@@ -28,7 +28,25 @@ import org.springframework.util.Assert;
 
 import cz.tacr.elza.FilterTools;
 import cz.tacr.elza.bulkaction.generator.PersistentSortRunConfig;
+import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.DataBit;
+import cz.tacr.elza.controller.vo.DataCoordinates;
+import cz.tacr.elza.controller.vo.DataDate;
+import cz.tacr.elza.controller.vo.DataDecimal;
+import cz.tacr.elza.controller.vo.DataInteger;
+import cz.tacr.elza.controller.vo.DataRecordRef;
+import cz.tacr.elza.controller.vo.DataString;
+import cz.tacr.elza.controller.vo.DataStructureRef;
+import cz.tacr.elza.controller.vo.DataJsonTable;
+import cz.tacr.elza.controller.vo.DataText;
+import cz.tacr.elza.controller.vo.DataFileRef;
+import cz.tacr.elza.controller.vo.DataFormattedText;
+import cz.tacr.elza.controller.vo.DataUnitdate;
+import cz.tacr.elza.controller.vo.DataUnitid;
+import cz.tacr.elza.controller.vo.DataUriRef;
+import cz.tacr.elza.controller.vo.ItemData;
+import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UpdateFund;
@@ -42,19 +60,37 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataBit;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDate;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrStructuredItem;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -145,6 +181,7 @@ public class ClientFactoryDO {
      * @param itemTypeId     identifkátor typu hodnoty atributu
      * @return
      */
+    @Deprecated
     public ArrDescItem createDescItem(final ArrItemVO descItemVO, final Integer itemTypeId) {
         ArrData data = null;
 
@@ -156,7 +193,7 @@ public class ClientFactoryDO {
 
         var sdp = staticDataService.getData();
         var itemType = sdp.getItemTypeById(itemTypeId);
-        if(itemType==null) {
+        if (itemType == null) {
         	throw new BusinessException("Failed to get item type, itemTypeId: " + itemTypeId,
         			 BaseCode.ID_NOT_EXIST);
         }
@@ -164,14 +201,153 @@ public class ClientFactoryDO {
 
         if (descItemVO.getDescItemSpecId() != null) {
             RulItemSpec itemSpec = itemType.getItemSpecById(descItemVO.getDescItemSpecId());
-            if(itemSpec==null) {
+            if (itemSpec == null) {
             	throw new BusinessException("Failed to get item spec, itemTypeId: " + itemTypeId
-            			+", itemSpecId: " + descItemVO.getDescItemSpecId(), BaseCode.ID_NOT_EXIST);
+            			+ ", itemSpecId: " + descItemVO.getDescItemSpecId(), BaseCode.ID_NOT_EXIST);
             }
             descItem.setItemSpec(itemSpec);
         }
 
         return descItem;
+    }
+
+   /**
+     * Vytvoření hodnoty atributu (nová).
+     *
+     * @param nodeItem       hodnota atributu
+     * @return
+     */
+    public ArrDescItem createDescItem(final NodeItem nodeItem) {
+    	ArrDescItem descItem = new ArrDescItem();
+
+        var sdp = staticDataService.getData();
+        var itemType = sdp.getItemTypeById(nodeItem.getItemTypeId());
+        if (itemType == null) {
+        	throw new BusinessException("Failed to get item type, itemTypeId: " + nodeItem.getItemTypeId(), BaseCode.ID_NOT_EXIST);
+        }
+        descItem.setItemType(itemType.getEntity());
+
+        if (nodeItem.getItemSpecId() != null) {
+        	var itemSpecId = nodeItem.getItemSpecId();
+            var itemSpec = itemType.getItemSpecById(itemSpecId);
+            if (itemSpec == null) {
+            	throw new BusinessException("Failed to get item spec, itemTypeId: " + nodeItem.getItemTypeId() + ", itemSpecId: " + itemSpecId, BaseCode.ID_NOT_EXIST);
+            }
+            descItem.setItemSpec(itemSpec);
+        }
+
+        // Item is not undefined -> parse data
+        if (!Boolean.TRUE.equals(nodeItem.getUndefined())) {
+        	ArrData data = createArrData(nodeItem.getData());
+            descItem.setData(data);
+        }
+
+        // Copy other properties to application object
+		descItem.setItemId(nodeItem.getId());
+		descItem.setDescItemObjectId(nodeItem.getItemObjectId());
+		descItem.setPosition(nodeItem.getPosition());
+        descItem.setReadOnly(nodeItem.getReadOnly() != null ? nodeItem.getReadOnly() : false);
+
+        return descItem;
+    }
+
+    /**
+     * Vytvoření hodnoty ArrData.
+     * 
+     * @param data
+     * @return
+     */
+    public ArrData createArrData(ItemData itemData) {
+    	Integer value;
+    	ArrData data = null;
+    	DataType dataType = DataType.fromId(itemData.getDataTypeId());
+        switch (dataType) {
+	        case INT:
+	            data = new ArrDataInteger();
+	            ((ArrDataInteger) data).setIntegerValue(((DataInteger) itemData).getIntegerValue());
+	        	break;
+	        case STRING:
+	            data = new ArrDataString();
+	            ((ArrDataString) data).setStringValue(((DataString) itemData).getStringValue());
+	        	break;
+	        case TEXT:
+	        	data = new ArrDataText();
+	        	((ArrDataText) data).setTextValue(((DataText) itemData).getTextValue());
+	        	break;
+	        case UNITDATE:
+	        	data = ArrDataUnitdate.valueOf(((DataUnitdate) itemData).getValue());
+	        	break;
+	        case UNITID:
+	            data = new ArrDataUnitid();
+	            ((ArrDataUnitid) data).setUnitId(((DataUnitid) itemData).getUnitId());
+	            break;
+	        case FORMATTED_TEXT:
+	        	data = new ArrDataText();
+	        	((ArrDataText) data).setTextValue(((DataFormattedText) itemData).getValue());
+	        	break;
+	        case COORDINATES:
+	        	data = new ArrDataCoordinates();
+	        	((ArrDataCoordinates) data).setValue(GeometryConvertor.convert(((DataCoordinates) itemData).getValue()));
+	        	break;
+	        case RECORD_REF:
+	        	data = new ArrDataRecordRef();
+	            ApAccessPoint record = null;
+	            value = ((DataRecordRef) itemData).getValue();
+	            if (value != null) {
+	                record = em.getReference(ApAccessPoint.class, value);
+	            }
+	        	((ArrDataRecordRef) data).setRecord(record);
+	        	break;
+	        case DECIMAL:
+	        	data = new ArrDataDecimal();
+	        	((ArrDataDecimal) data).setValue(((DataDecimal) itemData).getValue());
+	        	break;
+	        case STRUCTURED:
+	        	data = new ArrDataStructureRef();
+	            ArrStructuredObject structObj = null;
+	            value = ((DataStructureRef) itemData).getStructuredObjectId();
+	            if (value != null) {
+	                structObj = em.getReference(ArrStructuredObject.class, value);
+	            }
+	            ((ArrDataStructureRef) data).setStructuredObject(structObj);
+	            break;
+	        case ENUM:
+	        	data = new ArrDataNull();
+	        	break;
+	        case FILE_REF:
+	        	data = new ArrDataFileRef();
+	            ArrFile file = null;
+	            value = ((DataFileRef) itemData).getFileId();
+	            if (value != null) {
+	                file = em.getReference(ArrFile.class, value);
+	            }
+	            ((ArrDataFileRef) data).setFile(file);
+	        	break;
+	        case JSON_TABLE:
+	        	data = new ArrDataJsonTable();
+	        	((ArrDataJsonTable) data).setValue(ElzaTable.fromJsonString(((DataJsonTable) itemData).getValue()));
+	        	break;
+	        case DATE:
+	        	data = new ArrDataDate();
+	        	((ArrDataDate) data).setValue(((DataDate) itemData).getValue());
+	        	break;
+	        case URI_REF:
+	        	data = new ArrDataUriRef();
+	        	String stringValue = ((DataUriRef) itemData).getValue();
+	        	((ArrDataUriRef) data).setUriRefValue(stringValue);
+	        	((ArrDataUriRef) data).setSchema(ArrDataUriRef.createSchema(stringValue));
+	        	((ArrDataUriRef) data).setDescription(((DataUriRef) itemData).getDescription());
+	        	break;
+	        case BIT:
+	        	data = new ArrDataBit();
+	        	((ArrDataBit) data).setBitValue(((DataBit) itemData).getBitValue());
+	        	break;
+	        default:
+                throw new IllegalStateException("Neimplementovaný datový typ atributu -> CODE: " + dataType.getCode());
+        }
+
+        data.setDataType(dataType.getEntity());
+    	return data;
     }
 
     public ArrStructuredItem createStructureItem(final ArrItemVO itemVO, final Integer itemTypeId) {
@@ -241,25 +417,25 @@ public class ClientFactoryDO {
         return result;
     }
 
+    @Deprecated
     public ArrDescItem createDescItem(final StaticDataProvider sdp, final ArrItemVO itemVO) {
-    	
+
     	var itemType = sdp.getItemTypeById(itemVO.getItemTypeId());
-    	if(itemType==null) {
-    		throw new BusinessException("Cannot find item type, itemTypeId: "+itemVO.getItemTypeId(), BaseCode.ID_NOT_EXIST)
+    	if (itemType == null) {
+    		throw new BusinessException("Cannot find item type, itemTypeId: " + itemVO.getItemTypeId(), BaseCode.ID_NOT_EXIST)
     			.set("itemTypeId", itemVO.getItemTypeId());
     	}
-    	
+
         ArrDescItem descItem = new ArrDescItem();
         descItem.setItemType(itemType.getEntity());
         
         if (itemVO.getDescItemSpecId() != null) {
             RulItemSpec descItemSpec = itemType.getItemSpecById(itemVO.getDescItemSpecId());
-            if(descItemSpec==null) {
-        		throw new BusinessException("Cannot find item spec, itemTypeId: "+itemVO.getItemTypeId()
+            if (descItemSpec == null) {
+        		throw new BusinessException("Cannot find item spec, itemTypeId: " + itemVO.getItemTypeId()
         		+ ", itemSpecId: " + itemVO.getDescItemSpecId(), BaseCode.ID_NOT_EXIST)
     				.set("itemTypeId", itemVO.getItemTypeId())
     				.set("itemSpecId", itemVO.getDescItemSpecId());
-            	
             }
             descItem.setItemSpec(descItemSpec);
         }        

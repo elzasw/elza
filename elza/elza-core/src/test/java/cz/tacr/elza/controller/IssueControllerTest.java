@@ -28,7 +28,6 @@ import cz.tacr.elza.controller.vo.WfIssueVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrPermission.Permission;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
 
 public class IssueControllerTest extends AbstractControllerTest {
@@ -297,7 +296,7 @@ public class IssueControllerTest extends AbstractControllerTest {
      * Zalozeni testovaciho AS
      * @throws ApiException 
      */
-    private Fund createFund() throws ApiException {
+    private Fund createFund() {
         Fund fund = createFund("Test issue", "TST1");
         RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
         return fund;
