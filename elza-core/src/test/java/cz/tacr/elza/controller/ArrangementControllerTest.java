@@ -94,8 +94,11 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
-import cz.tacr.elza.test.ApiException;
+//import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
+import cz.tacr.elza.test.controller.vo.ItemDataResult;
+import cz.tacr.elza.test.controller.vo.NodeItem;
+import cz.tacr.elza.test.controller.vo.DataText;
 import cz.tacr.elza.utils.CsvUtils;
 
 public class ArrangementControllerTest extends AbstractControllerTest {
@@ -116,7 +119,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     public static final int MAX_SIZE = 999;
 
     @Test
-    public void arrangementTest() throws IOException, InterruptedException, ApiException, ExecutionException, IllegalAccessException {
+    public void arrangementTest() throws IOException, InterruptedException, ExecutionException, IllegalAccessException {
 
         // vytvoření
         Fund fund = createdFund();
@@ -163,7 +166,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     //TODO: odkomentovat po změně importu institucí @Test
-    public void fundFulltextTest() throws InterruptedException, ApiException {
+    public void fundFulltextTest() throws InterruptedException {
 
         final String value = "aaa";
         final int count = 2;
@@ -209,7 +212,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         }
     }
 
-    private Fund createFundFulltext(int i, int count, String value) throws InterruptedException, ApiException {
+    private Fund createFundFulltext(int i, int count, String value) throws InterruptedException {
 
         Fund fund = createFund("Test fulltext " + i, "TST" + 1);
 
@@ -227,7 +230,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void revertingChangeTest() throws IOException, InterruptedException, ApiException {
+    public void revertingChangeTest() throws IOException, InterruptedException {
 
         Fund fund = createdFund();
 
@@ -248,13 +251,13 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ChangesResult changesAll = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, null);
         assertNotNull(changesAll);
         assertNotNull(changesAll.getChanges());
-        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 33);
+        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 35);
         assertFalse(changesAll.getOutdated());
 
         ChangesResult changesByNode = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, nodes.get(0).getId());
         assertNotNull(changesByNode);
         assertNotNull(changesByNode.getChanges());
-        assertTrue(changesByNode.getTotalCount().equals(changesByNode.getChanges().size()) && changesByNode.getChanges().size() == 9);
+        assertTrue(changesByNode.getTotalCount().equals(changesByNode.getChanges().size()) && changesByNode.getChanges().size() == 11);
 
         final Integer lastChangeId = changesAll.getChanges().get(0).getChangeId();
         final Integer firstChangeId = changesAll.getChanges().get(changesAll.getChanges().size() - 1).getChangeId();
@@ -275,7 +278,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             e.printStackTrace();
         }
 
-        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 33);
+        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 35);
         assertTrue(!changesByDate.getOutdated());
 
         // obdoba revertChanges s fail očekáváním
@@ -596,6 +599,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      * Operace s descItems (create, update, delete).
      *
      * @param fundVersion verze archivní pomůcky
+     * @throws ApiException 
      */
     private void operationsDescItems(final ArrFundVersionVO fundVersion) throws IOException, InterruptedException {
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
@@ -613,25 +617,41 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
         RulDescItemTypeExtVO type = findDescItemTypeByCode("SRD_SCALE");
         ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null, null);
+        NodeItem nodeItem = buildDescItem(type, rootNode, "value", null, null); // new
         ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, rootNode, type);
+        ItemDataResult itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem); // new
         rootNode = descItemResult.getParent();
         ArrItemVO descItemCreated = descItemResult.getItem();
+        NodeItem nodeItemCreated = itemDataResult.getItem(); // new
 
         assertNotNull(((ArrItemTextVO) descItem).getValue().equals(((ArrItemTextVO) descItemCreated).getValue()));
         assertNotNull(descItemCreated.getPosition());
         assertNotNull(descItemCreated.getDescItemObjectId());
 
+        // new
+        assertNotNull(((DataText) nodeItem.getData()).getTextValue().equals(((DataText) nodeItemCreated.getData()).getTextValue()));
+        assertNotNull(nodeItemCreated.getPosition());
+        assertNotNull(nodeItemCreated.getItemObjectId());
+
         // aktualizace hodnoty
         helperTestService.waitForWorkers();
         ((ArrItemTextVO) descItemCreated).setValue("update value");
         descItemResult = updateDescItem(descItemCreated, fundVersion, rootNode, true);
+        itemDataResult = descitemsApi.descItemUpdateDescItem(fundVersion.getId(), true, nodeItemCreated); // new
         rootNode = descItemResult.getParent();
         ArrItemVO descItemUpdated = descItemResult.getItem();
+        NodeItem nodeItemUpdated = itemDataResult.getItem(); // new
 
         assertTrue(descItemUpdated.getDescItemObjectId().equals(descItemCreated.getDescItemObjectId()));
         assertTrue(descItemUpdated.getPosition().equals(descItemCreated.getPosition()));
         assertTrue(!descItemUpdated.getId().equals(descItemCreated.getId()));
         assertTrue(((ArrItemTextVO) descItemUpdated).getValue().equals(((ArrItemTextVO) descItemCreated).getValue()));
+
+        // new
+        assertTrue(nodeItemUpdated.getItemObjectId().equals(nodeItemCreated.getItemObjectId()));
+        assertTrue(nodeItemUpdated.getPosition().equals(nodeItemCreated.getPosition()));
+        assertTrue(!nodeItemUpdated.getId().equals(nodeItemCreated.getId()));
+        assertTrue(((DataText) nodeItemUpdated.getData()).getTextValue().equals(((DataText) nodeItemCreated.getData()).getTextValue()));
 
         // odstranění hodnoty
         helperTestService.waitForWorkers();
@@ -1112,7 +1132,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      * Vytvoření AP.
      * @throws ApiException
      */
-    private Fund createdFund() throws ApiException {
+    private Fund createdFund() {
         Fund fund = createFund(NAME_AP, "IC1");
         assertNotNull(fund);
 
@@ -1142,7 +1162,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void replaceDataValuesTest() throws InterruptedException, ApiException {
+    public void replaceDataValuesTest() throws InterruptedException {
 
         // vytvoření
         ArrFundVersionVO fundVersion = getOpenVersion(createdFund());
@@ -1213,7 +1233,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void filterUniqueValuesTest() throws InterruptedException, ApiException {
+    public void filterUniqueValuesTest() throws InterruptedException {
         // vytvoření
         ArrFundVersionVO fundVersion = getOpenVersion(createdFund());
 
@@ -1254,7 +1274,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      * @throws ApiException
      */
     @Test
-    public void copyOlderSiblingAttribute() throws InterruptedException, ApiException {
+    public void copyOlderSiblingAttribute() throws InterruptedException {
         Fund fundSource = createdFund();
         ArrFundVersionVO fundVersion = getOpenVersion(fundSource);
 
@@ -1288,7 +1308,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void copyLevelsTest() throws InterruptedException, ApiException {
+    public void copyLevelsTest() throws InterruptedException {
         Fund fundSource = createdFund();
         ArrFundVersionVO fundVersionSource = getOpenVersion(fundSource);
         List<ArrNodeVO> nodesSource = createLevels(fundVersionSource);
@@ -1327,7 +1347,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void refTemplatesTest() throws ApiException {
+    public void refTemplatesTest() {
         Fund fund = createdFund();
         ArrRefTemplateVO refTemplateVO = createRefTemplate(fund.getId());
 
@@ -1372,7 +1392,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void createDescItemBit() throws ApiException {
+    public void createDescItemBit() {
         Fund fundSource = createdFund();
         ArrFundVersionVO fundVersion = getOpenVersion(fundSource);
 
@@ -1391,7 +1411,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void createDescItemEnumEmpty() throws ApiException {
+    public void createDescItemEnumEmpty() {
         Fund fundSource = createdFund();
         ArrFundVersionVO fundVersion = getOpenVersion(fundSource);
 

@@ -226,7 +226,7 @@ model DataCoordinates extends ItemData {
 
 model DataDate extends ItemData {
     type: "DataDate";
-    value: offsetDateTime;
+    value: plainDate;
 }
 
 model DataDecimal extends ItemData {
@@ -255,8 +255,7 @@ model DataNull extends ItemData {
 
 model DataRecordRef extends ItemData {
     type: "DataRecordRef";
-    recordId: integer;
-    bindingId: integer;
+    value: integer;
 }
 
 model DataString extends ItemData {
@@ -274,15 +273,14 @@ model DataText extends ItemData {
     textValue: string;
 }
 
+model DataFormattedText extends ItemData {
+    type: "DataFormattedText";
+    value: string;
+}
+
 model DataUnitdate extends ItemData {
     type: "DataUnitdate";
-    valueFrom: string;
-    valueFromEstimated: boolean;
-    valueTo: string;
-    valueToEstimated: boolean;
-    format: string;
-    normalizedFrom: int64;
-    normalizedTo: int64;
+    value: string;
 }
 
 model DataUnitid extends ItemData {
@@ -292,11 +290,10 @@ model DataUnitid extends ItemData {
 
 model DataUriRef extends ItemData {
     type: "DataUriRef";
-    schema: string;
-    uriRefValue: string;
-    description: string;
-    nodeId: integer;
-    refTemplateId: integer;
+    nodeId?: integer;
+    value: string;
+    description?: string;
+    refTemplateId?: integer;
 }
 
 /**
@@ -360,8 +357,10 @@ model NodeItem {
     itemSpecId?: integer;
     /** value cannot be changed */
     readOnly?: boolean;
-    /** id parent node */
+    /** id node */
     nodeId?: integer;
+    /** node version */
+    nodeVersion?: integer;
     /** if inheritance is prohibited - true */
     inhibited?: boolean;
     /** item data */
@@ -624,16 +623,10 @@ namespace ElzaAPI.DescItem {
     /**
      * Create attribute value
      */
-    @route("/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create/new")
+    @route("/{fundVersionId}/create")
     @put op createDescItem(
         /** id AP version */
         @path fundVersionId: integer,
-        /** id node */
-        @path nodeId: integer,
-        /** node version */
-        @path nodeVersion: integer,
-        /** id type of item */
-        @path descItemTypeId: integer;
         /** new attribute value */
         @body body: NodeItem
     ): {
@@ -644,14 +637,10 @@ namespace ElzaAPI.DescItem {
     /**
      * Update attribute value
      */
-    @route("/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}/new")
+    @route("/{fundVersionId}/{createNewVersion}/update")
     @put op updateDescItem(
         /** id AP version */
         @path fundVersionId: integer,
-        /** id node */
-        @path nodeId: integer,
-        /** node version */
-        @path nodeVersion: integer,
         /** create a new version or not? */ 
         @path createNewVersion: boolean,
         /** new attribute value */
