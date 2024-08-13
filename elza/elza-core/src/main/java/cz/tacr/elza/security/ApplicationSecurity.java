@@ -40,7 +40,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -65,8 +64,6 @@ import cz.tacr.elza.security.ssoheader.SsoHeaderProperties;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.UserService;
 
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-
 /**
  * Authentization configuration for API
  *
@@ -74,7 +71,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
  */
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
 @Order(SecurityProperties.BASIC_AUTH_ORDER - 2)
 public class ApplicationSecurity {
 
@@ -230,8 +226,8 @@ public class ApplicationSecurity {
         	 * tento dotaz je zpracován výchozím Spring controller.
         	 */
     		.authorizeHttpRequests(auth -> auth
-           		.requestMatchers(new AntPathRequestMatcher("/"), new AntPathRequestMatcher("/res/**")).permitAll()
-        		.anyRequest().authenticated())
+    				.requestMatchers("/", "/res/**").permitAll()
+    				.anyRequest().authenticated())
     		.httpBasic(Customizer.withDefaults())
 
         	.sessionManagement(session -> session
