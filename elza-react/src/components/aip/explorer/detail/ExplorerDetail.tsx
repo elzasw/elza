@@ -62,7 +62,6 @@ const ExplorerDetail: FC = () => {
 
 
     const renderFileData = () => {
-        console.log('selectedItem :>> ', selectedItem);
         return (
             <div className="explorer-detail-body">
                 <DetailRow

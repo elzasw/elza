@@ -21,13 +21,13 @@ const AipsLogicalContainer = ({tree, selectedNode, setSelectedNode}: AipsLogical
     const nodes = mapNodesToFlatItemArr(tree);
 
     return (
-        <div className="border  h-100">
+        <div className="border h-100">
             <div className="border-bottom">
                 {selectedNode && <TreeNavigation nodes={nodes} selectedNode={selectedNode} onSelect={setSelectedNode}/>}
             </div>
             <Row className="flex-grow-1 m-0">
-                <Col xs={6}>
-                    <div className="border-end h-100">
+                <Col xs={6} className="p-0">
+                    <div className="border-end ">
                         {selectedNode && <Tree nodes={nodes} selectedNode={selectedNode} setSelectedNode={setSelectedNode}/>}
                     </div>
                 </Col>

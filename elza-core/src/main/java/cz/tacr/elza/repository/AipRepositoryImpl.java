@@ -54,6 +54,7 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
                                                     final Root<DaAip> aipRoot) {
         List<Predicate> predicates = new ArrayList<>();
         Join<DaAip, DaAipState> stateJoin = aipRoot.join("states", JoinType.LEFT);
+        stateJoin.on(cb.isNull(stateJoin.get("deleteChange")));
         Join<DaAip, DaSyncQueueItem> syncJoin = aipRoot.join("daSyncQueueItem", JoinType.LEFT);
         Join<DaAipState, ApAccessPoint> oApJoin = stateJoin.join("originatorAccessPoint", JoinType.LEFT);
         Join<DaAipState, ParInstitution> instJoin = stateJoin.join("institution", JoinType.LEFT);
@@ -108,6 +109,6 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
             return cb.conjunction();
         }
 
-        return cb.or(predicates.toArray(new Predicate[0]));
+        return cb.and(predicates.toArray(new Predicate[0]));
     }
 }

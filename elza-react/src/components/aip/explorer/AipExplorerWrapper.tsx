@@ -1,4 +1,3 @@
-import {  FluentProvider } from "@fluentui/react-components";
 import i18n from "components/i18n";
 import { Modal, Button } from "react-bootstrap";
 import AipExplorer from "./AipExplorer";
@@ -11,7 +10,7 @@ type AipExplorerModalWrapperProps = {
 }
 
 const AipExplorerModalWrapper = ({onOk, onClose, mode}: AipExplorerModalWrapperProps) => (
-    <FluentProvider>
+    <>
         <Modal.Body>
             <AipExplorer mode={mode}/>
         </Modal.Body>
@@ -23,7 +22,7 @@ const AipExplorerModalWrapper = ({onOk, onClose, mode}: AipExplorerModalWrapperP
                 {i18n('global.action.cancel')}
             </Button>
         </Modal.Footer>
-    </FluentProvider>
+    </>
 );
 
 export default AipExplorerModalWrapper;

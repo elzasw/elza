@@ -8,8 +8,9 @@
     }
     .modal-content {
         height: 90vh;
+        display: flex;
     }
     .modal-body-container {
-        flex: 1
+        flex: 1;
     }
 }  
