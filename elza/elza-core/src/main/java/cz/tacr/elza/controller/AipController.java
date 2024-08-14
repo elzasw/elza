@@ -89,8 +89,61 @@ public class AipController implements AipsApi {
         return ResponseEntity.ok(aipService.getAipDetail(aipId));
     }
 
+    @Override
+    public ResponseEntity<Void> aipBulkConnectLogicToJp(Integer arrNodeId, Integer daAipId, Integer daDaoId) {
+        daService.bulkConnectLogicalStructureToJP(arrNodeId, daAipId, daDaoId);
+        return ResponseEntity.ok().build();
+    }
 
-//    @RequestMapping(value = "/{aipId}", method = RequestMethod.GET)
+    @Override
+    public ResponseEntity<Void> aipBulkConnectToJp(Integer arrNodeId, Integer daAipId) {
+        daService.bulkConnectToJP(arrNodeId, daAipId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> aipBulkCreateFromSelected(Integer arrNodeId, Integer daAipId) {
+        daService.bulkCreateFromSelected(arrNodeId, daAipId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> aipBulkCreateSelectedToJp(Integer arrNodeId, Integer daAipId, Integer daDaoId) {
+        daService.bulkCreateFromSelectedToJP(arrNodeId, daAipId, daDaoId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> aipConnectJpFromSelected(Integer arrNodeId, Integer daAipId, Integer daDaoId) {
+        daService.createJPFromSelected(arrNodeId, daAipId, daDaoId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> aipConnectJpLinkFromSelected(Integer arrNodeId, Integer daAipId, Integer daDaoId) {
+        daService.createAndLinkFromSelected(arrNodeId, daAipId, daDaoId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> aipConnectPartToJp(Integer arrNodeId, Integer daAipId, Integer daDaoId) {
+        daService.connectPartToJP(arrNodeId, daAipId, daDaoId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> aipConnectSelectedToJp(Integer arrNodeId, Integer daAipId) {
+        daService.connectSelectedToJP(arrNodeId, daAipId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> aipConnectToJp(Integer arrNodeId, Integer daAipId) {
+        daService.connectToJP(arrNodeId, daAipId);
+        return ResponseEntity.ok().build();
+    }
+
+    //    @RequestMapping(value = "/{aipId}", method = RequestMethod.GET)
 //    public DaDaoFileFolderVO getDaDaoByAip(@PathVariable("aipId") final Integer aipId) {
 //        return daoService.findByAipIdAndTypeAndDeleteChangeIsNull(aipId);
 //    }

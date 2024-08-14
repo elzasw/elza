@@ -1300,6 +1300,178 @@ namespace ElzaAPI.Aip {
          };
 
      /**
+      * Connect to JP
+      */
+      @route("/connect-to-jp")
+      @post op connectToJp(
+         /** ArrNode ID */
+         @query arrNodeId: integer;
+         /** DaAip ID */
+         @query daAipId: integer;
+      ) : {
+          /** Dao link successfully created */
+          @Http.statusCode statusCode: 200;
+        } | {
+          /** Failed to create dao link */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+        };
+
+     /**
+      * Connect Part to JP
+      */
+      @route("/connect-part-to-jp")
+      @post op connectPartToJp(
+         /** ArrNode ID */
+         @query arrNodeId: integer;
+         /** DaAip ID */
+         @query daAipId: integer;
+         /** DaDao ID */
+         @query daDaoId: integer;
+      ) : {
+          /** Dao link successfully created */
+          @Http.statusCode statusCode: 200;
+        } | {
+          /** Failed to create dao link */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+        };
+
+     /**
+      * Create JP from selected
+      */
+      @route("/connect-jp-from-selected")
+      @post op connectJpFromSelected(
+         /** ArrNode ID */
+         @query arrNodeId: integer;
+         /** DaAip ID */
+         @query daAipId: integer;
+         /** DaDao ID */
+         @query daDaoId: integer;
+      ) : {
+          /** Dao link successfully created */
+          @Http.statusCode statusCode: 200;
+        } | {
+          /** Failed to create dao link */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+        };
+
+     /**
+      * Create JP and link from selected
+      */
+      @route("/connect-jp-link-from-selected")
+      @post op connectJpLinkFromSelected(
+         /** ArrNode ID */
+         @query arrNodeId: integer;
+         /** DaAip ID */
+         @query daAipId: integer;
+         /** DaDao ID */
+         @query daDaoId: integer;
+      ) : {
+          /** Dao link successfully created */
+          @Http.statusCode statusCode: 200;
+        } | {
+          /** Failed to create dao link */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+        };
+
+     /**
+      * Connect selected to JP
+      */
+      @route("/connect-selected-to-jp")
+      @post op connectSelectedToJp(
+         /** ArrNode ID */
+         @query arrNodeId: integer;
+         /** DaAip ID */
+         @query daAipId: integer;
+      ) : {
+          /** Dao link successfully created */
+          @Http.statusCode statusCode: 200;
+        } | {
+          /** Failed to create dao link */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+        };
+
+     /**
+      * Bulk connect to JP
+      */
+      @route("/bulk-connect-to-jp")
+      @post op bulkConnectToJp(
+         /** ArrNode ID */
+         @query arrNodeId: integer;
+         /** DaAip ID */
+         @query daAipId: integer;
+      ) : {
+          /** Dao link successfully created */
+          @Http.statusCode statusCode: 200;
+        } | {
+          /** Failed to create dao link */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+        };
+
+     /**
+      * Bulk create from selected
+      */
+      @route("/bulk-create-from-selected")
+      @post op bulkCreateFromSelected(
+         /** ArrNode ID */
+         @query arrNodeId: integer;
+         /** DaAip ID */
+         @query daAipId: integer;
+      ) : {
+          /** Dao link successfully created */
+          @Http.statusCode statusCode: 200;
+        } | {
+          /** Failed to create dao link */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+        };
+
+     /**
+      * Bulk create from selected and connect to JP
+      */
+      @route("/bulk-create-selected-to-jp")
+      @post op bulkCreateSelectedToJp(
+         /** ArrNode ID */
+         @query arrNodeId: integer;
+         /** DaAip ID */
+         @query daAipId: integer;
+         /** DaDao ID */
+         @query daDaoId: integer;
+      ) : {
+          /** Dao link successfully created */
+          @Http.statusCode statusCode: 200;
+        } | {
+          /** Failed to create dao link */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+        };
+
+     /**
+      * Bulk connect logical structure to JP
+      */
+      @route("/bulk-connect-logic-to-jp")
+      @post op bulkConnectLogicToJp(
+         /** ArrNode ID */
+         @query arrNodeId: integer;
+         /** DaAip ID */
+         @query daAipId: integer;
+         /** DaDao ID */
+         @query daDaoId: integer;
+      ) : {
+          /** Dao link successfully created */
+          @Http.statusCode statusCode: 200;
+        } | {
+          /** Failed to create dao link */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+        };
+
+     /**
       * Get level view tree for aips with ids
       */
      @route("/levelViewTree")

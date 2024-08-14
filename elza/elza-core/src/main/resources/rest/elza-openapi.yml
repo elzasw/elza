@@ -770,6 +770,311 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Admin.CopyPermissionParams'
+  /aip/bulk-connect-logic-to-jp:
+    post:
+      operationId: Aip_bulkConnectLogicToJp
+      description: Bulk connect logical structure to JP
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID
+          schema:
+            type: integer
+          explode: false
+        - name: daAipId
+          in: query
+          required: true
+          description: DaAip ID
+          schema:
+            type: integer
+          explode: false
+        - name: daDaoId
+          in: query
+          required: true
+          description: DaDao ID
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/bulk-connect-to-jp:
+    post:
+      operationId: Aip_bulkConnectToJp
+      description: Bulk connect to JP
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID
+          schema:
+            type: integer
+          explode: false
+        - name: daAipId
+          in: query
+          required: true
+          description: DaAip ID
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/bulk-create-from-selected:
+    post:
+      operationId: Aip_bulkCreateFromSelected
+      description: Bulk create from selected
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID
+          schema:
+            type: integer
+          explode: false
+        - name: daAipId
+          in: query
+          required: true
+          description: DaAip ID
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/bulk-create-selected-to-jp:
+    post:
+      operationId: Aip_bulkCreateSelectedToJp
+      description: Bulk create from selected and connect to JP
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID
+          schema:
+            type: integer
+          explode: false
+        - name: daAipId
+          in: query
+          required: true
+          description: DaAip ID
+          schema:
+            type: integer
+          explode: false
+        - name: daDaoId
+          in: query
+          required: true
+          description: DaDao ID
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/connect-jp-from-selected:
+    post:
+      operationId: Aip_connectJpFromSelected
+      description: Create JP from selected
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID
+          schema:
+            type: integer
+          explode: false
+        - name: daAipId
+          in: query
+          required: true
+          description: DaAip ID
+          schema:
+            type: integer
+          explode: false
+        - name: daDaoId
+          in: query
+          required: true
+          description: DaDao ID
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/connect-jp-link-from-selected:
+    post:
+      operationId: Aip_connectJpLinkFromSelected
+      description: Create JP and link from selected
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID
+          schema:
+            type: integer
+          explode: false
+        - name: daAipId
+          in: query
+          required: true
+          description: DaAip ID
+          schema:
+            type: integer
+          explode: false
+        - name: daDaoId
+          in: query
+          required: true
+          description: DaDao ID
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/connect-part-to-jp:
+    post:
+      operationId: Aip_connectPartToJp
+      description: Connect Part to JP
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID
+          schema:
+            type: integer
+          explode: false
+        - name: daAipId
+          in: query
+          required: true
+          description: DaAip ID
+          schema:
+            type: integer
+          explode: false
+        - name: daDaoId
+          in: query
+          required: true
+          description: DaDao ID
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/connect-selected-to-jp:
+    post:
+      operationId: Aip_connectSelectedToJp
+      description: Connect selected to JP
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID
+          schema:
+            type: integer
+          explode: false
+        - name: daAipId
+          in: query
+          required: true
+          description: DaAip ID
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
+  /aip/connect-to-jp:
+    post:
+      operationId: Aip_connectToJp
+      description: Connect to JP
+      parameters:
+        - name: arrNodeId
+          in: query
+          required: true
+          description: ArrNode ID
+          schema:
+            type: integer
+          explode: false
+        - name: daAipId
+          in: query
+          required: true
+          description: DaAip ID
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
   /aip/create-dao-link:
     post:
       tags:
