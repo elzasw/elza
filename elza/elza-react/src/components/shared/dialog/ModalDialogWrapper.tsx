@@ -2,6 +2,7 @@ import { PropsWithChildren, useEffect, useRef} from 'react';
 import ReactDOM from 'react-dom';
 import {Modal} from 'react-bootstrap';
 import {setInputFocus} from 'components/Utils.jsx';
+import { FluentProvider } from '@fluentui/react-components';
 
 /**
  * Obal modálního dialogu
@@ -49,15 +50,18 @@ export const ModalDialogWrapper = ({
             onHide={handleHide}
             maskClosable={false}
         >
-            {title !== null && (
-                <Modal.Header closeButton>
-                    <Modal.Title>{title}</Modal.Title>
-                </Modal.Header>
-            )}
+            <FluentProvider style={{ flex: 1, display: "block"}}>
 
-            <div ref={modalBody} className="modal-body-container">
-                {children}
-            </div>
+                {title !== null && (
+                    <Modal.Header closeButton>
+                        <Modal.Title>{title}</Modal.Title>
+                    </Modal.Header>
+                )}
+
+                <div ref={modalBody} className="modal-body-container">
+                    {children}
+                </div>
+            </FluentProvider>
         </Modal>
     );
 }

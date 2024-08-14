@@ -26,7 +26,6 @@ import "./Tree.scss";
         () => new Set()
     );
 
-    console.log('nodes :>> ', nodes);
     const items = nodes;
        
     const handleOpenChange = (

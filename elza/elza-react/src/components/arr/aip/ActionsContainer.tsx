@@ -20,7 +20,6 @@ const ActionsContainer = ({fund}: ActionsContainerProps) => {
     const selectedAips = useSelector((state: any) => storeFromArea(state, AREA_SELECTED_AIPS));
     const aips = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
     const aip = useSelector((state: AppState) => storeFromArea(state, aipActions.AREA_AIP))
-    console.log('aips :>> ', selectedAips);
     const dispatch = useThunkDispatch();
 
     const handleConnectIndividually = () => {

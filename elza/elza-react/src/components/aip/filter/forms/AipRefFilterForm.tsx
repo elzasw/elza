@@ -48,7 +48,7 @@ const AipRefFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
         <FinalForm<AipFilter>
             initialValues={{
                 attr: item.key as keyof DaAipDetailVO,
-                criteria: AipFilterCriteria.CONTAINS,
+                criteria: AipFilterCriteria.EQUALS,
                 value: selectValues[0].value,
                 path: item.path,
                 label: selectValues[0].label,
@@ -58,7 +58,7 @@ const AipRefFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
         >
         {({ submitting, handleSubmit, values, form }) => {
             const inputVisible =
-                values.criteria == AipFilterCriteria.CONTAINS ||
+                values.criteria == AipFilterCriteria.EQUALS ||
                 values.criteria == AipFilterCriteria.DOES_NOT_CONTAIN;
 
             return (
@@ -72,9 +72,9 @@ const AipRefFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
                                     // @ts-ignore
                                     type="radio"
                                     label={i18n("aip.form.contain")}
-                                    checked={values.criteria == AipFilterCriteria.CONTAINS}
-                                    value={AipFilterCriteria.CONTAINS}
-                                    onChange={() => form.change("criteria", AipFilterCriteria.CONTAINS)}
+                                    checked={values.criteria == AipFilterCriteria.EQUALS}
+                                    value={AipFilterCriteria.EQUALS}
+                                    onChange={() => form.change("criteria", AipFilterCriteria.EQUALS)}
                                 />
                             )}
                         </Field>

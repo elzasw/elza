@@ -49,7 +49,6 @@ const ExplorerNavigationTab = () => {
     }
 
     items = items.reverse();
-    console.log('items :>> ', items);
 
     const handleMoveUp = () => {
         if (items.length - 1) {
