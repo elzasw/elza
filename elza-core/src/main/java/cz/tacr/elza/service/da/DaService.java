@@ -21,6 +21,8 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaAip;
 import cz.tacr.elza.domain.DaAipState;
@@ -31,6 +33,7 @@ import cz.tacr.elza.domain.DaDaoFile;
 import cz.tacr.elza.domain.DaDaoFileFolder;
 import cz.tacr.elza.domain.DaDaoItem;
 import cz.tacr.elza.domain.DaDaoRelation;
+import cz.tacr.elza.domain.DaLevelView;
 import cz.tacr.elza.domain.DaLocalCache;
 import cz.tacr.elza.domain.DaRemoteRepositorySync;
 import cz.tacr.elza.domain.DaSyncQueueItem;
@@ -49,6 +52,7 @@ import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.DaRemoteRepositorySyncRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.AipService;
 import cz.tacr.elza.service.ArrangementInternalService;
@@ -82,6 +86,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -147,6 +152,8 @@ public class DaService {
     private ClientFactoryVO clientFactoryVO;
     @Autowired
     private ExternalSystemService externalSystemService;
+    @Autowired
+    private LevelRepository levelRepository;
 
     @Scheduled(cron = "0 0 2 * * *")
     public void synchronizeDaRepositories() {
@@ -673,6 +680,207 @@ public class DaService {
         arrDaoLink.setDaDao(daDao);
         arrDaoLink.setLinkType(linkType);
         daoLinkRepository.save(arrDaoLink);
+    }
+
+    @Transactional
+    public void connectToJP(Integer nodeId, Integer daAipId) {
+        ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        DaAip daAip = findAipById(daAipId);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
+        ArrDaoLink arrDaoLink = new ArrDaoLink();
+        arrDaoLink.setAip(daAip);
+        arrDaoLink.setNode(arrNode);
+        arrDaoLink.setLinkType(ArrDaoLink.LinkType.AIP);
+        arrDaoLink.setCreateChange(change);
+        daoLinkRepository.save(arrDaoLink);
+    }
+
+    @Transactional
+    public void connectPartToJP(Integer nodeId, Integer daAipId, Integer daDaoId) {
+        ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        DaAip daAip = findAipById(daAipId);
+        DaDao daDao = findDaoById(daDaoId);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
+        ArrDaoLink arrDaoLink = new ArrDaoLink();
+        arrDaoLink.setAip(daAip);
+        arrDaoLink.setNode(arrNode);
+        arrDaoLink.setLinkType(ArrDaoLink.LinkType.PART_AIP);
+        arrDaoLink.setDaDao(daDao);
+        arrDaoLink.setCreateChange(change);
+        daoLinkRepository.save(arrDaoLink);
+    }
+
+    @Transactional
+    public void createJPFromSelected(Integer nodeId, Integer daAipId, Integer daDaoId) {
+        ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        DaAip daAip = findAipById(daAipId);
+        DaDao daDao = findDaoById(daDaoId);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
+        ArrNode newNode = new ArrNode();
+        newNode.setUuid(generateUuid());
+        newNode.setFund(arrNode.getFund());
+        nodeRepository.save(newNode);
+        ArrLevel arrLevel = new ArrLevel();
+        arrLevel.setNodeParent(arrNode);
+        arrLevel.setNode(newNode);
+        arrLevel.setCreateChange(change);
+        arrLevel.setPosition(1);
+        levelRepository.save(arrLevel);
+        if (daDao != null) {
+            connectPartToJP(newNode.getNodeId(), daAip.getAipId(), daDao.getDaoId());
+        } else {
+            connectToJP(newNode.getNodeId(), daAip.getAipId());
+        }
+    }
+
+    @Transactional
+    public void connectSelectedToJP(Integer nodeId, Integer daAipId) {
+        ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        DaAip daAip = findAipById(daAipId);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
+        ArrDaoLink arrDaoLink = new ArrDaoLink();
+        arrDaoLink.setAip(daAip);
+        arrDaoLink.setNode(arrNode);
+        arrDaoLink.setLinkType(ArrDaoLink.LinkType.COMPONENT_AIP);
+        arrDaoLink.setCreateChange(change);
+        daoLinkRepository.save(arrDaoLink);
+    }
+
+    @Transactional
+    public void createAndLinkFromSelected(Integer nodeId, Integer daAipId, Integer daDaoId) {
+        ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        DaAip daAip = findAipById(daAipId);
+        DaDao daDao = findDaoById(daDaoId);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
+        ArrNode newNode = new ArrNode();
+        newNode.setUuid(generateUuid());
+        newNode.setFund(arrNode.getFund());
+        nodeRepository.save(newNode);
+        ArrLevel arrLevel = new ArrLevel();
+        arrLevel.setNodeParent(arrNode);
+        arrLevel.setNode(newNode);
+        arrLevel.setCreateChange(change);
+        arrLevel.setPosition(1);
+        levelRepository.save(arrLevel);
+        ArrDaoLink arrDaoLink = new ArrDaoLink();
+        arrDaoLink.setAip(daAip);
+        arrDaoLink.setNode(arrNode);
+        arrDaoLink.setLinkType(ArrDaoLink.LinkType.COMPONENT_AIP);
+        arrDaoLink.setCreateChange(change);
+        if (daDao != null) {
+           arrDaoLink.setDaDao(daDao);
+        }
+        daoLinkRepository.save(arrDaoLink);
+    }
+
+    @Transactional
+    public void bulkConnectToJP(Integer nodeId, Integer daAipId) {
+        ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        DaAip daAip = findAipById(daAipId);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
+        ArrDaoLink arrDaoLink = new ArrDaoLink();
+        arrDaoLink.setAip(daAip);
+        arrDaoLink.setNode(arrNode);
+        arrDaoLink.setLinkType(ArrDaoLink.LinkType.AIP);
+        arrDaoLink.setCreateChange(change);
+        daoLinkRepository.save(arrDaoLink);
+    }
+
+    @Transactional
+    public void bulkCreateFromSelectedToJP(Integer nodeId, Integer daAipId, Integer daDaoId) {
+        ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        DaAip daAip = findAipById(daAipId);
+        DaDao daDao = findDaoById(daDaoId);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
+        int position = 1;
+        ArrNode newNode = new ArrNode();
+        newNode.setUuid(generateUuid());
+        newNode.setFund(arrNode.getFund());
+        nodeRepository.save(newNode);
+        ArrLevel arrLevel = new ArrLevel();
+        arrLevel.setNodeParent(arrNode);
+        arrLevel.setNode(newNode);
+        arrLevel.setCreateChange(change);
+        arrLevel.setPosition(position);
+        levelRepository.save(arrLevel);
+        DaLevelView levelView = daDao.getLevelView();
+
+        for (DaLevelView child : levelView.getChildren()) {
+            createNextLevel(arrNode, change, position + 1, child);
+        }
+        ArrDaoLink arrDaoLink = new ArrDaoLink();
+        arrDaoLink.setAip(daAip);
+        arrDaoLink.setNode(arrNode);
+        arrDaoLink.setDaDao(daDao);
+        arrDaoLink.setLinkType(ArrDaoLink.LinkType.PART_AIP);
+        arrDaoLink.setCreateChange(change);
+
+        daoLinkRepository.save(arrDaoLink);
+    }
+
+    @Transactional
+    public void bulkConnectLogicalStructureToJP(Integer nodeId, Integer daAipId, Integer daDaoId) {
+        ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        DaAip daAip = findAipById(daAipId);
+        DaDao daDao = findDaoById(daDaoId);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
+        DaLevelView levelView = daDao.getLevelView();
+        int position = 1;
+        for (DaLevelView child : levelView.getChildren()) {
+            createNextLevel(arrNode, change, position, child);
+        }
+        ArrDaoLink arrDaoLink = new ArrDaoLink();
+        arrDaoLink.setAip(daAip);
+        arrDaoLink.setNode(arrNode);
+        arrDaoLink.setDaDao(daDao);
+        arrDaoLink.setLinkType(ArrDaoLink.LinkType.PART_AIP);
+        arrDaoLink.setCreateChange(change);
+
+        daoLinkRepository.save(arrDaoLink);
+    }
+
+    private void createNextLevel(ArrNode arrNode, ArrChange change, int position, DaLevelView levelView) {
+        ArrNode newNode = new ArrNode();
+        newNode.setUuid(generateUuid());
+        newNode.setFund(arrNode.getFund());
+        nodeRepository.save(newNode);
+
+        ArrLevel arrLevel = new ArrLevel();
+        arrLevel.setNodeParent(arrNode);
+        arrLevel.setNode(newNode);
+        arrLevel.setCreateChange(change);
+        arrLevel.setPosition(position);
+        levelRepository.save(arrLevel);
+        for (DaLevelView child : levelView.getChildren()) {
+            createNextLevel(newNode, change, position + 1, child);
+        }
+    }
+
+    @Transactional
+    public void bulkCreateFromSelected(Integer nodeId, Integer daAipId) {
+        ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
+        DaAip daAip = findAipById(daAipId);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
+        ArrNode newNode = new ArrNode();
+        newNode.setUuid(generateUuid());
+        newNode.setFund(arrNode.getFund());
+        nodeRepository.save(newNode);
+        ArrLevel arrLevel = new ArrLevel();
+        arrLevel.setNodeParent(arrNode);
+        arrLevel.setNode(newNode);
+        arrLevel.setCreateChange(change);
+        arrLevel.setPosition(1);
+        levelRepository.save(arrLevel);
+        bulkConnectToJP(newNode.getNodeId(), daAip.getAipId());
+    }
+
+    /**
+     * Vytvoření jednoznačného identifikátoru požadavku.
+     *
+     * @return jednoznačný identifikátor
+     */
+    public String generateUuid() {
+        return UUID.randomUUID().toString();
     }
 
     @Transactional
