@@ -518,7 +518,7 @@ public class ClientFactoryDO {
         List<DescItemCondition> valuesConditions = createValuesEnumCondition(filter.getValuesType(), filter.getValues(),
                 ArrDescItem.FULLTEXT_ATT);
         List<DescItemCondition> specsConditions = createSpecificationsEnumCondition(filter.getSpecsType(), filter.getSpecs(),
-                ArrDescItem.SPECIFICATION_ATT);
+                ArrDescItem.FIELD_ITEM_SPEC_ID);
         List<Integer> itemSpecIds = Objects.equals(filter.getSpecsType(), ValuesTypes.UNSELECTED) ? null : filter.getSpecs();
 
         List<DescItemCondition> conditions = new LinkedList<>();

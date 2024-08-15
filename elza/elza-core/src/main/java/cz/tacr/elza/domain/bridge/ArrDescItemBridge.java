@@ -3,7 +3,7 @@ package cz.tacr.elza.domain.bridge;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_ITEM_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_NODE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_FUND_ID;
-import static cz.tacr.elza.domain.ArrDescItem.SPECIFICATION_ATT;
+import static cz.tacr.elza.domain.ArrDescItem.FIELD_ITEM_SPEC_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_DESC_ITEM_TYPE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_CREATE_CHANGE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_DELETE_CHANGE_ID;
@@ -35,7 +35,7 @@ public class ArrDescItemBridge implements TypeBridge<ArrDescItem> {
     	document.addValue(FIELD_NODE_ID, arrDescItem.getNodeId());
     	document.addValue(FIELD_FUND_ID, arrDescItem.getFundId());
 
-    	document.addValue(SPECIFICATION_ATT, arrDescItem.getItemSpecId());
+    	document.addValue(FIELD_ITEM_SPEC_ID, arrDescItem.getItemSpecId());
     	document.addValue(FIELD_DESC_ITEM_TYPE_ID, arrDescItem.getDescItemTypeId());
     	document.addValue(FIELD_CREATE_CHANGE_ID, arrDescItem.getCreateChangeId());
     	document.addValue(FIELD_DELETE_CHANGE_ID, arrDescItem.getDeleteChangeId());
