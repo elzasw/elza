@@ -125,7 +125,7 @@ public class FundController implements FundsApi {
 
     @Override
     @Transactional
-    public ResponseEntity<Fund> createFund(@RequestBody CreateFund createFund) {
+    public ResponseEntity<Fund> fundCreateFund(@RequestBody CreateFund createFund) {
         // Kontrola a vytvoření AS
         Validate.isTrue(StringUtils.isNotBlank(createFund.getName()), "Musí být vyplněn název");
         Validate.notNull(createFund.getInstitutionIdentifier(), "Identifikátor instituce musí být vyplněn");
@@ -162,7 +162,7 @@ public class FundController implements FundsApi {
     }
 
     @Override
-    public ResponseEntity<FindFundsResult> findFunds(@RequestParam(value = "fulltext", required = false) String fulltext,
+    public ResponseEntity<FindFundsResult> fundFindFunds(@RequestParam(value = "fulltext", required = false) String fulltext,
                                                      @RequestParam(value = "institutionIdentifier", required = false) String institutionIdentifier,
                                                      @RequestParam(value = "max", required = false, defaultValue = "200") Integer max,
                                                      @RequestParam(value = "from", required = false, defaultValue = "0") Integer from) {
@@ -197,11 +197,10 @@ public class FundController implements FundsApi {
         });
 
         return ResponseEntity.ok(fundsResult);
-
     }
 
     @Override
-    public ResponseEntity<FundDetail> getFund(@PathVariable("id") String id) {
+    public ResponseEntity<FundDetail> fundGetFund(@PathVariable("id") String id) {
         Validate.notNull(id, "Musí být zadáno id AS");
 
         ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(Integer.valueOf(id));
@@ -212,7 +211,7 @@ public class FundController implements FundsApi {
 
     @Override
     @Transactional
-    public ResponseEntity<Void> importFundData(@PathVariable("id") String id,
+    public ResponseEntity<Void> fundImportFundData(@PathVariable("id") String id,
                                                @RequestPart(value = "importType", required = true) String importType,
                                                @RequestPart(value = "dataFile", required = true) MultipartFile dataFile) {
         Validate.notNull(id, "Musí být zadáno id AS");
@@ -229,7 +228,7 @@ public class FundController implements FundsApi {
 
     @Override
     @Transactional
-    public ResponseEntity<FundDetail> updateFund(@PathVariable("id") String id, @RequestBody UpdateFund updateFund) {
+    public ResponseEntity<FundDetail> fundUpdateFund(@PathVariable("id") String id, @RequestBody UpdateFund updateFund) {
         Validate.notNull(updateFund, "AS musí být vyplněn");
         Validate.notNull(updateFund.getRuleSetCode(), "AS musí mít přiřazená pravidla");
 
@@ -239,7 +238,7 @@ public class FundController implements FundsApi {
 
         ArrFund arrFund = factoryDO.createFund(updateFund, institution, id);
         RulRuleSet ruleSet = ruleSetRepository.findByCode(updateFund.getRuleSetCode());
-        Validate.notNull(ruleSet);
+        Objects.requireNonNull(ruleSet);
 
         ArrFundVersion fundVersion = arrangementService.updateFund(arrFund, ruleSet, apScopes, null, null);
         ArrNode rootNode = fundVersion.getRootNode();
@@ -256,7 +255,7 @@ public class FundController implements FundsApi {
      */
     @Override
     @Transactional
-    public ResponseEntity<List<Integer>> deleteStructureData(final Integer fundVersionId, final List<Integer> structureDataIds) {
+    public ResponseEntity<List<Integer>> fundDeleteStructureData(final Integer fundVersionId, final List<Integer> structureDataIds) {
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
         List<ArrStructuredObject> structObjList = structureService.getStructObjByIds(structureDataIds);
         List<Integer> deletedIds = structureService.deleteStructObj(fundVersion.getFundId(), structObjList);
