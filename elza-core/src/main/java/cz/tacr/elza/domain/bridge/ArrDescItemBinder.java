@@ -3,7 +3,7 @@ package cz.tacr.elza.domain.bridge;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_ITEM_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_NODE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_FUND_ID;
-import static cz.tacr.elza.domain.ArrDescItem.SPECIFICATION_ATT;
+import static cz.tacr.elza.domain.ArrDescItem.FIELD_ITEM_SPEC_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_DESC_ITEM_TYPE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_CREATE_CHANGE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_DELETE_CHANGE_ID;
@@ -29,13 +29,13 @@ public class ArrDescItemBinder implements TypeBinder {
     	this.context = context;
 
     	// při změně pole data nebo deleteChange přepočti index
-        context.dependencies().use(FIELD_DATA).use(FIELD_DELETE_CHANGE_ID);
+        context.dependencies().use(FIELD_DATA).use(FIELD_ITEM_SPEC_ID).use(FIELD_DELETE_CHANGE_ID);
 
         createIntegerField(FIELD_ITEM_ID);
         createIntegerField(FIELD_NODE_ID);
         createIntegerField(FIELD_FUND_ID);
 
-        createIntegerField(SPECIFICATION_ATT); // itemSpecId
+        createIntegerField(FIELD_ITEM_SPEC_ID);
         createIntegerField(FIELD_DESC_ITEM_TYPE_ID);
         createIntegerField(FIELD_CREATE_CHANGE_ID);
         createIntegerField(FIELD_DELETE_CHANGE_ID);
