@@ -33,7 +33,7 @@ public class FundControllerTest extends AbstractControllerTest {
         List<String> scopes = new ArrayList<>();
         scopes.add(SCOPE_GLOBAL);
         cf.setScopes(scopes);
-        Fund fund = fundsApi.createFund(cf);
+        Fund fund = fundsApi.fundCreateFund(cf);
         logger.info("Vytvořen AS : " + fund.getId());
     }
 
@@ -52,7 +52,7 @@ public class FundControllerTest extends AbstractControllerTest {
         List<String> scopes = new ArrayList<>();
         scopes.add(SCOPE_GLOBAL);
         cf.setScopes(scopes);
-        Fund fund = fundsApi.createFund(cf);
+        Fund fund = fundsApi.fundCreateFund(cf);
         logger.info("Vytvořen AS : " + fund.getId());
 
         UpdateFund uf = new cz.tacr.elza.test.controller.vo.UpdateFund();
@@ -65,7 +65,7 @@ public class FundControllerTest extends AbstractControllerTest {
         scopes = new ArrayList<>();
         scopes.add(SCOPE_GLOBAL);
         uf.setScopes(scopes);
-        cz.tacr.elza.test.controller.vo.FundDetail fundDetail = fundsApi.updateFund(fund.getId().toString(), uf);
+        cz.tacr.elza.test.controller.vo.FundDetail fundDetail = fundsApi.fundUpdateFund(fund.getId().toString(), uf);
 
         // TODO: check scope and ruleset
         // Note:  fundDetail is missing rulesetCode
@@ -78,7 +78,7 @@ public class FundControllerTest extends AbstractControllerTest {
         assertEquals(fundDetail.getUnitdate(), uf.getUnitdate());
 
         // check DB object
-        cz.tacr.elza.test.controller.vo.FundDetail fundInfo = fundsApi.getFund(fund.getId().toString());
+        cz.tacr.elza.test.controller.vo.FundDetail fundInfo = fundsApi.fundGetFund(fund.getId().toString());
         assertEquals(fundInfo.getName(), uf.getName());
         assertEquals(fundInfo.getInternalCode(), uf.getInternalCode());
         assertEquals(fundInfo.getMark(), uf.getMark());
@@ -103,7 +103,7 @@ public class FundControllerTest extends AbstractControllerTest {
         List<String> scopes = new ArrayList<>();
         scopes.add(SCOPE_GLOBAL);
         cf.setScopes(scopes);
-        Fund fund = fundsApi.createFund(cf);
+        Fund fund = fundsApi.fundCreateFund(cf);
         logger.info("Vytvořen AS : " + fund.getId());
 
         FundDetail fundDetail = getFundV1(fund.getId());
@@ -127,7 +127,7 @@ public class FundControllerTest extends AbstractControllerTest {
         List<String> scopes = new ArrayList<>();
         scopes.add(SCOPE_GLOBAL);
         cf.setScopes(scopes);
-        fundsApi.createFund(cf);
+        fundsApi.fundCreateFund(cf);
 
         cf = new CreateFund();
         cf.setInternalCode("fundUpd6");
@@ -138,7 +138,7 @@ public class FundControllerTest extends AbstractControllerTest {
         scopes = new ArrayList<>();
         scopes.add(SCOPE_GLOBAL);
         cf.setScopes(scopes);
-        fundsApi.createFund(cf);
+        fundsApi.fundCreateFund(cf);
 
         FindFundsResult funds = findFunds("fundUpd6", null, 10,0);
         logger.info("Nalezeno AS : " + funds.getTotalCount());
