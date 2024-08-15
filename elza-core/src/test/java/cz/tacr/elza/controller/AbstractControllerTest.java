@@ -796,7 +796,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		scopes.add(SCOPE_GLOBAL);
 		createFund.setScopes(scopes);
 
-		return fundsApi.createFund(createFund);
+		return fundsApi.fundCreateFund(createFund);
 	}
 
 	protected FundDetail getFundV1(final Integer id) {
