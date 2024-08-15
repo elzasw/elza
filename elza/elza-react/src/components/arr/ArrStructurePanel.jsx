@@ -287,7 +287,7 @@ class ArrStructurePanel extends AbstractReactComponent {
         const {fundVersionId} = this.props;
         const ids = this.getActiveSelection(clickItem) || [clickItem.id];
 
-        await Api.funds.deleteStructureData(fundVersionId, ids);
+        await Api.funds.fundDeleteStructureData(fundVersionId, ids);
 
         this.closeContextMenu();
     };

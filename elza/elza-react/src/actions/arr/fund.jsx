@@ -105,7 +105,7 @@ export function createFund(data) {
         });
 
     return dispatch => {
-        return savingApiWrapper(dispatch, Api.funds.createFund(formData)).then(response => {
+        return savingApiWrapper(dispatch, Api.funds.fundCreateFund(formData)).then(response => {
             dispatch(addToastrSuccess(i18n('arr.fund.title.added')));
             dispatch(fundsSelectFund(response.data.id));
         });
@@ -114,7 +114,7 @@ export function createFund(data) {
 
 export function updateFund(id, data) {
     return dispatch => {
-        return savingApiWrapper(dispatch, Api.funds.updateFund(id, data));
+        return savingApiWrapper(dispatch, Api.funds.fundUpdateFund(id, data));
     };
 }
 
