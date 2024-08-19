@@ -3,10 +3,12 @@ package cz.tacr.elza.domain.bridge;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_ITEM_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_NODE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_FUND_ID;
+import static cz.tacr.elza.domain.ArrDescItem.FIELD_ITEM_SPEC;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_ITEM_SPEC_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_DESC_ITEM_TYPE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_CREATE_CHANGE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_DELETE_CHANGE_ID;
+import static cz.tacr.elza.domain.ArrDescItem.FIELD_DELETE_CHANGE;
 import static cz.tacr.elza.domain.ArrDescItem.FULLTEXT_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.INTGER_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.DECIMAL_ATT;
@@ -28,8 +30,8 @@ public class ArrDescItemBinder implements TypeBinder {
     public void bind(TypeBindingContext context) {
     	this.context = context;
 
-    	// při změně pole data nebo deleteChange přepočti index
-        context.dependencies().use(FIELD_DATA).use(FIELD_ITEM_SPEC_ID).use(FIELD_DELETE_CHANGE_ID);
+    	// při změně pole data, itemSpec nebo deleteChange přepočti index
+        context.dependencies().use(FIELD_DATA).use(FIELD_ITEM_SPEC).use(FIELD_DELETE_CHANGE);
 
         createIntegerField(FIELD_ITEM_ID);
         createIntegerField(FIELD_NODE_ID);
