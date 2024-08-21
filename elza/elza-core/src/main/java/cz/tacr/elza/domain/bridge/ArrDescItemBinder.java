@@ -15,7 +15,7 @@ import static cz.tacr.elza.domain.ArrDescItem.DECIMAL_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORMALIZED_FROM_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORMALIZED_TO_ATT;
 import static cz.tacr.elza.domain.ArrItem.FIELD_DATA;
-import static cz.tacr.elza.domain.LuceneAnalyzerConfigurer.WHITESPACE_TOKENIZER_CZ;
+import static cz.tacr.elza.domain.LuceneAnalyzerConfigurer.KEYWORD_TOKENIZER_CZ;
 
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.mapper.pojo.bridge.binding.TypeBindingContext;
@@ -55,7 +55,7 @@ public class ArrDescItemBinder implements TypeBinder {
 
     private IndexFieldReference<String> createAnalyzedField(String name) {
     	return context.indexSchemaElement()
-        		.field(name, f -> f.asString().analyzer(WHITESPACE_TOKENIZER_CZ))
+        		.field(name, f -> f.asString().analyzer(KEYWORD_TOKENIZER_CZ))
         		.multiValued()
         		.toReference();
     }
