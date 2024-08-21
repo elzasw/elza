@@ -789,13 +789,12 @@ public class ClientFactoryDO {
 
     /**
      * Vrací hodnotu jako řetězec pro filtr.
-     * Pro vyhledávání bez ohledu na velikost písmen, text musí být napsán malými písmeny.
      *
      * @param conditions
      * @return String
      */
     private String getConditionValueString(final List<String> conditions) {
-        return getSingleValue(conditions, Function.identity()).toLowerCase();
+        return getSingleValue(conditions, Function.identity());
     }
 
     private Double getConditionValueDouble(final List<String> conditions) {
