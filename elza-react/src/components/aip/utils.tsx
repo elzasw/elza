@@ -1,5 +1,6 @@
 import { Icon } from 'components/shared';
 import { pad2 } from 'components/validate';
+import { LinkType } from 'elza-api';
 import {Aips} from 'typings/store';
 
 export const getAipRows = (aips: Aips) => {
@@ -21,6 +22,18 @@ export const getAipRows = (aips: Aips) => {
 
 export const getBoolIcon = (bool: Boolean) => {
     return bool ? <Icon glyph="fa-check"/> : <Icon glyph="fa-close"/>;
+}
+
+export const getConnectedToJPIcon = (link: LinkType | null) => {
+    let iconString = "fa fa-close";
+    if(link == LinkType.Aip) {
+        iconString="fa fa-check"
+    }else if(link == LinkType.ComponentAip) {
+        iconString="fa fa-chain-broken"
+    } else if(link == LinkType.PartAip) {
+        iconString="fa fa-link"
+    }
+    return <Icon glyph={iconString}/>;
 }
 
 export const generateUUID = () => {

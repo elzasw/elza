@@ -24,9 +24,9 @@ public interface CachedNodeRepository extends ElzaJpaRepository<ArrCachedNode, I
 
 	/**
 	 * Fetch list of nodes from cache
-	 * 
+	 *
 	 * Method will fetch ArrCachedNode and ArrNode
-	 * 
+	 *
 	 * @param nodeIds
 	 * @return
 	 */
@@ -52,4 +52,7 @@ public interface CachedNodeRepository extends ElzaJpaRepository<ArrCachedNode, I
     @Modifying
     @Query("DELETE FROM arr_cached_node cn WHERE cn.nodeId IN (SELECT di.nodeId FROM arr_desc_item di WHERE di.itemType = ?1)")
     int deleteByItemType(RulItemType itemType);
+
+    @Query("SELECT cn FROM arr_cached_node cn WHERE cn.nodeId IN (SELECT adl.nodeId FROM arr_dao_link adl WHERE adl.aip.aipId = ?1)")
+    List<ArrCachedNode> findByConnectedToAipId(Integer aipId);
 }

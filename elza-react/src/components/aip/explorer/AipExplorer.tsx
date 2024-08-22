@@ -13,9 +13,10 @@ import { AppState } from "typings/store";
 
 type AipExplorerProps = {
     mode: ExplorerMode;
+    onSelect?: (node) => void;
 }
 
-const AipExplorer = ({mode}: AipExplorerProps) => {
+const AipExplorer = ({mode, onSelect}: AipExplorerProps) => {
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
 
     if(!aip.id) {
@@ -32,7 +33,7 @@ const AipExplorer = ({mode}: AipExplorerProps) => {
                 <ExplorerNavigationTab />
                 <Divider />
                 <Splitter
-                    left={<ExplorerTree />}
+                    left={<ExplorerTree onSelect={onSelect}/>}
                     center={<ExplorerTable />}
                     right={<ExplorerDetail />}
                     rightSize={370}
