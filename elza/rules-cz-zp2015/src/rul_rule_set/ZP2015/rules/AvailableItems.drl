@@ -6472,12 +6472,17 @@ then
 end
 
 
-rule "Mozne specifikace pro prvek Mnozstvi v podtypu korespondence"
+rule "Mozne specifikace pro podtyp korespondence"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_KOR") ) from $ownItems
-    $itemType : RulItemTypeExt(code in ("ZP2015_AMOUNT") )
-    $itemSpec : RulItemSpecExt(code in ("ZP2015_AMOUNT_PIECES", "ZP2015_AMOUNT_SHEETS", "ZP2015_AMOUNT_PAGES") ) from $itemType.rulItemSpecList
+    $itemType : RulItemTypeExt(code in (
+        "ZP2015_AMOUNT",
+        "ZP2015_DATE_OTHER") )
+    $itemSpec : RulItemSpecExt(code in (
+        "ZP2015_AMOUNT_PIECES", "ZP2015_AMOUNT_SHEETS", "ZP2015_AMOUNT_PAGES",
+        "ZP2015_DATE_DISPATCH", "ZP2015_DATE_DELIVERY"
+        ) ) from $itemType.rulItemSpecList
 then
   $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
