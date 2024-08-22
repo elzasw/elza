@@ -65,6 +65,7 @@ public class ArrStructuredObject implements ArrFundGetter, Structured {
         private RulStructuredType structureType;
         private State state = State.TEMP;
         private String uuid;
+        private Boolean assignable;
 
         public Builder(final ArrChange createChange,
                        final ArrFund fund,
@@ -77,7 +78,11 @@ public class ArrStructuredObject implements ArrFundGetter, Structured {
         public ArrStructuredObject build() {
             ArrStructuredObject so = new ArrStructuredObject();
             so.setCreateChange(createChange);
-            so.setAssignable(true);
+            if(assignable!=null) {
+            	so.setAssignable(assignable);
+            } else {
+            	so.setAssignable(true);
+            }
             so.setFund(fund);
             so.setStructuredType(structureType);
             so.setState(state);
@@ -99,6 +104,11 @@ public class ArrStructuredObject implements ArrFundGetter, Structured {
         public Builder setUuid(final String uuid) {
             this.uuid = uuid;
             return this;
+        }
+        
+        public Builder setAssignable(final Boolean assignable) {
+        	this.assignable = assignable;
+        	return this;
         }
     }
 
