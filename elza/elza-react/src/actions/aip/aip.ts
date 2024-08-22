@@ -7,7 +7,8 @@ import { DaAipDetailVO } from 'api/DaAipDetailVO';
 export const AREA_AIPS = 'aipList';
 export const AREA_AIP = 'aip';
 export const AREA_SELECTED_AIPS = "selectedAips";
-export const AIP_LOGICAL_TREE = "aipLogicalTree"
+export const AIP_LOGICAL_TREE = "aipLogicalTree";
+export const AREA_SELECTED_AIP_DAOS = "selectedAipDaos";
 export const DEFAULT_PAGE_SIZE = 25;
 
 export const aipsFilter = (filters: AipFilter[], from: number, pageSize: number = DEFAULT_PAGE_SIZE) => {
@@ -45,6 +46,10 @@ export const setSelectedAips = (aips: DaAipDetailVO[]) => {
     return SimpleListActions.setData(AREA_SELECTED_AIPS, null, aips);
 }
 
+export const setSelectedAipDaos = (daDaoIds: number[]) => {
+    return SimpleListActions.setData(AREA_SELECTED_AIP_DAOS, daDaoIds, daDaoIds);
+}
+
 export const fetchAipLogicalTreeIfNeeded = (ids: number[]) => {
-    return DetailActions.fetchIfNeeded(AIP_LOGICAL_TREE, ids, (id: number[]) => WebApi.getAipsLogicalTree(ids))
+    return DetailActions.fetchIfNeeded(AIP_LOGICAL_TREE, ids, () => WebApi.getAipsLogicalTree(ids))
 }

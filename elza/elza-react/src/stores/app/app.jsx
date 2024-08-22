@@ -21,6 +21,7 @@ const initialState = {
     accessPoints: SimpleListReducer(),
     selectedAips: SimpleListReducer(),
     aipLogicalTree: DetailReducer(),
+    selectedAipDaos: DetailReducer(),
     kmlExtSystemList: SimpleListReducer(), // seznam externích systémů
     extSystemDetail: DetailReducer(),
     extSystemList: SimpleListReducer(), // seznam externích systémů

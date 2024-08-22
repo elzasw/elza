@@ -1,6 +1,6 @@
 import { DaAipDetailVO } from "api/DaAipDetailVO";
 import DetailRow from "./DetailRow";
-import { formatAipSize, formatDate, getBoolIcon } from "./utils";
+import { formatAipSize, formatDate, getBoolIcon, getConnectedToJPIcon } from "./utils";
 
 type AipDetailBodyProps = {
     detail: DaAipDetailVO;
@@ -31,12 +31,12 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 <DetailRow label="Dotace od-do" value={
                     formatDate(new Date(detail.unitdateFrom)) + " - " + formatDate(new Date(detail.unitdateTo))
                 }/>}
-            {detail.originatorInstitution && 
+            {detail.originatorInstitution &&
                 <DetailRow label="Původce" value={
                     <a href={`/entity/${detail.originatorInstitution.id}`}>{detail.originatorInstitution.name}</a>
                 }/>
             }
-            {detail.originator && !detail.originatorInstitution && 
+            {detail.originator && !detail.originatorInstitution &&
                 <DetailRow label="Původce" value={detail.originator}/>
             }
             {detail.ingestionCode &&
@@ -51,6 +51,7 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 <DetailRow label="Načtena metadata" value={getBoolIcon(detail.metadataLoad)}/>}
             {detail.state &&
                 <DetailRow label="Aktuální verze" value={detail.state}/>}
+            <DetailRow label="Napojen archivní popis" value={getConnectedToJPIcon(detail.arrDaoLinkType)}/>
         </>
     );
 }

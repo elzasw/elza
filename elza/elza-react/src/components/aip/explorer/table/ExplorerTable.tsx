@@ -22,6 +22,11 @@ import "./ExplorerTable.scss"
 import { formatAipSize } from "components/aip/utils";
 import { getFileName } from "../utils";
 import { ExplorerMode, isDaoFileFolderVO, useExplorerContext } from "../ExplorerContext";
+import { useThunkDispatch } from "utils/hooks";
+import { AREA_SELECTED_AIP_DAOS, setSelectedAipDaos } from "actions/aip/aip";
+import { useSelector } from "react-redux";
+import { storeFromArea } from "shared/utils";
+import { AppState } from "typings/store";
 
 type Item = {
     fileName?: string;
@@ -63,6 +68,7 @@ const columnSizes = {
 const ExplorerTable: FC = () => {
     const {selectedItem, setSelectedItem, mode} = useExplorerContext();
     const [columnSizingOptions] = useState<TableColumnSizingOptions>(columnSizes);
+    const dispatch = useThunkDispatch();
 
     let items = [];
     if(selectedItem && !selectedItem.fileName &&
@@ -96,8 +102,8 @@ const ExplorerTable: FC = () => {
                 onSelectionChange: (e, data) => {
                     const selectedRows = rows
                         .filter(row => data.selectedItems.has(row.rowId))
-                        .map(row => row.item);
-                        console.log('selectedRows :>> ', selectedRows);
+                        .map(row => row.item.daoId);
+                        dispatch(setSelectedAipDaos(selectedRows))
                 }
             })
         ]

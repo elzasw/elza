@@ -68,7 +68,7 @@ public class AipService {
         List<DaAip> allAips = aipRepository.findAllById(aipIds);
         List<TreeNodeCustomGen> treeNodes = new ArrayList<>();
 
-        TreeNodeCustomGen withoutRoot = createNodeCustomGen(null, "Bez logické struktury", 1, null, null);
+        TreeNodeCustomGen withoutRoot = createNodeCustomGen(null, "Bez logické struktury", 1, null, null, null);
         List<TreeNodeCustomGen> withoutStructure = new ArrayList<>(allAips.stream()
                 .filter(aip -> daoList
                         .stream()
@@ -81,7 +81,8 @@ public class AipService {
                         aip.getAipId().toString(),
                         2,
                         withoutRoot.getUUID(),
-                        false
+                        false,
+                        null
                 ))
                 .toList());
 
@@ -90,7 +91,7 @@ public class AipService {
         withoutRoot.setHasChildren(!withoutStructure.isEmpty());
         List<Integer> withStructure = aipIds.stream().filter(i -> !withoutStructureAipIds.contains(i)).toList();
 
-        TreeNodeCustomGen root = createNodeCustomGen(withStructure, "Logická struktura", 1, null, null);
+        TreeNodeCustomGen root = createNodeCustomGen(withStructure, "Logická struktura", 1, null, null, null);
 
         if(!withoutStructure.isEmpty()) {
             withoutStructure.add(0, withoutRoot);
@@ -126,7 +127,7 @@ public class AipService {
                 .distinct()
                 .filter(aipIds::contains)
                 .toList();
-        TreeNodeCustomGen root = createNodeCustomGen(relatedAipsIds, levelView.getLabel(), depth, parentUUID, !daos.isEmpty());
+        TreeNodeCustomGen root = createNodeCustomGen(relatedAipsIds, levelView.getLabel(), depth, parentUUID, !daos.isEmpty(), levelView.getLevelViewId());
         treeNodes.add(root);
         if (children != null) {
             for (DaLevelView child : children) {
@@ -135,7 +136,14 @@ public class AipService {
         }
     }
 
-    private TreeNodeCustomGen createNodeCustomGen(List<Integer> ids, String name, Integer depth, String parentUUID, Boolean hasChildren) {
+    private TreeNodeCustomGen createNodeCustomGen(
+            List<Integer> ids,
+            String name,
+            Integer depth,
+            String parentUUID,
+            Boolean hasChildren,
+            Integer daLevelViewId
+    ) {
         TreeNodeCustomGen node = new TreeNodeCustomGen();
         node.setUUID(UUID.randomUUID().toString());
         node.setValue(ids);
@@ -143,6 +151,7 @@ public class AipService {
         node.setDepth(depth);
         node.setParent(parentUUID);
         node.setHasChildren(hasChildren);
+        node.setDaLeveViewId(daLevelViewId);
         return node;
     }
 }

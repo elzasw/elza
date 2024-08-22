@@ -12,7 +12,6 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.csv.CSVPrinter;

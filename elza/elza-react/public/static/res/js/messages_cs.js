@@ -773,6 +773,8 @@ var messages = {
     "arr.aip.assignment.link": "Připojit k JP",
     "arr.aip.assignment.create": "Vytvořit JP z vybraných",
     "arr.aip.assignment.select-and-create": "Výběrové připojení s JP",
+    "arr.aip.assignment.part.confirm-first": "Opravdu chcete připojit pouze vybranou část ",
+    "arr.aip.assignment.part.confirm-last": "? Touto volbou nedojde k propojení návazných částí balíčku.",
     "arr.aip.assignment.create-and-link": "Vytvořit JP s propojením",
 
     "arr.linked-nodes.title": "Odkazující JP",
@@ -856,6 +858,7 @@ var messages = {
     "arr.fund.next": "Následující",
 
     "arr.fund.noselect": "Není vybrán žádný archivní soubor",
+
 
     "arr.node.status.ok": "Ok",
     "arr.node.status.okx": "Ok*",
@@ -1877,5 +1880,11 @@ var messages = {
     "aip.explorer.detail.relationRep": "Vztahy - reprezentace",
     "aip.explorer.detail.relationLog": "Vztahy - logická struktura",
     "aip.explorer.detail.parent": "Rodič",
+    "aip.detail.assignment.description": "Popis",
+    "aip.detail.assignment.name": "Název",
+    "aip.detail.assignment.relatedAip": "Související AIP",
+    "aip.detail.assignment.relatedAips": "Související AIPy",
+    "aip.detail.assignment.packagesNo": "Počet balíčků",
+    "aip.detail.assignment.packages": "Seznam balíčků",
     ____: "",
 };
