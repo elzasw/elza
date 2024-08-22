@@ -458,7 +458,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
             while (scrollableResults.next()) {
             	Object[] obj = (Object[]) scrollableResults.get();
         		ArrLevel level = (ArrLevel) obj[0];
-        		int depth = scrollableResults.getRowNumber();
+        		int depth = (int) obj[1];
         		treeLevelConsumer.accept(level, depth);
         		count++;
             }
