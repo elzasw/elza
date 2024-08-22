@@ -304,7 +304,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                 					   PREFIX_PREF + SEPARATOR + itemTypeCode + SEPARATOR + itemSpecCode,
                 				       wildcardValue(value), true, true);
                 }
-                boostWildcardQuery(factory, bool, addDataPrefix(fieldName), wildcardValue(value), true, true);
+                boostWildcardQuery(factory, bool, fieldName, wildcardValue(value), true, true);
             }
 
         } else {
@@ -312,7 +312,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                 // boost o preferovaný item
             	boostWildcardQuery(factory, bool, PREFIX_PREF + SEPARATOR + itemTypeCode, wildcardValue(value), true, true);
             }
-            boostWildcardQuery(factory, bool, addDataPrefix(fieldName), wildcardValue(value), true, true);
+            boostWildcardQuery(factory, bool, fieldName, wildcardValue(value), true, true);
         }
 
         return bool.toPredicate();
