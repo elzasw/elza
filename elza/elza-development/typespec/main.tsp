@@ -1402,8 +1402,8 @@ namespace ElzaAPI.Aip {
       @post op bulkConnectToJp(
          /** ArrNode ID */
          @query arrNodeId: integer;
-         /** DaAip ID */
-         @query daAipId: integer;
+         /** DaAip ID list */
+         @query daAipIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -1420,8 +1420,8 @@ namespace ElzaAPI.Aip {
       @post op bulkCreateFromSelected(
          /** ArrNode ID */
          @query arrNodeId: integer;
-         /** DaAip ID */
-         @query daAipId: integer;
+         /** DaAip ID list */
+         @query daAipIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -1438,10 +1438,10 @@ namespace ElzaAPI.Aip {
       @post op bulkCreateSelectedToJp(
          /** ArrNode ID */
          @query arrNodeId: integer;
-         /** DaAip ID */
-         @query daAipId: integer;
-         /** DaDao ID */
-         @query daDaoId: integer;
+         /** DaAip ID list */
+         @query daAipIdList: integer[];
+         /** DaLevelView ID */
+         @query daLevelViewId: integer;
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -1458,10 +1458,10 @@ namespace ElzaAPI.Aip {
       @post op bulkConnectLogicToJp(
          /** ArrNode ID */
          @query arrNodeId: integer;
-         /** DaAip ID */
-         @query daAipId: integer;
-         /** DaDao ID */
-         @query daDaoId: integer;
+         /** DaAip ID list */
+         @query daAipIdList: integer[];
+         /** DaLevelView ID */
+         @query daLevelViewId: integer;
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;

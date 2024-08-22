@@ -782,17 +782,19 @@ paths:
           schema:
             type: integer
           explode: false
-        - name: daAipId
+        - name: daAipIdList
           in: query
           required: true
-          description: DaAip ID
+          description: DaAip ID list
           schema:
-            type: integer
+            type: array
+            items:
+              type: integer
           explode: false
-        - name: daDaoId
+        - name: daLevelViewId
           in: query
           required: true
-          description: DaDao ID
+          description: DaLevelView ID
           schema:
             type: integer
           explode: false
@@ -819,12 +821,14 @@ paths:
           schema:
             type: integer
           explode: false
-        - name: daAipId
+        - name: daAipIdList
           in: query
           required: true
-          description: DaAip ID
+          description: DaAip ID list
           schema:
-            type: integer
+            type: array
+            items:
+              type: integer
           explode: false
       responses:
         '200':
@@ -849,12 +853,14 @@ paths:
           schema:
             type: integer
           explode: false
-        - name: daAipId
+        - name: daAipIdList
           in: query
           required: true
-          description: DaAip ID
+          description: DaAip ID list
           schema:
-            type: integer
+            type: array
+            items:
+              type: integer
           explode: false
       responses:
         '200':
@@ -879,17 +885,19 @@ paths:
           schema:
             type: integer
           explode: false
-        - name: daAipId
+        - name: daAipIdList
           in: query
           required: true
-          description: DaAip ID
+          description: DaAip ID list
           schema:
-            type: integer
+            type: array
+            items:
+              type: integer
           explode: false
-        - name: daDaoId
+        - name: daLevelViewId
           in: query
           required: true
-          description: DaDao ID
+          description: DaLevelView ID
           schema:
             type: integer
           explode: false

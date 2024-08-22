@@ -90,26 +90,26 @@ public class AipController implements AipsApi {
     }
 
     @Override
-    public ResponseEntity<Void> aipBulkConnectLogicToJp(Integer arrNodeId, Integer daAipId, Integer daDaoId) {
+    public ResponseEntity<Void> aipBulkConnectLogicToJp(Integer arrNodeId, List<Integer> daAipId, Integer daDaoId) {
         daService.bulkConnectLogicalStructureToJP(arrNodeId, daAipId, daDaoId);
         return ResponseEntity.ok().build();
     }
 
     @Override
-    public ResponseEntity<Void> aipBulkConnectToJp(Integer arrNodeId, Integer daAipId) {
-        daService.bulkConnectToJP(arrNodeId, daAipId);
+    public ResponseEntity<Void> aipBulkConnectToJp(Integer arrNodeId, List<Integer> daAipIdList) {
+        daService.bulkConnectToJP(arrNodeId, daAipIdList);
         return ResponseEntity.ok().build();
     }
 
     @Override
-    public ResponseEntity<Void> aipBulkCreateFromSelected(Integer arrNodeId, Integer daAipId) {
-        daService.bulkCreateFromSelected(arrNodeId, daAipId);
+    public ResponseEntity<Void> aipBulkCreateFromSelected(Integer arrNodeId, List<Integer> daAipIdList) {
+        daService.bulkCreateFromSelected(arrNodeId, daAipIdList);
         return ResponseEntity.ok().build();
     }
 
     @Override
-    public ResponseEntity<Void> aipBulkCreateSelectedToJp(Integer arrNodeId, Integer daAipId, Integer daDaoId) {
-        daService.bulkCreateFromSelectedToJP(arrNodeId, daAipId, daDaoId);
+    public ResponseEntity<Void> aipBulkCreateSelectedToJp(Integer arrNodeId, List<Integer> daAipIdList, Integer daLevelViewId) {
+        daService.bulkCreateFromSelectedToJP(arrNodeId, daAipIdList, daLevelViewId);
         return ResponseEntity.ok().build();
     }
 
