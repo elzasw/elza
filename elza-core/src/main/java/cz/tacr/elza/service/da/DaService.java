@@ -729,7 +729,11 @@ public class DaService {
         arrLevel.setNodeParent(arrNode);
         arrLevel.setNode(newNode);
         arrLevel.setCreateChange(change);
-        arrLevel.setPosition(1);
+        Integer maxPosition = levelRepository.findMaxPositionUnderParent(arrNode);
+        if (maxPosition == null) {
+            maxPosition = 0;
+        }
+        arrLevel.setPosition(maxPosition + 1);
         levelRepository.save(arrLevel);
         if (daDao != null) {
             connectPartToJP(newNode.getNodeId(), daAip.getAipId(), daDao.getDaoId());
@@ -762,10 +766,14 @@ public class DaService {
         newNode.setFund(arrNode.getFund());
         nodeRepository.save(newNode);
         ArrLevel arrLevel = new ArrLevel();
+        Integer maxPosition = levelRepository.findMaxPositionUnderParent(arrNode);
+        if (maxPosition == null) {
+            maxPosition = 0;
+        }
         arrLevel.setNodeParent(arrNode);
         arrLevel.setNode(newNode);
         arrLevel.setCreateChange(change);
-        arrLevel.setPosition(1);
+        arrLevel.setPosition(maxPosition + 1);
         levelRepository.save(arrLevel);
         ArrDaoLink arrDaoLink = new ArrDaoLink();
         arrDaoLink.setAip(daAip);
@@ -893,7 +901,11 @@ public class DaService {
             arrLevel.setNodeParent(arrNode);
             arrLevel.setNode(newNode);
             arrLevel.setCreateChange(change);
-            arrLevel.setPosition(1);
+            Integer maxPosition = levelRepository.findMaxPositionUnderParent(arrNode);
+            if (maxPosition == null) {
+                maxPosition = 0;
+            }
+            arrLevel.setPosition(maxPosition + 1);
             levelRepository.save(arrLevel);
             connectToJP(newNode.getNodeId(), daAip.getAipId());
         }
