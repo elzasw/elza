@@ -812,7 +812,10 @@ public class DaService {
         for (Integer daAipId : daAipIdList) {
             DaAip daAip = findAipById(daAipId);
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-            int position = 1;
+            Integer position = levelRepository.findMaxPositionUnderParent(arrNode);
+            if (position == null) {
+                position = 0;
+            }
             ArrNode newNode = new ArrNode();
             newNode.setUuid(generateUuid());
             newNode.setFund(arrNode.getFund());
@@ -852,7 +855,10 @@ public class DaService {
         for (Integer daAipId : daAipIdList) {
             DaAip daAip = findAipById(daAipId);
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-            int position = 1;
+            Integer position = levelRepository.findMaxPositionUnderParent(arrNode);
+            if (position == null) {
+                position = 0;
+            }
             for (DaLevelView child : levelView.getChildren()) {
                 createNextLevel(arrNode, change, position, child);
             }
