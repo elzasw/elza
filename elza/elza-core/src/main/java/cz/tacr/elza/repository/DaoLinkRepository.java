@@ -18,7 +18,7 @@ import cz.tacr.elza.service.arrangement.DeleteFundHistory;
 
 /**
  * Repository for ArrDaoLink
- * 
+ *
  * @since 1.9.2015
  */
 
@@ -74,4 +74,7 @@ public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer
     @Modifying
     @Query("UPDATE arr_dao_link SET createChange = :change WHERE daoLinkId IN :ids")
     void updateCreateChange(@Param("ids") Collection<Integer> ids, @Param("change") ArrChange change);
+
+    @Query("SELECT adl FROM arr_dao_link adl WHERE adl.aip.aipId = :aipId AND adl.deleteChange IS NULL")
+    List<ArrDaoLink> findByAipIdAndDeleteChangeIsNull(@Param("aipId") Integer aipId);
 }

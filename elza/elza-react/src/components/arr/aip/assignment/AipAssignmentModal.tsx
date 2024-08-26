@@ -11,19 +11,21 @@ import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
 import { AIP_LOGICAL_TREE, fetchAipLogicalTreeIfNeeded } from "actions/aip/aip";
 import { useThunkDispatch } from "utils/hooks";
+import { WebApi } from "actions";
 
 
 type AipAssignmentModalProps = {
     aips: DaAipDetailVO[];
-    tree: any
+    tree: any,
 }
 
 const AipAssignmentModal = ({aips, tree}: AipAssignmentModalProps) =>  {
     const [logicalTree, setLogicalTree] = useState(null);
-    const [leftSelectedNode, setLeftSelectedNode] = useState<TreeItemValue>(null);
-    const [rightSelectedNode, setRightSelectedNode] = useState<TreeItemValue>(tree.nodes[0].id);
+    const [selectedAips, setSelectedAips] = useState<{aipIds: number[], daLevelViewId: number}>(null);
+    const [selectedArrNodeId, setSelectedArrNodeId] = useState<TreeItemValue>(tree.nodes[0].id);
     const structure = useSelector((state: AppState) => storeFromArea(state, AIP_LOGICAL_TREE))
     const dispatch = useThunkDispatch();
+
 
     useEffect(() => {
         const ids = aips.map(aip => aip.aipId)
@@ -33,23 +35,45 @@ const AipAssignmentModal = ({aips, tree}: AipAssignmentModalProps) =>  {
     useEffect(() => {
         if(structure.data) {
             setLogicalTree(structure.data);
-            setLeftSelectedNode(structure.data.nodes[0].UUID);
+            setSelectedAips(structure.data.nodes[0].UUID);
         }
     },[structure]);
 
     const handleConnectToJP = () => {
-
+        if(!selectedAips.daLevelViewId) {
+            // Bez logické struktury
+            WebApi.connectSelectedAipToJp(selectedArrNodeId as number, selectedAips.aipIds);
+        } else {
+            // S logickou strukturou
+            WebApi.connectAipLogicalStructureToJpBulk(
+                selectedArrNodeId as number,
+                selectedAips.aipIds,
+                selectedAips.daLevelViewId
+            );
+        }
     }
 
     const handleCreateFromSelected = () => {
-
+        if(!selectedAips.daLevelViewId) {
+            // Bez logické struktury
+            WebApi.createJpFromSelectedAipBulk(selectedArrNodeId as number, selectedAips.aipIds)
+        } else {
+            // S logickou strukturou
+            WebApi.createJpFromSelectedAipAnConnectBulk(
+                selectedArrNodeId as number,
+                selectedAips.aipIds,
+                selectedAips.daLevelViewId
+            );
+        }
     }
 
     return (
         <Modal.Body>
             <Row style={{height: "80vh"}}>
                 <Col xs={7}>
-                    <AipsLogicalTree tree={logicalTree}  selectedNode={leftSelectedNode} setSelectedNode={setLeftSelectedNode}/>
+                {structure.data &&
+                    <AipsLogicalTree tree={logicalTree} setSelectedAips={setSelectedAips} selectedNode={structure.data.nodes[0].UUID}/>
+                }
                 </Col>
                 <Col xs={1}>
                     <div className="actions-container">
@@ -65,7 +89,7 @@ const AipAssignmentModal = ({aips, tree}: AipAssignmentModalProps) =>  {
                 </Col>
                 <Col xs={4}>
                     <div className="border h-100">
-                        <FundTree tree={tree} expandedIds={tree.expandedIds} selectedNode={rightSelectedNode} setSelectedNode={setRightSelectedNode}/>
+                        <FundTree tree={tree} expandedIds={tree.expandedIds} selectedNode={selectedArrNodeId} setSelectedNode={setSelectedArrNodeId}/>
                     </div>
                 </Col>
             </Row>

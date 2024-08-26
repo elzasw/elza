@@ -478,6 +478,10 @@ model TreeNodeCustomGen {
      * Hloubka
      */
     depth: integer;
+    /*
+     * Id daLevelView
+     */
+    daLeveViewId?: integer;
     /**
      * Příznak, zda udel má potomky
      */
@@ -758,6 +762,10 @@ model AipDetailVO {
      * Stav aktualizace
      */
     state: QueueItemState;
+    /**
+     * Připojené arr nodes
+     */
+    connectedNodes: TreeNodeVO[];
 }
 
 /**

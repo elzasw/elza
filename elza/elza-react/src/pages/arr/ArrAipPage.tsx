@@ -112,7 +112,7 @@ const ArrAipPage = class ArrAipPage extends ArrParentPage {
     renderRightPanel(readMode, closed) {
         const activeFund = this.getActiveFund(this.props);
         return (
-            <ActionsContainer fund={activeFund}/>
+            <ActionsContainer fund={activeFund} readMode={readMode}/>
         );
     }
 };

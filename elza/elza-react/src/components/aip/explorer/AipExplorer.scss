@@ -11,6 +11,7 @@
     height: 100%;
     overflow: hidden;
     word-wrap: break-word;
+    flex-grow: 1;
 
     .detail-body {
         display: flex;
@@ -19,9 +20,15 @@
         margin-bottom: 1rem;
     }
 
+
     .modal-dialog {
         max-width: 95vw;
     }
+    .modal-content {
+        height: 90vh;
+        // display: flex;
+    }
+
 
     // .modal-body {
     //     padding: 0;
@@ -31,6 +38,12 @@
         color: $fg-color;
         cursor: pointer;
         text-decoration: none;
+    }
+
+    .splitter-container {
+        .splitter-left {
+            border-right: $color-grey 1px solid;
+        }
     }
 
 }

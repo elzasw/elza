@@ -20,7 +20,7 @@ import { ExplorerMode } from './explorer/ExplorerContext';
 import AipDetailBody from './AipDetailBody';
 
 const AipDetail = () => {
-    const aip = useSelector((state: AppState) => storeFromArea(state, aipActions.AREA_AIP))
+    const aip = useSelector((state: AppState) => storeFromArea(state, aipActions.AREA_AIP));
     const dispatch = useThunkDispatch();
     const history = useHistory();
 

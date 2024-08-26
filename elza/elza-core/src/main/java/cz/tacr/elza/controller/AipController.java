@@ -67,11 +67,6 @@ public class AipController implements AipsApi {
         return ResponseEntity.ok(aipService.getAipsLogicalTree(requestBody));
     }
 
-//    @Override
-//    public ResponseEntity<TreeDataCustomGen> aipTree(Integer aipId) {
-//        return ResponseEntity.ok(aipService.getAipTree(aipId));
-//    }
-
     @Override
     public ResponseEntity<Void> aipCreateDaoLink(Integer aipId, Integer daoId, Integer nodeId, LinkType linkType) {
         daService.createDaoLink(aipId, daoId, nodeId, ArrDaoLink.LinkType.valueOf(linkType.name()));
@@ -142,9 +137,4 @@ public class AipController implements AipsApi {
         daService.connectToJP(arrNodeId, daAipId);
         return ResponseEntity.ok().build();
     }
-
-    //    @RequestMapping(value = "/{aipId}", method = RequestMethod.GET)
-//    public DaDaoFileFolderVO getDaDaoByAip(@PathVariable("aipId") final Integer aipId) {
-//        return daoService.findByAipIdAndTypeAndDeleteChangeIsNull(aipId);
-//    }
 }
