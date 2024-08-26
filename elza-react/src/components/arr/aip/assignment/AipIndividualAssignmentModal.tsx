@@ -15,6 +15,7 @@ import { AppState } from "typings/store/AppState.types.ts";
 import ConfirmForm from "../../../../components/shared/form/ConfirmForm";
 import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog.jsx";
 import { useThunkDispatch } from "utils/hooks/useThunkDispatch.ts";
+import {fetchAipStructureIfNeeded} from "../../../../actions/aip/exp.ts";
 
 
 type AipAssignmentModalProps = {
@@ -30,11 +31,13 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
     const dispatch = useThunkDispatch();
 
     const handleConnectToJP = () => {
-        WebApi.connectAipToJp(rightSelectedNode as number, aipId);
+        WebApi.connectAipToJp(rightSelectedNode as number, aipId)
+            .then(dispatch(fetchAipStructureIfNeeded(aipId, true)));
     }
 
     const handleCreateFromSelected = () => {
         WebApi.connectAipPartToJp(rightSelectedNode as number, aipId, leftSelectedNode)
+            .then(dispatch(fetchAipStructureIfNeeded(aipId, true)));
     }
 
     const handleSelectAndConnectToJP = () => {
@@ -49,6 +52,7 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
                 }}
                 onSubmitSuccess={() => {
                     dispatch(modalDialogHide());
+                    dispatch(fetchAipStructureIfNeeded(aipId, true));
                 }}
             />
         );
@@ -69,6 +73,7 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
                 }}
                 onSubmitSuccess={() => {
                     dispatch(modalDialogHide());
+                    dispatch(fetchAipStructureIfNeeded(aipId, true));
                 }}
             />
         );

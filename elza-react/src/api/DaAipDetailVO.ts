@@ -1,6 +1,7 @@
 import { LinkType } from "elza-api";
 import { ParInstitutionVO } from "./ParInstitutionVO.ts";
 import { QueueItemState } from "./QueueItemState.ts";
+import {LinkedNodeVO} from "./LinkedNodeVO.ts";
 
 export type DaAipDetailVO = {
     aipId: number;
@@ -21,4 +22,5 @@ export type DaAipDetailVO = {
     metadataLoad: boolean;
     state: QueueItemState;
     arrDaoLinkType: LinkType;
+    linkedNodes?: Array<LinkedNodeVO>;
 }

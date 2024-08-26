@@ -1802,7 +1802,24 @@ components:
           allOf:
             - $ref: '#/components/schemas/QueueItemState'
           description: Stav aktualizace
+        linkedNodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkedNodeVO'
+          description: Seznam napojených nodes
       description: Vo pro detail AIPu
+    LinkedNodeVO:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          description: Identifikátor node
+        name:
+          type: string
+          description: Jméno node
     AipFilterGen:
       type: object
       required:

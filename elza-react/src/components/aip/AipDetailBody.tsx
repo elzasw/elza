@@ -1,6 +1,6 @@
 import { DaAipDetailVO } from "api/DaAipDetailVO";
 import DetailRow from "./DetailRow";
-import { formatAipSize, formatDate, getBoolIcon, getConnectedToJPIcon } from "./utils";
+import {formatAipSize, formatDate, getBoolIcon, getConnectedToJP, getConnectedToJPIcon} from "./utils";
 
 type AipDetailBodyProps = {
     detail: DaAipDetailVO;
@@ -51,7 +51,7 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 <DetailRow label="Načtena metadata" value={getBoolIcon(detail.metadataLoad)}/>}
             {detail.state &&
                 <DetailRow label="Aktuální verze" value={detail.state}/>}
-            <DetailRow label="Napojen archivní popis" value={getConnectedToJPIcon(detail.arrDaoLinkType)}/>
+            <DetailRow label="Napojen archivní popis" value={getConnectedToJP(detail.linkedNodes, detail.fund.id)}/>
         </>
     );
 }

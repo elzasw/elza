@@ -1,5 +1,6 @@
 import { DaoFileFolderVO } from "./DaoFileFolderVO";
 import { DaoVO } from "./DaoVO";
+import {LinkedNodeVO} from "./LinkedNodeVO.ts";
 
 export type DaoFileVO = {
     uuid: string;
@@ -21,4 +22,5 @@ export type DaoFileVO = {
     sourceXDimensionValue?: number;
     sourceYDimensionUnit?: string;
     sourceYDimensionValue?: number;
+    linkedNodes?: LinkedNodeVO;
 }

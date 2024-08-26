@@ -2,6 +2,7 @@ import { Icon } from 'components/shared';
 import { pad2 } from 'components/validate';
 import { LinkType } from 'elza-api';
 import {Aips} from 'typings/store';
+import {LinkedNodeVO} from "../../api/LinkedNodeVO.ts";
 
 export const getAipRows = (aips: Aips) => {
     if(aips.fetched && aips.rows){
@@ -34,6 +35,19 @@ export const getConnectedToJPIcon = (link: LinkType | null) => {
         iconString="fa fa-link"
     }
     return <Icon glyph={iconString}/>;
+}
+
+export const getConnectedToJP = (linkedNodes: Array<LinkedNodeVO> | null, fundId: number) => {
+    let iconString = "fa fa-close";
+    let nodes;
+
+    if (linkedNodes) {
+        iconString = "fa fa-check";
+
+        nodes = linkedNodes.map(item => <div><a href={`/fund/${fundId}/node/${item.id}`}>{item.name}</a></div>)
+    }
+
+    return <div><Icon glyph={iconString}/> {nodes}</div>;
 }
 
 export const generateUUID = () => {

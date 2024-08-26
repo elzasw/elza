@@ -9,6 +9,7 @@ import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
 import { AREA_AIP, aipFetchIfNeeded } from "actions/aip/aip";
 import { useThunkDispatch } from "utils/hooks";
+import {getConnectedToJP} from "../../utils.tsx";
 
 const ExplorerDetail: FC = () => {
     const {selectedItem, setSelectedItem, structure} = useExplorerContext();
@@ -94,12 +95,11 @@ const ExplorerDetail: FC = () => {
                     label={i18n("aip.explorer.detail.format")}
                     value={renderValue(selectedItem.mimeType)}
                 />
-                {/* TODO: @kasparova */}
-                {/* <DetailRow
+                <DetailRow
                     label={i18n("aip.explorer.detail.as")}
                     // @ts-ignore
-                    value={renderValue(aip.data.as)}
-                /> */}
+                    value={getConnectedToJP(selectedItem.linkedNodes, aip.data?.fund.id)}
+                />
             </div>
         );
     }
