@@ -1228,7 +1228,7 @@ export class WebApiCls {
     }
 
     connectSelectedAipToJp(arrNodeId: number, daAipIdList: number[]): Promise<void> {
-        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/bulk-connect-to-jp"', {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/bulk-connect-to-jp', {
             arrNodeId: arrNodeId,
             daAipIdList: daAipIdList
         }, null);
