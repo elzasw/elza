@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
+import cz.tacr.elza.domain.DaDao;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -77,4 +78,6 @@ public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer
 
     @Query("SELECT adl FROM arr_dao_link adl WHERE adl.aip.aipId = :aipId AND adl.deleteChange IS NULL")
     List<ArrDaoLink> findByAipIdAndDeleteChangeIsNull(@Param("aipId") Integer aipId);
+
+    List<ArrDaoLink> findByDaDaoInAndDeleteChangeIsNull(Collection<DaDao> daDaos);
 }

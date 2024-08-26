@@ -293,7 +293,7 @@ public class ClientFactoryVO {
         ArrFundGen fundGen = new ArrFundGen();
         fundGen.setFundNumber(fund.getFundNumber());
         fundGen.setCreateDate(fund.getCreateDate().toString());
-        fundGen.setId(fundGen.getId());
+        fundGen.setId(fund.getFundId());
         fundGen.setInternalCode(fund.getInternalCode());
         fundGen.setInstitutionId(fund.getInstitution().getInstitutionId());
         fundGen.setUnitdate(fund.getUnitdate());
@@ -1866,37 +1866,38 @@ public class ClientFactoryVO {
         if(state.getOriginatorAccessPoint() != null) {
             originator = institutionRepository.findByAccessPoint(state.getOriginatorAccessPoint());
         }
-//        List<Integer> nodeIds = daoLinkRepository.findByAipIdAndDeleteChangeIsNull(daAip.getAipId())
-//                .stream()
-//                .map(ArrDaoLink::getNodeId)
-//                .toList();
-//
-//        List<TreeNodeVO> connectedNodes = levelTreeCacheService.getNodesByIds(nodeIds, state.getFund().getVersion());
-        return createAipDetailVO(daAip, state, originator);
+        Set<Integer> nodeIds = daoLinkRepository.findByAipIdAndDeleteChangeIsNull(daAip.getAipId())
+                .stream()
+                .map(ArrDaoLink::getNodeId)
+                .collect(Collectors.toSet());
+
+        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(state.getFund().getFundId());
+        List<TreeNodeVO> linkedNodes = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId());
+        return createAipDetailVO(daAip, state, originator, linkedNodes);
     }
 
-    private AipDetailVO createAipDetailVO(DaAip src, DaAipState state, ParInstitution originator) {
+    private AipDetailVO createAipDetailVO(DaAip src, DaAipState state, ParInstitution originator, List<TreeNodeVO> treeNodeList) {
         AipDetailVO vo = new AipDetailVO();
         vo.setAipId(src.getAipId());
         vo.setCode(src.getCode());
         vo.setDigitalRepositoryId(src.getDigitalRepository().getExternalSystemId());
 
-        if(state != null) {
+        if (state != null) {
             vo.setAipVersion(state.getAipVersion());
 
             vo.setFund(createFundGen(state.getFund()));
-            if(state.getUnitdateFrom() != null) {
+            if (state.getUnitdateFrom() != null) {
                 vo.setUnitdateFrom(state.getUnitdateFrom().toString());
             }
-            if(state.getUnitdateTo() != null) {
+            if (state.getUnitdateTo() != null) {
                 vo.setUnitdateTo(state.getUnitdateTo().toString());
             }
             vo.setInstitutionCode(state.getInstitutionCode());
-            if(state.getInstitution() != null) {
+            if (state.getInstitution() != null) {
                 ApIndex displayName = indexRepository.findByPartAndIndexType(state.getInstitution().getAccessPoint().getPreferredPart(), DISPLAY_NAME);
                 vo.setInstitution(createParInstitutionGen(state.getInstitution(), displayName));
             }
-            if(originator != null) {
+            if (originator != null) {
                 ApIndex displayName = indexRepository.findByPartAndIndexType(state.getOriginatorAccessPoint().getPreferredPart(), DISPLAY_NAME);
                 vo.setOriginatorInstitution(createParInstitutionGen(originator, displayName));
             }
@@ -1907,10 +1908,31 @@ public class ClientFactoryVO {
             vo.setAipSize(new BigDecimal(state.getAipSize()).intValue());
             vo.setMetadataLoad(state.getMetadataLoad());
         }
-        if(src.getDaSyncQueueItem() != null) {
+
+        if (src.getDaSyncQueueItem() != null) {
             vo.setState(mapQueueItemState(src.getDaSyncQueueItem().getState()));
         }
+
+        if (CollectionUtils.isNotEmpty(treeNodeList)) {
+            vo.setLinkedNodes(createLinkedNodeVOs(treeNodeList));
+        }
+
         return vo;
+    }
+
+    private List<LinkedNodeVO> createLinkedNodeVOs(List<TreeNodeVO> treeNodeList) {
+        List<LinkedNodeVO> linkedNodeList = new ArrayList<>();
+        for (TreeNodeVO treeNode : treeNodeList) {
+            linkedNodeList.add(createLinkedNodeVO(treeNode));
+        }
+        return linkedNodeList;
+    }
+
+    private LinkedNodeVO createLinkedNodeVO(TreeNodeVO treeNode) {
+        LinkedNodeVO linkedNode = new LinkedNodeVO();
+        linkedNode.setId(treeNode.getId());
+        linkedNode.setName(treeNode.getName());
+        return linkedNode;
     }
 
     private LinkType mapArrDaoLink(ArrDaoLink.LinkType type) {
@@ -1941,7 +1963,7 @@ public class ClientFactoryVO {
         return result;
     }
 
-    public ExplorerTreeNodeFile createExplorerTreeNodeFile(DaDaoFile daDaoFile) {
+    public ExplorerTreeNodeFile createExplorerTreeNodeFile(DaDaoFile daDaoFile, List<TreeNodeVO> treeNodeList) {
         ExplorerTreeNodeFile result = new ExplorerTreeNodeFile();
         result.setUuid(UUID.randomUUID().toString());
         result.setChecksum(daDaoFile.getChecksum());
@@ -1961,7 +1983,19 @@ public class ClientFactoryVO {
         if(daDaoFile.getDaoFileFolder() != null) {
             result.setDaoFileFolderId(daDaoFile.getDaoFileFolder().getDaoFileFolderId());
         }
+        result.setLinkedNodes(createLinkedNodes(treeNodeList));
         return result;
+    }
+
+    public List<LinkedNode> createLinkedNodes(List<TreeNodeVO> treeNodeList) {
+        if (CollectionUtils.isNotEmpty(treeNodeList)) {
+            List<LinkedNode> linkedNodeList = new ArrayList<>();
+            for (TreeNodeVO treeNode : treeNodeList) {
+                linkedNodeList.add(new LinkedNode(treeNode.getId(), treeNode.getName()));
+            }
+            return linkedNodeList;
+        }
+        return null;
     }
 
     public ExplorerTreeNodeFile copyFile(ExplorerTreeNodeFile file) {
@@ -1988,15 +2022,17 @@ public class ClientFactoryVO {
         if(file.getParentFolder() != null) {
             result.setParentFolder(file.getParentFolder());
         }
+        result.setLinkedNodes(file.getLinkedNodes());
         return result;
     }
 
-    public ExplorerTreeNode createExplorerTreeNode(DaDaoFileFolder daDaoFileFolder) {
+    public ExplorerTreeNode createExplorerTreeNode(DaDaoFileFolder daDaoFileFolder, Map<Integer, List<TreeNodeVO>> daoTreeNodeMap) {
         ExplorerTreeNode result = new ExplorerTreeNode();
         result.setUuid(UUID.randomUUID().toString());
         result.setDaoId(daDaoFileFolder.getRepresentationDao().getDaoId());
+        result.setLinkedNodes(createLinkedNodes(daoTreeNodeMap.getOrDefault(daDaoFileFolder.getRepresentationDao().getDaoId(), new ArrayList<>())));
         if(daDaoFileFolder.getParentFileFolder() != null) {
-            result.setParentFolder(createExplorerTreeNode(daDaoFileFolder.getParentFileFolder()));
+            result.setParentFolder(createExplorerTreeNode(daDaoFileFolder.getParentFileFolder(), daoTreeNodeMap));
         }
         result.setLabel(daDaoFileFolder.getLabel());
         return result;

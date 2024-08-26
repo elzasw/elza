@@ -10,6 +10,7 @@ public class ExplorerTreeNode {
     private List<ExplorerTreeNodeFile> childFiles;
     private ExplorerTreeNode parentFolder;
     private ExplorerTreeNode parentFolderLogical;
+    private List<LinkedNode> linkedNodes;
 
     public String getUuid() {
         return uuid;
@@ -65,5 +66,13 @@ public class ExplorerTreeNode {
 
     public void setParentFolderLogical(ExplorerTreeNode parentFolderLogical) {
         this.parentFolderLogical = parentFolderLogical;
+    }
+
+    public List<LinkedNode> getLinkedNodes() {
+        return linkedNodes;
+    }
+
+    public void setLinkedNodes(List<LinkedNode> linkedNodes) {
+        this.linkedNodes = linkedNodes;
     }
 }
