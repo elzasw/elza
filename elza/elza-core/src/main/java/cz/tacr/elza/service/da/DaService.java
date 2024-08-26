@@ -22,6 +22,7 @@ import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.DaAip;
@@ -55,13 +56,18 @@ import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.DaRemoteRepositorySyncRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.AipService;
 import cz.tacr.elza.service.ArrangementInternalService;
+import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoLevelViewService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.eventnotification.EventFactory;
+import cz.tacr.elza.service.eventnotification.EventNotificationService;
+import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.utils.EadReaderWriter;
 import gov.loc.mets.v1_11.schema.MetsType;
 import gov.loc.premis.v3.PremisComplexType;
@@ -72,6 +78,7 @@ import org.archivists.ead3.schema.Ead;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -159,6 +166,12 @@ public class DaService {
     private LevelRepository levelRepository;
     @Autowired
     private DaLevelViewRepository daLevelViewRepository;
+    @Autowired
+    private ArrangementService arrangementService;
+    @Autowired
+    private FundVersionRepository fundVersionRepository;
+    @Autowired
+    private EventNotificationService eventNotificationService;
 
     @Scheduled(cron = "0 0 2 * * *")
     public void synchronizeDaRepositories() {
@@ -721,10 +734,8 @@ public class DaService {
         DaAip daAip = findAipById(daAipId);
         DaDao daDao = findDaoById(daDaoId);
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-        ArrNode newNode = new ArrNode();
-        newNode.setUuid(generateUuid());
-        newNode.setFund(arrNode.getFund());
-        nodeRepository.save(newNode);
+        arrangementService.createNode(arrNode.getFund(), generateUuid(), change);
+        ArrNode newNode = arrangementService.createNode(arrNode.getFund(), generateUuid(), change);
         ArrLevel arrLevel = new ArrLevel();
         arrLevel.setNodeParent(arrNode);
         arrLevel.setNode(newNode);
@@ -735,6 +746,12 @@ public class DaService {
         }
         arrLevel.setPosition(maxPosition + 1);
         levelRepository.save(arrLevel);
+        ArrFundVersion fundVersion = fundVersionRepository
+                .findByFundIdAndLockChangeIsNull(arrNode.getFund().getFundId());
+        final ArrLevel parentLevel = arrangementService.lockNode(arrNode, fundVersion, change);
+
+        eventNotificationService.publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, fundVersion,
+                parentLevel, arrLevel));
         if (daDao != null) {
             connectPartToJP(newNode.getNodeId(), daAip.getAipId(), daDao.getDaoId());
         } else {
@@ -761,10 +778,8 @@ public class DaService {
         DaAip daAip = findAipById(daAipId);
         DaDao daDao = findDaoById(daDaoId);
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-        ArrNode newNode = new ArrNode();
-        newNode.setUuid(generateUuid());
-        newNode.setFund(arrNode.getFund());
-        nodeRepository.save(newNode);
+        arrangementService.createNode(arrNode.getFund(), generateUuid(), change);
+        ArrNode newNode = arrangementService.createNode(arrNode.getFund(), generateUuid(), change);
         ArrLevel arrLevel = new ArrLevel();
         Integer maxPosition = levelRepository.findMaxPositionUnderParent(arrNode);
         if (maxPosition == null) {
@@ -775,6 +790,12 @@ public class DaService {
         arrLevel.setCreateChange(change);
         arrLevel.setPosition(maxPosition + 1);
         levelRepository.save(arrLevel);
+        ArrFundVersion fundVersion = fundVersionRepository
+                .findByFundIdAndLockChangeIsNull(arrNode.getFund().getFundId());
+        final ArrLevel parentLevel = arrangementService.lockNode(arrNode, fundVersion, change);
+
+        eventNotificationService.publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, fundVersion,
+                parentLevel, arrLevel));
         ArrDaoLink arrDaoLink = new ArrDaoLink();
         arrDaoLink.setAip(daAip);
         arrDaoLink.setNode(arrNode);
@@ -812,20 +833,25 @@ public class DaService {
         for (Integer daAipId : daAipIdList) {
             DaAip daAip = findAipById(daAipId);
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-            Integer position = levelRepository.findMaxPositionUnderParent(arrNode);
-            if (position == null) {
-                position = 0;
+            Integer maxPosition = levelRepository.findMaxPositionUnderParent(arrNode);
+            if (maxPosition == null) {
+                maxPosition = 0;
             }
-            ArrNode newNode = new ArrNode();
-            newNode.setUuid(generateUuid());
-            newNode.setFund(arrNode.getFund());
-            nodeRepository.save(newNode);
+            int position = maxPosition + 1;
+            arrangementService.createNode(arrNode.getFund(), generateUuid(), change);
+            ArrNode newNode = arrangementService.createNode(arrNode.getFund(), generateUuid(), change);
             ArrLevel arrLevel = new ArrLevel();
             arrLevel.setNodeParent(arrNode);
             arrLevel.setNode(newNode);
             arrLevel.setCreateChange(change);
             arrLevel.setPosition(position);
             levelRepository.save(arrLevel);
+            ArrFundVersion fundVersion = fundVersionRepository
+                    .findByFundIdAndLockChangeIsNull(arrNode.getFund().getFundId());
+            final ArrLevel parentLevel = arrangementService.lockNode(arrNode, fundVersion, change);
+
+            eventNotificationService.publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, fundVersion,
+                    parentLevel, arrLevel));
 
             for (DaLevelView child : levelView.getChildren()) {
                 createNextLevel(arrNode, change, position + 1, child);
@@ -855,10 +881,11 @@ public class DaService {
         for (Integer daAipId : daAipIdList) {
             DaAip daAip = findAipById(daAipId);
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-            Integer position = levelRepository.findMaxPositionUnderParent(arrNode);
-            if (position == null) {
-                position = 0;
+            Integer maxPosition = levelRepository.findMaxPositionUnderParent(arrNode);
+            if (maxPosition == null) {
+                maxPosition = 0;
             }
+            int position = maxPosition + 1;
             for (DaLevelView child : levelView.getChildren()) {
                 createNextLevel(arrNode, change, position, child);
             }
@@ -877,10 +904,8 @@ public class DaService {
     }
 
     private void createNextLevel(ArrNode arrNode, ArrChange change, int position, DaLevelView levelView) {
-        ArrNode newNode = new ArrNode();
-        newNode.setUuid(generateUuid());
-        newNode.setFund(arrNode.getFund());
-        nodeRepository.save(newNode);
+        arrangementService.createNode(arrNode.getFund(), generateUuid(), change);
+        ArrNode newNode = arrangementService.createNode(arrNode.getFund(), generateUuid(), change);
 
         ArrLevel arrLevel = new ArrLevel();
         arrLevel.setNodeParent(arrNode);
@@ -888,6 +913,12 @@ public class DaService {
         arrLevel.setCreateChange(change);
         arrLevel.setPosition(position);
         levelRepository.save(arrLevel);
+        ArrFundVersion fundVersion = fundVersionRepository
+                .findByFundIdAndLockChangeIsNull(arrNode.getFund().getFundId());
+        final ArrLevel parentLevel = arrangementService.lockNode(arrNode, fundVersion, change);
+
+        eventNotificationService.publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, fundVersion,
+                parentLevel, arrLevel));
         for (DaLevelView child : levelView.getChildren()) {
             createNextLevel(newNode, change, position + 1, child);
         }
@@ -899,10 +930,8 @@ public class DaService {
         for (Integer daAipId : daAipIdList) {
             DaAip daAip = findAipById(daAipId);
             ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
-            ArrNode newNode = new ArrNode();
-            newNode.setUuid(generateUuid());
-            newNode.setFund(arrNode.getFund());
-            nodeRepository.save(newNode);
+            arrangementService.createNode(arrNode.getFund(), generateUuid(), change);
+            ArrNode newNode = arrangementService.createNode(arrNode.getFund(), generateUuid(), change);
             ArrLevel arrLevel = new ArrLevel();
             arrLevel.setNodeParent(arrNode);
             arrLevel.setNode(newNode);
