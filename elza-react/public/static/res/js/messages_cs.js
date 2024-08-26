@@ -773,7 +773,7 @@ var messages = {
     "arr.aip.assignment.link": "Připojit k JP",
     "arr.aip.assignment.create": "Vytvořit JP z vybraných",
     "arr.aip.assignment.select-and-create": "Výběrové připojení s JP",
-    "arr.aip.assignment.part.confirm-first": "Opravdu chcete připojit pouze vybranou část ",
+    "arr.aip.assignment.part.confirm-first": "Opravdu chcete připojit pouze vybranou část",
     "arr.aip.assignment.part.confirm-last": "? Touto volbou nedojde k propojení návazných částí balíčku.",
     "arr.aip.assignment.create-and-link": "Vytvořit JP s propojením",
 

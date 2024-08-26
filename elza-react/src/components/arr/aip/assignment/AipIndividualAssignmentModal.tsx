@@ -41,8 +41,8 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
         const confirmForm = (
             <ConfirmForm
                 //@ts-ignore
-                confirmMessage={i18n('arr.daos.fund.sync.confirm-message')}
-                submittingMessage={i18n('arr.aip.assignment.part.confirm-first') + "xx" + i18n('arr.aip.assignment.part.confirm-last')}
+                confirmMessage={i18n('arr.aip.assignment.part.confirm-first') + i18n('arr.aip.assignment.part.confirm-last')}
+                submittingMessage={i18n('arr.aip.assignment.part.confirm-first') + i18n('arr.aip.assignment.part.confirm-last')}
                 submitTitle={i18n('global.action.run')}
                 onSubmit={() => {
                     return WebApi.createJpFromSelectedAip(rightSelectedNode as number, aipId, leftSelectedNode)
@@ -52,7 +52,7 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
                 }}
             />
         );
-        dispatch(modalDialogShow(this, i18n('arr.daos.fund.sync.title'), confirmForm));
+        dispatch(modalDialogShow(this, null, confirmForm));
 
     }
 
@@ -61,8 +61,8 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
         const confirmForm = (
             <ConfirmForm
                 //@ts-ignore
-                confirmMessage={i18n('arr.aip.assignment.part.confirm-first') + "xx" + i18n('arr.aip.assignment.part.confirm-last')}
-                submittingMessage={i18n('arr.aip.assignment.part.confirm-first') + "xx" + i18n('arr.aip.assignment.part.confirm-last')}
+                confirmMessage={i18n('arr.aip.assignment.part.confirm-first') + i18n('arr.aip.assignment.part.confirm-last')}
+                submittingMessage={i18n('arr.aip.assignment.part.confirm-first') + i18n('arr.aip.assignment.part.confirm-last')}
                 submitTitle={i18n('global.action.run')}
                 onSubmit={() => {
                     return WebApi.createJpLinkFromSelectedAip(rightSelectedNode as number, aipId, leftSelectedNode);
@@ -72,7 +72,7 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
                 }}
             />
         );
-        dispatch(modalDialogShow(this, i18n('arr.daos.fund.sync.title'), confirmForm));
+        dispatch(modalDialogShow(this, null, confirmForm));
     }
 ;
 
