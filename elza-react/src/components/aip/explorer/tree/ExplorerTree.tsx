@@ -12,15 +12,16 @@ import { useThunkDispatch } from "utils/hooks";
 import { AREA_AIP_STRUCTURE, fetchAipStructureIfNeeded } from "actions/aip/exp";
 import "./ExplorerTree.scss"
 import Folder from "./Folder";
-import { useExplorerContext } from "../ExplorerContext";
+import { ExplorerMode, useExplorerContext } from "../ExplorerContext";
 import { DaoFileFolderVO } from "api/DaoFileFolderVO";
 import { findNodeByUUID } from "../utils";
 
 
-const AipTree: FC = () => {
+const AipTree: FC<{onSelect?: (node) => void}> = ({onSelect}) => {
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
     const {data: structure} = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE));
     const {selectedItem, setSelectedItem, setStructure} = useExplorerContext();
+    const {mode} = useExplorerContext();
 
     if (structure) {
         structure.parent = null;
@@ -72,6 +73,9 @@ const AipTree: FC = () => {
     useEffect(() => {
         if (selectedItem) {
             openChange(selectedItem.uuid);
+            if(mode == ExplorerMode.SELECT && onSelect) {
+                onSelect(selectedItem);
+            }
         }
     }, [selectedItem]);
 
@@ -90,19 +94,19 @@ const AipTree: FC = () => {
             {structure && <TreeItem itemType="branch" value={structure.uuid}>
                 <TreeItemLayout
                     expandIcon={
-                        openItems.includes(structure.uuid) ? 
-                            <SubtractSquare16Regular color="black"/> : 
+                        openItems.includes(structure.uuid) ?
+                            <SubtractSquare16Regular color="black"/> :
                             <AddSquare16Regular color="black"/>
                     }
                 >
                     {structure.label}
                 </TreeItemLayout>
                 <Tree>
-                    {structure?.childFolders && 
-                    structure.childFolders.map((folder: DaoFileFolderVO, index: number) => <Folder 
+                    {structure?.childFolders &&
+                    structure.childFolders.map((folder: DaoFileFolderVO, index: number) => <Folder
                             key={`root-${index}`}
-                            folder={folder} 
-                            openItems={openItems} 
+                            folder={folder}
+                            openItems={openItems}
                             parent={structure}
                         />
                     )}

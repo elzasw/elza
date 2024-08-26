@@ -1192,6 +1192,72 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/levelViewTree', null, aipIds);
     }
 
+    aipDeleteDaoLink(daoLinkId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + `/aip/delete-dao-link?daoLinkId=${daoLinkId}`);
+    }
+
+    connectAipToJp(arrNodeId: number, daAipId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/connect-to-jp', {
+            arrNodeId: arrNodeId,
+            daAipId: daAipId
+        }, null);
+    }
+
+    connectAipPartToJp(arrNodeId: number, daAipId: number, daDaoId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/connect-part-to-jp', {
+            arrNodeId: arrNodeId,
+            daAipId: daAipId,
+            daDaoId: daDaoId
+        }, null);
+    }
+
+    createJpFromSelectedAip(arrNodeId: number, daAipId: number, daDaoId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/connect-jp-from-selected', {
+            arrNodeId: arrNodeId,
+            daAipId: daAipId,
+            daDaoId: daDaoId
+        }, null);
+    }
+
+    createJpLinkFromSelectedAip(arrNodeId: number, daAipId: number, daDaoId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/connect-jp-link-from-selected', {
+            arrNodeId: arrNodeId,
+            daAipId: daAipId,
+            daDaoId: daDaoId
+        }, null);
+    }
+
+    connectSelectedAipToJp(arrNodeId: number, daAipIdList: number[]): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/bulk-connect-to-jp', {
+            arrNodeId: arrNodeId,
+            daAipIdList: daAipIdList
+        }, null);
+    }
+
+    createJpFromSelectedAipBulk(arrNodeId: number, daAipIdList: number[]): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/bulk-create-from-selected', {
+            arrNodeId: arrNodeId,
+            daAipIdList: daAipIdList
+        }, null);
+    }
+
+    createJpFromSelectedAipAnConnectBulk(arrNodeId: number, aipIds: number[], daLevelViewId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/bulk-create-selected-to-jp', {
+            arrNodeId: arrNodeId,
+            daAipIdList: aipIds,
+            daLevelViewId: daLevelViewId
+        }, null);
+    }
+
+    connectAipLogicalStructureToJpBulk(arrNodeId: number, aipIds: number[], daLevelViewId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/bulk-connect-logic-to-jp', {
+            arrNodeId: arrNodeId,
+            daAipIdList: aipIds,
+            daLevelViewId: daLevelViewId
+        }, null);
+    }
+
+
     getNodeData(fundVersionId, nodeParam, resultParam: any | object = {}) {
         const data = {
             fundVersionId: fundVersionId,

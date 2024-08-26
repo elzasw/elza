@@ -13,10 +13,11 @@ import * as aipActions from "../../../actions/aip/aip.ts";
 
 
 type ActionsContainerProps = {
-    fund: any
+    fund: any,
+    readMode: boolean
 }
 
-const ActionsContainer = ({fund}: ActionsContainerProps) => {
+const ActionsContainer = ({fund, readMode}: ActionsContainerProps) => {
     const selectedAips = useSelector((state: any) => storeFromArea(state, AREA_SELECTED_AIPS));
     const aips = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
     const aip = useSelector((state: AppState) => storeFromArea(state, aipActions.AREA_AIP))
@@ -32,7 +33,7 @@ const ActionsContainer = ({fund}: ActionsContainerProps) => {
                 modalDialogShow(
                     this,
                     i18n('arr.aip.assignment.individually.title'),
-                    <AipIndividualAssignmentModal aip={aip} tree={fund.fundTree}/>,
+                    <AipIndividualAssignmentModal aipId={aip.id} tree={fund.fundTree}/>,
                     "aip-assignment"
                 ),
             );
@@ -52,11 +53,11 @@ const ActionsContainer = ({fund}: ActionsContainerProps) => {
 
     return (
         <div className="actions-container">
-            <Button onClick={handleConnectBulk}>
+            <Button onClick={handleConnectBulk} disabled={readMode}>
                 <Icon glyph="fa-solif fa-link" />
                 <div>{i18n('arr.aip.assignment.bulk')} ({selectedAips.count > 0 ? selectedAips.count : aips.count})</div>
             </Button>
-            <Button onClick={handleConnectIndividually}>
+            <Button onClick={handleConnectIndividually} disabled={readMode}>
                 <Icon glyph="fa-solif fa-link" />
                 <div>{i18n('arr.aip.assignment.individually')}</div>
             </Button>

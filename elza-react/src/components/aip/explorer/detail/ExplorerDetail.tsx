@@ -1,12 +1,30 @@
 import i18n from "components/i18n";
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import "./ExplorerDetail.scss";
 import { Button,  } from "@fluentui/react-components";
 import {  findNodeByUUID,  } from "../utils";
 import {  useExplorerContext } from "../ExplorerContext";
+import { useSelector } from "react-redux";
+import { storeFromArea } from "shared/utils";
+import { AppState } from "typings/store";
+import { AREA_AIP, aipFetchIfNeeded } from "actions/aip/aip";
+import { useThunkDispatch } from "utils/hooks";
 
 const ExplorerDetail: FC = () => {
     const {selectedItem, setSelectedItem, structure} = useExplorerContext();
+    const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
+    const dispatch = useThunkDispatch();
+
+    const fetchData = () => {
+        dispatch(aipFetchIfNeeded(aip.id));
+    }
+
+    useEffect(() => {
+        fetchData()
+    }, [aip.id]);
+
+    console.log('aip.data :>> ', aip.data);
+
 
     const DetailRow = ({label, value}: {label: string, value?: any}) => (
         <div className="item-row">
@@ -77,11 +95,11 @@ const ExplorerDetail: FC = () => {
                     value={renderValue(selectedItem.mimeType)}
                 />
                 {/* TODO: @kasparova */}
-                <DetailRow
+                {/* <DetailRow
                     label={i18n("aip.explorer.detail.as")}
                     // @ts-ignore
-                    value={renderValue(selectedItem.as)}
-                />
+                    value={renderValue(aip.data.as)}
+                /> */}
             </div>
         );
     }

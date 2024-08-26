@@ -14,7 +14,6 @@ const AipPageRibbon: FC = () => {
     const aip =  useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
     const dispatch = useThunkDispatch();
 
-    //TODO: @kasparova implement when ready
     const handleLoadMetadata = () => {
         let aipIds = selectedAips.rows.map(aip => aip.aipId)
         Api.aips.aipCreateDaoStructure(aipIds).then(() => {

@@ -1866,6 +1866,12 @@ public class ClientFactoryVO {
         if(state.getOriginatorAccessPoint() != null) {
             originator = institutionRepository.findByAccessPoint(state.getOriginatorAccessPoint());
         }
+//        List<Integer> nodeIds = daoLinkRepository.findByAipIdAndDeleteChangeIsNull(daAip.getAipId())
+//                .stream()
+//                .map(ArrDaoLink::getNodeId)
+//                .toList();
+//
+//        List<TreeNodeVO> connectedNodes = levelTreeCacheService.getNodesByIds(nodeIds, state.getFund().getVersion());
         return createAipDetailVO(daAip, state, originator);
     }
 
@@ -1905,6 +1911,15 @@ public class ClientFactoryVO {
             vo.setState(mapQueueItemState(src.getDaSyncQueueItem().getState()));
         }
         return vo;
+    }
+
+    private LinkType mapArrDaoLink(ArrDaoLink.LinkType type) {
+        switch (type) {
+            case AIP -> {return LinkType.AIP;}
+            case PART_AIP -> {return LinkType.PART_AIP;}
+            case COMPONENT_AIP -> {return LinkType.COMPONENT_AIP;}
+            default -> throw new IllegalArgumentException("Unknown link type: " + type);
+        }
     }
 
     private QueueItemState mapQueueItemState(
