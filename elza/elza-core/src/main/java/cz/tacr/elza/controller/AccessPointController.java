@@ -348,6 +348,8 @@ public class AccessPointController implements AccesspointsApi {
         }
 
         revisionService.createRevision(state);
+        apCacheService.createApCachedAccessPoint(state.getAccessPointId());
+
         return ResponseEntity.ok().build();
     }
 
@@ -357,6 +359,8 @@ public class AccessPointController implements AccesspointsApi {
         ApState state = accessPointService.getStateInternal(id);
 
         revisionService.deleteRevision(state);
+        apCacheService.createApCachedAccessPoint(state.getAccessPointId());
+
         return ResponseEntity.ok().build();
     }
 
@@ -376,6 +380,7 @@ public class AccessPointController implements AccesspointsApi {
         StateApproval state = StateApproval.valueOf(stateUpdate.getStateApproval().toString());
 
         revisionService.mergeRevision(apState, state, stateUpdate.getComment());
+        apCacheService.createApCachedAccessPoint(apState.getAccessPointId());
 
         return ResponseEntity.ok(accessPoint.getVersion());
     }
@@ -400,6 +405,7 @@ public class AccessPointController implements AccesspointsApi {
         }
 
         revisionService.changeStateRevision(state, nextTypeId, revNextState, revStateChange.getComment());
+        apCacheService.createApCachedAccessPoint(state.getAccessPointId());
 
         return ResponseEntity.ok(accessPoint.getVersion());
     }
