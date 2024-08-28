@@ -42,6 +42,7 @@ import cz.tacr.elza.controller.vo.RelationFilterVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -117,7 +118,11 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         BooleanPredicateClausesStep<?> bool = factory.bool();
 
 		if (searchFilter != null) {
-			// TODO je třeba dále projednat podmínky
+			// vyhledávání podle ID entity
+			if (StringUtils.isNotEmpty(searchFilter.getCode())) {
+				bool.should(factory.match().field(FIELD_ACCESSPOINT_ID).matching(searchFilter.getCode()));
+			}
+			// vyhledávání podle uživatelského jména, které provedl poslední změnu stavu
 			if (StringUtils.isNotEmpty(searchFilter.getUser())) {
 				bool.should(factory.wildcard().field(USERNAME).matching(wildcardValue(searchFilter.getUser())));
 			}
