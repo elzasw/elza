@@ -14,6 +14,9 @@ public class SearchFilterVO {
 
     private List<AeState> aeStates = null;
 
+    // identifikátor konkrétní archivní entity
+    private String code;
+
     private String user;
 
     private String creation;
@@ -64,7 +67,15 @@ public class SearchFilterVO {
         this.aeStates = aeStates;
     }
 
-    public String getUser() {
+    public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+	public String getUser() {
         return user;
     }
 
