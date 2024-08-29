@@ -22,6 +22,8 @@ import './EntityCreatePage.scss';
 import { ApAccessPointVO } from 'api';
 import { ApItemVO } from 'api/ApItemVO';
 
+const serverContextPath: string | undefined = (window as any).serverContextPath;
+
 function useQuery() {
     return new URLSearchParams(useLocation().search);
 }
@@ -75,11 +77,15 @@ export const EntityCreatePage:FC = () => {
         location.assign(getResponseUrl(ResponseStatus.CANCEL))
     }
 
+    const getEntityUrl = () => {
+        return `${serverContextPath}/entity/{entityId}`;
+    }
+
     const getResponseUrl = (
         status: ResponseStatus,
         entity?: ApAccessPointVO
     ) => {
-        return replaceStrings(responseUrl || location.href, [
+        return replaceStrings(responseUrl || getEntityUrl() || location.href, [
             ["{status}", status],
             ["{entityUuid}", entity?.id ? entity.uuid : ""],
             ["{entityId}", entity?.id ? entity.id.toString() : ""]
