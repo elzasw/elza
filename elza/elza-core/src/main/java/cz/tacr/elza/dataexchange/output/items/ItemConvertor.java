@@ -53,6 +53,8 @@ public class ItemConvertor {
         // data must be initialized - no hidden fetches per item
         Validate.isTrue(HibernateUtils.isInitialized(data));
 
+        data = HibernateUtils.unproxy(data);
+
         ItemDataConvertor convertor = dataConvertors.get(data.getType());
         if (convertor == null) {
             throw new IllegalStateException("Unsupported data type:" + data.getDataType());
