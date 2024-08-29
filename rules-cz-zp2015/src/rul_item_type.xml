@@ -537,7 +537,7 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_PART" data-type="TEXT">
+    <item-type code="ZP2015_PART" data-type="STRING">
         <name>Díl, část, pořadí vydání jednotky popisu</name>
         <shortcut>Část</shortcut>
         <description>ZP5.2.9 Díl, část, pořadí vydání jednotky popisu</description>
