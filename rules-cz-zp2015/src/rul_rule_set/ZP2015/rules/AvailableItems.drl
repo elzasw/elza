@@ -6472,12 +6472,17 @@ then
 end
 
 
-rule "Mozne specifikace pro prvek Mnozstvi v podtypu korespondence"
+rule "Mozne specifikace pro podtyp korespondence"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_KOR") ) from $ownItems
-    $itemType : RulItemTypeExt(code in ("ZP2015_AMOUNT") )
-    $itemSpec : RulItemSpecExt(code in ("ZP2015_AMOUNT_PIECES", "ZP2015_AMOUNT_SHEETS", "ZP2015_AMOUNT_PAGES") ) from $itemType.rulItemSpecList
+    $itemType : RulItemTypeExt(code in (
+        "ZP2015_AMOUNT",
+        "ZP2015_DATE_OTHER") )
+    $itemSpec : RulItemSpecExt(code in (
+        "ZP2015_AMOUNT_PIECES", "ZP2015_AMOUNT_SHEETS", "ZP2015_AMOUNT_PAGES",
+        "ZP2015_DATE_DISPATCH", "ZP2015_DATE_DELIVERY"
+        ) ) from $itemType.rulItemSpecList
 then
   $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
@@ -6651,8 +6656,14 @@ when ActiveLevel($items: descItems)
     $itemSpec: RulItemSpecExt( code in (
         // autor
         "ZP2015_ENTITY_ROLE_1",
+        // autoři hudby
+        "ZP2015_ENTITY_ROLE_6",
+        // autoři textové složky / textaři
+        "ZP2015_ENTITY_ROLE_10",
         // vydavatelé
         "ZP2015_ENTITY_ROLE_15",
+        // objednatelé/příjemci
+        "ZP2015_ENTITY_ROLE_19",
         // příjemci
         "ZP2015_ENTITY_ROLE_21",
         // žadatelé
@@ -6661,8 +6672,18 @@ when ActiveLevel($items: descItems)
         "ZP2015_ENTITY_ROLE_24",
         // schvalovatelé
         "ZP2015_ENTITY_ROLE_25",
+        // režiséři
+        "ZP2015_ENTITY_ROLE_27",
+        // scenáristé
+        "ZP2015_ENTITY_ROLE_28",
+        // interpreti hudby
+        "ZP2015_ENTITY_ROLE_30",
         // fotografové
         "ZP2015_ENTITY_ROLE_31",
+        // kartografové
+        "ZP2015_ENTITY_ROLE_33",
+        // dramaturgové
+        "ZP2015_ENTITY_ROLE_40",
         // výrobci
         "ZP2015_ENTITY_ROLE_53",
         // typová označení a názvy výrobků a typových staveb

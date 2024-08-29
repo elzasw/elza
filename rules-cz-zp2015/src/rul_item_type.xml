@@ -69,8 +69,8 @@
         <use-specification>false</use-specification>
     </item-type>
     <item-type code="ZP2015_AIP_ID" data-type="STRING">
-        <name>Uložení v DA</name>
-        <shortcut>Uložení v DA</shortcut>
+        <name>Uložení v DA (TEXT)</name>
+        <shortcut>Uložení v DA (TEXT)</shortcut>
         <description>ZP4.2.10 Ukládací číslo v digitálním archivu, obvykle AIP ID</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
@@ -537,7 +537,7 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_PART" data-type="TEXT">
+    <item-type code="ZP2015_PART" data-type="STRING">
         <name>Díl, část, pořadí vydání jednotky popisu</name>
         <shortcut>Část</shortcut>
         <description>ZP5.2.9 Díl, část, pořadí vydání jednotky popisu</description>

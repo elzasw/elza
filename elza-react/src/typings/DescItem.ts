@@ -21,7 +21,7 @@ export interface DescItem<T = unknown> {
     addedByUser: boolean;
 
     //
-    itemType: number;
+    itemTypeId: number;
     prevDescItemSpecId?: number;
     descItemSpecId?: number;
 }

@@ -46,7 +46,7 @@ public class StructObjProcessor implements ItemProcessor {
             throw new DEImportException("Structured object id is not set");
         }
 
-        return section.addStructObject(item.getId(), item.getUuid());
+        return section.addStructObject(item.getId(), item.getUuid(), item.isAsgn());
     }
 
     private void processItems(Collection<DescriptionItem> items, StructObjContext structObjCtx) {
