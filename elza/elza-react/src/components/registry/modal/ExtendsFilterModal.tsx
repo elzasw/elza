@@ -35,14 +35,7 @@ type FormProps = {};
 
 const validate = values => {
     const errors: any = {};
-    if (!values.partType) {
-        errors.partType = i18n('global.validation.required');
-    }
-    if (values.itemType) {
-        if (values.itemType.useSpecification && !values.itemSpec) {
-            errors.itemSpec = i18n('global.validation.required');
-        }
-    } else {
+    if (!values.itemType) {
         errors.itemType = i18n('global.validation.required');
     }
     if (!values.value) {
