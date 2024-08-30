@@ -110,16 +110,15 @@ public class ApStateSpecification implements Specification<ApState> {
             condition = cb.and(condition, stateRoot.get(ApState.FIELD_STATE_APPROVAL).in(state));
         }
 
+        Root<ApRevision> revisionRoot = q.from(ApRevision.class);
+        Root<ApRevState> revStateRoot = q.from(ApRevState.class);
         if (revState != null) {
-            Root<ApRevision> revisionRoot = q.from(ApRevision.class);
             Join<ApRevision, ApState> revisionApStateJoin = revisionRoot.join(ApRevision.FIELD_STATE, JoinType.INNER);
-            Root<ApRevState> revStateRoot = q.from(ApRevState.class);
-
             condition = cb.and(condition,
                     cb.equal(stateRoot.get(ApState.FIELD_STATE_ID), revisionApStateJoin.get(ApState.FIELD_STATE_ID)),
                     cb.isNull(revisionRoot.get(ApRevision.FIELD_DELETE_CHANGE_ID)),
                     cb.equal(revStateRoot.get(ApRevState.FIELD_REVISION), revisionRoot),
-                    cb.isNull(revStateRoot.get(ApRevState.FIELD_DELETE_CHANGE_ID)),
+                    cb.isNull(revStateRoot.get(ApRevState.FIELD_DELETE_CHANGE_ID)), 
                     revStateRoot.get(ApRevState.FIELD_STATE_APPROVAL).in(revState));
         }
 
@@ -130,7 +129,14 @@ public class ApStateSpecification implements Specification<ApState> {
             String user = searchFilterVO.getUser();
             if (StringUtils.isNotEmpty(user)) {
                 Join<ApState, ApChange> apChangeJoin = stateRoot.join(ApState.FIELD_CREATE_CHANGE, JoinType.INNER);
-                condition = cb.and(condition, cb.like(cb.lower(apChangeJoin.get(ApChange.USER).get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%"));
+            	Join<ApRevState, ApChange> revChangeJoin = revStateRoot.join(ApState.FIELD_CREATE_CHANGE, JoinType.INNER);
+            	condition = cb.or(condition,
+            			cb.and(condition,
+            					cb.like(cb.lower(apChangeJoin.get(ApChange.USER).get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%"),
+            					cb.isNull(stateRoot.get(ApState.FIELD_DELETE_CHANGE_ID))),
+            			cb.and(condition,
+            					cb.like(cb.lower(revChangeJoin.get(ApChange.USER).get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%")),
+		                        cb.isNull(revStateRoot.get(ApRevision.FIELD_DELETE_CHANGE_ID)));
             }
 
             String code = searchFilterVO.getCode();
@@ -288,8 +294,7 @@ public class ApStateSpecification implements Specification<ApState> {
                       processValueComparator(ctx, comparator, dataType, value));
     }
 
-    private void addPartTypeCondForItem(Ctx ctx, CriteriaBuilder cb, Predicate and,
-                                        boolean prefPart, String partTypeCode) {
+    private void addPartTypeCondForItem(Ctx ctx, CriteriaBuilder cb, Predicate and, boolean prefPart, String partTypeCode) {
         Join<ApItem, ApPart> itemPartJoin = ctx.getItemPartJoin();
         if (prefPart) {
             itemPartJoin.on(cb.equal(itemPartJoin.get(ApPart.PART_ID), ctx.getAccessPointJoin().get(

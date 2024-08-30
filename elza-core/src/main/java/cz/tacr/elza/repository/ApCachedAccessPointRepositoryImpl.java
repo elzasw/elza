@@ -120,11 +120,11 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 		if (searchFilter != null) {
 			// vyhledávání podle ID entity
 			if (StringUtils.isNotEmpty(searchFilter.getCode())) {
-				bool.should(factory.match().field(FIELD_ACCESSPOINT_ID).matching(searchFilter.getCode()));
+				bool.must(factory.match().field(FIELD_ACCESSPOINT_ID).matching(searchFilter.getCode()));
 			}
 			// vyhledávání podle uživatelského jména, které provedl poslední změnu stavu
 			if (StringUtils.isNotEmpty(searchFilter.getUser())) {
-				bool.should(factory.wildcard().field(USERNAME).matching(wildcardValue(searchFilter.getUser())));
+				bool.must(factory.wildcard().field(USERNAME).matching(wildcardValue(searchFilter.getUser())));
 			}
 			if (searchFilter.getArea() != Area.ENTITY_CODE) {
 				SearchPredicate sp = process(factory, searchFilter);
