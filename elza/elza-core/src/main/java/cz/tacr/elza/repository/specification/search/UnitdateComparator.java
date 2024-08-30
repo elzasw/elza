@@ -24,7 +24,7 @@ public class UnitdateComparator implements Comparator {
     @Override
     public Predicate toPredicate(final QueryComparator comparator, final String value) {
         CriteriaBuilder cb = ctx.cb;
-        ArrDataUnitdate data = UnitDateConvertor.convertIsoToUnitDate(value, new ArrDataUnitdate());
+        ArrDataUnitdate data = UnitDateConvertor.convertToUnitDate(value, new ArrDataUnitdate());
         AccessPointItemService.normalize(data);
         Long normalizedFrom = data.getNormalizedFrom();
         Long normalizedTo = data.getNormalizedTo();
