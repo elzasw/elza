@@ -67,10 +67,12 @@ public class DataService {
         	Set<Integer> dbDataIds = result.stream().map(i -> i.getDataId()).collect(Collectors.toSet());
         	List<Integer> missingIds = dataIds.stream().filter(i -> !dbDataIds.contains(i)).collect(Collectors.toList());
         	
-        	log.error("Failed to load items, dataIds({}): {}, missing items in DB({}): ", 
+        	log.error("Failed to load items (dataType: {}), dataIds({}): {}, missing items in DB({}): {}",
+        			dataType,
         			dataIds.size(), dataIds, 
         			missingIds.size(), missingIds);;
         	throw new SystemException("Failed to load items.", BaseCode.DB_INTEGRITY_PROBLEM)
+        		.set("dataType", dataType)
         		.set("dataIds.size", dataIds.size())
         		.set("dataIds", dataIds)
         		.set("missingIds.size", missingIds.size())
