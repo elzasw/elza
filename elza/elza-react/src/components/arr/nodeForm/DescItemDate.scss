@@ -1,6 +1,9 @@
 //@import '~react-widgets/lib/scss/react-widgets.scss';
 
-@import "react-widgets/scss/variables.scss";
+// @import "react-widgets/scss/variables.scss";
+// @import "react-widgets/scss/calendar.scss";
+// @import "react-widgets/scss/date-picker.scss";
+@import "react-widgets/scss/components.scss";
 
 // @import "~react-widgets/lib/scss/mixins.scss";
 // @import "~react-widgets/lib/scss/normalize.scss";
@@ -57,14 +60,26 @@ $input-padding-horizontal: 5px;
             background-color: $shade-0;
             border-radius: 0;
             overflow: visible;
+            min-height: 1.8em;
 
             .rw-widget-input {
                 display: block;
-                width: auto;
+                // width: auto;
                 flex: 1;
                 box-shadow: none;
                 color: $fg-color;
                 background-color: transparent;
+            }
+
+            .rw-btn {
+                background-color: transparent;
+                padding: 0 5px;
+                color: $fg-color;
+                opacity: 1;
+
+                &:hover {
+                    background-color: $shade-4;
+                }
             }
 
             .rw-select {
