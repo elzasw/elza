@@ -6,7 +6,7 @@ import { logout } from 'actions/global/login';
 import { store } from 'stores/index.jsx';
 
 // @ts-ignore
-const serverContextPath = window.serverContextPath;
+export const serverContextPath = window.serverContextPath || "";
 
 const baseApiPath = '/api';
 const v1ApiPath = '/v1';
