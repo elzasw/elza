@@ -108,8 +108,21 @@ const ExtendsFilterModal = ({
 
     const getItemTypes = (_rulDescItemTypes: string[]) => {
         return _rulDescItemTypes.length === 0 ? [] : refTables.descItemTypes.items.filter((itemType: RulDescItemTypeExtVO) => {
-            const dataType: RulDataTypeVO = refTables.rulDataTypes.itemsMap[itemType.dataTypeId];
             return _rulDescItemTypes.includes(itemType.code);
+        })
+        // Docasne zakazani nekterych datovych typu kvuli chybam na serveru(#9089)
+        .filter((itemType:RulDescItemTypeExtVO) => {
+            const dataType: RulDataTypeVO = refTables.rulDataTypes.itemsMap[itemType.dataTypeId];
+
+            if(
+                dataType.code === RulDataTypeCodeEnum.INT // #9085
+                    || dataType.code === RulDataTypeCodeEnum.COORDINATES // #9086
+                    || dataType.code === RulDataTypeCodeEnum.BIT // #9087
+            ){
+                console.log("#### remove data type", dataType.code, itemType.code)
+                return false;
+            }
+            return true;
         });
     }
 
