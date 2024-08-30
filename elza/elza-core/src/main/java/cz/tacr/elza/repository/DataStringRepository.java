@@ -40,7 +40,7 @@ public interface DataStringRepository extends JpaRepository<ArrDataString, Integ
      * @param stringValue
      */
     @Modifying
-    @Query(nativeQuery = true, value = "insert into arr_data_string(data_id, value) values(?1, ?2)")
+    @Query(nativeQuery = true, value = "insert into arr_data_string(data_id, string_value) values(?1, ?2)")
     void insertMasterOnly(Integer dataId, String stringValue);
 
 }
