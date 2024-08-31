@@ -609,7 +609,7 @@ public class PackageService {
     	// 
         if (pkgCtx.isSyncNodeCache()) {
         	// We need to have valid SDP before syncing cache
-        	staticDataService.refreshForCurrentThread();
+        	staticDataService.setForCurrentThread(staticDataService.createProvider());
         	// Synchronize cache
             nodeCacheService.syncCache();
         }
