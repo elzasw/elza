@@ -753,7 +753,8 @@ public class ItemTypeUpdater {
         for (DataTextRepository.OnlyValues srcValue : srcValues) {
         	// convert values
         	String srcTextValue = srcValue.getTextValue();
-        	String trgStringValue = srcTextValue.replaceAll("\\r?\\n", "; ");
+        	String trgStringValue = srcTextValue.replaceAll("\\r?\\n", "; ")
+        			.replaceAll("\\s{2,}", " ");
         	if(!srcTextValue.equals(trgStringValue)) {
         		logger.info("Converting from text to string, dataId: {}, targetValue: {}, srcValue: {}", 
         				srcValue.getDataId(), trgStringValue, srcTextValue);
