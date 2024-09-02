@@ -40,7 +40,6 @@ when
         "ZP2015_STORAGE_COND",
         "ZP2015_SIZE",
         "ZP2015_ITEM_MAT",
-        "ZP2015_PART",
         "ZP2015_WRITING",
         "ZP2015_EDITION"))
 then
