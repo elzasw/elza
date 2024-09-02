@@ -46,6 +46,124 @@ model LoggedUsers {
     totalCount: int32;
 }
 
+/**
+ * Archivní soubor
+ */
+model Fund {
+    /** Identifikátor */
+    id: integer;
+    /** UUID - identifikátor AS */ 
+    uuid: string;
+    /** Název */
+    name: string;
+    /** Identifikátor instituce (vždy kód instituce) */
+    institutionIdentifier: string;
+    /** Interní kód */
+    internalCode?: string;
+    /** Datum založení */
+    createDate?: offsetDateTime;
+    /** Číslo archivního souboru */
+    fundNumber?: integer;
+    /** Datace */
+    unitdate?: string;
+    /** Značka archivního souboru */
+    mark?: string;
+}
+
+/**
+ * Zakládaný archivní souboru
+ */
+model FundDetail {
+    /** Identifikátor */
+    id: integer;
+    /** UUID - identifikátor AS */ 
+    uuid: string;
+    /** Název */
+    name: string;
+    /** Identifikátor instituce (vždy kód instituce) */
+    institutionIdentifier: string;
+    /** Interní kód */
+    internalCode?: string;
+    /** Datum založení */
+    createDate?: offsetDateTime;
+    /** Číslo archivního souboru */
+    fundNumber?: integer;
+    /** Datace */
+    unitdate?: string;
+    /** Značka archivního souboru */
+    mark?: string;
+    /** Seznam oblastí entit */
+    scopes: string[];
+}
+
+/**
+ * Zakládaný archivní souboru
+ */ 
+model CreateFund {
+    /** Název */
+    name: string;
+    /** Kód pravidel */
+    ruleSetCode: string;
+    /** Identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu) */
+    institutionIdentifier: string;
+    /** Interní kód */
+    internalCode?: string;
+    /** UUID - identifikátor AS (pokud není vyplněno, bude vygenerováno) */
+    uuid?: string;
+    /** Číslo archivního souboru */
+    fundNumber?: integer;
+    /** Datace */
+    unitdate?: string;
+    /** Značka archivního souboru */
+    mark?: string;
+    /** Seznam uživatelů, kteří mají administrátorská oprávnění pro zakládaný AS */
+    adminUsers?: integer[];
+    /** Seznam skupin, kteří mají administrátorská oprávnění pro zakládaný AS */
+    adminGroups?: integer[];
+    /** Seznam oblastí entit */
+    @minItems(1) scopes: string[];
+}
+
+/**
+ * Data k importu
+ */ 
+model ImportFundData {
+    /** Import type. Only 'CSV' is supported */
+    importType: string;
+    /** File to upload */
+    dataFile: bytes;
+}
+
+/**
+ * Změny archivního souboru
+ */
+model UpdateFund {
+    /** Název */
+    name?: string;
+    /** Kód pravidel */
+    ruleSetCode?: string;
+    /** Identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu) */
+    institutionIdentifier?: string;
+    /** Interní kód */
+    internalCode?: string;
+    /** Číslo archivního souboru */
+    fundNumber?: integer;
+    /** Datace */
+    unitdate?: string;
+    /** Značka archivního souboru */
+    mark?: string;
+    /** Seznam oblastí entit */
+    scopes?: string[];
+}
+
+/**
+ * Výsledek vyhledávání AS
+ */
+model FindFundsResult {
+    funds: Fund[];
+    totalCount: integer;
+}
+
 model FsRepo {
     /** Repository ID */
     fsRepoId: int32;
@@ -226,7 +344,7 @@ model DataCoordinates extends ItemData {
 
 model DataDate extends ItemData {
     type: "DataDate";
-    value: offsetDateTime;
+    value: plainDate;
 }
 
 model DataDecimal extends ItemData {
@@ -255,8 +373,7 @@ model DataNull extends ItemData {
 
 model DataRecordRef extends ItemData {
     type: "DataRecordRef";
-    recordId: integer;
-    bindingId: integer;
+    value: integer;
 }
 
 model DataString extends ItemData {
@@ -274,15 +391,14 @@ model DataText extends ItemData {
     textValue: string;
 }
 
+model DataFormattedText extends ItemData {
+    type: "DataFormattedText";
+    value: string;
+}
+
 model DataUnitdate extends ItemData {
     type: "DataUnitdate";
-    valueFrom: string;
-    valueFromEstimated: boolean;
-    valueTo: string;
-    valueToEstimated: boolean;
-    format: string;
-    normalizedFrom: int64;
-    normalizedTo: int64;
+    value: string;
 }
 
 model DataUnitid extends ItemData {
@@ -292,11 +408,10 @@ model DataUnitid extends ItemData {
 
 model DataUriRef extends ItemData {
     type: "DataUriRef";
-    schema: string;
-    uriRefValue: string;
-    description: string;
-    nodeId: integer;
-    refTemplateId: integer;
+    nodeId?: integer;
+    value: string;
+    description?: string;
+    refTemplateId?: integer;
 }
 
 /**
@@ -360,8 +475,10 @@ model NodeItem {
     itemSpecId?: integer;
     /** value cannot be changed */
     readOnly?: boolean;
-    /** id parent node */
+    /** id node */
     nodeId?: integer;
+    /** node version */
+    nodeVersion?: integer;
     /** if inheritance is prohibited - true */
     inhibited?: boolean;
     /** item data */
@@ -481,11 +598,6 @@ model ExtSystemProperty {
     value: string;
 }
 
-@route("/daorepository")
-namespace ElzaAPI.DaoRepository {
-    op fsRepos(): FsRepo[];
-}
-
 @tag("admin")
 @route("/admin")
 namespace ElzaAPI.Admin {
@@ -507,7 +619,10 @@ namespace ElzaAPI.Admin {
      * @param userId ID of target user
      */
     @route("user/{userId}/copy-permissions")
-    @post op copyPermissions(@path userId: integer, @body params: CopyPermissionParams): {
+    @post op copyPermissions(
+        @path userId: integer,
+        @body params: CopyPermissionParams
+    ): {
         @Http.statusCode statusCode: 200;
     };
 
@@ -519,7 +634,12 @@ namespace ElzaAPI.Admin {
 
     /** Return list of logged users */
     @route("info/logged-users")
-    op loggedUsers(): LoggedUsers;    
+    op loggedUsers(): LoggedUsers;
+}
+
+@route("/daorepository")
+namespace ElzaAPI.DaoRepository {
+    op fsRepos(): FsRepo[];
 }
 
 @tag("externalsystems")
@@ -571,12 +691,88 @@ namespace ElzaAPI.ExternalSystem {
 
 @tag("funds")
 @route("/fund")
-namespace ElzaAPI.Fund {
+namespace ElzaAPI.fund {
+    /**
+     * Created a new archive file (AS)
+     */
+    @post op createFund(
+        @body body: CreateFund;
+    ): Fund | {
+          /** Invalid data for AS creation */
+          @Http.statusCode statusCode: 400;
+    };
+
+    /**
+     * Search for archive files (AS)
+     */
+    @get op findFunds(
+        /** vyhledávaný výraz */
+        @query fulltext?: string;
+        /** identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu) */ 
+        @query institutionIdentifier?: string;
+        /** maximální počet výsledků na stránku */
+        @query max?: integer = 200;
+        /** Od kolikátého záznamu se mají výsledky vracet (0 = žádné se nepřeskočí) */
+        @query from?: integer = 0;
+    ): FindFundsResult;
+
+    /**
+     * Getting the AS detail
+     */
+    @route("/{id}")
+    @get op getFund(
+        /** fund ID. Might be ID or fund UUID */
+        @path id: string;
+    ): FundDetail | {
+          @Http.statusCode statusCode: 404;
+    };
+
+    /**
+     * Update of archive file (AS)
+     */
+    @route("/{id}")
+    @put op updateFund(
+        /** fund ID. Might be ID or fund UUID */
+        @path id: string;
+        @body body: UpdateFund;
+    ): FundDetail | {
+          @Http.statusCode statusCode: 400;
+    } | {
+          @Http.statusCode statusCode: 404;
+    };
+
+    /**
+     * Import additional data to the existing fund
+     */
+    @route("/{id}/import")
+    @put op importFundData(
+        /** Fund ID. Might be ID or fund UUID */
+        @path id: string;
+        /** Doplnění způsobu importu */
+        @body body: ImportFundData;
+        @header contentType: "multipart/form-data";
+    ): void | {
+          @Http.statusCode statusCode: 400;
+    } | {
+          @Http.statusCode statusCode: 406;
+    };
+
+    /**
+     * Smazání seznamu hodnot strukturovaného datového typu
+     */
+    @route("/{id}/structuredObject")
+    @delete op deleteStructureData(
+        /** Identifikátor AS */
+        @path id: integer;
+        /** Seznam id hodnot strukturovaného datového typu */
+        @body data: integer[];
+    ): integer[];
+
     /**
      * Return list of item type id & count
      */
     @route("{fundId}/usedItemtypes/{fundVersionId}") 
-    op usedItemTypes(
+    @get op usedItemTypes(
         ...FundIdParameter,
 		...FundVersionIdParameter): UsedItemType[];
 
@@ -584,7 +780,7 @@ namespace ElzaAPI.Fund {
      * Return list of filesystem repositories
      */
     @route("{fundId}/fsrepos")
-    op fsRepos(...FundIdParameter): FsRepo[];
+    @get op fsRepos(...FundIdParameter): FsRepo[];
 
     @route("{fundId}/fsrepo/{fsrepoId}/linkitem/{nodeId}")
     @put op fsCreateDAOLink (
@@ -624,43 +820,26 @@ namespace ElzaAPI.DescItem {
     /**
      * Create attribute value
      */
-    @route("/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create/new")
+    @route("/{fundVersionId}/create")
     @put op createDescItem(
         /** id AP version */
         @path fundVersionId: integer,
-        /** id node */
-        @path nodeId: integer,
-        /** node version */
-        @path nodeVersion: integer,
-        /** id type of item */
-        @path descItemTypeId: integer;
         /** new attribute value */
         @body body: NodeItem
-    ): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-         @body result: ItemDataResult;
-       };
+    ): ItemDataResult;
+
     /**
      * Update attribute value
      */
-    @route("/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}/new")
+    @route("/{fundVersionId}/{createNewVersion}/update")
     @put op updateDescItem(
         /** id AP version */
         @path fundVersionId: integer,
-        /** id node */
-        @path nodeId: integer,
-        /** node version */
-        @path nodeVersion: integer,
         /** create a new version or not? */ 
         @path createNewVersion: boolean,
         /** new attribute value */
         @body body: NodeItem
-    ): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-         @body result: ItemDataResult;
-       } | {
+    ): ItemDataResult | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
           @body data: BaseException;
@@ -735,7 +914,10 @@ namespace ElzaAPI.AccessPoint {
         @path partId: integer,
         /** actual version of ApAccessPoint */
         @query apVersion?: integer
-    ): integer;
+    ): integer | {
+          /** requested resource does not exists */
+          @Http.statusCode statusCode: 404;
+       };
 
     /**
      * Change state of ApAccessPoint
@@ -774,7 +956,10 @@ namespace ElzaAPI.AccessPoint {
         @body body: RevStateChange;
         /** actual version of ApAccessPoint */
         @query apVersion?: integer;
-    ): integer;
+    ): integer | {
+          /** requested resource does not exists */
+          @Http.statusCode statusCode: 404;
+       };
 
     /**
      * Set the preferred name of revision of ApAccessPoint
@@ -787,7 +972,10 @@ namespace ElzaAPI.AccessPoint {
         @path partId: integer,
         /** actual version of ApAccessPoint */
         @query apVersion?: integer;
-    ): integer;
+    ): integer | {
+          /** requested resource does not exists */
+          @Http.statusCode statusCode: 404;
+       };
 
     /**
      * Delete part of revision of ApAccessPoint

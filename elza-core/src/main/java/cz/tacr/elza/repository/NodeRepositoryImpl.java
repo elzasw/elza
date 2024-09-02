@@ -492,7 +492,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         HashMap<String, PointsConfig> stringNumericConfigHashMap = new HashMap<>();
         PointsConfig intConfig = new PointsConfig(NumberFormat.getIntegerInstance(), Integer.class);
         PointsConfig longConfig = new PointsConfig(NumberFormat.getNumberInstance(), Long.class);
-        stringNumericConfigHashMap.put(ArrDescItem.SPECIFICATION_ATT, intConfig);
+        stringNumericConfigHashMap.put(ArrDescItem.FIELD_ITEM_SPEC_ID, intConfig);
         stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_FROM_ATT, longConfig);
         stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_TO_ATT, longConfig);
 
