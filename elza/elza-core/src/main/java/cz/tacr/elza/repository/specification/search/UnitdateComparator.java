@@ -23,7 +23,7 @@ public class UnitdateComparator implements Comparator {
     @Override
     public Predicate toPredicate(final QueryComparator comparator, final String value) {
         CriteriaBuilder cb = ctx.cb;
-        ArrDataUnitdate data = UnitDateConvertor.convertIsoToUnitDate(value, new ArrDataUnitdate());
+        ArrDataUnitdate data = UnitDateConvertor.convertToUnitDate(value, new ArrDataUnitdate());
         Long normalizedFrom = data.getNormalizedFrom();
         Long normalizedTo = data.getNormalizedTo();
         Join<ApItem, ArrData> dataJoin = ctx.getApItemRoot().join(ApItem.FIELD_DATA, JoinType.INNER);

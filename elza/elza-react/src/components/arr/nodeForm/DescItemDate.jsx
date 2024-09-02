@@ -32,7 +32,11 @@ class DescItemDate extends AbstractReactComponent {
 
     render() {
         const {descItem, locked, readMode, cal} = this.props;
-        let value = cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : Moment(descItem.value).format('l');
+        let value = cal && descItem.value == null
+            ? i18n('subNodeForm.descItemType.calculable')
+            : descItem.value == null
+                ? null
+                : Moment(descItem.value).format('l');
 
         if (readMode) {
             return (

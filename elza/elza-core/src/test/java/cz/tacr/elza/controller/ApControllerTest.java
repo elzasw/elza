@@ -43,12 +43,10 @@ import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.ApStateApproval;
 import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.Fund;
 import io.restassured.response.Response;
-
 
 /**
  * Test method na APController
@@ -241,7 +239,7 @@ public class ApControllerTest extends AbstractControllerTest {
     }
 
     @Test//(timeout = 60000)
-    public void testAccessPointRev() throws InterruptedException, ApiException {
+    public void testAccessPointRev() throws InterruptedException {
         ApTypeVO type = getApType(STRUCT_AP_TYPE);
         assertNotNull(type);
 
@@ -496,7 +494,7 @@ public class ApControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void registerReplaceTest() throws ApiException {
+    public void registerReplaceTest() {
         // Vytvoření fund
         Fund fund = createFund("RegisterLinks Test AP", "IC3");
         ArrFundVersionVO fundVersion = getOpenVersion(fund);

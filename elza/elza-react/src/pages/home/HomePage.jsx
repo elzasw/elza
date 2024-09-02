@@ -110,7 +110,7 @@ class HomePage extends AbstractReactComponent {
     componentDidMount() {
         const funds = this.props.stateRegion?.arrRegionFront;
         if (funds?.length > 0) {
-            Promise.all(funds.map((fund) => Api.funds.getFund(fund.id, { overrideErrorHandler: true })
+            Promise.all(funds.map((fund) => Api.funds.fundGetFund(fund.id, { overrideErrorHandler: true })
                 .catch(() => { return undefined; })))
                 .then((responses) => {
                     const fundDetails = responses.filter((response) => response != undefined).map((response) => response.data);

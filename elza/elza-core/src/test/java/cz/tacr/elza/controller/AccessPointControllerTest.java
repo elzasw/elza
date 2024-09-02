@@ -35,7 +35,6 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.service.PartService;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.CopyAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointsDetail;
@@ -63,7 +62,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     private PlatformTransactionManager tm;
 
     @Test
-    public void copyAccessPointsTest() throws ApiException {
+    public void copyAccessPointsTest() {
 
         long count = apRepository.count();
         assertTrue(count == 3);
@@ -87,7 +86,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         copyAccessPointDetail.setReplace(true);
         copyAccessPointDetail.setSkipItems(skipItems);
 
-        EntityRef entityRef = accesspointsApi.copyAccessPoint(ap.getUuid(), copyAccessPointDetail);
+        EntityRef entityRef = accesspointsApi.accessPointCopyAccessPoint(ap.getUuid(), copyAccessPointDetail);
         count = apRepository.count();
         assertTrue(count == 4); // +1
 
@@ -102,7 +101,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void deleteAccessPointsTest() throws ApiException {
+    public void deleteAccessPointsTest() {
 
         ApAccessPoint ap1 = apRepository.findAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
         assertNotNull(ap1);
@@ -130,7 +129,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void deleteAccessPointTest() throws ApiException {
+    public void deleteAccessPointTest() {
 
         ApAccessPoint ap1 = apRepository.findAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
         assertNotNull(ap1);
@@ -168,7 +167,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void deleteAccessPointCopyAllTest() throws ApiException {
+    public void deleteAccessPointCopyAllTest() {
 
         ApAccessPoint ap1 = apRepository.findAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
         assertNotNull(ap1);
@@ -197,7 +196,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void setPreferNameRevisionTest() throws ApiException, InterruptedException {
+    public void setPreferNameRevisionTest() throws InterruptedException {
         ApAccessPoint ap1 = apRepository.findAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
         assertNotNull(ap1);
         ApAccessPointVO apVo = this.getAccessPoint(ap1.getAccessPointId());

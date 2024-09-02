@@ -240,7 +240,7 @@ public class DescItemTypeFilter {
 		if (itemSpecIds != null) {
 			BooleanPredicateClausesStep<?> specs = factory.bool();
 			itemSpecIds.forEach(
-					specId -> specs.should(factory.match().field(ArrDescItem.SPECIFICATION_ATT).matching(specId)));
+					specId -> specs.should(factory.match().field(ArrDescItem.FIELD_ITEM_SPEC_ID).matching(specId)));
 			bool.must(specs);
 		}
 

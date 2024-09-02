@@ -371,6 +371,9 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         	revState = HibernateUtils.unproxy(revState);
         	CachedAccessPoint cap = apMap.get(revState.getRevision().getState().getAccessPointId());
         	cap.setRevState(revState.getStateApproval());
+            if (revState.getCreateChange().getUser() != null) {
+            	cap.setCreateUsername(revState.getCreateChange().getUser().getUsername());
+            }
         }
 
         createCachedPartMap(accessPointList, apMap);

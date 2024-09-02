@@ -606,7 +606,11 @@ public class PackageService {
     }
 
     private void postImportPackage(PackageContext pkgCtx, boolean startTasks) {
+    	// 
         if (pkgCtx.isSyncNodeCache()) {
+        	// We need to have valid SDP before syncing cache
+        	staticDataService.setForCurrentThread(staticDataService.createProvider());
+        	// Synchronize cache
             nodeCacheService.syncCache();
         }
 

@@ -8,17 +8,26 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.db.HibernateConfiguration;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.Item;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
+import org.jfree.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.List;
 
 @Service
 public class DataService {
+	
+	private static Logger log = LoggerFactory.getLogger(DataService.class);
 
     @Autowired
     private StaticDataService staticDataService;
@@ -50,13 +59,26 @@ public class DataService {
 
     private <ENTITY extends Item> void findAllDataByDataResults(DataType dataType, List<ENTITY> items) {
     	List<Integer> dataIds = items.stream().filter(i -> i.getDataId() != null).map(i -> i.getDataId()).toList();
-    	List<? extends ArrData> result = dataType.getRepository().findAllById(dataIds);
-
-        items.forEach(i -> HibernateUtils.unproxy(i.getData()));
+    	List<? extends ArrData> result = dataType.getRepository().findAllById(dataIds);        
 
         // kontrola neporušenosti dat
         if (result.size() != dataIds.size()) {
-        	throw new RuntimeException("Failed to load items.");
+        	// Loaded IDS
+        	Set<Integer> dbDataIds = result.stream().map(i -> i.getDataId()).collect(Collectors.toSet());
+        	List<Integer> missingIds = dataIds.stream().filter(i -> !dbDataIds.contains(i)).collect(Collectors.toList());
+        	
+        	log.error("Failed to load items (dataType: {}), dataIds({}): {}, missing items in DB({}): {}",
+        			dataType,
+        			dataIds.size(), dataIds, 
+        			missingIds.size(), missingIds);;
+        	throw new SystemException("Failed to load items.", BaseCode.DB_INTEGRITY_PROBLEM)
+        		.set("dataType", dataType)
+        		.set("dataIds.size", dataIds.size())
+        		.set("dataIds", dataIds)
+        		.set("missingIds.size", missingIds.size())
+        		.set("missingIds", missingIds);
         }
+        
+        items.forEach(i -> HibernateUtils.unproxy(i.getData()));
     }
 }

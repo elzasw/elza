@@ -750,9 +750,9 @@
         <tag>HEAD</tag>
     </scm>
     <distributionManagement>
-        <repository>
-            <id>LightCompReleaseRepository</id>
-            <url>https://www.lightcomp.cz/releases/repository/elza-release</url>
-        </repository>
+		<repository>
+			<id>LightCompReleaseRepository</id>
+			<url>http://artifactory.lightcomp.cz:8081/artifactory/distributions</url>
+		</repository>
     </distributionManagement>
 </project>

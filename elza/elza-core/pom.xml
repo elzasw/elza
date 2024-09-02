@@ -131,12 +131,35 @@
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-fonts</artifactId>
 		</dependency>
+		<!-- pro tisk čárových kódů -->
+		<dependency>
+	    	<groupId>com.singingbush</groupId>
+    		<artifactId>barcode4j</artifactId>
+    		<version>2.2.4</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.xmlgraphics</groupId>
+		    <artifactId>batik-bridge</artifactId>
+		    <version>1.17</version>
+		    <!-- řešení konfliktů balíčků java.xml -->
+		    <exclusions>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+    		<groupId>net.sourceforge.barbecue</groupId>
+    		<artifactId>barbecue</artifactId>
+    		<version>1.5-beta1</version>
+		</dependency>
 
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
 		</dependency>
-        
+
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
@@ -212,6 +235,12 @@
 	        <groupId>org.glassfish.jaxb</groupId>
         	<artifactId>txw2</artifactId>        	
 		</dependency>
+        <!-- swagger ui -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.6.0</version>
+        </dependency>
 		<!-- io.swagger.annotations.* -->
         <dependency>
             <groupId>io.swagger</groupId>
@@ -566,14 +595,9 @@
                             <output>${project.build.directory}/generated-sources/api/rest</output>
                             <apiPackage>cz.tacr.elza.controller</apiPackage>
                             <modelPackage>cz.tacr.elza.controller.vo</modelPackage>
-                            <generateSupportingFiles>true</generateSupportingFiles>
-                            <generateApiTests>false</generateApiTests>
-							<!--<supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>-->
                             <configOptions>
                                 <useJakartaEe>true</useJakartaEe>
-								<!--<sourceFolder>/</sourceFolder>-->
                                 <interfaceOnly>true</interfaceOnly>
-								<!--  disables default interface methods for testing  -->
                                 <useTags>true</useTags>
 							</configOptions>
 						</configuration>
@@ -590,13 +614,9 @@
                             <output>${project.build.directory}/generated-sources/api/cam/rest-client</output>
                             <apiPackage>cz.tacr.cam.client.controller</apiPackage>
                             <modelPackage>cz.tacr.cam.client.controller.vo</modelPackage>
-                            <generateApiTests>false</generateApiTests>
                             <configOptions>
                                 <useJakartaEe>true</useJakartaEe>
                             </configOptions>
-							<!--<configOptions>
-                                <library>resttemplate</library>
-                            </configOptions>-->
 						</configuration>
 					</execution>
                     <execution>
@@ -604,17 +624,18 @@
                         <phase>generate-test-sources</phase>
                         <goals>
                             <goal>generate</goal>
-						</goals>
+                        </goals>
                         <configuration>
                             <generatorName>java</generatorName>
                             <inputSpec>${project.basedir}/src/main/resources/rest/elza-openapi.yml</inputSpec>
                             <output>${project.build.directory}/generated-test-sources/api/rest</output>
                             <apiPackage>cz.tacr.elza.test.controller</apiPackage>
                             <modelPackage>cz.tacr.elza.test.controller.vo</modelPackage>
-                            <generateApiTests>false</generateApiTests>
                             <configOptions>
                                 <useJakartaEe>true</useJakartaEe>
-                            </configOptions>                            
+                                <library>resttemplate</library><!-- default: okhttp-gson -->
+                                <useAbstractionForFiles>true</useAbstractionForFiles>
+                            </configOptions>
                         </configuration>
                     </execution>
                 </executions>

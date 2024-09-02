@@ -62,6 +62,7 @@ import cz.tacr.elza.repository.DataDateRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.DataStringRepository.OnlyValues;
+import cz.tacr.elza.repository.DataTextRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -110,6 +111,9 @@ public class ItemTypeUpdater {
 
     @Autowired
     private DataStringRepository dataStringRepository;
+    
+    @Autowired
+    private DataTextRepository dataTextRepository;
 
     @Autowired
     private CachedNodeRepository cachedNodeRepository;
@@ -654,6 +658,9 @@ public class ItemTypeUpdater {
                     case DATE:
                         changeDataType2Date(currDataType, dbItemType);
                         break;
+                    case STRING:
+                    	changeDataType2String(currDataType, dbItemType);
+                    	break;
                     default:
                         throw new SystemException("Unsupported data type conversion", BaseCode.DB_INTEGRITY_PROBLEM)
                                 .set("currDataType", currDataType)
@@ -695,6 +702,66 @@ public class ItemTypeUpdater {
             }
         }
         return modified;
+    }
+    
+    /**
+     * Change current data type to string
+     */
+    private void changeDataType2String(DataType currDataType, RulItemType dbItemType) {
+        if (currDataType.equals(DataType.TEXT)) {
+            // Do the conversion
+            changeText2String(dbItemType);
+            return;
+        }
+
+        throw new SystemException("Unsupported conversion from type to STRING", BaseCode.DB_INTEGRITY_PROBLEM)
+                .set("currDataType", currDataType)
+                .set("itemTypeId", dbItemType.getItemTypeId())
+                .set("itemTypeCode", dbItemType.getCode());    	
+    }
+    
+    private void changeText2String(RulItemType dbItemType) {
+
+        // Invalidate node cache by item type
+        numDroppedCachedNode += cachedNodeRepository.deleteByItemType(dbItemType);
+
+        // Iterate ArrData from arr_item
+        List<Integer> dataIds = dataRepository.findIdsByItemTypeFromArrItem(dbItemType);
+        ObjectListIterator<Integer> oli = new ObjectListIterator<>(dataIds);
+        while (oli.hasNext()) {
+            List<Integer> ids = oli.next();
+            changeText2String(ids);
+        }
+
+        // Iterate ArrData from ap_item
+        dataIds = dataRepository.findIdsByItemTypeFromApItem(dbItemType);
+        oli = new ObjectListIterator<>(dataIds);
+        while (oli.hasNext()) {
+            List<Integer> ids = oli.next();
+            changeText2String(ids);
+        }
+    }
+    
+    private void changeText2String(List<Integer> ids) {
+        // request all current arr_data_string
+        Collection<DataTextRepository.OnlyValues> srcValues = dataTextRepository.findValuesByDataIdIn(ids);
+        // drop all old strings
+        dataTextRepository.deleteMasterOnly(ids);
+        // update data type
+        dataRepository.updateDataType(ids, DataType.STRING.getId());
+        // insert new arr_data_date
+        for (DataTextRepository.OnlyValues srcValue : srcValues) {
+        	// convert values
+        	String srcTextValue = srcValue.getTextValue();
+        	String trgStringValue = srcTextValue.replaceAll("\\r?\\n", "; ")
+        			.replaceAll("\\s{2,}", " ");
+        	if(!srcTextValue.equals(trgStringValue)) {
+        		logger.info("Converting from text to string, dataId: {}, targetValue: {}, srcValue: {}", 
+        				srcValue.getDataId(), trgStringValue, srcTextValue);
+        	}
+        	
+            dataStringRepository.insertMasterOnly(srcValue.getDataId(), trgStringValue);
+        }
     }
 
     private void changeDataType2Date(DataType currDataType, RulItemType dbItemType) {

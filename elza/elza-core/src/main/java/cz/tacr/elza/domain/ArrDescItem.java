@@ -55,8 +55,9 @@ public class ArrDescItem extends ArrItem {
     public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
     public static final String FIELD_DESC_ITEM_TYPE_ID = "descItemTypeId";
+	public static final String FIELD_ITEM_SPEC = "itemSpec";
+	public static final String FIELD_ITEM_SPEC_ID = "itemSpecId";
 	public static final String FULLTEXT_ATT = "fulltextValue";
-	public static final String SPECIFICATION_ATT = "specification";
 	public static final String INTGER_ATT = "valueInt";
 	public static final String DECIMAL_ATT = "valueDecimal";
 	public static final String DATE_ATT = "valueDate";
