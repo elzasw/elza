@@ -16,7 +16,7 @@ elza:
 
   # Integration settings
   #  URL for integration JavaScript
-  # integrationScriptUrl: /elzainteg/integ.js  
+  # integrationScriptUrl: /elzainteg/integ.js
 
   workingDir: ./work
 
@@ -40,6 +40,12 @@ elza:
   # Příznak kontroly datové struktury
   ap:
     checkDb: false
+
+# Časovač sync s DA
+#  da:
+#    sync:
+#      - code: asd
+#        syncDelay: 100
 
 #  hibernate:
 #    index:

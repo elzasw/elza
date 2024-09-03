@@ -7,6 +7,7 @@ import java.util.Map;
 
 import cz.tacr.elza.service.da.DaExportExtSyncsProcessor;
 import cz.tacr.elza.service.da.DaImportExtSyncsProcessor;
+import cz.tacr.elza.service.da.DaScheduler;
 import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -110,6 +111,8 @@ public class StartupService implements SmartLifecycle {
 
     private final UserService userService;
 
+    private final DaScheduler daScheduler;
+
     private boolean running;
 
     public static boolean fullTextReindex = false;
@@ -153,7 +156,8 @@ public class StartupService implements SmartLifecycle {
                           final DaExportExtSyncsProcessor daExportExtSyncsProcessor,
                           final AccessPointCacheService accessPointCacheService,
                           final CamScheduler camScheduler,
-                          final UserService userService) {
+                          final UserService userService,
+                          final DaScheduler daScheduler) {
         this.nodeRepository = nodeRepository;
         this.arrangementService = arrangementService;
         this.bulkActionRunRepository = bulkActionRunRepository;
@@ -178,6 +182,7 @@ public class StartupService implements SmartLifecycle {
         this.accessPointCacheService = accessPointCacheService;
         this.camScheduler = camScheduler;
         this.userService = userService;
+        this.daScheduler = daScheduler;
     }
 
     @Autowired
@@ -240,7 +245,7 @@ public class StartupService implements SmartLifecycle {
         });
 
         camScheduler.start();
-
+        daScheduler.start();
         if (fullTextReindex) {
             logger.info("Full text reindex ...");
             tt.executeWithoutResult(r -> adminService.reindexInternal());
@@ -262,6 +267,7 @@ public class StartupService implements SmartLifecycle {
     public void stop() {
         logger.info("Elza stopping ...");
         camScheduler.stop();
+        daScheduler.stop();
         asyncRequestService.stop();
         indexWorkProcessor.stopIndexing();
         structureDataService.stopGenerator();
