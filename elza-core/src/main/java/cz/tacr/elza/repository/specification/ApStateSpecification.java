@@ -286,7 +286,7 @@ public class ApStateSpecification implements Specification<ApState> {
         }
 
         if (partTypeCode != null) {
-            addPartTypeCondForItem(ctx, cb, and, prefPart, partTypeCode);
+        	and = cb.and(and, addPartTypeCondForItem(ctx, cb, and, prefPart, partTypeCode));
         }
 
         return cb.and(condition,
@@ -294,16 +294,15 @@ public class ApStateSpecification implements Specification<ApState> {
                       processValueComparator(ctx, comparator, dataType, value));
     }
 
-    private void addPartTypeCondForItem(Ctx ctx, CriteriaBuilder cb, Predicate and, boolean prefPart, String partTypeCode) {
+    private Predicate addPartTypeCondForItem(Ctx ctx, CriteriaBuilder cb, Predicate and, boolean prefPart, String partTypeCode) {
         Join<ApItem, ApPart> itemPartJoin = ctx.getItemPartJoin();
         if (prefPart) {
-            itemPartJoin.on(cb.equal(itemPartJoin.get(ApPart.PART_ID), ctx.getAccessPointJoin().get(
-                                                                                                    ApAccessPoint.FIELD_PREFFERED_PART_ID)));
-            and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
+            itemPartJoin.on(cb.equal(itemPartJoin.get(ApPart.PART_ID), ctx.getAccessPointJoin().get(ApAccessPoint.FIELD_PREFFERED_PART_ID)));
+            return cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
         } else {
             and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
             // zajimaji nas jen nesmazane part
-            and = cb.and(and, cb.isNull(itemPartJoin.get(ApPart.DELETE_CHANGE_ID)));
+            return cb.and(and, cb.isNull(itemPartJoin.get(ApPart.DELETE_CHANGE_ID)));
         }
     }
 
