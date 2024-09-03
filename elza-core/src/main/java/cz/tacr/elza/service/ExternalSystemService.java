@@ -890,4 +890,13 @@ public class ExternalSystemService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "SysExternalSystemProperty not found, id: " + extSysPropertyId));
     }
- }
+
+    public ArrDigitalRepository findDigitalRepositoryByCode(String code) {
+        ArrDigitalRepository digitalRepository = digitalRepositoryRepository.findOneByCode(code);
+        if (digitalRepository == null) {
+            throw new EntityNotFoundException("ArrDigitalRepository not found, code: " + code);
+        } else {
+            return digitalRepository;
+        }
+    }
+}

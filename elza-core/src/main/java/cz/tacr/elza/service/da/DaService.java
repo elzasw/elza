@@ -173,16 +173,9 @@ public class DaService {
     @Autowired
     private EventNotificationService eventNotificationService;
 
-    @Scheduled(cron = "0 0 2 * * *")
-    public void synchronizeDaRepositories() {
-        List<ArrDigitalRepository> digitalRepositories = externalSystemService.findDigitalRepository();
-        for (ArrDigitalRepository digitalRepository : digitalRepositories) {
-            try {
-                applicationContext.getBean(DaService.class).synchronizeDA(digitalRepository);
-            } catch (Exception e) {
-                logger.error("Došlo k chybě při pokusu o stažení změn z DA pro externí systém ID={} {}", digitalRepository.getExternalSystemId(), e.getMessage(), e);
-            }
-        }
+    public void synchronizeDaRepository(String code) {
+        ArrDigitalRepository arrDigitalRepository = externalSystemService.findDigitalRepositoryByCode(code);
+        applicationContext.getBean(DaService.class).synchronizeDA(arrDigitalRepository);
     }
 
     @Transactional
@@ -963,4 +956,6 @@ public class DaService {
         arrDaoLink.setDeleteChange(change);
         daoLinkRepository.save(arrDaoLink);
     }
+
+
 }
