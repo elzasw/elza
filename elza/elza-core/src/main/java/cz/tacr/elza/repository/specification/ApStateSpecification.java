@@ -157,6 +157,8 @@ public class ApStateSpecification implements Specification<ApState> {
         Path<String> accessPointName = indexJoin.get(ApIndex.VALUE);
         q.orderBy(cb.asc(accessPointName));
 
+        q.groupBy(stateRoot.get(ApState.FIELD_STATE_ID), accessPointName);
+
         return condition;
     }
 
@@ -227,7 +229,7 @@ public class ApStateSpecification implements Specification<ApState> {
                 String intervalExtinction = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
                 and = processValueCondDef(ctx, and, intervalExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CONTAIN, false);
             }
-            condition = cb.and(condition, and);
+            return cb.and(condition, and);
         }
 
         return condition;
