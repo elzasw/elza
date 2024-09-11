@@ -112,8 +112,8 @@ public class ApStateSpecification implements Specification<ApState> {
 
         Root<ApRevision> revisionRoot = q.from(ApRevision.class);
         Root<ApRevState> revStateRoot = q.from(ApRevState.class);
+        Join<ApRevision, ApState> revisionApStateJoin = revisionRoot.join(ApRevision.FIELD_STATE, JoinType.INNER);
         if (revState != null) {
-            Join<ApRevision, ApState> revisionApStateJoin = revisionRoot.join(ApRevision.FIELD_STATE, JoinType.INNER);
             condition = cb.and(condition,
                     cb.equal(stateRoot.get(ApState.FIELD_STATE_ID), revisionApStateJoin.get(ApState.FIELD_STATE_ID)),
                     cb.isNull(revisionRoot.get(ApRevision.FIELD_DELETE_CHANGE_ID)),
@@ -129,14 +129,18 @@ public class ApStateSpecification implements Specification<ApState> {
             String user = searchFilterVO.getUser();
             if (StringUtils.isNotEmpty(user)) {
                 Join<ApState, ApChange> apChangeJoin = stateRoot.join(ApState.FIELD_CREATE_CHANGE, JoinType.INNER);
+                Join<ApChange, UsrUser> changeUserJoin = apChangeJoin.join(ApChange.USER, JoinType.LEFT);
             	Join<ApRevState, ApChange> revChangeJoin = revStateRoot.join(ApState.FIELD_CREATE_CHANGE, JoinType.INNER);
-            	condition = cb.or(condition,
-            			cb.and(condition,
-            					cb.like(cb.lower(apChangeJoin.get(ApChange.USER).get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%"),
-            					cb.isNull(stateRoot.get(ApState.FIELD_DELETE_CHANGE_ID))),
-            			cb.and(condition,
-            					cb.like(cb.lower(revChangeJoin.get(ApChange.USER).get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%")),
-		                        cb.isNull(revStateRoot.get(ApRevision.FIELD_DELETE_CHANGE_ID)));
+
+            	Predicate usrState = cb.like(cb.lower(changeUserJoin.get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%");
+            	Predicate usrRevSt = cb.and(cb.like(cb.lower(revChangeJoin.get(ApChange.USER).get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%"),
+						  				  cb.equal(stateRoot.get(ApState.FIELD_STATE_ID), revisionApStateJoin.get(ApState.FIELD_STATE_ID)),
+						  				  cb.isNull(revisionRoot.get(ApRevision.FIELD_DELETE_CHANGE_ID)),
+						  				  cb.equal(revStateRoot.get(ApRevState.FIELD_REVISION), revisionRoot),
+						  				  cb.isNull(revStateRoot.get(ApRevision.FIELD_DELETE_CHANGE_ID)));
+            	Predicate usr = cb.or(usrState, usrRevSt);
+
+            	condition = cb.and(condition, usr);
             }
 
             String code = searchFilterVO.getCode();
