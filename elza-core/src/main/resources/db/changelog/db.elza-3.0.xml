@@ -824,4 +824,21 @@
         <modifyDataType tableName="da_dao_file" columnName="mime_type" newDataType="varchar(250)"/>
     </changeSet>
 
+    <changeSet id="20240904120500" author="fantis">
+        <addColumn tableName="da_sync_queue_item">
+            <column name="aip_type" type="varchar(25)"/>
+        </addColumn>
+
+        <addColumn tableName="da_local_cache">
+            <column name="file_path_metadata" type="varchar(1000)"/>
+        </addColumn>
+
+        <addColumn tableName="da_aip_state">
+            <column name="comlete_aip_load" type="boolean"/>
+            <column name="metadata_error" type="boolean"/>
+            <column name="metadata_error_exception" type="text"/>
+            <column name="aip_version_metadata" type="varchar(250)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

@@ -82,6 +82,18 @@ public class DaAipState {
     @Column
     private Boolean metadataLoad;
 
+    @Column
+    private Boolean comleteAipLoad;
+
+    @Column
+    private Boolean metadataError;
+
+    @Column
+    private String metadataErrorException;
+
+    @Column(length = 250)
+    private String aipVersionMetadata;
+
     public Integer getAipStateId() {
         return aipStateId;
     }
@@ -232,5 +244,37 @@ public class DaAipState {
 
     public void setMetadataLoad(Boolean metadataLoad) {
         this.metadataLoad = metadataLoad;
+    }
+
+    public Boolean getComleteAipLoad() {
+        return comleteAipLoad;
+    }
+
+    public void setComleteAipLoad(Boolean comleteAipLoad) {
+        this.comleteAipLoad = comleteAipLoad;
+    }
+
+    public Boolean getMetadataError() {
+        return metadataError;
+    }
+
+    public void setMetadataError(Boolean metadataError) {
+        this.metadataError = metadataError;
+    }
+
+    public String getMetadataErrorException() {
+        return metadataErrorException;
+    }
+
+    public void setMetadataErrorException(String metadataErrorException) {
+        this.metadataErrorException = metadataErrorException;
+    }
+
+    public String getAipVersionMetadata() {
+        return aipVersionMetadata;
+    }
+
+    public void setAipVersionMetadata(String aipVersionMetadata) {
+        this.aipVersionMetadata = aipVersionMetadata;
     }
 }

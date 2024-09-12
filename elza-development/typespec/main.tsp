@@ -690,6 +690,17 @@ enum QueueItemState {
     ERROR
 }
 
+model LinkedNodeVO {
+    /**
+     * Identifikátor node
+     */
+    id: integer;
+    /**
+     * Jméno node
+     */
+    name: string;
+}
+
 /**
  * Vo pro detail AIPu
  */
@@ -759,13 +770,29 @@ model AipDetailVO {
      */
     metadataLoad: boolean;
     /**
+     * Příznak načteného kompletního AIPu
+     */
+    comleteAipLoad: boolean;
+    /**
+     * Příznak chyby při načítání metadat
+     */
+    metadataError: boolean;
+    /**
+     * Chyby při načítání metadat
+     */
+    metadataErrorException: string;
+    /**
+     * Verze AIPu s načtenými metadaty
+     */
+    aipVersionMetadata: string;
+    /**
      * Stav aktualizace
      */
     state: QueueItemState;
     /**
-     * Připojené arr nodes
+     * Seznam napojených nodes
      */
-    connectedNodes: TreeNodeVO[];
+    linkedNodes: LinkedNodeVO[];
 }
 
 /**
@@ -862,6 +889,15 @@ enum LinkType {
     AIP,
     PART_AIP,
     COMPONENT_AIP;
+}
+
+/**
+ * AIP update type
+ */
+enum AipUpdateType {
+    DB_UPDATE,
+    DOWNLOAD_UPDATE,
+    FORCE_UPDATE;
 }
 
 @route("/daorepository")
@@ -1270,6 +1306,57 @@ namespace ElzaAPI.Aip {
        };
 
     /**
+     * Download complete AIP
+     */
+    @route("/download-complete-aip")
+    @post op downloadCompleteAip(
+        /** Aip IDs */
+        @body aipIds: integer[];
+    ): {
+        /** Complete AIPs successfully downloaded */
+        @Http.statusCode statusCode: 200;
+       } | {
+        /** Failed to download complete AIPs */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+       };
+
+    /**
+     * Delete complete AIP
+     */
+    @route("/delete-complete-aip")
+    @post op deleteCompleteAip(
+        /** Aip IDs */
+        @body aipIds: integer[];
+    ): {
+        /** Complete AIPs successfully deleted */
+        @Http.statusCode statusCode: 200;
+       } | {
+        /** Failed to delete complete AIPs */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+       };
+
+    /**
+     * Update AIP
+     */
+    @route("/update-aip")
+    @post op updateAip(
+        /** Aip IDs */
+        @body aipIds: integer[];
+
+        /** Type of update */
+        @query type: AipUpdateType;
+    ): {
+        /** AIPs successfully updated */
+        @Http.statusCode statusCode: 200;
+       } | {
+        /** Failed to update AIPs */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+       };
+
+    /**
      * Create dao link
      */
      @route("/create-dao-link")
@@ -1411,7 +1498,7 @@ namespace ElzaAPI.Aip {
          /** ArrNode ID */
          @query arrNodeId: integer;
          /** DaAip ID list */
-         @query daAipIdList: integer[];
+         @query({format: "multi"}) daAipIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -1429,7 +1516,7 @@ namespace ElzaAPI.Aip {
          /** ArrNode ID */
          @query arrNodeId: integer;
          /** DaAip ID list */
-         @query daAipIdList: integer[];
+         @query({format: "multi"}) daAipIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -1447,7 +1534,7 @@ namespace ElzaAPI.Aip {
          /** ArrNode ID */
          @query arrNodeId: integer;
          /** DaAip ID list */
-         @query daAipIdList: integer[];
+         @query({format: "multi"}) daAipIdList: integer[];
          /** DaLevelView ID */
          @query daLevelViewId: integer;
       ) : {
@@ -1467,7 +1554,7 @@ namespace ElzaAPI.Aip {
          /** ArrNode ID */
          @query arrNodeId: integer;
          /** DaAip ID list */
-         @query daAipIdList: integer[];
+         @query({format: "multi"}) daAipIdList: integer[];
          /** DaLevelView ID */
          @query daLevelViewId: integer;
       ) : {

@@ -1907,6 +1907,10 @@ public class ClientFactoryVO {
             vo.setNadChangeCode(state.getNadChangeCode());
             vo.setAipSize(new BigDecimal(state.getAipSize()).intValue());
             vo.setMetadataLoad(state.getMetadataLoad());
+            vo.setComleteAipLoad(state.getComleteAipLoad());
+            vo.setMetadataError(state.getMetadataError());
+            vo.setMetadataErrorException(state.getMetadataErrorException());
+            vo.setAipVersionMetadata(state.getAipVersionMetadata());
         }
 
         if (src.getDaSyncQueueItem() != null) {

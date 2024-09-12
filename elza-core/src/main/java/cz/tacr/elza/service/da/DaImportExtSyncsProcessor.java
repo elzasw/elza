@@ -67,9 +67,10 @@ public class DaImportExtSyncsProcessor implements Runnable {
                     try {
                         syncQueueItemList = daService.getNextItems(importListSize, DaSyncQueueItem.QueueItemState.UPDATE, DaSyncQueueItem.QueueItemState.IMPORT_NEW);
                         if (CollectionUtils.isNotEmpty(syncQueueItemList)) {
-                            Integer digitalRepositoryId = syncQueueItemList.get(0).getDigitalRepository().getExternalSystemId();
+                            DaSyncQueueItem firstQueueItem = syncQueueItemList.get(0);
+                            Integer digitalRepositoryId = firstQueueItem.getDigitalRepository().getExternalSystemId();
+                            AipType aipType = firstQueueItem.getAipType();
                             ArrDigitalRepository digitalRepository = externalSystemService.getDigitalRepository(digitalRepositoryId);
-                            AipType aipType = AipType.METADATA_BASE;
                             String batchId = daService.downloadAips(digitalRepository, syncQueueItemList, aipType);
 
                             while (!daService.downloadStatusFinished(digitalRepository, batchId)) {
@@ -94,11 +95,17 @@ public class DaImportExtSyncsProcessor implements Runnable {
                             }
 
                             try (InputStream inputStream  = Files.newInputStream(zipFile)) {
-                                daService.processPackageInfo(digitalRepository, inputStream, aipType);
+                                daService.processPackageInfo(digitalRepository, inputStream, aipType, syncQueueItemList);
                             }
                             Files.delete(zipFile);
 
                             daService.updateAipToQueueItems(syncQueueItemList);
+
+                            if (aipType == AipType.METADATA_BASE || aipType == AipType.AIP_BASE) {
+                                List<Integer> aipids = syncQueueItemList.stream().map(q -> q.getAip().getAipId()).toList();
+                                daService.createDaoStructure(aipids);
+                            }
+
                             daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.IMPORT_OK);
 
                             // pokud je vše v pořádku - maximální velikost dávky pro čtení

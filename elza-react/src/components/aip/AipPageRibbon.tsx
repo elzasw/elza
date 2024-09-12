@@ -26,8 +26,19 @@ const AipPageRibbon: FC = () => {
             dispatch(aipsFetchIfNeeded(true))
         });
     }
-    const handleLoadAips = () => {}
-    const handleForceUpdate = () => {}
+    const handleLoadAips = () => {
+        let aipIds = selectedAips.rows.map(aip => aip.aipId)
+        Api.aips.aipDownloadCompleteAip(aipIds).then(() => {
+            dispatch(aipsFetchIfNeeded(true))
+        });
+    }
+    const handleDeleteAips = () => {
+        let aipIds = selectedAips.rows.map(aip => aip.aipId)
+        Api.aips.aipDeleteCompleteAip(aipIds).then(() => {
+            dispatch(aipsFetchIfNeeded(true))
+        });
+    }
+    const handleUpdateAips = () => {}
 
     const altActions = [];
     const itemActions = [];
@@ -35,7 +46,7 @@ const AipPageRibbon: FC = () => {
 
     if (selectedAips?.rows?.length > 0) {
         altActions.push(
-            <Button key="reloadMetadata" onClick={handleLoadMetadata}>
+            <Button key="metadata" onClick={handleLoadMetadata}>
                 <Icon glyph="fa-download" />
                 <div>
                     <span className="btnText">{i18n("aip.actions.metadata")}</span>
@@ -59,10 +70,18 @@ const AipPageRibbon: FC = () => {
             </Button>
         );
         altActions.push(
-            <Button key="forceUpdate" onClick={handleForceUpdate}>
+            <Button key="deleteAips" onClick={handleDeleteAips}>
+                <Icon glyph="fa-trash" />
+                <div>
+                    <span className="btnText">{i18n("aip.actions.deleteAips")}</span>
+                </div>
+            </Button>
+        );
+        altActions.push(
+            <Button key="updateAips" onClick={handleUpdateAips}>
                 <Icon glyph="fa-refresh" />
                 <div>
-                    <span className="btnText">{i18n("aip.actions.update")}</span>
+                    <span className="btnText">{i18n("aip.actions.updateAips")}</span>
                 </div>
             </Button>
         );

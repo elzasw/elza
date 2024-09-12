@@ -115,6 +115,7 @@ public class PackageInfoService {
         aipState.setInstitutionCode(institutionCode);
         aipState.setInstitution(parInstitution);
         if (fundCode != null) {
+            aipState.setFundCode(fundCode);
             ArrFund arrFund = fundRepository.findByInternalCode(fundCode);
             aipState.setFund(arrFund);
         }
@@ -126,7 +127,6 @@ public class PackageInfoService {
         aipState.setCreateChange(daChange);
 
         if (oldAipState != null) {
-            aipState.setMetadataLoad(oldAipState.getMetadataLoad());
             oldAipState.setDeleteChange(daChange);
             aipStateRepository.save(oldAipState);
         }
