@@ -20,10 +20,7 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
     @Query("SELECT i FROM da_sync_queue_item i WHERE i.state IN :states ORDER BY i.syncQueueItemId")
     Page<DaSyncQueueItem> findByStates(@Param("states") Collection<DaSyncQueueItem.QueueItemState> states, Pageable pageable);
 
-    List<DaSyncQueueItem> findByCodeInAndDigitalRepository(List<String> codes, ArrDigitalRepository digitalRepository);
-
-    @Query("SELECT i FROM da_sync_queue_item i WHERE i.aip = :daAip")
-    DaSyncQueueItem findByAip(@Param("daAip") DaAip daAip);
-
-    DaSyncQueueItem findByCodeAndDigitalRepository(String code, ArrDigitalRepository digitalRepository);
+    List<DaSyncQueueItem> findByCodeInAndDigitalRepositoryAndStateIn(List<String> codes,
+                                                                     ArrDigitalRepository digitalRepository,
+                                                                     Collection<DaSyncQueueItem.QueueItemState> states);
 }

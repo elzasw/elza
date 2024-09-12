@@ -111,5 +111,7 @@ export const colDef = [
     // TODO: @kasparova Bude upřesněno v budoucnu
     // {name: "Stažené komponenty", type: "bool", minWidth: 90, idealWidth: 145},
     // {name: "Napojen archivní popis", type: "bool", minWidth: 70, idealWidth: 155},
-     {key: "state", name: "Aktuální verze", path: DA_SYNC_QUEUE_ITEM, type: "enum", minWidth: 65, idealWidth: 105}
+    {key: "state", name: "Aktuální verze", path: DA_SYNC_QUEUE_ITEM, type: "enum", minWidth: 65, idealWidth: 105},
+    {key: "comleteAipLoad", name: "Načtený kompletní AIP", path: DA_AIP_STATE_PATH, type: "bool", minWidth: 70, idealWidth: 130},
+    {key: "metadataError", name: "Chyba při načtení metadat", path: DA_AIP_STATE_PATH, type: "bool", minWidth: 70, idealWidth: 130}
 ]

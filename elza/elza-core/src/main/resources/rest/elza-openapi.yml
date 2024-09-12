@@ -1148,6 +1148,31 @@ paths:
               type: array
               items:
                 type: integer
+  /aip/delete-complete-aip:
+    post:
+      tags:
+        - aips
+      operationId: Aip_deleteCompleteAip
+      description: Delete complete AIP
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: Aip IDs
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
   /aip/delete-dao-link:
     post:
       tags:
@@ -1176,6 +1201,31 @@ paths:
         - aips
       operationId: Aip_deleteDaoStructure
       description: Delete dao structure
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: Aip IDs
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+  /aip/download-complete-aip:
+    post:
+      tags:
+        - aips
+      operationId: Aip_downloadCompleteAip
+      description: Download complete AIP
       parameters: []
       responses:
         '200':
@@ -1298,6 +1348,37 @@ paths:
               type: array
               items:
                 $ref: '#/components/schemas/AipFilterGen'
+  /aip/update-aip:
+    post:
+      tags:
+        - aips
+      operationId: Aip_updateAip
+      description: Update AIP
+      parameters:
+        - name: type
+          in: query
+          required: true
+          description: Type of update
+          schema:
+            $ref: '#/components/schemas/AipUpdateType'
+      responses:
+        '200':
+          description: The request has succeeded.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: Aip IDs
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
   /aip/{aipId}:
     get:
       tags:
@@ -1745,7 +1826,12 @@ components:
         - nadChangeCode
         - aipSize
         - metadataLoad
+        - comleteAipLoad
+        - metadataError
+        - metadataErrorException
+        - aipVersionMetadata
         - state
+        - linkedNodes
       properties:
         aipId:
           type: integer
@@ -1798,6 +1884,18 @@ components:
         metadataLoad:
           type: boolean
           description: Příznak načtených metadat
+        comleteAipLoad:
+          type: boolean
+          description: Příznak načteného kompletního AIPu
+        metadataError:
+          type: boolean
+          description: Příznak chyby při načítání metadat
+        metadataErrorException:
+          type: string
+          description: Chyby při načítání metadat
+        aipVersionMetadata:
+          type: string
+          description: Verze AIPu s načtenými metadaty
         state:
           allOf:
             - $ref: '#/components/schemas/QueueItemState'
@@ -1808,18 +1906,6 @@ components:
             $ref: '#/components/schemas/LinkedNodeVO'
           description: Seznam napojených nodes
       description: Vo pro detail AIPu
-    LinkedNodeVO:
-      type: object
-      required:
-        - id
-        - name
-      properties:
-        id:
-          type: integer
-          description: Identifikátor node
-        name:
-          type: string
-          description: Jméno node
     AipFilterGen:
       type: object
       required:
@@ -1871,6 +1957,13 @@ components:
         - AIP_BASE
         - AIP_RAW
       description: Aip package type
+    AipUpdateType:
+      type: string
+      enum:
+        - DB_UPDATE
+        - DOWNLOAD_UPDATE
+        - FORCE_UPDATE
+      description: AIP update type
     ApState:
       type: string
       enum:
@@ -2188,6 +2281,18 @@ components:
         - PART_AIP
         - COMPONENT_AIP
       description: Link type
+    LinkedNodeVO:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          description: Identifikátor node
+        name:
+          type: string
+          description: Jméno node
     LoggedUser:
       type: object
       required:

@@ -41,6 +41,24 @@ public class AipController implements AipsApi {
     }
 
     @Override
+    public ResponseEntity<Void> aipDownloadCompleteAip(List<Integer> aipIds) {
+        daService.aipDownloadCompleteAip(aipIds);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> aipDeleteCompleteAip(List<Integer> aipIds) {
+        daService.aipDeleteCompleteAip(aipIds);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> aipUpdateAip(AipUpdateType type, List<Integer> aipIds) {
+        daService.aipUpdateAip(type, aipIds);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
     public ResponseEntity<AipDetailFilteredResult> aipFindByFilter(Integer from, Integer count, List<AipFilterGen> aipFilterGen) {
         FilteredResult<DaAip> aips = aipService.findAipDetailsByFilter(aipFilterGen, from, count);
         AipDetailFilteredResult result = new AipDetailFilteredResult();
@@ -54,7 +72,7 @@ public class AipController implements AipsApi {
         try {
             try (InputStream is = file.getInputStream()) {
                 ArrDigitalRepository digitalRepository = externalSystemService.getDigitalRepository(digitalRepositoryId);
-                daService.processPackageInfo(digitalRepository, is, cz.tacr.elza.api.AipType.valueOf(aipType.name()));
+                daService.processPackageInfo(digitalRepository, is, cz.tacr.elza.api.AipType.valueOf(aipType.name()), new ArrayList<>());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

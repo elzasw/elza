@@ -1,5 +1,6 @@
 package cz.tacr.elza.domain;
 
+import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
@@ -38,6 +39,10 @@ public class DaSyncQueueItem {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaAip.class)
     @JoinColumn(name = "aip_id")
     private DaAip aip;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 25)
+    private AipType aipType;
 
 
     public Integer getSyncQueueItemId() {
@@ -86,6 +91,14 @@ public class DaSyncQueueItem {
 
     public void setAip(DaAip aip) {
         this.aip = aip;
+    }
+
+    public AipType getAipType() {
+        return aipType;
+    }
+
+    public void setAipType(AipType aipType) {
+        this.aipType = aipType;
     }
 
     public enum QueueItemState {

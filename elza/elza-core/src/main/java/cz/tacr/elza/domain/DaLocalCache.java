@@ -39,6 +39,9 @@ public class DaLocalCache {
     @Column(length = StringLength.LENGTH_1000, nullable = false)
     private String filePath;
 
+    @Column(length = StringLength.LENGTH_1000)
+    private String filePathMetadata;
+
     public Integer getLocalCacheId() {
         return localCacheId;
     }
@@ -77,5 +80,13 @@ public class DaLocalCache {
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
+    }
+
+    public String getFilePathMetadata() {
+        return filePathMetadata;
+    }
+
+    public void setFilePathMetadata(String filePathMetadata) {
+        this.filePathMetadata = filePathMetadata;
     }
 }

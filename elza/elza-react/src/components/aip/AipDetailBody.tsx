@@ -49,6 +49,12 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 <DetailRow label="Velikost" value={formatAipSize(detail.aipSize)}/>}
             {detail != null &&
                 <DetailRow label="Načtena metadata" value={getBoolIcon(detail.metadataLoad)}/>}
+            <DetailRow label="Načten úplný AIP" value={getBoolIcon(detail.comleteAipLoad)}/>
+            <DetailRow label="Chyba při načtení metadat" value={getBoolIcon(detail.metadataError)}/>
+            {detail.metadataErrorException &&
+                <DetailRow label="Chyba při načtení metadat" value={detail.metadataErrorException}/>}
+            {detail.aipVersionMetadata &&
+                <DetailRow label="Verze s načtenými metadaty" value={detail.aipVersionMetadata}/>}
             {detail.state &&
                 <DetailRow label="Aktuální verze" value={detail.state}/>}
             <DetailRow label="Napojen archivní popis" value={getConnectedToJP(detail.linkedNodes, detail.fund.id)}/>

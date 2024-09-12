@@ -14,6 +14,7 @@ import cz.tacr.da.controller.vo.UpdatedInfo;
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.connector.DaConnector;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.AipUpdateType;
 import cz.tacr.elza.controller.vo.DaDaoFileFolderVO;
 import cz.tacr.elza.controller.vo.DaDaoFileVO;
 import cz.tacr.elza.core.ResourcePathResolver;
@@ -194,7 +195,11 @@ public class DaService {
                         .map(UpdatedInfo::getAipId)
                         .toList();
 
-                Map<String, DaSyncQueueItem> existingSyncQueueItemMap = syncQueueItemRepository.findByCodeInAndDigitalRepository(aipCodes, digitalRepository).stream()
+                List<DaSyncQueueItem.QueueItemState> states = new ArrayList<>();
+                states.add(DaSyncQueueItem.QueueItemState.UPDATE);
+                states.add(DaSyncQueueItem.QueueItemState.IMPORT_NEW);
+
+                Map<String, DaSyncQueueItem> existingSyncQueueItemMap = syncQueueItemRepository.findByCodeInAndDigitalRepositoryAndStateIn(aipCodes, digitalRepository, states).stream()
                         .collect(Collectors.toMap(DaSyncQueueItem::getCode, Function.identity()));
 
                 for (UpdatedInfo updatedInfo : updatesAips.getAipIds()) {
@@ -204,6 +209,7 @@ public class DaService {
                         syncQueueItem = new DaSyncQueueItem();
                         syncQueueItem.setCode(updatedInfo.getAipId());
                         syncQueueItem.setState(DaSyncQueueItem.QueueItemState.IMPORT_NEW);
+                        syncQueueItem.setAipType(AipType.PACKAGE_INFO);
                         syncQueueItem.setDigitalRepository(digitalRepository);
                     } else {
                         syncQueueItem.setState(DaSyncQueueItem.QueueItemState.UPDATE);
@@ -234,7 +240,9 @@ public class DaService {
         for (Integer aipId : aipIds) {
             DaAip aip = findAipById(aipId);
             DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
-            DaLocalCache localCache = daLocalCacheRepository.findByAipStateAndAipTypeIn(aipState, EnumSet.of(AipType.METADATA_BASE, AipType.AIP_BASE));
+            DaLocalCache localCache = daLocalCacheRepository.findByAipStateAndAipTypeIn(aipState,
+                    EnumSet.of(AipType.METADATA_BASE, AipType.AIP_BASE),
+                    DaSyncQueueItem.QueueItemState.IMPORT_OK);
 
             if (aipState.getFund() == null) {
                 logger.info("AIP={} není navázaný na fund", aipId);
@@ -287,6 +295,8 @@ public class DaService {
             } catch (IOException | JAXBException e) {
                 logger.error("Došlo k chybě při načtení souborů z lokální cache pro AIP={}", aipId, e);
             }
+            localCache.setFilePathMetadata(localCache.getFilePath());
+            daLocalCacheRepository.save(localCache);
         }
     }
 
@@ -339,6 +349,24 @@ public class DaService {
         daoItemRepository.saveAll(daDaoItemList);
 
         levelViewService.deleteDisconnectedLevelViews(change);
+
+        //todo queueitem level package_info
+        //todo delete local cache
+    }
+
+    @Transactional
+    public void aipDownloadCompleteAip(List<Integer> aipIds) {
+
+    }
+
+    @Transactional
+    public void aipDeleteCompleteAip(List<Integer> aipIds) {
+
+    }
+
+    @Transactional
+    public void aipUpdateAip(AipUpdateType type, List<Integer> aipIds) {
+
     }
 
     public DaChange createDaChange(DaAip aip, DaChangeType changeType) {
@@ -421,9 +449,11 @@ public class DaService {
         if (syncQueueItemIterable.iterator().hasNext()) {
             DaSyncQueueItem firstSyncQueueItem = syncQueueItemIterable.iterator().next();
             ArrDigitalRepository digitalRepository = firstSyncQueueItem.getDigitalRepository();
+            AipType aipType = firstSyncQueueItem.getAipType();
 
             for (DaSyncQueueItem syncQueueItem : syncQueueItemIterable) {
-                if (syncQueueItem.getDigitalRepository().getExternalSystemId().equals(digitalRepository.getExternalSystemId())) {
+                if (syncQueueItem.getDigitalRepository().getExternalSystemId().equals(digitalRepository.getExternalSystemId())
+                        && Objects.equals(syncQueueItem.getAipType(), aipType)) {
                     syncQueueItemList.add(syncQueueItem);
                 }
             }
@@ -456,7 +486,7 @@ public class DaService {
         }
     }
 
-    public void processPackageInfo(ArrDigitalRepository digitalRepository, InputStream tempZipInputStream, AipType aipType) throws IOException {
+    public void processPackageInfo(ArrDigitalRepository digitalRepository, InputStream tempZipInputStream, AipType aipType, List<DaSyncQueueItem> syncQueueItemList) throws IOException {
         Path tempDir = Files.createTempDirectory("unzipped");
 
         try (ZipInputStream zipInputStream = new ZipInputStream((tempZipInputStream))) {
@@ -479,6 +509,9 @@ public class DaService {
                     .filter(file -> file.isDirectory() && file.toPath().getParent().equals(tempDir))
                     .collect(Collectors.toSet());
 
+            Map<String, DaSyncQueueItem> syncQueueItemMap = syncQueueItemList.stream()
+                    .collect(Collectors.toMap(DaSyncQueueItem::getCode, Function.identity()));
+
             for (File aipDir : aipDirSet) {
                 DaAipState aipState = null;
                 try (Stream<Path> str = Files.walk(aipDir.toPath()).filter(path -> path.toString().endsWith("PACKAGE-INFO.xml"))) {
@@ -491,9 +524,10 @@ public class DaService {
                     }
                 }
 
-                if (aipState != null) {
+                if (aipState != null && aipType != AipType.PACKAGE_INFO) {
                     Path zipDir = createZip(aipDir, resourcePathResolver.getAipDir());
-                    applicationContext.getBean(DaService.class).createLocalCache(aipState, digitalRepository, aipType, zipDir);
+                    DaSyncQueueItem syncQueueItem = syncQueueItemMap.getOrDefault(aipState.getDaAip().getCode(), null);
+                    applicationContext.getBean(DaService.class).createLocalCache(aipState, digitalRepository, aipType, zipDir, syncQueueItem);
                 }
             }
         }
@@ -589,16 +623,15 @@ public class DaService {
     }
 
     @Transactional
-    public void createLocalCache(DaAipState aipState, ArrDigitalRepository digitalRepository, AipType aipType, Path filePath) {
+    public void createLocalCache(DaAipState aipState, ArrDigitalRepository digitalRepository, AipType aipType, Path filePath, DaSyncQueueItem syncQueueItem) {
         DaLocalCache localCache = daLocalCacheRepository.findByAipState(aipState);
         if (localCache == null) {
             localCache = new DaLocalCache();
         }
 
         DaAip aip = aipState.getDaAip();
-        DaSyncQueueItem syncQueueItem = syncQueueItemRepository.findByCodeAndDigitalRepository(aip.getCode(), digitalRepository);
         if (syncQueueItem == null) {
-            syncQueueItem = createSyncQueueItem(aip.getCode(), aip, digitalRepository, DaSyncQueueItem.QueueItemState.IMPORT_OK, aipState.getAipVersion());
+            syncQueueItem = createSyncQueueItem(aip.getCode(), aip, digitalRepository, DaSyncQueueItem.QueueItemState.IMPORT_OK, aipState.getAipVersion(), aipType);
         }
 
         localCache.setAipType(aipType);
@@ -610,13 +643,14 @@ public class DaService {
 
     @Transactional
     public DaSyncQueueItem createSyncQueueItem(String code, DaAip aip, ArrDigitalRepository digitalRepository,
-                                               DaSyncQueueItem.QueueItemState queueItemState, String aipVersion) {
+                                               DaSyncQueueItem.QueueItemState queueItemState, String aipVersion, AipType aipType) {
         DaSyncQueueItem syncQueueItem = new DaSyncQueueItem();
         syncQueueItem.setCode(code);
         syncQueueItem.setAip(aip);
         syncQueueItem.setDigitalRepository(digitalRepository);
         syncQueueItem.setAipVersion(aipVersion);
         syncQueueItem.setState(queueItemState);
+        syncQueueItem.setAipType(aipType);
         return syncQueueItemRepository.save(syncQueueItem);
     }
 
