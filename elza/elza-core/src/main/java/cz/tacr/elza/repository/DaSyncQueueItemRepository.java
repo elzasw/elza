@@ -6,6 +6,7 @@ import cz.tacr.elza.domain.DaSyncQueueItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -23,4 +24,14 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
     List<DaSyncQueueItem> findByCodeInAndDigitalRepositoryAndStateIn(List<String> codes,
                                                                      ArrDigitalRepository digitalRepository,
                                                                      Collection<DaSyncQueueItem.QueueItemState> states);
+
+    @Modifying
+    @Query("UPDATE da_sync_queue_item i SET i.active = false " +
+            "WHERE i.code = :code " +
+            "AND i.digitalRepository = :digitalRepository " +
+            "AND i.state IN :states " +
+            "AND i.active IS TRUE")
+    void updateActiveByCodeAndDigitalRepositoryAndStateInAndActiveIsTrue(@Param("code") String code,
+                                                                         @Param("digitalRepository") ArrDigitalRepository digitalRepository,
+                                                                         @Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
 }

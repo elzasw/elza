@@ -44,6 +44,9 @@ public class DaSyncQueueItem {
     @Column(length = 25)
     private AipType aipType;
 
+    @Column
+    private Boolean active;
+
 
     public Integer getSyncQueueItemId() {
         return syncQueueItemId;
@@ -101,6 +104,14 @@ public class DaSyncQueueItem {
         this.aipType = aipType;
     }
 
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
     public enum QueueItemState {
 
         UPDATE("K aktualizaci"),
@@ -109,11 +120,13 @@ public class DaSyncQueueItem {
 
         IMPORT_OK("Aktualizováno/Staženo"), // předchozí OK
 
+        IMPORT_ERROR("Chyba při importu"),
+
         EXPORT_NEW("K exportu"),
 
         EXPORT_OK("Exportováno"),
 
-        ERROR("Chyba");
+        EXPORT_ERROR("Chyba při exportu");
 
         private String value;
 

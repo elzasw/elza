@@ -103,7 +103,7 @@ public class DaImportExtSyncsProcessor implements Runnable {
 
                             if (aipType == AipType.METADATA_BASE || aipType == AipType.AIP_BASE) {
                                 List<Integer> aipids = syncQueueItemList.stream().map(q -> q.getAip().getAipId()).toList();
-                                daService.createDaoStructure(aipids);
+                                daService.doCreateDaoStructure(aipids, false);
                             }
 
                             daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.IMPORT_OK);
@@ -114,7 +114,7 @@ public class DaImportExtSyncsProcessor implements Runnable {
                             wait = false;
                         }
                     } catch (Exception ex) {
-                        daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.ERROR);
+                        daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
 
                         logger.error("Failed to process item. ", ex);
                         // v případě chyby číst po 1 záznamu

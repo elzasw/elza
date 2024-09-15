@@ -96,7 +96,7 @@ public class DaExportExtSyncsProcessor implements Runnable {
                             Collection<DaSyncQueueItem> error = CollectionUtils.subtract(syncQueueItemList, successfull);
 
                             daService.changeQueueItemsState(successfull, DaSyncQueueItem.QueueItemState.EXPORT_OK);
-                            daService.changeQueueItemsState(error, DaSyncQueueItem.QueueItemState.ERROR);
+                            daService.changeQueueItemsState(error, DaSyncQueueItem.QueueItemState.EXPORT_ERROR);
 
                             // pokud je vše v pořádku - maximální velikost dávky pro čtení
                             exportListSize = DEFAULT_EXPORT_LIST_SIZE;
@@ -104,7 +104,7 @@ public class DaExportExtSyncsProcessor implements Runnable {
                             wait = false;
                         }
                     } catch (Exception ex) {
-                        daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.ERROR);
+                        daService.changeQueueItemsState(syncQueueItemList, DaSyncQueueItem.QueueItemState.EXPORT_ERROR);
 
                         logger.error("Failed to process item. ", ex);
                         // v případě chyby číst po 1 záznamu
