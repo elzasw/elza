@@ -5,11 +5,12 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.DaAip;
-import cz.tacr.elza.domain.DaAipState;
 import cz.tacr.elza.domain.DaChange;
 import cz.tacr.elza.domain.DaChangeType;
 import cz.tacr.elza.domain.DaDao;
@@ -24,13 +25,14 @@ import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.DaDaoFileFolderRepository;
 import cz.tacr.elza.repository.DaDaoFileRepository;
 import cz.tacr.elza.repository.DaDaoItemRepository;
 import cz.tacr.elza.repository.DaDaoRelationRepository;
 import cz.tacr.elza.repository.DaDaoRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.DaoLevelViewService;
 import cz.tacr.elza.service.GroovyScriptService;
 import gov.loc.mets.v1_11.schema.AmdSecType;
@@ -87,8 +89,6 @@ public class DaoProcessor {
     @Autowired
     private DaDaoRepository daoRepository;
     @Autowired
-    private AipStateRepository aipStateRepository;
-    @Autowired
     private DaDaoRelationRepository daoRelationRepository;
     @Autowired
     private DaDaoFileRepository daoFileRepository;
@@ -96,6 +96,8 @@ public class DaoProcessor {
     private DaDaoFileFolderRepository daoFileFolderRepository;
     @Autowired
     private DaDaoItemRepository daoItemRepository;
+    @Autowired
+    private DaoLinkRepository daoLinkRepository;
     @Autowired
     private DaoLevelViewService levelViewService;
     @Autowired
@@ -106,6 +108,8 @@ public class DaoProcessor {
     private GroovyScriptService groovyScriptService;
     @Autowired
     private ResourcePathResolver resourcePathResolver;
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
 
     private static final String IMPORT_DA = "IMPORT_DA";
 
@@ -137,11 +141,14 @@ public class DaoProcessor {
 
     private final Map<Integer, List<DaDaoFileFolder>> newDaDaoFileFolderMap = new HashMap<>();
 
-    public DaoProcessor(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir) {
+    private boolean forceUpdate;
+
+    public DaoProcessor(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir, boolean forceUpdate) {
         this.aip = aip;
         this.metsType = metsType;
         this.premisComplexType = premisComplexType;
         this.tempDir = tempDir;
+        this.forceUpdate = forceUpdate;
     }
 
 
@@ -159,7 +166,6 @@ public class DaoProcessor {
         daDaoItemMap = daoItemRepository.findByDaoInAndDeleteChangeIsNull(daDaoList).stream()
                 .collect(Collectors.groupingBy(i -> i.getDao().getDaoId()));
 
-        DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
         DaChangeType changeType = daDaoMap.isEmpty() ? DaChangeType.AIP_UPDATE : DaChangeType.AIP_CREATE;
         DaChange change = daService.createDaChange(aip, changeType);
 
@@ -185,14 +191,19 @@ public class DaoProcessor {
 
         deleteOldComponents(change);
         levelViewService.processLevelViewForAip(aip, change);
-        aipState.setMetadataLoad(true);
-        aipStateRepository.save(aipState);
         return true;
     }
 
     private void deleteOldComponents(DaChange change) {
         //smazání starých komponent
         Set<DaDao> daDaoSet = new HashSet<>(daDaoMap.values());
+
+        List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaDaoInAndDeleteChangeIsNull(daDaoSet);
+        if (CollectionUtils.isNotEmpty(daoLinkList) && !forceUpdate) {
+            throw new IllegalStateException("Nelze smazat dao, které má vazbu na node");
+        }
+        ArrChange arrChange = arrangementInternalService.createChange(ArrChange.Type.DELETE_DAO_LINK, null);
+
 
         Set<DaDaoRelation> daDaoRelationSet = daDaoRelationMap.values().stream()
                 .flatMap(List::stream)
@@ -215,12 +226,14 @@ public class DaoProcessor {
         daDaoFileFolderSet.forEach(f -> f.setDeleteChange(change));
         daDaoFileSet.forEach(f -> f.setDeleteChange(change));
         daDaoItemSet.forEach(i -> i.setDeleteChange(change));
+        daoLinkList.forEach(l -> l.setDeleteChange(arrChange));
 
         daoRepository.saveAll(daDaoSet);
         daoRelationRepository.saveAll(daDaoRelationSet);
         daoFileFolderRepository.saveAll(daDaoFileFolderSet);
         daoFileRepository.saveAll(daDaoFileSet);
         daoItemRepository.saveAll(daDaoItemSet);
+        daoLinkRepository.saveAll(daoLinkList);
     }
 
     @Nullable

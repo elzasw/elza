@@ -841,4 +841,10 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20240913093000" author="fantis">
+        <addColumn tableName="da_sync_queue_item">
+            <column name="active" type="boolean"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

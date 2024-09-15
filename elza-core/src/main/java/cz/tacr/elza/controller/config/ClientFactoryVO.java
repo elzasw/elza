@@ -1951,7 +1951,7 @@ public class ClientFactoryVO {
     private QueueItemState mapQueueItemState(
             cz.tacr.elza.domain.DaSyncQueueItem.QueueItemState state) {
         switch (state) {
-            case ERROR -> { return QueueItemState.ERROR; }
+            case IMPORT_ERROR -> { return QueueItemState.ERROR; }
             case UPDATE -> { return QueueItemState.UPDATE; }
             case IMPORT_OK -> { return QueueItemState.IMPORT_OK; }
             case IMPORT_NEW -> { return QueueItemState.IMPORT_NEW; }

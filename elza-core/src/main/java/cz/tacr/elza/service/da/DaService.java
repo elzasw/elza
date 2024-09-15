@@ -13,16 +13,12 @@ import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.da.controller.vo.UpdatedInfo;
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.connector.DaConnector;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.AipUpdateType;
-import cz.tacr.elza.controller.vo.DaDaoFileFolderVO;
-import cz.tacr.elza.controller.vo.DaDaoFileVO;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -43,7 +39,6 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.ErrorCode;
 import cz.tacr.elza.repository.AipRepository;
 import cz.tacr.elza.repository.AipStateRepository;
 import cz.tacr.elza.repository.DaChangeRepository;
@@ -60,7 +55,6 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.service.AipService;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoLevelViewService;
@@ -75,15 +69,14 @@ import gov.loc.premis.v3.PremisComplexType;
 import jakarta.transaction.Transactional;
 import jakarta.xml.bind.JAXBException;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.archivists.ead3.schema.Ead;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -97,7 +90,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -150,17 +142,11 @@ public class DaService {
     @Autowired
     private AipStateRepository aipStateRepository;
     @Autowired
-    private AipService aipService;
-    @Autowired
-    private DaDaoFileRepository daDaoFileRepository;
-    @Autowired
     private DaoLinkRepository daoLinkRepository;
     @Autowired
     private NodeRepository nodeRepository;
     @Autowired
     private DaDaoItemRepository daoItemRepository;
-    @Autowired
-    private ClientFactoryVO clientFactoryVO;
     @Autowired
     private ExternalSystemService externalSystemService;
     @Autowired
@@ -189,37 +175,34 @@ public class DaService {
             nextQuery = updatesAips.getNextQuery();
 
             if (CollectionUtils.isNotEmpty(updatesAips.getAipIds())) {
-                List<DaSyncQueueItem> syncQueueItemList = new ArrayList<>();
-
                 List<String> aipCodes = updatesAips.getAipIds().stream()
                         .map(UpdatedInfo::getAipId)
                         .toList();
 
-                List<DaSyncQueueItem.QueueItemState> states = new ArrayList<>();
-                states.add(DaSyncQueueItem.QueueItemState.UPDATE);
-                states.add(DaSyncQueueItem.QueueItemState.IMPORT_NEW);
-
-                Map<String, DaSyncQueueItem> existingSyncQueueItemMap = syncQueueItemRepository.findByCodeInAndDigitalRepositoryAndStateIn(aipCodes, digitalRepository, states).stream()
-                        .collect(Collectors.toMap(DaSyncQueueItem::getCode, Function.identity()));
+                List<DaAip> aipList = aipRepository.findByCodeIn(aipCodes);
+                Map<String, DaAip> aipMap = aipList.stream()
+                        .collect(Collectors.toMap(DaAip::getCode, a -> a));
+                Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
+                        .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
 
                 for (UpdatedInfo updatedInfo : updatesAips.getAipIds()) {
-                    DaSyncQueueItem syncQueueItem = existingSyncQueueItemMap.get(updatedInfo.getAipId());
+                    DaAip aip = aipMap.getOrDefault(updatedInfo.getAipId(), null);
 
-                    if (syncQueueItem == null) {
-                        syncQueueItem = new DaSyncQueueItem();
-                        syncQueueItem.setCode(updatedInfo.getAipId());
-                        syncQueueItem.setState(DaSyncQueueItem.QueueItemState.IMPORT_NEW);
-                        syncQueueItem.setAipType(AipType.PACKAGE_INFO);
-                        syncQueueItem.setDigitalRepository(digitalRepository);
-                    } else {
-                        syncQueueItem.setState(DaSyncQueueItem.QueueItemState.UPDATE);
+                    DaSyncQueueItem.QueueItemState queueItemState = DaSyncQueueItem.QueueItemState.IMPORT_NEW;
+                    AipType aipType = AipType.PACKAGE_INFO;
+                    if (aip != null) {
+                        DaAipState aipState = stateMap.get(aip);
+                        queueItemState = DaSyncQueueItem.QueueItemState.UPDATE;
+
+                        if (BooleanUtils.isTrue(aipState.getComleteAipLoad())) {
+                            aipType = AipType.AIP_BASE;
+                        } else if (BooleanUtils.isTrue(aipState.getMetadataLoad())) {
+                            aipType = AipType.METADATA_BASE;
+                        }
                     }
 
-                    syncQueueItem.setAipVersion(updatedInfo.getAipVersion());
-                    syncQueueItemList.add(syncQueueItem);
+                    createSyncQueueItem(updatedInfo.getAipId(), aip, digitalRepository, queueItemState, updatedInfo.getAipVersion(), aipType, true);
                 }
-
-                syncQueueItemRepository.saveAll(syncQueueItemList);
             }
         } while (updatesAips.getAipIds().size() == DA_UPDATE_PAGE_SIZE);
 
@@ -236,13 +219,13 @@ public class DaService {
         return daRemoteRepositorySync;
     }
 
-    public void createDaoStructure(List<Integer> aipIds) {
+    public void doCreateDaoStructure(List<Integer> aipIds, boolean forceUpdate) {
         for (Integer aipId : aipIds) {
             DaAip aip = findAipById(aipId);
             DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
             DaLocalCache localCache = daLocalCacheRepository.findByAipStateAndAipTypeIn(aipState,
                     EnumSet.of(AipType.METADATA_BASE, AipType.AIP_BASE),
-                    DaSyncQueueItem.QueueItemState.IMPORT_OK);
+                    getQueueImportStates());
 
             if (aipState.getFund() == null) {
                 logger.info("AIP={} není navázaný na fund", aipId);
@@ -254,8 +237,8 @@ public class DaService {
                 continue;
             }
 
-            MetsType metsType = null;
-            PremisComplexType premisComplexType = null;
+            MetsType metsType;
+            PremisComplexType premisComplexType;
             try {
                 Path zip = Paths.get(localCache.getFilePath());
 
@@ -282,21 +265,32 @@ public class DaService {
                     premisComplexType = PremisReaderWriter.unmarshal(premis);
                 }
 
-                try {
-                    applicationContext.getBean(DaService.class).createDaoStructure(aip, metsType, premisComplexType, tempDir);
-                } catch (Exception e) {
-                    logger.error("Došlo k chybě při při vytváření struktury DAO pro AIP={}", aipId, e);
-                }
+                applicationContext.getBean(DaService.class).createDaoStructure(aip, metsType, premisComplexType, tempDir, forceUpdate);
 
                 // Odstranit dočasné soubory a adresáře
                 try (Stream<Path> str = Files.walk(tempDir)) {
                     str.map(Path::toFile).forEach(File::delete);
                 }
+
+                if (localCache.getFilePathMetadata() != null && !localCache.getFilePath().equals(localCache.getFilePathMetadata())) {
+                    Path oldFile = Paths.get(localCache.getFilePathMetadata());
+                    oldFile.toFile().delete();
+                }
+
+                localCache.setFilePathMetadata(localCache.getFilePath());
+                daLocalCacheRepository.save(localCache);
+
+                aipState.setMetadataError(false);
+                aipState.setMetadataErrorException(null);
+                aipState.setAipVersionMetadata(aipState.getAipVersion());
+                aipStateRepository.save(aipState);
+
             } catch (IOException | JAXBException e) {
                 logger.error("Došlo k chybě při načtení souborů z lokální cache pro AIP={}", aipId, e);
+                aipState.setMetadataError(true);
+                aipState.setMetadataErrorException(e.getMessage());
+                aipStateRepository.save(aipState);
             }
-            localCache.setFilePathMetadata(localCache.getFilePath());
-            daLocalCacheRepository.save(localCache);
         }
     }
 
@@ -316,17 +310,53 @@ public class DaService {
     }
 
     @Transactional
-    public void createDaoStructure(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir) {
-        DaoProcessor daoProcessor = applicationContext.getBean(DaoProcessor.class, aip, metsType, premisComplexType, tempDir);
+    public void createDaoStructure(DaAip aip, MetsType metsType, PremisComplexType premisComplexType, Path tempDir, boolean forceUpdate) {
+        DaoProcessor daoProcessor = applicationContext.getBean(DaoProcessor.class, aip, metsType, premisComplexType, tempDir, forceUpdate);
         daoProcessor.process();
+    }
+
+    @Transactional
+    public void createDaoStructure(List<Integer> aipIds) {
+        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
+                .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
+
+        List<DaAipState> stateList = new ArrayList<>();
+
+        for (DaAip aip : aipList) {
+            DaAipState aipState = stateMap.get(aip);
+            if (BooleanUtils.isNotTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getComleteAipLoad()) && aipState.getFund() != null) {
+                aipState.setMetadataLoad(true);
+                stateList.add(aipState);
+
+                createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.UPDATE,
+                        aipState.getAipVersion(), AipType.METADATA_BASE, true);
+            }
+        }
+
+        aipStateRepository.saveAll(stateList);
     }
 
     @Transactional
     public void deleteDaoStructure(List<Integer> aipIds) {
         List<DaAip> aipList = aipRepository.findByIdAndLinkNotExists(aipIds);
 
-        List<DaAipState> stateList = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList);
-        List<DaDao> daDaoList = daoRepository.findByAipInAndDeleteChangeIsNull(aipList);
+        Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
+                .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
+
+        List<DaAip> deletedAipList = new ArrayList<>();
+
+        for (DaAip aip : aipList) {
+            DaAipState aipState = stateMap.get(aip);
+            if (BooleanUtils.isTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getComleteAipLoad())) {
+                createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.IMPORT_OK,
+                        aipState.getAipVersion(), AipType.PACKAGE_INFO, true);
+                deletedAipList.add(aip);
+            }
+        }
+
+        List<DaAipState> stateList = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(deletedAipList);
+        List<DaDao> daDaoList = daoRepository.findByAipInAndDeleteChangeIsNull(deletedAipList);
         List<DaDaoRelation> daDaoRelationList = daoRelationRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
         List<DaDaoFileFolder> daDaoFileFolderList = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(daDaoList);
         List<DaDaoFile> daDaoFileList = daoFileRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
@@ -350,23 +380,87 @@ public class DaService {
 
         levelViewService.deleteDisconnectedLevelViews(change);
 
-        //todo queueitem level package_info
-        //todo delete local cache
+        List<DaLocalCache> localCacheList = daLocalCacheRepository.findByAipInAndQueueItemStatesIn(deletedAipList, getQueueImportStates());
+        for (DaLocalCache localCache : localCacheList) {
+            if (localCache.getFilePath() != null) {
+                if (localCache.getFilePathMetadata() != null && !localCache.getFilePath().equals(localCache.getFilePathMetadata())) {
+                    Path oldFile = Paths.get(localCache.getFilePathMetadata());
+                    oldFile.toFile().delete();
+                }
+                Path oldFile = Paths.get(localCache.getFilePath());
+                oldFile.toFile().delete();
+            }
+        }
+        daLocalCacheRepository.deleteAll(localCacheList);
     }
 
     @Transactional
     public void aipDownloadCompleteAip(List<Integer> aipIds) {
+        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
+                .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
 
+        List<DaAipState> stateList = new ArrayList<>();
+
+        for (DaAip aip : aipList) {
+            DaAipState aipState = stateMap.get(aip);
+            if (BooleanUtils.isTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getComleteAipLoad())) {
+                aipState.setComleteAipLoad(true);
+                stateList.add(aipState);
+
+                createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.UPDATE,
+                        aipState.getAipVersion(), AipType.AIP_BASE, true);
+            }
+        }
+
+        aipStateRepository.saveAll(stateList);
     }
 
     @Transactional
     public void aipDeleteCompleteAip(List<Integer> aipIds) {
+        List<DaAip> aipList = aipRepository.findAllById(aipIds);
+        Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
+                .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
 
+        List<DaAipState> stateList = new ArrayList<>();
+
+        for (DaAip aip : aipList) {
+            DaAipState aipState = stateMap.get(aip);
+            if (BooleanUtils.isTrue(aipState.getComleteAipLoad())) {
+                aipState.setComleteAipLoad(false);
+                stateList.add(aipState);
+
+                createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.UPDATE,
+                        aipState.getAipVersion(), AipType.METADATA_BASE, true);
+            }
+        }
+
+        aipStateRepository.saveAll(stateList);
     }
 
     @Transactional
     public void aipUpdateAip(AipUpdateType type, List<Integer> aipIds) {
+        if (type == AipUpdateType.DOWNLOAD_UPDATE) {
+            List<DaAip> aipList = aipRepository.findAllById(aipIds);
+            Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
+                    .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
 
+            for (DaAip aip : aipList) {
+                DaAipState aipState = stateMap.get(aip);
+                AipType aipType = AipType.PACKAGE_INFO;
+                if (BooleanUtils.isTrue(aipState.getComleteAipLoad())) {
+                    aipType = AipType.AIP_BASE;
+                } else if (BooleanUtils.isTrue(aipState.getMetadataLoad())) {
+                    aipType = AipType.METADATA_BASE;
+                }
+                createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.UPDATE,
+                        aipState.getAipVersion(), aipType, true);
+            }
+        } else if (type == AipUpdateType.DB_UPDATE) {
+            doCreateDaoStructure(aipIds, false);
+        } else if (type == AipUpdateType.FORCE_UPDATE) {
+            doCreateDaoStructure(aipIds, true);
+        }
     }
 
     public DaChange createDaChange(DaAip aip, DaChangeType changeType) {
@@ -624,14 +718,19 @@ public class DaService {
 
     @Transactional
     public void createLocalCache(DaAipState aipState, ArrDigitalRepository digitalRepository, AipType aipType, Path filePath, DaSyncQueueItem syncQueueItem) {
-        DaLocalCache localCache = daLocalCacheRepository.findByAipState(aipState);
+        DaLocalCache localCache = daLocalCacheRepository.findByAipAndQueueItemStatesIn(aipState.getDaAip(), getQueueImportStates());
         if (localCache == null) {
             localCache = new DaLocalCache();
         }
 
         DaAip aip = aipState.getDaAip();
         if (syncQueueItem == null) {
-            syncQueueItem = createSyncQueueItem(aip.getCode(), aip, digitalRepository, DaSyncQueueItem.QueueItemState.IMPORT_OK, aipState.getAipVersion(), aipType);
+            syncQueueItem = createSyncQueueItem(aip.getCode(), aip, digitalRepository, DaSyncQueueItem.QueueItemState.IMPORT_OK, aipState.getAipVersion(), aipType, true);
+        }
+
+        if (localCache.getFilePath() != null && !localCache.getFilePath().equals(localCache.getFilePathMetadata())) {
+            Path oldFile = Paths.get(localCache.getFilePath());
+            oldFile.toFile().delete();
         }
 
         localCache.setAipType(aipType);
@@ -643,7 +742,10 @@ public class DaService {
 
     @Transactional
     public DaSyncQueueItem createSyncQueueItem(String code, DaAip aip, ArrDigitalRepository digitalRepository,
-                                               DaSyncQueueItem.QueueItemState queueItemState, String aipVersion, AipType aipType) {
+                                               DaSyncQueueItem.QueueItemState queueItemState, String aipVersion, AipType aipType, boolean active) {
+        List<DaSyncQueueItem.QueueItemState> queueItemStates = getQueueItemStates(queueItemState);
+        syncQueueItemRepository.updateActiveByCodeAndDigitalRepositoryAndStateInAndActiveIsTrue(code, digitalRepository, queueItemStates);
+
         DaSyncQueueItem syncQueueItem = new DaSyncQueueItem();
         syncQueueItem.setCode(code);
         syncQueueItem.setAip(aip);
@@ -651,7 +753,34 @@ public class DaService {
         syncQueueItem.setAipVersion(aipVersion);
         syncQueueItem.setState(queueItemState);
         syncQueueItem.setAipType(aipType);
+        syncQueueItem.setActive(active);
         return syncQueueItemRepository.save(syncQueueItem);
+    }
+
+    private List<DaSyncQueueItem.QueueItemState> getQueueItemStates(DaSyncQueueItem.QueueItemState queueItemState) {
+        List<DaSyncQueueItem.QueueItemState> queueItemStates = new ArrayList<>();
+        switch (queueItemState) {
+            case IMPORT_NEW, IMPORT_OK, IMPORT_ERROR, UPDATE:
+                queueItemStates.add(DaSyncQueueItem.QueueItemState.IMPORT_NEW);
+                queueItemStates.add(DaSyncQueueItem.QueueItemState.IMPORT_OK);
+                queueItemStates.add(DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
+                queueItemStates.add(DaSyncQueueItem.QueueItemState.UPDATE);
+                break;
+            case EXPORT_NEW, EXPORT_OK, EXPORT_ERROR:
+                queueItemStates.add(DaSyncQueueItem.QueueItemState.EXPORT_NEW);
+                queueItemStates.add(DaSyncQueueItem.QueueItemState.EXPORT_OK);
+                queueItemStates.add(DaSyncQueueItem.QueueItemState.EXPORT_ERROR);
+                break;
+        }
+        return queueItemStates;
+    }
+
+    private Collection<DaSyncQueueItem.QueueItemState> getQueueImportStates() {
+        List<DaSyncQueueItem.QueueItemState> states = new ArrayList<>();
+        states.add(DaSyncQueueItem.QueueItemState.UPDATE);
+        states.add(DaSyncQueueItem.QueueItemState.IMPORT_NEW);
+        states.add(DaSyncQueueItem.QueueItemState.IMPORT_OK);
+        return states;
     }
 
 
