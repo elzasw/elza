@@ -7,9 +7,11 @@ import {  useExplorerContext } from "../ExplorerContext";
 import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
-import { AREA_AIP, aipFetchIfNeeded } from "actions/aip/aip";
+import {AREA_AIP, aipFetchIfNeeded, aipsFetchIfNeeded} from "actions/aip/aip";
 import { useThunkDispatch } from "utils/hooks";
 import {getConnectedToJP} from "../../utils.tsx";
+import {Api} from "../../../../api";
+import {fetchAipStructureIfNeeded} from "../../../../actions/aip/exp.ts";
 
 const ExplorerDetail: FC = () => {
     const {selectedItem, setSelectedItem, structure} = useExplorerContext();
@@ -78,7 +80,11 @@ const ExplorerDetail: FC = () => {
         );
     }
 
-
+    const handleDeleteLink = (linkId: number) => {
+        Api.aips.aipDeleteDaoLink(linkId).then(() => {
+            dispatch(fetchAipStructureIfNeeded(aip.id, true));
+        });
+    }
 
     const renderFileData = () => {
         return (
@@ -98,7 +104,7 @@ const ExplorerDetail: FC = () => {
                 <DetailRow
                     label={i18n("aip.explorer.detail.as")}
                     // @ts-ignore
-                    value={getConnectedToJP(selectedItem.linkedNodes, aip.data?.fund.id)}
+                    value={getConnectedToJP(selectedItem.linkedNodes, aip.data?.fund.id, handleDeleteLink)}
                 />
             </div>
         );

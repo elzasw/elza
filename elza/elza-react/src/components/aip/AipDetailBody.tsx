@@ -1,12 +1,23 @@
 import { DaAipDetailVO } from "api/DaAipDetailVO";
 import DetailRow from "./DetailRow";
-import {formatAipSize, formatDate, getBoolIcon, getConnectedToJP, getConnectedToJPIcon} from "./utils";
+import {formatAipSize, formatDate, getBoolIcon, getConnectedToJP} from "./utils";
+import {Api} from "../../api";
+import {useThunkDispatch} from "../../utils/hooks";
+import {aipFetchIfNeeded} from "../../actions/aip/aip.ts";
 
 type AipDetailBodyProps = {
     detail: DaAipDetailVO;
 }
 
 const AipDetailBody = ({detail}: AipDetailBodyProps) => {
+    const dispatch = useThunkDispatch();
+
+    const handleDeleteLink = (linkId: number) => {
+        Api.aips.aipDeleteDaoLink(linkId).then(() => {
+            dispatch(aipFetchIfNeeded(detail.aipId, true))
+        });
+    }
+
     return (
         <>
             {detail.aipId &&
@@ -57,7 +68,7 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 <DetailRow label="Verze s načtenými metadaty" value={detail.aipVersionMetadata}/>}
             {detail.state &&
                 <DetailRow label="Aktuální verze" value={detail.state}/>}
-            <DetailRow label="Napojen archivní popis" value={getConnectedToJP(detail.linkedNodes, detail.fund.id)}/>
+            <DetailRow label="Napojen archivní popis" value={getConnectedToJP(detail.linkedNodes, detail.fund.id, handleDeleteLink)}/>
         </>
     );
 }

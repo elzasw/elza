@@ -1,8 +1,9 @@
-import { Icon } from 'components/shared';
+import {i18n, Icon} from 'components/shared';
 import { pad2 } from 'components/validate';
 import { LinkType } from 'elza-api';
 import {Aips} from 'typings/store';
 import {LinkedNodeVO} from "../../api/LinkedNodeVO.ts";
+import {Button} from "react-bootstrap";
 
 export const getAipRows = (aips: Aips) => {
     if(aips.fetched && aips.rows){
@@ -37,14 +38,20 @@ export const getConnectedToJPIcon = (link: LinkType | null) => {
     return <Icon glyph={iconString}/>;
 }
 
-export const getConnectedToJP = (linkedNodes: Array<LinkedNodeVO> | null, fundId: number) => {
+export const getConnectedToJP = (linkedNodes: Array<LinkedNodeVO> | null, fundId: number, handleDeleteLink: any) => {
     let iconString = "fa fa-close";
     let nodes;
 
     if (linkedNodes) {
         iconString = "fa fa-check";
 
-        nodes = linkedNodes.map(item => <div><a href={`/fund/${fundId}/node/${item.id}`}>{item.name}</a></div>)
+        nodes = linkedNodes.map(item =>
+            <div>
+                <a href={`/fund/${fundId}/node/${item.nodeId}`}>{item.name}</a>
+                <Button key="deleteLink" variant="action" onClick={() => handleDeleteLink(item.id)}>
+                    <Icon glyph="fa fa-close" />
+                </Button>
+            </div>)
     }
 
     return <div><Icon glyph={iconString}/> {nodes}</div>;
