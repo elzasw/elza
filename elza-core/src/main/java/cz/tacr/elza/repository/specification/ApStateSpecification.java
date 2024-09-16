@@ -288,7 +288,7 @@ public class ApStateSpecification implements Specification<ApState> {
         }
 
         if (partTypeCode != null) {
-        	and = cb.and(and, addPartTypeCondForItem(ctx, cb, and, prefPart, partTypeCode));
+        	and = cb.and(and, addPartTypeCondForItem(ctx, prefPart, partTypeCode));
         }
 
         return cb.and(condition,
@@ -296,15 +296,23 @@ public class ApStateSpecification implements Specification<ApState> {
                       processValueComparator(ctx, comparator, dataType, value));
     }
 
-    private Predicate addPartTypeCondForItem(Ctx ctx, CriteriaBuilder cb, Predicate and, boolean prefPart, String partTypeCode) {
+    private Predicate addPartTypeCondForItem(final Ctx ctx, boolean prefPart, final String partTypeCode) {
+    	CriteriaBuilder cb = ctx.cb;
         Join<ApItem, ApPart> itemPartJoin = ctx.getItemPartJoin();
-        if (prefPart) {
+    	if (prefPart) {
             itemPartJoin.on(cb.equal(itemPartJoin.get(ApPart.PART_ID), ctx.getAccessPointJoin().get(ApAccessPoint.FIELD_PREFFERED_PART_ID)));
-            return cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
+
+            return cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode);
         } else {
-            and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
-            // zajimaji nas jen nesmazane part
-            return cb.and(and, cb.isNull(itemPartJoin.get(ApPart.DELETE_CHANGE_ID)));
+           	Join<ApPart, ApPart> joinParentPart = ctx.getApPartRoot().join(ApPart.PARENT_PART, JoinType.LEFT);
+           	Join<RulPartType, ApPart> parentPartTypeJoin = joinParentPart.join(ApPart.PART_TYPE, JoinType.LEFT);
+
+           	return cb.and(cb.isNull(itemPartJoin.get(ApPart.DELETE_CHANGE_ID)),
+           				  // pokud existuje rodičovský ApPArt, bereme v úvahu pouze jeho typ
+           			      cb.or(cb.and(cb.isNotNull(itemPartJoin.get(ApPart.PARENT_PART)),
+           			                   cb.equal(parentPartTypeJoin.get(RulPartType.CODE), partTypeCode)),
+                	            cb.and(cb.isNull(itemPartJoin.get(ApPart.PARENT_PART)),
+                                       cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode))));
         }
     }
 
