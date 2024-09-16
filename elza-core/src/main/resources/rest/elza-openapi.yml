@@ -2285,9 +2285,13 @@ components:
       type: object
       required:
         - id
+        - nodeId
         - name
       properties:
         id:
+          type: integer
+          description: Identifikátor linku
+        nodeId:
           type: integer
           description: Identifikátor node
         name:

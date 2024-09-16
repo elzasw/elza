@@ -692,9 +692,13 @@ enum QueueItemState {
 
 model LinkedNodeVO {
     /**
-     * Identifikátor node
+     * Identifikátor linku
      */
     id: integer;
+    /**
+     * Identifikátor node
+     */
+    nodeId: integer;
     /**
      * Jméno node
      */

@@ -30,8 +30,8 @@ export const aipsFetchIfNeeded = (forceFetch = false) => {
     );
 }
 
-export function aipFetchIfNeeded(id: number) {
-    return DetailActions.fetchIfNeeded(AREA_AIP, id, (id: number) => WebApi.getAip(id));
+export function aipFetchIfNeeded(id: number, forceFetch = false) {
+    return DetailActions.fetchIfNeeded(AREA_AIP, id, (id: number) => WebApi.getAip(id), forceFetch);
 }
 
 export function selectAip(id: number | string) {

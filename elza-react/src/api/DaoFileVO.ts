@@ -22,5 +22,5 @@ export type DaoFileVO = {
     sourceXDimensionValue?: number;
     sourceYDimensionUnit?: string;
     sourceYDimensionValue?: number;
-    linkedNodes?: LinkedNodeVO;
+    linkedNodes?: LinkedNodeVO[];
 }

@@ -14,5 +14,5 @@ export type DaoFileFolderVO = {
     parent?: DaoFileFolderVO;
     parentFolder?: DaoFileFolderVO;
     parentFolderLogical?: DaoFileFolderVO;
-    linkedNodes?: LinkedNodeVO;
+    linkedNodes?: LinkedNodeVO[];
 }

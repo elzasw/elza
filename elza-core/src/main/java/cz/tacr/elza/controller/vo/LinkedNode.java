@@ -3,10 +3,12 @@ package cz.tacr.elza.controller.vo;
 public class LinkedNode {
 
     private Integer id;
+    private Integer nodeId;
     private String name;
 
-    public LinkedNode(Integer id, String name) {
+    public LinkedNode(Integer id, Integer nodeId, String name) {
         this.id = id;
+        this.nodeId = nodeId;
         this.name = name;
     }
 
@@ -16,6 +18,14 @@ public class LinkedNode {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Integer getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(Integer nodeId) {
+        this.nodeId = nodeId;
     }
 
     public String getName() {
