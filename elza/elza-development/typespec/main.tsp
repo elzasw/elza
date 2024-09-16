@@ -1361,6 +1361,22 @@ namespace ElzaAPI.Aip {
        };
 
     /**
+     * Export AIP
+     */
+    @route("/export-aip")
+    @post op exportAip(
+        /** Aip IDs */
+        @body aipIds: integer[];
+    ): {
+        /** AIPs successfully exported */
+        @Http.statusCode statusCode: 200;
+       } | {
+        /** Failed to export AIPs */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+       };
+
+    /**
      * Create dao link
      */
      @route("/create-dao-link")

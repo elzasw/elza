@@ -463,6 +463,38 @@ public class DaService {
         }
     }
 
+    @Transactional
+    public void aipExportAip(List<Integer> aipIds) {
+        List<DaAip> aipList = aipRepository.findByIdAndLinkExists(aipIds);
+        Map<DaAip, DaAipState> stateMap = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(aipList).stream()
+                .collect(Collectors.toMap(DaAipState::getDaAip, Function.identity()));
+
+        for (DaAip aip : aipList) {
+            DaAipState aipState = stateMap.get(aip);
+
+            AipType aipType = AipType.PACKAGE_INFO;
+            if (BooleanUtils.isTrue(aipState.getComleteAipLoad())) {
+                aipType = AipType.AIP_BASE;
+            } else if (BooleanUtils.isTrue(aipState.getMetadataLoad())) {
+                aipType = AipType.METADATA_BASE;
+            }
+
+            try {
+                Path aipDir = Files.createTempDirectory(aip.getCode());
+                //todo MCW-10996 vytvořit METS.xml, PACKAGE-INFO.xml, EAD.xml do složky aipDir
+
+                Path aipOutputDir = resourcePathResolver.getAipDir().resolve("out");
+                Path outputZip = createZip(aipDir.toFile(), aipOutputDir);
+
+                DaSyncQueueItem syncQueueItem = createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.EXPORT_NEW,
+                        aipState.getAipVersion(), aipType, true);
+                createExportLocalCache(aipState, aipType, outputZip, syncQueueItem);
+            } catch (IOException e) {
+                logger.error("Došlo k chybě při vytváření změnového balíčku AIP={}", aip.getCode(), e);
+            }
+        }
+    }
+
     public DaChange createDaChange(DaAip aip, DaChangeType changeType) {
         DaChange change = new DaChange();
         change.setChangeDate(LocalDateTime.now());
@@ -621,7 +653,7 @@ public class DaService {
                 if (aipState != null && aipType != AipType.PACKAGE_INFO) {
                     Path zipDir = createZip(aipDir, resourcePathResolver.getAipDir());
                     DaSyncQueueItem syncQueueItem = syncQueueItemMap.getOrDefault(aipState.getDaAip().getCode(), null);
-                    applicationContext.getBean(DaService.class).createLocalCache(aipState, digitalRepository, aipType, zipDir, syncQueueItem);
+                    applicationContext.getBean(DaService.class).createImportLocalCache(aipState, digitalRepository, aipType, zipDir, syncQueueItem);
                 }
             }
         }
@@ -717,7 +749,7 @@ public class DaService {
     }
 
     @Transactional
-    public void createLocalCache(DaAipState aipState, ArrDigitalRepository digitalRepository, AipType aipType, Path filePath, DaSyncQueueItem syncQueueItem) {
+    public void createImportLocalCache(DaAipState aipState, ArrDigitalRepository digitalRepository, AipType aipType, Path filePath, DaSyncQueueItem syncQueueItem) {
         DaLocalCache localCache = daLocalCacheRepository.findByAipAndQueueItemStatesIn(aipState.getDaAip(), getQueueImportStates());
         if (localCache == null) {
             localCache = new DaLocalCache();
@@ -733,6 +765,16 @@ public class DaService {
             oldFile.toFile().delete();
         }
 
+        localCache.setAipType(aipType);
+        localCache.setFilePath(filePath.toAbsolutePath().toString());
+        localCache.setSyncQueueItem(syncQueueItem);
+        localCache.setAipState(aipState);
+        daLocalCacheRepository.save(localCache);
+    }
+
+    @Transactional
+    public void createExportLocalCache(DaAipState aipState, AipType aipType, Path filePath, DaSyncQueueItem syncQueueItem) {
+        DaLocalCache localCache = new DaLocalCache();
         localCache.setAipType(aipType);
         localCache.setFilePath(filePath.toAbsolutePath().toString());
         localCache.setSyncQueueItem(syncQueueItem);

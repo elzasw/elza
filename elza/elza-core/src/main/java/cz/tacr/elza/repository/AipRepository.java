@@ -16,5 +16,8 @@ public interface AipRepository extends ElzaJpaRepository<DaAip, Integer>, AipRep
     @Query("select a from da_aip a where a.aipId in :aipIds and not exists (select dl from arr_dao_link dl where dl.aip = a and dl.deleteChange is null)")
     List<DaAip> findByIdAndLinkNotExists(@Param("aipIds") List<Integer> aipIds);
 
+    @Query("select a from da_aip a where a.aipId in :aipIds and exists (select dl from arr_dao_link dl where dl.aip = a and dl.deleteChange is null)")
+    List<DaAip> findByIdAndLinkExists(@Param("aipIds") List<Integer> aipIds);
+
     List<DaAip> findByCodeIn(List<String> codes);
 }

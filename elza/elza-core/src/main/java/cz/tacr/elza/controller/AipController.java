@@ -59,6 +59,12 @@ public class AipController implements AipsApi {
     }
 
     @Override
+    public ResponseEntity<Void> aipExportAip(List<Integer> aipIds) {
+        daService.aipExportAip(aipIds);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
     public ResponseEntity<AipDetailFilteredResult> aipFindByFilter(Integer from, Integer count, List<AipFilterGen> aipFilterGen) {
         FilteredResult<DaAip> aips = aipService.findAipDetailsByFilter(aipFilterGen, from, count);
         AipDetailFilteredResult result = new AipDetailFilteredResult();
