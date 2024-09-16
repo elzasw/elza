@@ -39,6 +39,12 @@ const AipPageRibbon: FC = () => {
         });
     }
     const handleUpdateAips = () => {}
+    const handleExportAips = () => {
+        let aipIds = selectedAips.rows.map(aip => aip.aipId)
+        Api.aips.aipExportAip(aipIds).then(() => {
+            dispatch(aipsFetchIfNeeded(true))
+        });
+    }
 
     const altActions = [];
     const itemActions = [];
@@ -82,6 +88,14 @@ const AipPageRibbon: FC = () => {
                 <Icon glyph="fa-refresh" />
                 <div>
                     <span className="btnText">{i18n("aip.actions.updateAips")}</span>
+                </div>
+            </Button>
+        );
+        altActions.push(
+            <Button key="exportAips" onClick={handleExportAips}>
+                <Icon glyph="fa-cloud-upload" />
+                <div>
+                    <span className="btnText">{i18n("aip.actions.exportAips")}</span>
                 </div>
             </Button>
         );

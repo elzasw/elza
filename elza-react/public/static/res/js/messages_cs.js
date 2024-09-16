@@ -1871,6 +1871,7 @@ var messages = {
     "aip.actions.loadAips": "Načtení úplných AIP",
     "aip.actions.deleteAips": "Smazání úplných AIP",
     "aip.actions.updateAips": "Aktualizace dat AIP",
+    "aip.actions.exportAips": "Generování změnových AIP",
     "aip.actions.explorer": "Náhled vybraného AIPu",
     "aip.actions.as": "Přechod na související archivní popis",
     "aip.explorer.detail.title": "Podrobnosti",
