@@ -132,30 +132,63 @@ public class AipController implements AipsApi {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Vytvořit JP s propojením
+     * @param arrNodeId ArrNode ID (required)
+     * @param daAipId DaAip ID (required)
+     * @param daDaoId DaDao ID (required)
+     * @return
+     */
     @Override
     public ResponseEntity<Void> aipConnectJpFromSelected(Integer arrNodeId, Integer daAipId, Integer daDaoId) {
         daService.createJPFromSelected(arrNodeId, daAipId, daDaoId);
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Vytvořit JP z vybraných
+     * @param arrNodeId ArrNode ID (required)
+     * @param daAipId DaAip ID (required)
+     * @param daDaoId DaDao ID (required)
+     * @return
+     */
     @Override
     public ResponseEntity<Void> aipConnectJpLinkFromSelected(Integer arrNodeId, Integer daAipId, Integer daDaoId) {
         daService.createAndLinkFromSelected(arrNodeId, daAipId, daDaoId);
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Připojit k JP - pokud jsem v části balíčku
+     * @param arrNodeId ArrNode ID (required)
+     * @param daAipId DaAip ID (required)
+     * @return
+     */
     @Override
     public ResponseEntity<Void> aipConnectPartToJp(Integer arrNodeId, Integer daAipId, Integer daDaoId) {
         daService.connectPartToJP(arrNodeId, daAipId, daDaoId);
         return ResponseEntity.ok().build();
     }
 
+
+    /**
+     * Výběrové připojení s JP
+     * @param arrNodeId ArrNode ID (required)
+     * @param daAipId DaAip ID (required)
+     * @return
+     */
     @Override
     public ResponseEntity<Void> aipConnectSelectedToJp(Integer arrNodeId, Integer daAipId) {
         daService.connectSelectedToJP(arrNodeId, daAipId);
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Připojit k JP - pokud jsem na nejvyšší úrovni balíčku
+     * @param arrNodeId ArrNode ID (required)
+     * @param daAipId DaAip ID (required)
+     * @return
+     */
     @Override
     public ResponseEntity<Void> aipConnectToJp(Integer arrNodeId, Integer daAipId) {
         daService.connectToJP(arrNodeId, daAipId);
