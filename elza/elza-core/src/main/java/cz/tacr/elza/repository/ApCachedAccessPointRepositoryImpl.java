@@ -241,7 +241,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     				value = ext.getValue().toString();
     			}
     			// nelze limitovat cast v niz se hleda
-    			if(StringUtils.isNotEmpty(ext.getPartTypeCode())) {
+    			if(StringUtils.isNotEmpty(ext.getPartTypeCode()) && value != null) {
     				throw new BusinessException("Vyhledávací dotaz Lucene nelze omezit na typ ApPart", ArrangementCode.REQUEST_INVALID_STATE)
     					.set("partTypeCode", ext.getPartTypeCode());
     			}
