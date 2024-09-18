@@ -20,7 +20,8 @@ export type DaAipDetailVO = {
     nadChangeCode: string;
     aipSize: number;
     metadataLoad: boolean;
-    state: QueueItemState;
+    importState: QueueItemState;
+    exportState: QueueItemState;
     arrDaoLinkType: LinkType;
     linkedNodes?: Array<LinkedNodeVO>;
     comleteAipLoad: boolean;

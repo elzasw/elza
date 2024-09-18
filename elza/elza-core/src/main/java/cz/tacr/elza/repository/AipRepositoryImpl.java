@@ -55,7 +55,15 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
         List<Predicate> predicates = new ArrayList<>();
         Join<DaAip, DaAipState> stateJoin = aipRoot.join("states", JoinType.LEFT);
         stateJoin.on(cb.isNull(stateJoin.get("deleteChange")));
-        Join<DaAip, DaSyncQueueItem> syncJoin = aipRoot.join("daSyncQueueItem", JoinType.LEFT);
+        Join<DaAip, DaSyncQueueItem> importSyncJoin = aipRoot.join("syncQueueItems", JoinType.LEFT);
+        importSyncJoin.on(cb.isTrue(importSyncJoin.get("active")), importSyncJoin.get("state").in(DaSyncQueueItem.QueueItemState.IMPORT_NEW,
+                DaSyncQueueItem.QueueItemState.IMPORT_OK,
+                DaSyncQueueItem.QueueItemState.IMPORT_ERROR,
+                DaSyncQueueItem.QueueItemState.UPDATE));
+        Join<DaAip, DaSyncQueueItem> exportSyncJoin = aipRoot.join("syncQueueItems", JoinType.LEFT);
+        exportSyncJoin.on(cb.isTrue(exportSyncJoin.get("active")), exportSyncJoin.get("state").in(DaSyncQueueItem.QueueItemState.EXPORT_NEW,
+                DaSyncQueueItem.QueueItemState.EXPORT_OK,
+                DaSyncQueueItem.QueueItemState.EXPORT_ERROR));
         Join<DaAipState, ApAccessPoint> oApJoin = stateJoin.join("originatorAccessPoint", JoinType.LEFT);
         Join<DaAipState, ParInstitution> instJoin = stateJoin.join("institution", JoinType.LEFT);
         Join<ParInstitution, ApAccessPoint> instApJoin = instJoin.join("accessPoint", JoinType.LEFT);
@@ -66,7 +74,8 @@ public class AipRepositoryImpl implements AipRepositoryCustom {
             switch (filter.getPath()) {
                 case "da_aip" -> path = aipRoot.get(filter.getAttr());
                 case "da_aip_state" -> path = stateJoin.get(filter.getAttr());
-                case "da_sync_queue_item" -> path = syncJoin.get(filter.getAttr());
+                case "import_sync_queue_item" -> path = importSyncJoin.get("state");
+                case "export_sync_queue_item" -> path = exportSyncJoin.get("state");
                 case "originator_access_point" -> path = oApJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID);
                 case "institution_access_point" -> path = instApJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID);
                 case "arr_fund" -> path = fundJoin.get(ArrFund.FIELD_FUND_ID);

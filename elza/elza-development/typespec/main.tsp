@@ -685,9 +685,21 @@ enum QueueItemState {
      */
     IMPORT_OK,
     /**
-     * Chyba
+     * Chyba importu
      */
-    ERROR
+    IMPORT_ERROR,
+    /**
+     * K exportu
+     */
+    EXPORT_NEW,
+    /**
+     * Exportováno
+     */
+    EXPORT_OK,
+    /**
+     * Chyba exportu
+     */
+    EXPORT_ERROR
 }
 
 model LinkedNodeVO {
@@ -790,9 +802,13 @@ model AipDetailVO {
      */
     aipVersionMetadata: string;
     /**
-     * Stav aktualizace
+     * Stav importu
      */
-    state: QueueItemState;
+    importState: QueueItemState;
+    /**
+     * Stav exportu
+     */
+    exportState: QueueItemState;
     /**
      * Seznam napojených nodes
      */

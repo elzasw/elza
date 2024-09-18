@@ -1855,7 +1855,8 @@ components:
         - metadataError
         - metadataErrorException
         - aipVersionMetadata
-        - state
+        - importState
+        - exportState
         - linkedNodes
       properties:
         aipId:
@@ -1921,10 +1922,14 @@ components:
         aipVersionMetadata:
           type: string
           description: Verze AIPu s načtenými metadaty
-        state:
+        importState:
           allOf:
             - $ref: '#/components/schemas/QueueItemState'
-          description: Stav aktualizace
+          description: Stav importu
+        exportState:
+          allOf:
+            - $ref: '#/components/schemas/QueueItemState'
+          description: Stav exportu
         linkedNodes:
           type: array
           items:
@@ -2387,7 +2392,10 @@ components:
         - UPDATE
         - IMPORT_NEW
         - IMPORT_OK
-        - ERROR
+        - IMPORT_ERROR
+        - EXPORT_NEW
+        - EXPORT_OK
+        - EXPORT_ERROR
       description: Výčet stavů aktualizace AIPu
     ReplaceType:
       type: string
