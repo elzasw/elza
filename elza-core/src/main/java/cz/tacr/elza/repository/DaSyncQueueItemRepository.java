@@ -21,10 +21,6 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
     @Query("SELECT i FROM da_sync_queue_item i WHERE i.state IN :states ORDER BY i.syncQueueItemId")
     Page<DaSyncQueueItem> findByStates(@Param("states") Collection<DaSyncQueueItem.QueueItemState> states, Pageable pageable);
 
-    List<DaSyncQueueItem> findByCodeInAndDigitalRepositoryAndStateIn(List<String> codes,
-                                                                     ArrDigitalRepository digitalRepository,
-                                                                     Collection<DaSyncQueueItem.QueueItemState> states);
-
     @Modifying
     @Query("UPDATE da_sync_queue_item i SET i.active = false " +
             "WHERE i.code = :code " +
@@ -34,4 +30,6 @@ public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem
     void updateActiveByCodeAndDigitalRepositoryAndStateInAndActiveIsTrue(@Param("code") String code,
                                                                          @Param("digitalRepository") ArrDigitalRepository digitalRepository,
                                                                          @Param("states") Collection<DaSyncQueueItem.QueueItemState> states);
+
+    DaSyncQueueItem findByAipAndStateInAndActiveIsTrue(DaAip aip, Collection<DaSyncQueueItem.QueueItemState> states);
 }

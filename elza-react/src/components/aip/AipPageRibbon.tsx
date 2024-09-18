@@ -1,13 +1,15 @@
 import {aipsFetchIfNeeded, AREA_AIP, AREA_SELECTED_AIPS} from "actions/aip/aip";
 import { Ribbon } from "components";
 import { Icon, RibbonGroup, i18n } from "components/shared";
-import { FC } from "react";
+import React, { FC } from "react";
 import { Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
 import {Api} from "../../api";
 import {useThunkDispatch} from "../../utils/hooks";
+import {modalDialogShow} from "../../actions/global/modalDialog";
+import AipUpdateTypeForm from "./AipUpdateTypeForm.tsx";
 
 const AipPageRibbon: FC = () => {
     const selectedAips = useSelector((state: AppState) => storeFromArea(state, AREA_SELECTED_AIPS));
@@ -38,7 +40,22 @@ const AipPageRibbon: FC = () => {
             dispatch(aipsFetchIfNeeded(true))
         });
     }
-    const handleUpdateAips = () => {}
+    const handleUpdateAips = () => {
+        dispatch(
+            modalDialogShow(
+                this,
+                i18n('aip.form.update.title'),
+                <AipUpdateTypeForm
+                    onSubmit={({type}) => {
+                        let aipIds = selectedAips.rows.map(aip => aip.aipId)
+                        Api.aips.aipUpdateAip(type, aipIds).then(() => {
+                            dispatch(aipsFetchIfNeeded(true))
+                        });
+                    }}
+                />,
+            ),
+        );
+    }
     const handleExportAips = () => {
         let aipIds = selectedAips.rows.map(aip => aip.aipId)
         Api.aips.aipExportAip(aipIds).then(() => {

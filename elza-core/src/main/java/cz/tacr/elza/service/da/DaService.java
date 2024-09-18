@@ -817,11 +817,20 @@ public class DaService {
         return queueItemStates;
     }
 
-    private Collection<DaSyncQueueItem.QueueItemState> getQueueImportStates() {
+    public static Collection<DaSyncQueueItem.QueueItemState> getQueueImportStates() {
         List<DaSyncQueueItem.QueueItemState> states = new ArrayList<>();
         states.add(DaSyncQueueItem.QueueItemState.UPDATE);
         states.add(DaSyncQueueItem.QueueItemState.IMPORT_NEW);
         states.add(DaSyncQueueItem.QueueItemState.IMPORT_OK);
+        states.add(DaSyncQueueItem.QueueItemState.IMPORT_ERROR);
+        return states;
+    }
+
+    public static Collection<DaSyncQueueItem.QueueItemState> getQueueExportStates() {
+        List<DaSyncQueueItem.QueueItemState> states = new ArrayList<>();
+        states.add(DaSyncQueueItem.QueueItemState.EXPORT_NEW);
+        states.add(DaSyncQueueItem.QueueItemState.EXPORT_OK);
+        states.add(DaSyncQueueItem.QueueItemState.EXPORT_ERROR);
         return states;
     }
 

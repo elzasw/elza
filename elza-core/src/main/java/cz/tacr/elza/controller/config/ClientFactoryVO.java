@@ -20,6 +20,7 @@ import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.domain.DaDaoFile;
 import cz.tacr.elza.domain.DaDaoFileFolder;
 import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.da.DaService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -1914,8 +1915,14 @@ public class ClientFactoryVO {
             vo.setAipVersionMetadata(state.getAipVersionMetadata());
         }
 
-        if (src.getDaSyncQueueItem() != null) {
-            vo.setState(mapQueueItemState(src.getDaSyncQueueItem().getState()));
+        DaSyncQueueItem importSyncQueueItem = daSyncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(src, DaService.getQueueImportStates());
+        if (importSyncQueueItem != null) {
+            vo.setImportState(mapQueueItemState(importSyncQueueItem.getState()));
+        }
+
+        DaSyncQueueItem exportSyncQueueItem = daSyncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(src, DaService.getQueueExportStates());
+        if (exportSyncQueueItem != null) {
+            vo.setExportState(mapQueueItemState(exportSyncQueueItem.getState()));
         }
 
         if (CollectionUtils.isNotEmpty(daoLinks)) {
@@ -1946,10 +1953,13 @@ public class ClientFactoryVO {
     private QueueItemState mapQueueItemState(
             cz.tacr.elza.domain.DaSyncQueueItem.QueueItemState state) {
         switch (state) {
-            case IMPORT_ERROR -> { return QueueItemState.ERROR; }
+            case IMPORT_ERROR -> { return QueueItemState.IMPORT_ERROR; }
             case UPDATE -> { return QueueItemState.UPDATE; }
             case IMPORT_OK -> { return QueueItemState.IMPORT_OK; }
             case IMPORT_NEW -> { return QueueItemState.IMPORT_NEW; }
+            case EXPORT_ERROR -> { return QueueItemState.EXPORT_ERROR; }
+            case EXPORT_OK -> { return QueueItemState.EXPORT_OK; }
+            case EXPORT_NEW -> { return QueueItemState.EXPORT_NEW; }
             default -> throw new BusinessException("Unrecognized queue item state", BaseCode.INVALID_STATE);
         }
     }

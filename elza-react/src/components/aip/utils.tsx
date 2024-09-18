@@ -92,7 +92,8 @@ export const formatAipSize = (bytes: number): string => {
 
 const DA_AIP_PATH = "da_aip";
 const DA_AIP_STATE_PATH = "da_aip_state";
-const DA_SYNC_QUEUE_ITEM = "da_sync_queue_item";
+const IMPORT_SYNC_QUEUE_ITEM = "import_sync_queue_item";
+const EXPORT_SYNC_QUEUE_ITEM = "export_sync_queue_item";
 const ORIG_ACCESS_POINT = "originator_access_point";
 const INST_ACCESS_POINT = "institution_access_point";
 const ARR_FUND = "arr_fund";
@@ -118,7 +119,8 @@ export const colDef = [
     // TODO: @kasparova Bude upřesněno v budoucnu
     // {name: "Stažené komponenty", type: "bool", minWidth: 90, idealWidth: 145},
     // {name: "Napojen archivní popis", type: "bool", minWidth: 70, idealWidth: 155},
-    {key: "state", name: "Aktuální verze", path: DA_SYNC_QUEUE_ITEM, type: "enum", minWidth: 65, idealWidth: 105},
+    {key: "importState", name: "Aktuální verze", path: IMPORT_SYNC_QUEUE_ITEM, type: "enumImportState", minWidth: 65, idealWidth: 105},
+    {key: "exportState", name: "Stav exportu", path: EXPORT_SYNC_QUEUE_ITEM, type: "enumExportState", minWidth: 65, idealWidth: 105},
     {key: "comleteAipLoad", name: "Načtený kompletní AIP", path: DA_AIP_STATE_PATH, type: "bool", minWidth: 70, idealWidth: 130},
     {key: "metadataError", name: "Chyba při načtení metadat", path: DA_AIP_STATE_PATH, type: "bool", minWidth: 70, idealWidth: 130}
 ]

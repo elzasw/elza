@@ -66,8 +66,10 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 <DetailRow label="Chyba při načtení metadat" value={detail.metadataErrorException}/>}
             {detail.aipVersionMetadata &&
                 <DetailRow label="Verze s načtenými metadaty" value={detail.aipVersionMetadata}/>}
-            {detail.state &&
-                <DetailRow label="Aktuální verze" value={detail.state}/>}
+            {detail.importState &&
+                <DetailRow label="Aktuální verze" value={detail.importState}/>}
+            {detail.exportState &&
+                <DetailRow label="Stav exportu" value={detail.exportState}/>}
             <DetailRow label="Napojen archivní popis" value={getConnectedToJP(detail.linkedNodes, detail.fund.id, handleDeleteLink)}/>
         </>
     );

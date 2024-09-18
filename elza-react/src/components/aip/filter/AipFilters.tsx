@@ -78,18 +78,29 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
 					onSubmit={handleCreate}
 					selectValues={[{label: "ANO", value: true}, {label: "NE", value: false}]}
 				/>)
-			case "enum": return (
+			case "enumImportState": return (
 				<AipEnumFilterForm
 					item={item}
 					onClose={handleClose}
 					onSubmit={handleCreate}
 					selectValues={[
-						{label: "Chyba", value: QueueItemState.ERROR},
+						{label: "Chyba stažení", value: QueueItemState.IMPORT_ERROR},
 						{label: "Ke stažení", value: QueueItemState.IMPORT_NEW},
 						{label: "Aktualizováno/Staženo", value: QueueItemState.IMPORT_OK},
-						{label: "K aktualizaci", value: QueueItemState.UPDATE}
+						{label: "K aktualizaci", value: QueueItemState.UPDATE},
 					]}
 				/>)
+            case "enumExportState": return (
+                <AipEnumFilterForm
+                    item={item}
+                    onClose={handleClose}
+                    onSubmit={handleCreate}
+                    selectValues={[
+                        {label: "Chyba exportu", value: QueueItemState.EXPORT_ERROR},
+                        {label: "K exportu", value: QueueItemState.EXPORT_NEW},
+                        {label: "Exportováno", value: QueueItemState.EXPORT_OK},
+                    ]}
+                />)
 			default: return <></>
 		}
 	}
