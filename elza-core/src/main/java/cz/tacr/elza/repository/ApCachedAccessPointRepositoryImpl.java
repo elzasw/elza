@@ -211,7 +211,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                       throw new NotImplementedException("Neimplementovaný stav oblasti: " + area);
     			}
     			if (onlyMainPart) {
-    				bool.must(processValueCondDef(factory, keyWord, sdp.getItemType(NM_MAIN.toUpperCase()), null, false));
+    				bool.must(processValueCondDef(factory, keyWord, sdp.getItemType(NM_MAIN.toUpperCase()), null, area == Area.PREFER_NAMES));
     			} else {
     				bool.must(processIndexCondDef(factory, keyWord, partTypeCode));
     			}
@@ -285,15 +285,14 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 												String value,
 												RulItemType itemType, 
 												RulItemSpec itemSpec, 
-												boolean onlyMainPart) {
+												boolean onlyPrefPart) {
 		if (itemType == null) {
 			throw new SystemException("Missing itemType", BaseCode.INVALID_STATE);
 		}
 
 		BooleanPredicateClausesStep<?> bool = factory.bool();
 		String fieldName = "";
-		// staré jméno `onlyPrefPart` vytváří nesprávnou logiku
-		if (onlyMainPart) {
+		if (onlyPrefPart) {
 			fieldName = PREFIX_PREF + SEPARATOR;
 		}
 		fieldName += itemType.getCode().toLowerCase();
@@ -307,7 +306,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                 value = itemSpec.getCode().toLowerCase();
                 bool.should(factory.match().field(addDataPrefix(fieldName)).matching(value));
             } else {
-                if (!onlyMainPart) {
+                if (!onlyPrefPart) {
                     // boost o preferovaný item
                 	boostWildcardQuery(factory, bool, 
                 					   PREFIX_PREF + SEPARATOR + itemTypeCode + SEPARATOR + itemSpecCode,
@@ -317,7 +316,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
             }
 
         } else {
-            if (!onlyMainPart) {
+            if (!onlyPrefPart) {
                 // boost o preferovaný item
             	boostWildcardQuery(factory, bool, PREFIX_PREF + SEPARATOR + itemTypeCode, wildcardValue(value), true, true);
             }
