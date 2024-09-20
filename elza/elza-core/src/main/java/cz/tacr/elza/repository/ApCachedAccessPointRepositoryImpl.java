@@ -190,32 +190,28 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     	BooleanPredicateClausesStep<?> bool = factory.bool();
 
     	if (StringUtils.isNotEmpty(search)) {
+    		boolean onlyMainPart = (searchFilterVO.getOnlyMainPart() != null && searchFilterVO.getOnlyMainPart());
     		RulPartType defaultPartType = sdp.getDefaultPartType();
     		List<String> keyWords = getKeyWordsFromSearch(search);
     		for (String keyWord : keyWords) {
     			String partTypeCode;
-    			boolean onlyMainPart = false;
     			switch (area) {
                   case PREFER_NAMES:
                       partTypeCode = PREFIX_PREF;
-                      if (searchFilterVO.getOnlyMainPart() != null && searchFilterVO.getOnlyMainPart()) {
-                          onlyMainPart = true;
-                      }
                       break;
                   case ALL_PARTS:
+                	  // s takovou volbou zaškrtávací políčko onlyMainPart ignorujeme
+                      onlyMainPart = false;
                       partTypeCode = null;
                       break;
                   case ALL_NAMES:
                       partTypeCode = defaultPartType.getCode().toLowerCase();
-                      if (searchFilterVO.getOnlyMainPart() != null && searchFilterVO.getOnlyMainPart()) {
-                          onlyMainPart = true;
-                      }
                       break;
                   default:
                       throw new NotImplementedException("Neimplementovaný stav oblasti: " + area);
     			}
     			if (onlyMainPart) {
-    				bool.must(processValueCondDef(factory, keyWord, sdp.getItemType(NM_MAIN.toUpperCase()), null, true));
+    				bool.must(processValueCondDef(factory, keyWord, sdp.getItemType(NM_MAIN.toUpperCase()), null, false));
     			} else {
     				bool.must(processIndexCondDef(factory, keyWord, partTypeCode));
     			}
@@ -289,14 +285,15 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 												String value,
 												RulItemType itemType, 
 												RulItemSpec itemSpec, 
-												boolean onlyPrefPart) {
+												boolean onlyMainPart) {
 		if (itemType == null) {
 			throw new SystemException("Missing itemType", BaseCode.INVALID_STATE);
 		}
 
 		BooleanPredicateClausesStep<?> bool = factory.bool();
 		String fieldName = "";
-		if (onlyPrefPart) {
+		// staré jméno `onlyPrefPart` vytváří nesprávnou logiku
+		if (onlyMainPart) {
 			fieldName = PREFIX_PREF + SEPARATOR;
 		}
 		fieldName += itemType.getCode().toLowerCase();
@@ -310,7 +307,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                 value = itemSpec.getCode().toLowerCase();
                 bool.should(factory.match().field(addDataPrefix(fieldName)).matching(value));
             } else {
-                if (!onlyPrefPart) {
+                if (!onlyMainPart) {
                     // boost o preferovaný item
                 	boostWildcardQuery(factory, bool, 
                 					   PREFIX_PREF + SEPARATOR + itemTypeCode + SEPARATOR + itemSpecCode,
@@ -320,7 +317,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
             }
 
         } else {
-            if (!onlyPrefPart) {
+            if (!onlyMainPart) {
                 // boost o preferovaný item
             	boostWildcardQuery(factory, bool, PREFIX_PREF + SEPARATOR + itemTypeCode, wildcardValue(value), true, true);
             }
