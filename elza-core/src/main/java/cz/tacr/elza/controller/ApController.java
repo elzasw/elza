@@ -728,7 +728,7 @@ public class ApController {
     @RequestMapping(value = "/search/rel", method = RequestMethod.POST)
     public ArchiveEntityResultListVO findAccessPointForRel(@RequestParam(name = "from", defaultValue = "0", required = false) final Integer from,
                                                            @RequestParam(name = "max", defaultValue = "50", required = false) final Integer max,
-                                                           @RequestParam(name = "itemTypeId") final Integer itemTypeId,
+                                                           @RequestParam(name = "itemTypeId", required = false) final Integer itemTypeId,
                                                            @RequestParam(name = "itemSpecId", required = false) final Integer itemSpecId,
                                                            @RequestParam(name = "scopeId", required = false) final Integer scopeId,
                                                            @RequestBody final SearchFilterVO filter) {
