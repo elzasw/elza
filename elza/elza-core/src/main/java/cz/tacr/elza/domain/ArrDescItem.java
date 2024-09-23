@@ -125,8 +125,7 @@ public class ArrDescItem extends ArrItem {
 		if (data instanceof ArrDataNull) {
             return itemSpec == null ? null : itemSpec.getName();
         }
-        String fulltext = indexData.getFulltextValue();
-        return itemSpec == null ? fulltext : itemSpec.getName() + DataRepositoryImpl.SPEC_SEPARATOR + fulltext;
+        return indexData.getFulltextValue();
     }
 
 	@JsonIgnore
