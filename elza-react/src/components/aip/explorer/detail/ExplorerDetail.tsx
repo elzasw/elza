@@ -10,8 +10,10 @@ import { AppState } from "typings/store";
 import {AREA_AIP, aipFetchIfNeeded, aipsFetchIfNeeded} from "actions/aip/aip";
 import { useThunkDispatch } from "utils/hooks";
 import {getConnectedToJP} from "../../utils.tsx";
-import {Api} from "../../../../api";
+import {Api, getFullPath} from "../../../../api";
 import {fetchAipStructureIfNeeded} from "../../../../actions/aip/exp.ts";
+import {downloadFile} from "../../../../actions/global/download";
+import {AipsApiAxiosParamCreator} from "elza-api";
 
 const ExplorerDetail: FC = () => {
     const {selectedItem, setSelectedItem, structure} = useExplorerContext();
@@ -87,9 +89,10 @@ const ExplorerDetail: FC = () => {
     }
 
     const handleDownloadComponent = (daoFileid: number) => {
-        // Api.aips.aipDownloadComponent(daoFileid).then(url => {
-        //     dispatch(downloadFile(getFullPath(url)));
-        // });
+        AipsApiAxiosParamCreator().aipDownloadComponent(daoFileid).then(response => {
+            const { url } = response;
+            dispatch(downloadFile(getFullPath(url)));
+        });
     }
 
     const renderFileData = () => {

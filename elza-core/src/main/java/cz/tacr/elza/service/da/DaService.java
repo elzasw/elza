@@ -75,8 +75,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -86,6 +91,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -1172,4 +1178,49 @@ public class DaService {
     }
 
 
+    @Transactional
+    public ResponseEntity<Resource> getComponent(Integer fileId) {
+        DaDaoFile daoFile = daoFileRepository.findById(fileId).orElseThrow(() -> new IllegalStateException("Nenalezen soubor s id " + fileId));
+        DaAip aip = daoFile.getDao().getAip();
+        DaLocalCache localCache = daLocalCacheRepository.findByAipAndQueueItemStatesIn(aip, getQueueImportStates());
+
+        try {
+            Path zip = Paths.get(localCache.getFilePath());
+
+            Path tempDir = Files.createTempDirectory("unzipped");
+
+            try (ZipInputStream zipInputStream = new ZipInputStream((Files.newInputStream(zip)))) {
+                ZipEntry entry;
+                while ((entry = zipInputStream.getNextEntry()) != null) {
+                    Path filePath = tempDir.resolve(entry.getName());
+                    if (entry.isDirectory()) {
+                        Files.createDirectories(filePath);
+                    } else {
+                        Files.createDirectories(filePath.getParent());
+                        Files.copy(zipInputStream, filePath);
+                    }
+                }
+            }
+
+            String filePath = daoFile.getFileName().replace("/", "\\");
+            String fileName = filePath.substring(filePath.lastIndexOf("\\") + 1);
+
+            Path file;
+            try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith(filePath))) {
+                file = str.findFirst().orElseThrow(() -> new RuntimeException("Balíček neobsahuje soubor " + filePath));
+            }
+
+            FileSystemResource fsr = new FileSystemResource(file);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.add(HttpHeaders.CONTENT_ENCODING, StandardCharsets.UTF_8.name());
+            headers.add(HttpHeaders.CONTENT_TYPE, daoFile.getMimeType());
+            headers.add(HttpHeaders.CONTENT_LENGTH, daoFile.getSize().toString());
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+
+            return new ResponseEntity<>(fsr, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            throw new IllegalStateException("Došlo k chybě při čtení souboru z cache", e);
+        }
+    }
 }
