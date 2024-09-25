@@ -1245,6 +1245,41 @@ paths:
               type: array
               items:
                 type: integer
+  /aip/download-component/{fileId}:
+    get:
+      tags:
+        - aips
+      operationId: Aip_downloadComponent
+      description: Getting the component file by file id
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          description: File ID
+          schema:
+            type: integer
+      responses:
+        '102':
+          description: Informational
+        '200':
+          description: The request has succeeded.
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
   /aip/export-aip:
     post:
       tags:
@@ -1851,7 +1886,7 @@ components:
         - nadChangeCode
         - aipSize
         - metadataLoad
-        - comleteAipLoad
+        - completeAipLoad
         - metadataError
         - metadataErrorException
         - aipVersionMetadata
@@ -1910,7 +1945,7 @@ components:
         metadataLoad:
           type: boolean
           description: Příznak načtených metadat
-        comleteAipLoad:
+        completeAipLoad:
           type: boolean
           description: Příznak načteného kompletního AIPu
         metadataError:

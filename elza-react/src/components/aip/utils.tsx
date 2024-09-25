@@ -121,6 +121,6 @@ export const colDef = [
     // {name: "Napojen archivní popis", type: "bool", minWidth: 70, idealWidth: 155},
     {key: "importState", name: "Aktuální verze", path: IMPORT_SYNC_QUEUE_ITEM, type: "enumImportState", minWidth: 65, idealWidth: 105},
     {key: "exportState", name: "Stav exportu", path: EXPORT_SYNC_QUEUE_ITEM, type: "enumExportState", minWidth: 65, idealWidth: 105},
-    {key: "comleteAipLoad", name: "Načtený kompletní AIP", path: DA_AIP_STATE_PATH, type: "bool", minWidth: 70, idealWidth: 130},
+    {key: "completeAipLoad", name: "Načtený kompletní AIP", path: DA_AIP_STATE_PATH, type: "bool", minWidth: 70, idealWidth: 130},
     {key: "metadataError", name: "Chyba při načtení metadat", path: DA_AIP_STATE_PATH, type: "bool", minWidth: 70, idealWidth: 130}
 ]

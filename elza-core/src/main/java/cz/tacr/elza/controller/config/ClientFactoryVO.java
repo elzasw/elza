@@ -1909,7 +1909,7 @@ public class ClientFactoryVO {
             vo.setNadChangeCode(state.getNadChangeCode());
             vo.setAipSize(new BigDecimal(state.getAipSize()).intValue());
             vo.setMetadataLoad(state.getMetadataLoad());
-            vo.setComleteAipLoad(state.getComleteAipLoad());
+            vo.setCompleteAipLoad(state.getCompleteAipLoad());
             vo.setMetadataError(state.getMetadataError());
             vo.setMetadataErrorException(state.getMetadataErrorException());
             vo.setAipVersionMetadata(state.getAipVersionMetadata());
@@ -1975,6 +1975,7 @@ public class ClientFactoryVO {
     public ExplorerTreeNodeFile createExplorerTreeNodeFile(DaDaoFile daDaoFile, List<ArrDaoLink> daoLinks, Map<Integer, TreeNodeVO> treeNodeMap) {
         ExplorerTreeNodeFile result = new ExplorerTreeNodeFile();
         result.setUuid(UUID.randomUUID().toString());
+        result.setDaoFileId(daDaoFile.getDaoFileId());
         result.setChecksum(daDaoFile.getChecksum());
         result.setChecksumType(daDaoFile.getChecksumType());
         result.setMimeType(daDaoFile.getMimeType());
@@ -2013,6 +2014,7 @@ public class ClientFactoryVO {
         result.setUuid(file.getUuid());
         result.setDaoId(file.getDaoId());
         result.setDaoFileFolderId(file.getDaoFileFolderId());
+        result.setDaoFileId(file.getDaoFileId());
         result.setChecksum(file.getChecksum());
         result.setChecksumType(file.getChecksumType());
         result.setMimeType(file.getMimeType());

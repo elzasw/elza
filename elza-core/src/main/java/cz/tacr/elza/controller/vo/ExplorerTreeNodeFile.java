@@ -17,6 +17,7 @@ public class ExplorerTreeNodeFile extends ExplorerTreeNode {
     private String description;
     private String fileName;
     private Integer daoFileFolderId;
+    private Integer daoFileId;
 
     public String getChecksum() {
         return checksum;
@@ -128,5 +129,13 @@ public class ExplorerTreeNodeFile extends ExplorerTreeNode {
 
     public void setDaoFileFolderId(Integer daoFileFolderId) {
         this.daoFileFolderId = daoFileFolderId;
+    }
+
+    public Integer getDaoFileId() {
+        return daoFileId;
+    }
+
+    public void setDaoFileId(Integer daoFileId) {
+        this.daoFileId = daoFileId;
     }
 }

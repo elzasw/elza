@@ -47,6 +47,11 @@ public class AipController implements AipsApi {
     }
 
     @Override
+    public ResponseEntity<Resource> aipDownloadComponent(Integer fileId) {
+        return AipsApi.super.aipDownloadComponent(fileId);
+    }
+
+    @Override
     public ResponseEntity<Void> aipDeleteCompleteAip(List<Integer> aipIds) {
         daService.aipDeleteCompleteAip(aipIds);
         return ResponseEntity.ok().build();

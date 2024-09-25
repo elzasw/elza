@@ -788,7 +788,7 @@ model AipDetailVO {
     /**
      * Příznak načteného kompletního AIPu
      */
-    comleteAipLoad: boolean;
+    completeAipLoad: boolean;
     /**
      * Příznak chyby při načítání metadat
      */
@@ -1388,6 +1388,30 @@ namespace ElzaAPI.Aip {
         @Http.statusCode statusCode: 200;
        } | {
         /** Failed to export AIPs */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+       };
+
+    /**
+     * Getting the component file by file id
+     */
+    @route("/download-component/{fileId}")
+    @get op downloadComponent(
+        /** File ID */
+        @path fileId: integer
+    ): {
+        @header contentType: "*/*";
+        @Http.statusCode statusCode: 200;
+        @body data: bytes;
+       } | {
+        /** Processing */
+        @Http.statusCode statusCode: 102;
+       } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+       } | {
+        /** Failed to download requested component */
         @Http.statusCode statusCode: 500;
         @body data: BaseException;
        };
