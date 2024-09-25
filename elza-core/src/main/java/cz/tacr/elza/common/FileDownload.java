@@ -23,8 +23,7 @@ public abstract class FileDownload {
      * @param filename
      */
     public static void addContentDispositionAsAttachment(HttpServletResponse response, String srcFilename) {
-        StringBuilder sb = new StringBuilder();
-        
+     
         String fileName = StringUtils.stripAccents(srcFilename);
         
         fileName = UNSUPPORTED_CHARS.matcher(fileName.trim()).replaceAll("_");
@@ -33,6 +32,6 @@ public abstract class FileDownload {
         	fileName = "download.bin";
         }
 
-        response.setHeader("Content-Disposition", "attachment; filename=" + sb.toString());
+        response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
     }
 }
