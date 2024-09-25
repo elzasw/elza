@@ -2946,16 +2946,16 @@ public class AccessPointService {
         }
     }
 
-    public List<Integer> findApTypeIdsByItemTypeAndItemSpec(Integer itemTypeId, @Nullable Integer itemSpecId) {
+    public List<Integer> findApTypeIdsByItemTypeAndItemSpec(@Nullable Integer itemTypeId, @Nullable Integer itemSpecId) {
         StaticDataProvider sdp = staticDataService.getData();
-        RulItemType itemType = sdp.getItemType(itemTypeId);
+        RulItemType itemType = itemTypeId != null ? sdp.getItemType(itemTypeId) : null;
         RulItemSpec itemSpec = itemSpecId != null ? sdp.getItemSpec(itemSpecId) : null;
         List<RulItemAptype> rulItemAptypeList = itemAptypeRepository.findAll();
         List<Integer> aeTypeIds = new ArrayList<>();
 
         for (RulItemAptype rulItemAptype : rulItemAptypeList) {
-            if ((rulItemAptype.getItemType() == null || rulItemAptype.getItemType().getCode().equals(itemType.getCode()))
-                    && (rulItemAptype.getItemSpec() == null || (itemSpec != null && rulItemAptype.getItemSpec().getCode().equals(itemSpec.getCode())))) {
+            if ((rulItemAptype.getItemType() == null || (itemType != null && rulItemAptype.getItemType().getCode().equals(itemType.getCode()))) &&
+                (rulItemAptype.getItemSpec() == null || (itemSpec != null && rulItemAptype.getItemSpec().getCode().equals(itemSpec.getCode())))) {
                 aeTypeIds.add(rulItemAptype.getApType().getApTypeId());
             }
         }
