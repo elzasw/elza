@@ -194,7 +194,7 @@ public class DaService {
                         DaAipState aipState = stateMap.get(aip);
                         queueItemState = DaSyncQueueItem.QueueItemState.UPDATE;
 
-                        if (BooleanUtils.isTrue(aipState.getComleteAipLoad())) {
+                        if (BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
                             aipType = AipType.AIP_BASE;
                         } else if (BooleanUtils.isTrue(aipState.getMetadataLoad())) {
                             aipType = AipType.METADATA_BASE;
@@ -325,7 +325,7 @@ public class DaService {
 
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
-            if (BooleanUtils.isNotTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getComleteAipLoad()) && aipState.getFund() != null) {
+            if (BooleanUtils.isNotTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getCompleteAipLoad()) && aipState.getFund() != null) {
                 aipState.setMetadataLoad(true);
                 stateList.add(aipState);
 
@@ -348,7 +348,7 @@ public class DaService {
 
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
-            if (BooleanUtils.isTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getComleteAipLoad())) {
+            if (BooleanUtils.isTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getCompleteAipLoad())) {
                 createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.IMPORT_OK,
                         aipState.getAipVersion(), AipType.PACKAGE_INFO, true);
                 deletedAipList.add(aip);
@@ -404,8 +404,8 @@ public class DaService {
 
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
-            if (BooleanUtils.isTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getComleteAipLoad())) {
-                aipState.setComleteAipLoad(true);
+            if (BooleanUtils.isTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getCompleteAipLoad())) {
+                aipState.setCompleteAipLoad(true);
                 stateList.add(aipState);
 
                 createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.UPDATE,
@@ -426,8 +426,8 @@ public class DaService {
 
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
-            if (BooleanUtils.isTrue(aipState.getComleteAipLoad())) {
-                aipState.setComleteAipLoad(false);
+            if (BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
+                aipState.setCompleteAipLoad(false);
                 stateList.add(aipState);
 
                 createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.UPDATE,
@@ -448,7 +448,7 @@ public class DaService {
             for (DaAip aip : aipList) {
                 DaAipState aipState = stateMap.get(aip);
                 AipType aipType = AipType.PACKAGE_INFO;
-                if (BooleanUtils.isTrue(aipState.getComleteAipLoad())) {
+                if (BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
                     aipType = AipType.AIP_BASE;
                 } else if (BooleanUtils.isTrue(aipState.getMetadataLoad())) {
                     aipType = AipType.METADATA_BASE;
@@ -473,7 +473,7 @@ public class DaService {
             DaAipState aipState = stateMap.get(aip);
 
             AipType aipType = AipType.PACKAGE_INFO;
-            if (BooleanUtils.isTrue(aipState.getComleteAipLoad())) {
+            if (BooleanUtils.isTrue(aipState.getCompleteAipLoad())) {
                 aipType = AipType.AIP_BASE;
             } else if (BooleanUtils.isTrue(aipState.getMetadataLoad())) {
                 aipType = AipType.METADATA_BASE;

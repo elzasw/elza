@@ -86,6 +86,12 @@ const ExplorerDetail: FC = () => {
         });
     }
 
+    const handleDownloadComponent = (daoFileid: number) => {
+        // Api.aips.aipDownloadComponent(daoFileid).then(url => {
+        //     dispatch(downloadFile(getFullPath(url)));
+        // });
+    }
+
     const renderFileData = () => {
         return (
             <div className="explorer-detail-body">
@@ -122,15 +128,15 @@ const ExplorerDetail: FC = () => {
                 >
                     <span>Zobrazit</span>
                 </Button>
-                <Button
+                {selectedItem.daoFileId && aip.data.completeAipLoad && <Button
                     as="a"
                     className="open-btn"
-                    onClick={() => {}}
+                    onClick={() => handleDownloadComponent(selectedItem.daoFileId)}
                     size="small"
                     shape="square"
                 >
                     <span>Stáhnout</span>
-                </Button>
+                </Button>}
             </div>
 
             <h4>{i18n("aip.explorer.detail.title")}</h4>

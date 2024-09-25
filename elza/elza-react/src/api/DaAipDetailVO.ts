@@ -24,7 +24,7 @@ export type DaAipDetailVO = {
     exportState: QueueItemState;
     arrDaoLinkType: LinkType;
     linkedNodes?: Array<LinkedNodeVO>;
-    comleteAipLoad: boolean;
+    completeAipLoad: boolean;
     metadataError: boolean;
     metadataErrorException: string;
     aipVersionMetadata: string;

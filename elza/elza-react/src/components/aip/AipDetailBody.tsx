@@ -60,7 +60,7 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 <DetailRow label="Velikost" value={formatAipSize(detail.aipSize)}/>}
             {detail != null &&
                 <DetailRow label="Načtena metadata" value={getBoolIcon(detail.metadataLoad)}/>}
-            <DetailRow label="Načten úplný AIP" value={getBoolIcon(detail.comleteAipLoad)}/>
+            <DetailRow label="Načten úplný AIP" value={getBoolIcon(detail.completeAipLoad)}/>
             <DetailRow label="Chyba při načtení metadat" value={getBoolIcon(detail.metadataError)}/>
             {detail.metadataErrorException &&
                 <DetailRow label="Chyba při načtení metadat" value={detail.metadataErrorException}/>}

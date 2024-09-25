@@ -847,4 +847,8 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20240925145600" author="fantis">
+        <renameColumn tableName="da_aip_state" oldColumnName="comlete_aip_load" newColumnName="complete_aip_load"/>
+    </changeSet>
+
 </databaseChangeLog>

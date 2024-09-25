@@ -83,7 +83,7 @@ public class DaAipState {
     private Boolean metadataLoad;
 
     @Column
-    private Boolean comleteAipLoad;
+    private Boolean completeAipLoad;
 
     @Column
     private Boolean metadataError;
@@ -246,12 +246,12 @@ public class DaAipState {
         this.metadataLoad = metadataLoad;
     }
 
-    public Boolean getComleteAipLoad() {
-        return comleteAipLoad;
+    public Boolean getCompleteAipLoad() {
+        return completeAipLoad;
     }
 
-    public void setComleteAipLoad(Boolean comleteAipLoad) {
-        this.comleteAipLoad = comleteAipLoad;
+    public void setCompleteAipLoad(Boolean completeAipLoad) {
+        this.completeAipLoad = completeAipLoad;
     }
 
     public Boolean getMetadataError() {
