@@ -20,7 +20,7 @@ public abstract class FileDownload {
      */
     public static void addContentDispositionAsAttachment(HttpServletResponse response, String srcFilename) {
         StringBuilder sb = new StringBuilder();
-        String incorrectChars = ",;\"`'\\/:+*|!<>";
+        String incorrectChars = ",;\"`'\\/:+*|!<>?";
         char[] chars = StringUtils.stripAccents(srcFilename).toCharArray();
         boolean onlyWhitespaces = true;
         for (char c : chars) {
