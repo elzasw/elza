@@ -38,6 +38,7 @@ class FundTreeLazy extends AbstractReactComponent {
         showCountStats: false,
         showCollapseAll: true,
         onLinkClick: null,
+        scrollDelay: 200,
     };
 
     UNSAFE_componentWillMount() {
@@ -361,6 +362,7 @@ class FundTreeLazy extends AbstractReactComponent {
             nodes,
             selectedId,
             onExpand,
+            scrollDelay
         } = this.props;
 
         let index;
@@ -435,7 +437,7 @@ class FundTreeLazy extends AbstractReactComponent {
                                 items={this.props.nodes}
                                 renderItem={this.renderNode}
                                 itemBuffer={10}
-                                scrollDelay={100}
+                                scrollDelay={scrollDelay}
                                 />
                         )}
                     </div>
