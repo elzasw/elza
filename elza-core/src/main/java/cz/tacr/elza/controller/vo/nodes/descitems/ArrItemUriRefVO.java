@@ -21,13 +21,15 @@ public class ArrItemUriRefVO extends ArrItemVO {
 
     }
 
-    public ArrItemUriRefVO(ArrItem item, String value, String description) {
+    public ArrItemUriRefVO(ArrItem item, String value, String description, final Integer nodeId, final Integer refTemplateId) {
         super(item);
         this.value = value;
         this.description = description;
-    }
+        this.nodeId = nodeId;
+        this.refTemplateId = refTemplateId; 
+	}
 
-    public Integer getNodeId() {
+	public Integer getNodeId() {
         return nodeId;
     }
 
@@ -73,6 +75,8 @@ public class ArrItemUriRefVO extends ArrItemVO {
         ArrData data = HibernateUtils.unproxy(item.getData());
         String value = null;
         String description = null;
+        Integer nodeId = null;
+        Integer refTemplateId = null;
         if (data != null) {
             if (!(data instanceof ArrDataUriRef)) {
                 throw new BusinessException("Inconsistent data type", BaseCode.PROPERTY_IS_INVALID)
@@ -81,8 +85,10 @@ public class ArrItemUriRefVO extends ArrItemVO {
             ArrDataUriRef dataUriRef = (ArrDataUriRef) data;
             value = dataUriRef.getUriRefValue();
             description = dataUriRef.getDescription();
+            nodeId = dataUriRef.getNodeId();
+            refTemplateId = dataUriRef.getRefTemplateId();
         }
-        ArrItemUriRefVO vo = new ArrItemUriRefVO(item, value, description);
+        ArrItemUriRefVO vo = new ArrItemUriRefVO(item, value, description, nodeId, refTemplateId);
         return vo;
 
     }
