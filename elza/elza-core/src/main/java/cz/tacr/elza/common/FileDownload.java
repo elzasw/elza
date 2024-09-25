@@ -1,5 +1,7 @@
 package cz.tacr.elza.common;
 
+import java.util.regex.Pattern;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +13,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 public abstract class FileDownload {
     public static final String CONTENT_DISPOSITION = "Content-Disposition";
+    
+    private static final Pattern UNSUPPORTED_CHARS = Pattern.compile("[^ a-zA-Z0-9-_\\.]");
 
     /**
      * Add instructions to the servlet to download file as attachment
@@ -20,28 +24,15 @@ public abstract class FileDownload {
      */
     public static void addContentDispositionAsAttachment(HttpServletResponse response, String srcFilename) {
         StringBuilder sb = new StringBuilder();
-        String incorrectChars = ",;\"`'\\/:+*|!<>?";
-        char[] chars = StringUtils.stripAccents(srcFilename).toCharArray();
-        boolean onlyWhitespaces = true;
-        for (char c : chars) {
-            if (incorrectChars.indexOf(c) >= 0) {
-                // skip 
-                continue;
-            }
-            if (!Character.isWhitespace(c)) {
-                onlyWhitespaces = false;
-            } else {
-                // skip leading whitespaces
-                if (onlyWhitespaces) {
-                    continue;
-                }
-            }
-            sb.append(c);
+        
+        String fileName = StringUtils.stripAccents(srcFilename);
+        
+        fileName = UNSUPPORTED_CHARS.matcher(fileName.trim()).replaceAll("_");
+        
+        if(StringUtils.isBlank(fileName)) {
+        	fileName = "download.bin";
         }
-        // add default name
-        if (onlyWhitespaces) {
-            sb.append("download.bin");
-        }
+
         response.setHeader("Content-Disposition", "attachment; filename=" + sb.toString());
     }
 }
