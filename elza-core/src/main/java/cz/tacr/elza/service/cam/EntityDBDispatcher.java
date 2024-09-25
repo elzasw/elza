@@ -1486,7 +1486,7 @@ public class EntityDBDispatcher {
                     if (!(il.getItemType().getCode().equals(itemLink.getT().getValue()) &&
                             compareItemSpec(il.getItemSpec(), itemLink.getS()) &&
                             dataUriRef.getUriRefValue().equals(itemLink.getUrl().getValue()) &&
-                            dataUriRef.getDescription().equals(itemLink.getNm().getValue()))) {
+                            Objects.equals(dataUriRef.getDescription(), itemLink.getNm().getValue()))) {
 
                     	result.addChanged(bindingItem, itemLink);
                     } else {
