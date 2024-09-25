@@ -100,6 +100,9 @@ public class ApStateSpecification implements Specification<ApState> {
         Validate.isTrue(!scopeIds.isEmpty());
         condition = cb.and(condition, stateRoot.get(ApState.FIELD_SCOPE_ID).in(scopeIds));
 
+        // pouze aktuální state
+        condition = cb.and(condition, cb.isNull(stateRoot.get(ApState.FIELD_DELETE_CHANGE_ID)));
+
         // typ archivní entity
         if (CollectionUtils.isNotEmpty(apTypeIdTree)) {
             condition = cb.and(condition, stateRoot.get(ApState.FIELD_AP_TYPE_ID).in(apTypeIdTree));
@@ -110,31 +113,32 @@ public class ApStateSpecification implements Specification<ApState> {
             condition = cb.and(condition, stateRoot.get(ApState.FIELD_STATE_APPROVAL).in(state));
         }
 
-        Root<ApRevState> revStateRoot = q.from(ApRevState.class);
-        Join<ApRevState, ApRevision> revisionJoin = revStateRoot.join(ApRevState.FIELD_REVISION, JoinType.INNER);
-        if (revState != null) {
-            condition = cb.and(condition,
-                    cb.equal(stateRoot.get(ApState.FIELD_STATE_ID), revisionJoin.get(ApState.FIELD_STATE_ID)),
-                    cb.isNull(revStateRoot.get(ApRevState.FIELD_DELETE_CHANGE_ID)), 
-                    revStateRoot.get(ApRevState.FIELD_STATE_APPROVAL).in(revState));
-        }
+        Join<ApState, ApRevision> revisionJoin = stateRoot.join(ApState.FIELD_REVISION_LIST, JoinType.LEFT);
+        revisionJoin.on(cb.isNull(revisionJoin.get(ApRevision.FIELD_DELETE_CHANGE_ID)));
 
-        // pouze aktuální state
-        condition = cb.and(condition, cb.isNull(stateRoot.get(ApState.FIELD_DELETE_CHANGE_ID)));
+        Join<ApRevision, ApRevState> revStateJoin = revisionJoin.join(ApRevision.FIELD_REV_STATE_LIST, JoinType.LEFT);
+        revStateJoin.on(cb.isNull(revStateJoin.get(ApRevState.FIELD_DELETE_CHANGE_ID)));
+
+        if (revState != null) {
+            condition = cb.and(condition, revStateJoin.get(ApRevState.FIELD_STATE_APPROVAL).in(revState));
+        }
 
         if (searchFilterVO != null) {
             String user = searchFilterVO.getUser();
             if (StringUtils.isNotEmpty(user)) {
+            	String userLike = "%" + user.toLowerCase() + "%";
+
                 Join<ApState, ApChange> apChangeJoin = stateRoot.join(ApState.FIELD_CREATE_CHANGE, JoinType.INNER);
                 Join<ApChange, UsrUser> changeUserJoin = apChangeJoin.join(ApChange.USER, JoinType.LEFT);
 
-                Join<ApRevState, ApChange> revChangeJoin = revStateRoot.join(ApState.FIELD_CREATE_CHANGE, JoinType.INNER);
+                Join<ApRevState, ApChange> revChangeJoin = revStateJoin.join(ApRevState.FIELD_CREATE_CHANGE, JoinType.LEFT);
                 Join<ApChange, UsrUser> revChangeUserJoin = revChangeJoin.join(ApChange.USER, JoinType.LEFT);
 
-            	Predicate usrState = cb.like(cb.lower(changeUserJoin.get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%");
-            	Predicate usrRevSt = cb.and(cb.equal(stateRoot.get(ApState.FIELD_STATE_ID), revisionJoin.get(ApState.FIELD_STATE_ID)),
-						  				  cb.isNull(revStateRoot.get(ApRevision.FIELD_DELETE_CHANGE_ID)),
-						  				  cb.like(cb.lower(revChangeUserJoin.get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%"));
+                // autor poslední změny stavu, pro tento stav nejsou žádné revize
+                Predicate usrState = cb.and(cb.isNull(revStateJoin), cb.like(cb.lower(changeUserJoin.get(UsrUser.FIELD_USERNAME)), userLike));
+
+                // autor poslední změny stavu revize
+            	Predicate usrRevSt = cb.like(cb.lower(revChangeUserJoin.get(UsrUser.FIELD_USERNAME)), userLike);
 
             	condition = cb.and(condition, cb.or(usrState, usrRevSt));
             }
