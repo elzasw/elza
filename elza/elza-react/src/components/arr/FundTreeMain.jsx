@@ -209,7 +209,7 @@ class FundTreeMain extends React.Component {
 
         if(node){
             expandedNodes = [node, ...getNodeChildren(node, nodes)]
-        } 
+        }
 
         expandedNodes = expandedNodes.filter((node) => node.hasChildren)
 
@@ -301,6 +301,7 @@ class FundTreeMain extends React.Component {
                 extendedReadOnly={fund.fundTree.luceneQuery}
                 onClickExtendedSearch={this.handleExtendedSearch}
                 showEditPermissions={showEditPermissions}
+                scrollDelay={0}
             />
         );
     }
