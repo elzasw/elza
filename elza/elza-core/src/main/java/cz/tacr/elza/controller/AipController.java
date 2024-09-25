@@ -48,7 +48,7 @@ public class AipController implements AipsApi {
 
     @Override
     public ResponseEntity<Resource> aipDownloadComponent(Integer fileId) {
-        return AipsApi.super.aipDownloadComponent(fileId);
+        return daService.getComponent(fileId);
     }
 
     @Override
