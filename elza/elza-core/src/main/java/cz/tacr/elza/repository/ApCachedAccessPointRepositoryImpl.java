@@ -42,7 +42,6 @@ import cz.tacr.elza.controller.vo.RelationFilterVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrDataUnitdate;
@@ -52,7 +51,9 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import cz.tacr.elza.service.SettingsService;
@@ -189,32 +190,28 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     	BooleanPredicateClausesStep<?> bool = factory.bool();
 
     	if (StringUtils.isNotEmpty(search)) {
+    		boolean onlyMainPart = (searchFilterVO.getOnlyMainPart() != null && searchFilterVO.getOnlyMainPart());
     		RulPartType defaultPartType = sdp.getDefaultPartType();
     		List<String> keyWords = getKeyWordsFromSearch(search);
     		for (String keyWord : keyWords) {
     			String partTypeCode;
-    			boolean onlyMainPart = false;
     			switch (area) {
                   case PREFER_NAMES:
                       partTypeCode = PREFIX_PREF;
-                      if (searchFilterVO.getOnlyMainPart() != null && searchFilterVO.getOnlyMainPart()) {
-                          onlyMainPart = true;
-                      }
                       break;
                   case ALL_PARTS:
+                	  // s takovou volbou zaškrtávací políčko onlyMainPart ignorujeme
+                      onlyMainPart = false;
                       partTypeCode = null;
                       break;
                   case ALL_NAMES:
                       partTypeCode = defaultPartType.getCode().toLowerCase();
-                      if (searchFilterVO.getOnlyMainPart() != null && searchFilterVO.getOnlyMainPart()) {
-                          onlyMainPart = true;
-                      }
                       break;
                   default:
                       throw new NotImplementedException("Neimplementovaný stav oblasti: " + area);
     			}
     			if (onlyMainPart) {
-    				bool.must(processValueCondDef(factory, keyWord, sdp.getItemType(NM_MAIN.toUpperCase()), null, partTypeCode));
+    				bool.must(processValueCondDef(factory, keyWord, sdp.getItemType(NM_MAIN.toUpperCase()), null, area == Area.PREFER_NAMES));
     			} else {
     				bool.must(processIndexCondDef(factory, keyWord, partTypeCode));
     			}
@@ -239,7 +236,12 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     			if (ext.getValue() != null) {
     				value = ext.getValue().toString();
     			}
-    			bool.must(processValueCondDef(factory, value, itemType, itemSpec, ext.getPartTypeCode()));
+    			// nelze limitovat cast v niz se hleda
+    			if(StringUtils.isNotEmpty(ext.getPartTypeCode()) && value != null) {
+    				throw new BusinessException("Vyhledávací dotaz Lucene nelze omezit na typ ApPart", ArrangementCode.REQUEST_INVALID_STATE)
+    					.set("partTypeCode", ext.getPartTypeCode());
+    			}
+    			bool.must(processValueCondDef(factory, value, itemType, itemSpec, false));
     		}
     	}
     	if (CollectionUtils.isNotEmpty(searchFilterVO.getRelFilters())) {
@@ -254,7 +256,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     					} else {
     						itemSpec = null;
     					}
-    					relPred.should(processValueCondDef(factory, rel.getCode().toString(), itemType, itemSpec, null));
+    					relPred.should(processValueCondDef(factory, rel.getCode().toString(), itemType, itemSpec, false));
     				} else {
     					relPred.should(factory.match().field(REL_AP_ID).matching(rel.getCode()));
     				}
@@ -279,18 +281,19 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     	return bool.toPredicate();
     }
 
-	private SearchPredicate processValueCondDef(SearchPredicateFactory factory, String value,
-												RulItemType itemType, RulItemSpec itemSpec, String partTypeCode) {
+	private SearchPredicate processValueCondDef(SearchPredicateFactory factory, 
+												String value,
+												RulItemType itemType, 
+												RulItemSpec itemSpec, 
+												boolean onlyPrefPart) {
 		if (itemType == null) {
 			throw new SystemException("Missing itemType", BaseCode.INVALID_STATE);
 		}
 
 		BooleanPredicateClausesStep<?> bool = factory.bool();
 		String fieldName = "";
-		if (StringUtils.isNotEmpty(partTypeCode)) {
-			if (partTypeCode.equals(PREFIX_PREF)) {
-				fieldName = PREFIX_PREF + SEPARATOR;
-			}
+		if (onlyPrefPart) {
+			fieldName = PREFIX_PREF + SEPARATOR;
 		}
 		fieldName += itemType.getCode().toLowerCase();
 		String itemTypeCode = itemType.getCode().toLowerCase();
@@ -303,7 +306,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                 value = itemSpec.getCode().toLowerCase();
                 bool.should(factory.match().field(addDataPrefix(fieldName)).matching(value));
             } else {
-                if (StringUtils.isEmpty(partTypeCode) || !partTypeCode.equals(PREFIX_PREF)) {
+                if (!onlyPrefPart) {
                     // boost o preferovaný item
                 	boostWildcardQuery(factory, bool, 
                 					   PREFIX_PREF + SEPARATOR + itemTypeCode + SEPARATOR + itemSpecCode,
@@ -313,7 +316,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
             }
 
         } else {
-            if (StringUtils.isEmpty(partTypeCode) || !partTypeCode.equals(PREFIX_PREF)) {
+            if (!onlyPrefPart) {
                 // boost o preferovaný item
             	boostWildcardQuery(factory, bool, PREFIX_PREF + SEPARATOR + itemTypeCode, wildcardValue(value), true, true);
             }
@@ -323,7 +326,9 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         return bool.toPredicate();
 	}
 
-    private SearchPredicate processIndexCondDef(SearchPredicateFactory factory, String value, String partTypeCode) {
+    private SearchPredicate processIndexCondDef(SearchPredicateFactory factory, 
+    											String value, 
+    											String partTypeCode) {
         BooleanPredicateClausesStep<?> bool = factory.bool();
 
         String fieldName = "";
@@ -358,7 +363,9 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         return bool.toPredicate();
     }
 
-    private void boostWildcardQuery(SearchPredicateFactory factory, BooleanPredicateClausesStep<?> step, String fieldName, 
+    private void boostWildcardQuery(SearchPredicateFactory factory, 
+    								BooleanPredicateClausesStep<?> step, 
+    								String fieldName, 
     								String value, boolean trans, boolean exact) {
     	float boost = 1.0f;
     	Float boostExact = null;
@@ -379,8 +386,10 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     	}
     }
 
-    private void boostExactQuery(SearchPredicateFactory factory, BooleanPredicateClausesStep<?> step, String fieldName, 
-    		                     String value, Float boostExact, Float boostTransExact) {
+    private void boostExactQuery(SearchPredicateFactory factory, 
+    							 BooleanPredicateClausesStep<?> step, String fieldName, 
+    		                     String value, 
+    		                     Float boostExact, Float boostTransExact) {
     	if (boostExact != null) {
     		step.should(factory.wildcard().field(addDataPrefix(fieldName)).matching(value).boost(boostExact));
     	}
@@ -389,7 +398,10 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     	}
     }
 
-    private void boostExactQuery(SearchPredicateFactory factory, BooleanPredicateClausesStep<?> step, String fieldName, String value, boolean prefix) {
+    private void boostExactQuery(SearchPredicateFactory factory, 
+    		                     BooleanPredicateClausesStep<?> step, 
+    		                     String fieldName, 
+    		                     String value, boolean prefix) {
     	SettingIndexSearch.Field sisField = getFieldSearchConfigByName(fieldName);
     	if (sisField != null) { 
     		Float boostExact = sisField.getBoostExact();

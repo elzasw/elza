@@ -48,7 +48,7 @@ public class ArrItemCoordinatesVO extends ArrItemVO {
         Geometry geo = GeometryConvertor.convert(value);
         data.setValue(geo);
         data.setDataType(DataType.COORDINATES.getEntity());
-        return null;
+        return data;
     }
 
     public static ArrItemCoordinatesVO newInstance(ArrItem item) {

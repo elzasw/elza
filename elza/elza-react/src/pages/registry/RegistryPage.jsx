@@ -93,7 +93,7 @@ class RegistryPage extends AbstractReactComponent {
     }
 
     canDeleteRegistry = () => {
-        // We can delete item if has id, data and if it is not part of the external 
+        // We can delete item if has id, data and if it is not part of the external
         // system with CAM_COMPLETE type
         const {
             registryDetail: { id, data },
@@ -369,7 +369,7 @@ class RegistryPage extends AbstractReactComponent {
                 <ApCopyModal
                     onSubmit={async (data) => {
                         const id = detail.id;
-                        const result = await Api.accesspoints.copyAccessPoint(id, data);
+                        const result = await Api.accesspoints.accessPointCopyAccessPoint(id, data);
                         dispatch(modalDialogHide())
                         dispatch(goToAe(history, result.data.id, true, true, revisionActive));
                         return;

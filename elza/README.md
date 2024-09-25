@@ -222,3 +222,8 @@ Po přeložení spuštění je potřeba naimportovat
 Aby bylo možné vytvářen archivní fondy, je nutné importovat instituci v sekci Osoby - soubor elza-core/src/test/resources/institution-import.xml
 
 Importovat je možné též instituce archivů ze souboru `package-cz-base/src/all-institutions-import.xml`
+
+# Nastavení verze
+To set other version it is possible to use maven:
+mvn -U "versions:set" "-DnewVersion=3.0-SNAPSHOT"
+
