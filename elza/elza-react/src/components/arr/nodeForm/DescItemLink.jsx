@@ -4,7 +4,7 @@ import { AbstractReactComponent, i18n } from 'components/shared';
 import { connect } from 'react-redux';
 import { normalizeString } from 'components/validate.jsx';
 import { decorateValue, inputValue } from './DescItemUtils.jsx';
-import {DescItemLabel} from './DescItemLabel';
+import { DescItemLabel } from './DescItemLabel';
 import Icon from '../../shared/icon/Icon';
 import { Button } from 'react-bootstrap';
 import { SelectSearchFundsForm } from 'components/arr/SelectSearchFundsForm';
@@ -87,8 +87,7 @@ class DescItemLink extends AbstractReactComponent {
         const { descItem } = this.props;
         if (descItem.value.startsWith(ELZA_SCHEME_NODE)) {
             if (descItem.nodeId) {
-                const uuid = descItem.value.replace(ELZA_SCHEME_NODE + '://', '');
-                this.props.dispatch(routerNavigate(`/node/${uuid}`));
+                this.props.dispatch(routerNavigate(`/node/${descItem.nodeId}`));
             }
         } else {
             window.open(descItem.value, '_blank');
