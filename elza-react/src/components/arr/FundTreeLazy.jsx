@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { createRef } from 'react';
 import ReactDOM from 'react-dom';
 import {
     AbstractReactComponent,
@@ -38,7 +38,7 @@ class FundTreeLazy extends AbstractReactComponent {
         showCountStats: false,
         showCollapseAll: true,
         onLinkClick: null,
-        scrollDelay: 200,
+        colorCoded: true,
     };
 
     UNSAFE_componentWillMount() {
@@ -49,7 +49,7 @@ class FundTreeLazy extends AbstractReactComponent {
         return {shortcuts: this.shortcutManager};
     }
 
-    treeContainerRef = null;
+    treeContainerRef = createRef();
 
     state = {};
 
@@ -161,10 +161,6 @@ class FundTreeLazy extends AbstractReactComponent {
             this.actionMap[action](e);
         }
     };
-
-    componentDidMount() {
-        this.setState({treeContainer: this.treeContainerRef});
-    }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         if(this.props.nodes != nextProps.nodes){
@@ -426,14 +422,14 @@ class FundTreeLazy extends AbstractReactComponent {
                         <div style={{flexGrow:1}}/>
                         {actionAddons}
                     </div>
-                    <div className="fa-tree-lazy-container" ref={ref => this.treeContainerRef = ref}>
+                    <div className="fa-tree-lazy-container" ref={this.treeContainerRef}>
                         <StoreHorizontalLoader store={{fetched, isFetching}} />
-                        {this.state.treeContainer && (
+                        {this.treeContainerRef.current && (
                             <VirtualList
-                                scrollTopPadding={TREE_TOP_PADDING}
                                 tagName="div"
+                                scrollTopPadding={TREE_TOP_PADDING}
                                 scrollToIndex={index}
-                                container={this.state.treeContainer}
+                                container={this.treeContainerRef.current}
                                 items={this.props.nodes}
                                 renderItem={this.renderNode}
                                 itemBuffer={10}

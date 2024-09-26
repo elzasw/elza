@@ -301,7 +301,6 @@ class FundTreeMain extends React.Component {
                 extendedReadOnly={fund.fundTree.luceneQuery}
                 onClickExtendedSearch={this.handleExtendedSearch}
                 showEditPermissions={showEditPermissions}
-                scrollDelay={0}
             />
         );
     }
