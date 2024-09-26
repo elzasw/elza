@@ -1963,18 +1963,10 @@ public class ClientFactoryVO {
             default -> throw new BusinessException("Unrecognized queue item state", BaseCode.INVALID_STATE);
         }
     }
-    public DaDaoVO createDaDaoVO(DaDao daDao) {
-        DaDaoVO result = new DaDaoVO();
-        result.setDaoId(daDao.getDaoId());
-        result.setCode(daDao.getCode());
-        result.setLabel(daDao.getLabel());
-        result.setType(daDao.getType());
-        return result;
-    }
 
     public ExplorerTreeNodeFile createExplorerTreeNodeFile(DaDaoFile daDaoFile, List<ArrDaoLink> daoLinks, Map<Integer, TreeNodeVO> treeNodeMap) {
         ExplorerTreeNodeFile result = new ExplorerTreeNodeFile();
-        result.setUuid(UUID.randomUUID().toString());
+        result.setUuid(UUID.nameUUIDFromBytes(daDaoFile.getDaoFileId().toString().getBytes()).toString());
         result.setDaoFileId(daDaoFile.getDaoFileId());
         result.setChecksum(daDaoFile.getChecksum());
         result.setChecksumType(daDaoFile.getChecksumType());
@@ -2002,7 +1994,9 @@ public class ClientFactoryVO {
             List<LinkedNode> linkedNodeList = new ArrayList<>();
             for (ArrDaoLink daoLink : daoLinks) {
                 TreeNodeVO treeNode = treeNodeMap.get(daoLink.getNodeId());
-                linkedNodeList.add(new LinkedNode(daoLink.getDaoLinkId(), treeNode.getId(), treeNode.getName()));
+                if(treeNode != null) {
+                    linkedNodeList.add(new LinkedNode(daoLink.getDaoLinkId(), treeNode.getId(), treeNode.getName()));
+                }
             }
             return linkedNodeList;
         }
@@ -2040,7 +2034,7 @@ public class ClientFactoryVO {
 
     public ExplorerTreeNode createExplorerTreeNode(DaDaoFileFolder daDaoFileFolder, Map<Integer, List<ArrDaoLink>> daoLinkMap, Map<Integer, TreeNodeVO> treeNodeMap) {
         ExplorerTreeNode result = new ExplorerTreeNode();
-        result.setUuid(UUID.randomUUID().toString());
+        result.setUuid(UUID.nameUUIDFromBytes(daDaoFileFolder.getDaoFileFolderId().toString().getBytes()).toString());
         result.setDaoId(daDaoFileFolder.getRepresentationDao().getDaoId());
         result.setLinkedNodes(createLinkedNodes(daoLinkMap.getOrDefault(daDaoFileFolder.getRepresentationDao().getDaoId(), new ArrayList<>()), treeNodeMap));
         if(daDaoFileFolder.getParentFileFolder() != null) {

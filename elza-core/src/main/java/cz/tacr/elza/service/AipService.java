@@ -100,7 +100,7 @@ public class AipService {
         for (DaLevelView view : rootLevelViews) {
             buildLogicalTree(view, levelViewIdToDaosMap, treeNodes, 2, root.getUUID(), aipIds);
         }
-        if(!treeNodes.isEmpty()) {
+        if(!rootLevelViews.isEmpty()) {
             root.setHasChildren(true);
             treeNodes.add(0, root);
         }

@@ -66,7 +66,9 @@ const NodeDetail: FC<NodeDetailProps> = ({tree, selectedNode, setSelectedAips}: 
                 <Icon glyph="fa-sign-in" />
             </Button>}
             </h4>
-            {aip.data && <AipDetailBody detail={aip.data} />}
+            {aip.data &&
+                <AipDetailBody detail={aip.data} />
+            }
        </div>
     );
 }
