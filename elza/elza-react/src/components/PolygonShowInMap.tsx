@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import CrossTabHelper, { CrossTabEventType, getThisLayout } from './CrossTabHelper';
 import { Button } from './ui';
 import { i18n, Icon, TooltipTrigger } from 'components/shared';
-import { MAP_URL } from '../pages/map/MapPage';
+import { MAP_URL_WITH_CONTEXT } from '../pages/map/MapPage';
 import classNames from 'classnames';
 import { useThunkDispatch } from 'utils/hooks';
 import { useSelector } from 'react-redux';
@@ -70,7 +70,7 @@ export const PolygonTooltip = ({
         }
     }, [polygon])
 
-    let mapViewUrl = MAP_URL + '?iframe=1'; // adresa vestavene implementace v Elza
+    let mapViewUrl = MAP_URL_WITH_CONTEXT + '?iframe=1'; // adresa vestavene implementace v Elza
 
     if (geoViewExternalSystems.length === 1) {
         const { url, apiKeyValue } = geoViewExternalSystems[0];
