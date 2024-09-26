@@ -20,8 +20,7 @@ import { findNodeByUUID } from "../utils";
 const AipTree: FC<{onSelect?: (node) => void}> = ({onSelect}) => {
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
     const {data: structure} = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE));
-    const {selectedItem, setSelectedItem, setStructure} = useExplorerContext();
-    const {mode} = useExplorerContext();
+    const {selectedItem, setSelectedItem, mode} = useExplorerContext();
 
     if (structure) {
         structure.parent = null;
@@ -64,11 +63,6 @@ const AipTree: FC<{onSelect?: (node) => void}> = ({onSelect}) => {
     useEffect(() => {
         dispatch(fetchAipStructureIfNeeded(aip.id));
     }, [aip.id]);
-
-    useEffect(() => {
-        setSelectedItem(structure);
-        setStructure(structure)
-    }, [structure]);
 
     useEffect(() => {
         if (selectedItem) {

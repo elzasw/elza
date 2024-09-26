@@ -8,7 +8,7 @@ import FundTree from "./FundTree";
 import AipExplorer from "../../../aip/explorer/AipExplorer.tsx";
 import {ExplorerMode} from "../../../aip/explorer/ExplorerContext.tsx";
 import {WebApi} from "../../../../actions";
-import { AREA_SELECTED_AIP_DAOS } from "actions/aip/aip.ts";
+import { AREA_AIP } from "actions/aip/aip.ts";
 import { useSelector } from "react-redux";
 import storeFromArea from "shared/utils/storeFromArea.jsx";
 import { AppState } from "typings/store/AppState.types.ts";
@@ -26,18 +26,19 @@ type AipAssignmentModalProps = {
 const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>  {
     const [rightSelectedNode, setRightSelectedNode] = useState<TreeItemValue>(tree.nodes[0].id);
     const [leftSelectedNode, setLeftSelectedNode] = useState<number>(null);
-
-    const selectedDaDaos = useSelector((state: AppState) => storeFromArea(state, AREA_SELECTED_AIP_DAOS));
+    const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP))
     const dispatch = useThunkDispatch();
 
     const handleConnectToJP = () => {
-        WebApi.connectAipToJp(rightSelectedNode as number, aipId)
-            .then(dispatch(fetchAipStructureIfNeeded(aipId, true)));
+        console.log('leftSelectedNode :>> ', leftSelectedNode);
+
+        WebApi.connectAipToJp(rightSelectedNode as number, aip.id)
+            .then(dispatch(fetchAipStructureIfNeeded(aip.id, true)));
     }
 
     const handleCreateFromSelected = () => {
-        WebApi.connectAipPartToJp(rightSelectedNode as number, aipId, leftSelectedNode)
-            .then(dispatch(fetchAipStructureIfNeeded(aipId, true)));
+        WebApi.connectAipPartToJp(rightSelectedNode as number,  aip.id, leftSelectedNode)
+            .then(dispatch(fetchAipStructureIfNeeded(aip.id, true)));
     }
 
     const handleSelectAndConnectToJP = () => {
@@ -48,11 +49,11 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
                 submittingMessage={i18n('arr.aip.assignment.part.confirm-first') + i18n('arr.aip.assignment.part.confirm-last')}
                 submitTitle={i18n('global.action.run')}
                 onSubmit={() => {
-                    return WebApi.createJpFromSelectedAip(rightSelectedNode as number, aipId, leftSelectedNode)
+                    return WebApi.createJpFromSelectedAip(rightSelectedNode as number, aip.id, leftSelectedNode)
                 }}
                 onSubmitSuccess={() => {
                     dispatch(modalDialogHide());
-                    dispatch(fetchAipStructureIfNeeded(aipId, true));
+                    dispatch(fetchAipStructureIfNeeded(aip.id, true));
                 }}
             />
         );
@@ -69,11 +70,11 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
                 submittingMessage={i18n('arr.aip.assignment.part.confirm-first') + i18n('arr.aip.assignment.part.confirm-last')}
                 submitTitle={i18n('global.action.run')}
                 onSubmit={() => {
-                    return WebApi.createJpLinkFromSelectedAip(rightSelectedNode as number, aipId, leftSelectedNode);
+                    return WebApi.createJpLinkFromSelectedAip(rightSelectedNode as number, aip.id, leftSelectedNode);
                 }}
                 onSubmitSuccess={() => {
                     dispatch(modalDialogHide());
-                    dispatch(fetchAipStructureIfNeeded(aipId, true));
+                    dispatch(fetchAipStructureIfNeeded(aip.id, true));
                 }}
             />
         );

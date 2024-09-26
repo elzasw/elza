@@ -11,12 +11,7 @@ import java.util.List;
 
 @Repository
 public interface AipStateRepository extends JpaRepository<DaAipState, Integer> {
-
-
     DaAipState findByDaAipAndDeleteChangeIsNull(@Param("daAip") DaAip daAip);
-
-    @Query("SELECT das FROM da_aip_state das WHERE das.daAip = :daAip AND das.deleteChange IS NULL")
-    DaAipState findByAip(@Param("daAip") DaAip daAip);
 
     List<DaAipState> findByDaAipInAndDeleteChangeIsNull(List<DaAip> aipList);
 }

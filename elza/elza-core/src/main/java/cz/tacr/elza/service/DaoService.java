@@ -724,6 +724,8 @@ public class DaoService {
         Map<Integer, ExplorerTreeNode> itemMap = new HashMap<>();
 
         List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaDaoInAndDeleteChangeIsNull(daDaoList);
+        List<ArrDaoLink> aipLinkList = daoLinkRepository.findByAip_AipIdAndDaDaoIsNullAndDeleteChangeIsNull(aipId);
+
         Map<Integer, List<ArrDaoLink>> daoLinkMap = daoLinkList.stream()
                 .collect(Collectors.groupingBy(l -> l.getDaDao().getDaoId()));
         Set<Integer> nodeIds = daoLinkList.stream().map(ArrDaoLink::getNodeId).collect(Collectors.toSet());
@@ -759,17 +761,19 @@ public class DaoService {
         addFilesToFoldersLogical(fileNodes, logicalMap, logicalRoot);
         ExplorerTreeNode metadata = buildMetadataStructure(daDaoList, daoLinkMap, treeNodeMap);
         ExplorerTreeNode representation = createExplorerTreeNode(
-                null,
+                -1,
                 "Reprezentace",
                 representationRoot != null ?  Collections.singletonList(representationRoot) : null
         );
         ExplorerTreeNode logical = createExplorerTreeNode(
-                null,
+                -2,
                 "Logická struktura",
                 logicalRoot != null ?  Collections.singletonList(logicalRoot) : null
         );
 
-        return createExplorerTreeNode(null, "Balíček", Arrays.asList(representation, logical, metadata));
+        ExplorerTreeNode root = createExplorerTreeNode(-3, "Balíček", Arrays.asList(representation, logical, metadata));
+        root.setLinkedNodes(clientFactoryVO.createLinkedNodes(aipLinkList, treeNodeMap));
+        return root;
     }
 
     private ExplorerTreeNode createParent(ExplorerTreeNode src) {
@@ -827,7 +831,7 @@ public class DaoService {
     private void addFilesToFoldersLogical(List<ExplorerTreeNodeFile> files, Map<Integer, ExplorerTreeNode> itemMap, ExplorerTreeNode root) {
         for (ExplorerTreeNodeFile file : files) {
             ExplorerTreeNodeFile copy = clientFactoryVO.copyFile(file);
-            copy.setUuid(UUID.randomUUID().toString());
+            copy.setUuid(UUID.nameUUIDFromBytes((file.getDaoFileFolderId().toString() + "cpy").getBytes()).toString());
             ExplorerTreeNode parent = itemMap.getOrDefault(
                     file.getParentFolderLogical() != null ? file.getParentFolderLogical().getDaoId() : null, root
             );
@@ -890,8 +894,8 @@ public class DaoService {
                 .toList();
 
         ExplorerTreeNode metadata = new ExplorerTreeNode();
-        metadata.setUuid(UUID.randomUUID().toString());
         metadata.setLabel("Metadata");
+        metadata.setUuid(UUID.nameUUIDFromBytes(metadata.getLabel().getBytes()).toString());
         metadata.setChildFiles(metadataFiles);
 
         return metadata;
@@ -899,7 +903,7 @@ public class DaoService {
 
     private ExplorerTreeNode createExplorerTreeNodeWithNodes(Integer id, String label, List<LinkedNode> linkedNodes) {
         ExplorerTreeNode node = new ExplorerTreeNode();
-        node.setUuid(UUID.randomUUID().toString());
+        node.setUuid(UUID.nameUUIDFromBytes(id.toString().getBytes()).toString());
         node.setDaoId(id);
         node.setLabel(label);
         node.setLinkedNodes(linkedNodes);

@@ -79,5 +79,7 @@ public interface DaoLinkRepository extends ElzaJpaRepository<ArrDaoLink, Integer
     @Query("SELECT adl FROM arr_dao_link adl WHERE adl.aip.aipId = :aipId AND adl.deleteChange IS NULL")
     List<ArrDaoLink> findByAipIdAndDeleteChangeIsNull(@Param("aipId") Integer aipId);
 
+    List<ArrDaoLink> findByAip_AipIdAndDaDaoIsNullAndDeleteChangeIsNull(Integer aipId);
+
     List<ArrDaoLink> findByDaDaoInAndDeleteChangeIsNull(Collection<DaDao> daDaos);
 }

@@ -46,7 +46,7 @@ export const getConnectedToJP = (linkedNodes: Array<LinkedNodeVO> | null, fundId
         iconString = "fa fa-check";
 
         nodes = linkedNodes.map(item =>
-            <div>
+            <div key={item.id}>
                 <a href={`/fund/${fundId}/node/${item.nodeId}`}>{item.name}</a>
                 <Button key="deleteLink" variant="action" onClick={() => handleDeleteLink(item.id)}>
                     <Icon glyph="fa fa-close" />
@@ -79,7 +79,7 @@ export const formatDate = (date: Date): string => {
 }
 
 export const formatAipSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return '0 B';
 
     const k = 1024;
     const sizes = ['B', 'kB', 'MB', 'GB', 'TB'];

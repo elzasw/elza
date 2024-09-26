@@ -1,5 +1,5 @@
 import i18n from "components/i18n";
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 import "./ExplorerDetail.scss";
 import { Button,  } from "@fluentui/react-components";
 import {  findNodeByUUID,  } from "../utils";
@@ -14,11 +14,14 @@ import {Api, getFullPath} from "../../../../api";
 import {fetchAipStructureIfNeeded} from "../../../../actions/aip/exp.ts";
 import {downloadFile} from "../../../../actions/global/download";
 import {AipsApiAxiosParamCreator} from "elza-api";
+import { AREA_AIP_STRUCTURE } from "actions/aip/exp.ts";
 
 const ExplorerDetail: FC = () => {
-    const {selectedItem, setSelectedItem, structure} = useExplorerContext();
+    const {selectedItem, setSelectedItem} = useExplorerContext();
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
+    const structure = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE));
     const dispatch = useThunkDispatch();
+    const [node, setNode] = useState(selectedItem);
 
     const fetchData = () => {
         dispatch(aipFetchIfNeeded(aip.id));
@@ -28,7 +31,27 @@ const ExplorerDetail: FC = () => {
         fetchData()
     }, [aip.id]);
 
-    console.log('aip.data :>> ', aip.data);
+    useEffect(() => {
+        if(!structure?.data) return;
+        
+        if(!selectedItem) {
+            setSelectedItem(structure.data); 
+        } else {
+            const result = findNodeByUUID(structure.data, selectedItem.uuid);
+            if(result && result.node) {
+                setSelectedItem(result.node);
+            }
+        }
+        if (structure) {
+            structure.parent = null;
+        }
+    }, [structure]);
+
+    useEffect(() => {
+        if(selectedItem) {
+            setNode(selectedItem)
+        }
+    }, [selectedItem]);
 
 
     const DetailRow = ({label, value}: {label: string, value?: any}) => (
@@ -56,17 +79,17 @@ const ExplorerDetail: FC = () => {
     }
 
     const renderName = () => {
-        return selectedItem.label || selectedItem.fileName;
+        return node.label || node.fileName;
     }
 
-    if(!selectedItem) {
+    if(!node) {
         return <p>Nebyl vybrám žádný objekt</p>
     }
     const renderRepresentationParent = () => {
         return (
             <span>
-                <a className="detail-item" onClick={() => selectFolder(selectedItem.parentFolder.uuid)}>
-                    {renderValue(selectedItem.parentFolder?.label)}
+                <a className="detail-item" onClick={() => selectFolder(node.parentFolder.uuid)}>
+                    {renderValue(node.parentFolder?.label)}
                 </a>
             </span>
         );
@@ -75,8 +98,8 @@ const ExplorerDetail: FC = () => {
     const renderLogicalParent = () => {
         return (
             <span>
-                <a className="detail-item" onClick={() => selectFolder(selectedItem.parentFolderLogical.uuid)}>
-                    {renderValue(selectedItem.parentFolderLogical?.label)}
+                <a className="detail-item" onClick={() => selectFolder(node.parentFolderLogical.uuid)}>
+                    {renderValue(node.parentFolderLogical?.label)}
                 </a>
             </span>
         );
@@ -104,16 +127,16 @@ const ExplorerDetail: FC = () => {
                 />
                 <DetailRow
                     label={i18n("aip.explorer.detail.checksum")}
-                    value={renderValue(selectedItem.checksumType)}
+                    value={renderValue(node.checksumType)}
                 />
                 <DetailRow
                     label={i18n("aip.explorer.detail.format")}
-                    value={renderValue(selectedItem.mimeType)}
+                    value={renderValue(node.mimeType)}
                 />
                 <DetailRow
                     label={i18n("aip.explorer.detail.as")}
                     // @ts-ignore
-                    value={getConnectedToJP(selectedItem.linkedNodes, aip.data?.fund.id, handleDeleteLink)}
+                    value={getConnectedToJP(node.linkedNodes, aip.data?.fund.id, handleDeleteLink)}
                 />
             </div>
         );
@@ -131,10 +154,10 @@ const ExplorerDetail: FC = () => {
                 >
                     <span>Zobrazit</span>
                 </Button>
-                {selectedItem.daoFileId && aip.data.completeAipLoad && <Button
+                {node.daoFileId && aip.data.completeAipLoad && <Button
                     as="a"
                     className="open-btn"
-                    onClick={() => handleDownloadComponent(selectedItem.daoFileId)}
+                    onClick={() => handleDownloadComponent(node.daoFileId)}
                     size="small"
                     shape="square"
                 >
@@ -144,16 +167,16 @@ const ExplorerDetail: FC = () => {
 
             <h4>{i18n("aip.explorer.detail.title")}</h4>
             <div className="explorer-detail-body">
-                {selectedItem && renderFileData()}
+                {node && renderFileData()}
             </div>
 
             <div>
                 <h4>Vztahy - reprezentace</h4>
                 {/* <p><b>{i18n("aip.explorer.detail.parent")} </b>{renderParent()}</p> */}
-                <p><b>{i18n("aip.explorer.detail.parent")} </b> {selectedItem.parentFolder ? renderRepresentationParent() : "-"}</p>
+                <p><b>{i18n("aip.explorer.detail.parent")} </b> {node.parentFolder ? renderRepresentationParent() : "-"}</p>
                 {/* <p><b>Potomci </b>{renderChildren()}</p> */}
                 <h4>Vztahy - logická struktura</h4>
-                <p><b>{i18n("aip.explorer.detail.parent")} </b>{ selectedItem.parentFolderLogical ? renderLogicalParent() : "-"}</p>
+                <p><b>{i18n("aip.explorer.detail.parent")} </b>{ node.parentFolderLogical ? renderLogicalParent() : "-"}</p>
             </div>
         </div>
     );

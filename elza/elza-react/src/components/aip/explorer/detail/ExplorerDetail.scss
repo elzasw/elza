@@ -2,7 +2,7 @@
 
 .explorer-detail {
     padding: 5px 10px;
-    height: 100%;
+    height: 80%;
     border-left: 1px solid $border-color;
 
     h4 {
@@ -30,15 +30,15 @@
             width: 100%;
             gap: 10px;
 
-    
+
             .col {
                 width: 50%;
             }
-    
+
             .label {
                 text-align: right;
             }
-    
+
             .value {
                 text-align: left;
             }
