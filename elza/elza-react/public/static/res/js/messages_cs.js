@@ -1265,6 +1265,7 @@ var messages = {
     "ap.ext-search.section.extends.spec": "Specifikace",
     "ap.ext-search.section.extends.value": "Hodnota",
 
+    "ap.ext-search.section.relations.title": "Přidat filtr vztahů",
     "ap.ext-search.section.relations.type": "Typ vztahu",
     "ap.ext-search.section.relations.spec": "Specifikace",
     "ap.ext-search.section.relations.area": "Oblast hledání",
