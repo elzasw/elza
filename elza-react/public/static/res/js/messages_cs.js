@@ -284,6 +284,7 @@ var messages = {
     "ribbon.action.arr.arr": "Pořádání",
     "ribbon.action.arr.dataGrid": "Tabulkové zobrazení",
     "ribbon.action.arr.dataGrid.export": "Export",
+    "ribbon.action.arr.dataGrid.import": "Import",
     "ribbon.action.arr.movements": "Přesuny",
     "ribbon.action.arr.output.add": "Nový výstup",
     "ribbon.action.arr.output.generate": "Generovat výstup",
