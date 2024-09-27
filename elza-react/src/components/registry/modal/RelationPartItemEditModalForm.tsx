@@ -17,6 +17,7 @@ import {DetailStoreState} from "../../../types";
 import {ApViewSettings} from "../../../api/ApViewSettings";
 import {objectById} from "../../../shared/utils";
 import {RulPartTypeVO} from "../../../api/RulPartTypeVO";
+import { Area } from 'api/Area';
 
 const FORM_NAME = "relationPartItemEditModalForm";
 
@@ -134,15 +135,17 @@ const RelationPartItemEditModalForm = ({
                     </Field>
                 </Col>
                 <Col xs={6}>
-                    <Form.Label>
-                        Pouze hlavní část
-                    </Form.Label>
-                    <Field
+                    {area !== Area.ALLPARTS && <>
+                        <Form.Label>
+                            {i18n('ap.ext-search.section.relations.only-main-part')}
+                        </Form.Label>
+                        <Field
                         name="onlyMainPart"
                         component={ReduxFormFieldErrorDecorator}
                         renderComponent={Form.Check}
                         type='checkbox'
                     />
+                    </>}
                 </Col>
                 {specialActionField && <Col xs={5}>
                     {specialActionField}
@@ -151,7 +154,7 @@ const RelationPartItemEditModalForm = ({
                     <ArchiveEntityRel
                         name={'codeObj'}
                         label={i18n('ap.ext-search.section.relations.obj')}
-                        onlyMainPart={onlyMainPart}
+                        onlyMainPart={area !== Area.ALLPARTS && onlyMainPart}
                         area={area}
                         scopeId={scopeId}
                         itemTypeId={typeId}
