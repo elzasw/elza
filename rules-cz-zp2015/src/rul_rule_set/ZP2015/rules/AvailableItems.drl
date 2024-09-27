@@ -6707,6 +6707,8 @@ when ActiveLevel($items: descItems)
         "ZP2015_ENTITY_ROLE_40",
         // výrobci
         "ZP2015_ENTITY_ROLE_53",
+        // místo fotografování
+        "ZP2015_ENTITY_ROLE_86",
         // typová označení a názvy výrobků a typových staveb
         "ZP2015_ENTITY_ROLE_63",
         // osoba/bytost související s jednotkami popisu
