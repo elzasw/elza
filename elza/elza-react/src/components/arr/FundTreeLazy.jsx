@@ -1,4 +1,4 @@
-import React, { createRef } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import {
     AbstractReactComponent,
@@ -39,6 +39,7 @@ class FundTreeLazy extends AbstractReactComponent {
         showCollapseAll: true,
         onLinkClick: null,
         colorCoded: true,
+        scrollDelay: 0,
     };
 
     UNSAFE_componentWillMount() {
@@ -49,7 +50,7 @@ class FundTreeLazy extends AbstractReactComponent {
         return {shortcuts: this.shortcutManager};
     }
 
-    treeContainerRef = createRef();
+    treeContainerRef = null;
 
     state = {};
 
@@ -161,6 +162,10 @@ class FundTreeLazy extends AbstractReactComponent {
             this.actionMap[action](e);
         }
     };
+
+    componentDidMount() {
+        this.setState({treeContainer: this.treeContainerRef});
+    }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
         if(this.props.nodes != nextProps.nodes){
@@ -358,7 +363,7 @@ class FundTreeLazy extends AbstractReactComponent {
             nodes,
             selectedId,
             onExpand,
-            scrollDelay
+            scrollDelay,
         } = this.props;
 
         let index;
@@ -422,14 +427,14 @@ class FundTreeLazy extends AbstractReactComponent {
                         <div style={{flexGrow:1}}/>
                         {actionAddons}
                     </div>
-                    <div className="fa-tree-lazy-container" ref={this.treeContainerRef}>
+                    <div className="fa-tree-lazy-container" ref={ref => this.treeContainerRef = ref}>
                         <StoreHorizontalLoader store={{fetched, isFetching}} />
-                        {this.treeContainerRef.current && (
+                        {this.state.treeContainer && (
                             <VirtualList
                                 tagName="div"
                                 scrollTopPadding={TREE_TOP_PADDING}
                                 scrollToIndex={index}
-                                container={this.treeContainerRef.current}
+                                container={this.state.treeContainer}
                                 items={this.props.nodes}
                                 renderItem={this.renderNode}
                                 itemBuffer={10}
