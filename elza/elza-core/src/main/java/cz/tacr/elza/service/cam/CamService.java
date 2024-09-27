@@ -79,7 +79,6 @@ import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApBindingSyncRepository;
-import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
@@ -89,6 +88,7 @@ import cz.tacr.elza.service.AccessPointItemService;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.AsyncRequestService;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.PartService;
@@ -112,9 +112,6 @@ public class CamService {
     private DataRecordRefRepository dataRecordRefRepository;
 
     @Autowired
-    private ApItemRepository itemRepository;
-
-    @Autowired
     private ApStateRepository stateRepository;
 
     @Autowired
@@ -128,6 +125,9 @@ public class CamService {
 
     @Autowired
     private AccessPointDataService apDataService;
+
+    @Autowired
+    private DataService dataService;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -474,7 +474,7 @@ public class CamService {
                 state,
                 apExternalSystem,
                 this.groovyService,
-                this.apDataService,
+                this.dataService,
                 state.getScope());
         if(!ceb.build(partList, itemMap)) {
         	return null;
@@ -499,7 +499,7 @@ public class CamService {
                 state,
                 bindingState,
                 this.groovyService,
-                this.apDataService,
+                this.dataService,
                 state.getScope(),
                 apExternalSystem);
 

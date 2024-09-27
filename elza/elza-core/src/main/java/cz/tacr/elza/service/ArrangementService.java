@@ -133,7 +133,6 @@ import cz.tacr.elza.repository.ArrRefTemplateMapSpecRepository;
 import cz.tacr.elza.repository.ArrRefTemplateMapTypeRepository;
 import cz.tacr.elza.repository.ArrRefTemplateRepository;
 import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DataCoordinatesRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -239,7 +238,7 @@ public class ArrangementService {
     private StaticDataService staticDataService;
 
     @Autowired
-    private DataCoordinatesRepository dataCoordinatesRepository;
+    private DataService dataService;
 
     @Autowired
     private InhibitedItemRepository inhibitedItemRepository;
@@ -2043,27 +2042,10 @@ public class ArrangementService {
 
     public Resource exportCoordinates(FileType fileType, Integer itemId) {
         ArrDescItem item = descItemRepository.findById(itemId).orElseThrow(() ->
-                new ObjectNotFoundException("ArrDescItem nenalezen", BaseCode.ID_NOT_EXIST));
-        String coordinates;
+                			new ObjectNotFoundException("ArrDescItem nenalezen", BaseCode.ID_NOT_EXIST));
+        String coordinates = dataService.convertCoordinates(fileType, item.getData());
 
-        if (fileType.equals(FileType.WKT)) {
-            ArrData data = HibernateUtils.unproxy(item.getData());
-            coordinates = data.getFulltextValue();
-        } else {
-            coordinates = convertCoordinates(fileType, item.getData().getDataId());
-        }
         return new ByteArrayResource(coordinates.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private String convertCoordinates(FileType fileType, Integer dataId) {
-        switch (fileType) {
-            case KML:
-                return dataCoordinatesRepository.convertCoordinatesToKml(dataId);
-            case GML:
-                return dataCoordinatesRepository.convertCoordinatesToGml(dataId);
-            default:
-                throw new IllegalStateException("Nepovolený typ souboru pro export souřadnic");
-        }
     }
 
     @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
@@ -2075,7 +2057,6 @@ public class ArrangementService {
         }
 
         logger.error("Required importType is not supported: {}", importType);
-
     }
 
     private void importFundDataCsv(ArrFund fund, InputStream is) {
