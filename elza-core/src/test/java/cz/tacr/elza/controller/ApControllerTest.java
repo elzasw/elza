@@ -679,14 +679,14 @@ public class ApControllerTest extends AbstractControllerTest {
     @Test
     public void importCoordinatesTest() throws IOException {
         // from file created by https://www.freemaptools.com/kml-file-creator.htm
-        Resource file = new DefaultResourceLoader().getResource("KML-Orlik-POINT.kml");
+        Resource file = new DefaultResourceLoader().getResource("coordinates/KML-Orlik-POINT.kml");
         final String orlikFile = IOUtils.toString(file.getInputStream(), StandardCharsets.UTF_8);
         Response responce = post(spec -> spec.queryParam("fileType", FileType.KML.toString()).body(orlikFile), IMPORT_COORDINATES);
         String coordinates = responce.asString();
         assertEquals(coordinates, "\"POINT (14.181221004109831 49.606926490508656)\"");
         
         // from file created by https://earth.google.com/
-        file = new DefaultResourceLoader().getResource("KML-London-POINT.kml");
+        file = new DefaultResourceLoader().getResource("coordinates/KML-London-POINT.kml");
         final String londonFile = IOUtils.toString(file.getInputStream(), StandardCharsets.UTF_8);
         responce = post(spec -> spec.queryParam("fileType", FileType.KML.toString()).body(londonFile), IMPORT_COORDINATES);
         coordinates = responce.asString();
