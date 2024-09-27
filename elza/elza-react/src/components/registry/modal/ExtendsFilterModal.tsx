@@ -186,20 +186,24 @@ const ExtendsFilterModal = ({
                             </Field>
                         </Col>
                         <Col xs={6}>
-                            <Form.Label>Pouze hlavní část</Form.Label>
-                            <Field
-                                name="onlyMainPart"
-                                component={ReduxFormFieldErrorDecorator}
-                                renderComponent={Form.Check}
-                                type="checkbox"
-                            />
+                                {area !== Area.ALLPARTS && <>
+                                    <Form.Label>
+                                        {i18n('ap.ext-search.section.relations.only-main-part')}
+                                    </Form.Label>
+                                        <Field
+                                        name="onlyMainPart"
+                                        component={ReduxFormFieldErrorDecorator}
+                                        renderComponent={Form.Check}
+                                        type="checkbox"
+                                    />
+                                    </>}
                         </Col>
                         {itemType && (
                             <Col xs={12}>
                                 <ArchiveEntityRel
                                     name={'obj'}
                                     label={i18n('ap.ext-search.section.relations.obj')}
-                                    onlyMainPart={onlyMainPart}
+                                    onlyMainPart={area !== Area.ALLPARTS && onlyMainPart}
                                     area={area}
                                     api={relEntityApi}
                                     itemTypeId={itemType.id}

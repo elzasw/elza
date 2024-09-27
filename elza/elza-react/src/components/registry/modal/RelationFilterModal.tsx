@@ -15,6 +15,7 @@ import {RulDataTypeVO} from "../../../api/RulDataTypeVO";
 import {RulDataTypeCodeEnum} from "../../../api/RulDataTypeCodeEnum";
 import {FilteredResultVO} from "../../../api/FilteredResultVO";
 import {ApAccessPointVO} from "../../../api/ApAccessPointVO";
+import { Area } from 'api/Area';
 
 const FORM_NAME = "relationFilterModalForm";
 
@@ -120,21 +121,23 @@ const RelationFilterModal = ({
                     </Field>
                 </Col>
                 <Col xs={6}>
-                    <Form.Label>
-                        {i18n('ap.ext-search.section.relations.only-main-part')}
-                    </Form.Label>
-                    <Field
-                        name="onlyMainPart"
-                        component={ReduxFormFieldErrorDecorator}
-                        renderComponent={Form.Check}
-                        type='checkbox'
-                    />
+                    {area !== Area.ALLPARTS && <>
+                        <Form.Label>
+                            {i18n('ap.ext-search.section.relations.only-main-part')}
+                        </Form.Label>
+                            <Field
+                            name="onlyMainPart"
+                            component={ReduxFormFieldErrorDecorator}
+                            renderComponent={Form.Check}
+                            type='checkbox'
+                        />
+                        </>}
                 </Col>
                 {<Col xs={12}>
                     <ArchiveEntityRel
                         name={'obj'}
                         label={i18n('ap.ext-search.section.relations.obj')}
-                        onlyMainPart={onlyMainPart}
+                        onlyMainPart={area !== Area.ALLPARTS && onlyMainPart}
                         area={area}
                         api={relApi}
                         scopeId={scopeId}
