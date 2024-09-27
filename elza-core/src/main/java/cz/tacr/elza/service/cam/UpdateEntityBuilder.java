@@ -51,7 +51,7 @@ import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
-import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
 
@@ -113,12 +113,10 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
     		final ApState state,
     		final ApBindingState bindingState,
     		final GroovyService groovyService,
-    		final AccessPointDataService apDataService,
+    		final DataService dataService,
     		final ApScope scope,
     		final ApExternalSystem externalSystem) {
-        super(sdp, bindingState.getAccessPoint(), groovyService,
-                apDataService, scope, externalSystem,
-                externalSystemService);
+        super(sdp, bindingState.getAccessPoint(), groovyService, dataService, scope, externalSystem, externalSystemService);
         this.bindingItemRepository = bindingItemRepository;
         this.bindingState = bindingState;
         this.apState = state;
