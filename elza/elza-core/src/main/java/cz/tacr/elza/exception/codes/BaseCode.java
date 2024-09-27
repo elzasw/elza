@@ -65,6 +65,11 @@ public enum BaseCode implements ErrorCode {
      * Neplatný stav.
      */
     INVALID_STATE,
+    
+    /**
+     * Neplatný typ.
+     */
+    INVATID_TYPE,
 
     /**
      * Byla detekována cyklická závislost.

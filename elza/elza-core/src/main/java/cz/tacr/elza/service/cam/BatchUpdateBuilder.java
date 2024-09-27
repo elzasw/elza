@@ -25,7 +25,7 @@ import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
 
@@ -49,11 +49,11 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
     BatchUpdateBuilder(final StaticDataProvider sdp,
     		final ApAccessPoint accessPoint,
     		final GroovyService groovyService,
-    		final AccessPointDataService apDataService,
+    		final DataService dataService,
     		final ApScope scope,
     		final ApExternalSystem apExternalSystem,
     		final ExternalSystemService externalSystemService) {
-		super(sdp, accessPoint, Collections.emptyList(), groovyService, apDataService, scope);
+		super(sdp, accessPoint, Collections.emptyList(), groovyService, dataService, scope);
 		this.apExternalSystem = apExternalSystem;
 		this.externalSystemService = externalSystemService;
 	}

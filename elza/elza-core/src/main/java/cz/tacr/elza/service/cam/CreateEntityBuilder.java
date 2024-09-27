@@ -20,7 +20,7 @@ import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
-import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
 
@@ -35,13 +35,12 @@ public class CreateEntityBuilder extends BatchUpdateBuilder {
                                final ApState state,
                                final ApExternalSystem apExternalSystem,
                                final GroovyService groovyService,
-                               final AccessPointDataService apDataService,
+                               final DataService dataService,
                                final ApScope scope) {
-        super(sdp, accessPoint, groovyService, apDataService, scope,
-                apExternalSystem, externalSystemService);
+        super(sdp, accessPoint, groovyService, dataService, scope, apExternalSystem, externalSystemService);
         this.apState = state;
     }
-    
+
     @Override
     protected EntityRefXml createBatchEntityRecordRef() {
     	EntityRefXml er = new EntityRefXml(createEntity);

@@ -28,7 +28,7 @@ import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.GroovyService;
 
 public class EntityXmlBuilder extends CamXmlBuilder {
@@ -40,10 +40,10 @@ public class EntityXmlBuilder extends CamXmlBuilder {
                             ApState apState,
                             Collection<ApBindingState> bindingStates,
                             GroovyService groovyService,
-                            AccessPointDataService apDataService,
+                            DataService dataService,
                             ApScope scope,
                             boolean applyFilter) {
-        super(sdp, accessPoint, bindingStates, groovyService, apDataService, scope);
+        super(sdp, accessPoint, bindingStates, groovyService, dataService, scope);
         this.apState = apState;
         this.applyFilter = applyFilter;
     }
