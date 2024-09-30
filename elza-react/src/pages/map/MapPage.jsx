@@ -21,7 +21,8 @@ import 'ol/ol.css';
 import './MapPage.scss';
 import { serverContextPath } from 'api';
 
-export const MAP_URL = `${serverContextPath}/map`;
+export const MAP_URL = `/map`;
+export const MAP_URL_WITH_CONTEXT = `${serverContextPath}${MAP_URL}`;
 export const DEFAULT_SYSTEM_LAYER = {name: i18n('global.action.systemLayerOSM'), type: LayerType.OSM};
 
 /**

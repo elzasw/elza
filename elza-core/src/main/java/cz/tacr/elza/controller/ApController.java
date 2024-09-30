@@ -1303,7 +1303,7 @@ public class ApController {
     }
 
     /**
-     * Import souřadnic ve formátu KML/GML
+     * Import souřadnic ve formátu KML/GML/WKT
      *
      * @param fileType Typ souboru
      * @param body Soubor se souřadnicemi
@@ -1315,7 +1315,7 @@ public class ApController {
             method = RequestMethod.POST)
     public String importCoordinates(@RequestParam final FileType fileType,
                                     @RequestBody(required = false) Resource body) {
-        return accessPointService.importCoordinates(fileType, body);
+        return String.format("\"%s\"", accessPointService.importCoordinates(fileType, body));
     }
 
     /**

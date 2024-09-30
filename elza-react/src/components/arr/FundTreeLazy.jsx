@@ -38,6 +38,8 @@ class FundTreeLazy extends AbstractReactComponent {
         showCountStats: false,
         showCollapseAll: true,
         onLinkClick: null,
+        colorCoded: true,
+        scrollDelay: 0,
     };
 
     UNSAFE_componentWillMount() {
@@ -361,6 +363,7 @@ class FundTreeLazy extends AbstractReactComponent {
             nodes,
             selectedId,
             onExpand,
+            scrollDelay,
         } = this.props;
 
         let index;
@@ -428,14 +431,14 @@ class FundTreeLazy extends AbstractReactComponent {
                         <StoreHorizontalLoader store={{fetched, isFetching}} />
                         {this.state.treeContainer && (
                             <VirtualList
-                                scrollTopPadding={TREE_TOP_PADDING}
                                 tagName="div"
+                                scrollTopPadding={TREE_TOP_PADDING}
                                 scrollToIndex={index}
                                 container={this.state.treeContainer}
                                 items={this.props.nodes}
                                 renderItem={this.renderNode}
                                 itemBuffer={10}
-                                scrollDelay={100}
+                                scrollDelay={scrollDelay}
                                 />
                         )}
                     </div>
