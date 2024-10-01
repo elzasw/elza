@@ -116,7 +116,10 @@ function resolveException(error: AxiosError<Error>) {
         } else {
             // other unknown errors
             result = {
+                createToaster: true,
                 type: 'unknown',
+                status: status,
+                statusText: statusText,
             };
         }
     }
