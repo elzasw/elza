@@ -188,8 +188,8 @@ public class AipController implements AipsApi {
      * @return
      */
     @Override
-    public ResponseEntity<Void> aipConnectSelectedToJp(Integer arrNodeId, Integer daAipId) {
-        daService.connectSelectedToJP(arrNodeId, daAipId);
+    public ResponseEntity<Void> aipConnectSelectedToJp(Integer arrNodeId, Integer daAipId, Integer daDaoId) {
+        daService.connectSelectedToJP(arrNodeId, daAipId, daDaoId);
         return ResponseEntity.ok().build();
     }
 

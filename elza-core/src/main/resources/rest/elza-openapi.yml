@@ -1042,6 +1042,13 @@ paths:
           schema:
             type: integer
           explode: false
+        - name: daDaoId
+          in: query
+          required: true
+          description: DaDao ID
+          schema:
+            type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
