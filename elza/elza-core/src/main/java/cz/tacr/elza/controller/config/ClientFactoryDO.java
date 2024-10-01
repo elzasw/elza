@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -58,6 +59,7 @@ import cz.tacr.elza.controller.vo.filter.ValuesTypes;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -515,12 +517,10 @@ public class ClientFactoryDO {
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
         Assert.notNull(filter, "Filter musí být vyplněn");
 
-        List<DescItemCondition> valuesConditions = createValuesEnumCondition(filter.getValuesType(), filter.getValues(),
-                ArrDescItem.FULLTEXT_ATT);
-        List<DescItemCondition> specsConditions = createSpecificationsEnumCondition(filter.getSpecsType(), filter.getSpecs(),
-                ArrDescItem.FIELD_ITEM_SPEC_ID);
-        List<Integer> itemSpecIds = Objects.equals(filter.getSpecsType(), ValuesTypes.UNSELECTED) ? null : filter.getSpecs();
-
+        List<DescItemCondition> valuesConditions = createValuesEnumCondition(filter.getValuesType(), filter.getValues(), ArrDescItem.FULLTEXT_ATT);
+        List<DescItemCondition> specsConditions = createSpecificationsEnumCondition(filter.getSpecsType(), filter.getSpecs(), ArrDescItem.FIELD_ITEM_SPEC_ID);
+        List<Integer> itemSpecIds = createItemSpecIds(filter, descItemType.getItemTypeId());
+        
         List<DescItemCondition> conditions = new LinkedList<>();
         Condition conditionType = filter.getConditionType();
         if (conditionType != null && conditionType != Condition.NONE) {
@@ -953,6 +953,28 @@ public class ClientFactoryDO {
         }
 
         return conditions;
+    }
+
+    /**
+     * Získání seznamu ItemSpec ids, který SELECTED
+     * 
+     * @param filter
+     * @param itemTypeId
+     * @return
+     */
+    private List<Integer> createItemSpecIds(final Filter filter, final Integer itemTypeId) {
+    	// pokud je vybrána možnost SELECTED jen vrátíme seznam z filtru
+    	if (Objects.equals(filter.getSpecsType(), ValuesTypes.SELECTED)) {
+    		return filter.getSpecs();
+    	}
+
+    	// pokud je vybrána možnost UNSELECTED vrátíme všechny zbývající itemSpecs, 
+    	// který odpovída itemTypeId kromě těch, které jsou uvedeny ve filtru
+        ItemType itemType = staticDataService.getData().getItemTypeById(itemTypeId);
+        List<Integer> specIds = itemType.getItemSpecs().stream().map(i -> i.getItemSpecId()).collect(Collectors.toList());
+        specIds.removeAll(filter.getSpecs());
+
+    	return specIds;
     }
 
     public ArrOutputItem createOutputItem(final ArrItemVO outputItemVO, final Integer itemTypeId) {

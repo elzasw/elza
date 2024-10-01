@@ -10,6 +10,7 @@ import Icon from '../shared/icon/Icon';
 import { Button } from '../ui';
 import { fundDataGridImport } from 'actions/arr/fundDataGrid';
 import { modalDialogHide } from 'actions/global/modalDialog';
+import { addToastrSuccess } from 'components/shared/toastr/ToastrActions';
 
 interface ImportFormFields {
     csvFile: File;
@@ -40,8 +41,15 @@ export const DataGridImportDialog = ({ onClose, versionId, fundId }: IImportForm
 
     const save = async ({ csvFile }: ImportFormFields) => {
         setIsRunning(true);
-        await dispatch(fundDataGridImport(versionId, fundId, csvFile));
-        dispatch(modalDialogHide());
+        try {
+            await dispatch(fundDataGridImport(versionId, fundId, csvFile));
+            dispatch(modalDialogHide());
+            dispatch(addToastrSuccess(i18n("ribbon.action.arr.dataGrid.import.success")));
+        }
+        catch (error) {
+            // error is shown in toaster
+            setIsRunning(false);
+        }
     };
 
     return (
