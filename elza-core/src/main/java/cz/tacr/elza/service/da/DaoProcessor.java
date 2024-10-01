@@ -186,8 +186,10 @@ public class DaoProcessor {
         //logical
         createDaoFromStruct(metsType.getStructMap(), change);
 
-        //ead
-        createDaoItemsFromArchDesc(ead.getArchdesc(), change);
+        if (ead != null) {
+            //ead
+            createDaoItemsFromArchDesc(ead.getArchdesc(), change);
+        }
 
         deleteOldComponents(change);
         levelViewService.processLevelViewForAip(aip, change);
@@ -379,7 +381,7 @@ public class DaoProcessor {
 
             if (type == DaDao.DaoType.METADMDINHERENT) {
                 try {
-                    String newHref = href.replace("/", "\\");
+                    String newHref = href.replace("/", java.io.File.separator);
                     ead = daService.loadEadFile(tempDir, newHref);
                 } catch (Exception e) {
                     logger.error("Došlo k chybě při načtení EAD souboru {}", href, e);

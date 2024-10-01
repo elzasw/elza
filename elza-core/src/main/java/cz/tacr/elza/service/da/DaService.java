@@ -1206,8 +1206,8 @@ public class DaService {
                 }
             }
 
-            String filePath = daoFile.getFileName().replace("/", "\\");
-            String fileName = filePath.substring(filePath.lastIndexOf("\\") + 1);
+            String filePath = daoFile.getFileName().replace("/", File.separator);
+            String fileName = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
 
             Path file;
             try (Stream<Path> str = Files.walk(tempDir).filter(path -> path.toString().endsWith(filePath))) {
