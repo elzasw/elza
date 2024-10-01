@@ -974,14 +974,16 @@ public class DaService {
     }
 
     @Transactional
-    public void connectSelectedToJP(Integer nodeId, Integer daAipId) {
+    public void connectSelectedToJP(Integer nodeId, Integer daAipId, Integer daDaoId) {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
         DaAip daAip = findAipById(daAipId);
+        DaDao daDao = findDaoById(daDaoId);
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
         ArrDaoLink arrDaoLink = new ArrDaoLink();
         arrDaoLink.setAip(daAip);
         arrDaoLink.setNode(arrNode);
         arrDaoLink.setLinkType(ArrDaoLink.LinkType.COMPONENT_AIP);
+        arrDaoLink.setDaDao(daDao);
         arrDaoLink.setCreateChange(change);
         daoLinkRepository.save(arrDaoLink);
     }

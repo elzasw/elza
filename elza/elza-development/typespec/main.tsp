@@ -1578,6 +1578,8 @@ namespace ElzaAPI.Aip {
          @query arrNodeId: integer;
          /** DaAip ID */
          @query daAipId: integer;
+         /** DaDao ID */
+         @query daDaoId: integer;
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
