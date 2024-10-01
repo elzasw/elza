@@ -169,8 +169,10 @@ public class DaService {
     private EventNotificationService eventNotificationService;
 
     public void synchronizeDaRepository(String code) {
+        logger.debug("Spuštěna synchronizace s DA pro externí systém CODE={}", code);
         ArrDigitalRepository arrDigitalRepository = externalSystemService.findDigitalRepositoryByCode(code);
         applicationContext.getBean(DaService.class).synchronizeDA(arrDigitalRepository);
+        logger.debug("Dokončena synchronizace s DA pro externí systém CODE={}", code);
     }
 
     @Transactional
@@ -293,8 +295,8 @@ public class DaService {
                 aipState.setAipVersionMetadata(aipState.getAipVersion());
                 aipStateRepository.save(aipState);
 
-            } catch (IOException | JAXBException e) {
-                logger.error("Došlo k chybě při načtení souborů z lokální cache pro AIP={}", aipId, e);
+            } catch (Exception e) {
+                logger.error("Došlo k chybě při zpracování metadat pro AIP={}", aipId, e);
                 aipState.setMetadataError(true);
                 aipState.setMetadataErrorException(e.getMessage());
                 aipStateRepository.save(aipState);

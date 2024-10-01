@@ -33,9 +33,9 @@ const ExplorerDetail: FC = () => {
 
     useEffect(() => {
         if(!structure?.data) return;
-        
+
         if(!selectedItem) {
-            setSelectedItem(structure.data); 
+            setSelectedItem(structure.data);
         } else {
             const result = findNodeByUUID(structure.data, selectedItem.uuid);
             if(result && result.node) {
@@ -133,11 +133,12 @@ const ExplorerDetail: FC = () => {
                     label={i18n("aip.explorer.detail.format")}
                     value={renderValue(node.mimeType)}
                 />
-                <DetailRow
+                {aip.data.fund &&
+                    <DetailRow
                     label={i18n("aip.explorer.detail.as")}
                     // @ts-ignore
                     value={getConnectedToJP(node.linkedNodes, aip.data?.fund.id, handleDeleteLink)}
-                />
+                    />}
             </div>
         );
     }

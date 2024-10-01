@@ -70,7 +70,8 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 <DetailRow label="Aktuální verze" value={detail.importState}/>}
             {detail.exportState &&
                 <DetailRow label="Stav exportu" value={detail.exportState}/>}
-            <DetailRow label="Napojen archivní popis" value={getConnectedToJP(detail.linkedNodes, detail.fund.id, handleDeleteLink)}/>
+            {detail.fund &&
+                <DetailRow label="Napojen archivní popis" value={getConnectedToJP(detail.linkedNodes, detail.fund.id, handleDeleteLink)}/>}
         </>
     );
 }
