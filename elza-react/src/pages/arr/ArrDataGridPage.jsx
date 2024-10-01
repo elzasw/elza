@@ -13,6 +13,7 @@ import {Button} from '../../components/ui';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import DataGridExportDialog from '../../components/arr/DataGridExportDialog';
 import {urlFundGrid, getFundVersion} from "../../constants";
+import {DataGridImportDialog} from 'components/arr/DataGridImportDialog';
 
 /**
  * Stránka archivních pomůcek.
@@ -61,6 +62,19 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
                 </div>
             </Button>,
         );
+        itemActions.push(
+            <Button
+                key="import-dataGrid"
+                onClick={() => {
+                    this.handleDataGridImport(activeFund.versionId);
+                }}
+            >
+                <Icon glyph="fa-upload" />
+                <div>
+                    <span className="btnText">{i18n('ribbon.action.arr.dataGrid.import')}</span>
+                </div>
+            </Button>,
+        );
 
         var altSection;
         if (altActions.length > 0) {
@@ -99,6 +113,17 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
                 this,
                 i18n('dataGrid.export.title'),
                 <DataGridExportDialog versionId={versionId} fundDataGrid={fund.fundDataGrid} />,
+            ),
+        );
+    }
+
+    handleDataGridImport(versionId) {
+        const fund = this.getActiveFund(this.props);
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('dataGrid.export.title'),
+                <DataGridImportDialog versionId={versionId} fundId={fund.id} fundDataGrid={fund.fundDataGrid} />,
             ),
         );
     }
