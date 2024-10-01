@@ -32,12 +32,17 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
     const handleConnectToJP = () => {
         console.log('leftSelectedNode :>> ', leftSelectedNode);
 
-        WebApi.connectAipToJp(rightSelectedNode as number, aip.id)
-            .then(dispatch(fetchAipStructureIfNeeded(aip.id, true)));
+        if (leftSelectedNode < 0) {
+            WebApi.connectAipToJp(rightSelectedNode as number, aip.id)
+                .then(dispatch(fetchAipStructureIfNeeded(aip.id, true)));
+        } else {
+            WebApi.connectAipPartToJp(rightSelectedNode as number,  aip.id, leftSelectedNode)
+                .then(dispatch(fetchAipStructureIfNeeded(aip.id, true)));
+        }
     }
 
     const handleCreateFromSelected = () => {
-        WebApi.connectAipPartToJp(rightSelectedNode as number,  aip.id, leftSelectedNode)
+        WebApi.createJpLinkFromSelectedAip(rightSelectedNode as number,  aip.id, leftSelectedNode)
             .then(dispatch(fetchAipStructureIfNeeded(aip.id, true)));
     }
 
@@ -49,7 +54,7 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
                 submittingMessage={i18n('arr.aip.assignment.part.confirm-first') + i18n('arr.aip.assignment.part.confirm-last')}
                 submitTitle={i18n('global.action.run')}
                 onSubmit={() => {
-                    return WebApi.createJpFromSelectedAip(rightSelectedNode as number, aip.id, leftSelectedNode)
+                    return WebApi.connectSelectedToJp(rightSelectedNode as number, aip.id, leftSelectedNode)
                 }}
                 onSubmitSuccess={() => {
                     dispatch(modalDialogHide());
@@ -70,7 +75,7 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
                 submittingMessage={i18n('arr.aip.assignment.part.confirm-first') + i18n('arr.aip.assignment.part.confirm-last')}
                 submitTitle={i18n('global.action.run')}
                 onSubmit={() => {
-                    return WebApi.createJpLinkFromSelectedAip(rightSelectedNode as number, aip.id, leftSelectedNode);
+                    return WebApi.createJpFromSelectedAip(rightSelectedNode as number, aip.id, leftSelectedNode);
                 }}
                 onSubmitSuccess={() => {
                     dispatch(modalDialogHide());

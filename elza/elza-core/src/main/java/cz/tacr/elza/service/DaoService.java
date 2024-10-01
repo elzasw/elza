@@ -904,6 +904,7 @@ public class DaoService {
                 .toList();
 
         ExplorerTreeNode metadata = new ExplorerTreeNode();
+        metadata.setDaoId(-4);
         metadata.setLabel("Metadata");
         metadata.setUuid(UUID.nameUUIDFromBytes(metadata.getLabel().getBytes()).toString());
         metadata.setChildFiles(metadataFiles);
