@@ -57,6 +57,11 @@ public class DaScheduler implements SchedulingConfigurer {
 
         if (CollectionUtils.isNotEmpty(siList)) {
             siMap = siList.stream().collect(Collectors.toMap(DaSyncConfig.SynchronizationInfo::getCode, s -> s));
+            for (DaSyncConfig.SynchronizationInfo value : siMap.values()) {
+                log.info("DA configuration: {}, {}, {}, {}", value.getCode(), value.getSyncDelay(), value.getSyncAt(), value.getResetAt());
+            }
+        } else {
+            log.info("No synchronization configuration found");
         }
 
         for (ArrDigitalRepository digitalRepository : digitalRepositoryList) {
@@ -85,9 +90,9 @@ public class DaScheduler implements SchedulingConfigurer {
 
     private void runSync(String code) {
         if (enabled) {
-            log.debug("Da repository synchronization started.");
+            log.info("Da repository synchronization started.");
             daService.synchronizeDaRepository(code);
-            log.debug("Da repository synchronization finished.");
+            log.info("Da repository synchronization finished.");
         }
     }
 }
