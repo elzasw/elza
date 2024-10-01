@@ -285,6 +285,7 @@ var messages = {
     "ribbon.action.arr.dataGrid": "Tabulkové zobrazení",
     "ribbon.action.arr.dataGrid.export": "Export",
     "ribbon.action.arr.dataGrid.import": "Import",
+    "ribbon.action.arr.dataGrid.import.success": "Import byl dokončen",
     "ribbon.action.arr.movements": "Přesuny",
     "ribbon.action.arr.output.add": "Nový výstup",
     "ribbon.action.arr.output.generate": "Generovat výstup",
@@ -1782,6 +1783,8 @@ var messages = {
     "dataGrid.export.exportType.data": "Data",
     "dataGrid.export.exportType.noSelection.item": "Není vybrán prvek",
     "dataGrid.export.title": "Export tabulkového zobrazení",
+
+    "dataGrid.import.title": "Import datových sloupců",
 
     "accesspoint.name.name": "Jméno",
     "accesspoint.name.complement": "Doplněk",
