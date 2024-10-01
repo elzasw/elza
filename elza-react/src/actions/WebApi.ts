@@ -1227,6 +1227,14 @@ export class WebApiCls {
         }, null);
     }
 
+    connectSelectedToJp(arrNodeId: number, daAipId: number, daDaoId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/connect-selected-to-jp', {
+            arrNodeId: arrNodeId,
+            daAipId: daAipId,
+            daDaoId: daDaoId
+        }, null);
+    }
+
     connectSelectedAipToJp(arrNodeId: number, daAipIdList: number[]): Promise<void> {
         return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/bulk-connect-to-jp', {
             arrNodeId: arrNodeId,

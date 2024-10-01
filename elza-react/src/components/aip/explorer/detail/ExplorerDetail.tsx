@@ -133,7 +133,7 @@ const ExplorerDetail: FC = () => {
                     label={i18n("aip.explorer.detail.format")}
                     value={renderValue(node.mimeType)}
                 />
-                {aip.data.fund &&
+                {aip.data?.fund &&
                     <DetailRow
                     label={i18n("aip.explorer.detail.as")}
                     // @ts-ignore
