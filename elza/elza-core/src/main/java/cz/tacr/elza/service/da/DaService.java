@@ -14,6 +14,8 @@ import cz.tacr.da.controller.vo.UpdatedInfo;
 import cz.tacr.elza.api.AipType;
 import cz.tacr.elza.connector.DaConnector;
 import cz.tacr.elza.controller.vo.AipUpdateType;
+import cz.tacr.elza.controller.vo.DaoLink;
+import cz.tacr.elza.controller.vo.DaoLinksResult;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -1222,5 +1224,60 @@ public class DaService {
         } catch (IOException e) {
             throw new IllegalStateException("Došlo k chybě při čtení souboru z cache", e);
         }
+    }
+
+    public DaoLinksResult getDaoLinks(Integer nodeId) {
+        List<DaoLink> daoLinkList = new ArrayList<>();
+        List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdAndDeleteChangeIsNullFetchAip(nodeId);
+
+        List<ArrDaoLink> aipDaoLinks = daoLinks.stream().filter(d -> d.getLinkType() == ArrDaoLink.LinkType.AIP).toList();
+
+        if (CollectionUtils.isNotEmpty(aipDaoLinks)) {
+            daoLinks.removeAll(aipDaoLinks);
+            for (ArrDaoLink aipDaoLink : aipDaoLinks) {
+                List<ArrDaoLink> dLinks = daoLinks.stream().filter(d -> d.getAip().getAipId().equals(aipDaoLink.getAip().getAipId())).toList();
+                daoLinks.removeAll(dLinks);
+                daoLinkList.add(createAipDaoLink(aipDaoLink, dLinks));
+            }
+        }
+
+        if (CollectionUtils.isNotEmpty(daoLinks)) {
+            for (ArrDaoLink daoLink : daoLinks) {
+                DaDao dao = daoLink.getDaDao();
+                daoLinkList.add(new DaoLink(daoLink.getDaoLinkId(),
+                        daoLink.getAip().getAipId(),
+                        dao.getDaoId(),
+                        dao.getType().getValue(),
+                        dao.getLabel()));
+            }
+        }
+
+        DaoLinksResult daoLinksResult = new DaoLinksResult();
+        daoLinksResult.setItems(daoLinkList);
+        return daoLinksResult;
+    }
+
+    private DaoLink createAipDaoLink(ArrDaoLink aipDaoLink, List<ArrDaoLink> dLinks) {
+        DaAip aip = aipDaoLink.getAip();
+        DaoLink daoLink = new DaoLink(aipDaoLink.getDaoLinkId(),
+                aip.getAipId(),
+                null,
+                "Balíček",
+                aip.getAipId().toString());
+
+        if (CollectionUtils.isNotEmpty(dLinks)) {
+            List<DaoLink> daoLinkList = new ArrayList<>();
+            for (ArrDaoLink dLink : dLinks) {
+                DaDao dao = dLink.getDaDao();
+                daoLinkList.add(new DaoLink(dLink.getDaoLinkId(),
+                        dLink.getAip().getAipId(),
+                        dao.getDaoId(),
+                        dao.getType().getValue(),
+                        dao.getLabel()));
+            }
+            daoLink.setChildren(daoLinkList);
+        }
+
+        return daoLink;
     }
 }

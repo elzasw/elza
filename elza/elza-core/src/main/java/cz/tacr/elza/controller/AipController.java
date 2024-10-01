@@ -114,6 +114,11 @@ public class AipController implements AipsApi {
     }
 
     @Override
+    public ResponseEntity<DaoLinksResult> aipGetDaoLinks(Integer nodeId) {
+        return ResponseEntity.ok(daService.getDaoLinks(nodeId));
+    }
+
+    @Override
     public ResponseEntity<Void> aipBulkConnectLogicToJp(Integer arrNodeId, List<Integer> daAipId, Integer daDaoId) {
         daService.bulkConnectLogicalStructureToJP(arrNodeId, daAipId, daDaoId);
         return ResponseEntity.ok().build();

@@ -50,12 +50,22 @@ public class DaDao {
     private DaLevelView levelView;
 
     public enum DaoType {
-        LOGICAL,
-        REPRESENTATION,
-        FILE,
-        METAAMD,
-        METADMDINHERENT,
-        METADMDCONTEXTUAL
+        LOGICAL("Úroveň inherentního popisu"),
+        REPRESENTATION("Reprezentace"),
+        FILE("Komponenta"),
+        METAAMD("Administrativní metadata"),
+        METADMDINHERENT("Inherentní archivní popis"),
+        METADMDCONTEXTUAL("Kontextuální archivní popis");
+
+        String value;
+
+        DaoType(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 
     public Integer getDaoId() {
