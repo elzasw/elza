@@ -3,12 +3,14 @@ import * as SimpleListActions from '../../shared/list/simple/SimpleListActions';
 import * as DetailActions from '../../shared/detail/DetailActions';
 import { Aip, AipFilter, AipsFilter } from 'typings/store';
 import { DaAipDetailVO } from 'api/DaAipDetailVO';
+import {Api} from "../../api";
 
 export const AREA_AIPS = 'aipList';
 export const AREA_AIP = 'aip';
 export const AREA_SELECTED_AIPS = "selectedAips";
 export const AIP_LOGICAL_TREE = "aipLogicalTree";
 export const AREA_SELECTED_AIP_DAOS = "selectedAipDaos";
+export const AREA_DAO_LINKS = "daoLinkList"
 export const DEFAULT_PAGE_SIZE = 25;
 
 export const aipsFilter = (filters: AipFilter[], from: number, pageSize: number = DEFAULT_PAGE_SIZE) => {
@@ -52,4 +54,8 @@ export const setSelectedAipDaos = (daDaoIds: number[]) => {
 
 export const fetchAipLogicalTreeIfNeeded = (ids: number[]) => {
     return DetailActions.fetchIfNeeded(AIP_LOGICAL_TREE, ids, () => WebApi.getAipsLogicalTree(ids))
+}
+
+export const daoLinksFetchIfNeeded = (nodeId: number, forceFetch = false) => {
+    return DetailActions.fetchIfNeeded(AREA_DAO_LINKS, nodeId, () => Api.aips.aipGetDaoLinks(nodeId), forceFetch);
 }

@@ -1148,6 +1148,32 @@ paths:
               type: array
               items:
                 type: integer
+  /aip/dao-links/{nodeId}:
+    get:
+      tags:
+        - aips
+      operationId: Aip_getDaoLinks
+      description: Get dao links for node by id
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          description: Node ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaoLinksResult'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
   /aip/delete-complete-aip:
     post:
       tags:
@@ -2177,6 +2203,44 @@ components:
             type: integer
           description: list of description element IDs not to copy
       description: Additional copy options
+    DaoLink:
+      type: object
+      required:
+        - daoLinkId
+        - aipId
+        - daoId
+        - linkType
+        - name
+      properties:
+        daoLinkId:
+          type: integer
+          description: Dao link ID
+        aipId:
+          type: integer
+          description: Aip ID
+        daoId:
+          type: integer
+          description: Dao ID
+        linkType:
+          type: string
+          description: Name of the dao link type
+        name:
+          type: string
+          description: Komponent name
+        children:
+          description: Link on children komponents
+          type: array
+          items:
+            $ref: '#/components/schemas/DaoLink'
+      description: Dao link
+    DaoLinksResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DaoLink'
+      description: List of dao links
     DeleteAccessPointDetail:
       type: object
       properties:

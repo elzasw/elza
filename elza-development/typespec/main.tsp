@@ -862,6 +862,43 @@ model AipFilterGen {
 }
 
 /**
+ * List of dao links
+ */
+model DaoLinksResult {
+    items?: DaoLink[];
+}
+
+/**
+ * Dao link
+ */
+model DaoLink {
+    /**
+     * Dao link ID
+     */
+    daoLinkId: integer;
+    /**
+     * Aip ID
+     */
+    aipId: integer;
+    /**
+     * Dao ID
+     */
+    daoId: integer;
+    /**
+     * Name of the dao link type
+     */
+    linkType: string;
+    /**
+     * Komponent name
+     */
+    name: string;
+    /**
+     * Link on children komponents
+     */
+    children?: DaoLink[];
+}
+
+/**
  * Způsob porovnání hodnot filtru
  */
 enum AipFilterCriteriaGen {
@@ -1654,6 +1691,23 @@ namespace ElzaAPI.Aip {
          /** Aip detail retrieved*/
          @Http.statusCode statusCode: 200;
          @body data: AipDetailVO;
+        } | {
+         /** Failed to get tree */
+         @Http.statusCode statusCode: 500;
+         @body data: BaseException;
+        };
+
+     /**
+      * Get dao links for node by id
+      */
+     @route("/dao-links/{nodeId}")
+     @get op getDaoLinks (
+        /** Node ID */
+        @path nodeId: integer
+     ) : {
+         /** Aip detail retrieved*/
+         @Http.statusCode statusCode: 200;
+         @body data: DaoLinksResult;
         } | {
          /** Failed to get tree */
          @Http.statusCode statusCode: 500;
