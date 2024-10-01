@@ -127,6 +127,9 @@ public class PackageInfoService {
         aipState.setCreateChange(daChange);
 
         if (oldAipState != null) {
+            aipState.setMetadataLoad(oldAipState.getMetadataLoad());
+            aipState.setCompleteAipLoad(oldAipState.getCompleteAipLoad());
+
             oldAipState.setDeleteChange(daChange);
             aipStateRepository.save(oldAipState);
         }

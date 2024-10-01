@@ -21,6 +21,7 @@ import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -54,6 +55,7 @@ import cz.tacr.elza.repository.DaLocalCacheRepository;
 import cz.tacr.elza.repository.DaRemoteRepositorySyncRepository;
 import cz.tacr.elza.repository.DaSyncQueueItemRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -167,6 +169,8 @@ public class DaService {
     private FundVersionRepository fundVersionRepository;
     @Autowired
     private EventNotificationService eventNotificationService;
+    @Autowired
+    private FundRepository fundRepository;
 
     public void synchronizeDaRepository(String code) {
         logger.debug("Spuštěna synchronizace s DA pro externí systém CODE={}", code);
@@ -181,10 +185,12 @@ public class DaService {
         String nextQuery = daRemoteRepositorySync.getNextQuery();
         UpdatedAips updatesAips;
         do {
+            logger.debug("Volání externího systému CODE={} s query {}", digitalRepository.getCode(), nextQuery);
             updatesAips = daConnector.updates(digitalRepository, DA_UPDATE_PAGE_SIZE, nextQuery);
             nextQuery = updatesAips.getNextQuery();
 
             if (CollectionUtils.isNotEmpty(updatesAips.getAipIds())) {
+                logger.debug("Z externího systému CODE={} se vrátilo {} aip ID", digitalRepository.getCode(), updatesAips.getAipIds().size());
                 List<String> aipCodes = updatesAips.getAipIds().stream()
                         .map(UpdatedInfo::getAipId)
                         .toList();
@@ -335,6 +341,10 @@ public class DaService {
 
         for (DaAip aip : aipList) {
             DaAipState aipState = stateMap.get(aip);
+            if (aipState.getFund() == null) {
+                ArrFund arrFund = fundRepository.findByInternalCode(aipState.getFundCode());
+                aipState.setFund(arrFund);
+            }
             if (BooleanUtils.isNotTrue(aipState.getMetadataLoad()) && BooleanUtils.isNotTrue(aipState.getCompleteAipLoad()) && aipState.getFund() != null) {
                 aipState.setMetadataLoad(true);
                 stateList.add(aipState);
