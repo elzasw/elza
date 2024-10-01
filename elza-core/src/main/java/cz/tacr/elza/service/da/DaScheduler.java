@@ -1,16 +1,22 @@
 package cz.tacr.elza.service.da;
 
+import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.service.ExternalSystemService;
 import jakarta.transaction.Transactional;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class DaScheduler implements SchedulingConfigurer {
@@ -23,6 +29,9 @@ public class DaScheduler implements SchedulingConfigurer {
 
     @Autowired
     private DaService daService;
+
+    @Autowired
+    private ExternalSystemService externalSystemService;
 
     private boolean enabled = false;
 
@@ -37,24 +46,40 @@ public class DaScheduler implements SchedulingConfigurer {
     @Override
     @Transactional
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-        List<DaSyncConfig.SynchronizationInfo> siList = daSyncConfig.getConfig();
-        if (CollectionUtils.isEmpty(siList)) {
+        List<ArrDigitalRepository> digitalRepositoryList = externalSystemService.findDigitalRepository();
+
+        if (CollectionUtils.isEmpty(digitalRepositoryList)) {
             return;
         }
-        for (DaSyncConfig.SynchronizationInfo si : siList) {
-            configureTask(si, taskRegistrar);
+
+        List<DaSyncConfig.SynchronizationInfo> siList = daSyncConfig.getConfig();
+        Map<String, DaSyncConfig.SynchronizationInfo> siMap = new HashMap<>();
+
+        if (CollectionUtils.isNotEmpty(siList)) {
+            siMap = siList.stream().collect(Collectors.toMap(DaSyncConfig.SynchronizationInfo::getCode, s -> s));
+        }
+
+        for (ArrDigitalRepository digitalRepository : digitalRepositoryList) {
+            DaSyncConfig.SynchronizationInfo si = siMap.getOrDefault(digitalRepository.getCode(), null);
+            configureTask(digitalRepository, si, taskRegistrar);
         }
     }
 
-    private void configureTask(DaSyncConfig.SynchronizationInfo syncConfig,
+    private void configureTask(ArrDigitalRepository digitalRepository,
+                               @Nullable DaSyncConfig.SynchronizationInfo syncConfig,
                                ScheduledTaskRegistrar taskRegistrar) {
-        if (StringUtils.isNotBlank(syncConfig.getSyncAt())) {
-            taskRegistrar.addCronTask(() -> runSync(syncConfig.getCode()),
-                    syncConfig.getResetAt());
-        }
-        if (syncConfig.getSyncDelay() != null && syncConfig.getSyncDelay() > 0) {
-            taskRegistrar.addFixedDelayTask(() -> runSync(syncConfig.getCode()),
-                    syncConfig.getSyncDelay() * 1000);
+        if (syncConfig == null) {
+            taskRegistrar.addFixedDelayTask(() -> runSync(digitalRepository.getCode()),
+                    15 * 60 * 1000);
+        } else {
+            if (StringUtils.isNotBlank(syncConfig.getSyncAt())) {
+                taskRegistrar.addCronTask(() -> runSync(syncConfig.getCode()),
+                        syncConfig.getResetAt());
+            }
+            if (syncConfig.getSyncDelay() != null && syncConfig.getSyncDelay() > 0) {
+                taskRegistrar.addFixedDelayTask(() -> runSync(syncConfig.getCode()),
+                        syncConfig.getSyncDelay() * 1000);
+            }
         }
     }
 
