@@ -59,7 +59,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
     }
 
     const centerPanel = daoLinks.data.data.items.map(item => {
-        return (<Row>
+        return (<Row className="napojeni-row">
             <p>
                 {item.linkType + ": "}
                 <Button key="explorerLink" variant="link" onClick={() => handleOpenExplorer(item.aipId)}>
