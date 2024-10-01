@@ -720,21 +720,31 @@ public class DaoService {
     public ExplorerTreeNode findByAipIdAndTypeAndDeleteChangeIsNull(Integer aipId) {
         DaAip aip = aipService.getAip(aipId);
         DaAipState state = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
-        List<DaDao> daDaoList = daDaoRepository.findByAipAndDeleteChangeIsNull(aip);
+        List<DaDao> daDaoList = new ArrayList<>();
+        List<ArrDaoLink> aipLinkList = new ArrayList<>();
         Map<Integer, ExplorerTreeNode> itemMap = new HashMap<>();
+        Map<Integer, List<ArrDaoLink>> daoLinkMap = new HashMap<>();
+        Map<Integer, TreeNodeVO> treeNodeMap = new HashMap<>();
+        List<DaDaoFileFolder> folders = new ArrayList<>();
+        List<DaDaoFile> files = new ArrayList<>();
 
-        List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaDaoInAndDeleteChangeIsNull(daDaoList);
-        List<ArrDaoLink> aipLinkList = daoLinkRepository.findByAip_AipIdAndDaDaoIsNullAndDeleteChangeIsNull(aipId);
+        if (state.getFund() != null) {
+            daDaoList = daDaoRepository.findByAipAndDeleteChangeIsNull(aip);
 
-        Map<Integer, List<ArrDaoLink>> daoLinkMap = daoLinkList.stream()
-                .collect(Collectors.groupingBy(l -> l.getDaDao().getDaoId()));
-        Set<Integer> nodeIds = daoLinkList.stream().map(ArrDaoLink::getNodeId).collect(Collectors.toSet());
-        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(state.getFund().getFundId());
-        Map<Integer, TreeNodeVO> treeNodeMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream()
-                .collect(Collectors.toMap(TreeNodeVO::getId, t -> t));
+            List<ArrDaoLink> daoLinkList = daoLinkRepository.findByDaDaoInAndDeleteChangeIsNull(daDaoList);
+            aipLinkList = daoLinkRepository.findByAip_AipIdAndDaDaoIsNullAndDeleteChangeIsNull(aipId);
 
-        List<DaDaoFileFolder> folders = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(daDaoList);
-        List<DaDaoFile> files = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(filterDaDaoByType(daDaoList, DaDao.DaoType.FILE));
+            daoLinkMap = daoLinkList.stream()
+                    .collect(Collectors.groupingBy(l -> l.getDaDao().getDaoId()));
+            Set<Integer> nodeIds = daoLinkList.stream().map(ArrDaoLink::getNodeId).collect(Collectors.toSet());
+            ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(state.getFund().getFundId());
+            treeNodeMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream()
+                    .collect(Collectors.toMap(TreeNodeVO::getId, t -> t));
+
+            folders = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(daDaoList);
+            files = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(filterDaDaoByType(daDaoList, DaDao.DaoType.FILE));
+        }
+
         List<ExplorerTreeNodeFile> fileNodes = new ArrayList<>();
         for (DaDaoFile f : files) {
             DaDaoRelation relation =

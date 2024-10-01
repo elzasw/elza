@@ -1867,14 +1867,19 @@ public class ClientFactoryVO {
         if(state.getOriginatorAccessPoint() != null) {
             originator = institutionRepository.findByAccessPoint(state.getOriginatorAccessPoint());
         }
-        List<ArrDaoLink> daoLinks = daoLinkRepository.findByAipIdAndDeleteChangeIsNull(daAip.getAipId());
-        Set<Integer> nodeIds = daoLinks.stream()
-                .map(ArrDaoLink::getNodeId)
-                .collect(Collectors.toSet());
+        List<ArrDaoLink> daoLinks = null;
+        Map<Integer, TreeNodeVO> treeNodeMap = null;
+        if (state.getFund() != null) {
+            daoLinks = daoLinkRepository.findByAipIdAndDeleteChangeIsNull(daAip.getAipId());
+            Set<Integer> nodeIds = daoLinks.stream()
+                    .map(ArrDaoLink::getNodeId)
+                    .collect(Collectors.toSet());
 
-        ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(state.getFund().getFundId());
-        Map<Integer, TreeNodeVO> treeNodeMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream()
-                .collect(Collectors.toMap(TreeNodeVO::getId, v -> v));
+            ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(state.getFund().getFundId());
+            treeNodeMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream()
+                    .collect(Collectors.toMap(TreeNodeVO::getId, v -> v));
+        }
+
         return createAipDetailVO(daAip, state, originator, daoLinks, treeNodeMap);
     }
 
@@ -1887,7 +1892,9 @@ public class ClientFactoryVO {
         if (state != null) {
             vo.setAipVersion(state.getAipVersion());
 
-            vo.setFund(createFundGen(state.getFund()));
+            if (state.getFund() != null) {
+                vo.setFund(createFundGen(state.getFund()));
+            }
             if (state.getUnitdateFrom() != null) {
                 vo.setUnitdateFrom(state.getUnitdateFrom().toString());
             }
