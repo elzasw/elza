@@ -122,7 +122,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
         this.props.dispatch(
             modalDialogShow(
                 this,
-                i18n('dataGrid.export.title'),
+                i18n('dataGrid.import.title'),
                 <DataGridImportDialog versionId={versionId} fundId={fund.id} fundDataGrid={fund.fundDataGrid} />,
             ),
         );

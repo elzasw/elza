@@ -1784,6 +1784,8 @@ var messages = {
     "dataGrid.export.exportType.noSelection.item": "Není vybrán prvek",
     "dataGrid.export.title": "Export tabulkového zobrazení",
 
+    "dataGrid.import.title": "Import datových sloupců",
+
     "accesspoint.name.name": "Jméno",
     "accesspoint.name.complement": "Doplněk",
     "accesspoint.name.languageCode": "Jazyk",
