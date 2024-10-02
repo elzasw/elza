@@ -20,4 +20,7 @@
     <structure-type code="PT_BODY">
         <name>Tělo</name>
     </structure-type>
+    <structure-type code="IMPORT_DA">
+        <name>Import DA</name>
+    </structure-type>
 </structure-types>

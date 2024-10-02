@@ -13,6 +13,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.SysExternalSystemVO;
+import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -853,7 +855,7 @@ public class ExternalSystemService {
 
     /**
      * Add or update property
-     * 
+     *
      * @param extSystem
      * @param user
      * @param extSystemProperty
@@ -888,4 +890,13 @@ public class ExternalSystemService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "SysExternalSystemProperty not found, id: " + extSysPropertyId));
     }
- }
+
+    public ArrDigitalRepository findDigitalRepositoryByCode(String code) {
+        ArrDigitalRepository digitalRepository = digitalRepositoryRepository.findOneByCode(code);
+        if (digitalRepository == null) {
+            throw new EntityNotFoundException("ArrDigitalRepository not found, code: " + code);
+        } else {
+            return digitalRepository;
+        }
+    }
+}

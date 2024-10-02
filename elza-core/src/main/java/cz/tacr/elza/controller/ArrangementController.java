@@ -6,20 +6,19 @@ import static java.util.stream.Collectors.toSet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.common.FactoryUtils;
+import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.DaDao;
+import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -102,31 +101,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDao;
-import cz.tacr.elza.domain.ArrDaoLink;
-import cz.tacr.elza.domain.ArrDaoPackage;
-import cz.tacr.elza.domain.ArrDaoRequest;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrDigitalRepository;
-import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
-import cz.tacr.elza.domain.ArrDigitizationRequest;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrNodeConformity;
-import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutput.OutputState;
-import cz.tacr.elza.domain.ArrOutputItem;
-import cz.tacr.elza.domain.ArrRequest;
-import cz.tacr.elza.domain.ArrRequestQueueItem;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulOutputType;
-import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
@@ -136,37 +111,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.filter.DescItemTypeFilter;
-import cz.tacr.elza.repository.ChangeRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoPackageRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DescItemRepository;
-import cz.tacr.elza.repository.FilteredResult;
-import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.ArrIOService;
-import cz.tacr.elza.service.ArrangementFormService;
-import cz.tacr.elza.service.ArrangementInternalService;
-import cz.tacr.elza.service.ArrangementService;
-import cz.tacr.elza.service.DaoService;
-import cz.tacr.elza.service.DaoSyncService;
-import cz.tacr.elza.service.DescriptionItemService;
-import cz.tacr.elza.service.ExternalSystemService;
-import cz.tacr.elza.service.FilterTreeService;
-import cz.tacr.elza.service.FundLevelService;
-import cz.tacr.elza.service.LevelTreeCacheService;
-import cz.tacr.elza.service.OutputService;
-import cz.tacr.elza.service.PolicyService;
-import cz.tacr.elza.service.RequestQueueService;
-import cz.tacr.elza.service.RequestService;
-import cz.tacr.elza.service.RevertingChangesService;
-import cz.tacr.elza.service.RuleService;
-import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 import cz.tacr.elza.service.exception.DeleteFailedException;
 import cz.tacr.elza.service.importnodes.ImportFromFund;
@@ -178,6 +123,7 @@ import cz.tacr.elza.service.output.OutputData;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.service.vo.UpdateDescItemsParam;
+
 
 /**
  * Kontroler pro pořádání.
@@ -233,6 +179,9 @@ public class ArrangementController {
 
     @Autowired
     private ClientFactoryVO factoryVo;
+
+    @Autowired
+    private ApFactory apFactory;
 
     @Autowired
     private DescriptionItemService descriptionItemService;
@@ -296,6 +245,19 @@ public class ArrangementController {
 
     @Autowired
     private FileSystemRepoService fileSystemRepoService;
+
+    @Autowired
+    private AipService aipService;
+
+    @Autowired
+    private AccessPointService accessPointService;
+    @Autowired
+    private DaDaoRepository daDaoRepository;
+    @Autowired
+    private AipRepository aipRepository;
+    @Autowired
+    private ClientFactoryVO clientFactoryVO;
+
 
     /**
      * Poskytuje seznam balíčků digitalizátů pouze pod archivní souborem (AS).
@@ -1794,7 +1756,7 @@ public class ArrangementController {
         UserDetail userDetail = userService.getLoggedUserDetail();
 
         // získání seznamu všech dostupných ArrFund pro vyhledávání
-        List<ArrFund> fundList = 
+        List<ArrFund> fundList =
         		userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL) ? null : fundRepository.findFromUsrPermissionByUserId(userDetail.getId());
 
         ArrFundToNodeList arrFundToNodeList = null;
@@ -2875,6 +2837,22 @@ public class ArrangementController {
         headers.add("Content-type",  contentType + "; charset=utf-8");
         headers.add("Content-disposition", "attachment; filename=file." + extension);
         return new ResponseEntity<>(arrangementService.exportCoordinates(fileType, itemId), headers, HttpStatus.OK);
+    }
+
+    @Transactional
+    @RequestMapping(value = "/ap", method = RequestMethod.POST)
+    public FilteredResultVO<ApAccessPointVO> getAccessPoints(@RequestParam("text") final String text,
+                                                 @RequestParam("from") final Integer from,
+                                                 @RequestParam("count") final Integer count) {
+        FilteredResult<ApAccessPoint> aps = accessPointService.findAccessPointsByText(text, from, count);
+        return new FilteredResultVO<>(apFactory.createVOs(aps.getList()), aps.getTotalCount());
+    }
+
+    @RequestMapping(value = "/digitalRepositories", method = RequestMethod.GET)
+    @Transactional
+    public List<SysExternalSystemSimpleVO> findAllDigitalRepositories() {
+        List<ArrDigitalRepository> extSystems = externalSystemService.findDigitalRepository();
+        return FactoryUtils.transformList(extSystems, ArrDigitalRepositorySimpleVO::newInstance);
     }
 
     /**

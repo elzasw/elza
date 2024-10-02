@@ -11,7 +11,8 @@ import {
     EXT_SYSTEM_CLASS,
     EXT_SYSTEM_CLASS_LABEL,
     GIS_SYSTEM_TYPE_LABEL,
-    AP_EXT_SYSTEM_LABEL
+    AP_EXT_SYSTEM_LABEL,
+    DIGITAL_REPOSITORY_TYPE_LABEL
 } from './ExtSystemForm';
 
 /**
@@ -19,14 +20,14 @@ import {
  */
 class AdminExtSystemDetail extends AbstractReactComponent {
     static state = {
-        defaultScopes: []
+        defaultScopes: [],
     };
 
     componentDidMount() {
         this.fetchIfNeeded();
-        WebApi.getAllScopes().then(json => {
+        WebApi.getAllScopes().then(scopes => {
             this.setState({
-                defaultScopes: json,
+                defaultScopes: scopes,
             });
         });
     }
@@ -108,6 +109,9 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                         <div>
                             <h4>{i18n('admin.extSystem.class')}</h4>
                             <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.ArrDigitalRepository]}</span>
+
+                            <h4>{i18n('admin.extSystem.type')}</h4>
+                            <span>{DIGITAL_REPOSITORY_TYPE_LABEL[extSystem.digitalRepositoryType]}</span>
 
                             {this.renderValue(extSystem, 'viewDaoUrl')}
                             {this.renderValue(extSystem, 'viewFileUrl')}

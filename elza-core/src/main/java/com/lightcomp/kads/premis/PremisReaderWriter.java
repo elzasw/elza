@@ -15,18 +15,18 @@ import javax.xml.transform.stream.StreamSource;
 import gov.loc.premis.v3.PremisComplexType;
 
 public class PremisReaderWriter {
-	
+
 	public static final JAXBContext JAXB_CONTEXT;
     static {
         try {
             JAXB_CONTEXT = JAXBContext.newInstance(PremisComplexType.class);
         } catch (JAXBException e) {
             throw new RuntimeException(e);
-        }        
+        }
     }
 
     public static PremisComplexType unmarshal(InputStream is) throws JAXBException {
-        Unmarshaller unm = JAXB_CONTEXT.createUnmarshaller();        
+        Unmarshaller unm = JAXB_CONTEXT.createUnmarshaller();
         return unm.unmarshal(new StreamSource(is), PremisComplexType.class).getValue();
     }
 
@@ -41,5 +41,5 @@ public class PremisReaderWriter {
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
         m.marshal(mets, path.toFile());
     }
-	
+
 }

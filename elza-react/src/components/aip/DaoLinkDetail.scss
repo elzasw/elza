@@ -1,0 +1,32 @@
+@import "../../variables.scss";
+
+
+.napojeni {
+    border-style: solid;
+    border-color: #bfbfbf;
+    border-width: 1px;
+    margin: 10px;
+    background-color: #e3e3e3;
+    padding: 10px;
+
+    > p {
+        margin-bottom: 0;
+    }
+}
+
+.napojeni-row {
+
+    > p {
+        margin-bottom: 0;
+    }
+}
+
+.napojeni-row-child {
+
+    margin-left: 10px;
+
+    > p {
+        margin-bottom: 0;
+    }
+}
+

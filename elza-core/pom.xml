@@ -23,7 +23,7 @@
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
             <!--<version>3.5.5</version>-->
-		</dependency>		
+		</dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -87,7 +87,7 @@
 			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-jcache</artifactId>
 		</dependency>
-		<!-- 
+		<!--
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-ehcache</artifactId>
@@ -168,7 +168,7 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
 			<!-- Drivejsi poznamka: Verze se uvadi povinne z duvodu reseni konfliktu s jinymi komponentami,
-                 bez jejiho uvedeni se vytvari WAR bez CXF 3.9 -->            
+                 bez jejiho uvedeni se vytvari WAR bez CXF 3.9 -->
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
@@ -223,7 +223,7 @@
         <dependency>
             <groupId>io.gsonfire</groupId>
             <artifactId>gson-fire</artifactId>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.woodstox</groupId>
 			<artifactId>woodstox-core</artifactId>
@@ -233,7 +233,7 @@
              Asi lepe zvazit jeji nahradu vlastni impl a odstraneni dependency -->
         <dependency>
 	        <groupId>org.glassfish.jaxb</groupId>
-        	<artifactId>txw2</artifactId>        	
+        	<artifactId>txw2</artifactId>
 		</dependency>
         <!-- swagger ui -->
         <dependency>
@@ -312,6 +312,21 @@
 		    <groupId>com.sun.xml.messaging.saaj</groupId>
 		    <artifactId>saaj-impl</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>com.lightcomp.ft</groupId>
+            <artifactId>file-transfer</artifactId>
+            <version>2.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 		<!-- Find bugs -->
 		<!--<dependency>-->
 		<!--<groupId>com.google.code.findbugs</groupId>-->
@@ -543,6 +558,35 @@
                             </plugins>
 			</configuration>
                     </execution>
+                    <execution>
+                        <id>generate-ead</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <extension>true</extension>
+                            <args>
+                                <arg>-Xinheritance</arg>
+                            </args>
+                            <generateDirectory>${project.build.directory}/generated-sources/ead</generateDirectory>
+                            <schemaDirectory>${project.basedir}/src/main/resources/schema</schemaDirectory>
+                            <schemaIncludes>
+                                <include>ead3.xsd</include>
+                            </schemaIncludes>
+                            <bindingDirectory>${project.basedir}/src/main/resources/schema</bindingDirectory>
+                            <bindingIncludes>
+                                <include>ead3-bindings.xml</include>
+                            </bindingIncludes>
+                            <plugins>
+                                <plugin>
+                                    <groupId>org.jvnet.jaxb</groupId>
+                                    <artifactId>jaxb-plugins</artifactId>
+                                    <version>4.0.0</version>
+                                </plugin>
+                            </plugins>
+                        </configuration>
+                    </execution>
 				</executions>
                 <dependencies>
                     <!--<dependency>
@@ -620,6 +664,24 @@
 						</configuration>
 					</execution>
                     <execution>
+                        <id>openapi-da-client</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatorName>java</generatorName>
+                            <inputSpec>${project.basedir}/src/main/resources/rest/da-openapi.yaml</inputSpec>
+                            <output>${project.build.directory}/generated-sources/api/da/rest-client</output>
+                            <apiPackage>cz.tacr.da.controller</apiPackage>
+                            <modelPackage>cz.tacr.da.controller.vo</modelPackage>
+                            <generateApiTests>false</generateApiTests>
+                            <configOptions>
+                                <useJakartaEe>true</useJakartaEe>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>openapi-test-client</id>
                         <phase>generate-test-sources</phase>
                         <goals>
@@ -633,6 +695,7 @@
                             <modelPackage>cz.tacr.elza.test.controller.vo</modelPackage>
                             <configOptions>
                                 <useJakartaEe>true</useJakartaEe>
+                            </configOptions>
                                 <library>resttemplate</library><!-- default: okhttp-gson -->
                                 <useAbstractionForFiles>true</useAbstractionForFiles>
                             </configOptions>
@@ -642,7 +705,7 @@
             </plugin>
             <!--  TODO pasek hack - cxf-codegen-plugin moment�ln� neum� generovat t��dy s jakarta ee9, nutno ru�n� p�epsat importy -->
             <!--
-            <plugin> 
+            <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>maven-replacer-plugin</artifactId>
                 <version>1.4.1</version>

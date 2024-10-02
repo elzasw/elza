@@ -36,6 +36,7 @@ import org.hibernate.search.engine.search.query.SearchResult;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -74,6 +75,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     @Autowired
     private LevelRepository levelRepository;
 
+    @Lazy
     @Autowired
     private NodeCacheService nodeCacheService;
     

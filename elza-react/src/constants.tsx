@@ -15,6 +15,11 @@ export enum GisSystemType {
     FrameApiEdit = "FRAME_API_EDIT"
 }
 
+export enum DigitalRepositoryType {
+    Wsdl = "WSDL",
+    Filesystem = "FILESYSTEM"
+}
+
 export enum MODAL_DIALOG_VARIANT {
     LARGE = 'dialog-lg',
     FULLSCREEN = 'dialog-fullscreen',
@@ -154,6 +159,7 @@ export const CLS_CALCULABLE = 'calculable';
 export const TREE = 'tree';
 export const NODE = 'node';
 export const GRID = 'grid';
+export const AIP = 'aip';
 export const MOVEMENTS = 'movements';
 export const OUTPUTS = 'outputs';
 export const ACTIONS = 'actions';
@@ -167,6 +173,7 @@ export const URL_FUND = '/fund';
 export const URL_FUND_TREE = `${URL_FUND}/tree`;
 export const URL_FUND_GRID_PATH = `${URL_FUND}/:id/${GRID}`;
 export const URL_FUND_MOVEMENTS_PATH = `${URL_FUND}/:id/${MOVEMENTS}`;
+export const URL_FUND_AIP_PATH = `${URL_FUND}/:id/${AIP}`;
 export const URL_FUND_OUTPUTS_PATH = `${URL_FUND}/:id/${OUTPUTS}/:outputId`;
 export const URL_FUND_ACTIONS_PATH = `${URL_FUND}/:id/${ACTIONS}/:actionId`;
 export const URL_FUND_REQUESTS_PATH = `${URL_FUND}/:id/${REQUESTS}/:requestId`;
@@ -177,6 +184,8 @@ export const URL_ADMIN = '/admin';
 export const URL_ADMIN_USER = `${URL_ADMIN}/user`;
 export const URL_ADMIN_GROUP = `${URL_ADMIN}/group`;
 export const URL_ADMIN_FUND = `${URL_ADMIN}/fund`;
+
+export const URL_AIP = '/aip';
 
 export const getFundVersion = (fund: Fund) => {
     if(!fund?.activeVersion){
@@ -227,6 +236,10 @@ export const urlFundGrid = (fundId: number, versionId?: number, filter?: string)
     return `${fundSub(fundId, versionId, GRID)}${filter ? "?filter="+filter : ""}`;
 }
 
+export const urlFundAb = (fundId: number, versionId?: number) => {
+    return fundSub(fundId, versionId, AIP);
+}
+
 export const urlFundMovements = (fundId: number, versionId?: number) => {
     return fundSub(fundId, versionId, MOVEMENTS);
 }
@@ -269,4 +282,8 @@ export const urlEntity = (entityId?: number | string) => {
 
 export const urlEntityRevision = (entityId?: number | string) => {
     return `${URL_ENTITY}/${(entityId == null ? "" : entityId)}/revision`
+}
+
+export const urlAip = (aipId?: number): string => {
+    return aipId ? `${URL_AIP}/${aipId}` : URL_AIP;
 }

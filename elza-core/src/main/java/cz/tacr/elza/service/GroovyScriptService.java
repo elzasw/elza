@@ -63,11 +63,10 @@ public class GroovyScriptService {
 
     private final NodeCacheService nodeCacheService;
 
-    private final AccessPointCacheService accessPointCacheService;
-    
     private static final String ENTITA = "AE";
     private static final String PART = "PART";
     private static final String ITEMS = "ITEMS";
+    private static final String CLASS_NAME = "CLASS_NAME";
     // Used for StaticDataProvider
     private static final String DATA_PROVIDER = "DATA_PROVIDER";
     private static final String AP_CACHE_PROVIDER = "AP_CACHE_PROVIDER";
@@ -87,11 +86,9 @@ public class GroovyScriptService {
     public GroovyScriptService(ResourcePathResolver resourcePathResolver,
                                NodeCacheService nodeCacheService,
                                StaticDataService staticDataService,
-                               AccessPointCacheService accessPointCacheService,
                                @Value("classpath:/script/groovy/createDid.groovy") Resource createDidScriptSource) {
         this.nodeCacheService = nodeCacheService;
         this.staticDataService = staticDataService;
-        this.accessPointCacheService = accessPointCacheService;
         try {
             Path groovyDir = resourcePathResolver.getGroovyDir(); // TODO: Move initialization to startup service
             Files.createDirectories(groovyDir);
@@ -133,7 +130,7 @@ public class GroovyScriptService {
 
     /**
      * Spuštění groovy skriptu pro zpracování dat v Part
-     * 
+     *
      * @param part
      * @param groovyFilePath
      * @return
@@ -149,12 +146,13 @@ public class GroovyScriptService {
 
     /**
      * Spuštění groovy skriptu pro zpracování dat v AccessPoint
-     * 
+     *
      * @param groovyAe
      * @param groovyFilePath
+     * @param accessPointCacheService
      * @return
      */
-    public List<GroovyItem> process(GroovyAe groovyAe, String groovyFilePath) {
+    public List<GroovyItem> process(GroovyAe groovyAe, String groovyFilePath, final AccessPointCacheService accessPointCacheService) {
         if (groovyFilePath == null) {
             return Collections.emptyList();
         }
@@ -167,6 +165,15 @@ public class GroovyScriptService {
         input.put(DATA_PROVIDER, staticDataService.getData());
 
         return (List<GroovyItem>) groovyScriptFile.evaluate(input);
+    }
+
+    public String process(String className, String groovyFilePath) {
+        GroovyScriptFile groovyScriptFile = getGroovyScriptFile(groovyFilePath);
+
+        Map<String, Object> input = new HashMap<>();
+        input.put(CLASS_NAME, className);
+
+        return (String) groovyScriptFile.evaluate(input);
     }
 
     public List<ApItem> filterOutgoingItems(ApPart part,

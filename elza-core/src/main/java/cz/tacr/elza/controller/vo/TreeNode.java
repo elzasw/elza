@@ -26,7 +26,7 @@ public class TreeNode implements Comparable<TreeNode> {
      */
     private Integer position;
     /**
-     * Rodič uzluz
+     * Rodič uzlu
      */
     private TreeNode parent;
 
