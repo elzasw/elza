@@ -1,4 +1,4 @@
-import { DaDaoType } from "./DaDaoType";
+import { DaDaoType } from "elza-api";
 
 export type DaoVO = {
     aip?: number;

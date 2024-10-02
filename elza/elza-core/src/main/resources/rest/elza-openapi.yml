@@ -2215,8 +2215,6 @@ components:
       required:
         - daoLinkId
         - aipId
-        - daoId
-        - linkType
         - name
       properties:
         daoLinkId:
@@ -2228,9 +2226,13 @@ components:
         daoId:
           type: integer
           description: Dao ID
-        linkType:
+        daoCode:
           type: string
-          description: Name of the dao link type
+          description: Dao code
+        daoType:
+          allOf:
+            - $ref: '#/components/schemas/DaDaoType'
+          description: Dao type
         name:
           type: string
           description: Komponent name
