@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.util.FileSystemUtils;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.exception.SystemException;
@@ -75,14 +76,23 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
     @Value("${elza.workingDir}")
     private String workDir;
 
+    public static boolean cleanIndexDir = false;
+
     @PostConstruct
-    public void init() {
+    public void init() throws IOException {
         packagesToImport = new ArrayList<>();
         partTypeCodes = new ArrayList<>();
         itemTypeCodes = new ArrayList<>();
         typeSpecMap = new HashMap<>();
 
+        // vyčištění složek s indexovými soubory
+        if (cleanIndexDir) {
+        	Path luceneIndexesDir = Paths.get(workDir, ResourcePathResolver.LUCENE_DIR, ResourcePathResolver.INDEXES_DIR);
+        	FileSystemUtils.deleteRecursively(luceneIndexesDir);
+        }
+
         // get item type codes from DB
+
         List<Item> itemTypeItems = jdbcTemplate.query("SELECT * FROM rul_item_type", (rs, rowNum) -> new Item(rs.getInt("item_type_id"), rs.getString("code")));
         Map<Integer, String> itemTypeMap = itemTypeItems.stream().collect(Collectors.toMap(Item::getItemId, Item::getCode));
         itemTypeCodes.addAll(itemTypeItems.stream().map(i -> i.code).collect(Collectors.toList()));

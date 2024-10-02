@@ -1,5 +1,5 @@
 import { default as AcrossTabs } from 'across-tabs';
-import { MAP_URL } from '../pages/map/MapPage';
+import { MAP_URL, MAP_URL_WITH_CONTEXT } from '../pages/map/MapPage';
 
 export enum CrossTabEventType {SHOW_IN_MAP = 'SHOW_IN_MAP'}
 
@@ -96,7 +96,7 @@ class CrossTabHelper {
     }
 
     static getUrlFromEvent = (): string => {
-        return (window as any).serverContextPath + MAP_URL;
+        return MAP_URL_WITH_CONTEXT;
     }
 
     static sendEvent(that: CrossTabUserClassInstance, event: CrossTabEvent) {

@@ -13,7 +13,6 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
 
 import org.junit.Assert;
@@ -66,7 +65,7 @@ public class RuleControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void visiblePolicy() throws ApiException {
+    public void visiblePolicy() {
         Fund test = createFund("Test", null);
         ArrFundVersionVO fundVersion = getOpenVersion(test);
 

@@ -100,6 +100,9 @@ public class ApStateSpecification implements Specification<ApState> {
         Validate.isTrue(!scopeIds.isEmpty());
         condition = cb.and(condition, stateRoot.get(ApState.FIELD_SCOPE_ID).in(scopeIds));
 
+        // pouze aktuální state
+        condition = cb.and(condition, cb.isNull(stateRoot.get(ApState.FIELD_DELETE_CHANGE_ID)));
+
         // typ archivní entity
         if (CollectionUtils.isNotEmpty(apTypeIdTree)) {
             condition = cb.and(condition, stateRoot.get(ApState.FIELD_AP_TYPE_ID).in(apTypeIdTree));
@@ -110,27 +113,44 @@ public class ApStateSpecification implements Specification<ApState> {
             condition = cb.and(condition, stateRoot.get(ApState.FIELD_STATE_APPROVAL).in(state));
         }
 
+        Join<ApState, ApRevision> revisionJoin = stateRoot.join(ApState.FIELD_REVISION_LIST, JoinType.LEFT);
+        revisionJoin.on(cb.isNull(revisionJoin.get(ApRevision.FIELD_DELETE_CHANGE_ID)));
+
+        Join<ApRevision, ApRevState> revStateJoin = revisionJoin.join(ApRevision.FIELD_REV_STATE_LIST, JoinType.LEFT);
+        revStateJoin.on(cb.isNull(revStateJoin.get(ApRevState.FIELD_DELETE_CHANGE_ID)));
+
         if (revState != null) {
-            Root<ApRevision> revisionRoot = q.from(ApRevision.class);
-            Join<ApRevision, ApState> revisionApStateJoin = revisionRoot.join(ApRevision.FIELD_STATE, JoinType.INNER);
-            Root<ApRevState> revStateRoot = q.from(ApRevState.class);
-
-            condition = cb.and(condition,
-                    cb.equal(stateRoot.get(ApState.FIELD_STATE_ID), revisionApStateJoin.get(ApState.FIELD_STATE_ID)),
-                    cb.isNull(revisionRoot.get(ApRevision.FIELD_DELETE_CHANGE_ID)),
-                    cb.equal(revStateRoot.get(ApRevState.FIELD_REVISION), revisionRoot),
-                    cb.isNull(revStateRoot.get(ApRevState.FIELD_DELETE_CHANGE_ID)),
-                    revStateRoot.get(ApRevState.FIELD_STATE_APPROVAL).in(revState));
+            condition = cb.and(condition, revStateJoin.get(ApRevState.FIELD_STATE_APPROVAL).in(revState));
         }
-
-        // pouze aktuální state
-        condition = cb.and(condition, cb.isNull(stateRoot.get(ApState.FIELD_DELETE_CHANGE_ID)));
 
         if (searchFilterVO != null) {
             String user = searchFilterVO.getUser();
             if (StringUtils.isNotEmpty(user)) {
+            	String userLike = "%" + user.toLowerCase() + "%";
+
                 Join<ApState, ApChange> apChangeJoin = stateRoot.join(ApState.FIELD_CREATE_CHANGE, JoinType.INNER);
-                condition = cb.and(condition, cb.like(cb.lower(apChangeJoin.get(ApChange.USER).get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%"));
+                Join<ApChange, UsrUser> changeUserJoin = apChangeJoin.join(ApChange.USER, JoinType.LEFT);
+
+                Join<ApRevState, ApChange> revChangeJoin = revStateJoin.join(ApRevState.FIELD_CREATE_CHANGE, JoinType.LEFT);
+                Join<ApChange, UsrUser> revChangeUserJoin = revChangeJoin.join(ApChange.USER, JoinType.LEFT);
+
+                // autor poslední změny stavu, pro tento stav nejsou žádné revize
+                Predicate usrState = cb.and(cb.isNull(revStateJoin), cb.like(cb.lower(changeUserJoin.get(UsrUser.FIELD_USERNAME)), userLike));
+
+                // autor poslední změny stavu revize
+            	Predicate usrRevSt = cb.like(cb.lower(revChangeUserJoin.get(UsrUser.FIELD_USERNAME)), userLike);
+
+            	condition = cb.and(condition, cb.or(usrState, usrRevSt));
+            }
+
+            String code = searchFilterVO.getCode();
+            if (StringUtils.isNotEmpty(code)) {
+            	try {
+            		Integer id = Integer.parseInt(code);
+            		condition = cb.and(condition, accessPointJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID).in(id));
+            	} catch (NumberFormatException e) {
+            		throw new IllegalArgumentException("Není možné převést řetězec na číslo (ID): " + code);
+                }
             }
 
             condition = cb.and(condition, process(cb.conjunction(), ctx));
@@ -140,6 +160,8 @@ public class ApStateSpecification implements Specification<ApState> {
         indexJoin.on(cb.equal(indexJoin.get(ApIndex.INDEX_TYPE), DISPLAY_NAME_LOWER));
         Path<String> accessPointName = indexJoin.get(ApIndex.VALUE);
         q.orderBy(cb.asc(accessPointName));
+
+        q.groupBy(stateRoot.get(ApState.FIELD_STATE_ID), accessPointName);
 
         return condition;
     }
@@ -211,7 +233,7 @@ public class ApStateSpecification implements Specification<ApState> {
                 String intervalExtinction = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
                 and = processValueCondDef(ctx, and, intervalExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CONTAIN, false);
             }
-            condition = cb.and(condition, and);
+            return cb.and(condition, and);
         }
 
         return condition;
@@ -270,7 +292,7 @@ public class ApStateSpecification implements Specification<ApState> {
         }
 
         if (partTypeCode != null) {
-            addPartTypeCondForItem(ctx, cb, and, prefPart, partTypeCode);
+        	and = cb.and(and, addPartTypeCondForItem(ctx, prefPart, partTypeCode));
         }
 
         return cb.and(condition,
@@ -278,17 +300,23 @@ public class ApStateSpecification implements Specification<ApState> {
                       processValueComparator(ctx, comparator, dataType, value));
     }
 
-    private void addPartTypeCondForItem(Ctx ctx, CriteriaBuilder cb, Predicate and,
-                                        boolean prefPart, String partTypeCode) {
+    private Predicate addPartTypeCondForItem(final Ctx ctx, boolean prefPart, final String partTypeCode) {
+    	CriteriaBuilder cb = ctx.cb;
         Join<ApItem, ApPart> itemPartJoin = ctx.getItemPartJoin();
-        if (prefPart) {
-            itemPartJoin.on(cb.equal(itemPartJoin.get(ApPart.PART_ID), ctx.getAccessPointJoin().get(
-                                                                                                    ApAccessPoint.FIELD_PREFFERED_PART_ID)));
-            and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
+    	if (prefPart) {
+            itemPartJoin.on(cb.equal(itemPartJoin.get(ApPart.PART_ID), ctx.getAccessPointJoin().get(ApAccessPoint.FIELD_PREFFERED_PART_ID)));
+
+            return cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode);
         } else {
-            and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
-            // zajimaji nas jen nesmazane part
-            and = cb.and(and, cb.isNull(itemPartJoin.get(ApPart.DELETE_CHANGE_ID)));
+           	Join<ApPart, ApPart> joinParentPart = ctx.getApPartRoot().join(ApPart.PARENT_PART, JoinType.LEFT);
+           	Join<RulPartType, ApPart> parentPartTypeJoin = joinParentPart.join(ApPart.PART_TYPE, JoinType.LEFT);
+
+           	return cb.and(cb.isNull(itemPartJoin.get(ApPart.DELETE_CHANGE_ID)),
+           				  // pokud existuje rodičovský ApPArt, bereme v úvahu pouze jeho typ
+           			      cb.or(cb.and(cb.isNotNull(itemPartJoin.get(ApPart.PARENT_PART)),
+           			                   cb.equal(parentPartTypeJoin.get(RulPartType.CODE), partTypeCode)),
+                	            cb.and(cb.isNull(itemPartJoin.get(ApPart.PARENT_PART)),
+                                       cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode))));
         }
     }
 

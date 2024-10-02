@@ -11,6 +11,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -33,6 +36,7 @@ public class ApState implements IApScope, AccessPointCacheSerializable {
     public static final String FIELD_REPLACED_BY = "replacedBy";
     public static final String FIELD_CREATE_CHANGE = "createChange";
     public static final String FIELD_STATE_ID = "stateId";
+    public static final String FIELD_REVISION_LIST = "revisionList";
 
     @Id
     @GeneratedValue
@@ -87,6 +91,9 @@ public class ApState implements IApScope, AccessPointCacheSerializable {
 
     @Column(length = StringLength.LENGTH_2000)
     private String comment;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = ApRevision.FIELD_STATE)
+    private List<ApRevision> revisionList;
 
     /**
      * Typ rejstříku.

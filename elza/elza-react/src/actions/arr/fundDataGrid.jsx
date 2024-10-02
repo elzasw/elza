@@ -6,6 +6,7 @@ import { WebApi } from 'actions/index';
 import * as types from 'actions/constants/ActionTypes';
 import { objectById } from 'stores/app/utils';
 import { COL_REFERENCE_MARK } from 'components/arr/FundDataGridConst';
+import { Api } from 'api';
 
 // Null hodnota, která se používaná v klientovi pro reprezentaci null hodnoty
 export const FILTER_NULL_VALUE = '____$<NULL>$___';
@@ -261,6 +262,13 @@ export function fundDataGridPrepareEdit(versionId, nodeId, parentNodeId, descIte
         parentNodeId,
         descItemTypeId,
     };
+}
+
+export function fundDataGridImport(versionId, fundId, file){
+    return async (dispatch) => {
+        await Api.funds.fundImportFundData(fundId, "CSV", file);
+        return dispatch(fundDataGridRefreshRows(versionId));
+    }
 }
 
 /**

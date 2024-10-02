@@ -35,14 +35,7 @@ type FormProps = {};
 
 const validate = values => {
     const errors: any = {};
-    if (!values.partType) {
-        errors.partType = i18n('global.validation.required');
-    }
-    if (values.itemType) {
-        if (values.itemType.useSpecification && !values.itemSpec) {
-            errors.itemSpec = i18n('global.validation.required');
-        }
-    } else {
+    if (!values.itemType) {
         errors.itemType = i18n('global.validation.required');
     }
     if (!values.value) {
@@ -115,8 +108,21 @@ const ExtendsFilterModal = ({
 
     const getItemTypes = (_rulDescItemTypes: string[]) => {
         return _rulDescItemTypes.length === 0 ? [] : refTables.descItemTypes.items.filter((itemType: RulDescItemTypeExtVO) => {
-            const dataType: RulDataTypeVO = refTables.rulDataTypes.itemsMap[itemType.dataTypeId];
             return _rulDescItemTypes.includes(itemType.code);
+        })
+        // Docasne zakazani nekterych datovych typu kvuli chybam na serveru(#9089)
+        .filter((itemType:RulDescItemTypeExtVO) => {
+            const dataType: RulDataTypeVO = refTables.rulDataTypes.itemsMap[itemType.dataTypeId];
+
+            if(
+                dataType.code === RulDataTypeCodeEnum.INT // #9085
+                    || dataType.code === RulDataTypeCodeEnum.COORDINATES // #9086
+                    || dataType.code === RulDataTypeCodeEnum.BIT // #9087
+            ){
+                console.log("#### remove data type", dataType.code, itemType.code)
+                return false;
+            }
+            return true;
         });
     }
 
@@ -180,20 +186,24 @@ const ExtendsFilterModal = ({
                             </Field>
                         </Col>
                         <Col xs={6}>
-                            <Form.Label>Pouze hlavní část</Form.Label>
-                            <Field
-                                name="onlyMainPart"
-                                component={ReduxFormFieldErrorDecorator}
-                                renderComponent={Form.Check}
-                                type="checkbox"
-                            />
+                                {area !== Area.ALLPARTS && <>
+                                    <Form.Label>
+                                        {i18n('ap.ext-search.section.relations.only-main-part')}
+                                    </Form.Label>
+                                        <Field
+                                        name="onlyMainPart"
+                                        component={ReduxFormFieldErrorDecorator}
+                                        renderComponent={Form.Check}
+                                        type="checkbox"
+                                    />
+                                    </>}
                         </Col>
                         {itemType && (
                             <Col xs={12}>
                                 <ArchiveEntityRel
                                     name={'obj'}
                                     label={i18n('ap.ext-search.section.relations.obj')}
-                                    onlyMainPart={onlyMainPart}
+                                    onlyMainPart={area !== Area.ALLPARTS && onlyMainPart}
                                     area={area}
                                     api={relEntityApi}
                                     itemTypeId={itemType.id}

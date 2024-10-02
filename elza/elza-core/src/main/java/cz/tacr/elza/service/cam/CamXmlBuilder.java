@@ -67,7 +67,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.GroovyService;
 import jakarta.annotation.Nullable;
 
@@ -88,7 +88,7 @@ abstract public class CamXmlBuilder {
     protected final ApScope scope;
 
     protected final GroovyService groovyService;
-    protected final AccessPointDataService apDataService;
+    protected final DataService dataService;
 
     /**
      * Collection of all part UUIDS
@@ -122,13 +122,13 @@ abstract public class CamXmlBuilder {
                   final ApAccessPoint accessPoint,
                   final Collection<ApBindingState> bindingStates,
                   final GroovyService groovyService,
-                  final AccessPointDataService apDataService,
+                  final DataService dataService,
                   final ApScope scope) {
         this.sdp = sdp;
         this.accessPoint = accessPoint;
         this.bindingStates = bindingStates;
         this.groovyService = groovyService;
-        this.apDataService = apDataService;
+        this.dataService = dataService;
         this.scope = scope;
     }
 
@@ -562,7 +562,7 @@ abstract public class CamXmlBuilder {
 		case RECORD_REF:
 			return convertEntityRef(data, itemTypeCode, itemSpecCode, uuidXml);
 		case COORDINATES:
-			return convertCoordinates(data, itemTypeCode, itemSpecCode, uuidXml, apDataService);
+			return convertCoordinates(data, itemTypeCode, itemSpecCode, uuidXml, dataService);
 		default:
 			throw new BusinessException("Failed to export item, unsupported data type: " + dataType + ", itemId:"
 					+ item.getItemId() + ", class: " + data.getClass(), BaseCode.EXPORT_FAILED);
@@ -572,14 +572,14 @@ abstract public class CamXmlBuilder {
 
     private static ItemBinaryXml convertCoordinates(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
                                                     UuidXml uuidXml,
-                                                    AccessPointDataService apDataService) {
+                                                    DataService dataService) {
         if (!(data instanceof ArrDataCoordinates)) {
             throw new BusinessException("Failed to convert data: " + data.getDataId(),
                     BaseCode.EXPORT_FAILED);
         }
         ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) data;
         ItemBinaryXml itemCoordinates = new ItemBinaryXml();
-        itemCoordinates.setValue(new BinaryStreamXml(apDataService.convertGeometryToWKB(dataCoordinates.getValue())));
+        itemCoordinates.setValue(new BinaryStreamXml(dataService.convertGeometryToWKB(dataCoordinates.getValue())));
         itemCoordinates.setT(itemTypeCode);
         itemCoordinates.setS(itemSpecCode);
         itemCoordinates.setUuid(uuidXml);

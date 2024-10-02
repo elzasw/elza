@@ -37,7 +37,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  * Data exchange import controller.
  */
 @RestController
-@RequestMapping(value = "/api/import/")
+@RequestMapping(value = "/api/import")
 public class DEImportController {
 
     private final DEImportService importService;
@@ -50,7 +50,7 @@ public class DEImportController {
         this.eventNotificationService = eventNotificationService;
     }
 
-    @RequestMapping(value = "transformations", method = RequestMethod.GET)
+    @RequestMapping(value = "/transformations", method = RequestMethod.GET)
     public List<String> getTransformations() {
         try {
             return importService.getTransformationNames();
@@ -59,12 +59,12 @@ public class DEImportController {
         }
     }
 
-    @RequestMapping(value = "import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(value = "/import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void importData(@RequestPart(name = "importPositionParams", required = false) final ImportPositionParams importPositionParams,
                            @RequestParam(name = "transformationName", required = false) final String transformationName,
                            @RequestParam("scopeId") final int scopeId,
-	        @RequestParam("xmlFile") final MultipartFile xmlFile,
-	        @RequestParam(name = "ignoreRootNodes", required = false) final Boolean ignoreRootNodes) {
+                           @RequestParam("xmlFile") final MultipartFile xmlFile,
+                           @RequestParam(name = "ignoreRootNodes", required = false) final Boolean ignoreRootNodes) {
 
         // TODO: XML transformation
         if (StringUtils.isNotEmpty(transformationName)) {

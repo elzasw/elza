@@ -16,7 +16,6 @@ import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ApPartVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.core.schema.SchemaManager;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.ws.core.v1.ImportService;
 import cz.tacr.elza.ws.types.v1.ImportRequest;
@@ -37,7 +36,7 @@ public class ImportServiceTest extends AbstractControllerTest {
     }
 
     @Test
-    public void importEntityTest() throws IOException, ApiException {
+    public void importEntityTest() throws IOException {
         // create external system
         ApExternalSystemVO externalSystemVO = new ApExternalSystemVO();
         externalSystemVO.setCode(SYSTEM_CODE);

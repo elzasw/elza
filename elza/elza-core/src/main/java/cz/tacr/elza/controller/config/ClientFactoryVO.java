@@ -3,6 +3,7 @@ package cz.tacr.elza.controller.config;
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -42,6 +43,71 @@ import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.factory.WfFactory;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
+import cz.tacr.elza.controller.vo.ApExternalSystemVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
+import cz.tacr.elza.controller.vo.ArrDaoFileVO;
+import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
+import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
+import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
+import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
+import cz.tacr.elza.controller.vo.ArrDaoVO;
+import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
+import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
+import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
+import cz.tacr.elza.controller.vo.BulkActionRunVO;
+import cz.tacr.elza.controller.vo.BulkActionVO;
+import cz.tacr.elza.controller.vo.DataBit;
+import cz.tacr.elza.controller.vo.DataCoordinates;
+import cz.tacr.elza.controller.vo.DataDate;
+import cz.tacr.elza.controller.vo.DataDecimal;
+import cz.tacr.elza.controller.vo.DataFileRef;
+import cz.tacr.elza.controller.vo.DataFormattedText;
+import cz.tacr.elza.controller.vo.DataInteger;
+import cz.tacr.elza.controller.vo.DataJsonTable;
+import cz.tacr.elza.controller.vo.DataNull;
+import cz.tacr.elza.controller.vo.DataRecordRef;
+import cz.tacr.elza.controller.vo.DataString;
+import cz.tacr.elza.controller.vo.DataStructureRef;
+import cz.tacr.elza.controller.vo.DataText;
+import cz.tacr.elza.controller.vo.DataUnitdate;
+import cz.tacr.elza.controller.vo.DataUnitid;
+import cz.tacr.elza.controller.vo.DataUriRef;
+import cz.tacr.elza.controller.vo.Fund;
+import cz.tacr.elza.controller.vo.FundDetail;
+import cz.tacr.elza.controller.vo.GisExternalSystemSimpleVO;
+import cz.tacr.elza.controller.vo.GisExternalSystemVO;
+import cz.tacr.elza.controller.vo.NodeConformityVO;
+import cz.tacr.elza.controller.vo.ItemData;
+import cz.tacr.elza.controller.vo.Node;
+import cz.tacr.elza.controller.vo.NodeItem;
+import cz.tacr.elza.controller.vo.ParInstitutionVO;
+import cz.tacr.elza.controller.vo.RulDataTypeVO;
+import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
+import cz.tacr.elza.controller.vo.RulExportFilterVO;
+import cz.tacr.elza.controller.vo.RulOutputFilterVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
+import cz.tacr.elza.controller.vo.RulTemplateVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
+import cz.tacr.elza.controller.vo.SysExternalSystemSimpleVO;
+import cz.tacr.elza.controller.vo.SysExternalSystemVO;
+import cz.tacr.elza.controller.vo.TreeItemSpecsItem;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.UISettingsVO;
+import cz.tacr.elza.controller.vo.UsrGroupVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
@@ -69,6 +135,72 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrDaoFile;
+import cz.tacr.elza.domain.ArrDaoFileGroup;
+import cz.tacr.elza.domain.ArrDaoLink;
+import cz.tacr.elza.domain.ArrDaoLinkRequest;
+import cz.tacr.elza.domain.ArrDaoPackage;
+import cz.tacr.elza.domain.ArrDaoRequest;
+import cz.tacr.elza.domain.ArrDaoRequestDao;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataBit;
+import cz.tacr.elza.domain.ArrDataDate;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
+import cz.tacr.elza.domain.ArrDigitizationRequest;
+import cz.tacr.elza.domain.ArrDigitizationRequestNode;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrItemFormattedText;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrNodeOutput;
+import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.ArrOutputTemplate;
+import cz.tacr.elza.domain.ArrRequest;
+import cz.tacr.elza.domain.ArrRequestQueueItem;
+import cz.tacr.elza.domain.GisExternalSystem;
+import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.RulDataType;
+import cz.tacr.elza.domain.RulExportFilter;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemSpecExt;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulOutputFilter;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.RulPolicyType;
+import cz.tacr.elza.domain.RulStructuredTypeExtension;
+import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.SysExternalSystem;
+import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrAuthentication;
+import cz.tacr.elza.domain.UsrGroup;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -497,6 +629,123 @@ public class ClientFactoryVO {
             default:
                 throw new NotImplementedException(item.getItemType().getDataTypeId().toString());
         }
+    }
+
+    /**
+     * Vytvoření hodnoty atributu (nová).
+     *
+     * @param item hodnota atributu
+     * @return VO hodnota atributu
+     */
+    public <T extends ArrItem> NodeItem createNodeItem(final T item) {
+        Assert.notNull(item, "Hodnota musí být vyplněna");
+
+        NodeItem nodeItem = new NodeItem();
+        nodeItem.setId(item.getItemId());
+        nodeItem.setItemTypeId(item.getItemTypeId());
+        nodeItem.setItemSpecId(item.getItemSpecId());
+        nodeItem.setNodeId(item.getNodeId());
+        nodeItem.setNodeVersion(item.getNode().getVersion());
+        nodeItem.setItemObjectId(item.getDescItemObjectId());
+        nodeItem.setPosition(item.getPosition());
+        nodeItem.setReadOnly(item.getReadOnly());
+
+        ArrData arrData = item.getData();
+		ItemData data = new ItemData();
+
+		String stringValue;
+		Integer integerValue;
+
+        DataType dataType = DataType.fromId(item.getItemType().getDataTypeId());
+		switch (dataType) {
+        	case INT:
+	            data = new DataInteger();
+	            integerValue = ((ArrDataInteger) arrData).getIntegerValue();
+	            ((DataInteger) data).setIntegerValue(integerValue);
+	            break;
+        	case STRING:
+	            data = new DataString();
+	            stringValue = ((ArrDataString) arrData).getStringValue();
+	            ((DataString) data).setStringValue(stringValue);
+	            break;
+        	case TEXT:
+        		data = new DataText();
+        		stringValue = ((ArrDataText) arrData).getTextValue();
+	            ((DataText) data).setTextValue(stringValue);
+        		break;
+	        case UNITDATE:
+	        	data = new DataUnitdate();
+	        	stringValue = UnitDateConvertor.convertToString(((ArrDataUnitdate) arrData));
+	        	((DataUnitdate) data).setValue((String) stringValue);
+	        	break;
+	        case UNITID:
+	        	data = new DataUnitid();
+	        	stringValue = ((ArrDataUnitid) arrData).getUnitId();
+	        	((DataUnitid) data).setUnitId(stringValue);
+	        	break;
+	        case FORMATTED_TEXT:
+	        	data = new DataFormattedText();
+	        	stringValue = ((ArrDataText) arrData).getTextValue();
+	        	((DataFormattedText) data).setValue(stringValue);
+	        	break;
+	        case COORDINATES:
+	        	data = new DataCoordinates();
+	        	stringValue = ((ArrDataCoordinates) arrData).getFulltextValue();
+	        	((DataCoordinates) data).setValue(stringValue);
+	        	break;
+	        case RECORD_REF:
+	        	data = new DataRecordRef();
+	        	integerValue = ((ArrDataRecordRef) arrData).getRecordId();
+	        	((DataRecordRef) data).setValue(integerValue);
+	        	break;
+	        case DECIMAL:
+	        	data = new DataDecimal();
+	        	BigDecimal decimalValue = ((ArrDataDecimal) arrData).getValue();
+	        	((DataDecimal) data).setValue(decimalValue);
+	        	break;
+	        case STRUCTURED:
+	        	data = new DataStructureRef();
+	        	integerValue = ((ArrDataStructureRef) arrData).getStructuredObjectId();
+	        	((DataStructureRef) data).setStructuredObjectId(integerValue);
+	        	break;
+	        case ENUM:
+	        	data = new DataNull();
+	        	break;
+	        case FILE_REF:
+	        	data = new DataFileRef();
+	        	integerValue = ((ArrDataFileRef) arrData).getFileId();
+	        	((DataFileRef) data).setFileId(integerValue);
+	        	break;
+	        case JSON_TABLE:
+	        	data = new DataJsonTable();
+	        	stringValue = ((ArrDataJsonTable) arrData).getJsonValue();
+	        	((DataJsonTable) data).setValue(stringValue);
+	        	break;
+	        case DATE:
+	        	data = new DataDate();
+	        	LocalDate dateValue = ((ArrDataDate) arrData).getValue();
+	        	((DataDate) data).setValue(dateValue);
+	        	break;
+	        case URI_REF:
+	        	data = new DataUriRef();
+	        	stringValue = ((ArrDataUriRef) arrData).getUriRefValue();
+	        	((DataUriRef) data).setValue(stringValue);
+	        	break;
+	        case BIT:
+	        	data = new DataBit();
+	        	Boolean bitValue = ((ArrDataBit) arrData).isBitValue();
+	        	((DataBit) data).setBitValue(bitValue);
+	        	break;
+        	default:
+        		throw new NotImplementedException(item.getItemType().getDataTypeId().toString());
+        }
+
+        data.setType(data.getClass().getSimpleName());
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        nodeItem.setData(data);
+
+        return nodeItem;
     }
 
     /**
@@ -2052,4 +2301,9 @@ public class ClientFactoryVO {
     }
 
 
+
+	public Node createNode(ArrNode arrNode) {
+		Node node = new Node(arrNode.getNodeId(), arrNode.getVersion(), arrNode.getUuid());
+		return node;
+	}
 }

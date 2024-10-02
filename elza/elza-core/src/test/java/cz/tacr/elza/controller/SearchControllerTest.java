@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.repository.HsearchOutboxEventRepository;
 import cz.tacr.elza.service.IndexWorkService;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.test.controller.vo.ResultEntityRef;
 import cz.tacr.elza.test.controller.vo.SearchParams;
@@ -22,7 +21,7 @@ public class SearchControllerTest extends AbstractControllerTest {
     HsearchOutboxEventRepository hsearchOutboxEvent; 
 
     @Test
-    public void searchEntityTest() throws ApiException, InterruptedException {
+    public void searchEntityTest() throws InterruptedException {
         // wait for ending hibernate search indexing
         while (hsearchOutboxEvent.count() > 0) {
             Thread.sleep(100);
@@ -40,7 +39,7 @@ public class SearchControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void searchArchDescTest() throws ApiException, InterruptedException {
+    public void searchArchDescTest() throws InterruptedException {
         // wait for ending lucene indexing
         while (indexWorkService.isActive()) {
             Thread.sleep(100);

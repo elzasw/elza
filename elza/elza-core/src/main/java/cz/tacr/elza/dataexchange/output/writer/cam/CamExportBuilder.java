@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
@@ -28,7 +29,7 @@ import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.cam.EntityXmlBuilder;
 
@@ -51,7 +52,7 @@ public class CamExportBuilder implements ExportBuilder {
 
     final private GroovyService groovyService;
 
-    final private AccessPointDataService apDataService;
+    final private DataService dataService;
 
     final private SchemaManager schemaManager;
 
@@ -78,7 +79,7 @@ public class CamExportBuilder implements ExportBuilder {
         @Override
         public void close() {
             CamExportBuilder expBuilder = getExportBuilder();
-            Validate.notNull(expBuilder.apStream);
+            Objects.requireNonNull(expBuilder.apStream);
             expBuilder.apStream = null;
         }
 
@@ -88,12 +89,12 @@ public class CamExportBuilder implements ExportBuilder {
     public CamExportBuilder(final StaticDataProvider staticDataProvider,
                             final GroovyService groovyService,
                             final SchemaManager schemaManager,
-                            final AccessPointDataService apDataService,
+                            final DataService dataService,
                             boolean applyFilter) {
         this.staticDataProvider = staticDataProvider;
         this.groovyService = groovyService;
         this.schemaManager = schemaManager;
-        this.apDataService = apDataService;
+        this.dataService = dataService;
         this.applyFilter = applyFilter;
         initBuilder();
     }
@@ -102,12 +103,12 @@ public class CamExportBuilder implements ExportBuilder {
     public CamExportBuilder(final StaticDataService staticDataService,
                             final GroovyService groovyService,
                             final SchemaManager schemaManager,
-                            final AccessPointDataService apDataService,
+                            final DataService dataService,
                             boolean applyFilter) {
         this.staticDataService = staticDataService;
         this.groovyService = groovyService;
         this.schemaManager = schemaManager;
-        this.apDataService = apDataService;
+        this.dataService = dataService;
         this.applyFilter = applyFilter;
         initBuilder();
     }
@@ -130,7 +131,7 @@ public class CamExportBuilder implements ExportBuilder {
                 apInfo.getApState(),
                 apInfo.getExternalIds(),
                 groovyService,
-                apDataService,
+                dataService,
                 apInfo.getApState().getScope(),
                 applyFilter);
 

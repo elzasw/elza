@@ -32,10 +32,10 @@ type Props = {
 } & OwnProps & ReturnType<typeof mapDispatchToProps> & ReturnType<typeof mapStateToProps> & InjectedFormProps;
 
 const RelationsFilterSection = ({
-    submitting, 
-    dispatch, 
-    relApi, 
-    nameFormSection = "", 
+    submitting,
+    dispatch,
+    relApi,
+    nameFormSection = "",
     name = 'ap.ext-search.section.relations',
     scopeId,
     rulSetsIds,
@@ -83,11 +83,11 @@ interface RelFilterFieldProps extends WrappedFieldArrayProps<string> {
 }
 
 const RelFilters: React.FC<RelFilterFieldProps> = ({
-    fields, 
-    disabled = false, 
-    meta, 
-    relApi, 
-    dispatch, 
+    fields,
+    disabled = false,
+    meta,
+    relApi,
+    dispatch,
     scopeId,
     rulSetsIds,
     ...props
@@ -97,19 +97,19 @@ const RelFilters: React.FC<RelFilterFieldProps> = ({
                 dispatch(
                     modalDialogShow(
                         this,
-                        i18n('ap.ext-search.section.extends.title'),
-                        <RelationFilterModal 
+                        i18n('ap.ext-search.section.relations.title'),
+                        <RelationFilterModal
                             initialValues={{
                                 area: Area.ALLNAMES,
                                 onlyMainPart: false,
                                 scopeId,
                                 itemType: {id: null, name: i18n('ap.ext-search.input.select.all')}
-                            }} 
-                            relApi={relApi} 
+                            }}
+                            relApi={relApi}
                             onSubmit={(data) => {
                                 fields.push(data);
                                 dispatch(modalDialogHide());
-                            }} 
+                            }}
                             rulSetsIds={rulSetsIds}
                             />,
                         ),

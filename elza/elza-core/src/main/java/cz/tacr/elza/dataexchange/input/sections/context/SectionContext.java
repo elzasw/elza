@@ -158,9 +158,10 @@ public class SectionContext {
      * @param importId
      * @param uuid
      *            Optional object UUID
+     * @param assignable 
      * @return
      */
-    public StructObjContext addStructObject(String importId, String uuid) {
+    public StructObjContext addStructObject(String importId, String uuid, Boolean assignable) {
         Validate.notNull(processingStructType);
 
         // create entity
@@ -169,6 +170,7 @@ public class SectionContext {
                 processingStructType)
                         .setState(State.OK)
                         .setUuid(uuid)
+                        .setAssignable(assignable)
                         .build();
 
         ArrStructObjectWrapper wrapper = new ArrStructObjectWrapper(entity, importId, uuid);

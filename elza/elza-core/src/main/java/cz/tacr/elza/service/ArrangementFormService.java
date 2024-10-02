@@ -25,6 +25,9 @@ import cz.tacr.elza.controller.ArrangementController.DescItemResult;
 import cz.tacr.elza.controller.arrangement.UpdateItemResult;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.ItemDataResult;
+import cz.tacr.elza.controller.vo.Node;
+import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
@@ -428,6 +431,7 @@ public class ArrangementFormService {
 	}
 
 	// TODO: Refactorize return value to contain nodeId instead of parent
+	@Deprecated
 	public DescItemResult updateDescItem(int fundVersionId, int nodeId, int nodeVersion, ArrItemVO descItemVO, boolean createNewVersion) {
 
 		var sdp = staticData.getData();
@@ -443,4 +447,12 @@ public class ArrangementFormService {
 		return descItemResult;
 	}
 
+	public ItemDataResult createItemDataResult(final ArrDescItem descItemCreated) {
+		ArrNode node = descItemCreated.getNode();
+		ItemDataResult itemDataResult = new ItemDataResult();
+		itemDataResult.setItem(factoryVo.createNodeItem(descItemCreated));
+		itemDataResult.setParent(new Node(node.getNodeId(), node.getVersion(), node.getUuid()));
+
+		return itemDataResult;
+	}
 }
