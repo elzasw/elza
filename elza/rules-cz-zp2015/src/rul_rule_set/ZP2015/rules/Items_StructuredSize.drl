@@ -34,7 +34,7 @@ when
               "ZP2015_SIZE_UNITS", "ZP2015_WEIGHT", "ZP2015_AMOUNT", "ZP2015_SIZE_OTHER") 
               )
 then
-  $itemType.setType(RulItemType.Type.POSSIBLE);
+  $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
 rule "mozne specifikace"
@@ -44,7 +44,7 @@ when
   $itemType : RulItemTypeExt(code in ("ZP2015_SIZE_UNITS", "ZP2015_WEIGHT", "ZP2015_AMOUNT") )
   $itemSpec : RulItemSpecExt( ) from $itemType.rulItemSpecList
 then
-  $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
+  $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
 
 rule "doporuceny ZP2015_SIZE"
@@ -55,7 +55,7 @@ when
                                       "ZP2015_SIZE_UNITS", "ZP2015_WEIGHT", "ZP2015_AMOUNT", "ZP2015_SIZE_OTHER") 
               )
 then
-  $itemType.setType(RulItemType.Type.RECOMMENDED);
+  $itemType.setMinType(RulItemType.Type.RECOMMENDED);
 end
 
 rule "povinny ZP2015_SIZE a neni vyplnen"
@@ -85,7 +85,7 @@ when
                                       ) from $activeLevel.descItems
                                       )
 then
-  $itemType.setType(RulItemType.Type.RECOMMENDED);
+  $itemType.setMinType(RulItemType.Type.RECOMMENDED);
 end
 
 rule "Jine rozmery - průměr - pečetidla, razítka, pečeti, odlitky, otisky typáře, kopie otisku, mapy (glóby), štočky, předměty numizmatické povahy, předměty faleristické povahy, jiné - možné"

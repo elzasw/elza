@@ -10,6 +10,7 @@ interface Props {
     onClick?: () => void;
     cal?: boolean;
     isValueUndefined?: boolean;
+    isValueInhibited?: boolean;
     hideTooltip?: boolean;
 }
 
@@ -18,6 +19,7 @@ export const DescItemLabel = ({
     onClick,
     cal,
     isValueUndefined,
+    isValueInhibited,
     hideTooltip,
 }: Props) => {
     // Sestavení hodnoty - změna znaku < na entitu, nahrazení enterů <br/>
@@ -46,7 +48,7 @@ export const DescItemLabel = ({
     return (
         <div
             title={!hideTooltip ? value : undefined}
-            className={classNames('desc-item-label-value', { [CLS_CALCULABLE]: cal })}
+            className={classNames('desc-item-label-value', { [CLS_CALCULABLE]: cal, "inhibited": isValueInhibited })}
         >
             {renderItem}
         </div>

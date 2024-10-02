@@ -56,12 +56,6 @@ export const ArchiveEntityRel = ({onlyMainPart, area, itemTypeId, itemSpecId, sc
             });
         }
 
-        if(itemTypeId == undefined){
-            return WebApi.findAccessPoint(filter.search,undefined,undefined,undefined,undefined,undefined,0,50 ).then((result) => {
-                setItems(result.rows);
-            })
-        }
-
         return WebApi.findAccessPointForRel(0, 50, itemTypeId, itemSpecId!, filter, scopeId).then(result => {
             setItems(result.data);
         })

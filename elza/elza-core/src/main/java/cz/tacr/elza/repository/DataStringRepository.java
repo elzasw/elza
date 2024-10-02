@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataString;
 
 
@@ -29,5 +30,17 @@ public interface DataStringRepository extends JpaRepository<ArrDataString, Integ
     @Modifying
     @Query(nativeQuery = true, value = "delete from arr_data_string where data_id in (?1)")
     void deleteMasterOnly(List<Integer> ids);
+
+    /**
+     * Insert data only in the table arr_data_string.
+     * 
+     * Data in the {@link ArrData} has to be inserted by other method
+     *
+     * @param dataId
+     * @param stringValue
+     */
+    @Modifying
+    @Query(nativeQuery = true, value = "insert into arr_data_string(data_id, string_value) values(?1, ?2)")
+    void insertMasterOnly(Integer dataId, String stringValue);
 
 }

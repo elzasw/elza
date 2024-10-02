@@ -1,18 +1,19 @@
 package cz.tacr.elza.domain;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 
 @Entity(name = "ap_revision")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "preferredPart", "lastUpdate"})
@@ -20,6 +21,7 @@ public class ApRevision {
 
     public static final String FIELD_STATE = "state";
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
+    public static final String FIELD_REV_STATE_LIST = "revStateList";
 
     @Id
     @GeneratedValue
@@ -53,6 +55,9 @@ public class ApRevision {
 
     @Column(name = "merge_state_id", nullable = false, updatable = false, insertable = false)
     private Integer mergeStateId;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = ApRevState.FIELD_REVISION)
+    private List<ApRevState> revStateList;
 
     public Integer getRevisionId() {
         return revisionId;

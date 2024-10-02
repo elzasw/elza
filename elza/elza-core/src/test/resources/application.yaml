@@ -67,8 +67,13 @@ elza:
     testing: true
 
 logging:
+#  file: 
+#    name: C:/temp/elza/logs/elza_test.log
+#    max-size: 500MB
   level:
     cz.tacr.elza: INFO
 #    cz.tacr.elza: DEBUG
+#    io.restassured: TRACE
+#    org.springframework.web.servlet: TRACE
 #    Request logging
 #    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG

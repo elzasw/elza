@@ -31,8 +31,8 @@ public class ResourcePathResolver {
 
     private static final String TRANSFORMS_DIR = "transformations";
     private static final String PACKAGES_DIR = "packages";
-    private static final String LUCENE_DIR = "lucene";
-    private static final String INDEXES_DIR = "indexes";
+    public static final String LUCENE_DIR = "lucene";
+    public static final String INDEXES_DIR = "indexes";
     private static final String GROOVY_DIR = "groovy";
     private static final String DMS_DIR = "dms";
     public static final String DPKG_DIR = "dpkg";

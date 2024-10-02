@@ -153,6 +153,7 @@ var messages = {
     "exception.base.GENERATING_EXPORT_FAILED": "Generování exportu selhalo",
     "exception.base.EXPORT_FAILED_DELETED_AP": "Generování exportu selhalo z důvodu přítomnosti zneplatněných archivních entit",
     "exception.base.EXPORT_FAILED_DELETED_AP.detail": "Zneplatněné archivní entity",
+    "exception.base.IMPORT_FAILED": "Chyba při importu souboru",
 
     "exception.ba.INCORRECT_CONFIG": "Chybná konfigurace hromadné akce.",
     "exception.ba.UNITID_NOT_SEALED": "Identifikátor jednotky popisu není pevně zmražen.",
@@ -283,6 +284,8 @@ var messages = {
     "ribbon.action.arr.arr": "Pořádání",
     "ribbon.action.arr.dataGrid": "Tabulkové zobrazení",
     "ribbon.action.arr.dataGrid.export": "Export",
+    "ribbon.action.arr.dataGrid.import": "Import",
+    "ribbon.action.arr.dataGrid.import.success": "Import byl dokončen",
     "ribbon.action.arr.movements": "Přesuny",
     "ribbon.action.arr.output.add": "Nový výstup",
     "ribbon.action.arr.output.generate": "Generovat výstup",
@@ -1264,6 +1267,7 @@ var messages = {
     "ap.ext-search.section.extends.spec": "Specifikace",
     "ap.ext-search.section.extends.value": "Hodnota",
 
+    "ap.ext-search.section.relations.title": "Přidat filtr vztahů",
     "ap.ext-search.section.relations.type": "Typ vztahu",
     "ap.ext-search.section.relations.spec": "Specifikace",
     "ap.ext-search.section.relations.area": "Oblast hledání",
@@ -1779,6 +1783,8 @@ var messages = {
     "dataGrid.export.exportType.data": "Data",
     "dataGrid.export.exportType.noSelection.item": "Není vybrán prvek",
     "dataGrid.export.title": "Export tabulkového zobrazení",
+
+    "dataGrid.import.title": "Import datových sloupců",
 
     "accesspoint.name.name": "Jméno",
     "accesspoint.name.complement": "Doplněk",

@@ -78,6 +78,9 @@ import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FulltextFundRequest;
 import cz.tacr.elza.controller.vo.FundListCountResult;
+import cz.tacr.elza.controller.vo.ItemDataResult;
+import cz.tacr.elza.controller.vo.Node;
+import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
@@ -836,9 +839,11 @@ public class ArrangementController {
      *
      * @param descItemVO       hodnota atributu
      * @param fundVersionId    identfikátor verze AP
+     * @param nodeId           id cílového nodu
      * @param nodeVersion      verze JP
      * @param createNewVersion vytvořit novou verzi?
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}",
             method = RequestMethod.PUT,
@@ -991,6 +996,7 @@ public class ArrangementController {
      * @param nodeVersion    verze JP
      * @return hodnota atributu
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create",
             method = RequestMethod.PUT,
@@ -3196,11 +3202,13 @@ public class ArrangementController {
      *
      * @param <T> typ nadřazené entity, např. ArrNodeVO nebo output atp.
      */
+    @Deprecated
     public static abstract class ItemResult<T> {
 
         /**
          * hodnota atributu
          */
+    	@Deprecated
         private ArrItemVO descItem;
 
         public abstract T getParent();
@@ -3216,6 +3224,7 @@ public class ArrangementController {
         }
     }
 
+    @Deprecated
     public static class DescItemResult extends ItemResult<ArrNodeVO> {
         private ArrNodeVO parent;
 

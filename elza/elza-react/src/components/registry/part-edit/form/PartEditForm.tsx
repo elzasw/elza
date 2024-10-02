@@ -72,8 +72,8 @@ export const PartEditForm = ({
         arrayInsert: (index: number, value: any) => void,
         userAction: boolean,
     ) => addEmptyItems(
-        attributes, 
-        refTables, 
+        attributes,
+        refTables,
         formItems,
         partTypeId,
         (index: number, value: any) => {
@@ -108,8 +108,8 @@ export const PartEditForm = ({
 
             const handleAutoItems = async () => {
                 if(apId == undefined) {throw Error("no 'apId'");}
-                const {data} = revision 
-                    ? await Api.accesspoints.getRevAutoitems(apId.toString()) 
+                const {data} = revision
+                    ? await Api.accesspoints.getRevAutoitems(apId.toString())
                     : await Api.accesspoints.accessPointGetAutoitems(apId.toString());
 
                 const result = await dispatch(showAutoItemsModal({
@@ -130,11 +130,11 @@ export const PartEditForm = ({
                                 return true;
                             }
                         })
-                        const currentItem = currentValue?.item || currentValue?.updatedItem;
+                        const currentItem = currentValue?.updatedItem || currentValue?.item;
 
                         if(currentItem && !attribute?.repeatable){
                             form.change(`${arrayName}[${currentIndex}].updatedItem`, {
-                                ...currentItem, 
+                                ...currentItem,
                                 value: autoValue.value,
                                 specId: autoValue.itemSpecId,
                             })
@@ -148,13 +148,12 @@ export const PartEditForm = ({
                     newItems.forEach((autoValue)=>{
                         const attribute = availableAttributes.find((attribute) => autoValue.itemTypeId === attribute.itemTypeId);
                         addItemsWithValues(
-                            attribute ? [attribute] : [], 
+                            attribute ? [attribute] : [],
                             autoValue ? [autoValue] : [],
-                            refTables, 
+                            refTables,
                             fields.value,
                             partTypeId,
                             (index: number, value: any) => {
-                                console.log("insert item with value", value, index)
                                 fields.insert(index, value);
                                 handleValueUpdate(form);
                             },
@@ -177,9 +176,9 @@ export const PartEditForm = ({
                     )}
                     <Row key="actions" className="mb-3 d-flex justify-content-between">
                         <Col style={{flex: 1}}>
-                            { availableAttributes 
+                            { availableAttributes
                                 && renderAddActions({
-                                    partTypeId, 
+                                    partTypeId,
                                     attributes: availableAttributes,
                                     refTables,
                                     handleAddItems,

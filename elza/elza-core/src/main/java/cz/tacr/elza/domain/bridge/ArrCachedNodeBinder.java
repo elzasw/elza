@@ -3,6 +3,7 @@ package cz.tacr.elza.domain.bridge;
 import static cz.tacr.elza.domain.ArrCachedNode.DATA;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_FUND_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FULLTEXT_ATT;
+import static cz.tacr.elza.domain.LuceneAnalyzerConfigurer.CLASSIC_TOKENIZER_CZ;
 
 import org.hibernate.search.mapper.pojo.bridge.binding.TypeBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
@@ -23,7 +24,7 @@ public class ArrCachedNodeBinder implements TypeBinder {
         	.toReference();
 
         context.indexSchemaElement()
-			.field(FULLTEXT_ATT, f -> f.asString().analyzer("cz"))
+			.field(FULLTEXT_ATT, f -> f.asString().analyzer(CLASSIC_TOKENIZER_CZ))
 			.multiValued()
 			.toReference();
 

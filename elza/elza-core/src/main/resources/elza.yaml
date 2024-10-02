@@ -75,6 +75,7 @@ spring:
   data:
     rest:
       base-uri: /rest
+      detection-strategy: annotated # for swagger: default | all | annotated | visibility
   app:
       buildType: REL
   jackson:

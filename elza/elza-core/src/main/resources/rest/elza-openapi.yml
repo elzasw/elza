@@ -9,6 +9,8 @@ tags:
     description: Externí systémy
   - name: funds
     description: Archivní soubory
+  - name: descitems
+    description: Záznamy v archivních fondech
   - name: accesspoints
     description: Přístupové body a archivní entity
   - name: search
@@ -21,175 +23,6 @@ servers:
   - url: http://localhost:8080
     description: Devel server
 paths:
-  /fund:
-    post:
-      summary: Založené nového archivního souboru
-      operationId: createFund
-      tags:
-        - funds
-      requestBody:
-        description: Data pro založení
-        content:
-          'application/json':
-            schema:
-              $ref: '#/components/schemas/CreateFund'
-      responses:
-        200:
-          description: Úspěšné založení archivního souboru
-          content:
-            'application/json':
-              schema:
-                $ref: '#/components/schemas/Fund'
-        400:
-          description: Neplatné údaje pro založení AS
-    get:
-      summary: Vyhledání archivních souborů
-      operationId: findFunds
-      tags:
-        - funds
-      parameters:
-        - name: fulltext
-          description: Vyhledávaný výraz
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: institutionIdentifier
-          description: Identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu)
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: max
-          description: Maximální počet výsledků na stránku
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-            default: 200
-        - name: from
-          description: Od kolikátého záznamu se mají výsledky vracet (0 = žádné se nepřeskočí)
-          in: query
-          required: false
-          schema:
-            type: integer
-            format: int32
-            default: 0
-      responses:
-        200:
-          description: Výsledek hledání AS
-          content:
-            'application/json':
-              schema:
-                $ref: '#/components/schemas/FindFundsResult'
-  /fund/{id}:
-    get:
-      summary: Získání detailu AS
-      operationId: getFund
-      tags:
-        - funds
-      parameters:
-        - name: id
-          description: Identifikátor AS
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Detail AS
-          content:
-            'application/json':
-              schema:
-                $ref: '#/components/schemas/FundDetail'
-        404:
-          description: AS neexistuje
-    put:
-      summary: Změna AS
-      operationId: updateFund
-      tags:
-        - funds
-      parameters:
-        - name: id
-          description: Identifikátor AS
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Data pro založení
-        content:
-          'application/json':
-            schema:
-              $ref: '#/components/schemas/UpdateFund'
-      responses:
-        200:
-          description: Detail AS
-          content:
-            'application/json':
-              schema:
-                $ref: '#/components/schemas/FundDetail'
-        400:
-          description: Neplatné údaje pro úpravu AS
-        404:
-          description: AS neexistuje
-  /fund/{id}/import:
-    put:
-      summary: Import additional data to the existing fund.
-      operationId: importFundData
-      tags:
-        - funds
-      parameters:
-        - name: id
-          description: Fund ID. Might be ID or fund UUID.
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Doplnění způsobu importu
-        content:
-          'multipart/form-data':
-            schema:
-              $ref: '#/components/schemas/ImportFundData'
-      responses:
-        200:
-          description: Potvrzení o úspěšném importu
-        404:
-          description: Fund neexistuje
-        406:
-          description: Chybný formát vstupního souboru 
-  /fund/{id}/structuredObject:
-    delete:
-      summary: Smazání seznamu hodnot strukturovaného datového typu
-      operationId: deleteStructureData
-      tags:
-        - funds
-      parameters:
-        - name: id
-          description: Identifikátor AS
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        description: Seznam id hodnot strukturovaného datového typu
-        content:
-          'application/json':
-            schema:
-              type: array
-              items:
-                type: integer
-      responses:
-        200:
-          description: Seznam smazaných id hodnot strukturovaného datového typu
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: integer
   /accesspoint/{id}:
     delete:
       tags:
@@ -245,11 +78,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /accesspoints/{id}/copy:
+  /accesspoint/{id}/copy:
     put:
       tags:
         - accesspoints
-      operationId: copyAccessPoint
+      operationId: AccessPoint_copyAccessPoint
       description: Copying an archive entity
       parameters:
         - name: id
@@ -310,8 +143,8 @@ paths:
             application/json:
               schema:
                 type: integer
-        404:
-          description: AP neexistuje
+        '404':
+          description: The server cannot find the requested resource.
   /accesspoint/{id}/part/{partId}/prefer-name:
     put:
       tags:
@@ -447,8 +280,8 @@ paths:
             application/json:
               schema:
                 type: integer
-        404:
-          description: AP nebo revize neexistuje
+        '404':
+          description: The server cannot find the requested resource.
   /accesspoint/{id}/revision/state:
     put:
       tags:
@@ -475,8 +308,8 @@ paths:
             application/json:
               schema:
                 type: integer
-        404:
-          description: AP nebo revize neexistuje
+        '404':
+          description: The server cannot find the requested resource.
       requestBody:
         description: data for change state of revision of ApAccessPoint
         required: true
@@ -782,6 +615,72 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FsRepo'
+  /descItems/{fundVersionId}/create:
+    put:
+      tags:
+        - descitems
+      operationId: DescItem_createDescItem
+      description: Create attribute value
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: id AP version
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDataResult'
+      requestBody:
+        description: new attribute value
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodeItem'
+  /descItems/{fundVersionId}/{createNewVersion}/update:
+    put:
+      tags:
+        - descitems
+      operationId: DescItem_updateDescItem
+      description: Update attribute value
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: id AP version
+          schema:
+            type: integer
+        - name: createNewVersion
+          in: path
+          required: true
+          description: create a new version or not?
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDataResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: new attribute value
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodeItem'
   /extsystem/property:
     get:
       tags:
@@ -858,11 +757,72 @@ paths:
               type: array
               items:
                 type: integer
+  /fund:
+    post:
+      tags:
+        - funds
+      operationId: fund_createFund
+      description: Created a new archive file (AS)
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Fund'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFund'
+    get:
+      tags:
+        - funds
+      operationId: fund_findFunds
+      description: Search for archive files (AS)
+      parameters:
+        - name: fulltext
+          in: query
+          required: false
+          description: vyhledávaný výraz
+          schema:
+            type: string
+        - name: institutionIdentifier
+          in: query
+          required: false
+          description: identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu)
+          schema:
+            type: string
+        - name: max
+          in: query
+          required: false
+          description: maximální počet výsledků na stránku
+          schema:
+            type: integer
+            default: 200
+        - name: from
+          in: query
+          required: false
+          description: Od kolikátého záznamu se mají výsledky vracet (0 = žádné se nepřeskočí)
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindFundsResult'
   /fund/{fundId}/fsrepo/{fsrepoId}/item-data:
     get:
       tags:
         - funds
-      operationId: Fund_fsRepoItemData
+      operationId: fund_fsRepoItemData
       parameters:
         - $ref: '#/components/parameters/FundIdParameter'
         - $ref: '#/components/parameters/FsRepoIdParameter'
@@ -884,21 +844,16 @@ paths:
     get:
       tags:
         - funds
-      operationId: Fund_fsRepoItems
+      operationId: fund_fsRepoItems
       parameters:
         - $ref: '#/components/parameters/FundIdParameter'
         - $ref: '#/components/parameters/FsRepoIdParameter'
         - name: filterType
           in: query
           required: false
-          description: >-
-            Optional filter to return only folders or files. If not specified
-            all items are returned
+          description: Optional filter to return only folders or files. If not specified all items are returned
           schema:
-            type: string
-            enum:
-              - FOLDER
-              - FILE
+            $ref: '#/components/schemas/FsItemType'
         - name: path
           in: query
           required: false
@@ -922,7 +877,7 @@ paths:
     put:
       tags:
         - funds
-      operationId: Fund_fsCreateDAOLink
+      operationId: fund_fsCreateDAOLink
       parameters:
         - $ref: '#/components/parameters/FundIdParameter'
         - $ref: '#/components/parameters/FsRepoIdParameter'
@@ -943,7 +898,7 @@ paths:
     get:
       tags:
         - funds
-      operationId: Fund_fsRepos
+      operationId: fund_fsRepos
       description: Return list of filesystem repositories
       parameters:
         - $ref: '#/components/parameters/FundIdParameter'
@@ -960,7 +915,7 @@ paths:
     get:
       tags:
         - funds
-      operationId: Fund_usedItemTypes
+      operationId: fund_usedItemTypes
       description: Return list of item type id & count
       parameters:
         - $ref: '#/components/parameters/FundIdParameter'
@@ -975,6 +930,115 @@ paths:
                 items:
                   $ref: '#/components/schemas/UsedItemType'
                 x-typespec-name: UsedItemType[]
+  /fund/{id}:
+    get:
+      tags:
+        - funds
+      operationId: fund_getFund
+      description: Getting the AS detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: fund ID. Might be ID or fund UUID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FundDetail'
+        '404':
+          description: The server cannot find the requested resource.
+    put:
+      tags:
+        - funds
+      operationId: fund_updateFund
+      description: Update of archive file (AS)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: fund ID. Might be ID or fund UUID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FundDetail'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+        '404':
+          description: The server cannot find the requested resource.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFund'
+  /fund/{id}/import:
+    put:
+      tags:
+        - funds
+      operationId: fund_importFundData
+      description: Import additional data to the existing fund
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: fund ID. Might be ID or fund UUID
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+        '406':
+          description: Client error
+      requestBody:
+        description: doplnění způsobu importu
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ImportFundDataMultiPart'
+  /fund/{id}/structuredObject:
+    delete:
+      tags:
+        - funds
+      operationId: fund_deleteStructureData
+      description: Smazání seznamu hodnot strukturovaného datového typu
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: identifikátor AS
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+      requestBody:
+        description: seznam id hodnot strukturovaného datového typu
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
   /io/export:
     post:
       tags:
@@ -1185,8 +1249,6 @@ components:
           type: string
         properties:
           type: object
-          additionalProperties:
-            type: object
         stackTrace:
           type: string
       description: Error specification for the client
@@ -1207,6 +1269,285 @@ components:
             type: integer
           description: list of description element IDs not to copy
       description: Additional copy options
+    CreateFund:
+      type: object
+      required:
+        - name
+        - ruleSetCode
+        - institutionIdentifier
+        - scopes
+      properties:
+        name:
+          type: string
+          description: Název
+        ruleSetCode:
+          type: string
+          description: Kód pravidel
+        institutionIdentifier:
+          type: string
+          description: Identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu)
+        internalCode:
+          type: string
+          description: Interní kód
+        uuid:
+          type: string
+          description: UUID - identifikátor AS (pokud není vyplněno, bude vygenerováno)
+        fundNumber:
+          type: integer
+          description: Číslo archivního souboru
+        unitdate:
+          type: string
+          description: Datace
+        mark:
+          type: string
+          description: Značka archivního souboru
+        adminUsers:
+          type: array
+          items:
+            type: integer
+          description: Seznam uživatelů, kteří mají administrátorská oprávnění pro zakládaný AS
+        adminGroups:
+          type: array
+          items:
+            type: integer
+          description: Seznam skupin, kteří mají administrátorská oprávnění pro zakládaný AS
+        scopes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Seznam oblastí entit
+      description: Zakládaný archivní souboru
+    DataBit:
+      type: object
+      required:
+        #- type
+        - bitValue
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataBit
+        bitValue:
+          type: boolean
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+      description: ItemData classes extensions
+    DataCoordinates:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataCoordinates
+        value:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataDate:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataDate
+        value:
+          type: string
+          format: date
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataDecimal:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataDecimal
+        value:
+          type: number
+          format: decimal
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataFileRef:
+      type: object
+      required:
+        #- type
+        - fileId
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataFileRef
+        fileId:
+          type: integer
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataFormattedText:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - DataFormattedText
+        value:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataInteger:
+      type: object
+      required:
+        #- type
+        - integerValue
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataInteger
+        integerValue:
+          type: integer
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataJsonTable:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataJsonTable
+        value:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataNull:
+      type: object
+      #required:
+        #- type
+      #properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataNull
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataRecordRef:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataRecordRef
+        value:
+          type: integer
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataString:
+      type: object
+      required:
+        #- type
+        - stringValue
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataString
+        stringValue:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataStructureRef:
+      type: object
+      required:
+        #- type
+        - structuredObjectId
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataStructureRef
+        structuredObjectId:
+          type: integer
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataText:
+      type: object
+      required:
+        #- type
+        - textValue
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - DataText
+        textValue:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataUnitdate:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataUnitdate
+        value:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataUnitid:
+      type: object
+      required:
+        #- type
+        - unitId
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataUnitid
+        unitId:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
+    DataUriRef:
+      type: object
+      required:
+        #- type
+        - value
+      properties:
+        #type:
+        #  type: string
+        #  enum:
+        #    - dataUriRef
+        nodeId:
+          type: integer
+        value:
+          type: string
+        description:
+          type: string
+        refTemplateId:
+          type: integer
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
     DeleteAccessPointDetail:
       type: object
       properties:
@@ -1293,6 +1634,19 @@ components:
           type: string
           description: value of property
       description: Pairs name-value for external system and user
+    FindFundsResult:
+      type: object
+      required:
+        - funds
+        - totalCount
+      properties:
+        funds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fund'
+        totalCount:
+          type: integer
+      description: Výsledek vyhledávání AS
     FsItem:
       type: object
       required:
@@ -1354,6 +1708,86 @@ components:
         path:
           type: string
           description: Repository path
+    Fund:
+      type: object
+      required:
+        - id
+        - uuid
+        - name
+        - institutionIdentifier
+      properties:
+        id:
+          type: integer
+          description: Identifikátor
+        uuid:
+          type: string
+          description: UUID - identifikátor AS
+        name:
+          type: string
+          description: Název
+        institutionIdentifier:
+          type: string
+          description: Identifikátor instituce (vždy kód instituce)
+        internalCode:
+          type: string
+          description: Interní kód
+        createDate:
+          type: string
+          format: date-time
+          description: Datum založení
+        fundNumber:
+          type: integer
+          description: Číslo archivního souboru
+        unitdate:
+          type: string
+          description: Datace
+        mark:
+          type: string
+          description: Značka archivního souboru
+      description: Archivní soubor
+    FundDetail:
+      type: object
+      required:
+        - id
+        - uuid
+        - name
+        - institutionIdentifier
+        - scopes
+      properties:
+        id:
+          type: integer
+          description: Identifikátor
+        uuid:
+          type: string
+          description: UUID - identifikátor AS
+        name:
+          type: string
+          description: Název
+        institutionIdentifier:
+          type: string
+          description: Identifikátor instituce (vždy kód instituce)
+        internalCode:
+          type: string
+          description: Interní kód
+        createDate:
+          type: string
+          format: date-time
+          description: Datum založení
+        fundNumber:
+          type: integer
+          description: Číslo archivního souboru
+        unitdate:
+          type: string
+          description: Datace
+        mark:
+          type: string
+          description: Značka archivního souboru
+        scopes:
+          type: array
+          items:
+            type: string
+          description: Seznam oblastí entit
+      description: Zakládaný archivní souboru
     FundSections:
       type: object
       required:
@@ -1369,6 +1803,63 @@ components:
           items:
             type: integer
       description: Specifies multiple sections for fund version
+    ImportFundDataMultiPart:
+      type: object
+      required:
+        - importType
+        - dataFile
+      properties:
+        importType:
+          type: string
+          description: Import type. Only 'CSV' is supported
+        dataFile:
+          type: string
+          format: binary
+      description: Data k importu
+    ItemData:
+      type: object
+      properties:
+        dataId:
+          type: integer
+          description: data id
+        dataTypeId:
+          type: integer
+          description: data type id
+        type:
+          type: string
+          description: Discriminator property for ItemData.
+      discriminator:
+        propertyName: type
+        mapping:
+          DataBit: '#/components/schemas/DataBit'
+          DataCoordinates: '#/components/schemas/DataCoordinates'
+          DataDate: '#/components/schemas/DataDate'
+          DataDecimal: '#/components/schemas/DataDecimal'
+          DataFileRef: '#/components/schemas/DataFileRef'
+          DataInteger: '#/components/schemas/DataInteger'
+          DataJsonTable: '#/components/schemas/DataJsonTable'
+          DataNull: '#/components/schemas/DataNull'
+          DataRecordRef: '#/components/schemas/DataRecordRef'
+          DataString: '#/components/schemas/DataString'
+          DataStructureRef: '#/components/schemas/DataStructureRef'
+          DataText: '#/components/schemas/DataText'
+          DataFormattedText: '#/components/schemas/DataFormattedText'
+          DataUnitdate: '#/components/schemas/DataUnitdate'
+          DataUnitid: '#/components/schemas/DataUnitid'
+          DataUriRef: '#/components/schemas/DataUriRef'
+      description: Item data
+    ItemDataResult:
+      type: object
+      properties:
+        parent:
+          allOf:
+            - $ref: '#/components/schemas/Node'
+          description: parent node
+        item:
+          allOf:
+            - $ref: '#/components/schemas/NodeItem'
+          description: item
+      description: Výsledek vytvoření nebo aktualizace ArrDescItem
     LoggedUser:
       type: object
       required:
@@ -1402,6 +1893,61 @@ components:
           format: int32
           description: Total number of logged users
       description: List of logged users
+    Node:
+      type: object
+      required:
+        - id
+        - version
+        - uuid
+      properties:
+        id:
+          type: integer
+          description: id of node
+        version:
+          type: integer
+          description: node version
+        uuid:
+          type: string
+          description: node uuid
+      description: Náhrada za třídu ArrNodeVO
+    NodeItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: id of item
+        itemObjectId:
+          type: integer
+          description: id value of item
+        position:
+          type: integer
+          description: pozition
+        undefined:
+          type: boolean
+          description: no value
+        itemTypeId:
+          type: integer
+          description: id type of item
+        itemSpecId:
+          type: integer
+          description: id spec of item
+        readOnly:
+          type: boolean
+          description: value cannot be changed
+        nodeId:
+          type: integer
+          description: id node
+        nodeVersion:
+          type: integer
+          description: node version
+        inhibited:
+          type: boolean
+          description: if inheritance is prohibited - true
+        data:
+          allOf:
+            - $ref: '#/components/schemas/ItemData'
+          description: item data
+      description: Náhrada za třídu ArrItemVO
     ReplaceType:
       type: string
       enum:
@@ -1439,200 +1985,47 @@ components:
         - TO_APPROVE
         - TO_AMEND
       description: States of ApRevState
+    UpdateFund:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Název
+        ruleSetCode:
+          type: string
+          description: Kód pravidel
+        institutionIdentifier:
+          type: string
+          description: Identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu)
+        internalCode:
+          type: string
+          description: Interní kód
+        fundNumber:
+          type: integer
+          description: Číslo archivního souboru
+        unitdate:
+          type: string
+          description: Datace
+        mark:
+          type: string
+          description: Značka archivního souboru
+        scopes:
+          type: array
+          items:
+            type: string
+          description: Seznam oblastí entit
+      description: Změny archivního souboru
     UsedItemType:
       type: object
+      required:
+        - rulItemTypeId
+        - count
       properties:
         rulItemTypeId:
           type: integer
         count:
           type: integer
       description: Fund node item type id and quantity
-      required:
-        - rulItemTypeId
-        - count
-    CreateFund:
-      required:
-        - name
-        - ruleSetCode
-        - institutionIdentifier
-        - scopes
-      type: object
-      description: Zakládaný archivní souboru
-      properties:
-        name:
-          description: Název
-          type: string
-        ruleSetCode:
-          description: Kód pravidel
-          type: string
-        institutionIdentifier:
-          description: Identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu)
-          type: string
-        internalCode:
-          description: Interní kód
-          type: string
-        uuid:
-          description: UUID - identifikátor AS (pokud není vyplněno, bude vygenerováno)
-          type: string
-        fundNumber:
-          description: Číslo archivního souboru
-          type: integer
-          format: int32
-        unitdate:
-          description: Datace
-          type: string
-        mark:
-          description: Značka archivního souboru
-          type: string
-        adminUsers:
-          description: Seznam uživatelů, kteří mají administrátorská oprávnění pro zakládaný AS
-          type: array
-          items:
-            type: integer
-            format: int32
-        adminGroups:
-          description: Seznam skupin, kteří mají administrátorská oprávnění pro zakládaný AS
-          type: array
-          items:
-            type: integer
-            format: int32
-        scopes:
-          description: Seznam oblastí entit
-          type: arrays
-          items:
-            type: string
-          minItems: 1
-    UpdateFund:
-      type: object
-      description: Změny archivního souboru
-      properties:
-        name:
-          description: Název
-          type: string
-        ruleSetCode:
-          description: Kód pravidel
-          type: string
-        institutionIdentifier:
-          description: Identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu)
-          type: string
-        internalCode:
-          description: Interní kód
-          type: string
-        fundNumber:
-          description: Číslo archivního souboru
-          type: integer
-          format: int32
-        unitdate:
-          description: Datace
-          type: string
-        mark:
-          description: Značka archivního souboru
-          type: string
-        scopes:
-          description: Seznam oblastí entit
-          type: array
-          items:
-            type: string
-    Fund:
-      required:
-        - id
-        - uuid
-        - name
-        - institutionIdentifier
-      type: object
-      description: Archivní soubor
-      properties:
-        id:
-          description: Identifikátor
-          type: integer
-          format: int32
-        uuid:
-          description: UUID
-          type: string
-        name:
-          description: Název
-          type: string
-        institutionIdentifier:
-          description: Identifikátor instituce (vždy kód instituce)
-          type: string
-        internalCode:
-          description: Interní kód
-          type: string
-        createDate:
-          description: Datum založení
-          type: string
-          format: date-time
-        fundNumber:
-          description: Číslo archivního souboru
-          type: integer
-          format: int32
-        unitdate:
-          description: Datace
-          type: string
-        mark:
-          description: Značka archivního souboru
-          type: string
-    FundDetail:
-      required:
-        - id
-        - uuid
-        - name
-        - institutionIdentifier
-        - scopes
-      type: object
-      description: Zakládaný archivní souboru
-      properties:
-        id:
-          description: Identifikátor
-          type: integer
-          format: int32
-        uuid:
-          description: UUID
-          type: string
-        name:
-          description: Název
-          type: string
-        institutionIdentifier:
-          description: Identifikátor instituce (vždy kód instituce)
-          type: string
-        internalCode:
-          description: Interní kód
-          type: string
-        createDate:
-          description: Datum založení
-          type: string
-          format: date-time
-        fundNumber:
-          description: Číslo archivního souboru
-          type: integer
-          format: int32
-        unitdate:
-          description: Datace
-          type: string
-        mark:
-          description: Značka archivního souboru
-          type: string
-        scopes:
-          description: Seznam oblastí entit
-          type: array
-          items:
-            type: string
-    FindFundsResult:
-      required:
-        - funds
-        - totalCount
-      type: object
-      description: Zakládaný archivní souboru
-      properties:
-        funds:
-          description: Seznam oblastí entit
-          type: array
-          items:
-            $ref: '#/components/schemas/Fund'
-        totalCount:
-          description: Celkový počet dohledaných AS
-          type: integer
-          format: int32
     DeleteAccessPointsDetail:
       type: object
       description: Seznam přístupových bodů
@@ -1786,16 +2179,3 @@ components:
           description: Aktualizovaná verze archivní entity
           type: integer
           format: int32
-    ImportFundData:
-      type: object
-      properties:
-        importType:
-          description: "Import type. Only 'CSV' is supported."
-          type: string
-        dataFile:
-          type: string
-          description: File to upload
-          format: binary
-      required:
-        - importType
-        - dataFile

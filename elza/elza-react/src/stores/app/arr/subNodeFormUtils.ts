@@ -213,14 +213,14 @@ export function getNewFormKey(descItem: DescItem) {
 // 2. Pokud atribut nemá žádnou hodnotu, přidá první implicitní
 //
 export function consolidateDescItems(resultDescItemType, infoType, refType, addedByUser, emptySystemSpecToKeyMap = {}) {
-    // var forceVisibility = infoType.type == 'REQUIRED' || infoType.type == 'RECOMMENDED';
+    const forceVisibility = infoType.itemType == RulItemTypeType.REQUIRED || infoType.itemType == RulItemTypeType.RECOMMENDED;
 
     // Vynucené hodnoty se specifikací, pokud je potřeba
     addForcedSpecifications(resultDescItemType, infoType, refType, emptySystemSpecToKeyMap);
     const hasOnlyInheritedInhibitedValues = !resultDescItemType.descItems.find(({ fromNodeId, inhibited }) => fromNodeId == null || (fromNodeId != null && !inhibited));
 
     // Přidáme jednu hodnotu - chceme i u opakovatelného, pokud žádnou nemá (nebyla hodnota přifána vynucením specifikací) nebo jsou všechny zděděné hodnoty potlačené
-    if (resultDescItemType.descItems.length === 0 || hasOnlyInheritedInhibitedValues) {
+    if (resultDescItemType.descItems.length === 0 || (hasOnlyInheritedInhibitedValues && forceVisibility)) {
         resultDescItemType.descItems.push(createDescItem(refType, addedByUser));
     }
 

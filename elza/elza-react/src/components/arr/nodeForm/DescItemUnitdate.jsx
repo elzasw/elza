@@ -32,11 +32,11 @@ class DescItemUnitdate extends AbstractReactComponent {
         let value = cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : descItem.value;
 
         if (readMode) {
-            if (value !== null) {
-                return <DescItemLabel value={value} cal={false} isValueUndefined={descItem.undefined} />;
-            } else {
-                return <DescItemLabel value="" cal={cal} isValueUndefined={descItem.undefined} />;
-            }
+            return <DescItemLabel
+                value={value || ""} cal={cal}
+                isValueUndefined={descItem.undefined}
+                isValueInhibited={descItem.inhibited}
+            />;
         }
 
         let cls = ['unitdate-input'];

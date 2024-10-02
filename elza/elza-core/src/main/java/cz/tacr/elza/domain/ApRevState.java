@@ -17,6 +17,7 @@ import jakarta.persistence.ManyToOne;
 public class ApRevState {
 
     public static final String FIELD_REVISION = "revision";
+    public static final String FIELD_CREATE_CHANGE = "createChange";
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
     public static final String FIELD_STATE_APPROVAL = "stateApproval";
 

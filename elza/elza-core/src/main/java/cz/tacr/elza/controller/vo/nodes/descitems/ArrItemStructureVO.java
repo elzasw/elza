@@ -87,7 +87,7 @@ public class ArrItemStructureVO extends ArrItemVO {
                         .set("dataClass", item.getClass());
             }
             ArrDataStructureRef struct = (ArrDataStructureRef) data;
-            value = struct.getValueInt();
+            value = struct.getStructuredObjectId();
             structureData = ArrStructureDataVO.newInstance(struct.getStructuredObject());
         }
         ArrItemStructureVO vo = new ArrItemStructureVO(item, value, structureData);

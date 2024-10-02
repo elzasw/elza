@@ -14,6 +14,7 @@ import cz.tacr.elza.domain.ArrItem;
  *
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
+@Deprecated
 public abstract class ArrItemVO {
 
     /**

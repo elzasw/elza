@@ -468,12 +468,6 @@ class ArrPage extends ArrParentPage {
                         checked: dataCenter && dataCenter.rightPanel !== undefined ? dataCenter.rightPanel : true,
                     },
                     {
-                        name: i18n('arr.fund.settings.panel.treeColorCoding'),
-                        key: 'treeColorCoding',
-                        checked:
-                            dataCenter && dataCenter.treeColorCoding !== undefined ? dataCenter.treeColorCoding : true,
-                    },
-                    {
                         name: i18n('arr.fund.settings.panel.acordeon'),
                         key: 'acordeon',
                         checked: dataCenter && dataCenter.acordeon !== undefined ? dataCenter.acordeon : false,
@@ -1132,7 +1126,6 @@ class ArrPage extends ArrParentPage {
 
         if (arrRegion.extendedView) {
             // extended view - jiné větší zobrazení stromu, renderuje se zde
-            const colorCoded = !(centerSettingsValues && centerSettingsValues.treeColorCoding === false);
 
             return (
                 <FundTreeMain
@@ -1152,7 +1145,6 @@ class ArrPage extends ArrParentPage {
                             <Icon glyph="fa-compress" />
                         </Button>
                     }
-                    colorCoded={colorCoded}
                 />
             );
         } else if (activeFund.nodes.activeIndex === null) {
@@ -1189,8 +1181,6 @@ class ArrPage extends ArrParentPage {
         const {focus, arrRegion, userDetail} = this.props;
         const activeFund = this.getActiveFund(this.props);
         const centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
-        const centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
-        let colorCoded = !(centerSettingsValues && centerSettingsValues.treeColorCoding === false);
 
         if (arrRegion.extendedView) {
             // extended view - jiné větší zobrazení stromu, ale renderuje se v center panelu, tento bude prázdný
@@ -1216,7 +1206,6 @@ class ArrPage extends ArrParentPage {
                             <Icon glyph="fa-arrows-alt" />
                         </Button>
                     }
-                    colorCoded={colorCoded}
                     readMode={readMode}
                 />
             );
