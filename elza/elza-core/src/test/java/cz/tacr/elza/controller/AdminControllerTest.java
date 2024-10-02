@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import cz.tacr.elza.api.DigitalRepositoryType;
 import org.junit.Test;
 
 import cz.tacr.elza.api.ApExternalSystemType;
@@ -47,6 +48,7 @@ public class AdminControllerTest extends AbstractControllerTest {
         digitalRepositoryVO.setCode("TST1");
         digitalRepositoryVO.setName("Test 1");
         digitalRepositoryVO.setSendNotification(true);
+        digitalRepositoryVO.setDigitalRepositoryType(DigitalRepositoryType.FILESYSTEM);
         SysExternalSystemVO digitalRepositoryCreatedVO = createExternalSystem(digitalRepositoryVO);
         assertNotNull(digitalRepositoryCreatedVO.getId());
 

@@ -1,0 +1,41 @@
+@import "../../variables.scss";
+
+
+.aip-table {
+    margin: 0;
+    overflow: auto;
+
+    .aip-table-body {
+        overflow-x: auto;
+
+        .header {
+           background-color: #b3b3b3ff;
+           padding: 5px;
+        }
+
+        .table-row:nth-child(even){
+           background-color: #e3e3e3ff;
+        }
+    }
+
+    .search {
+        height: 1px !important;
+        border-radius: 0;
+    }
+    .search::after {
+        border-bottom: none;
+    }
+
+    .container {
+        display: flex;
+        justify-content: space-between;
+        gap: 5px;
+      }
+      
+      .last-item {
+        margin-left: auto; 
+        background-color: #e3e3e3ff;
+        padding: 0 10px;
+        min-width: max-content;
+      }
+}

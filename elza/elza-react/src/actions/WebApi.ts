@@ -34,6 +34,8 @@ import { SyncsFilterVO } from '../api/SyncsFilterVO';
 import { ExtSyncsQueueResultListVO } from '../api/ExtSyncsQueueResultListVO';
 import { ApViewSettings } from '../api/ApViewSettings';
 import { UsrUserVO } from '../api/UsrUserVO';
+import { DaAipDetailVO } from 'api/DaAipDetailVO';
+import { AipFilter } from 'typings/store';
 
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
@@ -82,12 +84,14 @@ function callWS(url, data, needResponse = true) {
 export class WebApiCls {
     static baseUrl = '/api';
     static v1 = WebApiCls.baseUrl + '/v1';
+    static aipV1 = WebApiCls.v1 + '/aip';
     static fundV1 = WebApiCls.v1 + '/fund';
     static authUrl = WebApiCls.baseUrl + '/auth';
     static arrangementUrl = WebApiCls.baseUrl + '/arrangement';
     static issueUrl = WebApiCls.baseUrl + '/issue';
     static registryUrl = WebApiCls.baseUrl + '/registry';
     static apUrl = WebApiCls.registryUrl;
+    static daoUrl = WebApiCls.baseUrl + "/dao";
     static partyUrl = WebApiCls.baseUrl + '/party';
     static importUrl = WebApiCls.baseUrl + '/import';
     static exportUrl = WebApiCls.baseUrl + '/export';
@@ -117,6 +121,10 @@ export class WebApiCls {
 
     selectNode(nodeUuid) {
         return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/selectNode/' + nodeUuid);
+    }
+
+    getDaDaoListByAipId(id) {
+        return AjaxUtils.ajaxGet(WebApiCls.v1 + "/dao/" + id);
     }
 
     syncDaoLink(fundVersionId, nodeId) {
@@ -667,6 +675,13 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/', null, accessPoint);
     }
 
+    getAccessPoints(text: String, max: number = DEFAULT_LIST_SIZE, from: number = 0): Promise<ApAccessPointVO[]> {
+        return AjaxUtils.ajaxPost(
+            WebApiCls.arrangementUrl + "/ap",
+            {from: from, count: max, text: text},
+        );
+    }
+
     getStateApproval(accessPointId) {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/' + accessPointId + '/nextStates');
     }
@@ -1172,6 +1187,84 @@ export class WebApiCls {
 
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fundTree', null, data);
     }
+
+    getAipsLogicalTree(aipIds) {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/levelViewTree', null, aipIds);
+    }
+
+    aipDeleteDaoLink(daoLinkId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + `/aip/delete-dao-link?daoLinkId=${daoLinkId}`);
+    }
+
+    connectAipToJp(arrNodeId: number, daAipId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/connect-to-jp', {
+            arrNodeId: arrNodeId,
+            daAipId: daAipId
+        }, null);
+    }
+
+    connectAipPartToJp(arrNodeId: number, daAipId: number, daDaoId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/connect-part-to-jp', {
+            arrNodeId: arrNodeId,
+            daAipId: daAipId,
+            daDaoId: daDaoId
+        }, null);
+    }
+
+    createJpFromSelectedAip(arrNodeId: number, daAipId: number, daDaoId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/connect-jp-from-selected', {
+            arrNodeId: arrNodeId,
+            daAipId: daAipId,
+            daDaoId: daDaoId
+        }, null);
+    }
+
+    createJpLinkFromSelectedAip(arrNodeId: number, daAipId: number, daDaoId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/connect-jp-link-from-selected', {
+            arrNodeId: arrNodeId,
+            daAipId: daAipId,
+            daDaoId: daDaoId
+        }, null);
+    }
+
+    connectSelectedToJp(arrNodeId: number, daAipId: number, daDaoId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/connect-selected-to-jp', {
+            arrNodeId: arrNodeId,
+            daAipId: daAipId,
+            daDaoId: daDaoId
+        }, null);
+    }
+
+    connectSelectedAipToJp(arrNodeId: number, daAipIdList: number[]): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/bulk-connect-to-jp', {
+            arrNodeId: arrNodeId,
+            daAipIdList: daAipIdList
+        }, null);
+    }
+
+    createJpFromSelectedAipBulk(arrNodeId: number, daAipIdList: number[]): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/bulk-create-from-selected', {
+            arrNodeId: arrNodeId,
+            daAipIdList: daAipIdList
+        }, null);
+    }
+
+    createJpFromSelectedAipAnConnectBulk(arrNodeId: number, aipIds: number[], daLevelViewId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/bulk-create-selected-to-jp', {
+            arrNodeId: arrNodeId,
+            daAipIdList: aipIds,
+            daLevelViewId: daLevelViewId
+        }, null);
+    }
+
+    connectAipLogicalStructureToJpBulk(arrNodeId: number, aipIds: number[], daLevelViewId: number): Promise<void> {
+        return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/bulk-connect-logic-to-jp', {
+            arrNodeId: arrNodeId,
+            daAipIdList: aipIds,
+            daLevelViewId: daLevelViewId
+        }, null);
+    }
+
 
     getNodeData(fundVersionId, nodeParam, resultParam: any | object = {}) {
         const data = {
@@ -1743,6 +1836,18 @@ export class WebApiCls {
         });
     }
 
+    getAip(aipId): Promise<DaAipDetailVO> {
+        return AjaxUtils.ajaxGet(WebApiCls.aipV1 + '/' + aipId);
+    }
+
+    findAipsByFilter(filters: AipFilter[], max: number = DEFAULT_LIST_SIZE, from: number = 0): Promise<DaAipDetailVO[]> {
+        return AjaxUtils.ajaxPost(
+            WebApiCls.aipV1 + '/find/filter',
+            {from: from, count: max},
+            filters
+        );
+    }
+
     getValidationItems(fundVersionId, fromIndex, toIndex) {
         return AjaxUtils.ajaxGet(
             WebApiCls.arrangementUrl + '/validation/' + fundVersionId + '/' + fromIndex + '/' + toIndex,
@@ -1883,6 +1988,10 @@ export class WebApiCls {
 
     getAllExtSystem() {
         return AjaxUtils.ajaxGet(WebApiCls.adminUrl + '/externalSystems', null);
+    }
+
+    getAllDigitalRepositorySystem() {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/digitalRepositories', null);
     }
 
     getExtSystem(id) {

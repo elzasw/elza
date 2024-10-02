@@ -9,7 +9,7 @@ import cz.tacr.elza.domain.ArrFund;
 
 /**
  * Respozitory pro archivní soubory
- * 
+ *
  */
 @Repository
 public interface FundRepository extends ElzaJpaRepository<ArrFund, Integer> , FundRepositoryCustom {
@@ -22,4 +22,7 @@ public interface FundRepository extends ElzaJpaRepository<ArrFund, Integer> , Fu
 
     @Query("SELECT up FROM usr_permission_view up WHERE up.userId = ?1")
     List<ArrFund> findFromUsrPermissionByUserId(Integer userId);
+
+    @Query("SELECT af FROM arr_fund af WHERE af.internalCode = ?1")
+    ArrFund findByInternalCode(String code);
 }

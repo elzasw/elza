@@ -7,7 +7,7 @@ import {submitForm} from 'components/form/FormUtils.jsx';
 import {AbstractReactComponent, i18n} from 'components';
 import {connect} from 'react-redux';
 import {FormInputField} from 'components/shared';
-import {JAVA_ATTR_CLASS, GisSystemType, AP_EXT_SYSTEM_TYPE} from '../../../constants';
+import {JAVA_ATTR_CLASS, GisSystemType, AP_EXT_SYSTEM_TYPE, DigitalRepositoryType} from '../../../constants';
 import {WebApi} from 'actions/index.jsx';
 
 export const EXT_SYSTEM_CLASS = {
@@ -35,6 +35,11 @@ export const GIS_SYSTEM_TYPE_LABEL = {
     [GisSystemType.FrameApiEdit]: i18n('admin.extSystem.gis-edit'),
 }
 
+export const DIGITAL_REPOSITORY_TYPE_LABEL = {
+    [DigitalRepositoryType.Wsdl]: i18n('admin.extSystem.wsdl'),
+    [DigitalRepositoryType.Filesystem]: i18n('admin.extSystem.filesystem'),
+}
+
 const FIELDS = {
     abstractExtSystem: [JAVA_ATTR_CLASS, 'id', 'code', 'name', 'url', 'username', 'password', 'elzaCode'],
     [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue', 'publishOnlyApproved', 'userInfo'],
@@ -46,7 +51,7 @@ const FIELDS = {
 const REQUIRED_FIELDS = {
     abstractExtSystem: [JAVA_ATTR_CLASS, 'code', 'name'],
     [EXT_SYSTEM_CLASS.ApExternalSystem]: ['type', 'apiKeyId', 'apiKeyValue', 'url'],
-    [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['sendNotification'],
+    [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['digitalRepositoryType', 'sendNotification'],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [],
     [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'url'],
 };
@@ -90,9 +95,9 @@ class ExtSystemForm extends AbstractReactComponent {
     };
 
     componentDidMount() {
-        WebApi.getAllScopes().then(json => {
+        WebApi.getAllScopes().then(scopes => {
             this.setState({
-                defaultScopes: json,
+                defaultScopes: scopes,
             });
         });
     }
@@ -181,6 +186,20 @@ class ExtSystemForm extends AbstractReactComponent {
                     )}
                     {classJ === EXT_SYSTEM_CLASS.ArrDigitalRepository && (
                         <div>
+                            <Field
+                                name="digitalRepositoryType"
+                                type="select"
+                                component={FormInputField}
+                                label={i18n('admin.extSystem.type')}
+                                disabled={isUpdate}
+                            >
+                                <option key={null} />
+                                {Object.values(DigitalRepositoryType).map((i, index) => (
+                                    <option key={index} value={i}>
+                                        {DIGITAL_REPOSITORY_TYPE_LABEL[i]}
+                                    </option>
+                                ))}
+                            </Field>
                             <Field
                                 name="viewDaoUrl"
                                 type="text"

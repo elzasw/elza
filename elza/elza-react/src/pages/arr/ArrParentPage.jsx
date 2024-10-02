@@ -25,6 +25,7 @@ import {
     urlFundOutputs,
     urlFundTree,
     getFundVersion,
+    urlFundAb,
 } from '../../constants.tsx';
 import * as groups from '../../actions/refTables/groups';
 import {WebApi} from "../../actions";
@@ -69,6 +70,10 @@ export default class ArrParentPage extends AbstractReactComponent {
             case 'arr':
                 this.props.dispatch(routerNavigate(urlFundTree(activeFund.id, getFundVersion(activeFund))));
                 this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 1));
+                break;
+            case 'ab':
+                this.props.dispatch(routerNavigate(urlFundAb(activeFund.id, getFundVersion(activeFund))))
+                this.props.dispatch(setFocus(FOCUS_KEYS.NONE, 1));
                 break;
             case 'movements':
                 this.props.dispatch(routerNavigate(urlFundMovements(activeFund.id, getFundVersion(activeFund))));

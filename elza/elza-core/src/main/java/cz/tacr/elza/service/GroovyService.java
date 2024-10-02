@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -197,7 +196,7 @@ public class GroovyService {
         GroovyAe groovyAe = convertAe(state, parts, itemsByParts);
         String groovyFilePath = getGroovyFilePath(RulArrangementRule.RuleType.AUTO_ITEMS, scope.getRuleSetId());
 
-        return groovyScriptService.process(groovyAe, groovyFilePath);
+        return groovyScriptService.process(groovyAe, groovyFilePath, accessPointCacheService);
     }
 
     public List<GroovyItem> getAutoItemsForRev(@NotNull final ApState state, @NotNull final ApRevision revision) {
@@ -209,7 +208,7 @@ public class GroovyService {
         GroovyAe groovyAe = convertAe(revision.getState(), parts, revParts, itemsByParts, itemsByRevParts);
         String groovyFilePath = getGroovyFilePath(RulArrangementRule.RuleType.AUTO_ITEMS, scope.getRuleSetId());
 
-        return groovyScriptService.process(groovyAe, groovyFilePath);
+        return groovyScriptService.process(groovyAe, groovyFilePath, accessPointCacheService);
     }
 
     /**

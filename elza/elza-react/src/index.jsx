@@ -94,11 +94,15 @@ store.dispatch(storeRestoreFromStorage());
 
 window.onerror = function(message, url, line, column, error) {
     let stackTrace = error;
+    console.log("error",message)
     try {
         if (stackTrace.stack) {
+
             stackTrace = stackTrace.stack;
         }
     } catch (e) {}
+
+    if(message == "ResizeObserver loop completed with undelivered notifications.") return; //FIXME: @kasparova
 
     store.dispatch(
         addToastr(

@@ -28,7 +28,7 @@ public class ApBindingVO {
     private Integer externalSystemId;
 
     @Deprecated
-    private String externalSystemCode; 
+    private String externalSystemCode;
 
     private String value;
 
@@ -189,7 +189,7 @@ public class ApBindingVO {
         vo.setSyncState(createSyncStateVO(bindingState, lastChange, otherLocalChange));
         return vo;
     }
-    
+
     public static ApBindingVO newInstance(CachedBinding binding, CachedAccessPoint cachedAccessPoint,
                                           ApChange lastChange) {
     	List<ApBindingItem> bindingItemList = binding.getBindingItemList();
@@ -204,31 +204,31 @@ public class ApBindingVO {
      * @param parts
      * @return ApBindingVO
      */
-    public static ApBindingVO newInstance(ApBindingState bindingState, List<ApBindingItem> bindingItemList, 
+    public static ApBindingVO newInstance(ApBindingState bindingState, List<ApBindingItem> bindingItemList,
                                           CachedAccessPoint cachedAccessPoint, ApChange lastChange) {
 
         List<CachedPart> parts = cachedAccessPoint.getParts();
-    	
+
         List<ApBindingItemVO> bindingItemVOList = new ArrayList<>();
-        Map<Integer, ApBindingItemVO> bindedParts = new HashMap<>(), 
+        Map<Integer, ApBindingItemVO> bindedParts = new HashMap<>(),
         		bindedItems = new HashMap<>();
 
         if (CollectionUtils.isNotEmpty(bindingItemList)) {
             for (ApBindingItem bindingItem : bindingItemList) {
             	ApBindingItemVO bivo = ApBindingItemVO.newInstance(bindingItem);
-            	
+
             	if(bindingItem.getPartId()!=null) {
             		bindedParts.put(bindingItem.getPartId(), bivo);
-            	} else 
+            	} else
                 if(bindingItem.getItemId()!=null) {
                 	bindedItems.put(bindingItem.getItemId(), bivo);
                 }
-            	
+
                 bindingItemVOList.add(bivo);
             }
         }
-        
-        // set sync state        
+
+        // set sync state
         boolean otherLocalChange = false;
         if(CollectionUtils.isNotEmpty(parts)) {
         	Integer syncChangeId = bindingState.getSyncChangeId();
@@ -252,7 +252,7 @@ public class ApBindingVO {
                                 bindedParts.get(item.getPartId()).setSync(synced);
                             }
                     	}
-                	}            		
+                	}
             	}
             }
         }
@@ -266,7 +266,7 @@ public class ApBindingVO {
         }
         // změna stavu
         if (bindingState.getExtState() != null) {
-            // 
+            //
             if (bindingState.getExtState().equals(EntityRecordStateXml.ERS_NEW.toString())) {
                 // napojena je nova
                 if (cachedAccessPoint.getApState().getStateApproval() == StateApproval.APPROVED) {
@@ -282,38 +282,38 @@ public class ApBindingVO {
             }
 
         }
-    	
+
         ApBindingVO vo = newInstance(bindingState, lastChange, otherLocalChange);
         vo.setBindingItemList(bindingItemVOList);
         return vo;
     }
-    
+
     public static ApBindingVO newInstance(ApBindingState bindingState,
                                           ApState state,
                                           List<ApBindingItem> bindingItemList,
                                           List<ApPart> parts,
                                           Map<Integer, List<ApItem>> items, ApChange lastChange) {
-		
+
         List<ApBindingItemVO> bindingItemVOList = new ArrayList<>();
-        Map<Integer, ApBindingItemVO> bindedParts = new HashMap<>(), 
+        Map<Integer, ApBindingItemVO> bindedParts = new HashMap<>(),
         		bindedItems = new HashMap<>();
 
         if (CollectionUtils.isNotEmpty(bindingItemList)) {
             for (ApBindingItem bindingItem : bindingItemList) {
             	ApBindingItemVO bivo = ApBindingItemVO.newInstance(bindingItem);
-            	
+
             	if(bindingItem.getPartId()!=null) {
             		bindedParts.put(bindingItem.getPartId(), bivo);
-            	} else 
+            	} else
                 if(bindingItem.getItemId()!=null) {
                 	bindedItems.put(bindingItem.getItemId(), bivo);
                 }
-            	
+
                 bindingItemVOList.add(bivo);
             }
         }
-        
-        // set sync state        
+
+        // set sync state
         boolean otherLocalChange = false;
         if(CollectionUtils.isNotEmpty(parts)) {
         	Integer syncChangeId = bindingState.getSyncChangeId();
@@ -339,7 +339,7 @@ public class ApBindingVO {
                             }
 
                     	}
-                	}            		
+                	}
             	}
             }
         }
@@ -349,7 +349,7 @@ public class ApBindingVO {
         if (!Objects.equals(state.getAccessPoint().getPreferredPartId(), bindingState.getPreferredPartId())) {
             otherLocalChange = true;
         }
-    	
+
         ApBindingVO vo = newInstance(bindingState, lastChange, otherLocalChange);
         vo.setBindingItemList(bindingItemVOList);
         return vo;
@@ -358,8 +358,8 @@ public class ApBindingVO {
 
     private static SyncStateVO createSyncStateVO(ApBindingState bindingState, ApChange lastChange, boolean otherLocalChange) {
     	SyncStateVO syncState;
-    	
-        if (bindingState.getSyncOk() != null) {            
+
+        if (bindingState.getSyncOk() != null) {
             switch (bindingState.getSyncOk()) {
             case SYNC_OK:
                 if (lastChange.getChangeId() > bindingState.getSyncChangeId() || otherLocalChange) {

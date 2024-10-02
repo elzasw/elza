@@ -1,15 +1,15 @@
 package cz.tacr.elza.controller;
 
+import cz.tacr.elza.controller.vo.DaDaoFileFolderVO;
+import cz.tacr.elza.controller.vo.ExplorerTreeNode;
+import cz.tacr.elza.service.DaoService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import cz.tacr.elza.service.DaoSyncService;
 import io.swagger.annotations.ApiParam;
@@ -20,6 +20,8 @@ public class DaoController implements DaosApi {
 
     @Autowired
     DaoSyncService daoSyncService;
+    @Autowired
+    private DaoService daoService;
 
     @Override
     @Transactional
@@ -31,5 +33,10 @@ public class DaoController implements DaosApi {
         }
         daoSyncService.changeScenario(id, body);
         return new ResponseEntity<Void>(HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value="/dao/{aipId}" )
+    public ExplorerTreeNode findByAipIdAndTypeAndDeleteChangeIsNull(@PathVariable(value = "aipId") final Integer aipId) {
+        return daoService.findByAipIdAndTypeAndDeleteChangeIsNull(aipId);
     }
 }

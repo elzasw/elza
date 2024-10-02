@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.*;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 
@@ -45,31 +46,6 @@ import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
-import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApAttributesInfoVO;
-import cz.tacr.elza.controller.vo.ApBindingVO;
-import cz.tacr.elza.controller.vo.ApCreateTypeVO;
-import cz.tacr.elza.controller.vo.ApEidTypeVO;
-import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.ApPartFormVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
-import cz.tacr.elza.controller.vo.ApStateHistoryVO;
-import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
-import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
-import cz.tacr.elza.controller.vo.ArchiveEntityVO;
-import cz.tacr.elza.controller.vo.CreatedPartVO;
-import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
-import cz.tacr.elza.controller.vo.FileType;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.LanguageVO;
-import cz.tacr.elza.controller.vo.MapLayerVO;
-import cz.tacr.elza.controller.vo.RequiredType;
-import cz.tacr.elza.controller.vo.SearchFilterVO;
-import cz.tacr.elza.controller.vo.SyncProgressVO;
-import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.ap.ApViewSettings;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
@@ -296,9 +272,9 @@ public class ApController {
         if (StringUtils.isNotEmpty(search)) {
         	return accessPointService.findUseLuceneQueries(search, searchFilter, fund, apTypeIds, scopeId, state, revState, from, count, sdp);
         }
-        return accessPointService.findUseCriteriaQuery(search, searchFilter, 
-        										       searchTypeName, searchTypeUsername, 
-        										       fund, apTypeIds, scopeId, state, revState, 
+        return accessPointService.findUseCriteriaQuery(search, searchFilter,
+        										       searchTypeName, searchTypeUsername,
+        										       fund, apTypeIds, scopeId, state, revState,
         										       from, count, sdp);
     }
 
@@ -689,7 +665,7 @@ public class ApController {
         try {
             accessPointService.replace(replacedState, replacementState, extSystem, mcc);
         } catch (SyncImpossibleException e) {
-            throw new BusinessException("Failed to replace access point", e, 
+            throw new BusinessException("Failed to replace access point", e,
                     BaseCode.INVALID_STATE)
                             .set("entityId", replacedState.getAccessPointId());
         }
@@ -772,7 +748,7 @@ public class ApController {
      * @param accessPointId identifikátor přístupového bodu (PK)
      * @param apPartFormVO data pro vytvoření části
      * @param apVersion?
-     * 
+     *
      * @return partId, apVersion
      */
     @Transactional
@@ -822,7 +798,7 @@ public class ApController {
      * @param partId        identifikátor upravované části
      * @param apPartFormVO  data pro úpravu části
      * @param apVersion?
-     * 
+     *
      * @return apVersion
      */
     @Transactional
@@ -856,7 +832,7 @@ public class ApController {
      * @param apPartFormVO
      *            data pro úpravu části
      * @param apVersion?
-     * 
+     *
      * @return apVersion
      */
     @Transactional

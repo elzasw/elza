@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import cz.tacr.elza.api.DigitalRepositoryType;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -73,6 +74,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         digitalRepositoryVO.setCode(DIGIT_REPO_CODE);
         digitalRepositoryVO.setName(DIGIT_REPO_NAME);
         digitalRepositoryVO.setSendNotification(false);
+        digitalRepositoryVO.setDigitalRepositoryType(DigitalRepositoryType.FILESYSTEM);
 
         SysExternalSystemVO digitalRepositoryCreatedVO = createExternalSystem(digitalRepositoryVO);
         assertNotNull(digitalRepositoryCreatedVO.getId());

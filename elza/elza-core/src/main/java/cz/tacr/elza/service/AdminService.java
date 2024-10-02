@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
@@ -17,7 +18,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrCachedNode;
@@ -54,7 +54,7 @@ public class AdminService {
      *
      * Volání s časovačem, ve výchozím stavu: 0 0 4 ? * SAT
      * co znamená: každou sobotu ve 04:00
-     * @throws InterruptedException 
+     * @throws InterruptedException
      */
     @Scheduled(cron = "${elza.reindex.cron:0 0 4 ? * SAT}")
     public void reindexInternal() {
