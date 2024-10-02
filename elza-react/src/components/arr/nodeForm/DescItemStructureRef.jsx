@@ -210,6 +210,7 @@ class DescItemStructureRef extends React.Component {
                     value={structureData ? structureData.value : calValue}
                     cal={cal}
                     isValueUndefined={descItem.undefined}
+                    isValueInhibited={descItem.inhibited}
                 />
             );
         }

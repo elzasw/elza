@@ -74,6 +74,7 @@ import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApAccessPointRepositoryCustom.OrderBy;
@@ -163,6 +164,9 @@ public class AccessPointService {
 
     @Autowired
     private AccessPointDataService apDataService;
+
+    @Autowired
+    private DataService dataService;
 
     @Autowired
     private ApItemRepository itemRepository;
@@ -2887,16 +2891,16 @@ public class AccessPointService {
         }
     }
 
-    public List<Integer> findApTypeIdsByItemTypeAndItemSpec(Integer itemTypeId, @Nullable Integer itemSpecId) {
+    public List<Integer> findApTypeIdsByItemTypeAndItemSpec(@Nullable Integer itemTypeId, @Nullable Integer itemSpecId) {
         StaticDataProvider sdp = staticDataService.getData();
-        RulItemType itemType = sdp.getItemType(itemTypeId);
+        RulItemType itemType = itemTypeId != null ? sdp.getItemType(itemTypeId) : null;
         RulItemSpec itemSpec = itemSpecId != null ? sdp.getItemSpec(itemSpecId) : null;
         List<RulItemAptype> rulItemAptypeList = itemAptypeRepository.findAll();
         List<Integer> aeTypeIds = new ArrayList<>();
 
         for (RulItemAptype rulItemAptype : rulItemAptypeList) {
-            if ((rulItemAptype.getItemType() == null || rulItemAptype.getItemType().getCode().equals(itemType.getCode()))
-                    && (rulItemAptype.getItemSpec() == null || (itemSpec != null && rulItemAptype.getItemSpec().getCode().equals(itemSpec.getCode())))) {
+            if ((rulItemAptype.getItemType() == null || (itemType != null && rulItemAptype.getItemType().getCode().equals(itemType.getCode()))) &&
+                (rulItemAptype.getItemSpec() == null || (itemSpec != null && rulItemAptype.getItemSpec().getCode().equals(itemSpec.getCode())))) {
                 aeTypeIds.add(rulItemAptype.getApType().getApTypeId());
             }
         }
@@ -2928,47 +2932,27 @@ public class AccessPointService {
 
     public Resource exportCoordinates(FileType fileType, Integer itemId) {
         ApItem item = itemRepository.findById(itemId).orElseThrow(() ->
-                new ObjectNotFoundException("ApItem nenalezen", BaseCode.ID_NOT_EXIST));
-        String coordinates;
+                		new ObjectNotFoundException("ApItem nenalezen", BaseCode.ID_NOT_EXIST));
+        String coordinates = dataService.convertCoordinates(fileType, item.getData());
 
-        if (fileType.equals(FileType.WKT)) {
-            ArrData data = HibernateUtils.unproxy(item.getData());
-            coordinates = data.getFulltextValue();
-        } else {
-            coordinates = convertCoordinates(fileType, item.getData().getDataId());
-        }
         return new ByteArrayResource(coordinates.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private String convertCoordinates(FileType fileType, Integer dataId) {
-        switch (fileType) {
-            case KML:
-                return apDataService.convertCoordinatesToKml(dataId);
-            case GML:
-                return apDataService.convertCoordinatesToGml(dataId);
-            default:
-                throw new IllegalStateException("Nepovolený typ souboru pro export souřadnic");
-        }
     }
 
     public String importCoordinates(FileType fileType, Resource body) {
         try {
-            String content;
             switch (fileType) {
                 case KML:
-                    return "\"" + apDataService.convertCoordinatesFromKml(body.getInputStream()) + "\"";
+                	return dataService.convertCoordinatesFromKml(body.getInputStream());
                 case GML:
-                    content = IOUtils.toString(body.getInputStream(), StandardCharsets.UTF_8);
-                    content = content.substring(1, content.length() - 1);
-                    return "\"" + apDataService.convertCoordinatesFromGml(content) + "\"";
+                    String content = IOUtils.toString(body.getInputStream(), StandardCharsets.UTF_8);
+                    return dataService.convertCoordinatesFromGml(content);
                 case WKT:
-                    content = IOUtils.toString(body.getInputStream(), StandardCharsets.UTF_8);
-                    return content;
+                    return IOUtils.toString(body.getInputStream(), StandardCharsets.UTF_8);
                 default:
-                    throw new IllegalStateException("Nepovolený typ souboru pro import souřadnic");
+                    throw new BusinessException("Nepovolený typ souboru pro import souřadnic", BaseCode.INVATID_TYPE).set("fileType", fileType);
             }
         } catch (Exception e) {
-            throw new IllegalStateException("Chyba při importu souřadnic ze souboru");
+            throw new BusinessException("Chyba při importu souřadnic ze souboru", ExternalCode.IMPORT_FAIL);
         }
     }
 
@@ -2976,7 +2960,6 @@ public class AccessPointService {
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         String extension;
         String contentType;
-
         switch (fileType) {
             case WKT:
                 extension = "wkt";

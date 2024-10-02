@@ -44,6 +44,7 @@ class DescItemBit extends AbstractReactComponent<Props> {
                     value={i18n(Boolean(descItem.value) ? 'global.title.yes' : 'global.title.no')}
                     cal={cal}
                     isValueUndefined={descItem.undefined}
+                    isValueInhibited={descItem.inhibited}
                 />
             );
         }

@@ -40,7 +40,6 @@ import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.service.FundLevelService;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
 
 public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
@@ -61,7 +60,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
     private TreeData treeData;
 
     @Test
-    public void updateDescItemsTest() throws InterruptedException, ExecutionException, IllegalAccessException, ApiException, JsonParseException, JsonMappingException, IOException {
+    public void updateDescItemsTest() throws InterruptedException, ExecutionException, IllegalAccessException, JsonParseException, JsonMappingException, IOException {
         final Map<String, Message<byte[]>> receiptStore = new HashMap<>();
         ObjectMapper mapper = new ObjectMapper();
         Message<byte[]> recepipt;
@@ -144,7 +143,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void addLevelTest() throws InterruptedException, ExecutionException, IllegalAccessException, ApiException {
+    public void addLevelTest() throws InterruptedException, ExecutionException, IllegalAccessException {
         final Map<String, Message<byte[]>> receiptStore = new HashMap<>();
         MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
         
@@ -186,7 +185,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void inhibitedItemTest() throws InterruptedException, ExecutionException, IllegalAccessException, ApiException, StreamReadException, DatabindException, IOException {
+    public void inhibitedItemTest() throws InterruptedException, ExecutionException, IllegalAccessException, StreamReadException, DatabindException, IOException {
     	final Map<String, Message<byte[]>> receiptStore = new HashMap<>();
         MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
         ObjectMapper mapper = new ObjectMapper();
@@ -309,7 +308,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
                 .replace("{nodeVersion}", nodeVersion.toString());
     }
 
-    private void initFundVersionAndTreeData() throws ApiException {
+    private void initFundVersionAndTreeData() {
         Fund fund = createFund("Jmeno", "kod");
         helperTestService.waitForWorkers();
         fundVersion = getOpenVersion(fund);

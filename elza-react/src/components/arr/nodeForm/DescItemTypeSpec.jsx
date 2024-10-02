@@ -216,7 +216,7 @@ class DescItemTypeSpec extends AbstractReactComponent {
                 nameVal = refType.descItemSpecsMap[descItem.descItemSpecId].name;
             }
             return (
-                <span key="spec" className="desc-item-spec-label" title={nameVal}>
+                <span key="spec" className={classNames("desc-item-spec-label", {"inhibited": descItem.inhibited})} title={nameVal}>
                     {nameVal}
                 </span>
             );

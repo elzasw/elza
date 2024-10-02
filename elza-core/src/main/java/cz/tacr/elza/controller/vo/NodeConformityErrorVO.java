@@ -50,7 +50,8 @@ public class NodeConformityErrorVO {
 
     public static NodeConformityErrorVO newInstance(final ArrNodeConformityError nodeConformityError) {
     	NodeConformityErrorVO result = new NodeConformityErrorVO();
-    	result.setDescItemObjectId(nodeConformityError.getDescItemId());
+        // TODO: Rework NodeConformityErrorVO to use descItemId and not descItemObjectId
+    	result.setDescItemObjectId(nodeConformityError.getDescItem().getDescItemObjectId());
     	result.setDescription(nodeConformityError.getDescription());
     	result.setPolicyTypeId(nodeConformityError.getPolicyTypeId());
     	return result;

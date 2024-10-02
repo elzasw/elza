@@ -38,7 +38,6 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.service.DaoSyncService;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.ws.core.v1.DaoService;
 import cz.tacr.elza.ws.core.v1.FundService;
@@ -105,7 +104,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
     }
 
     @Test
-    public void importTestAttach() throws ApiException {
+    public void importTestAttach() {
         // create AS
         fundInfo = createFund(FUND_NAME, FUND_CODE);
         fundVersion = getOpenVersion(fundInfo);
@@ -159,7 +158,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
     }
 
     @Test
-    public void importTestLevel() throws ApiException {
+    public void importTestLevel() {
         // create AS
         fundInfo = createFund(FUND_NAME, FUND_CODE);
         fundVersion = getOpenVersion(fundInfo);
@@ -248,7 +247,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
     }
 
     @Test
-    public void importTestLevelWithScenarios() throws ApiException {
+    public void importTestLevelWithScenarios() {
         // create AS
         fundInfo = createFund(FUND_NAME, FUND_CODE);
         fundVersion = getOpenVersion(fundInfo);
@@ -368,7 +367,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
 
     // shodne s vyse, jen maximalni interakce pres WS
     @Test
-    public void importTestLevelWithScenariosWS() throws ApiException {
+    public void importTestLevelWithScenariosWS() {
         String address = RestAssured.baseURI + ":" + RestAssured.port + "/services"
                 + WebServiceConfig.FUND_SERVICE_URL;
         FundService fundServiceClient = WebServiceClientFactory.createFundService(address, "admin", "admin");

@@ -53,6 +53,42 @@ import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.UuidUtils;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.AddLevelParam;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
+import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
+import cz.tacr.elza.controller.vo.ArrDaoVO;
+import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
+import cz.tacr.elza.controller.vo.ArrFundVO;
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.ArrOutputRestrictionScopeVO;
+import cz.tacr.elza.controller.vo.ArrOutputTemplateVO;
+import cz.tacr.elza.controller.vo.ArrOutputVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
+import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
+import cz.tacr.elza.controller.vo.ArrRequestVO;
+import cz.tacr.elza.controller.vo.CopyNodesParams;
+import cz.tacr.elza.controller.vo.CopyNodesValidate;
+import cz.tacr.elza.controller.vo.DataGridExportType;
+import cz.tacr.elza.controller.vo.FileType;
+import cz.tacr.elza.controller.vo.FilterNode;
+import cz.tacr.elza.controller.vo.FilterNodePosition;
+import cz.tacr.elza.controller.vo.FulltextFundRequest;
+import cz.tacr.elza.controller.vo.FundListCountResult;
+import cz.tacr.elza.controller.vo.ItemDataResult;
+import cz.tacr.elza.controller.vo.Node;
+import cz.tacr.elza.controller.vo.NodeItem;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.controller.vo.RulOutputTypeVO;
+import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
+import cz.tacr.elza.controller.vo.SelectNodeResult;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.TreeNodeWithFundVO;
+import cz.tacr.elza.controller.vo.UniqueValue;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
@@ -765,9 +801,11 @@ public class ArrangementController {
      *
      * @param descItemVO       hodnota atributu
      * @param fundVersionId    identfikátor verze AP
+     * @param nodeId           id cílového nodu
      * @param nodeVersion      verze JP
      * @param createNewVersion vytvořit novou verzi?
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}",
             method = RequestMethod.PUT,
@@ -920,6 +958,7 @@ public class ArrangementController {
      * @param nodeVersion    verze JP
      * @return hodnota atributu
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create",
             method = RequestMethod.PUT,
@@ -3141,11 +3180,13 @@ public class ArrangementController {
      *
      * @param <T> typ nadřazené entity, např. ArrNodeVO nebo output atp.
      */
+    @Deprecated
     public static abstract class ItemResult<T> {
 
         /**
          * hodnota atributu
          */
+    	@Deprecated
         private ArrItemVO descItem;
 
         public abstract T getParent();
@@ -3161,6 +3202,7 @@ public class ArrangementController {
         }
     }
 
+    @Deprecated
     public static class DescItemResult extends ItemResult<ArrNodeVO> {
         private ArrNodeVO parent;
 

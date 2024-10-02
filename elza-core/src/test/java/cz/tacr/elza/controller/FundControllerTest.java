@@ -11,7 +11,6 @@ import cz.tacr.elza.controller.vo.FindFundsResult;
 import cz.tacr.elza.controller.vo.FundDetail;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.CreateFund;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.UpdateFund;
@@ -19,7 +18,7 @@ import cz.tacr.elza.test.controller.vo.UpdateFund;
 public class FundControllerTest extends AbstractControllerTest {
 
     @Test
-    public void createFund() throws ApiException {
+    public void createFund() {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
         ParInstitutionVO institution = getInstitutions().get(0);
@@ -34,12 +33,12 @@ public class FundControllerTest extends AbstractControllerTest {
         List<String> scopes = new ArrayList<>();
         scopes.add(SCOPE_GLOBAL);
         cf.setScopes(scopes);
-        Fund fund = fundsApi.createFund(cf);
+        Fund fund = fundsApi.fundCreateFund(cf);
         logger.info("Vytvořen AS : " + fund.getId());
     }
 
     @Test
-    public void updateFund() throws ApiException {
+    public void updateFund() {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
         ParInstitutionVO institution = getInstitutions().get(0);
@@ -53,7 +52,7 @@ public class FundControllerTest extends AbstractControllerTest {
         List<String> scopes = new ArrayList<>();
         scopes.add(SCOPE_GLOBAL);
         cf.setScopes(scopes);
-        Fund fund = fundsApi.createFund(cf);
+        Fund fund = fundsApi.fundCreateFund(cf);
         logger.info("Vytvořen AS : " + fund.getId());
 
         UpdateFund uf = new cz.tacr.elza.test.controller.vo.UpdateFund();
@@ -66,7 +65,7 @@ public class FundControllerTest extends AbstractControllerTest {
         scopes = new ArrayList<>();
         scopes.add(SCOPE_GLOBAL);
         uf.setScopes(scopes);
-        cz.tacr.elza.test.controller.vo.FundDetail fundDetail = fundsApi.updateFund(fund.getId().toString(), uf);
+        cz.tacr.elza.test.controller.vo.FundDetail fundDetail = fundsApi.fundUpdateFund(fund.getId().toString(), uf);
 
         // TODO: check scope and ruleset
         // Note:  fundDetail is missing rulesetCode
@@ -79,7 +78,7 @@ public class FundControllerTest extends AbstractControllerTest {
         assertEquals(fundDetail.getUnitdate(), uf.getUnitdate());
 
         // check DB object
-        cz.tacr.elza.test.controller.vo.FundDetail fundInfo = fundsApi.getFund(fund.getId().toString());
+        cz.tacr.elza.test.controller.vo.FundDetail fundInfo = fundsApi.fundGetFund(fund.getId().toString());
         assertEquals(fundInfo.getName(), uf.getName());
         assertEquals(fundInfo.getInternalCode(), uf.getInternalCode());
         assertEquals(fundInfo.getMark(), uf.getMark());
@@ -90,7 +89,7 @@ public class FundControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void getFund() throws ApiException {
+    public void getFund() {
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
         ParInstitutionVO institution = getInstitutions().get(0);
@@ -104,7 +103,7 @@ public class FundControllerTest extends AbstractControllerTest {
         List<String> scopes = new ArrayList<>();
         scopes.add(SCOPE_GLOBAL);
         cf.setScopes(scopes);
-        Fund fund = fundsApi.createFund(cf);
+        Fund fund = fundsApi.fundCreateFund(cf);
         logger.info("Vytvořen AS : " + fund.getId());
 
         FundDetail fundDetail = getFundV1(fund.getId());
@@ -112,7 +111,7 @@ public class FundControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void findFunds() throws ApiException {
+    public void findFunds() {
 
         List<RulRuleSetVO> ruleSets = getRuleSets();
         RulRuleSetVO ruleSet = ruleSets.get(0);
@@ -128,7 +127,7 @@ public class FundControllerTest extends AbstractControllerTest {
         List<String> scopes = new ArrayList<>();
         scopes.add(SCOPE_GLOBAL);
         cf.setScopes(scopes);
-        fundsApi.createFund(cf);
+        fundsApi.fundCreateFund(cf);
 
         cf = new CreateFund();
         cf.setInternalCode("fundUpd6");
@@ -139,7 +138,7 @@ public class FundControllerTest extends AbstractControllerTest {
         scopes = new ArrayList<>();
         scopes.add(SCOPE_GLOBAL);
         cf.setScopes(scopes);
-        fundsApi.createFund(cf);
+        fundsApi.fundCreateFund(cf);
 
         FindFundsResult funds = findFunds("fundUpd6", null, 10,0);
         logger.info("Nalezeno AS : " + funds.getTotalCount());

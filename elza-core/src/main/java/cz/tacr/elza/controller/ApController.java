@@ -704,7 +704,7 @@ public class ApController {
     @RequestMapping(value = "/search/rel", method = RequestMethod.POST)
     public ArchiveEntityResultListVO findAccessPointForRel(@RequestParam(name = "from", defaultValue = "0", required = false) final Integer from,
                                                            @RequestParam(name = "max", defaultValue = "50", required = false) final Integer max,
-                                                           @RequestParam(name = "itemTypeId") final Integer itemTypeId,
+                                                           @RequestParam(name = "itemTypeId", required = false) final Integer itemTypeId,
                                                            @RequestParam(name = "itemSpecId", required = false) final Integer itemSpecId,
                                                            @RequestParam(name = "scopeId", required = false) final Integer scopeId,
                                                            @RequestBody final SearchFilterVO filter) {
@@ -1279,7 +1279,7 @@ public class ApController {
     }
 
     /**
-     * Import souřadnic ve formátu KML/GML
+     * Import souřadnic ve formátu KML/GML/WKT
      *
      * @param fileType Typ souboru
      * @param body Soubor se souřadnicemi
@@ -1291,7 +1291,7 @@ public class ApController {
             method = RequestMethod.POST)
     public String importCoordinates(@RequestParam final FileType fileType,
                                     @RequestBody(required = false) Resource body) {
-        return accessPointService.importCoordinates(fileType, body);
+        return String.format("\"%s\"", accessPointService.importCoordinates(fileType, body));
     }
 
     /**

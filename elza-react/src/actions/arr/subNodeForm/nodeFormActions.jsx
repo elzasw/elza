@@ -281,7 +281,7 @@ export class NodeFormActions extends ItemFormActions {
         if(inhibit){
             return WebApi.inhibitDescItem(nodeId, itemId);
         }
-        return WebApi.allowDescItem(itemId);
+        return WebApi.allowDescItem(nodeId, itemId);
     }
 
     // @Override

@@ -179,11 +179,14 @@ public class StaticDataService {
      * Switch data provider for current transaction
      */
     public StaticDataProvider refreshForCurrentThread() {
-        StaticDataProvider provider = activeProvider;
+    	return setForCurrentThread(activeProvider);
+    }
+    
+	public StaticDataProvider setForCurrentThread(StaticDataProvider provider) {
         // update data provider for thread
         threadSpecificProvider.set(provider);
-    	return provider;
-    }
+    	return provider;		
+	}    
 
     public void reloadOnCommit() {
         //Transaction tx = getCurrentActiveTransaction(); //TODO hibernate search 6
@@ -276,4 +279,5 @@ public class StaticDataService {
             throw new IllegalStateException("Inactive transaction");
         }
     }
+
 }

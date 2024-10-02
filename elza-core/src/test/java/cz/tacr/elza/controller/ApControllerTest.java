@@ -43,12 +43,10 @@ import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.ApStateApproval;
 import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.Fund;
 import io.restassured.response.Response;
-
 
 /**
  * Test method na APController
@@ -241,7 +239,7 @@ public class ApControllerTest extends AbstractControllerTest {
     }
 
     @Test//(timeout = 60000)
-    public void testAccessPointRev() throws InterruptedException, ApiException {
+    public void testAccessPointRev() throws InterruptedException {
         ApTypeVO type = getApType(STRUCT_AP_TYPE);
         assertNotNull(type);
 
@@ -496,7 +494,7 @@ public class ApControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void registerReplaceTest() throws ApiException {
+    public void registerReplaceTest() {
         // Vytvoření fund
         Fund fund = createFund("RegisterLinks Test AP", "IC3");
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
@@ -681,14 +679,14 @@ public class ApControllerTest extends AbstractControllerTest {
     @Test
     public void importCoordinatesTest() throws IOException {
         // from file created by https://www.freemaptools.com/kml-file-creator.htm
-        Resource file = new DefaultResourceLoader().getResource("KML-Orlik-POINT.kml");
+        Resource file = new DefaultResourceLoader().getResource("coordinates/KML-Orlik-POINT.kml");
         final String orlikFile = IOUtils.toString(file.getInputStream(), StandardCharsets.UTF_8);
         Response responce = post(spec -> spec.queryParam("fileType", FileType.KML.toString()).body(orlikFile), IMPORT_COORDINATES);
         String coordinates = responce.asString();
         assertEquals(coordinates, "\"POINT (14.181221004109831 49.606926490508656)\"");
         
         // from file created by https://earth.google.com/
-        file = new DefaultResourceLoader().getResource("KML-London-POINT.kml");
+        file = new DefaultResourceLoader().getResource("coordinates/KML-London-POINT.kml");
         final String londonFile = IOUtils.toString(file.getInputStream(), StandardCharsets.UTF_8);
         responce = post(spec -> spec.queryParam("fileType", FileType.KML.toString()).body(londonFile), IMPORT_COORDINATES);
         coordinates = responce.asString();

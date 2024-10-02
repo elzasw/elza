@@ -107,7 +107,7 @@ class DescItemRecordRef extends AbstractReactComponent {
             if (record && !descItem.undefined) {
                 return (
                     <Link to={`${URL_ENTITY}/${record.id}`}>
-                        <DescItemLabel value={record.name} />
+                        <DescItemLabel value={record.name} isValueInhibited={descItem.inhibited}/>
                     </Link>
                 );
             } else {
