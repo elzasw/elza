@@ -3089,6 +3089,35 @@ components:
         - TO_AMEND
       description: States of ApRevState
     UpdateFund:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Název
+        ruleSetCode:
+          type: string
+          description: Kód pravidel
+        institutionIdentifier:
+          type: string
+          description: Identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu)
+        internalCode:
+          type: string
+          description: Interní kód
+        fundNumber:
+          type: integer
+          description: Číslo archivního souboru
+        unitdate:
+          type: string
+          description: Datace
+        mark:
+          type: string
+          description: Značka archivního souboru
+        scopes:
+          type: array
+          items:
+            type: string
+          description: Seznam oblastí entit
+      description: Změny archivního souboru    
     SyncProgress:
       type: string
       enum:
@@ -3153,36 +3182,6 @@ components:
           type: string
           description: Unikátení identifikátor rodičovského uzlu
       description: Custom uzel stromu
-    UsedItemType:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Název
-        ruleSetCode:
-          type: string
-          description: Kód pravidel
-        institutionIdentifier:
-          type: string
-          description: Identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu)
-        internalCode:
-          type: string
-          description: Interní kód
-        fundNumber:
-          type: integer
-          description: Číslo archivního souboru
-        unitdate:
-          type: string
-          description: Datace
-        mark:
-          type: string
-          description: Značka archivního souboru
-        scopes:
-          type: array
-          items:
-            type: string
-          description: Seznam oblastí entit
-      description: Změny archivního souboru
     UsedItemType:
       type: object
       required:
