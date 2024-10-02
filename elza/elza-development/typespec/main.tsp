@@ -1142,11 +1142,6 @@ enum AipUpdateType {
     FORCE_UPDATE;
 }
 
-@route("/daorepository")
-namespace ElzaAPI.DaoRepository {
-    op fsRepos(): FsRepo[];
-}
-
 @tag("admin")
 @route("/admin")
 namespace ElzaAPI.Admin {

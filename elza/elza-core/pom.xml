@@ -695,7 +695,6 @@
                             <modelPackage>cz.tacr.elza.test.controller.vo</modelPackage>
                             <configOptions>
                                 <useJakartaEe>true</useJakartaEe>
-                            </configOptions>
                                 <library>resttemplate</library><!-- default: okhttp-gson -->
                                 <useAbstractionForFiles>true</useAbstractionForFiles>
                             </configOptions>
