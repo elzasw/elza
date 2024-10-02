@@ -27,9 +27,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.repository.SobjVrequestRepository;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
-
 
 /**
  * Test pro {@link StructureController}.
@@ -52,7 +50,7 @@ public class StructureControllerTest extends AbstractControllerTest {
     protected SobjVrequestRepository sobjVrequestRepository;
 
     @Test
-    public void structureTest() throws ApiException {
+    public void structureTest() {
         Fund fund = createFund(NAME_AS, CODE_AS);
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
@@ -70,7 +68,7 @@ public class StructureControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void structureBatchTest() throws ApiException {
+    public void structureBatchTest() {
         Fund fund = createFund(NAME_AS, CODE_AS);
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 

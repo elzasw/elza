@@ -12,7 +12,7 @@ declare module "axios" {
 }
 
 // @ts-ignore
-const serverContextPath = window.serverContextPath;
+export const serverContextPath = window.serverContextPath || "";
 
 const baseApiPath = '/api';
 const v1ApiPath = '/v1';
@@ -116,7 +116,10 @@ function resolveException(error: AxiosError<Error>) {
         } else {
             // other unknown errors
             result = {
+                createToaster: true,
                 type: 'unknown',
+                status: status,
+                statusText: statusText,
             };
         }
     }

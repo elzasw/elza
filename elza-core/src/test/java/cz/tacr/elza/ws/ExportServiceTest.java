@@ -12,7 +12,6 @@ import cz.tacr.elza.dataexchange.output.writer.xml.XmlNameConsts;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
-import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.ws.core.v1.ExportRequestException;
 import cz.tacr.elza.ws.core.v1.ExportServiceImpl;
@@ -48,7 +47,7 @@ public class ExportServiceTest extends AbstractControllerTest {
     }
 
     @Test
-    public void exportEntityTest() throws ApiException {
+    public void exportEntityTest() {
         // try to export real entity
         ExportRequest er = new ExportRequest();
         er.setRequiredFormat(XmlNameConsts.SCHEMA_URI);

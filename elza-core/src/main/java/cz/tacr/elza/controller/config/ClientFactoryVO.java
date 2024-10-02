@@ -2,6 +2,8 @@ package cz.tacr.elza.controller.config;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -64,11 +66,30 @@ import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
 import cz.tacr.elza.controller.vo.ArrRequestVO;
 import cz.tacr.elza.controller.vo.BulkActionRunVO;
 import cz.tacr.elza.controller.vo.BulkActionVO;
+import cz.tacr.elza.controller.vo.DataBit;
+import cz.tacr.elza.controller.vo.DataCoordinates;
+import cz.tacr.elza.controller.vo.DataDate;
+import cz.tacr.elza.controller.vo.DataDecimal;
+import cz.tacr.elza.controller.vo.DataFileRef;
+import cz.tacr.elza.controller.vo.DataFormattedText;
+import cz.tacr.elza.controller.vo.DataInteger;
+import cz.tacr.elza.controller.vo.DataJsonTable;
+import cz.tacr.elza.controller.vo.DataNull;
+import cz.tacr.elza.controller.vo.DataRecordRef;
+import cz.tacr.elza.controller.vo.DataString;
+import cz.tacr.elza.controller.vo.DataStructureRef;
+import cz.tacr.elza.controller.vo.DataText;
+import cz.tacr.elza.controller.vo.DataUnitdate;
+import cz.tacr.elza.controller.vo.DataUnitid;
+import cz.tacr.elza.controller.vo.DataUriRef;
 import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundDetail;
 import cz.tacr.elza.controller.vo.GisExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.GisExternalSystemVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
+import cz.tacr.elza.controller.vo.ItemData;
+import cz.tacr.elza.controller.vo.Node;
+import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
 import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
@@ -129,7 +150,20 @@ import cz.tacr.elza.domain.ArrDaoPackage;
 import cz.tacr.elza.domain.ArrDaoRequest;
 import cz.tacr.elza.domain.ArrDaoRequestDao;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataBit;
+import cz.tacr.elza.domain.ArrDataDate;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataJsonTable;
+import cz.tacr.elza.domain.ArrDataFileRef;
+import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
+import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
@@ -138,6 +172,7 @@ import cz.tacr.elza.domain.ArrDigitizationRequestNode;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrItemFormattedText;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeOutput;
@@ -165,6 +200,7 @@ import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -571,6 +607,123 @@ public class ClientFactoryVO {
             default:
                 throw new NotImplementedException(item.getItemType().getDataTypeId().toString());
         }
+    }
+
+    /**
+     * Vytvoření hodnoty atributu (nová).
+     *
+     * @param item hodnota atributu
+     * @return VO hodnota atributu
+     */
+    public <T extends ArrItem> NodeItem createNodeItem(final T item) {
+        Assert.notNull(item, "Hodnota musí být vyplněna");
+
+        NodeItem nodeItem = new NodeItem();
+        nodeItem.setId(item.getItemId());
+        nodeItem.setItemTypeId(item.getItemTypeId());
+        nodeItem.setItemSpecId(item.getItemSpecId());
+        nodeItem.setNodeId(item.getNodeId());
+        nodeItem.setNodeVersion(item.getNode().getVersion());
+        nodeItem.setItemObjectId(item.getDescItemObjectId());
+        nodeItem.setPosition(item.getPosition());
+        nodeItem.setReadOnly(item.getReadOnly());
+
+        ArrData arrData = item.getData();
+		ItemData data = new ItemData();
+
+		String stringValue;
+		Integer integerValue;
+
+        DataType dataType = DataType.fromId(item.getItemType().getDataTypeId());
+		switch (dataType) {
+        	case INT:
+	            data = new DataInteger();
+	            integerValue = ((ArrDataInteger) arrData).getIntegerValue();
+	            ((DataInteger) data).setIntegerValue(integerValue);
+	            break;
+        	case STRING:
+	            data = new DataString();
+	            stringValue = ((ArrDataString) arrData).getStringValue();
+	            ((DataString) data).setStringValue(stringValue);
+	            break;
+        	case TEXT:
+        		data = new DataText();
+        		stringValue = ((ArrDataText) arrData).getTextValue();
+	            ((DataText) data).setTextValue(stringValue);
+        		break;
+	        case UNITDATE:
+	        	data = new DataUnitdate();
+	        	stringValue = UnitDateConvertor.convertToString(((ArrDataUnitdate) arrData));
+	        	((DataUnitdate) data).setValue((String) stringValue);
+	        	break;
+	        case UNITID:
+	        	data = new DataUnitid();
+	        	stringValue = ((ArrDataUnitid) arrData).getUnitId();
+	        	((DataUnitid) data).setUnitId(stringValue);
+	        	break;
+	        case FORMATTED_TEXT:
+	        	data = new DataFormattedText();
+	        	stringValue = ((ArrDataText) arrData).getTextValue();
+	        	((DataFormattedText) data).setValue(stringValue);
+	        	break;
+	        case COORDINATES:
+	        	data = new DataCoordinates();
+	        	stringValue = ((ArrDataCoordinates) arrData).getFulltextValue();
+	        	((DataCoordinates) data).setValue(stringValue);
+	        	break;
+	        case RECORD_REF:
+	        	data = new DataRecordRef();
+	        	integerValue = ((ArrDataRecordRef) arrData).getRecordId();
+	        	((DataRecordRef) data).setValue(integerValue);
+	        	break;
+	        case DECIMAL:
+	        	data = new DataDecimal();
+	        	BigDecimal decimalValue = ((ArrDataDecimal) arrData).getValue();
+	        	((DataDecimal) data).setValue(decimalValue);
+	        	break;
+	        case STRUCTURED:
+	        	data = new DataStructureRef();
+	        	integerValue = ((ArrDataStructureRef) arrData).getStructuredObjectId();
+	        	((DataStructureRef) data).setStructuredObjectId(integerValue);
+	        	break;
+	        case ENUM:
+	        	data = new DataNull();
+	        	break;
+	        case FILE_REF:
+	        	data = new DataFileRef();
+	        	integerValue = ((ArrDataFileRef) arrData).getFileId();
+	        	((DataFileRef) data).setFileId(integerValue);
+	        	break;
+	        case JSON_TABLE:
+	        	data = new DataJsonTable();
+	        	stringValue = ((ArrDataJsonTable) arrData).getJsonValue();
+	        	((DataJsonTable) data).setValue(stringValue);
+	        	break;
+	        case DATE:
+	        	data = new DataDate();
+	        	LocalDate dateValue = ((ArrDataDate) arrData).getValue();
+	        	((DataDate) data).setValue(dateValue);
+	        	break;
+	        case URI_REF:
+	        	data = new DataUriRef();
+	        	stringValue = ((ArrDataUriRef) arrData).getUriRefValue();
+	        	((DataUriRef) data).setValue(stringValue);
+	        	break;
+	        case BIT:
+	        	data = new DataBit();
+	        	Boolean bitValue = ((ArrDataBit) arrData).isBitValue();
+	        	((DataBit) data).setBitValue(bitValue);
+	        	break;
+        	default:
+        		throw new NotImplementedException(item.getItemType().getDataTypeId().toString());
+        }
+
+        data.setType(data.getClass().getSimpleName());
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        nodeItem.setData(data);
+
+        return nodeItem;
     }
 
     /**
@@ -1925,4 +2078,9 @@ public class ClientFactoryVO {
     public List<RulExportFilterVO> createExportFilterList(final List<RulExportFilter> exportFilters) {
         return exportFilters.stream().map(i -> new RulExportFilterVO(i)).collect(Collectors.toList());
     }
+
+	public Node createNode(ArrNode arrNode) {
+		Node node = new Node(arrNode.getNodeId(), arrNode.getVersion(), arrNode.getUuid());
+		return node;
+	}
 }

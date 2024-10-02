@@ -74,7 +74,7 @@ export function fundsFetchIfNeeded(size = DEFAULT_FUND_LIST_MAX_SIZE) {
 
         if (fundRegion.currentDataKey !== dataKey) {
             dispatch(fundsRequest(dataKey));
-            Api.funds.findFunds(fundRegion.filterText, filter.institutionIdentifier, size, filter.from).then(response => {
+            Api.funds.fundFindFunds(fundRegion.filterText, filter.institutionIdentifier, size, filter.from).then(response => {
                 const newState = getState();
                 const newFundRegion = newState.fundRegion;
                 const newDataKey = _fundRegionDataKey(newFundRegion);

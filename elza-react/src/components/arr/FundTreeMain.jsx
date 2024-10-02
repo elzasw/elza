@@ -209,7 +209,7 @@ class FundTreeMain extends React.Component {
 
         if(node){
             expandedNodes = [node, ...getNodeChildren(node, nodes)]
-        } 
+        }
 
         expandedNodes = expandedNodes.filter((node) => node.hasChildren)
 

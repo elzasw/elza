@@ -46,8 +46,8 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
-import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker.ErrorHandler;
@@ -98,10 +98,9 @@ public class ExportServiceImpl implements ExportService {
     ApChangeRepository changeRepository;
 
     @Autowired
-    AccessPointDataService apDataService;
+    DataService dataService;
 
     public ExportServiceImpl() {
-
     }
 
     // TODO: run this method in transaction
@@ -186,13 +185,11 @@ public class ExportServiceImpl implements ExportService {
         } else
         if (CamUtils.CAM_SCHEMA.equals(format)) {
             // format CAM
-            exportBuilder = new CamExportBuilder(staticDataService,
-                    groovyService, schemaManager,
-                    apDataService, false);
+            exportBuilder = new CamExportBuilder(staticDataService, groovyService, schemaManager, dataService, false);
         } else {
             throw new ExportRequestException("Unrecognized schema: " + format);
         }
-        
+
         // prepare sec context
         SecurityContext secCtx = SecurityContextHolder.getContext();
         Authentication auth = secCtx.getAuthentication();

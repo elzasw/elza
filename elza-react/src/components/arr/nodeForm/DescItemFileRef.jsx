@@ -71,11 +71,11 @@ class DescItemFileRef extends AbstractReactComponent {
         const value = descItem.file ? descItem.file : null;
 
         if (readMode) {
-            if (value) {
-                return <DescItemLabel value={value.name} isValueUndefined={descItem.undefined} />;
-            } else {
-                return <DescItemLabel value="" isValueUndefined={descItem.undefined} />;
-            }
+            return <DescItemLabel
+                value={value ? value.name : ""}
+                isValueUndefined={descItem.undefined}
+                isValueInhibited={descItem.inhibited}
+            />;
         }
 
         const footer = this.renderFooter();

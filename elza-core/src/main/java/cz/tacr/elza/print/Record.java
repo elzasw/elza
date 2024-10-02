@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -280,7 +281,7 @@ public class Record {
     }
 
     public List<Part> getParts(final Collection<String> partTypeCodes) {
-        Validate.notNull(partTypeCodes);
+    	Objects.requireNonNull(partTypeCodes);
         loadParts();
 
         return parts.stream().filter(part -> {
@@ -300,7 +301,7 @@ public class Record {
     }
 
     public List<Item> getItems(Collection<String> itemTypeCodes) {
-        Validate.notNull(itemTypeCodes);
+    	Objects.requireNonNull(itemTypeCodes);
 
         if (parts == null || itemTypeCodes.isEmpty()) {
             return Collections.emptyList();
@@ -423,7 +424,7 @@ public class Record {
         // format CAM
         CamExportBuilder exportBuilder = new CamExportBuilder(staticData, outputContext.getGroovyService(),
                 outputContext.getSchemaManager(),
-                outputContext.getApDataService(),
+                outputContext.getDataService(),
                 true);
 
         ExportContext expCtx = new ExportContext(exportBuilder, outputContext.getStaticData(), 1);
