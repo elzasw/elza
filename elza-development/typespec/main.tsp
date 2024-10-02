@@ -883,11 +883,15 @@ model DaoLink {
     /**
      * Dao ID
      */
-    daoId: integer;
+    daoId?: integer;
     /**
-     * Name of the dao link type
+     * Dao code
      */
-    linkType: string;
+    daoCode?: string;
+    /**
+     * Dao type
+     */
+    daoType?: DaDaoType;
     /**
      * Komponent name
      */
