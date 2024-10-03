@@ -140,5 +140,10 @@
 		<sql dbms="postgresql">ALTER INDEX IF EXISTS ap_external_id_pkey RENAME TO ap_binding_pkey</sql>
 		<sql dbms="postgresql">ALTER INDEX IF EXISTS ap_fragment_pkey RENAME TO ap_part_pkey</sql>
 	</changeSet>
+	
+	<changeSet id="20240310112200" author="ppy">
+		<!-- 9142 - Aktualizace záznamu v Cache po změně napojení entity -->
+		<sql> DELETE FROM ap_cached_access_point WHERE access_point_id IN (SELECT bs.access_point_id FROM ap_binding_state bs WHERE bs.delete_change_id is null AND bs.sync_ok='NOT_SYNCED')</sql>
+	</changeSet>
 
 </databaseChangeLog>
