@@ -214,4 +214,10 @@ public class ElzaWebController {
         initDefaults(request, model);
         return "web";
     }
+
+    @RequestMapping(value = "/aip/**", method = RequestMethod.GET)
+    public String aipPage(final HttpServletRequest request, final Model model) {
+        initDefaults(request, model);
+        return "web";
+    }
 }
