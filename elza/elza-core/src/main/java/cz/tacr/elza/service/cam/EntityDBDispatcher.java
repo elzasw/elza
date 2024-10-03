@@ -439,6 +439,7 @@ public class EntityDBDispatcher {
                                                                              SyncState.NOT_SYNCED,
                                                                              accessPoint.getPreferredPart(),
                                                                              state.getApType());
+                accessPointCacheService.createApCachedAccessPoint(state.getAccessPointId());
                 this.procCtx = null;
                 return state;
             }
