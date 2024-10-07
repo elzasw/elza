@@ -2359,13 +2359,6 @@ public class AccessPointService {
 
         // má uživatel oprávnění změnit třídu archivní entity?
         if (newTypeId != null && !newTypeId.equals(oldApState.getApTypeId())) {
-            // nelze změnit třídu pokud existuje platná ApBindingState
-            int countBinding = bindingStateRepository.countByAccessPoint(accessPoint);
-            if (countBinding > 0) {
-                throw new SystemException("Třídu a podtřídu entity zapsané v CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
-                    .set("accessPointId", accessPoint.getAccessPointId())
-                    .set("typeId", oldApState.getApTypeId());
-            }
             if (!hasPermissionToChangeType(oldStateApproval, oldApScope)) {
                 throw new SystemException("Požadovanou třídu entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                     .set("accessPointId", accessPoint.getAccessPointId())
@@ -2373,10 +2366,22 @@ public class AccessPointService {
                     .set("scopeId", oldApScope.getScopeId());
             }
 
-            // get ap type
+            // dostáváme nový ApType
             StaticDataProvider sdp = staticDataService.createProvider();
             newApType = sdp.getApTypeById(newTypeId);
             Validate.notNull(newApType, "AP Type not found, id={}", newTypeId);
+
+        	// nelze změnit třídu pokud existuje platná ApBindingState
+            int countBinding = bindingStateRepository.countByAccessPoint(accessPoint);
+            if (countBinding > 0) {
+            	// nový ApType nesmí být v jiné třídě, pouze v té aktuální
+            	Integer parentApTypeId = oldApState.getApType().getParentApTypeId();
+            	if (!newApType.getParentApTypeId().equals(parentApTypeId)) {
+            		throw new SystemException("Třídu entity zapsané v CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                    	.set("accessPointId", accessPoint.getAccessPointId())
+                    	.set("typeId", oldApState.getApTypeId());
+            	}
+            }
             update = true;
         } else {
             newApType = null;
@@ -2397,8 +2402,7 @@ public class AccessPointService {
         if (newScopeId != null && !newScopeId.equals(oldApScope.getScopeId())) {
             newApScope = getApScope(newScopeId);
             if (!hasApPermission(newApScope, oldStateApproval, newStateApproval)) {
-                throw new SystemException("Uživatel nemá oprávnění na změnu přístupového bodu",
-                        BaseCode.INSUFFICIENT_PERMISSIONS)
+                throw new SystemException("Uživatel nemá oprávnění na změnu přístupového bodu", BaseCode.INSUFFICIENT_PERMISSIONS)
                     .set("accessPointId", accessPoint.getAccessPointId())
                     .set("oldScopeId", oldApScope.getScopeId())
                     .set("newScopeId", newApScope.getScopeId());
