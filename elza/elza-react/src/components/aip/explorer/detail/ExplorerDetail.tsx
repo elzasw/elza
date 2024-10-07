@@ -67,8 +67,10 @@ const ExplorerDetail: FC = () => {
     );
 
     const selectFolder = (id) => {
-        const {node} = findNodeByUUID(structure, id);
-        setSelectedItem(node);
+        const result = findNodeByUUID(structure.data, id);
+        if(result) {
+            setSelectedItem(result.node);
+        }
     }
 
     const renderValue = (value: string) => {
