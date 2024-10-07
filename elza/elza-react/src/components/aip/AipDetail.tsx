@@ -83,6 +83,7 @@ const AipDetail = () => {
                             as="a"
                             className="open-btn"
                             onClick={handleOpenExplorer}
+                            disabled={!aip.data.metadataLoad || aip.data.metadataError}
                         >
                             <FolderOpen20Filled/>
                             <span>{i18n("aip.detail.explorer.open")}</span>
