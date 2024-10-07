@@ -99,6 +99,20 @@ const ArrAipPage = class ArrAipPage extends ArrParentPage {
                     value: activeFund.id,
                     path: "arr_fund",
                     invisible: true,
+                },{
+                    id: generateUUID(),
+                    attr: "metadataLoad",
+                    criteria: AipFilterCriteria.EQUALS,
+                    value: true,
+                    path: "da_aip_state",
+                    invisible: true,
+                },{
+                    id: generateUUID(),
+                    attr: "metadataError",
+                    criteria: AipFilterCriteria.EQUALS,
+                    value: false,
+                    path: "da_aip_state",
+                    invisible: true,
                 }]}
                 hiddenValues={["fund.name", "institution.name", "institutionCode"]}
             />
