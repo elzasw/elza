@@ -33,8 +33,9 @@ const AipTree: FC<{onSelect?: (node) => void}> = ({onSelect}) => {
         event: TreeOpenChangeEvent,
         data: TreeOpenChangeData
     ) => {
-        const {node} = findNodeByUUID(structure, data.value);
-        setSelectedItem(node);
+        const result = findNodeByUUID(structure, data.value);
+        if(!result) return;
+        setSelectedItem(result.node);
         setOpenItems((curr) =>
                 data.open
                     ? [...curr, data.value]
