@@ -2,7 +2,7 @@
 import "./DetailRow.scss";
 
 const DetailRow = ({label, value}: {label: string, value?: any}) => (
-    <div className="item-row">
+    <div className="aip-detail-item-row">
         <div className="label col">
             <b>{label}</b>
         </div>
