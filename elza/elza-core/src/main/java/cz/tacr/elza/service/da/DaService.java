@@ -1204,8 +1204,8 @@ public class DaService {
                 parentLevel, arrLevel));
         ArrDaoLink arrDaoLink = new ArrDaoLink();
         arrDaoLink.setAip(daAip);
-        arrDaoLink.setNode(arrNode);
-        arrDaoLink.setLinkType(ArrDaoLink.LinkType.COMPONENT_AIP);
+        arrDaoLink.setNode(newNode);
+        arrDaoLink.setLinkType(ArrDaoLink.LinkType.PART_AIP);
         arrDaoLink.setCreateChange(change);
         if (daDao != null) {
            arrDaoLink.setDaDao(daDao);
