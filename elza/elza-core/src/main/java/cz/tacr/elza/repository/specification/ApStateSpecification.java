@@ -29,6 +29,7 @@ import cz.tacr.elza.controller.vo.ExtensionFilterVO;
 import cz.tacr.elza.controller.vo.RelationFilterVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
@@ -201,10 +202,18 @@ public class ApStateSpecification implements Specification<ApState> {
             }
             if (CollectionUtils.isNotEmpty(searchFilterVO.getExtFilters())) {
                 for (ExtensionFilterVO ext : searchFilterVO.getExtFilters()) {
-                    String itemTypeCode = ext.getItemTypeId() != null ? sdp.getItemTypeById(ext.getItemTypeId()).getCode() : null;
+                    ItemType itemType = ext.getItemTypeId() != null ? sdp.getItemTypeById(ext.getItemTypeId()) : null;
+                    String itemTypeCode = itemType != null ? itemType.getCode() : null;  
                     String itemSpecCode = ext.getItemSpecId() != null ? sdp.getItemSpecById(ext.getItemSpecId()).getCode() : null;
-                    and = processValueCondDef(ctx, and, String.valueOf(ext.getValue()), ext.getPartTypeCode(), itemTypeCode,
-                            itemSpecCode, QueryComparator.CONTAIN, false);
+                    // výchozí komparátor
+                    QueryComparator comparator = QueryComparator.CONTAIN;
+                    // komparátor pro celá čísla (INT) nebo booleovské hodnoty (BIT)
+                    if (itemType != null && 
+                    		(itemType.getDataType().equals(DataType.INT) || itemType.getDataType().equals(DataType.BIT))) {
+                    	comparator = QueryComparator.EQ;
+                    }
+                    and = processValueCondDef(ctx, and, String.valueOf(ext.getValue()), ext.getPartTypeCode(), 
+                                              itemTypeCode, itemSpecCode, comparator, false);
                 }
             }
             if (CollectionUtils.isNotEmpty(searchFilterVO.getRelFilters())) {
