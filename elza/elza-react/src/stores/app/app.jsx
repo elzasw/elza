@@ -22,7 +22,7 @@ const initialState = {
     selectedAips: SimpleListReducer(),
     aipLogicalTree: DetailReducer(),
     daoLinkList: DetailReducer(),
-    selectedAipDaos: DetailReducer(),
+    selectedAipDaos: SimpleListReducer(),
     kmlExtSystemList: SimpleListReducer(), // seznam externích systémů
     extSystemDetail: DetailReducer(),
     extSystemList: SimpleListReducer(), // seznam externích systémů

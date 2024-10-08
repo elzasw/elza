@@ -8,7 +8,7 @@ import FundTree from "./FundTree";
 import AipExplorer from "../../../aip/explorer/AipExplorer.tsx";
 import {ExplorerMode} from "../../../aip/explorer/ExplorerContext.tsx";
 import {WebApi} from "../../../../actions";
-import { AREA_AIP } from "actions/aip/aip.ts";
+import {AREA_AIP, AREA_SELECTED_AIP_DAOS} from "actions/aip/aip.ts";
 import { useSelector } from "react-redux";
 import storeFromArea from "shared/utils/storeFromArea.jsx";
 import { AppState } from "typings/store/AppState.types.ts";
@@ -27,23 +27,34 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
     const [rightSelectedNode, setRightSelectedNode] = useState<TreeItemValue>(tree.nodes[0].id);
     const [leftSelectedNode, setLeftSelectedNode] = useState<number>(null);
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP))
+    const selectedDaoIds = useSelector((state: AppState) => storeFromArea(state, AREA_SELECTED_AIP_DAOS))
     const dispatch = useThunkDispatch();
 
     const handleConnectToJP = () => {
         console.log('leftSelectedNode :>> ', leftSelectedNode);
 
-        if (leftSelectedNode < 0) {
+        if (selectedDaoIds.count === 0 && leftSelectedNode < 0) {
             WebApi.connectAipToJp(rightSelectedNode as number, aip.id)
-                .then(dispatch(fetchAipStructureIfNeeded(aip.id, true)));
+                .then(() => dispatch(fetchAipStructureIfNeeded(aip.id, true)));
         } else {
-            WebApi.connectAipPartToJp(rightSelectedNode as number,  aip.id, leftSelectedNode)
-                .then(dispatch(fetchAipStructureIfNeeded(aip.id, true)));
+            let daoListIds = selectedDaoIds.rows;
+            if (selectedDaoIds.count === 0) {
+                daoListIds = [];
+                daoListIds.push(leftSelectedNode);
+            }
+            WebApi.connectAipPartToJp(rightSelectedNode as number,  aip.id, daoListIds)
+                .then(() => dispatch(fetchAipStructureIfNeeded(aip.id, true)));
         }
     }
 
     const handleCreateFromSelected = () => {
-        WebApi.createJpLinkFromSelectedAip(rightSelectedNode as number,  aip.id, leftSelectedNode)
-            .then(dispatch(fetchAipStructureIfNeeded(aip.id, true)));
+        let daoListIds = selectedDaoIds.rows;
+        if (selectedDaoIds.count === 0) {
+            daoListIds = [];
+            daoListIds.push(leftSelectedNode);
+        }
+        WebApi.createJpLinkFromSelectedAip(rightSelectedNode as number,  aip.id, daoListIds)
+            .then(() => dispatch(fetchAipStructureIfNeeded(aip.id, true)));
     }
 
     const handleSelectAndConnectToJP = () => {
@@ -54,7 +65,12 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
                 submittingMessage={i18n('arr.aip.assignment.part.confirm-first') + i18n('arr.aip.assignment.part.confirm-last')}
                 submitTitle={i18n('global.action.run')}
                 onSubmit={() => {
-                    return WebApi.connectSelectedToJp(rightSelectedNode as number, aip.id, leftSelectedNode)
+                    let daoListIds = selectedDaoIds.rows;
+                    if (selectedDaoIds.count === 0) {
+                        daoListIds = [];
+                        daoListIds.push(leftSelectedNode);
+                    }
+                    return WebApi.connectSelectedToJp(rightSelectedNode as number, aip.id, daoListIds)
                 }}
                 onSubmitSuccess={() => {
                     dispatch(modalDialogHide());
@@ -75,7 +91,12 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
                 submittingMessage={i18n('arr.aip.assignment.part.confirm-first') + i18n('arr.aip.assignment.part.confirm-last')}
                 submitTitle={i18n('global.action.run')}
                 onSubmit={() => {
-                    return WebApi.createJpFromSelectedAip(rightSelectedNode as number, aip.id, leftSelectedNode);
+                    let daoListIds = selectedDaoIds.rows;
+                    if (selectedDaoIds.count === 0) {
+                        daoListIds = [];
+                        daoListIds.push(leftSelectedNode);
+                    }
+                    return WebApi.createJpFromSelectedAip(rightSelectedNode as number, aip.id, daoListIds);
                 }}
                 onSubmitSuccess={() => {
                     dispatch(modalDialogHide());

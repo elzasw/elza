@@ -1203,35 +1203,35 @@ export class WebApiCls {
         }, null);
     }
 
-    connectAipPartToJp(arrNodeId: number, daAipId: number, daDaoId: number): Promise<void> {
+    connectAipPartToJp(arrNodeId: number, daAipId: number, daDaoIdList: number[]): Promise<void> {
         return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/connect-part-to-jp', {
             arrNodeId: arrNodeId,
             daAipId: daAipId,
-            daDaoId: daDaoId
+            daDaoIdList: daDaoIdList
         }, null);
     }
 
-    createJpFromSelectedAip(arrNodeId: number, daAipId: number, daDaoId: number): Promise<void> {
+    createJpFromSelectedAip(arrNodeId: number, daAipId: number, daDaoIdList: number[]): Promise<void> {
         return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/connect-jp-from-selected', {
             arrNodeId: arrNodeId,
             daAipId: daAipId,
-            daDaoId: daDaoId
+            daDaoIdList: daDaoIdList
         }, null);
     }
 
-    createJpLinkFromSelectedAip(arrNodeId: number, daAipId: number, daDaoId: number): Promise<void> {
+    createJpLinkFromSelectedAip(arrNodeId: number, daAipId: number, daDaoIdList: number[]): Promise<void> {
         return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/connect-jp-link-from-selected', {
             arrNodeId: arrNodeId,
             daAipId: daAipId,
-            daDaoId: daDaoId
+            daDaoIdList: daDaoIdList
         }, null);
     }
 
-    connectSelectedToJp(arrNodeId: number, daAipId: number, daDaoId: number): Promise<void> {
+    connectSelectedToJp(arrNodeId: number, daAipId: number, daDaoIdList: number[]): Promise<void> {
         return AjaxUtils.ajaxPost(WebApiCls.aipV1 + '/connect-selected-to-jp', {
             arrNodeId: arrNodeId,
             daAipId: daAipId,
-            daDaoId: daDaoId
+            daDaoIdList: daDaoIdList
         }, null);
     }
 
