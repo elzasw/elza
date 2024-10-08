@@ -415,7 +415,7 @@ public class DaService {
 
         DaChange change = createDaChange(null, DaChangeType.AIP_UPDATE);
 
-        stateList.forEach(s -> s.setMetadataLoad(false));
+        stateList.forEach(this::deleteStateMetadata);
         daDaoList.forEach(d -> d.setDeleteChange(change));
         daDaoRelationList.forEach(r -> r.setDeleteChange(change));
         daDaoFileFolderList.forEach(f -> f.setDeleteChange(change));
@@ -443,6 +443,12 @@ public class DaService {
             }
         }
         daLocalCacheRepository.deleteAll(localCacheList);
+    }
+
+    private void deleteStateMetadata(DaAipState s) {
+        s.setMetadataLoad(false);
+        s.setMetadataError(false);
+        s.setMetadataErrorException(null);
     }
 
     @Transactional
