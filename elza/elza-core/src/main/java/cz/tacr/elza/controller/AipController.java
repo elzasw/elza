@@ -146,12 +146,12 @@ public class AipController implements AipsApi {
      * Vytvořit JP s propojením
      * @param arrNodeId ArrNode ID (required)
      * @param daAipId DaAip ID (required)
-     * @param daDaoId DaDao ID (required)
+     * @param daDaoIdList DaDao ID List (required)
      * @return
      */
     @Override
-    public ResponseEntity<Void> aipConnectJpFromSelected(Integer arrNodeId, Integer daAipId, Integer daDaoId) {
-        daService.createJPFromSelected(arrNodeId, daAipId, daDaoId);
+    public ResponseEntity<Void> aipConnectJpFromSelected(Integer arrNodeId, Integer daAipId, List<Integer> daDaoIdList) {
+        daService.createJPFromSelectedList(arrNodeId, daAipId, daDaoIdList);
         return ResponseEntity.ok().build();
     }
 
@@ -159,12 +159,12 @@ public class AipController implements AipsApi {
      * Vytvořit JP z vybraných
      * @param arrNodeId ArrNode ID (required)
      * @param daAipId DaAip ID (required)
-     * @param daDaoId DaDao ID (required)
+     * @param daDaoIdList DaDao ID List (required)
      * @return
      */
     @Override
-    public ResponseEntity<Void> aipConnectJpLinkFromSelected(Integer arrNodeId, Integer daAipId, Integer daDaoId) {
-        daService.createAndLinkFromSelected(arrNodeId, daAipId, daDaoId);
+    public ResponseEntity<Void> aipConnectJpLinkFromSelected(Integer arrNodeId, Integer daAipId, List<Integer> daDaoIdList) {
+        daService.createAndLinkFromSelectedList(arrNodeId, daAipId, daDaoIdList);
         return ResponseEntity.ok().build();
     }
 
@@ -172,11 +172,12 @@ public class AipController implements AipsApi {
      * Připojit k JP - pokud jsem v části balíčku
      * @param arrNodeId ArrNode ID (required)
      * @param daAipId DaAip ID (required)
+     * @param daDaoIdList DaDao ID List (required)
      * @return
      */
     @Override
-    public ResponseEntity<Void> aipConnectPartToJp(Integer arrNodeId, Integer daAipId, Integer daDaoId) {
-        daService.connectPartToJP(arrNodeId, daAipId, daDaoId);
+    public ResponseEntity<Void> aipConnectPartToJp(Integer arrNodeId, Integer daAipId, List<Integer> daDaoIdList) {
+        daService.connectPartListToJP(arrNodeId, daAipId, daDaoIdList);
         return ResponseEntity.ok().build();
     }
 
@@ -185,11 +186,12 @@ public class AipController implements AipsApi {
      * Výběrové připojení s JP
      * @param arrNodeId ArrNode ID (required)
      * @param daAipId DaAip ID (required)
+     * @param daDaoIdList DaDao ID List (required)
      * @return
      */
     @Override
-    public ResponseEntity<Void> aipConnectSelectedToJp(Integer arrNodeId, Integer daAipId, Integer daDaoId) {
-        daService.connectSelectedToJP(arrNodeId, daAipId, daDaoId);
+    public ResponseEntity<Void> aipConnectSelectedToJp(Integer arrNodeId, Integer daAipId, List<Integer> daDaoIdList) {
+        daService.connectSelectedListToJP(arrNodeId, daAipId, daDaoIdList);
         return ResponseEntity.ok().build();
     }
 

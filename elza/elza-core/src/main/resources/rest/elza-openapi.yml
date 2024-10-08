@@ -764,12 +764,14 @@ paths:
           schema:
             type: integer
           explode: false
-        - name: daDaoId
+        - name: daDaoIdList
           in: query
           required: true
-          description: DaDao ID
+          description: DaDao ID List
           schema:
-            type: integer
+            type: array
+            items:
+              type: integer
           explode: false
       responses:
         '200':
@@ -801,12 +803,14 @@ paths:
           schema:
             type: integer
           explode: false
-        - name: daDaoId
+        - name: daDaoIdList
           in: query
           required: true
-          description: DaDao ID
+          description: DaDao ID List
           schema:
-            type: integer
+            type: array
+            items:
+              type: integer
           explode: false
       responses:
         '200':
@@ -838,12 +842,14 @@ paths:
           schema:
             type: integer
           explode: false
-        - name: daDaoId
+        - name: daDaoIdList
           in: query
           required: true
-          description: DaDao ID
+          description: DaDao ID List
           schema:
-            type: integer
+            type: array
+            items:
+              type: integer
           explode: false
       responses:
         '200':
@@ -875,12 +881,14 @@ paths:
           schema:
             type: integer
           explode: false
-        - name: daDaoId
+        - name: daDaoIdList
           in: query
           required: true
-          description: DaDao ID
+          description: DaDao ID List
           schema:
-            type: integer
+            type: array
+            items:
+              type: integer
           explode: false
       responses:
         '200':
@@ -3117,7 +3125,7 @@ components:
           items:
             type: string
           description: Seznam oblastí entit
-      description: Změny archivního souboru    
+      description: Změny archivního souboru
     SyncProgress:
       type: string
       enum:
