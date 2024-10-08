@@ -1,6 +1,5 @@
 package cz.tacr.elza.repository.specification;
 
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
 import java.util.ArrayList;
@@ -28,9 +27,11 @@ import cz.tacr.elza.controller.vo.Area;
 import cz.tacr.elza.controller.vo.ExtensionFilterVO;
 import cz.tacr.elza.controller.vo.RelationFilterVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.SyncStateVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
@@ -38,13 +39,11 @@ import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.specification.search.BitComparator;
@@ -153,6 +152,13 @@ public class ApStateSpecification implements Specification<ApState> {
                 }
             }
 
+            SyncStateVO syncState = searchFilterVO.getSyncState();
+            if (searchFilterVO.getSyncState() != null) {
+            	Join<ApAccessPoint, ApBindingState> bindingJoin = accessPointJoin.join(ApAccessPoint.BINDING_STATE, JoinType.LEFT);
+            	bindingJoin.on(cb.isNull(bindingJoin.get(ApBindingState.DELETE_CHANGE_ID)));
+            	condition = cb.and(condition, cb.equal(bindingJoin.get(ApBindingState.SYNC_STATE), syncState));
+            }
+
             condition = cb.and(condition, process(cb.conjunction(), ctx));
         }
 
@@ -217,21 +223,18 @@ public class ApStateSpecification implements Specification<ApState> {
                         } else {
                             String itemTypeCode = rel.getRelTypeId() != null ? sdp.getItemTypeById(rel.getRelTypeId()).getCode() : null;                                                
                             String itemSpecCode = rel.getRelSpecId() != null ? sdp.getItemSpecById(rel.getRelSpecId()).getCode() : null;
-                            and = processValueCondDef(ctx, and, String.valueOf(rel.getCode()), null, itemTypeCode,
-                                itemSpecCode, QueryComparator.EQ, false);
+                            and = processValueCondDef(ctx, and, String.valueOf(rel.getCode()), null, itemTypeCode, itemSpecCode, QueryComparator.EQ, false);
                         }
                     }
                 }
             }
             if (StringUtils.isNotEmpty(searchFilterVO.getCreation())) {
-                ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
-                String intervalCreation = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
-                and = processValueCondDef(ctx, and, intervalCreation, "PT_CRE", "CRE_DATE", null, QueryComparator.CONTAIN, false);
+            	String dateCreation = searchFilterVO.getCreation();
+                and = processValueCondDef(ctx, and, dateCreation, "PT_CRE", "CRE_DATE", null, QueryComparator.CONTAIN, false);
             }
             if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
-                ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
-                String intervalExtinction = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
-                and = processValueCondDef(ctx, and, intervalExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CONTAIN, false);
+            	String dateExtinction = searchFilterVO.getExtinction();
+                and = processValueCondDef(ctx, and, dateExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CONTAIN, false);
             }
             return cb.and(condition, and);
         }

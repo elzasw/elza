@@ -22,6 +22,7 @@ import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ApBindingState implements AccessPointCacheSerializable {
 
+	public static final String SYNC_STATE = "syncOk";
     public static final String ACCESS_POINT_ID = "accessPointId";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
 
