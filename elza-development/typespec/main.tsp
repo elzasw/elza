@@ -52,7 +52,7 @@ model LoggedUsers {
 model Fund {
     /** Identifikátor */
     id: integer;
-    /** UUID - identifikátor AS */ 
+    /** UUID - identifikátor AS */
     uuid: string;
     /** Název */
     name: string;
@@ -76,7 +76,7 @@ model Fund {
 model FundDetail {
     /** Identifikátor */
     id: integer;
-    /** UUID - identifikátor AS */ 
+    /** UUID - identifikátor AS */
     uuid: string;
     /** Název */
     name: string;
@@ -98,7 +98,7 @@ model FundDetail {
 
 /**
  * Zakládaný archivní souboru
- */ 
+ */
 model CreateFund {
     /** Název */
     name: string;
@@ -126,7 +126,7 @@ model CreateFund {
 
 /**
  * Data k importu
- */ 
+ */
 model ImportFundData {
     /** Import type. Only 'CSV' is supported */
     importType: string;
@@ -1252,7 +1252,7 @@ namespace ElzaAPI.fund {
     @get op findFunds(
         /** vyhledávaný výraz */
         @query fulltext?: string;
-        /** identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu) */ 
+        /** identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu) */
         @query institutionIdentifier?: string;
         /** maximální počet výsledků na stránku */
         @query max?: integer = 200;
@@ -1379,7 +1379,7 @@ namespace ElzaAPI.DescItem {
     @put op updateDescItem(
         /** id AP version */
         @path fundVersionId: integer,
-        /** create a new version or not? */ 
+        /** create a new version or not? */
         @path createNewVersion: boolean,
         /** new attribute value */
         @body body: NodeItem
@@ -1823,8 +1823,8 @@ namespace ElzaAPI.Aip {
          @query arrNodeId: integer;
          /** DaAip ID */
          @query daAipId: integer;
-         /** DaDao ID */
-         @query daDaoId: integer;
+         /** DaDao ID List */
+        @query({format: "multi"}) daDaoIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -1843,8 +1843,8 @@ namespace ElzaAPI.Aip {
          @query arrNodeId: integer;
          /** DaAip ID */
          @query daAipId: integer;
-         /** DaDao ID */
-         @query daDaoId: integer;
+         /** DaDao ID List */
+        @query({format: "multi"}) daDaoIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -1863,8 +1863,8 @@ namespace ElzaAPI.Aip {
          @query arrNodeId: integer;
          /** DaAip ID */
          @query daAipId: integer;
-         /** DaDao ID */
-         @query daDaoId: integer;
+         /** DaDao ID List */
+        @query({format: "multi"}) daDaoIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -1883,8 +1883,8 @@ namespace ElzaAPI.Aip {
          @query arrNodeId: integer;
          /** DaAip ID */
          @query daAipId: integer;
-         /** DaDao ID */
-         @query daDaoId: integer;
+         /** DaDao ID List */
+        @query({format: "multi"}) daDaoIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;

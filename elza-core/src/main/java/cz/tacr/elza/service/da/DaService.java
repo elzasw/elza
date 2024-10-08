@@ -1126,10 +1126,17 @@ public class DaService {
     }
 
     @Transactional
-    public void connectPartToJP(Integer nodeId, Integer daAipId, Integer daDaoId) {
+    public void connectPartListToJP(Integer nodeId, Integer daAipId, List<Integer> daDaoIdList) {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
         DaAip daAip = findAipById(daAipId);
-        DaDao daDao = findDaoById(daDaoId);
+        for (Integer daDaoId : daDaoIdList) {
+            DaDao daDao = findDaoById(daDaoId);
+            connectPartToJP(arrNode, daAip, daDao);
+        }
+    }
+
+    @Transactional
+    public void connectPartToJP(ArrNode arrNode,  DaAip daAip, DaDao daDao) {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
         ArrDaoLink arrDaoLink = new ArrDaoLink();
         arrDaoLink.setAip(daAip);
@@ -1141,10 +1148,18 @@ public class DaService {
     }
 
     @Transactional
-    public void createJPFromSelected(Integer nodeId, Integer daAipId, Integer daDaoId) {
+    public void createJPFromSelectedList(Integer nodeId, Integer daAipId, List<Integer> daDaoIdList) {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
         DaAip daAip = findAipById(daAipId);
-        DaDao daDao = findDaoById(daDaoId);
+        for (Integer daDaoId : daDaoIdList) {
+            DaDao daDao = findDaoById(daDaoId);
+            createJPFromSelected(arrNode, daAip, daDao);
+        }
+    }
+
+    @Transactional
+    public void createJPFromSelected(ArrNode arrNode, DaAip daAip, DaDao daDao) {
+
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
         ArrNode newNode = arrangementService.createNode(arrNode.getFund(), generateUuid(), change);
         ArrLevel arrLevel = new ArrLevel();
@@ -1164,17 +1179,24 @@ public class DaService {
         eventNotificationService.publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, fundVersion,
                 parentLevel, arrLevel));
         if (daDao != null) {
-            connectPartToJP(newNode.getNodeId(), daAip.getAipId(), daDao.getDaoId());
+            connectPartToJP(newNode, daAip, daDao);
         } else {
             connectToJP(newNode.getNodeId(), daAip.getAipId());
         }
     }
 
     @Transactional
-    public void connectSelectedToJP(Integer nodeId, Integer daAipId, Integer daDaoId) {
+    public void connectSelectedListToJP(Integer nodeId, Integer daAipId, List<Integer> daDaoIdList) {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
         DaAip daAip = findAipById(daAipId);
-        DaDao daDao = findDaoById(daDaoId);
+        for (Integer daDaoId : daDaoIdList) {
+            DaDao daDao = findDaoById(daDaoId);
+            connectSelectedToJP(arrNode, daAip, daDao);
+        }
+    }
+
+    @Transactional
+    public void connectSelectedToJP(ArrNode arrNode, DaAip daAip, DaDao daDao) {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
         ArrDaoLink arrDaoLink = new ArrDaoLink();
         arrDaoLink.setAip(daAip);
@@ -1186,10 +1208,17 @@ public class DaService {
     }
 
     @Transactional
-    public void createAndLinkFromSelected(Integer nodeId, Integer daAipId, Integer daDaoId) {
+    public void createAndLinkFromSelectedList(Integer nodeId, Integer daAipId, List<Integer> daDaoIdList) {
         ArrNode arrNode = nodeRepository.getOneCheckExist(nodeId);
         DaAip daAip = findAipById(daAipId);
-        DaDao daDao = findDaoById(daDaoId);
+        for (Integer daDaoId : daDaoIdList) {
+            DaDao daDao = findDaoById(daDaoId);
+            createAndLinkFromSelected(arrNode, daAip, daDao);
+        }
+    }
+
+    @Transactional
+    public void createAndLinkFromSelected(ArrNode arrNode, DaAip daAip, DaDao daDao) {
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.CREATE_DAO_LINK, arrNode);
         ArrNode newNode = arrangementService.createNode(arrNode.getFund(), generateUuid(), change);
         ArrLevel arrLevel = new ArrLevel();
