@@ -929,7 +929,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/UsedItemType'
-                x-typespec-name: UsedItemType[]
   /fund/{id}:
     get:
       tags:
@@ -991,7 +990,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: fund ID. Might be ID or fund UUID
+          description: Fund ID. Might be ID or fund UUID
           schema:
             type: string
       responses:
@@ -1002,7 +1001,7 @@ paths:
         '406':
           description: Client error
       requestBody:
-        description: doplnění způsobu importu
+        description: Doplnění způsobu importu
         required: true
         content:
           multipart/form-data:
@@ -1018,7 +1017,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: identifikátor AS
+          description: Identifikátor AS
           schema:
             type: integer
       responses:
@@ -1031,7 +1030,7 @@ paths:
                 items:
                   type: integer
       requestBody:
-        description: seznam id hodnot strukturovaného datového typu
+        description: Seznam id hodnot strukturovaného datového typu
         required: true
         content:
           application/json:
@@ -1321,13 +1320,13 @@ components:
     DataBit:
       type: object
       required:
-        #- type
+        #- dataType
         - bitValue
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
-        #    - dataBit
+        #    - BIT
         bitValue:
           type: boolean
       allOf:
@@ -1336,13 +1335,13 @@ components:
     DataCoordinates:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
-        #    - dataCoordinates
+        #    - COORDINATES
         value:
           type: string
       allOf:
@@ -1350,10 +1349,10 @@ components:
     DataDate:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataDate
@@ -1365,10 +1364,10 @@ components:
     DataDecimal:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataDecimal
@@ -1380,10 +1379,10 @@ components:
     DataFileRef:
       type: object
       required:
-        #- type
+        #- dataType
         - fileId
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataFileRef
@@ -1394,10 +1393,10 @@ components:
     DataFormattedText:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - DataFormattedText
@@ -1408,10 +1407,10 @@ components:
     DataInteger:
       type: object
       required:
-        #- type
+        #- dataType
         - integerValue
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataInteger
@@ -1422,10 +1421,10 @@ components:
     DataJsonTable:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataJsonTable
@@ -1436,9 +1435,9 @@ components:
     DataNull:
       type: object
       #required:
-        #- type
+        #- dataType
       #properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataNull
@@ -1447,10 +1446,10 @@ components:
     DataRecordRef:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataRecordRef
@@ -1461,10 +1460,10 @@ components:
     DataString:
       type: object
       required:
-        #- type
+        #- dataType
         - stringValue
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataString
@@ -1475,10 +1474,10 @@ components:
     DataStructureRef:
       type: object
       required:
-        #- type
+        #- dataType
         - structuredObjectId
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataStructureRef
@@ -1489,10 +1488,10 @@ components:
     DataText:
       type: object
       required:
-        #- type
+        #- dataType
         - textValue
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - DataText
@@ -1503,10 +1502,10 @@ components:
     DataUnitdate:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataUnitdate
@@ -1517,10 +1516,10 @@ components:
     DataUnitid:
       type: object
       required:
-        #- type
+        #- dataType
         - unitId
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataUnitid
@@ -1531,10 +1530,10 @@ components:
     DataUriRef:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataUriRef
@@ -1825,28 +1824,28 @@ components:
         dataTypeId:
           type: integer
           description: data type id
-        type:
+        dataType:
           type: string
           description: Discriminator property for ItemData.
       discriminator:
-        propertyName: type
+        propertyName: dataType
         mapping:
-          DataBit: '#/components/schemas/DataBit'
-          DataCoordinates: '#/components/schemas/DataCoordinates'
-          DataDate: '#/components/schemas/DataDate'
-          DataDecimal: '#/components/schemas/DataDecimal'
-          DataFileRef: '#/components/schemas/DataFileRef'
-          DataInteger: '#/components/schemas/DataInteger'
-          DataJsonTable: '#/components/schemas/DataJsonTable'
-          DataNull: '#/components/schemas/DataNull'
-          DataRecordRef: '#/components/schemas/DataRecordRef'
-          DataString: '#/components/schemas/DataString'
-          DataStructureRef: '#/components/schemas/DataStructureRef'
-          DataText: '#/components/schemas/DataText'
-          DataFormattedText: '#/components/schemas/DataFormattedText'
-          DataUnitdate: '#/components/schemas/DataUnitdate'
-          DataUnitid: '#/components/schemas/DataUnitid'
-          DataUriRef: '#/components/schemas/DataUriRef'
+          BIT: '#/components/schemas/DataBit'
+          COORDINATES: '#/components/schemas/DataCoordinates'
+          DATE: '#/components/schemas/DataDate'
+          DECIMAL: '#/components/schemas/DataDecimal'
+          FILE_REF: '#/components/schemas/DataFileRef'
+          INT: '#/components/schemas/DataInteger'
+          JSON_TABLE: '#/components/schemas/DataJsonTable'
+          DATA_NULL: '#/components/schemas/DataNull'
+          RECORD_REF: '#/components/schemas/DataRecordRef'
+          STRING: '#/components/schemas/DataString'
+          STRUCTURED: '#/components/schemas/DataStructureRef'
+          TEXT: '#/components/schemas/DataText'
+          FORMATTED_TEXT: '#/components/schemas/DataFormattedText'
+          UNITDATE: '#/components/schemas/DataUnitdate'
+          UNITID: '#/components/schemas/DataUnitid'
+          URI_REF: '#/components/schemas/DataUriRef'
       description: Item data
     ItemDataResult:
       type: object
