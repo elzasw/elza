@@ -14,6 +14,9 @@ import {ExplorerMode} from "./explorer/ExplorerContext.tsx";
 import * as aipActions from "../../actions/aip/aip.ts";
 import {DaDaoTypeCaption} from "../../api/DaDaoType.ts";
 import {DaDaoType, DaoLink} from "elza-api";
+import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../CrossTabHelper.tsx";
+import {WebApi} from "../../actions";
+import {DaoViewRequestInfoVO} from "../../api/DaoViewRequestInfoVO.ts";
 
 type DaoLinkDetailProps = {
     nodeId: number;
@@ -67,6 +70,28 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
         }
     }
 
+    const handleOpenComponent = (daoId: number) => {
+        const thisLayout = getThisLayout();
+
+        WebApi.getDaoViewRequestInfo(daoId).then((result: DaoViewRequestInfoVO) => {
+                if (thisLayout) {
+                    CrossTabHelper.sendEvent(
+                        thisLayout, {
+                            type: CrossTabEventType.DISPLAY_COMPONENT,
+                            data: {
+                                viewUrl: result.viewUrl,
+                                request: {
+                                    type: "ViewRequest",
+                                    daoId: result.daoId,
+                                    entityRef: result.entityRef
+                                }
+                            }}
+                    );
+                }
+            }
+        )
+    }
+
     if(daoLinks.isFetching || !daoLinks.data?.data.items || daoLinks.data.data.items.length === 0) {
         return (
             <div>
@@ -83,7 +108,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
                 {item.name}
             </Button>
             {item.children && " komponenty: " + item.children.length}
-            {item.daoType === DaDaoType.File && <Button key="detail" variant="action">
+            {item.daoType === DaDaoType.File && <Button key="detail" variant="action" onClick={() => handleOpenComponent(item.daoId)}>
                 <Icon glyph="fa-eye"/>
             </Button>}
             <Button key="deleteLink" variant="action" onClick={() => handleDeleteLink(item.daoLinkId)}>
