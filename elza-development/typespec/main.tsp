@@ -445,6 +445,8 @@ model ItemData {
     dataId?: integer;
     /** data type id */
     dataTypeId?: integer;
+    /** data type */
+    dataType?: DataType;
 }
 
 /**

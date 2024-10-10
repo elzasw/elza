@@ -1499,6 +1499,27 @@ components:
           type: string
       allOf:
         - $ref: '#/components/schemas/ItemData'
+    DataType:
+      type: string
+      enum:
+        - INT
+        - STRING
+        - TEXT
+        - UNITDATE
+        - UNITID
+        - FORMATTED_TEXT
+        - COORDINATES
+        - RECORD_REF
+        - DECIMAL
+        - STRUCTURED
+        - ENUM
+        - FILE_REF
+        - JSON_TABLE
+        - DATE
+        - URI_REF
+        - BIT
+        - DATA_NULL
+      description: Data types for ItemData classes
     DataUnitdate:
       type: object
       required:
@@ -1825,8 +1846,9 @@ components:
           type: integer
           description: data type id
         dataType:
-          type: string
-          description: Discriminator property for ItemData.
+          allOf:
+            - $ref: '#/components/schemas/DataType'
+          description: data type
       discriminator:
         propertyName: dataType
         mapping:
