@@ -489,6 +489,27 @@ paths:
           description: Změna scénáře provedena
         404:
           description: Dao neexistuje
+  /daos/component/{id}:
+    get:
+      summary: Získání informací o da dao pro view request na digital repository
+      operationId: getDaoViewRequestInfo
+      tags:
+        - daos
+      parameters:
+        - name: id
+          description: Identifikátor dao
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: Změna scénáře provedena
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DaoViewRequestVO"
   /search-ap:
     post:
       tags:
@@ -3442,3 +3463,16 @@ components:
         - METADMDINHERENT
         - METADMDCONTEXTUAL
       description: DaDao type
+    DaoViewRequestVO:
+      type: object
+      properties:
+        daoId:
+          type: string
+        entityRef:
+          type: string
+        viewUrl:
+          type: string
+      required:
+        - daoId
+        - entityRef
+        - viewUrl

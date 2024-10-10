@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.DaoViewRequestVO;
 import cz.tacr.elza.controller.vo.ExplorerTreeNode;
 import cz.tacr.elza.controller.vo.ExplorerTreeNodeFile;
 import cz.tacr.elza.controller.vo.LinkedNode;
@@ -134,6 +135,9 @@ public class DaoService {
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
+
+    @Autowired
+    private DigitalRepositoryRepository digitalRepositoryRepository;
 
     /**
      * Poskytuje seznam digitálních entit (DAO), které jsou napojené na konkrétní jednotku popisu (JP) nebo nemá žádné napojení (pouze pod archivní souborem (AS)).
@@ -933,4 +937,21 @@ public class DaoService {
         return daDaoRepository.findByAipIdsAndTypeAndDeleteChangeIsNullAndLevelViewIdIsNotNull(aipIds, type);
     }
 
+    public DaoViewRequestVO getDaoViewRequestInfo(Integer id) {
+        DaDao dao = daDaoRepository.findById(id).orElse(null);
+        if(dao == null) {
+            throw new BusinessException("Nepodařilo se najít DaDao s id: " + id, ArrangementCode.INVALID_DAO);
+        }
+        DaoViewRequestVO request = new DaoViewRequestVO();
+        if(dao.getAip() == null) {
+            throw new BusinessException("Pro DaDao s id " + id + " neexistuje AIP", ArrangementCode.INVALID_DAO);
+        }
+        request.setDaoId(dao.getAip().getCode());
+        request.setEntityRef(dao.getCode());
+        if(dao.getAip().getDigitalRepository() == null) {
+            throw new BusinessException("Pro AIP s id " + dao.getAip().getAipId() + " neexistuje digital repository", ArrangementCode.INVALID_DAO);
+        }
+        request.setViewUrl(dao.getAip().getDigitalRepository().getViewFileUrl());
+        return request;
+    }
 }

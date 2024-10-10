@@ -124,7 +124,11 @@ export class WebApiCls {
     }
 
     getDaDaoListByAipId(id) {
-        return AjaxUtils.ajaxGet(WebApiCls.v1 + "/dao/" + id);
+        return AjaxUtils.ajaxGet(WebApiCls.v1 + "/dao/aip/" + id);
+    }
+
+    getDaoViewRequestInfo(id) {
+        return AjaxUtils.ajaxGet(WebApiCls.v1 + "/daos/component/" + id);
     }
 
     syncDaoLink(fundVersionId, nodeId) {
