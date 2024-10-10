@@ -718,7 +718,6 @@ public class ClientFactoryVO {
         		throw new NotImplementedException(item.getItemType().getDataTypeId().toString());
         }
 
-        data.setDataType(data.getClass().getSimpleName());
         data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         nodeItem.setData(data);
