@@ -1,7 +1,7 @@
 import { DaAipDetailVO } from "api/DaAipDetailVO";
 import DetailRow from "./DetailRow";
 import {formatAipSize, formatDate, getBoolIcon, getConnectedToJP} from "./utils";
-import {Api} from "../../api";
+import {Api, serverContextPath} from "../../api";
 import {useThunkDispatch} from "../../utils/hooks";
 import {aipFetchIfNeeded} from "../../actions/aip/aip.ts";
 
@@ -28,12 +28,12 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 <DetailRow label="Verze" value={detail.aipVersion}/>}
             {detail.fund &&
                 <DetailRow label="Archivní soubor" value={
-                    <a href={`/fund/${detail.fund.id}`}>{detail.fund.name}</a>
+                    <a href={`${serverContextPath}/fund/${detail.fund.id}`}>{detail.fund.name}</a>
                 }/>
             }
             {detail.institution &&
                 <DetailRow label="Instituce" value={
-                    <a href={`/entity/${detail.institution.id}`}>{detail.institution.name}</a>
+                    <a href={`${serverContextPath}/entity/${detail.institution.id}`}>{detail.institution.name}</a>
                 }/>
             }
             {detail.institutionCode &&
@@ -44,7 +44,7 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                 }/>}
             {detail.originatorInstitution &&
                 <DetailRow label="Původce" value={
-                    <a href={`/entity/${detail.originatorInstitution.id}`}>{detail.originatorInstitution.name}</a>
+                    <a href={`${serverContextPath}/entity/${detail.originatorInstitution.id}`}>{detail.originatorInstitution.name}</a>
                 }/>
             }
             {detail.originator && !detail.originatorInstitution &&
