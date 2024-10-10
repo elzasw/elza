@@ -835,4 +835,9 @@
         <renameColumn tableName="da_aip_state" oldColumnName="comlete_aip_load" newColumnName="complete_aip_load"/>
     </changeSet>
 
+    <changeSet id="20241010215500" author="fantis">
+        <dropNotNullConstraint tableName="arr_dao_link" columnName="aip_id"/>
+        <dropNotNullConstraint tableName="arr_dao_link" columnName="link_type"/>
+    </changeSet>
+
 </databaseChangeLog>
