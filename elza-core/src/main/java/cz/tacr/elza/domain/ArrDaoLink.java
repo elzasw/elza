@@ -71,7 +71,7 @@ public class ArrDaoLink {
     private String scenario;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaAip.class)
-    @JoinColumn(name = "aip_id", nullable = false)
+    @JoinColumn(name = "aip_id")
     private DaAip aip;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = DaDao.class)
@@ -79,7 +79,7 @@ public class ArrDaoLink {
     private DaDao daDao;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "link_type", length = StringLength.LENGTH_ENUM, nullable = false)
+    @Column(name = "link_type", length = StringLength.LENGTH_ENUM)
     private LinkType linkType;
 
     public enum LinkType {
