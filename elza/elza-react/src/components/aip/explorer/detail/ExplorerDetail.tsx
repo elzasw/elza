@@ -15,6 +15,9 @@ import {fetchAipStructureIfNeeded} from "../../../../actions/aip/exp.ts";
 import {downloadFile} from "../../../../actions/global/download";
 import {AipsApiAxiosParamCreator} from "elza-api";
 import { AREA_AIP_STRUCTURE } from "actions/aip/exp.ts";
+import CrossTabHelper, { CrossTabEventType, getThisLayout } from "../../../CrossTabHelper";
+import {WebApi} from 'actions/WebApi';
+import { DaoViewRequestInfoVO } from "api/DaoViewRequestInfoVO.ts";
 
 const ExplorerDetail: FC = () => {
     const {selectedItem, setSelectedItem} = useExplorerContext();
@@ -120,6 +123,28 @@ const ExplorerDetail: FC = () => {
         });
     }
 
+    const handleOpenComponent = () => {
+        const thisLayout = getThisLayout();
+        
+        WebApi.getDaoViewRequestInfo(selectedItem.daoId).then((result: DaoViewRequestInfoVO) => {
+            if (thisLayout) {
+                CrossTabHelper.sendEvent(
+                    thisLayout, {
+                        type: CrossTabEventType.DISPLAY_COMPONENT,
+                        data: {
+                            viewUrl: result.viewUrl,
+                            request: {
+                                type: "ViewRequest",
+                                daoId: result.daoId,
+                                entityRef: result.entityRef
+                            }
+                        }}
+                    );
+                }
+            }
+        )
+    }
+
     const renderFileData = () => {
         return (
             <div className="explorer-detail-body">
@@ -148,16 +173,17 @@ const ExplorerDetail: FC = () => {
     return (
         <div className="explorer-detail">
             <div className="buttons">
+            {node.daoFileId && aip.data.completeAipLoad && <>
                 <Button
                     as="a"
                     className="open-btn"
-                    onClick={() => {}}
+                    onClick={handleOpenComponent}
                     size="small"
                     shape="square"
                 >
                     <span>Zobrazit</span>
                 </Button>
-                {node.daoFileId && aip.data.completeAipLoad && <Button
+                <Button
                     as="a"
                     className="open-btn"
                     onClick={() => handleDownloadComponent(node.daoFileId)}
@@ -165,7 +191,8 @@ const ExplorerDetail: FC = () => {
                     shape="square"
                 >
                     <span>Stáhnout</span>
-                </Button>}
+                </Button>
+            </>}
             </div>
 
             <h4>{i18n("aip.explorer.detail.title")}</h4>

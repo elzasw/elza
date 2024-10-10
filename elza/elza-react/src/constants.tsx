@@ -186,6 +186,7 @@ export const URL_ADMIN_GROUP = `${URL_ADMIN}/group`;
 export const URL_ADMIN_FUND = `${URL_ADMIN}/fund`;
 
 export const URL_AIP = '/aip';
+export const URL_COMPONENT = '/component';
 
 export const getFundVersion = (fund: Fund) => {
     if(!fund?.activeVersion){
@@ -286,4 +287,8 @@ export const urlEntityRevision = (entityId?: number | string) => {
 
 export const urlAip = (aipId?: number): string => {
     return aipId ? `${URL_AIP}/${aipId}` : URL_AIP;
+}
+
+export const urlComponent = () => {
+    return URL_COMPONENT;
 }

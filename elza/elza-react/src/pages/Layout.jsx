@@ -54,7 +54,8 @@ import {
     URL_ENTITY_CREATE,
     URL_FUND,
     URL_NODE,
-    URL_AIP
+    URL_AIP,
+    URL_COMPONENT
 } from '../constants.tsx';
 import AdminBulkActionPage from './admin/AdminBulkActionPage';
 import AppRouter from './AppRouter';
@@ -62,6 +63,7 @@ import './Layout.scss';
 import defaultKeymap from './LayoutKeymap.jsx';
 import { MAP_URL } from './map/MapPage';
 import { WebsocketProvider } from 'components/shared/web-socket/WebsocketProvider';
+import ComponentPage from './component/ComponentPage.tsx';
 // import FundOpenPage from './fund_open/FundOpenPage';
 
 let _gameRunner = null;
@@ -102,6 +104,7 @@ class Layout extends AbstractReactComponent {
         canStartGame: false,
         polygon: undefined,
         selectedLayer: undefined,
+        componentViewRequest: undefined,
     };
 
     componentDidMount() {
@@ -118,8 +121,13 @@ class Layout extends AbstractReactComponent {
     }
 
     processCrossTabEvent = (event) => {
-        if (event.type === CrossTabEventType.SHOW_IN_MAP) {
-            this.setState({polygon: event.data});
+        switch(event.type) {
+            case CrossTabEventType.SHOW_IN_MAP:
+                this.setState({polygon: event.data});
+                break;
+            case CrossTabEventType.DISPLAY_COMPONENT:
+                this.setState({componentViewRequest: event.data});
+                break;
         }
     };
 
@@ -171,7 +179,7 @@ class Layout extends AbstractReactComponent {
     }
 
     render() {
-        const {canStartGame, polygon, showGame, selectedLayer} = this.state;
+        const {canStartGame, polygon, showGame, selectedLayer, componentViewRequest} = this.state;
 
         if (showGame) {
             return (
@@ -248,6 +256,8 @@ class Layout extends AbstractReactComponent {
 
                                 <Route path={URL_AIP + "/:id"} component={AipPage} />
                                 <Route path={URL_AIP} component={AipPage} />
+
+                                <Route path={URL_COMPONENT} component={(props) => <ComponentPage componentViewRequest={componentViewRequest} {...props}/>} />
 
                                 <Route path={MAP_URL} component={(props) => <MapPage handleChangeSelectedLayer={this.handleChangeSelectedLayer} polygon={polygon} selectedLayer={selectedLayer} {...props} />} />
                                 <Route path="/admin">

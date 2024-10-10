@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller;
 
-import cz.tacr.elza.controller.vo.DaDaoFileFolderVO;
+import cz.tacr.elza.controller.vo.DaoViewRequestVO;
 import cz.tacr.elza.controller.vo.ExplorerTreeNode;
 import cz.tacr.elza.service.DaoService;
 import jakarta.transaction.Transactional;
@@ -35,8 +35,13 @@ public class DaoController implements DaosApi {
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value="/dao/{aipId}" )
+    @RequestMapping(method = RequestMethod.GET, value="/dao/aip/{aipId}" )
     public ExplorerTreeNode findByAipIdAndTypeAndDeleteChangeIsNull(@PathVariable(value = "aipId") final Integer aipId) {
         return daoService.findByAipIdAndTypeAndDeleteChangeIsNull(aipId);
+    }
+
+    @Override
+    public ResponseEntity<DaoViewRequestVO> getDaoViewRequestInfo(@ApiParam(value = "Identifikátor dao", required = true) @PathVariable("id") Integer id) {
+        return new ResponseEntity<>(daoService.getDaoViewRequestInfo(id), HttpStatus.OK);
     }
 }
