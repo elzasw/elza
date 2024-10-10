@@ -8,6 +8,7 @@ import AipDetailBody from "components/aip/AipDetailBody";
 import { Button } from "components/ui";
 import { Icon, i18n } from "components/shared";
 import { TreeItemValue } from "@fluentui/react-components";
+import {serverContextPath} from "../../../../api";
 
 type NodeDetailProps = {
     tree: any;
@@ -47,7 +48,7 @@ const NodeDetail: FC<NodeDetailProps> = ({tree, selectedNode, setSelectedAips}: 
                 <b>{i18n("aip.detail.assignment.packages")} </b>{node.value?.map((aipId, index) => (
                     <>
                         {index > 0 && ", "}
-                        <a href={`/aip/${aipId}`}>
+                        <a href={`${serverContextPath}/aip/${aipId}`}>
                             {aipId}
                         </a>
                     </>
@@ -62,7 +63,7 @@ const NodeDetail: FC<NodeDetailProps> = ({tree, selectedNode, setSelectedAips}: 
        <div className="py-2">
            {renderHeader()}
             <h4><b>{i18n("aip.detail.assignment.relatedAip")}</b>
-            {aip.data && <Button as="a" href={`/aip/${aip.data.aipId}`}>
+            {aip.data && <Button as="a" href={`${serverContextPath}/aip/${aip.data.aipId}`}>
                 <Icon glyph="fa-sign-in" />
             </Button>}
             </h4>

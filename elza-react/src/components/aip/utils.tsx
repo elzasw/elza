@@ -4,6 +4,7 @@ import { LinkType } from 'elza-api';
 import {Aips} from 'typings/store';
 import {LinkedNodeVO} from "../../api/LinkedNodeVO.ts";
 import {Button} from "react-bootstrap";
+import {serverContextPath} from "../../api";
 
 export const getAipRows = (aips: Aips) => {
     if(aips.fetched && aips.rows){
@@ -47,7 +48,7 @@ export const getConnectedToJP = (linkedNodes: Array<LinkedNodeVO> | null, fundId
 
         nodes = linkedNodes.map(item =>
             <div key={item.id}>
-                <a href={`/fund/${fundId}/node/${item.nodeId}`}>{item.name}</a>
+                <a href={`${serverContextPath}/fund/${fundId}/node/${item.nodeId}`}>{item.name}</a>
                 <Button key="deleteLink" variant="action" onClick={() => handleDeleteLink(item.id)}>
                     <Icon glyph="fa fa-close" />
                 </Button>
