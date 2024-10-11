@@ -186,11 +186,11 @@ import cz.tacr.elza.test.controller.vo.DataBit;
 import cz.tacr.elza.test.controller.vo.DataCoordinates;
 import cz.tacr.elza.test.controller.vo.DataDate;
 import cz.tacr.elza.test.controller.vo.DataDecimal;
+import cz.tacr.elza.test.controller.vo.DataEnum;
 import cz.tacr.elza.test.controller.vo.DataFileRef;
 import cz.tacr.elza.test.controller.vo.DataFormattedText;
 import cz.tacr.elza.test.controller.vo.DataInteger;
 import cz.tacr.elza.test.controller.vo.DataJsonTable;
-import cz.tacr.elza.test.controller.vo.DataNull;
 import cz.tacr.elza.test.controller.vo.DataRecordRef;
 import cz.tacr.elza.test.controller.vo.DataString;
 import cz.tacr.elza.test.controller.vo.DataStructureRef;
@@ -1461,15 +1461,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 */
 	protected NodeItem buildDescItem(final RulDescItemTypeExtVO type,
 			                         final ArrNodeVO node,
-									 final Object value, 
+									 final ItemData itemData, 
 									 final Integer itemSpecId, 
 									 final Boolean undefined) {
 		Validate.notNull(type, "Musí být vyplněn typ atributu");
 		Validate.notNull(type.getDataTypeId(), "Musí být vyplněn kód typu atributu");
 		Validate.notNull(node, "Musí být vyplněn atributový uzel");
-
-		ItemData data = getItemDataByDataTypeId(type.getDataTypeId(), value);
-		data.setDataTypeId(type.getDataTypeId());
 
 		NodeItem nodeItem = new NodeItem();
 		nodeItem.setItemTypeId(type.getId());
@@ -1477,7 +1474,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		nodeItem.setNodeId(node.getId());
 		nodeItem.setNodeVersion(node.getVersion());
 		nodeItem.setUndefined(undefined);
-		nodeItem.setData(data);
+		nodeItem.setData(itemData);
 
 		return nodeItem;
 	}
@@ -1537,7 +1534,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	        	((DataStructureRef) data).setStructuredObjectId(((ArrStructureDataVO) value).getId());
 	        	break;
 	        case ENUM:
-	        	data = new DataNull();
+	        	data = new DataEnum();
 	        	break;
 	        case FILE_REF:
 	        	data = new DataFileRef();
