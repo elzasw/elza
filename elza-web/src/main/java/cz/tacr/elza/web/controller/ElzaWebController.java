@@ -220,4 +220,10 @@ public class ElzaWebController {
         initDefaults(request, model);
         return "web";
     }
+
+    @RequestMapping(value = "/component", method = RequestMethod.GET)
+    public String componentPage(final HttpServletRequest request, final Model model) {
+        initDefaults(request, model);
+        return "web";
+    }
 }
