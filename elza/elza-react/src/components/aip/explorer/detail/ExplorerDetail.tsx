@@ -125,7 +125,7 @@ const ExplorerDetail: FC = () => {
 
     const handleOpenComponent = () => {
         const thisLayout = getThisLayout();
-        
+
         WebApi.getDaoViewRequestInfo(selectedItem.daoId).then((result: DaoViewRequestInfoVO) => {
             if (thisLayout) {
                 CrossTabHelper.sendEvent(
@@ -173,8 +173,7 @@ const ExplorerDetail: FC = () => {
     return (
         <div className="explorer-detail">
             <div className="buttons">
-            {node.daoFileId && aip.data.completeAipLoad && <>
-                <Button
+                {node.daoFileId && aip.data.metadataLoad && <Button
                     as="a"
                     className="open-btn"
                     onClick={handleOpenComponent}
@@ -182,8 +181,8 @@ const ExplorerDetail: FC = () => {
                     shape="square"
                 >
                     <span>Zobrazit</span>
-                </Button>
-                <Button
+                </Button>}
+                {node.daoFileId && aip.data.completeAipLoad && <Button
                     as="a"
                     className="open-btn"
                     onClick={() => handleDownloadComponent(node.daoFileId)}
@@ -191,8 +190,7 @@ const ExplorerDetail: FC = () => {
                     shape="square"
                 >
                     <span>Stáhnout</span>
-                </Button>
-            </>}
+                </Button>}
             </div>
 
             <h4>{i18n("aip.explorer.detail.title")}</h4>
