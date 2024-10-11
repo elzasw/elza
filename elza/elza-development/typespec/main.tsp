@@ -347,8 +347,7 @@ enum DataType {
     JSON_TABLE,
     DATE,
     URI_REF,
-    BIT,
-    DATA_NULL
+    BIT
 }
 
 /**
@@ -389,8 +388,8 @@ model DataJsonTable extends ItemData {
     value: string;
 }
 
-model DataNull extends ItemData {
-    dataType: DataType.DATA_NULL;
+model DataEnum extends ItemData {
+    dataType: DataType.ENUM;
 }
 
 model DataRecordRef extends ItemData {
@@ -443,10 +442,8 @@ model DataUriRef extends ItemData {
 model ItemData {
     /** data id */
     dataId?: integer;
-    /** data type id */
-    dataTypeId?: integer;
     /** data type */
-    dataType?: DataType;
+    dataType: DataType;
 }
 
 /**

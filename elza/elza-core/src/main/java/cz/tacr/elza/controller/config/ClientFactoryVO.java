@@ -2,8 +2,6 @@ package cz.tacr.elza.controller.config;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -71,11 +69,11 @@ import cz.tacr.elza.controller.vo.DataBit;
 import cz.tacr.elza.controller.vo.DataCoordinates;
 import cz.tacr.elza.controller.vo.DataDate;
 import cz.tacr.elza.controller.vo.DataDecimal;
+import cz.tacr.elza.controller.vo.DataEnum;
 import cz.tacr.elza.controller.vo.DataFileRef;
 import cz.tacr.elza.controller.vo.DataFormattedText;
 import cz.tacr.elza.controller.vo.DataInteger;
 import cz.tacr.elza.controller.vo.DataJsonTable;
-import cz.tacr.elza.controller.vo.DataNull;
 import cz.tacr.elza.controller.vo.DataRecordRef;
 import cz.tacr.elza.controller.vo.DataString;
 import cz.tacr.elza.controller.vo.DataStructureRef;
@@ -358,7 +356,6 @@ public class ClientFactoryVO {
      */
     private static ItemData convertInt(ArrData arrData) {
     	DataInteger data = new DataInteger(((ArrDataInteger) arrData).getIntegerValue(), DataType.INT);
-        data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -371,7 +368,6 @@ public class ClientFactoryVO {
      */
     private static ItemData convertString(ArrData arrData) {
     	DataString data = new DataString(((ArrDataString) arrData).getStringValue(), DataType.STRING);
-        data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -384,7 +380,6 @@ public class ClientFactoryVO {
      */
     private static ItemData convertText(ArrData arrData) {
     	DataText data = new DataText(((ArrDataText) arrData).getTextValue(), DataType.TEXT);
-        data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -397,7 +392,6 @@ public class ClientFactoryVO {
      */
     private static ItemData convertUnitdate(ArrData arrData) {
     	DataUnitdate data = new DataUnitdate(UnitDateConvertor.convertToString(((ArrDataUnitdate) arrData)), DataType.UNITDATE);
-        data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -410,7 +404,6 @@ public class ClientFactoryVO {
      */
     private static ItemData convertUnitid(ArrData arrData) {
     	DataUnitid data = new DataUnitid(((ArrDataUnitid) arrData).getUnitId(), DataType.UNITID);
-        data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -423,7 +416,6 @@ public class ClientFactoryVO {
      */
     private static ItemData convertFormattedText(ArrData arrData) {
     	DataFormattedText data = new DataFormattedText(((ArrDataText) arrData).getTextValue(), DataType.FORMATTED_TEXT);
-        data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -436,7 +428,6 @@ public class ClientFactoryVO {
      */
     private static ItemData convertCoordinates(ArrData arrData) {
     	DataCoordinates data = new DataCoordinates(((ArrDataCoordinates) arrData).getFulltextValue(), DataType.COORDINATES);
-        data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -449,7 +440,6 @@ public class ClientFactoryVO {
      */
     private static ItemData convertRecordRef(ArrData arrData) {
     	DataRecordRef data = new DataRecordRef(((ArrDataRecordRef) arrData).getRecordId(), DataType.RECORD_REF);
-        data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -462,7 +452,6 @@ public class ClientFactoryVO {
      */
     private static ItemData convertDecimal(ArrData arrData) {
     	DataDecimal data = new DataDecimal(((ArrDataDecimal) arrData).getValue(), DataType.DECIMAL);
-        data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -475,7 +464,6 @@ public class ClientFactoryVO {
      */
     private static ItemData convertStructureRef(ArrData arrData) {
     	DataStructureRef data = new DataStructureRef(((ArrDataStructureRef) arrData).getStructuredObjectId(), DataType.STRUCTURED);
-        data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -487,8 +475,7 @@ public class ClientFactoryVO {
      * @return
      */
     private static ItemData convertNull(ArrData arrData) {
-    	DataNull data = new DataNull(DataType.ENUM);
-        data.setDataTypeId(arrData.getDataTypeId());
+    	DataEnum data = new DataEnum(DataType.ENUM);
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -501,7 +488,6 @@ public class ClientFactoryVO {
      */
     private static ItemData convertFileRef(ArrData arrData) {
     	DataFileRef data = new DataFileRef(((ArrDataFileRef) arrData).getFileId(), DataType.FILE_REF);
-        data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -514,7 +500,6 @@ public class ClientFactoryVO {
      */
     private static ItemData convertJsonTable(ArrData arrData) {
     	DataJsonTable data = new DataJsonTable(((ArrDataJsonTable) arrData).getJsonValue(), DataType.JSON_TABLE);
-        data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -527,7 +512,6 @@ public class ClientFactoryVO {
      */
     private static ItemData convertDate(ArrData arrData) {
     	DataDate data = new DataDate(((ArrDataDate) arrData).getValue(), DataType.DATE);
-        data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -540,7 +524,6 @@ public class ClientFactoryVO {
      */
     private static ItemData convertUriRef(ArrData arrData) {
     	DataUriRef data = new DataUriRef(((ArrDataUriRef) arrData).getUriRefValue(), DataType.URI_REF);
-        data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         return data;
     }
@@ -553,7 +536,6 @@ public class ClientFactoryVO {
      */
     private static ItemData convertBit(ArrData arrData) {
     	DataBit data = new DataBit(((ArrDataBit) arrData).isBitValue(), DataType.BIT);
-        data.setDataTypeId(arrData.getDataTypeId());
         data.setDataId(arrData.getDataId());
         return data;
     }

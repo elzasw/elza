@@ -1053,16 +1053,14 @@ paths:
               schema:
                 type: integer
       requestBody:
-        description: Export request parameters
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ExportParams'
+        description: Export request parameters
   /io/export-status/{requestId}:
     get:
-      tags:
-        - io
       operationId: Io_getExportStatus
       description: Getting the export status by request id
       parameters:
@@ -1090,10 +1088,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /io/file/{requestId}:
-    get:
       tags:
         - io
+  /io/file/{requestId}:
+    get:
       operationId: Io_getExportFile
       description: Getting the generated file by request id
       parameters:
@@ -1124,6 +1122,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - io
 components:
   parameters:
     FsRepoIdParameter:
@@ -1376,6 +1376,17 @@ components:
           format: decimal
       allOf:
         - $ref: '#/components/schemas/ItemData'
+    DataEnum:
+      type: object
+#      required:
+#        - dataType
+#      properties:
+#        dataType:
+#          type: string
+#          enum:
+#            - ENUM
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
     DataFileRef:
       type: object
       required:
@@ -1430,17 +1441,6 @@ components:
         #    - dataJsonTable
         value:
           type: string
-      allOf:
-        - $ref: '#/components/schemas/ItemData'
-    DataNull:
-      type: object
-      #required:
-        #- dataType
-      #properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - dataNull
       allOf:
         - $ref: '#/components/schemas/ItemData'
     DataRecordRef:
@@ -1518,7 +1518,6 @@ components:
         - DATE
         - URI_REF
         - BIT
-        - DATA_NULL
       description: Data types for ItemData classes
     DataUnitdate:
       type: object
@@ -1844,9 +1843,6 @@ components:
         dataId:
           type: integer
           description: data id
-        dataTypeId:
-          type: integer
-          description: data type id
         dataType:
           allOf:
             - $ref: '#/components/schemas/DataType'
@@ -1861,7 +1857,7 @@ components:
           FILE_REF: '#/components/schemas/DataFileRef'
           INT: '#/components/schemas/DataInteger'
           JSON_TABLE: '#/components/schemas/DataJsonTable'
-          DATA_NULL: '#/components/schemas/DataNull'
+          ENUM: '#/components/schemas/DataEnum'
           RECORD_REF: '#/components/schemas/DataRecordRef'
           STRING: '#/components/schemas/DataString'
           STRUCTURED: '#/components/schemas/DataStructureRef'
