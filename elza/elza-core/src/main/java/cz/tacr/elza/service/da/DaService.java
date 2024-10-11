@@ -1289,22 +1289,29 @@ public class DaService {
         }
         eventNotificationService.publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, fundVersion,
                 parentLevel, arrLevel));
+        ArrNode nodeToConnect = arrNode;
+        for (DaLevelView child : levelView.getChildren()) {
+            nodeToConnect = createNextLevel(newNode, change, 1, child);
+        }
         for (Integer daAipId : daAipIdList) {
             DaAip daAip = findAipById(daAipId);
 
-            for (DaLevelView child : levelView.getChildren()) {
-                createNextLevel(newNode, change, 1, child);
-            }
             List<DaDao> daoList = daoRepository.findAllByLevelViewInAndDeleteChangeIsNull(Collections.singletonList(levelView));
             for (DaDao daDao : daoList) {
-                ArrDaoLink arrDaoLink = new ArrDaoLink();
-                arrDaoLink.setAip(daAip);
-                arrDaoLink.setNode(arrNode);
-                arrDaoLink.setDaDao(daDao);
-                arrDaoLink.setLinkType(ArrDaoLink.LinkType.PART_AIP);
-                arrDaoLink.setCreateChange(change);
+                List<DaDaoRelation> daDaoRelationList = daoRelationRepository.findByParentDaoAndDeleteChangeIsNull(daDao);
+                for (DaDaoRelation daDaoRelation : daDaoRelationList) {
+                    DaDao dao = daDaoRelation.getDao();
+                    if (!dao.getType().equals(DaDao.DaoType.LOGICAL)) {
+                        ArrDaoLink arrDaoLink = new ArrDaoLink();
+                        arrDaoLink.setAip(daAip);
+                        arrDaoLink.setNode(nodeToConnect);
+                        arrDaoLink.setDaDao(dao);
+                        arrDaoLink.setLinkType(ArrDaoLink.LinkType.PART_AIP);
+                        arrDaoLink.setCreateChange(change);
 
-                daoLinkRepository.save(arrDaoLink);
+                        daoLinkRepository.save(arrDaoLink);
+                    }
+                }
             }
         }
     }
@@ -1335,14 +1342,21 @@ public class DaService {
 
             List<DaDao> daoList = daoRepository.findAllByLevelViewInAndDeleteChangeIsNull(Collections.singletonList(levelView));
             for (DaDao daDao : daoList) {
-                ArrDaoLink arrDaoLink = new ArrDaoLink();
-                arrDaoLink.setAip(daAip);
-                arrDaoLink.setNode(nodeToConnect);
-                arrDaoLink.setDaDao(daDao);
-                arrDaoLink.setLinkType(ArrDaoLink.LinkType.PART_AIP);
-                arrDaoLink.setCreateChange(change);
+                List<DaDaoRelation> daDaoRelationList = daoRelationRepository.findByParentDaoAndDeleteChangeIsNull(daDao);
+                for (DaDaoRelation daDaoRelation : daDaoRelationList) {
+                    DaDao dao = daDaoRelation.getDao();
+                    if (!dao.getType().equals(DaDao.DaoType.LOGICAL)) {
+                        ArrDaoLink arrDaoLink = new ArrDaoLink();
+                        arrDaoLink.setAip(daAip);
+                        arrDaoLink.setNode(nodeToConnect);
+                        arrDaoLink.setDaDao(dao);
+                        arrDaoLink.setLinkType(ArrDaoLink.LinkType.PART_AIP);
+                        arrDaoLink.setCreateChange(change);
 
-                daoLinkRepository.save(arrDaoLink);
+                        daoLinkRepository.save(arrDaoLink);
+                    }
+                }
+
             }
         }
     }
