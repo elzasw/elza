@@ -1838,6 +1838,8 @@ components:
       description: Data k importu
     ItemData:
       type: object
+      required:
+        - dataType
       properties:
         dataId:
           type: integer
