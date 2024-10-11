@@ -2,8 +2,10 @@ package cz.tacr.elza.config.view;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -24,17 +26,42 @@ import cz.tacr.elza.service.vo.TitleItemsByType;
 public class TitleBuilder {
 
     private String separator = " ";
+    
+    class TitlePart {
+    	Integer itemTypeId;
+    	
+    	Integer maxCount;
+		
+		List<Integer> specs;
+		
+		public TitlePart(final Integer itemTypeId, final Integer maxCount, final List<Integer> specs) {
+			this.itemTypeId = itemTypeId;
+			this.maxCount = maxCount;
+			this.specs = specs;
+		}
 
-    // TODO: append doc
-    // ? item_type_id
-    private List<Integer> ids = new ArrayList<>();    
+		public Integer getItemTypeId() {
+			return itemTypeId;
+		}
 
-    private Map<Integer, Integer> maxCountMap = new HashMap<>();
+		public Integer getMaxCount() {
+			return maxCount;
+		}
 
-    private Map<Integer, List<Integer>> specsMap = new HashMap<>();
+		public List<Integer> getSpecs() {
+			return specs;
+		}
+    };
+    
+    /**
+     * List of {@link TitlePart}.
+     */
+    private List<TitlePart> titleParts = new ArrayList<>();
+    
+    private Set<Integer> itemTypeIds = new HashSet<>();
 
-    public List<Integer> getIds() {
-        return ids;
+    public Set<Integer> getItemTypeIds() {
+        return itemTypeIds;
     }
 
     public void setSeparator(String separator) {
@@ -43,17 +70,14 @@ public class TitleBuilder {
         }
     }
 
-    public void addItem(Integer id, Integer maxCount, List<Integer> specs) {
-        ids.add(id);
-        if (maxCount != null) {
-            maxCountMap.put(id, maxCount);
-        }
-        if (!CollectionUtils.isEmpty(specs)) {
-            specsMap.put(id, specs);
-        }
+    public void addItem(Integer itemTypeId, Integer maxCount, List<Integer> specs) {
+        itemTypeIds.add(itemTypeId);
+   
+        TitlePart tp = new TitlePart(itemTypeId, maxCount, specs);
+		titleParts.add(tp);		
     }
 
-    private Integer getItemId(String code, StaticDataProvider sdp) {
+    static private Integer getItemId(String code, StaticDataProvider sdp) {
         ItemType itemType = sdp.getItemTypeByCode(code);
         if (itemType == null) {
             throw new SystemException("Item type not found", BaseCode.INVALID_STATE)
@@ -62,7 +86,7 @@ public class TitleBuilder {
         return itemType.getItemTypeId();
     }
 
-    private Integer getItemSpecId(String code, StaticDataProvider sdp) {
+    static private Integer getItemSpecId(String code, StaticDataProvider sdp) {
         RulItemSpec itemSpec = sdp.getItemSpecByCode(code);
         if (itemSpec == null) {
             throw new SystemException("Item spec not found", BaseCode.INVALID_STATE)
@@ -71,7 +95,7 @@ public class TitleBuilder {
         return itemSpec.getItemSpecId();
     }
 
-    private List<Integer> getItemSpecIds(List<ItemSpec> specs, StaticDataProvider sdp) {
+    static private List<Integer> getItemSpecIds(List<ItemSpec> specs, StaticDataProvider sdp) {
         if (CollectionUtils.isEmpty(specs)) {
             return null;
         }
@@ -90,32 +114,34 @@ public class TitleBuilder {
 
     public String build(TitleItemsByType itemsValueMap, ArrDao dao, String defaultTitle) {
         List<String> titleParts = new ArrayList<>();
-        if (!CollectionUtils.isEmpty(ids) && itemsValueMap != null) {
-            for (Integer id : ids) {
-                Integer maxCount = maxCountMap.get(id);
-                TitleValues titleValues = itemsValueMap.getTitles(id);
-                if (titleValues != null) {
-                    for (TitleValue titleValue : titleValues.getValues()) {
-                        // filtrace podle spec, pokud jsou uvedeny
-                        List<Integer> specs = specsMap.get(id);
-                        Integer specId = titleValue.getSpecId();
-                        if (!CollectionUtils.isEmpty(specs) && specId != null && !specs.contains(specId)) {
-                            continue;
-                        }
-                        String value = titleValue.getValue();
-                        if (StringUtils.isNotBlank(value)) {
-                            titleParts.add(value);
-                        }
-                        // kontrola hodnoty maxCount, pokud je nastavena
-                        if (maxCount != null) {
-                            maxCount--;
-                            if (maxCount == 0) {
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+        if(itemsValueMap != null) {
+	        // iterate all title parts
+	        for (TitlePart tp : this.titleParts) {
+	        	Integer itemTypeId = tp.getItemTypeId();
+	        	TitleValues titleValues = itemsValueMap.getTitles(itemTypeId);
+	        	if (titleValues != null) {
+                    // filtrace podle spec, pokud jsou uvedeny
+	        		List<Integer> specs = tp.getSpecs();
+	        		Integer maxCount = tp.getMaxCount();
+	        		for (TitleValue titleValue : titleValues.getValues()) {
+						Integer specId = titleValue.getSpecId();
+						if (!CollectionUtils.isEmpty(specs) && specId != null && !specs.contains(specId)) {
+							continue;
+						}
+						String value = titleValue.getValue();
+						if (StringUtils.isNotBlank(value)) {
+							titleParts.add(value);
+						}
+						// kontrola hodnoty maxCount, pokud je nastavena
+						if (maxCount != null) {
+							maxCount--;
+							if (maxCount == 0) {
+								break;
+							}
+						}
+	        		}
+	        	}
+	        }
         }
         if (dao != null) {
             StringBuilder sb = new StringBuilder();
