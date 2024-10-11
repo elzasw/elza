@@ -1056,7 +1056,11 @@ model DaoLink {
     /**
      * Dao link ID
      */
-    daoLinkId: integer;
+    daoLinkId?: integer;
+    /**
+     * Dao link UUID
+     */
+    daoLinkUuid: string;
     /**
      * Aip ID
      */

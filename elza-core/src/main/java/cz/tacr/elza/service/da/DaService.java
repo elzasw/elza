@@ -1463,20 +1463,24 @@ public class DaService {
         List<DaoLink> daoLinkList = new ArrayList<>();
         List<ArrDaoLink> arrDaoLinks = daoLinkRepository.findByNodeIdAndDeleteChangeIsNullFetchAip(nodeId);
 
+        Set<Integer> aipIdSet = arrDaoLinks.stream().map(l -> l.getAip().getAipId()).collect(Collectors.toSet());
+
         List<ArrDaoLink> aipDaoLinks = arrDaoLinks.stream().filter(d -> d.getLinkType() == ArrDaoLink.LinkType.AIP).toList();
+
+        Map<Integer, ArrDaoLink> aipDaoLinkMap = new HashMap<>();
 
         if (CollectionUtils.isNotEmpty(aipDaoLinks)) {
             arrDaoLinks.removeAll(aipDaoLinks);
-            for (ArrDaoLink aipDaoLink : aipDaoLinks) {
-                List<ArrDaoLink> daoLinks = arrDaoLinks.stream().filter(d -> d.getAip().getAipId().equals(aipDaoLink.getAip().getAipId())).toList();
-                arrDaoLinks.removeAll(daoLinks);
-                daoLinkList.add(createAipDaoLink(aipDaoLink, daoLinks));
-            }
+
+            aipDaoLinkMap = aipDaoLinks.stream()
+                    .collect(Collectors.toMap(d -> d.getAip().getAipId(), Function.identity()));
         }
 
-        if (CollectionUtils.isNotEmpty(arrDaoLinks)) {
-            for (ArrDaoLink daoLink : arrDaoLinks) {
-                daoLinkList.add(createDaoLink(daoLink));
+        if (CollectionUtils.isNotEmpty(aipIdSet)) {
+            for (Integer aipId : aipIdSet) {
+                ArrDaoLink aipDaoLink = aipDaoLinkMap.getOrDefault(aipId, null);
+                List<ArrDaoLink> daoLinks = arrDaoLinks.stream().filter(d -> d.getAip().getAipId().equals(aipId)).toList();
+                daoLinkList.add(createAipDaoLink(aipId, aipDaoLink, daoLinks));
             }
         }
 
@@ -1485,8 +1489,8 @@ public class DaService {
         return daoLinksResult;
     }
 
-    private DaoLink createAipDaoLink(ArrDaoLink aipDaoLink, List<ArrDaoLink> arrDaoLinks) {
-        DaoLink daoLink = createDaoLink(aipDaoLink);
+    private DaoLink createAipDaoLink(Integer aipId, ArrDaoLink aipDaoLink, List<ArrDaoLink> arrDaoLinks) {
+        DaoLink daoLink = aipDaoLink == null ? createDaoLink(aipId) : createDaoLink(aipDaoLink);
 
         if (CollectionUtils.isNotEmpty(arrDaoLinks)) {
             List<DaoLink> daoLinkList = new ArrayList<>();
@@ -1499,10 +1503,21 @@ public class DaService {
         return daoLink;
     }
 
+    private DaoLink createDaoLink(Integer aipId) {
+
+        DaoLink daoLink = new DaoLink();
+        daoLink.setDaoLinkUuid(UUID.randomUUID().toString());
+        daoLink.setAipId(aipId);
+        daoLink.setName(aipId.toString());
+
+        return daoLink;
+    }
+
     private DaoLink createDaoLink(ArrDaoLink arrDaoLink) {
         DaDao dao = arrDaoLink.getDaDao();
 
         DaoLink daoLink = new DaoLink();
+        daoLink.setDaoLinkUuid(UUID.randomUUID().toString());
         daoLink.setDaoLinkId(arrDaoLink.getDaoLinkId());
         daoLink.setAipId(arrDaoLink.getAip().getAipId());
 

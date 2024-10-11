@@ -26,7 +26,8 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
     const daoLinks = useSelector((state: AppState) => storeFromArea(state, AREA_DAO_LINKS));
     const dispatch = useThunkDispatch();
     const [collapsed, setCollapsed] = useState<boolean>(false);
-    const [openItems, setOpenItems] = useState<number[]>([]);
+    const [openItems, setOpenItems] = useState<string[]>([]);
+    const [showAllChildren, setShowAllChildren] = useState<string[]>([]);
 
     useEffect(() => {
         dispatch(daoLinksFetchIfNeeded(nodeId, true));
@@ -58,7 +59,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
         );
     }
 
-    const handleOpenChange = (value: number, close: boolean) => {
+    const handleOpenChange = (value: string, close: boolean) => {
         const opened = [...openItems];
         if (close) {
             setOpenItems(prev => prev.filter(item => item !== value))
@@ -67,6 +68,18 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
                 opened.push(value)
             }
             setOpenItems(opened);
+        }
+    }
+
+    const handleShowAllChange = (value: string, close: boolean) => {
+        const showAll = [...showAllChildren];
+        if (close) {
+            setShowAllChildren(prev => prev.filter(item => item !== value))
+        } else {
+            if (!showAll.includes(value)) {
+                showAll.push(value)
+            }
+            setShowAllChildren(showAll);
         }
     }
 
@@ -100,7 +113,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
     }
 
     const renderLinkDetail = (item: DaoLink) => {
-        const openItem = openItems.includes(item.daoLinkId);
+        const openItem = openItems.includes(item.daoLinkUuid);
 
         return (<p>
             {DaDaoTypeCaption(item.daoType) + ": "}
@@ -111,40 +124,79 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
             {item.daoType === DaDaoType.File && <Button key="detail" variant="action" onClick={() => handleOpenComponent(item.daoId)}>
                 <Icon glyph="fa-eye"/>
             </Button>}
-            <Button key="deleteLink" variant="action" onClick={() => handleDeleteLink(item.daoLinkId)}>
+            {item.daoLinkId && <Button key="deleteLink" variant="action" onClick={() => handleDeleteLink(item.daoLinkId)}>
                 <Icon glyph="fa fa-close"/>
-            </Button>
-            {item.children && <Button key="expand" variant="action" onClick={() => handleOpenChange(item.daoLinkId, openItem)}>
+            </Button>}
+            {item.children && <Button key="expand" variant="action" onClick={() => handleOpenChange(item.daoLinkUuid, openItem)}>
                 {openItem && <Icon glyph="fa fa-chevron-up"/>}
                 {!openItem && <Icon glyph="fa fa-chevron-down"/>}
             </Button>}
         </p>);
     }
 
-    const renderChildrenLinks = (items: DaoLink[]) => {
-        return (items.map(child => {
-            const openItem = openItems.includes(child.daoLinkId);
+    const renderChildrenLinks = (item: DaoLink) => {
+        let count = -1;
+        const maxCount = 5;
+        const showAll = showAllChildren.includes(item.daoLinkUuid);
+
+        return (item.children.map(child => {
+            const openItem = openItems.includes(child.daoLinkUuid);
+            count = count + 1;
+            let skryt;
+
+            if (!showAll) {
+                if (count > maxCount) {
+                    return;
+                } else if (count === maxCount && item.children.length > maxCount) {
+                    return (
+                        <div key={'dao-link-div' + child.daoLinkUuid + "dalsi"}>
+                            <Row className="napojeni-row-child" key={'dao-link-row' + child.daoLinkUuid + "dalsi"}>
+                                <p>
+                                    <Button key="showAll" variant="link" onClick={() => handleShowAllChange(item.daoLinkUuid, showAll)}>
+                                        a {item.children.length - maxCount} dalších...
+                                    </Button>
+                                </p>
+                            </Row>
+                        </div>
+                    );
+                }
+            }
+
+            if (showAll && item.children.length > maxCount && item.children.length === (count + 1)) {
+                skryt = (
+                    <div key={'dao-link-div' + child.daoLinkUuid + "skryt"}>
+                        <Row className="napojeni-row-child" key={'dao-link-row' + child.daoLinkUuid + "skryt"}>
+                            <p>
+                                <Button key="hideAll" variant="link" onClick={() => handleShowAllChange(item.daoLinkUuid, showAll)}>
+                                    Skrýt
+                                </Button>
+                            </p>
+                        </Row>
+                    </div>
+                )
+            }
 
             return (
-                <div key={'dao-link-div' + child.daoLinkId}>
-                    <Row className="napojeni-row-child" key={'dao-link-row' + child.daoLinkId}>
+                <div key={'dao-link-div' + child.daoLinkUuid}>
+                    <Row className="napojeni-row-child" key={'dao-link-row' + child.daoLinkUuid}>
                         {renderLinkDetail(child)}
                     </Row>
-                    {child.children && openItem && renderChildrenLinks(child.children)}
+                    {child.children && openItem && renderChildrenLinks(child)}
+                    {skryt}
                 </div>
             );
         }));
     }
 
     const centerPanel = daoLinks.data.data.items.map(item => {
-        const openItem = openItems.includes(item.daoLinkId);
+        const openItem = openItems.includes(item.daoLinkUuid);
 
         return (
-            <div key={'dao-link-div' + item.daoLinkId}>
-                <Row className="napojeni-row" key={'dao-link-row' + item.daoLinkId}>
+            <div key={'dao-link-div' + item.daoLinkUuid}>
+                <Row className="napojeni-row" key={'dao-link-row' + item.daoLinkUuid}>
                     {renderLinkDetail(item)}
                 </Row>
-                {item.children && openItem && renderChildrenLinks(item.children)}
+                {item.children && openItem && renderChildrenLinks(item)}
             </div>
         );
     });

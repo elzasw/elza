@@ -2583,13 +2583,16 @@ components:
     DaoLink:
       type: object
       required:
-        - daoLinkId
+        - daoLinkUuid
         - aipId
         - name
       properties:
         daoLinkId:
           type: integer
           description: Dao link ID
+        daoLinkUuid:
+          type: string
+          description: Dao link UUID
         aipId:
           type: integer
           description: Aip ID
