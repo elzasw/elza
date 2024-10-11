@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -82,6 +83,7 @@ import cz.tacr.elza.controller.vo.DataText;
 import cz.tacr.elza.controller.vo.DataUnitdate;
 import cz.tacr.elza.controller.vo.DataUnitid;
 import cz.tacr.elza.controller.vo.DataUriRef;
+import cz.tacr.elza.controller.vo.DataType;
 import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundDetail;
 import cz.tacr.elza.controller.vo.GisExternalSystemSimpleVO;
@@ -132,7 +134,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
-import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -242,6 +243,26 @@ import cz.tacr.elza.ws.types.v1.Items;
 @Service
 public class ClientFactoryVO {
 
+	static Map<cz.tacr.elza.core.data.DataType, Function<ArrData, ItemData>> dataConvertors = new HashMap<>();
+	static {
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.INT, ClientFactoryVO::convertInt);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.STRING, ClientFactoryVO::convertString);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.TEXT, ClientFactoryVO::convertText);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.UNITDATE, ClientFactoryVO::convertUnitdate);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.UNITID, ClientFactoryVO::convertUnitid);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.FORMATTED_TEXT, ClientFactoryVO::convertFormattedText);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.COORDINATES, ClientFactoryVO::convertCoordinates);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.RECORD_REF, ClientFactoryVO::convertRecordRef);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.DECIMAL, ClientFactoryVO::convertDecimal);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.STRUCTURED, ClientFactoryVO::convertStructureRef);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.ENUM, ClientFactoryVO::convertNull);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.FILE_REF, ClientFactoryVO::convertFileRef);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.JSON_TABLE, ClientFactoryVO::convertJsonTable);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.DATE, ClientFactoryVO::convertDate);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.URI_REF, ClientFactoryVO::convertUriRef);
+		dataConvertors.put(cz.tacr.elza.core.data.DataType.BIT, ClientFactoryVO::convertBit);
+    }
+
 	@Autowired
     private DaoService daoService;
 
@@ -328,6 +349,214 @@ public class ClientFactoryVO {
 
     @Autowired
     private AccessPointService accessPointService;
+
+    /**
+     * Konvertor pro INT data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertInt(ArrData arrData) {
+    	DataInteger data = new DataInteger(((ArrDataInteger) arrData).getIntegerValue(), DataType.INT);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
+
+    /**
+     * Konvertor pro STRING data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertString(ArrData arrData) {
+    	DataString data = new DataString(((ArrDataString) arrData).getStringValue(), DataType.STRING);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
+
+    /**
+     * Konvertor pro TEXT data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertText(ArrData arrData) {
+    	DataText data = new DataText(((ArrDataText) arrData).getTextValue(), DataType.TEXT);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
+
+    /**
+     * Konvertor pro UNITDATE data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertUnitdate(ArrData arrData) {
+    	DataUnitdate data = new DataUnitdate(UnitDateConvertor.convertToString(((ArrDataUnitdate) arrData)), DataType.UNITDATE);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
+
+    /**
+     * Konvertor pro UNITID data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertUnitid(ArrData arrData) {
+    	DataUnitid data = new DataUnitid(((ArrDataUnitid) arrData).getUnitId(), DataType.UNITID);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
+
+    /**
+     * Konvertor pro FORMATTED_TEXT data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertFormattedText(ArrData arrData) {
+    	DataFormattedText data = new DataFormattedText(((ArrDataText) arrData).getTextValue(), DataType.FORMATTED_TEXT);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
+
+    /**
+     * Konvertor pro COORDINATES data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertCoordinates(ArrData arrData) {
+    	DataCoordinates data = new DataCoordinates(((ArrDataCoordinates) arrData).getFulltextValue(), DataType.COORDINATES);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
+
+    /**
+     * Konvertor pro RECORD_REF data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertRecordRef(ArrData arrData) {
+    	DataRecordRef data = new DataRecordRef(((ArrDataRecordRef) arrData).getRecordId(), DataType.RECORD_REF);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
+
+    /**
+     * Konvertor pro DECIMAL data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertDecimal(ArrData arrData) {
+    	DataDecimal data = new DataDecimal(((ArrDataDecimal) arrData).getValue(), DataType.DECIMAL);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
+
+    /**
+     * Konvertor pro STRUCTURED data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertStructureRef(ArrData arrData) {
+    	DataStructureRef data = new DataStructureRef(((ArrDataStructureRef) arrData).getStructuredObjectId(), DataType.STRUCTURED);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
+
+    /**
+     * Konvertor pro ENUM data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertNull(ArrData arrData) {
+    	DataNull data = new DataNull(DataType.ENUM);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
+
+    /**
+     * Konvertor pro FILE_REF data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertFileRef(ArrData arrData) {
+    	DataFileRef data = new DataFileRef(((ArrDataFileRef) arrData).getFileId(), DataType.FILE_REF);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
+
+    /**
+     * Konvertor pro JSON_TABLE data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertJsonTable(ArrData arrData) {
+    	DataJsonTable data = new DataJsonTable(((ArrDataJsonTable) arrData).getJsonValue(), DataType.JSON_TABLE);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
+
+    /**
+     * Konvertor pro DATE data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertDate(ArrData arrData) {
+    	DataDate data = new DataDate(((ArrDataDate) arrData).getValue(), DataType.DATE);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
+
+    /**
+     * Konvertor pro URI_REF data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertUriRef(ArrData arrData) {
+    	DataUriRef data = new DataUriRef(((ArrDataUriRef) arrData).getUriRefValue(), DataType.URI_REF);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
+
+    /**
+     * Konvertor pro BIT data
+     * 
+     * @param arrData
+     * @return
+     */
+    private static ItemData convertBit(ArrData arrData) {
+    	DataBit data = new DataBit(((ArrDataBit) arrData).isBitValue(), DataType.BIT);
+        data.setDataTypeId(arrData.getDataTypeId());
+        data.setDataId(arrData.getDataId());
+        return data;
+    }
 
     /**
      * Vytvoření nastavení.
@@ -569,7 +798,7 @@ public class ClientFactoryVO {
     public <T extends ArrItem> ArrItemVO createItem(final T item) {
         Assert.notNull(item, "Hodnota musí být vyplněna");
 
-        DataType dataType = DataType.fromId(item.getItemType().getDataTypeId()); //.getCode();
+        cz.tacr.elza.core.data.DataType dataType = cz.tacr.elza.core.data.DataType.fromId(item.getItemType().getDataTypeId()); //.getCode();
 
         switch (dataType) {
             case STRING:
@@ -629,98 +858,12 @@ public class ClientFactoryVO {
         nodeItem.setReadOnly(item.getReadOnly());
 
         ArrData arrData = item.getData();
-		ItemData data = new ItemData();
+		cz.tacr.elza.core.data.DataType dataType = cz.tacr.elza.core.data.DataType.fromId(item.getItemType().getDataTypeId());
+		Function<ArrData, ItemData> dataConvertor = dataConvertors.get(dataType);
+		Objects.requireNonNull(dataConvertor);
+		ItemData data = dataConvertor.apply(arrData);
 
-		String stringValue;
-		Integer integerValue;
-
-        DataType dataType = DataType.fromId(item.getItemType().getDataTypeId());
-		switch (dataType) {
-        	case INT:
-	            data = new DataInteger();
-	            integerValue = ((ArrDataInteger) arrData).getIntegerValue();
-	            ((DataInteger) data).setIntegerValue(integerValue);
-	            break;
-        	case STRING:
-	            data = new DataString();
-	            stringValue = ((ArrDataString) arrData).getStringValue();
-	            ((DataString) data).setStringValue(stringValue);
-	            break;
-        	case TEXT:
-        		data = new DataText();
-        		stringValue = ((ArrDataText) arrData).getTextValue();
-	            ((DataText) data).setTextValue(stringValue);
-        		break;
-	        case UNITDATE:
-	        	data = new DataUnitdate();
-	        	stringValue = UnitDateConvertor.convertToString(((ArrDataUnitdate) arrData));
-	        	((DataUnitdate) data).setValue((String) stringValue);
-	        	break;
-	        case UNITID:
-	        	data = new DataUnitid();
-	        	stringValue = ((ArrDataUnitid) arrData).getUnitId();
-	        	((DataUnitid) data).setUnitId(stringValue);
-	        	break;
-	        case FORMATTED_TEXT:
-	        	data = new DataFormattedText();
-	        	stringValue = ((ArrDataText) arrData).getTextValue();
-	        	((DataFormattedText) data).setValue(stringValue);
-	        	break;
-	        case COORDINATES:
-	        	data = new DataCoordinates();
-	        	stringValue = ((ArrDataCoordinates) arrData).getFulltextValue();
-	        	((DataCoordinates) data).setValue(stringValue);
-	        	break;
-	        case RECORD_REF:
-	        	data = new DataRecordRef();
-	        	integerValue = ((ArrDataRecordRef) arrData).getRecordId();
-	        	((DataRecordRef) data).setValue(integerValue);
-	        	break;
-	        case DECIMAL:
-	        	data = new DataDecimal();
-	        	BigDecimal decimalValue = ((ArrDataDecimal) arrData).getValue();
-	        	((DataDecimal) data).setValue(decimalValue);
-	        	break;
-	        case STRUCTURED:
-	        	data = new DataStructureRef();
-	        	integerValue = ((ArrDataStructureRef) arrData).getStructuredObjectId();
-	        	((DataStructureRef) data).setStructuredObjectId(integerValue);
-	        	break;
-	        case ENUM:
-	        	data = new DataNull();
-	        	break;
-	        case FILE_REF:
-	        	data = new DataFileRef();
-	        	integerValue = ((ArrDataFileRef) arrData).getFileId();
-	        	((DataFileRef) data).setFileId(integerValue);
-	        	break;
-	        case JSON_TABLE:
-	        	data = new DataJsonTable();
-	        	stringValue = ((ArrDataJsonTable) arrData).getJsonValue();
-	        	((DataJsonTable) data).setValue(stringValue);
-	        	break;
-	        case DATE:
-	        	data = new DataDate();
-	        	LocalDate dateValue = ((ArrDataDate) arrData).getValue();
-	        	((DataDate) data).setValue(dateValue);
-	        	break;
-	        case URI_REF:
-	        	data = new DataUriRef();
-	        	stringValue = ((ArrDataUriRef) arrData).getUriRefValue();
-	        	((DataUriRef) data).setValue(stringValue);
-	        	break;
-	        case BIT:
-	        	data = new DataBit();
-	        	Boolean bitValue = ((ArrDataBit) arrData).isBitValue();
-	        	((DataBit) data).setBitValue(bitValue);
-	        	break;
-        	default:
-        		throw new NotImplementedException(item.getItemType().getDataTypeId().toString());
-        }
-
-        data.setDataTypeId(arrData.getDataTypeId());
-        data.setDataId(arrData.getDataId());
-        nodeItem.setData(data);
+		nodeItem.setData(data);
 
         return nodeItem;
     }
