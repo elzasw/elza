@@ -1297,15 +1297,20 @@ public class DaService {
         for (DaLevelView child : levelView.getChildren()) {
             nodeToConnect = createNextLevel(newNode, change, 1, child);
         }
+
+        DaLevelView levelViewToConnect = levelView;
+        while (levelViewToConnect.getChildren() != null && !levelViewToConnect.getChildren().isEmpty()) {
+            levelViewToConnect = levelViewToConnect.getChildren().get(0);
+        }
         for (Integer daAipId : daAipIdList) {
             DaAip daAip = findAipById(daAipId);
 
-            List<DaDao> daoList = daoRepository.findAllByLevelViewInAndDeleteChangeIsNull(Collections.singletonList(levelView));
+            List<DaDao> daoList = daoRepository.findAllByLevelViewInAndDeleteChangeIsNull(Collections.singletonList(levelViewToConnect));
             for (DaDao daDao : daoList) {
                 List<DaDaoRelation> daDaoRelationList = daoRelationRepository.findByParentDaoAndDeleteChangeIsNull(daDao);
                 for (DaDaoRelation daDaoRelation : daDaoRelationList) {
                     DaDao dao = daDaoRelation.getDao();
-                    if (dao.getType().equals(DaDao.DaoType.LOGICAL)) {
+                    if (dao.getType().equals(DaDao.DaoType.LOGICAL) && dao.getAip().equals(daAip)) {
                         ArrDaoLink arrDaoLink = new ArrDaoLink();
                         arrDaoLink.setAip(daAip);
                         arrDaoLink.setNode(nodeToConnect);
@@ -1347,12 +1352,12 @@ public class DaService {
         for (Integer daAipId : daAipIdList) {
             DaAip daAip = findAipById(daAipId);
 
-            List<DaDao> daoList = daoRepository.findAllByLevelViewInAndDeleteChangeIsNull(Collections.singletonList(levelViewToConnect));
+            List<DaDao> daoList = daoRepository.findAllByLevelViewInAndDeleteChangeIsNull(Collections.singletonList(levelView));
             for (DaDao daDao : daoList) {
                 List<DaDaoRelation> daDaoRelationList = daoRelationRepository.findByParentDaoAndDeleteChangeIsNull(daDao);
                 for (DaDaoRelation daDaoRelation : daDaoRelationList) {
                     DaDao dao = daDaoRelation.getDao();
-                    if (dao.getType().equals(DaDao.DaoType.LOGICAL)) {
+                    if (dao.getType().equals(DaDao.DaoType.LOGICAL) && dao.getAip().equals(daAip)) {
                         ArrDaoLink arrDaoLink = new ArrDaoLink();
                         arrDaoLink.setAip(daAip);
                         arrDaoLink.setNode(nodeToConnect);
