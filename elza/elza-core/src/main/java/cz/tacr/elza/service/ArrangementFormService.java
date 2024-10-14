@@ -94,7 +94,7 @@ public class ArrangementFormService {
 	private final ArrangementInternalService arrangementInternalService;
 
     private final UserService userService;
-    
+
 	public ArrangementFormService(StaticDataService staticData,
 								  DescriptionItemServiceInternal arrangementInternal,
 								  DescriptionItemService descriptionItemService,
@@ -107,7 +107,7 @@ public class ArrangementFormService {
 								  ClientFactoryDO factoryDo,
 								  NodeCacheService nodeCache,
 								  FundVersionRepository fundVersionRepository,
-								  NodeRepository nodeRepository, 
+								  NodeRepository nodeRepository,
 								  final ArrangementService arrangementService,
 								  final ArrangementInternalService arrangementInternalService) {
 		this.staticData = staticData;
@@ -181,7 +181,13 @@ public class ArrangementFormService {
 			inhibitedDescItemIds = getInhibitedDescItemIds(parentRestoredNodes);
 			// sbíráme všechny descItems s povolenou dědičností z nadřazených uzlů
 			parentsDescItems = parentRestoredNodes.stream()
-					.flatMap(i -> i.getDescItems().stream())
+					.flatMap(i -> {
+                        if (i.getDescItems() != null) {
+                            return i.getDescItems().stream();
+                        } else {
+                            return new ArrayList<ArrDescItem>().stream();
+                        }
+                    })
 					.filter(i -> itemTypeIdsWithInheritance.contains(i.getDescItemTypeId()))
 					.toList();
 			// seznam descItemId s potlačenou dědičností pro aktuální uzel
@@ -219,7 +225,7 @@ public class ArrangementFormService {
 
 	/**
 	 * Získání seznamu ID (itemId) s potlačenou dědičností ze seznamu uzlů
-	 * 
+	 *
 	 * @param restoredNodes
 	 * @return
 	 */
@@ -230,6 +236,9 @@ public class ArrangementFormService {
 				.map(i -> i.getDescItemObjectId())
 				.collect(Collectors.toSet());
 		for (RestoredNode node : restoredNodes) {
+            if (node.getDescItems() == null) {
+                continue;
+            }
 			for (ArrDescItem descItem : node.getDescItems()) {
 				if (descItemObjectIds.contains(descItem.getDescItemObjectId())) {
 					inhibitedDescItemIds.add(descItem.getItemId());
@@ -376,7 +385,7 @@ public class ArrangementFormService {
 
 	/**
      * Update description item and return form data
-     * 
+     *
      * Method is called from WebSocket Controller
      *
      * @param fundVersion
