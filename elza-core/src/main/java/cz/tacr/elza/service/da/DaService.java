@@ -1305,7 +1305,7 @@ public class DaService {
                 List<DaDaoRelation> daDaoRelationList = daoRelationRepository.findByParentDaoAndDeleteChangeIsNull(daDao);
                 for (DaDaoRelation daDaoRelation : daDaoRelationList) {
                     DaDao dao = daDaoRelation.getDao();
-                    if (!dao.getType().equals(DaDao.DaoType.LOGICAL)) {
+                    if (dao.getType().equals(DaDao.DaoType.LOGICAL)) {
                         ArrDaoLink arrDaoLink = new ArrDaoLink();
                         arrDaoLink.setAip(daAip);
                         arrDaoLink.setNode(nodeToConnect);
