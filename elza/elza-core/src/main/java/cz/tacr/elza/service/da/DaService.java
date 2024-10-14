@@ -25,6 +25,7 @@ import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -69,6 +70,7 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoLevelViewService;
+import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
@@ -202,6 +204,8 @@ public class DaService {
     private DataStringRepository dataStringRepository;
     @Autowired
     private DataUnitdateRepository dataUnitdateRepository;
+    @Autowired
+    private DescriptionItemService descriptionItemService;
 
     public void synchronizeDaRepository(String code) {
         logger.debug("Spuštěna synchronizace s DA pro externí systém CODE={}", code);
@@ -1345,7 +1349,7 @@ public class DaService {
                 List<DaDaoRelation> daDaoRelationList = daoRelationRepository.findByParentDaoAndDeleteChangeIsNull(daDao);
                 for (DaDaoRelation daDaoRelation : daDaoRelationList) {
                     DaDao dao = daDaoRelation.getDao();
-                    if (!dao.getType().equals(DaDao.DaoType.LOGICAL)) {
+                    if (dao.getType().equals(DaDao.DaoType.LOGICAL)) {
                         ArrDaoLink arrDaoLink = new ArrDaoLink();
                         arrDaoLink.setAip(daAip);
                         arrDaoLink.setNode(nodeToConnect);
