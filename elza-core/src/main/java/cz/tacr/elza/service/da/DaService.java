@@ -1339,12 +1339,15 @@ public class DaService {
         for (DaLevelView child : levelView.getChildren()) {
             nodeToConnect = createNextLevel(arrNode, change, position, child);
         }
-
+        DaLevelView levelViewToConnect = levelView;
+        while (levelViewToConnect.getChildren() != null && !levelViewToConnect.getChildren().isEmpty()) {
+            levelViewToConnect = levelViewToConnect.getChildren().get(0);
+        }
 
         for (Integer daAipId : daAipIdList) {
             DaAip daAip = findAipById(daAipId);
 
-            List<DaDao> daoList = daoRepository.findAllByLevelViewInAndDeleteChangeIsNull(Collections.singletonList(levelView));
+            List<DaDao> daoList = daoRepository.findAllByLevelViewInAndDeleteChangeIsNull(Collections.singletonList(levelViewToConnect));
             for (DaDao daDao : daoList) {
                 List<DaDaoRelation> daDaoRelationList = daoRelationRepository.findByParentDaoAndDeleteChangeIsNull(daDao);
                 for (DaDaoRelation daDaoRelation : daDaoRelationList) {
