@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.da;
 
+import com.lightcomp.ft.client.Transfer;
 import com.lightcomp.kads.mets.MetsReaderWriter;
 import com.lightcomp.kads.premis.PremisReaderWriter;
 import cz.tacr.da.ApiException;
@@ -541,13 +542,20 @@ public class DaService {
             }
 
             try {
-                Path aipDir = Files.createTempDirectory(aip.getCode());
+                Path exportDir = Files.createTempDirectory("export");
+                Path aipDir = exportDir.resolve(aip.getCode());
+                Files.createDirectories(aipDir);
                 createPackageInfo(aip, aipDir);
                 createMets(aip, aipDir);
                 createEad(aip, aipDir);
 
                 Path aipOutputDir = resourcePathResolver.getAipDir().resolve("out");
                 Path outputZip = createZip(aipDir.toFile(), aipOutputDir);
+
+                // Odstranit dočasné soubory a adresáře
+                try (Stream<Path> str = Files.walk(exportDir)) {
+                    str.map(Path::toFile).forEach(File::delete);
+                }
 
                 DaSyncQueueItem syncQueueItem = createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.EXPORT_NEW,
                         aipState.getAipVersion(), aipType, true);
@@ -926,13 +934,10 @@ public class DaService {
         for (DaLocalCache localCache : localCaches) {
             Path zip = Paths.get(localCache.getFilePath());
 
-            Path aipDir = tempDir.resolve(localCache.getSyncQueueItem().getCode());
-            Files.createDirectories(aipDir);
-
             try (ZipInputStream zipInputStream = new ZipInputStream((Files.newInputStream(zip)))) {
                 ZipEntry entry;
                 while ((entry = zipInputStream.getNextEntry()) != null) {
-                    Path filePath = aipDir.resolve(entry.getName());
+                    Path filePath = tempDir.resolve(entry.getName());
                     if (entry.isDirectory()) {
                         Files.createDirectories(filePath);
                     } else {
@@ -943,16 +948,7 @@ public class DaService {
             }
         }
 
-        Path exportDir = Files.createTempDirectory("exportZip");
-        createZip(tempDir.toFile(), exportDir);
-
-
-        // Odstranit dočasné soubory a adresáře
-        try (Stream<Path> str = Files.walk(tempDir)) {
-            str.map(Path::toFile).forEach(File::delete);
-        }
-
-        return exportDir;
+        return tempDir;
     }
 
     @Transactional
@@ -1092,8 +1088,8 @@ public class DaService {
                 .collect(Collectors.toList());
     }
 
-    public void ingestFileTransfer(ArrDigitalRepository digitalRepository, Path exportDir, String batchId) {
-        daConnector.ingestFileTransfer(digitalRepository, exportDir, batchId);
+    public Transfer ingestFileTransfer(ArrDigitalRepository digitalRepository, Path exportDir) {
+        return daConnector.ingestFileTransfer(digitalRepository, exportDir);
     }
 
     @Transactional
