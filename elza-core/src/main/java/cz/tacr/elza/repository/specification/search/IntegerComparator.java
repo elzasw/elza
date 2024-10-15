@@ -1,7 +1,5 @@
 package cz.tacr.elza.repository.specification.search;
 
-
-
 import cz.tacr.cam.client.controller.vo.QueryComparator;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ApItem;
@@ -28,7 +26,7 @@ public class IntegerComparator implements Comparator {
         int numberValue = Integer.parseInt(value);
         switch (comparator) {
             case EQ:
-                return cb.equal(cb.lower(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.INTEGER_VALUE)), numberValue);
+                return cb.equal(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.INTEGER_VALUE), numberValue);
             case GT:
                 return cb.greaterThan(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.INTEGER_VALUE), numberValue);
             case GTE:
