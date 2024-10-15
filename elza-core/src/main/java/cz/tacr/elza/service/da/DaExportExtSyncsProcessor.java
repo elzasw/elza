@@ -1,5 +1,7 @@
 package cz.tacr.elza.service.da;
 
+import com.lightcomp.ft.client.Transfer;
+import com.lightcomp.ft.client.TransferState;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaSyncQueueItem;
 import cz.tacr.elza.service.ExternalSystemService;
@@ -14,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -70,8 +71,26 @@ public class DaExportExtSyncsProcessor implements Runnable {
                             Integer digitalRepositoryId = syncQueueItemList.get(0).getDigitalRepository().getExternalSystemId();
                             ArrDigitalRepository digitalRepository = externalSystemService.getDigitalRepository(digitalRepositoryId);
                             Path exportDir = daService.createOutputDir(syncQueueItemList);
-                            String batchId = UUID.randomUUID().toString();
-                            daService.ingestFileTransfer(digitalRepository, exportDir, batchId);
+                            Transfer transfer = daService.ingestFileTransfer(digitalRepository, exportDir);
+
+                            while (transfer.getStatus().getState() != TransferState.FINISHED
+                                    && transfer.getStatus().getState() != TransferState.FAILED
+                                    && transfer.getStatus().getState() != TransferState.CANCELED) {
+                                try {
+                                    // wake up every minute to retry
+                                    lock.wait(DOWNLOAD_CHECK_TIME_INTERVAL);
+                                } catch (InterruptedException e) {
+                                    logger.error(e.getMessage(), e);
+                                    break;
+                                }
+
+                            }
+
+                            if ((transfer.getStatus().getState() == TransferState.FAILED || transfer.getStatus().getState() == TransferState.CANCELED)) {
+                                throw new IllegalStateException("Přenos souborů neproběhl");
+                            }
+
+                            String batchId = transfer.getTransferId();
 
                             while (!daService.ingestStatusFinished(digitalRepository, batchId)) {
                                 try {

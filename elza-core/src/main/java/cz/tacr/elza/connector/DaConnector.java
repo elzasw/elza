@@ -2,6 +2,7 @@ package cz.tacr.elza.connector;
 
 import com.lightcomp.ft.client.Client;
 import com.lightcomp.ft.client.DownloadRequest;
+import com.lightcomp.ft.client.Transfer;
 import com.lightcomp.ft.client.UploadRequest;
 import com.lightcomp.ft.simple.DwnldRequestImpl;
 import com.lightcomp.ft.simple.UploadRequestImpl;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class DaConnector {
@@ -83,11 +85,12 @@ public class DaConnector {
         }
     }
 
-    public void ingestFileTransfer(ArrDigitalRepository digitalRepository, Path exportDir, String batchId) {
+    public Transfer ingestFileTransfer(ArrDigitalRepository digitalRepository, Path exportDir) {
         GenericDataType genericDataType = new GenericDataType();
-        genericDataType.setId(batchId);
+        genericDataType.setId(UUID.randomUUID().toString());
+        genericDataType.setType("ingest");
         UploadRequest uploadRequest = new UploadRequestImpl(exportDir, genericDataType);
-        getFileTransferClient(digitalRepository).uploadSync(uploadRequest);
+        return getFileTransferClient(digitalRepository).upload(uploadRequest);
     }
 
     public void invalidate(ArrDigitalRepository digitalRepository) {

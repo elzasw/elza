@@ -18,6 +18,8 @@ public class DaInstance {
 
     private final String url;
 
+    private static final String FILETRANSFER_URL = "/ws/ft";
+
     public DaInstance(final String url, final String apiKey, final String apiValue, final String username, final String password) {
         if (StringUtils.isEmpty(url)) {
             throw new IllegalArgumentException("Není nastavena properta da.url pro připojení api");
@@ -34,7 +36,7 @@ public class DaInstance {
         String apiUrl = getApiUrl();
         ApiClientDa apiClientDa = new ApiClientDa(apiUrl, apiKey, apiValue);
         defaultApi = new DefaultApi(apiClientDa);
-        fileTransferClient = FileTransfer.createClient(createClientConfig(url, username, password));
+        fileTransferClient = FileTransfer.createClient(createClientConfig(url + FILETRANSFER_URL, username, password));
         fileTransferClient.start();
         logger.debug("Inicializován konektor na DA: {} (apiKey: {})", apiUrl, apiKey);
     }
