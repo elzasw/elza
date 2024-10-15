@@ -2144,6 +2144,7 @@ public class ClientFactoryVO {
             if (state.getFund() != null) {
                 vo.setFund(createFundGen(state.getFund()));
             }
+            vo.setFundCode(state.getFundCode());
             if (state.getUnitdateFrom() != null) {
                 vo.setUnitdateFrom(state.getUnitdateFrom().toString());
             }

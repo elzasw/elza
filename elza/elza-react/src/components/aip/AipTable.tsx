@@ -77,7 +77,7 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
         switch(key) {
             case "aipSize": return formatAipSize(item[key]);
             case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom, item.unitdateTo): "-";
-            case "fund.name": return item.fund ? item.fund.name : "";
+            case "fund.name": return item.fund ? item.fund.name : "-";
             case "institution.name": return item.institution.name;
             default:
                 return findColDefByKey(key).type == "bool" ? getBoolIcon(item[key]) : item[key] ? item[key] : "-" ; // Sorry xD

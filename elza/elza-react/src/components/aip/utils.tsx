@@ -108,6 +108,7 @@ export const colDef = [
     {key: "code", name: "Kód aipu", path: DA_AIP_PATH, type: "string", minWidth: 50, idealWidth: 70},
     {key: "aipVersion", name: "Verze Aipu", path: DA_AIP_STATE_PATH ,type: "string", minWidth: 60, idealWidth: 90},
     {key: "fund.name", name: "Archivní soubor", path: ARR_FUND, type: "ref", minWidth: 70, idealWidth: 115},
+    {key: "fundCode", name: "Kód archivního souboru", path: DA_AIP_STATE_PATH, type: "string", minWidth: 70, idealWidth: 115},
     {key: "institution.name", name: "Instituce", path: INST_ACCESS_POINT, type: "ref", minWidth: 70, idealWidth: 70},
     {key: "institutionCode", name: "Kód instutuce", path: DA_AIP_STATE_PATH, type: "string", minWidth: 70, idealWidth:70},
     {key: "unitdateFrom", name: "Datace od-do", path: DA_AIP_STATE_PATH, type: "date", minWidth: 60, idealWidth: 105},
