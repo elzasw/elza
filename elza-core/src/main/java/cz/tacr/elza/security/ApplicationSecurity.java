@@ -76,6 +76,8 @@ public class ApplicationSecurity {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationSecurity.class);
 
+    public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/fund/**", "/node/**", "/entity/**", "/admin/**"};
+
     @Autowired
     private ApplicationContext applicationContext;
 
@@ -226,7 +228,7 @@ public class ApplicationSecurity {
         	 * tento dotaz je zpracován výchozím Spring controller.
         	 */
     		.authorizeHttpRequests(auth -> auth
-    				.requestMatchers("/", "/res/**").permitAll()
+    				.requestMatchers(PERMIT_ALL_PATTERNS).permitAll()
     				.anyRequest().authenticated())
     		.httpBasic(Customizer.withDefaults())
 
