@@ -76,6 +76,11 @@ public class ApplicationSecurity {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationSecurity.class);
 
+    /**
+     * These patterns need to be allowed to access without authorization 
+     * to make it possible to navigate from the browser address bar for unauthorized users
+     * @see cz.tacr.elza.web.controller.ElzaWebController (elza-web)
+     */
     public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/fund/**", "/node/**", "/entity/**", "/admin/**"};
 
     @Autowired
