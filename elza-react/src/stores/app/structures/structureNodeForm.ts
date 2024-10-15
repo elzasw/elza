@@ -2,7 +2,7 @@ import * as types from '../../../actions/constants/ActionTypes';
 import subNodeForm from '../arr/subNodeForm';
 import {structureFormActions} from '../../../actions/arr/subNodeForm';
 import {consolidateState} from '../../../components/Utils';
-import {Action} from 'redux';
+import { ActionWithArea } from 'actions/arr/subNodeForm/itemFormActions';
 
 type State = {
     id: number | null;
@@ -21,7 +21,7 @@ const initialState: State = {
     subNodeForm: subNodeForm(),
 };
 
-export interface StructureNodeFormAction extends Action {
+export interface StructureNodeFormAction extends ActionWithArea {
     structureIds?: number[];
     id?: number;
     routingKey?: number;

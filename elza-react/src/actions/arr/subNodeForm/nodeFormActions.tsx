@@ -4,11 +4,17 @@
 
 import { WebApi } from 'actions/index';
 import { findByRoutingKeyInGlobalState, getRoutingKeyType, indexById } from 'stores/app/utils';
-import NodeRequestController from 'src/websocketController';
+import NodeRequestController from '../../../websocketController';
 import { increaseNodeVersion } from '../node';
 import { fundNodeInfoReceive } from '../nodeInfo';
 import { fundSubNodeInfoReceive } from '../subNodeInfo';
-import { ItemFormActions, NODE_AREA } from './itemFormActions';
+import { AreaType, CreateDescItemResult, ItemFormActions } from './itemFormActions';
+import { Api } from 'api';
+import { AppState, DescItemTypeRef, Node } from 'typings/store';
+import { DescItem, DescItemFromServer } from 'typings/DescItem';
+import { ValueLocationIndex } from 'typings/store/SubNodeForm.types';
+import { NodeItem } from 'elza-api';
+import { transformToNodeItem } from './itemData';
 
 // Konfigurace velikosti cache dat pro formulář
 const CACHE_SIZE = 20;
@@ -16,7 +22,7 @@ const CACHE_SIZE2 = CACHE_SIZE / 2;
 
 //var debouncedGetFundNodeForm = debounce(WebApi.getFundNodeForm,200);
 export class NodeFormActions extends ItemFormActions {
-    static AREA = NODE_AREA;
+    static AREA = AreaType.NODE_AREA;
 
     constructor() {
         super(NodeFormActions.AREA);
@@ -31,7 +37,7 @@ export class NodeFormActions extends ItemFormActions {
      * @param {int} routingKey klíč určující umístění, např. u pořádání se jedná o identifikaci záložky NODE, ve které je formulář
      * @param {Object} valueLocation konkrétní umístění
      */
-    fundSubNodeFormValuesCopyFromPrev(versionId, nodeId, nodeVersionId, descItemTypeId, routingKey, valueLocation) {
+    fundSubNodeFormValuesCopyFromPrev(versionId: number, nodeId: number, nodeVersionId: number, descItemTypeId: number, routingKey: string, valueLocation: ValueLocationIndex) {
         return (dispatch, getState) => {
             dispatch(this._fundSubNodeFormDescItemTypeDeleteInStore(versionId, routingKey, valueLocation, true));
             WebApi.copyOlderSiblingAttribute(versionId, nodeId, nodeVersionId, descItemTypeId).then(json => {
@@ -47,12 +53,12 @@ export class NodeFormActions extends ItemFormActions {
      * Odpovídá volání WebApi.getFundNodeForm, jen dále zajišťuje cache.
      */
     //@Override
-    _getItemFormData(getState, dispatch, versionId, nodeId, routingKey, showChildren, showParents) {
+    _getItemFormData(getState: () => AppState, dispatch, versionId: number, nodeId: number, routingKey: string, showChildren: boolean, showParents: boolean) {
         const type = getRoutingKeyType(routingKey);
         switch (type) {
             case 'NODE': // podpora kešování
                 const state = getState();
-                const node = this._getParentObjStore(state, versionId, routingKey);
+                const node = this._getParentObjStore(state, versionId, routingKey) as Node;
                 if (node === null) {
                     console.error('Node not found, versionId=' + versionId);
                     return; // nemělo by nastat
@@ -66,6 +72,7 @@ export class NodeFormActions extends ItemFormActions {
                     // ##
                     // # Data pro cache, jen pokud již cache nenačítá
                     // ##
+                    /*
                     if (false) {
                         if (node.isNodeInfoFetching || !node.nodeInfoFetched || node.nodeInfoDirty) {
                             // nemáme platné okolí (okolní NODE) pro daný NODE, raději je načteme ze serveru; nemáme vlastně okolní NODE pro získání seznamu ID pro načtení formulářů pro cache
@@ -105,12 +112,13 @@ export class NodeFormActions extends ItemFormActions {
                             }
                         }
                     }
+                    */
 
                     // ##
                     // # Data požadovaného formuláře
                     // ##
 
-                    const nodeParam = {nodeId};
+                    const nodeParam = { nodeId };
                     const resultParam = {
                         formData: true,
                         parents: showParents && node.changeParent,
@@ -129,19 +137,19 @@ export class NodeFormActions extends ItemFormActions {
                             }),
                         );
 
-                        dispatch(fundSubNodeInfoReceive(versionId, nodeId, routingKey, {nodes: json.children}));
+                        dispatch(fundSubNodeInfoReceive(versionId, nodeId, routingKey, { nodes: json.children }));
 
                         return json.formData;
                     });
                 } else {
                     // je v cache, vrátíme ji
                     //console.log('### USE_CACHE')
-                    return new Promise(function (resolve, reject) {
+                    return new Promise(function(resolve, reject) {
                         resolve(data);
                     });
                 }
             case 'DATA_GRID': // není podpora kešování
-                const nodeParam = {nodeId};
+                const nodeParam = { nodeId };
                 const resultParam = {
                     formData: true,
                 };
@@ -152,7 +160,7 @@ export class NodeFormActions extends ItemFormActions {
     }
 
     // @Override
-    _getItemFormStore(state, versionId, routingKey) {
+    _getItemFormStore(state: AppState, versionId: number, routingKey: string) {
         const type = getRoutingKeyType(routingKey);
         switch (type) {
             case 'NODE':
@@ -177,7 +185,7 @@ export class NodeFormActions extends ItemFormActions {
     }
 
     // @Override
-    _getParentObjStore(state, versionId, routingKey) {
+    _getParentObjStore(state: AppState, versionId: number, routingKey: string) {
         const type = getRoutingKeyType(routingKey);
         switch (type) {
             case 'NODE':
@@ -200,12 +208,10 @@ export class NodeFormActions extends ItemFormActions {
     }
 
     // @Override
-    _callUpdateDescItem(dispatch, formState, versionId, parentVersionId, parentId, descItem) {
+    _callUpdateDescItem(dispatch, formState, versionId: number, parentVersionId: number, parentId: number, descItem: DescItem) {
         // Umělé navýšení verze o 1 - aby mohla pozitivně projít případná další update operace
-        console.log('Before update, parentVersionId: ', parentVersionId);
         dispatch(increaseNodeVersion(versionId, parentId, parentVersionId));
 
-        console.log('update desc Item');
         return new Promise((resolve, reject) => {
             NodeRequestController.updateRequest(versionId, parentVersionId, parentId, descItem, json => {
                 resolve(json);
@@ -214,39 +220,40 @@ export class NodeFormActions extends ItemFormActions {
     }
 
     // @Override
-    _callDeleteDescItem(versionId, parentId, parentVersionId, descItem) {
+    _callDeleteDescItem(versionId: number, parentId: number, parentVersionId: number, descItem: DescItem) {
         return WebApi.deleteDescItem(versionId, parentId, parentVersionId, descItem);
     }
 
     // @Override
-    _callCreateDescItem(versionId, parentId, parentVersionId, descItemTypeId, descItem) {
-        console.log('create desc Item');
-        return WebApi.createDescItem(versionId, parentId, parentVersionId, descItemTypeId, descItem);
+    async _callCreateDescItem(versionId: number, parentId: number, parentVersionId: number, _descItemTypeId: number, descItem: DescItem, refType: DescItemTypeRef) {
+        const nodeItem = transformToNodeItem(descItem, parentId, parentVersionId, refType);
+        const { data } = await Api.descItems.descItemCreateDescItem(versionId, nodeItem);
+        return data as CreateDescItemResult;
     }
 
     // @Override
-    _callArrCoordinatesImport(versionId, parentId, parentVersionId, descItemTypeId, file) {
+    _callArrCoordinatesImport(versionId: number, parentId: number, parentVersionId: number, descItemTypeId: number, file) {
         return WebApi.arrCoordinatesImport(versionId, parentId, parentVersionId, descItemTypeId, file);
     }
 
     // @Override
-    _callDescItemCsvImport(versionId, parentId, parentVersionId, descItemTypeId, file) {
+    _callDescItemCsvImport(versionId: number, parentId: number, parentVersionId: number, descItemTypeId: number, file) {
         return WebApi.descItemCsvImport(versionId, parentId, parentVersionId, descItemTypeId, file);
     }
 
     // @Override
-    _callDeleteDescItemType(versionId, parentId, parentVersionId, descItemTypeId) {
+    _callDeleteDescItemType(versionId: number, parentId: number, parentVersionId: number, descItemTypeId: number) {
         return WebApi.deleteDescItemType(versionId, parentId, parentVersionId, descItemTypeId);
     }
 
     // @Override
     _callSetNotIdentifiedDescItem(
-        versionId,
-        nodeId,
-        parentNodeVersion,
-        descItemTypeId,
-        descItemSpecId,
-        descItemObjectId,
+        versionId: number,
+        nodeId: number,
+        parentNodeVersion: number,
+        descItemTypeId: number,
+        descItemSpecId: number,
+        descItemObjectId: number,
     ) {
         return WebApi.setNotIdentifiedDescItem(
             versionId,
@@ -260,12 +267,12 @@ export class NodeFormActions extends ItemFormActions {
 
     // @Override
     _callUnsetNotIdentifiedDescItem(
-        versionId,
-        nodeId,
-        parentNodeVersion,
-        descItemTypeId,
-        descItemSpecId,
-        descItemObjectId,
+        versionId: number,
+        nodeId: number,
+        parentNodeVersion: number,
+        descItemTypeId: number,
+        descItemSpecId: number,
+        descItemObjectId: number,
     ) {
         return WebApi.unsetNotIdentifiedDescItem(
             versionId,
@@ -277,15 +284,15 @@ export class NodeFormActions extends ItemFormActions {
         );
     }
 
-    _callSetInhibitDescItem(nodeId, itemId, inhibit){
-        if(inhibit){
+    _callSetInhibitDescItem(nodeId: number, itemId: number, inhibit: boolean) {
+        if (inhibit) {
             return WebApi.inhibitDescItem(nodeId, itemId);
         }
         return WebApi.allowDescItem(nodeId, itemId);
     }
 
     // @Override
-    _getParentObjIdInfo(parentObjStore, routingKey) {
+    _getParentObjIdInfo(parentObjStore: any, routingKey: string) {
         const type = getRoutingKeyType(routingKey);
         switch (type) {
             case 'NODE':
@@ -294,7 +301,7 @@ export class NodeFormActions extends ItemFormActions {
                     parentVersion: parentObjStore.subNodeForm.versionId,
                 };
             case 'DATA_GRID':
-                return {parentId: parentObjStore.nodeId, parentVersion: parentObjStore.subNodeForm.versionId};
+                return { parentId: parentObjStore.nodeId, parentVersion: parentObjStore.subNodeForm.versionId };
             default:
                 break;
         }
