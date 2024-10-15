@@ -20,6 +20,7 @@ export const findNodeByUUID = (tree, uuid, path = []) => {
 
     if (Array.isArray(tree.childFiles)) {
         for (const file of tree.childFiles) {
+            file.parent = tree;
             if (file.uuid === uuid) {
                 return { node: file, path: [...path, file] };
             }
@@ -28,7 +29,8 @@ export const findNodeByUUID = (tree, uuid, path = []) => {
 
     if (Array.isArray(tree.childFolders)) {
         for (const folder of tree.childFolders) {
-            const result = findNodeByUUID(folder, uuid, [...path]); 
+            folder.parent = tree;
+            const result = findNodeByUUID(folder, uuid, [...path]);
             if (result) {
                 return result;
             }
@@ -49,7 +51,7 @@ export const findNodeById = (tree, id, path = []) => {
 
     if (Array.isArray(tree.childFolders)) {
         for (const folder of tree.childFolders) {
-            const result = findNodeById(folder, id, [...path]); 
+            const result = findNodeById(folder, id, [...path]);
             if (result) {
                 return result;
             }

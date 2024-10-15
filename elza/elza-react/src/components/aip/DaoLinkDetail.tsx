@@ -42,7 +42,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
         });
     }
 
-    const handleOpenExplorer = (aipId: number) => {
+    const handleOpenExplorer = (aipId: number, daoCode?: string) => {
         dispatch(aipActions.selectAip(aipId));
         dispatch(
             modalDialogShow(
@@ -53,6 +53,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
                     onOk={() => dispatch(modalDialogHide())}
                     onClose={() => dispatch(modalDialogHide())}
                     mode={ExplorerMode.VIEW}
+                    selected={daoCode}
                 />,
                 "aip-explorer"
             ),
@@ -117,7 +118,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
 
         return (<p>
             {DaDaoTypeCaption(item.daoType) + ": "}
-            <Button key="explorerLink" variant="link" onClick={() => handleOpenExplorer(item.aipId)}>
+            <Button key="explorerLink" variant="link" onClick={() => handleOpenExplorer(item.aipId, item.daoCode)}>
                 {item.name}
             </Button>
             {item.children && " komponenty: " + item.children.length}

@@ -2223,7 +2223,7 @@ public class ClientFactoryVO {
 
     public ExplorerTreeNodeFile createExplorerTreeNodeFile(DaDaoFile daDaoFile, List<ArrDaoLink> daoLinks, Map<Integer, TreeNodeVO> treeNodeMap) {
         ExplorerTreeNodeFile result = new ExplorerTreeNodeFile();
-        result.setUuid(UUID.nameUUIDFromBytes(daDaoFile.getDaoFileId().toString().getBytes()).toString());
+        result.setUuid(daDaoFile.getDao().getCode());
         result.setDaoFileId(daDaoFile.getDaoFileId());
         result.setChecksum(daDaoFile.getChecksum());
         result.setChecksumType(daDaoFile.getChecksumType());

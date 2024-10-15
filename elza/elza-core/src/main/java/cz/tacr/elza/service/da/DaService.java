@@ -1528,7 +1528,7 @@ public class DaService {
     private DaoLink createDaoLink(Integer aipId) {
 
         DaoLink daoLink = new DaoLink();
-        daoLink.setDaoLinkUuid(UUID.randomUUID().toString());
+        daoLink.setDaoLinkUuid(UUID.nameUUIDFromBytes(("AIP" + aipId).getBytes()).toString());
         daoLink.setAipId(aipId);
         daoLink.setName(aipId.toString());
 
@@ -1539,7 +1539,7 @@ public class DaService {
         DaDao dao = arrDaoLink.getDaDao();
 
         DaoLink daoLink = new DaoLink();
-        daoLink.setDaoLinkUuid(UUID.randomUUID().toString());
+        daoLink.setDaoLinkUuid(UUID.nameUUIDFromBytes(arrDaoLink.getDaoLinkId().toString().getBytes()).toString());
         daoLink.setDaoLinkId(arrDaoLink.getDaoLinkId());
         daoLink.setAipId(arrDaoLink.getAip().getAipId());
 

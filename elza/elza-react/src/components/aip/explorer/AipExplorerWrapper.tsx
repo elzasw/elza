@@ -7,12 +7,13 @@ type AipExplorerModalWrapperProps = {
     onOk: () => void;
     onClose: () => void;
     mode: ExplorerMode;
+    selected?: string;
 }
 
-const AipExplorerModalWrapper = ({onOk, onClose, mode}: AipExplorerModalWrapperProps) => (
+const AipExplorerModalWrapper = ({onOk, onClose, mode, selected}: AipExplorerModalWrapperProps) => (
     <>
         <Modal.Body>
-            <AipExplorer mode={mode}/>
+            <AipExplorer mode={mode} selected={selected}/>
         </Modal.Body>
         <Modal.Footer>
             <Button onClick={onOk} variant="outline-secondary">
