@@ -71,7 +71,7 @@ const AipDetail = () => {
                         />
                     }
                 >
-                      <h2>Detail AIP</h2>
+                      <h2>{i18n("aip.detail.title")}</h2>
                 </DrawerHeaderTitle>
             </DrawerHeader>
             <DrawerBody>
@@ -90,16 +90,6 @@ const AipDetail = () => {
                         </Button>
                         <AipDetailBody detail={aip.data} />
                     </div>
-
-                    {/* <h2>Chyba</h2>
-                    <DetailRow label="Technický popis"/>
-                        <div className='br'>
-                            ERRR
-                        </div>
-                    <DetailRow label="Podrobný popis"/>
-                    <div className='br'>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer iaculis nunc at scelerisque pretium. Proin quis nisi leo. Maecenas gravida orci a turpis blandit efficitur. Pellentesque porta purus mauris, et semper metus mollis sit amet. Curabitur varius et augue non tincidunt. Vivamus accumsan mollis odio non imperdiet. In ut urna quam.
-                    </div> */}
                 </>}
             </DrawerBody>
         </InlineDrawer>
