@@ -14,9 +14,10 @@ import { AppState } from "typings/store";
 type AipExplorerProps = {
     mode: ExplorerMode;
     onSelect?: (node) => void;
+    selected?: string;
 }
 
-const AipExplorer = ({mode, onSelect}: AipExplorerProps) => {
+const AipExplorer = ({mode, onSelect, selected}: AipExplorerProps) => {
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
 
     if(!aip.id) {
@@ -35,7 +36,7 @@ const AipExplorer = ({mode, onSelect}: AipExplorerProps) => {
                 <Splitter
                     left={<ExplorerTree onSelect={onSelect}/>}
                     center={<ExplorerTable />}
-                    right={<ExplorerDetail />}
+                    right={<ExplorerDetail selected={selected} />}
                     rightSize={370}
                 />
             </div>

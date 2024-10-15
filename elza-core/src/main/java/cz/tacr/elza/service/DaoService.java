@@ -758,7 +758,7 @@ public class DaoService {
                             .toList()
                             .get(0);
             ExplorerTreeNodeFile fileNode =  clientFactoryVO.createExplorerTreeNodeFile(f, daoLinkMap.getOrDefault(f.getDao().getDaoId(), new ArrayList<>()), treeNodeMap);
-            fileNode.setParentFolderLogical(createParent(createExplorerTreeNodeWithNodes(relation.getParentDao().getDaoId(), relation.getParentDao().getLabel(), null)));
+            fileNode.setParentFolderLogical(createParent(createExplorerTreeNodeWithNodes(relation.getParentDao().getCode(), relation.getParentDao().getDaoId(), relation.getParentDao().getLabel(), null)));
             fileNodes.add(fileNode);
         }
 
@@ -814,7 +814,7 @@ public class DaoService {
     private void createLogicalFolderMap(List<DaDao> daDaoList, Map<Integer, ExplorerTreeNode> itemMap, Map<Integer, List<ArrDaoLink>> daoLinkMap, Map<Integer, TreeNodeVO> treeNodeMap) {
         List<DaDao> logicalList = filterDaDaoByType(daDaoList, DaDao.DaoType.LOGICAL);
         logicalList.forEach(dao -> {
-            ExplorerTreeNode item = createExplorerTreeNodeWithNodes(dao.getDaoId(), dao.getLabel(),
+            ExplorerTreeNode item = createExplorerTreeNodeWithNodes(dao.getCode(), dao.getDaoId(), dao.getLabel(),
                     clientFactoryVO.createLinkedNodes(daoLinkMap.getOrDefault(dao.getDaoId(), new ArrayList<>()), treeNodeMap));
             itemMap.put(dao.getDaoId(), item);
         });
@@ -845,7 +845,7 @@ public class DaoService {
     private void addFilesToFoldersLogical(List<ExplorerTreeNodeFile> files, Map<Integer, ExplorerTreeNode> itemMap, ExplorerTreeNode root) {
         for (ExplorerTreeNodeFile file : files) {
             ExplorerTreeNodeFile copy = clientFactoryVO.copyFile(file);
-            copy.setUuid(UUID.nameUUIDFromBytes((file.getDaoFileFolderId().toString() + "cpy").getBytes()).toString());
+            copy.setUuid(file.getUuid() + "logical");
             ExplorerTreeNode parent = itemMap.getOrDefault(
                     file.getParentFolderLogical() != null ? file.getParentFolderLogical().getDaoId() : null, root
             );
@@ -916,9 +916,9 @@ public class DaoService {
         return metadata;
     }
 
-    private ExplorerTreeNode createExplorerTreeNodeWithNodes(Integer id, String label, List<LinkedNode> linkedNodes) {
+    private ExplorerTreeNode createExplorerTreeNodeWithNodes(String uuid, Integer id, String label, List<LinkedNode> linkedNodes) {
         ExplorerTreeNode node = new ExplorerTreeNode();
-        node.setUuid(UUID.nameUUIDFromBytes(id.toString().getBytes()).toString());
+        node.setUuid(uuid);
         node.setDaoId(id);
         node.setLabel(label);
         node.setLinkedNodes(linkedNodes);
@@ -926,7 +926,7 @@ public class DaoService {
     }
 
     private ExplorerTreeNode createExplorerTreeNode(Integer id, String label, List<ExplorerTreeNode> children) {
-        ExplorerTreeNode vo = createExplorerTreeNodeWithNodes(id, label, null);
+        ExplorerTreeNode vo = createExplorerTreeNodeWithNodes(UUID.nameUUIDFromBytes(id.toString().getBytes()).toString(), id, label, null);
         if(children != null && !children.isEmpty()) {
             vo.setChildFolders(children);
         }

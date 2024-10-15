@@ -19,7 +19,7 @@ import CrossTabHelper, { CrossTabEventType, getThisLayout } from "../../../Cross
 import {WebApi} from 'actions/WebApi';
 import { DaoViewRequestInfoVO } from "api/DaoViewRequestInfoVO.ts";
 
-const ExplorerDetail: FC = () => {
+const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
     const {selectedItem, setSelectedItem} = useExplorerContext();
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
     const structure = useSelector((state: AppState) => storeFromArea(state, AREA_AIP_STRUCTURE));
@@ -55,6 +55,15 @@ const ExplorerDetail: FC = () => {
             setNode(selectedItem)
         }
     }, [selectedItem]);
+
+    useEffect(() => {
+        if (selected && structure.data) {
+            const result = findNodeByUUID(structure.data, selected);
+            if (result && result.node) {
+                setSelectedItem(result.node);
+            }
+        }
+    }, [structure.data, selected]);
 
 
     const DetailRow = ({label, value}: {label: string, value?: any}) => (
