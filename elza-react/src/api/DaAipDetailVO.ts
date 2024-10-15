@@ -9,6 +9,7 @@ export type DaAipDetailVO = {
     digitalRepositoryId: number;
     aipVersion: string;
     fund: any;
+    fundCode: string;
     institution: ParInstitutionVO;
     institutionCode: string;
     unitdateFrom: string;

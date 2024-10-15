@@ -34,6 +34,8 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
                     <a href={`${serverContextPath}/fund/${detail.fund.id}`}>{detail.fund.name}</a>
                 }/>
             }
+            {detail.fundCode &&
+                <DetailRow label={i18n("aip.detail.fundCode")} value={detail.fundCode}/>}
             {detail.institution &&
                 <DetailRow label={i18n("aip.detail.institution.name")} value={
                     <a href={`${serverContextPath}/entity/${detail.institution.id}`}>{detail.institution.name}</a>

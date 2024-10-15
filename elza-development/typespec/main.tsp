@@ -923,6 +923,10 @@ model AipDetailVO {
      */
     fund: ArrFundGen;
     /**
+     * Kód archivního souboru
+     */
+    fundCode: string;
+    /**
      * Instituce
      */
     institution: ParInstitutionGen;

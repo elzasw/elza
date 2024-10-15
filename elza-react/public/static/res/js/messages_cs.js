@@ -1919,5 +1919,6 @@ var messages = {
     "aip.detail.importState": "Aktuální verze",
     "aip.detail.exportState": "Stav exportu",
     "aip.detail.linkedNode": "Napojen archivní popis",
+    "aip.detail.fundCode": "Kód archivního souboru",
     ____: "",
 };

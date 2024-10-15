@@ -2036,6 +2036,8 @@ components:
           allOf:
             - $ref: '#/components/schemas/ArrFundGen'
           description: Archivní soubor
+        fundCode:
+          type: string
         institution:
           allOf:
             - $ref: '#/components/schemas/ParInstitutionGen'
