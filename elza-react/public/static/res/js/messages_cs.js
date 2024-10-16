@@ -1478,6 +1478,7 @@ var messages = {
     "admin.extSystem.gis-edit": "Editace",
     "admin.extSystem.wsdl": "WSDL",
     "admin.extSystem.filesystem": "Souborový systém",
+    "admin.extSystem.da": "Digitální archiv",
     "admin.extSystem.apiKeyId": "ApiKey - ID",
     "admin.extSystem.apiKeyValue": "ApiKey - hodnota",
 

@@ -12,6 +12,10 @@ public enum DigitalRepositoryType  {
     /**
      * Filesystem
      */
-    FILESYSTEM
+    FILESYSTEM,
+    /**
+     * Digitální archiv
+     */
+    DA,
 
 }
