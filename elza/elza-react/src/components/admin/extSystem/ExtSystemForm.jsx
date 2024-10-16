@@ -38,6 +38,7 @@ export const GIS_SYSTEM_TYPE_LABEL = {
 export const DIGITAL_REPOSITORY_TYPE_LABEL = {
     [DigitalRepositoryType.Wsdl]: i18n('admin.extSystem.wsdl'),
     [DigitalRepositoryType.Filesystem]: i18n('admin.extSystem.filesystem'),
+    [DigitalRepositoryType.Da]: i18n('admin.extSystem.da'),
 }
 
 const FIELDS = {

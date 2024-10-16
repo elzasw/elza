@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.da;
 
+import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.service.ExternalSystemService;
 import jakarta.transaction.Transactional;
@@ -46,7 +47,9 @@ public class DaScheduler implements SchedulingConfigurer {
     @Override
     @Transactional
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
-        List<ArrDigitalRepository> digitalRepositoryList = externalSystemService.findDigitalRepository();
+        List<ArrDigitalRepository> digitalRepositoryList = externalSystemService.findDigitalRepository().stream()
+                .filter(d -> d.getDigitalRepositoryType() == DigitalRepositoryType.DA)
+                .toList();
 
         if (CollectionUtils.isEmpty(digitalRepositoryList)) {
             return;

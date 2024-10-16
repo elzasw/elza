@@ -109,8 +109,7 @@ public class DaConnector {
     }
 
     public DaInstance get(ArrDigitalRepository digitalRepository) {
-        if (digitalRepository.getDigitalRepositoryType() == DigitalRepositoryType.WSDL ||
-                digitalRepository.getDigitalRepositoryType() == DigitalRepositoryType.FILESYSTEM) {
+        if (digitalRepository.getDigitalRepositoryType() == DigitalRepositoryType.DA) {
             // use cache instanceMap
             DaInstance daInstance = instanceMap.get(digitalRepository.getExternalSystemId());
             if (daInstance == null) {

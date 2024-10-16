@@ -17,7 +17,8 @@ export enum GisSystemType {
 
 export enum DigitalRepositoryType {
     Wsdl = "WSDL",
-    Filesystem = "FILESYSTEM"
+    Filesystem = "FILESYSTEM",
+    Da = "DA",
 }
 
 export enum MODAL_DIALOG_VARIANT {
