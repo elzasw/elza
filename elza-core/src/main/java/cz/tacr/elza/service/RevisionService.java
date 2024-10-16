@@ -245,14 +245,19 @@ public class RevisionService {
         // nemůžeme změnit třídu revize, pokud je entita v CAM
         ApType nextType = revState.getType();
         if (!nextApTypeId.equals(revState.getTypeId())) {
+            // dostáváme nový ApType
+            nextType = sdp.getApTypeById(nextApTypeId);
+        	// nelze změnit třídu pokud existuje platná ApBindingState
             int countBinding = bindingStateRepository.countByAccessPoint(state.getAccessPoint());
             if (countBinding > 0) {
-                throw new SystemException("Třídu revize entity z CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
-                    .set("accessPointId", state.getAccessPointId())
+            	// nový ApType nesmí být v jiné třídě, pouze v té aktuální
+            	Integer parentApTypeId = revState.getType().getParentApTypeId();
+            	if (!nextType.getParentApTypeId().equals(parentApTypeId)) {
+                    throw new SystemException("Třídu revize entity z CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                        .set("accessPointId", state.getAccessPointId())
                         .set("revisionId", revState.getRevisionId());
+            	}
             }
-
-            nextType = sdp.getApTypeById(nextApTypeId);
         }
 
         if (revNextState == null) {
