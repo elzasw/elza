@@ -46,6 +46,7 @@ const createFilter = values => {
         extinction: values.extinction,
         relFilters: relFilters,
         extFilters: extFilters,
+        syncState: values.syncState,
     };
 };
 
