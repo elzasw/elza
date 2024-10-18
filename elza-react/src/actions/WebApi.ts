@@ -124,7 +124,7 @@ export class WebApiCls {
     }
 
     getDaDaoListByAipId(id) {
-        return AjaxUtils.ajaxGet(WebApiCls.v1 + "/dao/aip/" + id);
+        return AjaxUtils.ajaxGet(WebApiCls.v1 + "/daos/aip/" + id);
     }
 
     getDaoViewRequestInfo(id) {

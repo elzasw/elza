@@ -29,7 +29,7 @@ import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
 
 type Item = {
-    fileName?: string;
+    filename?: string;
     label?: string;
     size?: number;
     mimeType?: string;
@@ -39,10 +39,10 @@ const columns: TableColumnDefinition<Item>[] = [
     createTableColumn<Item>({
       columnId: "name",
       renderHeaderCell: () => <>Název</>,
-      renderCell: (item) => <>{item.fileName ? getFileName(item.fileName ): item.label || "-"}</>,
+      renderCell: (item) => <>{item.filename ? getFileName(item.filename ): item.label || "-"}</>,
       compare: (a, b) => {
-        const nameA = a.fileName || a.label;
-        const nameB = b.fileName || b.label;
+        const nameA = a.filename || a.label;
+        const nameB = b.filename || b.label;
         return nameA?.localeCompare(nameB)}
     }),
     createTableColumn<Item>({

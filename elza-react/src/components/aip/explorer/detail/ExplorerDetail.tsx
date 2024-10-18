@@ -93,7 +93,7 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
     }
 
     const renderName = () => {
-        return node.label || node.fileName;
+        return node.label || node.filename;
     }
 
     if(!node) {

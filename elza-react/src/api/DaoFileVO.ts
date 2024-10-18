@@ -13,7 +13,7 @@ export type DaoFileVO = {
     parentFolderLogical?: DaoFileFolderVO;
     description?: string;
     duration?: number;
-    fileName: string;
+    filename: string;
     imageHeight?: number;
     imageWifth?: number;
     parent?: DaoFileFolderVO;

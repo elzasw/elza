@@ -35,13 +35,13 @@ public class DaoController implements DaosApi {
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value="/dao/aip/{aipId}" )
-    public ExplorerTreeNode findByAipIdAndTypeAndDeleteChangeIsNull(@PathVariable(value = "aipId") final Integer aipId) {
-        return daoService.findByAipIdAndTypeAndDeleteChangeIsNull(aipId);
+    @Override
+    public ResponseEntity<ExplorerTreeNode> daoFindByAipIdAndTypeAndDeleteChangeIsNull(@PathVariable(value = "aipId") final Integer aipId) {
+        return new ResponseEntity<>(daoService.findByAipIdAndTypeAndDeleteChangeIsNull(aipId), HttpStatus.OK);
     }
 
     @Override
-    public ResponseEntity<DaoViewRequestVO> getDaoViewRequestInfo(@ApiParam(value = "Identifikátor dao", required = true) @PathVariable("id") Integer id) {
+    public ResponseEntity<DaoViewRequestVO> daoGetDaoViewRequestInfo(@ApiParam(value = "Identifikátor dao", required = true) @PathVariable("id") Integer id) {
         return new ResponseEntity<>(daoService.getDaoViewRequestInfo(id), HttpStatus.OK);
     }
 }

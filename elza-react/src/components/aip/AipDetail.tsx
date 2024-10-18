@@ -71,7 +71,7 @@ const AipDetail = () => {
                         />
                     }
                 >
-                      <h2>{i18n("aip.detail.title")}</h2>
+                      {i18n("aip.detail.title")}
                 </DrawerHeaderTitle>
             </DrawerHeader>
             <DrawerBody>
