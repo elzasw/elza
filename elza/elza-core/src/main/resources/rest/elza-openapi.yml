@@ -489,27 +489,58 @@ paths:
           description: Změna scénáře provedena
         404:
           description: Dao neexistuje
-  /daos/component/{id}:
+  /daos/aip/{aipId}:
     get:
-      summary: Získání informací o da dao pro view request na digital repository
-      operationId: getDaoViewRequestInfo
       tags:
         - daos
+      operationId: Dao_findByAipIdAndTypeAndDeleteChangeIsNull
+      description: Získání stromu pro průzkumník aipu
       parameters:
-        - name: id
-          description: Identifikátor dao
+        - name: aipId
           in: path
           required: true
+          description: Identifikátor aipu
           schema:
             type: integer
-            format: int32
       responses:
-        200:
-          description: Změna scénáře provedena
+        '200':
+          description: The request has succeeded.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/DaoViewRequestVO"
+                $ref: '#/components/schemas/ExplorerTreeNode'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+  /daos/component/{id}:
+    get:
+      tags:
+        - daos
+      operationId: Dao_getDaoViewRequestInfo
+      description: Získání informací o da dao pro view request na digital repository
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifikátor da dao
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaoViewRequestVO'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
   /search-ap:
     post:
       tags:
@@ -2652,6 +2683,142 @@ components:
           type: string
           description: optional description of entity
       description: Return value when copying ApAccessPoint
+    ExplorerTreeNode:
+      type: object
+      required:
+        - uuid
+        - daoId
+        - label
+        - childFolders
+        - childFiles
+        - parentFolder
+        - parentFolderLogical
+        - linkedNodes
+      properties:
+        uuid:
+          type: string
+          description: Identifikátor nodu
+        daoId:
+          type: integer
+          format: int32
+          description: Identifikátor da dao
+        label:
+          type: string
+          description: Popisek nodu
+        childFolders:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExplorerTreeNode'
+          description: Seznam podsložek
+        childFiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExplorerTreeNodeFile'
+          description: Seznam podsouborů
+        parentFolder:
+          allOf:
+            - $ref: '#/components/schemas/ExplorerTreeNode'
+          description: Rodičovská složka
+        parentFolderLogical:
+          allOf:
+            - $ref: '#/components/schemas/ExplorerTreeNode'
+          description: Rodičovská složka v logické struktuře
+        linkedNodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkedNodeVO'
+          description: Seznam připojených nodů
+      description: Model ExplorerTreeNode
+    ExplorerTreeNodeFile:
+      type: object
+      required:
+        - daoFileId
+        - dao
+        - checksum
+        - checksumType
+        - mimeType
+        - size
+        - filename
+        - uuid
+        - daoId
+        - label
+        - childFolders
+        - childFiles
+        - parentFolder
+        - parentFolderLogical
+        - linkedNodes
+        - daoFileFolderId
+      properties:
+        daoFileId:
+          type: integer
+        dao:
+          $ref: '#/components/schemas/DaDao'
+        checksum:
+          type: string
+        checksumType:
+          type: string
+        mimeType:
+          type: string
+        size:
+          type: integer
+          format: int32
+        imageHeight:
+          type: integer
+        imageWidth:
+          type: integer
+        sourceXDimensionUnit:
+          type: string
+        sourceXDimensionValue:
+          type: integer
+        sourceYDimensionUnit:
+          type: string
+        sourceYDimensionValue:
+          type: integer
+        duration:
+          type: string
+        description:
+          type: string
+        filename:
+          type: string
+        daoFileFolder:
+          $ref: '#/components/schemas/DaDaoFileFolder'
+        uuid:
+          type: string
+          description: Identifikátor nodu
+        daoId:
+          type: integer
+          format: int32
+          description: Identifikátor da dao
+        label:
+          type: string
+          description: Popisek nodu
+        childFolders:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExplorerTreeNode'
+          description: Seznam podsložek
+        childFiles:
+          description: Seznam podsouborů
+          type: array
+          items:
+            $ref: '#/components/schemas/ExplorerTreeNodeFile'
+        parentFolder:
+          allOf:
+            - $ref: '#/components/schemas/ExplorerTreeNode'
+          description: Rodičovská složka
+        parentFolderLogical:
+          allOf:
+            - $ref: '#/components/schemas/ExplorerTreeNode'
+          description: Rodičovská složka v logické struktuře
+        linkedNodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkedNodeVO'
+          description: Seznam připojených nodů
+        daoFileFolderId:
+          type: integer
+          format: int32
+      description: Model ExplorerTreeNodeFile
     ExportParams:
       type: object
       properties:
@@ -3451,7 +3618,7 @@ components:
         sourceYDimensionValue:
           type: integer
         duration:
-          type: integer
+          type: string
         description:
           type: string
         filename:
@@ -3470,14 +3637,18 @@ components:
       description: DaDao type
     DaoViewRequestVO:
       type: object
-      properties:
-        daoId:
-          type: string
-        entityRef:
-          type: string
-        viewUrl:
-          type: string
       required:
         - daoId
         - entityRef
         - viewUrl
+      properties:
+        daoId:
+          type: string
+          description: Identifikátor aipu - aip.code
+        entityRef:
+          type: string
+          description: Identifikátor dao - dao.code
+        viewUrl:
+          type: string
+          description: Url pro zobratení komponenty
+      description: Model DaoVireRequest

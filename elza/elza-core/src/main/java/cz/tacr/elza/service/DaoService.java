@@ -8,6 +8,7 @@ import cz.tacr.elza.controller.vo.DaoViewRequestVO;
 import cz.tacr.elza.controller.vo.ExplorerTreeNode;
 import cz.tacr.elza.controller.vo.ExplorerTreeNodeFile;
 import cz.tacr.elza.controller.vo.LinkedNode;
+import cz.tacr.elza.controller.vo.LinkedNodeVO;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.domain.*;
 import cz.tacr.elza.repository.*;
@@ -845,7 +846,7 @@ public class DaoService {
     private void addFilesToFoldersLogical(List<ExplorerTreeNodeFile> files, Map<Integer, ExplorerTreeNode> itemMap, ExplorerTreeNode root) {
         for (ExplorerTreeNodeFile file : files) {
             ExplorerTreeNodeFile copy = clientFactoryVO.copyFile(file);
-            copy.setUuid(file.getUuid() + "logical");
+            copy.setUuid(UUID.nameUUIDFromBytes((file.getDaoFileFolderId().toString() + "cpy").getBytes()).toString());
             ExplorerTreeNode parent = itemMap.getOrDefault(
                     file.getParentFolderLogical() != null ? file.getParentFolderLogical().getDaoId() : null, root
             );
@@ -916,7 +917,7 @@ public class DaoService {
         return metadata;
     }
 
-    private ExplorerTreeNode createExplorerTreeNodeWithNodes(String uuid, Integer id, String label, List<LinkedNode> linkedNodes) {
+    private ExplorerTreeNode createExplorerTreeNodeWithNodes(String uuid, Integer id, String label, List<LinkedNodeVO> linkedNodes) {
         ExplorerTreeNode node = new ExplorerTreeNode();
         node.setUuid(uuid);
         node.setDaoId(id);
