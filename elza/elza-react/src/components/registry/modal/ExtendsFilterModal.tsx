@@ -115,9 +115,9 @@ const ExtendsFilterModal = ({
             const dataType: RulDataTypeVO = refTables.rulDataTypes.itemsMap[itemType.dataTypeId];
 
             if(
-                dataType.code === RulDataTypeCodeEnum.INT // #9085
-                    || dataType.code === RulDataTypeCodeEnum.COORDINATES // #9086
-                    || dataType.code === RulDataTypeCodeEnum.BIT // #9087
+                //dataType.code === RulDataTypeCodeEnum.INT || // #9085
+				//dataType.code === RulDataTypeCodeEnum.BIT || // #9087
+                dataType.code === RulDataTypeCodeEnum.COORDINATES // #9086
             ){
                 console.log("#### remove data type", dataType.code, itemType.code)
                 return false;
