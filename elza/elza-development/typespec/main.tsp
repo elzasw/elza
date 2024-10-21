@@ -5,43 +5,40 @@ import "@typespec/openapi3";
 using TypeSpec.Http;
 using TypeSpec.Rest;
 
-/** Basic statistics about Elza instance */
+/**
+ * Basic statistics about Elza instance
+ */
 model AdminInfo {
     /** Number of funds */
     funds: int32;
-
     /** Number of valid levels */
     levels: int32;
-
     /** Number of valid access points */
     accessPoints: int32;
-
     /** Number of users */
     users: int32;
-
     /** Number of logged users */
     loggedUsers: int32;
 }
 
-/** Logged user */
+/**
+ * Logged user
+ */
 model LoggedUser {
-
     /** User ID */
     userId: integer;
-
     /** username */
     user: string;
-
     /** Remote address */
     remoteAddr: string;
 }
 
-/** List of logged users */
+/**
+ * List of logged users
+ */
 model LoggedUsers {
-
     /** User list */
     users: LoggedUser[];
-
     /** Total number of logged users */
     totalCount: int32;
 }
@@ -215,7 +212,9 @@ enum FsItemType {
     FILE,
 }
 
-/** Single file system item */
+/**
+ * Single file system item
+ */
 model FsItem {
     /** Type of item: file or folder */
     itemType: FsItemType;
@@ -336,84 +335,106 @@ model RevStateChange {
 }
 
 /**
+ * Data types for ItemData classes
+ */
+enum DataType {
+    INT,
+    STRING,
+    TEXT,
+    UNITDATE,
+    UNITID,
+    FORMATTED_TEXT,
+    COORDINATES,
+    RECORD_REF,
+    DECIMAL,
+    STRUCTURED,
+    ENUM,
+    FILE_REF,
+    JSON_TABLE,
+    DATE,
+    URI_REF,
+    BIT
+}
+
+/**
  * ItemData classes extensions
  */
 model DataBit extends ItemData {
-    type: "DataBit";
+    dataType: DataType.BIT;
     bitValue: boolean;
 }
 
 model DataCoordinates extends ItemData {
-    type: "DataCoordinates";
+    dataType: DataType.COORDINATES;
     value: string;
 }
 
 model DataDate extends ItemData {
-    type: "DataDate";
+    dataType: DataType.DATE;
     value: plainDate;
 }
 
 model DataDecimal extends ItemData {
-    type: "DataDecimal";
+    dataType: DataType.DECIMAL;
     value: decimal;
 }
 
 model DataFileRef extends ItemData {
-    type: "DataFileRef";
+    dataType: DataType.FILE_REF;
     fileId: integer;
 }
 
 model DataInteger extends ItemData {
-    type: "DataInteger";
+    dataType: DataType.INT;
     integerValue: integer;
 }
 
 model DataJsonTable extends ItemData {
-    type: "DataJsonTable";
+    dataType: DataType.JSON_TABLE;
     value: string;
 }
 
-model DataNull extends ItemData {
-    type: "DataNull";
+model DataEnum extends ItemData {
+    dataType: DataType.ENUM;
 }
 
 model DataRecordRef extends ItemData {
-    type: "DataRecordRef";
+    dataType: DataType.RECORD_REF;
     value: integer;
 }
 
 model DataString extends ItemData {
-    type: "DataString";
+    dataType: DataType.STRING;
     stringValue: string;
 }
 
 model DataStructureRef extends ItemData {
-    type: "DataStructureRef";
+    dataType: DataType.STRUCTURED;
     structuredObjectId: integer;
 }
 
 model DataText extends ItemData {
-    type: "DataText";
+    dataType: DataType.TEXT;
     textValue: string;
 }
 
 model DataFormattedText extends ItemData {
-    type: "DataFormattedText";
+    dataType: DataType.FORMATTED_TEXT;
     value: string;
 }
 
 model DataUnitdate extends ItemData {
-    type: "DataUnitdate";
+    dataType: DataType.UNITDATE;
     value: string;
 }
 
 model DataUnitid extends ItemData {
-    type: "DataUnitid";
+    dataType: DataType.UNITID;
     unitId: string;
 }
 
 model DataUriRef extends ItemData {
-    type: "DataUriRef";
+    dataType: DataType.URI_REF;
     nodeId?: integer;
     value: string;
     description?: string;
@@ -423,12 +444,12 @@ model DataUriRef extends ItemData {
 /**
  * Item data
  */
-@discriminator("type")
+@discriminator("dataType")
 model ItemData {
     /** data id */
     dataId?: integer;
-    /** data type id */
-    dataTypeId?: integer;
+    /** data type */
+    dataType: DataType;
 }
 
 /**
@@ -1617,6 +1638,11 @@ namespace ElzaAPI.Io {
           @Http.statusCode statusCode: 500;
           @body data: BaseException;
        };
+}
+
+@tag("statistic")
+@route("/statistic")
+namespace ElzaAPI.Statistic {
 }
 
 @tag("aips")

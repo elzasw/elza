@@ -98,7 +98,9 @@ import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.ItemDataResult;
 import cz.tacr.elza.test.controller.vo.NodeItem;
+import cz.tacr.elza.test.controller.vo.DataString;
 import cz.tacr.elza.test.controller.vo.DataText;
+import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.utils.CsvUtils;
 
 public class ArrangementControllerTest extends AbstractControllerTest {
@@ -617,7 +619,10 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
         RulDescItemTypeExtVO type = findDescItemTypeByCode("SRD_SCALE");
         ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null, null);
-        NodeItem nodeItem = buildDescItem(type, rootNode, "value", null, null); // new
+        DataText ds = new DataText();
+        ds.setTextValue("value");
+        ds.setDataType(DataType.TEXT);
+        NodeItem nodeItem = buildDescItem(type, rootNode, ds, null, null); // new
         ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, rootNode, type);
         ItemDataResult itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem); // new
         rootNode = descItemResult.getParent();

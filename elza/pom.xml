@@ -47,8 +47,8 @@
         <sonar.jacoco.reportPaths>target/jacoco.exec</sonar.jacoco.reportPaths>
 
         <!-- Pri zmene verze OpenApi generatoru je nutno zkontrolovat sedici verze axiosu v elze a ve vygenerovanem elza-api -->
-        <!-- V soucasne verzi OpenApi (5.0.1) je axios ve verzi 0.21.1 -->
-        <openapiGenerator.version>7.1.0</openapiGenerator.version>
+        <!-- V soucasne verzi OpenApi (7.9.0) je axios ve verzi 0.21.1 -->
+        <openapiGenerator.version>7.9.0</openapiGenerator.version>
     </properties>
 
     <modules>

@@ -3,11 +3,12 @@
  * @export
  * @interface SearchFilterVO
  */
-import {AeState} from "./AeState";
-import {UserVO} from "./UserVO";
-import {Area} from "./Area";
-import {RelationFilterVO} from "./RelationFilterVO";
-import {ExtensionFilterVO} from "./ExtensionFilterVO";
+import { AeState } from "./AeState";
+import { UserVO } from "./UserVO";
+import { Area } from "./Area";
+import { RelationFilterVO } from "./RelationFilterVO";
+import { ExtensionFilterVO } from "./ExtensionFilterVO";
+import { SyncState } from "./SyncState";
 
 export interface SearchFilterVO {
     /**
@@ -76,6 +77,10 @@ export interface SearchFilterVO {
      * @memberof SearchFilterVO
      */
     extFilters?: Array<ExtensionFilterVO>;
+    /**
+     * Stav synchronizace entity s ext. systemem
+     */
+    syncState?: SyncState;
 }
 
 

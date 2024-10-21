@@ -122,9 +122,9 @@ public class ViewTitles {
      */
     public Set<Integer> getAllItemTypeIds() {
         Set<Integer> result = new HashSet<>();
-        result.addAll(accordionLeft.getIds());
-        result.addAll(accordionRight.getIds());
-        result.addAll(treeItem.getIds());
+        result.addAll(accordionLeft.getItemTypeIds());
+        result.addAll(accordionRight.getItemTypeIds());
+        result.addAll(treeItem.getItemTypeIds());
         if (levelTypeId != null) {
             result.add(levelTypeId);
         }

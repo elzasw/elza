@@ -262,7 +262,7 @@ public class ClientFactoryDO {
     public ArrData createArrData(ItemData itemData) {
     	Integer value;
     	ArrData data = null;
-    	DataType dataType = DataType.fromId(itemData.getDataTypeId());
+    	DataType dataType = DataType.valueOf(itemData.getDataType().name());
         switch (dataType) {
 	        case INT:
 	            data = new ArrDataInteger();

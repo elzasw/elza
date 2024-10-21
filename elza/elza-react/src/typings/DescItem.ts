@@ -1,31 +1,37 @@
-import {RulItemTypeType} from '../api/RulItemTypeType';
+import { ItemAvailability } from 'stores/app/accesspoint/itemFormUtils';
+import { RulItemTypeType } from '../api/RulItemTypeType';
 import { ApAccessPointVO } from 'api';
 
-export interface DescItem<T = unknown> {
+export interface DescItemFromServer<T> {
     "@class": string;
     id?: number;
-    value?: T;
     descItemObjectId?: number;
     position?: number;
+    undefined?: boolean;
+    itemTypeId: number;
+    descItemSpecId?: number | null;
+    readOnly?: boolean;
+    fromNodeId?: number | null;
+    inhibited?: boolean | null;
+    record?: ApAccessPointVO;
+    value?: T;
+    description?: string;
+    refTemplateId?: number | string | null;
+    nodeId?: number;
+}
 
+export interface DescItem<T = unknown> extends DescItemFromServer<T> {
     /** CLIENT ATTRS */
     formKey?: string;
     _uid?: string | number;
-    undefined?: boolean;
     prevValue?: T;
     hasFocus: boolean;
     touched: boolean;
     visited: boolean;
     saving: boolean;
-    error: {hasError: boolean; value?: string};
+    error: { hasError: boolean; value?: string };
     addedByUser: boolean;
-
-    //
-    itemTypeId: number;
     prevDescItemSpecId?: number;
-    descItemSpecId?: number | null;
-    fromNodeId?: number | null;
-    inhibited?: boolean | null;
 }
 
 // export interface DescItemRecordRef extends DescItem<number>{
@@ -53,28 +59,47 @@ export interface DescItem<T = unknown> {
 
 // export type DescItem = DescItemPlain;
 
-export interface DescItemType {
+export interface DescItemSpecFromServer {
+    id: number;
+    rep: number;
+    type: number;
+}
+
+export interface ItemSpec {
+    id: number;
+    rep: number;
+    type: ItemAvailability;
+    itemType: number;
+}
+
+export interface DescItemTypeFromServer {
     cal: number;
     calSt: number;
-    descItemSpecsMap: {[key: number]: any};
+    favoriteSpecIds: number[];
+    id: number;
+    ind: number;
+    rep: number;
+    specs: DescItemSpecFromServer[];
+    type: number;
+    width: number;
+}
+
+export interface DescItemType extends DescItemTypeFromServer {
+    descItemSpecsMap: { [key: number]: any };
     descItems: DescItem[];
     favoriteSpecIds: number[];
     group: string;
     hasFocus: boolean;
-    id: number;
-    ind: number;
-    rep: number;
     specs: any[];
-    type: RulItemTypeType;
-    width: 1;
+    itemType: ItemAvailability;
 }
 
 export interface DescItemGroup {
     code: string;
     descItemTypes: DescItemType[];
+    hasFocus: boolean;
+    name: string;
+    position: number;
+    types: unknown[];
 }
 
-export interface ItemSpec {
-    itemType: number;
-    type: RulItemTypeType;
-}
