@@ -2133,9 +2133,7 @@ components:
     AipFilterGen:
       type: object
       required:
-        - id
         - attr
-        - value
         - criteria
         - path
       properties:

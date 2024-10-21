@@ -21,21 +21,33 @@ const AipStringFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
         return errors;
     };
 
-return (
+    const filterHasInput = (filter: AipFilter) => {
+        return filter .criteria == AipFilterCriteria.CONTAINS || 
+            filter.criteria == AipFilterCriteria.DOES_NOT_CONTAIN || 
+            filter.criteria == AipFilterCriteria.EQUALS;
+    }
+
+    const handleSubmit = (filter: AipFilter) => {
+        console.log('filter :>> ', filter);
+        if(!filterHasInput(filter)) {
+            delete filter.value;
+            delete filter.label;
+        }
+        onSubmit(filter);
+    }
+
+    return (
         <FinalForm<AipFilter>
             initialValues={{
                 attr: item.key as keyof DaAipDetailVO,
                 criteria: AipFilterCriteria.CONTAINS,
                 path: item.path
             }}
-            onSubmit={onSubmit}
+            onSubmit={handleSubmit}
             validate={validate}
         >
         {({ submitting, handleSubmit, form, values }) => {
-            const inputVisible = 
-                values.criteria == AipFilterCriteria.CONTAINS || 
-                values.criteria == AipFilterCriteria.DOES_NOT_CONTAIN || 
-                values.criteria == AipFilterCriteria.EQUALS;
+            const inputVisible = filterHasInput(values);
 
             return (
                 <Form>
