@@ -4,6 +4,9 @@ import { UserDetail } from "./UserDetail.types";
 import { ModalDialogState } from "./ModalDialog.types";
 import { DetailStoreState } from "types";
 import { ApValidationErrorsVO } from "api/ApValidationErrorsVO";
+import { SubNodeForm, SubNodeFormCache } from "./SubNodeForm.types";
+import { FundOutput } from "./Outputs.types";
+import { FundDataGrid } from "./DataGrid.types";
 import {DaAipDetailVO} from "../../api/DaAipDetailVO.ts";
 import { AipFilterCriteria } from "components/aip/filter/forms/EnumAipFilterCriteria.ts";
 import { ApAccessPointVO } from "api/ApAccessPointVO.ts";
@@ -199,8 +202,8 @@ export interface Node extends NodeBase {
     searchedIds?: unknown;
     selectedSubNodeId?: number;
     subNodeDaos?: unknown;
-    subNodeForm?: unknown;
-    subNodeFormCache?: unknown;
+    subNodeForm?: SubNodeForm;
+    subNodeFormCache?: SubNodeFormCache;
     subNodeInfo?: unknown;
     viewStartIndex: number;
 }
@@ -225,12 +228,12 @@ export interface Fund {
     daoUnassignedPackageList: unknown;
     dirty: boolean | unknown;
     fundAction: unknown;
-    fundDataGrid: unknown;
+    fundDataGrid: FundDataGrid;
     fundFiles: unknown;
     fundNodesError: unknown;
     fundNodesPolicy: unknown;
     fundNumber: unknown | null;
-    fundOutput: unknown;
+    fundOutput: FundOutput;
     fundTree: FundTree;
     fundTreeDaosLeft: unknown;
     fundTreeDaosRight: unknown;

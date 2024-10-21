@@ -1708,7 +1708,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/UsedItemType'
-                x-typespec-name: UsedItemType[]
   /fund/{id}:
     get:
       tags:
@@ -1770,7 +1769,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: fund ID. Might be ID or fund UUID
+          description: Fund ID. Might be ID or fund UUID
           schema:
             type: string
       responses:
@@ -1781,7 +1780,7 @@ paths:
         '406':
           description: Client error
       requestBody:
-        description: doplnění způsobu importu
+        description: Doplnění způsobu importu
         required: true
         content:
           multipart/form-data:
@@ -1797,7 +1796,7 @@ paths:
         - name: id
           in: path
           required: true
-          description: identifikátor AS
+          description: Identifikátor AS
           schema:
             type: integer
       responses:
@@ -1810,7 +1809,7 @@ paths:
                 items:
                   type: integer
       requestBody:
-        description: seznam id hodnot strukturovaného datového typu
+        description: Seznam id hodnot strukturovaného datového typu
         required: true
         content:
           application/json:
@@ -1833,16 +1832,14 @@ paths:
               schema:
                 type: integer
       requestBody:
-        description: Export request parameters
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ExportParams'
+        description: Export request parameters
   /io/export-status/{requestId}:
     get:
-      tags:
-        - io
       operationId: Io_getExportStatus
       description: Getting the export status by request id
       parameters:
@@ -1870,10 +1867,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /io/file/{requestId}:
-    get:
       tags:
         - io
+  /io/file/{requestId}:
+    get:
       operationId: Io_getExportFile
       description: Getting the generated file by request id
       parameters:
@@ -1904,6 +1901,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - io
 components:
   parameters:
     AipIdParameter:
@@ -2355,13 +2354,13 @@ components:
     DataBit:
       type: object
       required:
-        #- type
+        #- dataType
         - bitValue
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
-        #    - dataBit
+        #    - BIT
         bitValue:
           type: boolean
       allOf:
@@ -2370,13 +2369,13 @@ components:
     DataCoordinates:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
-        #    - dataCoordinates
+        #    - COORDINATES
         value:
           type: string
       allOf:
@@ -2384,10 +2383,10 @@ components:
     DataDate:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataDate
@@ -2399,10 +2398,10 @@ components:
     DataDecimal:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataDecimal
@@ -2411,13 +2410,24 @@ components:
           format: decimal
       allOf:
         - $ref: '#/components/schemas/ItemData'
+    DataEnum:
+      type: object
+#      required:
+#        - dataType
+#      properties:
+#        dataType:
+#          type: string
+#          enum:
+#            - ENUM
+      allOf:
+        - $ref: '#/components/schemas/ItemData'
     DataFileRef:
       type: object
       required:
-        #- type
+        #- dataType
         - fileId
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataFileRef
@@ -2428,10 +2438,10 @@ components:
     DataFormattedText:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - DataFormattedText
@@ -2442,10 +2452,10 @@ components:
     DataInteger:
       type: object
       required:
-        #- type
+        #- dataType
         - integerValue
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataInteger
@@ -2456,10 +2466,10 @@ components:
     DataJsonTable:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataJsonTable
@@ -2467,24 +2477,13 @@ components:
           type: string
       allOf:
         - $ref: '#/components/schemas/ItemData'
-    DataNull:
-      type: object
-      #required:
-        #- type
-      #properties:
-        #type:
-        #  type: string
-        #  enum:
-        #    - dataNull
-      allOf:
-        - $ref: '#/components/schemas/ItemData'
     DataRecordRef:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataRecordRef
@@ -2495,10 +2494,10 @@ components:
     DataString:
       type: object
       required:
-        #- type
+        #- dataType
         - stringValue
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataString
@@ -2509,10 +2508,10 @@ components:
     DataStructureRef:
       type: object
       required:
-        #- type
+        #- dataType
         - structuredObjectId
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataStructureRef
@@ -2523,10 +2522,10 @@ components:
     DataText:
       type: object
       required:
-        #- type
+        #- dataType
         - textValue
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - DataText
@@ -2534,13 +2533,33 @@ components:
           type: string
       allOf:
         - $ref: '#/components/schemas/ItemData'
+    DataType:
+      type: string
+      enum:
+        - INT
+        - STRING
+        - TEXT
+        - UNITDATE
+        - UNITID
+        - FORMATTED_TEXT
+        - COORDINATES
+        - RECORD_REF
+        - DECIMAL
+        - STRUCTURED
+        - ENUM
+        - FILE_REF
+        - JSON_TABLE
+        - DATE
+        - URI_REF
+        - BIT
+      description: Data types for ItemData classes
     DataUnitdate:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataUnitdate
@@ -2551,10 +2570,10 @@ components:
     DataUnitid:
       type: object
       required:
-        #- type
+        #- dataType
         - unitId
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataUnitid
@@ -2565,10 +2584,10 @@ components:
     DataUriRef:
       type: object
       required:
-        #- type
+        #- dataType
         - value
       properties:
-        #type:
+        #dataType:
         #  type: string
         #  enum:
         #    - dataUriRef
@@ -2895,35 +2914,35 @@ components:
       description: Data k importu
     ItemData:
       type: object
+      required:
+        - dataType
       properties:
         dataId:
           type: integer
           description: data id
-        dataTypeId:
-          type: integer
-          description: data type id
-        type:
-          type: string
-          description: Discriminator property for ItemData.
+        dataType:
+          allOf:
+            - $ref: '#/components/schemas/DataType'
+          description: data type
       discriminator:
-        propertyName: type
+        propertyName: dataType
         mapping:
-          DataBit: '#/components/schemas/DataBit'
-          DataCoordinates: '#/components/schemas/DataCoordinates'
-          DataDate: '#/components/schemas/DataDate'
-          DataDecimal: '#/components/schemas/DataDecimal'
-          DataFileRef: '#/components/schemas/DataFileRef'
-          DataInteger: '#/components/schemas/DataInteger'
-          DataJsonTable: '#/components/schemas/DataJsonTable'
-          DataNull: '#/components/schemas/DataNull'
-          DataRecordRef: '#/components/schemas/DataRecordRef'
-          DataString: '#/components/schemas/DataString'
-          DataStructureRef: '#/components/schemas/DataStructureRef'
-          DataText: '#/components/schemas/DataText'
-          DataFormattedText: '#/components/schemas/DataFormattedText'
-          DataUnitdate: '#/components/schemas/DataUnitdate'
-          DataUnitid: '#/components/schemas/DataUnitid'
-          DataUriRef: '#/components/schemas/DataUriRef'
+          BIT: '#/components/schemas/DataBit'
+          COORDINATES: '#/components/schemas/DataCoordinates'
+          DATE: '#/components/schemas/DataDate'
+          DECIMAL: '#/components/schemas/DataDecimal'
+          FILE_REF: '#/components/schemas/DataFileRef'
+          INT: '#/components/schemas/DataInteger'
+          JSON_TABLE: '#/components/schemas/DataJsonTable'
+          ENUM: '#/components/schemas/DataEnum'
+          RECORD_REF: '#/components/schemas/DataRecordRef'
+          STRING: '#/components/schemas/DataString'
+          STRUCTURED: '#/components/schemas/DataStructureRef'
+          TEXT: '#/components/schemas/DataText'
+          FORMATTED_TEXT: '#/components/schemas/DataFormattedText'
+          UNITDATE: '#/components/schemas/DataUnitdate'
+          UNITID: '#/components/schemas/DataUnitid'
+          URI_REF: '#/components/schemas/DataUriRef'
       description: Item data
     ItemDataResult:
       type: object

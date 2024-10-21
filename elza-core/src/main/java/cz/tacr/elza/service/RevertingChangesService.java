@@ -1209,12 +1209,12 @@ public class RevertingChangesService {
         
         // TODO is it still needed?
         List<RulItemType> descItemTypes;
-        if(CollectionUtils.isEmpty(viewTitles.getTreeItem().getIds())) {
+        if(CollectionUtils.isEmpty(viewTitles.getTreeItem().getItemTypeIds())) {
             descItemTypes = Collections.emptyList();
         } else {
             StaticDataProvider dataProvider = staticDataService.getData();
-            descItemTypes = new ArrayList<>(viewTitles.getTreeItem().getIds().size());
-            for(Integer itemTypeId: viewTitles.getTreeItem().getIds()) {
+            descItemTypes = new ArrayList<>(viewTitles.getTreeItem().getItemTypeIds().size());
+            for(Integer itemTypeId: viewTitles.getTreeItem().getItemTypeIds()) {
                 RulItemType itemType = dataProvider.getItemType(itemTypeId);
                 Validate.notNull(itemType, "Missing item type, id: %s", itemTypeId);
                 descItemTypes.add(itemType);
