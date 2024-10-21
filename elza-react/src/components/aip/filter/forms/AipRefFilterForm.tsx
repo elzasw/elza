@@ -17,6 +17,10 @@ const AipRefFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
     const accessPoints = useSelector((state: any) => storeFromArea(state, AREA_ACCESS_POINTS));
     const dispatch = useThunkDispatch();
 
+    const filterHasInput = (filter:AipFilter) => {
+        return filter.criteria == AipFilterCriteria.EQUALS || filter.criteria == AipFilterCriteria.DOES_NOT_CONTAIN;
+    }
+        
     const validate = (values: AipFilter) => {
         const errors: Partial<Record<keyof AipFilter, string>> = {};
         if(values.value == null) {
@@ -44,6 +48,14 @@ const AipRefFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
         return <span>Načítání..</span>
     }
 
+    const handleSubmit = (filter: AipFilter) => {
+        if(!filterHasInput(filter)) {
+            delete filter.value;
+            delete filter.label;
+        }
+        onSubmit(filter);
+    }
+
     return (
         <FinalForm<AipFilter>
             initialValues={{
@@ -53,13 +65,11 @@ const AipRefFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
                 path: item.path,
                 label: selectValues[0].label,
             }}
-            onSubmit={onSubmit}
+            onSubmit={handleSubmit}
             validate={validate}
         >
         {({ submitting, handleSubmit, values, form }) => {
-            const inputVisible =
-                values.criteria == AipFilterCriteria.EQUALS ||
-                values.criteria == AipFilterCriteria.DOES_NOT_CONTAIN;
+            const inputVisible = filterHasInput(values);
 
             return (
                 <Form>

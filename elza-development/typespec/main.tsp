@@ -1071,7 +1071,7 @@ model AipFilterGen {
     /**
      * UUID filtru
      */
-    id: string;
+    id?: string;
     /**
      * Atribut, podle kterého chceme filtrovat
      */
@@ -1079,7 +1079,7 @@ model AipFilterGen {
     /**
      * filtrovaná hodnota
      */
-    value: string;
+    value?: string;
     /**
      * Způsob porovnání
      */
