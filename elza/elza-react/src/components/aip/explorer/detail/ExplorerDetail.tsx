@@ -182,7 +182,7 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
     return (
         <div className="explorer-detail">
             <div className="buttons">
-                {node.daoFileId && aip.data.metadataLoad && <Button
+                {node.daoFileId && aip.data?.metadataLoad && <Button
                     as="a"
                     className="open-btn"
                     onClick={handleOpenComponent}
@@ -191,7 +191,7 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
                 >
                     <span>Zobrazit</span>
                 </Button>}
-                {node.daoFileId && aip.data.completeAipLoad && <Button
+                {node.daoFileId && aip.data?.completeAipLoad && <Button
                     as="a"
                     className="open-btn"
                     onClick={() => handleDownloadComponent(node.daoFileId)}
