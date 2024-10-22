@@ -19,7 +19,7 @@ public class ArrDataInteger extends ArrData {
 
     public static final String INTEGER_VALUE = "integerValue";
 
-    @Column(name = "integerValue", nullable = false)
+    @Column(name = "integer_value", nullable = false)
     private Integer integerValue;
 
 	public ArrDataInteger() {
