@@ -1,6 +1,7 @@
 package cz.tacr.elza.service.da;
 
 import com.lightcomp.ft.client.Transfer;
+import com.lightcomp.ft.xsd.v1.GenericDataType;
 import com.lightcomp.kads.mets.MetsReaderWriter;
 import com.lightcomp.kads.premis.PremisReaderWriter;
 import cz.tacr.da.ApiException;
@@ -26,7 +27,6 @@ import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -71,9 +71,9 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoLevelViewService;
-import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.da.vo.DaUploadRequestImpl;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -205,8 +205,6 @@ public class DaService {
     private DataStringRepository dataStringRepository;
     @Autowired
     private DataUnitdateRepository dataUnitdateRepository;
-    @Autowired
-    private DescriptionItemService descriptionItemService;
 
     public void synchronizeDaRepository(String code) {
         logger.debug("Spuštěna synchronizace s DA pro externí systém CODE={}", code);
@@ -1083,13 +1081,25 @@ public class DaService {
 
     public List<String> ingestResult(ArrDigitalRepository digitalRepository, String batchId) {
         IngestIngestResult result = daConnector.ingestResult(digitalRepository, batchId);
+
+        if (result == null) {
+            return Collections.emptyList();
+        }
+
         return result.getAccepted().stream()
                 .map(IngestPackageIngestSuccess::getAipId)
                 .collect(Collectors.toList());
     }
 
-    public Transfer ingestFileTransfer(ArrDigitalRepository digitalRepository, Path exportDir) {
-        return daConnector.ingestFileTransfer(digitalRepository, exportDir);
+    public DaUploadRequestImpl createDaUploadRequest(Path exportDir) {
+        GenericDataType genericDataType = new GenericDataType();
+        genericDataType.setId(UUID.randomUUID().toString());
+        genericDataType.setType("ingest");
+        return new DaUploadRequestImpl(exportDir, genericDataType);
+    }
+
+    public Transfer ingestFileTransfer(ArrDigitalRepository digitalRepository, DaUploadRequestImpl daUploadRequest) {
+        return daConnector.ingestFileTransfer(digitalRepository, daUploadRequest);
     }
 
     @Transactional

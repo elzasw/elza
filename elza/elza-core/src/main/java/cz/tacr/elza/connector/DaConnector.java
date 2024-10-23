@@ -3,9 +3,7 @@ package cz.tacr.elza.connector;
 import com.lightcomp.ft.client.Client;
 import com.lightcomp.ft.client.DownloadRequest;
 import com.lightcomp.ft.client.Transfer;
-import com.lightcomp.ft.client.UploadRequest;
 import com.lightcomp.ft.simple.DwnldRequestImpl;
-import com.lightcomp.ft.simple.UploadRequestImpl;
 import com.lightcomp.ft.xsd.v1.GenericDataType;
 import cz.tacr.da.ApiException;
 import cz.tacr.da.controller.DefaultApi;
@@ -16,6 +14,7 @@ import cz.tacr.da.controller.vo.IngestIngestStatus;
 import cz.tacr.da.controller.vo.UpdatedAips;
 import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ArrDigitalRepository;
+import cz.tacr.elza.service.da.vo.DaUploadRequestImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 public class DaConnector {
@@ -85,12 +83,8 @@ public class DaConnector {
         }
     }
 
-    public Transfer ingestFileTransfer(ArrDigitalRepository digitalRepository, Path exportDir) {
-        GenericDataType genericDataType = new GenericDataType();
-        genericDataType.setId(UUID.randomUUID().toString());
-        genericDataType.setType("ingest");
-        UploadRequest uploadRequest = new UploadRequestImpl(exportDir, genericDataType);
-        return getFileTransferClient(digitalRepository).upload(uploadRequest);
+    public Transfer ingestFileTransfer(ArrDigitalRepository digitalRepository, DaUploadRequestImpl daUploadRequest) {
+        return getFileTransferClient(digitalRepository).upload(daUploadRequest);
     }
 
     public void invalidate(ArrDigitalRepository digitalRepository) {
