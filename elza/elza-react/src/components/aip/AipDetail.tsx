@@ -59,7 +59,8 @@ const AipDetail: FC<Props> = ({open, onClose, onOpen}) => {
                     onOk={handleExplorerClose}
                     mode={ExplorerMode.VIEW}
                 />,
-                "aip-explorer"
+                "aip-explorer",
+                handleExplorerClose
             ),
         );
     }
