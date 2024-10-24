@@ -1,6 +1,10 @@
 @import "../../variables.scss";
 
 .aip-detail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
     h2 {
         font-weight: bold;
         width: auto;
@@ -10,6 +14,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        padding: 1rem;
         margin-bottom: 1rem;
 
         .open-btn {
