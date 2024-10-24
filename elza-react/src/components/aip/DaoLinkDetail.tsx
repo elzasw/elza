@@ -51,7 +51,6 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
                 <AipExplorerModalWrapper
                     //@ts-ignore
                     onOk={() => dispatch(modalDialogHide())}
-                    onClose={() => dispatch(modalDialogHide())}
                     mode={ExplorerMode.VIEW}
                     selected={daoCode}
                 />,
