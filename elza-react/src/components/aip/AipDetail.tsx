@@ -1,9 +1,8 @@
 
 import './AipDetail.scss';
 import { Dismiss24Regular } from "@fluentui/react-icons";
-import { DrawerBody, DrawerHeader, DrawerHeaderTitle, InlineDrawer, Button, OverlayDrawer } from '@fluentui/react-components';
-import { formatAipSize, formatDate, getBoolIcon } from './utils';
-import { useEffect } from 'react';
+import { DrawerBody, DrawerHeader, DrawerHeaderTitle, Button, OverlayDrawer } from '@fluentui/react-components';
+import { FC, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { storeFromArea } from 'shared/utils';
 import { AppState } from 'typings/store';
@@ -19,7 +18,13 @@ import AipExplorerModalWrapper from './explorer/AipExplorerWrapper';
 import { ExplorerMode } from './explorer/ExplorerContext';
 import AipDetailBody from './AipDetailBody';
 
-const AipDetail = () => {
+interface Props {
+    open: boolean;
+    onClose: () => void;
+    onOpen: () => void;
+}
+
+const AipDetail: FC<Props> = ({open, onClose, onOpen}) => {
     const aip = useSelector((state: AppState) => storeFromArea(state, aipActions.AREA_AIP));
     const dispatch = useThunkDispatch();
     const history = useHistory();
@@ -34,18 +39,24 @@ const AipDetail = () => {
 
     const handleClose = () => {
         dispatch(aipActions.selectAip(null));
+        onClose();
         history.replace(urlAip());
     }
 
+    const handleExplorerClose = () => {
+        dispatch(modalDialogHide());
+        onOpen();
+    }
+
     const handleOpenExplorer = () => {
+        onClose();
         dispatch(
             modalDialogShow(
                 this,
                 "AIP Průzkumník",
                 <AipExplorerModalWrapper
                 //@ts-ignore
-                    onOk={() => dispatch(modalDialogHide())}
-                    onClose={() => dispatch(modalDialogHide())}
+                    onOk={handleExplorerClose}
                     mode={ExplorerMode.VIEW}
                 />,
                 "aip-explorer"
@@ -55,9 +66,9 @@ const AipDetail = () => {
     return (
         <OverlayDrawer
             position="end"
-            open={aip.id != null && aip.data != null}
             style={{ width: "400px" }}
             className='aip-detail'
+            open={open}
         >
             <DrawerHeader>
                 <DrawerHeaderTitle

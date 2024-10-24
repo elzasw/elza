@@ -4,10 +4,10 @@ import {StoreHorizontalLoader} from 'components/shared';
 import storeFromArea from '../../shared/utils/storeFromArea.jsx';
 import { findColDefByKey, formatAipSize, formatDate, getAipRows } from './utils.tsx';
 import './AipTable.scss';
-import { useHistory } from 'react-router';
+import { useHistory, useRouteMatch} from 'react-router';
 import {urlAip} from '../../constants.tsx';
 import { useThunkDispatch } from 'utils/hooks';
-import {aipsFetchIfNeeded, aipsFilter, AREA_AIP, AREA_AIPS, setSelectedAips, } from "../../actions/aip/aip.ts";
+import {aipsFetchIfNeeded, aipsFilter, AREA_AIP, AREA_AIPS, selectAip, setSelectedAips, } from "../../actions/aip/aip.ts";
 import {DaAipDetailVO} from "../../api/DaAipDetailVO.ts";
 import {
     MenuCheckedValueChangeData,
@@ -34,6 +34,7 @@ import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
 import Pagination from 'components/shared/pagination/Pagination.tsx';
 import { AipFilter } from 'typings/store/index.ts';
+import AipDetail from './AipDetail.tsx';
 
 type AipTableProps = {
     onAipSelect?: (id: number) => void;
@@ -42,13 +43,19 @@ type AipTableProps = {
     hiddenValues?: string[]
 }
 
+interface AipPageUrlParams {
+    id?: string;
+}
+
 const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: AipTableProps) => {
     const aips = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
     const aip = useSelector((state: any) => storeFromArea(state, AREA_AIP));
+    const [detailOpen, setDetailOpen] = useState<boolean>(false);
     const {from, pageSize} = aips.filter;
     const dispatch = useThunkDispatch();
     const items = getAipRows(aips);
     const history = useHistory();
+    const match = useRouteMatch<AipPageUrlParams>();
 
     const columnsDef: TableColumnDefinition<DaAipDetailVO>[] = colDef.map((def) =>
         createTableColumn<DaAipDetailVO>({
@@ -84,6 +91,17 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
     }
 
     useEffect(() => {
+        const id = match.params?.id;
+
+        if (id != null) {
+            dispatch(selectAip(id));
+            setDetailOpen(true);
+        } else if (aip?.id != null) {
+            history.replace(urlAip(aip.id));
+        }
+    }, [match.params.id]);
+
+    useEffect(() => {
         dispatch(aipsFetchIfNeeded());
 
         if(hiddenValues) {
@@ -105,7 +123,10 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
         );
     };
 
-    const handleSelect = (id) =>  history.push(urlAip(id));
+    const handleSelect = (id) =>  {
+        setDetailOpen(true);
+        history.push(urlAip(id))
+    };
 
     const handleChangePage = (nextFrom: number) => nextFrom !== from && dispatch(aipsFilter(aips.filter.filters, nextFrom, aips.filter.pageSize))
 
@@ -193,6 +214,11 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
 
     return (
         <Row className='aip-table'>
+            <AipDetail 
+                open={detailOpen} 
+                onClose={() => setDetailOpen(false)}
+                onOpen={() => setDetailOpen(true)}
+            />
             <StoreHorizontalLoader store={aips} />
             {aips.fetched && (
                 <>
