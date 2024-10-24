@@ -2816,6 +2816,9 @@ components:
         daoFileFolderId:
           type: integer
           format: int32
+        isLogical:
+          type: boolean
+          description: Příznak logické struktury
       description: Model ExplorerTreeNodeFile
     ExportParams:
       type: object

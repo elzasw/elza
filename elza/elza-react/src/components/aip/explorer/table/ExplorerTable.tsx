@@ -15,18 +15,14 @@ import {
     TableColumnDefinition,
     createTableColumn,
     TableColumnId,
-    TableFeaturePlugin
 } from "@fluentui/react-components";
 import { FC, useCallback, useState, KeyboardEvent } from "react";
 import "./ExplorerTable.scss"
 import { formatAipSize } from "components/aip/utils";
 import { getFileName } from "../utils";
-import { ExplorerMode, isDaoFileFolderVO, useExplorerContext } from "../ExplorerContext";
+import { ExplorerMode, useExplorerContext } from "../ExplorerContext";
 import { useThunkDispatch } from "utils/hooks";
-import { AREA_SELECTED_AIP_DAOS, setSelectedAipDaos } from "actions/aip/aip";
-import { useSelector } from "react-redux";
-import { storeFromArea } from "shared/utils";
-import { AppState } from "typings/store";
+import { setSelectedAipDaos } from "actions/aip/aip";
 
 type Item = {
     filename?: string;
@@ -77,7 +73,10 @@ const ExplorerTable: FC = () => {
     ) {
         items =  [...selectedItem.childFolders || [], ...selectedItem.childFiles || []]
     } else if(selectedItem) {
-        items = selectedItem?.parent ? [...selectedItem.parent.childFolders || [], ...selectedItem.parent.childFiles || []] : [];
+        items = selectedItem?.parent ? [...selectedItem.childFolders, ...selectedItem.childFiles,] : [];
+        if (selectedItem.daoFileId) {
+            items = [...items, ...selectedItem.parent?.childFiles];
+        }
     }
 
     const {

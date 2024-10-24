@@ -18,6 +18,7 @@ const Folder = ({folder, openItems, parent}: FolderProps) => {
     const {selectedItem} = useExplorerContext();
     const isSelected: boolean = selectedItem.uuid == folder.uuid;
     folder.parent = parent;
+    const files = folder?.childFiles?.filter(file => !file.isLogical);
 
     const getExpandIcon = () => {
         return openItems.includes(folder.uuid) ? (
@@ -44,8 +45,8 @@ const Folder = ({folder, openItems, parent}: FolderProps) => {
                         parent={folder}
                      />
                 )}
-                {folder.childFiles?.map((file, index) =>
-                    <File
+                {files?.map((file, index) =>
+                        <File
                         key={`file-${index}`}
                         file={file}
                         parent={folder}

@@ -284,7 +284,10 @@ model ExplorerTreeNodeFile {
     parentFolderLogical: ExplorerTreeNode;
     /** Seznam připojených nodů */
     linkedNodes: LinkedNodeVO[];
+    /* Identifikátor dao_file_folder */
     daoFileFolderId: int32;
+    /** Příznak logické struktury */
+    isLogical?: boolean;
 }
 
 
