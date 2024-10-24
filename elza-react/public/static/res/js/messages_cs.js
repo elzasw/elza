@@ -1853,6 +1853,7 @@ var messages = {
     "userSettings.apiKeys.item.value": "hodnota",
     "userSettings.apiKeys.save": "Uložit",
 
+    "aip.detail.notSelected": "Nebyl vybrán žádný AIP",
     "aip.detail.explorer.open": "Otevřít průzkumník",
     "aip.form.value": "Hodnota",
     "aip.form.content": "Obsah",

@@ -7,7 +7,7 @@ import './AipTable.scss';
 import { useHistory } from 'react-router';
 import {urlAip} from '../../constants.tsx';
 import { useThunkDispatch } from 'utils/hooks';
-import {aipsFetchIfNeeded, aipsFilter, AREA_AIPS, setSelectedAips, } from "../../actions/aip/aip.ts";
+import {aipsFetchIfNeeded, aipsFilter, AREA_AIP, AREA_AIPS, setSelectedAips, } from "../../actions/aip/aip.ts";
 import {DaAipDetailVO} from "../../api/DaAipDetailVO.ts";
 import {
     MenuCheckedValueChangeData,
@@ -44,13 +44,11 @@ type AipTableProps = {
 
 const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: AipTableProps) => {
     const aips = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
+    const aip = useSelector((state: any) => storeFromArea(state, AREA_AIP));
     const {from, pageSize} = aips.filter;
     const dispatch = useThunkDispatch();
     const items = getAipRows(aips);
     const history = useHistory();
-
-
-
 
     const columnsDef: TableColumnDefinition<DaAipDetailVO>[] = colDef.map((def) =>
         createTableColumn<DaAipDetailVO>({
@@ -75,6 +73,7 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
 
     const getContent =(item: DaAipDetailVO, key: string) => {
         switch(key) {
+            case "code": return <span className='link-like'>{item.code}</span>
             case "aipSize": return formatAipSize(item[key]);
             case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom, item.unitdateTo): "-";
             case "fund.name": return item.fund ? item.fund.name : "-";
@@ -167,7 +166,7 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
                 }
             },
             selected,
-            appearance: selected ? ("brand" as const) : ("none" as const),
+            appearance: selected ? "brand": "none",
         };
     }));
 
@@ -234,10 +233,13 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {rows.map(({ item, selected, onClick }) => (
+                            {rows.map(({ item, selected, onClick }) =>  {
+                                const isDetailShown = aip?.data?.aipId == item.aipId;
+                                return (
                                 <TableRow
                                     key={item.code}
                                     className="table-row"
+                                    style={{backgroundColor: isDetailShown ? "#ddd": undefined}}
                                 >
                                     <TableSelectionCell
                                         checked={selected}
@@ -257,7 +259,8 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
                                     </TableCell>
                                     ))}
                                 </TableRow>
-                            ))}
+                            )}
+                            )}
                         </TableBody>
                     </Table>
                     <Pagination
