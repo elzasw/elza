@@ -95,7 +95,7 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
 
         if (id != null) {
             dispatch(selectAip(id));
-            setDetailOpen(true);
+            !onAipSelect && setDetailOpen(true);
         } else if (aip?.id != null) {
             history.replace(urlAip(aip.id));
         }

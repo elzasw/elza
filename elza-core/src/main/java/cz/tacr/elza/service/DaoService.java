@@ -854,6 +854,7 @@ public class DaoService {
                 parent.setChildFiles(new ArrayList<>());
             }
             file.setParentFolderLogical(createParent(parent));
+            copy.setIsLogical(true);
             parent.getChildFiles().add(copy);
         }
     }
