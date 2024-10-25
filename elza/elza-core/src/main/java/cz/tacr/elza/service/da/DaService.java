@@ -21,12 +21,9 @@ import cz.tacr.elza.controller.vo.DaDaoType;
 import cz.tacr.elza.controller.vo.DaoLink;
 import cz.tacr.elza.controller.vo.DaoLinksResult;
 import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -84,8 +81,6 @@ import gov.loc.mets.v1_11.schema.MdSecType;
 import gov.loc.mets.v1_11.schema.Mets;
 import gov.loc.mets.v1_11.schema.MetsType;
 import gov.loc.mets.v1_11.schema.StructMapType;
-import gov.loc.premis.v3.IntellectualEntity;
-import gov.loc.premis.v3.ObjectComplexType;
 import gov.loc.premis.v3.ObjectIdentifierComplexType;
 import gov.loc.premis.v3.PremisComplexType;
 import gov.loc.premis.v3.SignificantPropertiesComplexType;
@@ -93,20 +88,15 @@ import gov.loc.premis.v3.StringPlusAuthority;
 import jakarta.transaction.Transactional;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
-import org.archivists.ead3.schema.Abstract;
-import org.archivists.ead3.schema.Archdesc;
-import org.archivists.ead3.schema.Daterange;
-import org.archivists.ead3.schema.Did;
 import org.archivists.ead3.schema.Ead;
-import org.archivists.ead3.schema.Fromdate;
-import org.archivists.ead3.schema.Todate;
-import org.archivists.ead3.schema.Unitdatestructured;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.PageRequest;
@@ -117,6 +107,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -543,9 +536,11 @@ public class DaService {
                 Path exportDir = Files.createTempDirectory("export");
                 Path aipDir = exportDir.resolve(aip.getCode());
                 Files.createDirectories(aipDir);
-                createPackageInfo(aip, aipDir);
-                createMets(aip, aipDir);
-                createEad(aip, aipDir);
+                Path packageInfoPath = createPackageInfo(aip, aipDir);
+                Path eadPath = createEad(aip, aipDir);
+
+                createMets(aipDir, packageInfoPath, eadPath);
+
 
                 Path aipOutputDir = resourcePathResolver.getAipDir().resolve("out");
                 Path outputZip = createZip(aipDir.toFile(), aipOutputDir);
@@ -558,79 +553,91 @@ public class DaService {
                 DaSyncQueueItem syncQueueItem = createSyncQueueItem(aip.getCode(), aip, aip.getDigitalRepository(), DaSyncQueueItem.QueueItemState.EXPORT_NEW,
                         aipState.getAipVersion(), aipType, true);
                 createExportLocalCache(aipState, aipType, outputZip, syncQueueItem);
-            } catch (IOException | JAXBException e) {
+            } catch (IOException | JAXBException | DatatypeConfigurationException e) {
                 logger.error("Došlo k chybě při vytváření změnového balíčku AIP={}", aip.getCode(), e);
             }
         }
     }
 
-    private void createEad(DaAip aip, Path aipDir) throws JAXBException {
-        List<DaDao> daDaoList = daoRepository.findByAipAndDeleteChangeIsNull(aip);
-        List<DaDaoItem> daDaoItemList = daDaoItemRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
-        Did did = new Did();
-        for (DaDaoItem daDaoItem : daDaoItemList) {
-            ArrData data = daDaoItem.getData();
-            DataType type = data.getType();
-
-
-            switch (type) {
-                case STRING -> {
-                    ArrDataString arrDataString = dataStringRepository.findById(data.getDataId()).orElse(null);
-                    if (arrDataString != null) {
-                        Abstract abs = new Abstract();
-                        abs.getContent().add(arrDataString.getStringValue());
-                        did.getMDid().add(abs);
-                    }
-                }
-                case UNITDATE -> {
-                    ArrDataUnitdate arrDataUnitdate = dataUnitdateRepository.findById(data.getDataId()).orElse(null);
-                    if (arrDataUnitdate != null) {
-                        Unitdatestructured unitdatestructured = new Unitdatestructured();
-                        Daterange daterange = new Daterange();
-                        Fromdate fromDate = new Fromdate();
-                        fromDate.setStandarddate(arrDataUnitdate.getValueFrom());
-                        daterange.setFromdate(fromDate);
-                        Todate todate = new Todate();
-                        todate.setStandarddate(arrDataUnitdate.getValueTo());
-                        daterange.setTodate(todate);
-                        unitdatestructured.setDaterange(daterange);
-                        did.getMDid().add(unitdatestructured);
-                    }
-
-                }
-                default -> {}
-            }
-
-
-        }
-        Archdesc archdesc = new Archdesc();
-        archdesc.setDid(did);
-        Ead ead = new Ead();
-        ead.setArchdesc(archdesc);
-        EadReaderWriter.marshal(ead, Path.of(aipDir.toString(), "EAD.xml"));
+    private Path createEad(DaAip aip, Path aipDir) throws IOException {
+//        List<DaDao> daDaoList = daoRepository.findByAipAndDeleteChangeIsNull(aip); //TODO zatím zakomentováno, nutno ujasnit, jak má vypadat výstup. Použit defaultní soubor
+//        List<DaDaoItem> daDaoItemList = daDaoItemRepository.findByDaoInAndDeleteChangeIsNull(daDaoList);
+//        Did did = new Did();
+//        for (DaDaoItem daDaoItem : daDaoItemList) {
+//            ArrData data = daDaoItem.getData();
+//            DataType type = data.getType();
+//
+//
+//            switch (type) {
+//                case STRING -> {
+//                    ArrDataString arrDataString = dataStringRepository.findById(data.getDataId()).orElse(null);
+//                    if (arrDataString != null) {
+//                        Abstract abs = new Abstract();
+//                        abs.getContent().add(arrDataString.getStringValue());
+//                        did.getMDid().add(abs);
+//                    }
+//                }
+//                case UNITDATE -> {
+//                    ArrDataUnitdate arrDataUnitdate = dataUnitdateRepository.findById(data.getDataId()).orElse(null);
+//                    if (arrDataUnitdate != null) {
+//                        Unitdatestructured unitdatestructured = new Unitdatestructured();
+//                        Daterange daterange = new Daterange();
+//                        Fromdate fromDate = new Fromdate();
+//                        fromDate.setStandarddate(arrDataUnitdate.getValueFrom());
+//                        daterange.setFromdate(fromDate);
+//                        Todate todate = new Todate();
+//                        todate.setStandarddate(arrDataUnitdate.getValueTo());
+//                        daterange.setTodate(todate);
+//                        unitdatestructured.setDaterange(daterange);
+//                        did.getMDid().add(unitdatestructured);
+//                    }
+//
+//                }
+//                default -> {}
+//            }
+//
+//
+//        }
+//        Archdesc archdesc = new Archdesc();
+//        archdesc.setDid(did);
+//        Ead ead = new Ead();
+//        ead.setArchdesc(archdesc);
+//        EadReaderWriter.marshal(ead, Path.of(aipDir.toString(), "EAD.xml"));
+        ClassPathResource classPathResource = new ClassPathResource("exportDaTemplates/EAD-CONTEXT.xml");
+        Path path = Paths.get(aipDir + "/metadata/descriptive");
+        Files.createDirectories(path);
+        Path resultPath = Paths.get(path + "/EAD-CONTEXT.xml");
+        Files.copy(classPathResource.getInputStream(), resultPath);
+        return resultPath;
     }
 
-    private void createPackageInfo(DaAip aip, Path aipDir) throws IOException {
-        DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
-
-        List<ObjectComplexType> objectComplexTypeList = new ArrayList<>();
-
-        List<SignificantPropertiesComplexType> significantProperties = new ArrayList<>();
-        significantProperties.add(createSignificantPropertiesElement("AIP_VERSION", aipState.getAipVersion()));
-        significantProperties.add(createSignificantPropertiesElement("AIP_SIZE", String.valueOf(aipState.getAipSize())));
-        significantProperties.add(createSignificantPropertiesElement("INSTITUTION_ID", aipState.getInstitutionCode()));
-
-        List<ObjectIdentifierComplexType> identifiers = new ArrayList<>();
-        identifiers.add(createObjectIdentifierComplexType("FONDS_ID", aipState.getFundCode()));
-        identifiers.add(createObjectIdentifierComplexType("AIP_ID", aip.getCode()));
-        IntellectualEntity intellectualEntity = new IntellectualEntity(identifiers, null, significantProperties, null, null, null, null, null, null, null, null, null, null);
-
-        objectComplexTypeList.add(intellectualEntity);
-        PremisComplexType premisComplexType = new PremisComplexType(objectComplexTypeList, null, null, null, aipState.getAipVersionMetadata());
-        JAXBElement<PremisComplexType> wrappedElement = XmlUtils.wrapElement("premisComplexType", premisComplexType);
-        byte[] data = XmlUtils.marshallData(wrappedElement, PremisComplexType.class);
-        File packageInfoFile = new File(aipDir.toString() + "/PACKAGE-INFO.xml");
-        Files.write(packageInfoFile.toPath(), data);
+    private Path createPackageInfo(DaAip aip, Path aipDir) throws IOException {
+//        DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip); //TODO zatím zakomentováno, nutno ujasnit, jak má vypadat výstup. Použit defaultní soubor
+//
+//        List<ObjectComplexType> objectComplexTypeList = new ArrayList<>();
+//
+//        List<SignificantPropertiesComplexType> significantProperties = new ArrayList<>();
+//        significantProperties.add(createSignificantPropertiesElement("AIP_VERSION", aipState.getAipVersion()));
+//        significantProperties.add(createSignificantPropertiesElement("AIP_SIZE", String.valueOf(aipState.getAipSize())));
+//        significantProperties.add(createSignificantPropertiesElement("INSTITUTION_ID", aipState.getInstitutionCode()));
+//
+//        List<ObjectIdentifierComplexType> identifiers = new ArrayList<>();
+//        identifiers.add(createObjectIdentifierComplexType("FONDS_ID", aipState.getFundCode()));
+//        identifiers.add(createObjectIdentifierComplexType("AIP_ID", aip.getCode()));
+//        IntellectualEntity intellectualEntity = new IntellectualEntity(identifiers, null, significantProperties, null, null, null, null, null, null, null, null, null, null);
+//
+//        objectComplexTypeList.add(intellectualEntity);
+//        PremisComplexType premisComplexType = new PremisComplexType(objectComplexTypeList, null, null, null, aipState.getAipVersionMetadata());
+//        JAXBElement<PremisComplexType> wrappedElement = XmlUtils.wrapElement("premisComplexType", premisComplexType);
+//        byte[] data = XmlUtils.marshallData(wrappedElement, PremisComplexType.class);
+//        File packageInfoFile = new File(aipDir.toString() + "/PACKAGE-INFO.xml");
+//        Files.write(packageInfoFile.toPath(), data);
+        ClassPathResource classPathResource = new ClassPathResource("exportDaTemplates/PACKAGE-INFO.xml");
+        Path path = Paths.get(aipDir + "/metadata/preservation");
+        Files.createDirectories(path);
+        Path resultPath = Paths.get(path + "/PACKAGE-INFO.xml");
+        Files.copy(classPathResource.getInputStream(), resultPath);
+        return resultPath;
     }
 
     private ObjectIdentifierComplexType createObjectIdentifierComplexType(String type, String value) {
@@ -650,62 +657,110 @@ public class DaService {
         return new SignificantPropertiesComplexType(elements);
     }
 
-    private void createMets(DaAip aip, Path aipDir) throws JAXBException {
+    private void createMets(Path aipDir, Path packageInfoPath, Path eadPath) throws JAXBException, DatatypeConfigurationException, IOException {
         Mets mets = new Mets();
-        List<DaDao> daDaoList = daoRepository.findByAipAndDeleteChangeIsNull(aip);
-        for (DaDao daDao : daDaoList) {
-            switch (daDao.getType()) {
-                case REPRESENTATION -> {
-                    StructMapType structMapType = new StructMapType();
-                    structMapType.setTYPE("PHYSICAL");
-                    DivType divType = new DivType();
-                    divType.setLABEL("Representations");
-                    divType.setID(daDao.getCode());
-                    structMapType.setDiv(divType);
-                    mets.getStructMap().add(structMapType);
-                }
-                case METAAMD -> {
-                    String[] daoSplit = daDao.getLabel().split(":");
-                    if (daoSplit.length == 2) {
-                        MdSecType mdSecType = new MdSecType();
-                        MdSecType.MdRef mdRef = new MdSecType.MdRef();
-                        mdRef.setMDTYPE(daoSplit[0]);
-                        mdRef.setHref(daoSplit[1]);
-                        mdSecType.setMdRef(mdRef);
-                        AmdSecType amdSecType = new AmdSecType();
-                        amdSecType.getDigiprovMD().add(mdSecType);
-                        mets.getAmdSec().add(amdSecType);
-                    }
-                }
-                case METADMDCONTEXTUAL, METADMDINHERENT -> {
-                    MdSecType mdSecType = new MdSecType();
-                    MdSecType.MdRef mdRef = new MdSecType.MdRef();
-                    mdRef.setHref(daDao.getLabel());
-                    mdSecType.setMdRef(mdRef);
-                    AmdSecType amdSecType = new AmdSecType();
-                    amdSecType.getDigiprovMD().add(mdSecType);
-                    mets.getAmdSec().add(amdSecType);
-                }
-                case LOGICAL -> {
-                    StructMapType structMapType = new StructMapType();
-                    structMapType.setTYPE("LOGICAL");
-                    String[] daoSplit = daDao.getLabel().split(":");
-                    DivType divType = new DivType();
-                    divType.setTYPE("LOGICAL");
-                    if (daoSplit.length == 2) {
-                        divType.setTYPE(daoSplit[0]);
-                        divType.setLABEL(daoSplit[1]);
-                    } else {
-                        divType.setLABEL(daDao.getLabel());
-                    }
-                    structMapType.setDiv(divType);
-                    mets.getStructMap().add(structMapType);
-                }
-                default -> {}
-            }
-        }
+        XMLGregorianCalendar currentCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
+        MetsType.MetsHdr metsHdr = new MetsType.MetsHdr();
+        metsHdr.setCREATEDATE(currentCalendar);
+        MetsType.MetsHdr.Agent creatorAgent = createAgent("CREATOR", "OTHER", "SOFTWARE", "ELZA", "3.0");
+        MetsType.MetsHdr.Agent disseminationAgent = createAgent("DISSEMINATION", "ORGANIZATION", null, "Testovaci archiv", null);
+        metsHdr.getAgent().add(creatorAgent);
+        metsHdr.getAgent().add(disseminationAgent);
+        mets.setMetsHdr(metsHdr);
 
+        String dmdSecUUID = createUUID();
+        String amdSecUUID =  createUUID();
+        MdSecType dmdSec = createDmdSec(dmdSecUUID, currentCalendar, eadPath);
+        mets.getDmdSec().add(dmdSec);
+        AmdSecType amdSec = createAmdSec(amdSecUUID, packageInfoPath);
+        mets.getAmdSec().add(amdSec);
+
+        StructMapType structMap = new StructMapType();
+        structMap.setTYPE("PHYSICAL");
+        structMap.setLABEL("CSIP");
+        DivType div = new DivType();
+        div.setID( createUUID());
+        DivType innerDiv = new DivType();
+        innerDiv.setID( createUUID());
+        innerDiv.setLABEL("Metadata");
+        innerDiv.getDMDID().add(dmdSec);
+
+        innerDiv.getADMID().add(amdSec.getDigiprovMD().get(0));
+
+        div.getDiv().add(innerDiv);
+        structMap.setDiv(div);
+        mets.getStructMap().add(structMap);
         MetsReaderWriter.marshal(mets, Path.of(aipDir.toString(), "METS.xml"));
+    }
+
+    private String createUUID() {
+        return "uuid-" + UUID.randomUUID();
+    }
+
+    private AmdSecType createAmdSec(String amdSecUUID, Path packageInfoPath) throws IOException {
+        AmdSecType amdSecType = new AmdSecType();
+        MdSecType digiprovMD = new MdSecType();
+        digiprovMD.setID(amdSecUUID);
+        digiprovMD.setGROUPID("PRESERVATION");
+        digiprovMD.setSTATUS("CURRENT");
+        MdSecType.MdRef mdRef = new MdSecType.MdRef();
+        mdRef.setType("simple");
+        mdRef.setHref("metadata/preservation/PACKAGE-INFO.xml");
+        mdRef.setMDTYPE("PREMIS");
+        mdRef.setLOCTYPE("URL");
+        mdRef.setMIMETYPE("application/xml");
+        mdRef.setSIZE(10L);
+        mdRef.setCHECKSUM(calculateSHA512(packageInfoPath));
+        mdRef.setCHECKSUMTYPE("SHA-512");
+        mdRef.setSIZE(Files.size(packageInfoPath));
+
+        digiprovMD.setMdRef(mdRef);
+        amdSecType.getDigiprovMD().add(digiprovMD);
+        return amdSecType;
+    }
+
+    public static String calculateSHA512(Path filePath) {
+        try (FileInputStream fis = new FileInputStream(filePath.toFile())) {
+            // Využití DigestUtils pro výpočet SHA-512 hash
+            return DigestUtils.sha512Hex(fis);
+        } catch (IOException e) {
+            logger.error("Nastala chyba při čtení souboru {}", filePath, e);
+            return null;
+        }
+    }
+
+    private MdSecType createDmdSec(String dmdSecUUID, XMLGregorianCalendar currentCalendar, Path eadPath) throws IOException {
+        MdSecType mdSecType = new MdSecType();
+        mdSecType.setID(dmdSecUUID);
+        mdSecType.setGROUPID("CONTEXTUAL");
+        mdSecType.setCREATED(currentCalendar);
+        mdSecType.setSTATUS("CURRENT");
+
+
+        MdSecType.MdRef mdRef = new MdSecType.MdRef();
+        mdRef.setType("simple");
+        mdRef.setHref("metadata/descriptive/EAD-CONTEXT.xml");
+        mdRef.setMDTYPE("EAD");
+        mdRef.setLOCTYPE("URL");
+        mdRef.setMIMETYPE("application/xml");
+        mdRef.setCHECKSUM(calculateSHA512(eadPath));
+        mdRef.setCHECKSUMTYPE("SHA-512");
+        mdRef.setSIZE(Files.size(eadPath));
+
+
+        mdSecType.setMdRef(mdRef);
+
+        return mdSecType;
+    }
+
+    private MetsType.MetsHdr.Agent createAgent(String role, String type, String otherType, String name, String note) {
+        MetsType.MetsHdr.Agent creatorAgent = new MetsType.MetsHdr.Agent();
+        creatorAgent.setROLE(role);
+        creatorAgent.setTYPE(type);
+        creatorAgent.setOTHERTYPE(otherType);
+        creatorAgent.setName(name);
+        creatorAgent.getNote().add(note);
+        return creatorAgent;
     }
 
     public DaChange createDaChange(DaAip aip, DaChangeType changeType) {
