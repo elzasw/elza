@@ -129,7 +129,7 @@ export default class ArrParentPage extends AbstractReactComponent {
     resolveUrlsRaw = async (fundId, versionId) => {
         const {dispatch} = this.props;
         const activeFund = this.getActiveFund(this.props);
-        
+
         // skip loading data, if fund is currently open
         if(activeFund?.id === fundId && getFundVersion(activeFund) == versionId){
             return activeFund;
@@ -296,6 +296,7 @@ export default class ArrParentPage extends AbstractReactComponent {
             centerPanel = <Loading/>
         }
 
+
         return (
             <Shortcuts
                 name="ArrParent"
@@ -307,6 +308,7 @@ export default class ArrParentPage extends AbstractReactComponent {
             >
                 <PageLayout
                     splitter={splitter}
+                    area={this.area}
                     _className="fa-page"
                     className={this.layoutClassName ? 'arr-abstract-page ' + this.layoutClassName : 'arr-abstract-page'}
                     ribbon={this.buildRibbon(readMode, closed)}
