@@ -48,7 +48,10 @@ import ArrPageRibbon from './ArrPageRibbon';
 import ArrParentPage from './ArrParentPage';
 import {processNodeNavigation} from "../../utils/ArrShared";
 
+const AREA = "ARR";
+
 class ArrPage extends ArrParentPage {
+    area = AREA;
     static TAB_KEY = 'arr-as';
 
     static contextTypes = {shortcuts: PropTypes.object};
@@ -1231,7 +1234,7 @@ function mapStateToProps(state) {
 
     return {
         structureTypes,
-        splitter,
+        splitter: splitter.splitters[AREA],
         arrRegion,
         focus,
         developer,

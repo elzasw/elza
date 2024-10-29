@@ -22,7 +22,11 @@ import './ArrRequestPage.scss';
 import {FOCUS_KEYS, urlFundRequests, getFundVersion} from '../../constants.tsx';
 import { showConfirmDialog } from 'components/shared/dialog';
 
+const AREA = "ARR_REQUEST";
+
 class ArrRequestPage extends ArrParentPage {
+    area = AREA;
+
     constructor(props) {
         super(props, 'arr-request-page');
     }
@@ -314,7 +318,7 @@ class ArrRequestPage extends ArrParentPage {
 function mapStateToProps(state) {
     const {splitter, arrRegion, refTables, focus, userDetail} = state;
     return {
-        splitter,
+        splitter: splitter.splitters[AREA],
         arrRegion,
         focus,
         userDetail,

@@ -19,7 +19,11 @@ import {urlFundMovements, getFundVersion} from "../../constants";
  * Stránka archivních pomůcek.
  */
 
+const AREA = "ARR_MOVEMENTS";
+
 const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
+    area = AREA;
+
     constructor(props) {
         super(props, 'fa-page');
 
@@ -234,7 +238,7 @@ const ArrMovementsPage = class ArrMovementsPage extends ArrParentPage {
 function mapStateToProps(state) {
     const {splitter, arrRegion, refTables, form, focus, developer, userDetail, tab} = state;
     return {
-        splitter,
+        splitter: splitter.splitters[AREA],
         arrRegion,
         focus,
         developer,
