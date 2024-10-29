@@ -1,9 +1,0 @@
-export enum QueueItemState {
-    UPDATE =  "UPDATE",
-    IMPORT_NEW = "IMPORT_NEW",
-    IMPORT_OK = "IMPORT_OK",
-    IMPORT_ERROR = "IMPORT_ERROR",
-    EXPORT_ERROR = "EXPORT_ERROR",
-    EXPORT_OK = "EXPORT_OK",
-    EXPORT_NEW = "EXPORT_NEW"
-}

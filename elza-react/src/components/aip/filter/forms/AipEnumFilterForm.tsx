@@ -1,10 +1,10 @@
 import { FormInputField, i18n } from "components/shared";
 import { Field, Form as FinalForm } from "react-final-form"
-import { DaAipDetailVO } from "api/DaAipDetailVO";
 import { Modal, Button, Form } from "react-bootstrap";
 import { AipFilter } from "typings/store";
 import { AipFilterFormProps, SelectionOptions } from "./AipFilterFormProps";
 import { AipFilterCriteria } from "./EnumAipFilterCriteria";
+import {AipDetailVO} from "elza-api";
 
 const AipEnumFilterForm = ({item, selectValues, onSubmit, onClose}: AipFilterFormProps) => {
     const validate = (values: AipFilter) => {
@@ -19,7 +19,7 @@ const AipEnumFilterForm = ({item, selectValues, onSubmit, onClose}: AipFilterFor
     return (
         <FinalForm<AipFilter>
             initialValues={{
-                attr: item.key as keyof DaAipDetailVO,
+                attr: item.key as keyof AipDetailVO,
                 criteria: AipFilterCriteria.EQUALS,
                 value: selectValues[0]?.value,
                 path: item.path,
@@ -36,8 +36,8 @@ const AipEnumFilterForm = ({item, selectValues, onSubmit, onClose}: AipFilterFor
                             type="select"
                             label= {i18n('aip.form.value')}
                             name="value"
-                        
-                        > 
+
+                        >
                             {selectValues && selectValues.map(({value, label}: SelectionOptions, index: number) =>
                                 <option key={index} value={value.toString()}>
                                     {label}

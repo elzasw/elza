@@ -1,13 +1,13 @@
-import { DaAipDetailVO } from "api/DaAipDetailVO";
 import DetailRow from "./DetailRow";
 import {formatAipSize, formatDate, getBoolIcon, getConnectedToJP} from "./utils";
 import {Api, serverContextPath} from "../../api";
 import {useThunkDispatch} from "../../utils/hooks";
 import {aipFetchIfNeeded} from "../../actions/aip/aip.ts";
 import i18n from 'components/i18n';
+import {AipDetailVO} from "elza-api";
 
 type AipDetailBodyProps = {
-    detail: DaAipDetailVO;
+    detail: AipDetailVO;
 }
 
 const AipDetailBody = ({detail}: AipDetailBodyProps) => {
@@ -66,7 +66,7 @@ const AipDetailBody = ({detail}: AipDetailBodyProps) => {
             {detail != null &&
                 <DetailRow label={i18n("aip.detail.metadataLoad")} value={getBoolIcon(detail.metadataLoad)}/>}
             <DetailRow label={i18n("aip.detail.completeAipLoad")} value={getBoolIcon(detail.completeAipLoad)}/>
-            {detail.metadataError && 
+            {detail.metadataError &&
                 <DetailRow label={i18n("aip.detail.metadataError")} value={getBoolIcon(detail.metadataError)}/>}
             {detail.metadataErrorException &&
                 <DetailRow label={i18n("aip.detail.metadataError")} value={detail.metadataErrorException}/>}

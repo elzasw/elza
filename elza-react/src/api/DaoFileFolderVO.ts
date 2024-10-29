@@ -1,6 +1,5 @@
 import { DaoFileVO } from "./DaoFileVO";
-import { DaoVO } from "./DaoVO";
-import {LinkedNodeVO} from "./LinkedNodeVO.ts";
+import {LinkedNodeVO} from "elza-api";
 
 export type DaoFileFolderVO = {
     uuid: string;
@@ -8,7 +7,6 @@ export type DaoFileFolderVO = {
     createChange?: string;
     deleteChange?: string;
     label: string;
-    representationDao: DaoVO;
     childFiles?: DaoFileVO[];
     childFolders?: DaoFileFolderVO[];
     parent?: DaoFileFolderVO;

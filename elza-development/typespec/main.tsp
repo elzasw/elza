@@ -267,7 +267,20 @@ model ExplorerTreeNode {
 
 /** Model ExplorerTreeNodeFile */
 model ExplorerTreeNodeFile {
-    ...DaDaoFile,
+    daoFileId: integer;
+    checksum: string;
+    checksumType: string;
+    mimeType: string;
+    size: int32;
+    imageHeight?: integer;
+    imageWidth?: integer;
+    sourceXDimensionUnit?: string;
+    sourceXDimensionValue?: integer;
+    sourceYDimensionUnit?: string;
+    sourceYDimensionValue?: integer;
+    duration?: string;
+    description?: string;
+    filename: string;
     /** Identifikátor nodu */
     uuid: string;
     /** Identifikátor da dao */
@@ -657,41 +670,6 @@ model ExtSystemProperty {
     name: string;
     /** value of property */
     value: string;
-}
-
-model DaDaoFileFolder {
-    daoFileFolderId: integer;
-    label: string;
-    representationDao: DaDao;
-    parentFileFolder?: DaDaoFileFolder;
-}
-
-model DaDaoFile {
-    daoFileId: integer;
-    dao: DaDao;
-    checksum: string;
-    checksumType: string;
-    mimeType: string;
-    size: int32;
-    imageHeight?: integer;
-    imageWidth?: integer;
-    sourceXDimensionUnit?: string;
-    sourceXDimensionValue?: integer;
-    sourceYDimensionUnit?: string;
-    sourceYDimensionValue?: integer;
-    duration?: string;
-    description?: string;
-    filename: string;
-    daoFileFolder?: DaDaoFileFolder;
-}
-
-model DaDao {
-    daoId: integer;
-    type: DaDaoType;
-    code: string;
-    label: string;
-    folders: DaDaoFileFolder[];
-    files: DaDaoFile[];
 }
 
 /**
