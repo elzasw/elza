@@ -1,6 +1,5 @@
 import { FormInputField, i18n } from "components/shared";
 import { Field, Form as FinalForm } from "react-final-form"
-import { DaAipDetailVO } from "api/DaAipDetailVO";
 import { Modal, Button, Form } from "react-bootstrap";
 import { AipFilter } from "typings/store";
 import { AipFilterFormProps, SelectionOptions } from "./AipFilterFormProps";
@@ -11,6 +10,7 @@ import { storeFromArea } from "shared/utils";
 import { useEffect } from "react";
 import { useThunkDispatch } from "utils/hooks";
 import { AREA_ACCESS_POINTS, accessPointsFetchIfNeeded } from "actions/ap/accessPoints";
+import {AipDetailVO} from "elza-api";
 
 const AipRefFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
     const funds = useSelector((state: any) => storeFromArea(state, AREA_ADMIN_FUNDS));
@@ -20,7 +20,7 @@ const AipRefFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
     const filterHasInput = (filter:AipFilter) => {
         return filter.criteria == AipFilterCriteria.EQUALS || filter.criteria == AipFilterCriteria.DOES_NOT_CONTAIN;
     }
-        
+
     const validate = (values: AipFilter) => {
         const errors: Partial<Record<keyof AipFilter, string>> = {};
         if(values.value == null) {
@@ -59,7 +59,7 @@ const AipRefFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
     return (
         <FinalForm<AipFilter>
             initialValues={{
-                attr: item.key as keyof DaAipDetailVO,
+                attr: item.key as keyof AipDetailVO,
                 criteria: AipFilterCriteria.EQUALS,
                 value: selectValues[0].value,
                 path: item.path,

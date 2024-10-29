@@ -8,7 +8,6 @@ import { useHistory, useRouteMatch} from 'react-router';
 import {urlAip} from '../../constants.tsx';
 import { useThunkDispatch } from 'utils/hooks';
 import {aipsFetchIfNeeded, aipsFilter, AREA_AIP, AREA_AIPS, selectAip, setSelectedAips, } from "../../actions/aip/aip.ts";
-import {DaAipDetailVO} from "../../api/DaAipDetailVO.ts";
 import {
     MenuCheckedValueChangeData,
     MenuCheckedValueChangeEvent,
@@ -35,6 +34,7 @@ import AipFilterSection from './filter/AipFilterSection.tsx';
 import Pagination from 'components/shared/pagination/Pagination.tsx';
 import { AipFilter } from 'typings/store/index.ts';
 import AipDetail from './AipDetail.tsx';
+import {AipDetailVO} from "elza-api";
 
 type AipTableProps = {
     onAipSelect?: (id: number) => void;
@@ -57,11 +57,11 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
     const history = useHistory();
     const match = useRouteMatch<AipPageUrlParams>();
 
-    const columnsDef: TableColumnDefinition<DaAipDetailVO>[] = colDef.map((def) =>
-        createTableColumn<DaAipDetailVO>({
+    const columnsDef: TableColumnDefinition<AipDetailVO>[] = colDef.map((def) =>
+        createTableColumn<AipDetailVO>({
             columnId: def.key,
             renderHeaderCell: () => <>{def.name}</>,
-            renderCell: (item: DaAipDetailVO) => <>{getContent(item, def.key)}</>,
+            renderCell: (item: AipDetailVO) => <>{getContent(item, def.key)}</>,
             compare: (a, b) => {
                 switch(def.type) {
                     case "number": return a[def.key] - b[def.key];
@@ -72,13 +72,13 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
         })
     );
 
-    const [columns, setColumns] = useState<TableColumnDefinition<DaAipDetailVO>[]>(columnsDef);
+    const [columns, setColumns] = useState<TableColumnDefinition<AipDetailVO>[]>(columnsDef);
 
     const formatUnitDate = (unitdateFrom: string, unitdateTo: string) => {
         return formatDate(new Date(unitdateFrom)) + " - " + (unitdateTo ? formatDate(new Date(unitdateTo)) : "?");
     }
 
-    const getContent =(item: DaAipDetailVO, key: string) => {
+    const getContent =(item: AipDetailVO, key: string) => {
         switch(key) {
             case "code": return <span className='link-like'>{item.code}</span>
             case "aipSize": return formatAipSize(item[key]);
@@ -214,8 +214,8 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
 
     return (
         <Row className='aip-table'>
-            <AipDetail 
-                open={detailOpen} 
+            <AipDetail
+                open={detailOpen}
                 onClose={() => setDetailOpen(false)}
                 onOpen={() => setDetailOpen(true)}
             />

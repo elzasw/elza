@@ -1,10 +1,10 @@
 import { FormInputField, i18n } from "components/shared";
 import { Field, Form as FinalForm } from "react-final-form"
-import { DaAipDetailVO } from "api/DaAipDetailVO";
 import { Modal, Button, Form } from "react-bootstrap";
 import { AipFilter } from "typings/store";
 import { AipFilterFormProps } from "./AipFilterFormProps";
 import { AipFilterCriteria } from "./EnumAipFilterCriteria";
+import {AipDetailVO} from "elza-api";
 
 const AipNumericFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
     const validate = (values: AipFilter) => {
@@ -29,7 +29,7 @@ const AipNumericFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => 
     return (
         <FinalForm<AipFilter>
             initialValues={{
-                attr: item.key as keyof DaAipDetailVO,
+                attr: item.key as keyof AipDetailVO,
                 criteria: AipFilterCriteria.BETWEEN,
                 path: item.path,
             }}

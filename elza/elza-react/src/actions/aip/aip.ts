@@ -2,8 +2,8 @@ import {WebApi} from 'actions/index.jsx';
 import * as SimpleListActions from '../../shared/list/simple/SimpleListActions';
 import * as DetailActions from '../../shared/detail/DetailActions';
 import { Aip, AipFilter, AipsFilter } from 'typings/store';
-import { DaAipDetailVO } from 'api/DaAipDetailVO';
 import {Api} from "../../api";
+import {AipDetailVO} from "elza-api";
 
 export const AREA_AIPS = 'aipList';
 export const AREA_AIP = 'aip';
@@ -44,7 +44,7 @@ export function setAip(aip: Aip) {
     return DetailActions.updateValue(AREA_AIP, aip.id, aip);
 }
 
-export const setSelectedAips = (aips: DaAipDetailVO[]) => {
+export const setSelectedAips = (aips: AipDetailVO[]) => {
     return SimpleListActions.setData(AREA_SELECTED_AIPS, null, aips);
 }
 

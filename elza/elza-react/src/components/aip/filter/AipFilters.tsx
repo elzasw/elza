@@ -14,7 +14,7 @@ import AipRefFilterForm from "./forms/AipRefFilterForm";
 import AipNumericFilterForm from "./forms/AipNumericFilterForm";
 import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
-import { QueueItemState } from "api/QueueItemState";
+import {QueueItemState} from "elza-api";
 
 type AipFiltersProps = {
 	filterDisabled: boolean;
@@ -84,10 +84,10 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
 					onClose={handleClose}
 					onSubmit={handleCreate}
 					selectValues={[
-						{label: "Chyba stažení", value: QueueItemState.IMPORT_ERROR},
-						{label: "Ke stažení", value: QueueItemState.IMPORT_NEW},
-						{label: "Aktualizováno/Staženo", value: QueueItemState.IMPORT_OK},
-						{label: "K aktualizaci", value: QueueItemState.UPDATE},
+						{label: "Chyba stažení", value: QueueItemState.ImportError},
+						{label: "Ke stažení", value: QueueItemState.ImportNew},
+						{label: "Aktualizováno/Staženo", value: QueueItemState.ImportOk},
+						{label: "K aktualizaci", value: QueueItemState.Update},
 					]}
 				/>)
             case "enumExportState": return (
@@ -96,9 +96,9 @@ const AipFilters = ({filterDisabled, hiddenValues, filters, createFilter, remove
                     onClose={handleClose}
                     onSubmit={handleCreate}
                     selectValues={[
-                        {label: "Chyba exportu", value: QueueItemState.EXPORT_ERROR},
-                        {label: "K exportu", value: QueueItemState.EXPORT_NEW},
-                        {label: "Exportováno", value: QueueItemState.EXPORT_OK},
+                        {label: "Chyba exportu", value: QueueItemState.ExportError},
+                        {label: "K exportu", value: QueueItemState.ExportNew},
+                        {label: "Exportováno", value: QueueItemState.ExportOk},
                     ]}
                 />)
 			default: return <></>
