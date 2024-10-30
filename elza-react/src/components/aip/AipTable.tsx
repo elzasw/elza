@@ -1,13 +1,13 @@
-import {FC, useCallback, useEffect, useState, MouseEvent, KeyboardEvent, useMemo} from 'react';
+import {FC, useCallback, useEffect, useState, MouseEvent, KeyboardEvent} from 'react';
 import {useSelector} from 'react-redux';
 import {StoreHorizontalLoader} from 'components/shared';
 import storeFromArea from '../../shared/utils/storeFromArea.jsx';
 import { findColDefByKey, formatAipSize, formatDate, getAipRows } from './utils.tsx';
 import './AipTable.scss';
-import { useHistory, useRouteMatch} from 'react-router';
+import { useHistory} from 'react-router';
 import {urlAip} from '../../constants.tsx';
 import { useThunkDispatch } from 'utils/hooks';
-import {aipsFetchIfNeeded, aipsFilter, AREA_AIP, AREA_AIPS, selectAip, setSelectedAips, } from "../../actions/aip/aip.ts";
+import {aipsFetchIfNeeded, aipsFilter, AREA_AIP, AREA_AIPS, setSelectedAips, } from "../../actions/aip/aip.ts";
 import {
     MenuCheckedValueChangeData,
     MenuCheckedValueChangeEvent,
@@ -40,22 +40,18 @@ type AipTableProps = {
     onAipSelect?: (id: number) => void;
     filterDisabled?: boolean;
     initialFilters?: AipFilter[];
-    hiddenValues?: string[]
+    hiddenValues?: string[];
+    detailOpen?: boolean;
+    setDetailOpen?: (open: boolean) => void;
 }
 
-interface AipPageUrlParams {
-    id?: string;
-}
-
-const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: AipTableProps) => {
+const AipTable: FC<AipTableProps> = ({onAipSelect, filterDisabled, initialFilters, hiddenValues, detailOpen, setDetailOpen}) => {
     const aips = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
     const aip = useSelector((state: any) => storeFromArea(state, AREA_AIP));
-    const [detailOpen, setDetailOpen] = useState<boolean>(false);
     const {from, pageSize} = aips.filter;
     const dispatch = useThunkDispatch();
     const items = getAipRows(aips);
     const history = useHistory();
-    const match = useRouteMatch<AipPageUrlParams>();
 
     const columnsDef: TableColumnDefinition<AipDetailVO>[] = colDef.map((def) =>
         createTableColumn<AipDetailVO>({
@@ -90,16 +86,6 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
         }
     }
 
-    useEffect(() => {
-        const id = match.params?.id;
-
-        if (id != null) {
-            dispatch(selectAip(id));
-            !onAipSelect && setDetailOpen(true);
-        } else if (aip?.id != null) {
-            history.replace(urlAip(aip.id));
-        }
-    }, [match.params.id]);
 
     useEffect(() => {
         dispatch(aipsFetchIfNeeded());
