@@ -13,11 +13,10 @@ import {getConnectedToJP} from "../../utils.tsx";
 import {Api, getFullPath} from "../../../../api";
 import {fetchAipStructureIfNeeded} from "../../../../actions/aip/exp.ts";
 import {downloadFile} from "../../../../actions/global/download";
-import {AipsApiAxiosParamCreator} from "elza-api";
+import {AipsApiAxiosParamCreator, DaoViewRequestVO} from "elza-api";
 import { AREA_AIP_STRUCTURE } from "actions/aip/exp.ts";
 import CrossTabHelper, { CrossTabEventType, getThisLayout } from "../../../CrossTabHelper";
 import {WebApi} from 'actions/WebApi';
-import { DaoViewRequestInfoVO } from "api/DaoViewRequestInfoVO.ts";
 
 const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
     const {selectedItem, setSelectedItem} = useExplorerContext();
@@ -93,7 +92,7 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
     }
 
     const renderName = () => {
-        return node.label || node.fileName;
+        return node.label || node.filename;
     }
 
     if(!node) {
@@ -135,7 +134,7 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
     const handleOpenComponent = () => {
         const thisLayout = getThisLayout();
 
-        WebApi.getDaoViewRequestInfo(selectedItem.daoId).then((result: DaoViewRequestInfoVO) => {
+        WebApi.getDaoViewRequestInfo(selectedItem.daoId).then((result: DaoViewRequestVO) => {
             if (thisLayout) {
                 CrossTabHelper.sendEvent(
                     thisLayout, {
@@ -182,7 +181,7 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
     return (
         <div className="explorer-detail">
             <div className="buttons">
-                {node.daoFileId && aip.data.metadataLoad && <Button
+                {node.daoFileId && aip.data?.metadataLoad && <Button
                     as="a"
                     className="open-btn"
                     onClick={handleOpenComponent}
@@ -191,7 +190,7 @@ const ExplorerDetail: FC<{selected?: string;}> = ({selected}) => {
                 >
                     <span>Zobrazit</span>
                 </Button>}
-                {node.daoFileId && aip.data.completeAipLoad && <Button
+                {node.daoFileId && aip.data?.completeAipLoad && <Button
                     as="a"
                     className="open-btn"
                     onClick={() => handleDownloadComponent(node.daoFileId)}

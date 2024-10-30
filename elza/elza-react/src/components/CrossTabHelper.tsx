@@ -1,6 +1,6 @@
 import { default as AcrossTabs } from 'across-tabs';
 import { MAP_URL, MAP_URL_WITH_CONTEXT } from '../pages/map/MapPage';
-import { COMPONENT_URL } from 'pages/component/ComponentPage';
+import { COMPONENT_URL, COMPONENT_URL_WITH_CONTEXT } from 'pages/component/ComponentPage';
 
 export enum CrossTabEventType {
     SHOW_IN_MAP = 'SHOW_IN_MAP',
@@ -110,7 +110,7 @@ class CrossTabHelper {
             case CrossTabEventType.SHOW_IN_MAP:
                 return MAP_URL_WITH_CONTEXT;
             case CrossTabEventType.DISPLAY_COMPONENT:
-                return COMPONENT_URL;
+                return COMPONENT_URL_WITH_CONTEXT;
             default:
                 return '';
         }

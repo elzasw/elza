@@ -18,7 +18,10 @@ import ActionsContainer from 'components/arr/aip/ActionsContainer';
  * Stránka archivních balíčků
  */
 
-const ArrAipPage = class ArrAipPage extends ArrParentPage {
+const AREA = "AIP"
+
+class ArrAipPage extends ArrParentPage {
+    area = AREA
 
     constructor(props) {
         super(props, 'fa-page');
@@ -135,7 +138,7 @@ const ArrAipPage = class ArrAipPage extends ArrParentPage {
 function mapStateToProps(state) {
     const {splitter, arrRegion, refTables, form, focus, developer, userDetail, tab} = state;
     return {
-        splitter,
+        splitter: splitter.splitters[AREA],
         arrRegion,
         focus,
         developer,

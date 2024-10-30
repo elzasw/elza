@@ -67,7 +67,11 @@ const OutputState = {
 const allowSendOutput = window.allowSendOutput !== undefined && window.allowSendOutput;
 const outputStates = Object.values(OutputState).filter((state)=> state !== OutputState.ERROR)
 
+const AREA = "ARR_OUTPUT";
+
 const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
+    area = AREA;
+
     static contextTypes = {shortcuts: PropTypes.object};
     static childContextTypes = {shortcuts: PropTypes.object.isRequired};
 
@@ -745,7 +749,7 @@ const ArrOutputPage = class ArrOutputPage extends ArrParentPage {
 function mapStateToProps(state) {
     const {splitter, arrRegion, refTables, focus, userDetail} = state;
     return {
-        splitter,
+        splitter: splitter.splitters[AREA],
         arrRegion,
         focus,
         userDetail,

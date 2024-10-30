@@ -20,6 +20,15 @@ model AdminInfo {
     /** Number of logged users */
     loggedUsers: int32;
 }
+  /** Model DaoVireRequest */
+model DaoViewRequestVO {
+    /** Identifikátor aipu - aip.code */
+    daoId: string;
+    /** Identifikátor dao - dao.code */
+    entityRef: string;
+    /** Url pro zobratení komponenty */
+    viewUrl: string;
+}
 
 /**
  * Logged user
@@ -234,6 +243,65 @@ model FsItems {
     /** Optional string to request next items. It is used if there are more items. */
     lastKey?: string;
 }
+
+/** Model ExplorerTreeNode */
+model ExplorerTreeNode {
+    /** Identifikátor nodu */
+    uuid: string;
+    /** Identifikátor da dao */
+    daoId: int32;
+    /** Popisek nodu */
+    label: string;
+    /** Seznam podsložek */
+    childFolders: ExplorerTreeNode[];
+    /** Seznam podsouborů */
+    childFiles: ExplorerTreeNodeFile[];
+    /** Rodičovská složka */
+    parentFolder: ExplorerTreeNode;
+    /** Rodičovská složka v logické struktuře */
+    parentFolderLogical: ExplorerTreeNode;
+    /** Seznam připojených nodů */
+    linkedNodes: LinkedNodeVO[];
+}
+
+/** Model ExplorerTreeNodeFile */
+model ExplorerTreeNodeFile {
+    daoFileId: integer;
+    checksum: string;
+    checksumType: string;
+    mimeType: string;
+    size: int32;
+    imageHeight?: integer;
+    imageWidth?: integer;
+    sourceXDimensionUnit?: string;
+    sourceXDimensionValue?: integer;
+    sourceYDimensionUnit?: string;
+    sourceYDimensionValue?: integer;
+    duration?: string;
+    description?: string;
+    filename: string;
+    /** Identifikátor nodu */
+    uuid: string;
+    /** Identifikátor da dao */
+    daoId: int32;
+    /** Popisek nodu */
+    label: string;
+    /** Seznam podsložek */
+    childFolders: ExplorerTreeNode[];
+    /** Seznam podsouborů */
+    childFiles: ExplorerTreeNodeFile[];
+    /** Rodičovská složka */
+    parentFolder: ExplorerTreeNode;
+    /** Rodičovská složka v logické struktuře */
+    parentFolderLogical: ExplorerTreeNode;
+    /** Seznam připojených nodů */
+    linkedNodes: LinkedNodeVO[];
+    /* Identifikátor dao_file_folder */
+    daoFileFolderId: int32;
+    /** Příznak logické struktury */
+    isLogical?: boolean;
+}
+
 
 /**
  * Parameters of archive file export
@@ -625,41 +693,6 @@ model ExtSystemProperty {
     value: string;
 }
 
-model DaDaoFileFolder {
-    daoFileFolderId: integer;
-    label: string;
-    representationDao: DaDao;
-    parentFileFolder?: DaDaoFileFolder;
-}
-
-model DaDaoFile {
-    daoFileId: integer;
-    dao: DaDao;
-    checksum: string;
-    checksumType: string;
-    mimeType: string;
-    size: integer;
-    imageHeight?: integer;
-    imageWidth?: integer;
-    sourceXDimensionUnit?: string;
-    sourceXDimensionValue?: integer;
-    sourceYDimensionUnit?: string;
-    sourceYDimensionValue?: integer;
-    duration?: integer;
-    description?: string;
-    filename: string;
-    daoFileFolder?: DaDaoFileFolder;
-}
-
-model DaDao {
-    daoId: integer;
-    type: DaDaoType;
-    code: string;
-    label: string;
-    folders: DaDaoFileFolder[];
-    files: DaDaoFile[];
-}
-
 /**
  * Custom uzel stromu
  */
@@ -1040,7 +1073,7 @@ model AipFilterGen {
     /**
      * UUID filtru
      */
-    id: string;
+    id?: string;
     /**
      * Atribut, podle kterého chceme filtrovat
      */
@@ -1048,7 +1081,7 @@ model AipFilterGen {
     /**
      * filtrovaná hodnota
      */
-    value: string;
+    value?: string;
     /**
      * Způsob porovnání
      */
@@ -2092,7 +2125,39 @@ namespace ElzaAPI.Aip {
         };
 
 }
+@tag("daos")
+@route("/daos")
+namespace ElzaAPI.Dao {
+    /** Získání informací o da dao pro view request na digital repository*/
+    @route("/component/{id}")
+    @get op getDaoViewRequestInfo(
+        /**  Identifikátor da dao */
+        @path id: integer
+    ) : {
+         /** Dao view request data*/
+         @Http.statusCode statusCode: 200;
+         @body data: DaoViewRequestVO;
+        } | {
+         /** Failed to get request data */
+         @Http.statusCode statusCode: 500;
+         @body data: BaseException;
+        };
 
+    /** Získání stromu pro průzkumník aipu */
+    @route("/aip/{aipId}")
+    @get op findByAipIdAndTypeAndDeleteChangeIsNull(
+        /** Identifikátor aipu */
+        @path aipId: integer;
+    ): {
+        /** Dao view request data*/
+        @Http.statusCode statusCode: 200;
+        @body data: ExplorerTreeNode;
+        } | {
+        /** Failed to get request data */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+    };
+}
 @service({
     title: "ELZA API",
 })

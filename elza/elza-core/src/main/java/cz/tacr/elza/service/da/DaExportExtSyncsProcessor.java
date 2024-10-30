@@ -5,6 +5,7 @@ import com.lightcomp.ft.client.TransferState;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.DaSyncQueueItem;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.da.vo.DaUploadRequestImpl;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,8 @@ public class DaExportExtSyncsProcessor implements Runnable {
                             Integer digitalRepositoryId = syncQueueItemList.get(0).getDigitalRepository().getExternalSystemId();
                             ArrDigitalRepository digitalRepository = externalSystemService.getDigitalRepository(digitalRepositoryId);
                             Path exportDir = daService.createOutputDir(syncQueueItemList);
-                            Transfer transfer = daService.ingestFileTransfer(digitalRepository, exportDir);
+                            DaUploadRequestImpl daUploadRequest = daService.createDaUploadRequest(exportDir);
+                            Transfer transfer = daService.ingestFileTransfer(digitalRepository, daUploadRequest);
 
                             while (transfer.getStatus().getState() != TransferState.FINISHED
                                     && transfer.getStatus().getState() != TransferState.FAILED
@@ -90,7 +92,7 @@ public class DaExportExtSyncsProcessor implements Runnable {
                                 throw new IllegalStateException("Přenos souborů neproběhl");
                             }
 
-                            String batchId = transfer.getTransferId();
+                            String batchId = daUploadRequest.getResponse().getId();
 
                             while (!daService.ingestStatusFinished(digitalRepository, batchId)) {
                                 try {

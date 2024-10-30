@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.config;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+import static org.aspectj.runtime.internal.Conversions.intValue;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -2364,7 +2365,9 @@ public class ClientFactoryVO {
         result.setChecksum(daDaoFile.getChecksum());
         result.setChecksumType(daDaoFile.getChecksumType());
         result.setMimeType(daDaoFile.getMimeType());
-        result.setSize(daDaoFile.getSize());
+        if(daDaoFile.getSize() != null) {
+            result.setSize(intValue(daDaoFile.getSize()));
+        }
         result.setImageHeight(daDaoFile.getImageHeight());
         result.setImageWidth(daDaoFile.getImageWidth());
         result.setSourceXDimensionUnit(daDaoFile.getSourceXDimensionUnit());
@@ -2373,7 +2376,7 @@ public class ClientFactoryVO {
         result.setSourceYDimensionValue(daDaoFile.getSourceYDimensionValue());
         result.setDuration(daDaoFile.getDuration());
         result.setDescription(daDaoFile.getDescription());
-        result.setFileName(daDaoFile.getFileName());
+        result.setFilename(daDaoFile.getFileName());
         result.setDaoId(daDaoFile.getDao().getDaoId());
         if(daDaoFile.getDaoFileFolder() != null) {
             result.setDaoFileFolderId(daDaoFile.getDaoFileFolder().getDaoFileFolderId());
@@ -2382,13 +2385,13 @@ public class ClientFactoryVO {
         return result;
     }
 
-    public List<LinkedNode> createLinkedNodes(List<ArrDaoLink> daoLinks, Map<Integer, TreeNodeVO> treeNodeMap) {
+    public List<LinkedNodeVO> createLinkedNodes(List<ArrDaoLink> daoLinks, Map<Integer, TreeNodeVO> treeNodeMap) {
         if (CollectionUtils.isNotEmpty(daoLinks)) {
-            List<LinkedNode> linkedNodeList = new ArrayList<>();
+            List<LinkedNodeVO> linkedNodeList = new ArrayList<>();
             for (ArrDaoLink daoLink : daoLinks) {
                 TreeNodeVO treeNode = treeNodeMap.get(daoLink.getNodeId());
                 if(treeNode != null) {
-                    linkedNodeList.add(new LinkedNode(daoLink.getDaoLinkId(), treeNode.getId(), treeNode.getName()));
+                    linkedNodeList.add(new LinkedNodeVO(daoLink.getDaoLinkId(), treeNode.getId(), treeNode.getName()));
                 }
             }
             return linkedNodeList;
@@ -2414,7 +2417,7 @@ public class ClientFactoryVO {
         result.setSourceYDimensionValue(file.getSourceYDimensionValue());
         result.setDuration(file.getDuration());
         result.setDescription(file.getDescription());
-        result.setFileName(file.getFileName());
+        result.setFilename(file.getFilename());
         if(file.getParentFolderLogical() != null) {
             result.setParentFolderLogical(file.getParentFolderLogical());
         }

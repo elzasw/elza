@@ -33,7 +33,10 @@ import PersistentSortForm from '../../components/arr/PersistentSortForm';
 import {descItemTypesFetchIfNeeded} from '../../actions/refTables/descItemTypes';
 import { WebApi } from 'actions/WebApi.ts';
 
+const AREA = "FUND_ACTION";
+
 class FundActionPage extends ArrParentPage {
+    area = AREA;
     refForm = null;
     static contextTypes = {shortcuts: PropTypes.object};
     static childContextTypes = {shortcuts: PropTypes.object.isRequired};
@@ -586,7 +589,7 @@ function mapStateToProps(state) {
     const {arrRegion, splitter, userDetail} = state;
     return {
         arrRegion,
-        splitter,
+        splitter: splitter.splitters[AREA],
         userDetail,
     };
 }
