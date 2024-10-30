@@ -1,8 +1,7 @@
 import {i18n, Icon} from 'components/shared';
 import { pad2 } from 'components/validate';
-import { LinkType } from 'elza-api';
+import {LinkedNodeVO, LinkType} from 'elza-api';
 import {Aips} from 'typings/store';
-import {LinkedNodeVO} from "../../api/LinkedNodeVO.ts";
 import {Button} from "react-bootstrap";
 import {serverContextPath} from "../../api";
 

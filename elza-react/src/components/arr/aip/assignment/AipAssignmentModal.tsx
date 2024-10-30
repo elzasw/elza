@@ -1,5 +1,4 @@
-import { TreeItemValue, truncateBreadcrumLongTooltip } from "@fluentui/react-components";
-import { DaAipDetailVO } from "api/DaAipDetailVO";
+import { TreeItemValue } from "@fluentui/react-components";
 import { Modal, Button, Col, Row } from "react-bootstrap";
 import "./AipAssignmentModal.scss";
 import { Icon, i18n } from "components/shared";
@@ -12,10 +11,11 @@ import { AppState } from "typings/store";
 import { AIP_LOGICAL_TREE, AREA_AIP, aipFetchIfNeeded, fetchAipLogicalTreeIfNeeded } from "actions/aip/aip";
 import { useThunkDispatch } from "utils/hooks";
 import { WebApi } from "actions";
+import {AipDetailVO} from "elza-api";
 
 
 type AipAssignmentModalProps = {
-    aips: DaAipDetailVO[];
+    aips: AipDetailVO[];
     tree: any,
 }
 

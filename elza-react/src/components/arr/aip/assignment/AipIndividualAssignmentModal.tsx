@@ -1,5 +1,4 @@
 import { TreeItemValue } from "@fluentui/react-components";
-import { DaAipDetailVO } from "api/DaAipDetailVO";
 import { Modal, Button, Col, Row } from "react-bootstrap";
 import "./AipAssignmentModal.scss";
 import { Icon, i18n } from "components/shared";

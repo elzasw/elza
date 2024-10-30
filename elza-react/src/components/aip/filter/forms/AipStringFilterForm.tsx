@@ -1,15 +1,15 @@
 import { FormInputField, i18n } from "components/shared";
 import { Field, Form as FinalForm } from "react-final-form"
-import { DaAipDetailVO } from "api/DaAipDetailVO";
 import { Modal, Button, Form } from "react-bootstrap";
 import { AipFilter } from "typings/store";
 import { AipFilterFormProps } from "./AipFilterFormProps";
 import { AipFilterCriteria } from "./EnumAipFilterCriteria";
+import {AipDetailVO} from "elza-api";
 
 const AipStringFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
     const validate = (values: AipFilter) => {
         const errors: Partial<Record<keyof AipFilter, string>> = {};
-        const needsValue = 
+        const needsValue =
             values.criteria == AipFilterCriteria.CONTAINS ||
             values.criteria == AipFilterCriteria.DOES_NOT_CONTAIN ||
             values.criteria == AipFilterCriteria.EQUALS;
@@ -21,21 +21,33 @@ const AipStringFilterForm = ({item, onSubmit, onClose}: AipFilterFormProps) => {
         return errors;
     };
 
-return (
+    const filterHasInput = (filter: AipFilter) => {
+        return filter .criteria == AipFilterCriteria.CONTAINS ||
+            filter.criteria == AipFilterCriteria.DOES_NOT_CONTAIN ||
+            filter.criteria == AipFilterCriteria.EQUALS;
+    }
+
+    const handleSubmit = (filter: AipFilter) => {
+        console.log('filter :>> ', filter);
+        if(!filterHasInput(filter)) {
+            delete filter.value;
+            delete filter.label;
+        }
+        onSubmit(filter);
+    }
+
+    return (
         <FinalForm<AipFilter>
             initialValues={{
-                attr: item.key as keyof DaAipDetailVO,
+                attr: item.key as keyof AipDetailVO,
                 criteria: AipFilterCriteria.CONTAINS,
                 path: item.path
             }}
-            onSubmit={onSubmit}
+            onSubmit={handleSubmit}
             validate={validate}
         >
         {({ submitting, handleSubmit, form, values }) => {
-            const inputVisible = 
-                values.criteria == AipFilterCriteria.CONTAINS || 
-                values.criteria == AipFilterCriteria.DOES_NOT_CONTAIN || 
-                values.criteria == AipFilterCriteria.EQUALS;
+            const inputVisible = filterHasInput(values);
 
             return (
                 <Form>

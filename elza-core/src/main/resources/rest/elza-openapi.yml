@@ -489,27 +489,6 @@ paths:
           description: Změna scénáře provedena
         404:
           description: Dao neexistuje
-  /daos/component/{id}:
-    get:
-      summary: Získání informací o da dao pro view request na digital repository
-      operationId: getDaoViewRequestInfo
-      tags:
-        - daos
-      parameters:
-        - name: id
-          description: Identifikátor dao
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-      responses:
-        200:
-          description: Změna scénáře provedena
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DaoViewRequestVO"
   /search-ap:
     post:
       tags:
@@ -626,6 +605,8 @@ paths:
               $ref: '#/components/schemas/Admin.CopyPermissionParams'
   /aip/bulk-connect-logic-to-jp:
     post:
+      tags:
+        - aips
       operationId: Aip_bulkConnectLogicToJp
       description: Bulk connect logical structure to JP
       parameters:
@@ -635,7 +616,6 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
-          explode: false
         - name: daAipIdList
           in: query
           required: true
@@ -651,7 +631,6 @@ paths:
           description: DaLevelView ID
           schema:
             type: integer
-          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -661,10 +640,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-      tags:
-        - aips
   /aip/bulk-connect-to-jp:
     post:
+      tags:
+        - aips
       operationId: Aip_bulkConnectToJp
       description: Bulk connect to JP
       parameters:
@@ -674,7 +653,6 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
-          explode: false
         - name: daAipIdList
           in: query
           required: true
@@ -693,10 +671,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-      tags:
-        - aips
   /aip/bulk-create-from-selected:
     post:
+      tags:
+        - aips
       operationId: Aip_bulkCreateFromSelected
       description: Bulk create from selected
       parameters:
@@ -706,7 +684,6 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
-          explode: false
         - name: daAipIdList
           in: query
           required: true
@@ -725,10 +702,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-      tags:
-        - aips
   /aip/bulk-create-selected-to-jp:
     post:
+      tags:
+        - aips
       operationId: Aip_bulkCreateSelectedToJp
       description: Bulk create from selected and connect to JP
       parameters:
@@ -738,7 +715,6 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
-          explode: false
         - name: daAipIdList
           in: query
           required: true
@@ -754,7 +730,6 @@ paths:
           description: DaLevelView ID
           schema:
             type: integer
-          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -764,10 +739,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-      tags:
-        - aips
   /aip/connect-jp-from-selected:
     post:
+      tags:
+        - aips
       operationId: Aip_connectJpFromSelected
       description: Create JP from selected
       parameters:
@@ -777,14 +752,12 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
-          explode: false
         - name: daAipId
           in: query
           required: true
           description: DaAip ID
           schema:
             type: integer
-          explode: false
         - name: daDaoIdList
           in: query
           required: true
@@ -803,10 +776,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-      tags:
-        - aips
   /aip/connect-jp-link-from-selected:
     post:
+      tags:
+        - aips
       operationId: Aip_connectJpLinkFromSelected
       description: Create JP and link from selected
       parameters:
@@ -816,14 +789,12 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
-          explode: false
         - name: daAipId
           in: query
           required: true
           description: DaAip ID
           schema:
             type: integer
-          explode: false
         - name: daDaoIdList
           in: query
           required: true
@@ -842,10 +813,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-      tags:
-        - aips
   /aip/connect-part-to-jp:
     post:
+      tags:
+        - aips
       operationId: Aip_connectPartToJp
       description: Connect Part to JP
       parameters:
@@ -855,14 +826,12 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
-          explode: false
         - name: daAipId
           in: query
           required: true
           description: DaAip ID
           schema:
             type: integer
-          explode: false
         - name: daDaoIdList
           in: query
           required: true
@@ -881,10 +850,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-      tags:
-        - aips
   /aip/connect-selected-to-jp:
     post:
+      tags:
+        - aips
       operationId: Aip_connectSelectedToJp
       description: Connect selected to JP
       parameters:
@@ -894,14 +863,12 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
-          explode: false
         - name: daAipId
           in: query
           required: true
           description: DaAip ID
           schema:
             type: integer
-          explode: false
         - name: daDaoIdList
           in: query
           required: true
@@ -920,10 +887,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-      tags:
-        - aips
   /aip/connect-to-jp:
     post:
+      tags:
+        - aips
       operationId: Aip_connectToJp
       description: Connect to JP
       parameters:
@@ -933,14 +900,12 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
-          explode: false
         - name: daAipId
           in: query
           required: true
           description: DaAip ID
           schema:
             type: integer
-          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -950,8 +915,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-      tags:
-        - aips
   /aip/create-dao-link:
     post:
       tags:
@@ -1200,6 +1163,45 @@ paths:
               type: array
               items:
                 type: integer
+  /aip/find/filter:
+    post:
+      tags:
+        - aips
+      operationId: Aip_findByFilter
+      description: Find aips by filters
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: count
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AipDetailFilteredResult'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      requestBody:
+        description: Array of filters
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/AipFilterGen'
   /aip/import-package:
     post:
       tags:
@@ -1241,7 +1243,7 @@ paths:
         - aips
       operationId: Aip_levelViewTree
       description: Get level view tree for aips with ids
-      parameters: [ ]
+      parameters: []
       responses:
         '200':
           description: The request has succeeded.
@@ -1264,21 +1266,17 @@ paths:
               type: array
               items:
                 type: integer
-  /aip/find/filter:
+  /aip/tree:
     post:
       tags:
         - aips
-      operationId: Aip_findByFilter
-      description: Find aips by filters
+      operationId: Aip_tree
+      description: Get level view tree for aips with ids
       parameters:
-        - name: from
+        - name: aipId
           in: query
           required: true
-          schema:
-            type: integer
-        - name: count
-          in: query
-          required: true
+          description: Aip IDs
           schema:
             type: integer
       responses:
@@ -1287,22 +1285,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AipDetailFilteredResult'
+                $ref: '#/components/schemas/TreeDataCustomGen'
         '500':
           description: Server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-      requestBody:
-        description: Array of filters
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/AipFilterGen'
   /aip/update-aip:
     post:
       tags:
@@ -1355,32 +1344,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /aip/tree:
-    post:
-      tags:
-        - aips
-      operationId: Aip_tree
-      description: Get level view tree for aips with ids
-      parameters:
-        - name: aipId
-          in: query
-          required: true
-          description: Aip IDs
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TreeDataCustomGen'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
   /daorepository:
     get:
       operationId: DaoRepository_fsRepos
@@ -1394,6 +1357,58 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FsRepo'
+  /daos/aip/{aipId}:
+    get:
+      tags:
+        - daos
+      operationId: Dao_findByAipIdAndTypeAndDeleteChangeIsNull
+      description: Získání stromu pro průzkumník aipu
+      parameters:
+        - name: aipId
+          in: path
+          required: true
+          description: Identifikátor aipu
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExplorerTreeNode'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+  /daos/component/{id}:
+    get:
+      tags:
+        - daos
+      operationId: Dao_getDaoViewRequestInfo
+      description: Získání informací o da dao pro view request na digital repository
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifikátor da dao
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DaoViewRequestVO'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
   /descItems/{fundVersionId}/create:
     put:
       tags:
@@ -2000,6 +2015,7 @@ components:
         - digitalRepositoryId
         - aipVersion
         - fund
+        - fundCode
         - institution
         - originatorInstitution
         - originator
@@ -2037,6 +2053,7 @@ components:
           description: Archivní soubor
         fundCode:
           type: string
+          description: Kód archivního souboru
         institution:
           allOf:
             - $ref: '#/components/schemas/ParInstitutionGen'
@@ -2098,12 +2115,20 @@ components:
             $ref: '#/components/schemas/LinkedNodeVO'
           description: Seznam napojených nodes
       description: Vo pro detail AIPu
+    AipFilterCriteriaGen:
+      type: string
+      enum:
+        - IS_NULL
+        - IS_NOT_NULL
+        - CONTAINS
+        - DOES_NOT_CONTAIN
+        - EQUALS
+        - BETWEEN
+      description: Způsob porovnání hodnot filtru
     AipFilterGen:
       type: object
       required:
-        - id
         - attr
-        - value
         - criteria
         - path
       properties:
@@ -2130,16 +2155,6 @@ components:
           type: string
           description: Cesta
       description: Filter aipu
-    AipFilterCriteriaGen:
-      type: string
-      enum:
-        - IS_NULL
-        - IS_NOT_NULL
-        - CONTAINS
-        - DOES_NOT_CONTAIN
-        - EQUALS
-        - BETWEEN
-      description: Způsob porovnání hodnot filtru
     AipType:
       type: string
       enum:
@@ -2156,14 +2171,6 @@ components:
         - DOWNLOAD_UPDATE
         - FORCE_UPDATE
       description: AIP update type
-    ApState:
-      type: string
-      enum:
-        - OK
-        - ERROR
-        - TEMP
-        - INIT
-      description: Stav rejstříku
     ApStateApproval:
       type: string
       enum:
@@ -2277,14 +2284,6 @@ components:
         stackTrace:
           type: string
       description: Error specification for the client
-    ChangeType:
-      type: string
-      enum:
-        - NEW
-        - UPDATED
-        - DELETED
-        - ORIGINAL
-      description: Type of change Item
     CopyAccessPointDetail:
       type: object
       required:
@@ -2351,6 +2350,76 @@ components:
           minItems: 1
           description: Seznam oblastí entit
       description: Zakládaný archivní souboru
+    DaDaoType:
+      type: string
+      enum:
+        - REPRESENTATION
+        - LOGICAL
+        - FILE
+        - METAAMD
+        - METADMDINHERENT
+        - METADMDCONTEXTUAL
+      description: Dao type
+    DaoLink:
+      type: object
+      required:
+        - daoLinkUuid
+        - aipId
+        - name
+      properties:
+        daoLinkId:
+          type: integer
+          description: Dao link ID
+        daoLinkUuid:
+          type: string
+          description: Dao link UUID
+        aipId:
+          type: integer
+          description: Aip ID
+        daoId:
+          type: integer
+          description: Dao ID
+        daoCode:
+          type: string
+          description: Dao code
+        daoType:
+          allOf:
+            - $ref: '#/components/schemas/DaDaoType'
+          description: Dao type
+        name:
+          type: string
+          description: Komponent name
+        children:
+          description: Link on children komponents
+          type: array
+          items:
+            $ref: '#/components/schemas/DaoLink'
+      description: Dao link
+    DaoLinksResult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DaoLink'
+      description: List of dao links
+    DaoViewRequestVO:
+      type: object
+      required:
+        - daoId
+        - entityRef
+        - viewUrl
+      properties:
+        daoId:
+          type: string
+          description: Identifikátor aipu - aip.code
+        entityRef:
+          type: string
+          description: Identifikátor dao - dao.code
+        viewUrl:
+          type: string
+          description: Url pro zobratení komponenty
+      description: Model DaoVireRequest
     DataBit:
       type: object
       required:
@@ -2601,49 +2670,6 @@ components:
           type: integer
       allOf:
         - $ref: '#/components/schemas/ItemData'
-    DaoLink:
-      type: object
-      required:
-        - daoLinkUuid
-        - aipId
-        - name
-      properties:
-        daoLinkId:
-          type: integer
-          description: Dao link ID
-        daoLinkUuid:
-          type: string
-          description: Dao link UUID
-        aipId:
-          type: integer
-          description: Aip ID
-        daoId:
-          type: integer
-          description: Dao ID
-        daoCode:
-          type: string
-          description: Dao code
-        daoType:
-          allOf:
-            - $ref: '#/components/schemas/DaDaoType'
-          description: Dao type
-        name:
-          type: string
-          description: Komponent name
-        children:
-          description: Link on children komponents
-          type: array
-          items:
-            $ref: '#/components/schemas/DaoLink'
-      description: Dao link
-    DaoLinksResult:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/DaoLink'
-      description: List of dao links
     DeleteAccessPointDetail:
       type: object
       properties:
@@ -2671,6 +2697,140 @@ components:
           type: string
           description: optional description of entity
       description: Return value when copying ApAccessPoint
+    ExplorerTreeNode:
+      type: object
+      required:
+        - uuid
+        - daoId
+        - label
+        - childFolders
+        - childFiles
+        - parentFolder
+        - parentFolderLogical
+        - linkedNodes
+      properties:
+        uuid:
+          type: string
+          description: Identifikátor nodu
+        daoId:
+          type: integer
+          format: int32
+          description: Identifikátor da dao
+        label:
+          type: string
+          description: Popisek nodu
+        childFolders:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExplorerTreeNode'
+          description: Seznam podsložek
+        childFiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExplorerTreeNodeFile'
+          description: Seznam podsouborů
+        parentFolder:
+          allOf:
+            - $ref: '#/components/schemas/ExplorerTreeNode'
+          description: Rodičovská složka
+        parentFolderLogical:
+          allOf:
+            - $ref: '#/components/schemas/ExplorerTreeNode'
+          description: Rodičovská složka v logické struktuře
+        linkedNodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkedNodeVO'
+          description: Seznam připojených nodů
+      description: Model ExplorerTreeNode
+    ExplorerTreeNodeFile:
+      type: object
+      required:
+        - daoFileId
+        - checksum
+        - checksumType
+        - mimeType
+        - size
+        - filename
+        - uuid
+        - daoId
+        - label
+        - childFolders
+        - childFiles
+        - parentFolder
+        - parentFolderLogical
+        - linkedNodes
+        - daoFileFolderId
+      properties:
+        daoFileId:
+          type: integer
+        checksum:
+          type: string
+        checksumType:
+          type: string
+        mimeType:
+          type: string
+        size:
+          type: integer
+          format: int32
+        imageHeight:
+          type: integer
+        imageWidth:
+          type: integer
+        sourceXDimensionUnit:
+          type: string
+        sourceXDimensionValue:
+          type: integer
+        sourceYDimensionUnit:
+          type: string
+        sourceYDimensionValue:
+          type: integer
+        duration:
+          type: string
+        description:
+          type: string
+        filename:
+          type: string
+        uuid:
+          type: string
+          description: Identifikátor nodu
+        daoId:
+          type: integer
+          format: int32
+          description: Identifikátor da dao
+        label:
+          type: string
+          description: Popisek nodu
+        childFolders:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExplorerTreeNode'
+          description: Seznam podsložek
+        childFiles:
+          description: Seznam podsouborů
+          type: array
+          items:
+            $ref: '#/components/schemas/ExplorerTreeNodeFile'
+        parentFolder:
+          allOf:
+            - $ref: '#/components/schemas/ExplorerTreeNode'
+          description: Rodičovská složka
+        parentFolderLogical:
+          allOf:
+            - $ref: '#/components/schemas/ExplorerTreeNode'
+          description: Rodičovská složka v logické struktuře
+        linkedNodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkedNodeVO'
+          description: Seznam připojených nodů
+        daoFileFolderId:
+          type: integer
+          format: int32
+        isLogical:
+          type: boolean
+          description: Příznak logické struktury
+      description: Model ExplorerTreeNodeFile
     ExportParams:
       type: object
       properties:
@@ -3227,7 +3387,6 @@ components:
           description: Hloubka
         daLeveViewId:
           type: integer
-          description: Id daLevelView
         hasChildren:
           type: boolean
           description: Příznak, zda udel má potomky
@@ -3412,91 +3571,3 @@ components:
       required:
         - importType
         - dataFile
-    DaDao:
-      type: object
-      properties:
-        daoId:
-          type: integer
-        type:
-          $ref: "#/components/schemas/DaDaoType"
-        code:
-          type: string
-        label:
-          type: string
-        folders:
-          type: array
-          items:
-            $ref: "#/components/schemas/DaDaoFileFolder"
-        files:
-          type: array
-          items:
-            $ref: "#/components/schemas/DaDaoFile"
-    DaDaoFileFolder:
-      type: object
-      properties:
-        daoFileFolderId:
-          type: integer
-        label:
-          type: string
-        representationDao:
-          $ref: "#/components/schemas/DaDao"
-        parentFileFolder:
-          $ref: "#/components/schemas/DaDaoFileFolder"
-    DaDaoFile:
-      type: object
-      properties:
-        daoFileId:
-          type: integer
-        dao:
-          $ref: "#/components/schemas/DaDao"
-        checksum:
-          type: string
-        checksumType:
-          type: string
-        mimeType:
-          type: string
-        size:
-          type: integer
-        imageHeight:
-          type: integer
-        imageWidth:
-          type: integer
-        sourceXDimensionUnit:
-          type: string
-        sourceXDimensionValue:
-          type: integer
-        sourceYDimensionUnit:
-          type: string
-        sourceYDimensionValue:
-          type: integer
-        duration:
-          type: integer
-        description:
-          type: string
-        filename:
-          type: string
-        daoFileFolder:
-          $ref: "#/components/schemas/DaDaoFileFolder"
-    DaDaoType:
-      type: string
-      enum:
-        - REPRESENTATION
-        - LOGICAL
-        - FILE
-        - METAAMD
-        - METADMDINHERENT
-        - METADMDCONTEXTUAL
-      description: DaDao type
-    DaoViewRequestVO:
-      type: object
-      properties:
-        daoId:
-          type: string
-        entityRef:
-          type: string
-        viewUrl:
-          type: string
-      required:
-        - daoId
-        - entityRef
-        - viewUrl

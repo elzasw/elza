@@ -4,11 +4,10 @@ import {StoreHorizontalLoader} from 'components/shared';
 import storeFromArea from '../../shared/utils/storeFromArea.jsx';
 import { findColDefByKey, formatAipSize, formatDate, getAipRows } from './utils.tsx';
 import './AipTable.scss';
-import { useHistory } from 'react-router';
+import { useHistory, useRouteMatch} from 'react-router';
 import {urlAip} from '../../constants.tsx';
 import { useThunkDispatch } from 'utils/hooks';
-import {aipsFetchIfNeeded, aipsFilter, AREA_AIPS, setSelectedAips, } from "../../actions/aip/aip.ts";
-import {DaAipDetailVO} from "../../api/DaAipDetailVO.ts";
+import {aipsFetchIfNeeded, aipsFilter, AREA_AIP, AREA_AIPS, selectAip, setSelectedAips, } from "../../actions/aip/aip.ts";
 import {
     MenuCheckedValueChangeData,
     MenuCheckedValueChangeEvent,
@@ -34,6 +33,8 @@ import { Row } from 'react-bootstrap';
 import AipFilterSection from './filter/AipFilterSection.tsx';
 import Pagination from 'components/shared/pagination/Pagination.tsx';
 import { AipFilter } from 'typings/store/index.ts';
+import AipDetail from './AipDetail.tsx';
+import {AipDetailVO} from "elza-api";
 
 type AipTableProps = {
     onAipSelect?: (id: number) => void;
@@ -42,21 +43,25 @@ type AipTableProps = {
     hiddenValues?: string[]
 }
 
+interface AipPageUrlParams {
+    id?: string;
+}
+
 const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: AipTableProps) => {
     const aips = useSelector((state: any) => storeFromArea(state, AREA_AIPS));
+    const aip = useSelector((state: any) => storeFromArea(state, AREA_AIP));
+    const [detailOpen, setDetailOpen] = useState<boolean>(false);
     const {from, pageSize} = aips.filter;
     const dispatch = useThunkDispatch();
     const items = getAipRows(aips);
     const history = useHistory();
+    const match = useRouteMatch<AipPageUrlParams>();
 
-
-
-
-    const columnsDef: TableColumnDefinition<DaAipDetailVO>[] = colDef.map((def) =>
-        createTableColumn<DaAipDetailVO>({
+    const columnsDef: TableColumnDefinition<AipDetailVO>[] = colDef.map((def) =>
+        createTableColumn<AipDetailVO>({
             columnId: def.key,
             renderHeaderCell: () => <>{def.name}</>,
-            renderCell: (item: DaAipDetailVO) => <>{getContent(item, def.key)}</>,
+            renderCell: (item: AipDetailVO) => <>{getContent(item, def.key)}</>,
             compare: (a, b) => {
                 switch(def.type) {
                     case "number": return a[def.key] - b[def.key];
@@ -67,14 +72,15 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
         })
     );
 
-    const [columns, setColumns] = useState<TableColumnDefinition<DaAipDetailVO>[]>(columnsDef);
+    const [columns, setColumns] = useState<TableColumnDefinition<AipDetailVO>[]>(columnsDef);
 
     const formatUnitDate = (unitdateFrom: string, unitdateTo: string) => {
         return formatDate(new Date(unitdateFrom)) + " - " + (unitdateTo ? formatDate(new Date(unitdateTo)) : "?");
     }
 
-    const getContent =(item: DaAipDetailVO, key: string) => {
+    const getContent =(item: AipDetailVO, key: string) => {
         switch(key) {
+            case "code": return <span className='link-like'>{item.code}</span>
             case "aipSize": return formatAipSize(item[key]);
             case "unitdateFrom":  return item.unitdateFrom ? formatUnitDate(item.unitdateFrom, item.unitdateTo): "-";
             case "fund.name": return item.fund ? item.fund.name : "-";
@@ -83,6 +89,17 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
                 return findColDefByKey(key).type == "bool" ? getBoolIcon(item[key]) : item[key] ? item[key] : "-" ; // Sorry xD
         }
     }
+
+    useEffect(() => {
+        const id = match.params?.id;
+
+        if (id != null) {
+            dispatch(selectAip(id));
+            !onAipSelect && setDetailOpen(true);
+        } else if (aip?.id != null) {
+            history.replace(urlAip(aip.id));
+        }
+    }, [match.params.id]);
 
     useEffect(() => {
         dispatch(aipsFetchIfNeeded());
@@ -106,7 +123,10 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
         );
     };
 
-    const handleSelect = (id) =>  history.push(urlAip(id));
+    const handleSelect = (id) =>  {
+        setDetailOpen(true);
+        history.push(urlAip(id))
+    };
 
     const handleChangePage = (nextFrom: number) => nextFrom !== from && dispatch(aipsFilter(aips.filter.filters, nextFrom, aips.filter.pageSize))
 
@@ -167,7 +187,7 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
                 }
             },
             selected,
-            appearance: selected ? ("brand" as const) : ("none" as const),
+            appearance: selected ? "brand": "none",
         };
     }));
 
@@ -194,6 +214,11 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
 
     return (
         <Row className='aip-table'>
+            <AipDetail
+                open={detailOpen}
+                onClose={() => setDetailOpen(false)}
+                onOpen={() => setDetailOpen(true)}
+            />
             <StoreHorizontalLoader store={aips} />
             {aips.fetched && (
                 <>
@@ -234,10 +259,13 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {rows.map(({ item, selected, onClick }) => (
+                            {rows.map(({ item, selected, onClick }) =>  {
+                                const isDetailShown = aip?.data?.aipId == item.aipId;
+                                return (
                                 <TableRow
                                     key={item.code}
                                     className="table-row"
+                                    style={{backgroundColor: isDetailShown ? "#ddd": undefined}}
                                 >
                                     <TableSelectionCell
                                         checked={selected}
@@ -257,7 +285,8 @@ const AipTable = ({onAipSelect, filterDisabled, initialFilters, hiddenValues}: A
                                     </TableCell>
                                     ))}
                                 </TableRow>
-                            ))}
+                            )}
+                            )}
                         </TableBody>
                     </Table>
                     <Pagination

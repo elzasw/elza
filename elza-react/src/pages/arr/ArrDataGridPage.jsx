@@ -19,7 +19,11 @@ import {DataGridImportDialog} from 'components/arr/DataGridImportDialog';
  * Stránka archivních pomůcek.
  */
 
+const AREA = "ARR_DATA_GRID";
+
 const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
+    area = AREA;
+
     constructor(props) {
         super(props, 'fa-page');
     }
@@ -170,7 +174,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
 function mapStateToProps(state) {
     const {splitter, arrRegion, refTables, focus, developer, userDetail, tab} = state;
     return {
-        splitter,
+        splitter: splitter.splitters[AREA],
         arrRegion,
         focus,
         developer,

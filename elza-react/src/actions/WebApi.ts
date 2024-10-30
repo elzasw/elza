@@ -34,8 +34,8 @@ import { SyncsFilterVO } from '../api/SyncsFilterVO';
 import { ExtSyncsQueueResultListVO } from '../api/ExtSyncsQueueResultListVO';
 import { ApViewSettings } from '../api/ApViewSettings';
 import { UsrUserVO } from '../api/UsrUserVO';
-import { DaAipDetailVO } from 'api/DaAipDetailVO';
 import { AipFilter } from 'typings/store';
+import {AipDetailVO} from "elza-api";
 
 // @ts-ignore
 const serverContextPath = window.serverContextPath;
@@ -124,7 +124,7 @@ export class WebApiCls {
     }
 
     getDaDaoListByAipId(id) {
-        return AjaxUtils.ajaxGet(WebApiCls.v1 + "/dao/aip/" + id);
+        return AjaxUtils.ajaxGet(WebApiCls.v1 + "/daos/aip/" + id);
     }
 
     getDaoViewRequestInfo(id) {
@@ -1840,11 +1840,11 @@ export class WebApiCls {
         });
     }
 
-    getAip(aipId): Promise<DaAipDetailVO> {
+    getAip(aipId): Promise<AipDetailVO> {
         return AjaxUtils.ajaxGet(WebApiCls.aipV1 + '/' + aipId);
     }
 
-    findAipsByFilter(filters: AipFilter[], max: number = DEFAULT_LIST_SIZE, from: number = 0): Promise<DaAipDetailVO[]> {
+    findAipsByFilter(filters: AipFilter[], max: number = DEFAULT_LIST_SIZE, from: number = 0): Promise<AipDetailVO[]> {
         return AjaxUtils.ajaxPost(
             WebApiCls.aipV1 + '/find/filter',
             {from: from, count: max},

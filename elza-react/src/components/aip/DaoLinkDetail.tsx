@@ -13,10 +13,9 @@ import AipExplorerModalWrapper from "./explorer/AipExplorerWrapper.tsx";
 import {ExplorerMode} from "./explorer/ExplorerContext.tsx";
 import * as aipActions from "../../actions/aip/aip.ts";
 import {DaDaoTypeCaption} from "../../api/DaDaoType.ts";
-import {DaDaoType, DaoLink} from "elza-api";
+import {DaDaoType, DaoLink, DaoViewRequestVO} from "elza-api";
 import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../CrossTabHelper.tsx";
 import {WebApi} from "../../actions";
-import {DaoViewRequestInfoVO} from "../../api/DaoViewRequestInfoVO.ts";
 
 type DaoLinkDetailProps = {
     nodeId: number;
@@ -51,7 +50,6 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
                 <AipExplorerModalWrapper
                     //@ts-ignore
                     onOk={() => dispatch(modalDialogHide())}
-                    onClose={() => dispatch(modalDialogHide())}
                     mode={ExplorerMode.VIEW}
                     selected={daoCode}
                 />,
@@ -87,7 +85,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
     const handleOpenComponent = (daoId: number) => {
         const thisLayout = getThisLayout();
 
-        WebApi.getDaoViewRequestInfo(daoId).then((result: DaoViewRequestInfoVO) => {
+        WebApi.getDaoViewRequestInfo(daoId).then((result: DaoViewRequestVO) => {
                 if (thisLayout) {
                     CrossTabHelper.sendEvent(
                         thisLayout, {

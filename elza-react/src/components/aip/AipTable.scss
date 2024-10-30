@@ -5,6 +5,7 @@
     margin: 0;
     overflow: auto;
 
+
     .aip-table-body {
         overflow-x: auto;
 
@@ -14,7 +15,13 @@
         }
 
         .table-row:nth-child(even){
-           background-color: #e3e3e3ff;
+           background-color: $shade-1;
+        }
+
+        .link-like {
+            color: $color-link;       
+            text-decoration: underline;
+            cursor: pointer;  
         }
     }
 

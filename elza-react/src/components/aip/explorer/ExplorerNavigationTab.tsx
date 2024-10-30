@@ -41,7 +41,7 @@ const ExplorerNavigationTab = () => {
     let index = 0;
 
     while(curr != null) {
-        if(!curr.fileName) {
+        if(!curr.filename) {
           items.push({key: index, item: {...curr}});
           index = index + 1;
         }

@@ -10,6 +10,7 @@ import { FundDataGrid } from "./DataGrid.types";
 import {DaAipDetailVO} from "../../api/DaAipDetailVO.ts";
 import { AipFilterCriteria } from "components/aip/filter/forms/EnumAipFilterCriteria.ts";
 import { ApAccessPointVO } from "api/ApAccessPointVO.ts";
+import {AipDetailVO} from "elza-api";
 
 export interface SplitterState {
     leftWidth: number;
@@ -145,14 +146,14 @@ export interface Aips {
     fetched?: boolean;
     isFetching?: boolean;
     reducer?: unknown;
-    filteredRows?: DaAipDetailVO[];
-    rows?: DaAipDetailVO[];
-    sourceRows?: DaAipDetailVO[];
+    filteredRows?: AipDetailVO[];
+    rows?: AipDetailVO[];
+    sourceRows?: AipDetailVO[];
 }
 
 export interface Aip {
     currentDataKey?: number | string;
-    data?: DaAipDetailVO | null;
+    data?: AipDetailVO | null;
     getDataKey?: () => number | string;
     id?: number | string;
     fetched?: boolean;
@@ -364,7 +365,7 @@ type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCod
 
 export interface App {
     aip: Aip;
-    aipList: SimpleList<DaAipDetailVO>;
+    aipList: SimpleList<AipDetailVO>;
     aipStricture: DetailStoreState<any>;
     daoList: SimpleList<any>; //TODO: @kasparova
     explorerItem: DetailStoreState<any> //TODO: @kasparova

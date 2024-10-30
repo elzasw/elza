@@ -27,7 +27,11 @@ import { Api } from "api";
  * Stránka archivních pomůcek.
  */
 
+const AREA = "DAO";
+
 class ArrDaoPage extends ArrParentPage {
+    area = AREA;
+
     constructor(props) {
         super(props, 'dao-page');
     }
@@ -427,7 +431,7 @@ class ArrDaoPage extends ArrParentPage {
 function mapStateToProps(state) {
     const { splitter, arrRegion, refTables, form, focus, developer, userDetail, tab } = state;
     return {
-        splitter,
+        splitter: splitter.splitters[AREA],
         arrRegion,
         focus,
         developer,

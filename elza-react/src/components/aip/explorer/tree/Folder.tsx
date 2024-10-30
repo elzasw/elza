@@ -18,6 +18,8 @@ const Folder = ({folder, openItems, parent}: FolderProps) => {
     const {selectedItem} = useExplorerContext();
     const isSelected: boolean = selectedItem.uuid == folder.uuid;
     folder.parent = parent;
+    const files = folder?.childFiles?.filter(file => !file.isLogical);
+    const isLast = folder?.childFiles?.every(item => item.isLogical) && folder?.childFolders?.length == 0;
 
     const getExpandIcon = () => {
         return openItems.includes(folder.uuid) ? (
@@ -28,10 +30,10 @@ const Folder = ({folder, openItems, parent}: FolderProps) => {
     }
 
     return (
-        <TreeItem itemType="branch" value={folder.uuid} >
+        <TreeItem itemType={isLast ? "leaf" : "branch"} value={folder.uuid} >
             <TreeItemLayout
                 style={{backgroundColor: isSelected ?  "#e3e3e3ff" : undefined}}
-                expandIcon={getExpandIcon()}
+                expandIcon={isLast ? undefined : getExpandIcon()}
             >
                 {turncate(folder.label)}
             </TreeItemLayout>
@@ -44,8 +46,8 @@ const Folder = ({folder, openItems, parent}: FolderProps) => {
                         parent={folder}
                      />
                 )}
-                {folder.childFiles?.map((file, index) =>
-                    <File
+                {files?.map((file, index) =>
+                        <File
                         key={`file-${index}`}
                         file={file}
                         parent={folder}

@@ -5,12 +5,11 @@ import { ExplorerMode } from "./ExplorerContext";
 
 type AipExplorerModalWrapperProps = {
     onOk: () => void;
-    onClose: () => void;
     mode: ExplorerMode;
     selected?: string;
 }
 
-const AipExplorerModalWrapper = ({onOk, onClose, mode, selected}: AipExplorerModalWrapperProps) => (
+const AipExplorerModalWrapper = ({onOk, mode, selected}: AipExplorerModalWrapperProps) => (
     <>
         <Modal.Body>
             <AipExplorer mode={mode} selected={selected}/>
@@ -19,7 +18,7 @@ const AipExplorerModalWrapper = ({onOk, onClose, mode, selected}: AipExplorerMod
             <Button onClick={onOk} variant="outline-secondary">
                 OK
             </Button>
-            <Button onClick={onClose} variant="link">
+            <Button onClick={onOk} variant="link">
                 {i18n('global.action.cancel')}
             </Button>
         </Modal.Footer>
