@@ -7,7 +7,6 @@ import { ApValidationErrorsVO } from "api/ApValidationErrorsVO";
 import { SubNodeForm, SubNodeFormCache } from "./SubNodeForm.types";
 import { FundOutput } from "./Outputs.types";
 import { FundDataGrid } from "./DataGrid.types";
-import {DaAipDetailVO} from "../../api/DaAipDetailVO.ts";
 import { AipFilterCriteria } from "components/aip/filter/forms/EnumAipFilterCriteria.ts";
 import { ApAccessPointVO } from "api/ApAccessPointVO.ts";
 import {AipDetailVO} from "elza-api";
