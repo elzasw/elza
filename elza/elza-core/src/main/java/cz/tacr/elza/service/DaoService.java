@@ -846,7 +846,7 @@ public class DaoService {
     private void addFilesToFoldersLogical(List<ExplorerTreeNodeFile> files, Map<Integer, ExplorerTreeNode> itemMap, ExplorerTreeNode root) {
         for (ExplorerTreeNodeFile file : files) {
             ExplorerTreeNodeFile copy = clientFactoryVO.copyFile(file);
-            copy.setUuid(UUID.nameUUIDFromBytes((file.getDaoFileFolderId().toString() + "cpy").getBytes()).toString());
+            copy.setUuid(file.getUuid() + "logical");
             ExplorerTreeNode parent = itemMap.getOrDefault(
                     file.getParentFolderLogical() != null ? file.getParentFolderLogical().getDaoId() : null, root
             );

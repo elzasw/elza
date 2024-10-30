@@ -2390,8 +2390,14 @@ components:
         name:
           type: string
           description: Komponent name
+        path:
+          type: string
+          description: Cesta k dao
+        childrenCount:
+          type: integer
+          description: Number of children components
         children:
-          description: Link on children komponents
+          description: Link on children components
           type: array
           items:
             $ref: '#/components/schemas/DaoLink'
