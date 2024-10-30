@@ -123,14 +123,12 @@ class ArrAipPage extends ArrParentPage {
     }
 
     renderCenterPanel(readMode, closed) {
-        return (
-            <AipExplorer mode={ExplorerMode.VIEW}/>
-        );
-    }
-    renderRightPanel(readMode, closed) {
         const activeFund = this.getActiveFund(this.props);
         return (
-            <ActionsContainer fund={activeFund} readMode={readMode}/>
+            <div className='center-panel'>
+                <AipExplorer mode={ExplorerMode.VIEW}/>
+                <ActionsContainer fund={activeFund} readMode={readMode}/>
+            </div>
         );
     }
 };
