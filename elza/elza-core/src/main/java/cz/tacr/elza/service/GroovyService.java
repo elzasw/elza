@@ -326,14 +326,13 @@ public class GroovyService {
     public GroovyItem convertItem(AccessPointItem item, StaticDataProvider sdp) {
         ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
         RulItemSpec itemSpec = item.getItemSpec() == null ? null : sdp.getItemSpecById(item.getItemSpecId());
-        
+
         ArrData data = HibernateUtils.unproxy(item.getData());
-        if(data==null) {
+        if (data == null) {
         	// probably deleted item - has no data
-        	// we have to create it without it
+        	// we have to create groovyItem without value(s)
         	return new GroovyItem(itemType, itemSpec); 
         }
-        
 
         DataType dataType = itemType.getDataType();
         GroovyItem groovyItem;
@@ -355,9 +354,6 @@ public class GroovyService {
             }
             case TEXT: {
                 ArrDataText dataTmp = (ArrDataText) data;
-                if(dataTmp==null) {
-                	System.out.println("??");
-                }
                 groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getTextValue());
                 break;
             }
@@ -396,7 +392,6 @@ public class GroovyService {
                             BaseCode.DB_INTEGRITY_PROBLEM)
                                     .set("dataId", dataTmp.getDataId());
                 }
-
                 groovyItem = new GroovyItem(itemType, itemSpec, accessPoint, value, intValue);
                 break;
             }
