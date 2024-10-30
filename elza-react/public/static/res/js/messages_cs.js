@@ -769,6 +769,7 @@ var messages = {
     "arr.movements.move.before": "Přesunout před",
     "arr.movements.move.after": "Přesunout za",
 
+    "arr.aip.dao.link.delete": "Opravdu chcete smazat napojení?",
     "arr.aip.assignment.individually": "Připojit jednotlivě",
     "arr.aip.assignment.individually.title": "Připojení balíčku s archivním popisem",
     "arr.aip.assignment.bulk": "Připojit hromadně",

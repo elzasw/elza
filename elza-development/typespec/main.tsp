@@ -1119,7 +1119,15 @@ model DaoLink {
      */
     name: string;
     /**
-     * Link on children komponents
+     * Cesta k dao
+     */
+    path?: string;
+    /**
+     * Number of children components
+     */
+    childrenCount?: integer;
+    /**
+     * Link on children components
      */
     children?: DaoLink[];
 }

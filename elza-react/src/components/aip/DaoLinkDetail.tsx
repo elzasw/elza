@@ -6,7 +6,7 @@ import { AppState } from "typings/store";
 import {useEffect, useState} from "react";
 import {useThunkDispatch} from "../../utils/hooks";
 import {Button, Row} from "react-bootstrap";
-import {Icon} from "../shared";
+import {i18n, Icon} from "../shared";
 import {Api} from "../../api";
 import {modalDialogHide, modalDialogShow} from "../../actions/global/modalDialog";
 import AipExplorerModalWrapper from "./explorer/AipExplorerWrapper.tsx";
@@ -16,6 +16,7 @@ import {DaDaoTypeCaption} from "../../api/DaDaoType.ts";
 import {DaDaoType, DaoLink, DaoViewRequestVO} from "elza-api";
 import CrossTabHelper, {CrossTabEventType, getThisLayout} from "../CrossTabHelper.tsx";
 import {WebApi} from "../../actions";
+import ConfirmForm from "../shared/form/ConfirmForm";
 
 type DaoLinkDetailProps = {
     nodeId: number;
@@ -26,7 +27,7 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
     const dispatch = useThunkDispatch();
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [openItems, setOpenItems] = useState<string[]>([]);
-    const [showAllChildren, setShowAllChildren] = useState<string[]>([]);
+    const [showAllMainLinks, setShowAllMainLinks] = useState<boolean>();
 
     useEffect(() => {
         dispatch(daoLinksFetchIfNeeded(nodeId, true));
@@ -36,9 +37,22 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
     ]);
 
     const handleDeleteLink = (linkId: number) => {
-        Api.aips.aipDeleteDaoLink(linkId).then(() => {
-            dispatch(daoLinksFetchIfNeeded(nodeId, true))
-        });
+        const confirmForm = (
+            <ConfirmForm
+                //@ts-ignore
+                confirmMessage={i18n('arr.aip.dao.link.delete')}
+                submittingMessage={i18n('arr.aip.dao.link.delete')}
+                submitTitle={i18n('global.action.delete')}
+                onSubmit={() => {
+                    return Api.aips.aipDeleteDaoLink(linkId)
+                }}
+                onSubmitSuccess={() => {
+                    dispatch(modalDialogHide());
+                    dispatch(daoLinksFetchIfNeeded(nodeId, true))
+                }}
+            />
+        );
+        dispatch(modalDialogShow(this, null, confirmForm));
     }
 
     const handleOpenExplorer = (aipId: number, daoCode?: string) => {
@@ -67,18 +81,6 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
                 opened.push(value)
             }
             setOpenItems(opened);
-        }
-    }
-
-    const handleShowAllChange = (value: string, close: boolean) => {
-        const showAll = [...showAllChildren];
-        if (close) {
-            setShowAllChildren(prev => prev.filter(item => item !== value))
-        } else {
-            if (!showAll.includes(value)) {
-                showAll.push(value)
-            }
-            setShowAllChildren(showAll);
         }
     }
 
@@ -111,19 +113,19 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
         );
     }
 
-    const renderLinkDetail = (item: DaoLink) => {
+    const renderLinkDetail = (item: DaoLink, deleteLink: boolean) => {
         const openItem = openItems.includes(item.daoLinkUuid);
 
         return (<p>
-            {DaDaoTypeCaption(item.daoType) + ": "}
+            {item.path ? item.path + " " : DaDaoTypeCaption(item.daoType) + ": "}
             <Button key="explorerLink" variant="link" onClick={() => handleOpenExplorer(item.aipId, item.daoCode)}>
                 {item.name}
             </Button>
-            {item.children && " komponenty: " + item.children.length}
+            {item.children && " komponenty: " + item.childrenCount}
             {item.daoType === DaDaoType.File && <Button key="detail" variant="action" onClick={() => handleOpenComponent(item.daoId)}>
                 <Icon glyph="fa-eye"/>
             </Button>}
-            {item.daoLinkId && <Button key="deleteLink" variant="action" onClick={() => handleDeleteLink(item.daoLinkId)}>
+            {deleteLink && item.daoLinkId && <Button key="deleteLink" variant="action" onClick={() => handleDeleteLink(item.daoLinkId)}>
                 <Icon glyph="fa fa-close"/>
             </Button>}
             {item.children && <Button key="expand" variant="action" onClick={() => handleOpenChange(item.daoLinkUuid, openItem)}>
@@ -133,26 +135,25 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
         </p>);
     }
 
-    const renderChildrenLinks = (item: DaoLink) => {
+    const renderMainLinks = (items: Array<DaoLink>) => {
         let count = -1;
         const maxCount = 5;
-        const showAll = showAllChildren.includes(item.daoLinkUuid);
 
-        return (item.children.map(child => {
-            const openItem = openItems.includes(child.daoLinkUuid);
+        return (items.map(item => {
+            const openItem = openItems.includes(item.daoLinkUuid);
             count = count + 1;
             let skryt;
 
-            if (!showAll) {
+            if (!showAllMainLinks) {
                 if (count > maxCount) {
                     return;
-                } else if (count === maxCount && item.children.length > maxCount) {
+                } else if (count === maxCount && items.length > maxCount) {
                     return (
-                        <div key={'dao-link-div' + child.daoLinkUuid + "dalsi"}>
-                            <Row className="napojeni-row-child" key={'dao-link-row' + child.daoLinkUuid + "dalsi"}>
+                        <div key={'dao-link-div' + item.daoLinkUuid + "dalsi"}>
+                            <Row className="napojeni-row" key={'dao-link-row' + item.daoLinkUuid + "dalsi"}>
                                 <p>
-                                    <Button key="showAll" variant="link" onClick={() => handleShowAllChange(item.daoLinkUuid, showAll)}>
-                                        a {item.children.length - maxCount} dalších...
+                                    <Button key="showAll" variant="link" onClick={() => setShowAllMainLinks(!showAllMainLinks)}>
+                                        a {items.length - maxCount} dalších...
                                     </Button>
                                 </p>
                             </Row>
@@ -161,12 +162,12 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
                 }
             }
 
-            if (showAll && item.children.length > maxCount && item.children.length === (count + 1)) {
+            if (showAllMainLinks && items.length > maxCount && items.length === (count + 1)) {
                 skryt = (
-                    <div key={'dao-link-div' + child.daoLinkUuid + "skryt"}>
-                        <Row className="napojeni-row-child" key={'dao-link-row' + child.daoLinkUuid + "skryt"}>
+                    <div key={'dao-link-div' + item.daoLinkUuid + "skryt"}>
+                        <Row className="napojeni-row" key={'dao-link-row' + item.daoLinkUuid + "skryt"}>
                             <p>
-                                <Button key="hideAll" variant="link" onClick={() => handleShowAllChange(item.daoLinkUuid, showAll)}>
+                                <Button key="hideAll" variant="link" onClick={() => setShowAllMainLinks(!showAllMainLinks)}>
                                     Skrýt
                                 </Button>
                             </p>
@@ -176,29 +177,52 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
             }
 
             return (
-                <div key={'dao-link-div' + child.daoLinkUuid}>
-                    <Row className="napojeni-row-child" key={'dao-link-row' + child.daoLinkUuid}>
-                        {renderLinkDetail(child)}
+                <div key={'dao-link-div' + item.daoLinkUuid}>
+                    <Row className="napojeni-row" key={'dao-link-row' + item.daoLinkUuid}>
+                        {renderLinkDetail(item, true)}
                     </Row>
-                    {child.children && openItem && renderChildrenLinks(child)}
+                    {item.children && openItem && renderChildrenLinks(item)}
                     {skryt}
                 </div>
             );
         }));
     }
 
-    const centerPanel = daoLinks.data.data.items.map(item => {
-        const openItem = openItems.includes(item.daoLinkUuid);
+    const renderChildrenLinks = (item: DaoLink) => {
+        let count = -1;
 
-        return (
-            <div key={'dao-link-div' + item.daoLinkUuid}>
-                <Row className="napojeni-row" key={'dao-link-row' + item.daoLinkUuid}>
-                    {renderLinkDetail(item)}
-                </Row>
-                {item.children && openItem && renderChildrenLinks(item)}
-            </div>
-        );
-    });
+        return (item.children.map(child => {
+            const openItem = openItems.includes(child.daoLinkUuid);
+            count = count + 1;
+            let zobrazitVse;
+
+            if (item.children.length < item.childrenCount && item.children.length === (count + 1)) {
+                zobrazitVse = (
+                    <div key={'dao-link-div' + item.daoLinkUuid + "zobrazit-vse"}>
+                        <Row className="napojeni-row-child" key={'dao-link-row' + item.daoLinkUuid + "zobrazit-vse"}>
+                            <p>
+                                <Button key="hideAll" variant="link" onClick={() => handleOpenExplorer(item.aipId, null)}>
+                                    Zobrazit vše v průzkumníku...
+                                </Button>
+                            </p>
+                        </Row>
+                    </div>
+                )
+            }
+
+            return (
+                <div className="napojeni-div-child" key={'dao-link-div' + child.daoLinkUuid}>
+                    <Row className="napojeni-row-child" key={'dao-link-row' + child.daoLinkUuid}>
+                        {renderLinkDetail(child, false)}
+                    </Row>
+                    {child.children && openItem && renderChildrenLinks(child)}
+                    {zobrazitVse}
+                </div>
+            );
+        }));
+    }
+
+    const centerPanel = renderMainLinks(daoLinks.data.data.items);
 
     return (
         <div className="napojeni">

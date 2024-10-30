@@ -1550,24 +1550,54 @@ public class DaService {
         List<DaoLink> daoLinkList = new ArrayList<>();
         List<ArrDaoLink> arrDaoLinks = daoLinkRepository.findByNodeIdAndDeleteChangeIsNullFetchAip(nodeId);
 
-        Set<Integer> aipIdSet = arrDaoLinks.stream().map(l -> l.getAip().getAipId()).collect(Collectors.toSet());
+        List<DaAip> aipList = arrDaoLinks.stream()
+                .filter(d -> d.getLinkType() == ArrDaoLink.LinkType.AIP || d.getLinkType() == ArrDaoLink.LinkType.PART_AIP)
+                .map(ArrDaoLink::getAip)
+                .toList();
 
         List<ArrDaoLink> aipDaoLinks = arrDaoLinks.stream().filter(d -> d.getLinkType() == ArrDaoLink.LinkType.AIP).toList();
+        List<ArrDaoLink> partDaoLinks = arrDaoLinks.stream().filter(d -> d.getLinkType() == ArrDaoLink.LinkType.PART_AIP).toList();
+        List<ArrDaoLink> componentDaoLinks = arrDaoLinks.stream().filter(d -> d.getLinkType() == ArrDaoLink.LinkType.COMPONENT_AIP).collect(Collectors.toList());
 
-        Map<Integer, ArrDaoLink> aipDaoLinkMap = new HashMap<>();
+        Map<Integer, Map<Integer, List<DaDao>>> aipDaoMap = daoRelationRepository.findByAipsAndDeleteChangeIsNull(aipList).stream()
+                .collect(Collectors.groupingBy(r -> r.getParentDao().getAip().getAipId(),
+                        Collectors.groupingBy(r -> r.getParentDao().getDaoId(), Collectors.mapping(DaDaoRelation::getDao, Collectors.toList()))));
 
-        if (CollectionUtils.isNotEmpty(aipDaoLinks)) {
-            arrDaoLinks.removeAll(aipDaoLinks);
+        Map<Integer, List<DaDao>> aipParentDaoMap = daoRelationRepository.findParentDaosByAipsAndDeleteChangeIsNull(aipList).stream()
+                .sorted(Comparator.comparing(DaDao::getType))
+                .collect(Collectors.groupingBy(r -> r.getAip().getAipId()));
 
-            aipDaoLinkMap = aipDaoLinks.stream()
-                    .collect(Collectors.toMap(d -> d.getAip().getAipId(), Function.identity()));
+        List<DaoLink> resultPartDaoLinks = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(partDaoLinks)) {
+            for (ArrDaoLink partDaoLink : partDaoLinks) {
+                Integer aipId = partDaoLink.getAip().getAipId();
+                Map<Integer, List<DaDao>> daoMap = aipDaoMap.get(aipId);
+                Map<Integer, ArrDaoLink> daoLinkMap = componentDaoLinks.stream()
+                        .filter(d -> d.getAip().getAipId().equals(aipId))
+                        .collect(Collectors.toMap(d -> d.getDaDao().getDaoId(), d -> d));
+
+                resultPartDaoLinks.add(createPartAipDaoLink(partDaoLink, daoLinkMap, daoMap));
+            }
         }
 
-        if (CollectionUtils.isNotEmpty(aipIdSet)) {
-            for (Integer aipId : aipIdSet) {
-                ArrDaoLink aipDaoLink = aipDaoLinkMap.getOrDefault(aipId, null);
-                List<ArrDaoLink> daoLinks = arrDaoLinks.stream().filter(d -> d.getAip().getAipId().equals(aipId)).toList();
-                daoLinkList.add(createAipDaoLink(aipId, aipDaoLink, daoLinks));
+        if (CollectionUtils.isNotEmpty(aipDaoLinks)) {
+            for (ArrDaoLink aipDaoLink : aipDaoLinks) {
+                Integer aipId = aipDaoLink.getAip().getAipId();
+                Map<Integer, List<DaDao>> daoMap = aipDaoMap.get(aipId);
+                Map<Integer, ArrDaoLink> daoLinkMap = componentDaoLinks.stream()
+                        .filter(d -> d.getAip().getAipId().equals(aipId))
+                        .collect(Collectors.toMap(d -> d.getDaDao().getDaoId(), d -> d));
+                List<DaDao> parentDaoList = aipParentDaoMap.get(aipId);
+
+                daoLinkList.add(createAipDaoLink(aipId, aipDaoLink, daoLinkMap, daoMap, parentDaoList));
+            }
+        }
+
+        daoLinkList.addAll(resultPartDaoLinks);
+
+        if (CollectionUtils.isNotEmpty(componentDaoLinks)) {
+            for (ArrDaoLink componentDaoLink : componentDaoLinks) {
+                daoLinkList.add(createDaoLink(componentDaoLink, false));
             }
         }
 
@@ -1576,18 +1606,68 @@ public class DaService {
         return daoLinksResult;
     }
 
-    private DaoLink createAipDaoLink(Integer aipId, ArrDaoLink aipDaoLink, List<ArrDaoLink> arrDaoLinks) {
-        DaoLink daoLink = aipDaoLink == null ? createDaoLink(aipId) : createDaoLink(aipDaoLink);
+    private DaoLink createPartAipDaoLink(ArrDaoLink partDaoLink, Map<Integer, ArrDaoLink> daoLinkMap, Map<Integer, List<DaDao>> daoMap) {
+        DaoLink daoLink = createDaoLink(partDaoLink, partDaoLink.getDaDao().getType() == DaDao.DaoType.LOGICAL);
 
-        if (CollectionUtils.isNotEmpty(arrDaoLinks)) {
-            List<DaoLink> daoLinkList = new ArrayList<>();
-            for (ArrDaoLink arrDaoLink : arrDaoLinks) {
-                daoLinkList.add(createDaoLink(arrDaoLink));
-            }
-            daoLink.setChildren(daoLinkList);
+        processDao(partDaoLink.getDaDao(), daoLink, daoLinkMap, daoMap, null, new HashMap<>());
+
+        return daoLink;
+    }
+
+    private DaoLink createAipDaoLink(Integer aipId, ArrDaoLink aipDaoLink, Map<Integer, ArrDaoLink> daoLinkMap, Map<Integer, List<DaDao>> daoMap, List<DaDao> parentDaoList) {
+        DaoLink daoLink = aipDaoLink == null ? createDaoLink(aipId) : createDaoLink(aipDaoLink, false);
+
+        Map<Integer, DaoLink> childrenMap = new HashMap<>();
+
+        for (DaDao parentDao : parentDaoList) {
+            String path = parentDao.getLabel() + " / ";
+            processDao(parentDao, daoLink, daoLinkMap, daoMap, path, childrenMap);
         }
 
         return daoLink;
+    }
+
+    private void processDao(DaDao parentDao,
+                            DaoLink parentDaoLink,
+                            Map<Integer, ArrDaoLink> daoLinkMap,
+                            Map<Integer, List<DaDao>> daoMap,
+                            @Nullable String path,
+                            Map<Integer, DaoLink> childrenMap) {
+        List<DaDao> daoList = daoMap.getOrDefault(parentDao.getDaoId(), new ArrayList<>());
+
+        for (DaDao dao : daoList) {
+            if (dao.getType() == DaDao.DaoType.FILE
+                    || dao.getType() == DaDao.DaoType.METAAMD
+                    || dao.getType() == DaDao.DaoType.METADMDINHERENT
+                    || dao.getType() == DaDao.DaoType.METADMDCONTEXTUAL) {
+                boolean processed = childrenMap.get(dao.getDaoId()) != null;
+                if (parentDao.getType() == DaDao.DaoType.REPRESENTATION && processed) {
+                    continue;
+                }
+
+                if (parentDaoLink.getChildrenCount() < 100) {
+                    ArrDaoLink arrDaoLink = daoLinkMap.getOrDefault(dao.getDaoId(), null);
+                    boolean logical = parentDao.getType() == DaDao.DaoType.LOGICAL;
+                    DaoLink daoLink = arrDaoLink == null ? createDaoLink(dao, logical) : createDaoLink(arrDaoLink, logical);
+                    daoLink.setPath(path);
+                    parentDaoLink.addChildrenItem(daoLink);
+                    childrenMap.put(dao.getDaoId(), daoLink);
+                }
+                if (!processed) {
+                    parentDaoLink.setChildrenCount(parentDaoLink.getChildrenCount() + 1);
+                }
+            } else {
+                StringBuilder stringBuilder = new StringBuilder();
+                if (path != null) {
+                    stringBuilder.append(path);
+                }
+                stringBuilder.append(dao.getLabel())
+                        .append(" / ");
+                String newPath = stringBuilder.toString();
+
+                processDao(dao, parentDaoLink, daoLinkMap, daoMap, newPath, childrenMap);
+            }
+        }
     }
 
     private DaoLink createDaoLink(Integer aipId) {
@@ -1596,21 +1676,37 @@ public class DaService {
         daoLink.setDaoLinkUuid(UUID.nameUUIDFromBytes(("AIP" + aipId).getBytes()).toString());
         daoLink.setAipId(aipId);
         daoLink.setName(aipId.toString());
+        daoLink.setChildrenCount(0);
 
         return daoLink;
     }
 
-    private DaoLink createDaoLink(ArrDaoLink arrDaoLink) {
+    private DaoLink createDaoLink(DaDao dao, boolean logical) {
+        DaoLink daoLink = new DaoLink();
+        daoLink.setDaoLinkUuid(UUID.nameUUIDFromBytes(("DAO" + dao.getDaoId()).getBytes()).toString());
+        daoLink.setAipId(dao.getAip().getAipId());
+
+        daoLink.setDaoId(dao.getDaoId());
+        daoLink.setDaoCode(logical ? dao.getCode() + "logical" : dao.getCode());
+        daoLink.setDaoType(DaDaoType.fromValue(dao.getType().name()));
+        daoLink.setName(dao.getLabel());
+        daoLink.setChildrenCount(0);
+
+        return daoLink;
+    }
+
+    private DaoLink createDaoLink(ArrDaoLink arrDaoLink, boolean logical) {
         DaDao dao = arrDaoLink.getDaDao();
 
         DaoLink daoLink = new DaoLink();
         daoLink.setDaoLinkUuid(UUID.nameUUIDFromBytes(arrDaoLink.getDaoLinkId().toString().getBytes()).toString());
         daoLink.setDaoLinkId(arrDaoLink.getDaoLinkId());
         daoLink.setAipId(arrDaoLink.getAip().getAipId());
+        daoLink.setChildrenCount(0);
 
         if (dao != null) {
             daoLink.setDaoId(dao.getDaoId());
-            daoLink.setDaoCode(dao.getCode());
+            daoLink.setDaoCode(logical ? dao.getCode() + "logical" : dao.getCode());
             daoLink.setDaoType(DaDaoType.fromValue(dao.getType().name()));
             daoLink.setName(dao.getLabel());
         } else {
