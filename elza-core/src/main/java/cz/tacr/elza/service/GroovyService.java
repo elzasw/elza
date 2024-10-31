@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
@@ -18,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -126,6 +127,7 @@ public class GroovyService {
         List<GroovyPart> groovyParts = new ArrayList<>(parts.size());
         Integer preferredPartId = state.getAccessPoint().getPreferredPartId();
         List<AccessPointItem> accessPointItemList = new ArrayList<>(items);
+        Set<Integer> deletedPartIds = revParts.stream().filter(i -> i.isDeleted()).map(i -> i.getOriginalPartId()).collect(Collectors.toSet());
         for (ApPart part : parts) {
             List<AccessPointPart> childrenParts = new ArrayList<>();
             for (ApPart p : parts) {
@@ -134,8 +136,11 @@ public class GroovyService {
                 }
             }
 
-            boolean preferred = Objects.equals(preferredPartId, part.getPartId());
-            groovyParts.add(convertPart(state.getApTypeId(), part, childrenParts, accessPointItemList, revItems, preferred));
+            // pokud tento Part není v revizi vymazán
+            if (!deletedPartIds.contains(part.getPartId())) {
+                boolean preferred = Objects.equals(preferredPartId, part.getPartId());
+            	groovyParts.add(convertPart(state.getApTypeId(), part, childrenParts, accessPointItemList, revItems, preferred));
+            }
         }
         // přidat Part(s), které byly přidány v revizi
         for (ApRevPart part : revParts) {
@@ -301,10 +306,7 @@ public class GroovyService {
             }
         }
 
-        return new GroovyPart(sdp, apTypeId, part.getPartTypeId(),
-                preferred,
-                groovyItems,
-                groovyParts);
+        return new GroovyPart(sdp, apTypeId, part.getPartTypeId(), preferred, groovyItems, groovyParts);
     }
 
     public GroovyPart convertRevPart(@NotNull final Integer apTypeId,
@@ -314,13 +316,13 @@ public class GroovyService {
 
         GroovyItems groovyItems = new GroovyItems();
         for (ApRevItem revItem : revItems) {
+        	if (revItem.isDeleted()) {
+        		continue;
+        	}
             groovyItems.addItem(convertItem(revItem, sdp));
         }
 
-        return new GroovyPart(sdp, apTypeId, part.getPartTypeId(),
-                              false,
-                              groovyItems,
-                              Collections.emptyList());
+        return new GroovyPart(sdp, apTypeId, part.getPartTypeId(), false, groovyItems, Collections.emptyList());
     }
 
     public GroovyItem convertItem(AccessPointItem item, StaticDataProvider sdp) {
@@ -484,9 +486,7 @@ public class GroovyService {
             }
         }
 
-        return resourcePathResolver.getGroovyDir(rulPackage)
-                .resolve(component.getFilename())
-                .toString();
+        return resourcePathResolver.getGroovyDir(rulPackage).resolve(component.getFilename()).toString();
     }
 
     public String getGroovyFilePath(RulArrangementRule.RuleType ruleType, Integer ruleSetId) {
@@ -503,8 +503,7 @@ public class GroovyService {
                     + "' pro výpočet hodnoty", BaseCode.INVALID_STATE);
         }
 
-        return resourcePathResolver.getDroolFile(arrangementRule)
-                .toString();
+        return resourcePathResolver.getDroolFile(arrangementRule).toString();
     }
 
 }

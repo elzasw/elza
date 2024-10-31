@@ -130,10 +130,9 @@ public class GroovyItem {
             return String.valueOf(boolValue);
         } else if (intValue != null) {
             return String.valueOf(intValue);
+        } else {
+            throw new IllegalArgumentException("Item nemá string hodnotu: " + toString());
         }
-        // groovyItem has no value(s)  
-        // because it created based on deleted item without data
-        return null;
     }
 
     public Integer getIntValue() {
