@@ -1,6 +1,5 @@
 package cz.tacr.elza.groovy;
 
-
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;

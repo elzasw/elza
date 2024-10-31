@@ -25,13 +25,14 @@ public class SsoHeaderAuthenticationProvider implements AuthenticationProvider {
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 		String username = authentication.getName();
 
+		// Why credentials is empty?
 		if (!StringUtils.EMPTY.equals(authentication.getCredentials())) {
-			throw new BadCredentialsException("Neplatné uživatelské jméno nebo heslo");
+			throw new BadCredentialsException("Neplatné uživatelské jméno nebo heslo: "+username);
 		}
 
 		UsrUser user = userService.findByUsername(username);
 		if (user == null) {
-			throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
+			throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo: "+username);
 		}
 
 		UserDetail userDetail = userService.createUserDetail(user);
