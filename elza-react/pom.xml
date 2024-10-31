@@ -267,6 +267,8 @@
                             <arguments>
                                 <argument>install</argument>
                                 <argument>--no-save</argument>
+                                <!-- Till the old REACT dependencies will be replaced. -->
+                                <argument>--legacy-peer-deps</argument>
                             </arguments>
                         </configuration>
                         <executions>

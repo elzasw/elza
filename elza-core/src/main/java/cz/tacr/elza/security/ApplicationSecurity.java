@@ -50,6 +50,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.Assert;
@@ -220,6 +222,15 @@ public class ApplicationSecurity {
             throw new IllegalStateException("Failed to read token", e);
         }
     }
+    
+    @Bean
+    public HttpFirewall strictHttpFirewall() {
+    	// This allows to accept some Czech characters as header values when using SSO header
+        StrictHttpFirewall firewall = new StrictHttpFirewall();
+        // allow all header values
+        firewall.setAllowedHeaderValues(v -> true); 
+        return firewall;
+    }    
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

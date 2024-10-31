@@ -98,6 +98,7 @@ class FundTreeUsage extends AbstractReactComponent {
                 onContextMenu={this.handleContextMenu}
                 showCountStats={true}
                 onLinkClick={this.props.onLinkClick}
+                colorCoded={false}
             />
         );
     }
