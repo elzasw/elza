@@ -8,6 +8,9 @@
     margin: 10px;
     background-color: #e3e3e3;
     padding: 10px;
+    max-height: 500px;
+    overflow-y: scroll;
+    overflow-x: hidden;
 
     > p {
         margin-bottom: 0;
@@ -23,10 +26,12 @@
 
 .napojeni-row-child {
 
-    margin-left: 10px;
-
     > p {
         margin-bottom: 0;
     }
+}
+
+.napojeni-div-child {
+    margin-left: 15px;
 }
 
