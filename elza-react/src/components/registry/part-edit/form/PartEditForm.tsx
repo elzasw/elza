@@ -133,8 +133,11 @@ export const PartEditForm = ({
                         const currentItem = currentValue?.updatedItem || currentValue?.item;
 
                         if(currentItem && !attribute?.repeatable){
+                            const isOriginalValue = currentValue?.item?.value === autoValue.value && currentValue?.item?.specId == autoValue.itemSpecId;
                             form.change(`${arrayName}[${currentIndex}].updatedItem`, {
                                 ...currentItem,
+                                // set change type in case the currentItem is set as being deleted
+                                changeType: isOriginalValue ? "ORIGINAL" : "UPDATED",
                                 value: autoValue.value,
                                 specId: autoValue.itemSpecId,
                             })
