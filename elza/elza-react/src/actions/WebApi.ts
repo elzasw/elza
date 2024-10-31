@@ -1368,7 +1368,7 @@ export class WebApiCls {
     }
 
     synchronizeNodes(nodeId: number, nodeVersion: number, childrenNodes: boolean): Promise<void> {
-        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodes/' + nodeId + '/' + nodeVersion + '/sync/', {
+        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/nodes/' + nodeId + '/' + nodeVersion + '/sync', {
             childrenNodes,
         });
     }
@@ -1696,7 +1696,7 @@ export class WebApiCls {
             groupIds: groupIds,
             userIds: userIds,
         };
-        return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/group/join/', null, data);
+        return AjaxUtils.ajaxPost(WebApiCls.userUrl + '/group/join', null, data);
     }
 
     leaveGroup(groupId, userId) {
