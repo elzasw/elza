@@ -22,7 +22,7 @@ class Root extends React.Component {
                     key="router"
                     basename={serverContextPath.startsWith('http') ? '' : serverContextPath}
                 >
-                    <FluentProvider style={{ flex: 1 }} theme={{ ...theme, colorNeutralBackground1: "var(--shade-0)" }}>
+                    <FluentProvider style={{ flex: 1, height: "100%" }} theme={{ ...theme, colorNeutralBackground1: "var(--shade-0)" }}>
                         <Route component={Layout} />
                     </FluentProvider>
                 </BrowserRouter>

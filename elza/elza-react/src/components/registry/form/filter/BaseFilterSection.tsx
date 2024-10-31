@@ -55,7 +55,7 @@ const BaseFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-sea
                disabled={submitting}
         >
             <option value={undefined}/>
-            {Object.values(SyncState).map((value) => {
+            {[SyncState.SYNC_OK, SyncState.NOT_SYNCED].map((value) => {
                 return <option value={value}>
                     {i18n(`ap.binding.syncState.${value}`)}
                 </option>
