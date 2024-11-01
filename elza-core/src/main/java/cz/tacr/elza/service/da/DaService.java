@@ -2,6 +2,7 @@ package cz.tacr.elza.service.da;
 
 import com.lightcomp.ft.client.Transfer;
 import com.lightcomp.ft.xsd.v1.GenericDataType;
+import com.lightcomp.kads.common.AnyUriAdapter;
 import com.lightcomp.kads.mets.MetsReaderWriter;
 import com.lightcomp.kads.premis.PremisReaderWriter;
 import cz.tacr.da.ApiException;
@@ -20,6 +21,7 @@ import cz.tacr.elza.controller.vo.AipUpdateType;
 import cz.tacr.elza.controller.vo.DaDaoType;
 import cz.tacr.elza.controller.vo.DaoLink;
 import cz.tacr.elza.controller.vo.DaoLinksResult;
+import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -65,6 +67,7 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DaoLevelViewService;
@@ -81,17 +84,29 @@ import gov.loc.mets.v1_11.schema.MdSecType;
 import gov.loc.mets.v1_11.schema.Mets;
 import gov.loc.mets.v1_11.schema.MetsType;
 import gov.loc.mets.v1_11.schema.StructMapType;
+import gov.loc.premis.v3.AgentComplexType;
+import gov.loc.premis.v3.AgentIdentifierComplexType;
+import gov.loc.premis.v3.EventComplexType;
+import gov.loc.premis.v3.EventIdentifierComplexType;
+import gov.loc.premis.v3.IntellectualEntity;
+import gov.loc.premis.v3.LinkingAgentIdentifierComplexType;
+import gov.loc.premis.v3.LinkingObjectIdentifierComplexType;
+import gov.loc.premis.v3.ObjectComplexType;
 import gov.loc.premis.v3.ObjectIdentifierComplexType;
 import gov.loc.premis.v3.PremisComplexType;
 import gov.loc.premis.v3.SignificantPropertiesComplexType;
 import gov.loc.premis.v3.StringPlusAuthority;
 import jakarta.transaction.Transactional;
+import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.archivists.ead3.schema.Ead;
+import org.glassfish.jaxb.runtime.marshaller.NamespacePrefixMapper;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,11 +125,15 @@ import javax.annotation.Nullable;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -536,10 +555,12 @@ public class DaService {
                 Path exportDir = Files.createTempDirectory("export");
                 Path aipDir = exportDir.resolve(aip.getCode());
                 Files.createDirectories(aipDir);
-                Path packageInfoPath = createPackageInfo(aip, aipDir);
+
+                XMLGregorianCalendar createDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
+                Path packageInfoPath = createPackageInfo(aip, aipDir, createDate);
                 Path eadPath = createEad(aip, aipDir);
 
-                createMets(aipDir, packageInfoPath, eadPath);
+                createMets(aipDir, packageInfoPath, eadPath, createDate);
 
 
                 Path aipOutputDir = resourcePathResolver.getAipDir().resolve("out");
@@ -611,33 +632,118 @@ public class DaService {
         return resultPath;
     }
 
-    private Path createPackageInfo(DaAip aip, Path aipDir) throws IOException {
-//        DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip); //TODO zatím zakomentováno, nutno ujasnit, jak má vypadat výstup. Použit defaultní soubor
-//
-//        List<ObjectComplexType> objectComplexTypeList = new ArrayList<>();
-//
-//        List<SignificantPropertiesComplexType> significantProperties = new ArrayList<>();
-//        significantProperties.add(createSignificantPropertiesElement("AIP_VERSION", aipState.getAipVersion()));
-//        significantProperties.add(createSignificantPropertiesElement("AIP_SIZE", String.valueOf(aipState.getAipSize())));
-//        significantProperties.add(createSignificantPropertiesElement("INSTITUTION_ID", aipState.getInstitutionCode()));
-//
-//        List<ObjectIdentifierComplexType> identifiers = new ArrayList<>();
-//        identifiers.add(createObjectIdentifierComplexType("FONDS_ID", aipState.getFundCode()));
-//        identifiers.add(createObjectIdentifierComplexType("AIP_ID", aip.getCode()));
-//        IntellectualEntity intellectualEntity = new IntellectualEntity(identifiers, null, significantProperties, null, null, null, null, null, null, null, null, null, null);
-//
-//        objectComplexTypeList.add(intellectualEntity);
-//        PremisComplexType premisComplexType = new PremisComplexType(objectComplexTypeList, null, null, null, aipState.getAipVersionMetadata());
-//        JAXBElement<PremisComplexType> wrappedElement = XmlUtils.wrapElement("premisComplexType", premisComplexType);
-//        byte[] data = XmlUtils.marshallData(wrappedElement, PremisComplexType.class);
-//        File packageInfoFile = new File(aipDir.toString() + "/PACKAGE-INFO.xml");
-//        Files.write(packageInfoFile.toPath(), data);
-        ClassPathResource classPathResource = new ClassPathResource("exportDaTemplates/PACKAGE-INFO.xml");
+    private Path createPackageInfo(DaAip aip, Path aipDir, XMLGregorianCalendar createDate) throws IOException, JAXBException {
+        DaAipState aipState = aipStateRepository.findByDaAipAndDeleteChangeIsNull(aip);
+        PremisComplexType premisComplexType = new PremisComplexType();
+        premisComplexType.setVersion("3.0");
+        IntellectualEntity thisIntellectualEntity = new IntellectualEntity();
+        thisIntellectualEntity.getObjectIdentifier().add(createObjectIdentifierComplexType("local", "_THIS"));
+        premisComplexType.getObject().add(thisIntellectualEntity);
+
+        IntellectualEntity aipIntellectualEntity = new IntellectualEntity();
+        String localUUID = generateExportUUID();
+        aipIntellectualEntity.getObjectIdentifier().add(createObjectIdentifierComplexType("local", localUUID));
+        aipIntellectualEntity.getObjectIdentifier().add(createObjectIdentifierComplexType("AIP_ID", aip.getCode()));
+        aipIntellectualEntity.getSignificantProperties().add(createSignificantPropertiesElement("AIP_VERSION", aipState.getAipVersion()));
+        premisComplexType.getObject().add(aipIntellectualEntity);
+        String elzaAgentUUID = generateExportUUID();
+        AgentComplexType elzaAgent = getAgentComplexType("local", elzaAgentUUID, "Elza", "sof", "3.0");
+        premisComplexType.getAgent().add(elzaAgent);
+
+        String userAgentUUID = generateExportUUID();
+        UserInfoVO loggedUserInfo = userService.getLoggedUserInfo();
+        String userInfoName = loggedUserInfo.getPreferredName();
+        AgentComplexType userAgent = getAgentComplexType("local", userAgentUUID, userInfoName, "org", null);
+        premisComplexType.getAgent().add(userAgent);
+
+        EventComplexType eventComplexType = new EventComplexType();
+        LinkingAgentIdentifierComplexType userAgentIdentifierComplexType = new LinkingAgentIdentifierComplexType();
+        userAgentIdentifierComplexType.setLinkingAgentIdentifierType(createStringPlusAuthority("local"));
+        userAgentIdentifierComplexType.setLinkingAgentIdentifierValue(userAgentUUID);
+        userAgentIdentifierComplexType.getLinkingAgentRole().add(createStringPlusAuthority("SUBMITTER"));
+        eventComplexType.getLinkingAgentIdentifier().add(userAgentIdentifierComplexType);
+        LinkingAgentIdentifierComplexType elzaAgentIdentifierComplexType = new LinkingAgentIdentifierComplexType();
+        elzaAgentIdentifierComplexType.setLinkingAgentIdentifierType(createStringPlusAuthority("local"));
+        elzaAgentIdentifierComplexType.setLinkingAgentIdentifierValue(elzaAgentUUID);
+        elzaAgentIdentifierComplexType.getLinkingAgentRole().add(createStringPlusAuthority("imp"));
+        eventComplexType.getLinkingAgentIdentifier().add(elzaAgentIdentifierComplexType);
+        EventIdentifierComplexType eventIdentifierComplexType = new EventIdentifierComplexType();
+        eventIdentifierComplexType.setEventIdentifierType(createStringPlusAuthority("local"));
+        eventIdentifierComplexType.setEventIdentifierValue(generateExportUUID());
+        eventComplexType.setEventIdentifier(eventIdentifierComplexType);
+        eventComplexType.setEventDateTime(createDate.toString());
+        eventComplexType.setEventType(createStringPlusAuthority("ing"));
+        eventComplexType.getLinkingObjectIdentifier().add(createLinkingObjectIdentifier("local", "_THIS", "out"));
+        eventComplexType.getLinkingObjectIdentifier().add(createLinkingObjectIdentifier("local", localUUID, "sou"));
+        premisComplexType.getEvent().add(eventComplexType);
+
+        JAXBElement<PremisComplexType> wrappedElement = XmlUtils.wrapElement("premis", premisComplexType);
+
+        JAXBContext jaxbContext = JAXBContext.newInstance(PremisComplexType.class);
+        Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+        String schemaLocation = "http://www.loc.gov/premis/v3 http://www.loc.gov/standards/premis/premis.xsd";
+        marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaLocation);
+        AnyUriAdapter.register(marshaller, AnyUriAdapter.isLegacyDefault());
+        marshaller.setProperty("org.glassfish.jaxb.namespacePrefixMapper", new CustomNamespacePrefixMapper());
+
+        StringWriter sw = new StringWriter();
+        marshaller.marshal(wrappedElement, sw);
+        String xml = sw.toString();
+        String finalXml = xml.replace("ns3:", "");
         Path path = Paths.get(aipDir + "/metadata/preservation");
         Files.createDirectories(path);
         Path resultPath = Paths.get(path + "/PACKAGE-INFO.xml");
-        Files.copy(classPathResource.getInputStream(), resultPath);
+        try (FileWriter writer = new FileWriter(resultPath.toFile())) {
+            writer.write(finalXml);
+        }
         return resultPath;
+    }
+
+    private LinkingObjectIdentifierComplexType createLinkingObjectIdentifier(String type, String value, String role) {
+        LinkingObjectIdentifierComplexType linkingObjectIdentifierComplexType = new LinkingObjectIdentifierComplexType();
+        linkingObjectIdentifierComplexType.setLinkingObjectIdentifierType(createStringPlusAuthority(type));
+        linkingObjectIdentifierComplexType.setLinkingObjectIdentifierValue(value);
+        linkingObjectIdentifierComplexType.getLinkingObjectRole().add(createStringPlusAuthority(role));
+        return linkingObjectIdentifierComplexType;
+    }
+
+    @NotNull
+    private AgentComplexType getAgentComplexType(String agentIdentifierType, String agentIdentifierValue, String agentName, String agentType, String agentVersion) {
+        AgentComplexType localAgent = new AgentComplexType();
+        AgentIdentifierComplexType localAgentIdentifier = new AgentIdentifierComplexType();
+        localAgentIdentifier.setAgentIdentifierType(createStringPlusAuthority(agentIdentifierType));
+
+        localAgentIdentifier.setAgentIdentifierValue(agentIdentifierValue);
+        localAgent.getAgentIdentifier().add(localAgentIdentifier);
+        localAgent.getAgentName().add(createStringPlusAuthority(agentName));
+        localAgent.setAgentType(createStringPlusAuthority(agentType));
+        localAgent.setAgentVersion(agentVersion);
+        return localAgent;
+    }
+
+    private StringPlusAuthority createStringPlusAuthority(String value) {
+        return new StringPlusAuthority(value, null, null, null);
+    }
+
+    private static class CustomNamespacePrefixMapper extends NamespacePrefixMapper {
+        public static final Map<String, String> NAMESPACE_MAP = Map.of(
+                "http://www.loc.gov/premis/v3", "premis", // Bez prefixu pro tento jmenný prostor
+                "http://www.w3.org/2001/XMLSchema-instance", "xsi",
+                "http://www.w3.org/1999/xlink", "xlink"
+        );
+
+        private Map<String, String> namespaceMap;
+        public CustomNamespacePrefixMapper(final Map<String, String> namespaceMap) {
+            this.namespaceMap = namespaceMap;
+        }
+        public CustomNamespacePrefixMapper() {
+            this(new HashMap<>(NAMESPACE_MAP));
+        }
+        @Override
+        public String getPreferredPrefix(String namespaceUri, String suggestion, boolean requirePrefix) {
+            return namespaceMap.getOrDefault(namespaceUri, suggestion);
+        }
     }
 
     private ObjectIdentifierComplexType createObjectIdentifierComplexType(String type, String value) {
@@ -647,41 +753,39 @@ public class DaService {
     }
 
     private SignificantPropertiesComplexType createSignificantPropertiesElement(String type, String value) {
-        StringPlusAuthority stringPlusAuthority = new StringPlusAuthority();
-        stringPlusAuthority.setValue(type);
-        JAXBElement<StringPlusAuthority> stringPlusAuthorityElement = XmlUtils.wrapElement("stringPlusAuthority", stringPlusAuthority);
-        JAXBElement<String> stringElement = XmlUtils.wrapElement("string", value);
+        JAXBElement<String> stringPlusAuthorityElement = XmlUtils.wrapElement("significantPropertiesType", type);
+        JAXBElement<String> stringElement = XmlUtils.wrapElement("significantPropertiesValue", value);
         List<JAXBElement<?>> elements = new ArrayList<>();
         elements.add(stringPlusAuthorityElement);
         elements.add(stringElement);
         return new SignificantPropertiesComplexType(elements);
     }
 
-    private void createMets(Path aipDir, Path packageInfoPath, Path eadPath) throws JAXBException, DatatypeConfigurationException, IOException {
+    private void createMets(Path aipDir, Path packageInfoPath, Path eadPath, XMLGregorianCalendar createDate) throws JAXBException, DatatypeConfigurationException, IOException {
         Mets mets = new Mets();
-        XMLGregorianCalendar currentCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
+        mets.getOtherAttributes().put(QName.valueOf("csip:CONTENTINFORMATIONTYPE"), "OTHER");
+        mets.getOtherAttributes().put(QName.valueOf("csip:OTHERCONTENTINFORMATIONTYPE"), "change_request_v1_0");
         MetsType.MetsHdr metsHdr = new MetsType.MetsHdr();
-        metsHdr.setCREATEDATE(currentCalendar);
+        metsHdr.setCREATEDATE(createDate);
         MetsType.MetsHdr.Agent creatorAgent = createAgent("CREATOR", "OTHER", "SOFTWARE", "ELZA", "3.0");
-        MetsType.MetsHdr.Agent disseminationAgent = createAgent("DISSEMINATION", "ORGANIZATION", null, "Testovaci archiv", null);
+
         metsHdr.getAgent().add(creatorAgent);
-        metsHdr.getAgent().add(disseminationAgent);
         mets.setMetsHdr(metsHdr);
 
-        String dmdSecUUID = createUUID();
-        String amdSecUUID =  createUUID();
-        MdSecType dmdSec = createDmdSec(dmdSecUUID, currentCalendar, eadPath);
+        String dmdSecUUID = generateExportUUID();
+        String amdSecUUID =  generateExportUUID();
+        MdSecType dmdSec = createDmdSec(dmdSecUUID, createDate, eadPath);
         mets.getDmdSec().add(dmdSec);
-        AmdSecType amdSec = createAmdSec(amdSecUUID, packageInfoPath);
+        AmdSecType amdSec = createAmdSec(amdSecUUID, createDate, packageInfoPath);
         mets.getAmdSec().add(amdSec);
 
         StructMapType structMap = new StructMapType();
         structMap.setTYPE("PHYSICAL");
         structMap.setLABEL("CSIP");
         DivType div = new DivType();
-        div.setID( createUUID());
+        div.setID( generateExportUUID());
         DivType innerDiv = new DivType();
-        innerDiv.setID( createUUID());
+        innerDiv.setID( generateExportUUID());
         innerDiv.setLABEL("Metadata");
         innerDiv.getDMDID().add(dmdSec);
 
@@ -689,15 +793,19 @@ public class DaService {
 
         div.getDiv().add(innerDiv);
         structMap.setDiv(div);
+        structMap.setID(generateExportUUID());
         mets.getStructMap().add(structMap);
+        mets.setOBJID(aipDir.getFileName().toString());
+        mets.setTYPE("Dataset");
+        mets.setPROFILE("https://stands.nacr.cz/da/2023/aip.xml");
         MetsReaderWriter.marshal(mets, Path.of(aipDir.toString(), "METS.xml"));
     }
 
-    private String createUUID() {
+    private String generateExportUUID() {
         return "uuid-" + UUID.randomUUID();
     }
 
-    private AmdSecType createAmdSec(String amdSecUUID, Path packageInfoPath) throws IOException {
+    private AmdSecType createAmdSec(String amdSecUUID, XMLGregorianCalendar createDate, Path packageInfoPath) throws IOException {
         AmdSecType amdSecType = new AmdSecType();
         MdSecType digiprovMD = new MdSecType();
         digiprovMD.setID(amdSecUUID);
@@ -710,6 +818,7 @@ public class DaService {
         mdRef.setLOCTYPE("URL");
         mdRef.setMIMETYPE("application/xml");
         mdRef.setSIZE(10L);
+        mdRef.setCREATED(createDate);
         mdRef.setCHECKSUM(calculateSHA512(packageInfoPath));
         mdRef.setCHECKSUMTYPE("SHA-512");
         mdRef.setSIZE(Files.size(packageInfoPath));
@@ -729,11 +838,11 @@ public class DaService {
         }
     }
 
-    private MdSecType createDmdSec(String dmdSecUUID, XMLGregorianCalendar currentCalendar, Path eadPath) throws IOException {
+    private MdSecType createDmdSec(String dmdSecUUID, XMLGregorianCalendar createDate, Path eadPath) throws IOException {
         MdSecType mdSecType = new MdSecType();
         mdSecType.setID(dmdSecUUID);
         mdSecType.setGROUPID("CONTEXTUAL");
-        mdSecType.setCREATED(currentCalendar);
+        mdSecType.setCREATED(createDate);
         mdSecType.setSTATUS("CURRENT");
 
 
@@ -742,6 +851,7 @@ public class DaService {
         mdRef.setHref("metadata/descriptive/EAD-CONTEXT.xml");
         mdRef.setMDTYPE("EAD");
         mdRef.setLOCTYPE("URL");
+        mdRef.setCREATED(createDate);
         mdRef.setMIMETYPE("application/xml");
         mdRef.setCHECKSUM(calculateSHA512(eadPath));
         mdRef.setCHECKSUMTYPE("SHA-512");
