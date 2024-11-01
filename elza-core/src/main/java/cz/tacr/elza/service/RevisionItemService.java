@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -39,7 +40,6 @@ import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApRevItemRepository;
 import cz.tacr.elza.repository.DataRepository;
-import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 
@@ -285,7 +285,7 @@ public class RevisionItemService {
                         continue;
                     }
                 } else {
-                    Validate.notNull(revItem.getObjectId());
+                	Objects.requireNonNull(revItem.getObjectId());
                     Validate.isTrue(!revItem.isDeleted());
 
                     objectId = revItem.getObjectId();

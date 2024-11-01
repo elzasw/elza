@@ -818,7 +818,7 @@ public class RevisionService {
                     // Orig item is somehow transformed
                     notDeletedApItems.add(origItem);
                 }
-                if(revItem!=null) {
+                if (revItem != null) {
                     // return to original item
                     if (Objects.equals(itemVO.getChangeType(), ChangeType.ORIGINAL)) {
                         if (origItem == null) {
@@ -830,7 +830,7 @@ public class RevisionService {
                         // simply skip item -> revItem will be deleted
                         continue;
                     }
-                    if(itemVO.getId()!=null) {
+                    if (itemVO.getId()!=null) {
                         // pokud je nastaveno ID, musi byt spravne
                         if (!itemVO.getId().equals(revItem.getItemId())) {
                             // source item not found
