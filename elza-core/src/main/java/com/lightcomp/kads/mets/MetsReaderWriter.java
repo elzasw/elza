@@ -12,6 +12,7 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.Marshaller;
 
+import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamSource;
 
 import com.lightcomp.kads.common.AnyUriAdapter;
@@ -47,6 +48,7 @@ public class MetsReaderWriter {
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
         String schemaLocation = " http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd http://www.w3.org/1999/xlink http://www.loc.gov/standards/mets/xlink.xsd https://DILCIS.eu/XML/METS/CSIPExtensionMETS https://earkcsip.dilcis.eu/schema/DILCISExtensionMETS.xsd";
         m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaLocation);
+        mets.getOtherAttributes().put(new QName("https://DILCIS.eu/XML/METS/CSIPExtensionMETS", "csip"), "https://DILCIS.eu/XML/METS/CSIPExtensionMETS");
         AnyUriAdapter.register(m, AnyUriAdapter.isLegacyDefault());
         m.setProperty("org.glassfish.jaxb.namespacePrefixMapper", new CustomNamespacePrefixMapper());
         //m.setProperty("com.sun.xml.bind.defaultNamespaceRemap", "http://www.loc.gov/METS/");
@@ -57,7 +59,7 @@ public class MetsReaderWriter {
 
     private static class CustomNamespacePrefixMapper extends NamespacePrefixMapper {
         public static final Map<String, String> NAMESPACE_MAP = Map.of(
-                "http://www.loc.gov/METS/", "",  // Bez prefixu pro tento jmenný prostor
+                "http://www.loc.gov/METS/", "",
                 "https://DILCIS.eu/XML/METS/CSIPExtensionMETS", "csip",
                 "http://www.w3.org/2001/XMLSchema-instance", "xsi",
                 "http://www.w3.org/1999/xlink", "xlink"
