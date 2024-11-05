@@ -690,7 +690,8 @@ public class DaService {
         StringWriter sw = new StringWriter();
         marshaller.marshal(wrappedElement, sw);
         String xml = sw.toString();
-        String finalXml = xml.replace("ns3:", "");
+        String finalXml = xml.replace("ns3:", "").replace("xmlns:premis", "xmlns");
+
         Path path = Paths.get(aipDir + "/metadata/preservation");
         Files.createDirectories(path);
         Path resultPath = Paths.get(path + "/PACKAGE-INFO.xml");
@@ -798,7 +799,11 @@ public class DaService {
         mets.setOBJID(aipDir.getFileName().toString());
         mets.setTYPE("Dataset");
         mets.setPROFILE("https://stands.nacr.cz/da/2023/aip.xml");
-        MetsReaderWriter.marshal(mets, Path.of(aipDir.toString(), "METS.xml"));
+        Path resultPath = Path.of(aipDir.toString(), "METS.xml");
+        MetsReaderWriter.marshal(mets, resultPath);
+        String content = Files.readString(resultPath, StandardCharsets.UTF_8);
+        content = content.replace("<metsHdr", "<metsHdr csip:OAISPACKAGETYPE=\"AIP\"").replace("<note", "<note csip:NOTETYPE=\"SOFTWARE VERSION\"");
+        Files.writeString(resultPath, content, StandardCharsets.UTF_8);
     }
 
     private String generateExportUUID() {
