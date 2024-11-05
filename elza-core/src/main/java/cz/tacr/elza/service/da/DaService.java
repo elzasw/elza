@@ -690,7 +690,7 @@ public class DaService {
         StringWriter sw = new StringWriter();
         marshaller.marshal(wrappedElement, sw);
         String xml = sw.toString();
-        String finalXml = xml.replace("ns3:", "").replace("xmlns:premis", "xmlns");
+        String finalXml = xml.replace("premis:", "").replace("xmlns:premis", "xmlns");
 
         Path path = Paths.get(aipDir + "/metadata/preservation");
         Files.createDirectories(path);
