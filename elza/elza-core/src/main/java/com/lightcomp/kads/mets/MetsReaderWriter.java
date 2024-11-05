@@ -46,7 +46,7 @@ public class MetsReaderWriter {
     public static void marshal(Mets mets, Path path) throws JAXBException {
         Marshaller m = JAXB_CONTEXT.createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-        String schemaLocation = " http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd http://www.w3.org/1999/xlink http://www.loc.gov/standards/mets/xlink.xsd https://DILCIS.eu/XML/METS/CSIPExtensionMETS https://earkcsip.dilcis.eu/schema/DILCISExtensionMETS.xsd";
+        String schemaLocation = "http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd http://www.w3.org/1999/xlink http://www.loc.gov/standards/mets/xlink.xsd https://DILCIS.eu/XML/METS/CSIPExtensionMETS https://earkcsip.dilcis.eu/schema/DILCISExtensionMETS.xsd";
         m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, schemaLocation);
         mets.getOtherAttributes().put(new QName("https://DILCIS.eu/XML/METS/CSIPExtensionMETS", "csip"), "https://DILCIS.eu/XML/METS/CSIPExtensionMETS");
         AnyUriAdapter.register(m, AnyUriAdapter.isLegacyDefault());
