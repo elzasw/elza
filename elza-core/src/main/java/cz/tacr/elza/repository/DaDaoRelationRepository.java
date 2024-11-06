@@ -25,4 +25,7 @@ public interface DaDaoRelationRepository extends JpaRepository<DaDaoRelation, In
     @Query("select distinct pd from da_dao_relation dr join dr.parentDao pd where (pd.aip in :aips) and dr.deleteChange is null and " +
             "not exists (select d from da_dao_relation d where d.dao = pd)")
     List<DaDao> findParentDaosByAipsAndDeleteChangeIsNull(@Param("aips") List<DaAip> aips);
+
+    @Query("select dr from da_dao_relation dr join dr.parentDao pd where pd.type = 'REPRESENTATION' and dr.dao in :daDaoList and dr.deleteChange is null")
+    List<DaDaoRelation> findByDaoInAndDeleteChangeIsNullAndParentDaoIsRepresentation(@Param("daDaoList") List<DaDao> daDaoList);
 }
