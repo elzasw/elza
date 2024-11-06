@@ -628,6 +628,10 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         cap.setErrorDescription(accessPoint.getErrorDescription());
         cap.setLastUpdate(accessPoint.getLastUpdate());
         cap.setPreferredPartId(accessPoint.getPreferredPartId());
+        // Lots of codes expect that part list is not null
+        if(cap.getParts()==null) {
+	        cap.setParts(Collections.emptyList());
+        }
 
         restoreLinks(cap);
         return cap;
