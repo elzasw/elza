@@ -146,4 +146,8 @@
 		<sql> DELETE FROM ap_cached_access_point WHERE access_point_id IN (SELECT bs.access_point_id FROM ap_binding_state bs WHERE bs.delete_change_id is null AND bs.sync_ok='NOT_SYNCED')</sql>
 	</changeSet>
 
+	<changeSet id="20241106192200" author="ppy">
+		<!-- Speedup revision search and guarantee unique -->
+		<sql dbms="postgresql">CREATE UNIQUE INDEX ap_revision_state_delete_change_null_unique_idx ON ap_revision(state_id) WHERE delete_change_id IS NULL</sql>
+	</changeSet>
 </databaseChangeLog>
