@@ -148,7 +148,7 @@ public class GroovyService {
                 groovyParts.add(convertRevPart(state.getApTypeId(), part, revItems));
             }
         }
-        return new GroovyAe(apType.getCode(), groovyParts);
+        return new GroovyAe(state.getAccessPointId(), state.getStateId(), apType.getCode(), groovyParts);
     }
 
     /**
