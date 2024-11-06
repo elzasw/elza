@@ -140,17 +140,20 @@ public class GroovyUtils {
     }
 
     @Nullable
-    public static ArrData findDataByRulItemTypeCode(final CachedAccessPoint accessPoint, final GroovyPart.PreferredFilter filter, String itemTypeCode) {
+    public static ArrData findDataByRulItemTypeCode(final CachedAccessPoint accessPoint, 
+    		final GroovyPart.PreferredFilter filter, String itemTypeCode) {
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        ItemType itemType = sdp.getItemTypeByCode(itemTypeCode);
+    	
         for (CachedPart part : accessPoint.getParts()) {
             if (filter == GroovyPart.PreferredFilter.ALL
                     || filter == GroovyPart.PreferredFilter.NO && !part.getPartId().equals(accessPoint.getPreferredPartId())
                     || filter == GroovyPart.PreferredFilter.YES && part.getPartId().equals(accessPoint.getPreferredPartId())
             ) {
                 for (ApItem item : part.getItems()) {
-                    RulItemType rulItemType = item.getItemType();
-                    if (rulItemType.getCode().equals(itemTypeCode)) {
-                        return HibernateUtils.unproxy(item.getData());
-                    }
+                	if(Objects.equals(itemType.getItemTypeId(), item.getItemTypeId())) {
+                		return HibernateUtils.unproxy(item.getData());
+                	}
                 }
             }
         }
@@ -159,16 +162,21 @@ public class GroovyUtils {
 
     @Nullable
     public static String findItemSpecCodeByItemTypeCode(final CachedAccessPoint accessPoint, String itemTypeCode) {
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        ItemType itemType = sdp.getItemTypeByCode(itemTypeCode);
+
         for (CachedPart part : accessPoint.getParts()) {
             for (ApItem item : part.getItems()) {
-                RulItemType rulItemType = item.getItemType();
-                if (rulItemType != null) {
-                    if (rulItemType.getCode().equals(itemTypeCode)) {
-                        if (item.getItemSpec() != null) {
-                            return item.getItemSpec().getCode();
-                        }
-                    }
-                }
+            	if(Objects.equals(itemType.getItemTypeId(), item.getItemTypeId())) {
+            		Integer itemSpecId = item.getItemSpecId();
+            		if(itemSpecId != null) {
+	            		RulItemSpec itemSpec = itemType.getItemSpecById(itemSpecId);
+	            		if(itemSpec != null) {
+	            			return itemSpec.getCode();
+	            		}
+            		}
+            		return null;
+            	}
             }
         }
         return null;

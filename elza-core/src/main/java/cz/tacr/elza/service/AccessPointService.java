@@ -3475,12 +3475,12 @@ public class AccessPointService {
      */
     private void mergeParts(ApAccessPoint accessPoint, ApAccessPoint targetAccessPoint, ApChange change, ApRevState revState) {
         List<ApPart> fromParts = partService.findPartsByAccessPoint(accessPoint);
-        Map<Integer, List<ApItem>> fromItemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
-                .collect(Collectors.groupingBy(ApItem::getPartId));
+        List<ApItem> srcItems = dataService.findItemsWithData(itemRepository.findValidItemsByAccessPoint(accessPoint));
+        Map<Integer, List<ApItem>> fromItemMap = srcItems.stream().collect(Collectors.groupingBy(ApItem::getPartId));
 
         List<ApPart> toParts = partService.findPartsByAccessPoint(targetAccessPoint);
-        Map<Integer, List<ApItem>> toItemMap = itemRepository.findValidItemsByAccessPoint(targetAccessPoint).stream()
-                .collect(Collectors.groupingBy(ApItem::getPartId));
+        List<ApItem> trgItems = dataService.findItemsWithData(itemRepository.findValidItemsByAccessPoint(targetAccessPoint));
+        Map<Integer, List<ApItem>> toItemMap = trgItems.stream().collect(Collectors.groupingBy(ApItem::getPartId));
 
         // příprava seznamu objektů ke sloučení
         List<PartWithSubParts> fromWSParts = prepareListPartWithSubParts(fromParts);

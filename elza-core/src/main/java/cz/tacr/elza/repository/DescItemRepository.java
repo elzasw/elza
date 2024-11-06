@@ -46,14 +46,14 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
                                                    @Param("specs") Collection<RulItemSpec> specs); // exclude: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType
 
 	@Query("SELECT i FROM arr_desc_item i WHERE i.node in (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
-    List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange); // exclude: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType JOIN FETCH i.node n
+    List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange);
 
 	// TODO: zvážit odstranění této metody
     @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL") 
-    List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node); // exclude: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType
+    List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node);
 
     @Query("SELECT i FROM arr_desc_item i WHERE i.node IN (?1) AND i.deleteChange IS NULL")
-    List<ArrDescItem> findByNodesAndDeleteChangeIsNull(Collection<ArrNode> nodes); // exclude: LEFT JOIN FETCH i.data
+    List<ArrDescItem> findByNodesAndDeleteChangeIsNull(Collection<ArrNode> nodes);
 
     /**
      * Read descItems by list of nodeId
