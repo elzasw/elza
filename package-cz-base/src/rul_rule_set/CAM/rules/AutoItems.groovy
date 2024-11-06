@@ -56,7 +56,7 @@ static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
 
     // získání seznamu geografických objektů a názvu země
     String country = null;
-    String value
+    String value = null;
     int limitItems = 10
     ArrDataRecordRef dataRecord
     CachedAccessPoint cap = item.getAccessPoint()
@@ -80,7 +80,6 @@ static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
 
     // převést seznam CachedAccessPoint na řetězec
     for (CachedAccessPoint ap : caps) {
-        ArrDataString dataString = GroovyUtils.findDataByRulItemTypeCode(ap, GroovyPart.PreferredFilter.YES, "NM_MAIN")
         String geoType = GroovyUtils.findItemSpecCodeByItemTypeCode(ap, "GEO_TYPE")
         //System.out.println(geoType)
         // v České republice tento typ (GT_ADMREGION) nevykazujeme
@@ -93,6 +92,10 @@ static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
         }
         if (Objects.equals(geoType, "GT_CONTINENT") || Objects.equals(geoType, "GT_PLANET")) {
             break;
+        }
+        ArrDataString dataString = GroovyUtils.findDataByRulItemTypeCode(ap, GroovyPart.PreferredFilter.YES, "NM_MAIN")
+        if (dataString == null) {
+            continue;
         }
         if (value == null) {
         	value = dataString.getStringValue()
