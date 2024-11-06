@@ -10,6 +10,7 @@ import { AREA_AIP } from "actions/aip/aip";
 import { useSelector } from "react-redux";
 import { storeFromArea } from "shared/utils";
 import { AppState } from "typings/store";
+import {i18n} from 'components/shared'
 
 type AipExplorerProps = {
     mode: ExplorerMode;
@@ -20,25 +21,24 @@ type AipExplorerProps = {
 const AipExplorer = ({mode, onSelect, selected}: AipExplorerProps) => {
     const aip = useSelector((state: AppState) => storeFromArea(state, AREA_AIP));
 
-    if(!aip.id) {
-        return (
-            <div className="not-selected">
-                <p>Nebyl vybrán žádný objekt</p>
-            </div>
-        );
-    }
-
     return (
         <ExplorerContext mode={mode}>
             <div className="aip-explorer">
-                <ExplorerNavigationTab />
-                <Divider />
-                <Splitter
-                    left={<ExplorerTree onSelect={onSelect}/>}
-                    center={<ExplorerTable />}
-                    right={<ExplorerDetail selected={selected} />}
-                    rightSize={370}
-                />
+                {!aip.id && <div className="not-selected">
+                        <p>{i18n("aip.detail.notSelected")}</p>
+                    </div>
+                }
+                {aip.id && <>
+                        <ExplorerNavigationTab />
+                        <Divider />
+                        <Splitter
+                            left={<ExplorerTree onSelect={onSelect}/>}
+                            center={<ExplorerTable />}
+                            right={<ExplorerDetail selected={selected} />}
+                            rightSize={370}
+                        />
+                    </>
+                }
             </div>
         </ExplorerContext>
     );

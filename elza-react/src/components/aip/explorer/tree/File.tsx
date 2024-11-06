@@ -19,7 +19,7 @@ const File = ({file, parent}: FileProps) => {
             value={file.uuid}
             style={{backgroundColor: isSelected ? "#e3e3e3ff" : undefined}}
         >
-            <TreeItemLayout>{turncate(getFileName(file.filename))}</TreeItemLayout>
+            <TreeItemLayout>{getFileName(file.filename)}</TreeItemLayout>
         </TreeItem>
     );
 }
