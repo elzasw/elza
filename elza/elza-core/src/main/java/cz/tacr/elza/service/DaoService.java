@@ -732,6 +732,7 @@ public class DaoService {
         Map<Integer, TreeNodeVO> treeNodeMap = new HashMap<>();
         List<DaDaoFileFolder> folders = new ArrayList<>();
         List<DaDaoFile> files = new ArrayList<>();
+        Map<Integer, Integer> fileRepresentationMap = new HashMap<>();
 
         if (state.getFund() != null) {
             daDaoList = daDaoRepository.findByAipAndDeleteChangeIsNull(aip);
@@ -747,7 +748,10 @@ public class DaoService {
                     .collect(Collectors.toMap(TreeNodeVO::getId, t -> t));
 
             folders = daoFileFolderRepository.findByRepresentationDaoInAndDeleteChangeIsNull(daDaoList);
-            files = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(filterDaDaoByType(daDaoList, DaDao.DaoType.FILE));
+            List<DaDao> fileDaos = filterDaDaoByType(daDaoList, DaDao.DaoType.FILE);
+            files = daDaoFileRepository.findByDaoInAndDeleteChangeIsNull(fileDaos);
+            fileRepresentationMap = daoRelationRepository.findByDaoInAndDeleteChangeIsNullAndParentDaoIsRepresentation(fileDaos).stream()
+                    .collect(Collectors.toMap(r -> r.getDao().getDaoId(), r -> r.getParentDao().getDaoId()));
         }
 
         List<ExplorerTreeNodeFile> fileNodes = new ArrayList<>();
@@ -762,11 +766,13 @@ public class DaoService {
             fileNode.setParentFolderLogical(createParent(createExplorerTreeNodeWithNodes(relation.getParentDao().getCode(), relation.getParentDao().getDaoId(), relation.getParentDao().getLabel(), null)));
             fileNodes.add(fileNode);
         }
+        List<DaDao> representations = daDaoList.stream().filter(i -> i.getType() == DaDao.DaoType.REPRESENTATION).toList();
+        Map<Integer, ExplorerTreeNode> representationMap = createRepresentationMap(representations, daoLinkMap, treeNodeMap);
 
         createRepresentationFolderMap(folders, itemMap, daoLinkMap, treeNodeMap);
 
-        ExplorerTreeNode representationRoot = buildFolderHierarchy(folders, itemMap);
-        addFilesToFolders(fileNodes, itemMap, representationRoot);
+        buildFolderHierarchy(folders, itemMap, representationMap);
+        addFilesToFolders(fileNodes, itemMap, representationMap, fileRepresentationMap);
 
         Map<Integer, ExplorerTreeNode> logicalMap = new HashMap<>();
         createLogicalFolderMap(daDaoList, logicalMap, daoLinkMap, treeNodeMap);
@@ -778,7 +784,7 @@ public class DaoService {
         ExplorerTreeNode representation = createExplorerTreeNode(
                 -1,
                 "Reprezentace",
-                representationRoot != null ?  Collections.singletonList(representationRoot) : null
+                representationMap.values().stream().toList()
         );
         ExplorerTreeNode logical = createExplorerTreeNode(
                 -2,
@@ -805,6 +811,18 @@ public class DaoService {
                 .toList();
     }
 
+    private Map<Integer, ExplorerTreeNode> createRepresentationMap(List<DaDao> representations, Map<Integer, List<ArrDaoLink>> daoLinkMap, Map<Integer, TreeNodeVO> treeNodeMap) {
+        Map<Integer, ExplorerTreeNode> representationMap = new HashMap<>();
+
+        for (DaDao dao : representations) {
+            ExplorerTreeNode item = createExplorerTreeNodeWithNodes(dao.getCode(), dao.getDaoId(), dao.getLabel(),
+                    clientFactoryVO.createLinkedNodes(daoLinkMap.getOrDefault(dao.getDaoId(), new ArrayList<>()), treeNodeMap));
+            representationMap.put(dao.getDaoId(), item);
+        }
+
+        return representationMap;
+    }
+
     private void createRepresentationFolderMap(List<DaDaoFileFolder> folders, Map<Integer, ExplorerTreeNode> itemMap, Map<Integer, List<ArrDaoLink>> daoLinkMap, Map<Integer, TreeNodeVO> treeNodeMap) {
         folders.forEach(folder -> {
             ExplorerTreeNode item = clientFactoryVO.createExplorerTreeNode(folder, daoLinkMap, treeNodeMap);
@@ -822,25 +840,24 @@ public class DaoService {
 
     }
 
-    private ExplorerTreeNode buildFolderHierarchy(List<DaDaoFileFolder> folders, Map<Integer, ExplorerTreeNode> itemMap) {
-        ExplorerTreeNode root = null;
+    private void buildFolderHierarchy(List<DaDaoFileFolder> folders, Map<Integer, ExplorerTreeNode> itemMap, Map<Integer, ExplorerTreeNode> representationMap) {
         for (DaDaoFileFolder folder : folders) {
             ExplorerTreeNode item = itemMap.get(folder.getDaoFileFolderId());
             if(item == null) {
                 continue;
             }
+            ExplorerTreeNode parent;
             if (folder.getParentFileFolder() == null) {
-                root = item;
+                parent = representationMap.get(folder.getRepresentationDao().getDaoId());
             } else {
-                ExplorerTreeNode parent = itemMap.get(folder.getParentFileFolder().getDaoFileFolderId());
-                if (parent.getChildFolders() == null) {
-                    parent.setChildFolders(new ArrayList<>());
-                }
-                item.setParentFolder(createParent(parent));
-                parent.getChildFolders().add(item);
+                parent = itemMap.get(folder.getParentFileFolder().getDaoFileFolderId());
             }
+            if (parent.getChildFolders() == null) {
+                parent.setChildFolders(new ArrayList<>());
+            }
+            item.setParentFolder(createParent(parent));
+            parent.getChildFolders().add(item);
         }
-        return root;
     }
 
     private void addFilesToFoldersLogical(List<ExplorerTreeNodeFile> files, Map<Integer, ExplorerTreeNode> itemMap, ExplorerTreeNode root) {
@@ -858,9 +875,14 @@ public class DaoService {
             parent.getChildFiles().add(copy);
         }
     }
-    private void addFilesToFolders(List<ExplorerTreeNodeFile> files, Map<Integer, ExplorerTreeNode> itemMap, ExplorerTreeNode root) {
+    private void addFilesToFolders(List<ExplorerTreeNodeFile> files, Map<Integer, ExplorerTreeNode> itemMap, Map<Integer, ExplorerTreeNode> representationMap, Map<Integer, Integer> fileRepresentationMap) {
         for (ExplorerTreeNodeFile file : files) {
-            ExplorerTreeNode parent = itemMap.getOrDefault(file.getDaoFileFolderId(), root);
+            ExplorerTreeNode parent;
+            if (file.getDaoFileFolderId() != null) {
+                parent = itemMap.getOrDefault(file.getDaoFileFolderId(), null);
+            } else {
+                parent = representationMap.get(fileRepresentationMap.get(file.getDaoId()));
+            }
             file.setParentFolder(createParent(parent));
             if (parent.getChildFiles() == null){
                 parent.setChildFiles(new ArrayList<>());

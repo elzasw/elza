@@ -137,7 +137,7 @@ public class DaoProcessor {
 
     private final Map<String, DaDao> logicalDaoMap = new HashMap<>();
 
-    private final List<String> representations = new ArrayList<>();
+    private final Map<String, DaDao> representations = new HashMap<>();
 
     private final Map<Integer, List<DaDaoFileFolder>> newDaDaoFileFolderMap = new HashMap<>();
 
@@ -170,9 +170,9 @@ public class DaoProcessor {
         DaChange change = daService.createDaChange(aip, changeType);
 
         //representation and files
-        DaDao representationDao = createRepresentationDaoFromStruct(metsType.getStructMap(), change);
+        createRepresentationDaoFromStruct(metsType.getStructMap(), metsType.getFileSec(), change);
         if (metsType.getFileSec() != null) {
-            createDaoFromFileSec(metsType.getFileSec(), representationDao, change);
+            createDaoFromFileSec(metsType.getFileSec(), change);
         }
 
         //metadata
@@ -238,67 +238,70 @@ public class DaoProcessor {
         daoLinkRepository.saveAll(daoLinkList);
     }
 
-    @Nullable
-    private DaDao createRepresentationDaoFromStruct(List<StructMapType> structMap, DaChange change) {
-        DaDao representationDaDao;
+    private void createRepresentationDaoFromStruct(List<StructMapType> structMap, MetsType.FileSec fileSec, DaChange change) {
         for (StructMapType structMapType : structMap) {
             if (structMapType.getTYPE().equals("PHYSICAL")) {
-                representationDaDao = createRepresentationDaoFromDiv(structMapType.getDiv(), change);
-                if (representationDaDao != null) {
-                    return representationDaDao;
-                }
+                createRepresentationDaoFromDiv(structMapType.getDiv(), fileSec, change);
             }
         }
-        return null;
     }
 
-    @Nullable
-    private DaDao createRepresentationDaoFromDiv(DivType divType, DaChange change) {
-        DaDao representationDaDao;
+    private void createRepresentationDaoFromDiv(DivType divType, MetsType.FileSec fileSec, DaChange change) {
         if (divType.getLABEL() != null && divType.getLABEL().equals("Representations")) {
-            String code = divType.getID();
-            DaDao.DaoType type = DaDao.DaoType.REPRESENTATION;
-            String label = divType.getLABEL();
-            DaDao daDao = daDaoMap.getOrDefault(code, null);
-            if (daDao == null || isDaoChanged(daDao, code, label, type)) {
-                daDao = daService.createDaDao(aip, change, code, label, type);
-            } else {
-                daDaoMap.remove(code);
-            }
-
             if (CollectionUtils.isNotEmpty(divType.getFptr())) {
                 for (DivType.Fptr fptr : divType.getFptr()) {
                     MetsType.FileSec.FileGrp fileGrp = (MetsType.FileSec.FileGrp) fptr.getFILEID();
-                    representations.add(fileGrp.getID());
+                    String code = fileGrp.getID();
+                    DaDao.DaoType type = DaDao.DaoType.REPRESENTATION;
+                    String label = getRepresentationLabel(fileSec, code);
+                    DaDao daDao = daDaoMap.getOrDefault(code, null);
+                    if (daDao == null || isDaoChanged(daDao, code, label, type)) {
+                        daDao = daService.createDaDao(aip, change, code, label, type);
+                    } else {
+                        daDaoMap.remove(code);
+                    }
+
+                    representations.put(code, daDao);
                 }
             }
-            return daDao;
+            return;
         }
 
         if (CollectionUtils.isNotEmpty(divType.getDiv())) {
             for (DivType div : divType.getDiv()) {
-                representationDaDao = createRepresentationDaoFromDiv(div, change);
-                if (representationDaDao != null) {
-                    return representationDaDao;
+                createRepresentationDaoFromDiv(div, fileSec, change);
+            }
+        }
+    }
+
+    @Nullable
+    private String getRepresentationLabel(MetsType.FileSec fileSec, String code) {
+        if (CollectionUtils.isNotEmpty(fileSec.getFileGrp())) {
+            for (FileGrpType fileGrpType : fileSec.getFileGrp()) {
+                if (fileGrpType.getID().equals(code)) {
+                    String use = fileGrpType.getUSE();
+                    return use.substring(use.indexOf("/") + 1);
                 }
             }
         }
         return null;
     }
 
-    private void createDaoFromFileSec(MetsType.FileSec fileSec, DaDao representationDao, DaChange change) {
+    private void createDaoFromFileSec(MetsType.FileSec fileSec, DaChange change) {
         if (CollectionUtils.isNotEmpty(fileSec.getFileGrp())) {
             for (FileGrpType fileGrpType : fileSec.getFileGrp()) {
-                createDaoFromFileGrp(fileGrpType, representationDao, change);
+                DaDao representationDao = representations.getOrDefault(fileGrpType.getID(), null);
+                if (representationDao != null) {
+                    createDaoFromFileGrp(fileGrpType, representationDao, change);
+                }
             }
         }
     }
 
     private void createDaoFromFileGrp(FileGrpType fileGrpType, DaDao representationDao, DaChange change) {
         if (CollectionUtils.isNotEmpty(fileGrpType.getFile())) {
-            boolean representation = representations.contains(fileGrpType.getID());
             for (FileType fileType : fileGrpType.getFile()) {
-                createDaoFromFile(fileType, representationDao, change, representation);
+                createDaoFromFile(fileType, representationDao, change);
             }
         }
 
@@ -309,12 +312,12 @@ public class DaoProcessor {
         }
     }
 
-    private void createDaoFromFile(FileType fileType, DaDao representationDao, DaChange change, boolean representation) {
+    private void createDaoFromFile(FileType fileType, DaDao representationDao, DaChange change) {
         String code = fileType.getID();
         DaDao.DaoType type = DaDao.DaoType.FILE;
         String label = findOriginalNameInPremis(premisComplexType, code);
         if (label == null) {
-            label = getFileHref(fileType);
+            label = getDaoLabel(getFileHref(fileType));
         }
 
         DaDao daDao = daDaoMap.getOrDefault(code, null);
@@ -324,16 +327,14 @@ public class DaoProcessor {
             daDaoMap.remove(code);
         }
 
-        if (representation) {
-            findOrCreateDaoRelation(daDao, representationDao, change);
-        }
+        findOrCreateDaoRelation(daDao, representationDao, change);
 
         createFileFromFile(fileType, daDao, representationDao, change);
         fileDaoMap.put(code, daDao);
     }
 
     private void createFileFromFile(FileType fileType, DaDao daDao, DaDao representationDao, DaChange change) {
-        String href = getFileHref(fileType);
+        String href = getFolderPath(getFileHref(fileType));
         DaDaoFileFolder fileFolder = findOrCreateFileFolder(representationDao, change, href);
         String checksum = fileType.getCHECKSUM();
         String checksumType = fileType.getCHECKSUMTYPE();
@@ -364,7 +365,7 @@ public class DaoProcessor {
                     DaDao.DaoType type = DaDao.DaoType.METAAMD;
                     String label = findOriginalNameInPremis(premisComplexType, code);
                     if (label == null) {
-                        label = mdSecType.getMdRef().getMDTYPE() + ":" + mdSecType.getMdRef().getHref();
+                        label = getDaoLabel(mdSecType.getMdRef().getHref());
                     }
 
                     createDaoFromMdSecType(mdSecType, code, label, type, change);
@@ -390,11 +391,19 @@ public class DaoProcessor {
 
             String label = findOriginalNameInPremis(premisComplexType, code);
             if (label == null) {
-                label = href;
+                label = getDaoLabel(href);
             }
 
             createDaoFromMdSecType(mdSecType, code, label, type, change);
         }
+    }
+
+    private String getFolderPath(String href) {
+        return href.substring(href.lastIndexOf("/data/") + 6);
+    }
+
+    private String getDaoLabel(String href) {
+        return href.substring(href.lastIndexOf("/") + 1);
     }
 
     private void createDaoFromMdSecType(MdSecType mdSecType, String code, String label, DaDao.DaoType type, DaChange change) {

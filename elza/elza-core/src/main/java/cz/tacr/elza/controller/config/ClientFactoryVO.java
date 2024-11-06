@@ -2376,7 +2376,7 @@ public class ClientFactoryVO {
         result.setSourceYDimensionValue(daDaoFile.getSourceYDimensionValue());
         result.setDuration(daDaoFile.getDuration());
         result.setDescription(daDaoFile.getDescription());
-        result.setFilename(daDaoFile.getFileName());
+        result.setFilename(daDaoFile.getDao().getLabel());
         result.setDaoId(daDaoFile.getDao().getDaoId());
         if(daDaoFile.getDaoFileFolder() != null) {
             result.setDaoFileFolderId(daDaoFile.getDaoFileFolder().getDaoFileFolderId());
