@@ -44,20 +44,20 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
      * @return Return collection of ApItems for given access points.
      */
     @Query("SELECT i FROM ApItem i WHERE i.deleteChange IS NULL AND i.part.accessPoint IN :accessPoints")
-    List<ApItem> findValidItemsByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints); // excluded: JOIN FETCH i.part p LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType 
+    List<ApItem> findValidItemsByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints); 
 
     @Query("SELECT i FROM ApItem i JOIN FETCH i.part p WHERE i.deleteChange IS NULL AND p.accessPoint = :accessPoint")
-    List<ApItem> findValidItemsByAccessPointMultiFetch(@Param("accessPoint") ApAccessPoint accessPoint); // excluded: JOIN FETCH i.itemType it JOIN FETCH it.dataType 
+    List<ApItem> findValidItemsByAccessPointMultiFetch(@Param("accessPoint") ApAccessPoint accessPoint); 
 
     @Query("SELECT i FROM ApItem i JOIN i.part p JOIN p.partType pt WHERE i.deleteChange IS NULL AND i.itemType = :itemType AND p.deleteChange IS NULL AND pt.code = :partTypeCode AND p.accessPointId = :accessPointId")
     List<ApItem> findItemsByAccessPointIdAndItemTypeAndPartTypeCode(@Param("accessPointId") Integer accessPointId,
                                                                     @Param("itemType") RulItemType itemType,
-                                                                    @Param("partTypeCode") String partTypeCode); // excluded: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType  
+                                                                    @Param("partTypeCode") String partTypeCode);  
 
     @Query("SELECT i FROM ApItem i JOIN i.part p JOIN p.partType pt WHERE i.deleteChange IS NULL AND i.itemType IN :itemTypes AND p.deleteChange IS NULL AND pt.code = :partTypeCode AND p.accessPointId = :accessPointId")
     List<ApItem> findItemsByAccessPointIdAndItemTypesAndPartTypeCode(@Param("accessPointId") Integer accessPointId,
                                                                      @Param("itemTypes") Collection<RulItemType> itemTypes,
-                                                                     @Param("partTypeCode") String partTypeCode); // excluded: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType  
+                                                                     @Param("partTypeCode") String partTypeCode);  
 
     @Query("SELECT part FROM ApItem i JOIN i.part part JOIN i.data data WHERE data IN :dataRecordRefList AND i.deleteChange IS NULL")
     List<ApPart> findPartsByDataRecordRefList(@Param("dataRecordRefList") List<ArrDataRecordRef> dataRecordRefList);
