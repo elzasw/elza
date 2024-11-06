@@ -16,7 +16,7 @@ import {
     createTableColumn,
     TableColumnId,
 } from "@fluentui/react-components";
-import { FC, useCallback, useState, KeyboardEvent } from "react";
+import { FC, useCallback, useState, KeyboardEvent, useEffect } from "react";
 import "./ExplorerTable.scss"
 import { formatAipSize } from "components/aip/utils";
 import { getFileName } from "../utils";
@@ -63,21 +63,21 @@ const columnSizes = {
 
 const ExplorerTable: FC = () => {
     const {selectedItem, setSelectedItem, mode} = useExplorerContext();
+    const [items, setItems] = useState([]);
     const [columnSizingOptions] = useState<TableColumnSizingOptions>(columnSizes);
     const dispatch = useThunkDispatch();
 
-    let items = [];
-    if(selectedItem && !selectedItem.fileName &&
-        !((!selectedItem.childFolders && !selectedItem.childFiles)
-        || (selectedItem.childFolders && selectedItem.childFolders.length == 0))
-    ) {
-        items =  [...selectedItem.childFolders || [], ...selectedItem.childFiles || []]
-    } else if(selectedItem) {
-        items = selectedItem?.parent ? [...selectedItem.childFolders, ...selectedItem.childFiles,] : [];
-        if (selectedItem.daoFileId) {
-            items = [...items, ...selectedItem.parent?.childFiles];
+    useEffect(() => {
+        let newItems = [];
+
+        if(selectedItem?.filename) {
+            newItems = [...selectedItem?.parent?.childFolders || [], ...selectedItem?.parent?.childFiles || []]
+        } else {
+            newItems = [...selectedItem?.childFolders  || [], ...selectedItem?.childFiles  || []];
         }
-    }
+
+        setItems(newItems);
+    }, [selectedItem]);
 
     const {
         getRows,
@@ -183,8 +183,9 @@ const ExplorerTable: FC = () => {
             <TableBody>
                 {rows.map(({ item, selected, onClick }, index) => (
                     <TableRow
-                        key={`${item.fileName || item.label}.${item.size}${index}`}
+                        key={`${item.uuid}`}
                         className="table-row"
+                        style={{backgroundColor: item.uuid == selectedItem.uuid ? "#ddd": undefined}}
                     >
                         {mode == ExplorerMode.SELECT && <TableSelectionCell
                             checked={selected}
