@@ -18,7 +18,7 @@ import java.util.List;
 @Repository
 public interface DaSyncQueueItemRepository extends JpaRepository<DaSyncQueueItem, Integer> {
 
-    @Query("SELECT i FROM da_sync_queue_item i WHERE i.state IN :states ORDER BY i.syncQueueItemId")
+    @Query("SELECT i FROM da_sync_queue_item i WHERE i.state IN :states and i.active = true ORDER BY i.syncQueueItemId")
     Page<DaSyncQueueItem> findByStates(@Param("states") Collection<DaSyncQueueItem.QueueItemState> states, Pageable pageable);
 
     @Modifying
