@@ -121,14 +121,14 @@ const DaoLinkDetail = ({nodeId}: DaoLinkDetailProps) => {
             <Button key="explorerLink" variant="link" onClick={() => handleOpenExplorer(item.aipId, item.daoCode)}>
                 {item.name}
             </Button>
-            {item.children && " komponenty: " + item.childrenCount}
+            {item.childrenCount != null && item.childrenCount > 0 && " komponenty: " + item.childrenCount}
             {item.daoType === DaDaoType.File && <Button key="detail" variant="action" onClick={() => handleOpenComponent(item.daoId)}>
                 <Icon glyph="fa-eye"/>
             </Button>}
             {deleteLink && item.daoLinkId && <Button key="deleteLink" variant="action" onClick={() => handleDeleteLink(item.daoLinkId)}>
                 <Icon glyph="fa fa-close"/>
             </Button>}
-            {item.children && <Button key="expand" variant="action" onClick={() => handleOpenChange(item.daoLinkUuid, openItem)}>
+            {item.childrenCount != null && item.childrenCount > 0 && <Button key="expand" variant="action" onClick={() => handleOpenChange(item.daoLinkUuid, openItem)}>
                 {openItem && <Icon glyph="fa fa-chevron-up"/>}
                 {!openItem && <Icon glyph="fa fa-chevron-down"/>}
             </Button>}
