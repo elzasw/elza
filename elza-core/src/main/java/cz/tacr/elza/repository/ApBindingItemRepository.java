@@ -23,7 +23,7 @@ public interface ApBindingItemRepository extends ElzaJpaRepository<ApBindingItem
     List<ApBindingItem> findByBindings(@Param("bindings") Collection<ApBinding> bindingList);
 
     @Query("SELECT bi FROM ap_binding_item bi WHERE bi.binding = :binding AND bi.deleteChange IS NULL")
-    List<ApBindingItem> findByBinding(@Param("binding") ApBinding binding); // excluded: LEFT JOIN FETCH bi.part LEFT JOIN FETCH bi.item i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType 
+    List<ApBindingItem> findByBinding(@Param("binding") ApBinding binding); 
 
     @Query("SELECT bi FROM ap_binding_item bi WHERE bi.part IS NOT NULL AND bi.part = :part AND bi.deleteChange IS NULL")
     List<ApBindingItem> findByPart(@Param("part") ApPart part);
@@ -54,7 +54,7 @@ public interface ApBindingItemRepository extends ElzaJpaRepository<ApBindingItem
 
     @Query("SELECT bi FROM ap_binding_item bi WHERE bi.binding = :binding AND bi.item IS NOT NULL AND (bi.deleteChange IS NULL OR bi.deleteChangeId > :syncChangeId )")
     List<ApBindingItem> findItemsForSync(@Param("binding") ApBinding binding,
-                                         @Param("syncChangeId") Integer syncChangeId); // excluded: LEFT JOIN FETCH bi.item i LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType 
+                                         @Param("syncChangeId") Integer syncChangeId); 
 
     /**
      * Zneplatni vsechny doposud platne vazby itemu a partu
