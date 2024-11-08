@@ -30,7 +30,6 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
     const dispatch = useThunkDispatch();
 
     const handleConnectToJP = () => {
-        console.log('leftSelectedNode :>> ', leftSelectedNode);
 
         if (selectedDaoIds.count === 0 && leftSelectedNode < 0) {
             WebApi.connectAipToJp(rightSelectedNode as number, aip.id)
@@ -114,7 +113,7 @@ const AipIndividualAssignmentModal = ({aipId, tree}: AipAssignmentModalProps) =>
                     <AipExplorer mode={ExplorerMode.SELECT} onSelect={(node) => setLeftSelectedNode(node.daoId)}/>
                 </Col>
                 <Col xs={1}>
-                    <div className="actions-container">
+                    <div className="aip-actions-container">
                         <Button onClick={handleConnectToJP}>
                             <Icon glyph="fa-solid fa-link" />
                             <div>{i18n('arr.aip.assignment.link')}</div>

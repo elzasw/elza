@@ -85,7 +85,7 @@ const AipAssignmentModal = ({aips, tree}: AipAssignmentModalProps) =>  {
                 }
                 </Col>
                 <Col xs={1}>
-                    <div className="actions-container">
+                    <div className="aip-actions-container">
                         <Button onClick={handleConnectToJP}>
                             <Icon glyph="fa-solid fa-link" />
                             <div>{i18n('arr.aip.assignment.link')}</div>
