@@ -55,6 +55,7 @@ import org.archivists.ead3.schema.Did;
 import org.archivists.ead3.schema.Dsc;
 import org.archivists.ead3.schema.Ead;
 import org.archivists.ead3.schema.Unitdatestructured;
+import org.archivists.ead3.schema.Unittitle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -644,6 +645,15 @@ public class DaoProcessor {
                     if (o instanceof Abstract abs) {
                         String stringValue = null;
                         for (Serializable s : abs.getContent()) {
+                            if (s instanceof String sValue) {
+                                stringValue = sValue;
+                            }
+                        }
+                        data = new ArrDataString(stringValue);
+                        data.setDataType(DataType.STRING.getEntity());
+                    } else if (o instanceof Unittitle unittitle) {
+                        String stringValue = null;
+                        for (Serializable s : unittitle.getContent()) {
                             if (s instanceof String sValue) {
                                 stringValue = sValue;
                             }
