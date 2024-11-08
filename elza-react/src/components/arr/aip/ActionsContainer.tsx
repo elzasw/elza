@@ -52,7 +52,7 @@ const ActionsContainer = ({fund, readMode}: ActionsContainerProps) => {
     }
 
     return (
-        <div className="actions-container">
+        <div className="aip-actions-container">
             <Button onClick={handleConnectBulk} disabled={readMode}>
                 <Icon glyph="fa-solif fa-link" />
                 <div>{i18n('arr.aip.assignment.bulk')} ({selectedAips.count > 0 ? selectedAips.count : aips.count})</div>
