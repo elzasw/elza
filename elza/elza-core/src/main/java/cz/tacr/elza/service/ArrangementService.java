@@ -11,6 +11,7 @@ import static java.util.stream.Collectors.toSet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -87,11 +88,16 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -2137,6 +2143,36 @@ public class ArrangementService {
                     data = dataStr;
                 }
                     break;
+                case TEXT: {
+                    ArrDataText dataText = new ArrDataText();
+                    String str = dataIter.next();
+                    dataText.setTextValue(str);
+                    data = dataText;
+                }
+                    break;
+                case INT: {
+                    ArrDataInteger dataInt = new ArrDataInteger();
+                    String str = dataIter.next();
+                    dataInt.setIntegerValue(Integer.parseInt(str));
+                    data = dataInt;
+                	
+                }
+                	break;
+                case DECIMAL: {
+                    ArrDataDecimal dataDecimal = new ArrDataDecimal();
+                    String str = dataIter.next();
+                    dataDecimal.setValue(new BigDecimal(str));
+                    data = dataDecimal;	                
+                }
+                	break;
+                case RECORD_REF: {
+                    ArrDataRecordRef dataRr = new ArrDataRecordRef();
+                    String str = dataIter.next();
+                    dataRr.setRecord(em.getReference(ApAccessPoint.class, Integer.parseInt(str)));
+                    data = dataRr;
+                	
+                }
+                break;
                 default:
                     throw new BusinessException("Import of data type '" + itemType.getDataType().getCode()
                             + "' for itemType: " + itemTypeCode + " is not implemented.",
