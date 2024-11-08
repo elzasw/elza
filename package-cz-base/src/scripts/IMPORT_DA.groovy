@@ -7,7 +7,7 @@ static String generate(final String className) {
 
     String result = null
 
-    if (className.equals("Abstract")) {
+    if (className.equals("Abstract") || className.equals("Unittitle")) {
         result = "ZP2015_TITLE"
     } else if (className.equals("Unitdatestructured")) {
         result = "ZP2015_UNIT_DATE"
