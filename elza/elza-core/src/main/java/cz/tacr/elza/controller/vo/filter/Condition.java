@@ -2,55 +2,68 @@ package cz.tacr.elza.controller.vo.filter;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.lang3.Validate;
+
+import cz.tacr.elza.core.data.DataType;
 
 /**
  * Podmínky.
  *
- * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 18. 4. 2016
  */
 public enum Condition {
-    NONE("UNITDATE", "INT", "DECIMAL", "TEXT", "STRING", "FORMATTED_TEXT", "UNITID", "PARTY_REF", "RECORD_REF", "COORDINATES", "DATE"),
+    NONE(DataType.UNITDATE, DataType.INT, DataType.DECIMAL, 
+    		DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT, DataType.UNITID, 
+    		DataType.RECORD_REF, DataType.COORDINATES, DataType.DATE),
 
-    EMPTY("UNITDATE", "INT", "DECIMAL", "TEXT", "STRING", "FORMATTED_TEXT", "UNITID", "PARTY_REF", "RECORD_REF", "COORDINATES", "DATE"),
+    EMPTY(DataType.UNITDATE, DataType.INT, DataType.DECIMAL, 
+    		DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT, DataType.UNITID,
+    		DataType.RECORD_REF, DataType.COORDINATES, DataType.DATE),
 
-    NOT_EMPTY("UNITDATE", "INT", "DECIMAL", "TEXT", "STRING", "FORMATTED_TEXT", "UNITID", "PARTY_REF", "RECORD_REF", "COORDINATES", "DATE"),
+    NOT_EMPTY(DataType.UNITDATE, DataType.INT, DataType.DECIMAL, 
+    		DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT, DataType.UNITID,
+    		DataType.RECORD_REF, DataType.COORDINATES, DataType.DATE),
 
-    UNDEFINED("UNITDATE", "INT", "DECIMAL", "TEXT", "STRING", "FORMATTED_TEXT", "UNITID", "PARTY_REF", "RECORD_REF", "COORDINATES", "DATE"),
+    UNDEFINED(DataType.UNITDATE, DataType.INT, DataType.DECIMAL, 
+    		DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT, DataType.UNITID,
+    		DataType.RECORD_REF, DataType.COORDINATES, DataType.DATE),
 
-    GT("UNITDATE", "INT", "DECIMAL", "DATE"),
+    GT(DataType.UNITDATE, DataType.INT, DataType.DECIMAL, DataType.DATE),
 
-    GE("INT", "DECIMAL", "DATE"),
+    GE(DataType.INT, DataType.DECIMAL, DataType.DATE),
 
-    LT("UNITDATE", "INT", "DECIMAL", "DATE"),
+    LT(DataType.UNITDATE, DataType.INT, DataType.DECIMAL, DataType.DATE),
 
-    LE("INT", "DECIMAL", "DATE"),
+    LE(DataType.INT, DataType.DECIMAL, DataType.DATE),
 
-    EQ("UNITDATE", "INT", "DECIMAL", "TEXT", "STRING", "FORMATTED_TEXT", "UNITID", "DATE"),
+    EQ(DataType.UNITDATE, DataType.INT, DataType.DECIMAL, 
+    		DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT, DataType.UNITID, 
+    		DataType.DATE),
 
-    NE("INT", "DECIMAL", "DATE"),
+    NE(DataType.INT, DataType.DECIMAL, DataType.DATE),
 
-    INTERVAL("INT", "DECIMAL", "DATE"),
+    INTERVAL(DataType.INT, DataType.DECIMAL, DataType.DATE),
 
-    NOT_INTERVAL("INT", "DECIMAL", "DATE"),
+    NOT_INTERVAL(DataType.INT, DataType.DECIMAL, DataType.DATE),
 
-    CONTAIN("TEXT", "STRING", "FORMATTED_TEXT", "UNITID", "PARTY_REF", "RECORD_REF"),
+    CONTAIN(DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT, DataType.UNITID,
+    		DataType.RECORD_REF),
 
-    NOT_CONTAIN("TEXT", "STRING", "FORMATTED_TEXT", "UNITID"),
+    NOT_CONTAIN(DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT, DataType.UNITID),
 
-    BEGIN("TEXT", "STRING", "FORMATTED_TEXT", "UNITID"),
+    BEGIN(DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT, DataType.UNITID),
 
-    END("TEXT", "STRING", "FORMATTED_TEXT", "UNITID"),
+    END(DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT, DataType.UNITID),
 
-    SUBSET("UNITDATE"),
+    SUBSET(DataType.UNITDATE),
 
-    INTERSECT("UNITDATE");
+    INTERSECT(DataType.UNITDATE);
 
-    private List<String> supportedDescItemTypes;
+    private List<DataType> supportedDescItemTypes;
 
-    Condition(final String... supportedTypes) {
+    Condition(final DataType... supportedTypes) {
         Validate.notEmpty(supportedTypes);
 
         supportedDescItemTypes = Arrays.asList(supportedTypes);
@@ -63,11 +76,11 @@ public enum Condition {
      *
      * @throws IllegalStateException atribut není podporován
      */
-    public void checkSupport(final String typeCode) {
-        Validate.notNull(typeCode);
+    public void checkSupport(final DataType dataType) {
+        Objects.requireNonNull(dataType);
 
-        if (!supportedDescItemTypes.contains(typeCode)) {
-            throw new IllegalStateException("Tato podmínka nepodporuje atribut typu " + typeCode);
+        if (!supportedDescItemTypes.contains(dataType)) {
+            throw new IllegalStateException("Tato podmínka nepodporuje atribut typu " + dataType);
         }
     }
 }

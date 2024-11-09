@@ -485,22 +485,26 @@ public class ClientFactoryDO {
         if (filters == null || filters.getFilters() == null || filters.getFilters().isEmpty()) {
             return null;
         }
-
+        
+        StaticDataProvider sdp = this.staticDataService.getData();
+        
         Map<Integer, Filter> filtersMap = filters.getFilters();
         Set<Integer> descItemTypeIds = filtersMap.keySet();
-        List<RulItemType> descItemTypes = itemTypeRepository.findAllById(descItemTypeIds);
-
-        List<DescItemTypeFilter> descItemTypeFilters = new ArrayList<>(descItemTypes.size());
-
-        descItemTypes.forEach(type -> {
-            Filter filter = filtersMap.get(type.getItemTypeId());
+        List<DescItemTypeFilter> descItemTypeFilters = new ArrayList<>(descItemTypeIds.size());
+        for(Integer itemTypeId : descItemTypeIds) {
+	        ItemType itemType = sdp.getItemTypeById(itemTypeId);
+	        if(itemType == null) {
+	        	throw new BusinessException("Cannot find item type, itemTypeId: " + itemTypeId, BaseCode.ID_NOT_EXIST)
+	        		.set("itemTypeId", itemTypeId);
+	        }
+            Filter filter = filtersMap.get(itemType.getItemTypeId());
             if (filter != null) {
-                DescItemTypeFilter descItemTypeFilter = createDescItemFilter(type, filter, lockChangeId);
+                DescItemTypeFilter descItemTypeFilter = createDescItemFilter(itemType, filter, lockChangeId);
                 if (descItemTypeFilter != null) {
                     descItemTypeFilters.add(descItemTypeFilter);
                 }
             }
-        });
+        }
 
         return descItemTypeFilters;
     }
@@ -508,25 +512,24 @@ public class ClientFactoryDO {
     /**
      * Převede VO filter na filtr se kterým pracuje BL.
      *
-     * @param descItemType typ atributu
+     * @param itemType typ atributu
      * @param filter       VO filtr
      * @param lockChangeId
      * @return filtr pro daný typ atributu
      */
-    private DescItemTypeFilter createDescItemFilter(final RulItemType descItemType, final Filter filter, final Integer lockChangeId) {
-        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
+    private DescItemTypeFilter createDescItemFilter(final ItemType itemType, final Filter filter, final Integer lockChangeId) {
+        Assert.notNull(itemType, "Typ atributu musí být vyplněn");
         Assert.notNull(filter, "Filter musí být vyplněn");
 
         List<DescItemCondition> valuesConditions = createValuesEnumCondition(filter.getValuesType(), filter.getValues(), ArrDescItem.FULLTEXT_ATT);
         List<DescItemCondition> specsConditions = createSpecificationsEnumCondition(filter.getSpecsType(), filter.getSpecs(), ArrDescItem.FIELD_ITEM_SPEC_ID);
-        List<Integer> itemSpecIds = createItemSpecIds(filter, descItemType.getItemTypeId());
+        List<Integer> itemSpecIds = createItemSpecIds(filter, itemType);
         
         List<DescItemCondition> conditions = new LinkedList<>();
         Condition conditionType = filter.getConditionType();
         if (conditionType != null && conditionType != Condition.NONE) {
-            RulDataType rulDataType = descItemType.getDataType();
-            conditionType.checkSupport(rulDataType.getCode());
-            DataType dataType = DataType.fromId(rulDataType.getDataTypeId());
+            DataType dataType = itemType.getDataType();
+            conditionType.checkSupport(itemType.getDataType());
 
             DescItemCondition condition;
             switch (conditionType) {
@@ -739,7 +742,7 @@ public class ClientFactoryDO {
         }
 
         if (!valuesConditions.isEmpty() || !specsConditions.isEmpty() || !conditions.isEmpty()) {
-            return new DescItemTypeFilter(descItemType, itemSpecIds, valuesConditions, specsConditions, conditions, lockChangeId);
+            return new DescItemTypeFilter(itemType.getEntity(), itemSpecIds, valuesConditions, specsConditions, conditions, lockChangeId);
         }
 
         return null;
@@ -959,10 +962,14 @@ public class ClientFactoryDO {
      * Získání seznamu ItemSpec ids, který SELECTED
      * 
      * @param filter
-     * @param itemTypeId
+     * @param itemType
      * @return
      */
-    private List<Integer> createItemSpecIds(final Filter filter, final Integer itemTypeId) {
+    private List<Integer> createItemSpecIds(final Filter filter, final ItemType itemType) {
+    	if(!itemType.hasSpecifications()) {
+    		return null;
+    	}
+    	
     	// pokud je vybrána možnost SELECTED jen vrátíme seznam z filtru
     	if (Objects.equals(filter.getSpecsType(), ValuesTypes.SELECTED)) {
     		return filter.getSpecs();
@@ -970,7 +977,6 @@ public class ClientFactoryDO {
 
     	// pokud je vybrána možnost UNSELECTED vrátíme všechny zbývající itemSpecs, 
     	// který odpovída itemTypeId kromě těch, které jsou uvedeny ve filtru
-        ItemType itemType = staticDataService.getData().getItemTypeById(itemTypeId);
         List<Integer> specIds = itemType.getItemSpecs().stream().map(i -> i.getItemSpecId()).collect(Collectors.toList());
         specIds.removeAll(filter.getSpecs());
 
