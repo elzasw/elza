@@ -1708,7 +1708,7 @@ public class ArrangementController {
         ArrLevel deleteLevel = fundLevelService.deleteLevel(fundVersion, deleteNode, deleteParent, false);
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
-                .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
+                .getNodesByIds(Arrays.asList(deleteLevel.getNodeIdParent()),
                                fundVersion);
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         return new NodeWithParent(ArrNodeVO.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());

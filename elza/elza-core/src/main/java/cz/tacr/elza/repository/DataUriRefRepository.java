@@ -15,8 +15,7 @@ import java.util.Set;
 import static cz.tacr.elza.domain.factory.DescItemFactory.ELZA_NODE;
 
 /**
- * @author Tomáš Gotzy
- * @since 28.02.2002 *
+ * Repository for ArrDataUriRef
  */
 public interface DataUriRefRepository extends JpaRepository<ArrDataUriRef, Integer> {
 
