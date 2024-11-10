@@ -413,6 +413,11 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         String[] refMark2 = secondNode.getReferenceMark();
         assertEquals(refMark2.length, 1);
         assertEquals(refMark2[0], "1");
+        
+        // try to remove package and destroy all links
+        daoServiceClient.removePackage(PACKAGE_ID1);
+        
+        helperTestService.waitForWorkers();
     }
 
     private ArrItemTextVO checkExistsTextVO(List<ArrItemVO> descItems, String itemTypeCode, String textValue) {
