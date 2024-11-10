@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,6 +45,7 @@ import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.DaoRepository;
+import cz.tacr.elza.repository.DataUriRefRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -100,6 +102,9 @@ public class FundLevelService {
 
     @Autowired
     private DescItemRepository descItemRepository;
+    
+    @Autowired
+    private DataUriRefRepository dataUriRefRepository;
 
     @Autowired
     private IEventNotificationService eventNotificationService;
@@ -470,7 +475,8 @@ public class FundLevelService {
         logger.debug("Found {} levels to delete...", deleteLevels.size());
 
         // prepare list of nodes
-        Collection<ArrNode> updateNodes = deleteLevels.stream().map(i -> i.getNode()).collect(Collectors.toList());
+        Set<Integer> deletedLevelNodeIds = deleteLevels.stream().map(i -> i.getNodeId()).collect(Collectors.toSet());
+        List<ArrNode> updateNodes = deleteLevels.stream().map(i -> i.getNode()).collect(Collectors.toList());
         logger.debug("Have {} nodes to delete...", updateNodes.size());
 
         ObjectListIterator.forEachPage(updateNodes, nodes -> {
@@ -494,19 +500,34 @@ public class FundLevelService {
 
             // vyhledani node, ktere odkazuji na mazany
             List<ArrDescItem> arrDescItemList = descItemRepository.findByUriDataNodes(nodes);
-
-            arrDescItemList = arrDescItemList.stream().map(i -> {
-                entityManager.detach(i);
-                return (ArrDescItem) HibernateUtils.unproxy(i);
-            }).collect(Collectors.toList());
+            // Read data
+            Map<Integer, ArrDataUriRef> dataUriRefMap;
+            List<Integer> dataUriIds = arrDescItemList.stream().map(i -> i.getDataId()).collect(Collectors.toList());
+            if(CollectionUtils.isNotEmpty(dataUriIds)) {
+            	dataUriRefMap = dataUriRefRepository.findAllById(dataUriIds).stream()
+            			.collect(Collectors.toMap(du->du.getDataId() , du -> du));
+            } else {
+            	dataUriRefMap = Collections.emptyMap();
+            }
 
             for (ArrDescItem arrDescItem : arrDescItemList) {
+                // Why is it here? Probably to ensure that all data are fetched and not to refetch 
+                // them autmatically from db?
+            	// and also not to change item
+                entityManager.detach(arrDescItem);
+                arrDescItem = HibernateUtils.unproxy(arrDescItem);
+
                 // pokud se item bude mazat, není potřeba u něj předělávat UriRef
-                if (!deleteLevels.contains(levelRepository.findByNodeIdAndDeleteChangeIsNull(arrDescItem.getNodeId()))) {
-                    ArrDataUriRef arrDataUriRef = new ArrDataUriRef((ArrDataUriRef) arrDescItem.getData());
+                if (!deletedLevelNodeIds.contains(arrDescItem.getNodeId())) {
+                	ArrDataUriRef srcData = dataUriRefMap.get(arrDescItem.getDataId());
+                	Objects.requireNonNull(srcData);
+                	
+                	// make data copy to update
+                    ArrDataUriRef arrDataUriRef = new ArrDataUriRef(srcData);
                     arrDataUriRef.setDataId(null);
                     arrDataUriRef.setArrNode(null);
                     arrDataUriRef.setDeletingProcess(true);
+                    
                     arrDescItem.setData(arrDataUriRef);
                     descriptionItemService.updateDescriptionItem(arrDescItem, fundVersion, deleteChange);
                 }
@@ -527,87 +548,14 @@ public class FundLevelService {
     }
 
     /**
-     * Kaskádově smaže všechny levely od počátečního
-     *
-     * @param fundVersion
-     *
-     * @param baselevel
-     *            počáteční level
-     * @param deleteChange
-     *            záznam o provedených změnách
-     * @param allDeletedLevels
-     *            list všech levelů, které se budou mazat
-     * @param deleteLevelsWithAttachedDao
-     *            povolit nebo zakázat mazání úrovně s objektem dao
-     * @return List of modified levels
-     */
-    @Deprecated
-    private List<ArrLevel> deleteLevelCascade(final ArrFundVersion fundVersion,
-                                       final ArrLevel baselevel, final ArrChange deleteChange,
-                                       final List<ArrLevel> allDeletedLevels,
-                                       final boolean deleteLevelsWithAttachedDao) {
-        List<ArrLevel> deletedLevels = new ArrayList<>();
-
-        List<ArrLevel> childLevels = levelRepository
-                .findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(baselevel.getNode());
-        for (ArrLevel childLevel : childLevels) {
-            deletedLevels.addAll(deleteLevelCascade(fundVersion, childLevel, deleteChange, allDeletedLevels, deleteLevelsWithAttachedDao));
-        }
-
-        ArrNode node = baselevel.getNode();
-        // check if node is part of fund
-        Validate.isTrue(node.getFundId().equals(fundVersion.getFundId()), "Node is not part of same fund");
-
-        // check if connected Dao(type=Level) exists
-        if (!deleteLevelsWithAttachedDao && daoRepository.existsDaoByNodeAndDaoTypeIsLevel(node.getNodeId())) {
-            throw new SystemException("Uzel " + node.getNodeId() + " má připojený objekt dao typu LEVEL")
-                    .set("nodeId", node.getNodeId());
-        }
-
-        for (ArrDescItem descItem : descriptionItemService.findByNodeAndDeleteChangeIsNull(baselevel.getNode())) {
-            descItem.setDeleteChange(deleteChange);
-            descItemRepository.save(descItem);
-        }
-
-        daoService.deleteDaoLinkByNodes(fundVersion, deleteChange, Collections.singletonList(node));
-
-        // vyhledani node, ktere odkazuji na mazany
-        List<ArrDescItem> arrDescItemList = descriptionItemService.findByUriDataNode(node);
-
-        arrDescItemList = arrDescItemList.stream().map(i -> {
-            entityManager.detach(i);
-            return (ArrDescItem) HibernateUtils.unproxy(i);
-        }).collect(Collectors.toList());
-
-        for (ArrDescItem arrDescItem : arrDescItemList) {
-            //pokud se item bude mazat, není potřeba u něj předělávat UriRef
-            if (!allDeletedLevels.contains(levelRepository.findByNodeIdAndDeleteChangeIsNull(arrDescItem.getNodeId()))) {
-                ArrDataUriRef arrDataUriRef = new ArrDataUriRef(HibernateUtils.unproxy(arrDescItem.getData()));
-                arrDataUriRef.setDataId(null);
-                arrDataUriRef.setArrNode(null);
-                arrDataUriRef.setDeletingProcess(true);
-                arrDescItem.setData(arrDataUriRef);
-                descriptionItemService.updateDescriptionItem(arrDescItem, fundVersion, deleteChange);
-            }
-        }
-
-        // mark as deleted
-        node.setLastUpdate(deleteChange.getChangeDate().toLocalDateTime());
-        nodeRepository.save(node);
-
-        baselevel.setDeleteChange(deleteChange);
-
-        deletedLevels.add(baselevel);
-        return deletedLevels;
-    }
-
-    /**
      * Provede smazání levelu.
      *
      * @param version          verze stromu
      * @param deleteNode       node ke smazání
      * @param deleteNodeParent rodič nodu ke smazání
      * @param deleteLevelsWithAttachedDao povolit nebo zakázat mazání úrovně s objektem dao
+     * @return References on deleted level. Only one level is active for deleted node, so one
+     * 	level is returned.
      */
     // Dává smysl, aby deleteNodeParent byl null?
     // Pravděpodobně by vždy měl být non-null - nemůžeme takto mazat kořen
@@ -618,6 +566,8 @@ public class FundLevelService {
                                 final boolean deleteLevelsWithAttachedDao) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(deleteNode, "Mazané JP musí být vyplněna");
+        
+        logger.debug("Deleting node: {}, deleteAttachedDao: {}", deleteNode.getNodeId(), deleteLevelsWithAttachedDao);
 
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_LEVEL, deleteNode);
 
@@ -639,6 +589,7 @@ public class FundLevelService {
         nodeIdsToRevalidate.add(deleteNode.getNodeId());
 
         List<ArrLevel> updatedLevels = new ArrayList<>();
+        // get list of shifted nodes - also have to be revalidated
         List<ArrLevel> shiftnodes = nodesToShift(deleteLevel);
         updatedLevels.addAll(deleteLevel(version, deleteLevel, change, deleteLevelsWithAttachedDao));
         updatedLevels.forEach(l -> nodeIdsToRevalidate.add(l.getNodeId()));
@@ -663,7 +614,7 @@ public class FundLevelService {
                 (deleteNodeParent != null) ? deleteNodeParent.getNodeId() : null));
 
         // return final level state
-        return levelRepository.getOne(deleteLevel.getLevelId());
+        return levelRepository.getReferenceById(deleteLevel.getLevelId());
     }
 
     /**

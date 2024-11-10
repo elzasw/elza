@@ -235,8 +235,6 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     /**
      * Dotaz vyhleda items navazane na dany uzel prostrednictvim ArrDataUriRef
      *
-     * Vraci plne nactena data ArrDataUriRef.
-     *
      * Dotaz je nyni optimalizovan na rychlost na PostgreSQL. Problemem
      * je zajistit, aby se cast "join fetch" vykonavala az po aplikaci
      * filtru dle node.
@@ -245,9 +243,19 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      * @return
      */
     @Query("SELECT i FROM arr_desc_item i WHERE i in (SELECT i FROM arr_desc_item i JOIN arr_data_uri_ref d ON i.data = d WHERE d.arrNode = :node AND i.deleteChange IS NULL)")
-    List<ArrDescItem> findByUriDataNode(@Param("node") final ArrNode node); // exclude: JOIN FETCH i.data 
+    List<ArrDescItem> findByUriDataNode(@Param("node") final ArrNode node); 
 
-    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.data where i in (SELECT i FROM arr_desc_item i JOIN arr_data_uri_ref d on i.data = d WHERE d.arrNode IN :nodes AND i.deleteChange IS NULL)")
+    /**
+     * Dotaz vyhleda items navazane na dane uzly prostrednictvim ArrDataUriRef
+     *
+     * Dotaz je nyni optimalizovan na rychlost na PostgreSQL. Problemem
+     * je zajistit, aby se cast "join fetch" vykonavala az po aplikaci
+     * filtru dle node.
+     *
+     * @param node
+     * @return
+     */
+    @Query("SELECT i FROM arr_desc_item i WHERE i in (SELECT i FROM arr_desc_item i JOIN arr_data_uri_ref d on i.data = d WHERE d.arrNode IN :nodes AND i.deleteChange IS NULL)")
     List<ArrDescItem> findByUriDataNodes(@Param("nodes") final Collection<ArrNode> nodes);
 
     /**

@@ -871,6 +871,8 @@ public class DaoCoreServiceWsImpl {
     }
 
     public void removePackage(String packageIdentifier) {
+    	logger.debug("Removing package {}", packageIdentifier);
+    	
         Assert.hasText(packageIdentifier, "Označení obalu musí být vyplněno");
 
         final ArrDaoPackage arrDaoPackage = daoPackageRepository.findOneByCode(packageIdentifier);
@@ -883,7 +885,8 @@ public class DaoCoreServiceWsImpl {
         ArrFundVersion fundVersion = arrangementService.getOpenVersionByFund(fund);
 
         daoService.deleteDaoPackageWithCascade(fundVersion, arrDaoPackage);
-
+        
+        logger.debug("Package {} removed", packageIdentifier);
     }
 
 }

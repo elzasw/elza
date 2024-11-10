@@ -1168,6 +1168,7 @@ public class ArrangementService {
             Validate.notNull(change, "Musí být vyplněno");
         }
 
+        // Whys is this here?
         lockNode.setUuid(dbNode.getUuid());
         lockNode.setLastUpdate(change.getChangeDate().toLocalDateTime());
         lockNode.setFund(dbNode.getFund());
