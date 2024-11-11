@@ -1785,6 +1785,10 @@ var messages = {
     "dataGrid.export.title": "Export tabulkového zobrazení",
 
     "dataGrid.import.title": "Import datových sloupců",
+    "dataGrid.import.format.hint":
+        '<p> Pro přidání prvků popisu vložte soubor CSV, kde každý řádek odpovídá jedné jednotce popisu ve tvaru: </p> <p> {<b style="color: var(--color-red)">UUID</b>},{<b style="color: var(--color-blue)">Kód prvku</b>},{<b style="color: var(--color-orange)">Kód specifikace</b>},{<b style="color: var(--color-green)">Hodnota prvku</b>},{<b style="color: var(--color-blue)">Kód prvku</b>},{<b style="color: var(--color-green)">Hodnota prvku</b>}... </p> <p>V jednom řádku je k jedné jednotce popisu možné přidat současně více prvků popisu. Kód specifikace a hodnota prvku jsou povinné/volitelné v závislosti na typu prvku popisu.</p>',
+    "dataGrid.import.format.example.title": "Příklad přidání prvků",
+    "dataGrid.import.format.example.message": "<ul> <li>Formální název: Divá Bára</li> <li>Jiná označení: signatura: 1234/75</li> <li>Typ archiválie: rukopis</li> </ul>",
 
     "accesspoint.name.name": "Jméno",
     "accesspoint.name.complement": "Doplněk",

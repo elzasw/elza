@@ -12,7 +12,7 @@ import {FundDataGrid, Ribbon} from 'components/index.jsx';
 import {Button} from '../../components/ui';
 import {modalDialogShow} from 'actions/global/modalDialog.jsx';
 import DataGridExportDialog from '../../components/arr/DataGridExportDialog';
-import {urlFundGrid, getFundVersion} from "../../constants";
+import {urlFundGrid, getFundVersion, MODAL_DIALOG_SIZE} from "../../constants";
 import {DataGridImportDialog} from 'components/arr/DataGridImportDialog';
 
 /**
@@ -124,6 +124,7 @@ const ArrDataGridPage = class ArrDataGridPage extends ArrParentPage {
                 this,
                 i18n('dataGrid.import.title'),
                 <DataGridImportDialog versionId={versionId} fundId={fund.id} fundDataGrid={fund.fundDataGrid} />,
+                MODAL_DIALOG_SIZE.LG,
             ),
         );
     }

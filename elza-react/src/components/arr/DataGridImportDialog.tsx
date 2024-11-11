@@ -11,6 +11,7 @@ import { Button } from '../ui';
 import { fundDataGridImport } from 'actions/arr/fundDataGrid';
 import { modalDialogHide } from 'actions/global/modalDialog';
 import { addToastrSuccess } from 'components/shared/toastr/ToastrActions';
+import ReactTextareaAutosize from 'react-textarea-autosize';
 
 interface ImportFormFields {
     csvFile: File;
@@ -20,6 +21,20 @@ interface IImportFormProps {
     onClose: () => void;
     versionId: number;
     fundId: number;
+}
+
+const DataGridImportHint = () => {
+    return <div style={{ border: "var(--primary-border)", padding: "8px" }}>
+        <p dangerouslySetInnerHTML={{ __html: i18n("^dataGrid.import.format.hint") }} />
+        <h4>
+            {i18n("dataGrid.import.format.example.title")}
+        </h4>
+        <p dangerouslySetInnerHTML={{ __html: i18n("dataGrid.import.format.example.message") }} />
+        <div>
+            {/* <ReactTextareaAutosize rows={3} style={{ width: "100%" }} value={"069f2e12-b808-4b3f-af48-35c372ae0818,ZP2015_FORMAL_TITLE,Divá Bára,ZP2015_OTHER_ID,ZP2015_OTHERID_CJ,1234/75,ZP2015_UNIT_TYPE,ZP2015_UNIT_TYPE_RKP"} /> */}
+            <div style={{ lineBreak: "anywhere", border: "var(--primary-border)", padding: "8px" }}>069f2e12-b808-4b3f-af48-35c372ae0818,ZP2015_FORMAL_TITLE,Divá Bára,ZP2015_OTHER_ID,ZP2015_OTHERID_CJ,1234/75,ZP2015_UNIT_TYPE,ZP2015_UNIT_TYPE_RKP</div>
+        </div>
+    </div>
 }
 
 export const DataGridImportDialog = ({ onClose, versionId, fundId }: IImportFormProps) => {
@@ -61,6 +76,7 @@ export const DataGridImportDialog = ({ onClose, versionId, fundId }: IImportForm
                             return (
                                 <>
                                     <Modal.Body>
+                                        <DataGridImportHint />
                                         {values?.csvFile?.name}
                                         <Field<File> name={'csvFile'}>
                                             {({ input, meta }) => (
