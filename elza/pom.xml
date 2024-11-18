@@ -26,8 +26,8 @@
         <argLine>-Dfile.encoding=UTF-8</argLine>
 
         <cxf.version>4.0.4</cxf.version>
-        <hibernate.version>6.4.4.Final</hibernate.version>
-        <hibernate.search.version>7.1.1.Final</hibernate.search.version>
+        <hibernate.version>6.4.10.Final</hibernate.version>
+        <hibernate.search.version>7.1.2.Final</hibernate.search.version>
 
         <!-- 
         <hibernate.lucene.version>5.5.5</hibernate.lucene.version>-->  <!-- nelze zvednout na 6.6.0, protože hibernate.search.orm.version nemá ani

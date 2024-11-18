@@ -150,4 +150,21 @@
 		<!-- Speedup revision search and guarantee unique -->
 		<sql dbms="postgresql">CREATE UNIQUE INDEX ap_revision_state_delete_change_null_unique_idx ON ap_revision(state_id) WHERE delete_change_id IS NULL</sql>
 	</changeSet>
+	<changeSet id="20241117231700" author="ppy">
+		<!-- Speedup hsearch_outbox_event access -->
+		<addPrimaryKey columnNames="id" tableName="hsearch_outbox_event" />
+		<createIndex indexName="hsearch_outbox_event_status_idx" tableName="hsearch_outbox_event">
+		    <column name="status" type="varchar(256)" />
+		</createIndex>
+		<createIndex indexName="hsearch_outbox_event_process_after_idx" tableName="hsearch_outbox_event">
+		    <column name="process_after" type="timestamptz" />
+		</createIndex>
+		<createIndex indexName="hsearch_outbox_event_entity_id_hash_idx" tableName="hsearch_outbox_event">
+		    <column name="entity_id_hash" type="int" />
+		</createIndex>
+		<!-- ext_syncs_queue_item -->
+		<createIndex indexName="ext_syncs_queue_item_state_idx" tableName="ext_syncs_queue_item">
+		    <column name="state" type="nvarchar(50)" />
+		</createIndex>
+	</changeSet>
 </databaseChangeLog>
