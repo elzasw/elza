@@ -153,7 +153,7 @@
 	<changeSet id="20241117231700" author="ppy">
 		<!-- Speedup hsearch_outbox_event access -->
 		<addPrimaryKey columnNames="id" tableName="hsearch_outbox_event" />
-		<createIndex indexName="hsearch_outbox_event_status_idx" tableName="hsearch_outbox_event" unique="true" >
+		<createIndex indexName="hsearch_outbox_event_status_idx" tableName="hsearch_outbox_event">
 		    <column name="status" type="varchar(256)" />
 		</createIndex>
 		<createIndex indexName="hsearch_outbox_event_process_after_idx" tableName="hsearch_outbox_event">
