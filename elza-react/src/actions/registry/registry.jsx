@@ -192,7 +192,7 @@ export function registryCreateRevision(id, history, select) {
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
             if (detail.id == id) {
                 dispatch(registryDetailInvalidate());
-                dispatch(goToAe(history, id, true, !select));
+                dispatch(goToAe(history, id, true, !select, true));
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
