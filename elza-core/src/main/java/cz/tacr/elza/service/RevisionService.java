@@ -27,6 +27,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.AccessPointPart;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
@@ -248,15 +249,15 @@ public class RevisionService {
             // dostáváme nový ApType
             nextType = sdp.getApTypeById(nextApTypeId);
         	// nelze změnit třídu pokud existuje platná ApBindingState
-            int countBinding = bindingStateRepository.countByAccessPoint(state.getAccessPoint());
-            if (countBinding > 0) {
+            List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoint(state.getAccessPoint());
+            if (CollectionUtils.isNotEmpty(bindingStates)) {
             	// nový ApType nesmí být v jiné třídě, pouze v té aktuální
-            	Integer parentApTypeId = revState.getType().getParentApTypeId();
-            	if (!nextType.getParentApTypeId().equals(parentApTypeId)) {
-                    throw new SystemException("Třídu revize entity z CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+            	//Integer parentApTypeId = revState.getType().getParentApTypeId();
+            	//if (!nextType.getParentApTypeId().equals(parentApTypeId)) {
+                    throw new SystemException("Třídu revize entity z " + bindingStates.get(0).getApExternalSystem().getName() + " nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                         .set("accessPointId", state.getAccessPointId())
                         .set("revisionId", revState.getRevisionId());
-            	}
+            	//}
             }
         }
 

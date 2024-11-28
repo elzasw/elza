@@ -2372,15 +2372,15 @@ public class AccessPointService {
             Validate.notNull(newApType, "AP Type not found, id={}", newTypeId);
 
         	// nelze změnit třídu pokud existuje platná ApBindingState
-            int countBinding = bindingStateRepository.countByAccessPoint(accessPoint);
-            if (countBinding > 0) {
+            List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoint(accessPoint);
+            if (CollectionUtils.isNotEmpty(bindingStates)) {
             	// nový ApType nesmí být v jiné třídě, pouze v té aktuální
-            	Integer parentApTypeId = oldApState.getApType().getParentApTypeId();
-            	if (!newApType.getParentApTypeId().equals(parentApTypeId)) {
-            		throw new SystemException("Třídu entity zapsané v CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+            	//Integer parentApTypeId = oldApState.getApType().getParentApTypeId();
+            	//if (!newApType.getParentApTypeId().equals(parentApTypeId)) {
+            		throw new SystemException("Třídu entity zapsané v " + bindingStates.get(0).getApExternalSystem().getName() + " nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                     	.set("accessPointId", accessPoint.getAccessPointId())
                     	.set("typeId", oldApState.getApTypeId());
-            	}
+            	//}
             }
             update = true;
         } else {
