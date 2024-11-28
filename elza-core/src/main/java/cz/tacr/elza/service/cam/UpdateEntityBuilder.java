@@ -48,6 +48,7 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
@@ -374,9 +375,19 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         if (!Objects.equals(prefPartUuid, prefNameXml.getPid().getValue())) {
             setPrefName(new UuidXml(prefPartUuid));
         }
+        
+        // změna podtřídy entity
+        ApType apType = sdp.getApTypeById(apState.getApTypeId());
+		if (!apType.getCode().equals(externalEntityXml.getEnt().getValue())) {
+			setEntityType(apType.getCode());
+		}
 
         createDeletePartList();
 
         return trgList;
     }
+
+	private void setEntityType(String code) {		
+		setApType(new CodeXml(code));
+	}
 }
