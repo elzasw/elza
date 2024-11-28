@@ -252,12 +252,12 @@ public class RevisionService {
             List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoint(state.getAccessPoint());
             if (CollectionUtils.isNotEmpty(bindingStates)) {
             	// nový ApType nesmí být v jiné třídě, pouze v té aktuální
-            	//Integer parentApTypeId = revState.getType().getParentApTypeId();
-            	//if (!nextType.getParentApTypeId().equals(parentApTypeId)) {
+            	Integer parentApTypeId = revState.getType().getParentApTypeId();
+            	if (!nextType.getParentApTypeId().equals(parentApTypeId)) {
                     throw new SystemException("Třídu revize entity z " + bindingStates.get(0).getApExternalSystem().getName() + " nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                         .set("accessPointId", state.getAccessPointId())
                         .set("revisionId", revState.getRevisionId());
-            	//}
+            	}
             }
         }
 
