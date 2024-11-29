@@ -10,7 +10,9 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit --watch --preserveWatchOutput --pretty",
-    "start": "concurrently -n VITE,TS -c 'green,blue' 'npm run dev' 'npm run typecheck'"
+    "start": "concurrently -n VITE,TS -c 'green,blue' 'npm run dev' 'npm run typecheck'",
+    "extract": "formatjs extract 'src/**/*.{ts,tsx,js,jsx}' --ignore 'src/**/*.{d,test}.{ts,tsx}' --out-file lang/extracted/cs.json",
+    "compile": "formatjs compile-folder lang/translated lang/compiled"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.51.1",
@@ -38,6 +40,7 @@
     "react-final-form": "^6.5.9",
     "react-final-form-arrays": "^3.1.4",
     "react-infinite-scroll-component": "^6.1.0",
+    "react-intl": "^6.8.7",
     "react-redux": "^8.1.2",
     "react-router": "^5.1.2",
     "react-router-bootstrap": "^0.25.0",
@@ -56,6 +59,7 @@
     "ws": "^8.16.0"
   },
   "devDependencies": {
+    "@formatjs/cli": "^6.3.11",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@types/react-redux": "^7.1.26",
