@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
 
-
 /**
  * Respozitory pro číslo změny.
  * 
@@ -20,6 +19,7 @@ import cz.tacr.elza.domain.ArrFund;
 @Repository
 public interface ChangeRepository extends ElzaJpaRepository<ArrChange, Integer> {
 
+	ArrChange findTop1ByOrderByChangeIdAsc();
 
     @Modifying
     @Query("DELETE FROM arr_change c WHERE c.primaryNode IN (SELECT n FROM arr_node n WHERE n.fund = ?1)")

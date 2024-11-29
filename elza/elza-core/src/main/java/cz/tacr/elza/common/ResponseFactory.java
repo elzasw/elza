@@ -20,8 +20,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.vo.BaseException;
-import cz.tacr.elza.controller.vo.ExportRequestState;
 import cz.tacr.elza.controller.vo.ExportRequestStatus;
+import cz.tacr.elza.controller.vo.RequestProcessState;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.SystemException;
@@ -41,7 +41,7 @@ public class ResponseFactory {
         }
     }
 
-    public static ExportRequestStatus createExportRequestStatus(ExportRequestState state) {
+    public static ExportRequestStatus createExportRequestStatus(RequestProcessState state) {
         ExportRequestStatus ers = new ExportRequestStatus();
         ers.setState(state);
         return ers;

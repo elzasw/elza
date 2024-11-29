@@ -337,7 +337,6 @@
 		<!-- Dependency for javax - proper JDOC generation -->
     </dependencies>
 
-
     <build>
         <resources>
             <resource>
@@ -494,7 +493,7 @@
                         <id>generate-mets-schema</id>
                         <goals>
                             <goal>generate</goal>
-			</goals>
+						</goals>
                         <phase>generate-sources</phase>
                         <configuration>
                             <extension>true</extension>
@@ -520,15 +519,15 @@
                                     <groupId>org.jvnet.jaxb</groupId>
                                     <artifactId>jaxb-plugins</artifactId>
                                     <version>4.0.0</version>
-				</plugin>
+								</plugin>
                             </plugins>
-			</configuration>
+						</configuration>
                     </execution>
-                    <execution>
+					<execution>
                         <id>generate-premis3-schema</id>
                         <goals>
                             <goal>generate</goal>
-			</goals>
+						</goals>
                         <phase>generate-sources</phase>
                         <configuration>
                             <extension>true</extension>
@@ -554,9 +553,9 @@
                                     <groupId>org.jvnet.jaxb</groupId>
                                     <artifactId>jaxb-plugins</artifactId>
                                     <version>4.0.0</version>
-				</plugin>
+								</plugin>
                             </plugins>
-			</configuration>
+						</configuration>
                     </execution>
 				</executions>
                 <dependencies>
