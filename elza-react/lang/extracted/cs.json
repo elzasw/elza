@@ -1,0 +1,29 @@
+{
+  "admin_packages_label_action": {
+    "defaultMessage": "Akce"
+  },
+  "admin_packages_label_code": {
+    "defaultMessage": "Kód"
+  },
+  "admin_packages_label_dependencies": {
+    "defaultMessage": "Požadované balíčky (minimální/aktuální verze)",
+    "description": "Balicky, na kterych zavisi zobrazeny balicek"
+  },
+  "admin_packages_label_dependenciesBy": {
+    "defaultMessage": "Závislé balíčky"
+  },
+  "admin_packages_label_description": {
+    "defaultMessage": "Popis",
+    "description": "Popis balicku"
+  },
+  "admin_packages_label_name": {
+    "defaultMessage": "Název"
+  },
+  "admin_packages_label_version": {
+    "defaultMessage": "Verze"
+  },
+  "multi_definition_test": {
+    "defaultMessage": "Test",
+    "description": "Test message for multiple messages definitions"
+  }
+}

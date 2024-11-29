@@ -1,0 +1,9 @@
+{
+  "admin_packages_label_action": "Akce",
+  "admin_packages_label_code": "Kód",
+  "admin_packages_label_dependencies": "Požadované balíčky (minimální/aktuální verze)",
+  "admin_packages_label_dependenciesBy": "Závislé balíčky",
+  "admin_packages_label_description": "Popis",
+  "admin_packages_label_name": "Název",
+  "admin_packages_label_version": "Verze"
+}

@@ -9,6 +9,7 @@ import Layout from 'pages/Layout.jsx';
 import { Route } from 'react-router';
 import { BrowserRouter } from 'react-router-dom';
 import { FluentProvider, webDarkTheme, webLightTheme } from '@fluentui/react-components';
+import { LangProvider } from 'components/shared/lang/LangProvider';
 
 const serverContextPath = window.serverContextPath;
 
@@ -22,9 +23,11 @@ class Root extends React.Component {
                     key="router"
                     basename={serverContextPath.startsWith('http') ? '' : serverContextPath}
                 >
-                    <FluentProvider style={{ flex: 1, height: "100%" }} theme={{ ...theme, colorNeutralBackground1: "var(--shade-0)" }}>
-                        <Route component={Layout} />
-                    </FluentProvider>
+                    <LangProvider>
+                        <FluentProvider style={{ flex: 1, height: "100%" }} theme={{ ...theme, colorNeutralBackground1: "var(--shade-0)" }}>
+                            <Route component={Layout} />
+                        </FluentProvider>
+                    </LangProvider>
                 </BrowserRouter>
             </Provider>
         );
