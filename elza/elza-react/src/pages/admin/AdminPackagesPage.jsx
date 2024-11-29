@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { connect } from 'react-redux';
-import { AdminPackagesList, AdminPackagesUpload, Ribbon } from 'components';
+import { AdminPackagesUpload, Ribbon } from 'components';
 import { UrlFactory } from 'actions/index.jsx';
 
 import './AdminPackagesPage.scss';
@@ -24,7 +24,6 @@ class AdminPackagesPage extends React.Component {
 
         const centerPanel = (
             <div>
-                {/* <AdminPackagesList getExportUrl={UrlFactory.exportPackage} {...this.props.packages} /> */}
                 <AdminPackagesListFn getExportUrl={UrlFactory.exportPackage} />
                 <AdminPackagesUpload />
             </div>
