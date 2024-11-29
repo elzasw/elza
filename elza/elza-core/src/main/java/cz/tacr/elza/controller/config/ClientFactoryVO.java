@@ -347,7 +347,7 @@ public class ClientFactoryVO {
 
     @Autowired
     private AccessPointService accessPointService;
-
+    
     /**
      * Konvertor pro INT data
      * 
@@ -840,12 +840,17 @@ public class ClientFactoryVO {
         nodeItem.setReadOnly(item.getReadOnly());
 
         ArrData arrData = item.getData();
-		cz.tacr.elza.core.data.DataType dataType = cz.tacr.elza.core.data.DataType.fromId(item.getItemType().getDataTypeId());
-		Function<ArrData, ItemData> dataConvertor = dataConvertors.get(dataType);
-		Objects.requireNonNull(dataConvertor);
-		ItemData data = dataConvertor.apply(arrData);
-
-		nodeItem.setData(data);
+        if(arrData==null) {
+        	nodeItem.setUndefined(true);
+        } else {
+        	StaticDataProvider sdp = staticDataService.getData();
+        	RulItemType itemType = sdp.getItemType(item.getItemTypeId());
+        	cz.tacr.elza.core.data.DataType dataType = cz.tacr.elza.core.data.DataType.fromId(itemType.getDataTypeId());
+        	Function<ArrData, ItemData> dataConvertor = dataConvertors.get(dataType);
+        	Objects.requireNonNull(dataConvertor);
+        	ItemData data = dataConvertor.apply(arrData);
+        	nodeItem.setData(data);
+        }		
 
         return nodeItem;
     }
