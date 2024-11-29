@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.common.ResponseFactory;
 import cz.tacr.elza.controller.vo.ExportParams;
-import cz.tacr.elza.controller.vo.ExportRequestState;
+import cz.tacr.elza.controller.vo.RequestProcessState;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
@@ -143,13 +143,13 @@ public class IOController implements IoApi {
         Object body = null;
         switch (result.getState()) {
         case PENDING:
-            body = ResponseFactory.createExportRequestStatus(ExportRequestState.PENDING);
+            body = ResponseFactory.createExportRequestStatus(RequestProcessState.PENDING);
             break;
         case PROCESSING:
-            body = ResponseFactory.createExportRequestStatus(ExportRequestState.PREPARING);
+            body = ResponseFactory.createExportRequestStatus(RequestProcessState.PROCESSING);
             break;
         case FINISHED:
-            body = ResponseFactory.createExportRequestStatus(ExportRequestState.FINISHED);
+            body = ResponseFactory.createExportRequestStatus(RequestProcessState.FINISHED);
             break;
         case ERROR:
             status = HttpStatus.INTERNAL_SERVER_ERROR;

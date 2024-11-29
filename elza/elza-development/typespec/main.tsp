@@ -240,17 +240,21 @@ model ExportParams {
     includeAccessPoints?: boolean = true;
 }
 
-enum ExportRequestState {
+/**
+ * Status of async request
+ */
+enum RequestProcessState {
     PENDING,
-    PREPARING,
-    FINISHED
+    PROCESSING,
+    FINISHED,
+    ERROR
 }
 
 /**
- * Status of export
+ * Status of request
  */
 model ExportRequestStatus {
-    state: ExportRequestState;
+    state: RequestProcessState;
     progress?: integer;
 }
 
@@ -1088,9 +1092,231 @@ namespace ElzaAPI.Io {
        };
 }
 
-@tag("statistic")
-@route("/statistic")
-namespace ElzaAPI.Statistic {
+@tag("report")
+@route("/report")
+namespace ElzaAPI.Report {
+    /**
+     * Types of statistics values
+     */
+    enum ValueType {
+        INT,
+        STRING,
+        BOOLEAN,
+        DATE,
+        USER_ID,
+        GROUP_ID,
+        FUND_ID,
+        AP_ID,
+        ITEM_TYPE_ID,
+        ITEM_SPEC_ID,
+        SCOPE_ID,
+        AP_TYPE_ID
+    }
+
+    /**
+     * Types of report output formats
+     */
+    enum ReportFormat {
+        JSON,
+        CSV
+    }
+
+    /**
+     * Statistics parameters
+     */
+    model ReportParameters {
+        /** param values */
+        params?: ReportParamValue[];
+    }
+
+    /**
+     * List of values ​​for the parameter
+     */
+    model ReportParamValue {
+        /** parameter code */
+        code: string;
+        /** parameter values */
+        values: Value[];
+    }
+
+    /**
+     * Statistical report parameter
+     */
+    model ReportParamDefinition {
+        /** parameter code */
+        code: string;
+        /** parameter name */
+        name: string;
+        /** parameter type */
+        paramType: ValueType;
+        /** parameter required or not */
+        required: boolean;
+        /** parameter repeatable or not */
+        repeatable: boolean;
+        /** parameter default value(s) */
+        values?: Value[];
+    }
+
+    /**
+     * Category witl report definitions
+     */
+    model ReportCategory {
+        /** Category code */
+        code: string;
+        
+        /** Category name */
+        name: string;
+
+        /**
+         * List of definitions
+         */
+        reportDefinitions: ReportDefinition[];
+    }
+
+    /**
+     * Element from the statistics list
+     */
+    model ReportDefinition {
+        /** statistics code */
+        code: string;
+        /** statistics name */
+        name: string;
+        /** description of statistics */
+        description?: string;
+        /** statistics parameters */
+        params?: ReportParamDefinition[];
+    }
+
+    /**
+     * Report INTEGER value
+     */ 
+    model ValueInteger extends Value {
+        valueType: ValueType.INT;
+        intValue: integer;
+    }
+
+    /**
+     * Report STRING value
+     */ 
+    model ValueString extends Value {
+        valueType: ValueType.STRING;
+        textValue: string;
+    }
+
+    /**
+     * Report DATE value
+     */ 
+    model ValueDate extends Value {
+        valueType: ValueType.DATE;
+        dateValue: offsetDateTime;
+    }
+
+    /**
+     * Report ACCESSPOINT_ID value
+     */
+    model ValueAccesspointId extends Value {
+        valueType: ValueType.AP_ID;
+        accesspointId: integer;
+    }
+
+    /**
+     * Report data FOND_ID value
+     */
+    model ValueFondId extends Value {
+        valueType: ValueType.FUND_ID;
+        fondId: integer;
+    }
+
+    /**
+     * Report value
+     */
+    @discriminator("valueType")
+    model Value {
+        valueType: ValueType
+    }
+
+    /**
+     * Row of report in json format
+     */
+    model ReportRow {
+        cols: Value[];
+    }
+
+    /**
+     * Report in json format
+     */
+    model ReportData {
+        header: string[];
+        rows: ReportRow[];
+        sourceDataDate: offsetDateTime;
+    }
+
+    /**
+     * Getting a list of categories 
+     * and report definitions
+     */
+    @route("/definitions")
+    @get op getDefinitions(
+    ): ReportCategory[];
+
+    /**
+     * Run generating statistics
+     */
+    @route("/generate/{code}")
+    @post op generateReport(
+        /** statistický kód pro generování */
+        @path code: string;
+        /** hodnoty zadaných parametrů */
+        @body body: ReportParameters ;
+    ): integer;
+
+    /**
+     * Get the status of running statistics
+     */
+    @route("/status/{requestId}")
+    @get op getReportStatus(
+        @path requestId: integer;
+    ): {
+         /** Pending, processing, finished */
+         @Http.statusCode statusCode: 200;
+         @body data: RequestProcessState;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       } | {
+          /** Request execution failed */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException;
+       };
+
+    /**
+     * Download statistics results by request id
+     */
+	@route("/{requestId}")
+	@get op getReport(
+		@path requestId: integer;
+        @query format: ReportFormat;
+	): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: ReportData;
+       } | {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "text/csv";
+        @body data: bytes;
+       } | {
+         /** Processing */ 
+         @Http.statusCode statusCode: 102;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException; 
+       } | { 
+          /** Failed to export requested data */
+          @Http.statusCode statusCode: 500;
+          @body data: BaseException; 
+       };
 }
 
 @service({
