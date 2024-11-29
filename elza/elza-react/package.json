@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit --watch --preserveWatchOutput --pretty",
     "start": "concurrently -n VITE,TS -c 'green,blue' 'npm run dev' 'npm run typecheck'",
     "extract": "formatjs extract 'src/**/*.{ts,tsx,js,jsx}' --ignore 'src/**/*.{d,test}.{ts,tsx}' --out-file lang/extracted/cs.json",
-    "compile": "formatjs compile-folder lang/translated lang/compiled"
+    "compile": "formatjs compile-folder lang/translated public/static/locale"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.51.1",
