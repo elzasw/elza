@@ -14,7 +14,7 @@ import {fundsSelectFund} from 'actions/fund/fund.jsx';
 import {savingApiWrapper} from 'actions/global/status.jsx';
 import {storeLoadData} from 'actions/store/store.jsx';
 import {downloadFile} from '../global/download';
-import {ExportRequestState, IoApiAxiosParamCreator} from 'elza-api';
+import {RequestProcessState, IoApiAxiosParamCreator} from 'elza-api';
 
 /**
  * Fetch dat pro otevřené záložky AS, pokud je potřeba - např. název atp.
@@ -167,7 +167,7 @@ export function exportFund(fundId, { exportFilterId, includeUUID, includeAccessP
                 // ziskani stavu exportu, overrideErrorHandler: true pro zabraneni vychoziho zobrazeni chybove hlasky
                 const { data } = await Api.io.ioGetExportStatus(fileId, { overrideErrorHandler: true });
                 // pri stavu "Finished" muzeme soubor stahnout
-                if (data.state === ExportRequestState.Finished) {
+                if (data.state === RequestProcessState.Finished) {
                     // odstraneni info toastu pomoci toastKey o generovani exportu
                     dispatch(removeToastr(toastKey));
                     // hlaska o uspesnem exportu
