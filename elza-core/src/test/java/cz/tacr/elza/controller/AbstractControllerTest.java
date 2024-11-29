@@ -179,6 +179,7 @@ import cz.tacr.elza.test.controller.DaosApi;
 import cz.tacr.elza.test.controller.DescitemsApi;
 import cz.tacr.elza.test.controller.FundsApi;
 import cz.tacr.elza.test.controller.IoApi;
+import cz.tacr.elza.test.controller.ReportApi;
 import cz.tacr.elza.test.controller.SearchApi;
 import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.CreateFund;
@@ -535,6 +536,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 	protected DescitemsApi descitemsApi;
 
+	protected ReportApi reportApi;
+
 	protected static Map<String, String> cookies = null;
 
 	@Override
@@ -558,6 +561,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		searchApi = new cz.tacr.elza.test.controller.SearchApi(elzaApiClient);
 		ioApi = new cz.tacr.elza.test.controller.IoApi(elzaApiClient);
 		descitemsApi = new cz.tacr.elza.test.controller.DescitemsApi(elzaApiClient);
+		reportApi = new cz.tacr.elza.test.controller.ReportApi(elzaApiClient);
 
 		loginAsAdmin();
 
@@ -797,11 +801,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		createFund.setScopes(scopes);
 
 		return fundsApi.fundCreateFund(createFund);
-	}
-
-	protected FundDetail getFundV1(final Integer id) {
-		Response response = get(spec -> spec.pathParam("id", id), FUND_V1);
-		return response.getBody().as(FundDetail.class);
 	}
 
 	protected FindFundsResult findFunds(final String fulltext, final String institutionIdentifier, final Integer max,

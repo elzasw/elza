@@ -17,6 +17,8 @@ tags:
     description: Vyhledávání
   - name: io
     description: Vstup a výstup informací
+  - name: report
+    description: Statistické zprávy
 servers:
   - url: http://localhost
     description: Výchozí server
@@ -25,8 +27,6 @@ servers:
 paths:
   /accesspoint/{id}:
     delete:
-      tags:
-        - accesspoints
       operationId: AccessPoint_deleteAccessPoint
       description: Invalidation of ApAccessPoint (delete/replace)
       parameters:
@@ -45,17 +45,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - accesspoints
       requestBody:
-        description: addition for method of invalidation
         required: false
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/DeleteAccessPointDetail'
+        description: addition for method of invalidation
   /accesspoint/{id}/autoitems:
     get:
-      tags:
-        - accesspoints
       operationId: AccessPoint_getAutoitems
       description: List of automatically generated elements of the description
       parameters:
@@ -78,10 +78,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /accesspoint/{id}/copy:
-    put:
       tags:
         - accesspoints
+  /accesspoint/{id}/copy:
+    put:
       operationId: AccessPoint_copyAccessPoint
       description: Copying an archive entity
       parameters:
@@ -104,17 +104,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - accesspoints
       requestBody:
-        description: additional copy options
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/CopyAccessPointDetail'
+        description: additional copy options
   /accesspoint/{id}/part/{partId}:
     delete:
-      tags:
-        - accesspoints
       operationId: AccessPoint_deletePart
       description: Delete part of ApAccessPoint
       parameters:
@@ -136,6 +136,7 @@ paths:
           description: actual version of ApAccessPoint
           schema:
             type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -145,10 +146,10 @@ paths:
                 type: integer
         '404':
           description: The server cannot find the requested resource.
-  /accesspoint/{id}/part/{partId}/prefer-name:
-    put:
       tags:
         - accesspoints
+  /accesspoint/{id}/part/{partId}/prefer-name:
+    put:
       operationId: AccessPoint_setPreferName
       description: Set the preferred name of ApAccessPoint
       parameters:
@@ -170,6 +171,7 @@ paths:
           description: actual version of ApAccessPoint
           schema:
             type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -177,10 +179,10 @@ paths:
             application/json:
               schema:
                 type: integer
-  /accesspoint/{id}/revision/merge:
-    post:
       tags:
         - accesspoints
+  /accesspoint/{id}/revision/merge:
+    post:
       operationId: AccessPoint_mergeRevision
       description: Merge ApRevision & ApAccessPoint
       parameters:
@@ -196,6 +198,7 @@ paths:
           description: actual version of ApAccessPoint
           schema:
             type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -203,17 +206,17 @@ paths:
             application/json:
               schema:
                 type: integer
+      tags:
+        - accesspoints
       requestBody:
-        description: data for change ApState
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ApStateUpdate'
+        description: data for change ApState
   /accesspoint/{id}/revision/part/{partId}:
     delete:
-      tags:
-        - accesspoints
       operationId: AccessPoint_deleteRevisionPart
       description: Delete part of revision of ApAccessPoint
       parameters:
@@ -235,6 +238,7 @@ paths:
           description: actual version of ApAccessPoint
           schema:
             type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -248,10 +252,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /accesspoint/{id}/revision/part/{partId}/prefer-name:
-    put:
       tags:
         - accesspoints
+  /accesspoint/{id}/revision/part/{partId}/prefer-name:
+    put:
       operationId: AccessPoint_setPreferNameRevision
       description: Set the preferred name of revision of ApAccessPoint
       parameters:
@@ -273,6 +277,7 @@ paths:
           description: actual version of ApAccessPoint
           schema:
             type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -282,10 +287,10 @@ paths:
                 type: integer
         '404':
           description: The server cannot find the requested resource.
-  /accesspoint/{id}/revision/state:
-    put:
       tags:
         - accesspoints
+  /accesspoint/{id}/revision/state:
+    put:
       operationId: AccessPoint_changeStateRevision
       description: Change state of revision of ApAccessPoint
       parameters:
@@ -301,6 +306,7 @@ paths:
           description: actual version of ApAccessPoint
           schema:
             type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -310,17 +316,17 @@ paths:
                 type: integer
         '404':
           description: The server cannot find the requested resource.
+      tags:
+        - accesspoints
       requestBody:
-        description: data for change state of revision of ApAccessPoint
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/RevStateChange'
+        description: data for change state of revision of ApAccessPoint
   /accesspoint/{id}/state:
     put:
-      tags:
-        - accesspoints
       operationId: AccessPoint_changeState
       description: Change state of ApAccessPoint
       parameters:
@@ -336,6 +342,7 @@ paths:
           description: actual version of ApAccessPoint
           schema:
             type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -343,13 +350,15 @@ paths:
             application/json:
               schema:
                 type: integer
+      tags:
+        - accesspoints
       requestBody:
-        description: data for change ApState
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ApStateUpdate'
+        description: data for change ApState
   /accesspoints/{id}/restore:
     put: 
       summary: Obnovení neplatné entity a návrat do původního stavu
@@ -541,18 +550,16 @@ paths:
           description: Forbidden          
   /admin/admin/arrangement/missing-cached-nodes:
     get:
-      tags:
-        - admin
       operationId: Admin_syncNodeCache
       description: Creating missing items in arr_cached_node
       parameters: []
       responses:
         '200':
           description: The request has succeeded.
-  /admin/info:
-    get:
       tags:
         - admin
+  /admin/info:
+    get:
       operationId: Admin_info
       description: Return basic statistical info
       parameters: []
@@ -563,10 +570,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdminInfo'
-  /admin/info/logged-users:
-    get:
       tags:
         - admin
+  /admin/info/logged-users:
+    get:
       operationId: Admin_loggedUsers
       description: Return list of logged users
       parameters: []
@@ -577,10 +584,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LoggedUsers'
-  /admin/user/{userId}/copy-permissions:
-    post:
       tags:
         - admin
+  /admin/user/{userId}/copy-permissions:
+    post:
       operationId: Admin_copyPermissions
       description: |-
         Copy user permissions from another user
@@ -596,6 +603,8 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
+      tags:
+        - admin
       requestBody:
         required: true
         content:
@@ -617,8 +626,6 @@ paths:
                   $ref: '#/components/schemas/FsRepo'
   /descItems/{fundVersionId}/create:
     put:
-      tags:
-        - descitems
       operationId: DescItem_createDescItem
       description: Create attribute value
       parameters:
@@ -635,17 +642,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ItemDataResult'
+      tags:
+        - descitems
       requestBody:
-        description: new attribute value
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/NodeItem'
+        description: new attribute value
   /descItems/{fundVersionId}/{createNewVersion}/update:
     put:
-      tags:
-        - descitems
       operationId: DescItem_updateDescItem
       description: Update attribute value
       parameters:
@@ -674,17 +681,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - descitems
       requestBody:
-        description: new attribute value
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/NodeItem'
+        description: new attribute value
   /extsystem/property:
     get:
-      tags:
-        - externalsystems
       operationId: ExternalSystem_allProperties
       description: Return list of all properties of external system
       parameters:
@@ -694,12 +701,14 @@ paths:
           description: external system id
           schema:
             type: integer
+          explode: false
         - name: userId
           in: query
           required: false
           description: user id
           schema:
             type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -709,9 +718,9 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ExtSystemProperty'
-    post:
       tags:
         - externalsystems
+    post:
       operationId: ExternalSystem_storeProperties
       description: Store one or more property of external system
       parameters: []
@@ -724,8 +733,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - externalsystems
       requestBody:
-        description: request body
         required: true
         content:
           application/json:
@@ -733,9 +743,8 @@ paths:
               type: array
               items:
                 $ref: '#/components/schemas/ExtSystemProperty'
+        description: request body
     delete:
-      tags:
-        - externalsystems
       operationId: ExternalSystem_deleteProperties
       description: Delete one property of external system
       parameters: []
@@ -748,8 +757,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - externalsystems
       requestBody:
-        description: external system property id
         required: true
         content:
           application/json:
@@ -757,10 +767,9 @@ paths:
               type: array
               items:
                 type: integer
+        description: external system property id
   /fund:
     post:
-      tags:
-        - funds
       operationId: fund_createFund
       description: Created a new archive file (AS)
       parameters: []
@@ -773,6 +782,8 @@ paths:
                 $ref: '#/components/schemas/Fund'
         '400':
           description: The server could not understand the request due to invalid syntax.
+      tags:
+        - funds
       requestBody:
         required: true
         content:
@@ -780,8 +791,6 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateFund'
     get:
-      tags:
-        - funds
       operationId: fund_findFunds
       description: Search for archive files (AS)
       parameters:
@@ -791,12 +800,14 @@ paths:
           description: vyhledávaný výraz
           schema:
             type: string
+          explode: false
         - name: institutionIdentifier
           in: query
           required: false
           description: identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu)
           schema:
             type: string
+          explode: false
         - name: max
           in: query
           required: false
@@ -804,6 +815,7 @@ paths:
           schema:
             type: integer
             default: 200
+          explode: false
         - name: from
           in: query
           required: false
@@ -811,6 +823,7 @@ paths:
           schema:
             type: integer
             default: 0
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -818,10 +831,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FindFundsResult'
-  /fund/{fundId}/fsrepo/{fsrepoId}/item-data:
-    get:
       tags:
         - funds
+  /fund/{fundId}/fsrepo/{fsrepoId}/item-data:
+    get:
       operationId: fund_fsRepoItemData
       parameters:
         - $ref: '#/components/parameters/FundIdParameter'
@@ -832,6 +845,7 @@ paths:
           description: file path in the repository
           schema:
             type: string
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -840,10 +854,10 @@ paths:
               schema:
                 type: string
                 format: binary
-  /fund/{fundId}/fsrepo/{fsrepoId}/items:
-    get:
       tags:
         - funds
+  /fund/{fundId}/fsrepo/{fsrepoId}/items:
+    get:
       operationId: fund_fsRepoItems
       parameters:
         - $ref: '#/components/parameters/FundIdParameter'
@@ -854,18 +868,21 @@ paths:
           description: Optional filter to return only folders or files. If not specified all items are returned
           schema:
             $ref: '#/components/schemas/FsItemType'
+          explode: false
         - name: path
           in: query
           required: false
           description: Optional path in the repository
           schema:
             type: string
+          explode: false
         - name: lastKey
           in: query
           required: false
           description: Optional parameter to return next batch of items. See FsItems for more details.
           schema:
             type: string
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -873,10 +890,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FsItems'
-  /fund/{fundId}/fsrepo/{fsrepoId}/linkitem/{nodeId}:
-    put:
       tags:
         - funds
+  /fund/{fundId}/fsrepo/{fsrepoId}/linkitem/{nodeId}:
+    put:
       operationId: fund_fsCreateDAOLink
       parameters:
         - $ref: '#/components/parameters/FundIdParameter'
@@ -887,6 +904,7 @@ paths:
           required: false
           schema:
             type: string
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -894,10 +912,10 @@ paths:
             application/json:
               schema:
                 type: integer
-  /fund/{fundId}/fsrepos:
-    get:
       tags:
         - funds
+  /fund/{fundId}/fsrepos:
+    get:
       operationId: fund_fsRepos
       description: Return list of filesystem repositories
       parameters:
@@ -911,10 +929,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FsRepo'
-  /fund/{fundId}/usedItemtypes/{fundVersionId}:
-    get:
       tags:
         - funds
+  /fund/{fundId}/usedItemtypes/{fundVersionId}:
+    get:
       operationId: fund_usedItemTypes
       description: Return list of item type id & count
       parameters:
@@ -929,10 +947,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/UsedItemType'
-  /fund/{id}:
-    get:
       tags:
         - funds
+  /fund/{id}:
+    get:
       operationId: fund_getFund
       description: Getting the AS detail
       parameters:
@@ -951,9 +969,9 @@ paths:
                 $ref: '#/components/schemas/FundDetail'
         '404':
           description: The server cannot find the requested resource.
-    put:
       tags:
         - funds
+    put:
       operationId: fund_updateFund
       description: Update of archive file (AS)
       parameters:
@@ -974,6 +992,8 @@ paths:
           description: The server could not understand the request due to invalid syntax.
         '404':
           description: The server cannot find the requested resource.
+      tags:
+        - funds
       requestBody:
         required: true
         content:
@@ -982,8 +1002,6 @@ paths:
               $ref: '#/components/schemas/UpdateFund'
   /fund/{id}/import:
     put:
-      tags:
-        - funds
       operationId: fund_importFundData
       description: Import additional data to the existing fund
       parameters:
@@ -1000,17 +1018,17 @@ paths:
           description: The server could not understand the request due to invalid syntax.
         '406':
           description: Client error
+      tags:
+        - funds
       requestBody:
-        description: Doplnění způsobu importu
         required: true
         content:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/ImportFundDataMultiPart'
+        description: Doplnění způsobu importu
   /fund/{id}/structuredObject:
     delete:
-      tags:
-        - funds
       operationId: fund_deleteStructureData
       description: Smazání seznamu hodnot strukturovaného datového typu
       parameters:
@@ -1029,8 +1047,9 @@ paths:
                 type: array
                 items:
                   type: integer
+      tags:
+        - funds
       requestBody:
-        description: Seznam id hodnot strukturovaného datového typu
         required: true
         content:
           application/json:
@@ -1038,10 +1057,9 @@ paths:
               type: array
               items:
                 type: integer
+        description: Seznam id hodnot strukturovaného datového typu
   /io/export:
     post:
-      tags:
-        - io
       operationId: Io_exportRequest
       description: Create export file of funds or access points
       parameters: []
@@ -1052,6 +1070,8 @@ paths:
             application/json:
               schema:
                 type: integer
+      tags:
+        - io
       requestBody:
         required: true
         content:
@@ -1124,6 +1144,125 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - io
+  /report/definitions:
+    get:
+      operationId: Report_getDefinitions
+      description: |-
+        Getting a list of categories 
+        and report definitions
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Report.ReportCategory'
+      tags:
+        - report
+  /report/generate/{code}:
+    post:
+      operationId: Report_generateReport
+      description: Run generating statistics
+      parameters:
+        - name: code
+          in: path
+          required: true
+          description: statistický kód pro generování
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+      tags:
+        - report
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Report.ReportParameters'
+        description: hodnoty zadaných parametrů
+  /report/status/{requestId}:
+    get:
+      operationId: Report_getReportStatus
+      description: Get the status of running statistics
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestProcessState'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - report
+  /report/{requestId}:
+    get:
+      operationId: Report_getReport
+      description: Download statistics results by request id
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: format
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Report.ReportFormat'
+          explode: false
+      responses:
+        '102':
+          description: Informational
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report.ReportData'
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - report
 components:
   parameters:
     FsRepoIdParameter:
@@ -1355,7 +1494,7 @@ components:
         #dataType:
         #  type: string
         #  enum:
-        #    - dataDate
+        #    - DATE
         value:
           type: string
           format: date
@@ -1370,7 +1509,7 @@ components:
         #dataType:
         #  type: string
         #  enum:
-        #    - dataDecimal
+        #    - DECIMAL
         value:
           type: number
           format: decimal
@@ -1378,13 +1517,13 @@ components:
         - $ref: '#/components/schemas/ItemData'
     DataEnum:
       type: object
-#      required:
-#        - dataType
-#      properties:
-#        dataType:
-#          type: string
-#          enum:
-#            - ENUM
+      #required:
+      #  - dataType
+      #properties:
+      #  dataType:
+      #    type: string
+      #    enum:
+      #      - ENUM
       allOf:
         - $ref: '#/components/schemas/ItemData'
     DataFileRef:
@@ -1396,7 +1535,7 @@ components:
         #dataType:
         #  type: string
         #  enum:
-        #    - dataFileRef
+        #    - FILE_REF
         fileId:
           type: integer
       allOf:
@@ -1410,7 +1549,7 @@ components:
         #dataType:
         #  type: string
         #  enum:
-        #    - DataFormattedText
+        #    - FORMATTED_TEXT
         value:
           type: string
       allOf:
@@ -1424,7 +1563,7 @@ components:
         #dataType:
         #  type: string
         #  enum:
-        #    - dataInteger
+        #    - INT
         integerValue:
           type: integer
       allOf:
@@ -1438,7 +1577,7 @@ components:
         #dataType:
         #  type: string
         #  enum:
-        #    - dataJsonTable
+        #    - JSON_TABLE
         value:
           type: string
       allOf:
@@ -1452,7 +1591,7 @@ components:
         #dataType:
         #  type: string
         #  enum:
-        #    - dataRecordRef
+        #    - RECORD_REF
         value:
           type: integer
       allOf:
@@ -1466,7 +1605,7 @@ components:
         #dataType:
         #  type: string
         #  enum:
-        #    - dataString
+        #    - STRING
         stringValue:
           type: string
       allOf:
@@ -1480,7 +1619,7 @@ components:
         #dataType:
         #  type: string
         #  enum:
-        #    - dataStructureRef
+        #    - STRUCTURED
         structuredObjectId:
           type: integer
       allOf:
@@ -1494,7 +1633,7 @@ components:
         #dataType:
         #  type: string
         #  enum:
-        #    - DataText
+        #    - TEXT
         textValue:
           type: string
       allOf:
@@ -1528,7 +1667,7 @@ components:
         #dataType:
         #  type: string
         #  enum:
-        #    - dataUnitdate
+        #    - UNITDATE
         value:
           type: string
       allOf:
@@ -1542,7 +1681,7 @@ components:
         #dataType:
         #  type: string
         #  enum:
-        #    - dataUnitid
+        #    - UNITID
         unitId:
           type: string
       allOf:
@@ -1556,7 +1695,7 @@ components:
         #dataType:
         #  type: string
         #  enum:
-        #    - dataUriRef
+        #    - URI_REF
         nodeId:
           type: integer
         value:
@@ -1614,22 +1753,16 @@ components:
           type: boolean
           default: true
       description: Parameters of archive file export
-    ExportRequestState:
-      type: string
-      enum:
-        - PENDING
-        - PREPARING
-        - FINISHED
     ExportRequestStatus:
       type: object
       required:
         - state
       properties:
         state:
-          $ref: '#/components/schemas/ExportRequestState'
+          $ref: '#/components/schemas/RequestProcessState'
         progress:
           type: integer
-      description: Status of export
+      description: Status of request
     ExtSystemProperty:
       type: object
       required:
@@ -1973,6 +2106,227 @@ components:
         - SIMPLE
         - COPY_ALL
       description: Method of replacing ApAccessPoint
+    Report.ReportCategory:
+      type: object
+      required:
+        - code
+        - name
+        - reportDefinitions
+      properties:
+        code:
+          type: string
+          description: Category code
+        name:
+          type: string
+          description: Category name
+        reportDefinitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Report.ReportDefinition'
+          description: List of definitions
+      description: Category witl report definitions
+    Report.ReportData:
+      type: object
+      required:
+        - header
+        - rows
+        - sourceDataDate
+      properties:
+        header:
+          type: array
+          items:
+            type: string
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/Report.ReportRow'
+        sourceDataDate:
+          type: string
+          format: date-time
+      description: Report in json format
+    Report.ReportDefinition:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          description: statistics code
+        name:
+          type: string
+          description: statistics name
+        description:
+          type: string
+          description: description of statistics
+        params:
+          type: array
+          items:
+            $ref: '#/components/schemas/Report.ReportParamDefinition'
+          description: statistics parameters
+      description: Element from the statistics list
+    Report.ReportFormat:
+      type: string
+      enum:
+        - JSON
+        - CSV
+      description: Types of report output formats
+    Report.ReportParamDefinition:
+      type: object
+      required:
+        - code
+        - name
+        - paramType
+        - required
+        - repeatable
+      properties:
+        code:
+          type: string
+          description: parameter code
+        name:
+          type: string
+          description: parameter name
+        paramType:
+          allOf:
+            - $ref: '#/components/schemas/Report.ValueType'
+          description: parameter type
+        required:
+          type: boolean
+          description: parameter required or not
+        repeatable:
+          type: boolean
+          description: parameter repeatable or not
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/Report.Value'
+          description: parameter default value(s)
+      description: Statistical report parameter
+    Report.ReportParamValue:
+      type: object
+      required:
+        - code
+        - values
+      properties:
+        code:
+          type: string
+          description: parameter code
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/Report.Value'
+          description: parameter values
+      description: List of values ​​for the parameter
+    Report.ReportParameters:
+      type: object
+      properties:
+        params:
+          type: array
+          items:
+            $ref: '#/components/schemas/Report.ReportParamValue'
+          description: param values
+      description: Statistics parameters
+    Report.ReportRow:
+      type: object
+      required:
+        - cols
+      properties:
+        cols:
+          type: array
+          items:
+            $ref: '#/components/schemas/Report.Value'
+      description: Row of report in json format
+    Report.Value:
+      type: object
+      required:
+        - valueType
+      properties:
+        valueType:
+          $ref: '#/components/schemas/Report.ValueType'
+      discriminator:
+        propertyName: valueType
+        mapping:
+          INT: '#/components/schemas/Report.ValueInteger'
+          STRING: '#/components/schemas/Report.ValueString'
+          DATE: '#/components/schemas/Report.ValueDate'
+          AP_ID: '#/components/schemas/Report.ValueAccesspointId'
+          FUND_ID: '#/components/schemas/Report.ValueFondId'
+      description: Report value
+    Report.ValueAccesspointId:
+      type: object
+      required:
+        - accesspointId
+      properties:
+        accesspointId:
+          type: integer
+      allOf:
+        - $ref: '#/components/schemas/Report.Value'
+      description: Report ACCESSPOINT_ID value
+    Report.ValueDate:
+      type: object
+      required:
+        - dateValue
+      properties:
+        dateValue:
+          type: string
+          format: date-time
+      allOf:
+        - $ref: '#/components/schemas/Report.Value'
+      description: Report DATE value
+    Report.ValueFondId:
+      type: object
+      required:
+        - fondId
+      properties:
+        fondId:
+          type: integer
+      allOf:
+        - $ref: '#/components/schemas/Report.Value'
+      description: Report data FOND_ID value
+    Report.ValueInteger:
+      type: object
+      required:
+        - intValue
+      properties:
+        intValue:
+          type: integer
+      allOf:
+        - $ref: '#/components/schemas/Report.Value'
+      description: Report INTEGER value
+    Report.ValueString:
+      type: object
+      required:
+        - textValue
+      properties:
+        textValue:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/Report.Value'
+      description: Report STRING value
+    Report.ValueType:
+      type: string
+      enum:
+        - INT
+        - STRING
+        - BOOLEAN
+        - DATE
+        - USER_ID
+        - GROUP_ID
+        - FUND_ID
+        - AP_ID
+        - ITEM_TYPE_ID
+        - ITEM_SPEC_ID
+        - SCOPE_ID
+        - AP_TYPE_ID
+      description: Types of statistics values
+    RequestProcessState:
+      type: string
+      enum:
+        - PENDING
+        - PROCESSING
+        - FINISHED
+        - ERROR
+      description: Status of async request
     ResultAutoItems:
       type: object
       properties:
