@@ -9,32 +9,36 @@ import {
     ReportReportData,
     ReportReportFormat,
     ReportReportParameters,
-    ReportReportRow,
-    ReportValue,
-    ReportValueType,
+    // ReportReportRow,
+    // ReportValue,
+    // ReportValueType,
     RequestProcessState,
 } from "elza-api";
 import { Button } from "@fluentui/react-components";
 import { ReportsForm, ReportsTable } from "components/reports";
 import { WaitingOverlay } from "components/shared/waiting-overlay";
+import { FormattedMessage, defineMessages } from "react-intl";
 
-function makeid(length) {
-    let result = "";
-    const characters = " ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    const charactersLength = characters.length;
-    let counter = 0;
-    while (counter < length) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-        counter += 1;
+const messages = defineMessages({
+    generationTime: {
+        id: "admin_reports_generation_time",
+        defaultMessage: "Čas vygenerování přehledu: {date} v {time}"
+    },
+    downloadCSV: {
+        id: "admin_reports_download_csv",
+        defaultMessage: "Stáhnout CSV"
+    },
+    noReportData: {
+        id: "admin_reports_no_report_data",
+        defaultMessage: "Žádná data",
     }
-    return result;
-}
+})
 
 export function ReportsPage() {
     const splitter = useSelector(({ splitter }: AppState) => splitter);
     const [reportData, setReportData] = useState<ReportReportData>();
     const [isFetchingReport, setIsFetchingReport] = useState(false);
-    const [isReportFetched, setIsReportFetched] = useState(false);
+    const [_isReportFetched, setIsReportFetched] = useState(false);
     const [lastReportId, setLastReportId] = useState<number>();
 
     const buildRibbon = () => {
@@ -98,17 +102,26 @@ export function ReportsPage() {
                         {reportData && (
                             <div style={{ flexShrink: 0, flexGrow: 0, padding: "8px", display: "flex", justifyContent: "flex-end" }}>
                                 <div style={{ margin: "4px 16px" }}>
-                                    Cas vygenerovani prehledu: {reportDate.toLocaleDateString()} v {reportDate.toLocaleTimeString()}
+                                    <FormattedMessage
+                                        {...messages.generationTime}
+                                        values={{
+                                            date: reportDate.toLocaleDateString(),
+                                            time: reportDate.toLocaleTimeString(),
+                                        }}
+                                    />
                                 </div>
                                 <Button onClick={handleDownload}>
                                     <Icon glyph="fa-download" />
-                                    &nbsp;Stahnout CSV
+                                    &nbsp;
+                                    <FormattedMessage {...messages.downloadCSV} />
                                 </Button>
                             </div>
                         )}
                         <div style={{ flexGrow: 1, display: "flex", flexDirection: "column", height: "300px" }}>
                             {!reportData ? (
-                                <div style={{ padding: "16px", background: "var(--shade-2)", flex: 1 }}>No report data</div>
+                                <div style={{ padding: "16px", background: "var(--shade-2)", flex: 1 }}>
+                                    <FormattedMessage {...messages.noReportData} />
+                                </div>
                             ) : (
                                 <ReportsTable reportData={reportData} />
                             )}

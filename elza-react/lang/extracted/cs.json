@@ -22,8 +22,70 @@
   "admin_packages_label_version": {
     "defaultMessage": "Verze"
   },
-  "multi_definition_test": {
-    "defaultMessage": "Test",
-    "description": "Test message for multiple messages definitions"
+  "admin_reports_download_csv": {
+    "defaultMessage": "Stáhnout CSV"
+  },
+  "admin_reports_form_property_Date": {
+    "defaultMessage": "Datum"
+  },
+  "admin_reports_form_property_DateFrom": {
+    "defaultMessage": "Datum od"
+  },
+  "admin_reports_form_property_DateTo": {
+    "defaultMessage": "Datum do"
+  },
+  "admin_reports_form_reportDefinition": {
+    "defaultMessage": "Přehled"
+  },
+  "admin_reports_form_reset": {
+    "defaultMessage": "Reset"
+  },
+  "admin_reports_form_show": {
+    "defaultMessage": "Zobrazit"
+  },
+  "admin_reports_generation_time": {
+    "defaultMessage": "Čas vygenerování přehledu: {date} v {time}"
+  },
+  "admin_reports_header_ae_pocet": {
+    "defaultMessage": "Počet archivnich entit"
+  },
+  "admin_reports_header_as_pocet": {
+    "defaultMessage": "Počet archivnich souboru"
+  },
+  "admin_reports_header_fonds_cnt": {
+    "defaultMessage": "Počet fondů"
+  },
+  "admin_reports_header_internal_code": {
+    "defaultMessage": "Interní kód"
+  },
+  "admin_reports_header_items_cnt": {
+    "defaultMessage": "Počet prvků popisu"
+  },
+  "admin_reports_header_jp_pocet": {
+    "defaultMessage": "Počet jednotek popisu"
+  },
+  "admin_reports_header_levels_cnt": {
+    "defaultMessage": "Počet úrovní"
+  },
+  "admin_reports_header_pb_pocet": {
+    "defaultMessage": "Počet přístupových bodů"
+  },
+  "admin_reports_header_pp_pocet": {
+    "defaultMessage": "Počet prvku popisu"
+  },
+  "admin_reports_header_refents_cnt": {
+    "defaultMessage": "Počet napojených entit"
+  },
+  "admin_reports_header_string_value": {
+    "defaultMessage": "Název"
+  },
+  "admin_reports_header_vpb_pocet": {
+    "defaultMessage": "Počet vazeb přístupových bodů"
+  },
+  "admin_reports_no_report_data": {
+    "defaultMessage": "Žádná data"
+  },
+  "admin_reports_select_report": {
+    "defaultMessage": "Vyberte přehled..."
   }
 }
