@@ -472,7 +472,7 @@
 			<column name="description">Souhrnný přehled počtu archivních souborů, jednotek popisu a archivní entit.</column>
 		</insert>
 		<insert tableName="rpt_report">
-			<!-- MONTH_USER_COUNT -->
+			<!-- SYS_MONTH_USER_COUNT -->
 			<column name="report_id">2</column>
 			<column name="category_id">1</column>
 			<column name="code">SYS_MONTH_USER_COUNT</column>
@@ -490,7 +490,7 @@
 		<!-- parametry pro interní (vestavěné) sestavy -->
 		<insert tableName="rpt_param">
 			<column name="param_id">1</column>
-			<column name="report_id">2</column> <!-- MONTH_USER_COUNT -->
+			<column name="report_id">2</column> <!-- SYS_INSTITUTION_COUNT -->
 			<column name="value_type_id">4</column>
 			<column name="code">DATE</column>
 			<column name="name">DateFrom</column>
@@ -499,7 +499,7 @@
 		</insert>
 		<insert tableName="rpt_param">
 			<column name="param_id">2</column>
-			<column name="report_id">2</column> <!-- MONTH_USER_COUNT -->
+			<column name="report_id">2</column> <!-- SYS_INSTITUTION_COUNT -->
 			<column name="value_type_id">4</column>
 			<column name="code">DATE</column>
 			<column name="name">DateTo</column>

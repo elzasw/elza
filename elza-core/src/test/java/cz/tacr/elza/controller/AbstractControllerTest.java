@@ -52,6 +52,8 @@ import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandler;
 import org.springframework.messaging.simp.stomp.StompSession.Receiptable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.WebSocketClient;
@@ -88,7 +90,6 @@ import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.FindFundsResult;
 import cz.tacr.elza.controller.vo.FulltextFundRequest;
-import cz.tacr.elza.controller.vo.FundDetail;
 import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
@@ -170,6 +171,7 @@ import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionResponse;
 import cz.tacr.elza.exception.ExceptionUtils;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.test.ApiClient;
@@ -565,11 +567,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 		loginAsAdmin();
 
-		// Nastaveni autentizace
-		cookies.forEach((name, value) -> {
-			elzaApiClient.addDefaultCookie(name, value);
-		});
-
 		if (loadInstitutions) {
 			importXmlFile(null, 1, getResourceFile(XML_INSTITUTION));
 		}
@@ -597,6 +594,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
 			requestSpecification.log().all();
 		}
 		cookies = response.getCookies();
+
+		// Nastaveni autentizace
+		cookies.forEach((name, value) -> {
+			elzaApiClient.addDefaultCookie(name, value);
+		});
 	}
 
 	private Map<String, Integer> counterMap = new HashMap<>();
@@ -2488,16 +2490,35 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	/**
 	 * Vytvořené nového uživatele.
 	 *
+	 * @param username
+	 * @param valueMap
+	 * @param apId
 	 * @return vytvořený uživatel
 	 */
-	protected UsrUserVO createUser(final String username, final Map<UsrAuthentication.AuthType, String> valueMap,
-			final Integer apId) {
+	protected UsrUserVO createUser(final String username, final Map<UsrAuthentication.AuthType, String> valueMap, final Integer apId) {
 		CreateUserVO params = new CreateUserVO();
 		params.setUsername(username);
 		params.setValuesMap(valueMap);
 		params.setAccessPointId(apId);
 		return createUser(params);
 	}
+
+    /**
+	 * Vytvořené nového uživatele.
+     *
+	 * @param ap
+	 * @param userName
+	 * @param password
+     * @return vytvořený uživatel
+     */
+	protected UsrUserVO createUser(final ApAccessPointVO ap, String userName, String password) {
+        Map<UsrAuthentication.AuthType, String> valueMap = new HashMap<>();
+        valueMap.put(UsrAuthentication.AuthType.PASSWORD, password);
+        UsrUserVO user = createUser(userName, valueMap, ap.getId());
+		assertNotNull(user);
+		assertNotNull(user.getId());
+        return user;
+    }
 
 	/**
 	 * Vytvořené skupiny.

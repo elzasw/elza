@@ -131,9 +131,9 @@ public class ReportServiceQuery {
 				(select count(*) cnt from ap_state s where s.delete_change_id is null) ARCH_ENT;
 					""";
 
-		final static String MONTH_USER_COUNT_QUERY = """
-			with min_date as (select date_id from rpt_view_date where date_id = (:fromDate)::::DATE),
-				max_date as (select date_id from rpt_view_date where date_id = (:toDate)::::DATE),
+		final static String SYS_MONTH_USER_COUNT_QUERY = """
+			with min_date as (select date_id from rpt_view_date where date_id = :fromDate),
+				max_date as (select date_id from rpt_view_date where date_id = :toDate),
 				time_line as (select date_year, date_month, min(date_id) as date_from, max(date_id) as date_to from rpt_view_date where date_id >= (select date_id from min_date) and date_id <= (select date_id from max_date) group by date_year, date_month), 
 				users as (select distinct user_id from rpt_view_node_change where date_id >= (select date_id from min_date) and date_id <= (select date_id from max_date) 
 			union  
@@ -246,7 +246,7 @@ public class ReportServiceQuery {
 				group by pi.institution_id),  
 			level_new as (select f.institution_id, count(*) cnt from rpt_view_node_change rvch 
 				join arr_fund f on f.fund_id = rvch.fond_id 
-				where change_type='LEVEL_NEW' and date_id < :changeDate  
+				where change_type = 'LEVEL_NEW' and date_id < :changeDate  
 				group by f.institution_id), 
 			level_delete as (select f.institution_id, count(*) cnt 
 				from rpt_view_node_change rvch 

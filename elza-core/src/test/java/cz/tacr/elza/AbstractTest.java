@@ -31,6 +31,7 @@ import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.StartupService;
+import cz.tacr.elza.service.UserService;
 
 
 
@@ -73,6 +74,8 @@ public abstract class AbstractTest {
     protected DescriptionItemService descItemService;
     @Autowired
     protected LevelRepository levelRepository;
+    @Autowired
+    protected UserService userService;
 
     @Autowired
     protected ElzaLocale elzaLocale;
