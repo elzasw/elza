@@ -83,7 +83,7 @@ public class ApplicationSecurity {
      * to make it possible to navigate from the browser address bar for unauthorized users
      * @see cz.tacr.elza.web.controller.ElzaWebController (elza-web)
      */
-    public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/fund/**", "/node/**", "/entity/**", "/admin/**"};
+    public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/fund/**", "/node/**", "/entity/**", "/admin/**", "/h2-console/**"};
 
     @Autowired
     private ApplicationContext applicationContext;

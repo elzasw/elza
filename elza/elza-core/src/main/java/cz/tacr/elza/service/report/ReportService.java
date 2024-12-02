@@ -51,7 +51,7 @@ public class ReportService {
 
 	public static final String RT_SYS_TOTAL_COUNT = "SYS_TOTAL_COUNT";
 
-	public static final String RT_MONTH_USER_COUNT = "MONTH_USER_COUNT";
+	public static final String RT_SYS_MONTH_USER_COUNT = "SYS_MONTH_USER_COUNT";
 
 	public static final String RT_SYS_INSTITUTION_COUNT = "SYS_INSTITUTION_COUNT";
 
@@ -161,7 +161,7 @@ public class ReportService {
 		switch (request.getCode()) {
 		case RT_SYS_TOTAL_COUNT:
 			return reportSysTotalCount();
-		case RT_MONTH_USER_COUNT:
+		case RT_SYS_MONTH_USER_COUNT:
 			return reportMonthUserCount(request.getReportParameters());
 		case RT_SYS_INSTITUTION_COUNT:
 			return reportSysInstitutionCount(request.getReportParameters());
@@ -214,13 +214,13 @@ public class ReportService {
 			dateTo = ((ReportValueDate)parameters.getParams().get(1).getValues().get(0)).getDateValue();
 		}
 
-		Query query = em.createNativeQuery(ReportServiceQuery.MONTH_USER_COUNT_QUERY);
-		query.setParameter("fromDate", dateFrom.toString());
-		query.setParameter("toDate", dateTo.toString());
+		Query query = em.createNativeQuery(ReportServiceQuery.SYS_MONTH_USER_COUNT_QUERY);
+		query.setParameter("fromDate", java.sql.Date.valueOf(dateFrom.toLocalDate()));
+		query.setParameter("toDate", java.sql.Date.valueOf(dateTo.toLocalDate()));
 
-		checkAndUpdateViews(RT_MONTH_USER_COUNT);
+		checkAndUpdateViews(RT_SYS_MONTH_USER_COUNT);
 
-		List<Object[]> result = query.getResultList();
+		List<Object[]> result = new ArrayList<>(); //query.getResultList();
 
 		ReportReportData reportData = new ReportReportData();
 		reportData.setHeader(MONTH_USER_COUNT_HEADERS);
@@ -263,8 +263,10 @@ public class ReportService {
 
 			// TODO zkontrolovat parametr
 
+			OffsetDateTime changeDate = ((ReportValueDate)parameters.getParams().get(0).getValues().get(0)).getDateValue();
+
 			query = em.createNativeQuery(ReportServiceQuery.SYS_INSTITUTION_COUNT_WITH_DATE_QUERY);
-			query.setParameter("changeDate", ((ReportValueDate)parameters.getParams().get(0).getValues().get(0)).getDateValue());
+			query.setParameter("changeDate", changeDate);
 		}
 
 		checkAndUpdateViews(RT_SYS_INSTITUTION_COUNT);
@@ -392,7 +394,7 @@ public class ReportService {
 					dt = new RptViewDate();
 					dt.setDateId(date);
 					dt.setYear(date.getYear());
-					dt.setQuarter(date.getMonthValue() / 3 + 1);
+					dt.setQuarter((date.getMonthValue() - 1) / 3 + 1);
 					dt.setMonth(date.getMonthValue());
 					dt.setDay(date.getDayOfMonth());
 					dt.setDayOfWeek(date.getDayOfWeek().getValue());

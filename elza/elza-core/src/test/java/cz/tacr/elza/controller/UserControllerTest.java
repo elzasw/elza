@@ -226,21 +226,6 @@ public class UserControllerTest extends AbstractControllerTest {
         assertTrue(user2.isActive());
     }
 
-    /**
-     * Vytvoření uživatele.
-     *
-     * @return vytvořený uživatel
-     * @param ap
-     */
-    private UsrUserVO createUser(final ApAccessPointVO ap, String userName, String password) {
-        Map<UsrAuthentication.AuthType, String> valueMap = new HashMap<>();
-        valueMap.put(UsrAuthentication.AuthType.PASSWORD, password);
-        UsrUserVO user = createUser(userName, valueMap, ap.getId());
-		assertNotNull(user);
-		assertNotNull(user.getId());
-        return user;
-    }
-
     @Test
     public void copyPermissionsTest() {
         List<ApAccessPointVO> records = findRecord(null, null, null, null, null);
