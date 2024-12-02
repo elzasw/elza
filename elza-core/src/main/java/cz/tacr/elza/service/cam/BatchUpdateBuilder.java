@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import cz.tacr.cam.schema.cam.BatchUpdateXml;
+import cz.tacr.cam.schema.cam.CodeXml;
 import cz.tacr.cam.schema.cam.DeleteItemsXml;
 import cz.tacr.cam.schema.cam.DeletePartXml;
 import cz.tacr.cam.schema.cam.EntityIdXml;
@@ -97,6 +98,10 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
     protected void setPrefName(UuidXml prefName) {
         addChange(prefName);
     }
+    
+    protected void setApType(CodeXml apType) {
+		addChange(apType);
+	}
 
     protected void setRecordState(EntityRecordStateXml recordState) {
     	SetRecordStateXml srs = new SetRecordStateXml(recordState, null);

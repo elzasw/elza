@@ -3,6 +3,7 @@ package cz.tacr.elza.domain.convertor;
 import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.CENTURY;
 import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DATE;
 import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DATE_TIME;
+import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.FORMAT_DELIMITER;
 import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
 import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.ESTIMATED_TEMPLATE;
 import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.YEAR;
@@ -14,6 +15,7 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,25 +29,26 @@ import cz.tacr.elza.exception.codes.BaseCode;
 /**
  * Konvertor pro sprváné zobrazování UnitDate podle formátu.
  *
- * @author Martin Šlapa
  * @since 6.11.2015
  */
 public class UnitDateConvertor {
-
-    /**
-     * Výraz pro detekci stolení
-     */
-    public static final String EXP_CENTURY = "(\\d+)((st)|(\\.[ ]?st\\.))";
-
+	
+	private static final String BC_POSTFIX = " př. n. l.";
+	
     /**
      * Šablona pro století
      */
     public static final String CENTURY_TEMPLATE = "%d. st.";
-
+    
     /**
-     * Výraz pro rok
+     * Century BC
      */
-    public static final String EXP_YEAR = "(-?\\d{1,4})";
+    public static final String CENTURY_BC_TEMPLATE = "%d. st. př. n. l.";
+        
+    /**
+     * Template for year BC
+     */
+    public static final String YEAR_BC_TEMPLATE = "%d př. n. l.";
 
     /**
      * Formát datumu
@@ -102,6 +105,274 @@ public class UnitDateConvertor {
     private static final DateTimeFormatter FORMATTER_DATE_TIME2 = DateTimeFormatter.ofPattern(FORMAT_DATE_TIME_WITHOUT_SEC);
     private static final DateTimeFormatter FORMATTER_YEAR_MONTH = DateTimeFormatter.ofPattern(FORMAT_YEAR_MONTH);
     private static final DateTimeFormatter FORMATTER_ISO = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    
+    enum TokenType {
+    	SINGLE,
+    	FROM,
+    	TO
+    }
+
+    /**
+     * Parsed date part
+     */
+    private static class Token {
+    	
+    	private String format;
+    	
+    	private boolean estimate = false;
+
+		public Token(final String format, final boolean estimate) {
+    		this.format = format;
+    		this.estimate = estimate;
+    	}
+		
+		public String getFormat() {
+			return format;
+		}
+
+        public LocalDateTime dateFrom = null;
+
+        public LocalDateTime dateTo = null;        
+    }
+    
+    /**
+     * Parser for date part
+     */
+    interface DatePartParser {
+    	
+    	/**
+    	 * Parse string to token
+    	 * @param tokenString
+    	 * @return Return null if string was not parsed.
+    	 * 		Else return token.
+    	 * @throws Throws RuntimeException if parser failed.
+    	 */
+		Token parseToken(boolean estimate, boolean negative, String tokenString, TokenType type);
+	}
+    
+    static class CenturyParser implements DatePartParser {
+        /**
+         * Výraz pro detekci století
+         */
+        public static final String EXP_CENTURY = "(\\d+)((st)|(\\.[ ]?st\\.))";
+        public static Pattern patternCentury = Pattern.compile(EXP_CENTURY);
+
+		@Override
+		public Token parseToken(boolean estimate, boolean negative, String tokenString, TokenType type) {
+			Matcher matcher = patternCentury.matcher(tokenString);
+			if(!matcher.matches()) {
+				return null;
+			}
+            Integer c = Integer.parseInt(matcher.group(1));
+	        if(negative) {
+				c = -c+1;
+			}
+	        return createCentury(c, estimate);
+			
+		}
+    	
+    }
+    
+    static class CenturyParserBC implements DatePartParser {
+
+        /**
+         * Výraz pro detekci století př.n.l.
+         */
+    	public static final String EXP_CENTURY_BC = "(\\d+)(\\.[ ]?st\\.[ ]?př\\.[ ]?n\\.[ ]?l\\.)";
+    	public static Pattern patternCenturyBC = Pattern.compile(EXP_CENTURY_BC);
+
+    	@Override
+		public Token parseToken(boolean estimate, boolean negative, String tokenString, TokenType type) {
+			Matcher matcher = patternCenturyBC.matcher(tokenString);
+			if(!matcher.matches()) {
+				return null;
+			}
+            if(negative) {
+            	throw new SystemException("Double negative not supported", BaseCode.PROPERTY_IS_INVALID);
+            }
+            Integer c = -Integer.parseInt(matcher.group(1))+1;
+            return createCentury(c, estimate);
+		}    	
+    }
+    
+    static class YearParser implements DatePartParser {
+		/**
+		 * Výraz pro detekci roku
+		 */
+		public static final String EXP_YEAR = "(-?\\d{1,4})";
+		public static Pattern patternYear = Pattern.compile(EXP_YEAR);
+
+		@Override
+		public Token parseToken(boolean estimate, boolean negative, String tokenString, TokenType type) {
+			Matcher matcher = patternYear.matcher(tokenString);
+			if(!matcher.matches()) {
+				return null;
+			}
+			Integer year = Integer.parseInt(matcher.group(1));
+			if(negative) {
+				year = -year+1;
+			}
+			
+	        Token token = new Token(YEAR, estimate);
+	        token.dateFrom = LocalDateTime.of(year, 1, 1, 0, 0);
+	        token.dateTo = LocalDateTime.of(year, 12, 31, 23, 59, 59);
+	        return token;
+		}
+    }
+    
+    static class YearParserBC implements DatePartParser {
+        /**
+         * Year BC
+         */
+        public static final String EXP_YEAR_BC = "(\\d{1,5})([ ]?př\\.[ ]?n\\.[ ]?l\\.)";
+        public static Pattern patternYearBC = Pattern.compile(EXP_YEAR_BC);
+
+		@Override
+		public Token parseToken(boolean estimate, boolean negative, String tokenString, TokenType type) {
+			Matcher matcher = patternYearBC.matcher(tokenString);
+			if(!matcher.matches()) {
+				return null;
+			}
+			if(negative) {
+				throw new SystemException("Double negative not supported", BaseCode.PROPERTY_IS_INVALID);
+			}
+			Integer year = -Integer.parseInt(matcher.group(1))+1;
+			
+			Token token = new Token(YEAR, estimate);
+	        token.dateFrom = LocalDateTime.of(year, 1, 1, 0, 0);
+	        token.dateTo = LocalDateTime.of(year, 12, 31, 23, 59, 59);
+	        return token;
+		}
+    }
+    
+    static class YearMonthParser implements DatePartParser {
+
+		@Override
+		public Token parseToken(boolean estimate, boolean negative, String tokenString, TokenType type) {
+			YearMonth yearMonth;
+	        try {
+	            yearMonth = YearMonth.parse(tokenString, FORMATTER_YEAR_MONTH);	    		
+	    	} catch (DateTimeParseException e) {
+		    	return null;
+	    	}	        
+	        
+	        int year = yearMonth.getYear();
+			if(negative) {
+				year = (-year+1);
+			}
+			LocalDate date = LocalDate.of(year, yearMonth.getMonth(), 1);	            
+	        LocalDateTime dateTime = LocalDateTime.from(date.atStartOfDay());
+	            
+	        Token token = new Token(YEAR_MONTH, estimate);
+	        token.dateFrom = dateTime;
+	        dateTime = dateTime.plusMonths(1);
+	        token.dateTo = dateTime.minusSeconds(1);
+
+	        return token;
+		}
+    }
+    
+    static class YearMonthParserBC implements DatePartParser {
+
+        public static final String EXP_YEAR_MONTH_BC = "(\\d{1,2})(\\.)(\\d{1,5})([ ]?př\\.[ ]?n\\.[ ]?l\\.)";
+        public static Pattern patternYearMonthBC = Pattern.compile(EXP_YEAR_MONTH_BC);
+
+        @Override
+		public Token parseToken(boolean estimate, boolean negative, String tokenString, TokenType type) {
+			Matcher matcher = patternYearMonthBC.matcher(tokenString);
+			if(!matcher.matches()) {
+				return null;
+			}
+			if(negative) {
+				throw new SystemException("Double negative not supported", BaseCode.PROPERTY_IS_INVALID);
+			}
+			Integer month = Integer.parseInt(matcher.group(1));
+			Integer year = -Integer.parseInt(matcher.group(3))+1;			
+	        
+			LocalDate date = LocalDate.of(year, month, 1);	            
+	        LocalDateTime dateTime = LocalDateTime.from(date.atStartOfDay());
+	            
+	        Token token = new Token(YEAR_MONTH, estimate);
+	        token.dateFrom = dateTime;
+	        dateTime = dateTime.plusMonths(1);
+	        token.dateTo = dateTime.minusSeconds(1);
+
+	        return token;
+		}
+    }
+
+    static class DateTimeParser implements DatePartParser {
+
+		@Override
+		public Token parseToken(boolean estimate, boolean negative, String tokenString, TokenType type) {
+	        LocalDateTime date;
+	        int offsetSeconds = 0;
+	        try {
+	            date = LocalDateTime.parse(tokenString, FORMATTER_DATE_TIME);
+	        } catch (DateTimeParseException e) {
+	        	try {
+	        		date = LocalDateTime.parse(tokenString, FORMATTER_DATE_TIME2);
+	        		offsetSeconds = 59;
+	        	} catch (DateTimeParseException e2) {
+		        	return null;
+	        	}
+	        }
+	        
+	        String format = DATE_TIME;
+	        if((offsetSeconds>0) && type==TokenType.SINGLE) {
+	        	format = DATE_TIME+FORMAT_DELIMITER+DATE_TIME;
+	        }
+	        Token token = new Token(format, estimate);
+            token.dateFrom = date;
+            // Should we create time interval for second format without seconds?
+            token.dateTo = (offsetSeconds>0) ? date.plusSeconds(offsetSeconds) : date;
+            
+	        if(negative) {
+	        	token.dateFrom = token.dateFrom.minusYears(2*token.dateFrom.getYear()-1);
+	        	token.dateTo = token.dateTo.minusYears(2*token.dateFrom.getYear()-1);
+	        }
+	        return token;
+		}
+    }
+    
+    static class DateParser implements DatePartParser {
+
+		@Override
+		public Token parseToken(boolean estimate, boolean negative, String tokenString, TokenType type) {
+			LocalDate date;
+	        try {
+	        	date = LocalDate.parse(tokenString, FORMATTER_DATE);
+	        } catch (DateTimeParseException e) {
+	        	return null;
+	        }
+            if(negative) {
+	            int year = date.getYear();
+	            if(year<0) {
+		            throw new DateTimeParseException("Invalid date (double negative)", tokenString, 0);
+	            }
+	            date = LocalDate.of(-year+1, date.getMonth(), date.getDayOfMonth());
+            }
+	        Token token = new Token(DATE, estimate);
+	        LocalDateTime dateTime = LocalDateTime.from(date.atStartOfDay());
+	        token.dateFrom = dateTime;
+	        dateTime = dateTime.plusDays(1);
+	        dateTime = dateTime.minusSeconds(1);
+	        token.dateTo = dateTime;
+	        return token;
+		}
+    }
+
+    
+    static List<DatePartParser> parsers = List.of(
+    		new YearParser(),
+    		new YearMonthParser(),
+    		new DateTimeParser(),
+    		new DateParser(),
+    		new CenturyParser(),
+    		new CenturyParserBC(),
+    		new YearParserBC(),
+    		new YearMonthParserBC());
+
 
     /**
      * Provede konverzi textového vstupu a doplní intervaly do objektu.
@@ -135,7 +406,8 @@ public class UnitDateConvertor {
                 }
 
             } else {
-                Token token = parseToken(moveMinusToYearDate(normalizedInput), unitdate);
+                Token token = parseToken(normalizedInput, TokenType.SINGLE);
+                unitdate.formatAppend(token.getFormat());
                 unitdate.setValueFrom(FORMATTER_ISO.format(token.dateFrom));
                 unitdate.setValueFromEstimated(token.estimate);
                 unitdate.setValueTo(FORMATTER_ISO.format(token.dateTo));
@@ -162,7 +434,7 @@ public class UnitDateConvertor {
 
         } catch (Exception e) {
             unitdate.setFormat("");
-            throw new SystemException("Vstupní řetězec není validní", BaseCode.PROPERTY_IS_INVALID)
+            throw new SystemException("Vstupní řetězec není validní", e, BaseCode.PROPERTY_IS_INVALID)
                     .set("property", "format")
                     .set("value", input);
         }
@@ -253,11 +525,18 @@ public class UnitDateConvertor {
 
         boolean estimateBoth = input.contains(ESTIMATE_INTERVAL_DELIMITER);
 
-        token = parseToken(moveMinusToYearDate(data[0]), unitdate);
+        String from = data[0];
+		String to = data[1];
+		
+        token = parseToken(from, TokenType.FROM);
+        unitdate.formatAppend(token.getFormat());
         unitdate.setValueFrom(FORMATTER_ISO.format(token.dateFrom));
         unitdate.setValueFromEstimated(token.estimate || estimateBoth);
+        
         unitdate.formatAppend(DEFAULT_INTERVAL_DELIMITER);
-        token = parseToken(moveMinusToYearDate(data[1]), unitdate);
+        
+        token = parseToken(to, TokenType.TO);
+        unitdate.formatAppend(token.getFormat());
         unitdate.setValueTo(FORMATTER_ISO.format(token.dateTo));
         unitdate.setValueToEstimated(token.estimate || estimateBoth);
     }
@@ -385,22 +664,53 @@ public class UnitDateConvertor {
         } catch (DateTimeParseException e) {
             throw new IllegalStateException("Chyba při analýze datum: " + value, e);
         }
+
+        int year = date.getYear();
+        int month = date.getMonthValue();
+        // check if date is BC
+        // values has to be subsrtacted (-1year]
+        boolean bc;
+        if (year > 0) {
+        	bc = false;
+        } else {
+        	bc = (year<=0);
+        	year = -(year-1);
+        	date = LocalDateTime.of(LocalDate.of(year, month, date.getDayOfMonth()), date.toLocalTime());
+        }
+        
         switch (format) {
             case CENTURY:
-            	int century = (date.getYear()+99) / 100; 
-                result = String.format(CENTURY_TEMPLATE, century);
+            	int century = (year+99) / 100;
+            	if(bc) {
+            		result = String.format(CENTURY_BC_TEMPLATE, century);
+            	} else {
+            		result = String.format(CENTURY_TEMPLATE, century);
+            	}
                 break;
             case YEAR:
-                result = String.valueOf(date.getYear());
+            	if(bc) {            		
+            		result = String.format(YEAR_BC_TEMPLATE, year);
+            	} else {
+            		result = String.valueOf(year);
+            	}
                 break;
             case YEAR_MONTH:
-                result = moveMinusToDayDate(FORMATTER_YEAR_MONTH.format(date));
+                result = FORMATTER_YEAR_MONTH.format(date);
+                if(bc) {
+                	result += BC_POSTFIX;
+                }
                 break;
             case DATE:
-                result = moveMinusToDayDate(FORMATTER_DATE.format(date));
+                result = FORMATTER_DATE.format(date);
+                if(bc) {
+                	result += BC_POSTFIX;
+                }
                 break;
             case DATE_TIME:
-                result = moveMinusToDayDate(FORMATTER_DATE_TIME.format(date));
+                result = FORMATTER_DATE_TIME.format(date);
+                if(bc) {
+                	result += BC_POSTFIX;
+                }
                 break;
             default:
                 throw new IllegalStateException("Neexistující formát: " + format);
@@ -450,252 +760,67 @@ public class UnitDateConvertor {
 
     /**
      * Parsování tokenu.
+     * @param isNegative 
      *
      * @param tokenString výraz
      * @param unitdate    doplňovaný objekt
      * @return výsledný token
      */
-    private static Token parseToken(final String tokenString, final IUnitdate unitdate) {
+    private static Token parseToken(String tokenString, TokenType type) {
         if (StringUtils.isEmpty(tokenString)) {
             throw new IllegalArgumentException("Nemůže existovat prázdný interval");
         }
 
-        Token token;
-
+        boolean estimate = false;
         if (tokenString.charAt(0) == '[' && tokenString.charAt(tokenString.length() - 1) == ']') {
-            String tokenStringTrim = tokenString.substring(1, tokenString.length() - 1);
-            token = parseExpression(tokenStringTrim, unitdate);
-            token.estimate = true;
-        } else {
-            token = parseExpression(tokenString, unitdate);
+            tokenString = tokenString.substring(1, tokenString.length() - 1);
+            estimate = true;
+        }
+        boolean negative = false;
+        if(tokenString.startsWith("-")) {
+        	tokenString = tokenString.substring(1);
+        	negative = true;
         }
 
-        return token;
-    }
-
-    /**
-     * Parsování výrazu.
-     *
-     * @param expression výraz
-     * @param unitdate   doplňovaný objekt
-     * @return výsledný token
-     */
-    private static Token parseExpression(final String expression, final IUnitdate unitdate) {
-
-        if (expression.matches(EXP_CENTURY)) {
-            return parseCentury(expression, unitdate);
-        } else if (expression.matches(EXP_YEAR)) {
-            return parseYear(expression, unitdate);
-        } else if (tryParseDate(FORMATTER_YEAR_MONTH, expression)) {
-            return parseYearMonth(expression, unitdate);
-        } else if (tryParseDate(FORMATTER_DATE_TIME, expression) || tryParseDate(FORMATTER_DATE_TIME2, expression) ) {
-            return parseDateTime(expression, unitdate);
-        } else if (tryParseDate(FORMATTER_DATE, moveMinusToYearDate(expression))) {
-            return parseDate(moveMinusToYearDate(expression), unitdate);
-        } else {
-            throw new IllegalStateException();
+        // try to parse date using available parsers
+        for(DatePartParser parser: parsers) {
+        	Token result = parser.parseToken(estimate, negative, tokenString, type);
+        	if(result!=null) {
+	        	return result;
+        	}
         }
+        throw new IllegalArgumentException("Nepodporovaný výraz: " + tokenString);
     }
-
-    /**
-     * Parsování roku s měsícem.
-     *
-     * @param yearMonthString rok s měsícem
-     * @param unitdate        doplňovaný objekt
-     * @return výsledný token
-     */
-    private static Token parseYearMonth(final String yearMonthString, final IUnitdate unitdate) {
-        unitdate.formatAppend(YEAR_MONTH);
-
-        Token token = new Token();
+    
+    private static Token createCentury(Integer c, boolean estimate) {        
+        Token token = new Token(CENTURY, estimate);
         try {
-            YearMonth yearMonth = YearMonth.parse(yearMonthString, FORMATTER_YEAR_MONTH);
-            LocalDateTime date = LocalDateTime.from(yearMonth.atDay(1).atStartOfDay());
-            token.dateFrom = date;
-            date = date.plusMonths(1);
-            token.dateTo = date.minusSeconds(1);
-        } catch (DateTimeParseException e) {
-            throw new SystemException("Failed to parse", BaseCode.PROPERTY_IS_INVALID)
-                    .set("value", yearMonthString);
-        }
-
-        return token;
-    }
-
-    /**
-     * Parsování datumu s časem.
-     *
-     * @param dateString datum s časem
-     * @param unitdate   doplňovaný objekt
-     * @return výsledný token
-     */
-    private static Token parseDateTime(final String dateString, final IUnitdate unitdate) {
-        unitdate.formatAppend(DATE_TIME);
-
-        Token token = new Token();
-        try {
-            LocalDateTime date = LocalDateTime.parse(dateString, FORMATTER_DATE_TIME);
-            token.dateFrom = date;
-            token.dateTo = date;
-        } catch (DateTimeParseException e) {
-            LocalDateTime date = LocalDateTime.parse(dateString, FORMATTER_DATE_TIME2);
-            token.dateFrom = date;
-            token.dateTo = date.plusSeconds(59);
-        }
-
-        return token;
-    }
-
-    /**
-     * Parsování datumu.
-     *
-     * @param dateString datum
-     * @param unitdate   doplňovaný objekt
-     * @return výsledný token
-     */
-    private static Token parseDate(final String dateString, final IUnitdate unitdate) {
-        unitdate.formatAppend(DATE);
-
-        Token token = new Token();
-        try {
-            LocalDateTime date = LocalDateTime.from(LocalDate.parse(dateString, FORMATTER_DATE).atStartOfDay());
-            token.dateFrom = date;
-            date = date.plusDays(1);
-            date = date.minusSeconds(1);
-            token.dateTo = date;
-        } catch (DateTimeParseException e) {
-            throw new SystemException("Failed to parse", BaseCode.PROPERTY_IS_INVALID)
-                    .set("value", dateString);
-        }
-
-        return token;
-    }
-
-    /**
-     * Parsování roku.
-     *
-     * @param yearString rok
-     * @param unitdate   doplňovaný objekt
-     * @return výsledný token
-     */
-    private static Token parseYear(final String yearString, final IUnitdate unitdate) {
-        unitdate.formatAppend(YEAR);
-        Token token = new Token();
-        try {
-            Integer year = Integer.parseInt(yearString);
-            token.dateFrom = LocalDateTime.of(year, 1, 1, 0, 0);
-            token.dateTo = LocalDateTime.of(year, 12, 31, 23, 59, 59);
-        } catch (NumberFormatException | DateTimeParseException e) {
-            throw new SystemException("Failed to parse", BaseCode.PROPERTY_IS_INVALID)
-                    .set("value", yearString);
-        }
-
-        return token;
-    }
-
-    /**
-     * Parsování stolení.
-     *
-     * @param centuryString stolení
-     * @param unitdate      doplňovaný objekt
-     * @return výsledný token
-     */
-    private static Token parseCentury(final String centuryString, final IUnitdate unitdate) {
-        unitdate.formatAppend(CENTURY);
-        Token token = new Token();
-        try {
-
-            Pattern pattern = Pattern.compile(EXP_CENTURY);
-            Matcher matcher = pattern.matcher(centuryString);
-
-            Integer c;
-
-            if (matcher.find()) {
-                c = Integer.parseInt(matcher.group(1));
-            } else {
-                throw new IllegalStateException();
-            }
 
             token.dateFrom = LocalDateTime.of((c - 1) * 100 + 1, 1, 1, 0, 0);
             token.dateTo = LocalDateTime.of(c * 100, 12, 31, 23, 59, 59);
 
-        } catch (NumberFormatException | DateTimeParseException e) {
-            throw new SystemException("Failed to parse", BaseCode.PROPERTY_IS_INVALID)
-                    .set("value", centuryString);
+        } catch (DateTimeParseException e) {
+            throw new SystemException("Failed to create date, century: "+c, BaseCode.PROPERTY_IS_INVALID)
+                    .set("value", c);
         }
 
         return token;
-    }
+	}
 
-    /**
+	/**
      * Testování, zda-li odpovídá řetězec formátu
      *
      * @param formatter formát
      * @param s         řetězec
      * @return true - lze parsovat
      */
-    private static boolean tryParseDate(final DateTimeFormatter formatter, final String s) {
+	private static boolean tryParseDate(final DateTimeFormatter formatter, final String s) {
         try {
             formatter.withResolverStyle(ResolverStyle.STRICT);
             formatter.parse(s);
             return true;
         } catch (Exception e) {
             return false;
-        }
-    }
-
-    /**
-     * Přesunutí znaménka minus z začátku data na rok 
-     * 
-     * @param s datum, např -1.2.1024, -2.1024
-     * @return String, např 1.2.-1024, 2.-1024
-     */
-    private static String moveMinusToYearDate(final String s) {
-        if (!s.startsWith("-")) {
-            return s;
-        }
-        String[] parts = s.split("\\.");
-        switch (parts.length) {
-        // jen rok
-        case 1:
-            return s;
-        // měsíc a rok
-        case 2:
-            return String.format("%s.-%s", parts[0].substring(1), parts[1]);
-        // den, měsíc a rok
-        case 3:
-            return String.format("%s.%s.-%s", parts[0].substring(1), parts[1], parts[2]);  
-        default:
-            throw new IllegalStateException("Chyba formátu data: " + s);
-        }
-    }
-
-    /**
-     * Přesunutí znaménka mínus z roku na začátek data 
-     * 
-     * @param s datum, např 1.2.-1024
-     * @return String, např -1.2.1024
-     */
-    private static String moveMinusToDayDate(final String s) {
-        String[] parts = s.split("\\.");
-        switch (parts.length) {
-        // jen rok
-        case 1:
-            return s;
-        // měsíc a rok
-        case 2:
-            if (!parts[1].startsWith("-")) {
-                return s;
-            }
-            return String.format("-%s.%s", parts[0], parts[1].substring(1));
-        // den, měsíc a rok
-        case 3:
-            if (!parts[2].startsWith("-")) {
-                return s;
-            }
-            return String.format("-%s.%s.%s", parts[0], parts[1], parts[2].substring(1));  
-        default:
-            throw new IllegalStateException("Chyba formátu data: " + s);
         }
     }
 
@@ -726,17 +851,4 @@ public class UnitDateConvertor {
 
         return unitDate;
     }
-
-    /**
-     * Pomocná třída pro reprezentaci jednoho výrazu.
-     */
-    private static class Token {
-
-        public LocalDateTime dateFrom = null;
-
-        public LocalDateTime dateTo = null;
-
-        public boolean estimate = false;
-    }
-
 }
