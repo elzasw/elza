@@ -17,16 +17,16 @@ export function LangProvider({ children }: PropsWithChildren<Props>) {
   useEffect(() => {
     (async () => {
       const response = await fetch(`${serverContextPath}/static/locale/${locale}.json`);
-      const _messages:Record<string,string> = await response.json();
+      const _messages: Record<string, string> = await response.json();
 
       console.log("#### _messages", _messages);
       setMessages(_messages);
     })()
   }, [locale])
 
-  function handleLocaleChange(){
+  function handleLocaleChange() {
     const selectedLocaleIndex = locales.indexOf(locale);
-    if(selectedLocaleIndex + 1 < locales.length){
+    if (selectedLocaleIndex + 1 < locales.length) {
       setLocale(locales[selectedLocaleIndex + 1]);
     } else {
       setLocale(locales[0]);
@@ -37,7 +37,7 @@ export function LangProvider({ children }: PropsWithChildren<Props>) {
 
   return (
     <IntlProvider messages={messages} defaultLocale="cs" locale={locale}>
-      <Button onClick={handleLocaleChange}>{locale}</Button>
+      <Button style={{ display: "none" }} onClick={handleLocaleChange}>{locale}</Button>
       {children}
     </IntlProvider>
   );
