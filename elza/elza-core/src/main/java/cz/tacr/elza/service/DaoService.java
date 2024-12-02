@@ -16,6 +16,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.util.Strings;
+import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -420,6 +421,7 @@ public class DaoService {
         ArrChange change = null;
 
         for (ArrDao arrDao : arrDaos) {
+        	logger.debug("Deleting dao {}", arrDao.getDaoId());
             // smazat arr_dao_link
             List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDao(arrDao);
 
@@ -430,6 +432,8 @@ public class DaoService {
                 }
             }
             daoLinkRepository.deleteAll(arrDaoLinkList);
+            
+            logger.debug("Deleting dao {} - daoLinksDeleted", arrDao.getDaoId());
 
             // smazat arr_dao_file
             final List<ArrDaoFile> daoFileList = daoServiceInternal.getFilesByDao(arrDao);
@@ -453,6 +457,8 @@ public class DaoService {
 
             // smazat dao
             daoRepository.delete(arrDao);
+            
+            logger.debug("Deleted dao: {}", arrDao.getDaoId());
         }
 
         // smazat package

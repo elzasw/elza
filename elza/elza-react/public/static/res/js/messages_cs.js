@@ -284,7 +284,7 @@ var messages = {
     "ribbon.action.arr.arr": "Pořádání",
     "ribbon.action.arr.dataGrid": "Tabulkové zobrazení",
     "ribbon.action.arr.dataGrid.export": "Export",
-    "ribbon.action.arr.dataGrid.import": "Import",
+    "ribbon.action.arr.dataGrid.import": "Import prvků popisu",
     "ribbon.action.arr.dataGrid.import.success": "Import byl dokončen",
     "ribbon.action.arr.movements": "Přesuny",
     "ribbon.action.arr.output.add": "Nový výstup",
@@ -1785,7 +1785,11 @@ var messages = {
     "dataGrid.export.exportType.noSelection.item": "Není vybrán prvek",
     "dataGrid.export.title": "Export tabulkového zobrazení",
 
-    "dataGrid.import.title": "Import datových sloupců",
+    "dataGrid.import.title": "Import prvků popisu",
+    "dataGrid.import.format.hint":
+        '<p> Pro přidání prvků popisu vložte soubor CSV, kde každý řádek odpovídá jedné jednotce popisu ve tvaru: </p> <p> {<b style="color: var(--color-red)">UUID</b>},{<b style="color: var(--color-blue)">Kód prvku</b>},{<b style="color: var(--color-orange)">Kód specifikace</b>},{<b style="color: var(--color-green)">Hodnota prvku</b>},{<b style="color: var(--color-blue)">Kód prvku</b>},{<b style="color: var(--color-green)">Hodnota prvku</b>}... </p> <p>V jednom řádku je k jedné jednotce popisu možné přidat současně více prvků popisu. Kód specifikace a hodnota prvku jsou povinné/volitelné v závislosti na typu prvku popisu.</p>',
+    "dataGrid.import.format.example.title": "Příklad přidání prvků",
+    "dataGrid.import.format.example.message": "<ul> <li>Formální název: Divá Bára</li> <li>Jiná označení: signatura: 1234/75</li> <li>Typ archiválie: rukopis</li> </ul>",
 
     "accesspoint.name.name": "Jméno",
     "accesspoint.name.complement": "Doplněk",

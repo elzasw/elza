@@ -28,6 +28,11 @@ public class UnitDateConvertorConsts {
     public static final String DATE_TIME = "DT";
 
     /**
+     * Zkratka datumu s časem
+     */
+    public static final String FORMAT_DELIMITER = "-";
+
+    /**
      * Oddělovač pro interval
      */
     public static final String DEFAULT_INTERVAL_DELIMITER = "-";
