@@ -26,7 +26,8 @@ import {
     FundPage,
     HomePage,
     MapPage,
-    RegistryPage
+    RegistryPage,
+    ReportsPage
 } from 'pages';
 import { PropTypes } from 'prop-types';
 import React, { useEffect, useRef } from 'react';
@@ -254,6 +255,7 @@ class Layout extends AbstractReactComponent {
                                         <Route path="/admin/requestsQueue" component={AdminRequestsQueuePage} />
                                         <Route path="/admin/extSystem" component={AdminExtSystemPage} />
                                         <Route path="/admin/logs" component={AdminLogsPage} />
+                                        <Route path={'/admin/reports'} component={ReportsPage}/>
                                         <Route component={AdminPage} />
                                     </Switch>
                                 </Route>
