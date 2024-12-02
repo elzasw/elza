@@ -15,6 +15,7 @@ import {
     TableColumnId,
 } from "@fluentui/react-components";
 import { ReportReportData, ReportReportRow, ReportValueType } from "elza-api";
+import { FormattedMessage } from "react-intl";
 
 export interface Props {
     reportData: ReportReportData;
@@ -24,7 +25,7 @@ export function ReportsTable({ reportData }: Props) {
     const columns: TableColumnDefinition<ReportReportRow>[] = reportData.header.map((header, index) =>
         createTableColumn<ReportReportRow>({
             columnId: header,
-            renderHeaderCell: () => <>{header}</>,
+            renderHeaderCell: () => <><FormattedMessage id={`admin_reports_header_${header}`} /></>,
             renderCell: (item) => {
                 if (item.cols[index].valueType === ReportValueType.String) {
                     return <>{(item.cols[index] as any).textValue}</>;

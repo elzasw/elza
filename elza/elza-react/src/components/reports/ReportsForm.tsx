@@ -26,6 +26,26 @@ import {
     ReportValueString,
     ReportValueType,
 } from "elza-api";
+import { FormattedMessage, useIntl, defineMessages } from "react-intl";
+
+const messages = defineMessages({
+    selectReport: {
+        id: "admin_reports_select_report",
+        defaultMessage: "Vyberte přehled...",
+    },
+    reset: {
+        id: "admin_reports_form_reset",
+        defaultMessage: "Reset",
+    },
+    show: {
+        id: "admin_reports_form_show",
+        defaultMessage: "Zobrazit",
+    },
+    reportDefinition: {
+        id: "admin_reports_form_reportDefinition",
+        defaultMessage: "Přehled"
+    }
+})
 
 // export type Fields = Record<string, ReportValueAccesspointId | ReportValueFondId | ReportValueString | ReportValueInteger | ReportValueDate> & { definitionCode: string }
 export type _Fields = Record<string, string | number> & { definitionCode: string };
@@ -126,6 +146,7 @@ function transformValue(value: any, paramDefinition: ReportReportParamDefinition
 
 export function ReportsForm({ onSubmit }: Props) {
     const [reportCategories, setReportCategories] = useState<ReportReportCategory[]>([]);
+    const { formatMessage } = useIntl();
 
     useEffect(() => {
         (async () => {
@@ -186,11 +207,12 @@ export function ReportsForm({ onSubmit }: Props) {
                                     function handleChange(e: any, data: any) {
                                         form.change("definitionCode", data.optionValue);
                                     }
-                                    console.log("#### render def code", input.value, selectedValue);
 
                                     return (
                                         <div style={{ display: "flex", flexDirection: "column" }}>
-                                            <Label htmlFor="definitionCode">Přehled</Label>
+                                            <Label htmlFor="definitionCode">
+                                                <FormattedMessage {...messages.reportDefinition} />
+                                            </Label>
                                             <Dropdown
                                                 {...input}
                                                 value={selectedValue}
@@ -198,7 +220,7 @@ export function ReportsForm({ onSubmit }: Props) {
                                                 onOptionSelect={handleChange}
                                                 type="button"
                                                 id="definitionCode"
-                                            // placeholder="Vyberte přehled..."
+                                                placeholder={formatMessage(messages.selectReport)}
                                             >
                                                 {reportCategories.map(({ name, code, reportDefinitions }) => {
                                                     return (
@@ -216,13 +238,13 @@ export function ReportsForm({ onSubmit }: Props) {
                             </Field>
                             {params?.map(({ code, name, required, paramType }) => {
                                 if (paramType === ReportValueType.Int) {
-                                    return <FluentNumberField name={code} label={name} isRequired={required} />;
+                                    return <FluentNumberField name={code} label={formatMessage({ id: `admin_reports_form_property_${name}` })} isRequired={required} />;
                                 }
                                 if (paramType === ReportValueType.String) {
-                                    return <FluentStringField name={code} label={name} isRequired={required} />;
+                                    return <FluentStringField name={code} label={formatMessage({ id: `admin_reports_form_property_${name}` })} isRequired={required} />;
                                 }
                                 if (paramType === ReportValueType.Date) {
-                                    return <FluentDateField name={code} label={name} isRequired={required} />;
+                                    return <FluentDateField name={code} label={formatMessage({ id: `admin_reports_form_property_${name}` })} isRequired={required} />;
                                 }
                                 return (
                                     <div>
@@ -233,10 +255,10 @@ export function ReportsForm({ onSubmit }: Props) {
                             })}
                             <div style={{ margin: "-8px", marginTop: "32px", display: "flex", justifyContent: "flex-end" }}>
                                 <Button style={{ margin: "8px" }} onClick={handleReset}>
-                                    Reset
+                                    <FormattedMessage {...messages.reset} />
                                 </Button>
                                 <Button style={{ margin: "8px" }} appearance="primary" onClick={handleSubmit}>
-                                    Zobrazit
+                                    <FormattedMessage {...messages.show} />
                                 </Button>
                             </div>
                         </form>
