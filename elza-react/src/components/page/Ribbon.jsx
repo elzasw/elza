@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import { IndexLinkContainer, LinkContainer } from 'react-router-bootstrap';
 import { AbstractReactComponent, i18n, Icon, RibbonGroup, RibbonMenu, RibbonSplit } from 'components/shared';
 import { Dropdown, Button as BootstrapButton } from 'react-bootstrap';
+import { FormattedMessage, defineMessages } from 'react-intl';
 import { Button } from '../ui';
 import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
 import { logout } from 'actions/global/login.jsx';
@@ -31,6 +32,13 @@ import UserSettingsModal from 'components/user/UserSettingsModal';
 
 // Nacteni globalni promenne ze <script> v <head>
 const displayUserInfo = window.displayUserInfo !== undefined ? window.displayUserInfo : true;
+
+const messages = defineMessages({
+    reports: {
+        id: 'ribbon_action_admin_reports',
+        defaultMessage: 'Přehledy',
+    },
+});
 
 class Ribbon extends AbstractReactComponent {
     static propTypes = {
@@ -190,7 +198,9 @@ class Ribbon extends AbstractReactComponent {
                         <LinkContainer key="ribbon-btn-admin-reports" to="/admin/reports">
                             <Button variant={'default'}>
                                 <Icon glyph="fa-line-chart" />
-                                <span className="btnText">{i18n('ribbon.action.admin.reports')}</span>
+                                <span className="btnText">
+                                    <FormattedMessage {...messages.reports} />
+                                </span>
                             </Button>
                         </LinkContainer>,
                         <LinkContainer key="ribbon-btn-admin-packages" to="/admin/packages">
