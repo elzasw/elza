@@ -187,10 +187,22 @@ class Ribbon extends AbstractReactComponent {
                         </LinkContainer>
                     )}
                     {isSuperuser && [
+                        <LinkContainer key="ribbon-btn-admin-reports" to="/admin/reports">
+                            <Button variant={'default'}>
+                                <Icon glyph="fa-line-chart" />
+                                <span className="btnText">{i18n('ribbon.action.admin.reports')}</span>
+                            </Button>
+                        </LinkContainer>,
                         <LinkContainer key="ribbon-btn-admin-packages" to="/admin/packages">
                             <Button variant={'default'}>
                                 <Icon glyph="fa-archive" />
                                 <span className="btnText">{i18n('ribbon.action.admin.packages')}</span>
+                            </Button>
+                        </LinkContainer>,
+                        <LinkContainer key="ribbon-btn-admin-external-systems" to="/admin/extSystem">
+                            <Button variant={'default'}>
+                                <Icon glyph="fa-external-link" />
+                                <span className="btnText">{i18n('ribbon.action.admin.externalSystems')}</span>
                             </Button>
                         </LinkContainer>,
                         <LinkContainer key="ribbon-btn-admin-bulkActions" to="/admin/backgroundProcesses">
@@ -203,12 +215,6 @@ class Ribbon extends AbstractReactComponent {
                             <Button variant={'default'}>
                                 <Icon glyph="fa-shopping-basket" />
                                 <span className="btnText">{i18n('ribbon.action.admin.requestsQueue')}</span>
-                            </Button>
-                        </LinkContainer>,
-                        <LinkContainer key="ribbon-btn-admin-external-systems" to="/admin/extSystem">
-                            <Button variant={'default'}>
-                                <Icon glyph="fa-external-link" />
-                                <span className="btnText">{i18n('ribbon.action.admin.externalSystems')}</span>
                             </Button>
                         </LinkContainer>,
                         <LinkContainer key="ribbon-btn-admin-show-logs" to="/admin/logs">
