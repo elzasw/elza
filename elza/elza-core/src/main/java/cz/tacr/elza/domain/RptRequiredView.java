@@ -17,7 +17,7 @@ public class RptRequiredView {
     @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)
-    private Integer viewId;
+    private Integer requiredViewId;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = RptReport.class)
     @JoinColumn(name = "report_id")
@@ -26,12 +26,12 @@ public class RptRequiredView {
     @Column(length = StringLength.LENGTH_250, nullable = false)
     private String viewName;
 
-	public Integer getViewId() {
-		return viewId;
+	public Integer getRequiredViewId() {
+		return requiredViewId;
 	}
 
-	public void setViewId(Integer viewId) {
-		this.viewId = viewId;
+	public void setRequiredViewId(Integer viewId) {
+		this.requiredViewId = viewId;
 	}
 
 	public RptReport getReport() {

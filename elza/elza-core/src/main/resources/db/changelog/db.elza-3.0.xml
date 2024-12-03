@@ -411,7 +411,7 @@
 		</createTable>
 		<!-- typy hodnot sestav -->
 		<createTable tableName="rpt_value_type">
-            <column name="value_type_id" type="int" autoIncrement="true">
+            <column name="value_type_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
             <column name="code" type="nvarchar(50)">
@@ -445,7 +445,7 @@
 		</createTable>
 		<!-- seznam požadovaných view -->
 		<createTable tableName="rpt_required_view">
-            <column name="view_id" type="int" autoIncrement="true">
+            <column name="required_view_id" type="int">
                 <constraints primaryKey="true"/>
             </column>
             <column name="report_id" type="int"/>
@@ -467,18 +467,55 @@
 			<column name="name">Zpracování archiválií</column>
 		</insert>
 		<!-- datové typy pro parametry -->
-		<insert tableName="rpt_value_type"><column name="code">INT</column><column name="name">Integer</column></insert>
-		<insert tableName="rpt_value_type"><column name="code">STRING</column><column name="name">String</column></insert>
-		<insert tableName="rpt_value_type"><column name="code">BOOLEAN</column><column name="name">Boolean</column></insert>
-		<insert tableName="rpt_value_type"><column name="code">DATE</column><column name="name">Date</column></insert>
-		<insert tableName="rpt_value_type"><column name="code">USER_ID</column><column name="name">User id</column></insert>
-		<insert tableName="rpt_value_type"><column name="code">GROUP_ID</column><column name="name">User group id</column></insert>
-		<insert tableName="rpt_value_type"><column name="code">FUND_ID</column><column name="name">Fund id</column></insert>
-		<insert tableName="rpt_value_type"><column name="code">AP_ID</column><column name="name">AccessPoint id</column></insert>
-		<insert tableName="rpt_value_type"><column name="code">ITEM_TYPE_ID</column><column name="name">Item type id</column></insert>
-		<insert tableName="rpt_value_type"><column name="code">ITEM_SPEC_ID</column><column name="name">Item specification id</column></insert>
-		<insert tableName="rpt_value_type"><column name="code">SCOPE_ID</column><column name="name">Scope id</column></insert>
-		<insert tableName="rpt_value_type"><column name="code">AP_TYPE_ID</column><column name="name">AccessPoint type id</column></insert>
+		<insert tableName="rpt_value_type">
+		  <column name="value_type_id" value="1" />
+		  <column name="code" value="INT" />
+		  <column name="name" value="Integer" />
+		</insert>
+		<insert tableName="rpt_value_type">
+		 <column name="value_type_id" value="2" />
+		 <column name="code" value="STRING" />
+		 <column name="name" value="String" /></insert>
+		<insert tableName="rpt_value_type">
+		 <column name="value_type_id" value="3" />
+		 <column name="code" value="BOOLEAN" />
+		 <column name="name" value="Boolean" /></insert>
+		<insert tableName="rpt_value_type">
+		 <column name="value_type_id" value="4" />
+		 <column name="code" value="DATE" />
+		 <column name="name" value="Date" /></insert>
+		<insert tableName="rpt_value_type">
+		 <column name="value_type_id" value="5" />
+		 <column name="code" value="USER_ID" />
+		 <column name="name" value="User id" /></insert>
+		<insert tableName="rpt_value_type">
+		 <column name="value_type_id" value="6" />
+		 <column name="code" value="GROUP_ID" />
+		 <column name="name" value="User group id" /></insert>
+		<insert tableName="rpt_value_type">
+		 <column name="value_type_id" value="7" />
+		 <column name="code" value="FUND_ID" />
+		 <column name="name" value="Fund id" /></insert>
+		<insert tableName="rpt_value_type">
+		 <column name="value_type_id" value="8" />
+		 <column name="code" value="AP_ID" />
+		 <column name="name" value="AccessPoint id" /></insert>
+		<insert tableName="rpt_value_type">
+		 <column name="value_type_id" value="9" />
+		 <column name="code" value="ITEM_TYPE_ID" />
+		 <column name="name" value="Item type id" /></insert>
+		<insert tableName="rpt_value_type">
+		 <column name="value_type_id" value="10" />
+		 <column name="code" value="ITEM_SPEC_ID" />
+		 <column name="name" value="Item specification id" /></insert>
+		<insert tableName="rpt_value_type">
+		 <column name="value_type_id" value="11" />
+		 <column name="code" value="SCOPE_ID" />
+		 <column name="name" value="Scope id" /></insert>
+		<insert tableName="rpt_value_type">
+		 <column name="value_type_id" value="12" />
+		 <column name="code" value="AP_TYPE_ID" />
+		 <column name="name" value="AccessPoint type id" /></insert>
 		<!-- interní (vestavěné) sestavy -->
 		<insert tableName="rpt_report">
 			<!-- SYS_TOTAL_COUNT -->
@@ -507,18 +544,18 @@
 		<!-- parametry pro interní (vestavěné) sestavy -->
 		<insert tableName="rpt_param">
 			<column name="param_id">1</column>
-			<column name="report_id">2</column> <!-- SYS_INSTITUTION_COUNT -->
+			<column name="report_id">2</column> <!-- SYS_MONTH_USER_COUNT -->
 			<column name="value_type_id">4</column>
-			<column name="code">DATE</column>
+			<column name="code">DATE_FROM</column>
 			<column name="name">DateFrom</column>
 			<column name="repeatable">false</column>
 			<column name="required">true</column>
 		</insert>
 		<insert tableName="rpt_param">
 			<column name="param_id">2</column>
-			<column name="report_id">2</column> <!-- SYS_INSTITUTION_COUNT -->
+			<column name="report_id">2</column> <!-- SYS_MONTH_USER_COUNT -->
 			<column name="value_type_id">4</column>
-			<column name="code">DATE</column>
+			<column name="code">DATE_TO</column>
 			<column name="name">DateTo</column>
 			<column name="repeatable">false</column>
 			<column name="required">false</column>
@@ -527,22 +564,62 @@
 			<column name="param_id">3</column>
 			<column name="report_id">3</column> <!-- SYS_INSTITUTION_COUNT -->
 			<column name="value_type_id">4</column>
-			<column name="code">DATE</column>
+			<column name="code">DATE_TO</column>
 			<column name="name">Date</column>
 			<column name="repeatable">false</column>
 			<column name="required">false</column>
 		</insert>
 		<!-- seznam požadovaných view pro sestavy -->
-		<insert tableName="rpt_required_view"><column name="report_id">1</column><column name="view_name">rpt_view_node_change</column></insert>
-		<insert tableName="rpt_required_view"><column name="report_id">1</column><column name="view_name">rpt_view_item_change</column></insert>
-		<insert tableName="rpt_required_view"><column name="report_id">1</column><column name="view_name">rpt_view_ap_usage</column></insert>
-		<insert tableName="rpt_required_view"><column name="report_id">2</column><column name="view_name">rpt_view_node_change</column></insert>
-		<insert tableName="rpt_required_view"><column name="report_id">2</column><column name="view_name">rpt_view_item_change</column></insert>
-		<insert tableName="rpt_required_view"><column name="report_id">2</column><column name="view_name">rpt_view_ap_change</column></insert>
-		<insert tableName="rpt_required_view"><column name="report_id">2</column><column name="view_name">rpt_view_ap_usage</column></insert>
-		<insert tableName="rpt_required_view"><column name="report_id">3</column><column name="view_name">rpt_view_node_change</column></insert>
-		<insert tableName="rpt_required_view"><column name="report_id">3</column><column name="view_name">rpt_view_item_change</column></insert>
-		<insert tableName="rpt_required_view"><column name="report_id">3</column><column name="view_name">rpt_view_ap_usage</column></insert>
+		<insert tableName="rpt_required_view">
+		  <column name="required_view_id" value="1"/>
+		  <column name="report_id" value="1"/>
+          <column name="view_name" value="rpt_view_node_change" />
+        </insert>
+		<insert tableName="rpt_required_view">
+		  <column name="required_view_id" value="2"/>
+		  <column name="report_id" value="1"/>
+		  <column name="view_name" value="rpt_view_item_change"/>
+		</insert>
+		<insert tableName="rpt_required_view">
+		  <column name="required_view_id" value="3"/>
+		  <column name="report_id" value="1"/>
+		  <column name="view_name" value="rpt_view_ap_usage"/>
+		</insert>
+		<insert tableName="rpt_required_view">
+		  <column name="required_view_id" value="4"/>
+		  <column name="report_id" value="2"/>
+		  <column name="view_name" value="rpt_view_node_change"/>
+		</insert>
+		<insert tableName="rpt_required_view">		
+		  <column name="required_view_id" value="5"/>
+		  <column name="report_id" value="2"/>
+		  <column name="view_name" value="rpt_view_item_change"/>
+		</insert>
+		<insert tableName="rpt_required_view">
+		  <column name="required_view_id" value="6"/>
+		  <column name="report_id" value="2"/>
+		  <column name="view_name" value="rpt_view_ap_change"/>
+		</insert>
+		<insert tableName="rpt_required_view">
+		  <column name="required_view_id" value="7"/>
+		  <column name="report_id" value="2"/>
+		  <column name="view_name" value="rpt_view_ap_usage"/>
+		</insert>
+		<insert tableName="rpt_required_view">
+		  <column name="required_view_id" value="8"/>
+		  <column name="report_id" value="3"/>
+		  <column name="view_name" value="rpt_view_node_change"/>
+		</insert>
+		<insert tableName="rpt_required_view">
+		  <column name="required_view_id" value="9"/>
+		  <column name="report_id" value="3"/>
+		  <column name="view_name" value="rpt_view_item_change"/>
+		</insert>
+		<insert tableName="rpt_required_view">
+		  <column name="required_view_id" value="10"/>
+		  <column name="report_id" value="3"/>
+		  <column name="view_name" value="rpt_view_ap_usage"/>
+		</insert>
 	</changeSet>
 
 </databaseChangeLog>
