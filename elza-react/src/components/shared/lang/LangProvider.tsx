@@ -16,7 +16,7 @@ export function LangProvider({ children }: PropsWithChildren<Props>) {
 
   useEffect(() => {
     (async () => {
-      const response = await fetch(`${serverContextPath}/static/locale/${locale}.json`);
+      const response = await fetch(`${serverContextPath}/static/res/locale/${locale}.json`);
       const _messages: Record<string, string> = await response.json();
 
       console.log("#### _messages", _messages);
