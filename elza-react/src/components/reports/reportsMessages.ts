@@ -3,7 +3,7 @@ import { defineMessages } from "react-intl";
 export const headerMessages = defineMessages({
     asPocet: {
         id: "admin_reports_header_as_pocet",
-        defaultMessage: "Počet archivnich souboru",
+        defaultMessage: "Počet archivních souboru",
     },
     jpPocet: {
         id: "admin_reports_header_jp_pocet",
@@ -15,7 +15,7 @@ export const headerMessages = defineMessages({
     },
     aePocet: {
         id: "admin_reports_header_ae_pocet",
-        defaultMessage: "Počet archivnich entit",
+        defaultMessage: "Počet archivních entit",
     },
     pbPocet: {
         id: "admin_reports_header_pb_pocet",
@@ -48,6 +48,62 @@ export const headerMessages = defineMessages({
     refentsCnt: {
         id: "admin_reports_header_refents_cnt",
         defaultMessage: "Počet napojených entit",
+    },
+    dateYear: {
+        id: "admin_reports_header_date_year",
+        defaultMessage: "Rok"
+    },
+    dateMonth: {
+        id: "admin_reports_header_date_month",
+        defaultMessage: "Měsíc"
+    },
+    username: {
+        id: "admin_reports_header_username",
+        defaultMessage: "Uživatel"
+    },
+    levelNew: {
+        id: "admin_reports_header_level_new",
+        defaultMessage: "Nové jednotky popisu"
+    },
+    levelDelete: {
+        id: "admin_reports_header_level_delete",
+        defaultMessage: "Smazané jednotky popisu"
+    },
+    itemNew: {
+        id: "admin_reports_header_item_new",
+        defaultMessage: "Nové prvky popisu"
+    },
+    itemUpdate: {
+        id: "admin_reports_header_item_update",
+        defaultMessage: "Změněné prvky popisu"
+    },
+    itemDelete: {
+        id: "admin_reports_header_item_delete",
+        defaultMessage: "Smazané prvky popisu"
+    },
+    apNew: {
+        id: "admin_reports_header_ap_new",
+        defaultMessage: "Nové arch. entity"
+    },
+    apUpdate: {
+        id: "admin_reports_header_ap_update",
+        defaultMessage: "Změněné arch. entity"
+    },
+    apDelete: {
+        id: "admin_reports_header_ap_delete",
+        defaultMessage: "Smazané arch. entity"
+    },
+    apReplace: {
+        id: "admin_reports_header_ap_replace",
+        defaultMessage: "Nahrazené arch. entity"
+    },
+    apusgNew: {
+        id: "admin_reports_header_apusg_new",
+        defaultMessage: "Nové přístupové body"
+    },
+    apusgDelete: {
+        id: "admin_reports_header_apusg_delete",
+        defaultMessage: "Odstraněné přístupové body"
     },
 })
 
