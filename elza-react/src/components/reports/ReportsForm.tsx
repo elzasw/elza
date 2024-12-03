@@ -183,10 +183,30 @@ export function ReportsForm({ onSubmit }: Props) {
         onSubmit(values.definitionCode, transformedValues);
     }
 
+    function validate(values: _Fields) {
+        const errors: Record<string, string> = {}
+        try {
+            if (!values.definitionCode) {
+                errors.definitionCode = "Required"
+                return errors;
+            }
+
+            const { params } = getReportDefinition(values.definitionCode);
+            params?.forEach(({ code, required }) => {
+                if (!values[code] && required) {
+                    errors[code] = `${code} is required`
+                }
+            })
+        } catch (error) {
+            console.error(error);
+        }
+        return errors;
+    }
+
     return (
         <div style={{ overflow: "auto", height: "100%", padding: "20px" }}>
-            <Form<_Fields> onSubmit={handleSubmit}>
-                {({ handleSubmit, values, form }) => {
+            <Form<_Fields> onSubmit={handleSubmit} validate={validate}>
+                {({ handleSubmit, values, form, valid }) => {
                     function handleReset() {
                         form.reset();
                     }
@@ -239,13 +259,25 @@ export function ReportsForm({ onSubmit }: Props) {
                             </Field>
                             {params?.map(({ code, name, required, paramType }) => {
                                 if (paramType === ReportValueType.Int) {
-                                    return <FluentNumberField name={code} label={formatMessage({ id: `admin_reports_form_property_${name}` })} isRequired={required} />;
+                                    return <FluentNumberField
+                                        name={code}
+                                        label={formatMessage({ id: `admin_reports_form_property_${name}` })}
+                                        isRequired={required}
+                                    />;
                                 }
                                 if (paramType === ReportValueType.String) {
-                                    return <FluentStringField name={code} label={formatMessage({ id: `admin_reports_form_property_${name}` })} isRequired={required} />;
+                                    return <FluentStringField
+                                        name={code}
+                                        label={formatMessage({ id: `admin_reports_form_property_${name}` })}
+                                        isRequired={required}
+                                    />;
                                 }
                                 if (paramType === ReportValueType.Date) {
-                                    return <FluentDateField name={code} label={formatMessage({ id: `admin_reports_form_property_${name}` })} isRequired={required} />;
+                                    return <FluentDateField
+                                        name={code}
+                                        label={formatMessage({ id: `admin_reports_form_property_${name}` })}
+                                        isRequired={required}
+                                    />;
                                 }
                                 return (
                                     <div>
@@ -258,7 +290,7 @@ export function ReportsForm({ onSubmit }: Props) {
                                 <Button style={{ margin: "8px" }} onClick={handleReset}>
                                     <FormattedMessage {...messages.reset} />
                                 </Button>
-                                <Button style={{ margin: "8px" }} appearance="primary" onClick={handleSubmit}>
+                                <Button style={{ margin: "8px" }} appearance="primary" onClick={handleSubmit} disabled={!valid}>
                                     <FormattedMessage {...messages.show} />
                                 </Button>
                             </div>
