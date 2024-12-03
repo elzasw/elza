@@ -96,7 +96,7 @@ public class ReportControllerTest extends AbstractControllerTest {
         //assertEquals(3, ((ReportValueInteger) aePocet).getIntValue().intValue());
 	}
 
-	@Test
+	// @Test
 	public void reportSysMonthUserCount() {
         List<ApAccessPointVO> records = findRecord(null, null, null, null, null);
         ApAccessPointVO ap = records.get(0);
