@@ -190,6 +190,7 @@
                                             <includes>
                                                 <include>js/*.*</include>
                                                 <include>assets/*.*</include>
+                                                <include>locale/*.*</include>
                                             </includes>
                                         </resource>
                                     </resources>
