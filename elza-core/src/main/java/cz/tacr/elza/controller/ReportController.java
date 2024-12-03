@@ -1,18 +1,21 @@
 package cz.tacr.elza.controller;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.common.ResponseFactory;
 import cz.tacr.elza.controller.vo.ReportReportCategory;
-import cz.tacr.elza.controller.vo.ReportReportDefinition;
 import cz.tacr.elza.controller.vo.ReportReportFormat;
 import cz.tacr.elza.controller.vo.ReportReportParameters;
 import cz.tacr.elza.domain.UsrUser;
@@ -20,7 +23,6 @@ import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.report.ReportRequest;
 import cz.tacr.elza.service.report.ReportService;
 import cz.tacr.elza.service.report.ReportWorker;
-import jakarta.transaction.Transactional;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -114,7 +116,23 @@ public class ReportController implements ReportApi {
 
         switch (reportRequest.getState()) {
         case FINISHED:
-            return ResponseEntity.status(HttpStatus.OK).body(reportRequest.getReportData());
+        	switch (format) {
+        	case JSON:
+        		return ResponseEntity.status(HttpStatus.OK).body(reportRequest.getReportData());
+        	case CSV:
+                String data = reportService.getCsvReport(reportRequest.getReportData());
+                byte[] dataBytes = data.getBytes();
+                ByteArrayResource resource = new ByteArrayResource(dataBytes);
+                HttpHeaders headers = new HttpHeaders();
+                headers.add(HttpHeaders.CONTENT_ENCODING, StandardCharsets.UTF_8.name());
+                headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_PLAIN_VALUE);
+                headers.add(HttpHeaders.CONTENT_LENGTH, Long.toString(dataBytes.length));
+                headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=report_data.csv");
+                headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
+                headers.add(HttpHeaders.PRAGMA, "no-cache");
+                headers.add(HttpHeaders.EXPIRES, "0");
+                return new ResponseEntity<>(resource, headers, HttpStatus.OK);
+        	}
         case PROCESSING:
             return ResponseEntity.status(102).build();
         case ERROR:

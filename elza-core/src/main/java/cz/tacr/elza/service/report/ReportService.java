@@ -23,7 +23,10 @@ import cz.tacr.elza.controller.vo.ReportReportDefinition;
 import cz.tacr.elza.controller.vo.ReportReportParamDefinition;
 import cz.tacr.elza.controller.vo.ReportReportParameters;
 import cz.tacr.elza.controller.vo.ReportReportRow;
+import cz.tacr.elza.controller.vo.ReportValue;
+import cz.tacr.elza.controller.vo.ReportValueAccesspointId;
 import cz.tacr.elza.controller.vo.ReportValueDate;
+import cz.tacr.elza.controller.vo.ReportValueFondId;
 import cz.tacr.elza.controller.vo.ReportValueInteger;
 import cz.tacr.elza.controller.vo.ReportValueString;
 import cz.tacr.elza.controller.vo.ReportValueType;
@@ -430,4 +433,50 @@ public class ReportService {
 
 		return viewUpdate;
 	}
+
+	/**
+	 * Generování sestavy ve formátu VSD
+	 * 
+	 * @param reportData
+	 * @return
+	 */
+	public String getCsvReport(ReportReportData reportData) {
+		StringBuilder sb = new StringBuilder();
+		for (String header: reportData.getHeader()) {
+			if (!sb.isEmpty()) {
+				sb.append(",");
+			}
+			sb.append(header);
+		}
+		for (ReportReportRow row : reportData.getRows()) {
+			StringBuilder sbr = new StringBuilder();
+			for (ReportValue value : row.getCols()) {
+				if (!sbr.isEmpty()) {
+					sbr.append(",");
+				}
+				switch (value.getValueType()) {
+				case INT:
+					sbr.append(((ReportValueInteger) value).getIntValue());
+					break;
+				case STRING:
+					sbr.append(((ReportValueString) value).getTextValue());
+					break;
+				case DATE:
+					sbr.append(((ReportValueDate) value).getDateValue());
+					break;
+				case AP_ID:
+					sbr.append(((ReportValueAccesspointId) value).getAccesspointId());
+					break;
+				case FUND_ID:
+					sbr.append(((ReportValueFondId) value).getFondId());
+					break;
+				default:
+					throw new IllegalArgumentException("Unexpected type: " + value.getValueType());
+				}
+			}
+			sb.append("\n" + sbr.toString());
+		}
+		return sb.toString();
+	}
+
 }
