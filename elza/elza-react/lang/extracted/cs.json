@@ -49,8 +49,32 @@
   "admin_reports_header_ae_pocet": {
     "defaultMessage": "Počet archivnich entit"
   },
+  "admin_reports_header_ap_delete": {
+    "defaultMessage": "Smazané přístupové body"
+  },
+  "admin_reports_header_ap_new": {
+    "defaultMessage": "Nové přístupové body"
+  },
+  "admin_reports_header_ap_replace": {
+    "defaultMessage": "Nahrazené přístupové body"
+  },
+  "admin_reports_header_ap_update": {
+    "defaultMessage": "Upravené přístupové body"
+  },
+  "admin_reports_header_apusg_delete": {
+    "defaultMessage": "Smazané napojení přístupového bodu"
+  },
+  "admin_reports_header_apusg_new": {
+    "defaultMessage": "Nové napojení přístupového bodu"
+  },
   "admin_reports_header_as_pocet": {
     "defaultMessage": "Počet archivnich souboru"
+  },
+  "admin_reports_header_date_month": {
+    "defaultMessage": "Měsíc"
+  },
+  "admin_reports_header_date_year": {
+    "defaultMessage": "Rok"
   },
   "admin_reports_header_fonds_cnt": {
     "defaultMessage": "Počet fondů"
@@ -58,11 +82,26 @@
   "admin_reports_header_internal_code": {
     "defaultMessage": "Interní kód"
   },
+  "admin_reports_header_item_delete": {
+    "defaultMessage": "Smazané prvky popisu"
+  },
+  "admin_reports_header_item_new": {
+    "defaultMessage": "Nové prvky popisu"
+  },
+  "admin_reports_header_item_update": {
+    "defaultMessage": "Upravené prvky popisu"
+  },
   "admin_reports_header_items_cnt": {
     "defaultMessage": "Počet prvků popisu"
   },
   "admin_reports_header_jp_pocet": {
     "defaultMessage": "Počet jednotek popisu"
+  },
+  "admin_reports_header_level_delete": {
+    "defaultMessage": "Smazané úrovně"
+  },
+  "admin_reports_header_level_new": {
+    "defaultMessage": "Nové úrovně"
   },
   "admin_reports_header_levels_cnt": {
     "defaultMessage": "Počet úrovní"
@@ -79,6 +118,9 @@
   "admin_reports_header_string_value": {
     "defaultMessage": "Název"
   },
+  "admin_reports_header_username": {
+    "defaultMessage": "Uživatel"
+  },
   "admin_reports_header_vpb_pocet": {
     "defaultMessage": "Počet vazeb přístupových bodů"
   },
@@ -87,5 +129,8 @@
   },
   "admin_reports_select_report": {
     "defaultMessage": "Vyberte přehled..."
+  },
+  "ribbon_action_admin_reports": {
+    "defaultMessage": "Přehledy"
   }
 }
