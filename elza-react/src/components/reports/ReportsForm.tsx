@@ -124,19 +124,19 @@ function transformValue(value: any, paramDefinition: ReportReportParamDefinition
     const { code, paramType } = paramDefinition;
 
     const transformedValue: ReportValue = { valueType: paramType };
-    if (code === ReportValueType.Int) {
+    if (paramType === ReportValueType.Int) {
         return {
             ...transformedValue,
             intValue: value,
         } as ReportValueInteger;
     }
-    if (code === ReportValueType.String) {
+    if (paramType === ReportValueType.String) {
         return {
             ...transformedValue,
             textValue: value,
         } as ReportValueString;
     }
-    if (code === ReportValueType.Date) {
+    if (paramType === ReportValueType.Date) {
         return {
             ...transformedValue,
             dateValue: new Date(value).toISOString(),
@@ -168,10 +168,11 @@ export function ReportsForm({ onSubmit }: Props) {
         const { params } = getReportDefinition(values.definitionCode);
 
         Object.entries(values).forEach(([key, value]) => {
-            if (!Object.values(ReportValueType).find((_value) => key == _value)) {
-                return;
-            } // skip unknown/added types e.g. definitionCode;
             const paramDefinition = params.find(({ code }) => code === key);
+            // skip unknown/added types e.g. definitionCode;
+            if(!paramDefinition) {
+                return;
+            }
             const _value = transformValue(value, paramDefinition);
             transformedValues.params.push({
                 code: key,
