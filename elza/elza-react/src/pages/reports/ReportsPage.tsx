@@ -4,8 +4,9 @@ import PageLayout from "../shared/layout/PageLayout";
 import { useSelector } from "react-redux";
 import { AppState } from "typings/store";
 import { useState } from "react";
-import { Api } from "api";
+import { Api, basePath } from "api";
 import {
+    ReportApiAxiosParamCreator,
     ReportReportData,
     ReportReportFormat,
     ReportReportParameters,
@@ -18,6 +19,8 @@ import { Button } from "@fluentui/react-components";
 import { ReportsForm, ReportsTable } from "components/reports";
 import { WaitingOverlay } from "components/shared/waiting-overlay";
 import { FormattedMessage, defineMessages } from "react-intl";
+import { downloadAjaxFile, downloadFile, downloadFileInFrame } from "actions/global/download";
+import { useThunkDispatch } from "utils/hooks";
 
 const messages = defineMessages({
     generationTime: {
@@ -40,6 +43,8 @@ export function ReportsPage() {
     const [isFetchingReport, setIsFetchingReport] = useState(false);
     const [_isReportFetched, setIsReportFetched] = useState(false);
     const [lastReportId, setLastReportId] = useState<number>();
+    const [lastReportDefinition, setLastReportDefinition] = useState<string>();
+    const dispatch = useThunkDispatch();
 
     const buildRibbon = () => {
         return <Ribbon admin={true} />;
@@ -54,6 +59,7 @@ export function ReportsPage() {
 
         setIsFetchingReport(true);
         setIsReportFetched(false);
+        setLastReportDefinition(definitionCode);
         const intervalId = setInterval(async () => {
             try {
                 const { data: reportState } = await Api.report.reportGetReportStatus(reportId);
@@ -79,8 +85,8 @@ export function ReportsPage() {
     };
 
     async function handleDownload() {
-        const { data: reportResult } = await Api.report.reportGetReport(lastReportId, ReportReportFormat.Csv);
-        console.log("#### report download csv", reportResult);
+        const { url } = await ReportApiAxiosParamCreator().reportGetReport(lastReportId, ReportReportFormat.Csv);
+        dispatch(downloadFile(`${basePath}${url}`));
     }
 
     const reportDate = reportData ? new Date(reportData.sourceDataDate) : new Date();

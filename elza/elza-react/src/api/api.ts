@@ -26,7 +26,7 @@ export const serverContextPath = window.serverContextPath || "";
 
 const baseApiPath = '/api';
 const v1ApiPath = '/v1';
-const basePath = `${serverContextPath}${baseApiPath}${v1ApiPath}`;
+export const basePath = `${serverContextPath}${baseApiPath}${v1ApiPath}`;
 
 export const getFullPath = (path: string) => {
     if (path.startsWith('/')) {
