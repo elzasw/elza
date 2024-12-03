@@ -220,15 +220,15 @@ public class ReportService {
 
 		checkAndUpdateViews(RT_SYS_MONTH_USER_COUNT);
 
-		List<Object[]> result = new ArrayList<>(); //query.getResultList();
+		List<Object[]> result = query.getResultList();
 
 		ReportReportData reportData = new ReportReportData();
 		reportData.setHeader(MONTH_USER_COUNT_HEADERS);
 
 		for (Object[] item : result) {
 			ReportReportRow row = new ReportReportRow();
-			row.addColsItem(new ReportValueInteger(((Long)item[0]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueInteger(((Long)item[1]).intValue(), ReportValueType.INT));
+			row.addColsItem(new ReportValueInteger(((Integer)item[0]).intValue(), ReportValueType.INT));
+			row.addColsItem(new ReportValueInteger(((Integer)item[1]).intValue(), ReportValueType.INT));
 			row.addColsItem(new ReportValueString((String)item[2], ReportValueType.STRING));
 			row.addColsItem(new ReportValueInteger(((Long)item[3]).intValue(), ReportValueType.INT));
 			row.addColsItem(new ReportValueInteger(((Long)item[4]).intValue(), ReportValueType.INT));
