@@ -87,6 +87,7 @@ import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.SobjVrequestRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.repository.SysViewUpdateRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.WfCommentRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
@@ -233,6 +234,8 @@ public class HelperTestService {
     private ApKeyValueRepository keyValueRepository;
     @Autowired
     private ApCachedAccessPointRepository apCachedAccessPointRepository;
+    @Autowired
+    private SysViewUpdateRepository viewUpdateRepository;
 
     @Autowired
     private PackageService packageService;
@@ -288,6 +291,7 @@ public class HelperTestService {
 
         logger.debug("Cleaning table contents...");
 
+        viewUpdateRepository.deleteAll();
         daoDigitizationRequestNodeRepository.deleteAll();
         digitizationRequestRepository.deleteAll();
         daoRequestDaoRepository.deleteAll();
@@ -316,7 +320,6 @@ public class HelperTestService {
         groupUserRepository.deleteAll();
         groupRepository.deleteAll();
         authenticationRepository.deleteAll();
-        userRepository.deleteAll();
         nodeConformityErrorsRepository.deleteAll();
         nodeConformityMissingRepository.deleteAll();
         nodeConformityInfoRepository.deleteAll();
@@ -350,6 +353,7 @@ public class HelperTestService {
         apRepository.deleteAll();
         apChangeRepository.deleteAll();
         externalSystemRepository.deleteAll();
+        userRepository.deleteAll();
 
         // DB has to be flushed before start
         em.flush();

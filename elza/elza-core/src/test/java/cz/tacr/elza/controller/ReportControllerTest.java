@@ -90,27 +90,27 @@ public class ReportControllerTest extends AbstractControllerTest {
         assertEquals(ReportValueType.INT, jpPocet.getValueType());
         assertEquals(ReportValueType.INT, ppPocet.getValueType());
         assertEquals(ReportValueType.INT, aePocet.getValueType());
-        //assertEquals(1, ((ReportValueInteger) asPocet).getIntValue().intValue());
-        //assertEquals(1, ((ReportValueInteger) jpPocet).getIntValue().intValue());
-        //assertEquals(1, ((ReportValueInteger) ppPocet).getIntValue().intValue());
-        //assertEquals(3, ((ReportValueInteger) aePocet).getIntValue().intValue());
+        assertEquals(1, ((ReportValueInteger) asPocet).getIntValue().intValue());
+        assertEquals(1, ((ReportValueInteger) jpPocet).getIntValue().intValue());
+        assertEquals(1, ((ReportValueInteger) ppPocet).getIntValue().intValue());
+        assertEquals(3, ((ReportValueInteger) aePocet).getIntValue().intValue());
 	}
 
-	// @Test
+	@Test
 	public void reportSysMonthUserCount() {
         List<ApAccessPointVO> records = findRecord(null, null, null, null, null);
         ApAccessPointVO ap = records.get(0);
 
         // vytvoření uživatele & login
-//        UsrUserVO user = createUser(ap, UserControllerTest.USER, UserControllerTest.PASS);
-//        UsrPermissionVO permissionVO = new UsrPermissionVO();
-//        permissionVO.setPermission(UsrPermission.Permission.FUND_ADMIN);
-//        addUserPermission(user.getId(), List.of(permissionVO));
+        UsrUserVO user = createUser(ap, UserControllerTest.USER, UserControllerTest.PASS);
+        UsrPermissionVO permissionVO = new UsrPermissionVO();
+        permissionVO.setPermission(UsrPermission.Permission.FUND_ADMIN);
+        addUserPermission(user.getId(), List.of(permissionVO));
 
-//        login(UserControllerTest.USER, UserControllerTest.PASS);
+        login(UserControllerTest.USER, UserControllerTest.PASS);
 
 		// vytvoření fondu od vytvořeného uživatele
-//		createFund("fund1", user.getId());
+		createFund("fund1", user.getId());
 
         // vytvoření parametru
         ReportReportParamValue paramValue = new ReportReportParamValue()
@@ -134,13 +134,13 @@ public class ReportControllerTest extends AbstractControllerTest {
         }
         assertNotNull(reportState);
         assertEquals(RequestProcessState.FINISHED, reportState);
-		
+
         ReportReportData reportData = reportApi.reportGetReport(requestId, ReportReportFormat.JSON);
         List<String> headers = reportData.getHeader();
 		List<ReportReportRow> rows = reportData.getRows();
 
         assertEquals(14, headers.size());
-        //assertEquals(1, rows.size());
+        assertEquals(1, rows.size());
         assertNotNull(reportData.getSourceDataDate());
 
 	}
@@ -190,9 +190,9 @@ public class ReportControllerTest extends AbstractControllerTest {
 		assertEquals(ReportValueType.INT, fondsCnt.getValueType());
         assertEquals(ReportValueType.INT, levelsCnt.getValueType());
         assertEquals(ReportValueType.INT, itemsCnt.getValueType());
-        //assertEquals(1, ((ReportValueInteger) fondsCnt).getIntValue().intValue());
-        //assertEquals(1, ((ReportValueInteger) levelsCnt).getIntValue().intValue());
-        //assertEquals(1, ((ReportValueInteger) itemsCnt).getIntValue().intValue());
+        assertEquals(1, ((ReportValueInteger) fondsCnt).getIntValue().intValue());
+        assertEquals(1, ((ReportValueInteger) levelsCnt).getIntValue().intValue());
+        assertEquals(1, ((ReportValueInteger) itemsCnt).getIntValue().intValue());
 	}
 
 	protected Fund createFund(final String name, int userId) {

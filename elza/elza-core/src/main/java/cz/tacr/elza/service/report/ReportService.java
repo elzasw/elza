@@ -43,8 +43,6 @@ import cz.tacr.elza.repository.RptReportRepository;
 import cz.tacr.elza.repository.RptRequiredViewRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 
 @Service
 public class ReportService {
@@ -214,9 +212,13 @@ public class ReportService {
 			dateTo = ((ReportValueDate)parameters.getParams().get(1).getValues().get(0)).getDateValue();
 		}
 
-		Query query = em.createNativeQuery(ReportServiceQuery.SYS_MONTH_USER_COUNT_QUERY);
-		query.setParameter("fromDate", java.sql.Date.valueOf(dateFrom.toLocalDate()));
-		query.setParameter("toDate", java.sql.Date.valueOf(dateTo.toLocalDate()));
+		// do dotazku vložíme parametry - data jako text
+		// z nějakého důvodu standardní náhrada tohoto parametru nefunguje
+		String sysMonthUserCountQuery = ReportServiceQuery.SYS_MONTH_USER_COUNT_QUERY
+				.replace(":fromDate", "'" + dateFrom.toLocalDate().toString() + "'")
+				.replace(":toDate", "'" + dateTo.toLocalDate().toString() + "'");
+
+		Query query = em.createNativeQuery(sysMonthUserCountQuery);
 
 		checkAndUpdateViews(RT_SYS_MONTH_USER_COUNT);
 
