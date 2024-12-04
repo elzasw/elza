@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -21,7 +20,6 @@ import cz.tacr.elza.controller.vo.ReportReportCategory;
 import cz.tacr.elza.controller.vo.ReportReportData;
 import cz.tacr.elza.controller.vo.ReportReportDefinition;
 import cz.tacr.elza.controller.vo.ReportReportParamDefinition;
-import cz.tacr.elza.controller.vo.ReportReportParameters;
 import cz.tacr.elza.controller.vo.ReportReportRow;
 import cz.tacr.elza.controller.vo.ReportValue;
 import cz.tacr.elza.controller.vo.ReportValueAccesspointId;
@@ -44,24 +42,12 @@ import cz.tacr.elza.repository.RptViewDateRepository;
 import cz.tacr.elza.repository.SysViewUpdateRepository;
 import cz.tacr.elza.repository.RptReportRepository;
 import cz.tacr.elza.repository.RptRequiredViewRepository;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 
 @Service
 public class ReportService {
-
-	public static final String RT_SYS_TOTAL_COUNT = "SYS_TOTAL_COUNT";
-
-	public static final String RT_SYS_MONTH_USER_COUNT = "SYS_MONTH_USER_COUNT";
-
-	public static final String RT_SYS_INSTITUTION_COUNT = "SYS_INSTITUTION_COUNT";
-
-	private final List<String> SYS_TOTAL_COUNT_HEADERS = List.of("as_pocet", "jp_pocet", "pp_pocet", "ae_pocet", "pb_pocet", "vpb_pocet");
-
-	private final List<String> SYS_INSTITUTION_COUNT_HEADERS = List.of("internal_code", "string_value", "fonds_cnt", "levels_cnt", "items_cnt", "refents_cnt");
-
-	private final List<String> MONTH_USER_COUNT_HEADERS = List.of("date_year", "date_month", "username", "level_new", "level_delete", 
-			"item_new", "item_update", "item_delete", "ap_new", "ap_update", "ap_delete", "ap_replace", "apusg_new", "apusg_delete");
 
 	private final String VIEW_NODE_CHANGE = "rpt_view_node_change";
 
@@ -70,9 +56,11 @@ public class ReportService {
 	private final String VIEW_AP_USAGE = "rpt_view_ap_usage";
 
 	private final String VIEW_AP_CHANGE = "rpt_view_ap_change";
-	
+
 	// maximální "zastarávání" dat v hodinách
 	private final int HOURS_TO_REFRESH = 2;
+
+	Map<String, ReportProcessor> reportMap;
 
 	@Autowired
 	EntityManager em;
@@ -106,6 +94,18 @@ public class ReportService {
 
 	@Autowired
 	ChangeRepository arrChangeRepository;
+
+	@PostConstruct
+	public void init() {
+		reportMap = new HashMap<>();
+		reportMap.put(ReportSysTotalCount.REPORT_NAME, new ReportSysTotalCount(em, this));
+		reportMap.put(ReportSysMonthUserCount.REPORT_NAME, new ReportSysMonthUserCount(em, this));
+		reportMap.put(ReportSysInstitutionCount.REPORT_NAME, new ReportSysInstitutionCount(em, this));
+	}
+
+	public ReportProcessor getReportProcessor(String code) {
+		return reportMap.get(code);
+	}
 
 	/**
 	 * Získání seznamu všech statistických sestav
@@ -153,155 +153,37 @@ public class ReportService {
 	}
 
 	/**
-	 * Vytváření statistické sestavy
+	 * Konverze dat z dotazu
 	 * 
-	 * @param request
+	 * @param result
 	 * @return
 	 */
-	public ReportReportData createReport(ReportRequest request) {
-		switch (request.getCode()) {
-		case RT_SYS_TOTAL_COUNT:
-			return reportSysTotalCount();
-		case RT_SYS_MONTH_USER_COUNT:
-			return reportMonthUserCount(request.getReportParameters());
-		case RT_SYS_INSTITUTION_COUNT:
-			return reportSysInstitutionCount(request.getReportParameters());
-		default:
-			throw new IllegalArgumentException("Unexpected value: " + request.getCode());
-		}
-	}
-
-	/**
-	 * Souhrnné informace – aktuální stav
-	 * Souhrnný přehled počtu archivních souborů, jednotek popisu a archivní entit.
-	 * 
-	 * @return
-	 */
-	private ReportReportData reportSysTotalCount() {
-		checkAndUpdateViews(RT_SYS_TOTAL_COUNT);
-
-		Query query = em.createNativeQuery(ReportServiceQuery.SYS_TOTAL_COUNT_QUERY);
-		List<Object[]> result = query.getResultList();
-
-		ReportReportData reportData = new ReportReportData();
-		reportData.setHeader(SYS_TOTAL_COUNT_HEADERS);
-
-		ReportReportRow row = new ReportReportRow();
-		for (Object item : result.get(0)) {
-			row.addColsItem(new ReportValueInteger(((Long)item).intValue(), ReportValueType.INT));
-		}
-		reportData.addRowsItem(row);
-		reportData.setSourceDataDate(OffsetDateTime.now());
-
-		return reportData;
-	}
-
-	/**
-	 * Přehled po měsících dle uživatelů
-	 * Přehled všech změn za dané období a uživatele po měsících. 
-	 * Součástí přehledu jsou jednotky popisu, prvky popisu a archivní entity 
-	 * 
-	 * @return
-	 */
-	private ReportReportData reportMonthUserCount(ReportReportParameters parameters) {
-		Objects.requireNonNull(parameters);
-		Objects.requireNonNull(parameters.getParams());
-
-		// TODO kontrola parametrů
-
-		OffsetDateTime dateFrom = ((ReportValueDate)parameters.getParams().get(0).getValues().get(0)).getDateValue();
-		OffsetDateTime dateTo = OffsetDateTime.now();
-		if (parameters.getParams().size() == 2) {
-			dateTo = ((ReportValueDate)parameters.getParams().get(1).getValues().get(0)).getDateValue();
-		}
-
-		// do dotazku vložíme parametry - data jako text
-		// z nějakého důvodu standardní náhrada tohoto parametru nefunguje
-		String sysMonthUserCountQuery = ReportServiceQuery.SYS_MONTH_USER_COUNT_QUERY
-				.replace(":fromDate", "'" + dateFrom.toLocalDate().toString() + "'")
-				.replace(":toDate", "'" + dateTo.toLocalDate().toString() + "'");
-
-		Query query = em.createNativeQuery(sysMonthUserCountQuery);
-
-		checkAndUpdateViews(RT_SYS_MONTH_USER_COUNT);
-
-		List<Object[]> result = query.getResultList();
-
-		ReportReportData reportData = new ReportReportData();
-		reportData.setHeader(MONTH_USER_COUNT_HEADERS);
-
-		for (Object[] item : result) {
+	public List<ReportReportRow> getReportRows(List<Object[]> result) {
+		List<ReportReportRow> rows = new ArrayList<>();
+		for (Object[] items : result) {
 			ReportReportRow row = new ReportReportRow();
-			row.addColsItem(new ReportValueInteger(((Integer)item[0]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueInteger(((Integer)item[1]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueString((String)item[2], ReportValueType.STRING));
-			row.addColsItem(new ReportValueInteger(((Long)item[3]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueInteger(((Long)item[4]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueInteger(((Long)item[5]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueInteger(((Long)item[6]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueInteger(((Long)item[7]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueInteger(((Long)item[8]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueInteger(((Long)item[9]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueInteger(((Long)item[10]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueInteger(((Long)item[11]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueInteger(((Long)item[12]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueInteger(((Long)item[13]).intValue(), ReportValueType.INT));
-			reportData.addRowsItem(row);
+			for (Object item : items) {
+				if (item instanceof String) {
+					row.addColsItem(new ReportValueString((String)item, ReportValueType.STRING));
+				} else if (item instanceof Integer) {
+					row.addColsItem(new ReportValueInteger(((Integer)item).intValue(), ReportValueType.INT));
+				} else if (item instanceof Long) {
+					row.addColsItem(new ReportValueInteger(((Long)item).intValue(), ReportValueType.INT));
+				} else {
+					throw new IllegalArgumentException("Unexpected type: " + item);
+				}
+			}
+			rows.add(row);
 		}
-		reportData.setSourceDataDate(OffsetDateTime.now());
-
-		return reportData;
+		return rows;
 	}
-
-	/**
-	 * Přehled k datu dle institucí
-	 * Souhn počtu archivních souborů, jednotek popisu a prvků popisu k danému datu.
-	 * 
-	 * @param request
-	 * @return
-	 */
-	private ReportReportData reportSysInstitutionCount(ReportReportParameters parameters) {
-		Query query;
-		if (parameters == null || parameters.getParams() == null || parameters.getParams().isEmpty()) {
-			query = em.createNativeQuery(ReportServiceQuery.SYS_INSTITUTION_COUNT_QUERY);
-		} else {
-
-			// TODO zkontrolovat parametr
-
-			OffsetDateTime changeDate = ((ReportValueDate)parameters.getParams().get(0).getValues().get(0)).getDateValue();
-
-			query = em.createNativeQuery(ReportServiceQuery.SYS_INSTITUTION_COUNT_WITH_DATE_QUERY);
-			query.setParameter("changeDate", changeDate);
-		}
-
-		checkAndUpdateViews(RT_SYS_INSTITUTION_COUNT);
-
-		List<Object[]> result = query.getResultList();
-
-		ReportReportData reportData = new ReportReportData();
-		reportData.setHeader(SYS_INSTITUTION_COUNT_HEADERS);
-
-		for (Object[] item : result) {
-			ReportReportRow row = new ReportReportRow();
-			row.addColsItem(new ReportValueString((String)item[0], ReportValueType.STRING));
-			row.addColsItem(new ReportValueString((String)item[1], ReportValueType.STRING));
-			row.addColsItem(new ReportValueInteger(((Long)item[2]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueInteger(((Long)item[3]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueInteger(((Long)item[4]).intValue(), ReportValueType.INT));
-			row.addColsItem(new ReportValueInteger(((Long)item[5]).intValue(), ReportValueType.INT));
-			reportData.addRowsItem(row);
-		}
-		reportData.setSourceDataDate(OffsetDateTime.now());
-
-		return reportData;
-	}
-
+	
 	/**
 	 * Kontrola a v případě potřeby aktualizace dat
 	 * 
 	 * @param reportCode
 	 */
-	private void checkAndUpdateViews(String reportCode) {
+	public void checkAndUpdateViews(String reportCode) {
 		// získáme seznam `view` pro kontrolu relevance dat
 		List<RptRequiredView> views = requiredViewRepository.findByReportCode(reportCode);
 
@@ -440,7 +322,7 @@ public class ReportService {
 	 * @param reportData
 	 * @return
 	 */
-	public String getCsvReport(ReportReportData reportData) {
+	public String createCsvReport(ReportReportData reportData) {
 		StringBuilder sb = new StringBuilder();
 		for (String header: reportData.getHeader()) {
 			if (!sb.isEmpty()) {

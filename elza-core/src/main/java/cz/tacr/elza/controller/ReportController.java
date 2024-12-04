@@ -20,6 +20,7 @@ import cz.tacr.elza.controller.vo.ReportReportFormat;
 import cz.tacr.elza.controller.vo.ReportReportParameters;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.report.ReportProcessor;
 import cz.tacr.elza.service.report.ReportRequest;
 import cz.tacr.elza.service.report.ReportService;
 import cz.tacr.elza.service.report.ReportWorker;
@@ -58,10 +59,15 @@ public class ReportController implements ReportApi {
 	 */
 	@Override
 	public ResponseEntity<Integer> reportGenerateReport(final String code, final ReportReportParameters reportParameters) {
+		ReportProcessor processor = reportService.getReportProcessor(code);
+		if (processor == null) {
+            logger.error("Report with requested code={} not found.", code);
+            return ResponseEntity.notFound().build();
+		}
         UsrUser user = userService.getLoggedUser();
         Integer userId = (user == null ? null : user.getUserId());
 
-        return ResponseEntity.ok(reportWorker.addReportRequest(userId, code, reportParameters));
+        return ResponseEntity.ok(reportWorker.addReportRequest(userId, processor, reportParameters));
 	}
 
 	/**
@@ -120,7 +126,7 @@ public class ReportController implements ReportApi {
         	case JSON:
         		return ResponseEntity.status(HttpStatus.OK).body(reportRequest.getReportData());
         	case CSV:
-                String data = reportService.getCsvReport(reportRequest.getReportData());
+                String data = reportService.createCsvReport(reportRequest.getReportData());
                 byte[] dataBytes = data.getBytes();
                 ByteArrayResource resource = new ByteArrayResource(dataBytes);
                 HttpHeaders headers = new HttpHeaders();
