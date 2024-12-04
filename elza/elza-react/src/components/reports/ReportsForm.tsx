@@ -60,7 +60,7 @@ interface FieldProps {
     isRequired: boolean;
 }
 
-export function FluentNumberField({ name, label, isRequired }: FieldProps) {
+export function FluentFinalNumberField({ name, label, isRequired }: FieldProps) {
     return (
         <Field name={name}>
             {({ input }) => {
@@ -79,7 +79,7 @@ export function FluentNumberField({ name, label, isRequired }: FieldProps) {
     );
 }
 
-export function FluentStringField({ name, label, isRequired }: FieldProps) {
+export function FluentFinalStringField({ name, label, isRequired }: FieldProps) {
     return (
         <Field name={name}>
             {({ input }) => {
@@ -98,7 +98,7 @@ export function FluentStringField({ name, label, isRequired }: FieldProps) {
     );
 }
 
-export function FluentDateField({ name, label, isRequired }: FieldProps) {
+export function FluentFinalDateField({ name, label, isRequired }: FieldProps) {
     return (
         <Field name={name}>
             {({ input }) => {
@@ -121,7 +121,7 @@ function transformValue(value: any, paramDefinition: ReportReportParamDefinition
     if (!paramDefinition) {
         return undefined;
     }
-    const { code, paramType } = paramDefinition;
+    const { paramType } = paramDefinition;
 
     const transformedValue: ReportValue = { valueType: paramType };
     if (paramType === ReportValueType.Int) {
@@ -170,7 +170,7 @@ export function ReportsForm({ onSubmit }: Props) {
         Object.entries(values).forEach(([key, value]) => {
             const paramDefinition = params.find(({ code }) => code === key);
             // skip unknown/added types e.g. definitionCode;
-            if(!paramDefinition) {
+            if (!paramDefinition) {
                 return;
             }
             const _value = transformValue(value, paramDefinition);
@@ -208,7 +208,9 @@ export function ReportsForm({ onSubmit }: Props) {
             <Form<_Fields> onSubmit={handleSubmit} validate={validate}>
                 {({ handleSubmit, values, form, valid }) => {
                     function handleReset() {
-                        form.reset();
+                        form.reset({
+                            definitionCode: values.definitionCode
+                        });
                     }
                     let params: ReportReportParamDefinition[] = [];
                     let selectedValue: string = values.definitionCode;
@@ -259,21 +261,21 @@ export function ReportsForm({ onSubmit }: Props) {
                             </Field>
                             {params?.map(({ code, name, required, paramType }) => {
                                 if (paramType === ReportValueType.Int) {
-                                    return <FluentNumberField
+                                    return <FluentFinalNumberField
                                         name={code}
                                         label={formatMessage({ id: `admin_reports_form_property_${name}` })}
                                         isRequired={required}
                                     />;
                                 }
                                 if (paramType === ReportValueType.String) {
-                                    return <FluentStringField
+                                    return <FluentFinalStringField
                                         name={code}
                                         label={formatMessage({ id: `admin_reports_form_property_${name}` })}
                                         isRequired={required}
                                     />;
                                 }
                                 if (paramType === ReportValueType.Date) {
-                                    return <FluentDateField
+                                    return <FluentFinalDateField
                                         name={code}
                                         label={formatMessage({ id: `admin_reports_form_property_${name}` })}
                                         isRequired={required}
@@ -286,14 +288,14 @@ export function ReportsForm({ onSubmit }: Props) {
                                     </div>
                                 );
                             })}
-                            <div style={{ margin: "-8px", marginTop: "32px", display: "flex", justifyContent: "flex-end" }}>
-                                <Button style={{ margin: "8px" }} onClick={handleReset}>
+                            {values.definitionCode && <div style={{ margin: "-8px", marginTop: "32px", display: "flex", justifyContent: "flex-end" }}>
+                                {params.length > 0 && <Button style={{ margin: "8px" }} onClick={handleReset}>
                                     <FormattedMessage {...messages.reset} />
-                                </Button>
+                                </Button>}
                                 <Button style={{ margin: "8px" }} appearance="primary" onClick={handleSubmit} disabled={!valid}>
                                     <FormattedMessage {...messages.show} />
                                 </Button>
-                            </div>
+                            </div>}
                         </form>
                     );
                 }}
