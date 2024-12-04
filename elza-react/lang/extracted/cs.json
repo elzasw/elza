@@ -62,13 +62,13 @@
     "defaultMessage": "Změněné arch. entity"
   },
   "admin_reports_header_apusg_delete": {
-    "defaultMessage": "Odstraněné přístupové body"
+    "defaultMessage": "Odstraněné vazby přístupových bodů"
   },
   "admin_reports_header_apusg_new": {
-    "defaultMessage": "Nové přístupové body"
+    "defaultMessage": "Nové vazby přístupových bodů"
   },
   "admin_reports_header_as_pocet": {
-    "defaultMessage": "Počet archivních souboru"
+    "defaultMessage": "Počet archivních souborů"
   },
   "admin_reports_header_date_month": {
     "defaultMessage": "Měsíc"
@@ -77,7 +77,7 @@
     "defaultMessage": "Rok"
   },
   "admin_reports_header_fonds_cnt": {
-    "defaultMessage": "Počet fondů"
+    "defaultMessage": "Počet archivních souborů"
   },
   "admin_reports_header_internal_code": {
     "defaultMessage": "Interní kód"
@@ -104,16 +104,16 @@
     "defaultMessage": "Nové jednotky popisu"
   },
   "admin_reports_header_levels_cnt": {
-    "defaultMessage": "Počet úrovní"
+    "defaultMessage": "Počet jednotek popisu"
   },
   "admin_reports_header_pb_pocet": {
     "defaultMessage": "Počet přístupových bodů"
   },
   "admin_reports_header_pp_pocet": {
-    "defaultMessage": "Počet prvku popisu"
+    "defaultMessage": "Počet prvků popisu"
   },
   "admin_reports_header_refents_cnt": {
-    "defaultMessage": "Počet napojených entit"
+    "defaultMessage": "Počet vazeb přístupových bodů"
   },
   "admin_reports_header_string_value": {
     "defaultMessage": "Název"
