@@ -47,28 +47,28 @@
     "defaultMessage": "Čas vygenerování přehledu: {date} v {time}"
   },
   "admin_reports_header_ae_pocet": {
-    "defaultMessage": "Počet archivnich entit"
+    "defaultMessage": "Počet archivních entit"
   },
   "admin_reports_header_ap_delete": {
-    "defaultMessage": "Smazané přístupové body"
+    "defaultMessage": "Smazané arch. entity"
   },
   "admin_reports_header_ap_new": {
-    "defaultMessage": "Nové přístupové body"
+    "defaultMessage": "Nové arch. entity"
   },
   "admin_reports_header_ap_replace": {
-    "defaultMessage": "Nahrazené přístupové body"
+    "defaultMessage": "Nahrazené arch. entity"
   },
   "admin_reports_header_ap_update": {
-    "defaultMessage": "Upravené přístupové body"
+    "defaultMessage": "Změněné arch. entity"
   },
   "admin_reports_header_apusg_delete": {
-    "defaultMessage": "Smazané napojení přístupového bodu"
+    "defaultMessage": "Odstraněné přístupové body"
   },
   "admin_reports_header_apusg_new": {
-    "defaultMessage": "Nové napojení přístupového bodu"
+    "defaultMessage": "Nové přístupové body"
   },
   "admin_reports_header_as_pocet": {
-    "defaultMessage": "Počet archivnich souboru"
+    "defaultMessage": "Počet archivních souboru"
   },
   "admin_reports_header_date_month": {
     "defaultMessage": "Měsíc"
@@ -89,7 +89,7 @@
     "defaultMessage": "Nové prvky popisu"
   },
   "admin_reports_header_item_update": {
-    "defaultMessage": "Upravené prvky popisu"
+    "defaultMessage": "Změněné prvky popisu"
   },
   "admin_reports_header_items_cnt": {
     "defaultMessage": "Počet prvků popisu"
@@ -98,10 +98,10 @@
     "defaultMessage": "Počet jednotek popisu"
   },
   "admin_reports_header_level_delete": {
-    "defaultMessage": "Smazané úrovně"
+    "defaultMessage": "Smazané jednotky popisu"
   },
   "admin_reports_header_level_new": {
-    "defaultMessage": "Nové úrovně"
+    "defaultMessage": "Nové jednotky popisu"
   },
   "admin_reports_header_levels_cnt": {
     "defaultMessage": "Počet úrovní"
