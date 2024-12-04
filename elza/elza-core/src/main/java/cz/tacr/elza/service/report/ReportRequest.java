@@ -10,7 +10,7 @@ public class ReportRequest {
 
     final private Integer requestId;
 
-    final private String code;
+    final private ReportProcessor processor;
     
     final private ReportReportParameters reportParameters;
 
@@ -20,10 +20,10 @@ public class ReportRequest {
 
     private ReportReportData reportData;
 
-	public ReportRequest(Integer userId, Integer requestId, String code, ReportReportParameters reportParameters) {
+	public ReportRequest(Integer userId, Integer requestId, ReportProcessor processor, ReportReportParameters reportParameters) {
 		this.userId = userId;
 		this.requestId = requestId;
-		this.code = code;
+		this.processor = processor;
 		this.reportParameters = reportParameters;
 	}
 
@@ -35,8 +35,8 @@ public class ReportRequest {
 		return requestId;
 	}
 
-	public String getCode() {
-		return code;
+	public ReportProcessor getProcessor() {
+		return processor;
 	}
 
 	public ReportReportParameters getReportParameters() {

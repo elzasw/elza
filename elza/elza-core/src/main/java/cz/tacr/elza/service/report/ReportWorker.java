@@ -40,9 +40,9 @@ public class ReportWorker implements SmartLifecycle {
 
     private final Object lock = new Object();
 
-    public int addReportRequest(final Integer userId, final String code, final ReportReportParameters reportParams) {
+    public int addReportRequest(final Integer userId, final ReportProcessor processor, final ReportReportParameters reportParams) {
         synchronized (lock) {
-            ReportRequest reportRequest = new ReportRequest(userId, ++requestCount, code, reportParams);
+            ReportRequest reportRequest = new ReportRequest(userId, ++requestCount, processor, reportParams);
 
             // store result
             mapReportResult.put(reportRequest.getRequestId(), reportRequest);
@@ -60,7 +60,8 @@ public class ReportWorker implements SmartLifecycle {
     }
 
     private void createReport(ReportRequest request) throws IOException {
-    	ReportReportData reportData = reportService.createReport(request);
+    	ReportProcessor report = request.getProcessor();
+    	ReportReportData reportData = report.createReport(request.getReportParameters());
     	request.setReportData(reportData);
     }
 

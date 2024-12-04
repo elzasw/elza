@@ -5,8 +5,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
@@ -17,7 +17,9 @@ import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.service.report.ReportService;
+import cz.tacr.elza.service.report.ReportSysInstitutionCount;
+import cz.tacr.elza.service.report.ReportSysMonthUserCount;
+import cz.tacr.elza.service.report.ReportSysTotalCount;
 import cz.tacr.elza.test.controller.vo.CreateFund;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.ReportReportCategory;
@@ -30,6 +32,7 @@ import cz.tacr.elza.test.controller.vo.ReportReportRow;
 import cz.tacr.elza.test.controller.vo.ReportValue;
 import cz.tacr.elza.test.controller.vo.ReportValueDate;
 import cz.tacr.elza.test.controller.vo.ReportValueInteger;
+import cz.tacr.elza.test.controller.vo.ReportValueString;
 import cz.tacr.elza.test.controller.vo.ReportValueType;
 import cz.tacr.elza.test.controller.vo.RequestProcessState;
 
@@ -54,7 +57,7 @@ public class ReportControllerTest extends AbstractControllerTest {
 		// vytvoření alespoň jednoho fondu
 		createFund("fund1", null);
 
-        Integer requestId = reportApi.reportGenerateReport(ReportService.RT_SYS_TOTAL_COUNT, new ReportReportParameters()); 
+        Integer requestId = reportApi.reportGenerateReport(ReportSysTotalCount.REPORT_NAME, new ReportReportParameters()); 
 		assertNotNull(requestId);
 
 		RequestProcessState reportState = null;
@@ -114,11 +117,11 @@ public class ReportControllerTest extends AbstractControllerTest {
 
         // vytvoření parametru
         ReportReportParamValue paramValue = new ReportReportParamValue()
-        		.code("DATE")
+        		.code("DATE_FROM")
         		.addValuesItem(new ReportValueDate().dateValue(OffsetDateTime.now()));
         ReportReportParameters reportParameters = new ReportReportParameters().addParamsItem(paramValue);
 
-		Integer requestId = reportApi.reportGenerateReport(ReportService.RT_SYS_MONTH_USER_COUNT, reportParameters);
+		Integer requestId = reportApi.reportGenerateReport(ReportSysMonthUserCount.REPORT_NAME, reportParameters);
 		assertNotNull(requestId);
 
 		RequestProcessState reportState = null;
@@ -143,6 +146,23 @@ public class ReportControllerTest extends AbstractControllerTest {
         assertEquals(1, rows.size());
         assertNotNull(reportData.getSourceDataDate());
 
+		List<ReportValue> cols = rows.get(0).getCols();
+		ReportValue dateYear = cols.get(0);
+		ReportValue dateMonth = cols.get(1);
+		ReportValue userName = cols.get(2);
+		ReportValue levelNew = cols.get(3);
+		ReportValue itemNew = cols.get(5);
+
+		assertEquals(ReportValueType.INT, dateYear.getValueType());
+        assertEquals(ReportValueType.INT, dateMonth.getValueType());
+        assertEquals(ReportValueType.STRING, userName.getValueType());
+		assertEquals(ReportValueType.INT, levelNew.getValueType());
+        assertEquals(ReportValueType.INT, itemNew.getValueType());
+        assertEquals(LocalDate.now().getYear(), ((ReportValueInteger) dateYear).getIntValue().intValue());
+        assertEquals(LocalDate.now().getMonthValue(), ((ReportValueInteger) dateMonth).getIntValue().intValue());
+        assertEquals(UserControllerTest.USER, ((ReportValueString) userName).getTextValue());
+        assertEquals(1, ((ReportValueInteger) levelNew).getIntValue().intValue());
+        assertEquals(1, ((ReportValueInteger) itemNew).getIntValue().intValue());
 	}
 
 	@Test
@@ -152,11 +172,11 @@ public class ReportControllerTest extends AbstractControllerTest {
 
         // vytvoření parametru
         ReportReportParamValue paramValue = new ReportReportParamValue()
-        		.code("DATE")
+        		.code("DATE_TO")
         		.addValuesItem(new ReportValueDate().dateValue(OffsetDateTime.now()));
         ReportReportParameters reportParameters = new ReportReportParameters().addParamsItem(paramValue);
 
-		Integer requestId = reportApi.reportGenerateReport(ReportService.RT_SYS_INSTITUTION_COUNT, reportParameters);
+		Integer requestId = reportApi.reportGenerateReport(ReportSysInstitutionCount.REPORT_NAME, reportParameters);
 		assertNotNull(requestId);
 
 		RequestProcessState reportState = null;
