@@ -3,7 +3,7 @@ import { defineMessages } from "react-intl";
 export const headerMessages = defineMessages({
     asPocet: {
         id: "admin_reports_header_as_pocet",
-        defaultMessage: "Počet archivních souboru",
+        defaultMessage: "Počet archivních souborů",
     },
     jpPocet: {
         id: "admin_reports_header_jp_pocet",
@@ -11,7 +11,7 @@ export const headerMessages = defineMessages({
     },
     ppPocet: {
         id: "admin_reports_header_pp_pocet",
-        defaultMessage: "Počet prvku popisu",
+        defaultMessage: "Počet prvků popisu",
     },
     aePocet: {
         id: "admin_reports_header_ae_pocet",
@@ -35,11 +35,11 @@ export const headerMessages = defineMessages({
     },
     fondsCnt: {
         id: "admin_reports_header_fonds_cnt",
-        defaultMessage: "Počet fondů",
+        defaultMessage: "Počet archivních souborů",
     },
     levelsCnt: {
         id: "admin_reports_header_levels_cnt",
-        defaultMessage: "Počet úrovní",
+        defaultMessage: "Počet jednotek popisu",
     },
     itemsCnt: {
         id: "admin_reports_header_items_cnt",
@@ -47,7 +47,7 @@ export const headerMessages = defineMessages({
     },
     refentsCnt: {
         id: "admin_reports_header_refents_cnt",
-        defaultMessage: "Počet napojených entit",
+        defaultMessage: "Počet vazeb přístupových bodů",
     },
     dateYear: {
         id: "admin_reports_header_date_year",
@@ -99,11 +99,11 @@ export const headerMessages = defineMessages({
     },
     apusgNew: {
         id: "admin_reports_header_apusg_new",
-        defaultMessage: "Nové přístupové body"
+        defaultMessage: "Nové vazby přístupových bodů"
     },
     apusgDelete: {
         id: "admin_reports_header_apusg_delete",
-        defaultMessage: "Odstraněné přístupové body"
+        defaultMessage: "Odstraněné vazby přístupových bodů"
     },
 })
 
