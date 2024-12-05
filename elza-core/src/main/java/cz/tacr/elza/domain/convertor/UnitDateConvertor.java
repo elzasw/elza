@@ -733,7 +733,11 @@ public class UnitDateConvertor {
     public static String convertYear(final IUnitdate unitdate, final boolean first) {
         LocalDateTime date = getLocalDateTimeFromUnitDate(unitdate, first);
         if (date != null) {
-            return Math.abs(date.getYear()) + (unitdate.getValueFrom().startsWith(BC_ISO) ? PR_N_L : "");
+        	if(unitdate.getValueFrom().startsWith(BC_ISO)) {
+        		return Math.abs(date.getYear()+1) + (unitdate.getValueFrom().startsWith(BC_ISO) ? PR_N_L : "");
+        	} else {
+        		return ""+date.getYear();
+        	}
         }
         return unitdate.getFormat();
     }
