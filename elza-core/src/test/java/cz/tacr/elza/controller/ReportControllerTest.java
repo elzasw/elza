@@ -17,9 +17,7 @@ import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.service.report.ReportSysInstitutionCount;
-import cz.tacr.elza.service.report.ReportSysMonthUserCount;
-import cz.tacr.elza.service.report.ReportSysTotalCount;
+import cz.tacr.elza.service.report.ReportService;
 import cz.tacr.elza.test.controller.vo.CreateFund;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.ReportReportCategory;
@@ -57,7 +55,7 @@ public class ReportControllerTest extends AbstractControllerTest {
 		// vytvoření alespoň jednoho fondu
 		createFund("fund1", null);
 
-        Integer requestId = reportApi.reportGenerateReport(ReportSysTotalCount.REPORT_NAME, new ReportReportParameters()); 
+        Integer requestId = reportApi.reportGenerateReport(ReportService.SYS_TOTAL_COUNT, new ReportReportParameters()); 
 		assertNotNull(requestId);
 
 		RequestProcessState reportState = null;
@@ -121,7 +119,7 @@ public class ReportControllerTest extends AbstractControllerTest {
         		.addValuesItem(new ReportValueDate().dateValue(OffsetDateTime.now()));
         ReportReportParameters reportParameters = new ReportReportParameters().addParamsItem(paramValue);
 
-		Integer requestId = reportApi.reportGenerateReport(ReportSysMonthUserCount.REPORT_NAME, reportParameters);
+		Integer requestId = reportApi.reportGenerateReport(ReportService.SYS_MONTH_USER_COUNT, reportParameters);
 		assertNotNull(requestId);
 
 		RequestProcessState reportState = null;
@@ -176,7 +174,7 @@ public class ReportControllerTest extends AbstractControllerTest {
         		.addValuesItem(new ReportValueDate().dateValue(OffsetDateTime.now()));
         ReportReportParameters reportParameters = new ReportReportParameters().addParamsItem(paramValue);
 
-		Integer requestId = reportApi.reportGenerateReport(ReportSysInstitutionCount.REPORT_NAME, reportParameters);
+		Integer requestId = reportApi.reportGenerateReport(ReportService.SYS_INSTITUTION_COUNT, reportParameters);
 		assertNotNull(requestId);
 
 		RequestProcessState reportState = null;

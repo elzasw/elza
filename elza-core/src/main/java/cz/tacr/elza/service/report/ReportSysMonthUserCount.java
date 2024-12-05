@@ -7,18 +7,14 @@ import java.util.Objects;
 import cz.tacr.elza.controller.vo.ReportReportData;
 import cz.tacr.elza.controller.vo.ReportReportParameters;
 import cz.tacr.elza.controller.vo.ReportValueDate;
+import cz.tacr.elza.domain.RptParam;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 
 public class ReportSysMonthUserCount extends ReportBase {
 
-	public static final String REPORT_NAME = "SYS_MONTH_USER_COUNT";
-
-	private final List<String> REPORT_HEADERS = List.of("date_year", "date_month", "username", "level_new", "level_delete", 
-			"item_new", "item_update", "item_delete", "ap_new", "ap_update", "ap_delete", "ap_replace", "apusg_new", "apusg_delete");
-
-	public ReportSysMonthUserCount(EntityManager em, ReportService reportService) {
-		super(em, reportService);
+	public ReportSysMonthUserCount(String code, List<String> headers, String query, List<RptParam> params, ReportService reportService, EntityManager em) {
+		super(code, headers, query, params, reportService, em);
 	}
 
 	/**
@@ -44,18 +40,18 @@ public class ReportSysMonthUserCount extends ReportBase {
 
 		// do dotazku vložíme parametry - data jako text
 		// z nějakého důvodu standardní náhrada tohoto parametru nefunguje
-		String sysMonthUserCountQuery = ReportServiceQuery.SYS_MONTH_USER_COUNT_QUERY
+		String sysMonthUserCountQuery = reportQuery
 				.replace(":fromDate", "'" + dateFrom.toLocalDate().toString() + "'")
 				.replace(":toDate", "'" + dateTo.toLocalDate().toString() + "'");
 
 		Query query = em.createNativeQuery(sysMonthUserCountQuery);
 
-		reportService.checkAndUpdateViews(REPORT_NAME);
+		reportService.checkAndUpdateViews(reportCode);
 
 		List<Object[]> result = query.getResultList();
 
 		ReportReportData reportData = new ReportReportData();
-		reportData.setHeader(REPORT_HEADERS);
+		reportData.setHeader(reportHeaders);
 		reportData.setRows(reportService.getReportRows(result));
 		reportData.setSourceDataDate(OffsetDateTime.now());
 

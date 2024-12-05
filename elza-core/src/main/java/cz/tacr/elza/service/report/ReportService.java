@@ -29,6 +29,7 @@ import cz.tacr.elza.controller.vo.ReportValueInteger;
 import cz.tacr.elza.controller.vo.ReportValueString;
 import cz.tacr.elza.controller.vo.ReportValueType;
 import cz.tacr.elza.domain.RptParam;
+import cz.tacr.elza.domain.RptReport;
 import cz.tacr.elza.domain.RptRequiredView;
 import cz.tacr.elza.domain.RptValueType;
 import cz.tacr.elza.domain.RptViewDate;
@@ -49,6 +50,19 @@ import jakarta.persistence.Query;
 @Service
 public class ReportService {
 
+	public final static String SYS_TOTAL_COUNT = "SYS_TOTAL_COUNT";
+
+	public final static String SYS_MONTH_USER_COUNT = "SYS_MONTH_USER_COUNT";
+
+	public final static String SYS_INSTITUTION_COUNT = "SYS_INSTITUTION_COUNT";
+
+	private final List<String> SYS_TOTAL_COUNT_HEADERS = List.of("as_pocet", "jp_pocet", "pp_pocet", "ae_pocet", "pb_pocet", "vpb_pocet");
+
+	private final List<String> SYS_MONTH_USER_COUNT_HEADERS = List.of("date_year", "date_month", "username", "level_new", "level_delete", 
+			"item_new", "item_update", "item_delete", "ap_new", "ap_update", "ap_delete", "ap_replace", "apusg_new", "apusg_delete");
+
+	private final List<String> SYS_INSTITUTION_COUNT_HEADERS = List.of("internal_code", "string_value", "fonds_cnt", "levels_cnt", "items_cnt", "refents_cnt");
+
 	private final String VIEW_NODE_CHANGE = "rpt_view_node_change";
 
 	private final String VIEW_ITEM_CHANGE = "rpt_view_item_change";
@@ -60,7 +74,7 @@ public class ReportService {
 	// maximální "zastarávání" dat v hodinách
 	private final int HOURS_TO_REFRESH = 2;
 
-	Map<String, ReportProcessor> reportMap;
+	Map<String, ReportProcessor> reportProcessorMap;
 
 	@Autowired
 	EntityManager em;
@@ -97,14 +111,19 @@ public class ReportService {
 
 	@PostConstruct
 	public void init() {
-		reportMap = new HashMap<>();
-		reportMap.put(ReportSysTotalCount.REPORT_NAME, new ReportSysTotalCount(em, this));
-		reportMap.put(ReportSysMonthUserCount.REPORT_NAME, new ReportSysMonthUserCount(em, this));
-		reportMap.put(ReportSysInstitutionCount.REPORT_NAME, new ReportSysInstitutionCount(em, this));
+		List<RptParam> params = paramRepository.findAll();
+		Map<Integer, String> reportCodeMap = reportRepository.findAll().stream().collect(Collectors.toMap(r -> r.getReportId(), r -> r.getCode()));
+		Map<String, List<RptParam>> paramMap = params.stream().collect(
+			      Collectors.groupingBy(p -> reportCodeMap.get(p.getReportId()), HashMap::new, Collectors.toCollection(ArrayList::new)));
+
+		reportProcessorMap = new HashMap<>();
+		reportProcessorMap.put(SYS_TOTAL_COUNT, new ReportBase(SYS_TOTAL_COUNT, SYS_TOTAL_COUNT_HEADERS, ReportServiceQuery.SYS_TOTAL_COUNT_QUERY, null, this, em));
+		reportProcessorMap.put(SYS_MONTH_USER_COUNT, new ReportSysMonthUserCount(SYS_MONTH_USER_COUNT, SYS_MONTH_USER_COUNT_HEADERS, ReportServiceQuery.SYS_MONTH_USER_COUNT_QUERY, paramMap.get(SYS_MONTH_USER_COUNT), this, em));
+		reportProcessorMap.put(SYS_INSTITUTION_COUNT, new ReportSysInstitutionCount(SYS_INSTITUTION_COUNT, SYS_INSTITUTION_COUNT_HEADERS, ReportServiceQuery.SYS_INSTITUTION_COUNT_QUERY, paramMap.get(SYS_INSTITUTION_COUNT), this, em));
 	}
 
 	public ReportProcessor getReportProcessor(String code) {
-		return reportMap.get(code);
+		return reportProcessorMap.get(code);
 	}
 
 	/**

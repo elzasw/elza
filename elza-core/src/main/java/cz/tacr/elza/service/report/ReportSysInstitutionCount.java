@@ -6,17 +6,14 @@ import java.util.List;
 import cz.tacr.elza.controller.vo.ReportReportData;
 import cz.tacr.elza.controller.vo.ReportReportParameters;
 import cz.tacr.elza.controller.vo.ReportValueDate;
+import cz.tacr.elza.domain.RptParam;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 
 public class ReportSysInstitutionCount extends ReportBase {
 
-	public static final String REPORT_NAME = "SYS_INSTITUTION_COUNT";
-
-	private final List<String> REPORT_HEADERS = List.of("internal_code", "string_value", "fonds_cnt", "levels_cnt", "items_cnt", "refents_cnt");
-
-	public ReportSysInstitutionCount(EntityManager em, ReportService reportService) {
-		super(em, reportService);
+	public ReportSysInstitutionCount(String code, List<String> headers, String query, List<RptParam> params, ReportService reportService, EntityManager em) {
+		super(code, headers, query, params, reportService, em);
 	}
 
 	/**
@@ -30,7 +27,7 @@ public class ReportSysInstitutionCount extends ReportBase {
 	public ReportReportData createReport(ReportReportParameters parameters) {
 		Query query;
 		if (parameters == null || parameters.getParams() == null || parameters.getParams().isEmpty()) {
-			query = em.createNativeQuery(ReportServiceQuery.SYS_INSTITUTION_COUNT_QUERY);
+			query = em.createNativeQuery(reportQuery);
 		} else {
 
 			// TODO zkontrolovat parametr
@@ -41,12 +38,12 @@ public class ReportSysInstitutionCount extends ReportBase {
 			query.setParameter("changeDate", changeDate);
 		}
 
-		reportService.checkAndUpdateViews(REPORT_NAME);
+		reportService.checkAndUpdateViews(reportCode);
 
 		List<Object[]> result = query.getResultList();
 
 		ReportReportData reportData = new ReportReportData();
-		reportData.setHeader(REPORT_HEADERS);
+		reportData.setHeader(reportHeaders);
 		reportData.setRows(reportService.getReportRows(result));
 		reportData.setSourceDataDate(OffsetDateTime.now());
 
