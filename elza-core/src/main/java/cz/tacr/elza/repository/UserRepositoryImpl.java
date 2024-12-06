@@ -215,9 +215,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
         if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
             Join<UsrUser, ApAccessPoint> apJoin = user.join(UsrUser.FIELD_ACCESS_POINT, JoinType.INNER);
-            Predicate apFkCond = builder.equal(user.get(UsrUser.FIELD_ACCESS_POINT), apJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID));
             Join<ApAccessPoint, ApPart> nameJoin = apJoin.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.INNER);
-            Predicate nameFkCond = builder.equal(apJoin.get(ApAccessPoint.FIELD_PREFFERED_PART),
+            Predicate nameFkCond = builder.equal(apJoin.get(ApAccessPoint.FIELD_PREFFERED_PART_ID),
                     nameJoin.get(ApPart.PART_ID));
             nameJoin.on(nameFkCond);
             Join<ApIndex, ApPart> indexJoin = nameJoin.join(ApPart.INDICES, JoinType.INNER);
