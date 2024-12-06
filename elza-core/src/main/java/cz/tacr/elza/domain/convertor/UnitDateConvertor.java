@@ -335,6 +335,54 @@ public class UnitDateConvertor {
 		}
     }
     
+    static class DateTimeParserBC implements DatePartParser {
+
+        public static final String EXP_DATE_TIME_BC = "(\\d{1,2})(\\.)(\\d{1,2})(\\.)(\\d{1,5})([ ])(\\d{1,2})(:)(\\d{1,2})(:)(\\d{1,2})([ ]?př\\.[ ]?n\\.[ ]?l\\.)";
+        public static Pattern patternDateTimeBC = Pattern.compile(EXP_DATE_TIME_BC);
+
+        // without seconds
+        public static final String EXP_DATE_TIME_BC2 = "(\\d{1,2})(\\.)(\\d{1,2})(\\.)(\\d{1,5})([ ])(\\d{1,2})(:)(\\d{1,2})([ ]?př\\.[ ]?n\\.[ ]?l\\.)";
+        public static Pattern patternDateTimeBC2 = Pattern.compile(EXP_DATE_TIME_BC2);
+
+        @Override
+		public Token parseToken(boolean estimate, boolean negative, String tokenString, TokenType type) {
+			Matcher matcher = patternDateTimeBC.matcher(tokenString);	        
+	        int offsetSeconds = 0;
+			if(!matcher.matches()) {
+				matcher = patternDateTimeBC2.matcher(tokenString);
+				if(!matcher.matches()) {
+					return null;
+				}
+				offsetSeconds = 59;
+			}
+			if(negative) {
+				throw new SystemException("Double negative not supported", BaseCode.PROPERTY_IS_INVALID);
+			}
+			Integer day = Integer.parseInt(matcher.group(1));
+			Integer month = Integer.parseInt(matcher.group(3));
+			Integer year = -Integer.parseInt(matcher.group(5))+1;
+			Integer hour = Integer.parseInt(matcher.group(7));
+			Integer minute = Integer.parseInt(matcher.group(9));
+			Integer second = 0;
+			if(offsetSeconds==0) {
+				second = Integer.parseInt(matcher.group(11));
+			}
+	        String format = DATE_TIME;
+	        if((offsetSeconds>0) && type==TokenType.SINGLE) {
+	        	format = DATE_TIME+FORMAT_DELIMITER+DATE_TIME;
+	        }
+
+			LocalDate date = LocalDate.of(year, month, day);
+	        LocalDateTime dateTime = LocalDateTime.from(date.atTime(hour, minute, second));
+	            
+	        Token token = new Token(format, estimate);
+	        token.dateFrom = dateTime;
+            // Should we create time interval for second format without seconds?
+            token.dateTo = (offsetSeconds>0) ? dateTime.plusSeconds(offsetSeconds) : dateTime;
+	        return token;
+		}
+    }
+
     static class DateParser implements DatePartParser {
 
 		@Override
@@ -362,6 +410,35 @@ public class UnitDateConvertor {
 		}
     }
 
+    static class DateParserBC implements DatePartParser {
+
+        public static final String EXP_DATE_BC = "(\\d{1,2})(\\.)(\\d{1,2})(\\.)(\\d{1,5})([ ]?př\\.[ ]?n\\.[ ]?l\\.)";
+        public static Pattern patternDateBC = Pattern.compile(EXP_DATE_BC);
+
+        @Override
+		public Token parseToken(boolean estimate, boolean negative, String tokenString, TokenType type) {
+			Matcher matcher = patternDateBC.matcher(tokenString);
+			if(!matcher.matches()) {
+				return null;
+			}
+			if(negative) {
+				throw new SystemException("Double negative not supported", BaseCode.PROPERTY_IS_INVALID);
+			}
+			Integer day = Integer.parseInt(matcher.group(1));
+			Integer month = Integer.parseInt(matcher.group(3));
+			Integer year = -Integer.parseInt(matcher.group(5))+1;			
+	        
+			LocalDate date = LocalDate.of(year, month, day);
+	        LocalDateTime dateTime = LocalDateTime.from(date.atStartOfDay());
+	            
+	        Token token = new Token(DATE, estimate);
+	        token.dateFrom = dateTime;
+	        dateTime = dateTime.plusDays(1);
+	        token.dateTo = dateTime.minusSeconds(1);
+
+	        return token;
+        }
+    }
     
     static List<DatePartParser> parsers = List.of(
     		new YearParser(),
@@ -371,7 +448,9 @@ public class UnitDateConvertor {
     		new CenturyParser(),
     		new CenturyParserBC(),
     		new YearParserBC(),
-    		new YearMonthParserBC());
+    		new YearMonthParserBC(),
+    		new DateParserBC(),
+    		new DateTimeParserBC());
 
 
     /**
@@ -733,7 +812,11 @@ public class UnitDateConvertor {
     public static String convertYear(final IUnitdate unitdate, final boolean first) {
         LocalDateTime date = getLocalDateTimeFromUnitDate(unitdate, first);
         if (date != null) {
-            return Math.abs(date.getYear()) + (unitdate.getValueFrom().startsWith(BC_ISO) ? PR_N_L : "");
+        	if(date.getYear()<=0) {
+        		return Math.abs(date.getYear()-1) + (unitdate.getValueFrom().startsWith(BC_ISO) ? PR_N_L : "");
+        	} else {
+        		return ""+date.getYear();
+        	}
         }
         return unitdate.getFormat();
     }

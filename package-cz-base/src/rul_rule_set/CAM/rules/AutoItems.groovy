@@ -285,11 +285,12 @@ GroovyItem generateChronolDoplnek(final GroovyAe ae) {
         }
     }
 
-    // vytvářet hodnotu pro chronologický doplněk
+    // vytváření hodnoty pro chronologický doplněk
     String nmSupChro = GroovyUtils.formatUnitdate(from, to)
                 .prefixFrom(prefixFrom)
                 .prefixTo(prefixTo)
                 .formatYear()
+                .estimate("asi ") // prefix pro odhad
                 .yearEqual(generYearEqual, prefixYearEqual)
                 .build()
      
