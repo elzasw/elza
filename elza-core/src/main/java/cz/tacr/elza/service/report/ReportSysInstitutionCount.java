@@ -9,11 +9,12 @@ import cz.tacr.elza.controller.vo.ReportValueDate;
 import cz.tacr.elza.domain.RptParam;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import jakarta.persistence.Tuple;
 
 public class ReportSysInstitutionCount extends ReportBase {
 
-	public ReportSysInstitutionCount(String code, List<String> headers, String query, List<RptParam> params, ReportService reportService, EntityManager em) {
-		super(code, headers, query, params, reportService, em);
+	public ReportSysInstitutionCount(String code, String query, List<RptParam> params, ReportService reportService, EntityManager em) {
+		super(code, query, params, reportService, em);
 	}
 
 	/**
@@ -27,26 +28,21 @@ public class ReportSysInstitutionCount extends ReportBase {
 	public ReportReportData createReport(ReportReportParameters parameters) {
 		Query query;
 		if (parameters == null || parameters.getParams() == null || parameters.getParams().isEmpty()) {
-			query = em.createNativeQuery(reportQuery);
+			query = em.createNativeQuery(reportQuery, Tuple.class);
 		} else {
 
 			// TODO zkontrolovat parametr
 
 			OffsetDateTime changeDate = ((ReportValueDate)parameters.getParams().get(0).getValues().get(0)).getDateValue();
 
-			query = em.createNativeQuery(ReportServiceQuery.SYS_INSTITUTION_COUNT_WITH_DATE_QUERY);
+			query = em.createNativeQuery(ReportServiceQuery.SYS_INSTITUTION_COUNT_WITH_DATE_QUERY, Tuple.class);
 			query.setParameter("changeDate", changeDate);
 		}
 
 		reportService.checkAndUpdateViews(reportCode);
 
-		List<Object[]> result = query.getResultList();
+		List<Tuple> result = query.getResultList();
 
-		ReportReportData reportData = new ReportReportData();
-		reportData.setHeader(reportHeaders);
-		reportData.setRows(reportService.getReportRows(result));
-		reportData.setSourceDataDate(OffsetDateTime.now());
-
-		return reportData;
+		return createReportData(result);
 	}
 }

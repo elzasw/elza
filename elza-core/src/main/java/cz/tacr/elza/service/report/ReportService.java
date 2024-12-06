@@ -29,7 +29,6 @@ import cz.tacr.elza.controller.vo.ReportValueInteger;
 import cz.tacr.elza.controller.vo.ReportValueString;
 import cz.tacr.elza.controller.vo.ReportValueType;
 import cz.tacr.elza.domain.RptParam;
-import cz.tacr.elza.domain.RptReport;
 import cz.tacr.elza.domain.RptRequiredView;
 import cz.tacr.elza.domain.RptValueType;
 import cz.tacr.elza.domain.RptViewDate;
@@ -55,13 +54,6 @@ public class ReportService {
 	public final static String SYS_MONTH_USER_COUNT = "SYS_MONTH_USER_COUNT";
 
 	public final static String SYS_INSTITUTION_COUNT = "SYS_INSTITUTION_COUNT";
-
-	private final List<String> SYS_TOTAL_COUNT_HEADERS = List.of("as_pocet", "jp_pocet", "pp_pocet", "ae_pocet", "pb_pocet", "vpb_pocet");
-
-	private final List<String> SYS_MONTH_USER_COUNT_HEADERS = List.of("date_year", "date_month", "username", "level_new", "level_delete", 
-			"item_new", "item_update", "item_delete", "ap_new", "ap_update", "ap_delete", "ap_replace", "apusg_new", "apusg_delete");
-
-	private final List<String> SYS_INSTITUTION_COUNT_HEADERS = List.of("internal_code", "string_value", "fonds_cnt", "levels_cnt", "items_cnt", "refents_cnt");
 
 	private final String VIEW_NODE_CHANGE = "rpt_view_node_change";
 
@@ -117,9 +109,9 @@ public class ReportService {
 			      Collectors.groupingBy(p -> reportCodeMap.get(p.getReportId()), HashMap::new, Collectors.toCollection(ArrayList::new)));
 
 		reportProcessorMap = new HashMap<>();
-		reportProcessorMap.put(SYS_TOTAL_COUNT, new ReportBase(SYS_TOTAL_COUNT, SYS_TOTAL_COUNT_HEADERS, ReportServiceQuery.SYS_TOTAL_COUNT_QUERY, null, this, em));
-		reportProcessorMap.put(SYS_MONTH_USER_COUNT, new ReportSysMonthUserCount(SYS_MONTH_USER_COUNT, SYS_MONTH_USER_COUNT_HEADERS, ReportServiceQuery.SYS_MONTH_USER_COUNT_QUERY, paramMap.get(SYS_MONTH_USER_COUNT), this, em));
-		reportProcessorMap.put(SYS_INSTITUTION_COUNT, new ReportSysInstitutionCount(SYS_INSTITUTION_COUNT, SYS_INSTITUTION_COUNT_HEADERS, ReportServiceQuery.SYS_INSTITUTION_COUNT_QUERY, paramMap.get(SYS_INSTITUTION_COUNT), this, em));
+		reportProcessorMap.put(SYS_TOTAL_COUNT, new ReportBase(SYS_TOTAL_COUNT, ReportServiceQuery.SYS_TOTAL_COUNT_QUERY, null, this, em));
+		reportProcessorMap.put(SYS_MONTH_USER_COUNT, new ReportSysMonthUserCount(SYS_MONTH_USER_COUNT, ReportServiceQuery.SYS_MONTH_USER_COUNT_QUERY, paramMap.get(SYS_MONTH_USER_COUNT), this, em));
+		reportProcessorMap.put(SYS_INSTITUTION_COUNT, new ReportSysInstitutionCount(SYS_INSTITUTION_COUNT, ReportServiceQuery.SYS_INSTITUTION_COUNT_QUERY, paramMap.get(SYS_INSTITUTION_COUNT), this, em));
 	}
 
 	public ReportProcessor getReportProcessor(String code) {
@@ -171,32 +163,6 @@ public class ReportService {
 		return result;
 	}
 
-	/**
-	 * Konverze dat z dotazu
-	 * 
-	 * @param result
-	 * @return
-	 */
-	public List<ReportReportRow> getReportRows(List<Object[]> result) {
-		List<ReportReportRow> rows = new ArrayList<>();
-		for (Object[] items : result) {
-			ReportReportRow row = new ReportReportRow();
-			for (Object item : items) {
-				if (item instanceof String) {
-					row.addColsItem(new ReportValueString((String)item, ReportValueType.STRING));
-				} else if (item instanceof Integer) {
-					row.addColsItem(new ReportValueInteger(((Integer)item).intValue(), ReportValueType.INT));
-				} else if (item instanceof Long) {
-					row.addColsItem(new ReportValueInteger(((Long)item).intValue(), ReportValueType.INT));
-				} else {
-					throw new IllegalArgumentException("Unexpected type: " + item);
-				}
-			}
-			rows.add(row);
-		}
-		return rows;
-	}
-	
 	/**
 	 * Kontrola a v případě potřeby aktualizace dat
 	 * 
