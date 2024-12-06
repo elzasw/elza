@@ -10,11 +10,12 @@ import cz.tacr.elza.controller.vo.ReportValueDate;
 import cz.tacr.elza.domain.RptParam;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
+import jakarta.persistence.Tuple;
 
 public class ReportSysMonthUserCount extends ReportBase {
 
-	public ReportSysMonthUserCount(String code, List<String> headers, String query, List<RptParam> params, ReportService reportService, EntityManager em) {
-		super(code, headers, query, params, reportService, em);
+	public ReportSysMonthUserCount(String code, String query, List<RptParam> params, ReportService reportService, EntityManager em) {
+		super(code, query, params, reportService, em);
 	}
 
 	/**
@@ -44,17 +45,12 @@ public class ReportSysMonthUserCount extends ReportBase {
 				.replace(":fromDate", "'" + dateFrom.toLocalDate().toString() + "'")
 				.replace(":toDate", "'" + dateTo.toLocalDate().toString() + "'");
 
-		Query query = em.createNativeQuery(sysMonthUserCountQuery);
+		Query query = em.createNativeQuery(sysMonthUserCountQuery, Tuple.class);
 
 		reportService.checkAndUpdateViews(reportCode);
 
-		List<Object[]> result = query.getResultList();
+		List<Tuple> result = query.getResultList();
 
-		ReportReportData reportData = new ReportReportData();
-		reportData.setHeader(reportHeaders);
-		reportData.setRows(reportService.getReportRows(result));
-		reportData.setSourceDataDate(OffsetDateTime.now());
-
-		return reportData;
+		return createReportData(result);
 	}
 }
