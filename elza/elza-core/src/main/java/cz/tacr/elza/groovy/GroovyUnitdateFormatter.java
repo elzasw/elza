@@ -2,10 +2,10 @@ package cz.tacr.elza.groovy;
 
 import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.CENTURY;
 
+import java.util.Objects;
+
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
-
-import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.convertor.UnitDateConvertor;
@@ -15,10 +15,13 @@ public class GroovyUnitdateFormatter {
     private final GroovyItem from;
     private final GroovyItem to;
 
-    private String estimate = "asi ";
+    private String estimate = "~ ";
     private String prefixFrom = "";
     private String prefixTo = "";
+    
+    // Flag to display only year or century from given date
     private boolean formatYear = false;
+    
     private boolean yearEqual = false;
     private String prefixYearEqual = "";
 
@@ -36,19 +39,19 @@ public class GroovyUnitdateFormatter {
     }
 
     public GroovyUnitdateFormatter estimate(final String estimate) {
-        Validate.notNull(estimate);
+    	Objects.requireNonNull(estimate);
         this.estimate = estimate;
         return this;
     }
 
     public GroovyUnitdateFormatter prefixFrom(final String prefixFrom) {
-        Validate.notNull(prefixFrom);
+    	Objects.requireNonNull(prefixFrom);
         this.prefixFrom = prefixFrom;
         return this;
     }
 
     public GroovyUnitdateFormatter prefixTo(final String prefixTo) {
-        Validate.notNull(prefixTo);
+    	Objects.requireNonNull(prefixTo);
         this.prefixTo = prefixTo;
         return this;
     }
@@ -59,12 +62,13 @@ public class GroovyUnitdateFormatter {
     }
 
     public GroovyUnitdateFormatter yearEqual(boolean yearEqual, String prefixYearEqual) {
-        Validate.notNull(prefixYearEqual);
+    	Objects.requireNonNull(prefixYearEqual);
         this.yearEqual = yearEqual;
         this.prefixYearEqual = prefixYearEqual;
         return this;
     }
 
+    // prevod casti from
     private String buildBeginUnitdate(IUnitdate unitdate) {
         if (formatYear && !unitdate.getFormat().equals(CENTURY)) {
             return UnitDateConvertor.convertYear(unitdate, true);
@@ -114,22 +118,25 @@ public class GroovyUnitdateFormatter {
 
     @NotNull
     public String build() {
-        String result = "";
+        if (from == null && to == null) {
+            return "";
+        }        
         String fromStr = from != null ? buildBeginUnitdate(from.getUnitdateValue()) : null;
         String toStr = to != null ? buildEndUnitdate(to.getUnitdateValue()) : null;
 
-        if (from == null && to == null) {
-            return result;
-        } else if (from != null && to != null && formatYear && yearEqual && fromStr.equals(toStr) && getFirstWord(prefixFrom).equals(getFirstWord(prefixTo))) {
-            result = completeEqualUnitdate(from.getUnitdateValue(), to.getUnitdateValue(), fromStr);
-        } else if (from != null && to != null) {
-            result = completeBeginUnitdate(from.getUnitdateValue(), fromStr) + "-" + completeEndUnitdate(to.getUnitdateValue(), toStr);
+        if (from != null && to != null)
+        {
+        	if(formatYear && yearEqual && fromStr.equals(toStr) && getFirstWord(prefixFrom).equals(getFirstWord(prefixTo))) {
+        		return completeEqualUnitdate(from.getUnitdateValue(), to.getUnitdateValue(), fromStr);
+        	} else {
+        		return completeBeginUnitdate(from.getUnitdateValue(), fromStr) + "-" + completeEndUnitdate(to.getUnitdateValue(), toStr);
+        	}
+            
         } else if (from != null) {
-            result = completeBeginUnitdate(from.getUnitdateValue(), fromStr) + "-";
+        	return completeBeginUnitdate(from.getUnitdateValue(), fromStr) + "-";
         } else {
-            result = "?" + "-" + completeEndUnitdate(to.getUnitdateValue(), toStr);
+        	return "?" + "-" + completeEndUnitdate(to.getUnitdateValue(), toStr);
         }
-        return result;
     }
 
 }
