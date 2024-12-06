@@ -82,6 +82,18 @@ public class UnitDateConvertorTest {
         assertEquals("1980-01-01T10:05:00", unitDate.getValueFrom());
         assertEquals("1980-01-01T10:05:59", unitDate.getValueTo());
 
+        sourceDate = "1.3.325 10:05 př. n. l.";
+        unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
+        assertEquals(DATE_TIME_INTERVAL, unitDate.getFormat());
+        assertEquals("-0324-03-01T10:05:00", unitDate.getValueFrom());
+        assertEquals("-0324-03-01T10:05:59", unitDate.getValueTo());
+
+        sourceDate = "1.3.325 10:05:47 př. n. l.";
+        unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
+        assertEquals(DATE_TIME, unitDate.getFormat());
+        assertEquals("-0324-03-01T10:05:47", unitDate.getValueFrom());
+        assertEquals("-0324-03-01T10:05:47", unitDate.getValueTo());
+
         sourceDate = "1.1.1980 10:05-2.2.1990 12:25";
         unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
         assertEquals(DATE_TIME_INTERVAL, unitDate.getFormat());
@@ -101,6 +113,12 @@ public class UnitDateConvertorTest {
         assertTrue(unitDate.getValueToEstimated());
         assertEquals(unitDate.getValueFrom(), "-0002-01-01T00:00:00");
         assertEquals(unitDate.getValueTo(), "-0002-12-31T23:59:59");
+        
+        sourceDate = "31 př. n. l.";
+        unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
+        assertEquals(unitDate.getFormat(), YEAR);
+        assertEquals(unitDate.getValueFrom(), "-0030-01-01T00:00:00");
+        assertEquals(unitDate.getValueTo(), "-0030-12-31T23:59:59");
 
         sourceDate = "-20--2";
         unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
@@ -119,6 +137,12 @@ public class UnitDateConvertorTest {
         assertEquals(unitDate.getFormat(), YEAR_MONTH_INTERVAL);
         assertEquals(unitDate.getValueFrom(), "-0009-01-01T00:00:00");
         assertEquals(unitDate.getValueTo(), "-0007-02-28T23:59:59");
+        
+        sourceDate = "1.8.31 př. n. l.";
+        unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
+        assertEquals(unitDate.getFormat(), DATE);
+        assertEquals(unitDate.getValueFrom(), "-0030-08-01T00:00:00");
+        assertEquals(unitDate.getValueTo(), "-0030-08-01T23:59:59");
 
         sourceDate = "-1.2.20";
         unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
@@ -214,5 +238,15 @@ public class UnitDateConvertorTest {
         unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
         result = UnitDateConvertor.convertToString(unitDate);
         assertEquals("[10.5.2 12:25:00 př. n. l.]", result);
+
+        sourceDate = "3.1.10 př.n.l.-6.2.8 př. n. l.";
+        unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
+        result = UnitDateConvertor.convertToString(unitDate);
+        assertEquals("3.1.10 př. n. l.-6.2.8 př. n. l.", result);
+
+        sourceDate = "3.1.10 10:38:41 př.n.l.-6.2.8 15:21:43 př. n. l.";
+        unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
+        result = UnitDateConvertor.convertToString(unitDate);
+        assertEquals("3.1.10 10:38:41 př. n. l.-6.2.8 15:21:43 př. n. l.", result);
     }
 }
