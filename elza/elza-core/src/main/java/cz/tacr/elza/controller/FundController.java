@@ -204,6 +204,9 @@ public class FundController implements FundsApi {
         Validate.notNull(id, "Musí být zadáno id AS");
 
         ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(Integer.valueOf(id));
+        if (fundVersion == null) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
         ArrNode rootNode = fundVersion.getRootNode(); 
 
         return ResponseEntity.ok(factoryVo.createFundDetail(fundVersion.getFund(), rootNode.getUuid()));
