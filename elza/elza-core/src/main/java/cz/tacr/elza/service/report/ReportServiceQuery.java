@@ -123,17 +123,17 @@ public class ReportServiceQuery {
 				pb as (select count(distinct access_point_id) as cnt from rpt_view_ap_usage rvau where rvau.delete_change_id is null),
 			    DESC_ITEMS as (select change_type, count(*) cnt from rpt_view_item_change group by change_type),
 			  	NODES as (select change_type, count(*) cnt from rpt_view_node_change group by change_type)
-			select FONDS.cnt as AS_POCET,
-				coalesce((select cnt from nodes where change_type = 'LEVEL_NEW'), 0)-coalesce((select cnt from nodes where change_type = 'LEVEL_DELETE'), 0) as JP_POCET,
-				coalesce((select cnt from desc_items where change_type = 'ITEM_NEW'), 0)-coalesce((select cnt from desc_items where change_type = 'ITEM_DELETE'), 0) as PP_POCET,
-				ARCH_ENT.cnt as AE_POCET, (select PB.cnt from pb) as PB_POCET, (select VPB.cnt from vpb) as VPB_POCET
+			select FONDS.cnt as as_pocet,
+				coalesce((select cnt from nodes where change_type = 'LEVEL_NEW'), 0)-coalesce((select cnt from nodes where change_type = 'LEVEL_DELETE'), 0) as jp_pocet,
+				coalesce((select cnt from desc_items where change_type = 'ITEM_NEW'), 0)-coalesce((select cnt from desc_items where change_type = 'ITEM_DELETE'), 0) as pp_pocet,
+				ARCH_ENT.cnt as ae_pocet, (select PB.cnt from pb) as pb_pocet, (select VPB.cnt from vpb) as vpb_pocet
 			from (select count(*) cnt from arr_fund) as FONDS,
 				(select count(*) cnt from ap_state s where s.delete_change_id is null) ARCH_ENT;
 					""";
 
 		final static String SYS_MONTH_USER_COUNT_QUERY = """
-			with min_date as (select date_id from rpt_view_date where date_id = :fromDate),
-				max_date as (select date_id from rpt_view_date where date_id = :toDate),
+			with min_date as (select date_id from rpt_view_date where date_id = :dateFrom),
+				max_date as (select date_id from rpt_view_date where date_id = :dateTo),
 				time_line as (select date_year, date_month, min(date_id) as date_from, max(date_id) as date_to from rpt_view_date where date_id >= (select date_id from min_date) and date_id <= (select date_id from max_date) group by date_year, date_month), 
 				users as (select distinct user_id from rpt_view_node_change where date_id >= (select date_id from min_date) and date_id <= (select date_id from max_date) 
 			union  
@@ -242,31 +242,31 @@ public class ReportServiceQuery {
 				join arr_node nroot on nroot.fund_id = f.fund_id  
 				join arr_level lroot on lroot.node_id_parent is null and lroot.node_id = nroot.node_id and lroot.delete_change_id is null  
 				join par_institution pi on pi.institution_id = f.institution_id  
-				join arr_change c on c.change_id = lroot.create_change_id AND c.change_date < :changeDate  
+				join arr_change c on c.change_id = lroot.create_change_id AND c.change_date < :dateTo  
 				group by pi.institution_id),  
 			level_new as (select f.institution_id, count(*) cnt from rpt_view_node_change rvch 
 				join arr_fund f on f.fund_id = rvch.fond_id 
-				where change_type = 'LEVEL_NEW' and date_id < :changeDate  
+				where change_type = 'LEVEL_NEW' and date_id < :dateTo  
 				group by f.institution_id), 
 			level_delete as (select f.institution_id, count(*) cnt 
 				from rpt_view_node_change rvch 
 				join arr_fund f on f.fund_id = rvch.fond_id 
-			   	where change_type = 'LEVEL_DELETE' and date_id < :changeDate 
+			   	where change_type = 'LEVEL_DELETE' and date_id < :dateTo 
 			   	group by f.institution_id),
 			item_new as (select f.institution_id, count(*) cnt 
 				from rpt_view_item_change rvch 
 			   	join arr_fund f on f.fund_id = rvch.fond_id 
-			   	where change_type = 'ITEM_NEW' and date_id < :changeDate 
+			   	where change_type = 'ITEM_NEW' and date_id < :dateTo 
 			   	group by f.institution_id), 
 			item_delete as (select f.institution_id, count(*) cnt 
 				from rpt_view_item_change rvch 
 			   	join arr_fund f on f.fund_id = rvch.fond_id 
-			   	where change_type = 'ITEM_DELETE' and date_id < :changeDate 
+			   	where change_type = 'ITEM_DELETE' and date_id < :dateTo 
 			   	group by f.institution_id),  
 			refents as (select f.institution_id, count(*) cnt 
 				from rpt_view_ap_usage rvapu 
 			  	join arr_fund f on f.fund_id = rvapu.fond_id 
-			  	where rvapu.create_date_id < :changeDate and (rvapu.delete_date_id is null or rvapu.delete_date_id >= :changeDate) 
+			  	where rvapu.create_date_id < :dateTo and (rvapu.delete_date_id is null or rvapu.delete_date_id >= :dateTo) 
 			  	group by f.institution_id) 
 			select pi.internal_code, pref_indx.index_value,   
 				coalesce(fonds.cnt, 0) as FONDS_CNT,  
@@ -282,5 +282,93 @@ public class ReportServiceQuery {
 				left join item_new on item_new.institution_id = pi.institution_id  
 				left join item_delete on item_delete.institution_id = pi.institution_id 
 				left join refents on refents.institution_id = pi.institution_id;
+					""";
+
+		final static String SYS_EXT_SYSTEM_COUNT_QUERY = """
+			with max_change as (select max(c.change_id) as change_id from ap_change c where c.change_date < :dateTo), 
+				max_arr_change as (select max(c.change_id) as change_id from arr_change c where c.change_date < :dateTo) 
+			select aes.external_system_id, coalesce(total_cnt.ap_count, 0) as ae_pocet, coalesce(used_cnt.ap_count, 0) as pb_pocet 
+			from ap_external_system aes 
+				join sys_external_system ses on aes.external_system_id = ses.external_system_id 
+				left join (
+					select aes.external_system_id, count(*) as ap_count 
+					from ap_external_system aes  
+					join ap_binding_state bs on bs.external_system_id = aes.external_system_id 
+					and (bs.create_change_id <= (select change_id from max_change) 
+					and (bs.delete_change_id is null or bs.delete_change_id > (select change_id from max_change))) 
+				group by aes.external_system_id 
+				) total_cnt on total_cnt.external_system_id = aes.external_system_id  
+				left join ( 
+					select external_system_id, count(*) as ap_count from ( 
+						select vau.access_point_id, bs.external_system_id from rpt_view_ap_usage vau 
+						join ap_binding_state bs on bs.binding_state_id = vau.binding_state_id 
+						where vau.create_change_id <= (select change_id from max_arr_change) 
+							and ((vau.delete_change_id is null) or (vau.delete_change_id > (select change_id from max_arr_change))) 
+							and bs.create_change_id <= (select change_id from max_change) 
+							and ((bs.delete_change_id is null) or (bs.delete_change_id > (select change_id from max_change))) 
+					    group by vau.access_point_id, bs.external_system_id 
+					    ) as ap_ext_sys 
+					group by external_system_id 
+				) used_cnt on used_cnt.external_system_id = aes.external_system_id;
+					""";
+
+		final static String SYS_OUTPUT_COUNT_QUERY = """
+			with max_change as (select max(change_id) as change_id from arr_change where change_date <= :dateTo), 
+				min_change as (select min(change_id) as change_id from arr_change where change_date >= :dateFrom) 
+			select pref_indx.index_value as inst_name, 
+				inst.internal_code as inst_code,  
+				f.fund_number as fonds_number, 
+				f."name" as fonds_name,  
+				fa_id.fa_number as fa_number, 
+				fa_type.fa_type as fa_type, 
+				fa_date.fa_date as fa_date, 
+				fa_unit_count.fa_unit_count as fa_unit_count, 
+				o."name" as output_name,  
+				ot."name" as output_type, 
+				gchn.change_date as output_date, 
+				rt."name" as templ_name 
+			from arr_output_result aor  
+			join arr_output o on aor.output_id = o.output_id  
+			join arr_fund f on f.fund_id = o.fund_id  
+			join arr_change gchn on gchn.change_id = aor.change_id -- cas vytvoreni vystup 
+			left join ( 
+				select oi.output_id, di.integer_value as fa_number, itm.create_change_id, itm.delete_change_id from rul_item_type rit 
+				join arr_item itm on itm.item_type_id = rit.item_type_id 
+				join arr_output_item oi on oi.item_id = itm.item_id 
+				join arr_data_integer di on di.data_id = itm.data_id 
+				where rit.code = 'ZP2015_FINDING_AID_ID' 
+			) fa_id on fa_id.output_id = o.output_id and fa_id.create_change_id <= aor.change_id  
+			and (fa_id.delete_change_id is null or fa_id.delete_change_id > aor.change_id) 
+			left join ( 
+				select oi.output_id, ris.name as fa_type, itm.create_change_id, itm.delete_change_id from rul_item_type rit 
+				join arr_item itm on itm.item_type_id = rit.item_type_id 
+				join arr_output_item oi on oi.item_id = itm.item_id 
+				join rul_item_spec ris on itm.item_spec_id = ris.item_spec_id 
+				where rit.code = 'ZP2015_OUTPUT_TYPE' 
+			) fa_type on fa_type.output_id = o.output_id and fa_type.create_change_id <= aor.change_id  
+			and (fa_type.delete_change_id is null or fa_type.delete_change_id > aor.change_id) 
+			left join ( 
+				select oi.output_id, dd.date_value as fa_date, itm.create_change_id, itm.delete_change_id from rul_item_type rit 
+				join arr_item itm on itm.item_type_id = rit.item_type_id 
+				join arr_output_item oi on oi.item_id = itm.item_id 
+				join arr_data_date dd on dd.data_id = itm.data_id 
+				where rit.code = 'ZP2015_FINDING_AID_DATE' 
+			) fa_date on fa_date.output_id = o.output_id and fa_date.create_change_id <= aor.change_id  
+			and (fa_date.delete_change_id is null or fa_date.delete_change_id>aor.change_id) 
+			left join ( 
+				select oi.output_id, di.integer_value as fa_unit_count, itm.create_change_id, itm.delete_change_id from rul_item_type rit 
+				join arr_item itm on itm.item_type_id = rit.item_type_id 
+				join arr_output_item oi on oi.item_id = itm.item_id 
+				join arr_data_integer di on di.data_id = itm.data_id 
+				where rit.code = 'ZP2015_UNIT_COUNT_SUM' 
+			) fa_unit_count on fa_unit_count.output_id = o.output_id and fa_unit_count.create_change_id <= aor.change_id  
+			and (fa_unit_count.delete_change_id is null or fa_unit_count.delete_change_id>aor.change_id) 
+				join par_institution inst on inst.institution_id = f.institution_id  
+				join ap_access_point ap on ap.access_point_id = inst.access_point_id  
+				join ap_index pref_indx on pref_indx.part_id = ap.preferred_part_id and pref_indx.index_type = 'SHORT_NAME' 
+				--join arr_output_template out_tmpl on out_tmpl.output_template_id = aor.template_id  
+				join rul_template rt on rt.template_id = aor.template_id  
+				join rul_output_type ot on ot.output_type_id = o.output_type_id  
+			where aor.change_id >= (select change_id from min_change) and aor.change_id <= (select change_id from max_change);
 					""";
 }

@@ -1,11 +1,11 @@
 package cz.tacr.elza.service.report;
 
-import java.time.OffsetDateTime;
 import java.util.List;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import cz.tacr.elza.controller.vo.ReportReportData;
 import cz.tacr.elza.controller.vo.ReportReportParameters;
-import cz.tacr.elza.controller.vo.ReportValueDate;
 import cz.tacr.elza.domain.RptParam;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
@@ -26,20 +26,14 @@ public class ReportSysInstitutionCount extends ReportBase {
 	 */
 	@Override
 	public ReportReportData createReport(ReportReportParameters parameters) {
-		Query query;
-		if (parameters == null || parameters.getParams() == null || parameters.getParams().isEmpty()) {
-			query = em.createNativeQuery(reportQuery, Tuple.class);
-		} else {
-
-			// TODO zkontrolovat parametr
-
-			OffsetDateTime changeDate = ((ReportValueDate)parameters.getParams().get(0).getValues().get(0)).getDateValue();
-
-			query = em.createNativeQuery(ReportServiceQuery.SYS_INSTITUTION_COUNT_WITH_DATE_QUERY, Tuple.class);
-			query.setParameter("changeDate", changeDate);
-		}
-
+		validateAndReadParameters(parameters);
 		reportService.checkAndUpdateViews(reportCode);
+
+		Query query = em.createNativeQuery(reportQuery, Tuple.class);
+		if (parameters != null && !CollectionUtils.isEmpty(parameters.getParams())) {
+			query = em.createNativeQuery(ReportServiceQuery.SYS_INSTITUTION_COUNT_WITH_DATE_QUERY, Tuple.class);
+			query.setParameter("dateTo", dateTo);
+		}
 
 		List<Tuple> result = query.getResultList();
 

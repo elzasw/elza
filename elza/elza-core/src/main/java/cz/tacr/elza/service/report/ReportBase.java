@@ -1,14 +1,20 @@
 package cz.tacr.elza.service.report;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 
 import cz.tacr.elza.controller.vo.ReportReportData;
+import cz.tacr.elza.controller.vo.ReportReportParamValue;
 import cz.tacr.elza.controller.vo.ReportReportParameters;
 import cz.tacr.elza.controller.vo.ReportReportRow;
+import cz.tacr.elza.controller.vo.ReportValue;
+import cz.tacr.elza.controller.vo.ReportValueDate;
 import cz.tacr.elza.controller.vo.ReportValueInteger;
 import cz.tacr.elza.controller.vo.ReportValueString;
 import cz.tacr.elza.controller.vo.ReportValueType;
@@ -24,11 +30,15 @@ public class ReportBase implements ReportProcessor {
 
 	protected final String reportQuery;
 
-	protected final List<RptParam> reportParams; 
+	protected final List<RptParam> reportParams;
 
 	protected final ReportService reportService;
 
 	protected final EntityManager em;
+
+	protected OffsetDateTime dateFrom;
+
+	protected OffsetDateTime dateTo;
 
 	public ReportBase(String code, String query, List<RptParam> params, ReportService reportService, EntityManager em) {
 		this.reportCode = code;
@@ -40,12 +50,74 @@ public class ReportBase implements ReportProcessor {
 
 	@Override
 	public ReportReportData createReport(ReportReportParameters parameters) {
+		validateAndReadParameters(parameters);
 		reportService.checkAndUpdateViews(reportCode);
 
 		Query query = em.createNativeQuery(reportQuery, Tuple.class);
+		if (dateFrom != null) {
+			query.setParameter("dateFrom", dateFrom);
+		}
+		if (dateTo != null) {
+			query.setParameter("dateTo", dateTo);
+		}
+
 		List<Tuple> result = query.getResultList();
 
 		return createReportData(result);
+	}
+
+	/**
+	 * Kontrola a vyplňování polí parametrů
+	 * 
+	 * @param parameters
+	 */
+	protected void validateAndReadParameters(ReportReportParameters parameters) {
+		// tato sestava nemá žádné parametry
+		if (reportParams == null) {
+			return;
+		}
+		
+		for (RptParam param : reportParams) {
+			String code = param.getCode();
+			boolean required = param.getRequired();
+			ReportValue value = getValueByCode(code, parameters);
+			OffsetDateTime dtNow = OffsetDateTime.now();
+			switch (code) {
+			case "DATE_FROM":
+				if (value == null && required) {
+					throw new IllegalArgumentException("Required parameter value not found, code: " + code);
+				}
+				dateFrom = value == null ? dtNow.toLocalDate().atStartOfDay().atOffset(ZoneOffset.UTC) : ((ReportValueDate) value).getDateValue();
+				break;
+			case "DATE_TO":
+				if (value == null && required) {
+					throw new IllegalArgumentException("Required parameter value not found, code: " + code);
+				}
+				dateTo = value == null ? dtNow : ((ReportValueDate) value).getDateValue();
+				break;
+			case "INSTITUCE":
+				// TODO process this parameters
+				break;
+			default:
+				throw new IllegalArgumentException("Unexpected param code: " + code);
+			}
+		}
+	}
+
+	/**
+	 * Získání hodnoty parametru podle kódu
+	 * 
+	 * @param code
+	 * @param parameters
+	 * @return
+	 */
+	private ReportValue getValueByCode(String code, ReportReportParameters parameters) {
+		for (ReportReportParamValue value : parameters.getParams()) {
+			if (code.equals(value.getCode())) {
+				return value.getValues().get(0);
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -83,6 +155,10 @@ public class ReportBase implements ReportProcessor {
 					reportRow.addColsItem(new ReportValueInteger((Integer) row.get(element), ReportValueType.INT));
 				} else if (type == Long.class) {
 					reportRow.addColsItem(new ReportValueInteger(((Long) row.get(element)).intValue(), ReportValueType.INT));
+				} else if (type == Instant.class) {
+					reportRow.addColsItem(new ReportValueString(((Instant) row.get(element)).atOffset(ZoneOffset.UTC).toString(), ReportValueType.STRING));
+				} else if (type == Object.class) {
+					reportRow.addColsItem(new ReportValue());
 				} else {
 					throw new IllegalArgumentException("Unexpected type: " + type);
 				}

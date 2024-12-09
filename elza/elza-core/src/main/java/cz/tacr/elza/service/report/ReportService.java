@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -54,6 +55,10 @@ public class ReportService {
 	public final static String SYS_MONTH_USER_COUNT = "SYS_MONTH_USER_COUNT";
 
 	public final static String SYS_INSTITUTION_COUNT = "SYS_INSTITUTION_COUNT";
+
+	public final static String SYS_EXT_SYSTEM_COUNT = "SYS_EXT_SYSTEM_COUNT";
+
+	public final static String SYS_OUTPUT_COUNT = "SYS_OUTPUT_COUNT";
 
 	private final String VIEW_NODE_CHANGE = "rpt_view_node_change";
 
@@ -101,6 +106,9 @@ public class ReportService {
 	@Autowired
 	ChangeRepository arrChangeRepository;
 
+    @Value("${spring.datasource.url}")
+    private String datasourceUrl;
+
 	@PostConstruct
 	public void init() {
 		List<RptParam> params = paramRepository.findAll();
@@ -112,6 +120,12 @@ public class ReportService {
 		reportProcessorMap.put(SYS_TOTAL_COUNT, new ReportBase(SYS_TOTAL_COUNT, ReportServiceQuery.SYS_TOTAL_COUNT_QUERY, null, this, em));
 		reportProcessorMap.put(SYS_MONTH_USER_COUNT, new ReportSysMonthUserCount(SYS_MONTH_USER_COUNT, ReportServiceQuery.SYS_MONTH_USER_COUNT_QUERY, paramMap.get(SYS_MONTH_USER_COUNT), this, em));
 		reportProcessorMap.put(SYS_INSTITUTION_COUNT, new ReportSysInstitutionCount(SYS_INSTITUTION_COUNT, ReportServiceQuery.SYS_INSTITUTION_COUNT_QUERY, paramMap.get(SYS_INSTITUTION_COUNT), this, em));
+		reportProcessorMap.put(SYS_EXT_SYSTEM_COUNT, new ReportBase(SYS_EXT_SYSTEM_COUNT, ReportServiceQuery.SYS_EXT_SYSTEM_COUNT_QUERY, paramMap.get(SYS_EXT_SYSTEM_COUNT), this, em));
+		reportProcessorMap.put(SYS_OUTPUT_COUNT, new ReportBase(SYS_OUTPUT_COUNT, ReportServiceQuery.SYS_OUTPUT_COUNT_QUERY, paramMap.get(SYS_OUTPUT_COUNT), this, em));
+	}
+
+	public String getDatasourceUrl() {
+		return datasourceUrl;
 	}
 
 	public ReportProcessor getReportProcessor(String code) {
