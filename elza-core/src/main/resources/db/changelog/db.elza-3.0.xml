@@ -622,4 +622,64 @@
 		</insert>
 	</changeSet>
 
+	<changeSet id="20241206120600" author="sergey.iryupin">
+		<insert tableName="rpt_report">
+			<!-- SYS_EXT_SYSTEM_COUNT -->
+			<column name="report_id">4</column>
+			<column name="category_id">1</column>
+			<column name="code">SYS_EXT_SYSTEM_COUNT</column>
+			<column name="name">Přehled k datu dle zápisu do externích systémů</column>
+			<column name="description">Přehled počtu archivních entit a přístupových bodů, které jsou napojeny na externí systém (je k dispozici ID externího systému).</column>
+		</insert>
+		<insert tableName="rpt_report">
+			<!-- SYS_OUTPUT_COUNT -->
+			<column name="report_id">5</column>
+			<column name="category_id">1</column>
+			<column name="code">SYS_OUTPUT_COUNT</column>
+			<column name="name">Přehled po institucích a archivních souborech</column>
+			<column name="description">Výpis všech realizovaných výstupů za dané období.</column>
+		</insert>
+		<insert tableName="rpt_param">
+			<column name="param_id">4</column>
+			<column name="report_id">4</column> <!-- SYS_EXT_SYSTEM_COUNT -->
+			<column name="value_type_id">4</column>
+			<column name="code">DATE_TO</column>
+			<column name="name">Date</column>
+			<column name="repeatable">false</column>
+			<column name="required">false</column>
+		</insert>
+		<insert tableName="rpt_param">
+			<column name="param_id">5</column>
+			<column name="report_id">5</column> <!-- SYS_OUTPUT_COUNT -->
+			<column name="value_type_id">4</column>
+			<column name="code">DATE_FROM</column>
+			<column name="name">Date</column>
+			<column name="repeatable">false</column>
+			<column name="required">false</column>
+		</insert>
+		<insert tableName="rpt_param">
+			<column name="param_id">6</column>
+			<column name="report_id">5</column> <!-- SYS_OUTPUT_COUNT -->
+			<column name="value_type_id">4</column>
+			<column name="code">DATE_TO</column>
+			<column name="name">Date</column>
+			<column name="repeatable">false</column>
+			<column name="required">false</column>
+		</insert>
+		<insert tableName="rpt_param">
+			<column name="param_id">7</column>
+			<column name="report_id">5</column> <!-- SYS_OUTPUT_COUNT -->
+			<column name="value_type_id">2</column>
+			<column name="code">INSTITUCE</column>
+			<column name="name">Instituce</column>
+			<column name="repeatable">false</column>
+			<column name="required">false</column>
+		</insert>
+		<insert tableName="rpt_required_view">
+			<column name="required_view_id" value="11"/>
+			<column name="report_id" value="4"/> <!-- SYS_EXT_SYSTEM_COUNT -->
+			<column name="view_name" value="rpt_view_ap_usage"/>
+		</insert>
+	</changeSet>
+
 </databaseChangeLog>
