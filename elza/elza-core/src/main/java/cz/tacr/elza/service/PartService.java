@@ -501,6 +501,9 @@ public class PartService {
         ApKeyValue apKeyValue = keyValueRepository.findByKeyTypeAndValueAndScope(keyType, value, scope);
 
         if (apKeyValue != null) {
+        	logger.info("ApKeyValue s tímto typem a hodnotou a scopeId už existuje, keyType: {}, value: {}, scopeId: {}.", 
+        			keyType, value, scope.getScopeId());
+        	
             if (async) {
                 return false;
             }
