@@ -46,6 +46,42 @@
   "admin_reports_generation_time": {
     "defaultMessage": "Čas vygenerování přehledu: {date} v {time}"
   },
+  "admin_reports_header_FA_DATE": {
+    "defaultMessage": "Datum archivní pomůcky"
+  },
+  "admin_reports_header_FA_NUMBER": {
+    "defaultMessage": "Číslo archivní pomůcky"
+  },
+  "admin_reports_header_FA_TYPE": {
+    "defaultMessage": "Druh archivní pomůcky"
+  },
+  "admin_reports_header_FA_UNIT_COUNT": {
+    "defaultMessage": "Součet jednotek popisu"
+  },
+  "admin_reports_header_FONDS_NAME": {
+    "defaultMessage": "Název archivního souboru"
+  },
+  "admin_reports_header_FONDS_NUMBER": {
+    "defaultMessage": "Číslo archivního souboru"
+  },
+  "admin_reports_header_INST_CODE": {
+    "defaultMessage": "Číslo archivu"
+  },
+  "admin_reports_header_INST_NAME": {
+    "defaultMessage": "Instituce"
+  },
+  "admin_reports_header_OUTPUT_DATE": {
+    "defaultMessage": "Čas generování výstupu"
+  },
+  "admin_reports_header_OUTPUT_NAME": {
+    "defaultMessage": "Název výstupu"
+  },
+  "admin_reports_header_OUTPUT_TYPE": {
+    "defaultMessage": "Typ výstupu"
+  },
+  "admin_reports_header_TEMPL_NAME": {
+    "defaultMessage": "Šablona"
+  },
   "admin_reports_header_ae_pocet": {
     "defaultMessage": "Počet archivních entit"
   },
