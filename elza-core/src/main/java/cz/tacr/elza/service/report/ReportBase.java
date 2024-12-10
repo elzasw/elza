@@ -131,7 +131,7 @@ public class ReportBase implements ReportProcessor {
 		ReportReportData reportData = new ReportReportData();
 		if (!CollectionUtils.isEmpty(result)) {
 			reportData.setHeader(result.get(0).getElements().stream().map(i -> i.getAlias().toUpperCase()).toList());
-			reportData.setRows(fillReportRows(result));
+			reportData.setRows(getReportRows(result));
 		}
 		reportData.setSourceDataDate(OffsetDateTime.now());
 
@@ -144,7 +144,7 @@ public class ReportBase implements ReportProcessor {
 	 * @param result
 	 * @return list of ReportReportRow
 	 */
-	protected List<ReportReportRow> fillReportRows(List<Tuple> result) {
+	protected List<ReportReportRow> getReportRows(List<Tuple> result) {
 		List<ReportReportRow> reportRows = new ArrayList<>();
 		for (Tuple row : result) {
 			ReportReportRow reportRow = new ReportReportRow();

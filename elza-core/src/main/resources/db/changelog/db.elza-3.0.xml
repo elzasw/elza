@@ -682,4 +682,26 @@
 		</insert>
 	</changeSet>
 
+	<changeSet id="20241210121000" author="sergey.iryupin">
+		<!-- kategorie statistických sestav -->
+		<insert tableName="rpt_category">
+			<column name="category_id">2</column>
+			<column name="code">ENTITY</column>
+			<column name="name">Archivní entity</column>
+		</insert>
+		<insert tableName="rpt_category">
+			<column name="category_id">3</column>
+			<column name="code">OUTPUT</column>
+			<column name="name">Výstupy</column>
+		</insert>
+        <update tableName="rpt_report">
+            <column name="category_id" value="2"/>
+            <where>report_id = 4</where>
+        </update>
+        <update tableName="rpt_report">
+            <column name="category_id" value="3"/>
+            <where>report_id = 5</where>
+        </update>
+	</changeSet>
+
 </databaseChangeLog>
