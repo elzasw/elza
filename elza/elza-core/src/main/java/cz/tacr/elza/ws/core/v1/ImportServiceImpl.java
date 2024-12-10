@@ -35,6 +35,8 @@ import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.SyncState;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApStateRepository;
@@ -218,8 +220,13 @@ public class ImportServiceImpl implements ImportService {
 
             List<ApRevision> revState = revisionService.findAllRevisionByStateIn(apStates);
             if (revState.size() > 0) {
-                throw new IllegalStateException("Entity with revision, cannot synchronize. first revisionId: "
-                        + revState.get(0).getRevisionId());
+            	// prepare list of APs with revisions
+				List<Integer> revAccessPointIds = revState.stream().map(r -> r.getState().getAccessPointId()).collect(Collectors.toList());
+				// cannot synchronize            	
+				logger.error("Entities with revisions cannot be synchronized, {}", revAccessPointIds);
+                throw new BusinessException("Entity with revision, cannot synchronize. entities: "
+                        + revAccessPointIds, BaseCode.INVALID_STATE)
+                	.set("apIds", revAccessPointIds);
             }
 
             for (ApState state : apStates) {
