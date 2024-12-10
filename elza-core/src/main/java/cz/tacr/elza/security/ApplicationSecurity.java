@@ -79,11 +79,11 @@ public class ApplicationSecurity {
     private static final Logger log = LoggerFactory.getLogger(ApplicationSecurity.class);
 
     /**
-     * These patterns need to be allowed to access without authorization 
+     * These patterns need to be allowed to access without authorization
      * to make it possible to navigate from the browser address bar for unauthorized users
      * @see cz.tacr.elza.web.controller.ElzaWebController (elza-web)
      */
-    public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/fund/**", "/node/**", "/entity/**", "/admin/**", "/h2-console/**"};
+    public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/static/**", "/fund/**", "/node/**", "/entity/**", "/admin/**", "/h2-console/**"};
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -222,15 +222,15 @@ public class ApplicationSecurity {
             throw new IllegalStateException("Failed to read token", e);
         }
     }
-    
+
     @Bean
     public HttpFirewall strictHttpFirewall() {
     	// This allows to accept some Czech characters as header values when using SSO header
         StrictHttpFirewall firewall = new StrictHttpFirewall();
         // allow all header values
-        firewall.setAllowedHeaderValues(v -> true); 
+        firewall.setAllowedHeaderValues(v -> true);
         return firewall;
-    }    
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -239,7 +239,7 @@ public class ApplicationSecurity {
         	.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
 
     		// by https://www.baeldung.com/spring-security-migrate-5-to-6
-        	/** 
+        	/**
         	 * Dotaz na autorizaci /login je vychozi endpoint a nevyžaduje zvláštní povolení k přístupu,
         	 * tento dotaz je zpracován výchozím Spring controller.
         	 */
