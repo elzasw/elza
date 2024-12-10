@@ -105,6 +105,54 @@ export const headerMessages = defineMessages({
         id: "admin_reports_header_apusg_delete",
         defaultMessage: "Odstraněné vazby přístupových bodů"
     },
+    instName: {
+        id: "admin_reports_header_INST_NAME",
+        defaultMessage: "Instituce"
+        },
+    instCode: {
+        id: "admin_reports_header_INST_CODE",
+        defaultMessage: "Číslo archivu"
+        },
+    fondsNumber: {
+        id: "admin_reports_header_FONDS_NUMBER",
+        defaultMessage: "Číslo archivního souboru"
+        },
+    fondsName: {
+        id: "admin_reports_header_FONDS_NAME",
+        defaultMessage: "Název archivního souboru"
+        },
+    faNumber: {
+        id: "admin_reports_header_FA_NUMBER",
+        defaultMessage: "Číslo archivní pomůcky"
+        },
+    outputName: {
+        id: "admin_reports_header_OUTPUT_NAME",
+        defaultMessage: "Název výstupu"
+        },
+    faType: {
+        id: "admin_reports_header_FA_TYPE",
+        defaultMessage: "Druh archivní pomůcky"
+        },
+    faDate: {
+        id: "admin_reports_header_FA_DATE",
+        defaultMessage: "Datum archivní pomůcky"
+        },
+    faUnitCnt: {
+        id: "admin_reports_header_FA_UNIT_COUNT",
+        defaultMessage: "Součet jednotek popisu"
+        },
+    outputType: {
+        id: "admin_reports_header_OUTPUT_TYPE",
+        defaultMessage: "Typ výstupu"
+        },
+    templName: {
+        id: "admin_reports_header_TEMPL_NAME",
+        defaultMessage: "Šablona"
+        },
+    outputDate: {
+        id: "admin_reports_header_OUTPUT_DATE",
+        defaultMessage: "Čas generování výstupu"
+        },
 })
 
 export const formMessages = defineMessages({
