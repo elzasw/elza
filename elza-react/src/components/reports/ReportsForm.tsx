@@ -157,9 +157,17 @@ export function ReportsForm({ onSubmit }: Props) {
 
     function getReportDefinition(definitionCode: string) {
         let reportDefinition: ReportReportDefinition | undefined;
-        reportCategories?.forEach(({ reportDefinitions }) => {
-            reportDefinition = reportDefinitions?.find(({ code }) => code === definitionCode);
+        reportCategories?.find(({ reportDefinitions }) => {
+            const _reportDefinition = reportDefinitions?.find(({ code }) => code == definitionCode);
+            if (_reportDefinition) {
+                reportDefinition = _reportDefinition;
+                return true;
+            }
         });
+
+        if (!reportDefinition) {
+            throw `No report definition for '${definitionCode}'`;
+        }
         return reportDefinition;
     }
 
