@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.report;
 
+import java.sql.Date;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -155,8 +156,10 @@ public class ReportBase implements ReportProcessor {
 					reportRow.addColsItem(new ReportValueInteger((Integer) row.get(element), ReportValueType.INT));
 				} else if (type == Long.class) {
 					reportRow.addColsItem(new ReportValueInteger(((Long) row.get(element)).intValue(), ReportValueType.INT));
+				} else if (type == Date.class) {
+					reportRow.addColsItem(new ReportValueString(((Date) row.get(element)).toString(), ReportValueType.STRING));
 				} else if (type == Instant.class) {
-					reportRow.addColsItem(new ReportValueString(((Instant) row.get(element)).atOffset(ZoneOffset.UTC).toString(), ReportValueType.STRING));
+					reportRow.addColsItem(new ReportValueString(((Instant) row.get(element)).toString(), ReportValueType.STRING));
 				} else if (type == Object.class) {
 					reportRow.addColsItem(new ReportValue());
 				} else {
