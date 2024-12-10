@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -291,10 +292,11 @@ public class ImportServiceImpl implements ImportService {
 
         if (updateEntities != null && updateEntities.size() > 0) {
             for (SyncEntityRequest syncReq : updateEntities) {
-                Validate.notNull(syncReq.getBinding());
+                Objects.requireNonNull(syncReq.getBinding());
 
                 try {
-                    camService.synchronizeAccessPoint(procCtx, syncReq.getBinding(), syncReq.getEntityXml(), false);
+                	// May be we could reflect some parameters from request to set proper strategy
+                    camService.synchronizeAccessPoint(procCtx, syncReq.getBinding(), syncReq.getEntityXml(), true);
                 } catch (SyncImpossibleException e) {
                     logger.error("Synchronized impossible, accessPointId: {}, bindingId: {}, {}", syncReq.getAccessPoint().getAccessPointId(), syncReq.getBinding().getBindingId(), e.getMessage());
                     throw new RuntimeException("Synchronizace této entity s CAM není možná. " + e.getMessage(), e);
