@@ -153,6 +153,10 @@ export const headerMessages = defineMessages({
         id: "admin_reports_header_OUTPUT_DATE",
         defaultMessage: "Čas generování výstupu"
         },
+    extSysID: {
+        id: "admin_reports_header_EXTERNAL_SYSTEM_ID",
+        defaultMessage: "Identifikátor externího systému"
+        },
 })
 
 export const formMessages = defineMessages({
