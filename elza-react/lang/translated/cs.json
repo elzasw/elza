@@ -34,6 +34,9 @@
   "admin_reports_form_property_DateTo": {
     "defaultMessage": "Datum do"
   },
+  "admin_reports_form_property_Instituce": {
+    "defaultMessage": "Instituce"
+  },
   "admin_reports_form_reportDefinition": {
     "defaultMessage": "Přehled"
   },
