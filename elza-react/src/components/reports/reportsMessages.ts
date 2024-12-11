@@ -172,4 +172,8 @@ export const formMessages = defineMessages({
         id: "admin_reports_form_property_Date",
         defaultMessage: "Datum",
     },
+    instituce: {
+        id: "admin_reports_form_property_Instituce",
+        defaultMessage: "Instituce",
+    },
 })
