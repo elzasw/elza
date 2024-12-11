@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import static cz.tacr.elza.service.report.ReportServiceQuery.*;
+
 import cz.tacr.elza.controller.vo.ReportReportCategory;
 import cz.tacr.elza.controller.vo.ReportReportData;
 import cz.tacr.elza.controller.vo.ReportReportDefinition;
@@ -73,6 +75,8 @@ public class ReportService {
 
 	Map<String, ReportProcessor> reportProcessorMap;
 
+	Map<Integer, RptValueType> valueTypeMap;
+
 	@Autowired
 	EntityManager em;
 	
@@ -89,7 +93,7 @@ public class ReportService {
 	RptParamRepository paramRepository;
 
 	@Autowired
-	RptValueTypeRepository paramTypeRepository;
+	RptValueTypeRepository valueTypeRepository;
 
 	@Autowired
 	RptRequiredViewRepository requiredViewRepository;
@@ -111,21 +115,28 @@ public class ReportService {
 
 	@PostConstruct
 	public void init() {
+		List<RptValueType> valueTypes = valueTypeRepository.findAll();
+		valueTypeMap = valueTypes.stream().collect(Collectors.toMap(RptValueType::getValueTypeId, Function.identity()));
+
 		List<RptParam> params = paramRepository.findAll();
 		Map<Integer, String> reportCodeMap = reportRepository.findAll().stream().collect(Collectors.toMap(r -> r.getReportId(), r -> r.getCode()));
 		Map<String, List<RptParam>> paramMap = params.stream().collect(
 			      Collectors.groupingBy(p -> reportCodeMap.get(p.getReportId()), HashMap::new, Collectors.toCollection(ArrayList::new)));
 
 		reportProcessorMap = new HashMap<>();
-		reportProcessorMap.put(SYS_TOTAL_COUNT, new ReportBase(SYS_TOTAL_COUNT, ReportServiceQuery.SYS_TOTAL_COUNT_QUERY, null, this, em));
-		reportProcessorMap.put(SYS_MONTH_USER_COUNT, new ReportSysMonthUserCount(SYS_MONTH_USER_COUNT, ReportServiceQuery.SYS_MONTH_USER_COUNT_QUERY, paramMap.get(SYS_MONTH_USER_COUNT), this, em));
-		reportProcessorMap.put(SYS_INSTITUTION_COUNT, new ReportSysInstitutionCount(SYS_INSTITUTION_COUNT, ReportServiceQuery.SYS_INSTITUTION_COUNT_QUERY, paramMap.get(SYS_INSTITUTION_COUNT), this, em));
-		reportProcessorMap.put(SYS_EXT_SYSTEM_COUNT, new ReportBase(SYS_EXT_SYSTEM_COUNT, ReportServiceQuery.SYS_EXT_SYSTEM_COUNT_QUERY, paramMap.get(SYS_EXT_SYSTEM_COUNT), this, em));
-		reportProcessorMap.put(SYS_OUTPUT_COUNT, new ReportBase(SYS_OUTPUT_COUNT, ReportServiceQuery.SYS_OUTPUT_COUNT_QUERY, paramMap.get(SYS_OUTPUT_COUNT), this, em));
+		reportProcessorMap.put(SYS_TOTAL_COUNT, new ReportSimpleQuery(SYS_TOTAL_COUNT, SYS_TOTAL_COUNT_QUERY, null, this, em));
+		reportProcessorMap.put(SYS_MONTH_USER_COUNT, new ReportSysMonthUserCount(SYS_MONTH_USER_COUNT, SYS_MONTH_USER_COUNT_QUERY, paramMap.get(SYS_MONTH_USER_COUNT), this, em));
+		reportProcessorMap.put(SYS_INSTITUTION_COUNT, new ReportSysInstitutionCount(SYS_INSTITUTION_COUNT, SYS_INSTITUTION_COUNT_WITH_DATE_QUERY, paramMap.get(SYS_INSTITUTION_COUNT), this, em));
+		reportProcessorMap.put(SYS_EXT_SYSTEM_COUNT, new ReportSimpleQuery(SYS_EXT_SYSTEM_COUNT, SYS_EXT_SYSTEM_COUNT_QUERY, paramMap.get(SYS_EXT_SYSTEM_COUNT), this, em));
+		reportProcessorMap.put(SYS_OUTPUT_COUNT, new ReportSimpleQuery(SYS_OUTPUT_COUNT, SYS_OUTPUT_COUNT_QUERY, paramMap.get(SYS_OUTPUT_COUNT), this, em));
 	}
 
 	public String getDatasourceUrl() {
 		return datasourceUrl;
+	}
+
+	public RptValueType getValueType(Integer id) {
+		return valueTypeMap.get(id);
 	}
 
 	public ReportProcessor getReportProcessor(String code) {
@@ -153,13 +164,6 @@ public class ReportService {
 			resultMap.get(rpt.getCategoryId()).getReportDefinitions().add(definition);
 			definitionsMap.put(rpt.getReportId(), definition);
 		});
-		
-		
-		List<RptValueType> paramTypes = paramTypeRepository.findAll();
-
-		Map<Integer, RptValueType> paramTypesMap = paramTypes
-				.stream()
-				.collect(Collectors.toMap(RptValueType::getValueTypeId, Function.identity()));
 
 		List<RptParam> rptParams = paramRepository.findAll();
 		rptParams.forEach(rptParam -> {
@@ -169,7 +173,7 @@ public class ReportService {
 			// TODO: prepare default values
 			ReportReportParamDefinition paramDef = new ReportReportParamDefinition(
 					rptParam.getCode(), rptParam.getName(), 
-					ReportValueType.valueOf(paramTypesMap.get(rptParam.getValueTypeId()).getCode()), 
+					ReportValueType.valueOf(valueTypeMap.get(rptParam.getValueTypeId()).getCode()), 
 					rptParam.getRequired(), rptParam.getRepeatable());
 			definition.addParamsItem(paramDef);
 		});
@@ -316,7 +320,7 @@ public class ReportService {
 	}
 
 	/**
-	 * Generování sestavy ve formátu VSD
+	 * Generování sestavy ve formátu CSV
 	 * 
 	 * @param reportData
 	 * @return
@@ -340,7 +344,7 @@ public class ReportService {
 					sbr.append(((ReportValueInteger) value).getIntValue());
 					break;
 				case STRING:
-					sbr.append(((ReportValueString) value).getTextValue());
+					sbr.append(String.format("\"%s\"", ((ReportValueString) value).getTextValue()));
 					break;
 				case DATE:
 					sbr.append(((ReportValueDate) value).getDateValue());

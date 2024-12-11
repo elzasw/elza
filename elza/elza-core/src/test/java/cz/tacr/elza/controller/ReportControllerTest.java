@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import org.junit.Test;
@@ -114,9 +115,10 @@ public class ReportControllerTest extends AbstractControllerTest {
 		createFund("fund1", user.getId());
 
         // vytvoření parametru
+		OffsetDateTime startOfDay = LocalDate.now().atStartOfDay().atOffset(ZoneOffset.UTC);
         ReportReportParamValue paramValue = new ReportReportParamValue()
         		.code("DATE_FROM")
-        		.addValuesItem(new ReportValueDate().dateValue(OffsetDateTime.now()));
+        		.addValuesItem(new ReportValueDate().dateValue(startOfDay));
         ReportReportParameters reportParameters = new ReportReportParameters().addParamsItem(paramValue);
 
 		Integer requestId = reportApi.reportGenerateReport(ReportService.SYS_MONTH_USER_COUNT, reportParameters);
