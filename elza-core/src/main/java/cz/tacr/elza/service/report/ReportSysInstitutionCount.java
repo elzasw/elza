@@ -26,14 +26,11 @@ public class ReportSysInstitutionCount extends ReportBase {
 	 */
 	@Override
 	public ReportReportData createReport(ReportReportParameters parameters) {
-		validateAndReadParameters(parameters);
 		reportService.checkAndUpdateViews(reportCode);
 
-		Query query = em.createNativeQuery(reportQuery, Tuple.class);
-		if (parameters != null && !CollectionUtils.isEmpty(parameters.getParams())) {
-			query = em.createNativeQuery(ReportServiceQuery.SYS_INSTITUTION_COUNT_WITH_DATE_QUERY, Tuple.class);
-			query.setParameter("dateTo", dateTo);
-		}
+		Query query = (parameters != null && !CollectionUtils.isEmpty(parameters.getParams())) ? 
+				query = createQuery(parameters) 
+				: em.createNativeQuery(ReportServiceQuery.SYS_INSTITUTION_COUNT_QUERY, Tuple.class);
 
 		List<Tuple> result = query.getResultList();
 

@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Transient;
 
 @Entity(name = "rpt_param")
 public class RptParam {
@@ -45,6 +46,8 @@ public class RptParam {
     @Column
     private Boolean required;
 
+    //private DefaultValueGenerate generator;
+
 	public Integer getParamId() {
 		return paramId;
 	}
@@ -70,11 +73,11 @@ public class RptParam {
         return valueTypeId;
     }
 
-    public RptValueType getParamType() {
+    public RptValueType getValueType() {
 		return valueType;
 	}
 
-	public void setParamType(RptValueType valueType) {
+	public void setValueType(RptValueType valueType) {
 		this.valueType = valueType;
 		this.valueTypeId = (valueType != null) ? valueType.getValueTypeId() : null;
 	}

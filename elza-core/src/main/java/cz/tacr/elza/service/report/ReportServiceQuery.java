@@ -132,8 +132,8 @@ public class ReportServiceQuery {
 					""";
 
 		final static String SYS_MONTH_USER_COUNT_QUERY = """
-			with min_date as (select date_id from rpt_view_date where date_id = :dateFrom),
-				max_date as (select date_id from rpt_view_date where date_id = :dateTo),
+			with min_date as (select date_id from rpt_view_date where date_id = :DATE_FROM),
+				max_date as (select date_id from rpt_view_date where date_id = :DATE_TO),
 				time_line as (select date_year, date_month, min(date_id) as date_from, max(date_id) as date_to from rpt_view_date where date_id >= (select date_id from min_date) and date_id <= (select date_id from max_date) group by date_year, date_month), 
 				users as (select distinct user_id from rpt_view_node_change where date_id >= (select date_id from min_date) and date_id <= (select date_id from max_date) 
 			union  
@@ -242,31 +242,31 @@ public class ReportServiceQuery {
 				join arr_node nroot on nroot.fund_id = f.fund_id  
 				join arr_level lroot on lroot.node_id_parent is null and lroot.node_id = nroot.node_id and lroot.delete_change_id is null  
 				join par_institution pi on pi.institution_id = f.institution_id  
-				join arr_change c on c.change_id = lroot.create_change_id AND c.change_date < :dateTo  
+				join arr_change c on c.change_id = lroot.create_change_id AND c.change_date < :DATE_TO  
 				group by pi.institution_id),  
 			level_new as (select f.institution_id, count(*) cnt from rpt_view_node_change rvch 
 				join arr_fund f on f.fund_id = rvch.fond_id 
-				where change_type = 'LEVEL_NEW' and date_id < :dateTo  
+				where change_type = 'LEVEL_NEW' and date_id < :DATE_TO  
 				group by f.institution_id), 
 			level_delete as (select f.institution_id, count(*) cnt 
 				from rpt_view_node_change rvch 
 				join arr_fund f on f.fund_id = rvch.fond_id 
-			   	where change_type = 'LEVEL_DELETE' and date_id < :dateTo 
+			   	where change_type = 'LEVEL_DELETE' and date_id < :DATE_TO 
 			   	group by f.institution_id),
 			item_new as (select f.institution_id, count(*) cnt 
 				from rpt_view_item_change rvch 
 			   	join arr_fund f on f.fund_id = rvch.fond_id 
-			   	where change_type = 'ITEM_NEW' and date_id < :dateTo 
+			   	where change_type = 'ITEM_NEW' and date_id < :DATE_TO 
 			   	group by f.institution_id), 
 			item_delete as (select f.institution_id, count(*) cnt 
 				from rpt_view_item_change rvch 
 			   	join arr_fund f on f.fund_id = rvch.fond_id 
-			   	where change_type = 'ITEM_DELETE' and date_id < :dateTo 
+			   	where change_type = 'ITEM_DELETE' and date_id < :DATE_TO 
 			   	group by f.institution_id),  
 			refents as (select f.institution_id, count(*) cnt 
 				from rpt_view_ap_usage rvapu 
 			  	join arr_fund f on f.fund_id = rvapu.fond_id 
-			  	where rvapu.create_date_id < :dateTo and (rvapu.delete_date_id is null or rvapu.delete_date_id >= :dateTo) 
+			  	where rvapu.create_date_id < :DATE_TO and (rvapu.delete_date_id is null or rvapu.delete_date_id >= :DATE_TO) 
 			  	group by f.institution_id) 
 			select pi.internal_code, pref_indx.index_value,   
 				coalesce(fonds.cnt, 0) as FONDS_CNT,  
@@ -285,8 +285,8 @@ public class ReportServiceQuery {
 					""";
 
 		final static String SYS_EXT_SYSTEM_COUNT_QUERY = """
-			with max_change as (select max(c.change_id) as change_id from ap_change c where c.change_date < :dateTo), 
-				max_arr_change as (select max(c.change_id) as change_id from arr_change c where c.change_date < :dateTo) 
+			with max_change as (select max(c.change_id) as change_id from ap_change c where c.change_date < :DATE_TO), 
+				max_arr_change as (select max(c.change_id) as change_id from arr_change c where c.change_date < :DATE_TO) 
 			select aes.external_system_id, coalesce(total_cnt.ap_count, 0) as ae_pocet, coalesce(used_cnt.ap_count, 0) as pb_pocet 
 			from ap_external_system aes 
 				join sys_external_system ses on aes.external_system_id = ses.external_system_id 
@@ -313,23 +313,23 @@ public class ReportServiceQuery {
 					""";
 
 		final static String SYS_OUTPUT_COUNT_QUERY = """
-			with max_change as (select max(change_id) as change_id from arr_change where change_date <= :dateTo), 
-				min_change as (select min(change_id) as change_id from arr_change where change_date >= :dateFrom) 
+			with max_change as (select max(change_id) as change_id from arr_change where change_date <= :DATE_TO), 
+				min_change as (select min(change_id) as change_id from arr_change where change_date >= :DATE_FROM) 
 			select pref_indx.index_value as inst_name, 
 				inst.internal_code as inst_code,  
 				f.fund_number as fonds_number, 
-				f."name" as fonds_name,  
+				f."name" as fonds_name, 
 				fa_id.fa_number as fa_number, 
+				o."name" as output_name, 
 				fa_type.fa_type as fa_type, 
 				fa_date.fa_date as fa_date, 
 				fa_unit_count.fa_unit_count as fa_unit_count, 
-				o."name" as output_name,  
 				ot."name" as output_type, 
-				gchn.change_date as output_date, 
-				rt."name" as templ_name 
-			from arr_output_result aor  
-			join arr_output o on aor.output_id = o.output_id  
-			join arr_fund f on f.fund_id = o.fund_id  
+				rt."name" as templ_name, 
+				gchn.change_date as output_date 
+			from arr_output_result aor 
+			join arr_output o on aor.output_id = o.output_id 
+			join arr_fund f on f.fund_id = o.fund_id 
 			join arr_change gchn on gchn.change_id = aor.change_id -- cas vytvoreni vystup 
 			left join ( 
 				select oi.output_id, di.integer_value as fa_number, itm.create_change_id, itm.delete_change_id from rul_item_type rit 

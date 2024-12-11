@@ -2,9 +2,7 @@ package cz.tacr.elza.service.report;
 
 import java.sql.Date;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,12 +18,13 @@ import cz.tacr.elza.controller.vo.ReportValueInteger;
 import cz.tacr.elza.controller.vo.ReportValueString;
 import cz.tacr.elza.controller.vo.ReportValueType;
 import cz.tacr.elza.domain.RptParam;
+import cz.tacr.elza.domain.RptValueType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.persistence.Tuple;
 import jakarta.persistence.TupleElement;
 
-public class ReportBase implements ReportProcessor {
+public abstract class ReportBase implements ReportProcessor {
 
 	protected final String reportCode;
 
@@ -37,10 +36,6 @@ public class ReportBase implements ReportProcessor {
 
 	protected final EntityManager em;
 
-	protected OffsetDateTime dateFrom;
-
-	protected OffsetDateTime dateTo;
-
 	public ReportBase(String code, String query, List<RptParam> params, ReportService reportService, EntityManager em) {
 		this.reportCode = code;
 		this.reportQuery = query;
@@ -49,60 +44,50 @@ public class ReportBase implements ReportProcessor {
 		this.em = em;
 	}
 
-	@Override
-	public ReportReportData createReport(ReportReportParameters parameters) {
-		validateAndReadParameters(parameters);
-		reportService.checkAndUpdateViews(reportCode);
-
+	/**
+	 * Vytvoření dotazu s parametry
+	 * 
+	 * @param parameters
+	 * @return
+	 */
+	protected Query createQuery(ReportReportParameters parameters) {
 		Query query = em.createNativeQuery(reportQuery, Tuple.class);
-		if (dateFrom != null) {
-			query.setParameter("dateFrom", dateFrom);
-		}
-		if (dateTo != null) {
-			query.setParameter("dateTo", dateTo);
+
+		if (CollectionUtils.isEmpty(reportParams)) {
+			return query;
 		}
 
-		List<Tuple> result = query.getResultList();
+		for (RptParam param : reportParams) {
+			String paramCode = param.getCode();
+			RptValueType rptValueType = reportService.getValueType(param.getValueTypeId());
+			ReportValueType valueType = ReportValueType.valueOf(rptValueType.getCode());
+			boolean required = param.getRequired();
+			if (reportQuery.contains(':' + paramCode)) {
+				query.setParameter(paramCode, getOrGeneratedValue(paramCode, valueType, required, parameters));
+			}
+		}
 
-		return createReportData(result);
+		return query;
 	}
 
 	/**
-	 * Kontrola a vyplňování polí parametrů
+	 * Získání nebo generování hodnoty parametru
 	 * 
+	 * @param paramCode
+	 * @param valueType
+	 * @param required
 	 * @param parameters
+	 * @return
 	 */
-	protected void validateAndReadParameters(ReportReportParameters parameters) {
-		// tato sestava nemá žádné parametry
-		if (reportParams == null) {
-			return;
-		}
-		
-		for (RptParam param : reportParams) {
-			String code = param.getCode();
-			boolean required = param.getRequired();
-			ReportValue value = getValueByCode(code, parameters);
-			OffsetDateTime dtNow = OffsetDateTime.now();
-			switch (code) {
-			case "DATE_FROM":
-				if (value == null && required) {
-					throw new IllegalArgumentException("Required parameter value not found, code: " + code);
-				}
-				dateFrom = value == null ? dtNow.toLocalDate().atStartOfDay().atOffset(ZoneOffset.UTC) : ((ReportValueDate) value).getDateValue();
-				break;
-			case "DATE_TO":
-				if (value == null && required) {
-					throw new IllegalArgumentException("Required parameter value not found, code: " + code);
-				}
-				dateTo = value == null ? dtNow : ((ReportValueDate) value).getDateValue();
-				break;
-			case "INSTITUCE":
-				// TODO process this parameters
-				break;
-			default:
-				throw new IllegalArgumentException("Unexpected param code: " + code);
+	protected Object getOrGeneratedValue(String paramCode, ReportValueType valueType, boolean required, ReportReportParameters parameters) {
+		List<ReportValue> values = getValuesByCode(paramCode, parameters);
+		if (CollectionUtils.isEmpty(values)) {
+			if (required) {
+				throw new IllegalArgumentException("Required parameter value(s) not found, code: " + paramCode);
 			}
+			values = generateParamValues(valueType);
 		}
+		return getValueFromReportValue(values);
 	}
 
 	/**
@@ -112,13 +97,32 @@ public class ReportBase implements ReportProcessor {
 	 * @param parameters
 	 * @return
 	 */
-	private ReportValue getValueByCode(String code, ReportReportParameters parameters) {
+	private List<ReportValue> getValuesByCode(String code, ReportReportParameters parameters) {
 		for (ReportReportParamValue value : parameters.getParams()) {
 			if (code.equals(value.getCode())) {
-				return value.getValues().get(0);
+				return value.getValues();
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Získání hodnoty parametru pro dotaz
+	 * 
+	 * @param values
+	 * @return
+	 */
+	private Object getValueFromReportValue(List<ReportValue> values) {
+		// TODO now use only one value
+		ReportValue value = values.get(0);
+		switch (value.getValueType()) {
+		case DATE:
+			return ((ReportValueDate) value).getDateValue();
+		case STRING:
+			return ((ReportValueString) value).getTextValue();
+		default:
+			throw new IllegalArgumentException("Unexpected value type: " + value.getValueType());
+		}
 	}
 
 	/**
@@ -136,6 +140,30 @@ public class ReportBase implements ReportProcessor {
 		reportData.setSourceDataDate(OffsetDateTime.now());
 
 		return reportData;
+	}
+
+	/**
+	 * Generování chybějících hodnot parametrů
+	 * 
+	 * @param param
+	 * @return
+	 */
+	protected List<ReportValue> generateParamValues(ReportValueType type) {
+		List<ReportValue> values = new ArrayList<>();
+		ReportValue value = null;
+		switch (type) {
+		case DATE:
+			value = new ReportValueDate(OffsetDateTime.now(), ReportValueType.DATE);
+			break;
+		case STRING:
+			value = new ReportValueString(null, ReportValueType.STRING);
+			break;
+		default:
+			throw new IllegalArgumentException("Unexpected value type valueTypeId: " + type);
+		}
+		values.add(value);
+
+		return values;
 	}
 
 	/**
@@ -161,7 +189,7 @@ public class ReportBase implements ReportProcessor {
 				} else if (type == Instant.class) {
 					reportRow.addColsItem(new ReportValueString(((Instant) row.get(element)).toString(), ReportValueType.STRING));
 				} else if (type == Object.class) {
-					reportRow.addColsItem(new ReportValue());
+					reportRow.addColsItem(new ReportValueString("", ReportValueType.STRING));
 				} else {
 					throw new IllegalArgumentException("Unexpected type: " + type);
 				}
