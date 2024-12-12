@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit --watch --preserveWatchOutput --pretty",
     "start": "concurrently -n VITE,TS -c 'green,blue' 'npm run dev' 'npm run typecheck'",
     "extract": "formatjs extract 'src/**/*.{ts,tsx,js,jsx}' --ignore 'src/**/*.{d,test}.{ts,tsx}' --out-file lang/extracted/cs.json",
-    "compile": "formatjs compile-folder lang/translated public/static/res/locale"
+    "compile": "formatjs compile-folder lang/translated public/static/res/locale",
+    "extract-compile": "formatjs extract 'src/**/*.{ts,tsx,js,jsx}' --ignore 'src/**/*.{d,test}.{ts,tsx}' --out-file temp.json && formatjs compile 'temp.json' --out-file public/static/res/locale/cs.json && rm temp.json"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.51.1",
