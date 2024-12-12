@@ -287,7 +287,7 @@ public class ReportServiceQuery {
 		final static String SYS_EXT_SYSTEM_COUNT_QUERY = """
 			with max_change as (select max(c.change_id) as change_id from ap_change c where c.change_date < :DATE_TO), 
 				max_arr_change as (select max(c.change_id) as change_id from arr_change c where c.change_date < :DATE_TO) 
-			select aes.external_system_id, coalesce(total_cnt.ap_count, 0) as ae_pocet, coalesce(used_cnt.ap_count, 0) as pb_pocet 
+			select ses.name as external_system_name, coalesce(total_cnt.ap_count, 0) as ae_pocet, coalesce(used_cnt.ap_count, 0) as pb_pocet 
 			from ap_external_system aes 
 				join sys_external_system ses on aes.external_system_id = ses.external_system_id 
 				left join (

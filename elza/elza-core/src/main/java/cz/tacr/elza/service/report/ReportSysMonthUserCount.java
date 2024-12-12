@@ -6,6 +6,7 @@ import java.util.List;
 import cz.tacr.elza.controller.vo.ReportReportData;
 import cz.tacr.elza.controller.vo.ReportReportParameters;
 import cz.tacr.elza.controller.vo.ReportValueType;
+import cz.tacr.elza.domain.RptDefaultValueGenerator;
 import cz.tacr.elza.domain.RptParam;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
@@ -38,12 +39,12 @@ public class ReportSysMonthUserCount extends ReportBase {
 		// do dotazu vložíme parametry - data jako text
 		// z nějakého důvodu standardní náhrada tohoto parametru v H2 nefunguje
 		if (reportService.getDatasourceUrl().contains("jdbc:h2")) {
-			OffsetDateTime dateFrom = (OffsetDateTime) getOrGeneratedValue(DATE_FROM, ReportValueType.DATE, true, parameters);
-			OffsetDateTime dateTo = (OffsetDateTime) getOrGeneratedValue(DATE_TO, ReportValueType.DATE, false, parameters);
+			OffsetDateTime dateFrom = (OffsetDateTime) getOrGeneratedValue(DATE_FROM, ReportValueType.DATE, null, true, parameters);
+			OffsetDateTime dateTo = (OffsetDateTime) getOrGeneratedValue(DATE_TO, ReportValueType.DATE, RptDefaultValueGenerator.END_OF_DAY, false, parameters);
 
 			String sysMonthUserCountQuery = reportQuery
-					.replace(":" + DATE_FROM, "'" + dateFrom.toLocalDate().toString() + "'")
-					.replace(":" + DATE_TO, "'" + dateTo.toLocalDate().toString() + "'");
+					.replace(String.format(":%s", DATE_FROM), String.format("'%s'", dateFrom.toLocalDate().toString()))
+					.replace(String.format(":%s", DATE_TO), String.format("'%s'", dateTo.toLocalDate().toString()));
 
 			query = em.createNativeQuery(sysMonthUserCountQuery, Tuple.class);
 		}
