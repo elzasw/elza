@@ -25,7 +25,7 @@ export function ReportsTable({ reportData }: Props) {
     const columns: TableColumnDefinition<ReportReportRow>[] = reportData.header.map((header, index) =>
         createTableColumn<ReportReportRow>({
             columnId: header,
-            renderHeaderCell: () => <><FormattedMessage id={`admin_reports_header_${header}`} /></>,
+            renderHeaderCell: () => <><FormattedMessage id={`admin_reports_header_${header}`} defaultMessage={header} /></>,
             renderCell: (item) => {
                 if (item.cols[index].valueType === ReportValueType.String) {
                     return <>{(item.cols[index] as any).textValue}</>;
