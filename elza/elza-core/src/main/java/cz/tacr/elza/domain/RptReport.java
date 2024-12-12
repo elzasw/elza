@@ -23,7 +23,10 @@ public class RptReport {
     @JoinColumn(name = "category_id")
     private RptCategory category;
 
-    @Column(length = StringLength.LENGTH_50, nullable = false)
+	@Column(name = "category_id", nullable = false, updatable = false, insertable = false)
+	private Integer categoryId;
+
+	@Column(length = StringLength.LENGTH_50, nullable = false)
     private String code;
 
     @Column(length = StringLength.LENGTH_250, nullable = false)
@@ -32,8 +35,8 @@ public class RptReport {
     @Column
     private String description;
 
-	@Column(name = "category_id", nullable = false, updatable = false, insertable = false)
-	private Integer categoryId;
+    @Column
+    private Boolean chartData;
 
 	public Integer getReportId() {
 		return reportId;
@@ -42,6 +45,10 @@ public class RptReport {
 	public void setReportId(Integer reportId) {
 		this.reportId = reportId;
 	}
+
+	public Integer getCategoryId() {
+		return categoryId;
+	}    
 
 	public RptCategory getCategory() {
 		return category;
@@ -75,7 +82,12 @@ public class RptReport {
 		this.description = description;
 	}
 
-	public Integer getCategoryId() {
-		return categoryId;
-	}    
+	public Boolean getChartData() {
+		return chartData;
+	}
+
+	public void setChartData(Boolean chartData) {
+		this.chartData = chartData;
+	}
+
 }

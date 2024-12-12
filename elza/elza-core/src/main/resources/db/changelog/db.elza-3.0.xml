@@ -443,6 +443,7 @@
             <column name="code" type="nvarchar(50)"/>
             <column name="name" type="nvarchar(250)"/>
             <column name="description" type="text"/>
+            <column name="chart_data" type="boolean"/>
 		</createTable>
 		<!-- seznam požadovaných view -->
 		<createTable tableName="rpt_required_view">

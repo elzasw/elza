@@ -121,14 +121,16 @@ public class ReportServiceQuery {
 		final static String SYS_TOTAL_COUNT_QUERY = """
 			with vpb as (select count(*) as cnt from rpt_view_ap_usage rvau where rvau.delete_change_id is null),
 				pb as (select count(distinct access_point_id) as cnt from rpt_view_ap_usage rvau where rvau.delete_change_id is null),
-			    DESC_ITEMS as (select change_type, count(*) cnt from rpt_view_item_change group by change_type),
-			  	NODES as (select change_type, count(*) cnt from rpt_view_node_change group by change_type)
-			select FONDS.cnt as as_pocet,
-				coalesce((select cnt from nodes where change_type = 'LEVEL_NEW'), 0)-coalesce((select cnt from nodes where change_type = 'LEVEL_DELETE'), 0) as jp_pocet,
-				coalesce((select cnt from desc_items where change_type = 'ITEM_NEW'), 0)-coalesce((select cnt from desc_items where change_type = 'ITEM_DELETE'), 0) as pp_pocet,
-				ARCH_ENT.cnt as ae_pocet, (select PB.cnt from pb) as pb_pocet, (select VPB.cnt from vpb) as vpb_pocet
-			from (select count(*) cnt from arr_fund) as FONDS,
-				(select count(*) cnt from ap_state s where s.delete_change_id is null) ARCH_ENT;
+			    desc_items as (select change_type, count(*) cnt from rpt_view_item_change group by change_type),
+			  	nodes as (select change_type, count(*) cnt from rpt_view_node_change group by change_type)
+			select fonds.cnt as FONDS_CNT,
+				coalesce((select cnt from nodes where change_type = 'LEVEL_NEW'), 0) - coalesce((select cnt from nodes where change_type = 'LEVEL_DELETE'), 0) as LEVELS_CNT,
+				coalesce((select cnt from desc_items where change_type = 'ITEM_NEW'), 0) - coalesce((select cnt from desc_items where change_type = 'ITEM_DELETE'), 0) as ITEMS_CNT,
+				arch_ent.cnt as AE_POCET, 
+				(select pb.cnt from pb) as PB_POCET, 
+				(select vpb.cnt from vpb) as REFENTS_CNT 
+			from (select count(*) cnt from arr_fund) as fonds,
+				(select count(*) cnt from ap_state s where s.delete_change_id is null) arch_ent;
 					""";
 
 		final static String SYS_MONTH_USER_COUNT_QUERY = """
@@ -195,7 +197,7 @@ public class ReportServiceQuery {
 				from arr_fund f  
 				join par_institution pi on pi.institution_id = f.institution_id  
 				group by pi.institution_id),  
-			level_new as (SELECT f.institution_id, count(*) as cnt 
+			level_new as (select f.institution_id, count(*) as cnt 
 				from rpt_view_node_change rvch 
 				join arr_fund f on f.fund_id = rvch.fond_id 
 			    where change_type = 'LEVEL_NEW' 
@@ -220,10 +222,10 @@ public class ReportServiceQuery {
 				join arr_fund f on f.fund_id = rvapu.fond_id 
 				where rvapu.delete_change_id is null 
 				group by f.institution_id) 
-			select pi.internal_code, pref_indx.index_value,   
+			select pi.internal_code as inst_code, pref_indx.index_value as inst_name,   
 				coalesce(fonds.cnt, 0) as FONDS_CNT,  
-				coalesce(level_new.cnt, 0)-coalesce(level_delete.cnt, 0) as LEVELS_CNT,  
-				coalesce(item_new.cnt, 0)-coalesce(item_delete.cnt, 0) as ITEMS_CNT,  
+				coalesce(level_new.cnt, 0) - coalesce(level_delete.cnt, 0) as LEVELS_CNT,  
+				coalesce(item_new.cnt, 0) - coalesce(item_delete.cnt, 0) as ITEMS_CNT,  
 				coalesce(refents.cnt, 0) as REFENTS_CNT  
 			from fonds  
 				join par_institution pi on pi.institution_id = fonds.institution_id  
@@ -242,7 +244,7 @@ public class ReportServiceQuery {
 				join arr_node nroot on nroot.fund_id = f.fund_id  
 				join arr_level lroot on lroot.node_id_parent is null and lroot.node_id = nroot.node_id and lroot.delete_change_id is null  
 				join par_institution pi on pi.institution_id = f.institution_id  
-				join arr_change c on c.change_id = lroot.create_change_id AND c.change_date < :DATE_TO  
+				join arr_change c on c.change_id = lroot.create_change_id and c.change_date < :DATE_TO  
 				group by pi.institution_id),  
 			level_new as (select f.institution_id, count(*) cnt from rpt_view_node_change rvch 
 				join arr_fund f on f.fund_id = rvch.fond_id 
@@ -268,7 +270,7 @@ public class ReportServiceQuery {
 			  	join arr_fund f on f.fund_id = rvapu.fond_id 
 			  	where rvapu.create_date_id < :DATE_TO and (rvapu.delete_date_id is null or rvapu.delete_date_id >= :DATE_TO) 
 			  	group by f.institution_id) 
-			select pi.internal_code, pref_indx.index_value,   
+			select pi.internal_code as inst_code, pref_indx.index_value as inst_name,   
 				coalesce(fonds.cnt, 0) as FONDS_CNT,  
 				coalesce(level_new.cnt, 0) - coalesce(level_delete.cnt, 0) as LEVELS_CNT,  
 				coalesce(item_new.cnt, 0) - coalesce(item_delete.cnt, 0) as ITEMS_CNT,  
@@ -287,7 +289,7 @@ public class ReportServiceQuery {
 		final static String SYS_EXT_SYSTEM_COUNT_QUERY = """
 			with max_change as (select max(c.change_id) as change_id from ap_change c where c.change_date < :DATE_TO), 
 				max_arr_change as (select max(c.change_id) as change_id from arr_change c where c.change_date < :DATE_TO) 
-			select ses.name as external_system_name, coalesce(total_cnt.ap_count, 0) as ae_pocet, coalesce(used_cnt.ap_count, 0) as pb_pocet 
+			select ses.name as EXTERNAL_SYSTEM_NAME, coalesce(total_cnt.ap_count, 0) as AE_POCET, coalesce(used_cnt.ap_count, 0) as PB_POCET 
 			from ap_external_system aes 
 				join sys_external_system ses on aes.external_system_id = ses.external_system_id 
 				left join (
@@ -297,7 +299,7 @@ public class ReportServiceQuery {
 					and (bs.create_change_id <= (select change_id from max_change) 
 					and (bs.delete_change_id is null or bs.delete_change_id > (select change_id from max_change))) 
 				group by aes.external_system_id 
-				) total_cnt on total_cnt.external_system_id = aes.external_system_id  
+				) total_cnt on total_cnt.external_system_id = aes.external_system_id 
 				left join ( 
 					select external_system_id, count(*) as ap_count from ( 
 						select vau.access_point_id, bs.external_system_id from rpt_view_ap_usage vau 
