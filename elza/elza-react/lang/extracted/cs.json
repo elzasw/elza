@@ -25,20 +25,44 @@
   "admin_reports_download_csv": {
     "defaultMessage": "Stáhnout CSV"
   },
-  "admin_reports_form_property_Date": {
+  "admin_reports_form_category_ARRANGEMENT": {
+    "defaultMessage": "Zpracování archiválií"
+  },
+  "admin_reports_form_category_ENTITY": {
+    "defaultMessage": "Archivní entity"
+  },
+  "admin_reports_form_category_OUTPUT": {
+    "defaultMessage": "Výstupy"
+  },
+  "admin_reports_form_property_DATE": {
     "defaultMessage": "Datum"
   },
-  "admin_reports_form_property_DateFrom": {
+  "admin_reports_form_property_DATE_FROM": {
     "defaultMessage": "Datum od"
   },
-  "admin_reports_form_property_DateTo": {
+  "admin_reports_form_property_DATE_TO": {
     "defaultMessage": "Datum do"
   },
-  "admin_reports_form_property_Instituce": {
+  "admin_reports_form_property_INSTITUCE": {
     "defaultMessage": "Instituce"
   },
   "admin_reports_form_reportDefinition": {
     "defaultMessage": "Přehled"
+  },
+  "admin_reports_form_report_SYS_EXT_SYSTEM_COUNT": {
+    "defaultMessage": "Přehled k datu dle zápisu do externích systémů"
+  },
+  "admin_reports_form_report_SYS_INSTITUTION_COUNT": {
+    "defaultMessage": "Přehled k datu dle institucí"
+  },
+  "admin_reports_form_report_SYS_MONTH_USER_COUNT": {
+    "defaultMessage": "Přehled po měsících dle uživatelů"
+  },
+  "admin_reports_form_report_SYS_OUTPUT_COUNT": {
+    "defaultMessage": "Přehled k datu dle zápisu do externích systémů"
+  },
+  "admin_reports_form_report_SYS_TOTAL_COUNT": {
+    "defaultMessage": "Souhrnné informace – aktuální stav"
   },
   "admin_reports_form_reset": {
     "defaultMessage": "Reset"
@@ -79,8 +103,8 @@
   "admin_reports_header_DATE_YEAR": {
     "defaultMessage": "Rok"
   },
-  "admin_reports_header_EXTERNAL_SYSTEM_ID": {
-    "defaultMessage": "Identifikátor externího systému"
+  "admin_reports_header_EXTERNAL_SYSTEM_NAME": {
+    "defaultMessage": "Název externího systému"
   },
   "admin_reports_header_FA_DATE": {
     "defaultMessage": "Datum archivní pomůcky"

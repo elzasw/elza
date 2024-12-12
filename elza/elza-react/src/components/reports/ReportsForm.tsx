@@ -255,9 +255,11 @@ export function ReportsForm({ onSubmit }: Props) {
                                             >
                                                 {reportCategories.map(({ name, code, reportDefinitions }) => {
                                                     return (
-                                                        <OptionGroup key={code} label={name}>
+                                                        <OptionGroup key={code} label={formatMessage({ id: `admin_reports_form_category_${code}`, defaultMessage: name })}>
                                                             {reportDefinitions.map(({ name, code }) => {
-                                                                return <Option value={code}>{name}</Option>;
+                                                                return <Option value={code}>
+                                                                    {formatMessage({ id: `admin_reports_form_report_${code}`, defaultMessage: name })}
+                                                                </Option>;
                                                             })}
                                                         </OptionGroup>
                                                     );
@@ -268,26 +270,19 @@ export function ReportsForm({ onSubmit }: Props) {
                                 }}
                             </Field>
                             {params?.map(({ code, name, required, paramType }) => {
+                                const commonProps = {
+                                    name: code,
+                                    label: formatMessage({ id: `admin_reports_form_property_${code}`, defaultMessage: name }),
+                                    isRequired: required,
+                                }
                                 if (paramType === ReportValueType.Int) {
-                                    return <FluentFinalNumberField
-                                        name={code}
-                                        label={formatMessage({ id: `admin_reports_form_property_${name}` })}
-                                        isRequired={required}
-                                    />;
+                                    return <FluentFinalNumberField {...commonProps} />;
                                 }
                                 if (paramType === ReportValueType.String) {
-                                    return <FluentFinalStringField
-                                        name={code}
-                                        label={formatMessage({ id: `admin_reports_form_property_${name}` })}
-                                        isRequired={required}
-                                    />;
+                                    return <FluentFinalStringField {...commonProps} />;
                                 }
                                 if (paramType === ReportValueType.Date) {
-                                    return <FluentFinalDateField
-                                        name={code}
-                                        label={formatMessage({ id: `admin_reports_form_property_${name}` })}
-                                        isRequired={required}
-                                    />;
+                                    return <FluentFinalDateField {...commonProps} />;
                                 }
                                 return (
                                     <div>
