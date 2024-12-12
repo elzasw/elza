@@ -152,11 +152,11 @@ export const headerMessages = defineMessages({
     outputDate: {
         id: "admin_reports_header_OUTPUT_DATE",
         defaultMessage: "Čas generování výstupu"
-        },
+    },
     extSysName: {
         id: "admin_reports_header_EXTERNAL_SYSTEM_NAME",
         defaultMessage: "Název externího systému"
-        },
+    },
 })
 
 export const formMessages = defineMessages({
@@ -190,7 +190,7 @@ export const formMessages = defineMessages({
     },
     sysOutputCount: {
         id: "admin_reports_form_report_SYS_OUTPUT_COUNT",
-        defaultMessage: "Přehled k datu dle zápisu do externích systémů",
+        defaultMessage: "Přehled po institucích a archivních souborech",
     },
     dateFrom: {
         id: "admin_reports_form_property_DATE_FROM",
