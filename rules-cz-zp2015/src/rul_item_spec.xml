@@ -881,6 +881,17 @@
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
         <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_92">
+        <name>autor hudebního aranžmá</name>
+        <description>autor hudebního aranžmá</description>
+        <shortcut>autor hudebního aranžmá</shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
+    </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_7">
         <name>autor choreografie / choreograf</name>
         <description>5.13.2, kinematografické filmy</description>
@@ -910,6 +921,17 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+    </item-spec>
+    <item-spec code="ZP2015_ENTITY_ROLE_91">
+        <name>autor předlohy</name>
+        <description>autor předlohy</description>
+        <shortcut>autor předlohy</shortcut>
+        <item-aptypes>
+            <item-aptype register-type="PARTY_GROUP"/>
+            <item-aptype register-type="PERSON"/>
+        </item-aptypes>
+        <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_11">
         <name>autor textu</name>
