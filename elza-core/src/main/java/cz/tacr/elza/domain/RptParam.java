@@ -5,12 +5,13 @@ import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Transient;
 
 @Entity(name = "rpt_param")
 public class RptParam {
@@ -46,7 +47,9 @@ public class RptParam {
     @Column
     private Boolean required;
 
-    //private DefaultValueGenerate generator;
+    @Enumerated(EnumType.STRING)
+    @Column(length = StringLength.LENGTH_ENUM, nullable = true)
+    private RptDefaultValueGenerator generator;
 
 	public Integer getParamId() {
 		return paramId;
@@ -113,4 +116,13 @@ public class RptParam {
 	public void setRequired(Boolean required) {
 		this.required = required;
 	}
+
+	public RptDefaultValueGenerator getGenerator() {
+		return generator;
+	}
+
+	public void setGenerator(RptDefaultValueGenerator generator) {
+		this.generator = generator;
+	}
+
 }

@@ -17,6 +17,7 @@ import cz.tacr.elza.controller.vo.ReportValueDate;
 import cz.tacr.elza.controller.vo.ReportValueInteger;
 import cz.tacr.elza.controller.vo.ReportValueString;
 import cz.tacr.elza.controller.vo.ReportValueType;
+import cz.tacr.elza.domain.RptDefaultValueGenerator;
 import cz.tacr.elza.domain.RptParam;
 import cz.tacr.elza.domain.RptValueType;
 import jakarta.persistence.EntityManager;
@@ -61,9 +62,10 @@ public abstract class ReportBase implements ReportProcessor {
 			String paramCode = param.getCode();
 			RptValueType rptValueType = reportService.getValueType(param.getValueTypeId());
 			ReportValueType valueType = ReportValueType.valueOf(rptValueType.getCode());
+			RptDefaultValueGenerator generator = param.getGenerator();
 			boolean required = param.getRequired();
 			if (reportQuery.contains(':' + paramCode)) {
-				query.setParameter(paramCode, getOrGeneratedValue(paramCode, valueType, required, parameters));
+				query.setParameter(paramCode, getOrGeneratedValue(paramCode, valueType, generator, required, parameters));
 			}
 		}
 
@@ -79,13 +81,13 @@ public abstract class ReportBase implements ReportProcessor {
 	 * @param parameters
 	 * @return
 	 */
-	protected Object getOrGeneratedValue(String paramCode, ReportValueType valueType, boolean required, ReportReportParameters parameters) {
+	protected Object getOrGeneratedValue(String paramCode, ReportValueType valueType, RptDefaultValueGenerator generator, boolean required, ReportReportParameters parameters) {
 		List<ReportValue> values = getValuesByCode(paramCode, parameters);
 		if (CollectionUtils.isEmpty(values)) {
 			if (required) {
 				throw new IllegalArgumentException("Required parameter value(s) not found, code: " + paramCode);
 			}
-			values = generateParamValues(valueType);
+			values = generateParamValues(valueType, generator);
 		}
 		return getValueFromReportValue(values);
 	}
@@ -148,15 +150,15 @@ public abstract class ReportBase implements ReportProcessor {
 	 * @param param
 	 * @return
 	 */
-	protected List<ReportValue> generateParamValues(ReportValueType type) {
+	protected List<ReportValue> generateParamValues(ReportValueType type, RptDefaultValueGenerator generator) {
 		List<ReportValue> values = new ArrayList<>();
 		ReportValue value = null;
 		switch (type) {
 		case DATE:
-			value = new ReportValueDate(OffsetDateTime.now(), ReportValueType.DATE);
+			value = new ReportValueDate((OffsetDateTime) generator.getDefaultValue(), ReportValueType.DATE);
 			break;
 		case STRING:
-			value = new ReportValueString(null, ReportValueType.STRING);
+			value = new ReportValueString(null, ReportValueType.STRING); // TODO dočasné řešení
 			break;
 		default:
 			throw new IllegalArgumentException("Unexpected value type valueTypeId: " + type);
@@ -189,7 +191,7 @@ public abstract class ReportBase implements ReportProcessor {
 				} else if (type == Instant.class) {
 					reportRow.addColsItem(new ReportValueString(((Instant) row.get(element)).toString(), ReportValueType.STRING));
 				} else if (type == Object.class) {
-					reportRow.addColsItem(new ReportValueString("", ReportValueType.STRING));
+					reportRow.addColsItem(new ReportValueString("", ReportValueType.STRING)); // prázdná hodnota
 				} else {
 					throw new IllegalArgumentException("Unexpected type: " + type);
 				}
