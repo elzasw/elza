@@ -1,37 +1,13 @@
 import { defineMessages } from "react-intl";
 
 export const headerMessages = defineMessages({
-    asPocet: {
-        id: "admin_reports_header_AS_POCET",
-        defaultMessage: "Počet archivních souborů",
+    instName: {
+        id: "admin_reports_header_INST_NAME",
+        defaultMessage: "Instituce"
     },
-    jpPocet: {
-        id: "admin_reports_header_JP_POCET",
-        defaultMessage: "Počet jednotek popisu",
-    },
-    ppPocet: {
-        id: "admin_reports_header_PP_POCET",
-        defaultMessage: "Počet prvků popisu",
-    },
-    aePocet: {
-        id: "admin_reports_header_AE_POCET",
-        defaultMessage: "Počet archivních entit",
-    },
-    pbPocet: {
-        id: "admin_reports_header_PB_POCET",
-        defaultMessage: "Počet přístupových bodů",
-    },
-    vpbPocet: {
-        id: "admin_reports_header_VPB_POCET",
-        defaultMessage: "Počet vazeb přístupových bodů",
-    },
-    internalCode: {
-        id: "admin_reports_header_INTERNAL_CODE",
-        defaultMessage: "Číslo instituce",
-    },
-    indexValue: {
-        id: "admin_reports_header_INDEX_VALUE",
-        defaultMessage: "Instituce",
+    instCode: {
+        id: "admin_reports_header_INST_CODE",
+        defaultMessage: "Číslo instituce"
     },
     fondsCnt: {
         id: "admin_reports_header_FONDS_CNT",
@@ -44,6 +20,14 @@ export const headerMessages = defineMessages({
     itemsCnt: {
         id: "admin_reports_header_ITEMS_CNT",
         defaultMessage: "Počet prvků popisu",
+    },
+    aePocet: {
+        id: "admin_reports_header_AE_CNT",
+        defaultMessage: "Počet archivních entit",
+    },
+    pbPocet: {
+        id: "admin_reports_header_AP_CNT",
+        defaultMessage: "Počet přístupových bodů",
     },
     refentsCnt: {
         id: "admin_reports_header_REFENTS_CNT",
@@ -82,19 +66,19 @@ export const headerMessages = defineMessages({
         defaultMessage: "Smazané prvky popisu"
     },
     apNew: {
-        id: "admin_reports_header_AP_NEW",
+        id: "admin_reports_header_AE_NEW",
         defaultMessage: "Nové arch. entity"
     },
     apUpdate: {
-        id: "admin_reports_header_AP_UPDATE",
+        id: "admin_reports_header_AE_UPDATE",
         defaultMessage: "Změněné arch. entity"
     },
     apDelete: {
-        id: "admin_reports_header_AP_DELETE",
+        id: "admin_reports_header_AE_DELETE",
         defaultMessage: "Smazané arch. entity"
     },
     apReplace: {
-        id: "admin_reports_header_AP_REPLACE",
+        id: "admin_reports_header_AE_REPLACE",
         defaultMessage: "Nahrazené arch. entity"
     },
     apusgNew: {
@@ -104,14 +88,6 @@ export const headerMessages = defineMessages({
     apusgDelete: {
         id: "admin_reports_header_APUSG_DELETE",
         defaultMessage: "Odstraněné vazby přístupových bodů"
-    },
-    instName: {
-        id: "admin_reports_header_INST_NAME",
-        defaultMessage: "Instituce"
-    },
-    instCode: {
-        id: "admin_reports_header_INST_CODE",
-        defaultMessage: "Číslo instituce"
     },
     fondsNumber: {
         id: "admin_reports_header_FONDS_NUMBER",
