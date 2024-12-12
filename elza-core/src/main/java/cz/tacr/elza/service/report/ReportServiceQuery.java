@@ -126,8 +126,8 @@ public class ReportServiceQuery {
 			select fonds.cnt as FONDS_CNT,
 				coalesce((select cnt from nodes where change_type = 'LEVEL_NEW'), 0) - coalesce((select cnt from nodes where change_type = 'LEVEL_DELETE'), 0) as LEVELS_CNT,
 				coalesce((select cnt from desc_items where change_type = 'ITEM_NEW'), 0) - coalesce((select cnt from desc_items where change_type = 'ITEM_DELETE'), 0) as ITEMS_CNT,
-				arch_ent.cnt as AE_POCET, 
-				(select pb.cnt from pb) as PB_POCET, 
+				arch_ent.cnt as AE_CNT, 
+				(select pb.cnt from pb) as AP_CNT, 
 				(select vpb.cnt from vpb) as REFENTS_CNT 
 			from (select count(*) cnt from arr_fund) as fonds,
 				(select count(*) cnt from ap_state s where s.delete_change_id is null) arch_ent;
@@ -179,7 +179,7 @@ public class ReportServiceQuery {
 			select time_line.date_year, time_line.date_month, us.username,  
 				coalesce(nodes.level_new, 0) level_new, coalesce(nodes.level_delete, 0) level_delete, 
 				coalesce(items.item_new, 0) item_new, coalesce(items.item_update, 0) item_update, coalesce(items.item_delete, 0) item_delete, 
-				coalesce(aps.ap_new, 0) ap_new, coalesce(aps.ap_update, 0) ap_update, coalesce(aps.ap_delete, 0) ap_delete, coalesce(aps.ap_replace, 0) ap_replace, 
+				coalesce(aps.ap_new, 0) AE_NEW, coalesce(aps.ap_update, 0) AE_UPDATE, coalesce(aps.ap_delete, 0) AE_DELETE, coalesce(aps.ap_replace, 0) AE_REPLACE, 
 				coalesce(apusg_new.apusg_new, 0) as apusg_new, coalesce(apusg_delete.apusg_delete, 0) as apusg_delete 
 			from time_line 
 				join users on true 
@@ -289,7 +289,7 @@ public class ReportServiceQuery {
 		final static String SYS_EXT_SYSTEM_COUNT_QUERY = """
 			with max_change as (select max(c.change_id) as change_id from ap_change c where c.change_date < :DATE_TO), 
 				max_arr_change as (select max(c.change_id) as change_id from arr_change c where c.change_date < :DATE_TO) 
-			select ses.name as EXTERNAL_SYSTEM_NAME, coalesce(total_cnt.ap_count, 0) as AE_POCET, coalesce(used_cnt.ap_count, 0) as PB_POCET 
+			select ses.name as EXTERNAL_SYSTEM_NAME, coalesce(total_cnt.ap_count, 0) as AE_CNT, coalesce(used_cnt.ap_count, 0) as AP_CNT 
 			from ap_external_system aes 
 				join sys_external_system ses on aes.external_system_id = ses.external_system_id 
 				left join (
