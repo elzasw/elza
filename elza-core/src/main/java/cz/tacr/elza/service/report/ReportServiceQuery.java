@@ -128,7 +128,7 @@ public class ReportServiceQuery {
 				coalesce((select cnt from desc_items where change_type = 'ITEM_NEW'), 0) - coalesce((select cnt from desc_items where change_type = 'ITEM_DELETE'), 0) as ITEMS_CNT,
 				arch_ent.cnt as AE_CNT, 
 				(select pb.cnt from pb) as AP_CNT, 
-				(select vpb.cnt from vpb) as REFENTS_CNT 
+				(select vpb.cnt from vpb) as APUSG_CNT 
 			from (select count(*) cnt from arr_fund) as fonds,
 				(select count(*) cnt from ap_state s where s.delete_change_id is null) arch_ent;
 					""";
@@ -176,11 +176,17 @@ public class ReportServiceQuery {
 				join time_line tl on tl.date_from <= vapusg.delete_date_id and tl.date_to >= vapusg.delete_date_id 
 				group by tl.date_year, tl.date_month, delete_user_id 
 			) 
-			select time_line.date_year, time_line.date_month, us.username,  
-				coalesce(nodes.level_new, 0) level_new, coalesce(nodes.level_delete, 0) level_delete, 
-				coalesce(items.item_new, 0) item_new, coalesce(items.item_update, 0) item_update, coalesce(items.item_delete, 0) item_delete, 
-				coalesce(aps.ap_new, 0) AE_NEW, coalesce(aps.ap_update, 0) AE_UPDATE, coalesce(aps.ap_delete, 0) AE_DELETE, coalesce(aps.ap_replace, 0) AE_REPLACE, 
-				coalesce(apusg_new.apusg_new, 0) as apusg_new, coalesce(apusg_delete.apusg_delete, 0) as apusg_delete 
+			select time_line.DATE_YEAR, time_line.DATE_MONTH, us.USERNAME, 
+				coalesce(nodes.level_new, 0) as LEVEL_NEW, 
+				coalesce(nodes.level_delete, 0) as LEVEL_DELETE,
+				coalesce(items.item_new, 0) as ITEM_NEW, 
+				coalesce(items.item_update, 0) item_update, coalesce(items.item_delete, 0) as ITEM_DELETE,
+				coalesce(aps.ap_new, 0) as AE_NEW,
+				coalesce(aps.ap_update, 0) as AE_UPDATE,
+				coalesce(aps.ap_delete, 0) as AE_DELETE, 
+				coalesce(aps.ap_replace, 0) as AE_REPLACE,
+				coalesce(apusg_new.apusg_new, 0) as APUSG_NEW,
+				coalesce(apusg_delete.apusg_delete, 0) as APUSG_DELETE 
 			from time_line 
 				join users on true 
 				join usr_user us on us.user_id = users.user_id 
@@ -222,11 +228,12 @@ public class ReportServiceQuery {
 				join arr_fund f on f.fund_id = rvapu.fond_id 
 				where rvapu.delete_change_id is null 
 				group by f.institution_id) 
-			select pi.internal_code as inst_code, pref_indx.index_value as inst_name,   
+			select pi.internal_code as INST_CODE, 
+				pref_indx.index_value as INST_NAME, 
 				coalesce(fonds.cnt, 0) as FONDS_CNT,  
 				coalesce(level_new.cnt, 0) - coalesce(level_delete.cnt, 0) as LEVELS_CNT,  
 				coalesce(item_new.cnt, 0) - coalesce(item_delete.cnt, 0) as ITEMS_CNT,  
-				coalesce(refents.cnt, 0) as REFENTS_CNT  
+				coalesce(refents.cnt, 0) as APUSG_CNT  
 			from fonds  
 				join par_institution pi on pi.institution_id = fonds.institution_id  
 				join ap_access_point ap on ap.access_point_id = pi.access_point_id  
@@ -270,11 +277,12 @@ public class ReportServiceQuery {
 			  	join arr_fund f on f.fund_id = rvapu.fond_id 
 			  	where rvapu.create_date_id < :DATE_TO and (rvapu.delete_date_id is null or rvapu.delete_date_id >= :DATE_TO) 
 			  	group by f.institution_id) 
-			select pi.internal_code as inst_code, pref_indx.index_value as inst_name,   
-				coalesce(fonds.cnt, 0) as FONDS_CNT,  
-				coalesce(level_new.cnt, 0) - coalesce(level_delete.cnt, 0) as LEVELS_CNT,  
-				coalesce(item_new.cnt, 0) - coalesce(item_delete.cnt, 0) as ITEMS_CNT,  
-				coalesce(refents.cnt, 0) as REFENTS_CNT  
+			select pi.internal_code as INST_CODE, 
+				pref_indx.index_value as INST_NAME, 
+				coalesce(fonds.cnt, 0) as FONDS_CNT, 
+				coalesce(level_new.cnt, 0) - coalesce(level_delete.cnt, 0) as LEVELS_CNT, 
+				coalesce(item_new.cnt, 0) - coalesce(item_delete.cnt, 0) as ITEMS_CNT, 
+				coalesce(refents.cnt, 0) as APUSG_CNT 
 			from fonds  
 				join par_institution pi on pi.institution_id = fonds.institution_id  
 				join ap_access_point ap on ap.access_point_id = pi.access_point_id  
@@ -289,7 +297,9 @@ public class ReportServiceQuery {
 		final static String SYS_EXT_SYSTEM_COUNT_QUERY = """
 			with max_change as (select max(c.change_id) as change_id from ap_change c where c.change_date < :DATE_TO), 
 				max_arr_change as (select max(c.change_id) as change_id from arr_change c where c.change_date < :DATE_TO) 
-			select ses.name as EXTERNAL_SYSTEM_NAME, coalesce(total_cnt.ap_count, 0) as AE_CNT, coalesce(used_cnt.ap_count, 0) as AP_CNT 
+			select ses.name as EXTERNAL_SYSTEM_NAME, 
+				coalesce(total_cnt.ap_count, 0) as AE_CNT, 
+				coalesce(used_cnt.ap_count, 0) as AP_CNT 
 			from ap_external_system aes 
 				join sys_external_system ses on aes.external_system_id = ses.external_system_id 
 				left join (
@@ -317,18 +327,18 @@ public class ReportServiceQuery {
 		final static String SYS_OUTPUT_COUNT_QUERY = """
 			with max_change as (select max(change_id) as change_id from arr_change where change_date <= :DATE_TO), 
 				min_change as (select min(change_id) as change_id from arr_change where change_date >= :DATE_FROM) 
-			select pref_indx.index_value as inst_name, 
-				inst.internal_code as inst_code,  
-				f.fund_number as fonds_number, 
-				f."name" as fonds_name, 
-				fa_id.fa_number as fa_number, 
-				o."name" as output_name, 
-				fa_type.fa_type as fa_type, 
-				fa_date.fa_date as fa_date, 
-				fa_unit_count.fa_unit_count as fa_unit_count, 
-				ot."name" as output_type, 
-				rt."name" as templ_name, 
-				gchn.change_date as output_date 
+			select pref_indx.index_value as INST_NAME, 
+				inst.internal_code as INST_CODE,  
+				f.fund_number as FONDS_NUMBER, 
+				f."name" as FONDS_NAME, 
+				fa_id.fa_number as FA_NUMBER, 
+				o."name" as OUTPUT_NAME, 
+				fa_type.fa_type as FA_TYPE, 
+				fa_date.fa_date as FA_DATE, 
+				fa_unit_count.fa_unit_count as FA_UNIT_COUNT, 
+				ot."name" as OUTPUT_TYPE, 
+				rt."name" as TEMPL_NAME, 
+				gchn.change_date as OUTPUT_DATE 
 			from arr_output_result aor 
 			join arr_output o on aor.output_id = o.output_id 
 			join arr_fund f on f.fund_id = o.fund_id 

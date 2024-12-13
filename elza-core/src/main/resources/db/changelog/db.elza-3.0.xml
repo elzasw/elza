@@ -538,7 +538,7 @@
 			<column name="report_id">2</column> <!-- SYS_MONTH_USER_COUNT -->
 			<column name="value_type_id">4</column>
 			<column name="code">DATE_FROM</column>
-			<column name="name">Date from</column>
+			<column name="name">Datum od</column>
 			<column name="repeatable">false</column>
 			<column name="required">true</column>
 		</insert>
@@ -547,7 +547,7 @@
 			<column name="report_id">2</column> <!-- SYS_MONTH_USER_COUNT -->
 			<column name="value_type_id">4</column>
 			<column name="code">DATE_TO</column>
-			<column name="name">Date to</column>
+			<column name="name">Datum do</column>
 			<column name="repeatable">false</column>
 			<column name="required">false</column>
 			<column name="generator">END_OF_DAY</column>
@@ -557,7 +557,7 @@
 			<column name="report_id">3</column> <!-- SYS_INSTITUTION_COUNT -->
 			<column name="value_type_id">4</column>
 			<column name="code">DATE_TO</column>
-			<column name="name">Date to</column>
+			<column name="name">Datum do</column>
 			<column name="repeatable">false</column>
 			<column name="required">false</column>
 			<column name="generator">END_OF_DAY</column>
@@ -567,7 +567,7 @@
 			<column name="report_id">4</column> <!-- SYS_EXT_SYSTEM_COUNT -->
 			<column name="value_type_id">4</column>
 			<column name="code">DATE_TO</column>
-			<column name="name">Date to</column>
+			<column name="name">Datum do</column>
 			<column name="repeatable">false</column>
 			<column name="required">false</column>
 			<column name="generator">END_OF_DAY</column>
@@ -577,7 +577,7 @@
 			<column name="report_id">5</column> <!-- SYS_OUTPUT_COUNT -->
 			<column name="value_type_id">4</column>
 			<column name="code">DATE_FROM</column>
-			<column name="name">Date</column>
+			<column name="name">Datum od</column>
 			<column name="repeatable">false</column>
 			<column name="required">false</column>
 			<column name="generator">START_OF_YEAR</column>
@@ -587,19 +587,10 @@
 			<column name="report_id">5</column> <!-- SYS_OUTPUT_COUNT -->
 			<column name="value_type_id">4</column>
 			<column name="code">DATE_TO</column>
-			<column name="name">Date</column>
+			<column name="name">Datum do</column>
 			<column name="repeatable">false</column>
 			<column name="required">false</column>
 			<column name="generator">END_OF_DAY</column>
-		</insert>
-		<insert tableName="rpt_param">
-			<column name="param_id">7</column>
-			<column name="report_id">5</column> <!-- SYS_OUTPUT_COUNT -->
-			<column name="value_type_id">2</column>
-			<column name="code">INSTITUCE</column>
-			<column name="name">Instituce</column>
-			<column name="repeatable">false</column>
-			<column name="required">false</column>
 		</insert>
 		<!-- seznam požadovaných view pro sestavy -->
 		<!-- SYS_TOTAL_COUNT -->

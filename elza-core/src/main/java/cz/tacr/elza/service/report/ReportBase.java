@@ -62,10 +62,11 @@ public abstract class ReportBase implements ReportProcessor {
 			String paramCode = param.getCode();
 			RptValueType rptValueType = reportService.getValueType(param.getValueTypeId());
 			ReportValueType valueType = ReportValueType.valueOf(rptValueType.getCode());
-			RptDefaultValueGenerator generator = param.getGenerator();
-			boolean required = param.getRequired();
+			Object paramValue = getOrGeneratedValue(paramCode, valueType, param.getGenerator(), param.getRequired(), parameters);
 			if (reportQuery.contains(':' + paramCode)) {
-				query.setParameter(paramCode, getOrGeneratedValue(paramCode, valueType, generator, required, parameters));
+				query.setParameter(paramCode, paramValue);
+			} else {
+				throw new IllegalArgumentException("Required parameter not found in query, paramCode: " + paramCode);
 			}
 		}
 
