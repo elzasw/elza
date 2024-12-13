@@ -50,8 +50,13 @@ const messages = defineMessages({
 // export type Fields = Record<string, ReportValueAccesspointId | ReportValueFondId | ReportValueString | ReportValueInteger | ReportValueDate> & { definitionCode: string }
 export type _Fields = Record<string, string | number> & { definitionCode: string };
 
+export interface SubmitDefinition {
+    definition: ReportReportDefinition;
+    category: ReportReportCategory;
+}
+
 export interface Props {
-    onSubmit: (definitionCode: string, values: ReportReportParameters) => void;
+    onSubmit: (definition: SubmitDefinition, values: ReportReportParameters) => void;
 }
 
 interface FieldProps {
@@ -157,7 +162,7 @@ export function ReportsForm({ onSubmit }: Props) {
 
     function getReportDefinition(definitionCode: string) {
         let reportDefinition: ReportReportDefinition | undefined;
-        reportCategories?.find(({ reportDefinitions }) => {
+        const reportCategory = reportCategories?.find(({ reportDefinitions }) => {
             const _reportDefinition = reportDefinitions?.find(({ code }) => code == definitionCode);
             if (_reportDefinition) {
                 reportDefinition = _reportDefinition;
@@ -168,15 +173,17 @@ export function ReportsForm({ onSubmit }: Props) {
         if (!reportDefinition) {
             throw `No report definition for '${definitionCode}'`;
         }
-        return reportDefinition;
+        return { definition: reportDefinition, category: reportCategory };
     }
 
     function handleSubmit(values: _Fields) {
         const transformedValues: ReportReportParameters = { params: [] };
-        const { params } = getReportDefinition(values.definitionCode);
+        const { definition, category } = getReportDefinition(values.definitionCode);
+
+        if (!definition) { throw `No report definition for '${values.definitionCode}'` }
 
         Object.entries(values).forEach(([key, value]) => {
-            const paramDefinition = params.find(({ code }) => code === key);
+            const paramDefinition = definition.params.find(({ code }) => code === key);
             // skip unknown/added types e.g. definitionCode;
             if (!paramDefinition) {
                 return;
@@ -188,7 +195,7 @@ export function ReportsForm({ onSubmit }: Props) {
             });
         });
 
-        onSubmit(values.definitionCode, transformedValues);
+        onSubmit({ definition, category }, transformedValues);
     }
 
     function validate(values: _Fields) {
@@ -199,8 +206,8 @@ export function ReportsForm({ onSubmit }: Props) {
                 return errors;
             }
 
-            const { params } = getReportDefinition(values.definitionCode);
-            params?.forEach(({ code, required }) => {
+            const { definition } = getReportDefinition(values.definitionCode);
+            definition?.params?.forEach(({ code, required }) => {
                 if (!values[code] && required) {
                     errors[code] = `${code} is required`
                 }
@@ -224,9 +231,9 @@ export function ReportsForm({ onSubmit }: Props) {
                     let selectedValue: string = values.definitionCode;
 
                     try {
-                        const { name, params: _params } = getReportDefinition(values.definitionCode);
-                        selectedValue = name;
-                        params = _params;
+                        const { definition } = getReportDefinition(values.definitionCode);
+                        selectedValue = definition?.name;
+                        params = definition?.params;
                     } catch (error) {
                         console.error(error);
                     }

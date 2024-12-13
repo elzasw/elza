@@ -150,23 +150,23 @@ export const formMessages = defineMessages({
     },
     sysTotalCount: {
         id: "admin_reports_form_report_SYS_TOTAL_COUNT",
-        defaultMessage: "Souhrnné informace – aktuální stav",
+        defaultMessage: "Aktuální souhrnné informace",
     },
     sysMonthUserCount: {
         id: "admin_reports_form_report_SYS_MONTH_USER_COUNT",
-        defaultMessage: "Přehled po měsících dle uživatelů",
+        defaultMessage: "Činnost uživatelů",
     },
     sysInstitutionCount: {
         id: "admin_reports_form_report_SYS_INSTITUTION_COUNT",
-        defaultMessage: "Přehled k datu dle institucí",
+        defaultMessage: "Archivní popis v institucích",
     },
     sysExtSystemCount: {
         id: "admin_reports_form_report_SYS_EXT_SYSTEM_COUNT",
-        defaultMessage: "Přehled k datu dle zápisu do externích systémů",
+        defaultMessage: "Zápis do externích systémů",
     },
     sysOutputCount: {
         id: "admin_reports_form_report_SYS_OUTPUT_COUNT",
-        defaultMessage: "Přehled po institucích a archivních souborech",
+        defaultMessage: "Instituce a archivní soubory ",
     },
     dateFrom: {
         id: "admin_reports_form_property_DATE_FROM",

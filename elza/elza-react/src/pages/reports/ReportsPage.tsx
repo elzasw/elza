@@ -1,26 +1,23 @@
 import { Icon, Ribbon } from "components/index.jsx";
 import PageLayout from "../shared/layout/PageLayout";
-// import { StatsHome } from "components/shared/stats";
-import { useSelector } from "react-redux";
-import { AppState } from "typings/store";
-import { useState } from "react";
+import { Button } from "@fluentui/react-components";
+import { downloadFile } from "actions/global/download";
 import { Api, basePath } from "api";
+import { ReportsForm, ReportsTable } from "components/reports";
+import { WaitingOverlay } from "components/shared/waiting-overlay";
 import {
     ReportApiAxiosParamCreator,
     ReportReportData,
     ReportReportFormat,
     ReportReportParameters,
-    // ReportReportRow,
-    // ReportValue,
-    // ReportValueType,
     RequestProcessState,
 } from "elza-api";
-import { Button } from "@fluentui/react-components";
-import { ReportsForm, ReportsTable } from "components/reports";
-import { WaitingOverlay } from "components/shared/waiting-overlay";
+import { useState } from "react";
 import { FormattedMessage, defineMessages } from "react-intl";
-import { downloadAjaxFile, downloadFile, downloadFileInFrame } from "actions/global/download";
+import { useSelector } from "react-redux";
+import { AppState } from "typings/store";
 import { useThunkDispatch } from "utils/hooks";
+import { SubmitDefinition } from "components/reports/ReportsForm";
 
 const messages = defineMessages({
     generationTime: {
@@ -43,23 +40,26 @@ export function ReportsPage() {
     const [isFetchingReport, setIsFetchingReport] = useState(false);
     const [_isReportFetched, setIsReportFetched] = useState(false);
     const [lastReportId, setLastReportId] = useState<number>();
-    const [lastReportDefinition, setLastReportDefinition] = useState<string>();
+    const [lastReportDefinition, setLastReportDefinition] = useState<SubmitDefinition>();
     const dispatch = useThunkDispatch();
 
     const buildRibbon = () => {
         return <Ribbon admin={true} />;
     };
 
-    const handleSubmit = async (definitionCode: string, params: ReportReportParameters) => {
+    const handleSubmit = async (definition: SubmitDefinition, params: ReportReportParameters) => {
+        const definitionCode = definition?.definition?.code;
+
         if (!definitionCode) {
             throw "no selected report definition";
         }
 
         const { data: reportId } = await Api.report.reportGenerateReport(definitionCode, { ...params });
 
+        setReportData(undefined);
         setIsFetchingReport(true);
         setIsReportFetched(false);
-        setLastReportDefinition(definitionCode);
+        setLastReportDefinition(definition);
         const intervalId = setInterval(async () => {
             try {
                 const { data: reportState } = await Api.report.reportGetReportStatus(reportId);
@@ -106,27 +106,35 @@ export function ReportsPage() {
                     >
                         {isFetchingReport && <WaitingOverlay />}
                         {reportData && (
-                            <div style={{ flexShrink: 0, flexGrow: 0, padding: "8px", display: "flex", justifyContent: "flex-end" }}>
-                                <div style={{ margin: "4px 16px" }}>
-                                    <FormattedMessage
-                                        {...messages.generationTime}
-                                        values={{
-                                            date: reportDate.toLocaleDateString(),
-                                            time: reportDate.toLocaleTimeString(),
-                                        }}
-                                    />
+                            <div style={{ flexShrink: 0, flexGrow: 0, display: "flex" }}>
+                                <div style={{ padding: "8px", display: "flex", alignItems: "center" }}>
+                                    <FormattedMessage id={`admin_reports_form_category_${lastReportDefinition.category.code}`} defaultMessage={lastReportDefinition.category.name} />
+                                    &nbsp;<Icon glyph="fa-angle-right" />&nbsp;
+                                    <b><FormattedMessage id={`admin_reports_form_report_${lastReportDefinition.definition.code}`} defaultMessage={lastReportDefinition.definition.name} /></b>
                                 </div>
-                                <Button onClick={handleDownload}>
-                                    <Icon glyph="fa-download" />
-                                    &nbsp;
-                                    <FormattedMessage {...messages.downloadCSV} />
-                                </Button>
+                                <div style={{ flex: 1 }} />
+                                <div style={{ padding: "8px", display: "flex", alignItems: "center" }}>
+                                    <div style={{ margin: "4px 16px" }}>
+                                        <FormattedMessage
+                                            {...messages.generationTime}
+                                            values={{
+                                                date: reportDate.toLocaleDateString(),
+                                                time: reportDate.toLocaleTimeString(),
+                                            }}
+                                        />
+                                    </div>
+                                    <Button onClick={handleDownload}>
+                                        <Icon glyph="fa-download" />
+                                        &nbsp;
+                                        <FormattedMessage {...messages.downloadCSV} />
+                                    </Button>
+                                </div>
                             </div>
                         )}
                         <div style={{ flexGrow: 1, display: "flex", flexDirection: "column", height: "300px" }}>
                             {!reportData ? (
                                 <div style={{ padding: "16px", background: "var(--shade-2)", flex: 1 }}>
-                                    <FormattedMessage {...messages.noReportData} />
+                                    {!isFetchingReport && <FormattedMessage {...messages.noReportData} />}
                                 </div>
                             ) : (
                                 <ReportsTable reportData={reportData} />
