@@ -1,9 +1,0 @@
-{
-  "admin_packages_label_action": "Action",
-  "admin_packages_label_code": "Code",
-  "admin_packages_label_dependencies": "Required packages (minimum/current version)",
-  "admin_packages_label_dependenciesBy": "Dependant packages",
-  "admin_packages_label_description": "Description",
-  "admin_packages_label_name": "Name",
-  "admin_packages_label_version": "Version"
-}
