@@ -30,7 +30,7 @@ export const headerMessages = defineMessages({
         defaultMessage: "Počet přístupových bodů",
     },
     refentsCnt: {
-        id: "admin_reports_header_REFENTS_CNT",
+        id: "admin_reports_header_APUSG_CNT",
         defaultMessage: "Počet vazeb přístupových bodů",
     },
     dateYear: {
