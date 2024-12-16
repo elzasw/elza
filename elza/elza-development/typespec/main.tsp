@@ -1319,6 +1319,39 @@ namespace ElzaAPI.Report {
        };
 }
 
+@tag("node")
+@route("/node")
+namespace ElzaAPI.Node {
+    /**
+     * Received quote
+     */
+    model PlainTextRepresentation {
+        /** název generátoru pro uživatel */
+        name: string;
+        /** interní kód generátoru */
+        code: string;
+        /** vytvořená citace */
+        value: string;
+    }
+
+    /**
+     * Get quote by fundVersionId & nodeId
+     */
+	@route("/plain-text/{fundVersionId}/{nodeId}")
+	@get op getPlainText(
+        @path fundVersionId: integer;
+        @path nodeId: integer;
+    ): {
+         /** Pending, processing, finished */
+         @Http.statusCode statusCode: 200;
+         @body data: PlainTextRepresentation;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+}
+
 @service({
     title: "ELZA API",
 })

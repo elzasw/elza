@@ -13,7 +13,7 @@ public enum RptDefaultValueGenerator {
 	END_OF_DAY {
 		@Override
 		public Object getDefaultValue() {
-			return LocalDate.now().atTime(23, 59, 59).atOffset(ZoneOffset.UTC);
+			return LocalDate.now().atTime(23, 59, 59, 999_999_999).atOffset(ZoneOffset.UTC);
 		}
 	},
 	START_OF_YEAR {
