@@ -8,6 +8,7 @@ import {
     ExternalsystemsApi,
     DescitemsApi,
     ReportApi,
+    NodeApi,
 } from 'elza-api';
 import globalAxios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import i18n from '../components/i18n';
@@ -195,6 +196,7 @@ export const Api: {
     io: IoApi;
     externalSystems: ExternalsystemsApi;
     descItems: DescitemsApi;
+    node: NodeApi;
     report: ReportApi;
 } = {
     accesspoints: new AccesspointsApi(undefined, basePath, axios),
@@ -205,5 +207,6 @@ export const Api: {
     io: new IoApi(undefined, basePath, axios),
     externalSystems: new ExternalsystemsApi(undefined, basePath, axios),
     descItems: new DescitemsApi(undefined, basePath, axios),
+    node: new NodeApi(undefined, basePath, axios),
     report: new ReportApi(undefined, basePath, axios),
 };
