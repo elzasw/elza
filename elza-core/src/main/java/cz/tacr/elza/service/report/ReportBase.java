@@ -90,7 +90,7 @@ public abstract class ReportBase implements ReportProcessor {
 			}
 			values = generateParamValues(valueType, generator);
 		}
-		return getValueFromReportValue(values);
+		return getValueFromReportValue(values, generator);
 	}
 
 	/**
@@ -115,12 +115,18 @@ public abstract class ReportBase implements ReportProcessor {
 	 * @param values
 	 * @return
 	 */
-	private Object getValueFromReportValue(List<ReportValue> values) {
-		// TODO now use only one value
+	private Object getValueFromReportValue(List<ReportValue> values, RptDefaultValueGenerator generator) {
+		// TODO now we use only first value
 		ReportValue value = values.get(0);
 		switch (value.getValueType()) {
 		case DATE:
-			return ((ReportValueDate) value).getDateValue();
+			OffsetDateTime dateValue = ((ReportValueDate) value).getDateValue();
+			// pokud existuje generátor, bereme čas z generátoru
+			if (generator != null) {
+				OffsetDateTime dt = (OffsetDateTime) generator.getDefaultValue();
+				dateValue = dateValue.withHour(dt.getHour()).withMinute(dt.getMinute()).withSecond(dt.getSecond()).withNano(dt.getNano());
+			}
+			return dateValue;
 		case STRING:
 			return ((ReportValueString) value).getTextValue();
 		default:
