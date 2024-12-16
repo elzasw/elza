@@ -1167,7 +1167,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Node.PlainTextRepresentation'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Node.PlainTextRepresentation'
         '404':
           description: The server cannot find the requested resource.
           content:
