@@ -27,7 +27,7 @@ import { WebApi } from 'actions/index';
 import { getMapFromList, indexById } from 'stores/app/utils';
 import { fundSelectSubNode } from 'actions/arr/node';
 import { addToastr, addToastrSuccess } from 'components/shared/toastr/ToastrActions';
-import { Dropdown, DropdownButton } from 'react-bootstrap';
+import { Dropdown, DropdownButton, DropdownDivider } from 'react-bootstrap';
 import TemplateForm, { EXISTS_TEMPLATE, NEW_TEMPLATE } from './TemplateForm';
 import TemplateUseForm from './TemplateUseForm';
 import { userDetailsSaveSettings } from 'actions/user/userDetail';
@@ -48,10 +48,19 @@ import { TextFragmentsWindow } from "../../components/arr/text-fragments";
 import { ScenarioDropdown } from "./sub-node-dao";
 import { showConfirmDialog } from 'components/shared/dialog';
 import { DataTypeCode } from 'stores/app/accesspoint/itemFormUtils';
+import { QuoteModal } from './quote';
+import { defineMessages, FormattedMessage } from 'react-intl';
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
+
+const messages = defineMessages({
+    quoteTitle: {
+        id: "nodeSubNodeForm_quote_title",
+        defaultMessage: "Citace"
+    }
+})
 
 class NodeSubNodeForm extends AbstractReactComponent {
     static propTypes = {
@@ -347,6 +356,19 @@ class NodeSubNodeForm extends AbstractReactComponent {
         })
     }
 
+    handleQuote = () => {
+        const { fund, selectedSubNodeId } = this.props;
+        const { dispatch } = this.props;
+
+        dispatch(modalDialogShow(
+            this,
+            <FormattedMessage {...messages.quoteTitle} />,
+            <QuoteModal versionId={fund.versionId} nodeId={selectedSubNodeId} />,
+            null,
+        ))
+
+    }
+
     getDaoWithScenario = () => {
         const daos = this.props.parentNode.subNodeDaos.data
 
@@ -438,18 +460,10 @@ class NodeSubNodeForm extends AbstractReactComponent {
                         }
                     </div>
                     <div className="section">
-                        {this.isDigitizationFrontdeskDefined() &&
-                            <NoFocusButton onClick={this.props.onDigitizationRequest}>
-                                <Icon glyph="fa-camera" />
-                                {i18n('subNodeForm.digitizationRequest')}
-                            </NoFocusButton>
-                        }
-                        {editPermAllowed && this.hasDaos() && (
-                            <NoFocusButton onClick={this.props.onDigitizationSync}>
-                                <Icon glyph="fa-camera" />
-                                {i18n('subNodeForm.digitizationSync')}
-                            </NoFocusButton>
-                        )}
+                        <NoFocusButton onClick={this.handleQuote}>
+                            <Icon glyph="fa-quote-right" />
+                            <FormattedMessage {...messages.quoteTitle} />
+                        </NoFocusButton>
                     </div>
                     <div className="section">
                         {this.subNodeHasDescItemClass(ItemClass.URI_REF) &&
@@ -483,6 +497,22 @@ class NodeSubNodeForm extends AbstractReactComponent {
                             <Dropdown.Item eventKey="3" onClick={this.handleCopyUuid}>
                                 {i18n('subNodeForm.section.copyUuid')}
                             </Dropdown.Item>
+                            {this.isDigitizationFrontdeskDefined() || (editPermAllowed && this.hasDaos()) &&
+                                <>
+                                    <Dropdown.Divider />
+                                    {this.isDigitizationFrontdeskDefined() &&
+                                        <Dropdown.Item eventKey="3" onClick={this.props.onDigitizationRequest}>
+                                            <Icon glyph="fa-camera" />
+                                            {i18n('subNodeForm.digitizationRequest')}
+                                        </Dropdown.Item>
+                                    }
+                                    {editPermAllowed && this.hasDaos() && (
+                                        <Dropdown.Item eventKey="3" onClick={this.props.onDigitizationSync}>
+                                            <Icon glyph="fa-camera" />
+                                            {i18n('subNodeForm.digitizationSync')}
+                                        </Dropdown.Item>
+                                    )}
+                                </>}
                             {!this.subNodeHasDescItemClass(ItemClass.URI_REF) &&
                                 <>
                                     <Dropdown.Divider />
