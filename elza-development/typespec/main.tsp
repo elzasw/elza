@@ -1344,7 +1344,7 @@ namespace ElzaAPI.Node {
     ): {
          /** Pending, processing, finished */
          @Http.statusCode statusCode: 200;
-         @body data: PlainTextRepresentation;
+         @body data: PlainTextRepresentation[];
        } | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
