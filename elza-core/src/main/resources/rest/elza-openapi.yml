@@ -19,6 +19,8 @@ tags:
     description: Vstup a výstup informací
   - name: report
     description: Statistické zprávy
+  - name: node
+    description: Práce s úrovněmi a uzly
 servers:
   - url: http://localhost
     description: Výchozí server
@@ -1144,6 +1146,36 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - io
+  /node/plain-text/{fundVersionId}/{nodeId}:
+    get:
+      operationId: Node_getPlainText
+      description: Get quote by fundVersionId & nodeId
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Node.PlainTextRepresentation'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - node
   /report/definitions:
     get:
       operationId: Report_getDefinitions
@@ -2062,6 +2094,23 @@ components:
           type: string
           description: node uuid
       description: Náhrada za třídu ArrNodeVO
+    Node.PlainTextRepresentation:
+      type: object
+      required:
+        - name
+        - code
+        - value
+      properties:
+        name:
+          type: string
+          description: název generátoru pro uživatel
+        code:
+          type: string
+          description: interní kód generátoru
+        value:
+          type: string
+          description: vytvořená citace
+      description: Received quote
     NodeItem:
       type: object
       properties:
