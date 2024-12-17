@@ -1400,17 +1400,10 @@ public class ArrangementService {
 
     public TreeNode getRootTreeNode(@NotNull ArrFundVersion fundVersion) {
 
-        Integer rootNodeId = fundVersion.getRootNode().getNodeId();
+        Integer rootNodeId = fundVersion.getRootNodeId();
         Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(fundVersion);
 
-        TreeNode rootTreeNode = null;
-        for (TreeNode treeNode : versionTreeCache.values()) {
-            if (treeNode.getId().equals(rootNodeId)) {
-                rootTreeNode = treeNode;
-                break;
-            }
-        }
-
+        TreeNode rootTreeNode = versionTreeCache.get(rootNodeId);
         if (rootTreeNode == null) {
             throw new ObjectNotFoundException("Nenalezen kořen stromu ve verzi " + fundVersion.getFundVersionId(),
                     ArrangementCode.NODE_NOT_FOUND).setId(rootNodeId);
