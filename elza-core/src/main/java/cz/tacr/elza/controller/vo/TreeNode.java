@@ -16,7 +16,7 @@ public class TreeNode implements Comparable<TreeNode> {
     /**
      * Nodeid uzlu.
      */
-    private Integer id;
+    final private int id;
     /**
      * Hloubka uzlu ve stromu.
      */
@@ -37,17 +37,13 @@ public class TreeNode implements Comparable<TreeNode> {
      */
     private Integer[] referenceMark;
 
-    public TreeNode(final Integer nodeId, final Integer position) {
+    public TreeNode(final int nodeId, final Integer position) {
         this.id = nodeId;
         this.position = position;
     }
 
-    public Integer getId() {
+    public int getId() {
         return id;
-    }
-
-    public void setId(final Integer id) {
-        this.id = id;
     }
 
     public Integer getDepth() {
@@ -129,6 +125,7 @@ public class TreeNode implements Comparable<TreeNode> {
 
     @Override
     public int compareTo(final TreeNode o) {
+    	// TODO: throw exception if comparing with different parents 
 
         if (this.getParent() == null) {
             return -1;
@@ -138,7 +135,7 @@ public class TreeNode implements Comparable<TreeNode> {
             return 1;
         }
 
-        if (o.getId().equals(getId())) {
+        if (o.id!=id) {
             return 0;
         }
 

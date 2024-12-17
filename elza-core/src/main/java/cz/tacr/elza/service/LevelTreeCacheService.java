@@ -237,7 +237,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         } else {
             while (expandedIterator.hasNext()) {
                 TreeNode next = expandedIterator.next();
-                if (next.getId().equals(nodeId)) {
+                if (next.getId()==nodeId.intValue()) {
                     addNodesToResultList(nodesMap, next, expandedIterator);
                     break;
                 }
@@ -281,7 +281,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             TreeNode treeNode = versionTreeCache.get(nodeId);
             if (treeNode != null) {
                 TreeNode parent = treeNode;
-                while (parent != null && subTreeMap.get(parent) == null) {
+                while (parent != null && subTreeMap.get(parent.getId()) == null) {
                     subTreeMap.put(parent.getId(), parent);
                     parent = parent.getParent();
                 }
