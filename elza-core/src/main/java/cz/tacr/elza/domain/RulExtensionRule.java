@@ -23,13 +23,16 @@ import cz.tacr.elza.domain.enumeration.StringLength;
 
 /**
  * Řídící pravidla archivního popisu, které definuje dané rozšíření.
+ * 
+ * Class is comparable and allows to sort list of RulExtensionRule 
+ * according priority.
  *
  * @since 17.10.2017
  */
 @Entity(name = "rul_extension_rule")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class RulExtensionRule {
+public class RulExtensionRule implements Comparable<RulExtensionRule> {
 
     @Id
     @GeneratedValue
@@ -168,4 +171,22 @@ public class RulExtensionRule {
         ATTRIBUTE_TYPES,
         NEW_LEVEL
     }
+
+	@Override
+	public int compareTo(RulExtensionRule o) {
+        // 1. seřadit podle priority
+        Integer p1 = getPriority();
+        Integer p2 = o.getPriority();
+
+        int pComp = p1.compareTo(p2);
+        if (pComp != 0) {
+            return pComp;
+        } else {
+            // 2. seřadit podle id
+        	// ?? asi neni nutne
+            // return o1.getArrangementExtensionId().compareTo(o2.getArrangementExtensionId());
+        }    	
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

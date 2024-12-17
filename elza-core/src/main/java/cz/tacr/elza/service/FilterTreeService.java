@@ -186,7 +186,7 @@ public class FilterTreeService {
                     dataExport);
         }
 
-        return createResult(version, subIds, levelTreeCacheService.getVersionTreeCache(version), nodeValuesMap);
+        return createResult(version, subIds, nodeValuesMap);
     }
 
     /**
@@ -299,9 +299,10 @@ public class FilterTreeService {
      */
     private List<FilterNode> createResult(final ArrFundVersion version,
                                           final List<Integer> filteredIds,
-                                          final Map<Integer, TreeNode> versionCache,
                                           final Map<Integer, TitleItemsByType> nodeValuesMap) {
 
+    	Map<Integer, TreeNode> versionCache = levelTreeCacheService.getVersionTreeCache(version);
+    	
         List<FilterNode> result = new ArrayList<>(filteredIds.size());
 
         //načtení verzí všech uzlů

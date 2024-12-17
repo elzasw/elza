@@ -2293,11 +2293,12 @@ public class ArrangementService {
     @Transactional(TxType.MANDATORY)
     @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
             			       UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
-	public Integer inhibitItem(final @AuthParam(type = AuthParam.Type.FUND) ArrNode node, final Integer descItemObjectId) {
-    	ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);
-
-		List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(node.getNodeId(), null, true);
-		List<Integer> nodeIds = levels.stream().map(i -> i.getNodeId()).collect(Collectors.toList());
+	public Integer inhibitItem(final @AuthParam(type = AuthParam.Type.FUND) ArrNode node, final Integer descItemObjectId) {    	
+    	ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(node.getFundId());
+    	
+    	// get parent nodes
+    	List<Integer> nodeIds = levelTreeCacheService.getParentNodes(fundVersion, node.getNodeId());	
+    	ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);		
 		if (!nodeIds.contains(descItem.getNodeId())) {
             throw new SystemException("Element JP nebyl nalezen na nadřazených úrovních", BaseCode.INVALID_STATE)
                     .set("nodeId", node.getNodeId())
@@ -2316,8 +2317,7 @@ public class ArrangementService {
 		logger.debug("Syncronize nodeId: {}", node.getNodeId());
 		nodeCacheService.syncNodes(List.of(node.getNodeId()));
 		logger.debug("Syncronized nodeId: {}", node.getNodeId());
-
-		ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(node.getFundId());
+		
 		eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), node.getNodeId()));
 
 		return inhibitedItem.getInhibitedItemId();

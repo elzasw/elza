@@ -139,9 +139,8 @@ public class ArrangementFormService {
 	public DescFormDataNewVO getNodeFormData(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion version, Integer nodeId) {
 
 		// získat seznam rodičovských nodů
-		List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(nodeId, null, true);
-		List<Integer> parentNodeIds = levels.stream().map(i -> i.getNodeId()).toList();
-
+		List<Integer> parentNodeIds = this.levelTreeCache.getParentNodes(version, nodeId);
+		
 		ArrChange lockChange = version.getLockChange();
 		ArrNode node;
 		List<ArrDescItem> descItems;
@@ -158,6 +157,7 @@ public class ArrangementFormService {
 		} else {
 			// read node from db
 			node = nodeRepository.findById(nodeId).orElseThrow(node(nodeId));
+			// TODO: add support for inheritence for nodes from DB
 		}
 
 		List<RulItemTypeExt> itemTypes;

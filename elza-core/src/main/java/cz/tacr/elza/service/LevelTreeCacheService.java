@@ -77,6 +77,7 @@ import cz.tacr.elza.domain.WfIssue;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DaoLinkRepository;
@@ -166,12 +167,30 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
     @Autowired
     private DaoLinkRepository daoLinkRepository;
+    
+    /**
+     * Cached node hierarchy (tree).
+     * 
+     * Allows to speedup access to the hierarchy
+     * 
+     * !!!! This class is not thread safe
+     */
+    static public class NodeHierarchy {
+    	/**
+    	 * nodeId -> TreeNode
+    	 */
+    	Map<Integer, TreeNode> nodes = new HashMap<>();
 
+		public Map<Integer, TreeNode> getNodes() {
+			return nodes;
+		}
+    }
+    
     /**
      * Cache stromu pro danou verzi. (id verze -> nodeid uzlu -> uzel).
      * Maximální počet záznamů v cache {@link #maxCacheSize}.
      */
-    private CapacityMap<Integer, Map<Integer, TreeNode>> versionCache = new CapacityMap<Integer, Map<Integer, TreeNode>>();
+    private CapacityMap<Integer, NodeHierarchy> versionCache = new CapacityMap<Integer, NodeHierarchy>();
 
     @Subscribe
     public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
@@ -471,17 +490,17 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @param version verze stromu
      * @return mapu všech uzlů stromu (nodeid uzlu --> uzel)
      */
-    private Map<Integer, TreeNode> createVersionTreeCache(final ArrFundVersion version) {
+    private NodeHierarchy createVersionTreeCache(final ArrFundVersion version) {
         Validate.notNull(version, "Verze AS musí být vyplněna");
 
-        Integer rootId = version.getRootNode().getNodeId();
+        Integer rootId = version.getRootNodeId();
         ArrChange change = version.getLockChange();
 
         //všechny uzly stromu
         return createTreeNodeMap(change, rootId);
     }
 
-    public Map<Integer, TreeNode> createTreeNodeMap(ArrChange change, Integer rootNodeId) {
+    public NodeHierarchy createTreeNodeMap(ArrChange change, Integer rootNodeId) {
 
         //kořen
         LevelRepositoryCustom.LevelInfo rootInfo = new LevelRepositoryCustom.LevelInfo(rootNodeId, 0, null);
@@ -496,9 +515,10 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         levelInfoMap.put(rootNodeId, rootInfo);
 
         //výsledná mapa
-        Map<Integer, TreeNode> allMap = new HashMap<>();
+        NodeHierarchy nodeHierarchy = new NodeHierarchy();
+        
         for (LevelRepositoryCustom.LevelInfo levelInfo : levelInfoMap.values()) {
-            createTreeNodeMap(levelInfo, levelInfoMap, allMap);
+            createTreeNodeMap(levelInfo, levelInfoMap, nodeHierarchy.nodes);
         }
 
         //seřazení dětí všech uzlů podle pozice
@@ -514,12 +534,13 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             }
             return ret;
         };
-        for (TreeNode treeNode : allMap.values()) {
+        for (TreeNode treeNode : nodeHierarchy.nodes.values()) {
             treeNode.getChilds().sort(comparator);
         }
 
-        initReferenceMarksAndDepth(allMap.get(rootNodeId));
-        return allMap;
+        // TODO: count reference mark dynamically
+        initReferenceMarksAndDepth(nodeHierarchy.nodes.get(rootNodeId));
+        return nodeHierarchy;
     }
 
 
@@ -625,9 +646,9 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @param version verze stromu
      * @return mapa všech uzlů stromu (nodeid uzlu -> uzel)
      */
-    synchronized public Map<Integer, TreeNode> getVersionTreeCache(final ArrFundVersion version) {
+    synchronized public NodeHierarchy getNodeHierarchy(final ArrFundVersion version) {
         Validate.notNull(version, "Verze AS není vyplněna");
-        Map<Integer, TreeNode> versionTreeMap = versionCache.get(version.getFundVersionId());
+        NodeHierarchy versionTreeMap = versionCache.get(version.getFundVersionId());
 
         if (versionTreeMap == null) {
             versionTreeMap = createVersionTreeCache(version);
@@ -638,8 +659,20 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         versionCache.remove(version.getFundVersionId());
         versionCache.put(version.getFundVersionId(), versionTreeMap);
 
-
         return versionTreeMap;
+    }
+
+    /**
+     * Vytvoří cache stromu dané verze a uloží jej do cache. Druhé volání již vrací nacachovaná data.
+     *
+     * @param version verze stromu
+     * @return mapa všech uzlů stromu (nodeid uzlu -> uzel)
+     * 
+     * @see Use getNodeHierarchy instead of this function
+     */
+    @Deprecated
+    synchronized public Map<Integer, TreeNode> getVersionTreeCache(final ArrFundVersion version) {
+    	return getNodeHierarchy(version).getNodes();
     }
 
     /**
@@ -2447,4 +2480,38 @@ private void processEvent(AbstractEventSimple event) {
             }
         }
     }
+
+    /**
+     * Return list of parents
+     * @param version
+     * @param nodeId
+     * @return
+     */
+	public synchronized List<Integer> getParentNodes(ArrFundVersion version, Integer nodeId) {
+		Map<Integer, TreeNode> nodeMap = getNodeHierarchy(version).getNodes();		
+		TreeNode treeNode = nodeMap.get(nodeId);
+		if(treeNode==null) {
+			throw new ObjectNotFoundException("Missing node in fundVersion, nodeId="+nodeId, BaseCode.ID_NOT_EXIST)
+				.setId(nodeId)
+				.set("fundVersion", version.getFundVersionId());
+		}
+		// skip this node
+		treeNode = treeNode.getParent();
+		if(treeNode==null) {
+			return Collections.emptyList();
+		} else {
+			List<Integer> nodeIds = new ArrayList<>();
+			do {
+				nodeIds.add(treeNode.getId());
+				treeNode = treeNode.getParent();
+			} while(treeNode!=null);
+			
+			return nodeIds;
+		}		
+	}
+
+	public synchronized TreeNode getTreeNode(ArrFundVersion fundVersion, ArrNode node) {
+		Map<Integer, TreeNode> nodeMap = getNodeHierarchy(fundVersion).getNodes();
+		return nodeMap.get(node.getNodeId());
+	}
 }
