@@ -1340,8 +1340,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     	return dataService.findItemsWithData(descItemRepository.findOpenByFundAndTypeAndSpec(fund, type, specs));
     }
 
-    public List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange) {
-    	return dataService.findItemsWithData(descItemRepository.findByNodesAndDeleteChange(nodes, deleteChange));
+    public List<ArrDescItem> findByNodesAndDeleteChange(Collection<Integer> nodeIds, ArrChange deleteChange) {
+    	return dataService.findItemsWithData(descItemRepository.findByNodeIdsAndDeleteChange(nodeIds, deleteChange));
     }
 
     public List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node) {

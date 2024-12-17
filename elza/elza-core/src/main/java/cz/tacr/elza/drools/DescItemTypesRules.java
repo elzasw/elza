@@ -1,8 +1,10 @@
 package cz.tacr.elza.drools;
 
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.kie.api.runtime.StatelessKieSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
 import cz.tacr.elza.service.RuleService;
@@ -62,6 +65,13 @@ public class DescItemTypesRules extends Rules {
 		ActiveLevel activeLevel = scriptModelFactory.createActiveLevel(level, version);
 
     	ModelFactory.addLevelWithParents(activeLevel, facts);
+    	
+    	// prepare set of node ids with this level and its parents
+    	Set<Integer> nodeIds = new HashSet<>();
+    	nodeIds.add(level.getNodeId());
+    	for(Level l = activeLevel; l!=null; l = l.getParent() ) {
+    		nodeIds.add(l.getNodeId());
+    	}
 
         for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
             Path path = resourcePathResolver.getDroolFile(rulArrangementRule);
@@ -69,7 +79,7 @@ public class DescItemTypesRules extends Rules {
             executeStateless(ksession, facts);
         }
 
-        List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
+        List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNodeIds(nodeIds, version, RulExtensionRule.RuleType.ATTRIBUTE_TYPES);
         for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
             Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
             StatelessKieSession session = createKieStatelessSession(path);

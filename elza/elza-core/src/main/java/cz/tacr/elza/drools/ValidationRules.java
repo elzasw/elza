@@ -4,10 +4,12 @@ import static cz.tacr.elza.repository.ExceptionThrow.descItem;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.kie.api.runtime.StatelessKieSession;
 import org.slf4j.Logger;
@@ -27,6 +29,7 @@ import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
 import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
 import cz.tacr.elza.exception.SystemException;
@@ -86,7 +89,7 @@ public class ValidationRules extends Rules {
         logger.trace("Added level for parents to model (workerId: {}) in {}ms from start",
                      Thread.currentThread().getId(),
                      System.currentTimeMillis() - startTime);
-
+        
 		DataValidationResults validationResults = new DataValidationResults();
 
         for (RulArrangementRule rulPackageRule : rulPackageRules) {
@@ -109,7 +112,14 @@ public class ValidationRules extends Rules {
             }
 		}
 
-		List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.CONFORMITY_INFO);
+        Set<Integer> nodeIds = new HashSet<>();
+        for(Level l = activeLevel; l!=null; l = l.getParent()) {
+        	if(l.getNodeId()!=null) {
+        		nodeIds.add(l.getNodeId());
+        	}
+        }        
+        
+        List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNodeIds(nodeIds, version, RulExtensionRule.RuleType.CONFORMITY_INFO);
 		for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
             try {
                 Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
