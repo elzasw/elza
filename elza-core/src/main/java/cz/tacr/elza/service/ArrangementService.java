@@ -988,6 +988,7 @@ public class ArrangementService {
         List<ArrFundFulltextResult> resultList = new ArrayList<>();
 
         if (!fundToNodeList.isEmpty()) {
+        	// prepare results and sort per fund
             List<Integer> fundIds = fundToNodeList.stream().map(i -> i.getFundId()).collect(Collectors.toList());
             List<ArrFundVersion> fundVersions = arrangementInternalService.getOpenVersionsByFundIds(fundIds);
             Map<Integer, ArrFundVersion> fundIdVersionsMap = fundVersions.stream().collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
