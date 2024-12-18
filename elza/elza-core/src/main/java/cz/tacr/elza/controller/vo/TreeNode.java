@@ -135,7 +135,7 @@ public class TreeNode implements Comparable<TreeNode> {
             return 1;
         }
 
-        if (o.id!=id) {
+        if (o.id==id) {
             return 0;
         }
 
