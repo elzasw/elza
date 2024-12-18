@@ -1,5 +1,6 @@
 package cz.tacr.elza.service;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,8 +13,10 @@ import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.controller.vo.NodePlainTextRepresentation;
 import jakarta.validation.constraints.NotNull;
 
+import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +51,10 @@ import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.Item;
 import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulArrangementRule.RuleType;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPackage;
@@ -57,6 +63,8 @@ import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.groovy.GroovyAe;
+import cz.tacr.elza.groovy.GroovyFund;
+import cz.tacr.elza.groovy.GroovyGenCtx;
 import cz.tacr.elza.groovy.GroovyItem;
 import cz.tacr.elza.groovy.GroovyItems;
 import cz.tacr.elza.groovy.GroovyPart;
@@ -217,6 +225,24 @@ public class GroovyService {
         return groovyScriptService.process(groovyAe, groovyFilePath);
     }
 
+    public List<NodePlainTextRepresentation> getNodePlainText(@NotNull final ArrFundVersion fundVersion, @NotNull List<Integer> nodeIds) {
+		List<NodePlainTextRepresentation> result = new ArrayList<>();
+		List<RulArrangementRule> arrangementRules = arrangementRuleRepository.findByRuleSetIdAndRuleTypeOrderByPriority(fundVersion.getRuleSetId(), RuleType.PLAIN_TEXT_GENERATOR);
+
+		GroovyFund fund = new GroovyFund(fundVersion.getFund());
+		GroovyGenCtx genCtx = new GroovyGenCtx(fund, nodeIds);
+
+		for (RulArrangementRule rule: arrangementRules) {
+			Path groovyFilePath = resourcePathResolver.getDroolFile(rule);
+			String fileName = FileNameUtils.getBaseName(groovyFilePath);
+			String value = groovyScriptService.process(genCtx, groovyFilePath.toString());
+
+			result.add(new NodePlainTextRepresentation().name(fileName).code(fileName).value(value));
+		}
+
+		return result;
+    }
+
     /**
      * 
      * @param apTypeId
@@ -325,9 +351,9 @@ public class GroovyService {
         return new GroovyPart(sdp, apTypeId, part.getPartTypeId(), false, groovyItems, Collections.emptyList());
     }
 
-    public GroovyItem convertItem(AccessPointItem item, StaticDataProvider sdp) {
+    public GroovyItem convertItem(Item item, StaticDataProvider sdp) {
         ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
-        RulItemSpec itemSpec = item.getItemSpec() == null ? null : sdp.getItemSpecById(item.getItemSpecId());
+        RulItemSpec itemSpec = item.getItemSpecId() == null ? null : sdp.getItemSpecById(item.getItemSpecId());
 
         ArrData data = HibernateUtils.unproxy(item.getData());
         if (data == null) {

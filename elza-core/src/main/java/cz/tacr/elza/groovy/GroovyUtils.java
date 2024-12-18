@@ -15,7 +15,6 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
 import jakarta.annotation.Nullable;
@@ -35,7 +34,7 @@ public class GroovyUtils {
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         ItemType itemType = sdp.getItemTypeByCode(typeCode);
         RulItemSpec itemSpec = sdp.getItemSpecByCode(specCode);
-        Validate.notNull(itemType);
+        Objects.requireNonNull(itemType);
 
         if (CollectionUtils.isEmpty(aes)) {
             return null;
@@ -64,8 +63,8 @@ public class GroovyUtils {
                                                     final String containItemType,
                                                     final String containItemSpec,
                                                     final String itemType) {
-        Validate.notNull(groovyAe, "Nebyla předána entita pro vyhledání");
-        Validate.notNull(partTypeCode, "Nebyla předán typ části entity");
+    	Objects.requireNonNull(groovyAe, "Nebyla předána entita pro vyhledání");
+    	Objects.requireNonNull(partTypeCode, "Nebyla předán typ části entity");
         //StaticDataProvider sdp = StaticDataProvider.getInstance();
         //sdp.getItemTypeByCode(containItemType);
         //sdp.getItemSpecByCode(containItemSpec);
@@ -92,9 +91,9 @@ public class GroovyUtils {
 
     @Nullable
     public static GroovyItem findFirstItem(final GroovyAe groovyAe, final String partTypeCode, final GroovyPart.PreferredFilter filter, final String itemType) {
-        Validate.notNull(groovyAe, "Nebyla předána entita pro vyhledání");
-        Validate.notNull(partTypeCode, "Nebyla předán typ části entity");
-        Validate.notNull(filter, "Nebyl předán filter preferované části");
+    	Objects.requireNonNull(groovyAe, "Nebyla předána entita pro vyhledání");
+    	Objects.requireNonNull(partTypeCode, "Nebyla předán typ části entity");
+    	Objects.requireNonNull(filter, "Nebyl předán filter preferované části");
 
         for (GroovyPart part : groovyAe.getParts()) {
             if (filter == GroovyPart.PreferredFilter.ALL
@@ -114,9 +113,9 @@ public class GroovyUtils {
 
     @Nullable
     public static List<GroovyItem> findAllItems(final GroovyAe groovyAe, final String partTypeCode, final GroovyPart.PreferredFilter filter, final String itemType) {
-        Validate.notNull(groovyAe, "Nebyla předána entita pro vyhledání");
-        Validate.notNull(partTypeCode, "Nebyla předán typ části entity");
-        Validate.notNull(filter, "Nebyl předán filter preferované části");
+    	Objects.requireNonNull(groovyAe, "Nebyla předána entita pro vyhledání");
+    	Objects.requireNonNull(partTypeCode, "Nebyla předán typ části entity");
+    	Objects.requireNonNull(filter, "Nebyl předán filter preferované části");
         List<GroovyItem> groovyItems = new ArrayList<>();
 
         for (GroovyPart part : groovyAe.getParts()) {
@@ -183,14 +182,14 @@ public class GroovyUtils {
     }
 
     public static boolean hasParent(String typeCode, String parentCode) {
-        Validate.notNull(typeCode, "Nebyl předán typ entity");
+    	Objects.requireNonNull(typeCode, "Nebyl předán typ entity");
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         ApType itemType = sdp.getApTypeByCode(typeCode);
         return hasParent(itemType.getApTypeId(), parentCode);
     }
 
     public static boolean hasParent(Integer typeId, String parentCode) {
-        Validate.notNull(typeId, "Nebyl předán typ entity");
+    	Objects.requireNonNull(typeId, "Nebyl předán typ entity");
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         ApType itemType = sdp.getApTypeById(typeId);
 

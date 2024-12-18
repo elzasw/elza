@@ -35,10 +35,10 @@ public class ReportController implements ReportApi {
     private UserService userService;
 
     @Autowired
-	ReportService reportService;
+	private ReportService reportService;
 
 	@Autowired
-	ReportWorker reportWorker;
+	private ReportWorker reportWorker;
 
 	/**
 	 * Získání seznamu statistických zpráv

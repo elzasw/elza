@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -57,6 +58,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -75,6 +77,7 @@ import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.NodePlainTextRepresentation;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.UsedItemType;
@@ -249,6 +252,9 @@ public class ArrangementService {
     @Autowired
     private InhibitedItemRepository inhibitedItemRepository;
 
+    @Autowired
+    private GroovyService groovyService;
+
     //TODO: add translation or refactor
     public static final String UNDEFINED = "výjimka";
 
@@ -344,6 +350,26 @@ public class ArrangementService {
         return nodes;
     }
 
+    /**
+     * Získat citaci podle fundVersionId & nodeId
+     * 
+     * @param fundVersionId
+     * @param nodeId
+     * @return
+     */
+    public List<NodePlainTextRepresentation> getNodePlainText(@NotNull Integer fundVersionId, @NotNull Integer nodeId) {
+    	ArrFundVersion fundVersion = getFundVersion(fundVersionId);
+    	ArrNode node = getNode(nodeId);
+    	List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(nodeId, null, true);
+    	List<Integer> nodeIds = new ArrayList<>(levels.stream().map(i -> i.getNodeId()).toList());
+    	nodeIds.add(nodeId);
+    	List<ArrDescItem> items = descriptionItemService.findByNodeAndDeleteChangeIsNull(node);
+
+    	// TODO určit, co do Groovy služby převedeme
+
+    	return groovyService.getNodePlainText(fundVersion, nodeIds);
+	}
+    
     /**
      * Vytvoření archivního souboru.
      *
