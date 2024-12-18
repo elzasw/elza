@@ -79,6 +79,7 @@ import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -239,7 +240,12 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         }
 
         //seřazené otevřené nody tak jak půjdou v seznamu po sobě
-        TreeSet<TreeNode> expandedSort = new TreeSet<>(expandedNodes.values());
+        Collection<TreeNode> expandedNodesCollection = expandedNodes.values();
+        TreeSet<TreeNode> expandedSort = new TreeSet<>(expandedNodesCollection);
+        // check size of tree
+        if(expandedSort.size()!=expandedNodesCollection.size()) {
+        	throw new BusinessException("Chyba ve vybranych uzlů", ArrangementCode.REQUEST_INVALID);
+        }
         Iterator<TreeNode> expandedIterator = expandedSort.iterator();
 
         LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
