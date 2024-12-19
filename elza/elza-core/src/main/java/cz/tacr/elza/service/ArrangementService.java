@@ -1336,38 +1336,6 @@ public class ArrangementService {
     }
 
     /**
-     * Vyhledání sousedních uzlů kolem určitého uzlu.
-     *
-     * @param version verze AP
-     * @param node    uzel
-     * @param around  velikost okolí
-     * @return okolní uzly (včetně původního)
-     */
-    public List<ArrNode> findSiblingsAroundOfNode(final ArrFundVersion version, final ArrNode node, final Integer around) {
-        List<ArrNode> siblings = nodeRepository.findNodesByDirection(node, version, RelatedNodeDirection.ALL_SIBLINGS);
-
-        if (around <= 0) {
-            throw new SystemException("Velikost okolí musí být minimálně 1");
-        }
-
-        //požadujeme pouze nejbližšího sourozence před a za objektem
-        int nodeIndex = siblings.indexOf(node);
-        List<ArrNode> result = new ArrayList<>();
-
-        int min = nodeIndex - around;
-        int max = nodeIndex + around;
-
-        min = min < 0 ? 0 : min;
-        max = max > siblings.size() - 1 ? siblings.size() - 1 : max;
-
-        for (int i = min; i <= max; i++) {
-            result.add(siblings.get(i));
-        }
-
-        return result;
-    }
-
-    /**
      * Vrací výsek chybných JP podle indexů.
      *
      * @param fundVersion verze archivní pomůcky
@@ -1591,8 +1559,8 @@ public class ArrangementService {
         }
 
         // rekurzivní procházení potomků
-        if (treeNode.getChilds() != null) {
-            for (TreeNode node : treeNode.getChilds()) {
+        if (treeNode.getChildren() != null) {
+            for (TreeNode node : treeNode.getChildren()) {
                 recursiveAddNodes(nodeIds, node, nodePolicyTypes, policiesMap, nodeProblemsMap, foundNode);
             }
         }

@@ -32,10 +32,6 @@ public enum RelatedNodeDirection {
      */
     SIBLINGS,
     /**
-     * Všechny sourozence.
-     */
-    ALL_SIBLINGS,
-    /**
      * Všechny uzly ve verzi.
      */
     ALL;
