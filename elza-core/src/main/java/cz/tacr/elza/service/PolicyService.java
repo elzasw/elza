@@ -390,7 +390,7 @@ public class PolicyService {
      * @param parentNodeIds seznam přidaných identifikátorů uzlů
      */
     private void addParentNodeIds(final TreeNode treeNode, final List<Integer> parentNodeIds) {
-        LinkedList<TreeNode> childs = treeNode.getChilds();
+        List<TreeNode> childs = treeNode.getChildren();
         if (childs != null && childs.size() > 0 && parentNodeIds.size() <= MAX_SEND_NODE) {
             parentNodeIds.add(treeNode.getId());
             for (TreeNode child : childs) {

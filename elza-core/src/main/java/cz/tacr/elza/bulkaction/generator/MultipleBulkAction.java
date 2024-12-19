@@ -219,9 +219,7 @@ public class MultipleBulkAction extends BulkAction {
 
         // apply on child nodes in batch
         TreeNode treeNode = treeNodeMap.get(levelWithItems.getNodeId());
-        LinkedList<TreeNode> childNodes = treeNode.getChilds();
-        //List<ArrLevel> childLevels = getChildren(level);
-
+        List<TreeNode> childNodes = treeNode.getChildren();
         BatchNodeProcessor bnp = new BatchNodeProcessor(this, BATCH_CHILD_NODE_SIZE, actions, levelWithItems,
                 nodeCacheService,
                 treeNodeMap);

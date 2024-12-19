@@ -40,7 +40,7 @@ public class LevelTreeCacheWalker {
 
         nodesTable.add(node.getId());
 
-        node.getChilds().forEach(child -> {
+        node.getChildren().forEach(child -> {
             walkThroughDFS(child, nodesTable);
         });
     }
