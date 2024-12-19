@@ -72,7 +72,7 @@ class DescItemLink extends AbstractReactComponent {
                             this.props.onChange({
                                 value: ELZA_SCHEME_NODE + '://' + data.uuid,
                                 description:
-                                    fund.id !== this.props.fundId ? data.fundName + ' ' + data.name : data.name,
+                                    fund.id !== this.props.fundId ? data.fundName + '; ' + data.name : data.name,
                             });
                             this.props.onBlur();
                             this.props.dispatch(modalDialogHide());
