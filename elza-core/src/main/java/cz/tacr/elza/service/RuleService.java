@@ -13,7 +13,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -52,6 +51,7 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemUriRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSet;
+import cz.tacr.elza.core.data.RuleSetExtension;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.rules.ItemTypeExtBuilder;
@@ -91,6 +91,7 @@ import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulExtensionRule;
+import cz.tacr.elza.domain.RulExtensionRule.RuleType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
@@ -135,7 +136,6 @@ import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.ExceptionThrow;
 import cz.tacr.elza.repository.ExportFilterRepository;
-import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
@@ -222,9 +222,6 @@ public class RuleService {
 
     @Autowired
     private ArrangementExtensionRepository arrangementExtensionRepository;
-
-    @Autowired
-    private ExtensionRuleRepository extensionRuleRepository;
 
     @Autowired
     private AccessPointService accessPointService;
@@ -409,7 +406,7 @@ public class RuleService {
         // process errors
         for (DataValidationResult validationResult : validationResults) {
             // policy type has to be set
-            Validate.notNull(validationResult.getPolicyType());
+            Objects.requireNonNull(validationResult.getPolicyType());
 
             switch (validationResult.getResultType()) {
             case MISSING:
@@ -731,7 +728,7 @@ public class RuleService {
         for (Integer fundVersionId : nodeIdFundVersionMap.keySet()) {
             ArrFundVersion version = fundVersionRepository.findById(fundVersionId).orElseThrow(version(fundVersionId));
             List<ArrNode> nodes = new ArrayList<>();
-            nodeIdFundVersionMap.get(fundVersionId).forEach(id -> nodes.add(nodeRepository.getOne(id)));
+            nodeIdFundVersionMap.get(fundVersionId).forEach(id -> nodes.add(nodeRepository.getReferenceById(id)));
             asyncRequestService.enqueue(version, nodes);
         }
     }
@@ -1111,21 +1108,39 @@ public class RuleService {
         return itemTypeRepository.findById(itemTypeId)
                 .orElseThrow(itemType(itemTypeId));
     }
+    
+	public List<RulExtensionRule> findExtensionRuleByNodeIds(Collection<Integer> nodeIds, 
+			ArrFundVersion version, RuleType attributeTypes) {
+		if(CollectionUtils.isEmpty(nodeIds)) {
+			return Collections.emptyList();
+		}
 
-    public List<RulExtensionRule> findExtensionRuleByNode(final ArrNode node,
-                                                          final RulExtensionRule.RuleType attributeTypes) {
-        Assert.notNull(node, "JP musí být vyplněna");
+        List<ArrNodeExtension> nodeExtensions = nodeExtensionRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
+        if(CollectionUtils.isEmpty(nodeExtensions)) {
+			return Collections.emptyList();
+		}
 
-        List<ArrNodeExtension> nodeExtensions = nodeExtensionRepository.findAllByNodeIdFromRoot(node.getNodeId());
-
-        LinkedHashSet<RulArrangementExtension> arrangementExtensions = new LinkedHashSet<>();
-        for (ArrNodeExtension nodeExtension : nodeExtensions) {
-            arrangementExtensions.add(nodeExtension.getArrangementExtension());
+        // Find extensions
+        StaticDataProvider sdp = staticDataService.getData();
+        RuleSet ruleSet = sdp.getRuleSetById(version.getRuleSetId());
+        Set<RuleSetExtension> insertedExtensoins = new HashSet<>();
+        List<RulExtensionRule> result = new ArrayList<>();
+        for(ArrNodeExtension nodeExtension: nodeExtensions) { 
+        	RuleSetExtension ext = ruleSet.getRuleSetExtension(nodeExtension.getArrangementExtensionId());
+        	Validate.notNull(ext, "Cannot find extension, id: %d", nodeExtension.getArrangementExtensionId());
+        	if(insertedExtensoins.add(ext)) {
+        		// append rules to the result
+        		List<RulExtensionRule> filteredRules = ext.getRulesByType(attributeTypes);
+        		if(filteredRules!=null) {
+        			result.addAll(filteredRules);
+        		}
+        	}
         }
-        List<RulArrangementExtension> arrangementExtensionsFinal = new ArrayList<>(arrangementExtensions);
-
-        return extensionRuleRepository.findExtensionRules(arrangementExtensionsFinal, attributeTypes);
-    }
+        
+        // sort extensions
+        result.sort(null);
+        return result;
+	}    
 
     /**
      * Nastaví nodu konkrétní extensions. Synchronizuje dodaný set. Dovytvoří potřebné, smaže nepotřebné.
@@ -1452,9 +1467,9 @@ public class RuleService {
                 if (part == null) {
                     // part is only modified?
                     Integer origPartId = revIndex.getPart().getOriginalPartId();
-                    Validate.notNull(origPartId);
+                    Objects.requireNonNull(origPartId);
                     part = apBuilder.getPart(origPartId);
-                    Validate.notNull(part);
+                    Objects.requireNonNull(part);
                 }
 
                 Index index = new Index(revIndex.getIndexType(), revIndex.getRevValue(), part);
@@ -1531,9 +1546,10 @@ public class RuleService {
             return new Item(0, groovyItem.getItemType(), groovyItem.getSpecType(), groovyItem.getValue());
         case INT:
             return new IntItem(0, groovyItem.getItemType(), groovyItem.getSpecType(), groovyItem.getIntValue());
+        default:
+            throw new SystemException("Unsupported conversion, item type: " + groovyItem.getTypeCode()
+            + ", dataType: " + groovyItem.getItemType().getDataType(), BaseCode.SYSTEM_ERROR);
         }
-        throw new SystemException("Unsupported conversion, item type: " + groovyItem.getTypeCode()
-                + ", dataType: " + groovyItem.getItemType().getDataType(), BaseCode.SYSTEM_ERROR);
     }
 
     private void validateEntityRefs(Ap ap, ApValidationErrorsVO apValidationErrorsVO) {
@@ -2111,6 +2127,6 @@ public class RuleService {
      */
     @Transactional(TxType.MANDATORY)
     public RulExportFilter getExportFilter(Integer exportFilterId) {
-        return exportFilterRepository.getOne(exportFilterId);
+        return exportFilterRepository.getOneCheckExist(exportFilterId);
     }
 }

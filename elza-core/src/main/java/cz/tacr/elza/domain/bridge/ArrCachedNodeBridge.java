@@ -28,6 +28,8 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 
     	var cachedNode = nodeCacheService.deserialize(arrCachedNode);
     	nodeCacheService.reloadCachedNodes(Collections.singletonList(cachedNode));
+    	
+    	// TODO: do not index deleted levels
 
     	document.addValue(FIELD_FUND_ID, cachedNode.getFundId());
     	if (cachedNode.getDescItems() != null) {
