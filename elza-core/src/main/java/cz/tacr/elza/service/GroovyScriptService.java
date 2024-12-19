@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,6 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.eventbus.Subscribe;
 
-import cz.tacr.elza.controller.vo.NodePlainTextRepresentation;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -236,7 +236,7 @@ public class GroovyScriptService {
         private long lastModified = -1;
 
         public GroovyScriptFile(File scriptFile) {
-            this.scriptFile = Validate.notNull(scriptFile);
+            this.scriptFile = Objects.requireNonNull(scriptFile);
         }
 
         public Object evaluate(Map<String, Object> variables) {
