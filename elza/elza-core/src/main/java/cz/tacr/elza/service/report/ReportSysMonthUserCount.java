@@ -32,7 +32,7 @@ public class ReportSysMonthUserCount extends ReportBase {
 	 */
 	@Override
 	public ReportReportData createReport(ReportReportParameters parameters) {
-		reportService.checkAndUpdateViews(reportCode);
+		OffsetDateTime lastRefresh = reportService.checkAndUpdateViews(reportCode);
 
 		Query query = createQuery(parameters);
 
@@ -51,6 +51,6 @@ public class ReportSysMonthUserCount extends ReportBase {
 
 		List<Tuple> result = query.getResultList();
 
-		return createReportData(result);
+		return createReportData(result, lastRefresh);
 	}
 }

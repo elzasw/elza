@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.report;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import cz.tacr.elza.controller.vo.ReportReportData;
@@ -17,13 +18,13 @@ public class ReportSimpleQuery extends ReportBase {
 
 	@Override
 	public ReportReportData createReport(ReportReportParameters parameters) {
-		reportService.checkAndUpdateViews(reportCode);
+		OffsetDateTime lastRefresh = reportService.checkAndUpdateViews(reportCode);
 
 		Query query = createQuery(parameters);
 
 		List<Tuple> result = query.getResultList();
 
-		return createReportData(result);
+		return createReportData(result, lastRefresh);
 	}
 
 }

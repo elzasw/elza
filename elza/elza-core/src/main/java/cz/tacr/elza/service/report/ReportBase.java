@@ -138,15 +138,16 @@ public abstract class ReportBase implements ReportProcessor {
 	 * Vytvoření třídy sestavy s daty z dotazu
 	 * 
 	 * @param result
+	 * @param lastRefresh
 	 * @return
 	 */
-	protected ReportReportData createReportData(List<Tuple> result) {
+	protected ReportReportData createReportData(List<Tuple> result, OffsetDateTime lastRefresh) {
 		ReportReportData reportData = new ReportReportData();
 		if (!CollectionUtils.isEmpty(result)) {
 			reportData.setHeader(result.get(0).getElements().stream().map(i -> i.getAlias().toUpperCase()).toList());
 			reportData.setRows(getReportRows(result));
 		}
-		reportData.setSourceDataDate(OffsetDateTime.now());
+		reportData.setSourceDataDate(lastRefresh);
 
 		return reportData;
 	}
