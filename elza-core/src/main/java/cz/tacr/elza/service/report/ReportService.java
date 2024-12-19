@@ -185,8 +185,9 @@ public class ReportService {
 	 * Kontrola a v případě potřeby aktualizace dat
 	 * 
 	 * @param reportCode
+	 * @return
 	 */
-	public void checkAndUpdateViews(String reportCode) {
+	public OffsetDateTime checkAndUpdateViews(String reportCode) {
 		// získáme seznam `view` pro kontrolu relevance dat
 		List<RptRequiredView> views = requiredViewRepository.findByReportCode(reportCode);
 
@@ -194,6 +195,8 @@ public class ReportService {
 
 		updateRptViewDate(transactionTemplate);
 
+		OffsetDateTime lastRefresh = OffsetDateTime.now();
+		
 		// aktualizace views
 		SysViewUpdate viewUpdate;
 		for (RptRequiredView view : views) {
@@ -253,7 +256,11 @@ public class ReportService {
 			default:
 				throw new IllegalArgumentException("Unexpected value: " + view.getViewName());
 			}
+			if (viewUpdate.getLastRefresh().isBefore(lastRefresh)) {
+				lastRefresh = viewUpdate.getLastRefresh();
+			}
 		}
+		return lastRefresh;
 	}
 
 	/**

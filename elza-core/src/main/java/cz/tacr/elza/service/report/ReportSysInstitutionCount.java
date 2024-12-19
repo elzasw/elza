@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.report;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -26,7 +27,7 @@ public class ReportSysInstitutionCount extends ReportBase {
 	 */
 	@Override
 	public ReportReportData createReport(ReportReportParameters parameters) {
-		reportService.checkAndUpdateViews(reportCode);
+		OffsetDateTime lastRefresh = reportService.checkAndUpdateViews(reportCode);
 
 		Query query = (parameters != null && !CollectionUtils.isEmpty(parameters.getParams())) ? 
 				query = createQuery(parameters) 
@@ -34,6 +35,6 @@ public class ReportSysInstitutionCount extends ReportBase {
 
 		List<Tuple> result = query.getResultList();
 
-		return createReportData(result);
+		return createReportData(result, lastRefresh);
 	}
 }
