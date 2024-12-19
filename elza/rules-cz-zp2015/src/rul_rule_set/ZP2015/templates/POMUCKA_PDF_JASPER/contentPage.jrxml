@@ -756,7 +756,7 @@ StringUtils.isNotBlank($V{unitType})&&
 							</reportElement>
 							<box topPadding="0"/>
 							<textFieldExpression><![CDATA[$F{description}+ "; " + 
-($F{node}.getFund().getName() + ", CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") ))]]></textFieldExpression>
+("CZ"+$F{node}.getFund().getInstitution().getCode()+"/"+$F{node}.getFund().getFundNumber()+"/"+ ( ($F{node}.getSingleItem("ZP2015_UNIT_ID")!=null?$F{node}.getSingleItem("ZP2015_UNIT_ID").getSerializedValue():"{"+$F{node}.getUuid()+"}") ))]]></textFieldExpression>
 							<hyperlinkWhenExpression><![CDATA[$F{node}!=null&&($P{node}.getFund()==$F{node}.getFund())]]></hyperlinkWhenExpression>
 							<hyperlinkAnchorExpression><![CDATA[$F{node}.getUuid()]]></hyperlinkAnchorExpression>
 							<hyperlinkTooltipExpression><![CDATA[$F{item}.getDescription()]]></hyperlinkTooltipExpression>

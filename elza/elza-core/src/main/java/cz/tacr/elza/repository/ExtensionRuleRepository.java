@@ -17,7 +17,7 @@ import cz.tacr.elza.domain.RulPackage;
  * @since 20.10.2017
  */
 @Repository
-public interface ExtensionRuleRepository extends JpaRepository<RulExtensionRule, Integer>, ExtensionRuleRepositoryCustom {
+public interface ExtensionRuleRepository extends JpaRepository<RulExtensionRule, Integer> {
 
     List<RulExtensionRule> findByRulPackage(RulPackage rulPackage);
 

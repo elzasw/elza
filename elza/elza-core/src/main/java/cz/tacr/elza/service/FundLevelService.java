@@ -538,7 +538,8 @@ public class FundLevelService {
         // update nodes
         updateNodes.forEach(i -> i.setLastUpdate(deleteChange.getChangeDate().toLocalDateTime()));
         nodeRepository.saveAll(updateNodes);
-        logger.debug("Updated {} nodes...", updateNodes.size());
+        nodeCacheService.syncNodes(deletedLevelNodeIds);
+        logger.debug("Updated {} nodes...", updateNodes.size());        
 
         // delete levels
         deleteLevels.forEach(i -> i.setDeleteChange(deleteChange));

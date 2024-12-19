@@ -149,6 +149,7 @@ class DescItemType extends AbstractReactComponent {
     }
 
     async UNSAFE_componentWillReceiveProps(nextProps) {
+        console.log("UNSAFE_componentWillReceiveProps: {}", nextProps);
         const newDescItemType = {...nextProps.descItemType};
         const {formKey, value, currentEditDescItemIndex, descItemType} = this.state;
         const { dispatch } = nextProps;
@@ -182,6 +183,7 @@ class DescItemType extends AbstractReactComponent {
             }
         }
 
+        console.log("UNSAFE_componentWillReceiveProps - setting new state: {}", newDescItemType);
         this.setState({
             descItemType: newDescItemType,
         });
@@ -669,7 +671,7 @@ class DescItemType extends AbstractReactComponent {
         let realTarget = e.target;
         let found = false;
         while (realTarget !== null) {
-            if (typeof realTarget.dataset.id !== 'undefined') {
+            if (typeof realTarget.dataset?.id !== 'undefined') {
                 found = true;
                 break;
             }

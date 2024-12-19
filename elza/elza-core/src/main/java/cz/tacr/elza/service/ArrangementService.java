@@ -988,6 +988,7 @@ public class ArrangementService {
         List<ArrFundFulltextResult> resultList = new ArrayList<>();
 
         if (!fundToNodeList.isEmpty()) {
+        	// prepare results and sort per fund
             List<Integer> fundIds = fundToNodeList.stream().map(i -> i.getFundId()).collect(Collectors.toList());
             List<ArrFundVersion> fundVersions = arrangementInternalService.getOpenVersionsByFundIds(fundIds);
             Map<Integer, ArrFundVersion> fundIdVersionsMap = fundVersions.stream().collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
@@ -1400,17 +1401,10 @@ public class ArrangementService {
 
     public TreeNode getRootTreeNode(@NotNull ArrFundVersion fundVersion) {
 
-        Integer rootNodeId = fundVersion.getRootNode().getNodeId();
+        Integer rootNodeId = fundVersion.getRootNodeId();
         Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(fundVersion);
 
-        TreeNode rootTreeNode = null;
-        for (TreeNode treeNode : versionTreeCache.values()) {
-            if (treeNode.getId().equals(rootNodeId)) {
-                rootTreeNode = treeNode;
-                break;
-            }
-        }
-
+        TreeNode rootTreeNode = versionTreeCache.get(rootNodeId);
         if (rootTreeNode == null) {
             throw new ObjectNotFoundException("Nenalezen kořen stromu ve verzi " + fundVersion.getFundVersionId(),
                     ArrangementCode.NODE_NOT_FOUND).setId(rootNodeId);
@@ -2300,11 +2294,12 @@ public class ArrangementService {
     @Transactional(TxType.MANDATORY)
     @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
             			       UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
-	public Integer inhibitItem(final @AuthParam(type = AuthParam.Type.FUND) ArrNode node, final Integer descItemObjectId) {
-    	ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);
-
-		List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(node.getNodeId(), null, true);
-		List<Integer> nodeIds = levels.stream().map(i -> i.getNodeId()).collect(Collectors.toList());
+	public Integer inhibitItem(final @AuthParam(type = AuthParam.Type.FUND) ArrNode node, final Integer descItemObjectId) {    	
+    	ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(node.getFundId());
+    	
+    	// get parent nodes
+    	List<Integer> nodeIds = levelTreeCacheService.getParentNodes(fundVersion, node.getNodeId());	
+    	ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);		
 		if (!nodeIds.contains(descItem.getNodeId())) {
             throw new SystemException("Element JP nebyl nalezen na nadřazených úrovních", BaseCode.INVALID_STATE)
                     .set("nodeId", node.getNodeId())
@@ -2323,8 +2318,7 @@ public class ArrangementService {
 		logger.debug("Syncronize nodeId: {}", node.getNodeId());
 		nodeCacheService.syncNodes(List.of(node.getNodeId()));
 		logger.debug("Syncronized nodeId: {}", node.getNodeId());
-
-		ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(node.getFundId());
+		
 		eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), node.getNodeId()));
 
 		return inhibitedItem.getInhibitedItemId();
