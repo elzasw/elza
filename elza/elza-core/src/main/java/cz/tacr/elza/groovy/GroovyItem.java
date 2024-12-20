@@ -65,7 +65,11 @@ public class GroovyItem {
                 // TODO: Improve coordinates support
                 itemType.getDataType() != DataType.COORDINATES &&
                 // TODO: Improve enum support
-                itemType.getDataType() != DataType.ENUM) {
+                itemType.getDataType() != DataType.ENUM &&
+                // TODO: Improve structured support
+                itemType.getDataType() != DataType.STRUCTURED &&
+             // TODO: Improve unidid support
+                itemType.getDataType() != DataType.UNITID) {
             throw new BusinessException("String value not supported", BaseCode.PROPERTY_HAS_INVALID_TYPE);
         }
         this.value = value;

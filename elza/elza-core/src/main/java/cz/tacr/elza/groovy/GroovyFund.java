@@ -17,4 +17,8 @@ public class GroovyFund {
 	public String getMark() {
 		return fund.getMark();
 	}
+	
+	public Integer getNumber() {
+		return fund.getFundNumber();
+	}
 }

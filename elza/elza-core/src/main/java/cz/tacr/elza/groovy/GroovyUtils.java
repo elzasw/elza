@@ -58,6 +58,37 @@ public class GroovyUtils {
     }
 
     @Nullable
+    public static GroovyItem findItemByItemTypeCode(final String itemType, List<GroovyItem> items) {
+    	for (GroovyItem item : items) {
+    		if (item.getTypeCode().equals(itemType)) {
+    			return item;
+    		}
+    	}
+    	return null;
+    }
+
+    @Nullable
+    public static GroovyItem findItemByPartContains(final GroovyAe groovyAe,
+                                                    final String partTypeCode,
+                                                    final String containItemType,
+                                                    boolean preferred) {
+    	Objects.requireNonNull(groovyAe, "Nebyla předána entita pro vyhledání");
+    	Objects.requireNonNull(partTypeCode, "Nebyla předán typ části entity");
+    	Objects.requireNonNull(containItemType, "Nebyla předán typ prvku");
+
+        for (GroovyPart part : groovyAe.getParts()) {
+        	if (part.getPartTypeCode().equals(partTypeCode) && Objects.equals(part.isPreferred(), preferred)) {
+        		List<GroovyItem> findItems = part.getItems(containItemType);
+        		if (CollectionUtils.isNotEmpty(findItems)) {
+        			Validate.isTrue(findItems.size() == 1, "Očekává se pouze jeden GroovyItem");
+            		return findItems.get(0);
+        		}
+        	}
+        }
+    	return null;
+    }
+
+    @Nullable
     public static GroovyItem findItemByPartContains(final GroovyAe groovyAe,
                                                     final String partTypeCode,
                                                     final String containItemType,
@@ -65,10 +96,6 @@ public class GroovyUtils {
                                                     final String itemType) {
     	Objects.requireNonNull(groovyAe, "Nebyla předána entita pro vyhledání");
     	Objects.requireNonNull(partTypeCode, "Nebyla předán typ části entity");
-        //StaticDataProvider sdp = StaticDataProvider.getInstance();
-        //sdp.getItemTypeByCode(containItemType);
-        //sdp.getItemSpecByCode(containItemSpec);
-        //sdp.getItemTypeByCode(itemType);
 
         for (GroovyPart part : groovyAe.getParts()) {
             if (part.getPartTypeCode().equals(partTypeCode)) {

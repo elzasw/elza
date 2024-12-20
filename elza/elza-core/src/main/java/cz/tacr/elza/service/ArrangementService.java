@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -58,7 +57,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -159,6 +157,8 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
 import cz.tacr.elza.service.arrangement.DeleteFundHistoryAction;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
@@ -359,17 +359,14 @@ public class ArrangementService {
      */
     public List<NodePlainTextRepresentation> getNodePlainText(@NotNull Integer fundVersionId, @NotNull Integer nodeId) {
     	ArrFundVersion fundVersion = getFundVersion(fundVersionId);
-    	ArrNode node = getNode(nodeId);
-    	List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(nodeId, null, true);
-    	List<Integer> nodeIds = new ArrayList<>(levels.stream().map(i -> i.getNodeId()).toList());
-    	nodeIds.add(nodeId);
-    	List<ArrDescItem> items = descriptionItemService.findByNodeAndDeleteChangeIsNull(node);
+    	ArrFund fund = fundVersion.getFund();
+    	ParInstitution institucion = fund.getInstitution();
+    	Integer accessPointId = institucion.getAccessPointId();    	
+    	List<ArrDescItem> items = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(List.of(nodeId));
 
-    	// TODO určit, co do Groovy služby převedeme
-
-    	return groovyService.getNodePlainText(fundVersion, nodeIds);
+    	return groovyService.getNodePlainText(fundVersion, accessPointId, items);
 	}
-    
+
     /**
      * Vytvoření archivního souboru.
      *
