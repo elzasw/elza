@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -186,9 +187,9 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     public List<ArrLevel> findLevelsByDirection(final ArrLevel level,
                                                 final ArrFundVersion version,
                                                 final RelatedNodeDirection direction) {
-        Assert.notNull(level, "Level musí být vyplněn");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
-        Assert.notNull(direction, "Směr musí být vyplněn");
+        Objects.requireNonNull(level, "Level musí být vyplněn");
+        Objects.requireNonNull(version, "Verze AS musí být vyplněna");
+        Objects.requireNonNull(direction, "Směr musí být vyplněn");
 
         switch (direction) {
             case NODE:
@@ -222,11 +223,6 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
                 }
 
                 return result;
-            }
-            case ALL_SIBLINGS: {
-                ArrayList<ArrLevel> siblings = new ArrayList<>(levelRepository
-                        .findByParentNode(level.getNodeParent(), version.getLockChange()));
-                return siblings;
             }
             case ALL:
                 return levelRepository.findAllChildrenByNode(version.getRootNode(), version.getLockChange());

@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import static cz.tacr.elza.repository.ExceptionThrow.node;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -12,6 +13,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -20,6 +22,7 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +58,8 @@ import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulArrangementExtension;
@@ -67,6 +72,7 @@ import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.domain.RulPolicyType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.RulTemplate;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -78,6 +84,7 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputFilterRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
+import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
@@ -117,6 +124,9 @@ public class RuleController {
 
     @Autowired
     private PolicyService policyService;
+    
+    @Autowired
+    private LevelTreeCacheService levelTreeCacheService;
 
     @Autowired
     private FundVersionRepository fundVersionRepository;
@@ -355,16 +365,20 @@ public class RuleController {
      */
     @RequestMapping(value = "/policy/{nodeId}/{fundVersionId}", method = RequestMethod.GET)
     @Transactional
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_RD_ALL, Permission.FUND_RD } )
     public VisiblePolicyTypes getVisiblePolicy(@PathVariable(value = "nodeId") final Integer nodeId,
-                                               @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
-        Assert.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
+                                               @PathVariable(value = "fundVersionId") @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
+        Objects.requireNonNull(nodeId, "Identifikátor JP musí být vyplněn");
+        Objects.requireNonNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
 
         ArrNode node = nodeRepository.findById(nodeId)
                 .orElseThrow(node(nodeId));
 
         ArrFundVersion fundVersion = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
+        
+        // Get parent nodes
+        List<Integer> parentNodeIds = levelTreeCacheService.getParentNodes(fundVersion, nodeId);
 
         // TODO: Develop new request in policy service to prepare list of active
         //       policy types. Recursive query could be used
@@ -380,11 +394,13 @@ public class RuleController {
         final List<RulArrangementExtension> availableExtensions = ruleService.findArrangementExtensionsByFundVersionId(fundVersion.getFundVersionId());
         result.setAvailableExtensions(availableExtensions.stream().map(i -> RulArrangementExtensionVO.newInstance(i)).collect(Collectors.toList()));
 
-        final List<RulArrangementExtension> nodeExtensions = ruleService.findArrangementExtensionsByNodeId(fundVersion.getFundVersionId(), node.getNodeId());
+        final List<RulArrangementExtension> nodeExtensions = ruleService.findArrangementExtensionsByNodeId(fundVersion, node);
         result.setNodeExtensions(nodeExtensions.stream().map(i -> RulArrangementExtensionVO.newInstance(i)).collect(Collectors.toList()));
 
-        final List<RulArrangementExtension> parentExtensions = ruleService.findAllArrangementExtensionsByNodeId(node.getNodeId());
-        result.setParentExtensions(parentExtensions.stream().map(i -> RulArrangementExtensionVO.newInstance(i)).collect(Collectors.toList()));
+        if(CollectionUtils.isNotEmpty(parentNodeIds)) {
+        	final List<RulArrangementExtension> parentExtensions = ruleService.findArrangementExtensionsByNodeIds(parentNodeIds, fundVersion);
+        	result.setParentExtensions(parentExtensions.stream().map(i -> RulArrangementExtensionVO.newInstance(i)).collect(Collectors.toList()));
+        }
 
         return result;
     }
