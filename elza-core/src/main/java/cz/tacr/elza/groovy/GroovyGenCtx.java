@@ -2,23 +2,32 @@ package cz.tacr.elza.groovy;
 
 import java.util.List;
 
+import cz.tacr.elza.domain.ArrDescItem;
+
 public class GroovyGenCtx {
 
 	private final GroovyFund fund;
 
-	private final List<Integer> nodeIds;
-	
-	public GroovyGenCtx(GroovyFund fund, List<Integer> nodeIds) {
+	private final GroovyAe groovyAe;
+
+	private final List<GroovyItem> items;
+
+	public GroovyGenCtx(GroovyFund fund, GroovyAe groovyAe, List<GroovyItem> items) {
 		this.fund = fund;
-		this.nodeIds = nodeIds;
+		this.groovyAe = groovyAe;
+		this.items = items;
 	}
 
 	public GroovyFund getFund() {
 		return fund;
 	}
 
-	public List<Integer> getNodeIds() {
-		return nodeIds;
+	public GroovyAe getGroovyAe() {
+		return groovyAe;
+	}
+
+	public List<GroovyItem> getItems() {
+		return items;
 	}
 
 }

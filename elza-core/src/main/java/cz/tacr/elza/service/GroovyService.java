@@ -48,10 +48,14 @@ import cz.tacr.elza.domain.ArrDataCoordinates;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.Item;
 import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulArrangementRule.RuleType;
@@ -69,6 +73,7 @@ import cz.tacr.elza.groovy.GroovyItem;
 import cz.tacr.elza.groovy.GroovyItems;
 import cz.tacr.elza.groovy.GroovyPart;
 import cz.tacr.elza.groovy.GroovyResult;
+import cz.tacr.elza.groovy.GroovyUtils;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
@@ -225,12 +230,26 @@ public class GroovyService {
         return groovyScriptService.process(groovyAe, groovyFilePath);
     }
 
-    public List<NodePlainTextRepresentation> getNodePlainText(@NotNull final ArrFundVersion fundVersion, @NotNull List<Integer> nodeIds) {
+    public List<NodePlainTextRepresentation> getNodePlainText(@NotNull final ArrFundVersion fundVersion, Integer accessPointId, List<ArrDescItem> items) {
 		List<NodePlainTextRepresentation> result = new ArrayList<>();
-		List<RulArrangementRule> arrangementRules = arrangementRuleRepository.findByRuleSetIdAndRuleTypeOrderByPriority(fundVersion.getRuleSetId(), RuleType.PLAIN_TEXT_GENERATOR);
 
-		GroovyFund fund = new GroovyFund(fundVersion.getFund());
-		GroovyGenCtx genCtx = new GroovyGenCtx(fund, nodeIds);
+		GroovyFund groovyFund = new GroovyFund(fundVersion.getFund());
+
+        ApState state = apStateRepository.findLastByAccessPointId(accessPointId);
+        List<ApPart> parts = partService.findPartsByAccessPoint(state.getAccessPoint());
+        List<ApItem> itemsByParts = accessPointItemService.findItemsByParts(parts);
+        GroovyAe groovyAe = convertAe(state, parts, itemsByParts);
+
+        StaticDataProvider sdp = staticDataService.getData();
+        List<GroovyItem> groovyItems = new ArrayList<>();
+        items.forEach(i -> {
+        	GroovyItem item = convertItem(i, sdp);
+        	groovyItems.add(item);
+        });
+
+		GroovyGenCtx genCtx = new GroovyGenCtx(groovyFund, groovyAe, groovyItems);
+
+		List<RulArrangementRule> arrangementRules = arrangementRuleRepository.findByRuleSetIdAndRuleTypeOrderByPriority(fundVersion.getRuleSetId(), RuleType.PLAIN_TEXT_GENERATOR);
 
 		for (RulArrangementRule rule: arrangementRules) {
 			Path groovyFilePath = resourcePathResolver.getDroolFile(rule);
@@ -431,6 +450,17 @@ public class GroovyService {
                 ArrDataUriRef dataTmp = (ArrDataUriRef) data;
                 groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getFulltextValue());
                 break;
+            }
+            case STRUCTURED: {
+            	ArrDataStructureRef dataTmp = (ArrDataStructureRef) data;
+            	ArrStructuredObject structObj = dataTmp.getStructuredObject();
+            	groovyItem = new GroovyItem(itemType, itemSpec, structObj.getValue());
+            	break;
+            }
+            case UNITID: {
+            	ArrDataUnitid dataTmp = (ArrDataUnitid) data;
+            	groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getUnitId());
+            	break;
             }
             default:
                 throw new NotImplementedException("Neimplementovaný typ: " + dataType);
