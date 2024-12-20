@@ -213,6 +213,7 @@
                 <type code="ZP2015_ITEM_MAT_ADJUSTACE" width="1"/>
                 <type code="ZP2015_ITEM_MAT_NOSIC" width="1"/>
                 <type code="ZP2015_ITEM_MAT_LATKA_ZAZNAMU" width="1"/>
+                <type code="ZP2015_ITEM_MAT_BAREVNOST" width="1"/>
                 <!-- 5.2.9 Díl, část, pořadí vydání jednotky popisu -->
                 <type code="ZP2015_PART" width="1"/>
                 <!--  5.2.10 Jazyk -->
