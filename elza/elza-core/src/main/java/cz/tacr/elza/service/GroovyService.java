@@ -45,6 +45,7 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
 import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
@@ -73,7 +74,6 @@ import cz.tacr.elza.groovy.GroovyItem;
 import cz.tacr.elza.groovy.GroovyItems;
 import cz.tacr.elza.groovy.GroovyPart;
 import cz.tacr.elza.groovy.GroovyResult;
-import cz.tacr.elza.groovy.GroovyUtils;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
@@ -460,6 +460,11 @@ public class GroovyService {
             case UNITID: {
             	ArrDataUnitid dataTmp = (ArrDataUnitid) data;
             	groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getUnitId());
+            	break;
+            }
+            case DECIMAL: {
+            	ArrDataDecimal dataTmp = (ArrDataDecimal) data;
+            	groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getFulltextValue());
             	break;
             }
             default:

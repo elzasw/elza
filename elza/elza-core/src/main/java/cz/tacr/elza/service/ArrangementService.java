@@ -157,8 +157,6 @@ import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
 import cz.tacr.elza.service.arrangement.DeleteFundHistoryAction;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
-import cz.tacr.elza.service.cache.AccessPointCacheService;
-import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
