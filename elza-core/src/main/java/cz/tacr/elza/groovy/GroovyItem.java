@@ -1,5 +1,7 @@
 package cz.tacr.elza.groovy;
 
+import java.util.List;
+
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -58,18 +60,14 @@ public class GroovyItem {
                       @Nullable final RulItemSpec rulItemSpec,
                       @NotNull final String value) {
         this(itemType, rulItemSpec);
-        if (itemType.getDataType() != DataType.TEXT &&
-                itemType.getDataType() != DataType.STRING &&
-                // TODO: Improve URI REF support
-                itemType.getDataType() != DataType.URI_REF &&
-                // TODO: Improve coordinates support
-                itemType.getDataType() != DataType.COORDINATES &&
-                // TODO: Improve enum support
-                itemType.getDataType() != DataType.ENUM &&
-                // TODO: Improve structured support
-                itemType.getDataType() != DataType.STRUCTURED &&
-             // TODO: Improve unidid support
-                itemType.getDataType() != DataType.UNITID) {
+        if (!List.of(DataType.TEXT,
+        		DataType.STRING,
+        		DataType.URI_REF,
+        		DataType.COORDINATES,
+        		DataType.ENUM,
+        		DataType.STRUCTURED,
+        		DataType.UNITID,
+        		DataType.DECIMAL).contains(itemType.getDataType())) {
             throw new BusinessException("String value not supported", BaseCode.PROPERTY_HAS_INVALID_TYPE);
         }
         this.value = value;

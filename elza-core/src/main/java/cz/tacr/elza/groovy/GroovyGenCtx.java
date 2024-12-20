@@ -2,8 +2,6 @@ package cz.tacr.elza.groovy;
 
 import java.util.List;
 
-import cz.tacr.elza.domain.ArrDescItem;
-
 public class GroovyGenCtx {
 
 	private final GroovyFund fund;
