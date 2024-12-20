@@ -58,6 +58,8 @@ when
         "ZP2015_ITEM_MAT_NOSIC",
         // ZP5.2.8 Látka záznamu
         "ZP2015_ITEM_MAT_LATKA_ZAZNAMU",
+        // ZP5.2.8 Barevnost
+        "ZP2015_ITEM_MAT_BAREVNOST",
         // ZP5.2.10 Jazyk
         "ZP2015_LANGUAGE",
         // ZP5.7.1 Opis, nápis, exerque
