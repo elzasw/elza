@@ -74,6 +74,7 @@ import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.WfIssue;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.BusinessException;
@@ -185,9 +186,13 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 		public Map<Integer, TreeNode> getNodes() {
 			return nodes;
 		}
-
+		
 		public List<TreeNode> getSiblingsAround(ArrNode node, Integer around) {
-			TreeNode tn = nodes.get(node.getNodeId());
+			return getSiblingsAround(node.getNodeId(), around);
+		}
+
+		public List<TreeNode> getSiblingsAround(Integer nodeId, Integer around) {
+			TreeNode tn = nodes.get(nodeId);
 			if(tn==null) {
 				return null;
 			}
@@ -209,6 +214,55 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 	        }
 
 	        return result;			
+		}
+
+		public Collection<TreeNode> getNodesByDirection(Integer nodeId, RelatedNodeDirection direction) {
+			TreeNode tn = this.nodes.get(nodeId);
+			if(tn==null) {
+				throw new BusinessException("Cannot find node", BaseCode.ID_NOT_EXIST)
+					.set("nodeId", nodeId);
+			}
+			switch(direction) {
+			case CHILDREN:
+				return tn.getChildren();
+			case NODE:
+				return Collections.singletonList(tn);
+			case PARENT:
+				TreeNode directParent = tn.getParent();
+				return directParent == null ? Collections.emptyList() : Collections.singletonList(directParent);
+			case ASCENDANTS:
+				List<TreeNode> parents = new ArrayList<>();
+				TreeNode parent = tn.getParent();
+				while(parent!=null) {
+					parents.add(parent);
+					parent = parent.getParent();
+				}
+				return parents;
+			case SIBLINGS:
+				return getSiblingsAround(nodeId, 1);
+			case ALL:
+				// find root and return descendants of root including root
+				TreeNode rootNode = tn;
+				while(rootNode.getParent()!=null) {
+					rootNode = rootNode.getParent();
+				}
+				Collection<TreeNode> descendants = getNodesByDirection(rootNode.getId(), RelatedNodeDirection.DESCENDANTS);
+				descendants.add(rootNode);
+				return descendants;
+			case DESCENDANTS:
+				List<TreeNode> result = new ArrayList<>();
+				List<TreeNode> toProcess = new LinkedList<>();				
+				toProcess.addAll(tn.getChildren());
+				while(!toProcess.isEmpty()) {
+					TreeNode node = toProcess.remove(0);
+					result.add(node);
+					toProcess.addAll(node.getChildren());
+				}
+				return result;
+			default:
+				throw new BusinessException("Unknown direction", BaseCode.INVALID_STATE)
+					.set("direction", direction);
+			}
 		}
     }
     
@@ -2544,5 +2598,13 @@ private void processEvent(AbstractEventSimple event) {
 	public synchronized TreeNode getTreeNode(ArrFundVersion fundVersion, ArrNode node) {
 		Map<Integer, TreeNode> nodeMap = getNodeHierarchy(fundVersion).getNodes();
 		return nodeMap.get(node.getNodeId());
+	}
+
+	public Collection<TreeNode> findNodesByDirection(ArrNode node, ArrFundVersion version, RelatedNodeDirection direction) {
+		NodeHierarchy nh = getNodeHierarchy(version);
+		if(nh==null) {
+			throw new BusinessException("Cannot read node hierarchy", BaseCode.INVALID_STATE);
+		}
+		return nh.getNodesByDirection(node.getNodeId(), direction);
 	}
 }

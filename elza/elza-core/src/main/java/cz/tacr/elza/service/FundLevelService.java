@@ -605,7 +605,7 @@ public class FundLevelService {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                ruleService.revalidateNodes(version.getFundVersionId(), nodeIdsToRevalidate, null, null);
+                ruleService.revalidateNodes(version.getFundVersionId(), nodeIdsToRevalidate, null, null, false);
             }
         });
 
