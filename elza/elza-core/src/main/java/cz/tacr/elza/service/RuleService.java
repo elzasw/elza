@@ -2,7 +2,6 @@ package cz.tacr.elza.service;
 
 import static cz.tacr.elza.domain.RulRuleSet.RuleType.ENTITY;
 import static cz.tacr.elza.repository.ExceptionThrow.itemType;
-import static cz.tacr.elza.repository.ExceptionThrow.node;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 
 import java.util.ArrayList;
@@ -39,6 +38,7 @@ import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
+import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemBitVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemCoordinatesVO;
@@ -199,6 +199,8 @@ public class RuleService {
     private ItemTypeRepository itemTypeRepository;
     @Autowired
     private ArrDescItemsPostValidator descItemsPostValidator;
+    @Autowired
+    private LevelTreeCacheService levelTreeCache;
 
     @Autowired
     private ItemTypeActionRepository itemTypeActionRepository;
@@ -604,7 +606,7 @@ public class RuleService {
         Set<RelatedNodeDirection> impactOnConformityInfo = getImpactOnConformityInfo(fundVersionId, nodeTypeOperation,
                 createDescItems, updateDescItems, deleteDescItems);
 
-        revalidateNodes(fundVersionId, nodeIds, impactOnConformityInfo, validationPriority);
+        revalidateNodes(fundVersionId, nodeIds, impactOnConformityInfo, validationPriority, false);
 
         return impactOnConformityInfo;
     }
@@ -668,7 +670,8 @@ public class RuleService {
     public void revalidateNodes(final Integer fundVersionId,
                                 final Collection<Integer> nodeIds,
                                 @Nullable final Collection<RelatedNodeDirection> directions,
-                                @Nullable final Integer validationPriority) {
+                                @Nullable final Integer validationPriority,
+                                boolean useCache) {
         Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Validate.notEmpty(nodeIds, "Musí být vyplněna alespoň jedna JP");
 
@@ -678,21 +681,33 @@ public class RuleService {
         ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
 
-        Set<ArrNode> updateNodes = new HashSet<>();
+        Set<Integer> updateNodes = new HashSet<>();
 
         if (CollectionUtils.isEmpty(directions)) {
-            updateNodes.addAll(nodes);
+            updateNodes.addAll(nodeIds);
         } else {
             for (RelatedNodeDirection direction : directions) {
                 for (ArrNode node : nodes) {
-                    updateNodes.addAll(nodeRepository.findNodesByDirection(node, version, direction));
+                	if(!useCache) {
+                		Collection<ArrNode> dbNodes = nodeRepository.findNodesByDirection(node, version, direction);
+                		// append nodes for update
+                		if(dbNodes!=null) {
+                			dbNodes.forEach(dbNode -> updateNodes.add(dbNode.getNodeId()));
+                		}
+                	} else {
+                		Collection<TreeNode> treeNodes = levelTreeCache.findNodesByDirection(node, version, direction);
+                		// append nodes for update
+                		if(treeNodes!=null) {
+                			treeNodes.forEach(tn -> updateNodes.add(tn.getId()));
+                		}
+                	}
                 }
             }
         }
 
         if (!updateNodes.isEmpty()) {
             asyncRequestService.enqueueNodes(fundVersionId,
-                                        updateNodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList()),
+                                        updateNodes,
                                         validationPriority);
         }
     }
@@ -939,87 +954,6 @@ public class RuleService {
     }
 
     /**
-     * Vytvoření vazby mezi JP a definicí řídících pravidel.
-     *
-     * @param versionId     identifikátor verze AP
-     * @param nodeId        identifikátor JP
-     * @param nodeExtension  vazba
-     * @return  vazba
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
-    public ArrNodeExtension createNodeExtension(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
-                                                final Integer nodeId,
-                                                final ArrNodeExtension nodeExtension) {
-        Assert.notNull(nodeExtension, "Přirazení musí být vyplněno");
-        Assert.isNull(nodeExtension.getNodeExtensionId(), "Identifikátor přiřazení nesmí být vyplěn");
-
-        ArrNode node = nodeRepository.findById(nodeId)
-                .orElseThrow(node(nodeId));
-
-        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_NODE_EXTENSION, node);
-
-        node.setVersion(nodeExtension.getNode().getVersion());
-        saveNode(node, change);
-
-        validateNodeExtension(nodeExtension, versionId);
-
-        nodeExtension.setNode(node);
-        nodeExtension.setCreateChange(change);
-        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_EXTENSION_CHANGE, versionId, nodeExtension.getNode().getNodeId(), nodeExtension.getNode().getVersion()));
-
-        nodeExtensionRepository.saveAndFlush(nodeExtension);
-        arrangementCacheService.createNodeExtension(nodeId, nodeExtension);
-
-        revalidateNodes(versionId, Collections.singleton(nodeId),
-                        Collections.singleton(RelatedNodeDirection.DESCENDANTS),
-                        null);
-
-        return nodeExtension;
-    }
-
-    /**
-     * Odstranění vazby mezi nodem a definicí řídících pravidel.
-     *
-     * @param versionId     identifikátor verze AP
-     * @param nodeId        identifikátor JP
-     * @param nodeExtension  vazba
-     * @return vazba
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
-    public ArrNodeExtension deleteNodeExtension(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
-                                                final Integer nodeId,
-                                                final ArrNodeExtension nodeExtension) {
-        Assert.notNull(nodeExtension, "Rejstříkové heslo musí být vyplněno");
-        Assert.notNull(nodeExtension.getNodeExtensionId(), "Identifikátor musí být vyplněn");
-
-        ArrNodeExtension nodeExtensionDB = nodeExtensionRepository.findById(nodeExtension.getNodeExtensionId())
-                .orElseThrow(node(nodeExtension.getNodeExtensionId()));
-
-        ArrNode node = nodeRepository.findById(nodeId)
-                .orElseThrow(node(nodeExtension.getNodeExtensionId()));
-
-        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_NODE_EXTENSION, node);
-
-        node.setVersion(nodeExtension.getNode().getVersion());
-        saveNode(node, change);
-
-        validateNodeExtension(nodeExtensionDB, versionId);
-
-        nodeExtensionDB.setDeleteChange(change);
-
-        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_EXTENSION_CHANGE, versionId, node.getNodeId(), node.getVersion()));
-
-        nodeExtensionRepository.save(nodeExtensionDB);
-        arrangementCacheService.deleteNodeExtension(nodeId, nodeExtensionDB.getNodeExtensionId());
-
-        revalidateNodes(versionId, Collections.singleton(nodeId),
-                        Collections.singleton(RelatedNodeDirection.DESCENDANTS),
-                        null);
-
-        return nodeExtensionDB;
-    }
-
-    /**
      * Uložení uzlu - optimistické zámky
      *
      * @param node   uzel
@@ -1031,30 +965,6 @@ public class RuleService {
         nodeRepository.save(node);
         nodeRepository.flush();
         return node;
-    }
-
-    /**
-     * Validuje entitu před uložením.
-     *
-     * @param nodeExtension entita
-     * @param fundVersionId
-     */
-    private void validateNodeExtension(final ArrNodeExtension nodeExtension, final Integer fundVersionId) {
-        if (nodeExtension.getDeleteChange() != null) {
-            throw new IllegalStateException("Nelze vytvářet či modifikovat změnu," +
-                    " která již byla smazána (má delete change).");
-        }
-
-        if (nodeExtension.getNode() == null) {
-            throw new IllegalArgumentException("Není vyplněna JP");
-        }
-        if (nodeExtension.getArrangementExtension() == null) {
-            throw new IllegalArgumentException("Nejsou definovány rozšířené pravidla");
-        }
-        List<RulArrangementExtension> arrangementExtensions = findArrangementExtensionsByFundVersionId(fundVersionId);
-        if (!arrangementExtensions.contains(nodeExtension.getArrangementExtension())) {
-            throw new IllegalArgumentException("Řídící pravidla nejsou pro pravidla AS");
-        }
     }
 
     /**
@@ -1080,28 +990,29 @@ public class RuleService {
      * @return nalezené definice
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
-    public List<RulArrangementExtension> findArrangementExtensionsByNodeId(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
-                                                                           final Integer nodeId) {
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
-        Assert.notNull(fundVersionId, "Identifikátor verze AS musí být vyplněn");
-        ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
-                .orElseThrow(version(fundVersionId));
-        ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+    public List<RulArrangementExtension> findArrangementExtensionsByNodeId(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
+                                                                           final ArrNode node) {
+    	if(version.getLockChangeId() != null) {
+	    	throw new IllegalArgumentException("Verze AS je zamknuta");
+    	}
         if (!node.getFundId().equals(version.getFundId())) {
             throw new IllegalArgumentException("JP nespadá pod verzi AS");
         }
         return arrangementExtensionRepository.findByNode(node);
     }
-
+    
     /**
-     * Vyhledá všechny použité/zděděné definice rozšíření pro řídící pravidla pro JP. Seřazené podle názvu.
-     *
-     * @param nodeId identifikátor JP
-     * @return nalezené definice
+     * Vyhledá definice rozřízení pro JP z verze AS.
+     * @param nodeIds
+     * @param version
+     * @return
      */
-    public List<RulArrangementExtension> findAllArrangementExtensionsByNodeId(final Integer nodeId) {
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
-        return arrangementExtensionRepository.findByNodeIdToRoot(nodeId);
+    public List<RulArrangementExtension> findArrangementExtensionsByNodeIds(Collection<Integer> nodeIds, ArrFundVersion version) {
+    	if(version.getLockChangeId() != null) {
+	    	throw new IllegalArgumentException("Verze AS je zamknuta");
+    	}
+    	
+    	return arrangementExtensionRepository.findByNodeIds(nodeIds);
     }
 
     public RulItemType getItemTypeById(final Integer itemTypeId) {
@@ -1171,9 +1082,18 @@ public class RuleService {
             // Vše je v konzistentním stavu
             return;
         }
-
+        
+        
+        ArrChange.Type changeType = ArrChange.Type.SET_NODE_EXTENSION;
+        if(toDeleteIds.isEmpty()&& !toAddIds.isEmpty()) {
+        	changeType = ArrChange.Type.ADD_NODE_EXTENSION;
+        } else 
+        if(toAddIds.isEmpty() && !toDeleteIds.isEmpty()) {
+	        changeType = ArrChange.Type.DELETE_NODE_EXTENSION;
+        }
+        
         // Změna pod kterou uvidíme nastavení
-        final ArrChange change = arrangementInternalService.createChange(ArrChange.Type.SET_NODE_EXTENSION, node);
+        final ArrChange change = arrangementInternalService.createChange(changeType, node);
 
         // Uložení node pro zaznamenání change
         saveNode(node, change);
@@ -1226,7 +1146,8 @@ public class RuleService {
 
         revalidateNodes(versionId, Collections.singleton(nodeId),
                         Lists.newArrayList(RelatedNodeDirection.NODE, RelatedNodeDirection.DESCENDANTS),
-                        null);
+                        null,
+                        true);
     }
 
     /**
