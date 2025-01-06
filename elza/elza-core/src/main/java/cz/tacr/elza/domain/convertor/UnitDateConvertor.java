@@ -753,6 +753,9 @@ public class UnitDateConvertor {
         	bc = false;
         } else {
         	bc = (year<=0);
+        	// transform ISO year to chronological year
+        	// 0 -> -1 -> 1 pr. n. l.
+        	// -99 -> -100 -> 100 pr. n. l.
         	year = -(year-1);
         	date = LocalDateTime.of(LocalDate.of(year, month, date.getDayOfMonth()), date.toLocalTime());
         }
