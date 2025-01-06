@@ -167,6 +167,13 @@
 		    <column name="state" type="nvarchar(50)" />
 		</createIndex>
 	</changeSet>
+	<changeSet id="20241218173400" author="ppy">
+	    <sql dbms="postgresql">DELETE FROM arr_cached_node WHERE node_id IN (
+	    select n.node_id from arr_node n
+        left join arr_level l on l.node_id = n.node_id and l.delete_change_id is null
+        where l.level_id is null
+	    )</sql>
+	</changeSet>
 
 	<changeSet id="20241212121200" author="sergey.iryupin">
 		<!-- časová osa -->

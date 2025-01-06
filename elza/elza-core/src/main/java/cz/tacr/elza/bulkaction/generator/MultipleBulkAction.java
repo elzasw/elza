@@ -26,6 +26,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.LevelTreeCacheService.NodeHierarchy;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -158,9 +159,9 @@ public class MultipleBulkAction extends BulkAction {
 			Validate.notNull(levelWithItems);
 
             // read whole subtree
-            Map<Integer, TreeNode> treeNodeMap = levelTreeCacheService.createTreeNodeMap(null, node.getNodeId());
+            NodeHierarchy treeNode = levelTreeCacheService.createTreeNodeMap(null, node.getNodeId());
 
-            generate(levelWithItems, treeNodeMap);
+            generate(levelWithItems, treeNode.getNodes());
         }
 
         if (multipleItemChangeContext != null) {
@@ -218,9 +219,7 @@ public class MultipleBulkAction extends BulkAction {
 
         // apply on child nodes in batch
         TreeNode treeNode = treeNodeMap.get(levelWithItems.getNodeId());
-        LinkedList<TreeNode> childNodes = treeNode.getChilds();
-        //List<ArrLevel> childLevels = getChildren(level);
-
+        List<TreeNode> childNodes = treeNode.getChildren();
         BatchNodeProcessor bnp = new BatchNodeProcessor(this, BATCH_CHILD_NODE_SIZE, actions, levelWithItems,
                 nodeCacheService,
                 treeNodeMap);

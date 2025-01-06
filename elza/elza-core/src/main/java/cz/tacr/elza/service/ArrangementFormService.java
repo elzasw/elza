@@ -139,9 +139,8 @@ public class ArrangementFormService {
 	public DescFormDataNewVO getNodeFormData(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion version, Integer nodeId) {
 
 		// získat seznam rodičovských nodů
-		List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(nodeId, null, true);
-		List<Integer> parentNodeIds = levels.stream().map(i -> i.getNodeId()).toList();
-
+		List<Integer> parentNodeIds = this.levelTreeCache.getParentNodes(version, nodeId);
+		
 		ArrChange lockChange = version.getLockChange();
 		ArrNode node;
 		List<ArrDescItem> descItems;
@@ -158,25 +157,24 @@ public class ArrangementFormService {
 		} else {
 			// read node from db
 			node = nodeRepository.findById(nodeId).orElseThrow(node(nodeId));
+			// TODO: add support for inheritence for nodes from DB
 		}
 
 		List<RulItemTypeExt> itemTypes;
-		List<Integer> itemTypeIdsWithInheritance;
 		try {
 			itemTypes = ruleService.getDescriptionItemTypes(version, node);
-			itemTypeIdsWithInheritance = itemTypes.stream()
-					.filter(i -> i.isInheritance())
-					.map(i -> i.getItemTypeId())
-					.collect(Collectors.toList());
 		} catch (Exception e) {
 			logger.error("Chyba v pravidlech", e);
 			throw new BusinessException("Chyba v pravidlech", e, BaseCode.SYSTEM_ERROR);
 		}
 
+		Set<Integer> itemTypeIdsWithInheritance = itemTypes.stream()
+				.filter(i -> i.isInheritance())
+				.map(i -> i.getItemTypeId())
+				.collect(Collectors.toSet());
 		if (lockChange == null) {
 			descItems = restoredNode.getDescItems();
 			// v uzlu, kde je dědičnost potlačena, stále zobrazujeme zděděné záznamy
-			inhibitedDescItemIds = new HashSet<>();
 			// sbíráme id záznamy (descItemId) s potlačenou dědičností od nadřazených uzlů
 			inhibitedDescItemIds = getInhibitedDescItemIds(parentRestoredNodes);
 			// sbíráme všechny descItems s povolenou dědičností z nadřazených uzlů
@@ -230,9 +228,11 @@ public class ArrangementFormService {
 				.map(i -> i.getDescItemObjectId())
 				.collect(Collectors.toSet());
 		for (RestoredNode node : restoredNodes) {
-			for (ArrDescItem descItem : node.getDescItems()) {
-				if (descItemObjectIds.contains(descItem.getDescItemObjectId())) {
-					inhibitedDescItemIds.add(descItem.getItemId());
+			if(node.getDescItems()!=null) {
+				for (ArrDescItem descItem : node.getDescItems()) {
+					if (descItemObjectIds.contains(descItem.getDescItemObjectId())) {
+						inhibitedDescItemIds.add(descItem.getItemId());
+					}
 				}
 			}
 		}

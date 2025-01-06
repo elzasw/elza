@@ -48,6 +48,9 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
 	@Query("SELECT i FROM arr_desc_item i WHERE i.node in (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
     List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange);
 
+	@Query("SELECT i FROM arr_desc_item i WHERE i.nodeId in (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
+    List<ArrDescItem> findByNodeIdsAndDeleteChange(Collection<Integer> nodeIds, ArrChange deleteChange);
+
 	// TODO: zvážit odstranění této metody
     @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL") 
     List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node);

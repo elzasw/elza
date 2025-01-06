@@ -30,7 +30,8 @@ public class DescItemReader {
 	/**
 	 * Map of levels to be set
 	 */
-	Map<Level, ArrNode> items = new HashMap<>();
+	//Map<Level, ArrNode> items = new HashMap<>();
+	Map<Level, Integer> levelNodeMap = new HashMap<>();
 
 	private final DescItemRepository descItemRepository;
 
@@ -64,8 +65,8 @@ public class DescItemReader {
 	 * @param level
 	 * @param node
 	 */
-	public void add(Level level, ArrNode node) {
-		items.put(level, node);
+	public void add(Level level, Integer nodeId) {
+		levelNodeMap.put(level, nodeId);
 	}
 
 	/**
@@ -74,8 +75,8 @@ public class DescItemReader {
 	 */
 	public void read() {
 
-		Collection<ArrNode> nodes = items.values();
-		Set<Level> levels = items.keySet();
+		Set<Level> levels = levelNodeMap.keySet();
+		Collection<Integer> nodeIds = levelNodeMap.values();
 
 		// handle empty key set
         if (levels.isEmpty()) {
@@ -87,10 +88,6 @@ public class DescItemReader {
 
         // Check if load from cache
         if (version.getLockChange() == null) {
-            Collection<Integer> nodeIds = new ArrayList<>(nodes.size());
-            for (ArrNode node : nodes) {
-                nodeIds.add(node.getNodeId());
-            }
             cachedNodes = nodeCacheService.getNodes(nodeIds);
 
             for (Level level : levels) {
@@ -100,9 +97,9 @@ public class DescItemReader {
             }
         } else {
             // Load from DB
-			List<ArrDescItem> descItems = descItemService.findByNodesAndDeleteChange(nodes, version.getLockChange());
+			List<ArrDescItem> descItems = descItemService.findByNodesAndDeleteChange(nodeIds, version.getLockChange());
 
-            descItemsMap = ElzaTools.createGroupMap(descItems, p -> p.getNode().getNodeId());
+            descItemsMap = ElzaTools.createGroupMap(descItems, p -> p.getNodeId());
 
             for (Level level : levels) {
                 List<ArrDescItem> levelDescItems = descItemsMap.get(level.getNodeId());

@@ -49,9 +49,20 @@ public class ModelFactory {
      * @return vo level
      */
     static public Level createLevel(final ArrLevel level, final ArrFundVersion version) {
+        return createLevel(level.getNode().getNodeId(), version);
+    }
+
+    /**
+     * Vytvoří level.
+     *
+     * @param nodeId
+     * @param version verze levelu
+     * @return Level object for rules
+     */
+    static public Level createLevel(final Integer nodeId, final ArrFundVersion version) {
 
         Level result = new Level();
-        result.setNodeId(level.getNode().getNodeId());
+        result.setNodeId(nodeId);
 
         return result;
     }

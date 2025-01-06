@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -87,6 +88,7 @@ import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.SelectNodeResult;
 import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.TreeNodeWithFundVO;
 import cz.tacr.elza.controller.vo.UniqueValue;
@@ -102,6 +104,8 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -126,6 +130,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.drools.DirectionLevel;
@@ -160,6 +165,7 @@ import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FilterTreeService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.LevelTreeCacheService.NodeHierarchy;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RequestQueueService;
@@ -1466,29 +1472,30 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/nodes/{versionId}/{nodeId}/{around}/forms", method = RequestMethod.GET)
     @Transactional
-    public NodeFormsDataVO getNodeWithAroundFormsData(@PathVariable(value = "versionId") final Integer versionId,
+    public NodeFormsDataVO getNodeWithAroundFormsData(@PathVariable(value = "versionId") @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
                                                       @PathVariable(value = "nodeId") final Integer nodeId,
                                                       @PathVariable(value = "around") final Integer around) {
-        Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
-        Assert.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
-        Assert.notNull(around, "Velikost okolí musí být vyplněno");
+        Objects.requireNonNull(versionId, "Identifikátor verze musí být vyplněn");
+        Objects.requireNonNull(nodeId, "Identifikátor uzlu musí být vyplněn");
+        Objects.requireNonNull(around, "Velikost okolí musí být vyplněno");
 
+        // get fund version and check permissions 
         ArrFundVersion fundVersion = arrangementService.getFundVersion(versionId);
         ArrNode node = nodeRepository.findById(nodeId)
-                .orElseThrow(() -> new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST).setId(nodeId));
-
-        Assert.notNull(fundVersion, "Verze AP neexistuje");
-        Assert.notNull(node, "Uzel neexistuje");
-
-        List<ArrNode> nodes = arrangementService.findSiblingsAroundOfNode(fundVersion, node, around);
+                .orElseThrow(() -> new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST).setId(nodeId));        
 
         Map<Integer, DescFormDataNewVO> forms = new HashMap<>();
-
-        for (ArrNode arrNode : nodes) {
-            DescFormDataNewVO formData = formService.getNodeFormData(fundVersion, arrNode.getNodeId());
-            forms.put(arrNode.getNodeId(), formData);
+                
+        NodeHierarchy nodeHierarchy = this.levelTreeCacheService.getNodeHierarchy(fundVersion);
+        List<TreeNode> siblings = nodeHierarchy.getSiblingsAround(node, around);
+        if(siblings!=null) {
+        	// TODO: prepre form data in batch
+        	for(TreeNode s: siblings) {
+                DescFormDataNewVO formData = formService.getNodeFormData(fundVersion, s.getId());
+                forms.put(s.getId(), formData);
+        	}
         }
-
+        
         return new NodeFormsDataVO(forms);
     }
 

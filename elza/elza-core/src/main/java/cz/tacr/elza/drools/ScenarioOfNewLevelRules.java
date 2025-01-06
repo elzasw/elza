@@ -2,8 +2,11 @@ package cz.tacr.elza.drools;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.kie.api.runtime.KieSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +20,7 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulExtensionRule;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
+import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.NewLevelApproach;
 import cz.tacr.elza.drools.model.NewLevelApproaches;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
@@ -50,8 +54,9 @@ public class ScenarioOfNewLevelRules extends Rules {
 
         NewLevelApproaches newLevelApproaches = new NewLevelApproaches();
 
+        List<Level> levels = scriptModelFactory.createFactsForNewLevel(level, directionLevel, version);
         LinkedList<Object> facts = new LinkedList<>();
-        facts.addAll(scriptModelFactory.createFactsForNewLevel(level, directionLevel, version));
+        facts.addAll(levels);
 
         for (RulArrangementRule rulArrangementRule : rulArrangementRules) {
             Path path = resourcePathResolver.getDroolFile(rulArrangementRule);
@@ -60,8 +65,15 @@ public class ScenarioOfNewLevelRules extends Rules {
             session.setGlobal("results", newLevelApproaches);
             executeSession(session, facts);
         }
+        
+        Set<Integer> nodeIds = new HashSet<>();
+        for(Level l: levels) {
+        	if(l.getNodeId()!=null) {
+        		nodeIds.add(l.getNodeId());
+        	}
+        }
 
-        List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNode(level.getNode(), RulExtensionRule.RuleType.NEW_LEVEL);
+        List<RulExtensionRule> rulExtensionRules = ruleService.findExtensionRuleByNodeIds(nodeIds, version, RulExtensionRule.RuleType.NEW_LEVEL);
         for (RulExtensionRule rulExtensionRule : rulExtensionRules) {
             Path path = resourcePathResolver.getDroolFile(rulExtensionRule);
 
