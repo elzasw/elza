@@ -74,10 +74,13 @@ import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.WfIssue;
+import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.TitleValue;
 import cz.tacr.elza.domain.vo.TitleValues;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -166,12 +169,108 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
     @Autowired
     private DaoLinkRepository daoLinkRepository;
+    
+    /**
+     * Cached node hierarchy (tree).
+     * 
+     * Allows to speedup access to the hierarchy
+     * 
+     * !!!! This class is not thread safe
+     */
+    static public class NodeHierarchy {
+    	/**
+    	 * nodeId -> TreeNode
+    	 */
+    	Map<Integer, TreeNode> nodes = new HashMap<>();
 
+		public Map<Integer, TreeNode> getNodes() {
+			return nodes;
+		}
+		
+		public List<TreeNode> getSiblingsAround(ArrNode node, Integer around) {
+			return getSiblingsAround(node.getNodeId(), around);
+		}
+
+		public List<TreeNode> getSiblingsAround(Integer nodeId, Integer around) {
+			TreeNode tn = nodes.get(nodeId);
+			if(tn==null) {
+				return null;
+			}
+	        TreeNode parent = tn.getParent();
+			if(parent==null) {
+				return null;
+			}
+			List<TreeNode> children = parent.getChildren();
+	        int nodeIndex = children.indexOf(tn);
+	        int min = nodeIndex - around;
+	        int max = nodeIndex + around;	        
+
+	        min = min < 0 ? 0 : min;
+	        max = max > children.size() - 1 ? children.size() - 1 : max;
+
+	        List<TreeNode> result = new ArrayList<>();	        
+	        for (int i = min; i <= max; i++) {
+	            result.add(children.get(i));
+	        }
+
+	        return result;			
+		}
+
+		public Collection<TreeNode> getNodesByDirection(Integer nodeId, RelatedNodeDirection direction) {
+			TreeNode tn = this.nodes.get(nodeId);
+			if(tn==null) {
+				throw new BusinessException("Cannot find node", BaseCode.ID_NOT_EXIST)
+					.set("nodeId", nodeId);
+			}
+			switch(direction) {
+			case CHILDREN:
+				return tn.getChildren();
+			case NODE:
+				return Collections.singletonList(tn);
+			case PARENT:
+				TreeNode directParent = tn.getParent();
+				return directParent == null ? Collections.emptyList() : Collections.singletonList(directParent);
+			case ASCENDANTS:
+				List<TreeNode> parents = new ArrayList<>();
+				TreeNode parent = tn.getParent();
+				while(parent!=null) {
+					parents.add(parent);
+					parent = parent.getParent();
+				}
+				return parents;
+			case SIBLINGS:
+				return getSiblingsAround(nodeId, 1);
+			case ALL:
+				// find root and return descendants of root including root
+				TreeNode rootNode = tn;
+				while(rootNode.getParent()!=null) {
+					rootNode = rootNode.getParent();
+				}
+				Collection<TreeNode> descendants = getNodesByDirection(rootNode.getId(), RelatedNodeDirection.DESCENDANTS);
+				descendants.add(rootNode);
+				return descendants;
+			case DESCENDANTS:
+				List<TreeNode> result = new ArrayList<>();
+				List<TreeNode> toProcess = new LinkedList<>();				
+				toProcess.addAll(tn.getChildren());
+				while(!toProcess.isEmpty()) {
+					TreeNode node = toProcess.remove(0);
+					result.add(node);
+					toProcess.addAll(node.getChildren());
+				}
+				return result;
+			default:
+				throw new BusinessException("Unknown direction", BaseCode.INVALID_STATE)
+					.set("direction", direction);
+			}
+		}
+    }
+    
     /**
      * Cache stromu pro danou verzi. (id verze -> nodeid uzlu -> uzel).
      * Maximální počet záznamů v cache {@link #maxCacheSize}.
      */
-    private CapacityMap<Integer, Map<Integer, TreeNode>> versionCache = new CapacityMap<Integer, Map<Integer, TreeNode>>();
+    private CapacityMap<Integer, NodeHierarchy> versionCache = new CapacityMap<Integer, NodeHierarchy>();
 
     @Subscribe
     public synchronized void invalidateCache(final CacheInvalidateEvent cacheInvalidateEvent) {
@@ -220,7 +319,12 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         }
 
         //seřazené otevřené nody tak jak půjdou v seznamu po sobě
-        TreeSet<TreeNode> expandedSort = new TreeSet<>(expandedNodes.values());
+        Collection<TreeNode> expandedNodesCollection = expandedNodes.values();
+        TreeSet<TreeNode> expandedSort = new TreeSet<>(expandedNodesCollection);
+        // check size of tree
+        if(expandedSort.size()!=expandedNodesCollection.size()) {
+        	throw new BusinessException("Chyba ve vybranych uzlů", ArrangementCode.REQUEST_INVALID);
+        }
         Iterator<TreeNode> expandedIterator = expandedSort.iterator();
 
         LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
@@ -237,7 +341,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         } else {
             while (expandedIterator.hasNext()) {
                 TreeNode next = expandedIterator.next();
-                if (next.getId().equals(nodeId)) {
+                if (next.getId()==nodeId.intValue()) {
                     addNodesToResultList(nodesMap, next, expandedIterator);
                     break;
                 }
@@ -281,7 +385,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             TreeNode treeNode = versionTreeCache.get(nodeId);
             if (treeNode != null) {
                 TreeNode parent = treeNode;
-                while (parent != null && subTreeMap.get(parent) == null) {
+                while (parent != null && subTreeMap.get(parent.getId()) == null) {
                     subTreeMap.put(parent.getId(), parent);
                     parent = parent.getParent();
                 }
@@ -406,7 +510,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
                                           final TreeNode node,
                                           final Iterator<TreeNode> expandedNodesIterator) {
         if (!expandedNodesIterator.hasNext()) {
-            for (TreeNode child : node.getChilds()) {
+            for (TreeNode child : node.getChildren()) {
                 nodesMap.put(child.getId(), child);
             }
             return null;
@@ -416,7 +520,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
 
         //pokud má aktuální uzel a další otevřený uzel stejného rodiče, musíme postupně přidávat, protože v jeho dětech jsou další otevřené uzly
         if (nextNode.getParent().equals(node)) {
-            for (TreeNode child : node.getChilds()) {
+            for (TreeNode child : node.getChildren()) {
                 nodesMap.put(child.getId(), child);
                 //až najdeme další otevřený uzel v potomcích, přidáme jeho potomky do seznamu
                 if (child.equals(nextNode)) {
@@ -425,7 +529,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             }
         } else {
             //pokud potomci nejsou otevření, můžeme je všechny přidat do seznamu
-            for (TreeNode child : node.getChilds()) {
+            for (TreeNode child : node.getChildren()) {
                 nodesMap.put(child.getId(), child);
             }
         }
@@ -471,17 +575,17 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @param version verze stromu
      * @return mapu všech uzlů stromu (nodeid uzlu --> uzel)
      */
-    private Map<Integer, TreeNode> createVersionTreeCache(final ArrFundVersion version) {
+    private NodeHierarchy createVersionTreeCache(final ArrFundVersion version) {
         Validate.notNull(version, "Verze AS musí být vyplněna");
 
-        Integer rootId = version.getRootNode().getNodeId();
+        Integer rootId = version.getRootNodeId();
         ArrChange change = version.getLockChange();
 
         //všechny uzly stromu
         return createTreeNodeMap(change, rootId);
     }
 
-    public Map<Integer, TreeNode> createTreeNodeMap(ArrChange change, Integer rootNodeId) {
+    public NodeHierarchy createTreeNodeMap(ArrChange change, Integer rootNodeId) {
 
         //kořen
         LevelRepositoryCustom.LevelInfo rootInfo = new LevelRepositoryCustom.LevelInfo(rootNodeId, 0, null);
@@ -496,14 +600,15 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         levelInfoMap.put(rootNodeId, rootInfo);
 
         //výsledná mapa
-        Map<Integer, TreeNode> allMap = new HashMap<>();
+        NodeHierarchy nodeHierarchy = new NodeHierarchy();
+        
         for (LevelRepositoryCustom.LevelInfo levelInfo : levelInfoMap.values()) {
-            createTreeNodeMap(levelInfo, levelInfoMap, allMap);
+            createTreeNodeMap(levelInfo, levelInfoMap, nodeHierarchy.nodes);
         }
 
         //seřazení dětí všech uzlů podle pozice
         Comparator<TreeNode> comparator = (o1, o2) -> {
-            int ret = o1.getPosition().compareTo(o2.getPosition());
+            int ret = Integer.compare(o1.getPosition(), o2.getPosition());
             if (ret == 0) {
                 // check same position
                 logger.error("Two nodes on same position, nodeId: {}, nodeId: {}",
@@ -514,12 +619,13 @@ public class LevelTreeCacheService implements NodePermissionChecker {
             }
             return ret;
         };
-        for (TreeNode treeNode : allMap.values()) {
-            treeNode.getChilds().sort(comparator);
+        for (TreeNode treeNode : nodeHierarchy.nodes.values()) {
+            treeNode.getChildren().sort(comparator);
         }
 
-        initReferenceMarksAndDepth(allMap.get(rootNodeId));
-        return allMap;
+        // TODO: count reference mark dynamically
+        initReferenceMarksAndDepth(nodeHierarchy.nodes.get(rootNodeId));
+        return nodeHierarchy;
     }
 
 
@@ -564,7 +670,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         rootNode.setReferenceMark(new Integer[0]);
         rootNode.setDepth(1);
         int childPosition = 1;
-        for (TreeNode child : rootNode.getChilds()) {
+        for (TreeNode child : rootNode.getChildren()) {
             initReferenceMarkAndDepth(child, childPosition++);
         }
     }
@@ -584,7 +690,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         treeNode.setDepth(referenceMark.length + 1);
 
         int childPosition = 1;
-        for (TreeNode child : treeNode.getChilds()) {
+        for (TreeNode child : treeNode.getChildren()) {
             initReferenceMarkAndDepth(child, childPosition++);
         }
     }
@@ -607,7 +713,7 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         result.setDepth(treeNode.getDepth());
 
         //nastavíme původní děti, které budou použity na vytvoření výsledného seznamu
-        result.setChilds(treeNode.getChilds());
+        result.setChildren(treeNode.getChildren());
 
         expandedTreeNodesMap.put(result.getId(), result);
 
@@ -625,9 +731,9 @@ public class LevelTreeCacheService implements NodePermissionChecker {
      * @param version verze stromu
      * @return mapa všech uzlů stromu (nodeid uzlu -> uzel)
      */
-    synchronized public Map<Integer, TreeNode> getVersionTreeCache(final ArrFundVersion version) {
+    synchronized public NodeHierarchy getNodeHierarchy(final ArrFundVersion version) {
         Validate.notNull(version, "Verze AS není vyplněna");
-        Map<Integer, TreeNode> versionTreeMap = versionCache.get(version.getFundVersionId());
+        NodeHierarchy versionTreeMap = versionCache.get(version.getFundVersionId());
 
         if (versionTreeMap == null) {
             versionTreeMap = createVersionTreeCache(version);
@@ -638,8 +744,20 @@ public class LevelTreeCacheService implements NodePermissionChecker {
         versionCache.remove(version.getFundVersionId());
         versionCache.put(version.getFundVersionId(), versionTreeMap);
 
-
         return versionTreeMap;
+    }
+
+    /**
+     * Vytvoří cache stromu dané verze a uloží jej do cache. Druhé volání již vrací nacachovaná data.
+     *
+     * @param version verze stromu
+     * @return mapa všech uzlů stromu (nodeid uzlu -> uzel)
+     * 
+     * @see Use getNodeHierarchy instead of this function
+     */
+    @Deprecated
+    synchronized public Map<Integer, TreeNode> getVersionTreeCache(final ArrFundVersion version) {
+    	return getNodeHierarchy(version).getNodes();
     }
 
     /**
@@ -861,7 +979,7 @@ private void processEvent(AbstractEventSimple event) {
             }
 
             TreeNodeVO client = new TreeNodeVO(treeNode.getId(), treeNode.getDepth(), null,
-                    !treeNode.getChilds().isEmpty(),
+                    !treeNode.getChildren().isEmpty(),
                     treeNode.getReferenceMark(), nodeMap.get(treeNode.getId()).getVersion());
             if (subtreeRoot != null) {
                 String[] referenceMark = createClientNodeReferenceMark(treeNode, levelTypeId, viewTitles, valuesMap,
@@ -995,12 +1113,12 @@ private void processEvent(AbstractEventSimple event) {
             TreeNode deleteNode = versionTreeMap.get(nodeId);
             TreeNode parent = deleteNode.getParent();
             if (parent != null) {
-                int deleteNodeIndex = parent.getChilds().indexOf(deleteNode);
-                parent.getChilds().remove(deleteNode);
-                repositionList(parent.getChilds());
+                int deleteNodeIndex = parent.getChildren().indexOf(deleteNode);
+                parent.getChildren().remove(deleteNode);
+                repositionList(parent.getChildren());
 
-                if (parent.getChilds().size() > deleteNodeIndex) {
-                    initReferenceMarkLower(parent.getChilds(), parent.getChilds().get(deleteNodeIndex));
+                if (parent.getChildren().size() > deleteNodeIndex) {
+                    initReferenceMarkLower(parent.getChildren(), parent.getChildren().get(deleteNodeIndex));
                 }
             }
             removeFromCacheTree(versionTreeMap, deleteNode);
@@ -1016,7 +1134,7 @@ private void processEvent(AbstractEventSimple event) {
     private void removeFromCacheTree(final Map<Integer, TreeNode> versionTreeMap,
                                      final TreeNode deleteNode) {
         versionTreeMap.remove(deleteNode.getId());
-        for (TreeNode child : deleteNode.getChilds()) {
+        for (TreeNode child : deleteNode.getChildren()) {
             removeFromCacheTree(versionTreeMap, child);
         }
     }
@@ -1057,7 +1175,7 @@ private void processEvent(AbstractEventSimple event) {
         case ADD_LEVEL_BEFORE: {
             newNode = createEmptyTreeNode(newNodeId, staticNode.getParent());
 
-            LinkedList<TreeNode> parentChilds = staticNode.getParent().getChilds();
+            List<TreeNode> parentChilds = staticNode.getParent().getChildren();
             int staticNodeIndex = parentChilds.indexOf(staticNode);
             parentChilds.add(staticNodeIndex, newNode);
             repositionList(parentChilds);
@@ -1067,7 +1185,7 @@ private void processEvent(AbstractEventSimple event) {
         case ADD_LEVEL_AFTER: {
             newNode = createEmptyTreeNode(newNodeId, staticNode.getParent());
 
-            LinkedList<TreeNode> parentChilds = staticNode.getParent().getChilds();
+            List<TreeNode> parentChilds = staticNode.getParent().getChildren();
             int staticNodeIndex = parentChilds.indexOf(staticNode) + 1;
             parentChilds.add(staticNodeIndex, newNode);
             repositionList(parentChilds);
@@ -1077,8 +1195,8 @@ private void processEvent(AbstractEventSimple event) {
         case ADD_LEVEL_UNDER: {
             newNode = createEmptyTreeNode(newNodeId, staticNode);
 
-            LinkedList<TreeNode> parentChilds = staticNode.getChilds();
-            parentChilds.addLast(newNode);
+            List<TreeNode> parentChilds = staticNode.getChildren();
+            parentChilds.add(newNode);
             repositionList(parentChilds);
             initReferenceMarkAndDepth(newNode, newNode.getPosition());
             break;
@@ -1120,22 +1238,22 @@ private void processEvent(AbstractEventSimple event) {
 
             for (Integer transportNodeId : nodeIds) {
                 TreeNode transportNode = versionTreeMap.get(transportNodeId);
-                transportNode.getParent().getChilds().remove(transportNode);
+                transportNode.getParent().getChildren().remove(transportNode);
                 transportNodes.add(transportNode);
             }
             TreeNode transportParent = transportNodes.get(0).getParent();
-            repositionList(transportParent.getChilds());
+            repositionList(transportParent.getChildren());
 
             boolean siblingMove = transportParent.equals(staticParent);
-            if (!siblingMove && !transportParent.getChilds().isEmpty()) {
+            if (!siblingMove && !transportParent.getChildren().isEmpty()) {
                 //při přesunu přečíslujeme všechny node, které jsou pod rodičem, jehož děti přesouváme
-                initReferenceMarkLower(transportParent.getChilds(), transportParent.getChilds().getFirst());
+                initReferenceMarkLower(transportParent.getChildren(), transportParent.getChildren().get(0));
             }
 
 
             switch (moveLevelType) {
                 case MOVE_LEVEL_BEFORE: {
-                    LinkedList<TreeNode> staticParentChilds = staticParent.getChilds();
+                    List<TreeNode> staticParentChilds = staticParent.getChildren();
                     int staticIndex = staticParentChilds.indexOf(staticNode);
 
                     for (TreeNode transportNode : transportNodes) {
@@ -1149,7 +1267,7 @@ private void processEvent(AbstractEventSimple event) {
                     break;
                 }
                 case MOVE_LEVEL_AFTER: {
-                    LinkedList<TreeNode> staticParentChilds = staticParent.getChilds();
+                    List<TreeNode> staticParentChilds = staticParent.getChildren();
                     int staticIndex = staticParentChilds.indexOf(staticNode) + 1;
 
                     for (TreeNode transportNode : transportNodes) {
@@ -1161,11 +1279,11 @@ private void processEvent(AbstractEventSimple event) {
                     break;
                 }
                 case MOVE_LEVEL_UNDER: {
-                    LinkedList<TreeNode> staticParentChilds = staticNode.getChilds();
+                    List<TreeNode> staticParentChilds = staticNode.getChildren();
 
                     for (TreeNode transportNode : transportNodes) {
                         transportNode.setParent(staticNode);
-                        staticParentChilds.addLast(transportNode);
+                        staticParentChilds.add(transportNode);
                     }
 
                     repositionList(staticParentChilds);
@@ -1176,9 +1294,9 @@ private void processEvent(AbstractEventSimple event) {
 
             //přečíslujeme všechny prvky pod prvním přidaným (včetně) -> pokud přesouváme na stejné úrovni, přečíslujeme všechny
             if (siblingMove) {
-                initReferenceMarkLower(staticParent.getChilds(), staticParent.getChilds().getFirst());
+                initReferenceMarkLower(staticParent.getChildren(), staticParent.getChildren().get(0));
             } else {
-                initReferenceMarkLower(staticParent.getChilds(), transportNodes.get(0));
+                initReferenceMarkLower(staticParent.getChildren(), transportNodes.get(0));
             }
 
 
@@ -1203,7 +1321,7 @@ private void processEvent(AbstractEventSimple event) {
      * @param childs          seznam všech potomků, ve kterých hledáme
      * @param firstReposition první uzel, od kterého se začnou aktualizovat označení
      */
-    private void initReferenceMarkLower(final LinkedList<TreeNode> childs, final TreeNode firstReposition) {
+    private void initReferenceMarkLower(final List<TreeNode> childs, final TreeNode firstReposition) {
 
         boolean initReference = false;
         int position = firstReposition.getPosition();
@@ -1309,7 +1427,7 @@ private void processEvent(AbstractEventSimple event) {
             } else {
                 parentNode = treeMap.get(param.getParentNodeId());
             }
-            node = parentNode.getChilds().get(param.getNodeIndex());
+            node = parentNode.getChildren().get(param.getNodeIndex());
         } else {
             throw new SystemException("Není zvolen identifikátor JP nebo její index", BaseCode.INVALID_STATE);
         }
@@ -1326,8 +1444,8 @@ private void processEvent(AbstractEventSimple event) {
             result.setNodeIndex(0);
             result.setNodeCount(1);
         } else {
-            result.setNodeIndex(parentNode.getChilds().indexOf(node));
-            result.setNodeCount(parentNode.getChilds().size());
+            result.setNodeIndex(parentNode.getChildren().indexOf(node));
+            result.setNodeCount(parentNode.getChildren().size());
         }
 
         if (BooleanUtils.isTrue(param.getFormData())) {
@@ -1368,7 +1486,7 @@ private void processEvent(AbstractEventSimple event) {
         if (parentNode == null) {
             childs = Collections.singletonList(node);
         } else {
-            childs = parentNode.getChilds();
+            childs = parentNode.getChildren();
         }
         int diff = childs.size() - (childs.size() % maxCount);
         if (diff == childs.size()) {
@@ -1387,7 +1505,7 @@ private void processEvent(AbstractEventSimple event) {
     private Collection<TreeNodeVO> getChildren(final TreeNode node, final ArrFundVersion fundVersion) {
 
         LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
-        for (TreeNode treeNode : node.getChilds()) {
+        for (TreeNode treeNode : node.getChildren()) {
             nodesMap.put(treeNode.getId(), treeNode);
         }
 
@@ -2004,7 +2122,7 @@ private void processEvent(AbstractEventSimple event) {
         TreeNode parent = treeNode.getParent();
 
         Node node = new Node(id, arrNode.getVersion(), arrNode.getUuid());
-        node.setHasChildren(!treeNode.getChilds().isEmpty());
+        node.setHasChildren(!treeNode.getChildren().isEmpty());
         node.setDepth(treeNode.getDepth());
 
         String defaultTitle;
@@ -2156,7 +2274,7 @@ private void processEvent(AbstractEventSimple event) {
         if (parentNode == null) {
             childs = Collections.singletonList(node);
         } else {
-            childs = parentNode.getChilds();
+            childs = parentNode.getChildren();
         }
 
         if (fulltextFilter != null) {
@@ -2277,7 +2395,7 @@ private void processEvent(AbstractEventSimple event) {
         }
 
         if (parentReferenceMark.length == 0) {
-            return new String[] {node.getPosition().toString()};
+            return new String[] {Integer.toString(node.getPosition())};
         }
 
         String[] parentMark = parentReferenceMark;
@@ -2410,7 +2528,7 @@ private void processEvent(AbstractEventSimple event) {
 
         if (depth == Depth.ONE_LEVEL) {
             TreeNode node = versionTreeCache.get(nodeId);
-            return node.getChilds().stream().mapToInt(TreeNode::getId).boxed().collect(Collectors.toSet());
+            return node.getChildren().stream().mapToInt(TreeNode::getId).boxed().collect(Collectors.toSet());
         }
 
         Set<Integer> nodeIds = new HashSet<>();
@@ -2420,9 +2538,9 @@ private void processEvent(AbstractEventSimple event) {
         while (!children.isEmpty()) {
             TreeNode node = children.poll();
 
-            List<TreeNode> childs = node.getChilds();
+            List<TreeNode> childs = node.getChildren();
             if (childs != null) {
-                node.getChilds().forEach(child -> {
+                node.getChildren().forEach(child -> {
                     nodeIds.add(child.getId());
                     children.add(child);
                 });
@@ -2440,11 +2558,53 @@ private void processEvent(AbstractEventSimple event) {
      */
     public void walkTree(@NotNull final TreeNode root, @NotNull final Consumer<TreeNode> callback) {
         callback.accept(root);
-        LinkedList<TreeNode> childs = root.getChilds();
+        List<TreeNode> childs = root.getChildren();
         if (childs != null) {
             for (TreeNode child : childs) {
                 walkTree(child, callback);
             }
         }
     }
+
+    /**
+     * Return list of parents
+     * @param version
+     * @param nodeId
+     * @return
+     */
+	public synchronized List<Integer> getParentNodes(ArrFundVersion version, Integer nodeId) {
+		Map<Integer, TreeNode> nodeMap = getNodeHierarchy(version).getNodes();		
+		TreeNode treeNode = nodeMap.get(nodeId);
+		if(treeNode==null) {
+			throw new ObjectNotFoundException("Missing node in fundVersion, nodeId="+nodeId, BaseCode.ID_NOT_EXIST)
+				.setId(nodeId)
+				.set("fundVersion", version.getFundVersionId());
+		}
+		// skip this node
+		treeNode = treeNode.getParent();
+		if(treeNode==null) {
+			return Collections.emptyList();
+		} else {
+			List<Integer> nodeIds = new ArrayList<>();
+			do {
+				nodeIds.add(treeNode.getId());
+				treeNode = treeNode.getParent();
+			} while(treeNode!=null);
+			
+			return nodeIds;
+		}		
+	}
+
+	public synchronized TreeNode getTreeNode(ArrFundVersion fundVersion, ArrNode node) {
+		Map<Integer, TreeNode> nodeMap = getNodeHierarchy(fundVersion).getNodes();
+		return nodeMap.get(node.getNodeId());
+	}
+
+	public Collection<TreeNode> findNodesByDirection(ArrNode node, ArrFundVersion version, RelatedNodeDirection direction) {
+		NodeHierarchy nh = getNodeHierarchy(version);
+		if(nh==null) {
+			throw new BusinessException("Cannot read node hierarchy", BaseCode.INVALID_STATE);
+		}
+		return nh.getNodesByDirection(node.getNodeId(), direction);
+	}
 }
