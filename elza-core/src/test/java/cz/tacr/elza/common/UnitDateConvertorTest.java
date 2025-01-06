@@ -100,6 +100,12 @@ public class UnitDateConvertorTest {
         assertEquals("1980-01-01T10:05:00", unitDate.getValueFrom());
         assertEquals("1990-02-02T12:25:59", unitDate.getValueTo());
 
+        sourceDate = "-1";
+        unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
+        assertEquals(YEAR, unitDate.getFormat());
+        assertEquals("0000-01-01T00:00:00", unitDate.getValueFrom());
+        assertEquals("0000-12-31T23:59:59", unitDate.getValueTo());
+
         sourceDate = "-3";
         unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
         assertEquals(YEAR, unitDate.getFormat());
@@ -203,6 +209,11 @@ public class UnitDateConvertorTest {
         unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
         result = UnitDateConvertor.convertToString(unitDate);
         assertEquals("1.1.1980 10:05:00-2.2.1990 12:25:59", result);
+
+        sourceDate = "[1 př. n. l.]";
+        unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
+        result = UnitDateConvertor.convertToString(unitDate);
+        assertEquals("[1 př. n. l.]", result);
 
         sourceDate = "[2 př. n. l.]";
         unitDate = UnitDateConvertor.convertToUnitDate(sourceDate, new ArrDataUnitdate());
