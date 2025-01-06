@@ -40,7 +40,7 @@ String generate(final GroovyGenCtx ctx) {
     String title = GroovyUtils.findItemByItemTypeCode("ZP2015_TITLE", "", ", ", ctx.getItems(), 100)
     String unitDate = GroovyUtils.findItemByItemTypeCode("ZP2015_UNIT_DATE", ", ", ctx.getItems())
     String storageId = GroovyUtils.findItemByItemTypeCode("ZP2015_STORAGE_ID", ", ukl. j. ", ctx.getItems())
-    String itemOrder = GroovyUtils.findItemByItemTypeCode("ZP2015_ITEM_ORDER", ", ", ctx.getItems())
+    String itemOrder = GroovyUtils.findItemByItemTypeCode("ZP2015_ITEM_ORDER", "/", ctx.getItems())
 
     return aeName.getValue() + ", " + fundName + fundMark + refOzn + 
         invCislo + 
@@ -61,5 +61,6 @@ String generate(final GroovyGenCtx ctx) {
         otherIdMatrixId +
         title +
         unitDate +
+        storageId +
         itemOrder
 }
