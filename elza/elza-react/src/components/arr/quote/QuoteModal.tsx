@@ -9,7 +9,7 @@ import { NodePlainTextRepresentation } from 'elza-api';
 interface Props {
     nodeId: number;
     versionId: number;
-    onClose: () => void;
+    onClose?: () => void;
 }
 
 export function QuoteModal({ nodeId, versionId, onClose }: Props) {
