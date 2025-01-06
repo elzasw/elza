@@ -48,19 +48,12 @@ import { TextFragmentsWindow } from "../../components/arr/text-fragments";
 import { ScenarioDropdown } from "./sub-node-dao";
 import { showConfirmDialog } from 'components/shared/dialog';
 import { DataTypeCode } from 'stores/app/accesspoint/itemFormUtils';
-import { QuoteModal } from './quote';
-import { defineMessages, FormattedMessage } from 'react-intl';
+import { QuoteModal, messages as quoteMessages } from './quote';
+import { FormattedMessage } from 'react-intl';
 
 /**
  * Formulář detailu a editace jedné JP - jednoho NODE v konkrétní verzi.
  */
-
-const messages = defineMessages({
-    quoteTitle: {
-        id: "nodeSubNodeForm_quote_title",
-        defaultMessage: "Citace"
-    }
-})
 
 class NodeSubNodeForm extends AbstractReactComponent {
     static propTypes = {
@@ -362,7 +355,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
 
         dispatch(modalDialogShow(
             this,
-            <FormattedMessage {...messages.quoteTitle} />,
+            <FormattedMessage {...quoteMessages.quoteTitle} />,
             <QuoteModal versionId={fund.versionId} nodeId={selectedSubNodeId} />,
             null,
         ))
@@ -462,7 +455,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
                     <div className="section">
                         <NoFocusButton onClick={this.handleQuote}>
                             <Icon glyph="fa-quote-right" />
-                            <FormattedMessage {...messages.quoteTitle} />
+                            <FormattedMessage {...quoteMessages.quoteTitle} />
                         </NoFocusButton>
                     </div>
                     <div className="section">
