@@ -770,7 +770,7 @@ public class UnitDateConvertor {
             	}
                 break;
             case YEAR:
-            	if(bc) {            		
+            	if(bc) {
             		result = String.format(YEAR_BC_TEMPLATE, year);
             	} else {
             		result = String.valueOf(year);
@@ -816,7 +816,7 @@ public class UnitDateConvertor {
         LocalDateTime date = getLocalDateTimeFromUnitDate(unitdate, first);
         if (date != null) {
         	if(date.getYear()<=0) {
-        		return Math.abs(date.getYear()-1) + (unitdate.getValueFrom().startsWith(BC_ISO) ? PR_N_L : "");
+        		return Math.abs(date.getYear()-1) + PR_N_L;
         	} else {
         		return ""+date.getYear();
         	}
