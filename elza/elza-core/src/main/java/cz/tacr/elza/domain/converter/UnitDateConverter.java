@@ -1,13 +1,13 @@
-package cz.tacr.elza.domain.convertor;
+package cz.tacr.elza.domain.converter;
 
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.CENTURY;
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DATE;
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DATE_TIME;
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.FORMAT_DELIMITER;
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.ESTIMATED_TEMPLATE;
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.YEAR;
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.YEAR_MONTH;
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.CENTURY;
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.DATE;
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.DATE_TIME;
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.DEFAULT_INTERVAL_DELIMITER;
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.ESTIMATED_TEMPLATE;
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.FORMAT_DELIMITER;
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.YEAR;
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.YEAR_MONTH;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,11 +27,11 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
 /**
- * Konvertor pro sprváné zobrazování UnitDate podle formátu.
+ * Konvertor pro správné zobrazování UnitDate podle formátu.
  *
  * @since 6.11.2015
  */
-public class UnitDateConvertor {
+public class UnitDateConverter {
 	
 	private static final String BC_POSTFIX = " př. n. l.";
 	
@@ -728,11 +728,14 @@ public class UnitDateConvertor {
      * Konverze tokenu - výrazu.
      *
      * @param format        vstupní formát
-     * @param unitdate      doplňovaný objekt
+     * @param srcValue		zdrojový řetězec      
      * @param first         zda-li se jedná o první datum
      * @return výsledný řetězec
      */
-    private static String convertToken(final String format, final String value, final boolean estimated) {
+    private static String convertToken(final String format, final String srcValue, final boolean estimated) {
+    	
+    	// remove extra whitespaces
+    	String value = srcValue.trim();
 
         String result;
         boolean addEstimate = estimated;

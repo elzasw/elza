@@ -5,8 +5,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -23,7 +22,7 @@ public class UnitdateComparator implements Comparator {
     @Override
     public Predicate toPredicate(final QueryComparator comparator, final String value) {
         CriteriaBuilder cb = ctx.cb;
-        ArrDataUnitdate data = UnitDateConvertor.convertToUnitDate(value, new ArrDataUnitdate());
+        ArrDataUnitdate data = UnitDateConverter.convertToUnitDate(value, new ArrDataUnitdate());
         Long normalizedFrom = data.getNormalizedFrom();
         Long normalizedTo = data.getNormalizedTo();
         Join<ApItem, ArrData> dataJoin = ctx.getApItemRoot().join(ApItem.FIELD_DATA, JoinType.INNER);

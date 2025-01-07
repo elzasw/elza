@@ -50,7 +50,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UISettings;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
@@ -265,12 +265,12 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     		}
     	}
     	if (StringUtils.isNotEmpty(searchFilterVO.getCreation())) {
-    		ArrDataUnitdate creDate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
+    		ArrDataUnitdate creDate = UnitDateConverter.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
     		bool.must(factory.range().field(DATA_CRE_DATE + NORM_FROM).atMost(creDate.getNormalizedFrom()))
     			.must(factory.range().field(DATA_CRE_DATE + NORM_TO).atLeast(creDate.getNormalizedTo()));
     	}
     	if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
-    		ArrDataUnitdate extDate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
+    		ArrDataUnitdate extDate = UnitDateConverter.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
     		bool.must(factory.range().field(DATA_EXT_DATE + NORM_FROM).atMost(extDate.getNormalizedFrom()))
     			.must(factory.range().field(DATA_EXT_DATE + NORM_TO).atLeast(extDate.getNormalizedTo()));
     	}
