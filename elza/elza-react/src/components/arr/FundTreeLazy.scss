@@ -93,6 +93,7 @@ $TREE_TOP_PADDING: 0px;    // nutné definovat i v komponentě!
             white-space: nowrap;
             font-size: 0.9em;
             width: 100%;
+            align-items: center;
 
             &:nth-child(even) {
                 background: $shade-1;
