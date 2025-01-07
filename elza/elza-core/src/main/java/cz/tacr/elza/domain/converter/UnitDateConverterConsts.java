@@ -1,6 +1,6 @@
-package cz.tacr.elza.domain.convertor;
+package cz.tacr.elza.domain.converter;
 
-public class UnitDateConvertorConsts {
+public class UnitDateConverterConsts {
 
     /**
      * Zkratka století

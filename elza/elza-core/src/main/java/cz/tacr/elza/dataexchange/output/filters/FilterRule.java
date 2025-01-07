@@ -31,7 +31,7 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
@@ -518,7 +518,7 @@ public class FilterRule {
                     localDate = srcDataDate.getValue();
                 } else if (srcValue instanceof ArrDataUnitdate) {
                     ArrDataUnitdate srcDataUnitdate = (ArrDataUnitdate) srcValue;
-                    LocalDateTime localDateTime = UnitDateConvertor.getLocalDateTimeFromUnitDate(srcDataUnitdate,
+                    LocalDateTime localDateTime = UnitDateConverter.getLocalDateTimeFromUnitDate(srcDataUnitdate,
                                                                                                  false);
                     localDate = localDateTime.toLocalDate();
                 } else {
@@ -557,7 +557,7 @@ public class FilterRule {
                     sb.append(formatLocalDate(action, filterRuleContext, localDate, locale));
                 } else if (srcValue instanceof ArrDataUnitdate) {
                     ArrDataUnitdate srcDataUnitdate = (ArrDataUnitdate) srcValue;
-                    LocalDateTime localDateTime = UnitDateConvertor.getLocalDateTimeFromUnitDate(srcDataUnitdate,
+                    LocalDateTime localDateTime = UnitDateConverter.getLocalDateTimeFromUnitDate(srcDataUnitdate,
                                                                                                  false);
                     LocalDate localDate = localDateTime.toLocalDate();
                     localDate = prepareLocalDate(action, filterRuleContext, localDate);

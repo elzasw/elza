@@ -1,6 +1,6 @@
 package cz.tacr.elza.controller.factory;
 
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.DEFAULT_INTERVAL_DELIMITER;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,7 +46,7 @@ import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 
 @Service
 public class SearchFilterFactory {
@@ -223,13 +223,13 @@ public class SearchFilterFactory {
                 }
             }
             if (StringUtils.isNotEmpty(filter.getCreation())) {
-                ArrDataUnitdate aeDataUnitdate = UnitDateConvertor.convertToUnitDate(filter.getCreation(), new ArrDataUnitdate());
+                ArrDataUnitdate aeDataUnitdate = UnitDateConverter.convertToUnitDate(filter.getCreation(), new ArrDataUnitdate());
                 String intervalCreation = aeDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + aeDataUnitdate.getValueTo();
                 QueryValueCondDef valueCondDef = createQueryValueCondDef(CRE_DATE, null, QueryComparator.CONTAIN, intervalCreation);
                 andCondDefList.add(createQueryPartCondDef(valueCondDef, QueryPartCondDef.PartTypeEnum.CRE));
             }
             if (StringUtils.isNotEmpty(filter.getExtinction())) {
-                ArrDataUnitdate aeDataUnitdate = UnitDateConvertor.convertToUnitDate(filter.getExtinction(), new ArrDataUnitdate());
+                ArrDataUnitdate aeDataUnitdate = UnitDateConverter.convertToUnitDate(filter.getExtinction(), new ArrDataUnitdate());
                 String intervalExtinction = aeDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + aeDataUnitdate.getValueTo();
                 QueryValueCondDef valueCondDef = createQueryValueCondDef(EXT_DATE, null, QueryComparator.CONTAIN, intervalExtinction);
                 andCondDefList.add(createQueryPartCondDef(valueCondDef, QueryPartCondDef.PartTypeEnum.EXT));

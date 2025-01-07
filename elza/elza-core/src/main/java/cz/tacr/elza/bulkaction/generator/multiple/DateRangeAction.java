@@ -21,7 +21,7 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
@@ -327,7 +327,7 @@ public class DateRangeAction extends Action {
                 && (dateMin == null || datePriorMin.getNormalizedFrom() < dateMin.getNormalizedFrom())) {
             sb.append("(");
             // add only start of interval
-            sb.append(UnitDateConvertor.beginToString(datePriorMin, true));
+            sb.append(UnitDateConverter.beginToString(datePriorMin, true));
             //appendTimeInterval(sb, datePriorMin, priorMaxAsDateMin ? null : datePriorMax);
             sb.append(") ");
         }
@@ -342,7 +342,7 @@ public class DateRangeAction extends Action {
                 && (dateMax == null || datePosteriorMax.getNormalizedTo() > dateMax.getNormalizedTo())) {
             sb.append(" (");
             // add only end of interval
-            sb.append(UnitDateConvertor.endToString(datePosteriorMax, true));
+            sb.append(UnitDateConverter.endToString(datePosteriorMax, true));
             //appendTimeInterval(sb, posteriorMinAsDateMax ? null : datePosteriorMin, datePosteriorMax);
             sb.append(")");
         }
@@ -362,12 +362,12 @@ public class DateRangeAction extends Action {
     private void appendTimeInterval(StringBuilder sb, ArrDataUnitdate minDate, ArrDataUnitdate maxDate) {
         String minDateStr, maxDateStr;
         if (minDate != null) {
-            minDateStr = UnitDateConvertor.beginToString(minDate, true);
+            minDateStr = UnitDateConverter.beginToString(minDate, true);
         } else {
             minDateStr = null;
         }
         if (maxDate != null) {
-            maxDateStr = UnitDateConvertor.endToString(maxDate, true);
+            maxDateStr = UnitDateConverter.endToString(maxDate, true);
         } else {
             maxDateStr = null;
         }

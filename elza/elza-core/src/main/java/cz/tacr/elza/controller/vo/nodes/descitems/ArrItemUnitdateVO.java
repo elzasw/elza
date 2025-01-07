@@ -5,7 +5,7 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
@@ -53,7 +53,7 @@ public class ArrItemUnitdateVO extends ArrItemVO {
                         .set("dataClass", item.getClass());
             }
             ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) data;
-            value = UnitDateConvertor.convertToString(dataUnitdate);
+            value = UnitDateConverter.convertToString(dataUnitdate);
         }
         ArrItemUnitdateVO vo = new ArrItemUnitdateVO(item, value);
         return vo;

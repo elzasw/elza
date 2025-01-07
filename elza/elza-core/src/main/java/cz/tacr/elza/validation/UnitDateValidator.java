@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertorConsts;
+import cz.tacr.elza.domain.converter.UnitDateConverterConsts;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
@@ -96,7 +96,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 		
 		// determine single format
 		switch (format) {
-		case UnitDateConvertorConsts.CENTURY:
+		case UnitDateConverterConsts.CENTURY:
 			if(!validateCenturyFrom(fromYear, fromMonth, fromDay, fromHour, fromMinute, fromSecond)) {
 				return "Not a valid century start: " + valueFrom;				
 			}
@@ -110,7 +110,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 				return "Inconsistent valueFromEstimated and valueToEstimated.";
 			}
 			return null;
-		case UnitDateConvertorConsts.YEAR:
+		case UnitDateConverterConsts.YEAR:
 			if(!validateYearFrom(fromMonth, fromDay, fromHour, fromMinute, fromSecond)) {
 				return "Not a valid year from: " + valueFrom;				
 			}
@@ -124,7 +124,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 				return "Inconsistent valueFromEstimated and valueToEstimated.";
 			}
 			return null;
-		case UnitDateConvertorConsts.YEAR_MONTH:
+		case UnitDateConverterConsts.YEAR_MONTH:
 			if(!validateYearMonthFrom(fromDay, fromHour, fromMinute, fromSecond)) {
 				return "Not a valid start of month from: " + valueFrom;
 			}
@@ -138,7 +138,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 				return "Inconsistent valueFromEstimated and valueToEstimated.";
 			}
 			return null;
-		case UnitDateConvertorConsts.DATE:
+		case UnitDateConverterConsts.DATE:
 			if(!validateDateFrom(fromHour, fromMinute, fromSecond)) {
 				return "Not a valid start of day: " + valueFrom;
 			}
@@ -152,7 +152,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 				return "Inconsistent valueFromEstimated and valueToEstimated.";
 			}
 			return null;
-		case UnitDateConvertorConsts.DATE_TIME:
+		case UnitDateConverterConsts.DATE_TIME:
 			if(toYear!=fromYear || toMonth!=fromMonth || toDay!=fromDay ||
 					toHour!=fromHour || toMinute!=fromMinute || toSecond!=fromSecond) {
 				return "Not a same date and time: " + valueFrom + " - " + valueTo;
@@ -169,7 +169,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 		}
 		// check format from
 		switch (formatParts[0]) {
-		case UnitDateConvertorConsts.CENTURY:
+		case UnitDateConverterConsts.CENTURY:
 			if(!validateCenturyFrom(fromYear, fromMonth, fromDay, fromHour, fromMinute, fromSecond)) {
 				return "Not a valid century start: " + valueFrom;				
 			}
@@ -178,7 +178,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 				return "From year to year is not more then 100 years: " + toYear + "-" + fromYear; 
 			}
 			break;
-		case UnitDateConvertorConsts.YEAR:
+		case UnitDateConverterConsts.YEAR:
 			if(!validateYearFrom(fromMonth, fromDay, fromHour, fromMinute, fromSecond)) {
 				return "Not a valid year start: " + valueFrom;				
 			}
@@ -186,7 +186,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 				return "Has to be at least one year later: " + valueFrom + " - " + valueTo;
 			}
 			break;
-		case UnitDateConvertorConsts.YEAR_MONTH:
+		case UnitDateConverterConsts.YEAR_MONTH:
 			if(!validateYearMonthFrom(fromDay, fromHour, fromMinute, fromSecond)) {
 				return "Not a valid start of month from: " + valueFrom;
 			}
@@ -194,7 +194,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 				return "Has to be at least one month later: " + valueFrom + " - " + valueTo;
 			}
 			break;
-		case UnitDateConvertorConsts.DATE:
+		case UnitDateConverterConsts.DATE:
 			if(!validateDateFrom(fromHour, fromMinute, fromSecond)) {
 				return "Not a valid start of day: " + valueFrom;
 			}
@@ -203,7 +203,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 				return "Has to be at least one day later: " + valueFrom + " - " + valueTo;
 			}
 			break;			
-		case UnitDateConvertorConsts.DATE_TIME:
+		case UnitDateConverterConsts.DATE_TIME:
 			if(toYear<fromYear || (toYear==fromYear && 
 					(toMonth<fromMonth || (toMonth==fromMonth && 
 					(toDay<fromDay || (toDay==fromDay && 
@@ -217,7 +217,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 		}
 		// check format to
 		switch (formatParts[1]) {
-		case UnitDateConvertorConsts.CENTURY:
+		case UnitDateConverterConsts.CENTURY:
 			if(!validateCenturyTo(toYear, toMonth, toDay, toHour, toMinute, toSecond)) {
 				return "Not a valid century end: " + valueTo;				
 			}
@@ -226,7 +226,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 				return "From year to year is not more then 100 years: " + toYear + "-" + fromYear; 
 			}
 			break;
-		case UnitDateConvertorConsts.YEAR:
+		case UnitDateConverterConsts.YEAR:
 			if(!validateYearTo(toMonth, toDay, toHour, toMinute, toSecond)) {
 				return "Not a valid year end: " + valueTo;				
 			}
@@ -234,7 +234,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 				return "Has to be at least one year later: " + valueFrom + " - " + valueTo;
 			}
 			break;
-		case UnitDateConvertorConsts.YEAR_MONTH:
+		case UnitDateConverterConsts.YEAR_MONTH:
 			if(!validateYearMonthTo(toYear, toMonth, toDay, toHour, toMinute, toSecond)) {
 				return "Not a valid end	of month: " + valueTo;
 			}
@@ -242,7 +242,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 				return "Has to be at least one month later: " + valueFrom + " - " + valueTo;
 			}
 			break;
-		case UnitDateConvertorConsts.DATE:
+		case UnitDateConverterConsts.DATE:
 			if(!validateDateTo(toHour, toMinute, toSecond)) {
 				return "Not a valid end of day: " + valueTo;
 			}
@@ -251,7 +251,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 				return "Has to be at least one day later: " + valueFrom + " - " + valueTo;
 			}
 			break;			
-		case UnitDateConvertorConsts.DATE_TIME:
+		case UnitDateConverterConsts.DATE_TIME:
 			if (toYear < fromYear || (toYear == fromYear && (toMonth < fromMonth || (toMonth == fromMonth
 					&& (toDay < fromDay || (toDay == fromDay && (toHour < fromHour || (toHour == fromHour
 							&& (toMinute < fromMinute || (toMinute == fromMinute && toSecond <= fromSecond)))))))))) {
