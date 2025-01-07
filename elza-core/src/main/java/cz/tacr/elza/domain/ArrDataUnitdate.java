@@ -10,8 +10,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.common.db.CharConverter;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.CalendarConverter;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.validation.ValidUnitDate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -164,7 +164,7 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
 
     @Override
     public String getFulltextValue() {
-        String unitdateString = UnitDateConvertor.convertToString(this);
+        String unitdateString = UnitDateConverter.convertToString(this);
         return unitdateString;
     }
 
@@ -210,7 +210,7 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     static public ArrDataUnitdate valueOf(String v) {
         ArrDataUnitdate du = new ArrDataUnitdate();
 
-        UnitDateConvertor.convertToUnitDate(v, du);
+        UnitDateConverter.convertToUnitDate(v, du);
 
         // set normalized values
         String valueFrom = du.getValueFrom();

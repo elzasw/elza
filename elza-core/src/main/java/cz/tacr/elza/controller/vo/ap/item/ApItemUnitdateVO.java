@@ -9,7 +9,7 @@ import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 
 public class ApItemUnitdateVO extends ApItemVO {
 
@@ -25,7 +25,7 @@ public class ApItemUnitdateVO extends ApItemVO {
         super(item);
         ArrDataUnitdate data = HibernateUtils.unproxy(item.getData());
         if (data != null) {
-            value = UnitDateConvertor.convertToString(data);
+            value = UnitDateConverter.convertToString(data);
         }
     }
 
@@ -48,7 +48,7 @@ public class ApItemUnitdateVO extends ApItemVO {
         String value = null;
         ArrDataUnitdate data = HibernateUtils.unproxy(item.getData());
         if (data != null) {
-            value = UnitDateConvertor.convertToString(data);
+            value = UnitDateConverter.convertToString(data);
         }
         return equalsBase(item) && Objects.equals(this.value, value);
     }

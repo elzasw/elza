@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.factory.WfFactory;
 import cz.tacr.elza.controller.vo.IssueNodeItem;
 import cz.tacr.elza.controller.vo.UsrUserVO;
@@ -247,7 +248,7 @@ public class IssueController {
 
         MediaType mediaType = new MediaType("text", "csv", CsvUtils.CSV_EXCEL_CHARSET);
         response.setHeader(HttpHeaders.CONTENT_TYPE, mediaType.toString());
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=issue-list-" + issueListId + ".csv");
+        FileDownload.addContentDispositionAsAttachment(response, "issue-list-" + issueListId + ".csv");
 
         issueService.exportIssueList(issueList, response.getOutputStream());
     }

@@ -1,6 +1,6 @@
 package cz.tacr.elza.groovy;
 
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.CENTURY;
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.CENTURY;
 
 import java.util.Objects;
 
@@ -8,7 +8,7 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 import cz.tacr.elza.api.IUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 
 public class GroovyUnitdateFormatter {
 
@@ -71,17 +71,17 @@ public class GroovyUnitdateFormatter {
     // prevod casti from
     private String buildBeginUnitdate(IUnitdate unitdate) {
         if (formatYear && !unitdate.getFormat().equals(CENTURY)) {
-            return UnitDateConvertor.convertYear(unitdate, true);
+            return UnitDateConverter.convertYear(unitdate, true);
         } else {
-            return UnitDateConvertor.beginToString(unitdate, false);
+            return UnitDateConverter.beginToString(unitdate, false);
         }
     }
 
     private String buildEndUnitdate(IUnitdate unitdate) {
         if (formatYear && !unitdate.getFormat().equals(CENTURY)) {
-            return UnitDateConvertor.convertYear(unitdate, false);
+            return UnitDateConverter.convertYear(unitdate, false);
         } else {
-            return UnitDateConvertor.endToString(unitdate, false);
+            return UnitDateConverter.endToString(unitdate, false);
         }
     }
 
