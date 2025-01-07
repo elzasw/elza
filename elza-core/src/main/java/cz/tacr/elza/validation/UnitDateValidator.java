@@ -22,8 +22,8 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 	
 	private static Logger logger = LoggerFactory.getLogger(UnitDateValidator.class);
 	
-    @Value("${elza.validate.unitdate.enabled:false}")
-    protected boolean enabled = false;
+    @Value("${elza.validate.unitdate.enabled:true}")
+    protected boolean enabled = true;
         
     @PostConstruct
 	public void init() {
