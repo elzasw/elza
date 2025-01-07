@@ -248,7 +248,7 @@ public class IssueController {
 
         MediaType mediaType = new MediaType("text", "csv", CsvUtils.CSV_EXCEL_CHARSET);
         response.setHeader(HttpHeaders.CONTENT_TYPE, mediaType.toString());
-        FileDownload.addContentDispositionAsAttachment(response, "issue-list-" + issueListId + ".csv");
+        FileDownload.addContentDispositionAsAttachment(response, "issue-list-" + issueListId + ".csv"); 
 
         issueService.exportIssueList(issueList, response.getOutputStream());
     }
