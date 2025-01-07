@@ -95,7 +95,6 @@ import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
-import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.search.SearchIndexSupport;
 import cz.tacr.elza.service.ItemService.FundContext;
 import cz.tacr.elza.service.arrangement.BatchChangeContext;
@@ -175,9 +174,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     private IndexWorkService indexWorkService;
 
     @Autowired
-    private IndexWorkProcessor indexWorkProcessor;
-
-    @Autowired
     private StructObjInternalService structObjInternalService;
 
     @Autowired
@@ -193,16 +189,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     private ClientFactoryDO factoryDO;
 
     private TransactionSynchronization indexWorkNotify;
-
-    @PostConstruct
-    public void init() {
-        this.indexWorkNotify = new TransactionSynchronization() {
-            @Override
-            public void afterCompletion(int status) {
-                indexWorkProcessor.notifyIndexing();
-            }
-        };
-    }
 
     /**
      * Kontrola otevřené verze.

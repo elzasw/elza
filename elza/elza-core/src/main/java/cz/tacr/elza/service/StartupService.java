@@ -35,13 +35,10 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge;
 import cz.tacr.elza.domain.bridge.ArrCachedNodeBridge;
-//import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge; TODO hibernate search 6
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
-//import cz.tacr.elza.search.DbQueueProcessor; TODO hibernate search 6
-import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cam.CamScheduler;
@@ -81,8 +78,6 @@ public class StartupService implements SmartLifecycle {
     private final EntityManager em;
 
     private final AccessPointService accessPointService;
-
-    private final IndexWorkProcessor indexWorkProcessor;
 
     private final ApplicationContext applicationContext;
 
@@ -136,7 +131,6 @@ public class StartupService implements SmartLifecycle {
                           final AccessPointService accessPointService,
                           final VisiblePolicyRepository visiblePolicyRepository,
                           final HibernateConfiguration hibernateConfiguration,
-                          IndexWorkProcessor indexWorkProcessor,
                           final ApplicationContext applicationContext,
                           final AsyncRequestService asyncRequestService,
                           final ResourcePathResolver resourcePathResolver,
@@ -158,7 +152,6 @@ public class StartupService implements SmartLifecycle {
         this.accessPointService = accessPointService;
         this.visiblePolicyRepository = visiblePolicyRepository;
         this.hibernateConfiguration = hibernateConfiguration;
-        this.indexWorkProcessor = indexWorkProcessor;
         this.applicationContext = applicationContext;
         this.asyncRequestService = asyncRequestService;
         this.resourcePathResolver = resourcePathResolver;
@@ -206,6 +199,7 @@ public class StartupService implements SmartLifecycle {
         //----- stage 2 ------
         TransactionTemplate tt = new TransactionTemplate(txManager);
         tt.executeWithoutResult(r -> startInTransaction());
+        syncNodeCacheService();
         syncApCacheService();
 
         // prepare system security context for import
@@ -253,7 +247,6 @@ public class StartupService implements SmartLifecycle {
         logger.info("Elza stopping ...");
         camScheduler.stop();
         asyncRequestService.stop();
-        indexWorkProcessor.stopIndexing();
         structureDataService.stopGenerator();
         outputServiceInternal.stop();
         running = false;
@@ -292,7 +285,6 @@ public class StartupService implements SmartLifecycle {
         clearTempStructureData();
         clearOrphanedNodes();
         bulkActionConfigManager.load();
-        syncNodeCacheService();
         // kontrola datové struktury
         accessPointService.checkConsistency();
     }
@@ -303,7 +295,6 @@ public class StartupService implements SmartLifecycle {
         }
 
         structureDataService.startGenerator();
-        indexWorkProcessor.startIndexing();
         extSyncsProcessor.startExtSyncs();
 
         runQueuedRequests();
@@ -338,7 +329,7 @@ public class StartupService implements SmartLifecycle {
      * Provede spuštění synchronizace cache pro JP.
      */
     private void syncNodeCacheService() {
-        nodeCacheService.syncCache();
+        nodeCacheService.syncCacheParallel();
     }
 
     /**
