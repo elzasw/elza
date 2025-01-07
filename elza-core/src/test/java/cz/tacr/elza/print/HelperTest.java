@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.print.format.Helper;
 import cz.tacr.elza.print.item.ItemUnitdate;
 
@@ -85,7 +85,7 @@ public class HelperTest {
      * @return ItemUnitdate
      */
     private ItemUnitdate createItemUnitdate(String date) {
-        UnitDate ud = UnitDateConvertor.convertToUnitDate(date, new UnitDate());
+        UnitDate ud = UnitDateConverter.convertToUnitDate(date, new UnitDate());
         return new ItemUnitdate(ud); 
     }
 

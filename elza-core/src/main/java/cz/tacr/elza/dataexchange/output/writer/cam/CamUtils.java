@@ -1,10 +1,10 @@
 package cz.tacr.elza.dataexchange.output.writer.cam;
 
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.CENTURY;
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DATE;
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DATE_TIME;
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.YEAR;
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.YEAR_MONTH;
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.CENTURY;
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.DATE;
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.DATE_TIME;
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.YEAR;
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.YEAR_MONTH;
 
 import java.util.List;
 
