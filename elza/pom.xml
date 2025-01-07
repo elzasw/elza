@@ -37,7 +37,7 @@
 
         <geotools.version>29.1</geotools.version>
 
-        <pdfbox.version>3.0.2</pdfbox.version>
+        <pdfbox.version>3.0.3</pdfbox.version>
         <jasperreport.version>6.21.2</jasperreport.version>
 
         <surefire.version>2.22.0</surefire.version>
