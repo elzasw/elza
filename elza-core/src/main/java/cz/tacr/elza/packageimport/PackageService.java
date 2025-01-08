@@ -175,6 +175,7 @@ import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.repository.WfIssueStateRepository;
 import cz.tacr.elza.repository.WfIssueTypeRepository;
+import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.CacheService;
@@ -469,6 +470,9 @@ public class PackageService {
     private WfIssueStateRepository issueStateRepository;
 
     @Autowired
+    private IndexWorkProcessor indexWorkProcessor;
+
+    @Autowired
     private AsyncRequestService asyncRequestService;
 
     @Autowired
@@ -580,7 +584,8 @@ public class PackageService {
 
         structObjValueService.startGenerator();
 
-        // TODO spustit indexovani?
+        // spustit indexovani
+        indexWorkProcessor.resumeIndexing();
 
         asyncRequestService.start();
 
@@ -592,7 +597,8 @@ public class PackageService {
 
         asyncRequestService.stop();
 
-        // TODO zastavit indexovani?
+        // zastavit indexovani
+        indexWorkProcessor.suspendIndexing();
 
         structObjValueService.stopGenerator();
 

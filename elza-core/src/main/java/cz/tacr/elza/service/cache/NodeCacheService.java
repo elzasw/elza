@@ -97,7 +97,7 @@ public class NodeCacheService {
     /**
      * Maximální počet JP, které se mají dávkově zpracovávat pro synchronizaci.
      */
-    private static final int SYNC_BATCH_NODE_SIZE = 2; //800;
+    private static final int SYNC_BATCH_NODE_SIZE = 800;
 
     @Autowired
     private DaoLinkRepository daoLinkRepository;
@@ -480,7 +480,7 @@ public class NodeCacheService {
      *
      * Synchronní metoda volaná z transakce.
      */
-    @Transactional(value=TxType.NEVER)
+    //@Transactional(value=TxType.NEVER)
     public void syncCacheParallel() {
         logger.info("Spuštění - synchronizace cache pro JP");
 
