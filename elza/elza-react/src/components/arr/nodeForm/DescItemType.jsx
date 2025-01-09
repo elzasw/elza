@@ -815,6 +815,7 @@ class DescItemType extends AbstractReactComponent {
         let descItemProps = {
             hasSpecification: refType.useSpecification,
             descItem: descItem,
+            infoType: infoType,
             onChange: this.handleChange.bind(this, descItemIndex),
             onBlur: this.handleBlur.bind(this, descItemIndex),
             onFocus: this.handleFocus.bind(this, descItemIndex),
