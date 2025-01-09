@@ -344,6 +344,7 @@ export function normalizeString(text, allowedLength = 255) {
     if (text.length > allowedLength) {
         text = text.substr(0, allowedLength);
     }
+    text = text.replace(/[\t\n\r]/gm, ' ');
     return text;
 }
 

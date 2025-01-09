@@ -9,6 +9,7 @@ import {decorateValue, inputValue} from './DescItemUtils';
 import DescItemLabel from './DescItemLabel';
 import ItemTooltipWrapper from './ItemTooltipWrapper';
 import {CLS_CALCULABLE} from "../../../constants";
+import TextareaAutosize from 'react-textarea-autosize';
 
 const DescItemString_MAX_LENGTH = 1000;
 
@@ -33,7 +34,7 @@ class DescItemString extends AbstractReactComponent {
     }
 
     render() {
-        const {descItem, locked, readMode, cal} = this.props;
+        const { descItem, locked, readMode, cal, infoType } = this.props;
         let value =
             cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : inputValue(descItem.value);
 
@@ -54,14 +55,24 @@ class DescItemString extends AbstractReactComponent {
         return (
             <div className="desc-item-value">
                 <ItemTooltipWrapper tooltipTitle="dataType.string.format">
-                    <input
+                    {infoType.width === 0 ? <TextareaAutosize
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                         ref={ref => this.focusEl = ref}
                         type="text"
                         disabled={locked || descItem.undefined}
                         value={descItem.undefined ? i18n('subNodeForm.descItemType.undefinedValue') : value}
                         onChange={this.handleChange}
-                    />
+                        style={{ resize: "none" }}
+                    /> :
+                        <input
+                            {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
+                            ref={ref => this.focusEl = ref}
+                            type="text"
+                            disabled={locked || descItem.undefined}
+                            value={descItem.undefined ? i18n('subNodeForm.descItemType.undefinedValue') : value}
+                            onChange={this.handleChange}
+                        />
+                    }
                 </ItemTooltipWrapper>
             </div>
         );
