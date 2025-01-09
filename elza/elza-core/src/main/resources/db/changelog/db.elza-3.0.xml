@@ -175,9 +175,7 @@
 	    )</sql>
 	</changeSet>
 	<changeSet id="20250109112300" author="ppy">
-		<!-- Speedup structured items -->
-		<createIndex indexName="arr_item_data_idx" tableName="arr_item">
-		    <column name="data_id" type="int" />
-		</createIndex>
+		<!-- Speedup structured items, index was conditionally removed -->
+		<sql dbms="postgresql">CREATE INDEX arr_item_data_idx ON arr_item(data_id)</sql>
 	</changeSet>
 </databaseChangeLog>
