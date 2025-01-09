@@ -174,4 +174,10 @@
         where l.level_id is null
 	    )</sql>
 	</changeSet>
+	<changeSet id="20250109112300" author="ppy">
+		<!-- Speedup structured items -->
+		<createIndex indexName="arr_item_data_idx" tableName="arr_item">
+		    <column name="data_id" type="int" />
+		</createIndex>
+	</changeSet>
 </databaseChangeLog>
