@@ -55,17 +55,19 @@ public class AdminService {
      *
      * Volání s časovačem, ve výchozím stavu: 0 0 4 ? * SAT
      * co znamená: každou sobotu ve 04:00
+     * @return 
      * @throws InterruptedException 
      */
     @Scheduled(cron = "${elza.reindex.cron:0 0 4 ? * SAT}")
-    public void reindexInternal() {
+    public Future<?> reindexInternal() {
     	if (isIndexingRunning()) {
-    		return;
+    		return indexerStatus;
     	}
 
     	SearchSession searchSession = Search.session(entityManager);
     	MassIndexer massIndexer = searchSession.massIndexer(ArrCachedNode.class, ArrDescItem.class, ApCachedAccessPoint.class);
     	indexerStatus = massIndexer.start().toCompletableFuture();
+    	return indexerStatus;
     }
 
     /**
