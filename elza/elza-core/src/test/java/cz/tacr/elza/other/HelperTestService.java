@@ -279,8 +279,19 @@ public class HelperTestService {
         }
 
         deleteTablesInternal();
-
+        
+        // reset index
+        logger.debug("Start reindexing.");
         adminService.reindexInternal();
+        while(adminService.isIndexingRunning()) {
+        	logger.debug("Reindexing...");
+        	try {
+				this.wait(50);
+			} catch (InterruptedException e) {
+				break;
+			}
+        }
+        logger.debug("Reindexed.");
 
         if (stopTasks) {
             packageService.startAsyncTasks();
