@@ -286,7 +286,7 @@ public class HelperTestService {
         while(adminService.isIndexingRunning()) {
         	logger.debug("Reindexing...");
         	try {
-				this.wait(50);
+				Thread.sleep(50);
 			} catch (InterruptedException e) {
 				break;
 			}
