@@ -6,6 +6,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -244,7 +245,7 @@ public class ExportServiceImpl implements ExportService {
         ApAccessPoint ap;
         if(StringUtils.isBlank(entityId)) {
             Items items = request.getItems();
-            Validate.notNull(items);
+            Objects.requireNonNull(items);
             List<Object> itemList = items.getStrOrLongOrEnm();
             
             List<ApAccessPoint> aps = accessPointService.findAccessPointsBySinglePartValues(itemList);
