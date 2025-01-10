@@ -812,6 +812,9 @@
         <#lt>    <ead:unittype>s</ead:unittype>
         <#lt>  </ead:physdescstructured>
         <#break>
+      <#case "ZP2015_DAO_ID">
+        <#lt>  <ead:dao daotype="derived" identifier="${output.fund.institution.code}/${output.fund.fundNumber}/${item.serializedValue}" />
+        <#break>
     </#switch>
   </#list>
   <#if (unitPublicTitles?size>0) >
