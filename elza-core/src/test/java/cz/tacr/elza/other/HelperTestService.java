@@ -282,8 +282,8 @@ public class HelperTestService {
         
         // reset index
         logger.debug("Start reindexing.");
-        adminService.reindexInternal();
-        while(adminService.isIndexingRunning()) {
+        var indexStatus = adminService.reindexInternal();
+        while(!indexStatus.isDone()) {
         	logger.debug("Reindexing...");
         	try {
 				Thread.sleep(50);
