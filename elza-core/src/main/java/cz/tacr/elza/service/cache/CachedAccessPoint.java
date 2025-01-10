@@ -17,6 +17,8 @@ import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.RevStateApproval;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 
 public class CachedAccessPoint {
 
@@ -214,4 +216,13 @@ public class CachedAccessPoint {
         }
         return result;
     }
+
+	public CachedPart getPart(Integer partId) {
+        for(CachedPart part: parts) {
+        	if(part.getPartId().equals(partId)) {
+	        	return part;
+        	}
+        }
+		throw new BusinessException("Part not found", BaseCode.ID_NOT_EXIST).set("partId", partId);
+	}
 }
