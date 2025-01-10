@@ -40,6 +40,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.filter.SearchParamType;
@@ -622,11 +623,15 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         if (!descItemIds.isEmpty()) {
 
-        	SearchPredicate descItemIdsPredicate = createDescItemIdsQuery(descItemIds);
+        	// run in batches for a lot of descItems
+        	ObjectListIterator<Integer> oli = new ObjectListIterator<>(org.apache.lucene.search.IndexSearcher.getMaxClauseCount(), descItemIds);
+			oli.forEachRemaining(coll-> {
+	        	SearchPredicate descItemIdsPredicate = createDescItemIdsQuery(coll);
 
-            List<ArrDescItemInfo> list = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate, null, null);
+	            List<ArrDescItemInfo> list = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate, null, null);
 
-            nodeIds.addAll(list.stream().map(i -> i.getNodeId()).collect(Collectors.toList()));
+	            nodeIds.addAll(list.stream().map(i -> i.getNodeId()).collect(Collectors.toList()));				
+			});
 
         }
         return nodeIds;
