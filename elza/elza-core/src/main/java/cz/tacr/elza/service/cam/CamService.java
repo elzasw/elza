@@ -1,5 +1,8 @@
 package cz.tacr.elza.service.cam;
 
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+import static cz.tacr.elza.groovy.GroovyResult.SHORT_NAME;
+
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +56,7 @@ import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApBindingSync;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevision;
@@ -96,6 +100,8 @@ import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedPart;
 
 @Service
 public class CamService {
@@ -104,7 +110,7 @@ public class CamService {
 
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
-
+    
     @Autowired
     private ApBindingRepository bindingRepository;
 
@@ -535,15 +541,27 @@ public class CamService {
     public String createUserInfo(String userInfo, UsrUser user) {
     	String userName;
     	String userId;
-    	String prefName;
+    	String prefName, shortName;
     	if ( user == null) {
     		userName = "admin";
     		userId = "0";
     		prefName = "Admin";
+    		shortName = prefName;
     	} else {
-    		userName = user.getUsername();
+    		prefName = shortName = userName = user.getUsername();
     		userId = Integer.toString(user.getUserId());
-    		prefName = accessPointService.findPreferredPartDisplayName(user.getAccessPoint());
+    		CachedAccessPoint cachedAp = accessPointCacheService.findCachedAccessPoint(user.getAccessPointId());
+    		Objects.requireNonNull(cachedAp);
+			CachedPart prefPart = cachedAp.getPart(cachedAp.getPreferredPartId());
+			Objects.requireNonNull(prefPart);
+			for (ApIndex index : prefPart.getIndices()) {
+				if (index.getIndexType().equals(DISPLAY_NAME)) {
+					prefName = index.getIndexValue();
+				} else 
+				if (index.getIndexType().equals(SHORT_NAME)) {
+					shortName = index.getIndexValue();
+				}
+			}
     	}
     	if (userInfo == null) {
     		return userName;
@@ -551,7 +569,8 @@ public class CamService {
 
         return userInfo.replaceAll("%i", userId)
                 .replaceAll("%u", userName)
-                .replaceAll("%n", prefName);
+                .replaceAll("%n", prefName)
+                .replaceAll("%s", shortName);
     }
 
     /**
