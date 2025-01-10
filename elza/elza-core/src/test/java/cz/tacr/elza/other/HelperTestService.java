@@ -91,6 +91,7 @@ import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.WfCommentRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.repository.WfIssueRepository;
+import cz.tacr.elza.service.AdminService;
 import cz.tacr.elza.service.AsyncRequestService;
 
 /**
@@ -239,6 +240,9 @@ public class HelperTestService {
 
     @Autowired
     private StaticDataService staticDataService;
+    
+	@Autowired
+	private AdminService adminService;
 
     @Autowired
     protected EntityManager em;
@@ -276,8 +280,7 @@ public class HelperTestService {
 
         deleteTablesInternal();
 
-        MassIndexer massIndexer = Search.session(em).massIndexer(ApCachedAccessPoint.class, ArrDescItem.class);
-        massIndexer.start().toCompletableFuture();
+        adminService.reindexInternal();
 
         if (stopTasks) {
             packageService.startAsyncTasks();
