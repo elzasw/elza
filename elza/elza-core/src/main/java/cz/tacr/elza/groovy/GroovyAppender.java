@@ -8,8 +8,8 @@ import org.springframework.util.CollectionUtils;
 
 import jakarta.validation.constraints.NotNull;
 import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.domain.convertor.UnitDateConvertorConsts;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
+import cz.tacr.elza.domain.converter.UnitDateConverterConsts;
 
 /**
  * Build string value for future Item
@@ -217,9 +217,9 @@ public class GroovyAppender {
         @Override
         public void buildItem(StringBuilder sb, GroovyItem item) {
             ArrDataUnitdate dataUnitdate = ArrDataUnitdate
-                    .valueOf(UnitDateConvertor.convertToString(item.getUnitdateValue()));
+                    .valueOf(UnitDateConverter.convertToString(item.getUnitdateValue()));
             long normalizedDataFrom = dataUnitdate.getNormalizedFrom()
-                    + UnitDateConvertorConsts.MAX_NEGATIVE_DATE;
+                    + UnitDateConverterConsts.MAX_NEGATIVE_DATE;
             sb.append(String.format("%019d", normalizedDataFrom));
         }
 

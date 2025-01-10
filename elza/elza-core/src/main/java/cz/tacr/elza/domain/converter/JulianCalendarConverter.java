@@ -1,4 +1,4 @@
-package cz.tacr.elza.domain.convertor;
+package cz.tacr.elza.domain.converter;
 
 import java.time.LocalDateTime;
 

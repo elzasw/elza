@@ -10,6 +10,7 @@ public class GroovyResult {
     public static final String DISPLAY_NAME = "DISPLAY_NAME";
     public static final String DISPLAY_NAME_LOWER = "DISPLAY_NAME_LOWER";
     public static final String SORT_NAME = "SORT_NAME";
+    public static final String SHORT_NAME = "SHORT_NAME";
 
     private GroovyKeyValue keyValue;
 

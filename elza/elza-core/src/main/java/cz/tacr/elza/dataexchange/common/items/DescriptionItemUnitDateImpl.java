@@ -5,7 +5,7 @@ import cz.tacr.elza.dataexchange.common.timeinterval.TimeInterval;
 import cz.tacr.elza.dataexchange.input.DEImportException;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
+import cz.tacr.elza.domain.converter.CalendarConverter;
 import cz.tacr.elza.schema.v2.DescriptionItemUnitDate;
 
 public class DescriptionItemUnitDateImpl extends DescriptionItemUnitDate {

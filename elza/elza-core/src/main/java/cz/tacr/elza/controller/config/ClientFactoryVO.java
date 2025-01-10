@@ -199,7 +199,7 @@ import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -391,7 +391,7 @@ public class ClientFactoryVO {
      * @return
      */
     private static ItemData convertUnitdate(ArrData arrData) {
-    	DataUnitdate data = new DataUnitdate(UnitDateConvertor.convertToString(((ArrDataUnitdate) arrData)), DataType.UNITDATE);
+    	DataUnitdate data = new DataUnitdate(UnitDateConverter.convertToString(((ArrDataUnitdate) arrData)), DataType.UNITDATE);
         data.setDataId(arrData.getDataId());
         return data;
     }

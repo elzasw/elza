@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository.specification;
 
+import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.DEFAULT_INTERVAL_DELIMITER;
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
 import java.util.ArrayList;
@@ -40,11 +41,13 @@ import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.specification.search.BitComparator;
@@ -238,12 +241,14 @@ public class ApStateSpecification implements Specification<ApState> {
                 }
             }
             if (StringUtils.isNotEmpty(searchFilterVO.getCreation())) {
-            	String dateCreation = searchFilterVO.getCreation();
-                and = processValueCondDef(ctx, and, dateCreation, "PT_CRE", "CRE_DATE", null, QueryComparator.CONTAIN, false);
+                ArrDataUnitdate arrDataUnitdate = UnitDateConverter.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
+                String intervalCreation = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+                and = processValueCondDef(ctx, and, intervalCreation, "PT_CRE", "CRE_DATE", null, QueryComparator.CONTAIN, false);
             }
             if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
-            	String dateExtinction = searchFilterVO.getExtinction();
-                and = processValueCondDef(ctx, and, dateExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CONTAIN, false);
+                ArrDataUnitdate arrDataUnitdate = UnitDateConverter.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
+                String intervalExtinction = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+                and = processValueCondDef(ctx, and, intervalExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CONTAIN, false);
             }
             return cb.and(condition, and);
         }

@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.common.ResponseFactory;
 import cz.tacr.elza.controller.vo.ExportParams;
 import cz.tacr.elza.controller.vo.RequestProcessState;
@@ -194,7 +196,7 @@ public class IOController implements IoApi {
             if (StringUtils.isBlank(fileName)) {
                 fileName = "elzaData.xml";
             }
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+            FileDownload.addContentDispositionAsAttachment(headers, fileName);
 
             // cache headers
             headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");

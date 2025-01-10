@@ -40,6 +40,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.filter.SearchParamType;
@@ -53,8 +54,8 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.CalendarConverter;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
@@ -376,7 +377,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         Assert.notNull(condition, "Podmínka musí být vyplněna");
 
         IUnitdate unitdate = new ArrDataUnitdate();
-        UnitDateConvertor.convertToUnitDate(value, unitdate);
+        UnitDateConverter.convertToUnitDate(value, unitdate);
 
         LocalDateTime fromDate = LocalDateTime.parse(unitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         long secondsFrom = CalendarConverter.toSeconds(fromDate);
@@ -622,11 +623,15 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         if (!descItemIds.isEmpty()) {
 
-        	SearchPredicate descItemIdsPredicate = createDescItemIdsQuery(descItemIds);
+        	// run in batches for a lot of descItems
+        	ObjectListIterator<Integer> oli = new ObjectListIterator<>(org.apache.lucene.search.IndexSearcher.getMaxClauseCount(), descItemIds);
+			oli.forEachRemaining(coll-> {
+	        	SearchPredicate descItemIdsPredicate = createDescItemIdsQuery(coll);
 
-            List<ArrDescItemInfo> list = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate, null, null);
+	            List<ArrDescItemInfo> list = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate, null, null);
 
-            nodeIds.addAll(list.stream().map(i -> i.getNodeId()).collect(Collectors.toList()));
+	            nodeIds.addAll(list.stream().map(i -> i.getNodeId()).collect(Collectors.toList()));				
+			});
 
         }
         return nodeIds;
