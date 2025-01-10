@@ -6,7 +6,7 @@ import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
@@ -114,7 +114,7 @@ public class GroovyItem {
         if (itemType.getDataType() != DataType.UNITDATE) {
             throw new BusinessException("Integer value not supported", BaseCode.PROPERTY_HAS_INVALID_TYPE);
         }
-        this.value = UnitDateConvertor.convertToString(value);
+        this.value = UnitDateConverter.convertToString(value);
         this.unitdateValue = value;
     }
 

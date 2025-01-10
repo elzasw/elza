@@ -337,7 +337,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
 
             sb.append(" join arr_data_string d").append(index)
                     .append(" on d").append(index).append(".data_id = i").append(index).append(".data_id")
-                    .append(" and d").append(index).append(".value='").append(item.getValue()).append("'");
+                    .append(" and d").append(index).append(".string_value='").append(item.getValue()).append("'");
 
         } else if (criteria instanceof ItemEnum) {
             ItemEnum item = (ItemEnum) criteria;

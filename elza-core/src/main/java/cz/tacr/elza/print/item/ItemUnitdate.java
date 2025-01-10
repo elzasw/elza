@@ -1,6 +1,6 @@
 package cz.tacr.elza.print.item;
 
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.print.UnitDate;
 import cz.tacr.elza.print.item.convertors.UnitDatePrintConvertor;
 
@@ -31,10 +31,10 @@ public class ItemUnitdate extends AbstractItem {
     }
 
     public String getValueFrom() {
-        return UnitDateConvertor.beginToString(value, true);
+        return UnitDateConverter.beginToString(value, true);
     }
 
     public String getValueTo() {
-        return UnitDateConvertor.endToString(value, true);
+        return UnitDateConverter.endToString(value, true);
     }
 }
