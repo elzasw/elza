@@ -9,6 +9,9 @@ import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +21,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.util.Assert;
 import org.springframework.util.FileSystemUtils;
 
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
@@ -254,6 +259,7 @@ public class StartupService implements SmartLifecycle {
         logger.info("Elza stopping ...");
         camScheduler.stop();
         asyncRequestService.stop();
+        // TODO: stop hibernate mass indexing?
         indexWorkProcessor.stopIndexing();
         structureDataService.stopGenerator();
         outputServiceInternal.stop();
@@ -338,7 +344,8 @@ public class StartupService implements SmartLifecycle {
      * Provede spuštění synchronizace cache pro JP.
      */
     private void syncNodeCacheService() {
-        nodeCacheService.syncCacheParallel();
+    	//Assert.isTrue(TestTransaction.isActive(), "Nesmí existovat žádná aktivní transakce");
+    	nodeCacheService.syncCacheParallel();
     }
 
     /**

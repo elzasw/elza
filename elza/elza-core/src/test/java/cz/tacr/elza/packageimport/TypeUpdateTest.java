@@ -8,13 +8,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
-
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.AbstractServiceTest;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
@@ -57,12 +57,30 @@ public class TypeUpdateTest extends AbstractServiceTest {
     @Autowired
     private ApItemRepository apItemRepository;
 
+    @Before
+    @Override
+    public void setUp() throws Exception {
+    	// package reload - true
+    	packageService.setTesting(true);
+        super.setUp();
+    }
+
+    @After
+    @Override
+    public void tearDown() {
+        super.tearDown();
+        // package reload for next test - true
+        packageService.setTesting(true);
+    }
+
     // drop all types and specs
     @Test
-    @Transactional(TxType.REQUIRES_NEW)
     public void updateTypeTest1() {
-        authorizeAsAdmin();
+        TransactionTemplate tt = new TransactionTemplate(txManager);
+        tt.executeWithoutResult(r -> updateTypeTest1InTransaction());
+    }
 
+    private void updateTypeTest1InTransaction() {
         // drop foreign keys
         itemTypeActionRepository.deleteAll();
         apItemRepository.deleteAll();
@@ -88,10 +106,12 @@ public class TypeUpdateTest extends AbstractServiceTest {
 
     // test will migrate values from SRD_STRING2DATE to DATE
     @Test
-    @Transactional(TxType.REQUIRES_NEW)
     public void updateTypeTest2() {
-        authorizeAsAdmin();
+        TransactionTemplate tt = new TransactionTemplate(txManager);
+        tt.executeWithoutResult(r -> updateTypeTest2InTransaction());
+    }
 
+    private void updateTypeTest2InTransaction() {
         FundInfo fi = createFund("F1");
         RulPackage srcPackage = fi.getFirstRuleset().getPackage();
 

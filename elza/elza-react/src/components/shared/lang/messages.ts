@@ -8,5 +8,13 @@ export const globalMessages = defineMessages({
   copyToClipboardFinished: {
     id: "global_copyToClipboard_finished",
     defaultMessage: "Zkopírováno do schránky"
+  },
+  ok: {
+    id: "global_ok",
+    defaultMessage: "Ok",
+  },
+  cancel: {
+    id: "global_cancel",
+    defaultMessage: "Storno"
   }
 })

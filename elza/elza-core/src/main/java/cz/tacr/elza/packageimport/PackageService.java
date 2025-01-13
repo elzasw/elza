@@ -33,6 +33,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1069,6 +1070,7 @@ public class PackageService {
     }
 
     private void processPartTypes(final PackageContext packageContext) {
+    	logger.debug("Updating part types ...");
         // read from XML
         PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class,
                 packageContext.getByteStream(PART_TYPE_XML));
@@ -1092,10 +1094,26 @@ public class PackageService {
         }
 
         newPartTypes = partTypeRepository.saveAll(newPartTypes);
+        Set<Integer> savedPartIds = newPartTypes.stream().map(i -> i.getPartTypeId()).collect(Collectors.toSet()); 
 
-        List<RulPartType> rulRuleDelete = new ArrayList<>(currPartTypes);
-        rulRuleDelete.removeAll(newPartTypes);
-        partTypeRepository.deleteAll(rulRuleDelete);
+        List<RulPartType> rulPartTypeDelete = new ArrayList<>();
+        // add parts with parent
+        for(RulPartType currPartType: currPartTypes) {
+        	if (currPartType.getChildPart() != null && !savedPartIds.contains(currPartType.getPartTypeId())) {
+        		rulPartTypeDelete.add(currPartType);
+        	}
+        }
+        // add parts without parent
+        for(RulPartType currPartType: currPartTypes) {
+        	if (currPartType.getChildPart() == null && !savedPartIds.contains(currPartType.getPartTypeId())) {
+        		rulPartTypeDelete.add(currPartType);
+        	}
+        }
+        if (!CollectionUtils.isEmpty(rulPartTypeDelete)) {
+            logger.debug("Deleting {}.", rulPartTypeDelete);
+            partTypeRepository.deleteAll(rulPartTypeDelete);
+        }
+        logger.debug("Part types updated.");
     }
 
     private void processPartTypesChildPart(List<PartType> partTypes, List<RulPartType> newPartTypes) {
@@ -3630,7 +3648,6 @@ public class PackageService {
         }
         return null;
     }
-
 
     public Boolean getTesting() {
         return testing;

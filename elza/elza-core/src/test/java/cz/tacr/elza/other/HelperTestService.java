@@ -13,8 +13,6 @@ import java.util.zip.ZipOutputStream;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
-import org.hibernate.search.mapper.orm.Search;
-import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApCachedAccessPoint;
-import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.ApAccessPointRepository;
@@ -243,22 +239,12 @@ public class HelperTestService {
 
     @Autowired
     private StaticDataService staticDataService;
-    
-	@Autowired
-	private AdminService adminService;
+
+    @Autowired
+    private AdminService adminService;
 
     @Autowired
     protected EntityManager em;
-
-    @Transactional
-    public void importPackage(final File file) {
-        // stop services and prepare update
-    	packageService.preImportPackage();
-
-        packageService.importPackageInternal(file, true);
-        // refresh static structures
-        staticDataService.refreshForCurrentThread();
-    }
 
     public List<RulPackage> getPackages() {
         return packageService.getPackages();
@@ -282,8 +268,19 @@ public class HelperTestService {
         }
 
         deleteTablesInternal();
-
-        adminService.reindexInternal();
+        
+        // reset index
+        logger.debug("Start reindexing.");
+        var indexStatus = adminService.reindexInternal();
+        while(!indexStatus.isDone()) {
+        	logger.debug("Reindexing...");
+        	try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				break;
+			}
+        }
+        logger.debug("Reindexed.");
 
         if (stopTasks) {
             packageService.startAsyncTasks();
@@ -377,13 +374,20 @@ public class HelperTestService {
     @Transactional(value = Transactional.TxType.REQUIRES_NEW)
     public void loadPackage(String packageCode, String packageDir) {
         RulPackage rulPackage = getPackage(packageCode);
-        if (rulPackage == null || rulPackage.getVersion() <= 0) {
+        if (rulPackage == null || rulPackage.getVersion() <= 0 || packageService.getTesting()) {
             logger.info("Loading package '" + packageCode + "' for tests...");
             File file = null;
             try {
                 file = buildPackageFileZip(packageDir);
                 Assert.assertNotNull(file);
-                importPackage(file);
+
+                //packageService.importPackage(file);
+
+                // stop services and prepare update
+            	packageService.preImportPackage();
+                packageService.importPackageInternal(file, true);
+                staticDataService.refreshForCurrentThread();
+
             } catch (Exception e) {
                 logger.info("Exception while importing package: " + e.getMessage());
                 e.printStackTrace();
@@ -398,7 +402,6 @@ public class HelperTestService {
             Assert.assertNotNull(rulPackage);
             logger.info("Package loaded.");
         }
-
     }
 
     /**
@@ -455,5 +458,4 @@ public class HelperTestService {
     public void waitForWorkers() {
         asyncRequestService.waitForFinishAll();
     }
-
 }

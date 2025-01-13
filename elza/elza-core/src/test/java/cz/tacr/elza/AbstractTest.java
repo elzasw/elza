@@ -11,15 +11,18 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.other.HelperTestService;
+import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
@@ -81,15 +84,17 @@ public abstract class AbstractTest {
     @Autowired
     protected EntityManager em;
 
+    @Autowired
+    @Qualifier("transactionManager")
+    protected PlatformTransactionManager txManager;
+
     @Before
     public void setUp() throws Exception {
         // startup service have to be initialized
         Assert.assertTrue(!startupService.isRunning());
         helperTestService.deleteTables(false);
 
-        if (!startupService.isRunning()) {
-            startupService.startNow();
-        }
+        startupService.startNow();
 
     	helperTestService.loadPackage("CZ_BASE", "package-cz-base");
     	// helperTestService.loadPackage("ZP2015", "rules-cz-zp2015");
