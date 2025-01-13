@@ -16,14 +16,18 @@ import { createException } from 'components/ExceptionUtils.jsx';
 import { logout } from 'actions/global/login';
 import { store } from 'stores/index.jsx';
 
+interface WindowEx extends Window {
+    serverContextPath?: string;
+}
+
 declare module "axios" {
     export interface AxiosRequestConfig {
         overrideErrorHandler?: boolean;
     }
 }
 
-// @ts-ignore
-export const serverContextPath = window.serverContextPath || "";
+export const serverContextPath = (window as WindowEx).serverContextPath || "";
+export function getServerContextPath() { return (window as WindowEx).serverContextPath || ""; }
 
 const baseApiPath = '/api';
 const v1ApiPath = '/v1';
