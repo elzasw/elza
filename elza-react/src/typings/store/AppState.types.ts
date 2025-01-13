@@ -200,7 +200,7 @@ export interface Fund {
     requestList: unknown;
     unitdate: unknown | null;
     validNamedOutputs: unknown | null;
-    versionId: number | unknown;
+    versionId: number;
     versionValidation: unknown;
     versions: unknown;
 }

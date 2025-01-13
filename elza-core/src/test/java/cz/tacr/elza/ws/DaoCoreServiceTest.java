@@ -85,8 +85,8 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         return WebServiceClientFactory.createDaoService(address, "admin", "admin");
     }
 
-    @Override
     @Before
+    @Override
     public void setUp() throws Exception {
         super.setUp();
 
@@ -95,6 +95,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
     }
 
     @After
+    @Override
     public void tearDown() {
         daoServiceClient = null;
 
