@@ -8,11 +8,10 @@ import java.util.Collections;
 import java.util.List;
 
 import cz.tacr.elza.service.StructObjService;
-import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.AbstractServiceTest;
 import cz.tacr.elza.config.export.ExportConfig;
@@ -102,10 +101,13 @@ public class OutputModelTest extends AbstractServiceTest {
     @Autowired
     StructObjService structObjService;
 
-    // test output with structObjs
     @Test
-    @Transactional(TxType.REQUIRES_NEW)
     public void outputStructObjs() {
+        TransactionTemplate tt = new TransactionTemplate(txManager);
+        tt.executeWithoutResult(r -> outputStructObjsInTransaction());
+    }
+
+    public void outputStructObjsInTransaction() {
         authorizeAsAdmin();
 
         StaticDataProvider sdp = staticDataService.createProvider();
@@ -200,6 +202,5 @@ public class OutputModelTest extends AbstractServiceTest {
         // Flush any pending operations
         helperTestService.waitForWorkers();
         em.flush();
-
     }
 }

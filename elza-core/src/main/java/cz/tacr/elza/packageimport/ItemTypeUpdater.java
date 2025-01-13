@@ -177,7 +177,6 @@ public class ItemTypeUpdater {
      */
     int numDroppedCachedNode = 0;
 
-
 	public ItemTypeUpdater() {
 	}
 
