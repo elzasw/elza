@@ -207,7 +207,7 @@ public class FundController implements FundsApi {
         if (fundVersion == null) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
-        ArrNode rootNode = fundVersion.getRootNode(); 
+        ArrNode rootNode = fundVersion.getRootNode();
 
         return ResponseEntity.ok(factoryVo.createFundDetail(fundVersion.getFund(), rootNode.getUuid()));
     }
@@ -284,8 +284,8 @@ public class FundController implements FundsApi {
                     }
                     if (result == null) {
                         result = new ArrayList<>();
-                    }                    
-                    
+                    }
+
                     FsRepo fsRepo = new FsRepo();
                     fsRepo.setFsRepoId(digiRepo.getExternalSystemId());
                     fsRepo.setName(digiRepo.getName());
@@ -385,7 +385,7 @@ public class FundController implements FundsApi {
 
             List<FsItem> appendItems;
             Integer nextOffset = null;
-            // append selected items 
+            // append selected items
             if ((fsItemList.size() - offset) <= maxItems) {
                 // last items
                 if (offset == 0) {
@@ -417,7 +417,7 @@ public class FundController implements FundsApi {
             return p -> true;
         }
         switch (filterType) {
-        	case FILE: 
+        	case FILE:
                 return p -> Files.isRegularFile(p);
         	case FOLDER:
                 return p -> Files.isDirectory(p);
@@ -469,15 +469,15 @@ public class FundController implements FundsApi {
 
     @Override
     @Transactional
-    public ResponseEntity<List<UsedItemType>> fundUsedItemTypes(@PathVariable("fundId") Integer fundId, 
+    public ResponseEntity<List<UsedItemType>> fundUsedItemTypes(@PathVariable("fundId") Integer fundId,
                                                                 @PathVariable("fundVersionId") Integer fundVersionId) {
     	Objects.requireNonNull(fundId);
     	Objects.requireNonNull(fundVersionId);
 
         ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        Validate.isTrue(fundVersion.getFundId() == fundId, "fundId does not match fundVersionId");
+        Validate.isTrue(fundVersion.getFundId().equals(fundId), "fundId does not match fundVersionId");
 
-        List<UsedItemType> usedItemTypes = arrangementService.findUsedItemTypes(fundVersion); 
+        List<UsedItemType> usedItemTypes = arrangementService.findUsedItemTypes(fundVersion);
 
         return ResponseEntity.ok(usedItemTypes);
     }
