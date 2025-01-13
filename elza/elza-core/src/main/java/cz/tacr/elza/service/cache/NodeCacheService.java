@@ -480,7 +480,7 @@ public class NodeCacheService {
      *
      * Synchronní metoda volaná z transakce.
      */
-    //@Transactional(value=TxType.NEVER)
+    @Transactional(value=TxType.NEVER)
     public void syncCacheParallel() {
         logger.info("Spuštění - synchronizace cache pro JP");
 

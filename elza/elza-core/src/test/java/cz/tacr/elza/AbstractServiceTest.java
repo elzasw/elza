@@ -6,8 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
-import org.apache.commons.lang3.Validate;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
@@ -28,6 +29,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.security.UserDetail;
@@ -40,7 +42,8 @@ import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
 
 public abstract class AbstractServiceTest extends AbstractTest {
-    @Autowired
+
+	@Autowired
     protected AccessPointService apService;
 
     @Autowired
@@ -79,6 +82,9 @@ public abstract class AbstractServiceTest extends AbstractTest {
 
     @Autowired
     protected LevelTreeCacheService levelTreeCacheService;
+
+    @Autowired
+    protected PackageService packageService;
 
     @Value("${local.server.port}")
     protected int port;
@@ -143,10 +149,10 @@ public abstract class AbstractServiceTest extends AbstractTest {
 
         ArrFundVersion fundVersion = arrangementService.createFundWithScenario(fundName, fi.getFirstRuleset(), fundCode, firstInstitution,
         																	   null, null, null, null, null, null, null, null);
-        Validate.notNull(fundVersion.getFund());
+        Objects.requireNonNull(fundVersion.getFund());
         fi.setFund(fundVersion.getFund());
 
-        Validate.notNull(fundVersion);
+        Objects.requireNonNull(fundVersion);
         fi.setOpenVersion(fundVersion);
 
         return fi;
@@ -176,20 +182,22 @@ public abstract class AbstractServiceTest extends AbstractTest {
     @Before
     @Override
     public void setUp() throws Exception {
-        authorizeAsAdmin();
-        super.setUp();
+    	authorizeAsAdmin();
+    	super.setUp();
+
+        TransactionTemplate tt = new TransactionTemplate(txManager);
+        tt.executeWithoutResult(r -> staticDataService.init());
+
         institutions = imporInsts();
         firstInstitution = institutions.get(0);
-        // Flush any pending operations
-        em.flush();
+
+        // package not reload - false 
+        packageService.setTesting(false);
     }
 
     @After
     @Override
     public void tearDown() {
-        // Flush any pending operations
-        em.flush();
-
         super.tearDown();
     }
 
@@ -207,7 +215,7 @@ public abstract class AbstractServiceTest extends AbstractTest {
      */
     protected List<ParInstitution> imporInsts() {
         ApScope scope = apService.getApScope(1);
-        Validate.notNull(scope);
+        Objects.requireNonNull(scope);
 
         File instFile = getResourceFile(XML_INSTITUTION);
         try (FileInputStream fis = new FileInputStream(instFile)) {

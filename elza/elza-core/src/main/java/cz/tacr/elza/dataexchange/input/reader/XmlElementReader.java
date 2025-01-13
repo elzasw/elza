@@ -11,6 +11,8 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.dataexchange.input.DEImportException;
 
@@ -20,6 +22,8 @@ import cz.tacr.elza.dataexchange.input.DEImportException;
  * 
  */
 public class XmlElementReader {
+
+	private static final Logger logger = LoggerFactory.getLogger(XmlElementReader.class);
 
 	/**
 	 * Map of registered element handlers
@@ -101,6 +105,7 @@ public class XmlElementReader {
 			try {
                 handler.handleStartElement(eventReader, startElement);
 			} catch (Throwable t) {
+				logger.error("", t);
 				int lineNumber = peekEvent.getLocation().getLineNumber();
 				throw new DEImportException("Reading of XML element failed, path:" + path + ", line:" + lineNumber, t);
 			}

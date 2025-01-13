@@ -63,11 +63,11 @@ elza:
     deleteWithEntities: false
   startupService:
     autoStart: false
-  package:
-    testing: true
+#  package:
+#    testing: false
 
 logging:
-#  file: 
+#  file:
 #    name: C:/temp/elza/logs/elza_test.log
 #    max-size: 500MB
   level:
@@ -75,7 +75,8 @@ logging:
 #    cz.tacr.elza: DEBUG
 #    io.restassured: TRACE
 #    org.springframework.web.servlet: TRACE
-#    Request logging
+#   Request logging
 #    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
-#    Logovani SQL dotazu
+#   Logovani SQL dotazu
 #    org.hibernate.SQL: DEBUG
+#    org.springframework.transaction.interceptor: TRACE
