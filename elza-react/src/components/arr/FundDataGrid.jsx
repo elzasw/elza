@@ -584,6 +584,7 @@ class FundDataGrid extends AbstractReactComponent {
                         visibleColumns={visibleColumns}
                         itemTypeCodes={items}
                     />,
+                    "dialog-md"
                 ),
             );
         });
