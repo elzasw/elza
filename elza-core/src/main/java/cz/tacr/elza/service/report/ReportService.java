@@ -3,6 +3,7 @@ package cz.tacr.elza.service.report;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -69,6 +70,8 @@ public class ReportService {
 	private final String VIEW_AP_USAGE = "rpt_view_ap_usage";
 
 	private final String VIEW_AP_CHANGE = "rpt_view_ap_change";
+
+	private final String DATE_FROM = "DATE_FROM";
 
 	// maximální "zastarávání" dat v hodinách
 	private final int HOURS_TO_REFRESH = 2;
@@ -170,11 +173,19 @@ public class ReportService {
 			// get definition
 			ReportReportDefinition definition = definitionsMap.get(rptParam.getReportId());
 			// add parameter
-			// TODO: prepare default values
 			ReportReportParamDefinition paramDef = new ReportReportParamDefinition(
 					rptParam.getCode(), rptParam.getName(), 
 					ReportValueType.valueOf(valueTypeMap.get(rptParam.getValueTypeId()).getCode()), 
 					rptParam.getRequired(), rptParam.getRepeatable());
+			// add default value for required parameter 
+			if (paramDef.getRequired()) {
+				if (paramDef.getParamType() == ReportValueType.DATE) {
+					if (paramDef.getCode().equals(DATE_FROM)) {
+						OffsetDateTime firstDayOfYear = OffsetDateTime.now().with(TemporalAdjusters.firstDayOfYear());
+						paramDef.addValuesItem(new ReportValueDate(firstDayOfYear, ReportValueType.DATE));
+					}
+				}
+			}
 			definition.addParamsItem(paramDef);
 		});
 
