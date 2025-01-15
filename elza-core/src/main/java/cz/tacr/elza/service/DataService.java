@@ -50,23 +50,6 @@ public class DataService {
     @Autowired
     DataCoordinatesRepository dataCoordinatesRepository;
 
-    public <ENTITY extends Item> List<ENTITY> findItemsWithData(List<ENTITY> items) {
-    	StaticDataProvider sdp = staticDataService.getData();
-    	Map<DataType, List<ENTITY>> entityMap = new HashMap<>();
-    	for (ENTITY item : items) {
-    		ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
-    		DataType dataType = itemType.getDataType();
-    		List<ENTITY> entities = entityMap.computeIfAbsent(dataType, k -> new ArrayList<>());
-    		entities.add(item);
-    		if (entities.size() == hibernateConfiguration.getBatchSize()) {
-    			findAllDataByDataResults(dataType, entities);
-    			entityMap.remove(dataType);
-    		}
-    	}
-    	entityMap.keySet().forEach(d -> findAllDataByDataResults(d, entityMap.get(d)));
-    	return items;
-    }
-
     public <ENTITY extends Item> ENTITY findItemWithData(ENTITY item) {
     	List<ENTITY> items = findItemsWithData(List.of(item));
     	return items.get(0);
@@ -159,4 +142,21 @@ public class DataService {
     public byte[] convertGeometryToWKB(org.locationtech.jts.geom.Geometry geometry) {
         return dataCoordinatesRepository.convertGeometryToWKB(geometry);
     }
+
+	public <ENTITY extends Item> List<ENTITY> findItemsWithData(List<ENTITY> items) {
+		StaticDataProvider sdp = staticDataService.getData();
+		Map<DataType, List<ENTITY>> entityMap = new HashMap<>();
+		for (ENTITY item : items) {
+			ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
+			DataType dataType = itemType.getDataType();
+			List<ENTITY> entities = entityMap.computeIfAbsent(dataType, k -> new ArrayList<>());
+			entities.add(item);
+			if (entities.size() == hibernateConfiguration.getBatchSize()) {
+				findAllDataByDataResults(dataType, entities);
+				entityMap.remove(dataType);
+			}
+		}
+		entityMap.keySet().forEach(d -> findAllDataByDataResults(d, entityMap.get(d)));
+		return items;
+	}
 }

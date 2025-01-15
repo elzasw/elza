@@ -60,6 +60,7 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -103,10 +104,12 @@ public class DEExportService {
             ResourcePathResolver resourcePathResolver,
             ScopeRepository scopeRepository,
                            final RuleService ruleService,
-                           final ElzaLocale elzaLocale) {
+                           final ElzaLocale elzaLocale,
+                           final DataService dataService) {
         this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, apRepository,
                 fundVersionRepository,
-                resourcePathResolver);
+                resourcePathResolver,
+                dataService);
         this.staticDataService = staticDataService;
         this.apItemRepository = apItemRepository;
         this.stateRepository = stateRepository;
@@ -164,7 +167,7 @@ public class DEExportService {
             RulExportFilter expFilterDB = ruleService.getExportFilter(params.getExportFilterId());
             // create bean for export filter
             ExportFilterConfig efc = loadConfig(expFilterDB);
-            ExportFilter expFilter = efc.createFilter(initHelper.getEm(), staticDataService.getData(), elzaLocale);
+            ExportFilter expFilter = efc.createFilter(initHelper.getEm(), staticDataService.getData(), elzaLocale, initHelper.getDataService());
             context.setExportFilter(expFilter);
         }
 
