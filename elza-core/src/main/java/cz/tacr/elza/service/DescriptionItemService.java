@@ -95,8 +95,6 @@ import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
-import cz.tacr.elza.search.IndexWorkProcessor;
-import cz.tacr.elza.search.SearchIndexSupport;
 import cz.tacr.elza.service.ItemService.FundContext;
 import cz.tacr.elza.service.arrangement.BatchChangeContext;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
@@ -110,7 +108,7 @@ import cz.tacr.elza.service.vo.TitleItemsByType;
  *
  */
 @Service
-public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
+public class DescriptionItemService {
 
     private static final Logger logger = LoggerFactory.getLogger(DescriptionItemService.class);
 
@@ -175,9 +173,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     private IndexWorkService indexWorkService;
 
     @Autowired
-    private IndexWorkProcessor indexWorkProcessor;
-
-    @Autowired
     private StructObjInternalService structObjInternalService;
 
     @Autowired
@@ -199,7 +194,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         this.indexWorkNotify = new TransactionSynchronization() {
             @Override
             public void afterCompletion(int status) {
-                indexWorkProcessor.notifyIndexing();
+                //indexWorkProcessor.notifyIndexing();
             }
         };
     }
@@ -2491,7 +2486,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         return descItemCreated;
     }
 
-    @Override
     public Map<Integer, ArrDescItem> findToIndex(Collection<Integer> ids) {
         if (CollectionUtils.isEmpty(ids)) {
             return Collections.emptyMap();
