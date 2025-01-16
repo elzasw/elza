@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.util.CollectionUtils;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -504,6 +505,8 @@ public class FilterRule {
                 }
             }
         }
+        // unproxy value - will be used by instanceof
+		srcValue = HibernateUtils.unproxy(srcValue);
 
         ArrDescItem descItem = null;
         ArrItem existingItem = filter.getAddedItem(action.getTrgItemType().getEntity(), action.getTrgItemSpec());
