@@ -552,7 +552,7 @@ public class AccessPointService {
         // update access point, publish and reindex
         ApAccessPoint accessPoint = saveWithLock(restoreState.getAccessPoint());
         publishAccessPointRestoreEvent(accessPoint);
-        reindexDescItem(accessPoint);
+        //reindexDescItem(accessPoint);
 
         // if exists replacedById - regeneration cached AP by id
         if (apState.getReplacedById() != null) {
@@ -665,7 +665,7 @@ public class AccessPointService {
 
         accessPoint = saveWithLock(accessPoint);
         publishAccessPointDeleteEvent(accessPoint);
-        reindexDescItem(accessPoint);
+        //reindexDescItem(accessPoint);
     }
 
     /**
@@ -1728,7 +1728,7 @@ public class AccessPointService {
         }*/
 
         publishAccessPointUpdateEvent(result);
-        reindexDescItem(result);
+        //reindexDescItem(result);
 
         return newState;
     }
@@ -2309,13 +2309,6 @@ public class AccessPointService {
         return sequenceService.getNext(OBJECT_ID_SEQUENCE_NAME);
     }
 
-    @Transactional
-    public void reindexDescItem(ApAccessPoint accessPoint) {
-        Collection<Integer> itemIds = new HashSet<>(256);
-        itemIds.addAll(apAccessPointRepository.findItemIdByAccessPointIdOverDataRecordRef(accessPoint.getAccessPointId()));
-        descriptionItemService.reindexDescItem(itemIds);
-    }
-
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
     public List<ApStateInfo> findApStates(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint apAccessPoint) {
         return apStateRepository.findInfoByAccessPoint(apAccessPoint);
@@ -2467,7 +2460,7 @@ public class AccessPointService {
         }
 
         publishAccessPointUpdateEvent(accessPoint);
-        reindexDescItem(accessPoint);
+        //reindexDescItem(accessPoint);
 
         return newApState;
     }
