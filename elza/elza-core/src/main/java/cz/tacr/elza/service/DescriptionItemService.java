@@ -170,9 +170,6 @@ public class DescriptionItemService {
     private DescriptionItemServiceInternal serviceInternal;
 
     @Autowired
-    private IndexWorkService indexWorkService;
-
-    @Autowired
     private StructObjInternalService structObjInternalService;
 
     @Autowired
@@ -2492,24 +2489,6 @@ public class DescriptionItemService {
         }
         // moznost optimalizovat nacteni vcene zavislosti
         return descItemRepository.findAllById(ids).stream().collect(Collectors.toMap(o -> o.getItemId(), o -> o));
-    }
-
-    @Transactional
-    public void reindexDescItem(Integer itemId) {
-        try {
-            indexWorkService.createIndexWork(ArrDescItem.class, itemId);
-        } finally {
-            TransactionSynchronizationManager.registerSynchronization(indexWorkNotify);
-        }
-    }
-
-    @Transactional
-    public void reindexDescItem(Collection<Integer> itemIds) {
-        try {
-            indexWorkService.createIndexWork(ArrDescItem.class, itemIds);
-        } finally {
-            TransactionSynchronizationManager.registerSynchronization(indexWorkNotify);
-        }
     }
 
     public MultipleItemChangeContext createChangeContext(int fundVersionId) {

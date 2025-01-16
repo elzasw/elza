@@ -7,15 +7,11 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.repository.HsearchOutboxEventRepository;
-import cz.tacr.elza.service.IndexWorkService;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.test.controller.vo.ResultEntityRef;
 import cz.tacr.elza.test.controller.vo.SearchParams;
 
 public class SearchControllerTest extends AbstractControllerTest {
-
-    @Autowired
-    IndexWorkService indexWorkService;
 
     @Autowired
     HsearchOutboxEventRepository hsearchOutboxEvent; 
@@ -40,10 +36,7 @@ public class SearchControllerTest extends AbstractControllerTest {
 
     @Test
     public void searchArchDescTest() throws InterruptedException {
-        // wait for ending lucene indexing
-        while (indexWorkService.isActive()) {
-            Thread.sleep(100);
-        }
+        // TODO: wait for ending lucene indexing?
 
         // filter is null
         ResultEntityRef result = searchApi.searchArchDesc(createSearchParamEmpty());
