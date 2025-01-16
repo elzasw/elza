@@ -358,11 +358,11 @@ public class ArrangementService {
     public List<NodePlainTextRepresentation> getNodePlainText(@NotNull Integer fundVersionId, @NotNull Integer nodeId) {
     	ArrFundVersion fundVersion = getFundVersion(fundVersionId);
     	ArrFund fund = fundVersion.getFund();
-    	ParInstitution institucion = fund.getInstitution();
-    	Integer accessPointId = institucion.getAccessPointId();    	
+    	ParInstitution institution = fund.getInstitution();
+    	Integer accessPointId = institution.getAccessPointId();    	
     	List<ArrDescItem> items = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(List.of(nodeId));
 
-    	return groovyService.getNodePlainText(fundVersion, accessPointId, items);
+    	return groovyService.getNodePlainText(fundVersion, institution, items);
 	}
 
     /**

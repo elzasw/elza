@@ -2,8 +2,6 @@ package cz.tacr.elza.groovy;
 
 import java.util.Objects;
 
-import jakarta.annotation.Nullable;
-
 public class ResultBuilder {
 
 	private GroovyGenCtx ctx;
@@ -43,8 +41,18 @@ public class ResultBuilder {
 		return this;
 	}
 
-	public ResultBuilder append(final String itemType, int lengthLimit) {
-		GroovyItem item = findItemByItemTypeCode(itemType);
+	public ResultBuilder appendItem(final String itemType, final String prefix) {
+		ctx.getItemsByItemType(itemType).forEach(i -> append(prefix, i));
+		return this;
+	}
+
+	public ResultBuilder appendItem(final String itemType) {
+		ctx.getItemsByItemType(itemType).forEach(i -> append(i));
+		return this;
+	}
+
+	public ResultBuilder appendItemWithLimit(final String itemType, int lengthLimit) {
+		GroovyItem item = ctx.getFirstItemByItemType(itemType);
 		if (item != null) {
 			String itemString = item.getValue();
 	    	if (itemString.length() > lengthLimit) {
@@ -55,29 +63,14 @@ public class ResultBuilder {
 		return this;
 	}
 
-	public ResultBuilder append(final String itemType, final String prefix) {
-		append(prefix, findItemByItemTypeCode(itemType));
-		return this;
-	}
-
-	public ResultBuilder append(final String itemType, final String itemSpec, final String prefix) {
-    	for (GroovyItem item : ctx.getItems()) {
-    		if (item.getTypeCode().equals(itemType) && Objects.equals(item.getSpecCode(), itemSpec)) {
-    			append(prefix, item);
+	public ResultBuilder appendItemWithSpecLabel(final String itemType, final String itemSpec) {
+    	for (GroovyItem groovyItem : ctx.getItems()) {
+    		if (groovyItem.getTypeCode().equals(itemType) && Objects.equals(groovyItem.getSpecCode(), itemSpec)) {
+    			append(groovyItem.getSpecType().getShortcut() + " ", groovyItem);
     		}
     	}
 		return this;
 	}
-
-    @Nullable
-    private GroovyItem findItemByItemTypeCode(final String itemType) {
-    	for (GroovyItem item : ctx.getItems()) {
-    		if (item.getTypeCode().equals(itemType)) {
-    			return item;
-    		}
-    	}
-    	return null;
-    }
 
     @Override
 	public String toString() {
