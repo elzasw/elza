@@ -58,6 +58,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.Item;
+import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulArrangementRule.RuleType;
 import cz.tacr.elza.domain.RulComponent;
@@ -70,6 +71,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.groovy.GroovyAe;
 import cz.tacr.elza.groovy.GroovyFund;
 import cz.tacr.elza.groovy.GroovyGenCtx;
+import cz.tacr.elza.groovy.GroovyInstitution;
 import cz.tacr.elza.groovy.GroovyItem;
 import cz.tacr.elza.groovy.GroovyItems;
 import cz.tacr.elza.groovy.GroovyPart;
@@ -230,15 +232,15 @@ public class GroovyService {
         return groovyScriptService.process(groovyAe, groovyFilePath);
     }
 
-    public List<NodePlainTextRepresentation> getNodePlainText(@NotNull final ArrFundVersion fundVersion, Integer accessPointId, List<ArrDescItem> items) {
+    public List<NodePlainTextRepresentation> getNodePlainText(@NotNull final ArrFundVersion fundVersion, ParInstitution institution, List<ArrDescItem> items) {
 		List<NodePlainTextRepresentation> result = new ArrayList<>();
 
-		GroovyFund groovyFund = new GroovyFund(fundVersion.getFund());
-
-        ApState state = apStateRepository.findLastByAccessPointId(accessPointId);
+        ApState state = apStateRepository.findLastByAccessPointId(institution.getAccessPointId());
         List<ApPart> parts = partService.findPartsByAccessPoint(state.getAccessPoint());
         List<ApItem> itemsByParts = accessPointItemService.findItemsByParts(parts);
         GroovyAe groovyAe = convertAe(state, parts, itemsByParts);
+
+        GroovyFund groovyFund = new GroovyFund(fundVersion.getFund(), new GroovyInstitution(institution, groovyAe));
 
         StaticDataProvider sdp = staticDataService.getData();
         List<GroovyItem> groovyItems = new ArrayList<>();
