@@ -51,7 +51,7 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
     }
 
     @Override
-    protected void processBatch(ArrayList<BatchEntry> entries) {
+    protected void processBatch(List<BatchEntry> entries) {
         List<Integer> nodeIds = getNodeIds(entries);
         Map<Integer, RestoredNode> cachedNodes = nodeCacheService.getNodes(nodeIds);
 
