@@ -43,6 +43,17 @@ public interface DescItemRepositoryCustom {
 
     List<ArrDescItem> findDescItemsByNodeIds(Collection<Integer> nodeIds, Collection<RulItemType> itemTypes, Integer changeId);
 
+    /**
+     * Find all nodes containing given text.
+     * 
+     * Function will check arr_data_string and arr_data_text.
+     * 
+     * @param nodes
+     * @param itemType
+     * @param specifications
+     * @param text Text to find.
+     * @return Return items containing given text
+     */
     List<ArrDescItem> findByNodesContainingText(Collection<ArrNode> nodes,
                                                 RulItemType itemType,
                                                 Set<RulItemSpec> specifications,
