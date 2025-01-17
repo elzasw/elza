@@ -2,6 +2,7 @@ package cz.tacr.elza.dataexchange.output.sections;
 
 import java.math.BigInteger;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import jakarta.persistence.EntityManager;
@@ -16,6 +17,7 @@ import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
 public class SectionContext {
@@ -55,13 +57,14 @@ public class SectionContext {
                    LevelInfoListener levelInfoListener,
                    NodeCacheService nodeCacheService,
                    EntityManager em,
-                   ResourcePathResolver resourceResolver) {
-        this.context = Validate.notNull(ctx);
+                   ResourcePathResolver resourceResolver,
+                   DataService dataService) {
+        this.context = Objects.requireNonNull(ctx);
         this.staticData = ctx.getStaticData();
         this.levelInfoLoader = new LevelInfoLoader(em, ctx.getBatchSize(), nodeCacheService, ctx.isIncludeAccessPoints(), ctx.isIncludeUUID());
-        this.structObjLoader = new StructObjectInfoLoader(em, ctx.getBatchSize(), this.staticData);
+        this.structObjLoader = new StructObjectInfoLoader(em, ctx.getBatchSize(), this.staticData, dataService);
         this.dmsFileLoader = new DmsFileLoader(em, ctx.getBatchSize(), resourceResolver);
-        this.fundVersion = Validate.notNull(fundVersion);
+        this.fundVersion = Objects.requireNonNull(fundVersion);
         this.multipleSections = multipleSections;
         this.levelInfoListener = levelInfoListener;
         this.em = em;

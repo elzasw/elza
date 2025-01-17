@@ -665,4 +665,8 @@
 		</insert>
 	</changeSet>
 
+	<changeSet id="20250116011600" author="sergey.iryupin">
+		<dropTable tableName="sys_index_work"/>
+	</changeSet>
+
 </databaseChangeLog>

@@ -4,9 +4,11 @@ import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.service.DataService;
 
 public interface ExportFilterConfig {
 
-    ExportFilter createFilter(final EntityManager em, final StaticDataProvider sdp, final ElzaLocale elzaLocale);
+    ExportFilter createFilter(final EntityManager em, final StaticDataProvider sdp, 
+    		final ElzaLocale elzaLocale, final DataService dataService);
 
 }

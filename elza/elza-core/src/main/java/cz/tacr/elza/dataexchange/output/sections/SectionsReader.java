@@ -17,6 +17,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -39,6 +40,8 @@ public class SectionsReader implements ExportReader {
 
     private final ResourcePathResolver resourcePathResolver;
 
+	private final DataService dataService;
+
     public SectionsReader(ExportContext context, ExportInitHelper initHelper) {
         this.context = context;
         this.levelRepository = initHelper.getLevelRepository();
@@ -47,6 +50,7 @@ public class SectionsReader implements ExportReader {
         this.userService = initHelper.getUserService();
         this.em = initHelper.getEm();
         this.resourcePathResolver = initHelper.getResourcePathResolver();
+        this.dataService = initHelper.getDataService();
     }
 
     /**
@@ -98,7 +102,7 @@ public class SectionsReader implements ExportReader {
         ArrChange lockChange = fundVersion.getLockChange();
         SectionContext sectionContext = new SectionContext(fundVersion, context, true,
                 levelInfoListener, nodeCacheService, em,
-                this.resourcePathResolver);
+                this.resourcePathResolver, this.dataService);
         try {
             // read sections levels
             for (Integer rootNodeId : rootNodeIds) {
@@ -118,7 +122,8 @@ public class SectionsReader implements ExportReader {
         ArrChange lockChange = fundVersion.getLockChange();
         SectionContext sectionContext = new SectionContext(fundVersion, context, false,
                 levelInfoListener, nodeCacheService, em,
-                this.resourcePathResolver);
+                this.resourcePathResolver,
+                this.dataService);
         try {
             levelRepository.readLevelTree(rootNodeId, lockChange, false, (level, depth) -> sectionContext.addLevel(level));
 

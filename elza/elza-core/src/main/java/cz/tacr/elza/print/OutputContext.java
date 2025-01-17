@@ -104,7 +104,8 @@ public class OutputContext {
             exportInitHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService,
                     apRepository,
                     fundVersionRepository,
-                    resourcePathResolver);
+                    resourcePathResolver,
+                    dataService);
         }
         return exportInitHelper;
     }
