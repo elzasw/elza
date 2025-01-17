@@ -844,12 +844,11 @@ public class CamService {
      */
     public boolean hasModifiedPartOrItem(final ApState state,
                                       final ApBindingState bindingState) {
-        List<ApPart> partList = partService.findNewerPartsByAccessPoint(state.getAccessPoint(),
-                                                                        bindingState.getSyncChange().getChangeId());
+        List<ApPart> partList = partService.findNewerPartsByAccessPoint(state.getAccessPoint(), bindingState.getCreateChangeId());
         if (CollectionUtils.isNotEmpty(partList)) {
             return true;
         }
-        List<ApItem> itemList = apItemService.findNewerValidItemsByAccessPoint(state.getAccessPoint(), bindingState.getSyncChange().getChangeId());
+        List<ApItem> itemList = apItemService.findNewerValidItemsByAccessPoint(state.getAccessPoint(), bindingState.getCreateChangeId());
         if (CollectionUtils.isNotEmpty(itemList)) {
             return true;
         }
