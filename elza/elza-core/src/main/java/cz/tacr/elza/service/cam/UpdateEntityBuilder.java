@@ -233,7 +233,7 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         if (CollectionUtils.isNotEmpty(activeItems)) {
             // filter binded items
             List<ApBindingItem> filteredList = activeItems.stream().filter(i -> i.getItem()
-                    .getCreateChangeId() > bindingState.getSyncChangeId())
+                    .getCreateChangeId() > bindingState.getCreateChangeId())
                     .collect(Collectors.toList());
             if (filteredList.size() > 0) {
                 UpdateItemsXml updateItems = createUpdateItems(changedPart, filteredList);
@@ -319,13 +319,13 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
 
         // read current bindings
         bindingParts = bindingItemRepository.findPartsForSync(bindingState.getBinding(),
-                                                              bindingState.getSyncChangeId());
+                                                              bindingState.getCreateChangeId());
         for (ApBindingItem bindingPart : bindingParts) {
             BindingPartInfo bi = new BindingPartInfo(bindingPart);
             bindingMap.put(bindingPart.getPartId(), bi);
         }
         bindingItems = externalSystemService.findItemsForSync(bindingState.getBinding(),
-                                                              bindingState.getSyncChangeId());
+                                                              bindingState.getCreateChangeId());
         for (ApBindingItem bindingItem : bindingItems) {
             ApItem item = bindingItem.getItem();
             BindingPartInfo bi = bindingMap.get(item.getPartId());
