@@ -59,7 +59,7 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
     ArrStructuredObject findActiveByUuidOneFetch(@Param("uuid") String uuid);
 
     @Query("SELECT sd FROM arr_structured_object sd JOIN FETCH sd.structuredType WHERE sd.structuredObjectId IN :structuredObjectId")
-    List<ArrStructuredObject> findByIdsFetch(@Param("structuredObjectId") List<Integer> structuredObjectId);
+    List<ArrStructuredObject> findByIdsFetch(@Param("structuredObjectId") Collection<Integer> structuredObjectId);
 
     @Query("SELECT sd.structuredObjectId FROM arr_structured_object sd WHERE sd.structuredType IN :structuredTypes AND sd.deleteChange IS NULL")
     List<Integer> findStructuredObjectIdByStructureTypes(@Param("structuredTypes") Collection<RulStructuredType> structuredTypes);
