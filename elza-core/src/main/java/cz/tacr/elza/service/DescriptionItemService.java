@@ -1680,12 +1680,32 @@ public class DescriptionItemService {
 
         List<ArrDescItem> descItems = descItemRepository.findDescItemsByNodeIds(nodeIdSet, descItemTypes, changeId);
 
-        Set<ApAccessPoint> accessPoints = descItems.stream()
-                .filter(item -> item.getData() != null && DataType.fromId(item.getData().getDataTypeId()) == DataType.RECORD_REF)
-                .map(item -> ((ArrDataRecordRef) HibernateUtils.unproxy(item.getData())).getRecord())
-                .collect(Collectors.toSet());
-
-        Map<Integer, ApIndex> accessPointNames = accessPointService.findPreferredPartIndexMap(accessPoints);
+        // fetch access points
+        Set<Integer> accessPointIds = new HashSet<>();
+        Set<Integer> soiIds = new HashSet<>();
+        for(ArrDescItem item: descItems) {
+	        if(item.getData()!=null) {
+	        	DataType dataType = DataType.fromId(item.getData().getDataTypeId());
+	        	switch(dataType) {
+	        	case RECORD_REF:
+	        		accessPointIds.add( ((ArrDataRecordRef) HibernateUtils.unproxy(item.getData())).getRecordId());
+	        		break;
+	        	case STRUCTURED:
+	        		soiIds.add( ((ArrDataStructureRef) HibernateUtils.unproxy(item.getData())).getStructuredObjectId()  );
+	        		break;
+				default:
+					// other types does not need to be fetched
+					break;
+	        	}
+	        }
+        }
+        
+        if(soiIds.size()>0) {
+        	structuredObjectRepository.findAllById(soiIds);
+        }
+        // read access point names
+        Map<Integer, ApIndex> accessPointNames = (accessPointIds.size()>0) ? accessPointService.findPreferredPartIndexMapByIds(accessPointIds)
+        		: Collections.emptyMap();
 
         Map<Integer, TitleItemsByType> nodeIdMap = new HashMap<>();
         for (ArrDescItem descItem : descItems) {

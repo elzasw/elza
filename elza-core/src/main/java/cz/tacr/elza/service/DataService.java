@@ -16,10 +16,7 @@ import cz.tacr.elza.repository.DataCoordinatesRepository;
 import org.geotools.kml.v22.KMLConfiguration;
 import org.geotools.xsd.PullParser;
 import org.opengis.feature.GeometryAttribute;
-import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.type.GeometryType;
-import org.opengis.geometry.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,23 +46,6 @@ public class DataService {
 
     @Autowired
     DataCoordinatesRepository dataCoordinatesRepository;
-
-    public <ENTITY extends Item> List<ENTITY> findItemsWithData(List<ENTITY> items) {
-    	StaticDataProvider sdp = staticDataService.getData();
-    	Map<DataType, List<ENTITY>> entityMap = new HashMap<>();
-    	for (ENTITY item : items) {
-    		ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
-    		DataType dataType = itemType.getDataType();
-    		List<ENTITY> entities = entityMap.computeIfAbsent(dataType, k -> new ArrayList<>());
-    		entities.add(item);
-    		if (entities.size() == hibernateConfiguration.getBatchSize()) {
-    			findAllDataByDataResults(dataType, entities);
-    			entityMap.remove(dataType);
-    		}
-    	}
-    	entityMap.keySet().forEach(d -> findAllDataByDataResults(d, entityMap.get(d)));
-    	return items;
-    }
 
     public <ENTITY extends Item> ENTITY findItemWithData(ENTITY item) {
     	List<ENTITY> items = findItemsWithData(List.of(item));
@@ -159,4 +139,21 @@ public class DataService {
     public byte[] convertGeometryToWKB(org.locationtech.jts.geom.Geometry geometry) {
         return dataCoordinatesRepository.convertGeometryToWKB(geometry);
     }
+
+	public <ENTITY extends Item> List<ENTITY> findItemsWithData(List<ENTITY> items) {
+		StaticDataProvider sdp = staticDataService.getData();
+		Map<DataType, List<ENTITY>> entityMap = new HashMap<>();
+		for (ENTITY item : items) {
+			ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
+			DataType dataType = itemType.getDataType();
+			List<ENTITY> entities = entityMap.computeIfAbsent(dataType, k -> new ArrayList<>());
+			entities.add(item);
+			if (entities.size() == hibernateConfiguration.getBatchSize()) {
+				findAllDataByDataResults(dataType, entities);
+				entityMap.remove(dataType);
+			}
+		}
+		entityMap.keySet().forEach(d -> findAllDataByDataResults(d, entityMap.get(d)));
+		return items;
+	}
 }
