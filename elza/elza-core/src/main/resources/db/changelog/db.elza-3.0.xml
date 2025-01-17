@@ -669,4 +669,10 @@
 		<dropTable tableName="sys_index_work"/>
 	</changeSet>
 
+	<changeSet id="20250117091700" author="sergey.iryupin">
+		<dropColumn tableName="ap_binding_state">
+	        <column name="sync_change_id"/>
+	    </dropColumn>
+	</changeSet>
+
 </databaseChangeLog>
