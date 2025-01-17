@@ -9,9 +9,6 @@ import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
-import org.hibernate.search.mapper.orm.Search;
-import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
-import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +18,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.util.Assert;
 import org.springframework.util.FileSystemUtils;
 
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
@@ -46,7 +41,6 @@ import cz.tacr.elza.repository.BulkActionRunRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 //import cz.tacr.elza.search.DbQueueProcessor; TODO hibernate search 6
-import cz.tacr.elza.search.IndexWorkProcessor;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cam.CamScheduler;
@@ -86,8 +80,6 @@ public class StartupService implements SmartLifecycle {
     private final EntityManager em;
 
     private final AccessPointService accessPointService;
-
-    private final IndexWorkProcessor indexWorkProcessor;
 
     private final ApplicationContext applicationContext;
 
@@ -141,7 +133,6 @@ public class StartupService implements SmartLifecycle {
                           final AccessPointService accessPointService,
                           final VisiblePolicyRepository visiblePolicyRepository,
                           final HibernateConfiguration hibernateConfiguration,
-                          IndexWorkProcessor indexWorkProcessor,
                           final ApplicationContext applicationContext,
                           final AsyncRequestService asyncRequestService,
                           final ResourcePathResolver resourcePathResolver,
@@ -163,7 +154,6 @@ public class StartupService implements SmartLifecycle {
         this.accessPointService = accessPointService;
         this.visiblePolicyRepository = visiblePolicyRepository;
         this.hibernateConfiguration = hibernateConfiguration;
-        this.indexWorkProcessor = indexWorkProcessor;
         this.applicationContext = applicationContext;
         this.asyncRequestService = asyncRequestService;
         this.resourcePathResolver = resourcePathResolver;
@@ -260,7 +250,7 @@ public class StartupService implements SmartLifecycle {
         camScheduler.stop();
         asyncRequestService.stop();
         // TODO: stop hibernate mass indexing?
-        indexWorkProcessor.stopIndexing();
+        //indexWorkProcessor.stopIndexing();
         structureDataService.stopGenerator();
         outputServiceInternal.stop();
         running = false;
@@ -309,7 +299,7 @@ public class StartupService implements SmartLifecycle {
         }
 
         structureDataService.startGenerator();
-        indexWorkProcessor.startIndexing();
+        //indexWorkProcessor.startIndexing();
         extSyncsProcessor.startExtSyncs();
 
         runQueuedRequests();

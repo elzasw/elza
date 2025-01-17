@@ -41,6 +41,7 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
@@ -100,6 +101,9 @@ public class OutputModelTest extends AbstractServiceTest {
 
     @Autowired
     StructObjService structObjService;
+    
+    @Autowired
+    DataService dataService;
 
     @Test
     public void outputStructObjs() {
@@ -176,7 +180,8 @@ public class OutputModelTest extends AbstractServiceTest {
                 fundRepository, fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
                 bindingRepository, null, structObjRepos, structItemRepos, itemRepository,
                 bindingStateRepository, indexRepository,
-                daoLinkRepository, exportConfig, structObjService, em);
+                daoLinkRepository, exportConfig, structObjService, em,
+                dataService);
 
         ArrOutput output = new ArrOutput();
         output.setFund(fi.getFund());

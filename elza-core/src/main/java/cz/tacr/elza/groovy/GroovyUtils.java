@@ -68,16 +68,6 @@ public class GroovyUtils {
     }
 
     @Nullable
-    public static GroovyItem findItemByItemTypeSpecCode(final String itemType, final String itemSpec, List<GroovyItem> items) {
-    	for (GroovyItem item : items) {
-    		if (item.getTypeCode().equals(itemType) && Objects.equals(item.getSpecCode(), itemSpec)) {
-    			return item;
-    		}
-    	}
-    	return null;
-    }
-
-    @Nullable
     public static GroovyItem findItemByPartContains(final GroovyAe groovyAe,
                                                     final String partTypeCode,
                                                     final String containItemType,

@@ -4,21 +4,34 @@ import cz.tacr.elza.domain.ArrFund;
 
 public class GroovyFund {
 
-	private final ArrFund fund;
+	private final String name;
 
-	public GroovyFund(ArrFund fund) {
-		this.fund = fund;
+	private final String mark;
+
+	private final Integer fundNumber;
+
+	private final GroovyInstitution institution;
+
+	public GroovyFund(ArrFund fund, GroovyInstitution institution) {
+		this.name = fund.getName();
+		this.mark = fund.getMark();
+		this.fundNumber = fund.getFundNumber();
+		this.institution = institution;
 	}
 
 	public String getName() {
-		return fund.getName();
+		return name;
 	}
 
 	public String getMark() {
-		return fund.getMark();
+		return mark;
 	}
-	
+
 	public Integer getNumber() {
-		return fund.getFundNumber();
+		return fundNumber;
+	}
+
+	GroovyInstitution getInstitution() {
+		return institution;
 	}
 }

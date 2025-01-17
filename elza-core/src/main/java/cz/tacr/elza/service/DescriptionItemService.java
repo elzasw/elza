@@ -95,8 +95,6 @@ import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
-import cz.tacr.elza.search.IndexWorkProcessor;
-import cz.tacr.elza.search.SearchIndexSupport;
 import cz.tacr.elza.service.ItemService.FundContext;
 import cz.tacr.elza.service.arrangement.BatchChangeContext;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
@@ -110,7 +108,7 @@ import cz.tacr.elza.service.vo.TitleItemsByType;
  *
  */
 @Service
-public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
+public class DescriptionItemService {
 
     private static final Logger logger = LoggerFactory.getLogger(DescriptionItemService.class);
 
@@ -172,12 +170,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     private DescriptionItemServiceInternal serviceInternal;
 
     @Autowired
-    private IndexWorkService indexWorkService;
-
-    @Autowired
-    private IndexWorkProcessor indexWorkProcessor;
-
-    @Autowired
     private StructObjInternalService structObjInternalService;
 
     @Autowired
@@ -199,7 +191,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         this.indexWorkNotify = new TransactionSynchronization() {
             @Override
             public void afterCompletion(int status) {
-                indexWorkProcessor.notifyIndexing();
+                //indexWorkProcessor.notifyIndexing();
             }
         };
     }
@@ -1688,12 +1680,32 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         List<ArrDescItem> descItems = descItemRepository.findDescItemsByNodeIds(nodeIdSet, descItemTypes, changeId);
 
-        Set<ApAccessPoint> accessPoints = descItems.stream()
-                .filter(item -> item.getData() != null && DataType.fromId(item.getData().getDataTypeId()) == DataType.RECORD_REF)
-                .map(item -> ((ArrDataRecordRef) HibernateUtils.unproxy(item.getData())).getRecord())
-                .collect(Collectors.toSet());
-
-        Map<Integer, ApIndex> accessPointNames = accessPointService.findPreferredPartIndexMap(accessPoints);
+        // fetch access points
+        Set<Integer> accessPointIds = new HashSet<>();
+        Set<Integer> soiIds = new HashSet<>();
+        for(ArrDescItem item: descItems) {
+	        if(item.getData()!=null) {
+	        	DataType dataType = DataType.fromId(item.getData().getDataTypeId());
+	        	switch(dataType) {
+	        	case RECORD_REF:
+	        		accessPointIds.add( ((ArrDataRecordRef) HibernateUtils.unproxy(item.getData())).getRecordId());
+	        		break;
+	        	case STRUCTURED:
+	        		soiIds.add( ((ArrDataStructureRef) HibernateUtils.unproxy(item.getData())).getStructuredObjectId()  );
+	        		break;
+				default:
+					// other types does not need to be fetched
+					break;
+	        	}
+	        }
+        }
+        
+        if(soiIds.size()>0) {
+        	structuredObjectRepository.findAllById(soiIds);
+        }
+        // read access point names
+        Map<Integer, ApIndex> accessPointNames = (accessPointIds.size()>0) ? accessPointService.findPreferredPartIndexMapByIds(accessPointIds)
+        		: Collections.emptyMap();
 
         Map<Integer, TitleItemsByType> nodeIdMap = new HashMap<>();
         for (ArrDescItem descItem : descItems) {
@@ -2491,31 +2503,12 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         return descItemCreated;
     }
 
-    @Override
     public Map<Integer, ArrDescItem> findToIndex(Collection<Integer> ids) {
         if (CollectionUtils.isEmpty(ids)) {
             return Collections.emptyMap();
         }
         // moznost optimalizovat nacteni vcene zavislosti
         return descItemRepository.findAllById(ids).stream().collect(Collectors.toMap(o -> o.getItemId(), o -> o));
-    }
-
-    @Transactional
-    public void reindexDescItem(Integer itemId) {
-        try {
-            indexWorkService.createIndexWork(ArrDescItem.class, itemId);
-        } finally {
-            TransactionSynchronizationManager.registerSynchronization(indexWorkNotify);
-        }
-    }
-
-    @Transactional
-    public void reindexDescItem(Collection<Integer> itemIds) {
-        try {
-            indexWorkService.createIndexWork(ArrDescItem.class, itemIds);
-        } finally {
-            TransactionSynchronizationManager.registerSynchronization(indexWorkNotify);
-        }
     }
 
     public MultipleItemChangeContext createChangeContext(int fundVersionId) {

@@ -46,6 +46,7 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -89,7 +90,7 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                           DmsService dmsService,
                           DaoLinkRepository daoLinkRepository,
                           ExportConfig exportConfig,
-                          StructObjService structObjService) {
+                          StructObjService structObjService, DataService dataService) {
         super(em, dmsService);
 
         StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
@@ -102,7 +103,8 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                 nodeCacheService, institutionRepository,
                 apStateRepository, bindingRepository,
                 pdfAttProvider, structObjRepos, structItemRepos, itemRepository, bindingStateRepository,
-                indexRepository, daoLinkRepository, exportConfig, structObjService, em);
+                indexRepository, daoLinkRepository, exportConfig, structObjService, em,
+                dataService);
         pdfAttProvider.setOutput(outputModel);
     }
 

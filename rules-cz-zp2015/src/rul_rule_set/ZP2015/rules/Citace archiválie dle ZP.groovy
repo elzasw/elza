@@ -1,73 +1,72 @@
 package ZP2015
 
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+
 import cz.tacr.elza.groovy.GroovyItem
 import cz.tacr.elza.groovy.GroovyGenCtx
 import cz.tacr.elza.groovy.GroovyUtils
 import cz.tacr.elza.groovy.ResultBuilder
+import cz.tacr.elza.print.item.convertors.UnitDatePrintConvertor
 
 return generate(GENERATOR_CONTEXT)
 
-String generate(final GroovyGenCtx ctx) {
+String generate(final GroovyGenCtx ctx) {    
     GroovyItem aeName = GroovyUtils.findItemByPartContains(ctx.getGroovyAe(), "PT_NAME", "NM_MAIN", true)
-    GroovyItem aeIdn = GroovyUtils.findItemByPartContains(ctx.getGroovyAe(), "PT_IDENT", "IDN_VALUE", false)
 
-    String fundName = ctx.getFund().getName()
-    String fundMark = ctx.getFund().getMark() == null ? "" : " (" + ctx.getFund().getMark() + ")"
+    rb = new ResultBuilder(aeName, ctx)
+    // add fund
+    rb.append(ctx.getFund().getName());
+    if(!StringUtils.isEmpty(ctx.getFund().getMark())) {
+		// add mark
+		rb.appendText(" (").appendText(ctx.getFund().getMark()).append(")");
+	}
+    
+    // ref ozn
+    GroovyItem groovyUnitId = ctx.getFirstItemByItemType("ZP2015_UNIT_ID");
+    rb.append("ref. ozn. CZ")
+      .appendText(StringUtils.isEmpty(ctx.getInstitutionCode()) ? "-" : ctx.getInstitutionCode())
+      .appendText("//")
+      .appendText(ctx.getFund().getNumber() == null ? "-" : String.valueOf(ctx.getFund().getNumber()))
+      .appendText("//")
+      .appendText((groovyUnitId == null)  ? "-" : groovyUnitId.getValue());
+        
+    rb.appendItem("ZP2015_INV_CISLO", "inv. č. ")
+      .appendItem("ZP2015_SERIAL_NUMBER", "poř. č. ")
 
-    String idn = aeIdn == null ? "-" : aeIdn.getValue()
-    String fundNumber = ctx.getFund().getNumber() == null ? "-" : String.valueOf(ctx.getFund().getNumber())
-    GroovyItem groovyUnitId = GroovyUtils.findItemByItemTypeCode("ZP2015_UNIT_ID", ctx.getItems())
-    String unitId = groovyUnitId == null ? "-" : groovyUnitId.getValue()
-    String refOzn = idn + "//" + fundNumber + "//" + unitId
+    // jina ozn
+    final String ZP2015_OTHER_ID = "ZP2015_OTHER_ID";
+    rb.appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_SIG_ORIG")
+      .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_SIG")
+      .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_STORAGE_ID")
+      .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_OLDSIG2")
+      .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_CJ")
+      .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_DOCID")
+      .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_FORMAL_DOCID")
+      .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_ADDID")
+      .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_PICID")
+      .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_NEGID")
+      .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_CDID")
+      .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_ISBN")
+      .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_ISSN")
+      .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_ISMN")
+      .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_MATRIXID")
 
-    GroovyItem invCislo = GroovyUtils.findItemByItemTypeCode("ZP2015_INV_CISLO", ctx.getItems())
-    GroovyItem serialNumber = GroovyUtils.findItemByItemTypeCode("ZP2015_SERIAL_NUMBER", ctx.getItems())
+    // add title
+    rb.appendItemWithLimit("ZP2015_TITLE", 100)
 
-    final String ZP2015_OTHER_ID = "ZP2015_OTHER_ID"
-    GroovyItem otherIdSigOrig = GroovyUtils.findItemByItemTypeSpecCode(ZP2015_OTHER_ID, "ZP2015_OTHERID_SIG_ORIG", ctx.getItems())
-    GroovyItem otherIdSig = GroovyUtils.findItemByItemTypeSpecCode(ZP2015_OTHER_ID, "ZP2015_OTHERID_SIG", ctx.getItems())
-    GroovyItem otherIdStorageId = GroovyUtils.findItemByItemTypeSpecCode(ZP2015_OTHER_ID, "ZP2015_OTHERID_STORAGE_ID", ctx.getItems())
-    GroovyItem otherIdOldSig = GroovyUtils.findItemByItemTypeSpecCode(ZP2015_OTHER_ID, "ZP2015_OTHERID_OLDSIG2", ctx.getItems())
-    GroovyItem otherIdCJ = GroovyUtils.findItemByItemTypeSpecCode(ZP2015_OTHER_ID, "ZP2015_OTHERID_CJ", ctx.getItems())
-    GroovyItem otherIdDocId = GroovyUtils.findItemByItemTypeSpecCode(ZP2015_OTHER_ID, "ZP2015_OTHERID_DOCID", ctx.getItems())
-    GroovyItem otherIdFormalDocId = GroovyUtils.findItemByItemTypeSpecCode(ZP2015_OTHER_ID, "ZP2015_OTHERID_FORMAL_DOCID", ctx.getItems())
-    GroovyItem otherIdAddId = GroovyUtils.findItemByItemTypeSpecCode(ZP2015_OTHER_ID, "ZP2015_OTHERID_ADDID", ctx.getItems())
-    GroovyItem otherIdPicId = GroovyUtils.findItemByItemTypeSpecCode(ZP2015_OTHER_ID, "ZP2015_OTHERID_PICID", ctx.getItems())
-    GroovyItem otherIdNegId = GroovyUtils.findItemByItemTypeSpecCode(ZP2015_OTHER_ID, "ZP2015_OTHERID_NEGID", ctx.getItems())
-    GroovyItem otherIdCdId = GroovyUtils.findItemByItemTypeSpecCode(ZP2015_OTHER_ID, "ZP2015_OTHERID_CDID", ctx.getItems())
-    GroovyItem otherIdIsbn = GroovyUtils.findItemByItemTypeSpecCode(ZP2015_OTHER_ID, "ZP2015_OTHERID_ISBN", ctx.getItems())
-    GroovyItem otherIdIssn = GroovyUtils.findItemByItemTypeSpecCode(ZP2015_OTHER_ID, "ZP2015_OTHERID_ISSN", ctx.getItems())
-    GroovyItem otherIdIsmn = GroovyUtils.findItemByItemTypeSpecCode(ZP2015_OTHER_ID, "ZP2015_OTHERID_ISMN", ctx.getItems())
-    GroovyItem otherIdMatrixId = GroovyUtils.findItemByItemTypeSpecCode(ZP2015_OTHER_ID, "ZP2015_OTHERID_MATRIXID", ctx.getItems())
+    // add date
+    GroovyItem unitdate = ctx.getFirstItemByItemType("ZP2015_UNIT_DATE")
+    if (unitdate != null) {
+        // convert unitdate to String
+        String textDate = UnitDatePrintConvertor.convertToPrint(unitdate.getUnitdateValue())
+        rb.append(textDate)
+    }
 
-    GroovyItem title = GroovyUtils.findItemByItemTypeCode("ZP2015_TITLE", ctx.getItems())
-    GroovyItem unitDate = GroovyUtils.findItemByItemTypeCode("ZP2015_UNIT_DATE", ctx.getItems())
-    GroovyItem storageId = GroovyUtils.findItemByItemTypeCode("ZP2015_STORAGE_ID", ctx.getItems())
-    GroovyItem itemOrder = GroovyUtils.findItemByItemTypeCode("ZP2015_ITEM_ORDER", ctx.getItems())
+    rb.appendItem("ZP2015_STORAGE_ID", "ukl. j. ")
+      .setSeparator("/")
+      .appendItem("ZP2015_ITEM_ORDER")
 
-    return new ResultBuilder(aeName)
-        .append(fundName + fundMark)
-        .append("ref. ozn. CZ" + refOzn)
-        .append("inv. č. ", invCislo)
-        .append("poř. č. ", serialNumber)
-        .append("sign. ", otherIdSig)
-        .append("ukl. znak ", otherIdStorageId)
-        .append("sp. znak ", otherIdOldSig)
-        .append("č. j. ", otherIdCJ)
-        .append("zn. sp. ", otherIdDocId)
-        .append("č. vl. ", otherIdFormalDocId)
-        .append("přír. č. ", otherIdAddId)
-        .append("nakl. č. ", otherIdPicId)
-        .append("č. neg. ", otherIdNegId)
-        .append("č. prod. ", otherIdCdId)
-        .append("ISBN ", otherIdIsbn)
-        .append("ISSN ", otherIdIssn)
-        .append("ISMN ", otherIdIsmn)
-        .append("matr. č. ", otherIdMatrixId)
-        .append(title, 100)
-        .append(unitDate)
-        .append("ukl. j. ", storageId)
-        .setSeparator("/")
-        .append(itemOrder)
-        .toString()
+    return rb.toString()
 }
