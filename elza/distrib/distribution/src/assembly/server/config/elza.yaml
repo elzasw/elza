@@ -53,21 +53,6 @@ elza:
 #  levelTreeCache
 #    size: 30
 #
-spring:
-  jpa:
-      properties:
-          hibernate:
-              # Set database type and dialect for the database
-              # PostgreSQL
-              dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
-              # H2
-              #dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
-              # MySQL
-              #dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
-              # Oracle
-              #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
-              # MSSQL
-              #dialect: org.hibernate.dialect.SQLServer2008Dialect
 
 logging:
   file:
