@@ -19,6 +19,20 @@ public class ResultBuilder {
 		this.separator = separator;
 		return this;
 	}
+	
+	/**
+	 * Append text to the current item
+	 * 
+	 * Text is without separator
+	 * @param textValue
+	 * @return
+	 */
+	public ResultBuilder appendText(final String textValue) {
+		if (textValue != null) {
+			result.append(textValue);
+		}
+		return this;
+	}
 
 	public ResultBuilder append(final String item) {
 		if (item != null) {
