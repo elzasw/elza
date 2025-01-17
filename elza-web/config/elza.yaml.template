@@ -40,6 +40,9 @@ elza:
   # Takové nastavení, například: 0 0 4 ? * SAT
   # znamená: každou sobotu ve 04:00
   #
+  # Provádění reindexace je možné zcela vypnout nastavením 
+  # speciální hodnoty -.
+  #
   #reindex:
   #  cron: 0 0 4 ? * SAT
 
