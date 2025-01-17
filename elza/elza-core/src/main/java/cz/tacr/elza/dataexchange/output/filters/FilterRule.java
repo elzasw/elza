@@ -525,7 +525,7 @@ public class FilterRule {
                                                                                                  false);
                     localDate = localDateTime.toLocalDate();
                 } else {
-                    throw new IllegalStateException("Unsupported type: " + srcValue);
+                    throw new IllegalStateException("Unsupported type, dataId = " + srcValue.getDataId() + ": " + srcValue.getClass().getName());
                 }
             }
             localDate = prepareLocalDate(action, filterRuleContext, localDate);
