@@ -20,17 +20,17 @@ String generate(final GroovyGenCtx ctx) {
     rb.append(ctx.getFund().getName());
     if(!StringUtils.isEmpty(ctx.getFund().getMark())) {
 		// add mark
-		rb.append(" (").append(ctx.getFund().getMark()).append(")");
+		rb.appendText(" (").appendText(ctx.getFund().getMark()).append(")");
 	}
     
     // ref ozn
     GroovyItem groovyUnitId = ctx.getFirstItemByItemType("ZP2015_UNIT_ID");
     rb.append("ref. ozn. CZ")
-      .append(StringUtils.isEmpty(ctx.getInstitutionCode()) ? "-" : ctx.getInstitutionCode())
-      .append("//")
-      .append(ctx.getFund().getNumber() == null ? "-" : String.valueOf(ctx.getFund().getNumber()))
-      .append("//")
-      .append((groovyUnitId == null)  ? "-" : groovyUnitId.getValue());
+      .appendText(StringUtils.isEmpty(ctx.getInstitutionCode()) ? "-" : ctx.getInstitutionCode())
+      .appendText("//")
+      .appendText(ctx.getFund().getNumber() == null ? "-" : String.valueOf(ctx.getFund().getNumber()))
+      .appendText("//")
+      .appendText((groovyUnitId == null)  ? "-" : groovyUnitId.getValue());
         
     rb.appendItem("ZP2015_INV_CISLO", "inv. č. ")
       .appendItem("ZP2015_SERIAL_NUMBER", "poř. č. ")
