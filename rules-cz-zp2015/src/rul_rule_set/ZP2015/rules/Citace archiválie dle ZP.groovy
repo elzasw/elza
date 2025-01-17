@@ -2,6 +2,8 @@ package ZP2015
 
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import cz.tacr.elza.groovy.GroovyItem
 import cz.tacr.elza.groovy.GroovyGenCtx
 import cz.tacr.elza.groovy.GroovyUtils
@@ -12,9 +14,9 @@ return generate(GENERATOR_CONTEXT)
 
 String generate(final GroovyGenCtx ctx) {
     String fundName = ctx.getFund().getName()
-    String fundMark = ctx.getFund().getMark() == null ? "" : " (" + ctx.getFund().getMark() + ")"
+    String fundMark = StringUtils.isEmpty(ctx.getFund().getMark()) ? "" : " (" + ctx.getFund().getMark() + ")"
 
-    String idn = ctx.getInstitutionCode() == null ? "-" : ctx.getInstitutionCode()
+    String idn = StringUtils.isEmpty(ctx.getInstitutionCode()) ? "-" : ctx.getInstitutionCode()
     String fundNumber = ctx.getFund().getNumber() == null ? "-" : String.valueOf(ctx.getFund().getNumber())
     GroovyItem groovyUnitId = ctx.getFirstItemByItemType("ZP2015_UNIT_ID")
     String unitId = groovyUnitId == null ? "-" : groovyUnitId.getValue()
