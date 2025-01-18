@@ -58,9 +58,6 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     @Autowired
     AccessPointItemService itemService;
 
-    @Autowired
-    private PlatformTransactionManager tm;
-
     @Test
     public void copyAccessPointsTest() {
 

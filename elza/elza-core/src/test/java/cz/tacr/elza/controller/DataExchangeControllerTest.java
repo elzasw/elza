@@ -54,9 +54,6 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
     @Autowired
     private StructObjService structObjService;
 
-    @Autowired
-    private PlatformTransactionManager tm;
-
     @Test
     public void importExportTest() throws IOException {
 
