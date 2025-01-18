@@ -1972,7 +1972,7 @@ rule "RE_008_01 Listiny - možné role (vždy)"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     $descItem : DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_LIO", "ZP2015_UNIT_TYPE_LIP") ) from $ownItems 
-    $itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE") )
+    $itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE", "ZP2015_ENTITY_ROLE_TEXT") )
     $itemSpec: RulItemSpecExt( code in (
         // vydavatelé
         "ZP2015_ENTITY_ROLE_15",

@@ -83,6 +83,10 @@ public abstract class AbstractTest {
 
     @Autowired
     protected EntityManager em;
+    
+    @Autowired
+    protected PlatformTransactionManager tm;
+    
 
     @Autowired
     @Qualifier("transactionManager")
