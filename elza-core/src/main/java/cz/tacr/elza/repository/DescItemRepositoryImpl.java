@@ -32,6 +32,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.service.DataService;
 
 
 /**
@@ -44,7 +45,9 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
     @Autowired
     private EntityManager entityManager;
-
+    
+    @Autowired
+	private DataService dataService;
 
     @Override
     public Map<Integer, DescItemTitleInfo> findDescItemTitleInfoByNodeId(final Set<Integer> nodeIds,
@@ -137,13 +140,11 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
         return result;
     }
 
-    //TODO: gotzy upravit vazbu na d.party
     @Override
     public List<ArrDescItem> findDescItemsByNodeIds(final Collection<Integer> nodeIds, final Collection<RulItemType> itemTypes, final Integer changeId) {
-        String jpql = "SELECT di FROM arr_item di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis " +
-                "LEFT JOIN FETCH di.data d " +
-                "LEFT JOIN FETCH d.record drr " +
-                "LEFT JOIN FETCH d.structuredObject dso " +
+        String jpql = "SELECT di FROM arr_desc_item di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis " +
+                //"LEFT JOIN FETCH di.data d " +
+                //"LEFT JOIN FETCH d.structuredObject dso " +
                 "WHERE ";
         if (changeId == null) {
             jpql += "di.deleteChange IS NULL ";
@@ -169,8 +170,12 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
                 query.setParameter("itemTypes", itemTypes);
             }
             query.setParameter("nodeIds", nodeIdsIterator.next());
+            
+            // fetch data
+            List<ArrDescItem> fetchedData = query.getResultList();
+            dataService.findItemsWithData(fetchedData);
 
-            result.addAll(query.getResultList());
+            result.addAll(fetchedData);
         }
 
         return result;
@@ -192,7 +197,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
         String searchText = "%" + text + "%";
 
-        String hql = "SELECT di FROM arr_item di JOIN FETCH di.data d WHERE (di.data IN (SELECT ds FROM arr_data_string ds WHERE ds.stringValue like :text)" +
+        String hql = "SELECT di FROM arr_desc_item di WHERE (di.data IN (SELECT ds FROM arr_data_string ds WHERE ds.stringValue like :text)" +
                 " OR di.data IN (SELECT ds FROM arr_data_text ds WHERE ds.textValue like :text)" +
                 " OR di.data IN (SELECT ds FROM arr_data_unitid ds WHERE ds.unitId like :text))"
                 + " AND di.itemType = :itemType";
@@ -211,7 +216,10 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
             query.setParameter("specs", specifications);
         }
 
-        return query.getResultList();
+        List<ArrDescItem> fetchedData = query.getResultList();
+        dataService.findItemsWithData(fetchedData);
+
+		return fetchedData;
     }
 
     @Override
@@ -224,7 +232,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
             throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
         }
 
-        String hql = "SELECT i FROM arr_item i JOIN FETCH i.data d WHERE i.itemType = :itemType"
+        String hql = "SELECT i FROM arr_desc_item i WHERE i.itemType = :itemType"
                 + " AND i.node IN (:nodes) AND i.deleteChange IS NULL";
 
         if (!CollectionUtils.isEmpty(stuctureObjectIds)) {
@@ -249,6 +257,9 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
             query.setParameter("specs", specifications);
         }
 
-        return query.getResultList();
+        List<ArrDescItem> fetchedData = query.getResultList();
+        dataService.findItemsWithData(fetchedData);
+
+		return fetchedData;
     }
 }

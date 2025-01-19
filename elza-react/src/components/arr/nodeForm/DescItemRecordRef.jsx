@@ -157,7 +157,9 @@ export default withRouter(connect(
     (state, props) => {
         let nodeName = null;
         let fund = undefined;
-        if (props.typePrefix !== 'output' && props.typePrefix !== 'accesspoint' && props.typePrefix !== 'ap-name') {
+		// TODO: move to separate function or refactor
+		// Get node name in Arrangement mode
+        if (props.typePrefix === 'desc') {
             const {
                 arrRegion: {activeIndex, funds},
             } = state;

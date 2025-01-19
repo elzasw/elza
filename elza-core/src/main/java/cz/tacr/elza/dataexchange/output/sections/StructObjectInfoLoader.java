@@ -2,13 +2,14 @@ package cz.tacr.elza.dataexchange.output.sections;
 
 import jakarta.persistence.EntityManager;
 
-import org.apache.commons.lang3.Validate;
+import java.util.Objects;
 
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.dataexchange.output.loaders.AbstractEntityLoader;
 import cz.tacr.elza.dataexchange.output.loaders.LoadDispatcher;
 import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.service.DataService;
 
 public class StructObjectInfoLoader extends AbstractEntityLoader<StructObjectInfoImpl, ArrStructuredObject> {
 
@@ -16,10 +17,10 @@ public class StructObjectInfoLoader extends AbstractEntityLoader<StructObjectInf
 
     private final StaticDataProvider staticData;
 
-    public StructObjectInfoLoader(EntityManager em, int batchSize, StaticDataProvider staticData) {
+    public StructObjectInfoLoader(EntityManager em, int batchSize, StaticDataProvider staticData, DataService dataService) {
         super(ArrStructuredObject.class, ArrStructuredObject.FIELD_STRUCTURED_OBJECT_ID, em, batchSize);
-        this.structItemLoader = new StructItemLoader(em, batchSize);
-        this.staticData = Validate.notNull(staticData);
+        this.structItemLoader = new StructItemLoader(dataService, em, batchSize);
+        this.staticData = Objects.requireNonNull(staticData);
     }
 
     @Override

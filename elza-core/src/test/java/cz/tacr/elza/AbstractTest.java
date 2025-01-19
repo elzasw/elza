@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.core.ElzaLocale;
@@ -82,6 +83,10 @@ public abstract class AbstractTest {
 
     @Autowired
     protected EntityManager em;
+    
+    @Autowired
+    protected PlatformTransactionManager tm;
+    
 
     @Before
     public void setUp() throws Exception {
