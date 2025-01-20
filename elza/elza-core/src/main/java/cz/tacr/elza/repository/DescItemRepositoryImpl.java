@@ -197,7 +197,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
         String searchText = "%" + text + "%";
 
-        String hql = "SELECT di FROM arr_item di JOIN FETCH di.data d WHERE (di.data IN (SELECT ds FROM arr_data_string ds WHERE ds.stringValue like :text)" +
+        String hql = "SELECT di FROM arr_desc_item di WHERE (di.data IN (SELECT ds FROM arr_data_string ds WHERE ds.stringValue like :text)" +
                 " OR di.data IN (SELECT ds FROM arr_data_text ds WHERE ds.textValue like :text)" +
                 " OR di.data IN (SELECT ds FROM arr_data_unitid ds WHERE ds.unitId like :text))"
                 + " AND di.itemType = :itemType";
@@ -216,7 +216,10 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
             query.setParameter("specs", specifications);
         }
 
-        return query.getResultList();
+        List<ArrDescItem> fetchedData = query.getResultList();
+        dataService.findItemsWithData(fetchedData);
+
+		return fetchedData;
     }
 
     @Override
@@ -229,7 +232,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
             throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
         }
 
-        String hql = "SELECT i FROM arr_item i JOIN FETCH i.data d WHERE i.itemType = :itemType"
+        String hql = "SELECT i FROM arr_desc_item i WHERE i.itemType = :itemType"
                 + " AND i.node IN (:nodes) AND i.deleteChange IS NULL";
 
         if (!CollectionUtils.isEmpty(stuctureObjectIds)) {
@@ -254,6 +257,9 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
             query.setParameter("specs", specifications);
         }
 
-        return query.getResultList();
+        List<ArrDescItem> fetchedData = query.getResultList();
+        dataService.findItemsWithData(fetchedData);
+
+		return fetchedData;
     }
 }

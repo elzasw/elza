@@ -782,8 +782,8 @@ public class AccessPointCacheService {
             	// TODO: Vymazane bindingState nemaji byt v cache
                 bs.setDeleteChange(entityManager.getReference(ApChange.class, bs.getDeleteChangeId()));
             }
-            if (bs.getSyncChangeId() != null) {
-                bs.setSyncChange(entityManager.getReference(ApChange.class, bs.getSyncChangeId()));
+            if (bs.getCreateChangeId() != null) {
+                bs.setCreateChange(entityManager.getReference(ApChange.class, bs.getCreateChangeId()));
             }
             if (bs.getApTypeId() != null) {
                 bs.setApType(sdp.getApTypeById(bs.getApTypeId()));

@@ -45,6 +45,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSession.Receiptable;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -1197,12 +1198,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         Thread.sleep(1000);
         helperTestService.waitForWorkers();
         replaceDataValues(fundVersion.getId(), typeVo.getId(), "value", "valXYZ", body);
-
+        
         //nalezení hodnot podle změněné hodnoty
         RulItemType type = itemTypeRepository.findOneByCode("SRD_TITLE");
         type.setDataType(dataTypeRepository.findByCode("TEXT"));  //kvůli transakci (no session)
-        List<ArrDescItem> nodesContainingText = descItemRepository.findByNodesContainingText(nodeRepository.findAllById(nodeIds),
-                type, null, "valXYZ");
+        List<ArrDescItem> nodesContainingText = new TransactionTemplate(tm).execute(a -> {
+        	return descItemRepository.findByNodesContainingText(nodeRepository.findAllById(nodeIds), 
+        			type, null, "valXYZ");
+		});
 
         assertTrue(nodesContainingText.size() == nodeIds.size());
         for (ArrDescItem descItem : nodesContainingText) {
