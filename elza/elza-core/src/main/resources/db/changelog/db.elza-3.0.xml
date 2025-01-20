@@ -670,9 +670,11 @@
 	</changeSet>
 
 	<changeSet id="20250117091700" author="sergey.iryupin">
+        <validCheckSum>9:8f575490aa03eedd0016c997da17030a</validCheckSum>
 		<dropColumn tableName="ap_binding_state">
 	        <column name="sync_change_id"/>
 	    </dropColumn>
+        <delete tableName="ap_cached_access_point"/>
 	</changeSet>
 
 </databaseChangeLog>
