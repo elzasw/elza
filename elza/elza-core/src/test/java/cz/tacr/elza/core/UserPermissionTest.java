@@ -152,7 +152,7 @@ public class UserPermissionTest extends AbstractTest {
         ApChange createChange = changeRepository.save(new ApChange());
 
         ApState apState = new ApState();
-        apState.setStateId(1);
+        //apState.setStateId(1);
         apState.setAccessPoint(accessPoint);
         apState.setScope(scope);
         apState.setApType(types.get(0));

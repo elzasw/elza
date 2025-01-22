@@ -39,7 +39,7 @@ import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.task.TaskSchedulerBuilder;
+import org.springframework.boot.task.ThreadPoolTaskSchedulerBuilder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -52,8 +52,6 @@ import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandler;
 import org.springframework.messaging.simp.stomp.StompSession.Receiptable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.WebSocketClient;
@@ -171,7 +169,6 @@ import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionResponse;
 import cz.tacr.elza.exception.ExceptionUtils;
-import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.test.ApiClient;
@@ -3695,7 +3692,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 			recepiptStore.put(rcpId, msg);
 		});
 
-		ThreadPoolTaskScheduler taskScheduler = new TaskSchedulerBuilder().poolSize(1).build();
+		ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskSchedulerBuilder().poolSize(1).build();
 		taskScheduler.initialize();
 		stompClient.setTaskScheduler(taskScheduler);
 
