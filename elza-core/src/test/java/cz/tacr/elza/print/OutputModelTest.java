@@ -125,8 +125,7 @@ public class OutputModelTest extends AbstractServiceTest {
         // Create struct objs
         StructType structureType = sdp.getStructuredTypeByCode("SRD_PACKET");
         assertNotNull(structureType);
-        ArrStructuredObject structObj1 = structObjService.createStructObj(fi.getFund(), structureType
-                .getStructuredType(), State.OK);
+        ArrStructuredObject structObj1 = structObjService.createStructObj(fi.getFund(), structureType.getStructuredType(), State.OK);
         assertNotNull(structObj1);
         // add item
         helperTestService.waitForWorkers();

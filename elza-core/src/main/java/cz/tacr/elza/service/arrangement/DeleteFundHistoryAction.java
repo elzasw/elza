@@ -314,7 +314,7 @@ public class DeleteFundHistoryAction {
         faBulkActionNodeRepository.deleteByFund(fund);
         faBulkActionRepository.deleteByFund(fund);
 
-        fundVersionRepository.deleteByFund(fund);
+        fundVersionRepository.deleteByFundId(fundId);
 
         em.flush();
 

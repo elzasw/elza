@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.5</version>
+        <version>3.2.12</version><!--3.2.12,3.3.7,3.4.1-->
     </parent>
 
     <groupId>cz.tacr.elza</groupId>
@@ -26,14 +26,15 @@
         <argLine>-Dfile.encoding=UTF-8</argLine>
 
         <cxf.version>4.0.4</cxf.version>
-        <hibernate.version>6.4.10.Final</hibernate.version>
-        <hibernate.search.version>7.1.2.Final</hibernate.search.version>
-
+        <hibernate.version>6.6.5.Final</hibernate.version>
+        <hibernate.search.version>7.2.2.Final</hibernate.search.version>
+		<jboss-logging-version>3.6.0.Final</jboss-logging-version>
+		<apache.lucene.version>9.11.1</apache.lucene.version>
         <!-- 
         <hibernate.lucene.version>5.5.5</hibernate.lucene.version>-->  <!-- nelze zvednout na 6.6.0, protože hibernate.search.orm.version nemá ani
             v 5.8.0.Beta3 závislost na 6.6.0, ale jen 5.5.4. Mezi verzí 5.5.4 a 6.6.0
             byla odebrána vnitřní třída Index ve třídě org.apache.lucene.document.Field. -->
-        <spring.boot.version>3.2.5</spring.boot.version>
+        <spring.boot.version>3.2.12</spring.boot.version>
 
         <geotools.version>29.1</geotools.version>
 
@@ -243,6 +244,16 @@
 				<artifactId>ehcache</artifactId>
 				<version>3.10.8</version>
 				<!-- <classifier>jakarta</classifier> -->
+			</dependency>
+			<dependency>
+			    <groupId>org.jboss.logging</groupId>
+			    <artifactId>jboss-logging</artifactId>
+			    <version>${jboss-logging-version}</version>
+			</dependency>
+			<dependency>
+			    <groupId>org.apache.lucene</groupId>
+			    <artifactId>lucene-core</artifactId>
+			    <version>${apache.lucene.version}</version>
 			</dependency>
 
 			<!--            <dependency> -->
