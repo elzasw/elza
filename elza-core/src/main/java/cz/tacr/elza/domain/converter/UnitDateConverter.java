@@ -11,6 +11,7 @@ import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.YEAR_MONTH;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -99,6 +100,17 @@ public class UnitDateConverter {
      * Záporná reprezentace v ISO formátu.
      */
     public static final String BC_ISO = "-";
+    
+    /**
+     * Enum of format types
+     */
+    public enum FormatType {
+    	C,
+    	Y,
+    	YM,
+    	D,
+    	DT
+    }
 
     private static final DateTimeFormatter FORMATTER_DATE = DateTimeFormatter.ofPattern(FORMAT_DATE);
     private static final DateTimeFormatter FORMATTER_DATE_TIME = DateTimeFormatter.ofPattern(FORMAT_DATE_TIME);
@@ -587,6 +599,20 @@ public class UnitDateConverter {
 
         return dateString.contains(DEFAULT_INTERVAL_DELIMITER);
     }
+    
+    /**
+     * Check whether supplied unitdate is interval
+     * @param unitDate
+     * @return
+     */
+    public static boolean isInterval(IUnitdate unitDate) {
+    	String dateFormat = unitDate.getFormat();
+    	if(dateFormat.contains(UnitDateConverterConsts.FORMAT_DELIMITER)) {
+    		return true;    		
+    	} else {
+    		return false;
+    	}
+    }
 
     /**
      * Parsování intervalu.
@@ -831,21 +857,100 @@ public class UnitDateConverter {
      * Získání LocalDateTime z objektu IUnitdate.
      * 
      * @param unitdate
-     * @param first
+     * @param from
      * @return LocalDateTime
      */
-    public static LocalDateTime getLocalDateTimeFromUnitDate(final IUnitdate unitdate, final boolean first) {
-        if (first) {
+    public static LocalDateTime getLocalDateTimeFromUnitDate(final IUnitdate unitdate, final boolean from) {
+    	// Value from and to maight contain additional spaces from db 
+    	// and have to be trimmed.
+        if (from) {
             if (unitdate.getValueFrom() != null) {
-                return LocalDateTime.parse(unitdate.getValueFrom());
+                return LocalDateTime.parse(unitdate.getValueFrom().trim());
             }
         } else {
             if (unitdate.getValueTo() != null) {
-                return LocalDateTime.parse(unitdate.getValueTo());
+                return LocalDateTime.parse(unitdate.getValueTo().trim());
             }
         }
         return null;
     }
+    
+	public static LocalDateTime getLocalDateTimeFromUnitDate(IUnitdate unitDate, boolean from,
+			FormatType format) {
+		LocalDateTime ldt = getLocalDateTimeFromUnitDate(unitDate, from);
+		switch(format) {
+		case C:
+			boolean ad = ldt.getYear()>0; 
+			if(from) {
+				// e.g. 1848 -> 1801, 1801 -> 1801, 1800 -> 1701
+				//         0 -> -99, -1 -> -99, -100 -> -199
+				int expYear = ad?((ldt.getYear()-1)/100*100+1):(ldt.getYear()/100*100-99);
+				if( ldt.getYear()==expYear && ldt.getMonthValue()==1 && ldt.getDayOfMonth()==1&&ldt.getHour()==0&&ldt.getMinute()==0&&ldt.getSecond()==0) {
+					return ldt;
+				}
+				return LocalDateTime.of(LocalDate.of(expYear, 1, 1), LocalTime.of(0, 0, 0));				
+			} else {
+				// e.g. 1848 -> 1900, 1801 -> 1900, 1800 -> 1800
+				//         0 -> 0, -99 -> 0, -100 -> -100
+				int expYear = ad?((ldt.getYear()+99)/100*100):(ldt.getYear()/100*100);
+				if(ldt.getYear()==expYear && ldt.getMonthValue()==12&&ldt.getDayOfMonth()==31&&ldt.getHour()==23&&ldt.getMinute()==59&&ldt.getSecond()==59) {
+					return ldt;
+				}
+				return LocalDateTime.of(LocalDate.of(expYear, 12, 31), LocalTime.of(23, 59, 59));
+			}
+		case Y:
+			if(from) {
+				if(ldt.getMonthValue()==1 && ldt.getDayOfMonth()==1&&ldt.getHour()==0&&ldt.getMinute()==0&&ldt.getSecond()==0) {
+					return ldt;
+				}
+				return LocalDateTime.of(LocalDate.of(ldt.getYear(), 1, 1), LocalTime.of(0, 0, 0));				
+			} else {
+				if(ldt.getMonthValue()==12&&ldt.getDayOfMonth()==31&&ldt.getHour()==23&&ldt.getMinute()==59&&ldt.getSecond()==59) {
+					return ldt;
+				}
+				return LocalDateTime.of(LocalDate.of(ldt.getYear(), 12, 31), LocalTime.of(23, 59, 59));
+			}
+		case YM:
+			if(from) {
+				if(ldt.getDayOfMonth()==1&&ldt.getHour()==0&&ldt.getMinute()==0&&ldt.getSecond()==0) {
+					return ldt;
+				}
+				return LocalDateTime.of(LocalDate.of(ldt.getYear(), ldt.getMonthValue(), 1), LocalTime.of(0, 0, 0));				
+			} else {
+				// end of month
+				LocalDateTime ldtIncremented = ldt.plusDays(1);
+				if(ldtIncremented.getDayOfMonth()==1&&ldt.getHour()==23&&ldt.getMinute()==59&&ldt.getSecond()==59) {
+					return ldt;
+				}
+				int year = ldt.getYear();
+				int month = ldt.getMonthValue()+1;
+				if(month>12) {
+					year++;
+					month = 1;
+				}
+				ldtIncremented = LocalDateTime.of(LocalDate.of(year, month, 1), LocalTime.of(23, 59, 59));
+				return ldtIncremented.minusDays(1);
+			}
+		case D:
+			if(from) {
+				if(ldt.getHour()==0&&ldt.getMinute()==0&&ldt.getSecond()==0) {
+					return ldt;
+				}
+				LocalDateTime.of(ldt.toLocalDate(), LocalTime.of(0, 0, 0));
+			} else {
+				if(ldt.getHour()==23&&ldt.getMinute()==59&&ldt.getSecond()==59) {
+					return ldt;
+				}
+				LocalDateTime.of(ldt.toLocalDate(), LocalTime.of(23, 59, 59));
+			}
+		case DT:
+			// full date time -> nothing to change
+			return ldt;
+		default:
+			throw new IllegalStateException("Unexpected format: "+format);
+		}		
+	}
+    
 
     /**
      * Parsování tokenu.
@@ -940,4 +1045,61 @@ public class UnitDateConverter {
 
         return unitDate;
     }
+
+    /**
+     * Return format of given part
+     * @param unitDate
+     * @param from
+     * @return
+     */
+	public static String getFormatOf(IUnitdate unitDate, boolean from) {
+		String fullFormat = unitDate.getFormat();
+		if(!isInterval(unitDate)) {
+			return fullFormat;
+		}
+		String fullFormats[] = fullFormat.split(UnitDateConverterConsts.FORMAT_DELIMITER);
+		return from? fullFormats[0]: fullFormats[1];
+	}
+
+	/**
+	 * Select less accurate format from two
+	 * @param firstFormat
+	 * @param secondFormat
+	 * @return
+	 */
+	public static FormatType getLessAccurateFormat(String firstFormat, String secondFormat) {
+		FormatType first = FormatType.valueOf(firstFormat);
+		FormatType second = FormatType.valueOf(secondFormat);
+		
+		return (first.compareTo(second)<0)?first:second;
+	}
+
+	/**
+	 * Compare two unitdates
+	 * @param firstDate
+	 * @param firstFrom
+	 * @param secondDate
+	 * @param secondFrom
+	 * @return Return -1 if first date is before second date. Return 0 if both dates are same. 
+	 * Return 1 if second date is before first date.
+	 */
+    public static int compare(IUnitdate firstDate, boolean firstFrom, IUnitdate secondDate, boolean secondFrom) {
+    	// make both dates comparable by converting to same accuracy
+    	String firstFormat = UnitDateConverter.getFormatOf(firstDate, firstFrom);
+    	String secondFormat = UnitDateConverter.getFormatOf(secondDate, secondFrom);
+    	
+    	FormatType format = UnitDateConverter.getLessAccurateFormat(firstFormat, secondFormat);
+    	
+    	LocalDateTime first = UnitDateConverter.getLocalDateTimeFromUnitDate(firstDate, firstFrom, format);
+    	LocalDateTime second = UnitDateConverter.getLocalDateTimeFromUnitDate(secondDate, secondFrom, format);
+    	
+    	int result = first.compareTo(second);
+    	if(result<0) {
+    		return -1;
+    	}
+    	if(result>0) {
+    		return 1;
+    	}
+    	return 0;
+	}
 }
