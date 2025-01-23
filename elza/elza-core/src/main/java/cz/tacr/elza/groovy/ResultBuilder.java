@@ -2,16 +2,17 @@ package cz.tacr.elza.groovy;
 
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class ResultBuilder {
 
 	private GroovyGenCtx ctx;
 
-	private StringBuilder result;
+	private final StringBuilder result = new StringBuilder();
 
 	private String separator = ", ";
 
-	public ResultBuilder(GroovyItem init, GroovyGenCtx ctx) {
-		this.result = new StringBuilder(init.getValue());
+	public ResultBuilder(GroovyGenCtx ctx) {
 		this.ctx = ctx;
 	}
 
@@ -34,23 +35,30 @@ public class ResultBuilder {
 		return this;
 	}
 
-	public ResultBuilder append(final String item) {
-		if (item != null) {
-			result.append(separator).append(item);
+	public ResultBuilder append(final String itemValue) {
+		if(StringUtils.isEmpty(itemValue)) {
+			return this;
 		}
+		if(result.length() > 0) {
+			result.append(separator);
+		}
+		result.append(itemValue);
 		return this;
 	}
 
 	public ResultBuilder append(final GroovyItem item) {
-		if (item != null) {
-			result.append(separator).append(item.getValue());
-		}
-		return this;
+		return append(item.getValue());
 	}
 
 	public ResultBuilder append(final String prefix, GroovyItem item) {
-		if (item != null) {
-			result.append(separator).append(prefix).append(item.getValue());
+		if(StringUtils.isEmpty(prefix)) {
+			append(item);
+		} else {
+			append(prefix);
+			String value = item.getValue();
+			if(StringUtils.isNotEmpty(value)) {
+				appendText(value);
+			}
 		}
 		return this;
 	}
@@ -67,14 +75,15 @@ public class ResultBuilder {
 
 	public ResultBuilder appendItemWithLimit(final String itemType, int lengthLimit) {
 		GroovyItem item = ctx.getFirstItemByItemType(itemType);
-		if (item != null) {
-			String itemString = item.getValue();
-	    	if (itemString.length() > lengthLimit) {
-	    		itemString = itemString.substring(0, lengthLimit);
-	    	}
-			result.append(separator).append(itemString);
+		if (item == null) {
+			return this;
 		}
-		return this;
+		
+		String itemString = item.getValue();
+	    if (itemString.length() > (lengthLimit+3)) {
+	    	itemString = itemString.substring(0, lengthLimit) + "...";
+	    }
+		return append(itemString);		
 	}
 
 	public ResultBuilder appendItemWithSpecLabel(final String itemType, final String itemSpec) {

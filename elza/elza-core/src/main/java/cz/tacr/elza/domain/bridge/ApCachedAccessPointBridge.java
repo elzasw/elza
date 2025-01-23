@@ -90,6 +90,9 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
 
     @Override
     public void write(DocumentElement document, ApCachedAccessPoint apCachedAccessPoint, TypeBridgeWriteContext typeBridgeWriteContext) {
+		if (accessPointCacheService == null) {
+			throw new IllegalArgumentException("accessPointCacheService is null, not initialized");
+		}
 
     	CachedAccessPoint cachedAccessPoint = accessPointCacheService.deserialize(apCachedAccessPoint.getData()); 
         if (cachedAccessPoint.getPreferredPartId() == null) {
