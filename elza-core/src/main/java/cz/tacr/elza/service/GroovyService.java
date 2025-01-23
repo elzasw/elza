@@ -66,6 +66,7 @@ import cz.tacr.elza.domain.RulArrangementRule.RuleType;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.exception.SystemException;
@@ -182,7 +183,9 @@ public class GroovyService {
 			groovyItems.addItem(convertItem(item, sdp));
 		}
 		
-		return new GroovyPart(sdp, apType, part.getPartType() , preferred, groovyItems, groovyParts);
+		String partTypeCode = part.getPartTypeCode();
+		RulPartType partType = sdp.getPartTypeByCode(partTypeCode);
+		return new GroovyPart(sdp, apType, partType, preferred, groovyItems, groovyParts);
 	}
 
 	public GroovyAe convertAe(@NotNull final ApState state,
