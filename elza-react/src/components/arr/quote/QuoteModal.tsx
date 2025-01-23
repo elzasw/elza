@@ -46,7 +46,7 @@ export function QuoteModal({ nodeId, versionId, onClose }: Props) {
                                 </NoFocusButton>
                             </TooltipTrigger>
                         </div>
-                        <p>{value}</p>
+                        <p style={{wordWrap: "break-word"}}>{value}</p>
                     </div>
                 })}
             </Modal.Body>
