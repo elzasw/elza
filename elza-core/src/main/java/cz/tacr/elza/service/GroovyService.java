@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,6 +17,7 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.NodePlainTextRepresentation;
 import jakarta.validation.constraints.NotNull;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
@@ -80,6 +82,7 @@ import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedPart;
 
 @Service
 public class GroovyService {
@@ -126,7 +129,63 @@ public class GroovyService {
         _self = this;
     }
 
-    public GroovyAe convertAe(@NotNull final ApState state,
+    private GroovyAe convertAe(CachedAccessPoint apCached) {
+    	ApState state = apCached.getApState();
+        StaticDataProvider sdp = staticDataService.getData();
+        ApType apType = sdp.getApTypeById(state.getApTypeId());
+        
+        List<ApPart> parts = apCached.getApParts();
+        
+        // prepare parent parts        
+		List<GroovyPart> groovyParts = new ArrayList<>(apCached.getParts().size());
+		Map<Integer, List<CachedPart> > subParts = new HashMap<>();
+		List<CachedPart> mainParts = new ArrayList<>();
+				
+		for (CachedPart part : apCached.getParts()) {
+			if(part.getParentPartId()==null) {
+				mainParts.add(part);
+				if(part.getPartId().equals(state.getAccessPoint().getPreferredPartId())) {
+					
+				}
+			} else {
+				// append as child
+				subParts.computeIfAbsent(part.getPartId(), p -> new ArrayList<>() ).add(part);
+			}			
+		}
+		
+		// convert parts
+		for(CachedPart part: mainParts) {
+			boolean preferred = part.getPartId().equals(state.getAccessPoint().getPreferredPartId());
+			
+			GroovyPart gp = convertPart(sdp, apType, preferred, part, subParts.get(part.getPartId()));
+			groovyParts.add(gp);			
+		}
+
+		return new GroovyAe(state.getAccessPointId(), state.getStateId(), apType.getCode(), groovyParts);
+	}
+    
+    private GroovyPart convertPart(StaticDataProvider sdp, ApType apType, boolean preferred, CachedPart part, List<CachedPart> subParts) {
+    	// convert subparts
+		List<GroovyPart> groovyParts;
+		if(CollectionUtils.isEmpty(subParts)) {
+			groovyParts = Collections.emptyList();
+		} else {
+			groovyParts = new ArrayList<>(subParts.size());
+			for(CachedPart subPart: subParts) {
+				groovyParts.add(convertPart(sdp, apType, false, subPart, null));
+			}
+		}
+		
+		// convert items
+		GroovyItems groovyItems = new GroovyItems();
+		for(ApItem item: part.getItems()) {
+			groovyItems.addItem(convertItem(item, sdp));
+		}
+		
+		return new GroovyPart(sdp, apType, part.getPartType() , preferred, groovyItems, groovyParts);
+	}
+
+	public GroovyAe convertAe(@NotNull final ApState state,
                               @NotNull final List<ApPart> parts,
                               @NotNull final List<ApItem> items) {
         return convertAe(state, parts, Collections.emptyList(), items, Collections.emptyList());
@@ -235,10 +294,8 @@ public class GroovyService {
     public List<NodePlainTextRepresentation> getNodePlainText(@NotNull final ArrFundVersion fundVersion, ParInstitution institution, List<ArrDescItem> items) {
 		List<NodePlainTextRepresentation> result = new ArrayList<>();
 
-        ApState state = apStateRepository.findLastByAccessPointId(institution.getAccessPointId());
-        List<ApPart> parts = partService.findPartsByAccessPoint(state.getAccessPoint());
-        List<ApItem> itemsByParts = accessPointItemService.findItemsByParts(parts);
-        GroovyAe groovyAe = convertAe(state, parts, itemsByParts);
+		CachedAccessPoint apInstitution = accessPointCacheService.findCachedAccessPoint(institution.getAccessPointId());
+        GroovyAe groovyAe = convertAe(apInstitution);
 
         GroovyFund groovyFund = new GroovyFund(fundVersion.getFund(), new GroovyInstitution(institution, groovyAe));
 
@@ -264,7 +321,7 @@ public class GroovyService {
 		return result;
     }
 
-    /**
+	/**
      * 
      * @param apTypeId
      * @param part
