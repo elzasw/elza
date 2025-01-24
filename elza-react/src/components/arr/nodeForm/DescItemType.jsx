@@ -296,8 +296,9 @@ class DescItemType extends AbstractReactComponent {
      */
     renderDescItemSpec(key, descItem, descItemIndex, locked) {
         const {infoType, refType, readMode, strictMode} = this.props;
+        const isEnum = refType.dataType?.code === "ENUM";
 
-        if(refType.dataType?.code === "ENUM" && descItem.undefined){
+        if(isEnum && descItem.undefined){
             return <input className="form-control" disabled={true} value={i18n('subNodeForm.descItemType.undefinedValue')}/>
         }
         return (
@@ -305,6 +306,7 @@ class DescItemType extends AbstractReactComponent {
                 key={key}
                 ref={ref => (this.refObjects[key] = ref)}
                 descItem={descItem}
+                isEnum={isEnum}
                 locked={locked || descItem.undefined}
                 infoType={infoType}
                 refType={refType}
@@ -1360,7 +1362,11 @@ class DescItemType extends AbstractReactComponent {
         const label = this.renderLabel();
         const showDeleteDescItemType = this.getShowDeleteDescItemType();
         const descItems = descItemType.descItems
-            .filter(i => i.hasOwnProperty('formKey'))
+            .filter(item => {
+                const hasValue = item.id != undefined && !item.undefined;
+                return item.hasOwnProperty('formKey')
+                    && (hasValue || !readMode) // hide items without value in read mode
+            })
             .map((descItem, descItemIndex) => {
                 const actions = [];
 
