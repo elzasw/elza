@@ -1770,14 +1770,11 @@ public class ArrangementController {
         Set<Integer> nodeIds;
         List<SearchParam> searchParams = input.getSearchParams();
         if (CollectionUtils.isNotEmpty(searchParams)) {
-            nodeIds = arrangementService.findNodeIdsBySearchParams(fundVersion, input.getNodeId(), searchParams,
-                    input.getDepth());
+            nodeIds = arrangementService.findNodeIdsBySearchParams(fundVersion, input.getNodeId(), searchParams, input.getDepth());
         } else if (input.getLuceneQuery()) {
-            nodeIds = arrangementService.findNodeIdsByLuceneQuery(fundVersion, input.getNodeId(), input.getSearchValue(),
-                    input.getDepth());
+            nodeIds = arrangementService.findNodeIdsByLuceneQuery(fundVersion, input.getNodeId(), input.getSearchValue(), input.getDepth());
         } else {
-            nodeIds = arrangementService.findNodeIdsByFulltext(fundVersion, input.getNodeId(),
-                    input.getSearchValue(), input.getDepth());
+            nodeIds = arrangementService.findNodeIdsByFulltext(fundVersion, input.getNodeId(), input.getSearchValue(), input.getDepth());
         }
 
         return arrangementService.createTreeNodeFulltextList(nodeIds, fundVersion);
@@ -2010,7 +2007,7 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/replaceDataValues/{versionId}", method = RequestMethod.PUT)
-    public void replaceDataValues(@PathVariable("versionId") final Integer versionId,
+    public ResponseEntity<Integer> replaceDataValues(@PathVariable("versionId") final Integer versionId,
                                   @RequestParam("descItemTypeId") final Integer descItemTypeId,
                                   @RequestParam("searchText") final String searchText,
                                   @RequestParam("replaceText") final String replaceText,
@@ -2028,7 +2025,8 @@ public class ArrangementController {
                 CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
                         new HashSet<>(itemSpecRepository.findAllById(replaceDataBody.getSpecIds()));
 
-        descriptionItemService.replaceDescItemValues(fundVersion, descItemType, nodesDO, specifications, searchText, replaceText, replaceDataBody.getSelectionType() == SelectionType.FUND, false);
+        Integer result = descriptionItemService.replaceDescItemValues(fundVersion, descItemType, nodesDO, specifications, searchText, replaceText, replaceDataBody.getSelectionType() == SelectionType.FUND, false);
+        return ResponseEntity.ok(result);
     }
 
     /**
