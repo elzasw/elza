@@ -95,14 +95,13 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
-//import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.ItemDataResult;
 import cz.tacr.elza.test.controller.vo.NodeItem;
-import cz.tacr.elza.test.controller.vo.DataString;
 import cz.tacr.elza.test.controller.vo.DataText;
 import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.utils.CsvUtils;
+import io.restassured.response.Response;
 
 public class ArrangementControllerTest extends AbstractControllerTest {
 
@@ -1190,31 +1189,37 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             index++;
         }
 
-        //nahrazení hodnoty value za hodnotu valXYZ
+        // update lucene ArrDescItem index
+        helperTestService.massIndexerStartAndWait(ArrDescItem.class);
+
+        // nahrazení hodnoty value za hodnotu valXYZ
         List<ArrNodeVO> allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAllById(nodeIds));
         ArrangementController.ReplaceDataBody body = new ArrangementController.ReplaceDataBody();
         body.setNodes(new HashSet<>(allNodes));
         body.setSelectionType(ArrangementController.SelectionType.NODES);
-        Thread.sleep(1000);
-        helperTestService.waitForWorkers();
-        replaceDataValues(fundVersion.getId(), typeVo.getId(), "value", "valXYZ", body);
-        
-        //nalezení hodnot podle změněné hodnoty
+        Response result = replaceDataValues(fundVersion.getId(), typeVo.getId(), "value", "valXYZ", body);
+        Integer resultCount = result.getBody().as(Integer.class);
+
+        assertTrue(resultCount == nodeIds.size());
+
+        // update lucene ArrDescItem index
+        helperTestService.massIndexerStartAndWait(ArrDescItem.class);
+
+        // nalezení hodnot podle změněné hodnoty
         RulItemType type = itemTypeRepository.findOneByCode("SRD_TITLE");
-        type.setDataType(dataTypeRepository.findByCode("TEXT"));  //kvůli transakci (no session)
-        List<ArrDescItem> nodesContainingText = new TransactionTemplate(tm).execute(a -> {
-        	return descItemRepository.findByNodesContainingText(nodeRepository.findAllById(nodeIds), 
-        			type, null, "valXYZ");
+        type.setDataType(dataTypeRepository.findByCode("TEXT"));  // kvůli transakci (no session)
+        List<ArrDescItem> itemsContainingText = new TransactionTemplate(tm).execute(a -> {
+        	return descItemRepository.findByNodesContainingText(nodeRepository.findAllById(nodeIds), type, null, "valXYZ");
 		});
 
-        assertTrue(nodesContainingText.size() == nodeIds.size());
-        for (ArrDescItem descItem : nodesContainingText) {
+        assertTrue(itemsContainingText.size() == nodeIds.size());
+        for (ArrDescItem descItem : itemsContainingText) {
             ArrDataText data = HibernateUtils.unproxy(descItem.getData());
             assertTrue(Pattern.compile("^(\\d+valXYZ\\d+)$").matcher(data.getTextValue()).matches());
             assertTrue(nodeIds.contains(descItem.getNodeId()));
         }
 
-        //test nahrazení všech hodnot na konkrétní hodnotu
+        // test nahrazení všech hodnot na konkrétní hodnotu
         allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAllById(nodeIds));
         body.setNodes(new HashSet<>(allNodes));
         body.setSelectionType(ArrangementController.SelectionType.NODES);
@@ -1229,7 +1234,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             }
         }
 
-        //smazání hodnot atributů
+        // smazání hodnot atributů
         helperTestService.waitForWorkers();
         allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAllById(nodeIds));
         body.setNodes(new HashSet<>(allNodes));
