@@ -2309,13 +2309,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param replaceText     text, který nahradí hledaný text v celém textu
 	 * @param replaceDataBody seznam uzlů, ve kterých hledáme
 	 */
-	protected void replaceDataValues(final Integer versionId, final Integer descItemTypeId, final String searchText,
+	protected Response replaceDataValues(final Integer versionId, final Integer descItemTypeId, final String searchText,
 			final String replaceText, final ArrangementController.ReplaceDataBody replaceDataBody) {
 
-		put(spec -> spec.pathParam("versionId", versionId).queryParam("descItemTypeId", descItemTypeId)
-				.queryParam("searchText", searchText).queryParam("replaceText", replaceText).body(replaceDataBody),
-				REPLACE_DATA_VALUES);
-
+		return put(spec -> spec.pathParam("versionId", versionId)
+							.queryParam("descItemTypeId", descItemTypeId)
+							.queryParam("searchText", searchText)
+							.queryParam("replaceText", replaceText)
+							.body(replaceDataBody),
+					REPLACE_DATA_VALUES);
 	}
 
 	/**
