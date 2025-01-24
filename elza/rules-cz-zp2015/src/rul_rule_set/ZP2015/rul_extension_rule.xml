@@ -19,6 +19,7 @@
     <extension-rule filename="OtherID.drl" arrangement-extension="ZP2015_JinaOznaceni">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
+    </extension-rule>
     <extension-rule filename="Items_StructuredContent.drl" arrangement-extension="ZP2015_ObsahStrukturovany">
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
