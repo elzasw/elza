@@ -34,7 +34,7 @@ class DescItemString extends AbstractReactComponent {
     }
 
     render() {
-        const { descItem, locked, readMode, cal, infoType } = this.props;
+        const { descItem, locked, readMode, cal, infoType, hasSpecification } = this.props;
         let value =
             cal && descItem.value == null ? i18n('subNodeForm.descItemType.calculable') : inputValue(descItem.value);
 
@@ -52,10 +52,12 @@ class DescItemString extends AbstractReactComponent {
             cls.push(CLS_CALCULABLE);
         }
 
+        const isAutosize = infoType.width === 0 && !hasSpecification;
+
         return (
             <div className="desc-item-value">
                 <ItemTooltipWrapper tooltipTitle="dataType.string.format">
-                    {infoType.width === 0 ? <TextareaAutosize
+                    {isAutosize ? <TextareaAutosize
                         {...decorateValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                         ref={ref => this.focusEl = ref}
                         type="text"
