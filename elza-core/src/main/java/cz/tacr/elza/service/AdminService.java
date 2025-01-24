@@ -70,7 +70,7 @@ public class AdminService {
     		return indexerStatus;
     	}
     	log.info("Started mass indexing ...");
-    	
+
     	SearchSession searchSession = Search.session(entityManager);
     	MassIndexer massIndexer = searchSession.massIndexer(ArrCachedNode.class, ArrDescItem.class, ApCachedAccessPoint.class);
     	CompletionStage<?> startResult = massIndexer.start();
@@ -84,7 +84,7 @@ public class AdminService {
     	
     	return indexerStatus;
     }
-    
+
     /**
      * Method to run reindex at specific time.
      * 
@@ -93,7 +93,6 @@ public class AdminService {
     @Scheduled(cron = "${elza.reindex.cron:0 0 4 ? * SAT}")
     @Transactional
     public void reindexTimer() {
-    	
     	reindexInternal();
     }
 

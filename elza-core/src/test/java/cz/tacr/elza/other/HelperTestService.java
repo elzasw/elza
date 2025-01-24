@@ -13,6 +13,7 @@ import java.util.zip.ZipOutputStream;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
+import org.hibernate.search.mapper.orm.Search;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -449,6 +450,16 @@ public class HelperTestService {
             zout.closeEntry();
             fin.close();
         }
+    }
+
+    /**
+     * Starts the lucene indexing process, and then block until it's finished
+     * 
+     * @throws InterruptedException
+     */
+    @Transactional
+    public void massIndexerStartAndWait(Class<?>... classes) throws InterruptedException {
+        Search.session(em).massIndexer(classes).startAndWait();
     }
 
     /**
