@@ -1748,7 +1748,7 @@ public class DescriptionItemService {
      * @param forceUpdate    ignorovat příznak readOnly
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public void replaceDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
+    public Integer replaceDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                       final RulItemType descItemType,
                                       final Collection<ArrNode> nodes,
                                       final Set<RulItemSpec> specifications, final String findText,
@@ -1796,6 +1796,7 @@ public class DescriptionItemService {
 
             changeContext.flush();
         }
+        return descItemsToReplaceText.size();
     }
 
     public Class<? extends ArrData> getDescItemDataTypeClass(final RulItemType descItemType) {

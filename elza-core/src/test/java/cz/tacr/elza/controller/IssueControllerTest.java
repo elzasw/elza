@@ -61,10 +61,7 @@ public class IssueControllerTest extends AbstractControllerTest {
      * Test zohlednuje i opravneni uzivatelu.
      */
     @Test
-    public void issueTest1() throws Exception {
-
-        loginAsAdmin();
-
+    public void issueTest() throws Exception {
         Fund fund = createFund();
 
         List<ApAccessPointVO> records = findRecord(null, null, null, null, null);
@@ -90,7 +87,6 @@ public class IssueControllerTest extends AbstractControllerTest {
             Integer issueListId1 = runAsUser(adminUserVO.getUsername(), () -> {
 
                 String name1 = "Name 1";
-
                 Integer issueListId;
 
                 {
@@ -333,7 +329,6 @@ public class IssueControllerTest extends AbstractControllerTest {
         valueMap.put(UsrAuthentication.AuthType.PASSWORD, PASSWORD);
         return createUser(username, valueMap, ap.getId());
     }
-
 
     /**
      * Provede akce v {@code callback} jako daný uživatel.

@@ -194,7 +194,7 @@ public class StartupService implements SmartLifecycle {
         ObjectListIterator.setMaxBatchSize(hibernateConfiguration.getBatchSize());
 
         ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(accessPointService);
-        ArrDataRecordRef.setFulltextProvider(fulltextProvider);
+        ArrDataRecordRef.setFulltextProvider(fulltextProvider);                
         ApCachedAccessPointBridge.init(applicationContext.getBean(SettingsService.class), applicationContext.getBean(AccessPointCacheService.class));
         ArrCachedNodeBridge.init(applicationContext.getBean(NodeCacheService.class));
 
