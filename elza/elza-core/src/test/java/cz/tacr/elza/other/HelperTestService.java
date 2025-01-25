@@ -7,20 +7,39 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.transaction.Transactional;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.coordination.common.spi.CoordinationStrategy;
+import org.hibernate.search.mapper.orm.mapping.SearchMapping;
+import org.hibernate.search.mapper.orm.mapping.impl.HibernateOrmMapping;
+import org.hibernate.search.mapper.orm.outboxpolling.cfg.UuidGenerationStrategy;
+import org.hibernate.search.mapper.orm.outboxpolling.event.impl.DefaultOutboxEventFinder;
+import org.hibernate.search.mapper.orm.outboxpolling.event.impl.OutboxEvent;
+import org.hibernate.search.mapper.orm.outboxpolling.event.impl.OutboxEventOrder;
+import org.hibernate.search.mapper.orm.outboxpolling.event.impl.OutboxPollingOutboxEventAdditionalJaxbMappingProducer;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.web.ServerProperties.Jetty.Threads;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.ApAccessPointRepository;
@@ -247,6 +266,12 @@ public class HelperTestService {
     @Autowired
     protected EntityManager em;
 
+    @Autowired
+	private SessionFactory sessionFactory;
+
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+
     public List<RulPackage> getPackages() {
         return packageService.getPackages();
     }
@@ -461,6 +486,63 @@ public class HelperTestService {
     public void massIndexerStartAndWait(Class<?>... classes) throws InterruptedException {
         Search.session(em).massIndexer(classes).startAndWait();
     }
+    
+    /**
+     * Method to wait till index update is finished
+     */
+    public void waitForIndexUpdate() {
+    	// There are several approaches how to wait for the index update to finish.
+    	// 1. Run massIndexer and wait till it is finished. This is not optimal
+    	//    because it might hide some issues with the index update.
+    	//    e.g.: massIndexerStartAndWait(ArrDescItem.class);
+    	//
+    	// 2. Try to get directly to the OutboxPollingSearchMapping
+		//    and wait till the index update is finished.
+    	//    This is the most optimal approach.
+    	//    BUT IT DOES NOT WORK!
+    	/*
+        SearchMapping searchMapping = Search.mapping(sessionFactory);
+        HibernateOrmMapping hibernateOrmMapping = (HibernateOrmMapping) searchMapping;
+        CoordinationStrategy coordStrategy = hibernateOrmMapping.coordinationStrategy();
+        CompletableFuture<?> comp = coordStrategy.completion();
+        try {
+			Object result = comp.get(10, TimeUnit.SECONDS);
+		} catch (Exception e) {
+			throw new IllegalStateException("Index update failed", e);
+		}
+		*/
+        // 3. If it is not possible to read state from OutboxPollingSearchMapping,
+		//    we can read content of table hsearch_outbox_event and check 
+        //    if there are any unfinished events.
+		OutboxEventOrder processingOrder = OutboxEventOrder.ID;
+    	
+    	Integer counter = 0;
+    	while(counter<100){
+    		
+    		Integer pendingEvents;
+    		try(Session session = this.sessionFactory.openSession()) {
+    			DefaultOutboxEventFinder.Provider prov = new DefaultOutboxEventFinder.Provider( processingOrder );
+    			DefaultOutboxEventFinder finder = prov.createWithoutStatusOrProcessAfterFilter();
+    			List<OutboxEvent> results = finder.findOutboxEvents(session, 10);
+    			pendingEvents = results.size();
+    		}
+    		if(pendingEvents==0) {
+    			// success
+    			logger.debug("Indexing finished.");
+    			return;
+    		} else {
+    			logger.debug("Waiting to finish indexing, number of pending events: {}", pendingEvents);
+    		}
+    		counter++;
+    		try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				throw new IllegalStateException(e);
+			}
+    	};
+    	throw new IllegalStateException("Timeout.");
+	}
+    
 
     /**
      * Function will wait for all workers

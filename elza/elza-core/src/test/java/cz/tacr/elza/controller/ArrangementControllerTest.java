@@ -25,7 +25,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -35,10 +39,18 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.hibernate.SessionFactory;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.coordination.common.spi.CoordinationStrategy;
+import org.hibernate.search.mapper.orm.mapping.SearchMapping;
+import org.hibernate.search.mapper.orm.mapping.impl.HibernateOrmMapping;
+import org.hibernate.search.mapper.orm.outboxpolling.OutboxPollingExtension;
+import org.hibernate.search.mapper.orm.outboxpolling.mapping.OutboxPollingSearchMapping;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.Message;
@@ -119,7 +131,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     // maximální počet položek pro načtení
     public static final int MAX_SIZE = 999;
-
+    
     @Test
     public void arrangementTest() throws IOException, InterruptedException, ExecutionException, IllegalAccessException {
 
@@ -1190,7 +1202,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         }
 
         // update lucene ArrDescItem index
-        helperTestService.massIndexerStartAndWait(ArrDescItem.class);
+        helperTestService.waitForIndexUpdate();
 
         // nahrazení hodnoty value za hodnotu valXYZ
         List<ArrNodeVO> allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAllById(nodeIds));
@@ -1203,7 +1215,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(resultCount == nodeIds.size());
 
         // update lucene ArrDescItem index
-        helperTestService.massIndexerStartAndWait(ArrDescItem.class);
+        helperTestService.waitForIndexUpdate();
 
         // nalezení hodnot podle změněné hodnoty
         RulItemType type = itemTypeRepository.findOneByCode("SRD_TITLE");
@@ -1245,7 +1257,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(nodeDescItems.isEmpty());
     }
 
-    @Test
+	@Test
     public void filterUniqueValuesTest() throws InterruptedException {
         // vytvoření
         ArrFundVersionVO fundVersion = getOpenVersion(createdFund());
