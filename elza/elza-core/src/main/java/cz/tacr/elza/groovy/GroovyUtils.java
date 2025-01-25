@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -66,23 +65,6 @@ public class GroovyUtils {
     		}
     	}
     	return null;
-    }
-
-    public static String findItemByItemTypeCode(final String itemType, String prefix, List<GroovyItem> items) {
-    	return findItemByItemTypeCode(itemType, "", prefix, items, null);
-    }
-
-    public static String findItemByItemTypeCode(final String itemType, String nullValue, String prefix, List<GroovyItem> items) {
-    	return findItemByItemTypeCode(itemType, nullValue, prefix, items, null);
-    }
-
-    public static String findItemByItemTypeCode(final String itemType, String nullValue, String prefix, List<GroovyItem> items, Integer lengthLimit) {
-    	GroovyItem groovyItem = GroovyUtils.findItemByItemTypeCode(itemType, items);
-    	String result = groovyItem == null ? nullValue : groovyItem.getValue();
-    	if (lengthLimit != null && result != null && result.length() > lengthLimit) {
-    		result = result.substring(0, lengthLimit);
-    	}
-    	return StringUtils.isEmpty(result) ? result : prefix + result;
     }
 
     @Nullable

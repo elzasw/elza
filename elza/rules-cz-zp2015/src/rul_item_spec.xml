@@ -755,6 +755,7 @@
             <item-aptype register-type="ARTWORK"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_74">
         <name>nositel vyznamenání/ceny</name>
@@ -766,6 +767,7 @@
             <item-aptype register-type="DYNASTY"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_75">
         <name>navrhovatel</name>
@@ -788,6 +790,7 @@
             <item-aptype register-type="PARTY_GROUP"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_77">
         <name>osoba jmenovaná/ustanovená do funkce</name>
@@ -797,6 +800,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_78">
         <name>funkce</name>
@@ -806,6 +810,7 @@
             <item-aptype register-type="TERM"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_79">
         <name>korporace výkonu funkce</name>
@@ -815,6 +820,7 @@
             <item-aptype register-type="PARTY_GROUP"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_80">
         <name>místo výkonu funkce</name>
@@ -824,6 +830,7 @@
             <item-aptype register-type="GEO"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <!--  používá se nyní již jen u technických výkresů, asi by mohlo být 
           přejmenováno na "autor výkresu" -->
@@ -847,6 +854,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <!-- Nepoužívat, sloučeno s ZP2015_ENTITY_ROLE_6, bug7900 -->
     <item-spec code="ZP2015_ENTITY_ROLE_5">
@@ -858,6 +866,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_10">
         <name>autor textové složky / textař</name>
@@ -901,6 +910,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_8">
         <name>autor komentáře</name>
@@ -911,6 +921,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_9">
         <name>autor námětu</name>
@@ -921,6 +932,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_91">
         <name>autor předlohy</name>
@@ -942,6 +954,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_3">
         <name>autor doprovodnéno textu</name>
@@ -952,6 +965,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_12">
         <name>autor triků a speciálních efektů</name>
@@ -962,6 +976,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_84">
         <name>opisovač</name>
@@ -971,6 +986,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>    
     <item-spec code="ZP2015_ENTITY_ROLE_15">
         <name>vydavatel</name>
@@ -994,6 +1010,7 @@
             <item-aptype register-type="DYNASTY"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_17">
         <name>pečetitel</name>
@@ -1005,6 +1022,7 @@
             <item-aptype register-type="DYNASTY"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_18">
         <name>produkční společnost / producent</name>
@@ -1016,6 +1034,7 @@
             <item-aptype register-type="DYNASTY"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_19">
         <name>objednatel/příjemce</name>
@@ -1038,6 +1057,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_21">
         <name>příjemce</name>
@@ -1085,6 +1105,7 @@
             <item-aptype register-type="DYNASTY"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_24">
         <name>odesílatel</name>
@@ -1118,6 +1139,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_27">
         <name>režisér</name>
@@ -1147,6 +1169,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_30">
         <name>interpret hudby</name>
@@ -1179,6 +1202,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_33">
         <name>kartograf</name>
@@ -1199,6 +1223,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_36">
         <name>kreslič</name>
@@ -1208,6 +1233,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_37">
         <name>majitel typáře</name>
@@ -1219,6 +1245,7 @@
             <item-aptype register-type="DYNASTY"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_38">
         <name>tvůrce technického zpracování</name>
@@ -1229,6 +1256,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_39">
         <name>tvůrce výtvarné stránky</name>
@@ -1239,6 +1267,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_40">
         <name>dramaturg</name>
@@ -1259,6 +1288,7 @@
             <item-aptype register-type="PARTY_GROUP"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec> 
     <item-spec code="ZP2015_ENTITY_ROLE_41">
         <name>střih/střihač</name>
@@ -1269,6 +1299,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_42">
         <name>zvuk/zvukař</name>
@@ -1279,6 +1310,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_43">
         <name>účinkující</name>
@@ -1290,6 +1322,7 @@
             <item-aptype register-type="DYNASTY"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_44">
         <name>překladatel</name>
@@ -1300,6 +1333,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_45">
         <name>lektor</name>
@@ -1309,6 +1343,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_46">
         <name>svědek</name>
@@ -1318,6 +1353,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_47">
         <name>ručitel (rukojmě)</name>
@@ -1328,6 +1364,7 @@
             <item-aptype register-type="DYNASTY"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_48">
         <name>písař</name>
@@ -1337,6 +1374,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_49">
         <name>zpracovatel nosiče záznamu</name>
@@ -1347,6 +1385,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_50">
         <name>výrobce nosiče záznamu</name>
@@ -1357,6 +1396,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_52">
         <name>tiskárna/tiskař</name>
@@ -1367,6 +1407,7 @@
             <item-aptype register-type="PERSON"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_53">
         <name>výrobce</name>
@@ -1397,6 +1438,7 @@
             <item-aptype register-type="GEO"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_57">
         <name>místo vydavatele</name>
@@ -1406,6 +1448,7 @@
             <item-aptype register-type="GEO"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_88">
         <name>místo předání</name>
@@ -1415,6 +1458,7 @@
             <item-aptype register-type="GEO"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>    
     <item-spec code="ZP2015_ENTITY_ROLE_58">
         <name>místo vydání</name>
@@ -1424,6 +1468,7 @@
             <item-aptype register-type="GEO"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_60">
         <name>místo výroby</name>
@@ -1433,6 +1478,7 @@
             <item-aptype register-type="GEO"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_61">
         <name>místo vzniku jednotky popisu</name>
@@ -1442,6 +1488,7 @@
             <item-aptype register-type="GEO"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_62">
         <name>místo vzniku předlohy popisované kopie</name>
@@ -1451,6 +1498,7 @@
             <item-aptype register-type="GEO"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_63">
         <name>typové označení a název výrobku a typové stavby</name>
@@ -1476,6 +1524,7 @@
             <item-aptype register-type="TERM"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <!-- Zneplatněno viz https://bugzilla.lightcomp.cz/show_bug.cgi?id=6146 -->
     <item-spec code="ZP2015_ENTITY_ROLE_64">
@@ -1601,6 +1650,7 @@
             <item-aptype register-type="GEO"/>
         </item-aptypes>
         <item-type-assign code="ZP2015_ENTITY_ROLE"/>
+        <item-type-assign code="ZP2015_ENTITY_ROLE_TEXT"/>
     </item-spec>
     <item-spec code="ZP2015_ENTITY_ROLE_83">
         <name>sekundární klasifikace</name>

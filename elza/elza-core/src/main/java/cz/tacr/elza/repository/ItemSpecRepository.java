@@ -18,16 +18,8 @@ import cz.tacr.elza.domain.RulPackage;
 @Repository
 public interface ItemSpecRepository extends ElzaJpaRepository<RulItemSpec, Integer> {
 
-   // List<RulItemSpec> findByItemType(RulItemType itemType);
-
     List<RulItemSpec> findByRulPackage(RulPackage rulPackage);
-    //TODO: gotzy smazat
-    /*@Query("SELECT s" +
-            " FROM rul_item_spec s" +
-            " JOIN FETCH RulItemTypeSpecAssign a " +
-            " JOIN FETCH a.itemType t" +
-            " WHERE s.rulPackage = :rulPackage" +
-            " order by t.viewOrder, a.viewOrder")*/
+
     @Query("SELECT ispec " +
             "FROM RulItemTypeSpecAssign itsa " +
             "JOIN itsa.itemType itype " +

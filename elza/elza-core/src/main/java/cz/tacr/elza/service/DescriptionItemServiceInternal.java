@@ -168,7 +168,7 @@ public class DescriptionItemServiceInternal {
             String title = apIndex == null? "unknownName" : apIndex.getIndexValue();
             TitleValue value = new TitleValue(title);
             if (dataExport) {
-                value.setEntityId(apData.getRecord().getAccessPointId());
+                value.setEntityId(apData.getRecordId());
             }
             return value;
         }

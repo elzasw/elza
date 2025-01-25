@@ -6,6 +6,7 @@ import java.net.URL;
 import cz.tacr.elza.service.DescriptionItemService;
 import jakarta.persistence.EntityManager;
 
+import org.hibernate.SessionFactory;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -83,6 +84,10 @@ public abstract class AbstractTest {
 
     @Autowired
     protected EntityManager em;
+    
+    @Autowired
+    protected PlatformTransactionManager tm;
+    
 
     @Autowired
     @Qualifier("transactionManager")

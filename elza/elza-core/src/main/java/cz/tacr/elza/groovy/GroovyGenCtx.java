@@ -1,18 +1,18 @@
 package cz.tacr.elza.groovy;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.annotation.Nullable;
 
 public class GroovyGenCtx {
 
 	private final GroovyFund fund;
 
-	private final GroovyAe groovyAe;
-
 	private final List<GroovyItem> items;
 
 	public GroovyGenCtx(GroovyFund fund, GroovyAe groovyAe, List<GroovyItem> items) {
 		this.fund = fund;
-		this.groovyAe = groovyAe;
 		this.items = items;
 	}
 
@@ -21,11 +21,34 @@ public class GroovyGenCtx {
 	}
 
 	public GroovyAe getGroovyAe() {
-		return groovyAe;
+		return fund.getInstitution().getGroovyAe();
+	}
+
+	public String getInstitutionCode() {
+		return fund.getInstitution().getInternalCode();
 	}
 
 	public List<GroovyItem> getItems() {
 		return items;
 	}
 
+	public List<GroovyItem> getItemsByItemType(String itemType) {
+    	List<GroovyItem> result = new ArrayList<>();
+    	for (GroovyItem item : getItems()) {
+    		if (item.getTypeCode().equals(itemType)) {
+    			result.add(item);
+    		}
+    	}
+    	return result;
+	}
+
+	@Nullable
+	public GroovyItem getFirstItemByItemType(String itemType) {
+    	for (GroovyItem item : getItems()) {
+    		if (item.getTypeCode().equals(itemType)) {
+    			return item;
+    		}
+    	}
+    	return null;
+	}
 }

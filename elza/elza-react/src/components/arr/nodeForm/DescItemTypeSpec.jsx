@@ -205,10 +205,14 @@ class DescItemTypeSpec extends AbstractReactComponent {
     };
 
     render() {
-        const {onChange, onBlur, onFocus, descItem, locked, infoType, refType, readMode} = this.props;
+        const {onChange, onBlur, onFocus, descItem, locked, infoType, refType, readMode, isEnum} = this.props;
         const {favoriteItems, items} = this.state;
 
         if (readMode) {
+            if(descItem.descItemSpecId == null){
+                return <></>;
+            }
+
             let nameVal;
             if (descItem.descItemSpecId == null || descItem.descItemSpecId == '') {
                 nameVal = '';
@@ -216,8 +220,8 @@ class DescItemTypeSpec extends AbstractReactComponent {
                 nameVal = refType.descItemSpecsMap[descItem.descItemSpecId].name;
             }
             return (
-                <span key="spec" className={classNames("desc-item-spec-label", {"inhibited": descItem.inhibited})} title={nameVal}>
-                    {nameVal}
+                <span key="spec" className={classNames("desc-item-spec-label", {"inhibited": descItem.inhibited, "enum": isEnum})} title={nameVal}>
+                    {nameVal}{!isEnum && ":"}
                 </span>
             );
         }
