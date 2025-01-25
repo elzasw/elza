@@ -66,10 +66,12 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 		if(valueFrom==null) {
 			return "Value from is null";
 		}
+		valueFrom = valueFrom.trim();
 		String valueTo = value.getValueTo();
 		if(valueTo==null) {
 			return "Value to is null";
 		}
+		valueTo = valueTo.trim();
 		String format = value.getFormat();
 		if(format==null) {
 			return "Format is null";
@@ -93,6 +95,10 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 		int toHour = to.getHour();
 		int toMinute = to.getMinute();
 		int toSecond = to.getSecond();
+		
+		if(from.isAfter(to)) {
+			return "Value from is after value to: " + valueFrom + " > " + valueTo;
+		}
 		
 		// determine single format
 		switch (format) {
@@ -167,6 +173,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 		if (formatParts.length != 2) {
 			return "Format " + format + " is invalid";
 		}
+		boolean samePrecission = formatParts[0].equals(formatParts[1]);
 		// check format from
 		switch (formatParts[0]) {
 		case UnitDateConverterConsts.CENTURY:
@@ -174,7 +181,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 				return "Not a valid century start: " + valueFrom;				
 			}
 			// check if more then 100 years
-			if((toYear-fromYear)<=99) {
+			if(samePrecission && (toYear-fromYear)<=99) {
 				return "From year to year is not more then 100 years: " + toYear + "-" + fromYear; 
 			}
 			break;
@@ -182,7 +189,7 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 			if(!validateYearFrom(fromMonth, fromDay, fromHour, fromMinute, fromSecond)) {
 				return "Not a valid year start: " + valueFrom;				
 			}
-			if(toYear<=fromYear) {
+			if(samePrecission && toYear<=fromYear) {
 				return "Has to be at least one year later: " + valueFrom + " - " + valueTo;
 			}
 			break;
@@ -190,26 +197,31 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 			if(!validateYearMonthFrom(fromDay, fromHour, fromMinute, fromSecond)) {
 				return "Not a valid start of month from: " + valueFrom;
 			}
-			if(toYear<fromYear || (toYear==fromYear && toMonth<=fromMonth)) {
-				return "Has to be at least one month later: " + valueFrom + " - " + valueTo;
+			if(samePrecission) {
+				if (toYear < fromYear || (toYear == fromYear && toMonth <= fromMonth)) {
+					return "Has to be at least one month later: " + valueFrom + " - " + valueTo;
+				}
 			}
 			break;
 		case UnitDateConverterConsts.DATE:
 			if(!validateDateFrom(fromHour, fromMinute, fromSecond)) {
 				return "Not a valid start of day: " + valueFrom;
 			}
-			if(toYear<fromYear || (toYear==fromYear && 
+			if(samePrecission) {
+				if(toYear<fromYear || (toYear==fromYear && 
 					(toMonth<fromMonth || (toMonth==fromMonth && toDay<=fromDay)))) {
-				return "Has to be at least one day later: " + valueFrom + " - " + valueTo;
+					return "Has to be at least one day later: " + valueFrom + " - " + valueTo;
+				}
 			}
 			break;			
 		case UnitDateConverterConsts.DATE_TIME:
-			if(toYear<fromYear || (toYear==fromYear && 
-					(toMonth<fromMonth || (toMonth==fromMonth && 
-					(toDay<fromDay || (toDay==fromDay && 
-					(toHour<fromHour || (toHour==fromHour && 
-					(toMinute<fromMinute || (toMinute==fromMinute && toSecond<=fromSecond)))))))))) {
-				return "Has to be at least one second later: " + valueFrom + " - " + valueTo;
+			if(samePrecission) {
+				if (toYear < fromYear || (toYear == fromYear
+						&& (toMonth < fromMonth || (toMonth == fromMonth && (toDay < fromDay || (toDay == fromDay
+								&& (toHour < fromHour || (toHour == fromHour && (toMinute < fromMinute
+										|| (toMinute == fromMinute && toSecond <= fromSecond)))))))))) {
+					return "Has to be at least one second later: " + valueFrom + " - " + valueTo;
+				}
 			}
 			break;
 		default:
@@ -222,40 +234,51 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 				return "Not a valid century end: " + valueTo;				
 			}
 			// check if more then 100 years
-			if((toYear-fromYear)<=99) {
-				return "From year to year is not more then 100 years: " + toYear + "-" + fromYear; 
+			if(samePrecission) {
+				if ((toYear - fromYear) <= 99) {
+					return "From year to year is not more then 100 years: " + toYear + "-" + fromYear;
+				}
 			}
 			break;
 		case UnitDateConverterConsts.YEAR:
 			if(!validateYearTo(toMonth, toDay, toHour, toMinute, toSecond)) {
 				return "Not a valid year end: " + valueTo;				
 			}
-			if(toYear<=fromYear) {
-				return "Has to be at least one year later: " + valueFrom + " - " + valueTo;
+			if(samePrecission) {
+				if (toYear <= fromYear) {
+					return "Has to be at least one year later: " + valueFrom + " - " + valueTo;
+				}
 			}
 			break;
 		case UnitDateConverterConsts.YEAR_MONTH:
 			if(!validateYearMonthTo(toYear, toMonth, toDay, toHour, toMinute, toSecond)) {
 				return "Not a valid end	of month: " + valueTo;
 			}
-			if(toYear<fromYear || (toYear==fromYear && toMonth<=fromMonth)) {
-				return "Has to be at least one month later: " + valueFrom + " - " + valueTo;
+			if(samePrecission) {
+				if (toYear < fromYear || (toYear == fromYear && toMonth <= fromMonth)) {
+					return "Has to be at least one month later: " + valueFrom + " - " + valueTo;
+				}
 			}
 			break;
 		case UnitDateConverterConsts.DATE:
 			if(!validateDateTo(toHour, toMinute, toSecond)) {
 				return "Not a valid end of day: " + valueTo;
 			}
-			if (toYear < fromYear || (toYear == fromYear && 
-					(toMonth < fromMonth || (toMonth == fromMonth && toDay <= fromDay)))) {
-				return "Has to be at least one day later: " + valueFrom + " - " + valueTo;
+			if(samePrecission) {
+				if (toYear < fromYear || (toYear == fromYear
+						&& (toMonth < fromMonth || (toMonth == fromMonth && toDay <= fromDay)))) {
+					return "Has to be at least one day later: " + valueFrom + " - " + valueTo;
+				}
 			}
-			break;			
+			break;
 		case UnitDateConverterConsts.DATE_TIME:
-			if (toYear < fromYear || (toYear == fromYear && (toMonth < fromMonth || (toMonth == fromMonth
-					&& (toDay < fromDay || (toDay == fromDay && (toHour < fromHour || (toHour == fromHour
-							&& (toMinute < fromMinute || (toMinute == fromMinute && toSecond <= fromSecond)))))))))) {
-				return "Has to be at least one second later: " + valueFrom + " - " + valueTo;
+			if(samePrecission) {
+				if (toYear < fromYear || (toYear == fromYear
+						&& (toMonth < fromMonth || (toMonth == fromMonth && (toDay < fromDay || (toDay == fromDay
+								&& (toHour < fromHour || (toHour == fromHour && (toMinute < fromMinute
+										|| (toMinute == fromMinute && toSecond <= fromSecond)))))))))) {
+					return "Has to be at least one second later: " + valueFrom + " - " + valueTo;
+				}
 			}
 			break;
 		default:

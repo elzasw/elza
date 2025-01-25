@@ -231,7 +231,7 @@ public class ApBindingVO {
         // set sync state        
         boolean otherLocalChange = false;
         if(CollectionUtils.isNotEmpty(parts)) {
-        	Integer syncChangeId = bindingState.getSyncChangeId();
+        	Integer syncChangeId = bindingState.getCreateChangeId();
             for(CachedPart part: parts) {
             	ApBindingItemVO bindedPart = bindedParts.get(part.getPartId());
             	if(bindedPart==null) {
@@ -316,7 +316,7 @@ public class ApBindingVO {
         // set sync state        
         boolean otherLocalChange = false;
         if(CollectionUtils.isNotEmpty(parts)) {
-        	Integer syncChangeId = bindingState.getSyncChangeId();
+        	Integer syncChangeId = bindingState.getCreateChangeId();
             for(ApPart part: parts) {
             	ApBindingItemVO bindedPart = bindedParts.get(part.getPartId());
             	if(bindedPart==null) {
@@ -362,7 +362,7 @@ public class ApBindingVO {
         if (bindingState.getSyncOk() != null) {            
             switch (bindingState.getSyncOk()) {
             case SYNC_OK:
-                if (lastChange.getChangeId() > bindingState.getSyncChangeId() || otherLocalChange) {
+                if (lastChange.getChangeId() > bindingState.getCreateChangeId() || otherLocalChange) {
                     syncState = SyncStateVO.LOCAL_CHANGE;
                 } else {
                     syncState = SyncStateVO.SYNC_OK;

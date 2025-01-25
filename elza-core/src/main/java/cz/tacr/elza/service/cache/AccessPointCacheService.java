@@ -79,10 +79,9 @@ import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.search.SearchIndexSupport;
 
 @Service
-public class AccessPointCacheService implements SearchIndexSupport<ApCachedAccessPoint> {
+public class AccessPointCacheService {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessPointCacheService.class);
 
@@ -783,8 +782,8 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             	// TODO: Vymazane bindingState nemaji byt v cache
                 bs.setDeleteChange(entityManager.getReference(ApChange.class, bs.getDeleteChangeId()));
             }
-            if (bs.getSyncChangeId() != null) {
-                bs.setSyncChange(entityManager.getReference(ApChange.class, bs.getSyncChangeId()));
+            if (bs.getCreateChangeId() != null) {
+                bs.setCreateChange(entityManager.getReference(ApChange.class, bs.getCreateChangeId()));
             }
             if (bs.getApTypeId() != null) {
                 bs.setApType(sdp.getApTypeById(bs.getApTypeId()));
@@ -1041,7 +1040,6 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         return result;
     }
 
-    @Override
     public Map<Integer, ApCachedAccessPoint> findToIndex(Collection<Integer> ids) {
         if (CollectionUtils.isEmpty(ids)) {
             return Collections.emptyMap();

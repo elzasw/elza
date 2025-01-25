@@ -355,13 +355,13 @@ public class RevertingChangesService {
 
         sw.start("delete from arr_desc_item");
         {
-            List<Integer> toReindex = new ArrayList<>(1024);
+//            List<Integer> toReindex = new ArrayList<>(1024);
 
-            // preindexovat zaznamy, ktere mohou byt smazane
-            toReindex.addAll(node != null
-                    ? descItemRepository.findIdByNodeAndCreatedAfterChange(node, toChange)
-                    : descItemRepository.findIdByFundAndCreatedAfterChange(fund, toChange)
-            );
+//            // preindexovat zaznamy, ktere mohou byt smazane
+//            toReindex.addAll(node != null
+//                    ? descItemRepository.findIdByNodeAndCreatedAfterChange(node, toChange)
+//                    : descItemRepository.findIdByFundAndCreatedAfterChange(fund, toChange)
+//            );
 
             Query deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", "arr_item", toChange);
             int count = deleteEntityQuery.executeUpdate();
@@ -378,13 +378,13 @@ public class RevertingChangesService {
 
             dataRepository.deleteAll(arrDataList);
 
-            // preindexovat všechny aktualni
-            toReindex.addAll(node != null
-                    ? descItemRepository.findOpenIdByNodeAndCreatedAfterChange(node)
-                    : descItemRepository.findOpenIdByFundAndCreatedAfterChange(fund)
-            );
+//            // preindexovat všechny aktualni
+//            toReindex.addAll(node != null
+//                    ? descItemRepository.findOpenIdByNodeAndCreatedAfterChange(node)
+//                    : descItemRepository.findOpenIdByFundAndCreatedAfterChange(fund)
+//            );
 
-            descriptionItemService.reindexDescItem(toReindex);
+//            descriptionItemService.reindexDescItem(toReindex);
         }
         sw.stop();
 

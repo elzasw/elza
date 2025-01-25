@@ -86,6 +86,7 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
@@ -232,7 +233,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final DaoLinkRepository daoLinkRepository,
                        final ExportConfig exportConfig,
                        final StructObjService structObjService,
-                       final EntityManager em) {
+                       final EntityManager em, 
+                       final DataService dataService) {
         this.outputContext = outputContext;
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
@@ -251,7 +253,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.daoLinkRepository = daoLinkRepository;
         this.exportConfig = exportConfig;
         this.structObjService = structObjService;
-        this.soiLoader = new StructObjectInfoLoader(em, 1, staticDataService.getData());
+        this.soiLoader = new StructObjectInfoLoader(em, 1, staticDataService.getData(), dataService);
     }
 
     public boolean isInitialized() {

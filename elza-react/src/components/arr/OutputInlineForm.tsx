@@ -13,27 +13,36 @@ import { useSelector } from 'react-redux';
 import { AppState, OutputType, Template } from 'typings/store';
 import { ArrOutputVO } from 'typings/Outputs';
 import { AutoSave } from 'components/shared/form/FinalFormAutoSave';
+import { AppFetchingStore } from 'typings/globals';
+import { ApAccessPointVO } from 'api';
 
 interface Props {
-    initialValues?: ArrOutputVO;
+    output?: ArrOutputVO & AppFetchingStore & { subNodeForm: any; lockDate: any }; // TODO - otypovat
     disabled?: boolean;
-    onSave?: (values: Fields) => void;
+    onSave?: (values: Partial<ArrOutputVO>) => void;
 }
 
 interface Fields {
     name: string;
     internalCode?: string;
     outputFilterId?: number;
+    anonymizedAp?: ApAccessPointVO; // TODO - otypovat
 }
 
 export default function OutputInlineForm({
-    initialValues,
+    output,
     disabled,
     onSave,
 }: Props) {
     const dispatch = useThunkDispatch();
+    const initialValues: Fields = {
+        name: output.name,
+        internalCode: output.internalCode,
+        outputFilterId: output.outputFilterId,
+        anonymizedAp: output.anonymizedAp,
+    }
 
-    const outputTypeId = initialValues.outputTypeId;
+    const outputTypeId = output.outputTypeId;
     const outputType = useSelector(({ refTables }: AppState) => refTables.outputTypes.items.find(({ id }) => id === outputTypeId) || null);
     const outputFilters = useSelector(({ refTables }: AppState) => refTables.outputFilters.data);
     const allTemplates = useSelector(({ refTables }: AppState) => refTables.templates.items);
@@ -74,12 +83,12 @@ export default function OutputInlineForm({
     }
 
     const handleRemoveTemplate = (templateId: number) => {
-        WebApi.deleteOutputTemplate(initialValues.id, templateId);
+        WebApi.deleteOutputTemplate(output.id, templateId);
     };
 
 
     const handleAddTemplate = (templateId: number) => {
-        WebApi.addOutputTemplate(initialValues.id, templateId);
+        WebApi.addOutputTemplate(output.id, templateId);
         // Zbytek zařídí websocket
     };
 
@@ -88,15 +97,33 @@ export default function OutputInlineForm({
     }
 
     const getOutputAvailableTemplates = (templates: Template[]) => {
-        if (!initialValues.templateIds) {
+        if (!output.templateIds) {
             return templates;
         } else {
-            return templates.filter((item) => initialValues.templateIds.findIndex((id) => item.id === id) < 0);
+            return templates.filter((item) => output.templateIds.findIndex((id) => item.id === id) < 0);
         }
     }
 
     const handleSubmit = (values: Fields) => {
-        onSave(values);
+        const { id, state, error, nodes, outputTypeId, templateIds, outputResultIds, generatedDate, version, outputSettings, createDate, deleteDate, scopes } = output;
+
+        const _output: Partial<ArrOutputVO> = {
+            ...values,
+            id,
+            state,
+            error,
+            nodes,
+            outputTypeId,
+            templateIds,
+            outputResultIds,
+            generatedDate,
+            version,
+            outputSettings,
+            createDate,
+            deleteDate,
+            scopes,
+        }
+        onSave(_output);
     };
 
     const outputTypeName = outputType ? outputType.name : "Unknown";
@@ -143,7 +170,7 @@ export default function OutputInlineForm({
                             //@ts-expect-error possibly wrong type definition in FormInput
                             onChange={handleChangeTemplate}
                         />
-                        <Tags disabled={disabled} items={initialValues.templateIds || []} onRemove={(item) => handleRemoveTemplate(item)} renderItem={({ item }) => {
+                        <Tags disabled={disabled} items={output.templateIds || []} onRemove={(item) => handleRemoveTemplate(item)} renderItem={({ item }) => {
                             const templateId = item;
                             const template = templates.find((temp) => temp.id === templateId);
                             return template ? template.name : "Unknown template";

@@ -493,7 +493,6 @@ public class ExternalSystemService {
         Validate.isTrue(userName == null || userName.length() <= StringLength.LENGTH_250, "UserName length exceeds the limit");
         apBindingState.setExtUser(userName);
         apBindingState.setExtReplacedBy(replacedById == null ? null : String.valueOf(replacedById));
-        apBindingState.setSyncChange(apChange);
         apBindingState.setCreateChange(apChange);
         apBindingState.setSyncOk(syncState);
         apBindingState.setPreferredPart(preferredPart);
