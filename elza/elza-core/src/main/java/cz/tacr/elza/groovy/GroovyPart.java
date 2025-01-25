@@ -1,10 +1,9 @@
 package cz.tacr.elza.groovy;
 
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.validation.constraints.NotNull;
-
-import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -44,23 +43,31 @@ public class GroovyPart {
      * Související části archivní entity.
      */
     private List<GroovyPart> children;
-
+    
     public GroovyPart(final StaticDataProvider sdp,
                       final int apTypeId,
                       final int partTypeId,
                       final boolean preferred,
                       final GroovyItems items,
                       final List<GroovyPart> children) {
+    	this(sdp, sdp.getApTypeById(apTypeId), sdp.getPartTypeById(partTypeId), preferred, items, children);
+    }
+    
+    public GroovyPart(final StaticDataProvider sdp,    
+                final ApType apType,
+                final RulPartType partType,
+                final boolean preferred,
+                final GroovyItems items,
+                final List<GroovyPart> children) {
         this.sdp = sdp;
-        this.apType = sdp.getApTypeById(apTypeId);
-        Validate.notNull(apType);
-        
-        this.partType = sdp.getPartTypeById(partTypeId);
-        Validate.notNull(partType);
-
+        this.apType = apType;                
+        this.partType = partType;
         this.preferred = preferred;
         this.items = items;
         this.children = children;
+
+        Objects.requireNonNull(apType);
+        Objects.requireNonNull(partType);
     }
 
     public String getAeType() {

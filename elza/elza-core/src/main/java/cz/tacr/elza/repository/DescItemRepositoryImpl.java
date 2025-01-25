@@ -20,6 +20,11 @@ import jakarta.persistence.criteria.Root;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.search.engine.search.predicate.SearchPredicate;
+import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +39,6 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.service.DataService;
 
-
 /**
  * Rozšířený repozitář pro {@link DescItemRepository}.
  */
@@ -48,6 +52,15 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
     
     @Autowired
 	private DataService dataService;
+
+    private SearchSession searchSession = null;
+
+    private SearchSession getSearchSession() {
+		if (searchSession == null) {
+			searchSession = Search.session(entityManager);
+    	}
+    	return searchSession;
+    }
 
     @Override
     public Map<Integer, DescItemTitleInfo> findDescItemTitleInfoByNodeId(final Set<Integer> nodeIds,
@@ -186,37 +199,48 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
                                                        final RulItemType itemType,
                                                        final Set<RulItemSpec> specifications,
                                                        final String text) {
-
-        if(StringUtils.isBlank(text)){
+        if (StringUtils.isBlank(text)) {
             throw new IllegalArgumentException("Parametr text nesmí mít prázdnou hodnotu.");
         }
 
-        if(itemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)){
+        if (itemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)){
             throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
         }
 
-        String searchText = "%" + text + "%";
+        SearchPredicateFactory factory = getSearchSession().scope(ArrDescItem.class).predicate();        
 
-        String hql = "SELECT di FROM arr_desc_item di WHERE (di.data IN (SELECT ds FROM arr_data_string ds WHERE ds.stringValue like :text)" +
-                " OR di.data IN (SELECT ds FROM arr_data_text ds WHERE ds.textValue like :text)" +
-                " OR di.data IN (SELECT ds FROM arr_data_unitid ds WHERE ds.unitId like :text))"
-                + " AND di.itemType = :itemType";
+        // by nodes
+        BooleanPredicateClausesStep<?> boolItems = factory.bool();
+        nodes.forEach(node -> {
+        	boolItems.should(factory.match().field(ArrDescItem.FIELD_NODE_ID).matching(node.getNodeId()));
+        });
 
-        if(itemType.getUseSpecification()){
-            hql+= " AND di.itemSpec IN (:specs)";
-        }
+        // deleteChange is null
+    	SearchPredicate nullDeleteChangePredicate = factory.bool().mustNot(factory.exists().field(ArrDescItem.FIELD_DELETE_CHANGE_ID)).toPredicate();
 
-        hql += " AND di.node IN (:nodes) AND di.deleteChange IS NULL";
+        // by itemType
+        SearchPredicate itemTypePredicate = factory.match().field(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID).matching(itemType.getItemTypeId()).toPredicate();
 
-        Query query = entityManager.createQuery(hql);
-        query.setParameter("itemType", itemType);
-        query.setParameter("nodes", nodes);
-        query.setParameter("text", searchText);
+        // by itemSpec
         if (itemType.getUseSpecification()) {
-            query.setParameter("specs", specifications);
+        	specifications.forEach(spec -> {
+        		boolItems.should(factory.match().field(ArrDescItem.FIELD_ITEM_SPEC_ID).matching(spec.getItemSpecId()));
+        	});
         }
 
-        List<ArrDescItem> fetchedData = query.getResultList();
+        // by text
+        String searchValue = '*' + text + '*';
+        SearchPredicate textPredicate = factory.wildcard().field(ArrDescItem.FULLTEXT_ATT).matching(searchValue).toPredicate();
+
+        // final predicate
+        SearchPredicate finalPredicate = factory.bool()
+        		.must(boolItems.toPredicate())
+        		.must(nullDeleteChangePredicate)
+        		.must(itemTypePredicate)
+        		.must(textPredicate)
+        		.toPredicate();
+
+        List<ArrDescItem> fetchedData = getSearchSession().search(ArrDescItem.class).where(finalPredicate).fetchAll().hits();
         dataService.findItemsWithData(fetchedData);
 
 		return fetchedData;

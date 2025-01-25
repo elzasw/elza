@@ -12,15 +12,17 @@ import cz.tacr.elza.print.item.convertors.UnitDatePrintConvertor
 
 return generate(GENERATOR_CONTEXT)
 
-String generate(final GroovyGenCtx ctx) {    
-    GroovyItem aeName = GroovyUtils.findItemByPartContains(ctx.getGroovyAe(), "PT_NAME", "NM_MAIN", true)
-
-    rb = new ResultBuilder(aeName, ctx)
+String generate(final GroovyGenCtx ctx) {
+	ResultBuilder rb = new ResultBuilder(ctx);
+	    
+    GroovyItem aeName = GroovyUtils.findItemByPartContains(ctx.getGroovyAe(), "PT_NAME", "NM_MAIN", true);
+    rb.append(aeName);
+        
     // add fund
     rb.append(ctx.getFund().getName());
     if(!StringUtils.isEmpty(ctx.getFund().getMark())) {
 		// add mark
-		rb.appendText(" (").appendText(ctx.getFund().getMark()).append(")");
+		rb.appendText(" (").appendText(ctx.getFund().getMark()).appendText(")");
 	}
     
     // ref ozn

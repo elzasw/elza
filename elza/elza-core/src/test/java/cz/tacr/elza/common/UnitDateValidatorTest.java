@@ -329,50 +329,74 @@ public class UnitDateValidatorTest {
 
 	@Test
 	public void testCombined() {
-		ArrDataUnitdate centuryInt = new ArrDataUnitdate();
-		centuryInt.setValueFrom("1801-01-01T00:00:00");
-		centuryInt.setFormat("C-DT");
-		centuryInt.setValueTo("1901-01-01T00:00:00");
-		assertEquals( 0, validator.validate(centuryInt).size());		
+		ArrDataUnitdate centuryIntOk1 = new ArrDataUnitdate();
+		centuryIntOk1.setValueFrom("1801-01-01T00:00:00");
+		centuryIntOk1.setFormat("C-DT");
+		centuryIntOk1.setValueTo("1901-01-01T00:00:00");
+		assertEquals( 0, validator.validate(centuryIntOk1).size());		
+
+		ArrDataUnitdate centuryIntOk2 = new ArrDataUnitdate();
+		centuryIntOk2.setValueFrom("1801-01-01T00:00:00");
+		centuryIntOk2.setFormat("C-DT");
+		centuryIntOk2.setValueTo("1899-12-31T23:59:59");
+		assertEquals( 0, validator.validate(centuryIntOk2).size());		
 
 		ArrDataUnitdate centuryIntErr1 = new ArrDataUnitdate();
-		centuryIntErr1.setValueFrom("1801-01-01T00:00:00");
+		centuryIntErr1.setValueFrom("1901-01-01T00:00:00");
 		centuryIntErr1.setFormat("C-DT");
 		centuryIntErr1.setValueTo("1899-12-31T23:59:59");
 		assertEquals( 1, validator.validate(centuryIntErr1).size());		
 
-		ArrDataUnitdate centuryInt2 = new ArrDataUnitdate();
-		centuryInt2.setValueFrom("1801-01-01T00:00:00");
-		centuryInt2.setFormat("C-D");
-		centuryInt2.setValueTo("1901-01-01T23:59:59");
-		assertEquals( 0, validator.validate(centuryInt2).size());		
+		ArrDataUnitdate centuryIntOk3 = new ArrDataUnitdate();
+		centuryIntOk3.setValueFrom("1801-01-01T00:00:00");
+		centuryIntOk3.setFormat("C-D");
+		centuryIntOk3.setValueTo("1901-01-01T23:59:59");
+		assertEquals( 0, validator.validate(centuryIntOk3).size());		
+
+		ArrDataUnitdate centuryIntOk4= new ArrDataUnitdate();
+		centuryIntOk4.setValueFrom("1801-01-01T00:00:00");
+		centuryIntOk4.setFormat("C-D");
+		centuryIntOk4.setValueTo("1900-12-31T23:59:59");
+		assertEquals( 0, validator.validate(centuryIntOk4).size());		
 
 		ArrDataUnitdate centuryIntErr2 = new ArrDataUnitdate();
-		centuryIntErr2.setValueFrom("1801-01-01T00:00:00");
+		centuryIntErr2.setValueFrom("1901-01-01T00:00:00");
 		centuryIntErr2.setFormat("C-D");
 		centuryIntErr2.setValueTo("1900-12-31T23:59:59");
 		assertEquals( 1, validator.validate(centuryIntErr2).size());		
 
-		ArrDataUnitdate centuryInt3 = new ArrDataUnitdate();
-		centuryInt3.setValueFrom("1801-01-01T00:00:00");
-		centuryInt3.setFormat("C-YM");
-		centuryInt3.setValueTo("1901-01-31T23:59:59");
-		assertEquals( 0, validator.validate(centuryInt3).size());		
+		ArrDataUnitdate centuryIntOk5 = new ArrDataUnitdate();
+		centuryIntOk5.setValueFrom("1801-01-01T00:00:00");
+		centuryIntOk5.setFormat("C-YM");
+		centuryIntOk5.setValueTo("1901-01-31T23:59:59");
+		assertEquals( 0, validator.validate(centuryIntOk5).size());		
+
+		ArrDataUnitdate centuryIntOk6 = new ArrDataUnitdate();
+		centuryIntOk6.setValueFrom("1801-01-01T00:00:00");
+		centuryIntOk6.setFormat("C-YM");
+		centuryIntOk6.setValueTo("1900-12-31T23:59:59");
+		assertEquals( 0, validator.validate(centuryIntOk6).size());		
 
 		ArrDataUnitdate centuryIntErr3 = new ArrDataUnitdate();
-		centuryIntErr3.setValueFrom("1801-01-01T00:00:00");
+		centuryIntErr3.setValueFrom("1901-01-01T00:00:00");
 		centuryIntErr3.setFormat("C-YM");
 		centuryIntErr3.setValueTo("1900-12-31T23:59:59");
 		assertEquals( 1, validator.validate(centuryIntErr3).size());		
 
-		ArrDataUnitdate centuryInt4 = new ArrDataUnitdate();
-		centuryInt4.setValueFrom("1801-01-01T00:00:00");
-		centuryInt4.setFormat("C-Y");
-		centuryInt4.setValueTo("1901-12-31T23:59:59");
-		assertEquals( 0, validator.validate(centuryInt4).size());		
+		ArrDataUnitdate centuryIntOk7 = new ArrDataUnitdate();
+		centuryIntOk7.setValueFrom("1801-01-01T00:00:00");
+		centuryIntOk7.setFormat("C-Y");
+		centuryIntOk7.setValueTo("1901-12-31T23:59:59");
+		assertEquals( 0, validator.validate(centuryIntOk7).size());		
+
+		ArrDataUnitdate centuryIntOk8 = new ArrDataUnitdate();
+		centuryIntOk8.setValueFrom("1801-01-01T00:00:00");
+		centuryIntOk8.setFormat("C-Y");
+		centuryIntOk8.setValueTo("1900-12-31T23:59:59");
+		assertEquals( 0, validator.validate(centuryIntOk8).size());		
 
 		ArrDataUnitdate centuryIntErr4 = new ArrDataUnitdate();
-		centuryIntErr4.setValueFrom("1801-01-01T00:00:00");
+		centuryIntErr4.setValueFrom("1901-01-01T00:00:00");
 		centuryIntErr4.setFormat("C-Y");
 		centuryIntErr4.setValueTo("1900-12-31T23:59:59");
 		assertEquals( 1, validator.validate(centuryIntErr4).size());		
@@ -383,32 +407,44 @@ public class UnitDateValidatorTest {
 		yearInt.setValueTo("1822-01-01T00:00:00");
 		assertEquals( 0, validator.validate(yearInt).size());		
 
+		ArrDataUnitdate yearIntOk2 = new ArrDataUnitdate();
+		yearIntOk2.setValueFrom("1821-01-01T00:00:00");
+		yearIntOk2.setFormat("Y-DT");
+		yearIntOk2.setValueTo("1821-12-31T23:59:59");
+		assertEquals( 0, validator.validate(yearIntOk2).size());		
+
 		ArrDataUnitdate yearIntErr = new ArrDataUnitdate();
-		yearIntErr.setValueFrom("1821-01-01T00:00:00");
+		yearIntErr.setValueFrom("1822-01-01T00:00:00");
 		yearIntErr.setFormat("Y-DT");
 		yearIntErr.setValueTo("1821-12-31T23:59:59");
 		assertEquals( 1, validator.validate(yearIntErr).size());		
 
-		ArrDataUnitdate yearInt2 = new ArrDataUnitdate();
-		yearInt2.setValueFrom("1821-01-01T00:00:00");
-		yearInt2.setFormat("Y-D");
-		yearInt2.setValueTo("1822-01-01T23:59:59");
-		assertEquals( 0, validator.validate(yearInt2).size());		
+		ArrDataUnitdate yearIntOk3 = new ArrDataUnitdate();
+		yearIntOk3.setValueFrom("1821-01-01T00:00:00");
+		yearIntOk3.setFormat("Y-D");
+		yearIntOk3.setValueTo("1822-01-01T23:59:59");
+		assertEquals( 0, validator.validate(yearIntOk3).size());		
 
 		ArrDataUnitdate yearIntErr2 = new ArrDataUnitdate();
-		yearIntErr2.setValueFrom("1821-01-01T00:00:00");
+		yearIntErr2.setValueFrom("1822-01-01T00:00:00");
 		yearIntErr2.setFormat("Y-D");
 		yearIntErr2.setValueTo("1821-12-31T23:59:59");
 		assertEquals( 1, validator.validate(yearIntErr2).size());		
 
-		ArrDataUnitdate yearInt3 = new ArrDataUnitdate();
-		yearInt3.setValueFrom("1821-01-01T00:00:00");
-		yearInt3.setFormat("Y-YM");
-		yearInt3.setValueTo("1822-01-31T23:59:59");
-		assertEquals( 0, validator.validate(yearInt3).size());		
+		ArrDataUnitdate yearIntOk4 = new ArrDataUnitdate();
+		yearIntOk4.setValueFrom("1821-01-01T00:00:00");
+		yearIntOk4.setFormat("Y-YM");
+		yearIntOk4.setValueTo("1822-01-31T23:59:59");
+		assertEquals( 0, validator.validate(yearIntOk4).size());		
+
+		ArrDataUnitdate yearIntOk5 = new ArrDataUnitdate();
+		yearIntOk5.setValueFrom("1821-01-01T00:00:00");
+		yearIntOk5.setFormat("Y-YM");
+		yearIntOk5.setValueTo("1821-12-31T23:59:59");
+		assertEquals( 0, validator.validate(yearIntOk5).size());
 
 		ArrDataUnitdate yearIntErr3 = new ArrDataUnitdate();
-		yearIntErr3.setValueFrom("1821-01-01T00:00:00");
+		yearIntErr3.setValueFrom("1822-01-01T00:00:00");
 		yearIntErr3.setFormat("Y-YM");
 		yearIntErr3.setValueTo("1821-12-31T23:59:59");
 		assertEquals( 1, validator.validate(yearIntErr3).size());
@@ -419,20 +455,26 @@ public class UnitDateValidatorTest {
 		yearMonthInt.setValueTo("1821-04-01T00:00:00");
 		assertEquals( 0, validator.validate(yearMonthInt).size());
 		
+		ArrDataUnitdate yearMonthIntOk2 = new ArrDataUnitdate();
+		yearMonthIntOk2.setValueFrom("1821-03-01T00:00:00");
+		yearMonthIntOk2.setFormat("YM-DT");
+		yearMonthIntOk2.setValueTo("1821-03-31T23:59:59");
+		assertEquals( 0, validator.validate(yearMonthIntOk2).size());
+
 		ArrDataUnitdate yearMonthIntErr1 = new ArrDataUnitdate();
-		yearMonthIntErr1.setValueFrom("1821-03-01T00:00:00");
+		yearMonthIntErr1.setValueFrom("1821-04-01T00:00:00");
 		yearMonthIntErr1.setFormat("YM-DT");
 		yearMonthIntErr1.setValueTo("1821-03-31T23:59:59");
 		assertEquals( 1, validator.validate(yearMonthIntErr1).size());
 		
-		ArrDataUnitdate yearMonthInt2 = new ArrDataUnitdate();
-		yearMonthInt2.setValueFrom("1821-03-01T00:00:00");
-		yearMonthInt2.setFormat("YM-D");
-		yearMonthInt2.setValueTo("1821-04-01T23:59:59");
-		assertEquals( 0, validator.validate(yearMonthInt2).size());
+		ArrDataUnitdate yearMonthIntOk3 = new ArrDataUnitdate();
+		yearMonthIntOk3.setValueFrom("1821-03-01T00:00:00");
+		yearMonthIntOk3.setFormat("YM-D");
+		yearMonthIntOk3.setValueTo("1821-04-01T23:59:59");
+		assertEquals( 0, validator.validate(yearMonthIntOk3).size());
 		
 		ArrDataUnitdate yearMonthIntErr2 = new ArrDataUnitdate();
-		yearMonthIntErr2.setValueFrom("1821-03-01T00:00:00");
+		yearMonthIntErr2.setValueFrom("1821-04-01T00:00:00");
 		yearMonthIntErr2.setFormat("YM-D");
 		yearMonthIntErr2.setValueTo("1821-03-31T23:59:59");
 		assertEquals( 1, validator.validate(yearMonthIntErr2).size());
@@ -443,12 +485,18 @@ public class UnitDateValidatorTest {
 		dayInt.setValueTo("1821-03-15T00:00:00");
 		assertEquals( 0, validator.validate(dayInt).size());
 		
+		ArrDataUnitdate dayIntOk2 = new ArrDataUnitdate();
+		dayIntOk2.setValueFrom("1821-03-14T00:00:00");
+		dayIntOk2.setFormat("D-DT");
+		dayIntOk2.setValueTo("1821-03-14T23:59:59");
+		assertEquals( 0, validator.validate(dayIntOk2).size());		
+
 		ArrDataUnitdate dayIntErr1 = new ArrDataUnitdate();
-		dayIntErr1.setValueFrom("1821-03-14T00:00:00");
+		dayIntErr1.setValueFrom("1821-03-15T00:00:00");
 		dayIntErr1.setFormat("D-DT");
 		dayIntErr1.setValueTo("1821-03-14T23:59:59");
 		assertEquals( 1, validator.validate(dayIntErr1).size());		
-	}
+}
 
 	@Test
 	public void testEstimated() {
