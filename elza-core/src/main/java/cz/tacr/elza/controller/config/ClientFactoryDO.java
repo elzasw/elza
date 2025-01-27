@@ -478,6 +478,7 @@ public class ClientFactoryDO {
         arrFund.setInternalCode(fund.getInternalCode());
         arrFund.setMark(fund.getMark());
         arrFund.setInstitution(institution);
+        arrFund.setManaged(fund.getManaged());
         return arrFund;
     }
 
