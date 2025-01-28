@@ -7,6 +7,7 @@ import cz.tacr.elza.drools.model.item.Item;
 import cz.tacr.elza.drools.model.item.IntItem;
 import cz.tacr.elza.drools.model.item.CoordinatesItem;
 import cz.tacr.elza.drools.model.item.CoordType;
+import cz.tacr.elza.drools.model.item.UnitdateItem;
 import cz.tacr.elza.drools.model.Ap;
 import cz.tacr.elza.drools.model.Part;
 import cz.tacr.elza.drools.model.PartType;
@@ -45,32 +46,34 @@ then
 end
 
 /*
-Obecně programově jsou všechny párty kontrolovány na neopakovatelnost.
+ Všechny párty jsou opakovatelné, zde je detekováno nechtěné opakování.
 */
 
-
-rule "R_NAM_003 Možnost vyplnění části označení"
-when $part: ModelPart(type == PartType.PT_NAME)
+rule "R_BOD_001 Povinnost vyplnění záznamu (těla) entity"
+when $ae: Ap($aeParts : parts)
+     $part: Part(type == PartType.PT_BODY) from $ae.parts
+     $part2: Part(type == PartType.PT_BODY && this!=$part) from $ae.parts
 then
-     $part.setRepeatable(true);
+    // TODO: Pridat odkaz na PART
+    results.addError("Tělo záznamu je uvedeno vícekrát.");
 end
 
-rule "R_EVE_001 Možnost vyplnění části událost"
-when $part: ModelPart(type == PartType.PT_EVENT)
+rule "R_CRE_001 Povinost vyplnění části vzniku entity - neopakovatelnost"
+when $ae: Ap($aeParts : parts)
+     $part: Part(type == PartType.PT_CRE) from $ae.parts
+     $part2: Part(type == PartType.PT_CRE && this!=$part) from $ae.parts
 then
-     $part.setRepeatable(true);
+    // TODO: Pridat odkaz na PART
+    results.addError("Část vznik je uvedena vícekrát.");
 end
 
-rule "R_REL_001 Možnost vyplnění části vztah"
-when $part: ModelPart(type == PartType.PT_REL)
+rule "R_EXT_001 Povinost vyplnění části zániku entity - neopakovatelnost"
+when $ae: Ap($aeParts : parts)
+     $part: Part(type == PartType.PT_EXT) from $ae.parts
+     $part2: Part(type == PartType.PT_EXT && this!=$part) from $ae.parts
 then
-     $part.setRepeatable(true);
-end
-
-rule "R_IDN_007 Možnost vyplnění ostatních identifikátorů u entity"
-when $part: ModelPart(type == PartType.PT_IDENT)
-then
-     $part.setRepeatable(true);
+    // TODO: Pridat odkaz na PART
+    results.addError("Část zánik je uvedena vícekrát.");
 end
 
 
@@ -102,62 +105,201 @@ end
 /*
 Pravidla pro porovnání datací
 */
-rule "R_REL_002 Použití typu vztahu u odkazu na jinou entitu"
-when $ae: Ap( $aeParts : parts)
-     $partRel: (Part(type == PartType.PT_REL) from $aeParts)
-     $itemFrom: (Item(type == "REL_BEGIN") from $partRel.items)
-     $itemTo: (Item(type == "REL_END") from $partRel.items)
-     eval( DrlUtils.greaterThanOrEqualTo($itemTo.getValue(), $itemFrom.getValue()) == false )
+rule "R_CRE_004 Použití datace vzniku"
+when $ae: Ap($aeParts : parts)
+     $partCre: (Part(type == PartType.PT_CRE) from $ae.Parts)
+     $partExt: (Part(type == PartType.PT_EXT) from $ae.Parts)
+     $itemCre: (UnitdateItem(type == "CRE_DATE") from $partCre.items)
+     $itemExt: (UnitdateItem(type == "EXT_DATE") from $partExt.items)
+     eval( $itemCre.startsOrEndsAfter($itemExt) )
 then
-    results.addError("Datace vztahu od je větší než datace vztahu do.");
+    results.addError("Datace zániku není větší než datace vzniku.");
 end
 
 rule "R_EVE_004 Použití datace události"
-when $ae: Ap( $aeParts : parts)
-     $partRel: (Part(type == PartType.PT_EVENT) from $aeParts)
-     $itemFrom: (Item(type == "EV_BEGIN") from $partRel.items)
-     $itemTo: (Item(type == "EV_END") from $partRel.items)
-     eval( DrlUtils.greaterThanOrEqualTo($itemTo.getValue(), $itemFrom.getValue()) == false )
+when $ae: Ap($aeParts : parts)
+     $partRel: (Part(type == PartType.PT_EVENT) from $ae.Parts)
+     $itemFrom: (UnitdateItem(type == "EV_BEGIN") from $partRel.items)
+     $itemTo: (UnitdateItem(type == "EV_END" ) from $partRel.items)     
+     eval ( $itemFrom.startsOrEndsAfter($itemTo) )
 then
     results.addError("Datace události od je větší než datace události do.");
 end
 
-rule "R_CRE_004 Použití datace vzniku"
-when $ae: Ap( $aeParts : parts)
-     $partCre: (Part(type == PartType.PT_CRE) from $aeParts)
-     $partExt: (Part(type == PartType.PT_EXT) from $aeParts)
-     $itemCre: (Item(type == "CRE_DATE") from $partCre.items)
-     $itemExt: (Item(type == "EXT_DATE") from $partExt.items)
-     eval( DrlUtils.greaterThanOrEqualTo($itemExt.getValue(), $itemCre.getValue()) == false )
+rule "R_EVE_006 datace vzniku entity začíná po začátku datace události od"
+when $ae: Ap($aeParts : parts)
+     $partCre: (Part(type == PartType.PT_CRE) from $ae.Parts)
+     $itemCre: (UnitdateItem(type == "CRE_DATE") from $partCre.items)
+     $partEv: (Part(type == PartType.PT_EVENT) from $ae.Parts)
+     $itemEve: (UnitdateItem(type in ("EV_BEGIN") ) from $partEv.items)
+     not (AbstractItem(type=="EV_TYPE" && spec in ("ET_AWARD") ) )
+     eval( $itemCre.startsAfterStart($itemEve) )
 then
-    results.addError("Datace zániku není větší než datace vzniku.");
+    results.addError("Datace vzniku entity začíná po začátku datace události od.");
 end
+
+rule "R_EVE_006 datace vzniku entity začíná po konci datace události do"
+when $ae: Ap($aeParts : parts)
+     $partCre: (Part(type == PartType.PT_CRE) from $ae.Parts)
+     $itemCre: (UnitdateItem(type == "CRE_DATE") from $partCre.items)
+     $partEv: (Part(type == PartType.PT_EVENT) from $ae.Parts)
+     $itemEve: (UnitdateItem(type in ("EV_END") ) from $partEv.items)
+     not (AbstractItem(type=="EV_TYPE" && spec in ("ET_AWARD") ) )
+     eval( $itemCre.startsAfterEnd($itemEve) )
+then
+    results.addError("Datace vzniku entity začíná po konci datace události do.");
+end
+
+
+rule "R_EVE_006 datace události od začíná po konci datace zániku"
+when $ae: Ap($aeParts : parts)
+     $partExt: (Part(type == PartType.PT_EXT) from $ae.Parts)
+     $itemExt: (UnitdateItem(type == "EXT_DATE") from $partExt.items)
+     $partEv: (Part(type == PartType.PT_EVENT) from $ae.Parts)
+     $itemEve: (UnitdateItem(type in ("EV_BEGIN") ) from $partEv.items)
+     not (AbstractItem(type=="EV_TYPE" && spec in ("ET_AWARD") ) )
+     eval( $itemEve.startsAfterEnd($itemExt) )
+then
+    results.addError("Datace události od začíná po konci datace zániku.");
+end
+
+
+rule "R_EVE_006 datace události do končí po konci datace zániku"
+when $ae: Ap($aeParts : parts)
+     $partExt: (Part(type == PartType.PT_EXT) from $ae.Parts)
+     $itemExt: (UnitdateItem(type == "EXT_DATE") from $partExt.items)
+     $partEv: (Part(type == PartType.PT_EVENT) from $ae.Parts)
+     $itemEve: (UnitdateItem(type in ("EV_END") ) from $partEv.items)
+     not (AbstractItem(type=="EV_TYPE" && spec in ("ET_AWARD") ) )
+     eval( $itemEve.startsAfterEnd($itemExt) )
+then
+    results.addError("Datace události do končí po konci datace zániku.");
+end
+
+
+rule "R_IDN_002 Volitelné prvky identifikátoru - datace"
+when $ae: Ap($aeParts : parts)
+     $partRel: (Part(type == PartType.PT_IDENT) from $ae.Parts)
+     $itemFrom: (UnitdateItem(type == "IDN_VALID_FROM") from $partRel.items)
+     $itemTo: (UnitdateItem(type == "IDN_VALID_TO") from $partRel.items)
+     eval( $itemFrom.startsOrEndsAfter($itemTo) )
+then
+    results.addError("Datace konce platnosti identifikátoru je před datací začátku platnosti identifikátoru.");
+end
+
+rule "R_NAM_002 Použití prvků popisu pro označení - datace"
+when $ae: Ap($aeParts : parts)
+     $partRel: (Part(type == PartType.PT_NAME) from $ae.Parts)
+     $itemFrom: (UnitdateItem(type == "NM_USED_FROM") from $partRel.items)
+     $itemTo: (UnitdateItem(type == "NM_USED_TO") from $partRel.items)
+     eval( $itemFrom.startsOrEndsAfter($itemTo) )
+then
+    results.addError("Datace konce užití jména je před datací začátku užití jména.");
+end
+
+rule "R_REL_002 Použití typu vztahu u odkazu na jinou entitu"
+when $ae: Ap($aeParts : parts)
+     $partRel: (Part(type == PartType.PT_REL) from $ae.Parts)
+     $itemFrom: (UnitdateItem(type == "REL_BEGIN") from $partRel.items)
+     $itemTo: (UnitdateItem(type == "REL_END") from $partRel.items)
+     eval( $itemFrom.startsOrEndsAfter($itemTo) )
+then
+    results.addError("Datace vztahu od je větší než datace vztahu do.");
+end
+
+rule "R_REL_003 datace vzniku entity začíná po začátku datace vztahu od"
+when $ae: Ap($aeParts : parts)
+     $partCre: (Part(type == PartType.PT_CRE) from $ae.Parts)
+     $itemCre: (UnitdateItem(type == "CRE_DATE") from $partCre.items)
+     $partRel: (Part(type == PartType.PT_REL) from $ae.Parts)
+     $itemRel: (UnitdateItem(type in ("REL_BEGIN") ) from $partRel.items)
+     not (AbstractItem(type=="REL_ENTITY" && spec in ("RT_ENTITYDEATH", "RT_ENTITYEND", "RT_ENTITYEXTINCTION", "RT_ENTITYBIRTH", "RT_ENTITYRISE", "RT_ENTITYORIGIN", "RT_DOCUMENT") ) )
+     // Kontrola zda neexistuje rodic typu ET_AWARD
+     not ( $partParent: Part(type==PartType.PT_EVENT && this==$partRel.parent) and
+           AbstractItem(type=="EV_TYPE" && spec in ("ET_AWARD") ) from $partParent.items
+         )
+     eval( $itemCre.startsAfterStart($itemRel) )
+then
+    results.addError("Datace vzniku entity začíná po začátku datace vztahu od.");
+end
+
+rule "R_REL_003 datace vzniku entity začíná po konci datace vztahu do"
+when $ae: Ap($aeParts : parts)
+     $partCre: (Part(type == PartType.PT_CRE) from $ae.Parts)
+     $itemCre: (UnitdateItem(type == "CRE_DATE") from $partCre.items)
+     $partRel: (Part(type == PartType.PT_REL) from $ae.Parts)
+     $itemRel: (UnitdateItem(type in ("REL_END") ) from $partRel.items)
+     not (AbstractItem(type=="REL_ENTITY" && spec in ("RT_ENTITYDEATH", "RT_ENTITYEND", "RT_ENTITYEXTINCTION", "RT_ENTITYBIRTH", "RT_ENTITYRISE", "RT_ENTITYORIGIN", "RT_DOCUMENT") ) )
+     // Kontrola zda neexistuje rodic typu ET_AWARD
+     not ( $partParent: Part(type==PartType.PT_EVENT && this==$partRel.parent) and
+           AbstractItem(type=="EV_TYPE" && spec in ("ET_AWARD") ) from $partParent.items
+         )
+     eval( $itemCre.startsAfterEnd($itemRel) )
+then
+    results.addError("Datace vzniku entity začíná po konci datace vztahu do.");
+end
+
+rule "R_REL_003 datace vztahu od začíná po konci datace zániku"
+when $ae: Ap($aeParts : parts)
+     $partExt: (Part(type == PartType.PT_EXT) from $ae.Parts)
+     $itemExt: (UnitdateItem(type == "EXT_DATE") from $partExt.items)
+     $partRel: (Part(type == PartType.PT_REL) from $ae.Parts)
+     $itemRel: (UnitdateItem(type in ("REL_BEGIN") ) from $partRel.items)
+     not (AbstractItem(type=="REL_ENTITY" && spec in ("RT_ENTITYDEATH", "RT_ENTITYEND", "RT_ENTITYEXTINCTION", "RT_ENTITYBIRTH", "RT_ENTITYRISE", "RT_ENTITYORIGIN", "RT_DOCUMENT") ) )
+     // Kontrola zda neexistuje rodic typu ET_AWARD
+     not ( $partParent: Part(type==PartType.PT_EVENT && this==$partRel.parent) and
+           AbstractItem(type=="EV_TYPE" && spec in ("ET_AWARD") ) from $partParent.items
+         )
+     eval( $itemRel.startsAfterEnd($itemExt) )
+then
+    results.addError("Datace vztahu od začíná po konci datace zániku.");
+end
+
+rule "R_REL_003 datace vztahu do končí po konci datace zániku"
+when $ae: Ap($aeParts : parts)
+     $partExt: (Part(type == PartType.PT_EXT) from $ae.Parts)
+     $itemExt: (UnitdateItem(type == "EXT_DATE") from $partExt.items)
+     $partRel: (Part(type == PartType.PT_REL) from $ae.Parts)
+     $itemRel: (UnitdateItem(type in ("REL_END") ) from $partRel.items)
+     not (AbstractItem(type=="REL_ENTITY" && spec in ("RT_ENTITYDEATH", "RT_ENTITYEND", "RT_ENTITYEXTINCTION", "RT_ENTITYBIRTH", "RT_ENTITYRISE", "RT_ENTITYORIGIN", "RT_DOCUMENT") ) )
+     // Kontrola zda neexistuje rodic typu ET_AWARD
+     not ( $partParent: Part(type==PartType.PT_EVENT && this==$partRel.parent) and
+           AbstractItem(type=="EV_TYPE" && spec in ("ET_AWARD") ) from $partParent.items
+         )
+     eval( $itemRel.endsAfterEnd($itemExt) )
+then
+    results.addError("Datace vztahu do končí po konci datace zániku.");
+end
+
+
 
 /*
 Existence prvků popisu u událostí a vzniku
 */
 
 rule "R_CRE_006 Povinnost prvků popisu vzniku"
-when $ae: Ap( $aeParts : parts)
-     $part: Part(type == PartType.PT_CRE) from $aeParts
-     not (Item(type in ("NOTE", "CRE_DATE")) from $part.items)
-     not (Part(parentPartId == $part.id) from $aeParts)
+when $ae: Ap( )
+     $part: Part(type == PartType.PT_CRE) from $ae.Parts
+     not (Item(type in ("NOTE")) from $part.items)
+     not (UnitdateItem(type in ("CRE_DATE")) from $part.items)
+     not (Part(parentPartId == $part.id) from $ae.Parts)
 then 
     results.addError("U vzniku neexistuje ani jeden z následujícího popisu: poznámka, datace, návazná entita.");
 end
 
 rule "R_EVE_005 Povinnost prvků popisu události"
-when $ae: Ap( $aeParts : parts)
-     $part: Part(type == PartType.PT_EVENT) from $aeParts
-     not (Item(type in ("NOTE", "EV_BEGIN", "EV_END")) from $part.items)
-     not (Part(parentPartId == $part.id) from $aeParts)
+when $ae: Ap( )
+     $part: Part(type == PartType.PT_EVENT) from $ae.parts
+     not (Item(type in ("NOTE")) from $part.items)
+     not (UnitdateItem(type in ("EV_BEGIN", "EV_END")) from $part.items)
+     not (Part(parentPartId == $part.id) from $ae.Parts)
 then 
     results.addError("U události neexistuje ani jeden z následujícího popisu: poznámka, datace, návazná entita.");
 end
 
 rule "R_BDG_003 nadřízená entita nesmí být zaniklá"
-when $ae: Ap( $aeParts : parts)
-     $part: Part(type == PartType.PT_BODY) from $aeParts
+when $ae: Ap( )
+     $part: Part(type == PartType.PT_BODY) from $ae.Parts
      $i: IntItem(type == "GEO_ADMIN_CLASS") from $part.items
      $geo: GeoModel(extinct == true)
 then
@@ -165,8 +307,8 @@ then
 end
 
 rule "R_BDG_003 nadřízená entita musí být daného typu"
-when $ae: Ap( $aeParts : parts)
-     $part: Part(type == PartType.PT_BODY) from $aeParts
+when $ae: Ap( )
+     $part: Part(type == PartType.PT_BODY) from $ae.Parts
      $i: IntItem(type == "GEO_ADMIN_CLASS") from $part.items
      $geo: GeoModel(parentGeoType not in ("GT_ADMREGION","GT_AREA","GT_AUTONOMOUSPART","GT_CANTON","GT_CONTINENT","GT_COUNTRY","GT_COUNTY","GT_DEPARTEMENT","GT_DISTRICT","GT_LAND","GT_MILITARYAREA","GT_MUNIP","GT_MUNIPDISTR","GT_MUNIPPART","GT_OKRUH","GT_PLANET","GT_PROVINCE","GT_REGION","GT_SHIRE","GT_TERRITORIALUNIT","GT_VOJVODSTVI"))
 then
