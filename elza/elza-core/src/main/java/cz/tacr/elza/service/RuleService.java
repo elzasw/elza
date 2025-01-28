@@ -1419,8 +1419,6 @@ public class RuleService {
         ModelValidation modelValidation = new ModelValidation(ap, geoModel, modelPartList, new ApValidationErrors(),
                 items, expectedItems);
         ModelValidation validationResult = executeValidation(modelValidation, ruleSet);
-        // validace opakovatelnosti partů
-        validatePartRepeatability(validationResult);
         // validace opakovatelnosti indexů přes party se stejným part typem
         validateIndexRepeatability(validationResult, apValidationErrorsVO);
         // validace vztahů na nevalidní nebo nahrazené entity
@@ -1501,39 +1499,6 @@ public class RuleService {
                             }
                         }
                     }
-                }
-            }
-        }
-    }
-
-    /**
-     * Validate part repeatability
-     * 
-     * @param validationResult
-     */
-    private void validatePartRepeatability(final ModelValidation validationResult) {
-        Ap ap = validationResult.getAp();
-        // count parts per type
-        Map<PartType, Integer> partCountMap = new HashMap<>();
-        for (Part part : ap.getParts()) {
-            if (part.getParent() == null) {
-                partCountMap.put(part.getType(), partCountMap.getOrDefault(part.getType(), 0) + 1);
-            }
-        }
-        // check if part is repeatable
-        for (ModelPart modelPart : validationResult.getModelParts()) {
-            if (!modelPart.isRepeatable()) {
-                Integer partCount = partCountMap.getOrDefault(modelPart.getType(), 0);
-                if (partCount > 1) {
-
-                    logger.error("Multiple occurance of non-repeatable part, accessPointId = {}, partType={}, count={}",
-                                 ap.getId(),
-                                 modelPart.getType(), partCount);
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("Část ").append(modelPart.getType())
-                            .append(" je v entitě vícekrát (").append(partCount).append(").");
-                    validationResult.getApValidationErrors().addError(sb.toString());
                 }
             }
         }
