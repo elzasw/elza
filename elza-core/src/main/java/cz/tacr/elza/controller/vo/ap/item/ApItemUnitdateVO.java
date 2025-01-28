@@ -38,7 +38,7 @@ public class ApItemUnitdateVO extends ApItemVO {
     }
 
     @Override
-    public ArrData createDataEntity(EntityManager em) {
+    public ArrDataUnitdate createDataEntity(EntityManager em) {
         ArrDataUnitdate data = ArrDataUnitdate.valueOf(value);
         return data;
     }

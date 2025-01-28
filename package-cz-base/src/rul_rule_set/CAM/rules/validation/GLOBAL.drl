@@ -3,6 +3,7 @@ import cz.tacr.elza.drools.model.ApValidationErrors;
 import cz.tacr.elza.drools.model.ItemType;
 import cz.tacr.elza.drools.model.ItemSpec
 import cz.tacr.elza.drools.model.RequiredType;
+import cz.tacr.elza.drools.model.item.AbstractItem;
 import cz.tacr.elza.drools.model.item.Item;
 import cz.tacr.elza.drools.model.item.IntItem;
 import cz.tacr.elza.drools.model.item.CoordinatesItem;
