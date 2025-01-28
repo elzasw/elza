@@ -18,7 +18,7 @@ public class RulItemTypeExt extends RulItemType {
     // příznak dědičnosti
     private boolean inheritance = false;
 
-	public RulItemTypeExt(RulItemType src, List<RulItemSpec> specs) {
+	public RulItemTypeExt(RulItemType src, List<? extends RulItemSpec> specs) {
 		super(src);
 
 		// copy specifications
