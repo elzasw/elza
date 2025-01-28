@@ -72,6 +72,7 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -127,6 +128,7 @@ import cz.tacr.elza.drools.model.item.AbstractItem;
 import cz.tacr.elza.drools.model.item.BoolItem;
 import cz.tacr.elza.drools.model.item.IntItem;
 import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.item.UnitdateItem;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -1200,6 +1202,8 @@ public class RuleService {
                 collect(Collectors.toList());
     }
 
+    // TODO: Refactor this method, VO object should not be parameter of 
+    //       of this method.
     @Transactional
     public ModelAvailable executeAvailable(final ApAccessPointCreateVO form) {
         if (form == null || form.getTypeId() == null || form.getPartForm() == null || form.getScopeId() == null) {
@@ -1259,7 +1263,8 @@ public class RuleService {
             } else if (item instanceof ApItemAccessPointRefVO) {
                 ai = new IntItem(item.getId(), itemType, itemSpec, ((ApItemAccessPointRefVO) item).getValue());
             } else if (item instanceof ApItemUnitdateVO) {
-                ai = new Item(item.getId(), itemType, itemSpec, ((ApItemUnitdateVO) item).getValue());
+            	ArrDataUnitdate unitdate = ArrDataUnitdate.valueOf(((ApItemUnitdateVO) item).getValue());
+                ai = new UnitdateItem(item.getId(), itemType, itemSpec, unitdate);
             } else if (item instanceof ApItemCoordinatesVO) {
                 ai = new Item(item.getId(), itemType, itemSpec, ((ApItemCoordinatesVO) item).getValue());
             } else if (item instanceof ApItemUriRefVO) {
