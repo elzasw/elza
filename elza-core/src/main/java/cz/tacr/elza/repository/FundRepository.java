@@ -21,7 +21,7 @@ public interface FundRepository extends ElzaJpaRepository<ArrFund, Integer> , Fu
     @Query("SELECT fa FROM arr_fund fa JOIN fa.institution inst WHERE inst.institutionId = ?1")
     List<ArrFund> findByInstitutionId(Integer institutionId);
 
-    @Query("SELECT up FROM usr_permission_view up WHERE up.userId = ?1")
+    @Query("SELECT up.fund FROM usr_permission_view up WHERE up.userId = ?1")
     List<ArrFund> findFromUsrPermissionByUserId(Integer userId);
 
     // přepsání již existující metody řeší problém správného čtení pole arr_fund.managed
