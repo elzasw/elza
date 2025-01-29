@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.apache.commons.collections4.CollectionUtils;
 
+import cz.tacr.elza.core.data.CachedItemSpec;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.RulItemSpec;
 
@@ -25,7 +26,7 @@ public class ItemType {
         this.repeatable = false;
         this.requiredType = RequiredType.IMPOSSIBLE;
         
-        List<RulItemSpec> itemSpecs = itemType.getItemSpecs();
+        List<CachedItemSpec> itemSpecs = itemType.getItemSpecs();
         if (CollectionUtils.isNotEmpty(itemType.getItemSpecs())) {
             specs = new ArrayList<>(itemSpecs.size());
             specMap = new HashMap<>();

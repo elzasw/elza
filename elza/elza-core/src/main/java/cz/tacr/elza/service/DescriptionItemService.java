@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import cz.tacr.elza.domain.ArrFund;
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -183,6 +184,9 @@ public class DescriptionItemService {
 
     @Autowired
     private ClientFactoryDO factoryDO;
+    
+    @Autowired
+    private EntityManager entityManager;
 
     private TransactionSynchronization indexWorkNotify;
 
@@ -1643,7 +1647,12 @@ public class DescriptionItemService {
         // create new item based on source
         descItemNew.setPosition(newPosition);
         // set data and specification
-        descItemNew.setItemSpec(itemSpec);
+        if (itemSpec != null) {
+        	// fetch entity specification from DB 
+        	// cannot send cached object to the DB
+        	RulItemSpec dbItemSpec = entityManager.getReference(RulItemSpec.class, itemSpec.getItemSpecId());
+        	descItemNew.setItemSpec(dbItemSpec);
+        }        
         descItemNew.setReadOnly(readOnly);
         ArrDescItem result = descItemRepository.save(descItemNew);
 
