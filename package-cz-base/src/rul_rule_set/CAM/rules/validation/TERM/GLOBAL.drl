@@ -4,13 +4,13 @@ import cz.tacr.elza.drools.model.ItemType;
 import cz.tacr.elza.drools.model.ItemSpec
 import cz.tacr.elza.drools.model.RequiredType;
 import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.item.UnitdateItem;
 import cz.tacr.elza.drools.model.Ap;
 import cz.tacr.elza.drools.model.Part;
 import cz.tacr.elza.drools.model.PartType;
 import cz.tacr.elza.drools.model.ModelPart;
 import cz.tacr.elza.drools.model.Index;
 import cz.tacr.elza.drools.model.GeoModel;
-import cz.tacr.elza.drools.model.DrlUtils;
 global ApValidationErrors results;
 
 
@@ -18,11 +18,12 @@ global ApValidationErrors results;
 Existence prvků popisu u zániku
 */
 
-rule "R_CRE_006 Povinnost prvků popisu vzniku"
-when $ae: Ap( $aeParts : parts)
-     $part: Part(type == PartType.PT_EXT) from $aeParts
-     not (Item(type in ("NOTE", "EXT_DATE")) from $part.items)
-     not (Part(parentPartId == $part.id) from $aeParts)
+rule "R_EXT_006 Povinnost prvků popisu zániku"
+when $ae: Ap( )
+     $part: Part(type == PartType.PT_EXT) from $ae.parts
+     not (Item(type in ("NOTE")) from $part.items)
+     not (UnitdateItem(type in ("EXT_DATE")) from $part.items)
+     not (Part(parentPartId == $part.id) from $ae.parts)
 then 
     results.addError("U zániku neexistuje ani jeden z následujícího popisu: poznámka, datace, návazná entita.");
 end

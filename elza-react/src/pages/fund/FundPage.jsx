@@ -237,6 +237,7 @@ class FundPage extends AbstractReactComponent {
                     mark: fundDetail.mark,
                     ruleSetCode: rules.code,
                     scopes: (fundDetail.apScopes || []).map(i => i.code),
+                    managed: fundDetail.managed,
                 };
                 this.props.dispatch(
                     modalDialogShow(
@@ -268,6 +269,7 @@ class FundPage extends AbstractReactComponent {
                 fundNumber: data.fundNumber,
                 unitdate: data.unitdate,
                 mark: data.mark,
+                managed: data.managed,
             }),
         );
     }
