@@ -10,9 +10,6 @@ import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.domain.enumeration.StringLength;
 
@@ -20,7 +17,6 @@ import cz.tacr.elza.domain.enumeration.StringLength;
  * Externí systémy pro rejstříky/osoby.
  */
 @Entity(name = "ap_external_system")
-//@Cache(region = "domain", usage = CacheConcurrencyStrategy.READ_WRITE)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class ApExternalSystem extends SysExternalSystem {
 
@@ -29,10 +25,10 @@ public class ApExternalSystem extends SysExternalSystem {
     private ApExternalSystemType type;
 
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApScope.class)
-    @JoinColumn(name = "scopeId", nullable = true)
+    @JoinColumn(name = "scopeId", nullable = false)
     private ApScope scope;
 
-    @Column(updatable = false, insertable = false, nullable = true)
+    @Column(updatable = false, insertable = false, nullable = false)
     private Integer scopeId;
 
     @Column(length = StringLength.LENGTH_50, nullable = true)
