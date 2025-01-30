@@ -14,10 +14,8 @@ import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import io.restassured.response.Response;
 
-
 /**
  * Testování metod z AdminController.
- *
  */
 public class AdminControllerTest extends AbstractControllerTest {
 
@@ -60,6 +58,7 @@ public class AdminControllerTest extends AbstractControllerTest {
         externalSystemVO.setCode("TST3");
         externalSystemVO.setName("Test 3");
         externalSystemVO.setType(ApExternalSystemType.CAM);
+        externalSystemVO.setScopeId(1);
 
         SysExternalSystemVO externalSystemCreatedVO = createExternalSystem(externalSystemVO);
         assertNotNull(externalSystemCreatedVO.getId());
