@@ -106,22 +106,28 @@ public class ElzaCore {
     @Bean(name = "threadPoolTaskExecutorBA")
     public ThreadPoolTaskExecutor threadPoolTaskExecutorBulkAction() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(1);
+        threadPoolTaskExecutor.setCorePoolSize((bulkThreadCount + 1) / 2);
         threadPoolTaskExecutor.setMaxPoolSize(bulkThreadCount);
         threadPoolTaskExecutor.setQueueCapacity(512);
         threadPoolTaskExecutor.afterPropertiesSet();
+        
+        logger.debug("Creating threadPoolTaskExecutorBA, corePoolSize: {}, maxPoolSize: {}",
+        		threadPoolTaskExecutor.getCorePoolSize(),
+        		threadPoolTaskExecutor.getMaxPoolSize());        
         return threadPoolTaskExecutor;
     }
 
     @Bean(name = "threadPoolTaskExecutorAR")
     public ThreadPoolTaskExecutor threadPoolTaskExecutorAsyncRequest() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(1);
+        threadPoolTaskExecutor.setCorePoolSize((nodeThreadCount + 1) / 2);
         threadPoolTaskExecutor.setMaxPoolSize(nodeThreadCount);
         threadPoolTaskExecutor.setQueueCapacity(512);
         threadPoolTaskExecutor.afterPropertiesSet();
         
-        logger.debug("Creating threadPoolTaskExecutorAR, maxPoolSize: {}", threadPoolTaskExecutor.getMaxPoolSize());
+        logger.debug("Creating threadPoolTaskExecutorAR, corePoolSize: {}, maxPoolSize: {}",
+        		threadPoolTaskExecutor.getCorePoolSize(),
+        		threadPoolTaskExecutor.getMaxPoolSize());
         return threadPoolTaskExecutor;
     }
 
@@ -134,29 +140,35 @@ public class ElzaCore {
         threadPoolTaskExecutor.setMaxPoolSize(1);
         threadPoolTaskExecutor.afterPropertiesSet();
         
-        logger.debug("Creating threadPoolTaskExecutorRQ, maxPoolSize: {}", threadPoolTaskExecutor.getMaxPoolSize());
+        logger.debug("Creating threadPoolTaskExecutorRQ, corePoolSize: {}, maxPoolSize: {}",
+        		threadPoolTaskExecutor.getCorePoolSize(),
+        		threadPoolTaskExecutor.getMaxPoolSize());
         return threadPoolTaskExecutor;
     }
 
     @Bean(name = "threadPoolTaskExecutorOP")
     public ThreadPoolTaskExecutor threadPoolTaskExecutorOutput() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(1);
+        threadPoolTaskExecutor.setCorePoolSize((outputThreadCount+1) / 2);
         threadPoolTaskExecutor.setMaxPoolSize(outputThreadCount);
         threadPoolTaskExecutor.afterPropertiesSet();
         
-        logger.debug("Creating threadPoolTaskExecutorOP, maxPoolSize: {}", threadPoolTaskExecutor.getMaxPoolSize());
+        logger.debug("Creating threadPoolTaskExecutorOP, corePoolSize: {}, maxPoolSize: {}",
+        		threadPoolTaskExecutor.getCorePoolSize(),
+        		threadPoolTaskExecutor.getMaxPoolSize());
         return threadPoolTaskExecutor;
     }
 
     @Bean(name = "threadPoolTaskExecutorAP")
     public ThreadPoolTaskExecutor threadPoolTaskExecutorAp() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(1);
+        threadPoolTaskExecutor.setCorePoolSize((apThreadCount+1) / 2);
         threadPoolTaskExecutor.setMaxPoolSize(apThreadCount);
         threadPoolTaskExecutor.afterPropertiesSet();
         
-        logger.debug("Creating threadPoolTaskExecutorAP, maxPoolSize: {}", threadPoolTaskExecutor.getMaxPoolSize());
+        logger.debug("Creating threadPoolTaskExecutorAP, corePoolSize: {}, maxPoolSize: {}",
+        		threadPoolTaskExecutor.getCorePoolSize(),
+        		threadPoolTaskExecutor.getMaxPoolSize());
         return threadPoolTaskExecutor;
     }
 
@@ -170,6 +182,10 @@ public class ElzaCore {
         // threadPoolTaskExecutor.setMaxPoolSize();
         threadPoolTaskExecutor.setThreadNamePrefix("HibernateSearchIndex-");
         threadPoolTaskExecutor.initialize();
+        
+        logger.debug("Creating threadPoolTaskExecutorHS, corePoolSize: {}, maxPoolSize: {}",
+        		threadPoolTaskExecutor.getCorePoolSize(),
+        		threadPoolTaskExecutor.getMaxPoolSize());        
         return threadPoolTaskExecutor;
     }
 
