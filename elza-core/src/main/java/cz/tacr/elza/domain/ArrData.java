@@ -1,6 +1,7 @@
 package cz.tacr.elza.domain;
 
 import java.util.Date;
+import java.util.Objects;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -28,7 +29,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotNull;
-
 
 /**
  * Tabulka pro evidenci hodnot atributů archivního popisu.
@@ -75,8 +75,8 @@ public abstract class ArrData implements NodeCacheSerializable, AccessPointCache
 		this.dataTypeId = src.getDataTypeId();
 
         // If we are copying from existing item then dataType have to be set
-		Validate.notNull(dataType);
-		Validate.notNull(dataTypeId);
+		Objects.requireNonNull(dataType);
+		Objects.requireNonNull(dataTypeId);
 	}
 
 	public Integer getDataId() {
@@ -259,7 +259,7 @@ public abstract class ArrData implements NodeCacheSerializable, AccessPointCache
      * Method throws RuntimeException if problem is found.
      */
     public void validate() {
-        Validate.notNull(this.dataTypeId);
+    	Objects.requireNonNull(this.dataTypeId);
         validateInternal();
     }
 
