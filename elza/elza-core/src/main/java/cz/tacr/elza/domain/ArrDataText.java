@@ -2,18 +2,16 @@ package cz.tacr.elza.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 
-import org.apache.commons.lang3.Validate;
+import java.util.Objects;
+
 import org.hibernate.Length;
-import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-
 
 /**
  * Hodnota atributu archivního popisu typu "neomezený" textový řetězec.
@@ -77,7 +75,7 @@ public class ArrDataText extends ArrData {
 
     @Override
     protected void validateInternal() {
-        Validate.notNull(textValue);
+    	Objects.requireNonNull(textValue);
         // check any leading and trailing whitespace in data
         String value = textValue.trim();
         if (value.length() != textValue.length()) {
