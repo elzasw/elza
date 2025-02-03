@@ -56,8 +56,13 @@ public class ElzaCore {
 
     @Value("${elza.asyncActions.node.threadCount:2}")
     @Min(1)
-    @Max(50)
+    @Max(8)
     private int nodeThreadCount;
+    
+    @Value("${elza.asyncActions.node.maxThreadCount:16}")
+    @Min(1)
+    @Max(16)
+    private int nodeMaxThreadCount;
 
     @Value("${elza.asyncActions.bulk.threadCount:2}")
     @Min(1)
@@ -117,9 +122,11 @@ public class ElzaCore {
     public ThreadPoolTaskExecutor threadPoolTaskExecutorAsyncRequest() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(nodeThreadCount);
-        threadPoolTaskExecutor.setMaxPoolSize(48);
+        threadPoolTaskExecutor.setMaxPoolSize(nodeMaxThreadCount);
         threadPoolTaskExecutor.setQueueCapacity(512);
         threadPoolTaskExecutor.afterPropertiesSet();
+        
+        logger.debug("Creating threadPoolTaskExecutorAR, poolSize: {}, maxPoolSize: {}", nodeThreadCount, nodeMaxThreadCount);
         return threadPoolTaskExecutor;
     }
 
