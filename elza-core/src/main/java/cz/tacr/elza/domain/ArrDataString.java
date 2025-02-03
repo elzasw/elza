@@ -4,14 +4,13 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
-import org.apache.commons.lang3.Validate;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-
 
 /**
  * Hodnota atributu archivního popisu typu omezený textový řetězec.
@@ -75,7 +74,7 @@ public class ArrDataString extends ArrData {
 
     @Override
     protected void validateInternal() {
-        Validate.notNull(stringValue);
+    	Objects.requireNonNull(stringValue);
         // check any leading and trailing whitespace in data
         String value = stringValue.trim();
         if (value.length() != stringValue.length()) {

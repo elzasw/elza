@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -87,9 +86,7 @@ import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -135,12 +132,6 @@ public class ClientFactoryDO {
 
     @Autowired
     private EntityManager em;
-
-    @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
-    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
     private InstitutionRepository institutionRepository;
@@ -270,11 +261,13 @@ public class ClientFactoryDO {
 	        	break;
 	        case STRING:
 	            data = new ArrDataString();
-	            ((ArrDataString) data).setStringValue(((DataString) itemData).getStringValue());
+	        	// trim whitespaces from the beginning and end of a string
+	            ((ArrDataString) data).setStringValue(((DataString) itemData).getStringValue().trim());
 	        	break;
 	        case TEXT:
 	        	data = new ArrDataText();
-	        	((ArrDataText) data).setTextValue(((DataText) itemData).getTextValue());
+	        	// trim whitespaces from the beginning and end of a string
+	        	((ArrDataText) data).setTextValue(((DataText) itemData).getTextValue().trim());
 	        	break;
 	        case UNITDATE:
 	        	data = ArrDataUnitdate.valueOf(((DataUnitdate) itemData).getValue());
