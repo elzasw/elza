@@ -2,7 +2,6 @@ package cz.tacr.elza.domain;
 
 import java.util.Date;
 
-import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.RoutingBinderRef;
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.TypeBinderRef;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.TypeBinding;
@@ -14,10 +13,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import cz.tacr.elza.domain.bridge.ArrDescItemBinder;
-import cz.tacr.elza.domain.bridge.ArrDescItemRoutingBinder;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.DataRepositoryImpl;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -125,6 +122,10 @@ public class ArrDescItem extends ArrItem {
 		if (data instanceof ArrDataNull) {
             return itemSpec == null ? null : itemSpec.getName();
         }
+		// souřadnice by neměly být indexovány v textové podobě
+		if (data instanceof ArrDataCoordinates) {
+			return null;
+		}
         return indexData.getFulltextValue();
     }
 
