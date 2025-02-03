@@ -56,27 +56,22 @@ public class ElzaCore {
 
     @Value("${elza.asyncActions.node.threadCount:2}")
     @Min(1)
-    @Max(8)
+    @Max(16)
     private int nodeThreadCount;
     
-    @Value("${elza.asyncActions.node.maxThreadCount:16}")
-    @Min(1)
-    @Max(16)
-    private int nodeMaxThreadCount;
-
     @Value("${elza.asyncActions.bulk.threadCount:2}")
     @Min(1)
-    @Max(50)
+    @Max(16)
     private int bulkThreadCount;
 
     @Value("${elza.asyncActions.output.threadCount:2}")
     @Min(1)
-    @Max(50)
+    @Max(16)
     private int outputThreadCount;
 
     @Value("${elza.asyncActions.ap.threadCount:2}")
     @Min(1)
-    @Max(50)
+    @Max(16)
     private int apThreadCount;
 
     public static void main(final String[] args) {
@@ -111,8 +106,8 @@ public class ElzaCore {
     @Bean(name = "threadPoolTaskExecutorBA")
     public ThreadPoolTaskExecutor threadPoolTaskExecutorBulkAction() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(bulkThreadCount);
-        threadPoolTaskExecutor.setMaxPoolSize(48);
+        threadPoolTaskExecutor.setCorePoolSize(1);
+        threadPoolTaskExecutor.setMaxPoolSize(bulkThreadCount);
         threadPoolTaskExecutor.setQueueCapacity(512);
         threadPoolTaskExecutor.afterPropertiesSet();
         return threadPoolTaskExecutor;
@@ -121,39 +116,47 @@ public class ElzaCore {
     @Bean(name = "threadPoolTaskExecutorAR")
     public ThreadPoolTaskExecutor threadPoolTaskExecutorAsyncRequest() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(nodeThreadCount);
-        threadPoolTaskExecutor.setMaxPoolSize(nodeMaxThreadCount);
+        threadPoolTaskExecutor.setCorePoolSize(1);
+        threadPoolTaskExecutor.setMaxPoolSize(nodeThreadCount);
         threadPoolTaskExecutor.setQueueCapacity(512);
         threadPoolTaskExecutor.afterPropertiesSet();
         
-        logger.debug("Creating threadPoolTaskExecutorAR, poolSize: {}, maxPoolSize: {}", nodeThreadCount, nodeMaxThreadCount);
+        logger.debug("Creating threadPoolTaskExecutorAR, maxPoolSize: {}", threadPoolTaskExecutor.getMaxPoolSize());
         return threadPoolTaskExecutor;
     }
 
+    // Request queue
+    // TODO: add to configuration or maybe use with another queue
     @Bean(name = "threadPoolTaskExecutorRQ")
     public ThreadPoolTaskExecutor threadPoolTaskExecutorRequestQueue() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(3);
-        threadPoolTaskExecutor.setMaxPoolSize(10);
+        threadPoolTaskExecutor.setCorePoolSize(1);
+        threadPoolTaskExecutor.setMaxPoolSize(1);
         threadPoolTaskExecutor.afterPropertiesSet();
+        
+        logger.debug("Creating threadPoolTaskExecutorRQ, maxPoolSize: {}", threadPoolTaskExecutor.getMaxPoolSize());
         return threadPoolTaskExecutor;
     }
 
     @Bean(name = "threadPoolTaskExecutorOP")
     public ThreadPoolTaskExecutor threadPoolTaskExecutorOutput() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(outputThreadCount);
-        threadPoolTaskExecutor.setMaxPoolSize(10);
+        threadPoolTaskExecutor.setCorePoolSize(1);
+        threadPoolTaskExecutor.setMaxPoolSize(outputThreadCount);
         threadPoolTaskExecutor.afterPropertiesSet();
+        
+        logger.debug("Creating threadPoolTaskExecutorOP, maxPoolSize: {}", threadPoolTaskExecutor.getMaxPoolSize());
         return threadPoolTaskExecutor;
     }
 
     @Bean(name = "threadPoolTaskExecutorAP")
     public ThreadPoolTaskExecutor threadPoolTaskExecutorAp() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(apThreadCount);
-        threadPoolTaskExecutor.setMaxPoolSize(48);
+        threadPoolTaskExecutor.setCorePoolSize(1);
+        threadPoolTaskExecutor.setMaxPoolSize(apThreadCount);
         threadPoolTaskExecutor.afterPropertiesSet();
+        
+        logger.debug("Creating threadPoolTaskExecutorAP, maxPoolSize: {}", threadPoolTaskExecutor.getMaxPoolSize());
         return threadPoolTaskExecutor;
     }
 
