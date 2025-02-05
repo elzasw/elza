@@ -11,11 +11,11 @@ import jakarta.validation.Payload;
 
 @Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = UnitDateValidator.class)
+@Constraint(validatedBy = DataTextValidator.class)
 @Documented
-public @interface ValidUnitDate {
+public @interface ValidDataText {
 
-	String message() default "Validation error ArrDataUnitdate";
+	String message() default "Validation error ArrDataText: textValue cannot be empty";
 
 	Class<?>[] groups() default {};
 
