@@ -100,7 +100,7 @@ public class ArrangementWebsocketController {
 		sc.setAuthentication(token);
 		SecurityContextHolder.setContext(sc);
 
-        // nepovolujeme prázdné řádky pro ArrItemTextVO i DataString
+        // nepovolujeme prázdné řádky pro ArrItemTextVO i ArrItemStringVO
     	if (descItemVO instanceof ArrItemTextVO) {
     		Validate.isTrue(StringUtils.isNotBlank(((ArrItemTextVO) descItemVO).getValue()), "Textové pole nesmí být prázdné");
     	}
