@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.validation.ValidDataString;
 
 /**
  * Hodnota atributu archivního popisu typu omezený textový řetězec.
@@ -18,6 +19,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 @Entity(name = "arr_data_string")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@ValidDataString
 public class ArrDataString extends ArrData {
 
     public static final String STRING_VALUE = "stringValue";
