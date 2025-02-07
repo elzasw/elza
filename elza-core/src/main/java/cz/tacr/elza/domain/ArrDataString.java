@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.validation.ValidDataString;
+import cz.tacr.elza.validation.ValidStringField;
 
 /**
  * Hodnota atributu archivního popisu typu omezený textový řetězec.
@@ -19,11 +19,11 @@ import cz.tacr.elza.validation.ValidDataString;
 @Entity(name = "arr_data_string")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@ValidDataString
 public class ArrDataString extends ArrData {
 
     public static final String STRING_VALUE = "stringValue";
 
+    @ValidStringField
     @Column(name = "string_value", length = StringLength.LENGTH_1000, nullable = false)
     private String stringValue;
 
@@ -85,7 +85,7 @@ public class ArrDataString extends ArrData {
                             .set("dataId", getDataId())
                             .set("property", stringValue);
         }
-        // check for non-printable chars in the string, exclude 0x0D, 0x0A
+        // check for non-printable chars in the string
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
             if (c <= 0x1f) {
