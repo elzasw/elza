@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.validation.ValidDataText;
+import cz.tacr.elza.validation.ValidStringField;
 
 /**
  * Hodnota atributu archivního popisu typu "neomezený" textový řetězec.
@@ -20,11 +20,11 @@ import cz.tacr.elza.validation.ValidDataText;
 @Entity(name = "arr_data_text")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@ValidDataText
 public class ArrDataText extends ArrData {
 
     public static final String TEXT_VALUE = "textValue";
 
+    @ValidStringField(multiline = true)
     @Column(length = Length.LONG, nullable = false) // Hibernate long text field
     private String textValue;
 
