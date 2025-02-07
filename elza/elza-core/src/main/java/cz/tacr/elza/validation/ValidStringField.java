@@ -9,15 +9,17 @@ import java.lang.annotation.Target;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
-@Target({ElementType.TYPE, ElementType.ANNOTATION_TYPE})
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = DataTextValidator.class)
+@Constraint(validatedBy = StringFieldValidator.class)
 @Documented
-public @interface ValidDataText {
+public @interface ValidStringField {
 
-	String message() default "Validation error ArrDataText: textValue cannot be empty";
+	String message() default "String validation error.";
 
 	Class<?>[] groups() default {};
 
 	Class<? extends Payload>[] payload() default {};
+
+	boolean multiline() default false;
 }

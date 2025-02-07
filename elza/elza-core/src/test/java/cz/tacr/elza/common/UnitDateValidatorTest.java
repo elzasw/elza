@@ -22,16 +22,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.validation.UnitDateValidator;
 import cz.tacr.elza.validation.impl.ArrDescItemsPostValidatorImpl;
-import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.metadata.BeanDescriptor;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes=UnitDateValidatorTest.AppConfig.class)
 public class UnitDateValidatorTest {
-	
+
 	@Configuration
 	@ComponentScan(basePackageClasses = {cz.tacr.elza.validation.UnitDateValidator.class}, 
 	excludeFilters = @ComponentScan.Filter(type=FilterType.ASSIGNABLE_TYPE , value=ArrDescItemsPostValidatorImpl.class))
@@ -47,18 +45,15 @@ public class UnitDateValidatorTest {
 	        propertySources.addFirst(new MapPropertySource("YOUR_MAP", myMap));
 	        return configurer;
 	    }
-		
-		 @Bean
-		 public LocalValidatorFactoryBean validator() {
-			 return new LocalValidatorFactoryBean();
-		 }
+
+		@Bean
+		public LocalValidatorFactoryBean validator() {
+			return new LocalValidatorFactoryBean();
+		}
 	}
-	
+
 	@Autowired
 	private Validator validator;
-	
-	//ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-	//Validator validator = validatorFactory.getValidator();	
 
 	@Test
 	public void testCentury() {
