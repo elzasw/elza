@@ -177,7 +177,12 @@ public class StartupService implements SmartLifecycle {
             logger.info("Elza startup service - autoStart is disabled");
             return;
         }
-        startNow();
+        try {
+        	startNow();
+        } catch(Exception e) {
+        	logger.error("Elza startup service failed.", e);
+        	throw e;
+        }
     }
 
     /**
