@@ -35,6 +35,7 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge;
 import cz.tacr.elza.domain.bridge.ArrCachedNodeBridge;
+import cz.tacr.elza.domain.bridge.OutboxPollingConfigurer;
 //import cz.tacr.elza.domain.bridge.ApCachedAccessPointClassBridge; TODO hibernate search 6
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.BulkActionRunRepository;
@@ -231,6 +232,8 @@ public class StartupService implements SmartLifecycle {
         });
 
         camScheduler.start();
+        // enable indexing after all caches are loaded and packages are in place
+        OutboxPollingConfigurer.setIndexingEnabled(true);
 
         if (fullTextReindex) {
             logger.info("Full text reindex ...");
