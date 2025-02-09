@@ -486,6 +486,8 @@ public class NodeCacheService {
 
         AtomicInteger atomCounter = new AtomicInteger(0);
         AtomicInteger errorCounter = new AtomicInteger(0);
+        
+        int totalQueueCapacity = this.executor.getQueueCapacity();
 
         synchronized (this) {
             TransactionTemplate tt = new TransactionTemplate(txManager);
@@ -502,7 +504,20 @@ public class NodeCacheService {
         			if (count % SYNC_BATCH_NODE_SIZE == 0) {
         				logger.debug("Adding nodes to queue: {}-{}", count - SYNC_BATCH_NODE_SIZE + 1, count);
 
-                        atomCounter.incrementAndGet();
+        				int numWaiting = atomCounter.incrementAndGet();
+                        // check if executor has free slots
+						while (numWaiting + 5 >= totalQueueCapacity) {
+							try {
+								logger.debug("Waiting to add nodes to queue: {}-{}", count - SYNC_BATCH_NODE_SIZE + 1, count);
+								this.wait(1000);
+								numWaiting = atomCounter.get();
+							} catch (InterruptedException e) {
+								logger.error("Cache node synchronization interrupted");
+								throw new SystemException("Cache node synchronization interrupted");
+							}							
+						}
+        				
+        				// check if executor has free slots
                         addParallelSync(atomCounter, errorCounter, batchNodeIds, count - batchNodeIds.size());
         				batchNodeIds.clear();
         			}

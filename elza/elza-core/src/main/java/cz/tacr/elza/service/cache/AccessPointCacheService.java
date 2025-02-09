@@ -179,6 +179,8 @@ public class AccessPointCacheService {
 
         AtomicInteger atomCounter = new AtomicInteger(0);
         AtomicInteger errorCounter = new AtomicInteger(0);
+        
+        int totalQueueCapacity = this.executor.getQueueCapacity();
 
         synchronized (this) {
 
@@ -194,7 +196,18 @@ public class AccessPointCacheService {
                     apIds.add((Integer) obj);
                     count++;
                     if (count % syncApBatchSize == 0) {
-                        atomCounter.incrementAndGet();
+                        int numWaiting = atomCounter.incrementAndGet();
+                        // check if executor has free slots
+						while (numWaiting + 5 >= totalQueueCapacity) {
+							try {
+								logger.debug("Waiting to add APs to queue: {}", count);
+								this.wait(1000);
+								numWaiting = atomCounter.get();
+							} catch (InterruptedException e) {
+								logger.error("AP cache synchronization interrupted");
+								throw new SystemException("AP cache synchronization interrupted");
+							}							
+						}
                         addParallelSync(atomCounter, errorCounter, apIds, count - apIds.size());
                         apIds.clear();
                     }
@@ -209,6 +222,7 @@ public class AccessPointCacheService {
             logger.info("Počet AP k synchronizaci: {}", cnt);
         }
 
+        // wait to finish
         synchronized (atomCounter) {
             while (atomCounter.get() > 0) {
                 try {

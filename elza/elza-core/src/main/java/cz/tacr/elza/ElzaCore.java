@@ -164,6 +164,7 @@ public class ElzaCore {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize((apThreadCount+1) / 2);
         threadPoolTaskExecutor.setMaxPoolSize(apThreadCount);
+        threadPoolTaskExecutor.setQueueCapacity(512);
         threadPoolTaskExecutor.afterPropertiesSet();
         
         logger.debug("Creating threadPoolTaskExecutorAP, corePoolSize: {}, maxPoolSize: {}",
