@@ -1004,24 +1004,19 @@ private void processEvent(AbstractEventSimple event) {
         return result;
     }
 
-    private List<RulItemType> getDescriptionItemTypes(final ViewTitles viewTitles) {
+    /**
+     * Return list of item type ids
+     * @param viewTitles
+     * @return
+     */
+    private List<Integer> getDescriptionItemTypes(final ViewTitles viewTitles) {
         Set<Integer> typeIds = viewTitles.getAllItemTypeIds();
 
         if (typeIds.isEmpty()) {
             return Collections.emptyList();
         }
 
-        List<RulItemType> result = new ArrayList<>();
-
-        StaticDataProvider data = staticDataService.getData();
-        for (Integer typeId : typeIds) {
-            ItemType rsit = data.getItemTypeById(typeId);
-            if (rsit == null) {
-                logger.warn("Nepodařilo se nalézt typ atributu, kód=" + typeId + ". Změňte kód v konfiguraci.");
-                continue;
-            }
-            result.add(rsit.getEntity());
-        }
+        List<Integer> result = new ArrayList<>(typeIds);
         return result;
     }
 
@@ -1085,7 +1080,7 @@ private void processEvent(AbstractEventSimple event) {
 
         ViewTitles viewTitles = configView
                 .getViewTitles(version.getRuleSetId(), version.getFund().getFundId());
-        List<RulItemType> descItemTypes = getDescriptionItemTypes(viewTitles);
+        List<Integer> descItemTypes = getDescriptionItemTypes(viewTitles);
 
         return descriptionItemService.createNodeValuesByItemTypeCodeMap(treeNodeMap.keySet(), descItemTypes,
                                                                         version.getLockChangeId(), subtreeRoot);

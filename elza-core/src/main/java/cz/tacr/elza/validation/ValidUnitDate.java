@@ -15,7 +15,7 @@ import jakarta.validation.Payload;
 @Documented
 public @interface ValidUnitDate {
 
-	String message() default "{cz.tacr.elza.validation.ValidUnitDate.message}";
+	String message() default "Validation error ArrDataUnitdate";
 
 	Class<?>[] groups() default {};
 

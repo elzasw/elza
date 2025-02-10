@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +9,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import cz.tacr.elza.controller.vo.DataString;
+import cz.tacr.elza.controller.vo.DataText;
+import cz.tacr.elza.controller.vo.DataType;
+import cz.tacr.elza.controller.vo.ItemData;
 import cz.tacr.elza.controller.vo.ItemDataResult;
 import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -41,6 +46,17 @@ public class DescItemController implements DescitemsApi {
         Validate.notNull(nodeItem.getNodeId(), "Nebyl vyplněn identifikátor uzlu JP");
         Validate.notNull(nodeItem.getNodeVersion(), "Nebyla vyplněna verze uzlu JP");
         Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+
+        // nepovolujeme prázdné řádky pro DataText i DataString
+        if (nodeItem.getData() != null) {
+			ItemData data = nodeItem.getData();
+        	if (data.getDataType() == DataType.TEXT) {
+        		Validate.isTrue(StringUtils.isNotBlank(((DataText) data).getTextValue()), "Textové pole nesmí být prázdné");
+        	}
+        	if (data.getDataType() == DataType.STRING) {
+        		Validate.isTrue(StringUtils.isNotBlank(((DataString) data).getStringValue()), "Stringové pole nesmí být prázdné");
+        	}
+        }
 
         ArrDescItem descItemCreated = descriptionItemService.createDescriptionItem(nodeItem, nodeItem.getNodeId(), fundVersionId);
 

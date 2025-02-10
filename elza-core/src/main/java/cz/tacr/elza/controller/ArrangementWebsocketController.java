@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -31,6 +32,8 @@ import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ArrInhibitedItemVO;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrUpdateItemVO;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -96,6 +99,14 @@ public class ArrangementWebsocketController {
 		SecurityContext sc = new SecurityContextImpl();
 		sc.setAuthentication(token);
 		SecurityContextHolder.setContext(sc);
+
+        // nepovolujeme prázdné řádky pro ArrItemTextVO i ArrItemStringVO
+    	if (descItemVO instanceof ArrItemTextVO) {
+    		Validate.isTrue(StringUtils.isNotBlank(((ArrItemTextVO) descItemVO).getValue()), "Textové pole nesmí být prázdné");
+    	}
+    	if (descItemVO instanceof ArrItemStringVO) {
+    		Validate.isTrue(StringUtils.isNotBlank(((ArrItemStringVO) descItemVO).getValue()), "Stringové pole nesmí být prázdné");
+    	}
 
 		arrangementFormService.updateDescItem(fundVersionId, nodeId, nodeVersion, descItemVO,
 		        BooleanUtils.isNotFalse(createNewVersion),
