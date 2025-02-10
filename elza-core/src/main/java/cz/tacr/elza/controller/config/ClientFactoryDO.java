@@ -88,6 +88,7 @@ import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -423,16 +424,19 @@ public class ClientFactoryDO {
     	}
 
         ArrDescItem descItem = new ArrDescItem();
-        descItem.setItemType(itemType.getEntity());
+        // set real DB reference
+        descItem.setItemType(em.getReference(RulItemType.class, itemVO.getItemTypeId()));
         
-        if (itemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = itemType.getItemSpecById(itemVO.getDescItemSpecId());
+        if (itemVO.getDescItemSpecId() != null) {        	
+        	RulItemSpec descItemSpec = itemType.getItemSpecById(itemVO.getDescItemSpecId());
             if (descItemSpec == null) {
         		throw new BusinessException("Cannot find item spec, itemTypeId: " + itemVO.getItemTypeId()
         		+ ", itemSpecId: " + itemVO.getDescItemSpecId(), BaseCode.ID_NOT_EXIST)
     				.set("itemTypeId", itemVO.getItemTypeId())
     				.set("itemSpecId", itemVO.getDescItemSpecId());
             }
+            // set real DB reference
+            descItemSpec = em.getReference(RulItemSpec.class, itemVO.getDescItemSpecId());
             descItem.setItemSpec(descItemSpec);
         }        
 
