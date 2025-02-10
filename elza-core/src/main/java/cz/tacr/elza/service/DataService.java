@@ -36,7 +36,7 @@ import javax.xml.stream.XMLStreamException;
 @Service
 public class DataService {
 	
-	private static Logger log = LoggerFactory.getLogger(DataService.class);
+	private final static Logger log = LoggerFactory.getLogger(DataService.class);
 
     @Autowired
     private StaticDataService staticDataService;
