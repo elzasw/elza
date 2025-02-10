@@ -41,7 +41,7 @@ public interface DescItemRepositoryCustom {
      */
     Map<Integer, List<ArrDescItem>> findByNodes(Collection<Integer> nodeIds);
 
-    List<ArrDescItem> findDescItemsByNodeIds(Collection<Integer> nodeIds, Collection<RulItemType> itemTypes, Integer changeId);
+    List<ArrDescItem> findDescItemsByNodeIds(Collection<Integer> nodeIds, Collection<Integer> itemTypeIds, Integer changeId);
 
     /**
      * Find all nodes containing given text.
