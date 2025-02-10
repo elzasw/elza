@@ -4,14 +4,14 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
-import org.apache.commons.lang3.Validate;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-
+import cz.tacr.elza.validation.ValidStringField;
 
 /**
  * Hodnota atributu archivního popisu typu omezený textový řetězec.
@@ -23,6 +23,7 @@ public class ArrDataString extends ArrData {
 
     public static final String STRING_VALUE = "stringValue";
 
+    @ValidStringField
     @Column(name = "string_value", length = StringLength.LENGTH_1000, nullable = false)
     private String stringValue;
 
@@ -75,7 +76,7 @@ public class ArrDataString extends ArrData {
 
     @Override
     protected void validateInternal() {
-        Validate.notNull(stringValue);
+    	Objects.requireNonNull(stringValue);
         // check any leading and trailing whitespace in data
         String value = stringValue.trim();
         if (value.length() != stringValue.length()) {
@@ -84,7 +85,7 @@ public class ArrDataString extends ArrData {
                             .set("dataId", getDataId())
                             .set("property", stringValue);
         }
-        // check for non-printable chars in the string, exclude 0x0D, 0x0A
+        // check for non-printable chars in the string
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
             if (c <= 0x1f) {

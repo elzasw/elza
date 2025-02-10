@@ -1,5 +1,6 @@
 package cz.tacr.elza.drools.model;
 
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.exception.BusinessException;
@@ -96,7 +97,7 @@ public class DescItem {
         descItemId = descItem.getItemId();
         type = descItem.getItemType().getCode();
         specCode = descItem.getItemSpec() == null ? null : descItem.getItemSpec().getCode();
-        dataType = descItem.getItemType().getDataType().getCode();
+        dataType = DataType.fromId(descItem.getItemType().getDataTypeId()).getCode();
     }
 
     public Integer getDescItemId() {

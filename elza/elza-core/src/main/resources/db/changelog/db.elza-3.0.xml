@@ -677,4 +677,9 @@
         <delete tableName="ap_cached_access_point"/>
 	</changeSet>
 
+	<changeSet id="20250130103000" author="sergey.iryupin">
+		<sql>UPDATE ap_external_system SET scope_id = (SELECT MIN(s.scope_id) FROM ap_scope s) WHERE scope_id IS NULL</sql>
+		<addNotNullConstraint tableName="ap_external_system" columnName="scope_id"/>
+	</changeSet>
+
 </databaseChangeLog>

@@ -1670,11 +1670,11 @@ public class DescriptionItemService {
 	}
 
     public Map<Integer, TitleItemsByType> createNodeValuesByItemTypeIdMap(final Collection<Integer> nodeIds,
-                                                                                   final Collection<RulItemType> descItemTypes,
+                                                                                   final Collection<Integer> descItemTypeIds,
                                                                                    final Integer changeId,
                                                                                    @Nullable final TreeNode subtreeRoot,
                                                                                    final boolean dataExport) {
-        if (nodeIds.isEmpty() || descItemTypes.isEmpty()) {
+        if (nodeIds.isEmpty() || descItemTypeIds.isEmpty()) {
             return Collections.emptyMap();
         }
 
@@ -1687,7 +1687,7 @@ public class DescriptionItemService {
             rootParent = rootParent.getParent();
         }
 
-        List<ArrDescItem> descItems = descItemRepository.findDescItemsByNodeIds(nodeIdSet, descItemTypes, changeId);
+        List<ArrDescItem> descItems = descItemRepository.findDescItemsByNodeIds(nodeIdSet, descItemTypeIds, changeId);
 
         // fetch access points
         Set<Integer> accessPointIds = new HashSet<>();
@@ -1738,11 +1738,11 @@ public class DescriptionItemService {
      *         nodeId, itemTypeCode, values
      */
     public Map<Integer, TitleItemsByType> createNodeValuesByItemTypeCodeMap(final Collection<Integer> nodeIds,
-                                                                                    final Collection<RulItemType> descItemTypes,
+                                                                                    final Collection<Integer> descItemTypeIds,
                                                                                     final Integer changeId,
                                                                                     @Nullable final TreeNode subtreeRoot) {
 
-        return createNodeValuesByItemTypeIdMap(nodeIds, descItemTypes, changeId, subtreeRoot, false);
+        return createNodeValuesByItemTypeIdMap(nodeIds, descItemTypeIds, changeId, subtreeRoot, false);
     }
 
     /**

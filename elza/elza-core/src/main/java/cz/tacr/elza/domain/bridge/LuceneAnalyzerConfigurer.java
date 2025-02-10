@@ -1,4 +1,4 @@
-package cz.tacr.elza.domain;
+package cz.tacr.elza.domain.bridge;
 
 import org.apache.lucene.analysis.classic.ClassicTokenizerFactory;
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
