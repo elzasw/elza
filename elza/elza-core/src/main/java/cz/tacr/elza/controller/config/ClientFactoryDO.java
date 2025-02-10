@@ -61,6 +61,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.StringNormalize;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
@@ -261,13 +262,13 @@ public class ClientFactoryDO {
 	        	break;
 	        case STRING:
 	            data = new ArrDataString();
-	        	// trim whitespaces from the beginning and end of a string
-	            ((ArrDataString) data).setStringValue(((DataString) itemData).getStringValue().trim());
+	        	// normalization: replacing non-printable characters, removing double spaces and whitespaces at the beginning and end
+	            ((ArrDataString) data).setStringValue(StringNormalize.normalizeString(((DataString) itemData).getStringValue()));
 	        	break;
 	        case TEXT:
 	        	data = new ArrDataText();
-	        	// trim whitespaces from the beginning and end of a string
-	        	((ArrDataText) data).setTextValue(((DataText) itemData).getTextValue().trim());
+	        	// normalization: replacing non-printable characters, removing double spaces and whitespaces at the beginning and end
+	        	((ArrDataText) data).setTextValue(StringNormalize.normalizeText(((DataText) itemData).getTextValue()));
 	        	break;
 	        case UNITDATE:
 	        	data = ArrDataUnitdate.valueOf(((DataUnitdate) itemData).getValue());
