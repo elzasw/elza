@@ -154,7 +154,8 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
     }
 
     @Override
-    public List<ArrDescItem> findDescItemsByNodeIds(final Collection<Integer> nodeIds, final Collection<RulItemType> itemTypes, final Integer changeId) {
+    public List<ArrDescItem> findDescItemsByNodeIds(final Collection<Integer> nodeIds, 
+    		final Collection<Integer> itemTypeIds, final Integer changeId) {
         String jpql = "SELECT di FROM arr_desc_item di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis " +
                 //"LEFT JOIN FETCH di.data d " +
                 //"LEFT JOIN FETCH d.structuredObject dso " +
@@ -167,8 +168,8 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
         jpql += "AND n.nodeId IN (:nodeIds)";
 
-        if (CollectionUtils.isNotEmpty(itemTypes)) {
-            jpql += " AND di.itemType IN (:itemTypes)";
+        if (CollectionUtils.isNotEmpty(itemTypeIds)) {
+            jpql += " AND di.itemTypeId IN (:itemTypeIds)";
         }
 
         List<ArrDescItem> result = new LinkedList<>();
@@ -179,8 +180,8 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
             if (changeId != null) {
                 query.setParameter("changeId", changeId);
             }
-            if (CollectionUtils.isNotEmpty(itemTypes)) {
-                query.setParameter("itemTypes", itemTypes);
+            if (CollectionUtils.isNotEmpty(itemTypeIds)) {
+                query.setParameter("itemTypeIds", itemTypeIds);
             }
             query.setParameter("nodeIds", nodeIdsIterator.next());
             
