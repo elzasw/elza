@@ -9,6 +9,10 @@ export const globalMessages = defineMessages({
     id: "global_copyToClipboard_finished",
     defaultMessage: "Zkopírováno do schránky"
   },
+  copyToClipboardUnavailable: {
+    id: "global_copyToClipboard_unavailable",
+    defaultMessage: "Zkopírování do schránky není dostupné. Aplikace pravděpodobně neběží v zabezpečeném režimu (https)."
+  },
   ok: {
     id: "global_ok",
     defaultMessage: "Ok",
