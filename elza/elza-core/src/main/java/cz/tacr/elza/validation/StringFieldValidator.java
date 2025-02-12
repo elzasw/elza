@@ -38,12 +38,13 @@ public class StringFieldValidator implements ConstraintValidator<ValidStringFiel
 		}
 
 		// log only first 100 characters, because the number of characters can be very large
-		logger.debug("Validating value: {}", value.substring(0, 100));
+		String logValue = value.length() > 100 ? value.substring(0, 100) : value;
+		logger.debug("Validating value: {}", logValue);
 
         // check any leading and trailing whitespace in data
         if (value.length() != value.trim().length()) {
         	setErrorDescription(context, ERR_WHITESPACES);
-        	logger.error("Validation failed - value contains leading or trailing whitespace: {}", value.substring(0, 100));
+        	logger.error("Validation failed - value contains leading or trailing whitespace: {}", logValue);
         	return false;
         }
 
@@ -56,7 +57,7 @@ public class StringFieldValidator implements ConstraintValidator<ValidStringFiel
                 	continue;
                 }
                 setErrorDescription(context, ERR_INVALID_CHRS);
-                logger.error("Validation failed - value contains non-printable characters: {}", value.substring(0, 100));
+                logger.error("Validation failed - value contains non-printable characters: {}", logValue);
             	return false;
             }
         }
@@ -64,7 +65,7 @@ public class StringFieldValidator implements ConstraintValidator<ValidStringFiel
         // check double-space
         if (value.indexOf("  ") >= 0) {
         	setErrorDescription(context, ERR_DOUBLE_SPCS);
-        	logger.error("Validation failed - value contains double spaces: {}", value.substring(0, 100));
+        	logger.error("Validation failed - value contains double spaces: {}", logValue);
         	return false;
         }
 
