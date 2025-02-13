@@ -482,10 +482,12 @@ public class NodeCacheService {
      */
     @Transactional(value=TxType.NEVER)
     public void syncCacheParallel() {
-        logger.info("Spuštění - synchronizace cache pro JP");
+        logger.info("Node cache synchronization started.");
 
         AtomicInteger atomCounter = new AtomicInteger(0);
         AtomicInteger errorCounter = new AtomicInteger(0);
+        
+        int totalQueueCapacity = this.executor.getQueueCapacity();
 
         synchronized (this) {
             TransactionTemplate tt = new TransactionTemplate(txManager);
@@ -500,9 +502,22 @@ public class NodeCacheService {
         			batchNodeIds.add(nodeId);
         			count++;
         			if (count % SYNC_BATCH_NODE_SIZE == 0) {
-        				logger.debug("Připravujeme JP {}-{}", count - SYNC_BATCH_NODE_SIZE + 1, count);
+        				logger.debug("Adding nodes to queue: {}-{}", count - SYNC_BATCH_NODE_SIZE + 1, count);
 
-                        atomCounter.incrementAndGet();
+        				int numWaiting = atomCounter.incrementAndGet();
+                        // check if executor has free slots
+						while (numWaiting + 5 >= totalQueueCapacity) {
+							try {
+								logger.debug("Waiting to add nodes to queue: {}-{}", count - SYNC_BATCH_NODE_SIZE + 1, count);
+								this.wait(1000);
+								numWaiting = atomCounter.get();
+							} catch (InterruptedException e) {
+								logger.error("Cache node synchronization interrupted");
+								throw new SystemException("Cache node synchronization interrupted");
+							}							
+						}
+        				
+        				// check if executor has free slots
                         addParallelSync(atomCounter, errorCounter, batchNodeIds, count - batchNodeIds.size());
         				batchNodeIds.clear();
         			}
@@ -515,7 +530,7 @@ public class NodeCacheService {
                 return count;
             });
 
-            logger.info("Počet JP k synchronizaci: {}", cnt);
+            logger.info("Number of nodes requiring synchronization: {}", cnt);
         }
 
         synchronized (atomCounter) {
@@ -534,8 +549,7 @@ public class NodeCacheService {
             throw new SystemException("JP synchronization failed");
         }
 
-        logger.info("Všechny JP jsou synchronizovány");
-        logger.info("Ukončení synchronizace cache pro JP");
+        logger.info("Node cache synchronization finished.");
     }
 
     private void addParallelSync(final AtomicInteger atomCounter, 
@@ -549,16 +563,17 @@ public class NodeCacheService {
 
     private void parallelSync(AtomicInteger atomCounter, AtomicInteger errorCounter, List<Integer> nodeIds, int offset) {
         try {
-            logger.info("Sestavuji JP {}-{}", offset + 1, nodeIds.size() + offset);
+            logger.info("Creating cache for nodes {}-{}", offset + 1, nodeIds.size() + offset);
 
             TransactionTemplate tt = new TransactionTemplate(txManager);
             tt.executeWithoutResult(t -> {
             	processNewNodes(nodeIds);
             });
         } catch (Exception e) {
-            logger.error("Failed to create JP cache", e);
+            logger.error("Failed to create node cache, ids: {}", nodeIds, e);
             errorCounter.incrementAndGet();
         }
+        logger.debug("Finished cache for nodes {}-{}", offset + 1, nodeIds.size() + offset);
         synchronized (atomCounter) {
             int v = atomCounter.decrementAndGet();
             if (v == 0) {

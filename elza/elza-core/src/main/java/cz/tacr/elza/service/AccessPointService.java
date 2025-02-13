@@ -1965,9 +1965,7 @@ public class AccessPointService {
      * @return ApScope nebo null
      */
     public ApScope getApScope(final Integer scopeId) {
-        if (scopeId == null) {
-            return null;
-        }
+        Objects.requireNonNull(scopeId);
         return scopeRepository.findById(scopeId)
                 .orElseThrow(() -> new ObjectNotFoundException("ApScope neexistuje", BaseCode.ID_NOT_EXIST).setId(scopeId));
     }

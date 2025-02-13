@@ -18,7 +18,7 @@ public class NotEmptyDescItemCondition implements LuceneDescItemCondition {
 	@Override
 	public SearchPredicate createSearchPredicate(final SearchPredicateFactory factory) {
 		return factory.bool()
-				.should(factory.exists().field(ArrDescItem.FULLTEXT_ATT).toPredicate())
+				.should(factory.exists().field(ArrDescItem.FULLTEXT_ATT))
 				.toPredicate();
 	}
 }

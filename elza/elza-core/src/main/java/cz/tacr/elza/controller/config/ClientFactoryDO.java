@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -62,6 +61,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.StringNormalize;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
@@ -87,7 +87,6 @@ import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UISettings;
@@ -114,6 +113,7 @@ import cz.tacr.elza.filter.condition.NeDescItemCondition;
 import cz.tacr.elza.filter.condition.NoValuesCondition;
 import cz.tacr.elza.filter.condition.NotContainDescItemCondition;
 import cz.tacr.elza.filter.condition.NotEmptyDescItemCondition;
+import cz.tacr.elza.filter.condition.NotEmptySpecificationDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.NotIntervalDescItemCondition;
 import cz.tacr.elza.filter.condition.SelectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.SelectedValuesDescItemEnumCondition;
@@ -135,12 +135,6 @@ public class ClientFactoryDO {
 
     @Autowired
     private EntityManager em;
-
-    @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
-    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
     private InstitutionRepository institutionRepository;
@@ -270,11 +264,13 @@ public class ClientFactoryDO {
 	        	break;
 	        case STRING:
 	            data = new ArrDataString();
-	            ((ArrDataString) data).setStringValue(((DataString) itemData).getStringValue());
+	        	// normalization: replacing non-printable characters, removing double spaces and whitespaces at the beginning and end
+	            ((ArrDataString) data).setStringValue(StringNormalize.normalizeString(((DataString) itemData).getStringValue()));
 	        	break;
 	        case TEXT:
 	        	data = new ArrDataText();
-	        	((ArrDataText) data).setTextValue(((DataText) itemData).getTextValue());
+	        	// normalization: replacing non-printable characters, removing double spaces and whitespaces at the beginning and end
+	        	((ArrDataText) data).setTextValue(StringNormalize.normalizeText(((DataText) itemData).getTextValue()));
 	        	break;
 	        case UNITDATE:
 	        	data = ArrDataUnitdate.valueOf(((DataUnitdate) itemData).getValue());
@@ -429,16 +425,19 @@ public class ClientFactoryDO {
     	}
 
         ArrDescItem descItem = new ArrDescItem();
-        descItem.setItemType(itemType.getEntity());
+        // set real DB reference
+        descItem.setItemType(em.getReference(RulItemType.class, itemVO.getItemTypeId()));
         
-        if (itemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = itemType.getItemSpecById(itemVO.getDescItemSpecId());
+        if (itemVO.getDescItemSpecId() != null) {        	
+        	RulItemSpec descItemSpec = itemType.getItemSpecById(itemVO.getDescItemSpecId());
             if (descItemSpec == null) {
         		throw new BusinessException("Cannot find item spec, itemTypeId: " + itemVO.getItemTypeId()
         		+ ", itemSpecId: " + itemVO.getDescItemSpecId(), BaseCode.ID_NOT_EXIST)
     				.set("itemTypeId", itemVO.getItemTypeId())
     				.set("itemSpecId", itemVO.getDescItemSpecId());
             }
+            // set real DB reference
+            descItemSpec = em.getReference(RulItemSpec.class, itemVO.getDescItemSpecId());
             descItem.setItemSpec(descItemSpec);
         }        
 
@@ -478,6 +477,7 @@ public class ClientFactoryDO {
         arrFund.setInternalCode(fund.getInternalCode());
         arrFund.setMark(fund.getMark());
         arrFund.setInstitution(institution);
+        arrFund.setManaged(fund.getManaged());
         return arrFund;
     }
 
@@ -949,7 +949,7 @@ public class ClientFactoryDO {
                 conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
                 conditions.add(new NoValuesCondition());
             } else if (containsNull) { // odškrtlé jen "Prázdné" = vše s hodnotou
-                conditions.add(new NotEmptyDescItemCondition());
+                conditions.add(new NotEmptySpecificationDescItemEnumCondition());
             } else {
                 // není potřeba vkládat podmínku, pokud vznikne ještě jiná podmínka tak by se udělal průnik výsledků a když bude seznam podmínek prázdný tak se vrátí všechna data
             }

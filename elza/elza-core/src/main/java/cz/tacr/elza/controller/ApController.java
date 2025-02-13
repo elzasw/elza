@@ -781,6 +781,9 @@ public class ApController {
                               @RequestBody final ApPartFormVO apPartFormVO,
                               @RequestParam(required = false) Integer apVersion) {
 
+    	// nepovolujeme prázdné řádky pro ApItemStringVO i ApItemStringVO
+    	apPartFormVO.validateItems();
+
         ApAccessPoint apAccessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
         ApState state = accessPointService.getStateInternal(apAccessPoint);
         ApRevState revState = revisionService.findRevStateByState(state);
@@ -831,6 +834,9 @@ public class ApController {
                               @PathVariable final Integer partId,
                               @RequestBody final ApPartFormVO apPartFormVO,
                               @RequestParam(required = false) Integer apVersion) {
+
+    	// nepovolujeme prázdné řádky pro ApItemStringVO i ApItemStringVO
+    	apPartFormVO.validateItems();
 
         ApAccessPoint apAccessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
         ApState state = accessPointService.getStateInternal(apAccessPoint);

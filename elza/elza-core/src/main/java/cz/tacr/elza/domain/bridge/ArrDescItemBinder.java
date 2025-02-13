@@ -15,7 +15,7 @@ import static cz.tacr.elza.domain.ArrDescItem.DECIMAL_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORMALIZED_FROM_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORMALIZED_TO_ATT;
 import static cz.tacr.elza.domain.ArrItem.FIELD_DATA;
-import static cz.tacr.elza.domain.LuceneAnalyzerConfigurer.KEYWORD_TOKENIZER_CZ;
+import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.KEYWORD_TOKENIZER_CZ;
 
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.mapper.pojo.bridge.binding.TypeBindingContext;

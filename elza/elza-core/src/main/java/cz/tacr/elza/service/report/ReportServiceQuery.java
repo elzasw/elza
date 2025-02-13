@@ -134,8 +134,8 @@ public class ReportServiceQuery {
 					""";
 
 		final static String SYS_MONTH_USER_COUNT_QUERY = """
-			with min_date as (select date_id from rpt_view_date where date_id = :DATE_FROM),
-				max_date as (select date_id from rpt_view_date where date_id = :DATE_TO),
+			with min_date as (select min(date_id) as date_id from rpt_view_date where date_id >= :DATE_FROM),
+				max_date as (select max(date_id) as date_id from rpt_view_date where date_id <= :DATE_TO),
 				time_line as (select date_year, date_month, min(date_id) as date_from, max(date_id) as date_to from rpt_view_date where date_id >= (select date_id from min_date) and date_id <= (select date_id from max_date) group by date_year, date_month), 
 				users as (select distinct user_id from rpt_view_node_change where date_id >= (select date_id from min_date) and date_id <= (select date_id from max_date) 
 			union  

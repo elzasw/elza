@@ -18,6 +18,8 @@ public class ArrFundBaseVO {
 
     private String mark;
 
+    private Boolean managed;
+
     public ArrFundBaseVO() {
     }
 
@@ -39,6 +41,7 @@ public class ArrFundBaseVO {
         this.internalCode = fund.getInternalCode();
         this.fundNumber = fund.getFundNumber();
         this.mark = fund.getMark();
+        this.managed = fund.getManaged();
     }
 
     public ArrFundBaseVO(Fund fund) {
@@ -89,7 +92,15 @@ public class ArrFundBaseVO {
         this.mark = mark;
     }
 
-    public ArrFund createEntity() {
+    public Boolean getManaged() {
+		return managed;
+	}
+
+	public void setManaged(Boolean managed) {
+		this.managed = managed;
+	}
+
+	public ArrFund createEntity() {
         ArrFund entity = new ArrFund();
         entity.setFundId(id);
         entity.setName(name);

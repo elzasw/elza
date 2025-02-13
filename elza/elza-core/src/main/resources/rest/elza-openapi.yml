@@ -2438,6 +2438,9 @@ components:
           items:
             type: string
           description: Seznam oblastí entit
+        managed:
+          type: boolean
+          description: Zákaz změny vlastností
       description: Změny archivního souboru
     UsedItemType:
       type: object

@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import cz.tacr.elza.domain.ArrFund;
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -183,6 +184,9 @@ public class DescriptionItemService {
 
     @Autowired
     private ClientFactoryDO factoryDO;
+    
+    @Autowired
+    private EntityManager entityManager;
 
     private TransactionSynchronization indexWorkNotify;
 
@@ -1643,7 +1647,12 @@ public class DescriptionItemService {
         // create new item based on source
         descItemNew.setPosition(newPosition);
         // set data and specification
-        descItemNew.setItemSpec(itemSpec);
+        if (itemSpec != null) {
+        	// fetch entity specification from DB 
+        	// cannot send cached object to the DB
+        	RulItemSpec dbItemSpec = entityManager.getReference(RulItemSpec.class, itemSpec.getItemSpecId());
+        	descItemNew.setItemSpec(dbItemSpec);
+        }        
         descItemNew.setReadOnly(readOnly);
         ArrDescItem result = descItemRepository.save(descItemNew);
 
@@ -1661,11 +1670,11 @@ public class DescriptionItemService {
 	}
 
     public Map<Integer, TitleItemsByType> createNodeValuesByItemTypeIdMap(final Collection<Integer> nodeIds,
-                                                                                   final Collection<RulItemType> descItemTypes,
+                                                                                   final Collection<Integer> descItemTypeIds,
                                                                                    final Integer changeId,
                                                                                    @Nullable final TreeNode subtreeRoot,
                                                                                    final boolean dataExport) {
-        if (nodeIds.isEmpty() || descItemTypes.isEmpty()) {
+        if (nodeIds.isEmpty() || descItemTypeIds.isEmpty()) {
             return Collections.emptyMap();
         }
 
@@ -1678,7 +1687,7 @@ public class DescriptionItemService {
             rootParent = rootParent.getParent();
         }
 
-        List<ArrDescItem> descItems = descItemRepository.findDescItemsByNodeIds(nodeIdSet, descItemTypes, changeId);
+        List<ArrDescItem> descItems = descItemRepository.findDescItemsByNodeIds(nodeIdSet, descItemTypeIds, changeId);
 
         // fetch access points
         Set<Integer> accessPointIds = new HashSet<>();
@@ -1729,11 +1738,11 @@ public class DescriptionItemService {
      *         nodeId, itemTypeCode, values
      */
     public Map<Integer, TitleItemsByType> createNodeValuesByItemTypeCodeMap(final Collection<Integer> nodeIds,
-                                                                                    final Collection<RulItemType> descItemTypes,
+                                                                                    final Collection<Integer> descItemTypeIds,
                                                                                     final Integer changeId,
                                                                                     @Nullable final TreeNode subtreeRoot) {
 
-        return createNodeValuesByItemTypeIdMap(nodeIds, descItemTypes, changeId, subtreeRoot, false);
+        return createNodeValuesByItemTypeIdMap(nodeIds, descItemTypeIds, changeId, subtreeRoot, false);
     }
 
     /**

@@ -151,6 +151,8 @@ model UpdateFund {
     mark?: string;
     /** Seznam oblastí entit */
     scopes?: string[];
+    /** Zákaz změny vlastností */
+    managed?: boolean;
 }
 
 /**

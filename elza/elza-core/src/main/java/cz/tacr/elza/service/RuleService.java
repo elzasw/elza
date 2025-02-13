@@ -72,6 +72,7 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -127,6 +128,7 @@ import cz.tacr.elza.drools.model.item.AbstractItem;
 import cz.tacr.elza.drools.model.item.BoolItem;
 import cz.tacr.elza.drools.model.item.IntItem;
 import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.item.UnitdateItem;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -1200,6 +1202,8 @@ public class RuleService {
                 collect(Collectors.toList());
     }
 
+    // TODO: Refactor this method, VO object should not be parameter of 
+    //       of this method.
     @Transactional
     public ModelAvailable executeAvailable(final ApAccessPointCreateVO form) {
         if (form == null || form.getTypeId() == null || form.getPartForm() == null || form.getScopeId() == null) {
@@ -1259,7 +1263,8 @@ public class RuleService {
             } else if (item instanceof ApItemAccessPointRefVO) {
                 ai = new IntItem(item.getId(), itemType, itemSpec, ((ApItemAccessPointRefVO) item).getValue());
             } else if (item instanceof ApItemUnitdateVO) {
-                ai = new Item(item.getId(), itemType, itemSpec, ((ApItemUnitdateVO) item).getValue());
+            	ArrDataUnitdate unitdate = ArrDataUnitdate.valueOf(((ApItemUnitdateVO) item).getValue());
+                ai = new UnitdateItem(item.getId(), itemType, itemSpec, unitdate);
             } else if (item instanceof ApItemCoordinatesVO) {
                 ai = new Item(item.getId(), itemType, itemSpec, ((ApItemCoordinatesVO) item).getValue());
             } else if (item instanceof ApItemUriRefVO) {
@@ -1414,8 +1419,6 @@ public class RuleService {
         ModelValidation modelValidation = new ModelValidation(ap, geoModel, modelPartList, new ApValidationErrors(),
                 items, expectedItems);
         ModelValidation validationResult = executeValidation(modelValidation, ruleSet);
-        // validace opakovatelnosti partů
-        validatePartRepeatability(validationResult);
         // validace opakovatelnosti indexů přes party se stejným part typem
         validateIndexRepeatability(validationResult, apValidationErrorsVO);
         // validace vztahů na nevalidní nebo nahrazené entity
@@ -1496,39 +1499,6 @@ public class RuleService {
                             }
                         }
                     }
-                }
-            }
-        }
-    }
-
-    /**
-     * Validate part repeatability
-     * 
-     * @param validationResult
-     */
-    private void validatePartRepeatability(final ModelValidation validationResult) {
-        Ap ap = validationResult.getAp();
-        // count parts per type
-        Map<PartType, Integer> partCountMap = new HashMap<>();
-        for (Part part : ap.getParts()) {
-            if (part.getParent() == null) {
-                partCountMap.put(part.getType(), partCountMap.getOrDefault(part.getType(), 0) + 1);
-            }
-        }
-        // check if part is repeatable
-        for (ModelPart modelPart : validationResult.getModelParts()) {
-            if (!modelPart.isRepeatable()) {
-                Integer partCount = partCountMap.getOrDefault(modelPart.getType(), 0);
-                if (partCount > 1) {
-
-                    logger.error("Multiple occurance of non-repeatable part, accessPointId = {}, partType={}, count={}",
-                                 ap.getId(),
-                                 modelPart.getType(), partCount);
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("Část ").append(modelPart.getType())
-                            .append(" je v entitě vícekrát (").append(partCount).append(").");
-                    validationResult.getApValidationErrors().addError(sb.toString());
                 }
             }
         }

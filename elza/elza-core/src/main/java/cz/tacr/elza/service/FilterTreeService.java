@@ -166,21 +166,12 @@ public class FilterTreeService {
                                             final Collection<Integer> descItemTypeIds,
                                             final boolean dataExport,
                                             final ArrayList<Integer> filteredIds) {
-        List<RulItemType> itemTypes = new ArrayList<>();
-        StaticDataProvider data = staticDataService.getData();
-        for (Integer id : descItemTypeIds) {
-            ItemType rsit = data.getItemTypeById(id);
-            if (rsit == null) {
-                throw new BusinessException("Uknown desc item type", BaseCode.ID_NOT_EXIST).set("descItemTypeId", id);
-            }
-            itemTypes.add(rsit.getEntity());
-        }
 
         ArrayList<Integer> subIds = FilterTools.getSublist(page, pageSize, filteredIds);
         Map<Integer, TitleItemsByType> nodeValuesMap = Collections.emptyMap();
-        if (!subIds.isEmpty() && !itemTypes.isEmpty()) {
+        if (!subIds.isEmpty() && !descItemTypeIds.isEmpty()) {
             nodeValuesMap = descriptionItemService.createNodeValuesByItemTypeIdMap(subIds,
-                    itemTypes,
+            		descItemTypeIds,
                     version.getLockChangeId(),
                     null,
                     dataExport);
