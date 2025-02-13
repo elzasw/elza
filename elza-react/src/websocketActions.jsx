@@ -60,6 +60,7 @@ import * as types from 'actions/constants/ActionTypes';
 import { fundNodeSubNodeFulltextSearch } from 'actions/arr/node';
 import { PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ } from './constants.tsx';
 import * as issuesActions from 'actions/arr/issues';
+import { createException } from 'components/ExceptionUtils.jsx';
 
 const serverContextPath = window.serverContextPath;
 
@@ -87,7 +88,7 @@ export class websocket {
                 brokerURL: wsUrl,
                 onConnect: this.onConnect,
                 onUnhandledReceipt: this.onReceipt,
-                onError: this.onError,
+                onStompError: this.onError,
                 heartbeatOutgoing: heartbeatOut,
                 heartbeatIncoming: heartbeatIn,
                 debug: (message) => { return; },
@@ -107,7 +108,7 @@ export class websocket {
     disconnect = (error = false) => {
         if (this.stompClient?.ws?.readyState < 3) {
             // When ready state is not CLOSING(2) or CLOSED(3) and stompClient exists
-            console.log('Websocket disconnected');
+            console.log('#### Websocket disconnected');
             this.stompClient.deactivate();
             this.stompClient = null;
         }
@@ -164,6 +165,7 @@ export class websocket {
 
     onError = error => {
         const { body, headers, command } = error;
+        console.log("#### websocket error", error);
 
         store.dispatch(
             checkUserLogged(logged => {
@@ -172,14 +174,9 @@ export class websocket {
                         // Error message received from server
 
                         this.disconnect(true);
-                        let message = headers.message || '';
+                        const bodyObj = body ? JSON.parse(body) : {};
 
-                        if (body) {
-                            const bodyObj = JSON.parse(body);
-                            message = bodyObj.message;
-                        }
-
-                        store.dispatch(addToastrDanger(i18n('global.error.ws'), message));
+                        store.dispatch(createException(bodyObj));
                     } else {
                         // Unknown error -> probably lost connection -> try to reconnect
                         this.disconnect();

@@ -240,6 +240,7 @@ public class FundController implements FundsApi {
         List<ApScope> apScopes = FactoryUtils.transformList(updateFund.getScopes(), s -> accessPointService.getApScope(s));
 
         ArrFund arrFund = factoryDO.createFund(updateFund, institution, id);
+        // TODO: use StaticData
         RulRuleSet ruleSet = ruleSetRepository.findByCode(updateFund.getRuleSetCode());
         Objects.requireNonNull(ruleSet);
 

@@ -32,9 +32,11 @@ spring:
         search:
           coordination:
             strategy: outbox-polling
+            internal:
+              configurer: cz.tacr.elza.domain.bridge.OutboxPollingConfigurer
           backend:
             analysis:
-              configurer: cz.tacr.elza.domain.LuceneAnalyzerConfigurer
+              configurer: cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer
             directory:
               root: ${elza.workingDir}/lucene/indexes
           #automatic_indexing:

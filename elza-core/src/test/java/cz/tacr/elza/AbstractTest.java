@@ -6,7 +6,6 @@ import java.net.URL;
 import cz.tacr.elza.service.DescriptionItemService;
 import jakarta.persistence.EntityManager;
 
-import org.hibernate.SessionFactory;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,7 +22,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.other.HelperTestService;
-import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
@@ -87,7 +85,6 @@ public abstract class AbstractTest {
     
     @Autowired
     protected PlatformTransactionManager tm;
-    
 
     @Autowired
     @Qualifier("transactionManager")

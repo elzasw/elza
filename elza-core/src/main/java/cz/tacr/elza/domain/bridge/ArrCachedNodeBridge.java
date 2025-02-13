@@ -36,7 +36,7 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
             for (ArrDescItem item : cachedNode.getDescItems()) {
             	// TODO: consider indexing with specifications
             	String fullTextValue = item.getFulltextValue();
-            	if (StringUtils.isNotEmpty(fullTextValue)) {
+            	if (StringUtils.isNotBlank(fullTextValue)) {
             		document.addValue(FULLTEXT_ATT, fullTextValue);
             	}
             }

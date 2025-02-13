@@ -41,6 +41,7 @@ import cz.tacr.elza.drools.model.item.BoolItem;
 import cz.tacr.elza.drools.model.item.CoordinatesItem;
 import cz.tacr.elza.drools.model.item.IntItem;
 import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.item.UnitdateItem;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
@@ -140,7 +141,7 @@ public class ApBuilder {
             break;
         case UNITDATE:
             ArrDataUnitdate aeDataUnitdate = (ArrDataUnitdate) data;
-            abstractItem = new Item(itemId, itemType, itemSpec, UnitDateConverter.convertToString(aeDataUnitdate));
+            abstractItem = new UnitdateItem(itemId, itemType, itemSpec, aeDataUnitdate);
             break;
         case URI_REF:
             ArrDataUriRef arrDataUriRef = (ArrDataUriRef) data;

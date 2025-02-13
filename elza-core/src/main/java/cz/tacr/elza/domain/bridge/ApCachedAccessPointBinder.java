@@ -2,12 +2,12 @@ package cz.tacr.elza.domain.bridge;
 
 import static cz.tacr.elza.domain.ApCachedAccessPoint.DATA;
 import static cz.tacr.elza.domain.ApCachedAccessPoint.FIELD_ACCESSPOINT_ID;
-import static cz.tacr.elza.domain.LuceneAnalyzerConfigurer.CLASSIC_TOKENIZER_CZ;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.AP_TYPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SCOPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.REV_STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.USERNAME;
+import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.CLASSIC_TOKENIZER_CZ;
 
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.service.SpringContext;

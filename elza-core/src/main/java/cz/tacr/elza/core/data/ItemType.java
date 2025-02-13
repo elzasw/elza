@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.Validate;
 
@@ -16,11 +17,11 @@ public class ItemType {
 
     private final DataType dataType;
 
-    private List<RulItemSpec> itemSpecs;
+    private List<CachedItemSpec> itemSpecs;
 
-    private Map<Integer, RulItemSpec> itemSpecIdMap;
+    private Map<Integer, CachedItemSpec> itemSpecIdMap;
 
-    private Map<String, RulItemSpec> itemSpecCodeMap;
+    private Map<String, CachedItemSpec> itemSpecCodeMap;
 
     ItemType(RulItemType itemType, DataType dataType) {
         this.itemType = itemType;
@@ -56,12 +57,12 @@ public class ItemType {
         return itemType.getUseSpecification();
     }
 
-    public List<RulItemSpec> getItemSpecs() {
+    public List<CachedItemSpec> getItemSpecs() {
         return itemSpecs;
     }
 
     public RulItemSpec getItemSpecById(Integer id) {
-        Validate.notNull(id);
+        Objects.requireNonNull(id);
         return itemSpecIdMap.get(id);
     }
 
@@ -70,7 +71,7 @@ public class ItemType {
         return itemSpecCodeMap.get(code);
     }
 
-    void addItemSpec(RulItemSpec is) {
+    void addItemSpec(CachedItemSpec is) {
         itemSpecs.add(is);
     }
 

@@ -19,17 +19,17 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, ArrDataUnitdate> {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(UnitDateValidator.class);
-	
+
     @Value("${elza.validate.unitdate.enabled:true}")
-    protected boolean enabled = true;
-        
+    private boolean enabled = true;
+
     @PostConstruct
 	public void init() {
     	logger.debug("Initializing UnitDateValidator (postConstruct), enabled={}", enabled);
 	}
-	
+
 	@Override
 	public void initialize(ValidUnitDate constraintAnnotation) {
 		logger.debug("Initializing UnitDateValidator, enabled={}", enabled);
@@ -37,17 +37,17 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 
 	@Override
 	public boolean isValid(ArrDataUnitdate value, ConstraintValidatorContext context) {
-		if(value==null) {
+		if (value == null) {
 			return true;
 		}
-		
-		if(!enabled) {
+
+		if (!enabled) {
 			return true;
 		}
-		
+
 		String errorDescription = validate(value);
-		if(errorDescription!=null) {
-			if(StringUtils.isNotBlank(errorDescription)) {
+		if (errorDescription != null) {
+			if (StringUtils.isNotBlank(errorDescription)) {
 				context.disableDefaultConstraintViolation();
 				context.buildConstraintViolationWithTemplate(errorDescription).addConstraintViolation();
 			}
@@ -353,5 +353,4 @@ public class UnitDateValidator implements ConstraintValidator<ValidUnitDate, Arr
 				(fromDay==1) && 
 				(fromHour==0) && (fromMinute==0) && (fromSecond==0);
 	}
-
 }

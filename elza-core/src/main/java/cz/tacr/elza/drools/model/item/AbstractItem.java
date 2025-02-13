@@ -1,6 +1,6 @@
 package cz.tacr.elza.drools.model.item;
 
-import org.apache.commons.lang3.Validate;
+import java.util.Objects;
 
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -12,7 +12,7 @@ public abstract class AbstractItem {
     private RulItemSpec spec;
 
     AbstractItem(final Integer id, final ItemType itemType, final RulItemSpec itemSpec) {
-        Validate.notNull(itemType);
+        Objects.requireNonNull(itemType);
 
         this.id = id;
         this.itemType = itemType;
