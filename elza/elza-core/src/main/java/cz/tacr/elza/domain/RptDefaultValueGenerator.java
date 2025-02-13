@@ -13,7 +13,8 @@ public enum RptDefaultValueGenerator {
 	END_OF_DAY {
 		@Override
 		public Object getDefaultValue() {
-			return LocalDate.now().atTime(23, 59, 59, 999_999_999).atOffset(ZoneOffset.UTC);
+			// if nanoOfSecond == 999_999_999 - in query we get +1 day, so decrease it by 999
+			return LocalDate.now().atTime(23, 59, 59, 999_999_000).atOffset(ZoneOffset.UTC);
 		}
 	},
 	START_OF_YEAR {
