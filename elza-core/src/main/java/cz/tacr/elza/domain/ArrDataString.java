@@ -74,34 +74,4 @@ public class ArrDataString extends ArrData {
         copyValue(src);
     }
 
-    @Override
-    protected void validateInternal() {
-    	Objects.requireNonNull(stringValue);
-        // check any leading and trailing whitespace in data
-        String value = stringValue.trim();
-        if (value.length() != stringValue.length()) {
-            throw new BusinessException("Value contains whitespaces at the begining or end",
-                    BaseCode.PROPERTY_IS_INVALID)
-                            .set("dataId", getDataId())
-                            .set("property", stringValue);
-        }
-        // check for non-printable chars in the string
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
-            if (c <= 0x1f) {
-                throw new BusinessException("Value contains invalid characters.",
-                        BaseCode.PROPERTY_IS_INVALID)
-                                .set("dataId", getDataId())
-                                .set("property", stringValue)
-                                .set("invalidCharacter", Integer.valueOf(c));
-            }
-        }
-        // check double-space
-        if (value.indexOf("  ") >= 0) {
-            throw new BusinessException("Value contains double spaces.",
-                    BaseCode.PROPERTY_IS_INVALID)
-                            .set("dataId", getDataId())
-                            .set("property", stringValue);
-        }
-    }
 }

@@ -4,14 +4,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
-import java.util.Objects;
-
 import org.hibernate.Length;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.validation.ValidStringField;
 
 /**
@@ -57,7 +53,7 @@ public class ArrDataText extends ArrData {
     public String getFulltextValue() {
         return textValue;
     }
-
+  
 	@Override
 	public ArrDataText makeCopy() {
 		return new ArrDataText(this);
@@ -75,27 +71,4 @@ public class ArrDataText extends ArrData {
         copyValue(src);
     }
 
-    @Override
-    protected void validateInternal() {
-    	Objects.requireNonNull(textValue);
-        // check any leading and trailing whitespace in data
-        String value = textValue.trim();
-        if (value.length() != textValue.length()) {
-            throw new BusinessException("Value contains whitespaces at the begining/end",
-                    BaseCode.PROPERTY_IS_INVALID)
-                            .set("dataId", getDataId())
-                            .set("property", textValue);
-        }
-        // check for non-printable chars in the string, exclude 0x0D, 0x0A
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
-            if (c <= 0x1f && c != 0x0D && c != 0x0A) {
-                throw new BusinessException("Value contains invalid characters.",
-                        BaseCode.PROPERTY_IS_INVALID)
-                                .set("dataId", getDataId())
-                                .set("property", textValue)
-                                .set("invalidCharacter", Integer.valueOf(c));
-            }
-        }
-    }
 }

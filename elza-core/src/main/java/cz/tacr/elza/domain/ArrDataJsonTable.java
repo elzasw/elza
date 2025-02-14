@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.domain.table.ElzaTable;
 
-
 /**
  * Hodnota atributu archivního popisu typu JsonTable.
  */
@@ -83,10 +82,4 @@ public class ArrDataJsonTable extends ArrData  {
         copyValue(src);
     }
 
-    @Override
-    protected void validateInternal() {
-        if (value == null) {
-            throw new NullPointerException("Missing value in table ArrDataJsonTable");
-        }
-    }
 }

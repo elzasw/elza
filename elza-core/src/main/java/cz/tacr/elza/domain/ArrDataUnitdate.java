@@ -198,15 +198,6 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
         copyValue(src);
     }
 
-    @Override
-    protected void validateInternal() {
-    	Objects.requireNonNull(format);
-    	Objects.requireNonNull(normalizedFrom);
-    	Objects.requireNonNull(normalizedTo);
-    	Objects.requireNonNull(valueFromEstimated);
-    	Objects.requireNonNull(valueToEstimated);
-    }
-
     static public ArrDataUnitdate valueOf(String v) {
         ArrDataUnitdate du = new ArrDataUnitdate();
 
@@ -233,4 +224,5 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
 
         return du;
     }
+
 }
