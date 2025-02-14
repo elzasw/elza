@@ -3,13 +3,11 @@ package cz.tacr.elza.domain;
 import java.net.URI;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.validation.ValidStringNoBeginOrEndWhitespaces;
 import jakarta.persistence.Basic;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,14 +27,17 @@ public class ArrDataUriRef extends ArrData {
     public static final String URI_REF_VALUE = "uriRefValue";
 
     @Basic
+    @ValidStringNoBeginOrEndWhitespaces
     @Column(name="schema", nullable = false, length = 50)
     private String schema;
 
     @Basic
+    @ValidStringNoBeginOrEndWhitespaces
     @Column(name="uri_ref_value", nullable = false, length = 2000)
     private String uriRefValue;
 
     @Basic
+    @ValidStringNoBeginOrEndWhitespaces
     @Column(name="description", length = 2000)
     private String description;
 
@@ -162,33 +163,6 @@ public class ArrDataUriRef extends ArrData {
     protected void mergeInternal(ArrData srcData) {
         ArrDataUriRef src = (ArrDataUriRef) srcData;
         copyValue(src);
-    }
-
-    @Override
-    protected void validateInternal() {
-        Validate.notNull(uriRefValue);
-        Validate.notNull(schema);
-        // check any leading and trailing whitespace in data
-        if (uriRefValue.trim().length() != uriRefValue.length()) {
-            throw new BusinessException("URI contains whitespaces at the begining or end",
-                    BaseCode.PROPERTY_IS_INVALID)
-                            .set("dataId", getDataId())
-                            .set("property", uriRefValue);
-        }
-        if (schema.trim().length() != schema.length()) {
-            throw new BusinessException("Schema contains whitespaces at the begining or end",
-                    BaseCode.PROPERTY_IS_INVALID)
-                            .set("dataId", getDataId())
-                            .set("property", schema);
-        }
-        if (description != null) {
-            if (description.trim().length() != description.length()) {
-                throw new BusinessException("Description contains whitespaces at the begining or end",
-                        BaseCode.PROPERTY_IS_INVALID)
-                                .set("dataId", getDataId())
-                                .set("property", description);
-            }
-        }
     }
 
     public static String createSchema(String value) {

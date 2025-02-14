@@ -4,8 +4,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
 
-import org.apache.commons.lang3.Validate;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
@@ -71,8 +69,4 @@ public class ArrDataDate extends ArrData {
         copyValue(src);
     }
 
-    @Override
-    protected void validateInternal() {
-        Validate.notNull(value);
-    }
 }

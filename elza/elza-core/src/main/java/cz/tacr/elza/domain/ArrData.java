@@ -260,11 +260,6 @@ public abstract class ArrData implements NodeCacheSerializable, AccessPointCache
      */
     public void validate() {
     	Objects.requireNonNull(this.dataTypeId);
-        validateInternal();
     }
 
-    /**
-     * Each domain object has to implement its own validation
-     */
-    abstract protected void validateInternal();
 }
