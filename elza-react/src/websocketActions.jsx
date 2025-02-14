@@ -207,23 +207,29 @@ export class websocket {
 
     // Handles websocket connection errors (e.g. unintentional disconnects)
     onWebsocketError = (error) => {
-        const { body, command, headers } = error;
         console.log("#ws websocket error", error);
 
-        const data = body ? JSON.parse(body) : {};
-        store.dispatch(createException(data.type ? data : { body, command, headers }));
-        this.reconnect();
+        this.handleError(error);
     }
 
     // Handles error message received through STOMP
     onStompError = (error) => {
-        const { body, command, headers } = error;
         console.log("#ws stomp error", error);
 
-        const data = body ? JSON.parse(body) : {};
-        store.dispatch(createException(data.type ? data : { body, command, headers }));
-        this.reconnect();
+        this.handleError(error);
     };
+
+    handleError = (error) => {
+        const { body, command, headers } = error;
+
+        const data = body ? JSON.parse(body) : {};
+        // display error when page is visible or exception is well structured
+        // e.g. "Session closed." will not be displayed
+        if (this.isPageVisible || data.type) {
+            store.dispatch(createException(data.type ? data : { body, command, headers }));
+        }
+        this.reconnect();
+    }
 
     onMessage = frame => {
         var body = JSON.parse(frame.body);
