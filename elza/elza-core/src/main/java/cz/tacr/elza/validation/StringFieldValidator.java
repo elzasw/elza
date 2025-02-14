@@ -18,11 +18,10 @@ public class StringFieldValidator implements ConstraintValidator<ValidStringFiel
 
 	public static final String ERR_DOUBLE_SPCS = "Value contains double spaces.";
 
-	public static final String ERR_EMPTY_STR = "Value contains only spaces or empty string.";
+	public static final String ERR_BLANK_STR = "Value contains only spaces or empty string.";
 
-	// TODO enable (= true) after removing empty records in CAM
-	@Value("${elza.validate.stringfield.enabled:false}")
-    private boolean enabled = false;
+	@Value("${elza.validate.stringfield.enabled:true}")
+    private boolean enabled = true;
 
 	private boolean multiline;
 
@@ -37,15 +36,18 @@ public class StringFieldValidator implements ConstraintValidator<ValidStringFiel
 			return true;
 		}
 
+		context.disableDefaultConstraintViolation();
+		boolean valid = true;
+
 		// log only first 100 characters, because the number of characters can be very large
 		String logValue = value.length() > 100 ? value.substring(0, 100) : value;
 		logger.debug("Validating value: {}", logValue);
 
         // check any leading and trailing whitespace in data
         if (value.length() != value.trim().length()) {
-        	setErrorDescription(context, ERR_WHITESPACES);
+        	context.buildConstraintViolationWithTemplate(ERR_WHITESPACES).addConstraintViolation();
         	logger.error("Validation failed - value contains leading or trailing whitespace: {}", logValue);
-        	return false;
+        	valid = false;
         }
 
         // check for non-printable chars in the string, exclude 0x0D, 0x0A
@@ -56,30 +58,27 @@ public class StringFieldValidator implements ConstraintValidator<ValidStringFiel
                 if (multiline && (ch == 0x0D || ch == 0x0A)) {
                 	continue;
                 }
-                setErrorDescription(context, ERR_INVALID_CHRS);
+                context.buildConstraintViolationWithTemplate(ERR_INVALID_CHRS).addConstraintViolation();
                 logger.error("Validation failed - value contains non-printable characters: {}", logValue);
-            	return false;
+            	valid = false;
+            	break;
             }
         }
 
         // check double-space
         if (value.indexOf("  ") >= 0) {
-        	setErrorDescription(context, ERR_DOUBLE_SPCS);
+        	context.buildConstraintViolationWithTemplate(ERR_DOUBLE_SPCS).addConstraintViolation();
         	logger.error("Validation failed - value contains double spaces: {}", logValue);
-        	return false;
+        	valid = false;
         }
 
         // check blank string
         if (StringUtils.isBlank(value)) {
-        	setErrorDescription(context, ERR_EMPTY_STR);
+        	context.buildConstraintViolationWithTemplate(ERR_BLANK_STR).addConstraintViolation();
         	logger.error("Validation failed - value contains only spaces or empty string");
-        	return false;
+        	valid = false;
         }
-		return true;
-	}
 
-	private void setErrorDescription(ConstraintValidatorContext context, String errorDescription) {
-		context.disableDefaultConstraintViolation();
-		context.buildConstraintViolationWithTemplate(errorDescription).addConstraintViolation();		
+        return valid;
 	}
 }
