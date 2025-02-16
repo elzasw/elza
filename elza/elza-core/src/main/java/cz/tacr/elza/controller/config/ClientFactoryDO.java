@@ -113,6 +113,7 @@ import cz.tacr.elza.filter.condition.NeDescItemCondition;
 import cz.tacr.elza.filter.condition.NoValuesCondition;
 import cz.tacr.elza.filter.condition.NotContainDescItemCondition;
 import cz.tacr.elza.filter.condition.NotEmptyDescItemCondition;
+import cz.tacr.elza.filter.condition.NotEmptySpecificationDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.NotIntervalDescItemCondition;
 import cz.tacr.elza.filter.condition.SelectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.SelectedValuesDescItemEnumCondition;
@@ -948,7 +949,7 @@ public class ClientFactoryDO {
                 conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
                 conditions.add(new NoValuesCondition());
             } else if (containsNull) { // odškrtlé jen "Prázdné" = vše s hodnotou
-                conditions.add(new NotEmptyDescItemCondition());
+                conditions.add(new NotEmptySpecificationDescItemEnumCondition());
             } else {
                 // není potřeba vkládat podmínku, pokud vznikne ještě jiná podmínka tak by se udělal průnik výsledků a když bude seznam podmínek prázdný tak se vrátí všechna data
             }
