@@ -94,7 +94,7 @@ export function login(username, password) {
  */
 export function logout(redirect = false) {
     return dispatch => {
-        window.ws.disconnect();
+        window.ws.disconnect(undefined, true);
         if (redirect) {
             dispatch(routerNavigate('/'));
         }
