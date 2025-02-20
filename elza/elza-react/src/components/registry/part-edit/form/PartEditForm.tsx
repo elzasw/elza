@@ -109,7 +109,7 @@ export const PartEditForm = ({
             const handleAutoItems = async () => {
                 if(apId == undefined) {throw Error("no 'apId'");}
                 const {data} = revision
-                    ? await Api.accesspoints.getRevAutoitems(apId.toString())
+                    ? await Api.accesspoints.accessPointGetRevAutoitems(apId.toString())
                     : await Api.accesspoints.accessPointGetAutoitems(apId.toString());
 
                 const result = await dispatch(showAutoItemsModal({
