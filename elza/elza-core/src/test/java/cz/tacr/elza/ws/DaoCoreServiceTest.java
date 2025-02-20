@@ -153,7 +153,6 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         ArrDaoVO daoConnected2 = daosConnected2.get(0);
         ArrDaoLinkVO daoLinkVo2 = daoConnected2.getDaoLink();
         assertNull(daoLinkVo2);
-
     }
 
     @Test
@@ -322,7 +321,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         DescItemResult descItemResult = updateDescItem(descItemTextVO, fundVersion, nodeVO, true);
         helperTestService.waitForWorkers();
 
-        this.daosApi.changeLinkScenario(daoVo.getId(), "sc2");
+        daosApi.daoChangeLinkScenario(daoVo.getId(), "sc2");
         daoVos = this.findDaos(fundVersion.getId(), levelNode.getId());
         assertTrue(daoVos.size() == 1);
         daoVo = daoVos.get(0);

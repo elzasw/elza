@@ -625,11 +625,56 @@ model ExtSystemProperty {
     value: string;
 }
 
+/**
+ * Access point list
+ */
+model DeleteAccessPointsDetail {
+    /** list of id or uuid */
+    ids: string[];
+}
+
+/**
+ * Deleted archive entity
+ */
+model DeletedEntity {
+    accessPointId: integer;
+    name: string;
+    description?: string;
+    apTypeId: integer;
+    extSystemId?: integer;
+    deleteChangeId: integer;
+    replacedBy?: integer;
+}
+
+/**
+ * Deleted archive entities
+ */
+model InvalidatedEntities {
+   totalCount: integer;
+   page: DeletedEntity[];
+}
+
+/**
+ * Data for create/update a part
+ */
+model ApPartFormVO {
+    // this is an external class
+}
+
+/**
+ * Result of creating a part
+ */
+model CreatedPart {
+    partId: integer;
+    apVersion: integer;
+}
+
 @tag("admin")
 @route("/admin")
 namespace ElzaAPI.Admin {
-
-    /** Creating missing items in arr_cached_node */
+    /**
+     * Creating missing items in arr_cached_node
+     */
     @route("arrangement/missing-cached-nodes")
     op syncNodeCache(): { 
         @Http.statusCode statusCode: 200;
@@ -662,6 +707,28 @@ namespace ElzaAPI.Admin {
     /** Return list of logged users */
     @route("info/logged-users")
     op loggedUsers(): LoggedUsers;
+}
+
+@tag("daos")
+@route("/daos")
+namespace ElzaAPI.Dao {
+    /**
+     * Changing the dao connection scenario
+     */
+    @route("/{id}/change-scenario")
+    @post op changeLinkScenario(
+        /** dao id */
+        @path id: integer,
+        /** new scenario */
+        @body body: string
+    ): {
+         /** The scenario has been changed */
+         @Http.statusCode statusCode: 200;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
 }
 
 @route("/daorepository")
@@ -877,7 +944,22 @@ namespace ElzaAPI.DescItem {
 @route("/accesspoint")
 namespace ElzaAPI.AccessPoint {
     /**
-     * Invalidation of ApAccessPoint (delete/replace)
+     * Invalidation of access points
+     */
+    @route("")
+    @delete op deleteAccessPoints(
+        @body body: DeleteAccessPointsDetail
+    ): {
+         /** The entities has been deleted */
+         @Http.statusCode statusCode: 200;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * Invalidation of access point (delete/replace)
      */
     @route("/{id}")
     @delete op deleteAccessPoint(
@@ -886,13 +968,52 @@ namespace ElzaAPI.AccessPoint {
         /** addition for method of invalidation */
         @body body?: DeleteAccessPointDetail
     ): {
-         /** Pending, processing, finished */
+         /** The entity has been deleted */
          @Http.statusCode statusCode: 200;
        } | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
           @body data: BaseException;
        };
+
+    /**
+     * Restore deleted entity and return to original state
+     */
+    @route("/{id}/restore")
+    @put op restoreAccessPoint(
+        /** id of accesspoint */
+        @path id: string,
+    ): {
+         /** The entity has been restored */
+         @Http.statusCode statusCode: 200;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * Validation of an archive entity
+     */
+    @route("/{id}/validate")
+    @put op validateAccessPoint(
+        /** id of accesspoint */
+        @path id: string,
+    ): {
+         /** The entity has been validated */
+         @Http.statusCode statusCode: 200;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * Get invalidated entities
+     */
+    //@route("/invalidated")
+    //@get op getInvalidatedEntities(
+    //): InvalidatedEntities;
 
     /**
      * List of automatically generated elements of the description
@@ -926,6 +1047,61 @@ namespace ElzaAPI.AccessPoint {
          @body data: EntityRef;
        } | {
           /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * Create new part of ApAccessPoint
+     */ 
+    @route("/{id}/part")
+    @post op createPart(
+        /** id of accesspoint */
+        @path id: integer,
+        /** data for creating a part */
+        @body body: ApPartFormVO,
+        /** accesspoint version */
+        @query apVersion?: integer
+    ): CreatedPart | {
+          /** id does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * Update a part of ApAccessPoint
+     */
+    @route("{id}/part/{partId}")
+    @post op updatePart(
+        /** id of accesspoint */
+        @path id: integer,
+        /** id of part */
+        @path partId: integer,
+        /** data for updating a part */
+        @body body: ApPartFormVO,
+        /** accesspoint version */
+        @query apVersion?: integer
+    ): integer | {
+          /** id does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * Update a revision part of ApAccessPoint
+     */
+    @route("{id}/revision/part/{revPartId}")
+    @post op updateRevisionPart(
+        /** id of accesspoint */
+        @path id: integer,
+        /** id of revision part */
+        @path revPartId: integer,
+        /** data for updating a part */
+        @body body: ApPartFormVO,
+        /** accesspoint version */
+        @query apVersion?: integer
+    ): integer | {
+          /** id does not exists */
           @Http.statusCode statusCode: 404;
           @body data: BaseException;
        };
@@ -971,6 +1147,55 @@ namespace ElzaAPI.AccessPoint {
         /** actual version of ApAccessPoint */
         @query apVersion?: integer
     ): integer;
+
+    /**
+     * Creating a new revision of access point
+     */
+    @route("/{id}/revision")
+    @post op createRevision(
+        /** id of accesspoint */
+        @path id: integer
+    ):  {
+         /** The revision has been created */
+         @Http.statusCode statusCode: 200;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * Deleting a revision of access point 
+     */
+    @route("/{id}/revision")
+    @delete op deleteRevision(
+        /** id of accesspoint */
+        @path id: integer
+    ):  {
+         /** The revision has been deleted */
+         @Http.statusCode statusCode: 200;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+   /**
+     * List of automatically generated description elements for revision
+     */
+    @route("/{id}/revision/autoitems")
+    @get op getRevAutoitems(
+        /** id of accesspoint */
+        @path id: string
+    ): {
+         /** Pending, processing, finished */
+         @Http.statusCode statusCode: 200;
+         @body data: ResultAutoItems;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
 
     /**
      * Change state of revision of ApAccessPoint

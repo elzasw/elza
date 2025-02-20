@@ -5,6 +5,8 @@ info:
 tags:
   - name: admin
     description: Administrativní funkce
+  - name: daos
+    description: Digitální archivní objekty
   - name: externalsystems
     description: Externí systémy
   - name: funds
@@ -27,10 +29,32 @@ servers:
   - url: http://localhost:8080
     description: Devel server
 paths:
+  /accesspoint:
+    delete:
+      operationId: AccessPoint_deleteAccessPoints
+      description: Invalidation of access points
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - accesspoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteAccessPointsDetail'
   /accesspoint/{id}:
     delete:
       operationId: AccessPoint_deleteAccessPoint
-      description: Invalidation of ApAccessPoint (delete/replace)
+      description: Invalidation of access point (delete/replace)
       parameters:
         - name: id
           in: path
@@ -59,7 +83,7 @@ paths:
   /accesspoint/{id}/autoitems:
     get:
       operationId: AccessPoint_getAutoitems
-      description: List of automatically generated elements of the description
+      description: Get invalidated entitiesList of automatically generated elements of the description
       parameters:
         - name: id
           in: path
@@ -115,7 +139,92 @@ paths:
             schema:
               $ref: '#/components/schemas/CopyAccessPointDetail'
         description: additional copy options
+  /accesspoint/{id}/part:
+    post:
+      operationId: AccessPoint_createPart
+      description: Create new part of ApAccessPoint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: integer
+        - name: apVersion
+          in: query
+          required: false
+          description: accesspoint version
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedPart'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - accesspoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApPartFormVO'
+        description: data for creating a part
   /accesspoint/{id}/part/{partId}:
+    post:
+      operationId: AccessPoint_updatePart
+      description: Update a part of ApAccessPoint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: integer
+        - name: partId
+          in: path
+          required: true
+          description: id of part
+          schema:
+            type: integer
+        - name: apVersion
+          in: query
+          required: false
+          description: accesspoint version
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - accesspoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApPartFormVO'
+        description: data for updating a part
     delete:
       operationId: AccessPoint_deletePart
       description: Delete part of ApAccessPoint
@@ -181,6 +290,97 @@ paths:
             application/json:
               schema:
                 type: integer
+      tags:
+        - accesspoints
+  /accesspoint/{id}/restore:
+    put:
+      operationId: AccessPoint_restoreAccessPoint
+      description: Restore deleted entity and return to original state
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - accesspoints
+  /accesspoint/{id}/revision:
+    post:
+      operationId: AccessPoint_createRevision
+      description: Creating a new revision of access point
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - accesspoints
+    delete:
+      operationId: AccessPoint_deleteRevision
+      description: Deleting a revision of access point
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - accesspoints
+  /accesspoint/{id}/revision/autoitems:
+    get:
+      operationId: AccessPoint_getRevAutoitems
+      description: List of automatically generated description elements for revision
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultAutoItems'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
       tags:
         - accesspoints
   /accesspoint/{id}/revision/merge:
@@ -291,6 +491,52 @@ paths:
           description: The server cannot find the requested resource.
       tags:
         - accesspoints
+  /accesspoint/{id}/revision/part/{revPartId}:
+    post:
+      operationId: AccessPoint_updateRevisionPart
+      description: Update a revision part of ApAccessPoint
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: integer
+        - name: revPartId
+          in: path
+          required: true
+          description: id of revision part
+          schema:
+            type: integer
+        - name: apVersion
+          in: query
+          required: false
+          description: accesspoint version
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - accesspoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApPartFormVO'
+        description: data for updating a part
   /accesspoint/{id}/revision/state:
     put:
       operationId: AccessPoint_changeStateRevision
@@ -361,144 +607,28 @@ paths:
             schema:
               $ref: '#/components/schemas/ApStateUpdate'
         description: data for change ApState
-  /accesspoints/{id}/restore:
-    put: 
-      summary: Obnovení neplatné entity a návrat do původního stavu
-      operationId: restoreAccessPoint
-      tags:
-        - accesspoints
+  /accesspoint/{id}/validate:
+    put:
+      operationId: AccessPoint_validateAccessPoint
+      description: Validation of an archive entity
       parameters:
         - name: id
-          description: Identifikátor archivní entity
           in: path
           required: true
+          description: id of accesspoint
           schema:
             type: string
       responses:
-        200:
-          description: Entita byla obnovena
-        404:
-          description: AP neexistuje
-  /accesspoints/{id}/validate:
-    put: 
-      summary: Ověřování entity
-      operationId: validateAccessPoint
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Entita byla ověřena
-        404:
-          description: AP neexistuje
-  /accesspoints:
-    delete:
-      summary: Zneplatnění přístupovych bodu
-      operationId: deleteAccessPoints
-      tags:
-        - accesspoints
-      requestBody:
-        description: Seznam přístupových bodů
-        content:
-          'application/json':
-            schema:
-              $ref: '#/components/schemas/DeleteAccessPointsDetail'
-      responses:
-        200:
-          description: Potvrzení o úspěšném odstranění
-        404:
-          description: AP neexistuje
-  /revision/{id}:
-    post:
-      summary: Vytvoření nové revize přístupového bodu
-      operationId: createRevision
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-      responses:
-        200:
-          description: Potvrzení o úspěšném založení
-        404:
-          description: AP neexistuje
-    delete:
-      summary: Smazání revize přístupového bodu
-      operationId: deleteRevision
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-      responses:
-        200:
-          description: Potvrzení o úspěšném smazání
-        404:
-          description: AP nebo revize neexistuje
-  /revision/{id}/autoitems:
-    get:
-      summary: Vrátí seznam automaticky generovaných prvků popisu pro revizi
-      operationId: getRevAutoitems
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Seznam navržených prvků popisu
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ResultAutoItems"
-        404:
-          description: AP neexistuje
-  /daos/{id}/change-scenario:
-    post:
-      summary: Změna scénáře napojení dao
-      operationId: changeLinkScenario
+                $ref: '#/components/schemas/BaseException'
       tags:
-        - daos
-      parameters:
-        - name: id
-          description: Identifikátor dao
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-      requestBody:
-        description: Nový scénář
-        required: true
-        content:
-          'application/json':
-            schema:
-              type: string
-      responses:
-        200:
-          description: Změna scénáře provedena
-        404:
-          description: Dao neexistuje
+        - accesspoints
   /search-ap:
     post:
       tags:
@@ -626,6 +756,35 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FsRepo'
+  /daos/{id}/change-scenario:
+    post:
+      operationId: Dao_changeLinkScenario
+      description: Changing the dao connection scenario
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: dao id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - daos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+        description: new scenario
   /descItems/{fundVersionId}/create:
     put:
       operationId: DescItem_createDescItem
@@ -1365,6 +1524,10 @@ components:
           format: int32
           description: Number of logged users
       description: Basic statistics about Elza instance
+    ApPartFormVO:
+      type: object
+      format: partform
+      description: Data for create/update a part
     ApStateApproval:
       type: string
       enum:
@@ -1490,6 +1653,17 @@ components:
           minItems: 1
           description: Seznam oblastí entit
       description: Zakládaný archivní souboru
+    CreatedPart:
+      type: object
+      required:
+        - partId
+        - apVersion
+      properties:
+        partId:
+          type: integer
+        apVersion:
+          type: integer
+      description: Result of creating a part
     DataBit:
       type: object
       required:
@@ -1751,6 +1925,17 @@ components:
             - $ref: '#/components/schemas/ReplaceType'
           description: method of replacing
       description: Data for detele/replace ApAccessPoint
+    DeleteAccessPointsDetail:
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          items:
+            type: string
+          description: list of id or uuid
+      description: Access point list
     EntityRef:
       type: object
       required:
@@ -2453,15 +2638,6 @@ components:
         count:
           type: integer
       description: Fund node item type id and quantity
-    DeleteAccessPointsDetail:
-      type: object
-      description: Seznam přístupových bodů
-      properties:
-        ids:
-          description: Seznam id nebo uuid
-          type: array
-          items:
-            type: string
     AbstractFilter:
       title: Abstract filter
       description: Used as a parent for all other filters
@@ -2595,14 +2771,3 @@ components:
       required:
         - count
       title: Result«EntityRef»
-    CreatedPart:
-      type: object
-      properties:
-        partId:
-          description: Identifikátor vytvořené částí archivní entity
-          type: integer
-          format: int32
-        apVersion:
-          description: Aktualizovaná verze archivní entity
-          type: integer
-          format: int32

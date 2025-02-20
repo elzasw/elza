@@ -623,6 +623,11 @@
                                 <interfaceOnly>true</interfaceOnly>
                                 <useTags>true</useTags>
 							</configOptions>
+							<!--https://stackoverflow.com/questions/75791924/use-existing-class-with-openapi-generator-maven-plugin-without-skipping-validati-->
+							<importMappings>
+								ApPartFormVO=cz.tacr.elza.controller.vo.ApPartFormVO
+							</importMappings>
+							<typeMappings>object+partform=ApPartFormVO</typeMappings>
 						</configuration>
 					</execution>
                     <execution>
