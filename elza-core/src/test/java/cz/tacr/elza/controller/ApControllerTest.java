@@ -29,7 +29,6 @@ import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.CreatedPartVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
@@ -45,6 +44,7 @@ import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.test.controller.vo.ApStateApproval;
 import cz.tacr.elza.test.controller.vo.ApStateUpdate;
+import cz.tacr.elza.test.controller.vo.CreatedPart;
 import cz.tacr.elza.test.controller.vo.Fund;
 import io.restassured.response.Response;
 
@@ -267,7 +267,7 @@ public class ApControllerTest extends AbstractControllerTest {
 
         // AP created
         // prepare revision
-        accesspointsApi.createRevision(accessPoint.getId());
+        accesspointsApi.accessPointCreateRevision(accessPoint.getId());
         accessPoint = getAccessPoint(accessPoint.getId());
         assertEquals(accessPoint.getRevStateApproval(), RevStateApproval.ACTIVE);
 
@@ -278,17 +278,17 @@ public class ApControllerTest extends AbstractControllerTest {
 
         ApPartFormVO partFormVO = ApControllerTest.createPartFormVO(null, ptName.getCode(), null, items);
 
-        CreatedPartVO createdPart = createPart(accessPoint.getId(), partFormVO);
+        CreatedPart createdPart = createPart(accessPoint.getId(), partFormVO);
         Integer revPartId = createdPart.getPartId();
         assertNotNull(revPartId);
 
         // drop revision
-        accesspointsApi.deleteRevision(accessPoint.getId());
+        accesspointsApi.accessPointDeleteRevision(accessPoint.getId());
         accessPoint = getAccessPoint(accessPoint.getId());
         assertNull(accessPoint.getRevStateApproval());
 
         // prepare revision 2
-        accesspointsApi.createRevision(accessPoint.getId());
+        accesspointsApi.accessPointCreateRevision(accessPoint.getId());
         accessPoint = getAccessPoint(accessPoint.getId());
         assertEquals(accessPoint.getRevStateApproval(), RevStateApproval.ACTIVE);
 
@@ -543,8 +543,7 @@ public class ApControllerTest extends AbstractControllerTest {
 
         List<ApItemVO> bodyItemsB = new ArrayList<>();
         bodyItemsB.add(buildApItem(BRIEF_DESC, null, "ApRecordB desc", null, null));
-        CreatedPartVO createdPart = createPart(replacementRecordCreated.getId(),
-                                               createPartFormVO(null, ptBody.getCode(), null, bodyItemsB));
+        CreatedPart createdPart = createPart(replacementRecordCreated.getId(), createPartFormVO(null, ptBody.getCode(), null, bodyItemsB));
         Integer partBodyBId = createdPart.getPartId();
         assertNotNull(partBodyBId);
 

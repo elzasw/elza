@@ -82,7 +82,6 @@ import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.controller.vo.CreateUserVO;
-import cz.tacr.elza.controller.vo.CreatedPartVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
@@ -182,6 +181,7 @@ import cz.tacr.elza.test.controller.ReportApi;
 import cz.tacr.elza.test.controller.SearchApi;
 import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.CreateFund;
+import cz.tacr.elza.test.controller.vo.CreatedPart;
 import cz.tacr.elza.test.controller.vo.DataBit;
 import cz.tacr.elza.test.controller.vo.DataCoordinates;
 import cz.tacr.elza.test.controller.vo.DataDate;
@@ -408,11 +408,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String RECORD_TYPES_FOR_PARTY_TYPE = AP_CONTROLLER_URL + "/recordTypesForPartyType";
 
 	// PART
-	protected static final String CREATE_PART = AP_CONTROLLER_URL + "/{accessPointId}/part";
-	protected static final String UPDATE_PART = AP_CONTROLLER_URL + "/{accessPointId}/part/{partId}";
-	protected static final String DELETE_PART = REST_CONTROLLER_URL + "/accesspoint/{accessPointId}/part/{partId}";
-	protected static final String SET_PREFER_NAME = REST_CONTROLLER_URL
-			+ "/accesspoint/{accessPointId}/part/{partId}/prefer-name";
+	protected static final String CREATE_PART = REST_CONTROLLER_URL + "/accesspoint/{id}/part";
+	protected static final String UPDATE_PART = REST_CONTROLLER_URL + "/accesspoint/{id}/part/{partId}";
+	protected static final String DELETE_PART = REST_CONTROLLER_URL + "/accesspoint/{id}/part/{partId}";
+	protected static final String SET_PREFER_NAME = REST_CONTROLLER_URL + "/accesspoint/{id}/part/{partId}/prefer-name";
 
 	// RULE
 	protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
@@ -3276,8 +3275,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param fundVersionId identifikátor verze AS
 	 * @return smazaná entita
 	 */
-	protected StructureController.StructureItemResult deleteStructureItem(final ArrItemVO itemVO,
-			final Integer fundVersionId) {
+	protected StructureController.StructureItemResult deleteStructureItem(final ArrItemVO itemVO, final Integer fundVersionId) {
 		return post(spec -> spec.pathParam("fundVersionId", fundVersionId).body(itemVO), DELETE_STRUCTURE_ITEM)
 				.as(StructureController.StructureItemResult.class);
 	}
@@ -3303,8 +3301,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
 	 * @return data formuláře
 	 */
-	protected StructureController.StructureDataFormDataVO getFormStructureItems(final Integer fundVersionId,
-			final Integer structureDataId) {
+	protected StructureController.StructureDataFormDataVO getFormStructureItems(final Integer fundVersionId, final Integer structureDataId) {
 		return get(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureDataId", structureDataId),
 				GET_FORM_STRUCTURE_ITEMS).as(StructureController.StructureDataFormDataVO.class);
 	}
@@ -3345,8 +3342,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param assignable       přiřaditelný
 	 * @param structureDataIds identifikátory hodnoty strukturovaného datového typu
 	 */
-	protected void setAssignableStructureData(final Integer fundVersionId, final boolean assignable,
-			List<Integer> structureDataIds) {
+	protected void setAssignableStructureData(final Integer fundVersionId, final boolean assignable, List<Integer> structureDataIds) {
 		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("assignable", assignable)
 				.body(structureDataIds), SET_ASSIGNABLE_STRUCTURE_DATA_LIST);
 	}
@@ -3370,9 +3366,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param accessPointId identifikátor přístupového bodu (PK)
 	 * @param apPartFormVO  data pro vytvoření části
 	 */
-	protected CreatedPartVO createPart(final Integer accessPointId, final ApPartFormVO apPartFormVO) {
-		return post(spec -> spec.pathParam("accessPointId", accessPointId).body(apPartFormVO), CREATE_PART)
-				.as(CreatedPartVO.class);
+	protected CreatedPart createPart(final Integer accessPointId, final ApPartFormVO apPartFormVO) {
+		return post(spec -> spec.pathParam("id", accessPointId).body(apPartFormVO), CREATE_PART)
+				.as(CreatedPart.class);
 	}
 
 	/**
@@ -3383,8 +3379,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param apPartFormVO  data pro úpravu části
 	 */
 	protected void updatePart(final Integer accessPointId, final Integer partId, final ApPartFormVO apPartFormVO) {
-		post(spec -> spec.pathParam("accessPointId", accessPointId).pathParam("partId", partId).body(apPartFormVO),
-				UPDATE_PART);
+		post(spec -> spec.pathParam("id", accessPointId).pathParam("partId", partId).body(apPartFormVO), UPDATE_PART);
 	}
 
 	/**
@@ -3394,7 +3389,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param partId        identifikátor mazané části
 	 */
 	public void deletePart(final Integer accessPointId, final Integer partId) {
-		delete(spec -> spec.pathParam("accessPointId", accessPointId).pathParam("partId", partId), DELETE_PART);
+		delete(spec -> spec.pathParam("id", accessPointId).pathParam("partId", partId), DELETE_PART);
 	}
 
 	/**
@@ -3402,11 +3397,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * Označení.
 	 *
 	 * @param accessPointId identifikátor přístupového bodu (PK)
-	 * @param partId        identifikátor části, kterou nastavujeme jako
-	 *                      preferovanou
+	 * @param partId        identifikátor části, kterou nastavujeme jako preferovanou
 	 */
 	public void setPreferName(final Integer accessPointId, final Integer partId) {
-		put(spec -> spec.pathParam("accessPointId", accessPointId).pathParam("partId", partId), SET_PREFER_NAME);
+		put(spec -> spec.pathParam("id", accessPointId).pathParam("partId", partId), SET_PREFER_NAME);
 	}
 
 	/**
