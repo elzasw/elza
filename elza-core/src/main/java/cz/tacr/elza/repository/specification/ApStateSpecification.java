@@ -241,13 +241,15 @@ public class ApStateSpecification implements Specification<ApState> {
                 }
             }
             if (StringUtils.isNotEmpty(searchFilterVO.getCreation())) {
-                ArrDataUnitdate arrDataUnitdate = UnitDateConverter.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
-                String intervalCreation = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+            	// TODO: rework processValueCondDef to accept Object and such conversion will not be needed anymore
+                ArrDataUnitdate arrDataUnitdate = UnitDateConverter.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());                
+                String intervalCreation = UnitDateConverter.convertToString(arrDataUnitdate);
                 and = processValueCondDef(ctx, and, intervalCreation, "PT_CRE", "CRE_DATE", null, QueryComparator.CONTAIN, false);
             }
             if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
+            	// TODO: rework processValueCondDef to accept Object and such conversion will not be needed anymore
                 ArrDataUnitdate arrDataUnitdate = UnitDateConverter.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
-                String intervalExtinction = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
+                String intervalExtinction = UnitDateConverter.convertToString(arrDataUnitdate);
                 and = processValueCondDef(ctx, and, intervalExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CONTAIN, false);
             }
             return cb.and(condition, and);
