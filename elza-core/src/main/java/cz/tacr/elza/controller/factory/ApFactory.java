@@ -41,9 +41,9 @@ import cz.tacr.elza.controller.vo.ApPartVO;
 import cz.tacr.elza.controller.vo.ApRecordSimple;
 import cz.tacr.elza.controller.vo.ApStateHistoryVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
+import cz.tacr.elza.controller.vo.ApValidationIssues;
 import cz.tacr.elza.controller.vo.LanguageVO;
-import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
+import cz.tacr.elza.controller.vo.PartValidationIssues;
 import cz.tacr.elza.controller.vo.UserVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.controller.vo.ap.ApViewSettings;
@@ -875,7 +875,7 @@ public class ApFactory {
         return result;
     }
 
-    public ApValidationErrorsVO createValidationVO(ApAccessPoint accessPoint) {
+    public ApValidationIssues createValidationVO(ApAccessPoint accessPoint) {
         List<ApPart> partList = partRepository.findValidPartByAccessPoint(accessPoint);
 
         String[] errorsArray = StringUtils.split(accessPoint.getErrorDescription(), "\n");
@@ -885,7 +885,7 @@ public class ApFactory {
             errors.addAll(Arrays.asList(errorsArray));
         }
 
-        List<PartValidationErrorsVO> partValidationErrorsVOList = new ArrayList<>();
+        List<PartValidationIssues> partValidationErrorsVOList = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(partList)) {
             for (ApPart part : partList) {
@@ -902,17 +902,17 @@ public class ApFactory {
         return createVO(errors, partValidationErrorsVOList);
     }
 
-    private PartValidationErrorsVO createVO(final Integer id, final List<String> errors) {
-        PartValidationErrorsVO partValidationErrorsVO = new PartValidationErrorsVO(id);
-        partValidationErrorsVO.addErrors(errors);
-        return partValidationErrorsVO;
+    private PartValidationIssues createVO(final Integer id, final List<String> errors) {
+    	PartValidationIssues partValidationIssues = new PartValidationIssues().id(id);
+    	partValidationIssues.setErrors(errors);
+        return partValidationIssues;
     }
 
-    private ApValidationErrorsVO createVO(final List<String> errors, final List<PartValidationErrorsVO> partErrors) {
-        ApValidationErrorsVO apValidationErrorsVO = new ApValidationErrorsVO();
-        apValidationErrorsVO.setErrors(errors);
-        apValidationErrorsVO.setPartErrors(partErrors);
-        return apValidationErrorsVO;
+    private ApValidationIssues createVO(final List<String> errors, final List<PartValidationIssues> partErrors) {
+    	ApValidationIssues apValidationIssues = new ApValidationIssues();
+    	apValidationIssues.setErrors(errors);
+    	apValidationIssues.setPartErrors(partErrors);
+        return apValidationIssues;
     }
 
     public ApAccessPointVO createVO(ApAccessPointVO vo, ApRevision revision, ApRevState revState, ApAccessPoint accessPoint) {

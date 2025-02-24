@@ -669,6 +669,22 @@ model CreatedPart {
     apVersion: integer;
 }
 
+/**
+ * Part validation issues/errors
+ */
+model PartValidationIssues {
+    id: integer;
+    errors: string[];
+}
+
+/**
+ * Entity validation issues/errors
+ */
+model ApValidationIssues {
+    errors: string[];
+    partErrors: PartValidationIssues[];
+}
+
 @tag("admin")
 @route("/admin")
 namespace ElzaAPI.Admin {
@@ -996,13 +1012,12 @@ namespace ElzaAPI.AccessPoint {
      * Validation of an archive entity
      */
     @route("/{id}/validate")
-    @put op validateAccessPoint(
+    @get op validateAccessPoint(
         /** id of accesspoint */
         @path id: string,
-    ): {
-         /** The entity has been validated */
-         @Http.statusCode statusCode: 200;
-       } | {
+        /** include revision */
+        @query includeRevision?: boolean = false
+    ): ApValidationIssues | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
           @body data: BaseException;
