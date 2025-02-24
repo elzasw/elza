@@ -326,12 +326,12 @@ public class ApControllerTest extends AbstractControllerTest {
         accessPoint = getAccessPoint(accessPoint.getId());
         assertTrue(accessPoint.getRevParts().size() == 2);
 
-        mergeRevision(accessPoint.getId(), null);
+        mergeRevision(accessPoint.getId(), new ApStateUpdate().stateApproval(ApStateApproval.NEW));
 
         accessPoint = getAccessPoint(accessPoint.getId());
         assertTrue(accessPoint.getRevParts().size() == 0);
         assertTrue(accessPoint.getParts().size() == 2);
-        
+
         // Kontrola obsahu partu
         for (ApPartVO part : accessPoint.getParts()) {
             if (part.getId().equals(preferredPart.getId())) {

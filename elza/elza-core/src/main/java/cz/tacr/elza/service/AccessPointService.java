@@ -48,14 +48,14 @@ import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
-import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
+import cz.tacr.elza.controller.vo.ApValidationIssues;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
 import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
+import cz.tacr.elza.controller.vo.PartValidationIssues;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
@@ -2136,9 +2136,7 @@ public class AccessPointService {
      * @return ApAccessPoint
      * @throws SyncImpossibleException
      */
-    public ApAccessPoint copyAccessPoint(ApAccessPoint srcAccessPoint, ApScope scope, boolean replace,
-                                         List<Integer> skipItems)
-            throws SyncImpossibleException {
+    public ApAccessPoint copyAccessPoint(ApAccessPoint srcAccessPoint, ApScope scope, boolean replace, List<Integer> skipItems) throws SyncImpossibleException {
         ApState state = getStateInternal(srcAccessPoint);
 
         if (!hasPermissionToCopy(state, scope, replace)) {
@@ -2225,7 +2223,8 @@ public class AccessPointService {
             updatePartValue(trgState, fromIdToPartMap.get(part.getPartId()));
         }
 
-        ApAccessPoint trgAccessPoint = validate(trgState.getAccessPoint(), trgState, true);
+        ApValidationIssues apValidationIssues = validate(trgState.getAccessPoint(), trgState, true, true);
+        ApAccessPoint trgAccessPoint = updateValidationErrors(trgState.getAccessPoint(), apValidationIssues, true);
         macc.add(trgAccessPoint.getAccessPointId());
 
         logger.debug("Copy accessPoint, creating items in cache: {}.", macc.getModifiedApIds().size());
@@ -3041,7 +3040,7 @@ public class AccessPointService {
         boolean successfulGeneration = updatePartValue(apState, apPart);
 
         logger.debug("Validate accessPointId={}, partId={}, successfulGeneration={}", apState.getAccessPointId(), apPart.getPartId(), successfulGeneration);
-        validate(apState.getAccessPoint(), apState, successfulGeneration);
+        validate(apState.getAccessPoint(), apState, successfulGeneration, true);
     }
 
     public boolean isRevalidaceRequired(ApState.StateApproval state, ApState.StateApproval newState) {
@@ -3057,17 +3056,16 @@ public class AccessPointService {
      * @param accessPoint - protože může mít modifikace
      * @param apState
      * @param successfulGeneration
-     * @return Upraveny AP.
-     *         Dochazi k zapisu aktualniho stavu validace.
-     *
+     * @param includeRevision
+     * 
+     * @return ApValidationIssues
      */
-    public ApAccessPoint validate(ApAccessPoint accessPoint, ApState apState, boolean successfulGeneration) {
+    public ApValidationIssues validate(ApAccessPoint accessPoint, ApState apState, boolean successfulGeneration, boolean includeRevision) {
         logger.debug("Validate stateId={}, accessPointId={}, scopeId={}, version={}", apState.getStateId(), accessPoint.getAccessPointId(), apState.getScopeId(), accessPoint.getVersion());
-        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(apState, false);
-        accessPoint = updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
+        ApValidationIssues apValidationIssues = ruleService.executeValidation(apState, includeRevision);
 
         logger.debug("Validate accessPointId={}, version={}", accessPoint.getAccessPointId(), accessPoint.getVersion());
-        return accessPoint;
+        return apValidationIssues;
     }
 
     public ApAccessPoint updateAndValidate(final Integer accessPointId) {
@@ -3105,7 +3103,8 @@ public class AccessPointService {
         boolean successfulGeneration = updatePartValues(apState, prefPartId, partList, itemMap, async);
 
         logger.debug("Validate accessPointid={}, version={}, partListSize={}, successfulGeneration={}", accessPoint.getAccessPointId(), accessPoint.getVersion(), partList.size(), successfulGeneration);
-        return validate(accessPoint, apState, successfulGeneration);
+        ApValidationIssues apValidationIssues = validate(accessPoint, apState, successfulGeneration, true);
+        return updateValidationErrors(accessPoint, apValidationIssues, successfulGeneration);
     }
 
     /**
@@ -3119,12 +3118,12 @@ public class AccessPointService {
      * @return
      */
     private ApAccessPoint updateValidationErrors(final ApAccessPoint accessPoint,
-                                       final ApValidationErrorsVO apValidationErrorsVO,
+                                       final ApValidationIssues apValidationIssues,
                                        final boolean successfulGeneration) {
 
         StringBuilder accessPointErrors = new StringBuilder();
-        if (CollectionUtils.isNotEmpty(apValidationErrorsVO.getErrors())) {
-            for (String error : apValidationErrorsVO.getErrors()) {
+        if (CollectionUtils.isNotEmpty(apValidationIssues.getErrors())) {
+            for (String error : apValidationIssues.getErrors()) {
                 accessPointErrors.append(error).append("\n");
             }
         }
@@ -3134,9 +3133,9 @@ public class AccessPointService {
 
         // Prepare map of errors
         Map<Integer, StringBuilder> partErrors;
-        if (CollectionUtils.isNotEmpty(apValidationErrorsVO.getPartErrors())) {
+        if (CollectionUtils.isNotEmpty(apValidationIssues.getPartErrors())) {
             partErrors = new HashMap<>();
-            for (PartValidationErrorsVO pE : apValidationErrorsVO.getPartErrors()) {
+            for (PartValidationIssues pE : apValidationIssues.getPartErrors()) {
                 StringBuilder builder = partErrors.computeIfAbsent(pE.getId(), p -> new StringBuilder());
                 List<String> srcErrors = pE.getErrors();
                 if (CollectionUtils.isNotEmpty(srcErrors)) {
@@ -3787,17 +3786,17 @@ public class AccessPointService {
     }
 
     public void validateEntityAndFailOnError(ApState apState) {
-        ApValidationErrorsVO validationErrors = ruleService.executeValidation(apState, false);
-        if (CollectionUtils.isEmpty(validationErrors.getErrors()) &&
-                CollectionUtils.isEmpty(validationErrors.getPartErrors())) {
+    	ApValidationIssues validationIssues = ruleService.executeValidation(apState, false);
+        if (CollectionUtils.isEmpty(validationIssues.getErrors()) &&
+                CollectionUtils.isEmpty(validationIssues.getPartErrors())) {
             return;
         }
         final StringBuilder sb = new StringBuilder();
-        if (validationErrors.getErrors() != null) {
-            validationErrors.getErrors().forEach(e -> sb.append(e).append("\n"));
+        if (validationIssues.getErrors() != null) {
+        	validationIssues.getErrors().forEach(e -> sb.append(e).append("\n"));
         }
-        if (validationErrors.getPartErrors() != null) {
-            validationErrors.getPartErrors().forEach(e -> {
+        if (validationIssues.getPartErrors() != null) {
+        	validationIssues.getPartErrors().forEach(e -> {
                 sb.append("Část ID: ").append(e.getId()).append("\n");
                 if (e.getErrors() != null) {
                     e.getErrors().forEach(e2 -> sb.append(e2).append("\n"));

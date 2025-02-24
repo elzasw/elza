@@ -33,6 +33,8 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.service.PartService;
+import cz.tacr.elza.test.controller.vo.ApStateApproval;
+import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.CopyAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.CreatedPart;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
@@ -219,7 +221,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         accesspointsApi.accessPointSetPreferNameRevision(apVo.getId(), revPartId, null);
 
         // merge
-        mergeRevision(ap1.getAccessPointId(), null);
+        mergeRevision(ap1.getAccessPointId(), new ApStateUpdate().stateApproval(ApStateApproval.NEW));
 
         ApAccessPointVO apVo2;
         do {

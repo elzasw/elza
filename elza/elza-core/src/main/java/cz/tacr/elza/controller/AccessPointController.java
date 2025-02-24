@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApStateUpdate;
+import cz.tacr.elza.controller.vo.ApValidationIssues;
 import cz.tacr.elza.controller.vo.AutoValue;
 import cz.tacr.elza.controller.vo.CopyAccessPointDetail;
 import cz.tacr.elza.controller.vo.CreatedPart;
@@ -176,14 +177,14 @@ public class AccessPointController implements AccesspointsApi {
      */
     @Override
     @Transactional
-    public ResponseEntity<Void> accessPointValidateAccessPoint(String id) {
+    public ResponseEntity<ApValidationIssues> accessPointValidateAccessPoint(String id, Boolean includeRevision) {
         ApAccessPoint accessPoint = accessPointService.getAccessPointByIdOrUuid(id);
         ApState apState = accessPointService.getStateInternal(accessPoint);
 
         accessPointService.checkPermissionForEdit(apState);
-        accessPointService.validate(accessPoint, apState, true);
+        ApValidationIssues validationIssues = accessPointService.validate(accessPoint, apState, true, includeRevision);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(validationIssues);
     }
 
     /**

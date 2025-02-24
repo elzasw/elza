@@ -394,7 +394,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String CREATE_ACCESS_POINT = AP_CONTROLLER_URL + "/";
 	protected static final String UPDATE_RECORD = AP_CONTROLLER_URL + "/{recordId}";
 	protected static final String USAGES_RECORD = AP_CONTROLLER_URL + "/{recordId}/usage";
-	protected static final String MERGE_AP = AP_CONTROLLER_URL + "/revision/{entityId}/merge";
+	protected static final String MERGE_AP = REST_CONTROLLER_URL + "/accesspoint/{id}/revision/merge";
 	protected static final String REPLACE_RECORD = AP_CONTROLLER_URL + "/{recordId}/replace";
 	protected static final String CHANGE_STATE = REST_CONTROLLER_URL + "/accesspoint/{recordId}/state";
 
@@ -2187,8 +2187,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		return get(spec -> spec.pathParam("recordId", recordId), USAGES_RECORD).getBody().as(RecordUsageVO.class);
 	}
 
-	protected void mergeRevision(final Integer entityId, @Nullable final ApState.StateApproval state) {
-		post(spec -> spec.pathParam("entityId", entityId).param("state", state), MERGE_AP);
+	protected void mergeRevision(final Integer accesspointId, final ApStateUpdate stateUpdate) {
+		post(spec -> spec.pathParam("id", accesspointId).body(stateUpdate), MERGE_AP);
 	}
 
 	/**

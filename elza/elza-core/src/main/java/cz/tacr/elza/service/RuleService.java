@@ -36,8 +36,8 @@ import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
-import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
-import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
+import cz.tacr.elza.controller.vo.ApValidationIssues;
+import cz.tacr.elza.controller.vo.PartValidationIssues;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemBitVO;
@@ -1302,14 +1302,15 @@ public class RuleService {
      * Method reads current AP state from DB.
      * Method is not using cache.
      *
-     * @param accessPoint
-     * @return
+     * @param apState
+     * @param includeRevision
+     * 
+     * @return ApValidationIssues
      */
     @Transactional(TxType.MANDATORY)
-    public ApValidationErrorsVO executeValidation(final ApState srcApState,
-                                                  final boolean includeRevision) {
+    public ApValidationIssues executeValidation(final ApState apState, final boolean includeRevision) {
 
-        Integer stateId = srcApState.getStateId();
+        Integer stateId = apState.getStateId();
 
         // Flush all changes to DB before reading data for validation
         this.entityManager.flush();
@@ -1408,7 +1409,7 @@ public class RuleService {
 
         GeoModel geoModel = createGeoModel(ap);
 
-        ApValidationErrorsVO apValidationErrorsVO = createAeValidationErrorsVO();
+        ApValidationIssues apValidationIssues = new ApValidationIssues();
 
         // vytvoření mapy specifikací vztahů
         Map<Integer, Map<String, Relation>> relationMap = apBuilder.createRelationMap();
@@ -1420,12 +1421,12 @@ public class RuleService {
                 items, expectedItems);
         ModelValidation validationResult = executeValidation(modelValidation, ruleSet);
         // validace opakovatelnosti indexů přes party se stejným part typem
-        validateIndexRepeatability(validationResult, apValidationErrorsVO);
+        validateIndexRepeatability(validationResult, apValidationIssues);
         // validace vztahů na nevalidní nebo nahrazené entity
-        validateEntityRefs(ap, apValidationErrorsVO);
+        validateEntityRefs(ap, apValidationIssues);
 
         if (CollectionUtils.isNotEmpty(validationResult.getApValidationErrors().getErrors())) {
-            apValidationErrorsVO.getErrors().addAll(validationResult.getApValidationErrors().getErrors());
+        	apValidationIssues.getErrors().addAll(validationResult.getApValidationErrors().getErrors());
         }
 
         for (Part part : ap.getParts()) {
@@ -1435,21 +1436,21 @@ public class RuleService {
             // validace možných itemů
             List<String> availableErrors = validateAvailableItems(availableResult, part);
             // validace opakovatelnosti vztahů
-            validateRelationRepeatabilitySpecs(availableResult, relationMap, apValidationErrorsVO);
+            validateRelationRepeatabilitySpecs(availableResult, relationMap, apValidationIssues);
             // validace opakovatelnosti identifikátorů
             List<String> identErrors = validateIdentRepeatabilitySpecs(availableResult, identMap);
 
             if (CollectionUtils.isNotEmpty(availableErrors)) {
-                PartValidationErrorsVO partValidationErrorsVO = getPartValidationErrorsVO(apValidationErrorsVO, part.getId());
-                partValidationErrorsVO.getErrors().addAll(availableErrors);
+                PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, part.getId());
+                partValidationIssues.getErrors().addAll(availableErrors);
             }
             if (CollectionUtils.isNotEmpty(identErrors)) {
-                PartValidationErrorsVO partValidationErrorsVO = getPartValidationErrorsVO(apValidationErrorsVO, part.getId());
-                partValidationErrorsVO.getErrors().addAll(identErrors);
+            	PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, part.getId());
+                partValidationIssues.getErrors().addAll(identErrors);
             }
         }
 
-        return apValidationErrorsVO;
+        return apValidationIssues;
     }
 
     /**
@@ -1476,7 +1477,7 @@ public class RuleService {
         }
     }
 
-    private void validateEntityRefs(Ap ap, ApValidationErrorsVO apValidationErrorsVO) {
+    private void validateEntityRefs(Ap ap, ApValidationIssues apValidationIssues) {
         if (CollectionUtils.isNotEmpty(ap.getParts())) {
             for (Part part : ap.getParts()) {
                 if (CollectionUtils.isNotEmpty(part.getItems())) {
@@ -1493,8 +1494,8 @@ public class RuleService {
                         if (CollectionUtils.isNotEmpty(stateList)) {
                             for (ApState state : stateList) {
                                 if (state.getDeleteChange() != null) {
-                                    PartValidationErrorsVO partValidationErrorsVO = getPartValidationErrorsVO(apValidationErrorsVO, part.getId());
-                                    partValidationErrorsVO.getErrors().add("V části typu " + part.getType().value() + " entita odkazuje na neplatnou entitu");
+                                    PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, part.getId());
+                                    partValidationIssues.addErrorsItem("V části typu " + part.getType().value() + " entita odkazuje na neplatnou entitu");
                                 }
                             }
                         }
@@ -1504,8 +1505,7 @@ public class RuleService {
         }
     }
 
-    private void validateIndexRepeatability(ModelValidation validationResult,
-                                            ApValidationErrorsVO apValidationErrorsVO) {
+    private void validateIndexRepeatability(ModelValidation validationResult, ApValidationIssues apValidationIssues) {
         for (ModelPart modelPart : validationResult.getModelParts()) {
             if (CollectionUtils.isNotEmpty(modelPart.getIndices())) {
                 Map<String, Integer> indexCount = createIndexCountMap(modelPart.getIndices());
@@ -1513,8 +1513,8 @@ public class RuleService {
                     int parentId = index.getPart().getParent() != null ? index.getPart().getParent().getId() : -1;
                     String key = parentId + ":" + index.getIndexType() + ":" + index.getValue();
                     if (!index.isRepeatable() && indexCount.get(key) > 1) {
-                        PartValidationErrorsVO partValidationErrorsVO = getPartValidationErrorsVO(apValidationErrorsVO, index.getPart().getId());
-                        partValidationErrorsVO.addError("V části typu " + index.getPart().getType().value()
+                        PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, index.getPart().getId());
+                        partValidationIssues.addErrorsItem("V části typu " + index.getPart().getType().value()
                                 + " je duplicitní index typu "
                                 + index.getIndexType() + " hodnoty " + index.getValue());
                     }
@@ -1609,7 +1609,7 @@ public class RuleService {
 
     }
 
-    private void validateRelationRepeatabilitySpecs(ModelAvailable availableResult, Map<Integer, Map<String, Relation>> relationMap, ApValidationErrorsVO aeValidationErrorsVO) {
+    private void validateRelationRepeatabilitySpecs(ModelAvailable availableResult, Map<Integer, Map<String, Relation>> relationMap, ApValidationIssues apValidationIssues) {
         StaticDataProvider sdp = staticDataService.getData();
         if (availableResult.getPart().getType().equals(PartType.PT_REL)) {
             Part parent = availableResult.getPart().getParent();
@@ -1633,11 +1633,11 @@ public class RuleService {
 
                     if (itemSpec != null && !itemSpec.isRepeatable()) {
                         if (parent != null) {
-                            PartValidationErrorsVO partValidationErrorsVO = getPartValidationErrorsVO(aeValidationErrorsVO, parent.getId());
-                            partValidationErrorsVO.getErrors().add("V části typu " + parent.getType().value() + " je vztah "
+                            PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, parent.getId());
+                            partValidationIssues.addErrorsItem("V části typu " + parent.getType().value() + " je vztah "
                                     + itemSpec.getCode() + "-" + itemSpec.getItemSpec().getName() + " vícekrát.");
                         } else {
-                            aeValidationErrorsVO.getErrors().add("V entitě je vztah " + itemSpec.getCode() + "-"
+                        	apValidationIssues.addErrorsItem("V entitě je vztah " + itemSpec.getCode() + "-"
                                     + itemSpec.getItemSpec().getName() + " vícekrát.");
                         }
                     }
@@ -1821,27 +1821,15 @@ public class RuleService {
         return null;
     }
 
-    private ApValidationErrorsVO createAeValidationErrorsVO() {
-        ApValidationErrorsVO aeValidationErrorsVO = new ApValidationErrorsVO();
-        aeValidationErrorsVO.setPartErrors(new ArrayList<>());
-        aeValidationErrorsVO.setErrors(new ArrayList<>());
-        return aeValidationErrorsVO;
-    }
-
-    private PartValidationErrorsVO getPartValidationErrorsVO(ApValidationErrorsVO aeValidationErrorsVO, Integer partId) {
-        for (PartValidationErrorsVO p : aeValidationErrorsVO.getPartErrors()) {
+    private PartValidationIssues getPartValidationIssues(ApValidationIssues apValidationIssues, Integer partId) {
+        for (PartValidationIssues p : apValidationIssues.getPartErrors()) {
             if (p.getId().equals(partId)) {
                 return p;
             }
         }
-        PartValidationErrorsVO partValidationErrorsVO = createPartValidationErrorsVO(partId);
-        aeValidationErrorsVO.getPartErrors().add(partValidationErrorsVO);
-        return partValidationErrorsVO;
-    }
-
-    private PartValidationErrorsVO createPartValidationErrorsVO(Integer partId) {
-        PartValidationErrorsVO partValidationErrorsVO = new PartValidationErrorsVO(partId);
-        return partValidationErrorsVO;
+        PartValidationIssues partValidationIssues = new PartValidationIssues().id(partId);
+        apValidationIssues.addPartErrorsItem(partValidationIssues);
+        return partValidationIssues;
     }
 
     @Nullable

@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller;
 
-import static cz.tacr.elza.repository.ExceptionThrow.ap;
 import static cz.tacr.elza.repository.ExceptionThrow.scope;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 
@@ -56,7 +55,6 @@ import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
 import cz.tacr.elza.controller.vo.ApStateHistoryVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
@@ -118,7 +116,6 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.MultipleApChangeContext;
-import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
@@ -164,9 +161,6 @@ public class ApController {
 
     @Autowired
     private StaticDataService staticDataService;
-
-    @Autowired
-    private PartService partService;
 
     @Autowired
     private SearchFilterFactory searchFilterFactory;
@@ -659,6 +653,7 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/{accessPointId}/replace", method = RequestMethod.POST)
     @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
+    @Deprecated
     public void replace(@PathVariable final Integer accessPointId, @RequestBody final Integer replacedId) {
 
         // TODO: This method is probably obsolete, usage should be checked
@@ -758,68 +753,25 @@ public class ApController {
         return resultList;
     }
 
-    /**
-     * Úprava části přístupového bodu.
-     *
-     * @param id identifikátor přístupového bodu (PK)
-     * @param state stav do kterého se má entita po merge uvést
-     */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/revision/{id}/merge", method = RequestMethod.POST)
-    public void mergeRevision(@PathVariable final Integer id,
-                              @RequestParam(required = false) @Nullable final ApState.StateApproval state) {
-        ApState apState = accessPointService.getStateInternal(id);
-        revisionService.mergeRevision(apState, state, null);
-    }
-
-    /**
-     * Smazání části přístupového bodu.
-     *
-     * @param accessPointId
-     *            identifikátor přístupového bodu (PK)
-     * @param partId
-     *            identifikátor mazané části
-     */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "{accessPointId}/part/{partId}", method = RequestMethod.DELETE)
-    public void deletePart(@PathVariable final Integer accessPointId,
-                           @PathVariable final Integer partId) {
-        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
-                .orElseThrow(ap(accessPointId));
-        ApState state = accessPointService.getStateInternal(apAccessPoint);
-
-        ApRevision revision = revisionService.findRevisionByState(state);
-        if (revision != null) {
-            revisionService.deletePart(state, revision, partId);
-        } else {
-            accessPointService.checkPermissionForEdit(state);
-            partService.deletePart(apAccessPoint, partId);
-            accessPointService.updateAndValidate(accessPointId);
-            accessPointCacheService.createApCachedAccessPoint(accessPointId);
-        }
-    }
-
-    /**
-     * Validace přístupového bodu
-     *
-     * @param accessPointId identifikátor přístupového bodu (PK)
-     * @return validační chyby přístupového bodu
-     */
-    @Transactional
-    @RequestMapping(value = "{accessPointId}/validate", method = RequestMethod.GET)
-    public ApValidationErrorsVO validateAccessPoint(@PathVariable final Integer accessPointId, @RequestParam(defaultValue = "false") Boolean includeRevision) {
-        ApState apState = accessPointService.getApState(accessPointId);
-
-        if (includeRevision) {
-            ApRevision revision = revisionService.findRevisionByState(apState);
-            if (revision != null) {
-                return ruleService.executeValidation(apState, true);
-            }
-        }
-        return apFactory.createValidationVO(apState.getAccessPoint());
-    }
+//    /**
+//     * Validace přístupového bodu
+//     *
+//     * @param accessPointId identifikátor přístupového bodu (PK)
+//     * @return validační chyby přístupového bodu
+//     */
+//    @Transactional
+//    @RequestMapping(value = "{accessPointId}/validate", method = RequestMethod.GET)
+//    public ApValidationErrorsVO validateAccessPoint(@PathVariable final Integer accessPointId, @RequestParam(defaultValue = "false") Boolean includeRevision) {
+//        ApState apState = accessPointService.getApState(accessPointId);
+//
+//        if (includeRevision) {
+//            ApRevision revision = revisionService.findRevisionByState(apState);
+//            if (revision != null) {
+//                return ruleService.executeValidation(apState, true);
+//            }
+//        }
+//        return apFactory.createValidationVO(apState.getAccessPoint());
+//    }
 
     /**
      * Zjištění povinných a možných atributů pro zakládání nového přístupového bodu nebo nové části

@@ -608,7 +608,7 @@ paths:
               $ref: '#/components/schemas/ApStateUpdate'
         description: data for change ApState
   /accesspoint/{id}/validate:
-    put:
+    get:
       operationId: AccessPoint_validateAccessPoint
       description: Validation of an archive entity
       parameters:
@@ -618,9 +618,21 @@ paths:
           description: id of accesspoint
           schema:
             type: string
+        - name: includeRevision
+          in: query
+          required: false
+          description: include revision
+          schema:
+            type: boolean
+            default: false
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApValidationIssues'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -1555,6 +1567,21 @@ components:
             - $ref: '#/components/schemas/ApStateApproval'
           description: state of ApState
       description: Data for changing state of ApAccessPoint
+    ApValidationIssues:
+      type: object
+      required:
+        - errors
+        - partErrors
+      properties:
+        errors:
+          type: array
+          items:
+            type: string
+        partErrors:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartValidationIssues'
+      description: Entity validation issues/errors
     AutoValue:
       type: object
       properties:
@@ -2336,6 +2363,19 @@ components:
             - $ref: '#/components/schemas/ItemData'
           description: item data
       description: Náhrada za třídu ArrItemVO
+    PartValidationIssues:
+      type: object
+      required:
+        - id
+        - errors
+      properties:
+        id:
+          type: integer
+        errors:
+          type: array
+          items:
+            type: string
+      description: Part validation issues/errors
     ReplaceType:
       type: string
       enum:
