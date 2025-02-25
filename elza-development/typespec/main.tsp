@@ -1014,7 +1014,7 @@ namespace ElzaAPI.AccessPoint {
     @route("/{id}/validate")
     @get op validateAccessPoint(
         /** id of accesspoint */
-        @path id: string,
+        @path id: integer,
         /** include revision */
         @query includeRevision?: boolean = false
     ): ApValidationIssues | {
