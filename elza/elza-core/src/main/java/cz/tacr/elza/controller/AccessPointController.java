@@ -174,11 +174,13 @@ public class AccessPointController implements AccesspointsApi {
      * Validace archivní entity
      * 
      * @param id identifikátor archivní entity
+     * @param includeRevision
+     * @return ApValidationIssues
      */
     @Override
     @Transactional
-    public ResponseEntity<ApValidationIssues> accessPointValidateAccessPoint(String id, Boolean includeRevision) {
-        ApAccessPoint accessPoint = accessPointService.getAccessPointByIdOrUuid(id);
+    public ResponseEntity<ApValidationIssues> accessPointValidateAccessPoint(Integer id, Boolean includeRevision) {
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(id);
         ApState apState = accessPointService.getStateInternal(accessPoint);
 
         accessPointService.checkPermissionForEdit(apState);

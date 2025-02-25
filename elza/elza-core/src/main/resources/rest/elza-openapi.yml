@@ -617,7 +617,7 @@ paths:
           required: true
           description: id of accesspoint
           schema:
-            type: string
+            type: integer
         - name: includeRevision
           in: query
           required: false
