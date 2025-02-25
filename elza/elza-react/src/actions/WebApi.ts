@@ -998,16 +998,6 @@ export class WebApiCls {
     }
 
     /**
-     * Validace přístupového bodu
-     *
-     * @param accessPointId identifikátor přístupového bodu (PK)
-     * @return validační chyby přístupového bodu
-     */
-    validateAccessPoint(accessPointId: number, includeRevision?: boolean): Promise<ApValidationErrorsVO> {
-        return AjaxUtils.ajaxGet(`${WebApiCls.registryUrl}/${accessPointId}/validate${includeRevision ? '?includeRevision=true' : ''}`);
-    }
-
-    /**
      * Zjištění povinných a možných atributů pro zakládání nového přístupového bodu nebo nové části
      *
      * @param apAccessPointCreateVO průběžná data pro založení
