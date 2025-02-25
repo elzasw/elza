@@ -184,7 +184,7 @@ const DetailHeader: FC<Props> = ({
                                 {!revisionActive && errorsFetched && <div>
                                     <button className="tooltip-link" onClick={async () => {
                                         if (id != undefined) {
-                                            await Api.accesspoints.accessPointValidateAccessPoint(id.toString())
+                                            await Api.accesspoints.accessPointValidateAccessPoint(id)
                                             if (onInvalidateValidation) onInvalidateValidation();
                                         }
                                     }}>{i18n('global.validation.run')}</button>
