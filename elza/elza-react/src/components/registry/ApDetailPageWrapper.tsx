@@ -614,7 +614,10 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         dispatch(DetailActions.fetchIfNeeded(
             AP_VALIDATION,
             apId,
-            (id: number) => Api.accesspoints.accessPointValidateAccessPoint(id, includeRevision),
+            async (id: number) => {
+                const { data } = await Api.accesspoints.accessPointValidateAccessPoint(id, includeRevision);
+                return data;
+            },
             true
         ));
     },
