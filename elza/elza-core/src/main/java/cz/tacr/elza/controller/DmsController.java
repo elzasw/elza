@@ -50,7 +50,6 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
-import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
@@ -78,9 +77,6 @@ public class DmsController {
     private FundRepository fundRepository;
 
     @Autowired
-    private NodeRepository nodeRepository;
-
-    @Autowired
     private ArrangementInternalService arrangementInternalService;
 
     @Autowired
@@ -106,73 +102,50 @@ public class DmsController {
     }
 
     /**
-     * Vytvoření souboru.
-     * @param object objekt souboru
-     * @throws IOException
-     */
-    @Transactional
-    @RequestMapping(value = "/api/dms/common", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void createFile(final DmsFileVO object) throws IOException {
-        create(object, src -> src.createEntity());
-    }
-
-    /**
      * Vytvoření souboru
-     * @param object objekt souboru
+     * @param arrFile objekt souboru
      * @throws IOException
      */
     @Transactional
     @RequestMapping(value = "/api/dms/fund", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ArrFileVO createFile(final ArrFileVO object) throws IOException {
-        dmsService.checkFundWritePermission(object.getFundId());
+    public ArrFileVO createFile(final ArrFileVO arrFile) throws IOException {
+        dmsService.checkFundWritePermission(arrFile.getFundId());
 
-        //ArrNode node = nodeRepository.findBy
         ArrChange createChange = arrangementInternalService.createChange(Type.ADD_ATTACHMENT);
-        ArrFile file = create(object, (fileVO) -> object.createEntity(fundRepository, createChange));
+        ArrFile file = create(arrFile, (fileVO) -> arrFile.createEntity(fundRepository, createChange));
         return ArrFileVO.newInstance(file, attachmentService);
     }
 
     /**
-     * Vytvoření souboru
-     * @param object objekt souboru
-     * @throws IOException
-     */
-    @Transactional
-    @RequestMapping(value = "/api/dms/output", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void createFile(final ArrOutputFileVO object) throws IOException {
-        create(object, (fileVO) -> object.createEntity(outputResultRepository));
-    }
-
-    /**
      * Aktualizuje vo objekt z předaných informací o souboru.
-     * @param objVO vo pro aktualizaci - do něj se zapisuje
+     * @param dmsFile vo pro aktualizaci - do něj se zapisuje
      * @param fileInfo vstupní objekt s daty pro zapsání
      */
-    private void updateDmsFile(final DmsFileVO objVO, final FileInfo fileInfo) {
-        objVO.setFileSize((int) fileInfo.getFileSize());
-        objVO.setFileName(fileInfo.getFileName());
-        objVO.setMimeType(fileInfo.getMimeType());
+    private void updateDmsFile(final DmsFileVO dmsFile, final FileInfo fileInfo) {
+        dmsFile.setFileSize((int) fileInfo.getFileSize());
+        dmsFile.setFileName(fileInfo.getFileName());
+        dmsFile.setMimeType(fileInfo.getMimeType());
     }
 
     /**
      * Pomocná metoda pro vytvoření DMS souboru
-     * @param objVO VO
+     * @param dmsFile VO
      * @param factory továrna pro změnu VO na DO
      * @return DO pro vrácení klientovi
      * @throws IOException
      */
-    private <T extends DmsFile> T create(final DmsFileVO objVO, final Function<DmsFileVO, T> factory)
+    private <T extends DmsFile> T create(final DmsFileVO dmsFile, final Function<DmsFileVO, T> factory)
             throws IOException {
-        Assert.notNull(objVO, "Soubor musí být vyplněn");
+        Assert.notNull(dmsFile, "Soubor musí být vyplněn");
 
-        final FileInfo fileInfo = getObjInfo(objVO);
+        final FileInfo fileInfo = getFileInfo(dmsFile);
         if (fileInfo == null) {
             throw new BusinessException("Soubor nebo textový obsah souboru musí být vyplněny", BaseCode.PROPERTY_NOT_EXIST).set("property", "file, content");
         }
 
-        updateDmsFile(objVO, fileInfo);
+        updateDmsFile(dmsFile, fileInfo);
 
-        T objDO = factory.apply(objVO);
+        T objDO = factory.apply(dmsFile);
 
         final InputStream inputStream = fileInfo.getInputStream();
         dmsService.createFile(objDO, inputStream);
@@ -229,13 +202,13 @@ public class DmsController {
     /**
      * Načtení informací o souboru i s ohledem na typ dat - ze souboru, editovatelná apod.
      *
-     * @param objVO vo objekt z klienta
+     * @param dmsFile vo objekt z klienta
      * @return info o souboru a jeho datech nebo null, pokud se v datech soubor nevyskytoval
      * @throws IOException chyba
      */
-    private FileInfo getObjInfo(final DmsFileVO objVO) throws IOException {
-        final MultipartFile multipartFile = objVO.getFile();
-        final String content = objVO.getContent();
+    private FileInfo getFileInfo(final DmsFileVO dmsFile) throws IOException {
+        final MultipartFile multipartFile = dmsFile.getFile();
+        final String content = dmsFile.getContent();
         final InputStream inputStream;
         final String mimeType;
         final long fileSize;
@@ -247,9 +220,9 @@ public class DmsController {
             fileName = FilenameUtils.getName(multipartFile.getOriginalFilename());
             inputStream = multipartFile.getInputStream();
         } else if (content != null) {
-            mimeType = objVO.getMimeType();
+            mimeType = dmsFile.getMimeType();
 
-            if (StringUtils.isEmpty(objVO.getFileName())) {
+            if (StringUtils.isEmpty(dmsFile.getFileName())) {
                 String baseFileName = "attachment-" + FORMATTER_DATE_TIME.get().format(new Date());
 
                 String fileExtension = null;
@@ -262,7 +235,7 @@ public class DmsController {
                 }
                 fileName = baseFileName + "." + fileExtension;
             } else {
-                fileName = objVO.getFileName();
+                fileName = dmsFile.getFileName();
             }
 
             fileSize = content.length();
@@ -273,20 +246,6 @@ public class DmsController {
         }
 
         return new FileInfo(inputStream, fileSize, fileName, mimeType);
-    }
-
-    /**
-     * Update souboru - metoda neřeší oprávnění a pokud bude zpřístupněna přes rest, musí kontrovolat, že dms file nemá žádné vazby (např. na AS) a je tedy opravdu common.
-     *
-     * @param fileId id souboru
-     * @param object objekt souboru
-     * @throws IOException
-     */
-    @Transactional
-    // kvůli IE nelze použít PUT protože nemůžeme uploadovat soubor
-//    @RequestMapping(value = "/api/dms/common/{fileId}", method = RequestMethod.POST)
-    public void updateFile(@PathVariable(value = "fileId") Integer fileId, final DmsFileVO object) throws IOException {
-        update(fileId, object, (vo) -> object.createEntity());
     }
 
     /**
@@ -306,21 +265,6 @@ public class DmsController {
     }
 
     /**
-     * Update souboru
-     *
-     * @param fileId id souboru
-     * @param object objekt souboru
-     * @throws IOException
-     */
-    @Transactional
-    // kvůli IE nelze použít PUT protože nemůžeme uploadovat soubor
-    @RequestMapping(value = "/api/dms/output/{fileId}", method = RequestMethod.POST)
-    public void updateFile(@PathVariable(value = "fileId") Integer fileId, final ArrOutputFileVO object) throws IOException {
-        update(fileId, object, (fileVO) -> object.createEntity(outputResultRepository));
-    }
-
-
-    /**
      * Pomocná metoda pro úpravu DMS souboru
      * @param objVO VO
      * @param factory továrna pro změnu VO na DO
@@ -333,7 +277,7 @@ public class DmsController {
         Validate.notNull(objVO, "Soubor musí být vyplněn");
         Validate.isTrue(fileId.equals(objVO.getId()), "Id v URL neodpovídá ID objektu");
 
-        final FileInfo fileInfo = getObjInfo(objVO);
+        final FileInfo fileInfo = getFileInfo(objVO);
         if (fileInfo != null) {
             updateDmsFile(objVO, fileInfo);
         }
@@ -358,6 +302,8 @@ public class DmsController {
         DmsFile file = dmsService.getFile(fileId);
         Validate.notNull(file, "Soubor s fileId %s neexistuje!", fileId);
 
+        dmsService.checkFundReadPermission(file.getFundId());
+
         FileDownload.addContentDispositionAsAttachment(response, file.getFileName());
 
         try (ServletOutputStream out = response.getOutputStream();
@@ -366,14 +312,19 @@ public class DmsController {
         }
     }
 
+    /**
+     * Stažení souboru
+     * @param response http odpověd
+     * @param repoId id repo
+     * @param filePath
+     * @throws IOException
+     */
     // TODO: In Spring6 change to: "/api/digirepo/{repoId}/{*filePath}"
     @RequestMapping(value = "/api/digirepo/{repoId}", method = RequestMethod.GET)
-    public void getFile(HttpServletResponse response, @PathVariable(value = "repoId") Integer repoId,
-                        @RequestParam(value = "filePath") String filePath)
-            throws IOException {
+    public void getFile(HttpServletResponse response, @PathVariable(value = "repoId") Integer repoId, @RequestParam(value = "filePath") String filePath) throws IOException {
         // read file repo
         ArrDigitalRepository digiRep = externalSystemService.getDigitalRepository(repoId);
-        
+
         Path fp = fileSystemRepoService.resolvePath(digiRep, filePath);
         String contentType = fileSystemRepoService.getMimetype(filePath);
         if (StringUtils.isEmpty(contentType)) {
@@ -381,12 +332,11 @@ public class DmsController {
             FileDownload.addContentDispositionAsAttachment(response, fp.getFileName().toString());
         }
         response.setContentType(filePath);
-        
+
         try (ServletOutputStream out = response.getOutputStream();
-                InputStream in = fileSystemRepoService.getInputStream(digiRep, filePath);) {
+                InputStream in = fileSystemRepoService.getInputStream(digiRep, filePath)) {
             IOUtils.copy(in, out);
         }
-
     }
 
     /**
@@ -397,8 +347,7 @@ public class DmsController {
      */
     @RequestMapping(value = "/api/outputResults/{outputId}", method = RequestMethod.GET)
     @Transactional
-    public void getOutputResultsZip(HttpServletResponse response,
-                                   @PathVariable(value = "outputId") Integer outputId) throws IOException {
+    public void getOutputResultsZip(HttpServletResponse response, @PathVariable(value = "outputId") Integer outputId) throws IOException {
         Validate.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
         ArrOutput output = outputRepository.findByOutputId(outputId);
 		List<ArrOutputResult> outputResults = outputResultRepository.findByOutput(output);
@@ -438,9 +387,7 @@ public class DmsController {
             if (fileForDownload != null) {
                 fileForDownload.delete();
             }
-
         }
-
     }
 
     /**
@@ -451,9 +398,7 @@ public class DmsController {
      */
     @RequestMapping(value = "/api/outputResult/{outputResultId}", method = RequestMethod.GET)
     @Transactional
-    public void getOutputResultZip(HttpServletResponse response,
-                                   @PathVariable(value = "outputResultId") Integer outputResultId)
-            throws IOException {
+    public void getOutputResultZip(HttpServletResponse response, @PathVariable(value = "outputResultId") Integer outputResultId) throws IOException {
         Validate.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
         ArrOutputResult result = outputResultRepository.getOneCheckExist(outputResultId);
         ArrOutput output = result.getOutput();
@@ -492,21 +437,6 @@ public class DmsController {
 
         }
 
-    }
-
-    /**
-     * Vyhledávání
-     * @param search vyhledávaný text
-     * @param from od záznamu
-     * @param count  počet záznamů
-     * @return list záznamů
-     */
-    @RequestMapping(value = "/api/dms/common", method = RequestMethod.GET)
-    public FilteredResultVO<DmsFileVO> findFiles(@RequestParam(required = false) @Nullable final String search,
-                                                    @RequestParam(required = false, defaultValue = "0") final Integer from,
-                                                    @RequestParam(required = false, defaultValue = "20") final Integer count) {
-        FilteredResult<DmsFile> files = dmsService.findDmsFiles(search, from, count);
-        return new FilteredResultVO<>(files.getList(), DmsFileVO::newInstance, files.getTotalCount());
     }
 
     /**
@@ -593,24 +523,12 @@ public class DmsController {
     @Transactional
     public FilteredResultVO<ArrOutputFileVO> findOutputFiles(@PathVariable final Integer outputId) {
     	ArrOutput output = outputRepository.findByOutputId(outputId);
-    	// List<ArrOutputResult> outputResults = outputResultRepository.findByOutput(output);
 
     	List<ArrOutputFile> outputFiles = dmsService.findOutputFiles(output.getFundId(), output);
 
         return new FilteredResultVO<>(outputFiles,
                 (entity) -> ArrOutputFileVO.newInstance(entity),
                 outputFiles.size());
-    }
-
-    /**
-     * Smazání souboru - metoda neřeší oprávnění a pokud bude zpřístupněna přes rest, musí kontrovolat, že dms file nemá žádné vazby (např. na AS) a je tedy opravdu common.
-     *
-     * @param fileId id souboru
-     */
-    @Transactional
-//    @RequestMapping(value = "/api/dms/common/{fileId}", method = RequestMethod.DELETE)
-    public void deleteFile(@PathVariable(value = "fileId") Integer fileId) throws IOException {
-        dmsService.deleteFile(fileId);
     }
 
     /**
@@ -623,17 +541,5 @@ public class DmsController {
     public void deleteArrFile(@PathVariable(value = "fileId") Integer fileId) throws IOException {
         ArrFile arrFile = dmsService.getArrFile(fileId);
         dmsService.deleteArrFile(arrFile, arrFile.getFund());
-    }
-
-    /**
-     * Smazání souboru
-     *
-     * @param fileId id souboru
-     */
-    @Transactional
-    @RequestMapping(value = "/api/dms/output/{fileId}", method = RequestMethod.DELETE)
-    public void deleteOutputFile(@PathVariable(value = "fileId") Integer fileId) throws IOException {
-        ArrOutputFile outputFile = dmsService.getOutputFile(fileId);
-        dmsService.deleteOutputFile(outputFile, outputFile.getOutputResult().getOutput().getFund());
     }
 }

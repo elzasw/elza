@@ -10,7 +10,6 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-
 /**
  * Soubor Fund
  *
@@ -30,6 +29,8 @@ public class ArrFile extends DmsFile {
     public static final String FIELD_DELETE_CHANGE = "deleteChange";
 
     public static final String FIELD_FUND = "fund";
+
+    public static final String FIELD_FUND_ID = "fundId";
 
     @JsonIgnore
     @RestResource(exported = false)
@@ -51,9 +52,12 @@ public class ArrFile extends DmsFile {
 
     @RestResource(exported = false)
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
-    @JoinColumn(name = "fundId", nullable = false)
+    @JoinColumn(name = FIELD_FUND_ID, nullable = false)
     @JsonIgnore
     private ArrFund fund;
+
+    @Column(name = FIELD_FUND_ID, nullable = true, updatable = false, insertable = false)
+    protected Integer fundId;
 
     public ArrChange getCreateChange() {
         return createChange;
@@ -77,6 +81,10 @@ public class ArrFile extends DmsFile {
 
     public void setFund(ArrFund fund) {
         this.fund = fund;
+        this.fundId = fund == null? null : fund.getFundId();
     }
 
+	public Integer getFundId() {
+		return fundId;
+	}
 }
