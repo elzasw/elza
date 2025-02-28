@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,7 +39,6 @@ import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrChange.Type;
-import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputFile;
@@ -85,12 +83,6 @@ public class DmsController {
     @Autowired
     private DmsService dmsService;
 
-    @Autowired
-    private ExternalSystemService externalSystemService;
-
-    @Autowired
-    private FileSystemRepoService fileSystemRepoService;
-
     /**
      * Načtení seznamu editovatelných mime typů.
      *
@@ -114,6 +106,278 @@ public class DmsController {
         ArrChange createChange = arrangementInternalService.createChange(Type.ADD_ATTACHMENT);
         ArrFile file = create(arrFile, (fileVO) -> arrFile.createEntity(fundRepository, createChange));
         return ArrFileVO.newInstance(file, attachmentService);
+    }
+
+    /**
+     * Update souboru
+     *
+     * @param fileId id souboru
+     * @param object objekt souboru
+     * @throws IOException
+     */
+    @Transactional
+    // kvůli IE nelze použít PUT protože nemůžeme uploadovat soubor
+    @RequestMapping(value = "/api/dms/fund/{fileId}", method = RequestMethod.POST)
+    public void updateFile(@PathVariable(value = "fileId") Integer fileId, final ArrFileVO object) throws IOException {
+        ArrFile arrFile = dmsService.getArrFile(fileId);
+        dmsService.checkFundWritePermission(arrFile.getFund().getFundId());
+        update(fileId, object, (fileVO) -> object.createEntity(fundRepository, null));
+    }
+
+    /**
+     * Pomocná metoda pro úpravu DMS souboru
+     * @param dmsFileVO VO
+     * @param factory továrna pro změnu VO na DO
+     * @return DO pro vrácení klientovi
+     * @throws IOException
+     */
+    private <T extends DmsFile> T update(final Integer fileId, final DmsFileVO dmsFileVO,
+                                         final Function<DmsFileVO, T> factory) throws IOException {
+        Validate.notNull(fileId, "Identifikátor souboru musí být vyplněn");
+        Validate.notNull(dmsFileVO, "Soubor musí být vyplněn");
+        Validate.isTrue(fileId.equals(dmsFileVO.getId()), "Id v URL neodpovídá ID objektu");
+
+        final FileInfo fileInfo = getFileInfo(dmsFileVO);
+        if (fileInfo != null) {
+            updateDmsFile(dmsFileVO, fileInfo);
+        }
+
+        T objDO = factory.apply(dmsFileVO);
+        final InputStream inputStream = fileInfo != null ? fileInfo.getInputStream() : null;
+
+        dmsService.updateFile(objDO, inputStream);
+
+        return objDO;
+    }
+
+    /**
+     * Stažení souboru
+     * @param response http odpověd
+     * @param fileId id souboru
+     * @throws IOException
+     */
+    @RequestMapping(value = "/api/dms/{fileId}", method = RequestMethod.GET)
+    public void getFile(HttpServletResponse response, @PathVariable(value = "fileId") Integer fileId) throws IOException {
+        Validate.notNull(fileId, "Identifikátor souboru musí být vyplněn");
+        DmsFile file = dmsService.getFile(fileId);
+        Validate.notNull(file, "Soubor s fileId %s neexistuje!", fileId);
+
+        dmsService.checkFundReadPermission(file.getFundId());
+
+        FileDownload.addContentDispositionAsAttachment(response, file.getFileName());
+
+        try (ServletOutputStream out = response.getOutputStream();
+                InputStream in = dmsService.downloadFile(file);) {
+            IOUtils.copy(in, out);
+        }
+    }
+
+    /**
+     * Stažení souboru
+     * @param response http odpověd
+     * @param outputResultId id souboru
+     * @throws IOException
+     */
+    @RequestMapping(value = "/api/outputResults/{outputId}", method = RequestMethod.GET)
+    @Transactional
+    public void getOutputResultsZip(HttpServletResponse response, @PathVariable(value = "outputId") Integer outputId) throws IOException {
+        Validate.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
+        ArrOutput output = outputRepository.findByOutputId(outputId);
+
+        dmsService.checkFundReadPermission(output.getFundId());
+
+        List<ArrOutputResult> outputResults = outputResultRepository.findByOutput(output);
+        List<ArrOutputFile> outputFiles = new ArrayList<>();
+		for(ArrOutputResult outputResult: outputResults) {
+        	outputFiles.addAll(outputResult.getOutputFiles());
+        }
+
+        ServletOutputStream out = response.getOutputStream();
+
+        File fileForDownload = null;
+        String fileName;
+
+        InputStream in = null;
+        try {
+            if (outputFiles.size() == 1) {
+                // single file download directly
+                ArrOutputFile singleFile = outputFiles.get(0);
+                in = dmsService.downloadFile(singleFile);
+                fileName = singleFile.getFileName();
+
+            } else {
+                // multiple files have to be zipped
+                fileForDownload = dmsService.getOutputFilesZip(outputFiles).toFile();
+                fileName = output.getName() + ".zip";
+                in = new BufferedInputStream(new FileInputStream(fileForDownload));
+            }
+            FileDownload.addContentDispositionAsAttachment(response, fileName);
+
+            IOUtils.copy(in, out);
+        } finally {
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(out);
+            if (fileForDownload != null) {
+                fileForDownload.delete();
+            }
+        }
+    }
+
+    /**
+     * Stažení souboru
+     * @param response http odpověd
+     * @param outputResultId id souboru
+     * @throws IOException
+     */
+    @RequestMapping(value = "/api/outputResult/{outputResultId}", method = RequestMethod.GET)
+    @Transactional
+    public void getOutputResultZip(HttpServletResponse response, @PathVariable(value = "outputResultId") Integer outputResultId) throws IOException {
+        Validate.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
+        ArrOutputResult result = outputResultRepository.getOneCheckExist(outputResultId);
+        ArrOutput output = result.getOutput();
+
+        dmsService.checkFundReadPermission(output.getFundId());
+
+        // check number of files
+        List<ArrOutputFile> outputFiles = result.getOutputFiles();
+
+        ServletOutputStream out = response.getOutputStream();
+
+        File fileForDownload = null;
+        String fileName;
+
+        InputStream in = null;
+        try {
+            if (outputFiles.size() == 1) {
+                // single file download directly
+                ArrOutputFile singleFile = outputFiles.get(0);
+                in = dmsService.downloadFile(singleFile);
+                fileName = singleFile.getFileName();
+
+            } else {
+                // multiple files have to be zipped
+                fileForDownload = dmsService.getOutputFilesZip(result.getOutputFiles()).toFile();
+                fileName = output.getName() + ".zip";
+                in = new BufferedInputStream(new FileInputStream(fileForDownload));
+            }
+            FileDownload.addContentDispositionAsAttachment(response, fileName);
+
+            IOUtils.copy(in, out);
+        } finally {
+            IOUtils.closeQuietly(in);
+            IOUtils.closeQuietly(out);
+            if (fileForDownload != null) {
+                fileForDownload.delete();
+            }
+        }
+    }
+
+    /**
+     * Vyhledávání
+     * @param search vyhledávaný text
+     * @param from od záznamu
+     * @param count  počet záznamů
+     * @return list záznamů
+     */
+    @RequestMapping(value = "/api/dms/fund/{fundId}", method = RequestMethod.GET)
+	@Transactional
+    public FilteredResultVO<ArrFileVO> findFundFiles(@PathVariable final Integer fundId,
+                                                     @RequestParam(required = false) @Nullable final String search,
+                                                    @RequestParam(required = false, defaultValue = "0") final Integer from,
+                                                    @RequestParam(required = false, defaultValue = "20") final Integer count) {
+        FilteredResult<ArrFile> files = dmsService.findArrFiles(search, fundId, from, count);
+        return new FilteredResultVO<>(files.getList(), (entity) -> ArrFileVO.newInstance(entity, attachmentService),
+                files.getTotalCount());
+    }
+
+    /**
+     * Načtení konkrétního objektu s informacemi o souboru s vyžádáním obsahu pro editovatelný soubor.
+     *
+     * @param fundId id AS
+     * @param fileId id souboru
+     * @return list záznamů
+     */
+    @RequestMapping(value = "/api/dms/fund/{fundId}/{fileId}", method = RequestMethod.GET)
+    public ArrFileVO getEditableFundFile(@PathVariable("fundId") final Integer fundId,
+                                         @PathVariable("fileId") final Integer fileId) throws IOException {
+        Assert.notNull(fundId, "Fund id musí být uvedeno");
+        dmsService.checkFundReadPermission(fundId);
+
+        ArrFile file = dmsService.getArrFile(fileId);
+        Assert.isTrue(fundId.equals(file.getFund().getFundId()), "Nesouhlasí id AS");
+
+        if (!attachmentService.isEditable(file.getMimeType())) {
+            throw new BusinessException("Soubor není možné editovat ručně.", BaseCode.INVALID_STATE);
+        }
+
+        ArrFileVO result = ArrFileVO.newInstance(file, attachmentService);
+
+        try (InputStream is = dmsService.downloadFile(file)) {
+            String text = IOUtils.toString(is, "utf-8");
+            result.setContent(text);
+        }
+
+        return result;
+    }
+
+    /**
+     * Načtení konkrétního objektu s informacemi o souboru s vyžádáním obsahu pro editovatelný soubor.
+     *
+     * @param fundId id AS
+     * @param fileId id souboru
+     * @return list záznamů
+     */
+    @RequestMapping(value = "/api/dms/fund/{fundId}/{fileId}/generated", method = RequestMethod.GET)
+    public void generateEditableFundFile(HttpServletResponse response,
+                                         @PathVariable("fundId") final Integer fundId,
+                                         @PathVariable("fileId") final Integer fileId,
+                                         @RequestParam("mimeType") final String mimeType) throws IOException {
+        Assert.notNull(fundId, "Fund id musí být uvedeno");
+        dmsService.checkFundReadPermission(fundId);
+
+        ArrFile file = dmsService.getArrFile(fileId);
+        Assert.isTrue(fundId.equals(file.getFund().getFundId()), "Nesouhlasí id AS");
+
+        ServletOutputStream out = response.getOutputStream();
+
+        try (CloseablePathResource output = attachmentService.generate(file, mimeType)) {
+            FileDownload.addContentDispositionAsAttachment(response, output.getFilename());
+            response.setContentLengthLong(output.contentLength());
+
+            // Copy to output stream
+            output.writeTo(out);
+
+            IOUtils.closeQuietly(out);
+        }
+    }
+
+    /**
+     * Vyhledávání
+     * @param outputId ID output
+     * @return list záznamů
+     */
+    @RequestMapping(value = "/api/dms/output/{outputId}", method = RequestMethod.GET)
+    @Transactional
+    public FilteredResultVO<ArrOutputFileVO> findOutputFiles(@PathVariable final Integer outputId) {
+    	ArrOutput output = outputRepository.findByOutputId(outputId);
+
+    	List<ArrOutputFile> outputFiles = dmsService.findOutputFiles(output.getFundId(), output);
+
+        return new FilteredResultVO<>(outputFiles,
+                (entity) -> ArrOutputFileVO.newInstance(entity),
+                outputFiles.size());
+    }
+
+    /**
+     * Smazání souboru
+     *
+     * @param fileId id souboru
+     */
+    @Transactional
+    @RequestMapping(value = "/api/dms/fund/{fileId}", method = RequestMethod.DELETE)
+    public void deleteArrFile(@PathVariable(value = "fileId") Integer fileId) throws IOException {
+        ArrFile arrFile = dmsService.getArrFile(fileId);
+        dmsService.deleteArrFile(arrFile, arrFile.getFund());
     }
 
     /**
@@ -151,52 +415,6 @@ public class DmsController {
         dmsService.createFile(objDO, inputStream);
 
         return objDO;
-    }
-
-    private static class FileInfo {
-        private InputStream inputStream;
-        private long fileSize;
-        private String fileName;
-        private String mimeType;
-
-        public FileInfo(final InputStream inputStream, final long fileSize, final String fileName, final String mimeType) {
-            this.setInputStream(inputStream);
-            this.setFileSize(fileSize);
-            this.setFileName(fileName);
-            this.setMimeType(mimeType);
-        }
-
-        public InputStream getInputStream() {
-            return inputStream;
-        }
-
-        public void setInputStream(InputStream inputStream) {
-            this.inputStream = inputStream;
-        }
-
-        public long getFileSize() {
-            return fileSize;
-        }
-
-        public void setFileSize(long fileSize) {
-            this.fileSize = fileSize;
-        }
-
-        public String getFileName() {
-            return fileName;
-        }
-
-        public void setFileName(String fileName) {
-            this.fileName = fileName;
-        }
-
-        public String getMimeType() {
-            return mimeType;
-        }
-
-        public void setMimeType(String mimeType) {
-            this.mimeType = mimeType;
-        }
     }
 
     /**
@@ -248,298 +466,49 @@ public class DmsController {
         return new FileInfo(inputStream, fileSize, fileName, mimeType);
     }
 
-    /**
-     * Update souboru
-     *
-     * @param fileId id souboru
-     * @param object objekt souboru
-     * @throws IOException
-     */
-    @Transactional
-    // kvůli IE nelze použít PUT protože nemůžeme uploadovat soubor
-    @RequestMapping(value = "/api/dms/fund/{fileId}", method = RequestMethod.POST)
-    public void updateFile(@PathVariable(value = "fileId") Integer fileId, final ArrFileVO object) throws IOException {
-        ArrFile arrFile = dmsService.getArrFile(fileId);
-        dmsService.checkFundWritePermission(arrFile.getFund().getFundId());
-        update(fileId, object, (fileVO) -> object.createEntity(fundRepository, null));
-    }
+    private static class FileInfo {
+        private InputStream inputStream;
+        private long fileSize;
+        private String fileName;
+        private String mimeType;
 
-    /**
-     * Pomocná metoda pro úpravu DMS souboru
-     * @param objVO VO
-     * @param factory továrna pro změnu VO na DO
-     * @return DO pro vrácení klientovi
-     * @throws IOException
-     */
-    private <T extends DmsFile> T update(final Integer fileId, final DmsFileVO objVO,
-                                         final Function<DmsFileVO, T> factory) throws IOException {
-        Validate.notNull(fileId, "Identifikátor souboru musí být vyplněn");
-        Validate.notNull(objVO, "Soubor musí být vyplněn");
-        Validate.isTrue(fileId.equals(objVO.getId()), "Id v URL neodpovídá ID objektu");
-
-        final FileInfo fileInfo = getFileInfo(objVO);
-        if (fileInfo != null) {
-            updateDmsFile(objVO, fileInfo);
+        public FileInfo(final InputStream inputStream, final long fileSize, final String fileName, final String mimeType) {
+            this.setInputStream(inputStream);
+            this.setFileSize(fileSize);
+            this.setFileName(fileName);
+            this.setMimeType(mimeType);
         }
 
-        T objDO = factory.apply(objVO);
-        final InputStream inputStream = fileInfo != null ? fileInfo.getInputStream() : null;
-
-        dmsService.updateFile(objDO, inputStream);
-
-        return objDO;
-    }
-
-    /**
-     * Stažení souboru
-     * @param response http odpověd
-     * @param fileId id souboru
-     * @throws IOException
-     */
-    @RequestMapping(value = "/api/dms/{fileId}", method = RequestMethod.GET)
-    public void getFile(HttpServletResponse response, @PathVariable(value = "fileId") Integer fileId) throws IOException {
-        Validate.notNull(fileId, "Identifikátor souboru musí být vyplněn");
-        DmsFile file = dmsService.getFile(fileId);
-        Validate.notNull(file, "Soubor s fileId %s neexistuje!", fileId);
-
-        dmsService.checkFundReadPermission(file.getFundId());
-
-        FileDownload.addContentDispositionAsAttachment(response, file.getFileName());
-
-        try (ServletOutputStream out = response.getOutputStream();
-                InputStream in = dmsService.downloadFile(file);) {
-            IOUtils.copy(in, out);
-        }
-    }
-
-    /**
-     * Stažení souboru
-     * @param response http odpověd
-     * @param repoId id repo
-     * @param filePath
-     * @throws IOException
-     */
-    // TODO: In Spring6 change to: "/api/digirepo/{repoId}/{*filePath}"
-    @RequestMapping(value = "/api/digirepo/{repoId}", method = RequestMethod.GET)
-    public void getFile(HttpServletResponse response, @PathVariable(value = "repoId") Integer repoId, @RequestParam(value = "filePath") String filePath) throws IOException {
-        // read file repo
-        ArrDigitalRepository digiRep = externalSystemService.getDigitalRepository(repoId);
-
-        Path fp = fileSystemRepoService.resolvePath(digiRep, filePath);
-        String contentType = fileSystemRepoService.getMimetype(filePath);
-        if (StringUtils.isEmpty(contentType)) {
-            contentType = "application/binary";
-            FileDownload.addContentDispositionAsAttachment(response, fp.getFileName().toString());
-        }
-        response.setContentType(filePath);
-
-        try (ServletOutputStream out = response.getOutputStream();
-                InputStream in = fileSystemRepoService.getInputStream(digiRep, filePath)) {
-            IOUtils.copy(in, out);
-        }
-    }
-
-    /**
-     * Stažení souboru
-     * @param response http odpověd
-     * @param outputResultId id souboru
-     * @throws IOException
-     */
-    @RequestMapping(value = "/api/outputResults/{outputId}", method = RequestMethod.GET)
-    @Transactional
-    public void getOutputResultsZip(HttpServletResponse response, @PathVariable(value = "outputId") Integer outputId) throws IOException {
-        Validate.notNull(outputId, "Identifikátor výstupu musí být vyplněn");
-        ArrOutput output = outputRepository.findByOutputId(outputId);
-		List<ArrOutputResult> outputResults = outputResultRepository.findByOutput(output);
-
-        // check number of files
-        List<ArrOutputFile> outputFiles = new ArrayList<>();
-
-		for(ArrOutputResult outputResult: outputResults) {
-        	outputFiles.addAll(outputResult.getOutputFiles());
+        public InputStream getInputStream() {
+            return inputStream;
         }
 
-        ServletOutputStream out = response.getOutputStream();
-
-        File fileForDownload = null;
-        String fileName;
-
-        InputStream in = null;
-        try {
-            if (outputFiles.size() == 1) {
-                // single file download directly
-                ArrOutputFile singleFile = outputFiles.get(0);
-                in = dmsService.downloadFile(singleFile);
-                fileName = singleFile.getFileName();
-
-            } else {
-                // multiple files have to be zipped
-                fileForDownload = dmsService.getOutputFilesZip(outputFiles).toFile();
-                fileName = output.getName() + ".zip";
-                in = new BufferedInputStream(new FileInputStream(fileForDownload));
-            }
-            FileDownload.addContentDispositionAsAttachment(response, fileName);
-
-            IOUtils.copy(in, out);
-        } finally {
-            IOUtils.closeQuietly(in);
-            IOUtils.closeQuietly(out);
-            if (fileForDownload != null) {
-                fileForDownload.delete();
-            }
-        }
-    }
-
-    /**
-     * Stažení souboru
-     * @param response http odpověd
-     * @param outputResultId id souboru
-     * @throws IOException
-     */
-    @RequestMapping(value = "/api/outputResult/{outputResultId}", method = RequestMethod.GET)
-    @Transactional
-    public void getOutputResultZip(HttpServletResponse response, @PathVariable(value = "outputResultId") Integer outputResultId) throws IOException {
-        Validate.notNull(outputResultId, "Identifikátor výstupu musí být vyplněn");
-        ArrOutputResult result = outputResultRepository.getOneCheckExist(outputResultId);
-        ArrOutput output = result.getOutput();
-
-        // check number of files
-        List<ArrOutputFile> outputFiles = result.getOutputFiles();
-
-        ServletOutputStream out = response.getOutputStream();
-
-        File fileForDownload = null;
-        String fileName;
-
-        InputStream in = null;
-        try {
-            if (outputFiles.size() == 1) {
-                // single file download directly
-                ArrOutputFile singleFile = outputFiles.get(0);
-                in = dmsService.downloadFile(singleFile);
-                fileName = singleFile.getFileName();
-
-            } else {
-                // multiple files have to be zipped
-                fileForDownload = dmsService.getOutputFilesZip(result.getOutputFiles()).toFile();
-                fileName = output.getName() + ".zip";
-                in = new BufferedInputStream(new FileInputStream(fileForDownload));
-            }
-            FileDownload.addContentDispositionAsAttachment(response, fileName);
-
-            IOUtils.copy(in, out);
-        } finally {
-            IOUtils.closeQuietly(in);
-            IOUtils.closeQuietly(out);
-            if (fileForDownload != null) {
-                fileForDownload.delete();
-            }
-
+        public void setInputStream(InputStream inputStream) {
+            this.inputStream = inputStream;
         }
 
-    }
-
-    /**
-     * Vyhledávání
-     * @param search vyhledávaný text
-     * @param from od záznamu
-     * @param count  počet záznamů
-     * @return list záznamů
-     */
-    @RequestMapping(value = "/api/dms/fund/{fundId}", method = RequestMethod.GET)
-	@Transactional
-    public FilteredResultVO<ArrFileVO> findFundFiles(@PathVariable final Integer fundId,
-                                                     @RequestParam(required = false) @Nullable final String search,
-                                                    @RequestParam(required = false, defaultValue = "0") final Integer from,
-                                                    @RequestParam(required = false, defaultValue = "20") final Integer count) {
-        FilteredResult<ArrFile> files = dmsService.findArrFiles(search, fundId, from, count);
-        return new FilteredResultVO<>(files.getList(), (entity) -> ArrFileVO.newInstance(entity, attachmentService),
-                files.getTotalCount());
-    }
-
-    /**
-     * Načtení konkrétního objektu s informacemi o souboru s vyžádáním obsahu pro editovatelný soubor.
-     *
-     * @param fundId id AS
-     * @param fileId id souboru
-     * @return list záznamů
-     */
-    @RequestMapping(value = "/api/dms/fund/{fundId}/{fileId}", method = RequestMethod.GET)
-    public ArrFileVO getEditableFundFile(@PathVariable("fundId") final Integer fundId,
-                                         @PathVariable("fileId") final Integer fileId) throws IOException {
-        Assert.notNull(fundId, "Fund id musí být uvedeno");
-        ArrFile file = dmsService.getArrFile(fileId);
-        Assert.isTrue(fundId.equals(file.getFund().getFundId()), "Nesouhlasí id AS");
-
-        if (!attachmentService.isEditable(file.getMimeType())) {
-            throw new BusinessException("Soubor není možné editovat ručně.", BaseCode.INVALID_STATE);
+        public long getFileSize() {
+            return fileSize;
         }
 
-        ArrFileVO result = ArrFileVO.newInstance(file, attachmentService);
-
-        try (InputStream is = dmsService.downloadFile(file)) {
-            String text = IOUtils.toString(is, "utf-8");
-            result.setContent(text);
+        public void setFileSize(long fileSize) {
+            this.fileSize = fileSize;
         }
 
-        return result;
-    }
-
-    /**
-     * Načtení konkrétního objektu s informacemi o souboru s vyžádáním obsahu pro editovatelný soubor.
-     *
-     * @param fundId id AS
-     * @param fileId id souboru
-     * @return list záznamů
-     */
-    @RequestMapping(value = "/api/dms/fund/{fundId}/{fileId}/generated", method = RequestMethod.GET)
-    public void generateEditableFundFile(HttpServletResponse response,
-                                         @PathVariable("fundId") final Integer fundId,
-                                         @PathVariable("fileId") final Integer fileId,
-                                         @RequestParam("mimeType") final String mimeType) throws IOException {
-        Assert.notNull(fundId, "Fund id musí být uvedeno");
-        ArrFile file = dmsService.getArrFile(fileId);
-        Assert.isTrue(fundId.equals(file.getFund().getFundId()), "Nesouhlasí id AS");
-
-        ServletOutputStream out = response.getOutputStream();
-
-        try (CloseablePathResource output = attachmentService.generate(file, mimeType)) {
-            FileDownload.addContentDispositionAsAttachment(response, output.getFilename());
-            response.setContentLengthLong(output.contentLength());
-
-            // Copy to output stream
-            output.writeTo(out);
-
-            IOUtils.closeQuietly(out);
+        public String getFileName() {
+            return fileName;
         }
-    }
 
-    /**
-     * Vyhledávání
-     * @param outputId ID output
-     * @return list záznamů
-     */
-    @RequestMapping(value = "/api/dms/output/{outputId}", method = RequestMethod.GET)
-    @Transactional
-    public FilteredResultVO<ArrOutputFileVO> findOutputFiles(@PathVariable final Integer outputId) {
-    	ArrOutput output = outputRepository.findByOutputId(outputId);
+        public void setFileName(String fileName) {
+            this.fileName = fileName;
+        }
 
-    	List<ArrOutputFile> outputFiles = dmsService.findOutputFiles(output.getFundId(), output);
+        public String getMimeType() {
+            return mimeType;
+        }
 
-        return new FilteredResultVO<>(outputFiles,
-                (entity) -> ArrOutputFileVO.newInstance(entity),
-                outputFiles.size());
-    }
-
-    /**
-     * Smazání souboru
-     *
-     * @param fileId id souboru
-     */
-    @Transactional
-    @RequestMapping(value = "/api/dms/fund/{fileId}", method = RequestMethod.DELETE)
-    public void deleteArrFile(@PathVariable(value = "fileId") Integer fileId) throws IOException {
-        ArrFile arrFile = dmsService.getArrFile(fileId);
-        dmsService.deleteArrFile(arrFile, arrFile.getFund());
+        public void setMimeType(String mimeType) {
+            this.mimeType = mimeType;
+        }
     }
 }

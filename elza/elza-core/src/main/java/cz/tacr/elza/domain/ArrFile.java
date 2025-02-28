@@ -84,6 +84,7 @@ public class ArrFile extends DmsFile {
         this.fundId = fund == null? null : fund.getFundId();
     }
 
+    @Override
 	public Integer getFundId() {
 		return fundId;
 	}
