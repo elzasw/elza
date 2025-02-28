@@ -34,7 +34,9 @@ public class ArrOutputFile extends DmsFile {
         this.outputResult = outputResult;
     }
 
+    @Override
     public Integer getFundId() {
+    	// žádná kontrola null, protože všechna pole nullable = false
     	return outputResult.getOutput().getFundId();
     }
 }
