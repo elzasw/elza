@@ -285,6 +285,7 @@ public class DmsController {
                                                      @RequestParam(required = false) @Nullable final String search,
                                                     @RequestParam(required = false, defaultValue = "0") final Integer from,
                                                     @RequestParam(required = false, defaultValue = "20") final Integer count) {
+        dmsService.checkFundReadPermission(fundId);
         FilteredResult<ArrFile> files = dmsService.findArrFiles(search, fundId, from, count);
         return new FilteredResultVO<>(files.getList(), (entity) -> ArrFileVO.newInstance(entity, attachmentService),
                 files.getTotalCount());
@@ -360,6 +361,7 @@ public class DmsController {
     @Transactional
     public FilteredResultVO<ArrOutputFileVO> findOutputFiles(@PathVariable final Integer outputId) {
     	ArrOutput output = outputRepository.findByOutputId(outputId);
+        dmsService.checkFundReadPermission(output.getFundId());
 
     	List<ArrOutputFile> outputFiles = dmsService.findOutputFiles(output.getFundId(), output);
 
