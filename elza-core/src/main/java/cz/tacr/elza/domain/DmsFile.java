@@ -153,4 +153,11 @@ public class DmsFile {
     public void setFile(final File file) {
         this.file = file;
     }
+
+    /**
+     * Override in ArrFile & ArrOutputFile 
+     */
+    public Integer getFundId() {
+    	return null;
+    }
 }
