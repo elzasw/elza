@@ -1,7 +1,5 @@
 package cz.tacr.elza.controller.vo;
 
-import org.apache.commons.lang3.Validate;
-
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.repository.OutputResultRepository;
@@ -39,8 +37,7 @@ public class ArrOutputFileVO extends DmsFileVO {
     public ArrOutputFile createEntity(OutputResultRepository outputResultRepository) {
         ArrOutputFile result = new ArrOutputFile();
 
-        ArrOutputResult dbResult = outputResultRepository.findById(outputResultId)
-                .orElseThrow(outputResult(outputResultId));
+        ArrOutputResult dbResult = outputResultRepository.findById(outputResultId).orElseThrow(outputResult(outputResultId));
 
         copyTo(result);
         return result;
