@@ -17,13 +17,14 @@ import storeFromArea from '../../../../shared/utils/storeFromArea';
 import { DetailStoreState } from '../../../../types';
 import { Loading } from '../../../shared';
 import { RevisionItem } from '../../revision';
-import { addEmptyItems, addItemsWithValues } from './actions';
+import { addEmptyItems, createAutoValueItemWithIndex } from './actions';
 import { showAutoItemsModal } from './AutoItemsModal';
 import './PartEditForm.scss';
 import { renderAddActions } from './renderAddActions';
 import { ItemsWrapper } from './renderItems';
 import { handleValueUpdate } from './valueChangeMutators';
 import { AutoValue } from 'elza-api';
+import { ApItemStringVO } from 'api/ApItemStringVO';
 
 export interface RevisionApPartForm extends Omit<ApPartFormVO, 'items'> {
     items: RevisionItem[];
@@ -147,21 +148,35 @@ export const PartEditForm = ({
                             newItems.push(autoValue);
                         }
                     })
+                    const orderedItems:RevisionItem<ApItemVO>[] = [...fields.value]
+                    const appendedNewItems:RevisionItem<ApItemStringVO>[] = [];
 
+                    // add all new items from auto values in correct order
                     newItems.forEach((autoValue)=>{
                         const attribute = availableAttributes.find((attribute) => autoValue.itemTypeId === attribute.itemTypeId);
-                        addItemsWithValues(
-                            attribute ? [attribute] : [],
-                            autoValue ? [autoValue] : [],
+                        if(!attribute){
+                            throw Error(`attribute not found: ${autoValue.itemTypeId}`);
+                        }
+                        const {item, index} = createAutoValueItemWithIndex(
+                            attribute,
+                            autoValue,
                             refTables,
-                            fields.value,
-                            partTypeId,
-                            (index: number, value: any) => {
-                                fields.insert(index, value);
-                                handleValueUpdate(form);
-                            },
+                            orderedItems,
+                            partTypeId
                         )
+                        appendedNewItems.push(item);
+                        orderedItems.splice(index, 0, item);
                     })
+
+                    orderedItems.forEach((item, index) => {
+                        const isNew = appendedNewItems.find((_item) => _item === item) != undefined;
+                        // add items in correct order, skip existing
+                        if(isNew){
+                            fields.insert(index, item);
+                        }
+                    })
+
+                    handleValueUpdate(form);
                 }
             };
 
