@@ -6,6 +6,7 @@ export interface RevisionPart {
     updatedPart?: ApPartVO;
 }
 
+// Editovatelny prvek popisu entity
 export interface RevisionItem<T extends ApItemVO = ApItemVO> {
     item?: T;
     updatedItem?: T;
