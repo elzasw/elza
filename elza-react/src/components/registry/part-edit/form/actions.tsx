@@ -18,6 +18,7 @@ import { DetailStoreState } from 'types';
 import { RevisionItem } from '../../revision';
 import { RevisionApPartForm } from '../form';
 import { AutoValue } from 'elza-api';
+import { ApItemStringVO } from 'api/ApItemStringVO';
 
 export const addEmptyItems = (
     attributes: Array<ApCreateTypeVO>,
@@ -38,45 +39,46 @@ export const addEmptyItems = (
     });
 }
 
-export const addItemsWithValues= (
-    attributes: Array<ApCreateTypeVO>,
-    values: AutoValue[],
+export const createAutoValueItemWithIndex = (
+    attribute: ApCreateTypeVO,
+    value: AutoValue,
     refTables: RefTablesState,
     formItems: RevisionItem[],
     partTypeId: number,
-    arrayInsert: (index: number, value: RevisionItem) => void,
 ) => {
-    const newItems = getItemsWithValues(attributes, values, refTables);
+    const item = createAutoValueItems(attribute, value, refTables);
 
-    newItems.reverse().forEach((item) => {
-        const index = findItemPlacePosition(item, formItems, partTypeId, refTables);
-        arrayInsert(index, item);
-    });
+    const index = findItemPlacePosition(item, formItems, partTypeId, refTables);
+    return {item, index};
 }
 
-const getItemsWithValues = (
-    attributes: Array<ApCreateTypeVO>,
-    values: AutoValue[],
+// creates item from auto value
+const createAutoValueItems = (
+    attribute: ApCreateTypeVO,
+    value: AutoValue,
     refTables: RefTablesState,
-) => {
-    return attributes.map((attribute)=>{
-        const itemType = refTables.descItemTypes.itemsMap[attribute.itemTypeId] as RulDescItemTypeExtVO;
-        const dataType = refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO;
-        const value = values.find((value) => value.itemTypeId === attribute.itemTypeId);
-        const item: any = {
-            typeId: attribute.itemTypeId,
-            '@class': ItemInfo.getItemClass(dataType.code),
-            position: 1, // TODO: dořešit pozici
-            value: value?.value,
-            specId: value?.itemSpecId,
-        }
+):RevisionItem<ApItemStringVO> => {
+    const itemType = refTables.descItemTypes.itemsMap[attribute.itemTypeId] as RulDescItemTypeExtVO;
+    const dataType = refTables.rulDataTypes.itemsMap[itemType.dataTypeId] as RulDataTypeVO;
 
-        return {
-            updatedItem: item,
-            typeId: attribute.itemTypeId,
-            '@class': ItemInfo.getItemClass(dataType.code),
-        };
-    })
+    switch(dataType.code){
+        case RulDataTypeCodeEnum.STRING:{
+            const item: ApItemStringVO = {
+                typeId: attribute.itemTypeId,
+                '@class': ItemInfo.getItemClass(dataType.code),
+                position: 1, // TODO: dořešit pozici
+                value: value?.value,
+                specId: value?.itemSpecId,
+            }
+            return {
+                updatedItem: item,
+                typeId: attribute.itemTypeId,
+                '@class': ItemInfo.getItemClass(dataType.code),
+            };
+        }
+        default:
+            return undefined;
+    }
 }
 
 let tempIdCounter = 0;
