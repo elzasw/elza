@@ -199,7 +199,6 @@ public class AccessPointCacheService {
                     }
                 }
                 if (apIds.size() > 0) {
-                    atomCounter.incrementAndGet();                    
                     addParallelSync(atomCounter, errorCounter, apIds, count - apIds.size());
                 }
                 return count;
