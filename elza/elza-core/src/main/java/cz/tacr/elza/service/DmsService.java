@@ -172,6 +172,16 @@ public class DmsService {
     }
 
     /**
+     * Ověření oprávnění na čtení souborů.
+     *
+     * @param fundId identifikátor archivního souboru
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL})
+    public void checkFundReadPermission(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId) {
+        Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
+    }
+
+    /**
      * Úprava detailů souboru či jeho nahrazení
      *
      * @param newFile    nové DO DMS file
@@ -252,27 +262,14 @@ public class DmsService {
     }
 
     /**
-     * Smazání DMS file pomocí ID
-     *
-     * @param fileId ID
-     * @throws IOException
-     */
-    public void deleteFile(final Integer fileId) throws IOException {
-        deleteFile(fileRepository.getOneCheckExist(fileId));
-    }
-
-    /**
      * Smazání/nastavení pole deleteChange u objektu ArrFile
      *
      * @param file soubor
      * @param fund archivní soubor
      * @throws IOException
      */
-    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR,
-            UsrPermission.Permission.FUND_ARR_ALL,
-            UsrPermission.Permission.FUND_ADMIN })
-    public void deleteArrFile(final ArrFile file,
-                              @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) throws IOException {
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ADMIN })
+    public void deleteArrFile(final ArrFile file, @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) throws IOException {
         Integer count = arrangementInternalService.countActiveItems(file);
         if (count > 0) {
             throw new BusinessException("Existují návazné jednotky popisu, přílohu nelze smazat",
@@ -287,20 +284,6 @@ public class DmsService {
         fileRepository.save(file);
 
         publishFileChange(file);
-    }
-
-    /**
-     * Smazání Output file pomocí ID
-     *
-     * @param outputFileId ID
-     * @throws IOException
-     */
-    @AuthMethod(permission = { UsrPermission.Permission.FUND_ARR,
-            UsrPermission.Permission.FUND_ARR_ALL,
-            UsrPermission.Permission.FUND_ADMIN })
-    public void deleteOutputFile(final ArrOutputFile outputFile,
-                                 @AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) throws IOException {
-        deleteFile(outputFile);
     }
 
     /**
@@ -471,7 +454,6 @@ public class DmsService {
         Assert.notNull(fundId, "Nebyl vyplněn identifikátor AS");
         return fundFileRepository.findByTextAndFund(search, fundRepository.getOneCheckExist(fundId), from, count);
     }
-
 
 	/**
 	 * Return list of files for given output
