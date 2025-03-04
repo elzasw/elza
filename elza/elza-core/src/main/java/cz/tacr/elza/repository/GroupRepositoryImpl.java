@@ -43,28 +43,28 @@ public class GroupRepositoryImpl implements GroupRepositoryCustom {
         if (userId != null) {
         	// user musí být členem skupiny (UsrGroupUser) nebo mít opravneni skupinu spravovat (UsrPermission)
 
-        	// select u.group_control_id from usr_permission u
-            final Subquery<Integer> subquery = criteriaQuery.subquery(Integer.class);
-            final Root<UsrPermission> usrPerminionRoot = subquery.from(UsrPermission.class);
-            subquery.select(usrPerminionRoot.get(UsrPermission.FIELD_GROUP_CONTROL_ID));
-
             // select u.group_id from usr_group_user u where u.user_id = userId
-            final Subquery<Integer> subsubquery = subquery.subquery(Integer.class);
-            final Root<UsrGroupUser> usrGroupUserRoot = subsubquery.from(UsrGroupUser.class);
-            subsubquery.select(usrGroupUserRoot.get(UsrGroupUser.FIELD_GROUP_ID));
-            subsubquery.where(builder.equal(usrGroupUserRoot.get(UsrGroupUser.FIELD_USER_ID), userId));
+            final Subquery<Integer> selectAllGroupsWithUser = criteriaQuery.subquery(Integer.class);
+            final Root<UsrGroupUser> usrGroupUserRoot = selectAllGroupsWithUser.from(UsrGroupUser.class);
+            selectAllGroupsWithUser.select(usrGroupUserRoot.get(UsrGroupUser.FIELD_GROUP_ID));
+            selectAllGroupsWithUser.where(builder.equal(usrGroupUserRoot.get(UsrGroupUser.FIELD_USER_ID), userId));
 
             // select u.group_control_id from usr_permission u
             // where u.user_id = userId 
             //       or u.group_id in (select u.group_id from usr_group_user u where u.user_id = userId)
-            subquery.where(builder.or(
+            final Subquery<Integer> selectControlledGroupsByUser = criteriaQuery.subquery(Integer.class);
+            final Root<UsrPermission> usrPerminionRoot = selectControlledGroupsByUser.from(UsrPermission.class);
+            selectControlledGroupsByUser.select(usrPerminionRoot.get(UsrPermission.FIELD_GROUP_CONTROL_ID));
+            selectControlledGroupsByUser.where(builder.or(
                     builder.equal(usrPerminionRoot.get(UsrPermission.FIELD_USER_ID), userId), 
-                    builder.in(usrPerminionRoot.get(UsrPermission.FIELD_GROUP_ID)).value(subsubquery)
+                    builder.in(usrPerminionRoot.get(UsrPermission.FIELD_GROUP_ID)).value(selectAllGroupsWithUser)
             ));
 
             conditions.add(builder.or(
-            		builder.in(usrGroupRoot.get(UsrGroup.FIELD_GROUP_ID)).value(subquery),
-            		builder.in(usrGroupRoot.get(UsrGroup.FIELD_GROUP_ID)).value(subsubquery)
+            		// append controlled groups
+            		builder.in(usrGroupRoot.get(UsrGroup.FIELD_GROUP_ID)).value(selectControlledGroupsByUser),
+            		// append groups with direct membership
+            		builder.in(usrGroupRoot.get(UsrGroup.FIELD_GROUP_ID)).value(selectAllGroupsWithUser)
             ));
         }
 
