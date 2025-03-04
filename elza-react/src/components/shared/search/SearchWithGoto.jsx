@@ -185,6 +185,8 @@ class SearchWithGoto extends AbstractReactComponent {
                     } else {
                         if (allItemsCount > 0 && itemsCount < allItemsCount) {
                             searchedText = i18n('search.found.more', itemsCount, allItemsCount);
+                        } else {
+                            searchedText = i18n('search.found', itemsCount);
                         }
                     }
                     actionAddons.push(<div key="searched" className="fa-tree-lazy-search-info">{searchedText}</div>);
