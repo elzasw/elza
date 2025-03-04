@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -723,7 +724,9 @@ abstract public class CamXmlBuilder {
         ArrDataUriRef dataUriRef = (ArrDataUriRef) data;
         ItemLinkXml itemLink = new ItemLinkXml();
         itemLink.setUrl(new StringXml(dataUriRef.getUriRefValue()));
-        itemLink.setNm(new StringXml(dataUriRef.getDescription() != null ? dataUriRef.getDescription() : ""));
+        if(StringUtils.isNotEmpty(dataUriRef.getDescription())) {
+        	itemLink.setNm(new StringXml(dataUriRef.getDescription()));
+        }
         itemLink.setT(itemTypeCode);
         itemLink.setS(itemSpecCode);
         itemLink.setUuid(uuidXml);

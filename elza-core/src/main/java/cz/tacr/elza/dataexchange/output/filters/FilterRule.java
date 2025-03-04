@@ -621,6 +621,7 @@ public class FilterRule {
         Integer addYear = null;
         ArrData srcAddYear = filterRuleContext.getFirstData(action.getValueAddYearFrom(), null);
         if (srcAddYear != null) {
+        	srcAddYear = HibernateUtils.unproxy(srcAddYear);
             ArrDataInteger di = (ArrDataInteger) srcAddYear;
             addYear = di.getIntegerValue();
         }
