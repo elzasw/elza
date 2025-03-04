@@ -45,6 +45,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.test.controller.vo.ApStateApproval;
 import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.CreatedPart;
+import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.Fund;
 import io.restassured.response.Response;
 
@@ -609,7 +610,8 @@ public class ApControllerTest extends AbstractControllerTest {
         assertNotNull(usage.getFunds());
 
         // Replace
-        replaceRecord(replacedRecordCreated.getId(), replacementRecordCreated.getId());
+        DeleteAccessPointDetail replaceAccessPoint = new DeleteAccessPointDetail().replacedBy(replacementRecordCreated.getId().toString());
+        replaceRecord(replacedRecordCreated.getId().toString(), replaceAccessPoint);
         RecordUsageVO usageAfterReplace = usagesRecord(replacedRecordCreated.getId());
         Assert.assertTrue(usageAfterReplace.getFunds() == null || usageAfterReplace.getFunds().isEmpty());
 

@@ -161,7 +161,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -200,6 +199,7 @@ import cz.tacr.elza.test.controller.vo.DataText;
 import cz.tacr.elza.test.controller.vo.DataUnitdate;
 import cz.tacr.elza.test.controller.vo.DataUnitid;
 import cz.tacr.elza.test.controller.vo.DataUriRef;
+import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.websocket.WebSocketStompClientElza;
 import io.restassured.RestAssured;
@@ -395,7 +395,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String UPDATE_RECORD = AP_CONTROLLER_URL + "/{recordId}";
 	protected static final String USAGES_RECORD = AP_CONTROLLER_URL + "/{recordId}/usage";
 	protected static final String MERGE_AP = REST_CONTROLLER_URL + "/accesspoint/{id}/revision/merge";
-	protected static final String REPLACE_RECORD = AP_CONTROLLER_URL + "/{recordId}/replace";
+	protected static final String REPLACE_RECORD = FUND_CONTROLLER_URL + "/accesspoint/{id}";
 	protected static final String CHANGE_STATE = REST_CONTROLLER_URL + "/accesspoint/{recordId}/state";
 
 	protected static final String GET_LANGUAGES = AP_CONTROLLER_URL + "/languages";
@@ -2194,11 +2194,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	/**
 	 * Nahrazení rejstříkového hesla.
 	 *
-	 * @param replacedId    id rejstříkového hesla které nahrazujeme
-	 * @param replacementId id rejstříkového hesla kterým nahrazujeme
+	 * @param id                      id rejstříkového hesla které nahrazujeme
+	 * @param deleteAccessPointDetail objekt s id rejstříkového hesla kterým nahrazujeme
 	 */
-	protected Response replaceRecord(final Integer replacedId, final Integer replacementId) {
-		return post(spec -> spec.pathParam("recordId", replacedId).body(replacementId), REPLACE_RECORD);
+	protected Response replaceRecord(final String id, final DeleteAccessPointDetail deleteAccessPointDetail) {
+		return delete(spec -> spec.pathParam("id", id).body(deleteAccessPointDetail), REPLACE_RECORD);
 	}
 
 	protected Response changeState(final Integer apId, ApStateUpdate stateUpdate) {
