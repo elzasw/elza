@@ -181,7 +181,13 @@ public class RuleController {
         return factoryVo.createDescItemTypeExtList(descItemTypes);
     }
 
+    /**
+     * Získání seznamu všech balíčků
+     * 
+     * @return seznam balíčků
+     */
     @RequestMapping(value = "/getPackages", method = RequestMethod.GET)
+    @AuthMethod(permission = Permission.ADMIN)
     public List<PackageVO> getPackages() {
         List<RulPackage> packages = packageService.getPackages();
         List<PackageVO> packageVO = packages.stream().map(i -> PackageVO.newInstance(i)).collect(Collectors.toList());
@@ -225,9 +231,15 @@ public class RuleController {
         packageService.deletePackage(code);
     }
 
+    /**
+     * Nahrání balíčku podle kódu
+     * 
+     * @param code kód balíčku
+     * @param response
+     */
     @RequestMapping(value = "/exportPackage/{code}", method = RequestMethod.GET)
-    public void exportPackageRest(@PathVariable(value = "code") final String code,
-                                  HttpServletResponse response) {
+    @AuthMethod(permission = Permission.ADMIN)
+    public void exportPackageRest(@PathVariable(value = "code") final String code, HttpServletResponse response) {
         Assert.notNull(code, "Kód musí být vyplněn");
         try {
             Path filePath = packageService.exportPackage(code);
