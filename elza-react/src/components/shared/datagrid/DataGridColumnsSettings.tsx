@@ -69,8 +69,8 @@ export default function DataGridColumnSettingsFn({
     onSubmitForm,
     className,
 }: Props) {
-    const [leftSelected, setLeftSelected] = useState<string[]>([]);
-    const [rightSelected, setRightSelected] = useState<string[]>([]);
+    const [leftSelected, setLeftSelected] = useState<Column[]>([]);
+    const [rightSelected, setRightSelected] = useState<Column[]>([]);
     const [visible, setVisible] = useState<Column[]>([]);
     const [available, setAvailable] = useState<Column[]>(columns || []);
     const [usedItemTypes, setUsedItemTypes] = useState<UsedItemType[]>([]);
@@ -126,10 +126,7 @@ export default function DataGridColumnSettingsFn({
         const moved = _visible.splice(from, 1);
         _visible.splice(to, 0, ...moved); // insert moved item on 'to' index
 
-        const _rightSelected = [to.toString()];
-
         setVisible(_visible);
-        setRightSelected(_rightSelected)
     }
 
     /* Unused version for multiple items*/
@@ -154,26 +151,22 @@ export default function DataGridColumnSettingsFn({
 
     function handleAddVisible() {
         const selectedMap = {};
-        leftSelected.forEach(index => {
-            selectedMap[index] = true;
+        leftSelected.forEach(({ code }) => {
+            selectedMap[code] = true;
         });
 
         const newAvailable = [];
         const newVisible = [...visible];
 
-        available.forEach((item, index) => {
-            if (selectedMap[index]) {
+        available.forEach((item) => {
+            if (selectedMap[item.code]) {
                 newVisible.push(item);
             } else {
                 newAvailable.push(item);
             }
         });
 
-        const newRightSelected = [];
-        const originalLength = visible.length;
-        for (let newLength = newVisible.length; newLength > originalLength; newLength--) {
-            newRightSelected.push(newLength - 1);
-        }
+        const newRightSelected: Column[] = [...leftSelected];
 
         setAvailable(newAvailable);
         setVisible(newVisible);
@@ -208,28 +201,21 @@ export default function DataGridColumnSettingsFn({
 
     function handleRemoveVisible() {
         const selectedMap = {};
-        rightSelected.forEach(index => {
-            selectedMap[index] = true;
-        });
-
-        const rightSelectedIds = [];
-        visible.forEach((item, index) => {
-            if (selectedMap[index]) {
-                rightSelectedIds.push(item.id);
-            }
+        rightSelected.forEach(({ code }) => {
+            selectedMap[code] = true;
         });
 
         // Upravení seznamu visible
         const newVisible = [];
-        visible.forEach((item, index) => {
-            if (!selectedMap[index]) {
+        visible.forEach((item) => {
+            if (!selectedMap[item.code]) {
                 newVisible.push(item);
             }
         });
 
         // Získání nového seznamu available
         const visibleMap = getMapFromList(newVisible);
-        const newAvailable = [];
+        const newAvailable: Column[] = [];
         columns.forEach(col => {
             if (!visibleMap[col.id]) {
                 if (itemTypeCodes !== null && itemTypeCodes.length !== 0) {
@@ -250,10 +236,10 @@ export default function DataGridColumnSettingsFn({
 
         // Ziskání
 
-        const newLeftSelected = [];
-        newAvailable.forEach((item, index) => {
-            if (rightSelectedIds.indexOf(item.id) > -1) {
-                newLeftSelected.push(index);
+        const newLeftSelected: Column[] = [];
+        newAvailable.forEach((item) => {
+            if (rightSelected.findIndex(({ code }) => code === item.code) > -1) {
+                newLeftSelected.push(item);
             }
         });
 
@@ -263,12 +249,26 @@ export default function DataGridColumnSettingsFn({
         setLeftSelected(newLeftSelected);
     }
 
-    function handleChangeLeftSelection(selected: string[]) {
-        setLeftSelected(selected);
+    function getFilteredAvailable() {
+        return available.filter((item) => item.name.toLowerCase().indexOf(leftFilter.toLowerCase()) > -1)
     }
 
-    function handleChangeRightSelection(selected: string[]) {
-        setRightSelected(selected);
+    function getFilteredVisible() {
+        return visible.filter((item) => item.name.toLowerCase().indexOf(rightFilter.toLowerCase()) > -1)
+    }
+
+    function handleChangeLeftSelection(selectedIndexes: string[]) {
+        const filteredAvailable = getFilteredAvailable();
+        const selectedItems = selectedIndexes.map((itemIndex) => filteredAvailable[itemIndex])
+        setLeftSelected(selectedItems);
+        setRightSelected([]);
+    }
+
+    function handleChangeRightSelection(selectedIndexes: string[]) {
+        const filteredVisible = getFilteredVisible();
+        const selectedItems = selectedIndexes.map((itemIndex) => filteredVisible[itemIndex])
+        setRightSelected(selectedItems);
+        setLeftSelected([]);
     }
 
     function renderItemContent({ item }: Item) {
@@ -278,9 +278,19 @@ export default function DataGridColumnSettingsFn({
 
     const cls = className ? 'datagrid-columns-settings-container ' + className : 'datagrid-columns-settings-container';
 
-    const filteredAvailable = available.filter((item) => item.name.toLowerCase().indexOf(leftFilter.toLowerCase()) > -1);
-    const filteredVisible = visible.filter((item) => item.name.toLowerCase().indexOf(rightFilter.toLowerCase()) > -1);
+    const filteredAvailable = getFilteredAvailable();
+    const filteredVisible = getFilteredVisible();
     const usedAvailable = available.filter((item) => usedItemTypes.find(type => type.rulItemTypeId == item.id));
+
+    // remap column objects to filtered list indexes
+    const filteredLeftSelectedIndexes = leftSelected.map((item) => {
+        return filteredAvailable.findIndex(({ code }) => item?.code === code);
+    }).filter((index) => index >= 0);
+
+    // remap column objects to filtered list indexes
+    const filteredRightSelectedIndexes = rightSelected.map((item) => {
+        return filteredVisible.findIndex(({ code }) => item?.code === code);
+    }).filter((index) => index >= 0);
 
     return (
         <div>
@@ -293,7 +303,7 @@ export default function DataGridColumnSettingsFn({
                             <ListBox
                                 items={filteredAvailable}
                                 multiselect
-                                activeIndexes={leftSelected}
+                                activeIndexes={filteredLeftSelectedIndexes}
                                 renderItemContent={renderItemContent}
                                 onChangeSelection={handleChangeLeftSelection}
                                 onDoubleClick={handleAddVisible}
@@ -326,7 +336,7 @@ export default function DataGridColumnSettingsFn({
                                 items={filteredVisible}
                                 sortable
                                 multiselect
-                                activeIndexes={rightSelected}
+                                activeIndexes={filteredRightSelectedIndexes}
                                 renderItemContent={renderItemContent}
                                 onChangeOrder={handleChangeOrder}
                                 onChangeSelection={handleChangeRightSelection}
