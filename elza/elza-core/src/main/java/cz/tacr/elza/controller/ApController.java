@@ -107,6 +107,7 @@ import cz.tacr.elza.drools.model.ModelAvailable;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -131,7 +132,6 @@ import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cam.CamService;
 import cz.tacr.elza.service.cam.ProcessingContext;
-import cz.tacr.elza.service.cam.SyncImpossibleException;
 import cz.tacr.elza.service.layers.LayersConfig;
 
 /**
@@ -687,7 +687,7 @@ public class ApController {
         MultipleApChangeContext mcc = new MultipleApChangeContext();
 
         try {
-            accessPointService.replace(replacedState, replacementState, extSystem, mcc);
+            accessPointService.replace(replacedState, replacementState, extSystem, mcc, false);
         } catch (SyncImpossibleException e) {
             throw new BusinessException("Failed to replace access point", e, 
                     BaseCode.INVALID_STATE)

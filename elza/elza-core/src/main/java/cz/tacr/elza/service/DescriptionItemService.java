@@ -773,7 +773,7 @@ public class DescriptionItemService {
         checkFundVersionLock(fundContext.getFundVersion());
 
         // kontrola validity typu a specifikace
-        itemService.checkValidTypeAndSpec(fundContext, descItem);
+        itemService.checkValidTypeAndSpec(fundContext, descItem, false);
 
         int maxPosition = getMaxPosition(descItem, nodeItems);
 
@@ -1196,7 +1196,7 @@ public class DescriptionItemService {
 			descItemUpdated = updateItemValueAsNewVersion(fundVersion, change, descItemDB, descItem.getItemSpec(),
                                                           HibernateUtils.unproxy(descItem.getData()), descItem.getPosition(),
                                                           descItem.getReadOnly(),
-                                                          changeContext);
+                                                          changeContext, false);
 		} else {
             descItemUpdated = updateValue(fundVersion, descItem, changeContext);
         }
@@ -1265,7 +1265,7 @@ public class DescriptionItemService {
 			descItemUpdated = updateItemValueAsNewVersion(fundVersion, change, descItemDB, descItem.getItemSpec(),
                                                           HibernateUtils.unproxy(descItem.getData()), descItem.getPosition(),
                                                           descItem.getReadOnly(),
-                                                          changeContext);
+                                                          changeContext, false);
 		} else {
             descItemUpdated = updateValue(fundVersion, descItem, changeContext);
         }
@@ -1464,7 +1464,8 @@ public class DescriptionItemService {
      */
     public ArrDescItem updateDescriptionItem(final ArrDescItem descItem,
                                              final ArrFundVersion fundVersion,
-                                             final ArrChange change) {
+                                             final ArrChange change,
+                                             final boolean forceUpdate) {
 
         logger.debug("updateDescriptionItem, fundVersion: {}, change: {}, descItem: {}",
                           fundVersion.getFundVersionId(),
@@ -1473,7 +1474,7 @@ public class DescriptionItemService {
         SingleItemChangeContext sicc = new SingleItemChangeContext(this.ruleService, this.eventNotificationService,
                                                                    fundVersion.getFundVersionId(), descItem.getNodeId());
 
-        ArrDescItem descItemUpdated = updateValueAsNewVersion(fundVersion, change, descItem, sicc, false);
+        ArrDescItem descItemUpdated = updateValueAsNewVersion(fundVersion, change, descItem, sicc, forceUpdate);
 
         sicc.validateAndPublish();
 
@@ -1555,7 +1556,7 @@ public class DescriptionItemService {
         // kontrola validity typu a specifikace
         StaticDataProvider sdp = staticDataService.getData();
         FundContext fundContext = FundContext.newInstance(fundVersion, arrangementService, sdp);
-        itemService.checkValidTypeAndSpec(fundContext, result);
+        itemService.checkValidTypeAndSpec(fundContext, result, false);
 
         // update value in node cache
         arrangementCacheService.changeDescItem(result.getNodeId(), result, false, changeContext);
@@ -1607,7 +1608,7 @@ public class DescriptionItemService {
 		ArrData dataCurr = HibernateUtils.unproxy(descItem.getData());
 
         return updateItemValueAsNewVersion(fundVersion, change, descItemCurr, descItem.getItemSpec(), dataCurr,
-                                           descItem.getPosition(), descItem.getReadOnly(), batchChangeContext);
+                                           descItem.getPosition(), descItem.getReadOnly(), batchChangeContext, forceUpdate);
 	}
 
     /**
@@ -1630,7 +1631,8 @@ public class DescriptionItemService {
                                                     final ArrData srcData,
                                                     final Integer newPosition,
                                                     final Boolean readOnly,
-                                                    final BatchChangeContext batchChangeContext) {
+                                                    final BatchChangeContext batchChangeContext,
+                                                    boolean forceUpdate) {
         Integer oldPosition = descItemDB.getPosition();
         boolean move = false;
         if (!Objects.equals(oldPosition, newPosition)) {
@@ -1659,7 +1661,7 @@ public class DescriptionItemService {
         // kontrola validity typu a specifikace
         StaticDataProvider sdp = staticDataService.getData();
         FundContext fundContext = FundContext.newInstance(fundVersion, arrangementService, sdp);
-        itemService.checkValidTypeAndSpec(fundContext, result);
+        itemService.checkValidTypeAndSpec(fundContext, result, forceUpdate);
 
         // update value in node cache
         arrangementCacheService.changeDescItem(result.getNodeId(), result, move, batchChangeContext);
@@ -2100,7 +2102,7 @@ public class DescriptionItemService {
 			ArrDescItem updatedDescItem = updateItemValueAsNewVersion(fundVersion, change, descItem, setSpecification,
                                                                       HibernateUtils.unproxy(descItem.getData()), descItem.getPosition(),
                                                                       descItem.getReadOnly(),
-                                                                      changeContext);
+                                                                      changeContext, false);
             nodeIdsToAdd.remove(updatedDescItem.getNodeId());
         }
 
