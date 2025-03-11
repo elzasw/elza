@@ -32,4 +32,10 @@ public interface Item extends Comparable<Item> {
      * @return Never null, for non-serializable item should be returned empty string.
      */
     String getSerializedValue();
+
+    /**
+     * @see #getDescItemObjectId
+     * @return objectId of item
+     */
+	Integer getDescItemObjectId();
 }

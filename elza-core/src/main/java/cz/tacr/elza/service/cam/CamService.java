@@ -74,6 +74,7 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
@@ -1137,8 +1138,7 @@ public class CamService {
         ExtSyncsQueueItem firstItem = itemPage.iterator().next();
         ApExternalSystem externalSystem = firstItem.getExternalSystem();
 
-        ItemSyncImportProcessor isiProc = appCtx.getBean(ItemSyncImportProcessor.class, externalSystem
-                .getExternalSystemId());
+        ItemSyncImportProcessor isiProc = appCtx.getBean(ItemSyncImportProcessor.class, externalSystem.getExternalSystemId());
 
         List<Integer> bindingIds = new ArrayList<>(), apIds = new ArrayList<>();
 
@@ -1156,8 +1156,7 @@ public class CamService {
             }
         }
         if (CollectionUtils.isNotEmpty(apIds)) {
-            List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPointIdsAndExternalSystem(apIds,
-                                                                                                              externalSystem);
+            List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPointIdsAndExternalSystem(apIds, externalSystem);
             bindingStates.forEach(bs -> isiProc.addBindingValue(bs.getBinding().getValue()));
         }
         if (CollectionUtils.isNotEmpty(bindingIds)) {
