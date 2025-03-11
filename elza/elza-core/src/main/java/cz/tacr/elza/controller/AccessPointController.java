@@ -22,6 +22,7 @@ import cz.tacr.elza.controller.vo.CreatedPart;
 import cz.tacr.elza.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.controller.vo.DeleteAccessPointsDetail;
 import cz.tacr.elza.controller.vo.EntityRef;
+import cz.tacr.elza.controller.vo.InvalidatedEntities;
 import cz.tacr.elza.controller.vo.ReplaceType;
 import cz.tacr.elza.controller.vo.ResultAutoItems;
 import cz.tacr.elza.controller.vo.RevStateChange;
@@ -99,7 +100,7 @@ public class AccessPointController implements AccesspointsApi {
     }
 
     /**
-     * Odstranění nebo nahrazení archivní entity
+     * Odstranění (zneplatnění) nebo nahrazení archivní entity
      * 
      * @param id
      * @param deleteAccessPointDetail
@@ -135,7 +136,7 @@ public class AccessPointController implements AccesspointsApi {
     }
 
     /**
-     * Odstranění archivných entit
+     * Odstranění (zneplatnění) archivných entit
      * 
      * @param deleteAccessPointsDetail list of id or uuid to delete
      */
@@ -168,6 +169,19 @@ public class AccessPointController implements AccesspointsApi {
         accessPointService.restoreAccessPoint(apState);
 
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Získání seznamu smazaných (neplatných) entit
+     * 
+     * @param page
+     * @param pageSize
+     * @return InvalidatedEntitiesm
+     */
+    @Override
+    @Transactional
+    public ResponseEntity<InvalidatedEntities> accessPointGetInvalidatedEntities(Integer page, Integer pageSize) {
+    	return ResponseEntity.ok(accessPointService.findInvalidatedEntities(page, pageSize));
     }
 
     /**

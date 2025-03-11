@@ -40,6 +40,7 @@ import cz.tacr.elza.test.controller.vo.CreatedPart;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointsDetail;
 import cz.tacr.elza.test.controller.vo.EntityRef;
+import cz.tacr.elza.test.controller.vo.InvalidatedEntities;
 import cz.tacr.elza.test.controller.vo.ReplaceType;
 
 public class AccessPointControllerTest extends AbstractControllerTest {
@@ -132,12 +133,12 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         ApAccessPoint ap1 = apRepository.findAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
         assertNotNull(ap1);
         List<ApPart> parts = partService.findPartsByAccessPoint(ap1);
-        assertTrue(parts.size() == 3);
+        assertEquals(3, parts.size());
 
         ApAccessPoint ap2 = apRepository.findAccessPointByUuid("c4b13fa0-89a2-44a2-954f-e281934c3dcf");
         assertNotNull(ap2);
         parts = partService.findPartsByAccessPoint(ap2);
-        assertTrue(parts.size() == 3);
+        assertEquals(3, parts.size());
 
         DeleteAccessPointDetail deleteAPDetail = new DeleteAccessPointDetail();
         deleteAPDetail.setReplacedBy(ap2.getAccessPointId().toString());
@@ -148,12 +149,15 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         ApAccessPointVO apInfo = this.getAccessPoint(ap1.getAccessPointId());
         assertNotNull(apInfo);
         assertTrue(apInfo.isInvalid());
-        assertEquals(apInfo.getReplacedById(), ap2.getAccessPointId());
-
-        assertEquals(apInfo.getParts().size(), 3);
+        assertEquals(ap2.getAccessPointId(), apInfo.getReplacedById());
+        assertEquals(3, apInfo.getParts().size());
 
         parts = partService.findPartsByAccessPoint(ap2);
-        assertTrue(parts.size() == 3);
+        assertEquals(3, parts.size());
+
+        // find deleted entities
+        InvalidatedEntities invalidated = accesspointsApi.accessPointGetInvalidatedEntities(null, null);
+        assertEquals(1, invalidated.getTotalCount());
 
         // try to restore AP
         accesspointsApi.accessPointRestoreAccessPoint(ap1.getAccessPointId().toString());
@@ -162,6 +166,10 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         assertTrue(!apInfo.isInvalid());
         assertNull(apInfo.getReplacedById());
         assertEquals(apInfo.getStateApproval(), ApState.StateApproval.NEW);
+
+        // find deleted entities
+        invalidated = accesspointsApi.accessPointGetInvalidatedEntities(null, null);
+        assertEquals(0, invalidated.getTotalCount());
     }
 
     @Test

@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -50,11 +51,13 @@ import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApValidationIssues;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
+import cz.tacr.elza.controller.vo.DeletedEntity;
 import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.InvalidatedEntities;
 import cz.tacr.elza.controller.vo.PartValidationIssues;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
@@ -365,6 +368,88 @@ public class AccessPointService {
         return apAccessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds, scopeIdsForSearch,
                                                                            approvalStates, searchTypeName,
                                                                            searchTypeUsername);
+    }
+
+    /**
+     * Získání seznamu smazaných (neplatných) entit
+     * 
+     * @param page
+     * @param pageSize
+     * @return InvalidatedEntities
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN, UsrPermission.Permission.AP_SCOPE_RD_ALL})
+    public InvalidatedEntities findInvalidatedEntities(final Integer page, final Integer pageSize) {
+    	Page<ApState> invalidated = apStateRepository.findAccessPointsDeletedPageable(PageRequest.of(page, pageSize));
+    	if (invalidated.isEmpty()) {
+    		return new InvalidatedEntities(0, Collections.emptyList());
+    	}
+
+    	Long totalCount = invalidated.getTotalElements();
+    	List<DeletedEntity> deletedEntity = new ArrayList<>(invalidated.getSize());
+    	List<ApAccessPoint> accessPoints = invalidated.getContent().stream().map(i -> i.getAccessPoint()).toList();
+
+    	// reading all data to prepare the result
+    	List<ApBindingState> bindingStateAll = bindingStateRepository.findByAccessPoints(accessPoints);
+    	Map<ApAccessPoint, List<ApBindingState>> bindingMap = bindingStateAll.stream().collect(Collectors.groupingBy(ApBindingState::getAccessPoint));
+
+    	List<ApIndex> indexDisplayAll = indexRepository.findByAccessPointsAndIndexType(accessPoints, DISPLAY_NAME);
+    	Map<ApAccessPoint, List<ApIndex>> indexMap = indexDisplayAll.stream().collect(Collectors.groupingBy(i -> i.getPart().getAccessPoint()));
+
+    	// creating a list of returned objects DeletedEntity
+    	invalidated.forEach(state -> deletedEntity.add(createDeletedEntity(state, bindingMap, indexMap)));
+
+    	return new InvalidatedEntities(totalCount.intValue(), deletedEntity);
+    }
+
+    /**
+     * Vytvoření objektu třídy DeletedEntity
+     * 
+     * @param state
+     * @param bindingMap
+     * @param indexMap
+     * @return DeletedEntity
+     */
+    private DeletedEntity createDeletedEntity(ApState state, Map<ApAccessPoint, List<ApBindingState>> bindingMap, Map<ApAccessPoint, List<ApIndex>> indexMap) {
+		List<ApIndex> indexes = indexMap.get(state.getAccessPoint());
+
+		// define name of ap
+		Optional<ApIndex> preferredPartIndex = indexes.stream().filter(i -> i.getPartId().equals(state.getAccessPoint().getPreferredPartId())).findFirst();
+        String name = preferredPartIndex.isPresent() ? preferredPartIndex.get().getIndexValue() : null;
+
+        String bindingValue = null;
+        Integer externalSystemId = null;
+        List<ApBindingState> bindingStates = bindingMap.get(state.getAccessPoint());
+		if (bindingStates != null && !bindingStates.isEmpty()) {
+			// each ap should have only one bindingState
+			ApBinding binding = bindingStates.iterator().next().getBinding();
+			if (binding != null) {
+				bindingValue = binding.getValue();
+				externalSystemId = binding.getExternalSystemId();
+			}
+        }
+
+		// define description of ap
+		Optional<ApIndex> bodyPartIndex = indexes.stream().filter(i -> {
+				ApPart part = i.getPart();
+				if (part != null && part.getPartType() != null) {
+					return part.getPartType().getCode().equals(StaticDataProvider.DEFAULT_BODY_PART_TYPE);
+				}
+				return false;
+			}).findFirst();
+        String description = bodyPartIndex.isPresent() ? bodyPartIndex.get().getIndexValue() : null;
+
+        DeletedEntity de = new DeletedEntity();
+		de.setAccessPointId(state.getAccessPointId());
+		de.setName(name);
+		de.setDescription(description);
+		de.setBindingValue(bindingValue);
+		de.setExtSystemId(externalSystemId);
+		de.setApTypeId(state.getApTypeId());
+		de.setDeleteChangeId(state.getDeleteChangeId());
+		de.setDeleteDate(state.getDeleteChange().getChangeDate());
+		de.setReplacedBy(state.getReplacedById());
+		
+		return de;
     }
 
     /**
