@@ -79,6 +79,20 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>install-elza-react-dependencies</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>ci</argument>
+                                <argument>--legacy-peer-deps</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>install-api-dependencies</id>
                         <phase>generate-sources</phase>
                         <goals>
@@ -132,20 +146,6 @@
                             <arguments>
                                 <argument>run</argument>
                                 <argument>compile-extracted</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>install-elza-react-dependencies</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>npm</executable>
-                            <arguments>
-                                <argument>ci</argument>
-                                <argument>--legacy-peer-deps</argument>
                             </arguments>
                         </configuration>
                     </execution>
