@@ -2,6 +2,9 @@
   "name": "Elza REST API",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "compile": "tsp compile main.tsp"
+  },
   "dependencies": {
     "@typespec/compiler": "^0.65",
     "@typespec/http": "^0.65",
