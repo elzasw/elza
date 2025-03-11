@@ -597,8 +597,17 @@
   <#list existingcopies as item>
     <#lt>  <ead:altformavail<#if existingcopiesInherited><#lt> altrender="inherited"</#if>><ead:p>${item.serializedValue}</ead:p></ead:altformavail>
   </#list>
+  <#-- Zjisteni podedenych roli -->
+  <#local inheritedRoles = node.getInheritedItems("ZP2015_ENTITY_ROLE")>
+  <#if (inheritedRoles?size>0)>
+    <#local relations = relations + inheritedRoles>
+  </#if>
+  <#local inheritedRoles = node.getInheritedItems("ZP2015_ITEM_TITLE_REF")>
+  <#if (inheritedRoles?size>0)>
+    <#local relations = relations + inheritedRoles>
+  </#if>
   <#if (relations?size>0)>
-    <@writeRelations relations />
+    <@writeRelations node relations />
   </#if>
   
 </#macro>
@@ -863,35 +872,33 @@
         <#lt>  <ead:container<#if containerInherited><#lt> altrender="inherited"</#if>>${item.serializedValue}</ead:container>
   </#list>
   <#-- Zapis puvodcu -->
-  <#local originatorsInherited = false>
-  <#if (originators?size)==0>
-    <#if node.parentNode?has_content>
-      <#local originators = getItemsFromParent(node.parentNode, "ZP2015_ORIGINATOR")>
-      <#local originatorsInherited = true>
-    </#if>
-  </#if>
-  <#list originators as item>    
-    <#lt>  <ead:origination <#if originatorsInherited><#lt> altrender="inherited"</#if> >
+  <#if (originators?size)!=0>
+    <#list originators as item>
+    <#lt>  <ead:origination>
         <@writeAp item.record "ORIGINATOR" />
     <#lt>  </ead:origination>
-  </#list>
-
+    </#list>
+  </#if>
+  <#local originators = node.getInheritedItems("ZP2015_ORIGINATOR")>
+  <#if (originators?size)!=0>
+    <#list originators as item>    
+    <#lt>  <ead:origination altrender="inherited">
+        <@writeAp item.record "ORIGINATOR" />
+    <#lt>  </ead:origination>
+    </#list>
+  </#if>
+  
   <#if (needsCharakteristikaJP)>
     <@writeCharakteristika node />
   </#if>
   <#-- Zapis jazyku -->
-  <#if (languages?size>0) >
-    <@writeLangMaterials languages />
-  <#else>
-    <#if node.parentNode?has_content>
-      <#local languages=getItemsFromParent(node.parentNode, "ZP2015_LANGUAGE")>
-      <#if (languages?size>0) >
-        <@writeLangMaterials languages true/>
-      </#if>
-    </#if>
+  <#local inhLanguages=node.getInheritedItems( "ZP2015_LANGUAGE")>
+  <#if (languages?size>0)||(inhLanguages?size>0) >
+    <@writeLangMaterials languages inhLanguages />
   </#if>
   <#if (majorLanguages?size>0) >
-    <@writeLangMaterials majorLanguages false "majority"/>
+    <#local inhLanguages=[]>
+    <@writeLangMaterials majorLanguages inhLanguages "majority"/>
   </#if>
   <#if (node.depth==1)>  
     <#list output.items?filter(item -> item.type.code=="ZP2015_UNITS_AMOUNT") as item>
@@ -1067,12 +1074,15 @@
 
 <#-- Zápis jazyku, vola se jen pokud existuje alespon jeden jazyk
   -->
-<#macro writeLangMaterials items inherited=false altrender="">
+<#macro writeLangMaterials items inherited=[] altrender="">
   <!-- Jazyky JP -->
-  <#if items?size==0><#stop "Empty item list"></#if>
+  <#if (items?size==0 && inherited?size==0)><#stop "Empty item list"></#if>
   <#lt>  <ead:langmaterial<#if (altrender?length>0)><#lt> altrender="${altrender}"</#if>>     
   <#list items as langItem>
-    <#lt>   <ead:language langcode="${langItem.specification.code[4..]}"<#if inherited><#lt> altrender="inherited"</#if>>${langItem.specification.name}</ead:language>
+    <#lt>   <ead:language langcode="${langItem.specification.code[4..]}">${langItem.specification.name}</ead:language>
+  </#list>
+  <#list inherited as langItem>
+    <#lt>   <ead:language langcode="${langItem.specification.code[4..]}" altrender="inherited">${langItem.specification.name}</ead:language>
   </#list>
   <#lt>  </ead:langmaterial>
 </#macro>
@@ -1301,10 +1311,11 @@
 <#lt>  </ead:unitdatestructured>
 </#macro>
 
-<#macro writeRelations relations>
+<#macro writeRelations node relations>
   <#-- Role entit, souřadnice, autorské dílo -->
   <ead:relations>
   <#list relations as item>
+    <#local inherited = !node.isOwnItem(item)>
     <#switch item.type.code>
     <#case "ZP2015_POSITION">
       <#lt>    <ead:relation relationtype = "otherrelationtype"  otherrelationtype="COORDINATES">
@@ -1316,7 +1327,7 @@
       <#lt>    </ead:relation>
       <#break>
     <#case "ZP2015_ITEM_TITLE_REF">
-      <#lt>    <ead:relation relationtype="resourcerelation" linktitle="autorské dílo" linkrole="ARTWORK">
+      <#lt>    <ead:relation relationtype="resourcerelation" linktitle="autorské dílo" linkrole="ARTWORK"<#if inherited><#lt> altrender="inherited"</#if>>
       <#lt>      <ead:relationentry>${item.record.preferredPart.value}</ead:relationentry>
       <#lt>      <ead:descriptivenote><ead:p><ead:ptr target="ap${item.record.id?c}" /></ead:p></ead:descriptivenote>      
       <#lt>    </ead:relation>
@@ -1345,7 +1356,7 @@
       <#if (linktitleMapping?keys?seq_contains(linkrole)) >
         <#local linktitle=linktitleMapping[linkrole]>
       </#if>
-      <#lt>    <ead:relation relationtype="${relationType}" linktitle="${linktitle}" linkrole="${linkrole}">
+      <#lt>    <ead:relation relationtype="${relationType}" linktitle="${linktitle}" linkrole="${linkrole}"<#if inherited><#lt> altrender="inherited"</#if>>
       <#lt>      <ead:relationentry>${item.record.preferredPart.value}</ead:relationentry>
       <#lt>      <ead:descriptivenote><ead:p><ead:ptr target="ap${item.record.id?c}" /></ead:p></ead:descriptivenote>      
       <#lt>    </ead:relation>
