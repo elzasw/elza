@@ -3,6 +3,8 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,13 +20,15 @@ import cz.tacr.elza.domain.projection.ApStateInfo;
 @Repository
 public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, JpaSpecificationExecutor<ApState> {
 
-    /*
-    @Query("SELECT s FROM ap_state s WHERE s.accessPoint = :accessPoint AND s.deleteChangeId IS NULL")
-    ApState findActiveByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
-
-    @Query("SELECT s FROM ap_state s WHERE s.accessPoint IN :accessPoints AND s.deleteChangeId IS NULL")
-    List<ApState> findActiveByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
-    */
+    /**
+     * Search for deleted APs
+     */
+    @Query("SELECT st FROM ap_state st" +
+    		" JOIN FETCH st.accessPoint ap" +
+    		" WHERE st.deleteChange IS NOT NULL" +
+    		" AND st.createChangeId IN (SELECT max(s.createChangeId) FROM ap_state s WHERE s.accessPoint = st.accessPoint)" +
+    		" ORDER BY st.deleteChangeId DESC")
+    Page<ApState> findAccessPointsDeletedPageable(Pageable pageable);
 
     @Query("SELECT s1" +
             " FROM ap_state s1" +
