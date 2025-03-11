@@ -637,12 +637,23 @@ model DeleteAccessPointsDetail {
  * Deleted archive entity
  */
 model DeletedEntity {
+    /** id of access point */
     accessPointId: integer;
+    /** name of access point */
     name: string;
+    /** pt_body + brief_desc */
     description?: string;
+    /** id type of acces point */
     apTypeId: integer;
+    /** id in external system */
+    bindingValue?: string;
+    /** id external system */
     extSystemId?: integer;
+    /** id of deleteChange */
     deleteChangeId: integer;
+    /** date of deletion */
+    deleteDate: offsetDateTime;
+    /** id replaced access point */
     replacedBy?: integer;
 }
 
@@ -1008,7 +1019,18 @@ namespace ElzaAPI.AccessPoint {
           @body data: BaseException;
        };
 
-    /**
+     /**
+     * Get invalidated (deleted) entities
+     */
+    @route("/invalidated")
+    @get op getInvalidatedEntities(
+        /** number of the page */
+        @query page?: integer = 0,
+        /** page size */
+        @query pageSize?: integer = 10
+    ): InvalidatedEntities;
+
+   /**
      * Validation of an archive entity
      */
     @route("/{id}/validate")
@@ -1022,13 +1044,6 @@ namespace ElzaAPI.AccessPoint {
           @Http.statusCode statusCode: 404;
           @body data: BaseException;
        };
-
-    /**
-     * Get invalidated entities
-     */
-    //@route("/invalidated")
-    //@get op getInvalidatedEntities(
-    //): InvalidatedEntities;
 
     /**
      * List of automatically generated elements of the description

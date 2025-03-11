@@ -15,9 +15,6 @@ import jakarta.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
-
 @Entity(name = "ap_index")
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ApIndex implements AccessPointCacheSerializable {

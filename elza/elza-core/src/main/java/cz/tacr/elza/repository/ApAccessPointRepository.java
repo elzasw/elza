@@ -33,7 +33,6 @@ public interface ApAccessPointRepository extends ElzaJpaRepository<ApAccessPoint
      *
      * @return AP projection
      */
-    @SuppressWarnings("SpringDataRepositoryMethodReturnTypeInspection")
     @Query("SELECT new cz.tacr.elza.domain.projection.ApAccessPointInfo(ap.accessPointId, ap.uuid, s.stateId, s.scopeId, s.apTypeId)" +
             " FROM ap_state s" +
             " JOIN s.accessPoint ap" +
