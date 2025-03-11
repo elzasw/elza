@@ -529,7 +529,7 @@ public class FundLevelService {
                     arrDataUriRef.setDeletingProcess(true);
                     
                     arrDescItem.setData(arrDataUriRef);
-                    descriptionItemService.updateDescriptionItem(arrDescItem, fundVersion, deleteChange);
+                    descriptionItemService.updateDescriptionItem(arrDescItem, fundVersion, deleteChange, false);
                 }
             }
             logger.debug("Cleared {} ArrDeskItem with UriRef to deleted nodes...", arrDescItemList.size());

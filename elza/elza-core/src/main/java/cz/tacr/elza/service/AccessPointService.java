@@ -119,6 +119,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionUtils;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
@@ -153,7 +154,6 @@ import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
-import cz.tacr.elza.service.cam.SyncImpossibleException;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventApQueue;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -491,7 +491,7 @@ public class AccessPointService {
 
             MultipleApChangeContext macc = new MultipleApChangeContext();
 
-            replace(apState, replacedByState, extSystem, macc);
+            replace(apState, replacedByState, extSystem, macc, false);
             apState.setReplacedBy(replacedBy);
 
             // kopírování všechny Part z accessPoint->replacedBy
@@ -1003,20 +1003,19 @@ public class AccessPointService {
     public void replace(final ApState replacedState,
                         final ApState replacementState,
                         @Nullable final ApExternalSystem apExternalSystem,
-                        MultipleApChangeContext macc)
+                        MultipleApChangeContext macc,
+                        boolean syncQueue)
             throws SyncImpossibleException {
 
         // replace in access points (items)
         replaceInAps(replacedState, replacementState, apExternalSystem, macc);
 
         // replace in arrangement
-        replaceInArrItems(replacedState, replacementState);
+        replaceInArrItems(replacedState, replacementState, syncQueue);
 
     }
 
-    private void replaceInArrItems(ApState replacedState,
-                                   ApState replacementState)
-            throws SyncImpossibleException {
+    private void replaceInArrItems(ApState replacedState, ApState replacementState, boolean syncQueue) throws SyncImpossibleException {
         logger.debug("AccessPoint replacement in ArrItems started ({}->{})", replacedState.getAccessPointId(),
                      replacementState.getAccessPointId());
         
@@ -1029,13 +1028,11 @@ public class AccessPointService {
         logger.debug("Number of ArrItems which needs replacement: {}", arrItems.size());
 
         // ArrItems
-        final Map<Integer, List<ArrDescItem>> itemsByFundId = arrItems.stream()
-                .collect(Collectors.groupingBy(item -> item.getNode().getFundId()));
+        final Map<Integer, List<ArrDescItem>> itemsByFundId = arrItems.stream().collect(Collectors.groupingBy(item -> item.getNode().getFundId()));
 
         Set<Integer> fundIds = itemsByFundId.keySet();
         // fund to scopes
-        Map<Integer, Set<Integer>> fundIdsToScopes = fundIds.stream()
-                .collect(toMap(Function.identity(), scopeRepository::findIdsByFundId));
+        Map<Integer, Set<Integer>> fundIdsToScopes = fundIds.stream().collect(toMap(Function.identity(), scopeRepository::findIdsByFundId));
 
         // Oprávnění
         boolean isFundAdmin = userService.hasPermission(UsrPermission.Permission.FUND_ARR_ALL);
@@ -1075,23 +1072,22 @@ public class AccessPointService {
                 im.setItemType(i.getItemType());
                 im.setPosition(i.getPosition());
 
-                Set<Integer> fundScopes = fundIdsToScopes.get(fundId);
-                if (fundScopes == null) {
-                    throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
-                            .set("fundId", fundId);
-                } else {
-                    if (!fundScopes.contains(replacementState.getScopeId())) {
-                        throw new SyncImpossibleException(
-                                "Nelze nahradit entitu, protože oblast nahrazující entity není napojena na všechny AS s místem použití nahrazované entity. entitaId: "
-                                        + replacedState.getAccessPointId() + ", fondId: " + fundId);
-                    }
+                if (!syncQueue) {
+	                Set<Integer> fundScopes = fundIdsToScopes.get(fundId);
+	                if (fundScopes == null) {
+	                    throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE).set("fundId", fundId);
+	                } else {
+	                    if (!fundScopes.contains(replacementState.getScopeId())) {
+	                        throw new SyncImpossibleException(
+	                                "Nelze nahradit entitu, protože oblast nahrazující entity není napojena na všechny AS s místem použití nahrazované entity. entitaId: "
+	                                        + replacedState.getAccessPointId() + ", fondId: " + fundId);
+	                    }
+	                }
                 }
-                descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change);
+                descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change, syncQueue);
+            }
+            logger.debug("AccessPoint replacement in ArrItems finished ({}->{})", replacedState.getAccessPointId(), replacementState.getAccessPointId());
         }
-
-        logger.debug("AccessPoint replacement in ArrItems finished ({}->{})", replacedState.getAccessPointId(),
-                     replacementState.getAccessPointId());
-    }
     }
 
     private void replaceInAps(ApState replacedState,
@@ -2215,7 +2211,7 @@ public class AccessPointService {
         MultipleApChangeContext macc = new MultipleApChangeContext();
 
         if (replace) {
-            replace(state, trgState, null, macc);
+            replace(state, trgState, null, macc, false);
             state.setReplacedBy(trgState.getAccessPoint());
             deleteAccessPoint(state, srcAccessPoint, change);
         }
