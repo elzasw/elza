@@ -9,7 +9,6 @@ import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -343,7 +342,7 @@ public class SearchController implements SearchApi {
         List<AbstractFilter> filters = searchParams.getFilters();
         String searchedText = null;
         if (filters != null && filters.size() > 0) {
-            if(filters.size() == 1) {
+            if (filters.size() == 1) {
                 if (filters.get(0) instanceof MultimatchContainsFilter) {
                     MultimatchContainsFilter mcf = (MultimatchContainsFilter) filters.get(0);
                     searchedText = mcf.getValue();
@@ -359,19 +358,11 @@ public class SearchController implements SearchApi {
         } else {
             // filter not specified
         }
-        return searchEntityFulltext(fundList, searchParams.getOffset(), searchParams.getSize(), searchedText);
-    }
+        QueryResults<ArrDescItemInfo> results = nodeRepository.findFundIdsByFulltext(searchedText, fundList, searchParams.getSize(), searchParams.getOffset());
 
-    private ResponseEntity<ResultEntityRef> searchEntityFulltext(List<ArrFund> fundList,
-                                                                 Integer offset, Integer size,
-                                                                 String value) {
-        QueryResults<ArrDescItemInfo> results = nodeRepository.findFundIdsByFulltext(value, fundList, size, offset);
-
-        ResponseBuilder rb = new ResponseBuilder(fundVersionRepository,
-                levelTreeCacheService, nodeRepository);
+        ResponseBuilder rb = new ResponseBuilder(fundVersionRepository, levelTreeCacheService, nodeRepository);
         ResultEntityRef rer = rb.build(results);
 
         return ResponseEntity.ok(rer);
     }
-
 }
