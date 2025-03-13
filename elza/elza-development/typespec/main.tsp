@@ -357,6 +357,17 @@ enum DataType {
 }
 
 /**
+ * Item data
+ */
+@discriminator("dataType")
+model ItemData {
+    /** data id */
+    dataId?: integer;
+    /** data type */
+    dataType: DataType;
+}
+
+/**
  * ItemData classes extensions
  */
 model DataBit extends ItemData {
@@ -439,17 +450,6 @@ model DataUriRef extends ItemData {
     value: string;
     description?: string;
     refTemplateId?: integer;
-}
-
-/**
- * Item data
- */
-@discriminator("dataType")
-model ItemData {
-    /** data id */
-    dataId?: integer;
-    /** data type */
-    dataType: DataType;
 }
 
 /**
@@ -696,6 +696,110 @@ model ApValidationIssues {
     partErrors: PartValidationIssues[];
 }
 
+/**
+ * Types of filters
+ */
+enum FilterType {
+    fieldValue,
+    contains,
+    logical
+}
+
+/**
+ * Operation type for FieldValueFilter
+ */
+enum OperationCompareType {
+    EQ, NEQ, GT, LT, GTE, LTE, STARTWITH, ENDWITH, CONTAINS, IS_NULL, NOT_NULL
+}
+
+/**
+ * Operation type for LogicalFilter
+ */
+enum OperationLogicalType {
+    AND, OR 
+}
+
+/**
+ * Used as a parent for all other filters
+ */
+@discriminator("filterType")
+model AbstractFilter {
+    filterType: FilterType
+}
+
+/**
+ * Compares specified attribute of the entity with specified value using specified operation
+ */
+model FieldValueFilter extends AbstractFilter {
+    filterType: FilterType.fieldValue;
+    /** searched field */
+    field: string;
+    /** searched value */
+    value: string;
+    /** operation type */
+    operation: OperationCompareType;
+}
+
+/**
+ * Performs fulltext search over the whole entity
+ */
+model MultimatchContainsFilter extends AbstractFilter {
+    filterType: FilterType.contains;
+    /** searched value */
+    value: string;
+}
+
+/**
+ * Join subfilters using logical operator, result may be used in other LogicalFilter as one of subfilter
+ */
+model LogicalFilter extends AbstractFilter {
+    filterType: FilterType.logical;
+    /** collection of filters */
+    filters: AbstractFilter[];
+    /** operation type */
+    operation: OperationLogicalType;
+}
+
+/**
+ * Order of sorting
+ */
+enum SortingOrder {
+    asc,
+    desc
+}
+
+/**
+ * Allows to define sorting
+ */
+model Sorting {
+    /** attribute name to sort on */
+    field: string;
+    /** order of sorting */
+    order?: SortingOrder;
+}
+
+/**
+ * Search parameters
+ */
+model SearchParams {
+    /** array of conditions, joined by AND operator */
+    filters?: AbstractFilter[];
+    /** page offset */
+    offset?: integer;
+    /** page size */
+    size?: integer;
+    /** array of sort conditions */
+    sort?: Sorting[];
+}
+
+/**
+ * Search result 
+ */
+model ResultEntityRef {
+    count: int64;
+    items?: EntityRef[];
+}
+
 @tag("admin")
 @route("/admin")
 namespace ElzaAPI.Admin {
@@ -822,6 +926,27 @@ namespace ElzaAPI.fund {
           /** Invalid data for AS creation */
           @Http.statusCode statusCode: 400;
     };
+
+    /**
+     * Searches for funds
+     */
+    @route("/search")
+    @post op searchFunds(
+        /** search parameters */
+        @body content: SearchParams;
+    ): FindFundsResult | {
+          /** Bad Request, query with incorrect parameters */
+          @Http.statusCode statusCode: 400;
+          @body data: BaseException;
+       } | {
+          /** Unauthorized */
+          @Http.statusCode statusCode: 401;
+          @body data: BaseException;
+       } | {
+          /** Forbidden */
+          @Http.statusCode statusCode: 403;
+          @body data: BaseException;
+       };
 
     /**
      * Search for archive files (AS)
@@ -1524,7 +1649,7 @@ namespace ElzaAPI.Report {
         /** statistický kód pro generování */
         @path code: string;
         /** hodnoty zadaných parametrů */
-        @body body: ReportParameters ;
+        @body body: ReportParameters;
     ): integer;
 
     /**
@@ -1605,6 +1730,51 @@ namespace ElzaAPI.Node {
        } | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+}
+
+@tag("search")
+namespace ElzaAPI.Search {
+    /**
+     * Searches for entity
+     */
+	@route("/search-ap")
+	@post op entity(
+        /** search parameters */
+        @body body: SearchParams;
+    ): ResultEntityRef | {
+          /** Bad Request, query with incorrect parameters */
+          @Http.statusCode statusCode: 400;
+          @body data: BaseException;
+       } | {
+          /** Unauthorized */
+          @Http.statusCode statusCode: 401;
+          @body data: BaseException;
+       } | {
+          /** Forbidden */
+          @Http.statusCode statusCode: 403;
+          @body data: BaseException;
+       };
+
+    /**
+     * Searches for array descriptions
+     */
+	@route("/search-arr")
+	@post op archDesc(
+        /** search parameters */
+        @body body: SearchParams;
+    ): ResultEntityRef | {
+          /** Bad Request, query with incorrect parameters */
+          @Http.statusCode statusCode: 400;
+          @body data: BaseException;
+       } | {
+          /** Unauthorized */
+          @Http.statusCode statusCode: 401;
+          @body data: BaseException;
+       } | {
+          /** Forbidden */
+          @Http.statusCode statusCode: 403;
           @body data: BaseException;
        };
 }

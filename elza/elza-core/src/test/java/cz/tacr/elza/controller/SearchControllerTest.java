@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.repository.HsearchOutboxEventRepository;
+import cz.tacr.elza.test.controller.vo.FilterType;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.test.controller.vo.ResultEntityRef;
 import cz.tacr.elza.test.controller.vo.SearchParams;
@@ -55,7 +56,7 @@ public class SearchControllerTest extends AbstractControllerTest {
     private SearchParams createSearchParamText(String value) {
         SearchParams searchParams = new SearchParams();
         MultimatchContainsFilter mcf = new MultimatchContainsFilter().value(value);
-        mcf.setFilterType("contains");
+        mcf.setFilterType(FilterType.CONTAINS);
         return searchParams.addFiltersItem(mcf).offset(0).size(100);
     }
 }

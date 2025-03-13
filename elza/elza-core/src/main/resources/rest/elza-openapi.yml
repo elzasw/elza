@@ -15,14 +15,14 @@ tags:
     description: Záznamy v archivních fondech
   - name: accesspoints
     description: Přístupové body a archivní entity
-  - name: search
-    description: Vyhledávání
   - name: io
     description: Vstup a výstup informací
   - name: report
     description: Statistické zprávy
   - name: node
     description: Práce s úrovněmi a uzly
+  - name: search
+    description: Vyhledávání
 servers:
   - url: http://localhost
     description: Výchozí server
@@ -671,58 +671,7 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - accesspoints
-  /search-ap:
-    post:
-      tags:
-        - search
-      summary: searches for entity
-      operationId: searchEntity
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SearchParams"
-        description: search parameters
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Result_EntityRef"
-        "400":
-          description: Bad Request, query with incorrect parameters
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-  /search-arr:
-    post:
-      tags:
-        - search
-#        - accesspoints
-      summary: searches for entity
-      operationId: searchArchDesc
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SearchParams"
-        description: search parameters
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Result_EntityRef"
-        "400":
-          description: Bad Request, query with incorrect parameters
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden          
-  /admin/admin/arrangement/missing-cached-nodes:
+  /admin/arrangement/missing-cached-nodes:
     get:
       operationId: Admin_syncNodeCache
       description: Creating missing items in arr_cached_node
@@ -1036,6 +985,45 @@ paths:
                 $ref: '#/components/schemas/FindFundsResult'
       tags:
         - funds
+  /fund/search:
+    post:
+      operationId: fund_searchFunds
+      description: Searches for funds
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindFundsResult'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - funds
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchParams'
+        description: search parameters
   /fund/{fundId}/fsrepo/{fsrepoId}/item-data:
     get:
       operationId: fund_fsRepoItemData
@@ -1498,6 +1486,84 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - report
+  /search-ap:
+    post:
+      operationId: Search_entity
+      description: Searches for entity
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultEntityRef'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - search
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchParams'
+        description: search parameters
+  /search-arr:
+    post:
+      operationId: Search_archDesc
+      description: Searches for array descriptions
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResultEntityRef'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - search
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchParams'
+        description: search parameters
 components:
   parameters:
     FsRepoIdParameter:
@@ -1529,6 +1595,20 @@ components:
       schema:
         type: integer
   schemas:
+    AbstractFilter:
+      type: object
+      required:
+        - filterType
+      properties:
+        filterType:
+          $ref: '#/components/schemas/FilterType'
+      discriminator:
+        propertyName: filterType
+        mapping:
+          fieldValue: '#/components/schemas/FieldValueFilter'
+          contains: '#/components/schemas/MultimatchContainsFilter'
+          logical: '#/components/schemas/LogicalFilter'
+      description: Used as a parent for all other filters
     Admin.CopyPermissionParams:
       type: object
       required:
@@ -2100,6 +2180,38 @@ components:
           type: string
           description: value of property
       description: Pairs name-value for external system and user
+    FieldValueFilter:
+      type: object
+      required:
+        #- filterType
+        - field
+        - value
+        - operation
+      properties:
+        #filterType:
+        #  type: string
+        #  enum:
+        #    - fieldValue
+        field:
+          type: string
+          description: searched field
+        value:
+          type: string
+          description: searched value
+        operation:
+          allOf:
+            - $ref: '#/components/schemas/OperationCompareType'
+          description: operation type
+      allOf:
+        - $ref: '#/components/schemas/AbstractFilter'
+      description: Compares specified attribute of the entity with specified value using specified operation
+    FilterType:
+      type: string
+      enum:
+        - fieldValue
+        - contains
+        - logical
+      description: Types of filters
     FindFundsResult:
       type: object
       required:
@@ -2372,6 +2484,45 @@ components:
           format: int32
           description: Total number of logged users
       description: List of logged users
+    LogicalFilter:
+      type: object
+      required:
+        #- filterType
+        - filters
+        - operation
+      properties:
+        #filterType:
+        #  type: string
+        #  enum:
+        #    - logical
+        filters:
+          description: collection of filters
+          type: array
+          items:
+            $ref: '#/components/schemas/AbstractFilter'
+        operation:
+          allOf:
+            - $ref: '#/components/schemas/OperationLogicalType'
+          description: operation type
+      allOf:
+        - $ref: '#/components/schemas/AbstractFilter'
+      description: Join subfilters using logical operator, result may be used in other LogicalFilter as one of subfilter
+    MultimatchContainsFilter:
+      type: object
+      required:
+        #- filterType
+        - value
+      properties:
+        #filterType:
+        #  type: string
+        #  enum:
+        #    - contains
+        value:
+          type: string
+          description: searched value
+      allOf:
+        - $ref: '#/components/schemas/AbstractFilter'
+      description: Performs fulltext search over the whole entity
     Node:
       type: object
       required:
@@ -2444,6 +2595,27 @@ components:
             - $ref: '#/components/schemas/ItemData'
           description: item data
       description: Náhrada za třídu ArrItemVO
+    OperationCompareType:
+      type: string
+      enum:
+        - EQ
+        - NEQ
+        - GT
+        - LT
+        - GTE
+        - LTE
+        - STARTWITH
+        - ENDWITH
+        - CONTAINS
+        - IS_NULL
+        - NOT_NULL
+      description: Operation type for FieldValueFilter
+    OperationLogicalType:
+      type: string
+      enum:
+        - AND
+        - OR
+      description: Operation type for LogicalFilter
     PartValidationIssues:
       type: object
       required:
@@ -2612,8 +2784,13 @@ components:
     Report.ValueAccesspointId:
       type: object
       required:
+        #- valueType
         - accesspointId
       properties:
+        #valueType:
+        #  type: string
+        #  enum:
+        #    - AP_ID
         accesspointId:
           type: integer
       allOf:
@@ -2622,8 +2799,13 @@ components:
     Report.ValueDate:
       type: object
       required:
+        #- valueType
         - dateValue
       properties:
+        #valueType:
+        #  type: string
+        #  enum:
+        #    - DATE
         dateValue:
           type: string
           format: date-time
@@ -2633,8 +2815,13 @@ components:
     Report.ValueFondId:
       type: object
       required:
+        #- valueType
         - fondId
       properties:
+        #valueType:
+        #  type: string
+        #  enum:
+        #    - FUND_ID
         fondId:
           type: integer
       allOf:
@@ -2643,8 +2830,13 @@ components:
     Report.ValueInteger:
       type: object
       required:
+        #- valueType
         - intValue
       properties:
+        #valueType:
+        #  type: string
+        #  enum:
+        #    - INT
         intValue:
           type: integer
       allOf:
@@ -2653,8 +2845,13 @@ components:
     Report.ValueString:
       type: object
       required:
+        #- valueType
         - textValue
       properties:
+        #valueType:
+        #  type: string
+        #  enum:
+        #    - STRING
         textValue:
           type: string
       allOf:
@@ -2692,6 +2889,19 @@ components:
           items:
             $ref: '#/components/schemas/AutoValue'
       description: List of automatically generated items
+    ResultEntityRef:
+      type: object
+      required:
+        - count
+      properties:
+        count:
+          type: integer
+          format: int64
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntityRef'
+      description: Search result
     RevStateChange:
       type: object
       required:
@@ -2715,6 +2925,45 @@ components:
         - TO_APPROVE
         - TO_AMEND
       description: States of ApRevState
+    SearchParams:
+      type: object
+      properties:
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/AbstractFilter'
+          description: array of conditions, joined by AND operator
+        offset:
+          type: integer
+          description: page offset
+        size:
+          type: integer
+          description: page size
+        sort:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sorting'
+          description: array of sort conditions
+      description: Search parameters
+    Sorting:
+      type: object
+      required:
+        - field
+      properties:
+        field:
+          type: string
+          description: attribute name to sort on
+        order:
+          allOf:
+            - $ref: '#/components/schemas/SortingOrder'
+          description: order of sorting
+      description: Allows to define sorting
+    SortingOrder:
+      type: string
+      enum:
+        - asc
+        - desc
+      description: Order of sorting
     UpdateFund:
       type: object
       properties:
@@ -2759,136 +3008,3 @@ components:
         count:
           type: integer
       description: Fund node item type id and quantity
-    AbstractFilter:
-      title: Abstract filter
-      description: Used as a parent for all other filters
-      type: object
-      discriminator:
-        propertyName: filterType
-        mapping:
-          fieldValue: "#/components/schemas/FieldValueFilter"
-          contains: "#/components/schemas/MultimatchContainsFilter"
-          logical: "#/components/schemas/LogicalFilter"
-      properties:
-        filterType:
-          type: string
-      required:
-        - filterType
-    FieldValueFilter:
-      title: FieldValueFilter
-      description: Compares specified attribute of the entity with specified value using specified operation.
-      allOf:
-        - $ref: '#/components/schemas/AbstractFilter'
-        - type: object
-          properties:
-            field:
-              title: Searched field
-              type: string
-            operation:
-              description: Operator
-              type: string
-              enum:
-                - EQ
-                - NEQ
-                - GT
-                - LT
-                - GTE
-                - LTE
-                - STARTWITH
-                - ENDWITH
-                - CONTAINS
-                - IS_NULL
-                - NOT_NULL
-            value:
-              description: Searched value
-              type: string
-          required:
-            - field
-            - operation
-            - value
-    MultimatchContainsFilter:
-      title: Fulltext filter
-      description: Performs fulltext search over the whole entity.
-      allOf:
-        - $ref: '#/components/schemas/AbstractFilter'
-        - type: object
-          properties:
-            value:
-              description: Searched value
-              type: string
-          required:
-            - value
-    LogicalFilter:
-      title: LogicalFilter
-      description: Join subfilters using logical operator, result may be used in other LogicalFilter as one of subfilter.
-      allOf:
-        - $ref: '#/components/schemas/AbstractFilter'
-        - type: object
-          properties:
-            filters:
-              description: Collection of filters
-              type: array
-              items:
-                $ref: "#/components/schemas/AbstractFilter"
-            operation:
-              description: Operation type
-              type: string
-              enum:
-                - AND
-                - OR
-          required:
-            - filters
-            - operation
-    SearchParams:
-      type: object
-      properties:
-        filters:
-          description: Array of conditions. Conditions are joined by AND operator.
-          type: array
-          items:
-            $ref: "#/components/schemas/AbstractFilter"
-        offset:
-          description: Page offset
-          type: integer
-          format: int32
-        size:
-          description: Page size
-          type: integer
-          format: int32
-        sort:
-          description: Array of sort conditions
-          type: array
-          items:
-            $ref: "#/components/schemas/Sorting"
-      title: Search parameters
-      description: Query is defined by filter, optional sort conditions,
-         page size and page offset.
-    Sorting:
-      title: Sorting
-      description: Allows to define sorting.
-      type: object
-      properties:
-        field:
-          type: string
-          description: Attribute name to sort on.
-        order:
-          type: string
-          description: Order of sorting.
-          enum:
-            - asc
-            - desc
-      required:
-        - field
-    Result_EntityRef:
-      type: object
-      properties:
-        count:
-          type: integer
-          format: int64
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/EntityRef"
-      required:
-        - count
-      title: Result«EntityRef»
