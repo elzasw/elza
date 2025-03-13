@@ -1965,7 +1965,7 @@ public class ArrangementService {
                         ArrDescItem targetItem = nodeItems.get(0);
                         descriptionItemService.setSpecification(sourceItem, targetItem, refTemplateMapType, refTemplateMapSpecs);
                         descriptionItemService.updateDescriptionItemData(sourceItem, targetItem, refTemplate.getRefTemplateId());
-                        descriptionItemService.updateDescriptionItem(targetItem, fundVersion, change);
+                        descriptionItemService.updateDescriptionItem(targetItem, fundVersion, change, false);
                     }
                 }
             }

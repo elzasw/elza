@@ -164,7 +164,7 @@ public abstract class BulkAction {
                 result = descriptionItemService.createDescriptionItem(descItem, descItem.getNode(), version,
                                                                       getChange());
             } else {
-                result = descriptionItemService.updateDescriptionItem(descItem, version, getChange());
+                result = descriptionItemService.updateDescriptionItem(descItem, version, getChange(), false);
             }
         } else {
             if (descItem.getDescItemObjectId() == null) {

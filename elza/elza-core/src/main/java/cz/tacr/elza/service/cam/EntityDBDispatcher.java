@@ -73,6 +73,7 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
@@ -431,10 +432,8 @@ public class EntityDBDispatcher {
                 this.bindingState = externalSystemService.createBindingState(prevBindingState,
                                                                              procCtx.getApChange(),
                                                                              entity.getEns().value(),
-                                                                             entity.getRevi().getRid()
-                                                                                     .getValue(),
-                                                                             entity.getRevi().getUsr()
-                                                                                     .getValue(),
+                                                                             entity.getRevi().getRid().getValue(),
+                                                                             entity.getRevi().getUsr().getValue(),
                                                                              null,
                                                                              SyncState.NOT_SYNCED,
                                                                              accessPoint.getPreferredPart(),
@@ -444,7 +443,6 @@ public class EntityDBDispatcher {
                 return state;
             }
         }
-
 
         // check s AP class/subclass was cha
         ApType apType = sdp.getApTypeByCode(entity.getEnt().getValue());        
@@ -484,7 +482,6 @@ public class EntityDBDispatcher {
                                                                      SyncState.SYNC_OK,
                                                                      accessPoint.getPreferredPart(),
                                                                      state.getApType());
-
         StateApproval oldStateApproval = null;
         StateApproval newStateApproval = null;
         switch (entity.getEns()) {
@@ -497,13 +494,13 @@ public class EntityDBDispatcher {
                     ApAccessPoint replacedBy = replacedBindingState.get().getAccessPoint();
                     ApState replacementState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
                     try {
-						accessPointService.replace(state, replacementState, bindingState.getApExternalSystem(), mcc);
+						accessPointService.replace(state, replacementState, bindingState.getApExternalSystem(), mcc, syncQueue);
 					} catch (SyncImpossibleException e) {
 			            log.error("Replacement error, accessPointId: {}, replacedAccessPointId: {}",
 			            		  state.getAccessPointId(),
 			            		  replacementState.getAccessPointId());
 			            throw new BusinessException("Replacement error, accessPointId: " + state.getAccessPointId()
-			                      + "replacedAccessPointId: " + replacementState.getAccessPointId(),
+			                      + ", replacedAccessPointId: " + replacementState.getAccessPointId(), e,
 			                      BaseCode.INVALID_STATE)
 			                      .set("accessPointId", state.getAccessPointId())
 			                      .set("replacedAccessPointId", replacementState.getAccessPointId());

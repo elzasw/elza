@@ -1027,7 +1027,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         return result;
     }
 
-    static public List<cz.tacr.elza.print.item.Item> convert(List<? extends ArrItem> items, OutputItemConvertor conv) {
+    /**
+     * Convert items to print items
+     * @param items
+     * @param conv Convertor
+     * @return
+     */
+    static public List<cz.tacr.elza.print.item.Item> convert(List<? extends ArrItem> items, 
+    		OutputItemConvertor conv) {
         return items.stream()
                 .map(i -> conv.convert(i))
                 .filter(Objects::nonNull)
