@@ -67,12 +67,12 @@ import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SyncProgressVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.ap.ApViewSettings;
-import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
@@ -94,17 +94,20 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UISettings;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.projection.ApStateInfo;
 import cz.tacr.elza.drools.model.ModelAvailable;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
@@ -112,6 +115,7 @@ import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.MultipleApChangeContext;
 import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
@@ -119,7 +123,6 @@ import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cam.CamService;
 import cz.tacr.elza.service.cam.ProcessingContext;
-import cz.tacr.elza.service.cam.SyncImpossibleException;
 import cz.tacr.elza.service.layers.LayersConfig;
 
 /**
@@ -184,6 +187,9 @@ public class ApController {
 
     @Autowired
     private LayersConfig layersConfig;
+
+    @Autowired
+    private ApBindingStateRepository bindingStateRepository;
 
     /**
      * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
@@ -635,6 +641,46 @@ public class ApController {
     public RecordUsageVO findUsage(@PathVariable final Integer accessPointId) {
     	ApAccessPoint apAccessPoint = accessPointRepository.getOneCheckExist(accessPointId);
     	return accessPointService.findRecordUsage(apAccessPoint);
+    }
+
+    /**
+     * Nahrazení rejstříku
+     *
+     * @param accessPointId ID nahrazovaného rejstříku
+     * @param replacedId ID rejstříku kterým budeme nahrazovat
+     */
+    @Transactional
+    @RequestMapping(value = "/{accessPointId}/replace", method = RequestMethod.POST)
+    @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
+    public void replace(@PathVariable final Integer accessPointId, @RequestBody final Integer replacedId) {
+
+        // TODO: This method is probably obsolete, usage should be checked
+
+        final ApAccessPoint replaced = accessPointService.getAccessPointInternal(accessPointId);
+        final ApAccessPoint replacement = accessPointService.getAccessPointInternal(replacedId);
+
+        ApState replacedState = accessPointService.getStateInternal(replaced);
+        ApState replacementState = accessPointService.getStateInternal(replacement);
+
+        // TODO: Improve check on external system
+        ApExternalSystem extSystem = null;
+        List<ApBindingState> srcBindings = bindingStateRepository.findByAccessPoint(replaced);
+        if (CollectionUtils.isNotEmpty(srcBindings)) {
+            extSystem = srcBindings.get(0).getApExternalSystem();
+        }
+
+        MultipleApChangeContext mcc = new MultipleApChangeContext();
+
+        try {
+            accessPointService.replace(replacedState, replacementState, extSystem, mcc, false);
+        } catch (SyncImpossibleException e) {
+            throw new BusinessException("Failed to replace access point", e, 
+                    BaseCode.INVALID_STATE)
+                            .set("entityId", replacedState.getAccessPointId());
+        }
+        for (Integer apId : mcc.getModifiedApIds()) {
+            accessPointCacheService.createApCachedAccessPoint(apId);
+        }
     }
 
     /**

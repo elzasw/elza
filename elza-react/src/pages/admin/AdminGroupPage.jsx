@@ -28,6 +28,7 @@ import {
 } from 'actions/admin/group';
 import {indexById} from 'stores/app/utils';
 import {modalDialogShow} from 'actions/global/modalDialog';
+import {requestScopesIfNeeded} from '../../actions/refTables/scopesData';
 import {addToastrSuccess} from 'components/shared/toastr/ToastrActions';
 import {renderGroupItem} from 'components/admin/adminRenderUtils';
 import { urlAdminGroup } from '../../constants';
@@ -51,6 +52,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
+		this.props.dispatch(requestScopesIfNeeded());
         this.props.dispatch(groupsFetchIfNeeded());
         this.props.dispatch(groupsGroupDetailFetchIfNeeded());
     }
@@ -58,6 +60,7 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
     componentDidMount() {
         const {dispatch, match} = this.props;
 
+        dispatch(requestScopesIfNeeded());
         dispatch(groupsFetchIfNeeded());
         dispatch(groupsGroupDetailFetchIfNeeded());
 

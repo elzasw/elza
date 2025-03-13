@@ -115,10 +115,12 @@ public class ItemService {
      *
      * @param fundContext - kontext fondu
      * @param arrItem     - hodnota atributu
+     * @param forceUpdate - vypnutí kontroly typu a oblasti (if true)
      */
     @Transactional(TxType.MANDATORY)
     public void checkValidTypeAndSpec(@NotNull final FundContext fundContext,
-                                      @NotNull final ArrItem arrItem) {
+                                      @NotNull final ArrItem arrItem,
+                                      boolean forceUpdate) {
 
         Integer itemTypeId = arrItem.getItemTypeId();
         Validate.notNull(itemTypeId, "Invalid description item type: " + itemTypeId);
@@ -173,7 +175,7 @@ public class ItemService {
 
         if (data != null && !arrItem.isUndefined()) {
             // check record_ref
-            if (itemType.getDataType().equals(DataType.RECORD_REF)) {
+            if (!forceUpdate && itemType.getDataType().equals(DataType.RECORD_REF)) {
                 ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
                 checkRecordRef(fundContext, recordRef, rulItemType, rulItemSpec);
             }
