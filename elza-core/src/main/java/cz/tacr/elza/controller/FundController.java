@@ -47,6 +47,7 @@ import cz.tacr.elza.controller.vo.FsItems;
 import cz.tacr.elza.controller.vo.FsRepo;
 import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundDetail;
+import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.controller.vo.UpdateFund;
 import cz.tacr.elza.controller.vo.UsedItemType;
 import cz.tacr.elza.core.data.RuleSet;
@@ -197,6 +198,13 @@ public class FundController implements FundsApi {
         });
 
         return ResponseEntity.ok(fundsResult);
+    }
+
+    @Override
+    public ResponseEntity<FindFundsResult> fundSearchFunds(SearchParams searchParams) {
+
+    	FindFundsResult fundsResult = new FindFundsResult(Collections.emptyList(), 0);
+    	return ResponseEntity.ok(fundsResult);
     }
 
     @Override
