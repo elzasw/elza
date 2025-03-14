@@ -94,17 +94,18 @@ then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
 
-rule "Možné prvky popisu - od složky níže"
-no-loop
-when
-    $activeLevel: ActiveLevel( )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", 
-                             "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
-    $itemType : RulItemTypeExt(code in (
-		"ZP2015_WRITING"))
-then
-    $itemType.setType(RulItemType.Type.POSSIBLE);
-end
+// viz úkol #9349 - EAD3 - písmo na úrovni série - ZP: Písmo možné od složky níže (nelze takto řešit ve strukturovaném typu)
+// rule "Možné prvky popisu - od složky níže"
+// no-loop
+// when
+//     $activeLevel: ActiveLevel( )
+//     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", 
+//                              "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
+//     $itemType : RulItemTypeExt(code in (
+// 		"ZP2015_WRITING"))
+// then
+//     $itemType.setType(RulItemType.Type.POSSIBLE);
+// end
 
 // Povolení všech jazyků archivního popisu
 rule "Povolení všech jazyků archivního popisu (ZP2015_ARCHDESC_LANG)"
