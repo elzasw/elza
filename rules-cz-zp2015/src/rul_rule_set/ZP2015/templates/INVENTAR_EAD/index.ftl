@@ -662,7 +662,7 @@
         <#break>
       <#case "ZP2015_UNIT_ID">
         <#if output.fund.fundNumber?has_content>
-        <#lt>  <ead:unitid localtype="REFERENCNI_OZNACENI" label="referenční označení">CZ${output.fund.institution.code}//${output.fund.fundNumber}//${item.serializedValue}</ead:unitid>
+        <#lt>  <ead:unitid localtype="REFERENCNI_OZNACENI" label="referenční označení">CZ${output.fund.institution.code}//${output.fund.fundNumber?c}//${item.serializedValue}</ead:unitid>
         </#if>
         <#break>
       <#case "ZP2015_SERIAL_NUMBER">
@@ -822,7 +822,7 @@
         <#lt>  </ead:physdescstructured>
         <#break>
       <#case "ZP2015_DAO_ID">
-        <#lt>  <ead:dao daotype="derived" identifier="${output.fund.institution.code}/${output.fund.fundNumber}/${item.serializedValue}" />
+        <#lt>  <ead:dao daotype="derived" identifier="${output.fund.institution.code}/${output.fund.fundNumber?c}/${item.serializedValue}" />
         <#break>
     </#switch>
   </#list>
