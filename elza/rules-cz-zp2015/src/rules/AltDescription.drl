@@ -89,8 +89,19 @@ when
         "ZP2015_SIZE",
         "ZP2015_ITEM_MAT",
         "ZP2015_PART",
-        "ZP2015_WRITING",
         "ZP2015_EDITION"))
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
+
+rule "Možné prvky popisu - od složky níže"
+no-loop
+when
+    $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", 
+                             "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code in (
+		"ZP2015_WRITING"))
 then
     $itemType.setType(RulItemType.Type.POSSIBLE);
 end
