@@ -1160,6 +1160,10 @@ paths:
                 $ref: '#/components/schemas/FundDetail'
         '404':
           description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
       tags:
         - funds
     put:

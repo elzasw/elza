@@ -971,6 +971,7 @@ namespace ElzaAPI.fund {
         @path id: string;
     ): FundDetail | {
           @Http.statusCode statusCode: 404;
+          @body data: BaseException;
     };
 
     /**
