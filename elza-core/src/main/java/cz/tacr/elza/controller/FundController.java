@@ -202,9 +202,11 @@ public class FundController implements FundsApi {
 
     @Override
     public ResponseEntity<FindFundsResult> fundSearchFunds(SearchParams searchParams) {
+    	// TODO process searchParams
+        List<ArrFund> fundList = fundRepository.findAll();
+        List<Fund> funds = fundList.stream().map(f -> factoryVo.createFund(f, "TODO: uuid")).toList();
 
-    	FindFundsResult fundsResult = new FindFundsResult(Collections.emptyList(), 0);
-    	return ResponseEntity.ok(fundsResult);
+        return ResponseEntity.ok(new FindFundsResult(funds, funds.size()));
     }
 
     @Override
