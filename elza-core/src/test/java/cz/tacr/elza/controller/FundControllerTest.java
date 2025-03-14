@@ -1,17 +1,19 @@
 package cz.tacr.elza.controller;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
 
 import org.junit.Test;
 
-import cz.tacr.elza.controller.vo.FindFundsResult;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.test.controller.vo.CreateFund;
+import cz.tacr.elza.test.controller.vo.FindFundsResult;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.FundDetail;
+import cz.tacr.elza.test.controller.vo.SearchParams;
 import cz.tacr.elza.test.controller.vo.UpdateFund;
 
 public class FundControllerTest extends AbstractControllerTest {
@@ -94,7 +96,7 @@ public class FundControllerTest extends AbstractControllerTest {
         Fund fund = fundsApi.fundCreateFund(cf);
         logger.info("Vytvořen AS : " + fund.getId());
 
-        FundDetail fundDetail = fundsApi.fundGetFund(String.valueOf(fund.getId()));
+        FundDetail fundDetail = fundsApi.fundGetFund(fund.getId().toString());
         logger.info("Načten AS : " + fundDetail.getId());
     }
 
@@ -126,5 +128,12 @@ public class FundControllerTest extends AbstractControllerTest {
         logger.info("Nalezeno AS : " + funds.getTotalCount());
         funds = findFunds(null, "in1", 10,0);
         logger.info("Nalezeno AS: " + funds.getTotalCount());
+    }
+    
+    @Test
+    public void searchFunds() {
+    	SearchParams params = new SearchParams(); 
+    	FindFundsResult result = fundsApi.fundSearchFunds(params);
+    	assertNotNull(result);
     }
 }
