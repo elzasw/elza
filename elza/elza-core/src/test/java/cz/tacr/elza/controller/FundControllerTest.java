@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 
@@ -129,11 +130,14 @@ public class FundControllerTest extends AbstractControllerTest {
         funds = findFunds(null, "in1", 10,0);
         logger.info("Nalezeno AS: " + funds.getTotalCount());
     }
-    
+
     @Test
     public void searchFunds() {
+    	createFund();
+
     	SearchParams params = new SearchParams(); 
     	FindFundsResult result = fundsApi.fundSearchFunds(params);
     	assertNotNull(result);
+    	assertTrue(result.getTotalCount() == 1);
     }
 }
