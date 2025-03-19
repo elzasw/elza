@@ -19,6 +19,8 @@ public class UsrPermissionView {
 
     public static final String FIELD_SCOPE = "scope";
     public static final String FIELD_USER = "user";
+    public static final String FIELD_USER_ID = "userId";
+    public static final String FIELD_FUND_ID = "fundId";
 
     /**
      * Identifikátor entity.
@@ -50,6 +52,9 @@ public class UsrPermissionView {
     @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFund.class)
     @JoinColumn(name = "fundId")
     private ArrFund fund;
+
+    @Column(name = "fundId", nullable = false, updatable = false, insertable = false)
+    private Integer fundId;
 
     /**
      * Scope rejstříků a osob.
@@ -97,6 +102,11 @@ public class UsrPermissionView {
 
     public void setFund(final ArrFund fund) {
         this.fund = fund;
+        this.fundId = fund != null ? fund.getFundId() : null;
+    }
+
+    public Integer getFundId() {
+        return fundId;
     }
 
     public ApScope getScope() {

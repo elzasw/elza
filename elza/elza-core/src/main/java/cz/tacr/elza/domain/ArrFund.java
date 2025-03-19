@@ -33,6 +33,10 @@ import cz.tacr.elza.domain.interfaces.Versionable;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrFund extends AbstractVersionableEntity implements Versionable, ArrFundGetter {
 
+    public static final String FIELD_FUND_ID = "fundId";
+    public static final String FIELD_NAME = "name";
+    public static final String FIELD_INTERNAL_CODE = "internalCode";
+
 	@Id
 	@GeneratedValue
     @Access(AccessType.PROPERTY) // required to read id without fetch from db

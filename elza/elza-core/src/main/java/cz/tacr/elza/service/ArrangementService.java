@@ -11,6 +11,7 @@ import static java.util.stream.Collectors.toSet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -36,6 +37,12 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
 import jakarta.validation.Valid;
@@ -68,14 +75,20 @@ import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
+import cz.tacr.elza.controller.vo.AbstractFilter;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
+import cz.tacr.elza.controller.vo.FieldValueFilter;
 import cz.tacr.elza.controller.vo.FileType;
+import cz.tacr.elza.controller.vo.LogicalFilter;
+import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.NodePlainTextRepresentation;
+import cz.tacr.elza.controller.vo.OperationCompareType;
+import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.UsedItemType;
@@ -115,6 +128,7 @@ import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrRefTemplate;
 import cz.tacr.elza.domain.ArrRefTemplateMapSpec;
 import cz.tacr.elza.domain.ArrRefTemplateMapType;
+import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -122,10 +136,10 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrPermissionView;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
-import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
@@ -978,6 +992,144 @@ public class ArrangementService {
     @Deprecated
     public ArrNode findNodeByUUID(String uuid) {
         return nodeRepository.findOneByUuid(uuid);
+    }
+
+    /**
+     * Vyhledávání v seznamu fondů podle parametrů
+     * 
+     * @param searchParams
+     * @return seznam ArrFund
+     */
+    public List<ArrFund> findFundsBySearchParams(SearchParams searchParams) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<ArrFund> cq = cb.createQuery(ArrFund.class);
+
+        List<Predicate> predicates = buildPredicateFromParams(cb, cq, searchParams);
+        if (!predicates.isEmpty()) {
+        	cq.where(predicates.toArray(new Predicate[predicates.size()]));
+        }
+
+        TypedQuery<ArrFund> query = em.createQuery(cq);
+        query.setFirstResult(searchParams.getOffset());
+        query.setMaxResults(searchParams.getSize());
+
+        return query.getResultList();
+    }
+
+    /**
+     * Sestavení predikátu na základě parametrů
+     * 
+     * @param cq
+     * @param searchParams
+     * @return seznam Predicate
+     */
+    private List<Predicate> buildPredicateFromParams(final CriteriaBuilder cb, final CriteriaQuery<ArrFund> cq, final SearchParams searchParams) {
+    	List<Predicate> predicates = new ArrayList<>();
+        Root<ArrFund> fundRoot = cq.from(ArrFund.class);
+
+        // zpracování filtru
+    	for (AbstractFilter filter : searchParams.getFilters()) {
+    		if (filter instanceof MultimatchContainsFilter) {
+    			predicates.add(createPredicate(cb, fundRoot, (MultimatchContainsFilter) filter));
+
+    		} else if (filter instanceof FieldValueFilter) {
+    			predicates.add(createPredicate(cb, fundRoot, (FieldValueFilter) filter));
+
+    		} else if (filter instanceof LogicalFilter) {
+    			// TODO implement this type of filter as needed
+    			throw new BusinessException("Filter type LogicalFilter is not yet implemented", ArrangementCode.REQUEST_INVALID);
+
+    		} else {
+    			throw new BusinessException("Not specified filter in search request", ArrangementCode.REQUEST_INVALID);
+    		}
+    	}
+
+    	// filtrování podle práv uživatele  
+    	UserDetail userDetail = userService.getLoggedUserDetail();
+        if (!userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL)) {
+        	Integer userId = userDetail.getId();
+        	Subquery<Integer> usrPermissionSubquery = cq.subquery(Integer.class);
+        	Root<UsrPermissionView> usrPermissionRoot = usrPermissionSubquery.from(UsrPermissionView.class);
+        	usrPermissionSubquery.select(usrPermissionRoot.get(UsrPermissionView.FIELD_FUND_ID));
+        	usrPermissionSubquery.where(cb.equal(usrPermissionRoot.get(UsrPermissionView.FIELD_USER_ID), userId));
+
+        	predicates.add(cb.in(fundRoot.get(ArrFund.FIELD_FUND_ID)).value(usrPermissionSubquery));
+        }
+
+        return predicates;
+    }
+
+    /**
+     * Vytvoření predikátu na základě třídy MultimatchContainsFilter
+     * 
+     * @param cb
+     * @param fundRoot
+     * @param filter
+     * @return
+     */
+    private Predicate createPredicate(final CriteriaBuilder cb, Root<ArrFund> fundRoot, MultimatchContainsFilter filter) {
+    	String value = filter.getValue().toLowerCase();
+    	return cb.or(
+				cb.like(cb.lower(fundRoot.get(ArrFund.FIELD_NAME)), "%" + value + "%"),
+				cb.like(cb.lower(fundRoot.get(ArrFund.FIELD_INTERNAL_CODE)), "%" + value + "%"));
+    }
+
+    /**
+     * Vytvoření predikátu na základě třídy FieldValueFilter
+     * 
+     * @param cb
+     * @param fundRoot
+     * @param filter
+     * @return
+     */
+    private Predicate createPredicate(final CriteriaBuilder cb, Root<ArrFund> fundRoot, FieldValueFilter filter) {
+		String fieldName = getArrFundFieldName(filter.getField());
+		String value = filter.getValue();
+		OperationCompareType op = filter.getOperation();
+		switch (op) {
+		case EQ:
+			return cb.equal(fundRoot.get(fieldName), value);
+		case NEQ:
+			return cb.notEqual(fundRoot.get(fieldName), value);
+		case GT:
+			return cb.greaterThan(fundRoot.get(fieldName), value);
+		case LT:
+			return cb.lessThan(fundRoot.get(fieldName), value);
+		case GTE:
+			return cb.greaterThanOrEqualTo(fundRoot.get(fieldName), value);
+		case LTE:
+			return cb.lessThanOrEqualTo(fundRoot.get(fieldName), value);
+		case STARTWITH:
+			return cb.like(fundRoot.get(fieldName), value + "%");
+		case ENDWITH:
+			return cb.like(fundRoot.get(fieldName), "%" + value);
+		case CONTAINS:
+			return cb.like(fundRoot.get(fieldName), "%" + value + "%");
+		case IS_NULL:
+			return cb.isNull(fundRoot.get(fieldName));
+		case NOT_NULL:
+			return cb.isNotNull(fundRoot.get(fieldName));
+		default:
+			throw new IllegalArgumentException("Unexpected operation: " + op);
+		}
+    }
+
+    /**
+     * Ověření názvu pole třídy ArrFund že takové pole existuje
+     * filtr: pouze jména, které začínají malým písmenem
+     * 
+     * @param fieldName
+     * @return string
+     */
+    private String getArrFundFieldName(String fieldName) {
+    	Field[] fields = ArrFund.class.getDeclaredFields();
+    	// všechny názvy polí ArrFund, kromě těch, které začínají velkým písmenem
+    	List<String> fieldNames = Arrays.stream(fields).map(Field::getName).filter(s -> s.matches("^[a-z].*")).toList();
+    	if (!fieldNames.contains(fieldName)) {
+    		throw new BusinessException("Invalid field name for class ArrFund", BaseCode.PROPERTY_IS_INVALID)
+    			.set("fieldName", fieldName);
+    	}
+    	return fieldName;  
     }
 
     /**
