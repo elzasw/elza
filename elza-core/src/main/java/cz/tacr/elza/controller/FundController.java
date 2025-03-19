@@ -142,8 +142,7 @@ public class FundController implements FundsApi {
 
         // prepare institution
         ParInstitution institution = arrangementService.getInstitution(createFund.getInstitutionIdentifier());
-        Validate.notNull(institution, "Nebyla nalezena instituce s identifikátorem " + createFund
-                .getInstitutionIdentifier());
+        Validate.notNull(institution, "Nebyla nalezena instituce s identifikátorem " + createFund.getInstitutionIdentifier());
 
         // prepare collection of scopes
         List<ApScope> scopes = scopeRepository.findByCodes(createFund.getScopes());
@@ -202,11 +201,11 @@ public class FundController implements FundsApi {
 
     @Override
     public ResponseEntity<FindFundsResult> fundSearchFunds(SearchParams searchParams) {
-    	// TODO process searchParams
-        List<ArrFund> fundList = fundRepository.findAll();
+        List<ArrFund> fundList = arrangementService.findFundsBySearchParams(searchParams);
         List<Fund> funds = fundList.stream().map(f -> factoryVo.createFund(f, "TODO: uuid")).toList();
+        FindFundsResult fundsResult = new FindFundsResult(funds, funds.size());
 
-        return ResponseEntity.ok(new FindFundsResult(funds, funds.size()));
+        return ResponseEntity.ok(fundsResult);
     }
 
     @Override
