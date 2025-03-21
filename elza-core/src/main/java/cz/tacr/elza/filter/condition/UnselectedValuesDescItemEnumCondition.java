@@ -11,7 +11,7 @@ import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 13. 4. 2016
  * @update Sergey Iryupin
- * @since 20. 3. 2024
+ * @since 21. 3. 2025
  */
 public class UnselectedValuesDescItemEnumCondition extends SelectedValuesDescItemEnumCondition {
 
@@ -21,14 +21,14 @@ public class UnselectedValuesDescItemEnumCondition extends SelectedValuesDescIte
      * @param values vybrané hodnoty
      * @param attributeName název atributu pro který je podmínka určena
      */
-   public UnselectedValuesDescItemEnumCondition(final List<String> values, final String attributeName) {
-       super(values, attributeName);
-   }
+	public UnselectedValuesDescItemEnumCondition(final List<String> values, final String attributeName) {
+		super(values, attributeName);
+	}
 
 	@Override
 	public SearchPredicate createSearchPredicate(final SearchPredicateFactory factory) {
-		SearchPredicate predicate = super.createSearchPredicate(factory);
-
-		return factory.bool().mustNot(predicate).toPredicate();
+		return factory.bool()
+				.mustNot(super.createSearchPredicate(factory))
+				.toPredicate();
 	}
 }
