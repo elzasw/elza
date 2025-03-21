@@ -64,7 +64,10 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, A
 	@JoinColumn(name = "institutionId", nullable = false)
 	private ParInstitution institution;
 
-	@OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
+    @Column(name = "institutionId", updatable = false, insertable = false)
+    private Integer institutionId;
+
+    @OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
 	private List<ArrFundVersion> versions;
 
 	@OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
@@ -129,12 +132,17 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, A
 		this.mark = mark;
 	}
 
+	public Integer getInstitutionId() {
+		return institutionId;
+	}
+
 	public ParInstitution getInstitution() {
 		return institution;
 	}
 
 	public void setInstitution(final ParInstitution institution) {
 		this.institution = institution;
+        this.institutionId = (institution != null) ? institution.getInstitutionId() : null;
 	}
 
 	public List<ArrFundVersion> getVersions() {
