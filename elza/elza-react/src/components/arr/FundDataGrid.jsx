@@ -503,7 +503,7 @@ class FundDataGrid extends AbstractReactComponent {
                 if (colInfo) {
                     // je již definovaná
                     width = colInfo.width;
-                } else if (gridViews[id]?.width) {
+                } else if (gridViews && gridViews[id]?.width) {
                     // můžeme použít z pravidel
                     width = gridViews[id].width;
                 } else {
