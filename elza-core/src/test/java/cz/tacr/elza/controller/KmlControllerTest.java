@@ -14,9 +14,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-
 /**
- *
+ * Test import a export KML souborů.
  */
 public class KmlControllerTest extends AbstractControllerTest {
 
@@ -32,7 +31,6 @@ public class KmlControllerTest extends AbstractControllerTest {
 
     protected final static String IMPORT_SCOPE_FA = "IMPORT_SCOPE_FA";
     protected final static String IMPORT_SCOPE_RECORD = "IMPORT_SCOPE_RECORD";
-    protected final static String ALL_IN_ONE_XML = "all-in-one-import.xml";
 
     @After
     public void cleanUp() {
