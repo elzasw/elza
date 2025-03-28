@@ -1090,7 +1090,7 @@ public class ArrangementService {
 
 		// if looking for 'institutionCode' - join ParInstitution by FIELD_INSTITUTION
 		Expression<String> expression;
-		if (fieldName.equals("institutionCode")) {
+		if (fieldName.equals(ArrFund.FIELD_INSTITUTION_CODE)) {
 			Join<ArrFund, ParInstitution> joinInstitution = fundRoot.join(ArrFund.FIELD_INSTITUTION);
 			expression = joinInstitution.get(ParInstitution.FIELD_INTERNAL_CODE);
 		} else {

@@ -13,6 +13,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Transient;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -37,6 +39,7 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, A
     public static final String FIELD_NAME = "name";
     public static final String FIELD_INTERNAL_CODE = "internalCode";
     public static final String FIELD_INSTITUTION = "institution";
+    public static final String FIELD_INSTITUTION_CODE = "institutionCode";
 
 	@Id
 	@GeneratedValue
@@ -68,6 +71,10 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, A
     @Column(name = "institutionId", updatable = false, insertable = false)
     private Integer institutionId;
 
+    // virtual field for searching by ParInstitution.internalCode
+    @Transient
+    private String institutionCode;
+    
     @OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
 	private List<ArrFundVersion> versions;
 
