@@ -36,6 +36,7 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, A
     public static final String FIELD_FUND_ID = "fundId";
     public static final String FIELD_NAME = "name";
     public static final String FIELD_INTERNAL_CODE = "internalCode";
+    public static final String FIELD_INSTITUTION = "institution";
 
 	@Id
 	@GeneratedValue

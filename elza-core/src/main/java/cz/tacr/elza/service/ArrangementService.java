@@ -40,6 +40,8 @@ import jakarta.persistence.LockModeType;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
@@ -128,7 +130,6 @@ import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrRefTemplate;
 import cz.tacr.elza.domain.ArrRefTemplateMapSpec;
 import cz.tacr.elza.domain.ArrRefTemplateMapType;
-import cz.tacr.elza.domain.ArrRequest;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -1083,32 +1084,42 @@ public class ArrangementService {
      * @return
      */
     private Predicate createPredicate(final CriteriaBuilder cb, Root<ArrFund> fundRoot, FieldValueFilter filter) {
-		String fieldName = getArrFundFieldName(filter.getField());
-		String value = filter.getValue();
-		OperationCompareType op = filter.getOperation();
+        String fieldName = getArrFundFieldName(filter.getField());
+	    String value = filter.getValue();
+	    OperationCompareType op = filter.getOperation();
+
+		// if looking for 'institutionCode' - join ParInstitution by FIELD_INSTITUTION
+		Expression<String> expression;
+		if (fieldName.equals("institutionCode")) {
+			Join<ArrFund, ParInstitution> joinInstitution = fundRoot.join(ArrFund.FIELD_INSTITUTION);
+			expression = joinInstitution.get(ParInstitution.FIELD_INTERNAL_CODE);
+		} else {
+			expression = fundRoot.get(fieldName);
+		}
+
 		switch (op) {
 		case EQ:
-			return cb.equal(fundRoot.get(fieldName), value);
+			return cb.equal(expression, value);
 		case NEQ:
-			return cb.notEqual(fundRoot.get(fieldName), value);
+			return cb.notEqual(expression, value);
 		case GT:
-			return cb.greaterThan(fundRoot.get(fieldName), value);
+			return cb.greaterThan(expression, value);
 		case LT:
-			return cb.lessThan(fundRoot.get(fieldName), value);
+			return cb.lessThan(expression, value);
 		case GTE:
-			return cb.greaterThanOrEqualTo(fundRoot.get(fieldName), value);
+			return cb.greaterThanOrEqualTo(expression, value);
 		case LTE:
-			return cb.lessThanOrEqualTo(fundRoot.get(fieldName), value);
+			return cb.lessThanOrEqualTo(expression, value);
 		case STARTWITH:
-			return cb.like(fundRoot.get(fieldName), value + "%");
+			return cb.like(expression, value + "%");
 		case ENDWITH:
-			return cb.like(fundRoot.get(fieldName), "%" + value);
+			return cb.like(expression, "%" + value);
 		case CONTAINS:
-			return cb.like(fundRoot.get(fieldName), "%" + value + "%");
+			return cb.like(expression, "%" + value + "%");
 		case IS_NULL:
-			return cb.isNull(fundRoot.get(fieldName));
+			return cb.isNull(expression);
 		case NOT_NULL:
-			return cb.isNotNull(fundRoot.get(fieldName));
+			return cb.isNotNull(expression);
 		default:
 			throw new IllegalArgumentException("Unexpected operation: " + op);
 		}
