@@ -63,10 +63,18 @@ export function fundsFundDetailFetchIfNeeded() {
 }
 
 /**
+ * Fetch dat pro detail archivního souboru.
+ */
+export async function getFundDetail(id) {
+    const fundDetail = await WebApi.getFundDetail(id);
+    return fundDetail;
+}
+
+/**
  * Fetch dat pro seznam archivních souborů.
  */
 export function fundsFetchIfNeeded(size = DEFAULT_FUND_LIST_MAX_SIZE) {
-    return (dispatch, getState) => {
+    return async (dispatch, getState) => {
         const state = getState();
         const {fundRegion} = state;
         const {filter} = fundRegion;
@@ -74,14 +82,20 @@ export function fundsFetchIfNeeded(size = DEFAULT_FUND_LIST_MAX_SIZE) {
 
         if (fundRegion.currentDataKey !== dataKey) {
             dispatch(fundsRequest(dataKey));
-            Api.funds.fundFindFunds(fundRegion.filterText, filter.institutionIdentifier, size, filter.from).then(response => {
-                const newState = getState();
-                const newFundRegion = newState.fundRegion;
-                const newDataKey = _fundRegionDataKey(newFundRegion);
-                if (newDataKey === dataKey) {
-                    dispatch(fundsReceive(response.data));
-                }
+
+            const {data} = await Api.funds.fundSearchFunds({
+                filters: filter.filter,
+                size,
+                offset: filter.from
             });
+
+            const newState = getState();
+            const newFundRegion = newState.fundRegion;
+            const newDataKey = _fundRegionDataKey(newFundRegion);
+
+            if (newDataKey === dataKey) {
+                dispatch(fundsReceive(data));
+            }
         }
     };
 }

@@ -6,39 +6,235 @@
     }
 
     .fund-list-container {
-        padding: 5px;
-        background: $fa-file-tree-bg;
-        border: 1px solid $fa-file-tree-border;
+        // padding: 5px;
+        // background: $fa-file-tree-bg;
+        background: transparent;
+        // border: 1px solid $fa-file-tree-border;
+        border: none;
         border-top: none;
         height: 100%;
         display: flex;
         flex-direction: column;
 
+        .filter-container {
+            padding: 10px;
+
+            .search-input {
+                margin-bottom: 0;
+
+                .form-control {
+                    height: auto;
+                    border-radius: 4px;
+                    padding: 4px 8px;
+                }
+            }
+
+            .search-actions {
+                height: 100%;
+                display: flex;
+                align-items: center;
+
+                .btn {
+                    display: flex;
+                    align-items: center;
+                    border-radius: 4px;
+                }
+            }
+        }
+
         .fund-listbox {
-            background: $fa-file-tree-bg-list;
-            /* border: 1px solid $fa-file-tree-border; */
+            // background: $fa-file-tree-bg-list;
+            background: transparent;
+            // border: 1px solid $fa-file-tree-border;
+            border: none;
             flex-grow: 1;
             margin: 0;
             overflow: hidden;
             overflow-y: auto;
 
-            .listbox-item {
-                //padding: 5px;
-                //height: 40px;
-                overflow:hidden;
-                padding:5px;
+            .listbox-container {
+                // padding: 10px;
+            }
 
-                .item-row{
+            .listbox-item {
+                // padding: 5px;
+                //height: 40px;
+                // overflow: hidden;
+                padding: 8px 16px;
+                display: flex;
+                border-bottom: $primary-border;
+                background: $shade-0;
+
+                &.active {
+
+                    // background: $shade-1;
+                    &:hover {
+                        background: transparent;
+                    }
+
+                }
+
+                .open-action {
+                    display: flex;
+                    align-items: center;
+                    flex-shrink: 0;
+
+                    .btn {
+                        height: 2em;
+                        background: $shade-3;
+                        margin: 2px;
+                        border-radius: 4px;
+                        transition: background 200ms ease-out;
+
+                        &:hover {
+                            background: $shade-4;
+
+                        }
+                    }
+                }
+
+                .fund-actions {
+                    // max-width: 0;
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: center;
+                    // opacity: 0;
+                    // overflow: hidden;
+                    margin: 0 10px;
+
+                    .btn {
+                        position: relative;
+                        width: 2em;
+                        height: 2em;
+                        background: $shade-3;
+                        margin: 2px;
+                        border-radius: 4px;
+                        transition: background 200ms ease-out;
+
+                        &:hover,
+                        &:active {
+                            background: $shade-4;
+
+                        }
+
+                        &.danger {
+                            background: $color-red;
+                            color: $fg-shade-4;
+                        }
+                    }
+
+                    .dropdown {
+                        .btn {
+                            background: transparent;
+                            border: none;
+
+                            &:hover,
+                            &:active,
+                            &:focus {
+                                background: $shade-4;
+                                color: currentColor !important;
+                            }
+                        }
+
+                        .dropdown-menu {
+                            .btn {
+                                background: transparent;
+                                border: none;
+                                width: auto;
+                                height: auto;
+
+                                &.danger {
+                                    color: $color-red;
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+                &:hover {
+                    .fund-actions {
+                        display: flex;
+                        max-width: 250px;
+                        opacity: 1;
+                    }
+                }
+
+
+                .item-row {
                     display: flex;
 
-                    div:first-child{
-                        flex-grow:1;
-                    }
+                    // div:first-child{
+                    //     flex-grow:1;
+                    // }
                     .name {
+                        margin: 2px;
                         white-space: nowrap;
-                        overflow:hidden;
+                        overflow: hidden;
                         text-overflow: ellipsis;
+
+                        &.main {
+                            font-weight: bold;
+                            font-size: 1.1rem;
+                        }
+
+                        &.link {
+                            cursor: pointer;
+                            text-decoration: none;
+                            color: $fg-color;
+
+                            &:hover {
+                                text-decoration: underline;
+                                color: $color-link;
+                            }
+                        }
+
+                        &.shrink {
+                            flex-shrink: 1 !important;
+
+                            div {
+                                text-overflow: ellipsis;
+                                overflow: hidden;
+                            }
+                        }
                     }
+
+                    .desc-part {
+                        // color: $contrast-color-fg;
+                        margin: 2px;
+                        padding: 2px 4px;
+                        font-size: 1rem;
+                        line-height: 0.9rem;
+                        white-space: nowrap;
+                        text-overflow: ellipsis;
+                        flex-shrink: 1;
+                        overflow: hidden;
+
+                        &.muted {
+                            opacity: 0.7;
+                            font-style: italic;
+                        }
+
+                        &.bubble {
+                            background: $shade-4;
+                            border-radius: 4px;
+                            font-size: 0.8rem;
+                            flex-shrink: 0;
+                        }
+
+                        &.id {
+                            background: $contrast-color;
+                            color: $contrast-color-fg;
+                            font-weight: bold;
+                        }
+
+                        &.internal-code {
+                            background: $accent-color;
+                            color: $accent-color-fg;
+                            font-weight: bold;
+                        }
+                    }
+
                     .btn-action {
                         padding: 0;
                         border: none;
@@ -52,7 +248,7 @@
                         align-items: center;
                         justify-content: center;
                         color: inherit;
-                        margin-right:-0.2em;
+                        margin-right: -0.2em;
 
                         .icon {
                             color: inherit;
@@ -64,19 +260,22 @@
                             background-color: $shade-2;
                             color: $fg-color;
                         }
+
                     }
-                    .link{
+
+                    .link {
                         //color:$color-link;
 
-                        &:hover{
-                            color:$color-link;
+                        &:hover {
+                            color: $color-link;
                             text-decoration: underline;
                         }
                     }
 
                 }
-                .desc{
-                    font-size:0.8em;
+
+                .desc {
+                    font-size: 0.8em;
                 }
             }
         }

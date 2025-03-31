@@ -1,0 +1,10 @@
+.draggable-window {
+    position: fixed;
+    z-index: 5000;
+    // transition: top 50ms ease-out, left 50ms ease-out;
+    cursor: move;
+
+    &.drag-disable {
+        cursor: default;
+    }
+}

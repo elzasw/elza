@@ -10,6 +10,7 @@ import { Route } from 'react-router';
 import { BrowserRouter } from 'react-router-dom';
 import { FluentProvider, webDarkTheme, webLightTheme } from '@fluentui/react-components';
 import { LangProvider } from 'components/shared/lang/LangProvider';
+import { FluentDialogProvider } from 'components/shared/dialog/FluentModalDialog';
 
 const serverContextPath = window.serverContextPath;
 
@@ -25,7 +26,9 @@ class Root extends React.Component {
                 >
                     <LangProvider>
                         <FluentProvider style={{ flex: 1, height: "100%" }} theme={{ ...theme, colorNeutralBackground1: "var(--shade-0)" }}>
-                            <Route component={Layout} />
+                            <FluentDialogProvider>
+                                <Route component={Layout} />
+                            </FluentDialogProvider>
                         </FluentProvider>
                     </LangProvider>
                 </BrowserRouter>
