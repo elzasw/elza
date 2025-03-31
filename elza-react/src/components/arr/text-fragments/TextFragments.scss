@@ -6,8 +6,6 @@
     padding: 10px;
     padding-top: 0px;
     width: 350px;
-    position: fixed;
-    z-index: 5000;
 
     .actions-container {
         padding: 5px 0;
@@ -108,7 +106,7 @@
 
                     &:hover {
                         color: $fg-color;
-                        
+
                         .delete-overlay {
                             opacity: 1;
                         }

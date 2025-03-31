@@ -50,3 +50,4 @@ export {default as ExceptionDetail} from 'components/shared/exception/ExceptionD
 export {default as TooltipTrigger} from 'components/shared/tooltip/TooltipTrigger';
 export {default as FormInput} from 'components/shared/form/FormInput';
 export {default as FormInputField} from 'components/shared/form/FormInputField';
+export {DraggableWindow} from './draggable-window';
