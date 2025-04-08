@@ -19,6 +19,8 @@ import java.util.Optional;
 import com.nimbusds.jose.util.JSONObjectUtils;
 import com.nimbusds.jose.util.Resource;
 import com.nimbusds.jose.util.ResourceRetriever;
+
+import cz.tacr.elza.security.kerberos.KerberosProperties;
 import cz.tacr.elza.security.oauth2.JwtUserDetailProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -45,11 +48,20 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.kerberos.authentication.KerberosAuthenticationProvider;
+import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
+import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosClient;
+import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosTicketValidator;
+import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
@@ -116,6 +128,9 @@ public class ApplicationSecurity {
     @Autowired
     private Optional<OAuth2Properties> optionalOAuth2Props;
 
+    @Autowired
+    private Optional<KerberosProperties> optionalKerberosProps;
+
     private SessionRegistry sessionRegistry = null;
 
     @Bean
@@ -146,6 +161,7 @@ public class ApplicationSecurity {
             ap.add(new JwtUserDetailProvider(jwtDecoder, txManager, userService, apService,
                     itemTypeRepository, optionalOAuth2Props.get()));
         }
+
         return new ProviderManager(ap);
     }
 
@@ -263,6 +279,7 @@ public class ApplicationSecurity {
 
         configureSsoHeaderFilter(http);
         configureOAuth2(http);
+        configureKerberos(http);
         return http.build();
     }
 
@@ -283,13 +300,71 @@ public class ApplicationSecurity {
     }
 
     private void configureSsoHeaderFilter(HttpSecurity http) throws Exception {
-        if (optionalSsoHeaderProperties.isPresent()) {
-            SsoHeaderAuthenticationFilter filter = new SsoHeaderAuthenticationFilter(optionalSsoHeaderProperties.get());
-            filter.setAuthenticationManager(authenticationManagerBean());
-            filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
-            filter.setAuthenticationFailureHandler(authenticationFailureHandler);
-            http.addFilterBefore(filter, AbstractPreAuthenticatedProcessingFilter.class);
-            log.info("SSO header authentication filter was configured");
+        if (!optionalSsoHeaderProperties.isPresent()) {
+        	return;
         }
+
+        SsoHeaderAuthenticationFilter filter = new SsoHeaderAuthenticationFilter(optionalSsoHeaderProperties.get());
+        filter.setAuthenticationManager(authenticationManagerBean());
+        filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+        filter.setAuthenticationFailureHandler(authenticationFailureHandler);
+
+        http
+        	.addFilterBefore(filter, AbstractPreAuthenticatedProcessingFilter.class);
+
+        log.info("SSO header authentication filter was configured");
+    }
+
+	private void configureKerberos(HttpSecurity http) {
+        if (!optionalKerberosProps.isPresent()) {
+            return;
+        }
+
+        ProviderManager providerManager = new ProviderManager(kerberosAuthenticationProvider(), kerberosServiceAuthenticationProvider());
+        SpnegoAuthenticationProcessingFilter spnegoAuthenticationProcessingFilter = new SpnegoAuthenticationProcessingFilter();
+        spnegoAuthenticationProcessingFilter.setAuthenticationManager(providerManager);
+
+        http
+        	.authenticationProvider(kerberosAuthenticationProvider())
+        	.authenticationProvider(kerberosServiceAuthenticationProvider())
+        	.addFilterBefore(spnegoAuthenticationProcessingFilter, BasicAuthenticationFilter.class);
+
+        log.info("Kerberos filter was configured");
+	}
+
+    @Bean
+    @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
+    public KerberosAuthenticationProvider kerberosAuthenticationProvider() {
+        KerberosAuthenticationProvider provider = new KerberosAuthenticationProvider();
+        SunJaasKerberosClient client = new SunJaasKerberosClient();
+        client.setDebug(optionalKerberosProps.get().isKerberosClientDebug());
+        provider.setKerberosClient(client);
+        provider.setUserDetailsService(userDetailsService());
+        return provider;
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
+    public KerberosServiceAuthenticationProvider kerberosServiceAuthenticationProvider() {
+        KerberosServiceAuthenticationProvider provider = new KerberosServiceAuthenticationProvider();
+        provider.setTicketValidator(sunJaasKerberosTicketValidator());
+        provider.setUserDetailsService(userDetailsService());
+        return provider;
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
+    public SunJaasKerberosTicketValidator sunJaasKerberosTicketValidator() {
+        SunJaasKerberosTicketValidator ticketValidator = new SunJaasKerberosTicketValidator();
+        ticketValidator.setServicePrincipal(optionalKerberosProps.get().getServicePrincipal());
+        ticketValidator.setKeyTabLocation(new FileSystemResource(optionalKerberosProps.get().getKeytabLocation()));
+        ticketValidator.setDebug(optionalKerberosProps.get().isTicketValidatorDebug());
+        return ticketValidator;
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
+    public UserDetailsService userDetailsService() {
+        return new InMemoryUserDetailsManager(User.withUsername("admin").password("{noop}admin").roles("ADMIN_USER").build());
     }
 }

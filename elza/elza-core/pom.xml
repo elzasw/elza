@@ -11,6 +11,7 @@
 
     <properties>
         <drools.version>8.44.0.Final</drools.version> <!-- 7.74.1.Final, 8.44.0.Final -->
+        <kerberos.version>2.1.1</kerberos.version>
     </properties>
 
     <dependencies>
@@ -290,6 +291,23 @@
             <groupId>org.geotools.xsd</groupId>
             <artifactId>gt-xsd-kml</artifactId>
 		</dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.springframework.security.kerberos -->
+        <dependency>
+            <groupId>org.springframework.security.kerberos</groupId>
+            <artifactId>spring-security-kerberos-core</artifactId>
+            <version>${kerberos.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security.kerberos</groupId>
+            <artifactId>spring-security-kerberos-client</artifactId>
+            <version>${kerberos.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security.kerberos</groupId>
+            <artifactId>spring-security-kerberos-web</artifactId>
+            <version>${kerberos.version}</version>
+        </dependency>
 		<!-- test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

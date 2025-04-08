@@ -18,7 +18,12 @@ elza:
   security:
   #  sso-header:
   #    user-header: X-SSO-User
-  #    allowDefaultUser:false
+  #    allowDefaultUser: false
+  #  kerberos:
+  #    service-principal: HTTP/dc1.lightcomp.cz@LIGHTCOMP.CZ
+  #    keytab-location: C:/Users/siryupin/krb5cc_siryupin
+  #    kerberos-client-debug: false
+  #    ticket-validator-debug: false
   #workingDir: C:/Elza/work
 
   # Nastavení času spuštění pro reindexaci:
