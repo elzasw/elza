@@ -98,6 +98,7 @@ export const TextFragmentsWindow: FC<{
             className="text-fragments-window"
             initialPosition={_textFragmentsWindowPosition}
             onDragStop={(position) => { _textFragmentsWindowPosition = position }}
+            dragWholeWindow={true}
         >
             <div className="actions-container" >
                 <div className="title">{i18n("textFragments.title")}</div>

@@ -88,14 +88,36 @@ interface OutputFilterData {
     ruleSetId?: number;
 }
 
-interface OutputFilters {
-    data: OutputFilterData[];
+// interface OutputFilters {
+//     data: OutputFilterData[];
+//     currentDataKey?: boolean;
+//     id?: boolean;
+//     fetched?: boolean;
+//     isFetching?: boolean;
+//     getDataKey?: () => unknown;
+//     reducer?: () => unknown;
+// }
+
+export interface RefTablesDataStore<T> {
+    data: T[] | null;
     currentDataKey?: boolean;
     id?: boolean;
     fetched?: boolean;
     isFetching?: boolean;
     getDataKey?: () => unknown;
     reducer?: () => unknown;
+}
+
+enum IssueTypeEnum {
+    IMPORTANT = "IMPORTANT",
+    RECOMMENDED = "RECOMMENDED",
+    MINOR = "MINOR",
+}
+
+export interface IssueType {
+    id: number;
+    code: IssueTypeEnum;
+    name: string;
 }
 
 export interface RefTablesState {
@@ -106,9 +128,9 @@ export interface RefTablesState {
     groups: unknown;
     institutions: unknown;
     issueStates: unknown;
-    issueTypes: unknown;
+    issueTypes: RefTablesDataStore<IssueType>;
     outputTypes: BaseRefTableStore<OutputType>;
-    outputFilters: OutputFilters;
+    outputFilters: RefTablesDataStore<OutputFilterData>;
     partTypes: BaseRefTableStore<RulPartTypeVO>;
     recordTypes: BaseRefTableStore<unknown>;
     rulDataTypes: BaseRefTableStore<RulDataTypeVO>;

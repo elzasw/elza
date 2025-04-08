@@ -253,13 +253,12 @@ class SearchFundsForm extends AbstractReactComponent {
         const levels = createReferenceMark(node, null);
         const iconProps = getNodeIcon(true, node.icon);
         return (
-            <div key={node.id} className="node">
+            <div key={node.id} className="node" onClick={() => this.handleNodeClick(node)}>
                 <div className="levels">{levels}</div>
                 <Icon className="item-icon" {...iconProps} />
                 <div title={node.name} className="item-label">
                     {node.name}
                 </div>
-                <span className="detail-col fa fa-sign-out" onClick={() => this.handleNodeClick(node)} />
             </div>
         );
     };
