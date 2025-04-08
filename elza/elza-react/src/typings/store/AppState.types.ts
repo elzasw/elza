@@ -182,7 +182,7 @@ export interface Fund {
     fundTreeMovementsLeft: unknown;
     fundTreeMovementsRight: unknown;
     fundTreeNodes: unknown;
-    id?: number | string;
+    id?: number;
     institutionId: number | unknown;
     internalCode: string | unknown;
     isFetching: boolean | unknown;

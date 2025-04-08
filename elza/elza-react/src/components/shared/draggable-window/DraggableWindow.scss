@@ -2,9 +2,14 @@
     position: fixed;
     z-index: 5000;
     // transition: top 50ms ease-out, left 50ms ease-out;
-    cursor: move;
+    // cursor: move;
 
     &.drag-disable {
         cursor: default;
+    }
+
+    .dragger {
+        // cursor: move;
+        user-select: none;
     }
 }
