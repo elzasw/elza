@@ -77,6 +77,7 @@ import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
+import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.AbstractFilter;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
@@ -85,6 +86,8 @@ import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
 import cz.tacr.elza.controller.vo.FieldValueFilter;
 import cz.tacr.elza.controller.vo.FileType;
+import cz.tacr.elza.controller.vo.FindFundsResult;
+import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
@@ -268,6 +271,9 @@ public class ArrangementService {
     @Autowired
     private GroovyService groovyService;
 
+    @Autowired
+    private ClientFactoryVO factoryVo;
+
     //TODO: add translation or refactor
     public static final String UNDEFINED = "výjimka";
 
@@ -374,7 +380,6 @@ public class ArrangementService {
     	ArrFundVersion fundVersion = getFundVersion(fundVersionId);
     	ArrFund fund = fundVersion.getFund();
     	ParInstitution institution = fund.getInstitution();
-    	Integer accessPointId = institution.getAccessPointId();    	
     	List<ArrDescItem> items = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(List.of(nodeId));
 
     	return groovyService.getNodePlainText(fundVersion, institution, items);
@@ -953,9 +958,7 @@ public class ArrangementService {
             }
         }
 
-        final List<ArrDescItem> newDescItems = descriptionItemService
-                .copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version,
-                        changeContext);
+        final List<ArrDescItem> newDescItems = descriptionItemService.copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version, changeContext);
 
         changeContext.flush();
 
@@ -999,42 +1002,55 @@ public class ArrangementService {
      * Vyhledávání v seznamu fondů podle parametrů
      * 
      * @param searchParams
-     * @return seznam ArrFund
+     * @return seznam ArrFund + total
      */
-    public List<ArrFund> findFundsBySearchParams(SearchParams searchParams) {
+    public FindFundsResult findFundsBySearchParams(SearchParams searchParams) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<ArrFund> cq = cb.createQuery(ArrFund.class);
+        Root<ArrFund> fundRoot = cq.from(ArrFund.class);
 
-        List<Predicate> predicates = buildPredicateFromParams(cb, cq, searchParams);
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<ArrFund> countRoot = countQuery.from(ArrFund.class);
+        countQuery.select(cb.count(countRoot));
+
+        List<Predicate> predicates = buildPredicateFromParams(cb, cq, fundRoot, searchParams);
         if (!predicates.isEmpty()) {
         	cq.where(predicates.toArray(new Predicate[predicates.size()]));
         }
 
-        TypedQuery<ArrFund> query = em.createQuery(cq);
-        query.setFirstResult(searchParams.getOffset());
-        query.setMaxResults(searchParams.getSize());
+        List<Predicate> countPredicates = buildPredicateFromParams(cb, countQuery, countRoot, searchParams);
+        if (!countPredicates.isEmpty()) {
+        	countQuery.where(countPredicates.toArray(new Predicate[countPredicates.size()]));
+        }
 
-        return query.getResultList();
+        TypedQuery<ArrFund> query = em.createQuery(cq)
+        							.setFirstResult(searchParams.getOffset())
+        							.setMaxResults(searchParams.getSize());
+        Long total = em.createQuery(countQuery).getSingleResult();
+        List<Fund> funds = query.getResultList().stream().map(f -> factoryVo.createFund(f, "TODO: uuid")).toList();
+
+        return new FindFundsResult(funds, total.intValue());
     }
 
     /**
      * Sestavení predikátu na základě parametrů
      * 
+     * @param cb
      * @param cq
+     * @param root
      * @param searchParams
      * @return seznam Predicate
      */
-    private List<Predicate> buildPredicateFromParams(final CriteriaBuilder cb, final CriteriaQuery<ArrFund> cq, final SearchParams searchParams) {
+    private List<Predicate> buildPredicateFromParams(final CriteriaBuilder cb, final CriteriaQuery<?> cq, final Root<ArrFund> root, final SearchParams searchParams) {
     	List<Predicate> predicates = new ArrayList<>();
-        Root<ArrFund> fundRoot = cq.from(ArrFund.class);
 
         // zpracování filtru
     	for (AbstractFilter filter : searchParams.getFilters()) {
     		if (filter instanceof MultimatchContainsFilter) {
-    			predicates.add(createPredicate(cb, fundRoot, (MultimatchContainsFilter) filter));
+    			predicates.add(createPredicate(cb, root, (MultimatchContainsFilter) filter));
 
     		} else if (filter instanceof FieldValueFilter) {
-    			predicates.add(createPredicate(cb, fundRoot, (FieldValueFilter) filter));
+    			predicates.add(createPredicate(cb, root, (FieldValueFilter) filter));
 
     		} else if (filter instanceof LogicalFilter) {
     			// TODO implement this type of filter as needed
@@ -1054,7 +1070,7 @@ public class ArrangementService {
         	usrPermissionSubquery.select(usrPermissionRoot.get(UsrPermissionView.FIELD_FUND_ID));
         	usrPermissionSubquery.where(cb.equal(usrPermissionRoot.get(UsrPermissionView.FIELD_USER_ID), userId));
 
-        	predicates.add(cb.in(fundRoot.get(ArrFund.FIELD_FUND_ID)).value(usrPermissionSubquery));
+        	predicates.add(cb.in(root.get(ArrFund.FIELD_FUND_ID)).value(usrPermissionSubquery));
         }
 
         return predicates;
