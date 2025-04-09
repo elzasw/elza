@@ -474,7 +474,7 @@
 							</schemaIncludes>
                             <bindingDirectory>${project.basedir}/src/main/resources/schema</bindingDirectory>
                             <bindingIncludes>
-                                <include>elza-schema-v2-bindinds.xml</include>
+                                <include>elza-schema-v2-bindings.xml</include>
 							</bindingIncludes>
                             <plugins>
                                 <plugin>
