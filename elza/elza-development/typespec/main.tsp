@@ -720,6 +720,13 @@ enum OperationLogicalType {
 }
 
 /**
+ * Field names for FieldValueFilter
+ */
+enum FondsFilterField {
+    fundId, name, createDate, internalCode, fundNumber, unitdate, mark, institutionCode
+}
+
+/**
  * Used as a parent for all other filters
  */
 @discriminator("filterType")
@@ -733,7 +740,7 @@ model AbstractFilter {
 model FieldValueFilter extends AbstractFilter {
     filterType: FilterType.fieldValue;
     /** searched field */
-    field: string;
+    field: FondsFilterField;
     /** searched value */
     value: string;
     /** operation type */

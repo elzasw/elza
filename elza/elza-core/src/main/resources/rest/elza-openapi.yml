@@ -2197,7 +2197,8 @@ components:
         #  enum:
         #    - fieldValue
         field:
-          type: string
+          allOf:
+            - $ref: '#/components/schemas/FondsFilterField'
           description: searched field
         value:
           type: string
@@ -2229,6 +2230,18 @@ components:
         totalCount:
           type: integer
       description: Výsledek vyhledávání AS
+    FondsFilterField:
+      type: string
+      enum:
+        - fundId
+        - name
+        - createDate
+        - internalCode
+        - fundNumber
+        - unitdate
+        - mark
+        - institutionCode
+      description: Field names for FieldValueFilter
     FsItem:
       type: object
       required:

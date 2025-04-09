@@ -13,6 +13,7 @@ import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.test.controller.vo.CreateFund;
 import cz.tacr.elza.test.controller.vo.FieldValueFilter;
 import cz.tacr.elza.test.controller.vo.FindFundsResult;
+import cz.tacr.elza.test.controller.vo.FondsFilterField;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.FundDetail;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
@@ -115,7 +116,7 @@ public class FundControllerTest extends AbstractControllerTest {
     	assertTrue(result.getTotalCount() == 3);
 
     	FieldValueFilter valueFilter = new FieldValueFilter();
-    	valueFilter.setField("internalCode");
+    	valueFilter.setField(FondsFilterField.INTERNAL_CODE);
     	valueFilter.setValue("Code");
     	valueFilter.setOperation(OperationCompareType.CONTAINS);
     	params.addFiltersItem(valueFilter);
@@ -125,7 +126,7 @@ public class FundControllerTest extends AbstractControllerTest {
     	assertTrue(result.getTotalCount() == 2);
 
     	valueFilter = new FieldValueFilter();
-    	valueFilter.setField("fundNumber");
+    	valueFilter.setField(FondsFilterField.FUND_NUMBER);
     	valueFilter.setValue("");
     	valueFilter.setOperation(OperationCompareType.NOT_NULL);
     	params.addFiltersItem(valueFilter);

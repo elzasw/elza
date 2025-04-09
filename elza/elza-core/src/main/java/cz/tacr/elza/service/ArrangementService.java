@@ -997,6 +997,14 @@ public class ArrangementService {
     public ArrNode findNodeByUUID(String uuid) {
         return nodeRepository.findOneByUuid(uuid);
     }
+    
+    // TODO FindАondsVersionResult
+    //     List<ArffFundVersion>
+    //     int totalCount
+    /*
+    public FindАondsVersionResult findFundsBySearchParams(SearchParams searchParams) {
+    	
+    }*/
 
     /**
      * Vyhledávání v seznamu fondů podle parametrů
@@ -1100,7 +1108,7 @@ public class ArrangementService {
      * @return
      */
     private Predicate createPredicate(final CriteriaBuilder cb, Root<ArrFund> fundRoot, FieldValueFilter filter) {
-        String fieldName = getArrFundFieldName(filter.getField());
+        String fieldName = getArrFundFieldName(filter.getField().getValue());
 	    String value = filter.getValue();
 	    OperationCompareType op = filter.getOperation();
 
