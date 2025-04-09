@@ -469,11 +469,11 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         Map<Integer, RestoredNode> cachedNodeMap = nodeCacheService.getNodes(arrNodeIds);
         List<Node> nodes = new ArrayList<>(nodeIds.size());
         Map<Integer, Node> daoLinkMap = new HashMap<>();
-
+        
         for (NodeId nodeId : nodeIds) {
             Integer arrNodeId = nodeId.getArrNodeId();
             RestoredNode cachedNode = cachedNodeMap.get(arrNodeId);
-            Validate.notNull(cachedNode);
+            Objects.requireNonNull(cachedNode);
 
             // get list of restriction id relevant filter conditions
             List<ArrItem> restrictionItems = getRestrictionItems(cachedNode);
@@ -508,12 +508,22 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
         // read dao links
         if (!daoLinkMap.isEmpty()) {
-            List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(arrNodeIds);
+            // collection of node ids for loading daos
+            List<Integer> daosFromNodeIds = arrNodeIds;
+            if(arrNodeIds.size() != nodes.size()) {
+                daosFromNodeIds = new ArrayList<>(nodes.size());
+                for (Node node : nodes) {
+                    daosFromNodeIds.add(node.getNodeId().getArrNodeId());
+                }
+            }            
+
+        	
+            List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(daosFromNodeIds);
             Validate.isTrue(daoLinks.size() == daoLinkMap.size());
 
             for (ArrDaoLink daoLink : daoLinks) {
                 Node node = daoLinkMap.get(daoLink.getDaoLinkId());
-                Validate.notNull(node);
+                Objects.requireNonNull(node);
 
                 Dao dao = new Dao(daoLink);
                 node.addDao(dao);
@@ -548,6 +558,13 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         return restrictionItems;
     }
 
+    /**
+     * 
+     * @param nodeId
+     * @param node
+     * @param restrictionItems
+     * @return Return null if node should be filtered
+     */
     private RestoredNode filterNode(NodeId nodeId, RestoredNode node, List<ArrItem> restrictionItems) {
         NodeId parentNodeId = nodeId.getParent();
         if (parentNodeId != null && restrictedNodeIds.contains(parentNodeId.getArrNodeId())) {
