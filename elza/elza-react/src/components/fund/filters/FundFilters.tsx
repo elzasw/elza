@@ -3,7 +3,7 @@ import { AddRegular } from "@fluentui/react-icons";
 import { Icon } from "components"
 import { FilterChange, FundFilterModal } from "./FundFilterModal";
 import { Field, Form } from "react-final-form";
-import { AbstractFilter, FieldValueFilter, FilterType, MultimatchContainsFilter, OperationCompareType } from "elza-api";
+import { AbstractFilter, FieldValueFilter, FilterType, FondsFilterField, MultimatchContainsFilter, OperationCompareType } from "elza-api";
 import { useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { messages } from "./messages";
@@ -28,7 +28,7 @@ export function FundFilters({
   onChange,
   currentFilters,
 }: Props) {
-  const [addFilter, setAddFilter] = useState<string>();
+  const [addFilter, setAddFilter] = useState<FondsFilterField>();
   const [filters, setFilters] = useState<(FieldValueFilter | MultimatchContainsFilter)[]>(currentFilters as any || []);
 
   const showModal = useTestModal();
@@ -38,7 +38,7 @@ export function FundFilters({
   const { formatMessage } = useIntl();
 
   function getFiltersList() {
-    return ["institutionId"]
+    return [FondsFilterField.InstitutionCode, FondsFilterField.InternalCode, FondsFilterField.FundNumber]
   }
 
   function handleFulltext({ fulltext }: FulltextValues) {
