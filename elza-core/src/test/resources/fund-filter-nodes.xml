@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ns2:edx xmlns:ns2="http://elza.tacr.cz/schema/v2">
+    <fs>
+        <s rule="SIMPLE-DEV">
+            <fi ic="in1" n="a1"/>
+            <sts>
+                <st c="SRD_PACKET">
+                    <sos>
+                        <so asgn="true" id="3" uuid="8a5756a8-9d16-435b-b9fd-f8f4f9687f9c" v="alfa">
+                            <de s="SRD_PACKET_TYPE_BOX" t="SRD_PACKET_TYPE"/>
+                            <ds t="SRD_PACKET_PREFIX">
+                                <v>alfa</v>
+                            </ds>
+                        </so>
+                        <so asgn="true" id="4" uuid="873130a1-32b3-433f-9962-c464198184ad" v="beta">
+                            <de s="SRD_PACKET_TYPE_BOX" t="SRD_PACKET_TYPE"/>
+                            <ds t="SRD_PACKET_PREFIX">
+                                <v>beta</v>
+                            </ds>
+                        </so>
+                        <so asgn="true" id="5" uuid="c5f783df-3725-4e55-8eb0-8c9d2b3d9744" v="gamma">
+                            <de s="SRD_PACKET_TYPE_BOX" t="SRD_PACKET_TYPE"/>
+                            <ds t="SRD_PACKET_PREFIX">
+                                <v>gamma</v>
+                            </ds>
+                        </so>
+                    </sos>
+                </st>
+            </sts>
+            <lvls>
+                <lvl id="1" uuid="0b7519bf-5b5a-4d2f-b939-b527e93d98e4">
+                    <de s="SRD_LEVEL_ROOT" t="SRD_LEVEL_TYPE"/>
+                </lvl>
+                <lvl id="2" pid="1" uuid="52587f9d-ebfa-491f-b9e9-f91429ba11fa">
+                    <de s="SRD_LEVEL_SERIES" t="SRD_LEVEL_TYPE"/>
+                </lvl>
+                <lvl id="3" pid="2" uuid="9503bfac-9912-44aa-b6ef-8ec56201375b">
+                    <de s="SRD_LEVEL_ITEM" t="SRD_LEVEL_TYPE"/>
+                    <do soid="3" t="SRD_STORAGE_ID"/>
+                    <ds t="SRD_TITLE">
+                        <v>1st</v>
+                    </ds>
+                </lvl>
+                <lvl id="4" pid="2" uuid="42231de5-42da-4669-a09a-4d009fb6f33c">
+                    <de s="SRD_LEVEL_ITEM" t="SRD_LEVEL_TYPE"/>
+                    <do soid="4" t="SRD_STORAGE_ID"/>
+                    <ds t="SRD_TITLE">
+                        <v>2nd</v>
+                    </ds>
+                </lvl>
+                <lvl id="5" pid="2" uuid="da867623-3780-4ca2-8c31-368220c900e2">
+                    <de s="SRD_LEVEL_ITEM" t="SRD_LEVEL_TYPE"/>
+                    <do soid="5" t="SRD_STORAGE_ID"/>
+                    <ds t="SRD_TITLE">
+                        <v>3rd</v>
+                    </ds>
+                </lvl>
+            </lvls>
+        </s>
+    </fs>
+</ns2:edx>
