@@ -5,14 +5,15 @@ import { useState } from "react";
 import { FundFilterInstitutionForm } from "./FundFilterInstitution";
 import { useIntl } from "react-intl";
 import { messages } from "./messages";
+import { FondsFilterField } from "elza-api";
 
 export interface FilterChange {
-  name: string;
+  name: FondsFilterField;
   value: string;
 }
 
 interface Props {
-  filterName: string;
+  filterName: FondsFilterField;
   onFilterChange: (data: FilterChange) => void;
   onClose: () => void;
   initialPosition?: Position;
