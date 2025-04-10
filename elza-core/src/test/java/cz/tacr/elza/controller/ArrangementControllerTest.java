@@ -1458,9 +1458,12 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void testFilterNodes() {
+    public void testFilterNodes() throws InterruptedException {
     	// import fund from xml
     	importXmlFile(null, 1, getResourceFile(XML_FUND));
+
+    	// waiting of indexing
+    	helperTestService.massIndexerStartAndWait(ArrDescItem.class);
 
     	List<ArrFundVersion> fundVersions = fundVersionRepository.findAll();
         assertTrue(fundVersions.size() == 1);
