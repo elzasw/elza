@@ -1,17 +1,14 @@
 import { showConfirmDialog } from 'components/shared/dialog';
 import PropTypes from 'prop-types';
-import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
-import { LinkContainer } from 'react-router-bootstrap';
 import {
     approveFund,
     createFund,
     deleteFund,
     deleteFundHistory,
     exportFund,
-
     updateFund
 } from '../../actions/arr/fund';
 import { globalFundTreeInvalidate } from '../../actions/arr/globalFundTree';
@@ -27,15 +24,15 @@ import {
 import { modalDialogShow } from '../../actions/global/modalDialog';
 import { WebApi } from '../../actions/index';
 import { refInstitutionsFetchIfNeeded } from '../../actions/refTables/institutions';
+import { refRuleSetFetchIfNeeded } from '../../actions/refTables/ruleSet';
 import { scopesDirty } from '../../actions/refTables/scopesData';
 import { routerNavigate } from '../../actions/router';
 import * as perms from '../../actions/user/Permission';
-import { ExportForm, FundDetail, FundDetailExt, FundForm, i18n, Icon, ImportForm, Ribbon } from '../../components';
+import { ExportForm, FundForm, i18n, Icon, ImportForm } from '../../components';
 import IssueLists from '../../components/arr/IssueLists';
 import SearchFundsForm from '../../components/arr/SearchFundsForm';
-import { AbstractReactComponent, Autocomplete, ListBox, RibbonGroup, SearchWithGoto, Utils } from '../../components/shared';
+import { AbstractReactComponent, ListBox } from '../../components/shared';
 import ListPager from '../../components/shared/listPager/ListPager';
-import { Button } from '../../components/ui';
 import { urlEntity, urlFund, urlFundTree } from "../../constants";
 import { objectById } from '../../shared/utils';
 import { indexById } from '../../stores/app/utils';
@@ -88,6 +85,7 @@ class FundPage extends AbstractReactComponent {
         this.props.dispatch(fundsFetchIfNeeded());
         this.props.dispatch(fundsFundDetailFetchIfNeeded());
         this.props.dispatch(refInstitutionsFetchIfNeeded());
+        this.props.dispatch(refRuleSetFetchIfNeeded());
     }
 
     componentDidMount() {
@@ -175,7 +173,7 @@ class FundPage extends AbstractReactComponent {
                 <FundForm
                     approve
                     initialValues={data}
-                    onSubmitForm={data => {
+                    onSubmitForm={() => {
                         return dispatch(approveFund(fundDetail.versionId));
                     }}
                 />,
@@ -202,7 +200,7 @@ class FundPage extends AbstractReactComponent {
                     ruleSet
                     initialValues={initData}
                     onSubmitForm={data =>
-                        this.handleCallEditFundVersion({
+                        this.handleCallEditFundVersion(fundDetail, {
                             ...data,
                             name: fundDetail.name,
                             institutionIdentifier: institution.code,
@@ -222,44 +220,36 @@ class FundPage extends AbstractReactComponent {
         const fundDetail = await getFundDetail(fundId);
         const rules = objectById(ruleSet.items, fundDetail.activeVersion.ruleSetId);
         const institution = objectById(institutionsAll.items, fundDetail.institutionId);
+        const scopeList = await WebApi.getAllScopes();
 
-        Utils.barrier(WebApi.getScopes(fundDetail.versionId), WebApi.getAllScopes())
-            .then(data => {
-                return {
-                    scopes: data[0].data,
-                    scopeList: data[1].data,
-                };
-            })
-            .then(json => {
-                const data = {
-                    name: fundDetail.name,
-                    institutionIdentifier: institution.code,
-                    internalCode: fundDetail.internalCode,
-                    fundNumber: fundDetail.fundNumber,
-                    unitdate: fundDetail.unitdate,
-                    mark: fundDetail.mark,
-                    ruleSetCode: rules.code,
-                    scopes: (fundDetail.apScopes || []).map(i => i.code),
-                    managed: fundDetail.managed,
-                };
-                this.props.dispatch(
-                    modalDialogShow(
-                        this,
-                        i18n('arr.fund.title.update'),
-                        <FundForm
-                            update
-                            initialValues={data}
-                            scopeList={json.scopeList}
-                            onSubmitForm={this.handleCallEditFundVersion}
-                        />,
-                    ),
-                );
-            });
+        const data = {
+            name: fundDetail.name,
+            institutionIdentifier: institution.code,
+            internalCode: fundDetail.internalCode,
+            fundNumber: fundDetail.fundNumber,
+            unitdate: fundDetail.unitdate,
+            mark: fundDetail.mark,
+            ruleSetCode: rules.code,
+            scopes: (fundDetail.apScopes || []).map(i => i.code),
+            managed: fundDetail.managed,
+        };
+
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.fund.title.update'),
+                <FundForm
+                    update
+                    initialValues={data}
+                    scopeList={scopeList}
+                    onSubmitForm={this.handleCallEditFundVersion}
+                />,
+            ),
+        );
     }
 
-    handleCallEditFundVersion(data) {
-        const {fundRegion, dispatch} = this.props;
-        const fundDetail = fundRegion.fundDetail;
+    async handleCallEditFundVersion(fundDetail, data) {
+        const {dispatch} = this.props;
 
         dispatch(scopesDirty(fundDetail.versionId));
         return dispatch(
@@ -285,123 +275,6 @@ class FundPage extends AbstractReactComponent {
     };
 
     buildRibbon() {
-        // const {fundRegion, userDetail} = this.props;
-        //
-        // const altActions = [];
-        // if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_CREATE)) {
-        //     altActions.push(
-        //         <Button key="add-fa" onClick={this.handleAddFund}>
-        //             <Icon glyph="fa-plus-circle" />
-        //             <div>
-        //                 <span className="btnText important">{i18n('ribbon.action.arr.fund.add')}</span>
-        //             </div>
-        //         </Button>,
-        //     );
-        // }
-        //
-        // altActions.push(
-        //     <Button key="search-fa" onClick={this.handleFundsSearchForm}>
-        //         <Icon glyph="fa-search" />
-        //         <div>
-        //             <span className="btnText">{i18n('ribbon.action.arr.fund.search')}</span>
-        //         </div>
-        //     </Button>,
-        // );
-        //
-        // if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_CREATE)) {
-        //     altActions.push(
-        //         <Button key="fa-import" onClick={this.handleImport}>
-        //             <Icon glyph="fa-upload" />
-        //             <div>
-        //                 <span className="btnText">{i18n('ribbon.action.arr.fund.import')}</span>
-        //             </div>
-        //         </Button>,
-        //     );
-        // }
-        //
-        // const itemActions = [];
-        // if (fundRegion.fundDetail.id !== null && !fundRegion.fundDetail.fetching && fundRegion.fundDetail.fetched) {
-        //     if (userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId: fundRegion.fundDetail.id})) {
-        //         itemActions.push(
-        //             <Button key="edit-version" onClick={this.handleEditFundVersion}>
-        //                 <Icon glyph="fa-pencil" />
-        //                 <div>
-        //                     <span className="btnText">{i18n('ribbon.action.arr.fund.update')}</span>
-        //                 </div>
-        //             </Button>,
-        //             <Button key="rule-set-version" onClick={this.handleRuleSetUpdateFundVersion}>
-        //                 <Icon glyph="fa-calendar-check-o" />
-        //                 <div>
-        //                     <span className="btnText">{i18n('ribbon.action.arr.fund.ruleSet')}</span>
-        //                 </div>
-        //             </Button>,
-        //             <Button key="approve-version" onClick={this.handleApproveFundVersion}>
-        //                 <Icon glyph="fa-code-fork" />
-        //                 <div>
-        //                     <span className="btnText">{i18n('ribbon.action.arr.fund.approve')}</span>
-        //                 </div>
-        //             </Button>,
-        //         );
-        //     }
-        //     if (userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL, {type: perms.FUND_ISSUE_ADMIN, fundId: fundRegion.fundDetail.id})) {
-        //         itemActions.push(
-        //             <Button key="fa-lecturing" onClick={this.handleIssuesSettings}>
-        //                 <Icon glyph="fa-commenting" />
-        //                 <div>
-        //                     <span className="btnText">{i18n('arr.issues.settings.title')}</span>
-        //                 </div>
-        //             </Button>,
-        //         );
-        //     }
-        //     if (userDetail.hasOne(perms.FUND_ADMIN)) {
-        //         itemActions.push(
-        //             <Button key="fa-delete" onClick={this.handleDeleteFund}>
-        //                 <Icon glyph="fa-trash" />
-        //                 <div>
-        //                     <span className="btnText">{i18n('arr.fund.action.delete')}</span>
-        //                 </div>
-        //             </Button>,
-        //         );
-        //         itemActions.push(
-        //             <Button key="fa-deletehistory" onClick={this.handleDeleteFundHistory}>
-        //                 <Icon glyph="fa-times-circle-o" />
-        //                 <div>
-        //                     <span className="btnText">{i18n('arr.fund.action.deletehistory')}</span>
-        //                 </div>
-        //             </Button>,
-        //         );
-        //     }
-        //     if (userDetail.hasOne(perms.FUND_EXPORT_ALL, {type: perms.FUND_EXPORT, fundId: fundRegion.fundDetail.id})) {
-        //         itemActions.push(
-        //             <Button key="fa-export" onClick={this.handleExportDialog}>
-        //                 <Icon glyph="fa-download" />
-        //                 <div>
-        //                     <span className="btnText">{i18n('ribbon.action.arr.fund.export')}</span>
-        //                 </div>
-        //             </Button>,
-        //         );
-        //     }
-        // }
-        //
-        // let altSection;
-        // if (altActions.length > 0) {
-        //     altSection = (
-        //         <RibbonGroup key="alt-actions" className="small">
-        //             {altActions}
-        //         </RibbonGroup>
-        //     );
-        // }
-        //
-        // let itemSection;
-        // if (itemActions.length > 0) {
-        //     itemSection = (
-        //         <RibbonGroup key="item-actions" className="small">
-        //             {itemActions}
-        //         </RibbonGroup>
-        //     );
-        // }
-        //
-        // return <Ribbon ref="ribbon" fund altSection={altSection} itemSection={itemSection} {...this.props} />;
         return <FundPageRibbon
             onAddFund={this.handleAddFund}
             onFundsSearchForm={this.handleFundsSearchForm}
@@ -566,18 +439,20 @@ class FundPage extends AbstractReactComponent {
                 </div>
             </div>
             <div className="fund-actions">
-                <Menu>
-                    <MenuTrigger disableButtonEnhancement={true}>
-                        <MenuButton appearance='subtle' icon={<Icon glyph="fa-ellipsis-v"/>}/>
-                    </MenuTrigger>
-                    <MenuPopover>
-                        <MenuList>
-                        {itemActions.map((action) => {
-                            return action;
-                        })}
-                        </MenuList>
-                    </MenuPopover>
-                </Menu>
+                {itemActions.length > 0 &&
+                    <Menu>
+                        <MenuTrigger disableButtonEnhancement={true}>
+                            <MenuButton appearance='subtle' icon={<Icon glyph="fa-ellipsis-v"/>}/>
+                        </MenuTrigger>
+                        <MenuPopover>
+                            <MenuList>
+                                {itemActions.map((action) => {
+                                    return action;
+                                })}
+                            </MenuList>
+                        </MenuPopover>
+                    </Menu>
+                }
             </div>
         </>;
     }
@@ -634,7 +509,7 @@ class FundPage extends AbstractReactComponent {
     }
 
     render() {
-        const {splitter, focus, fundRegion, maxSize} = this.props;
+        const {splitter, fundRegion, maxSize} = this.props;
 
         let activeIndex;
         if (fundRegion.fundDetail.id !== null) {
@@ -670,14 +545,14 @@ class FundPage extends AbstractReactComponent {
             </div>
         );
 
-        const centerPanel = (
-            <FundDetail fundDetail={fundRegion.fundDetail} focus={focus} fundCount={fundRegion.funds.length} />
-        );
+        // const centerPanel = (
+        //     <FundDetail fundDetail={fundRegion.fundDetail} focus={focus} fundCount={fundRegion.funds.length} />
+        // );
 
-        let rightPanel;
-        if (fundRegion.fundDetail.fetched) {
-            rightPanel = <FundDetailExt fundDetail={fundRegion.fundDetail} focus={focus} />;
-        }
+        // let rightPanel;
+        // if (fundRegion.fundDetail.fetched) {
+        //     rightPanel = <FundDetailExt fundDetail={fundRegion.fundDetail} focus={focus} />;
+        // }
 
         return (
             <PageLayout
