@@ -519,11 +519,19 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
         	
             List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(daosFromNodeIds);
-            Validate.isTrue(daoLinks.size() == daoLinkMap.size());
+            if(daoLinks.size() < daoLinkMap.size()) {
+            	logger.error("Number of loaded daos ({}) is lower then exptected number ({}) for nodes ({}).", 
+            			daoLinks.size(), daoLinkMap.size(), daosFromNodeIds);
+            	throw new BusinessException("Number of loaded daos is not the same as exptected number for nodes.", BaseCode.INVALID_STATE);
+            }
 
             for (ArrDaoLink daoLink : daoLinks) {
                 Node node = daoLinkMap.get(daoLink.getDaoLinkId());
-                Objects.requireNonNull(node);
+                // check if dao for node should be used
+                // if node is null it means that dao link is not allowed for such node
+                if(node==null) {
+                	continue;
+                }
 
                 Dao dao = new Dao(daoLink);
                 node.addDao(dao);
