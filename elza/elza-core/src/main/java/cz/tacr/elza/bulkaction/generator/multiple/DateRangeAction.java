@@ -227,7 +227,7 @@ public class DateRangeAction extends Action {
         // check if FROM inside or outside bulk range
         boolean fromStoredAsPrior = false, toStoredAsPrior = false;
         boolean fromStoredAsPosterior = false, toStoredAsPosterior = false;
-        if (dataNormalizedFrom <= bulkFrom.getNormalizedFrom()) {
+        if (dataNormalizedFrom < bulkFrom.getNormalizedFrom()) {
             // store as prior
             if (datePriorMin == null || datePriorMin.getNormalizedFrom() > dataNormalizedFrom
                     || (Objects.equals(datePriorMin.getNormalizedFrom(), dataNormalizedFrom) && !unitDate.getValueFromEstimated())) {
