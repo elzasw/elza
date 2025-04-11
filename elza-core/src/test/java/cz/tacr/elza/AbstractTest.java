@@ -26,6 +26,7 @@ import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
@@ -42,9 +43,12 @@ import cz.tacr.elza.service.StartupService;
 @SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)
 public abstract class AbstractTest {
 
-    // Import institucí
+    // import institucí
     protected final static String XML_INSTITUTION = "institution-import.xml";
 
+    // import fund
+    protected final static String XML_FUND = "fund-filter-nodes.xml";
+    
     @Autowired
     protected ClientFactoryVO clientFactoryVO;
     @Autowired
@@ -63,6 +67,8 @@ public abstract class AbstractTest {
     protected ItemSpecRepository itemSpecRepository;
     @Autowired
     protected ItemTypeSpecAssignRepository itemTypeSpecAssignRepository;
+    @Autowired
+    protected FundVersionRepository fundVersionRepository;
     @Autowired
     protected NodeRepository nodeRepository;
     @Autowired

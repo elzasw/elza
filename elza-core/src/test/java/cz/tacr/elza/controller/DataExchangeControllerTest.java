@@ -36,7 +36,6 @@ import cz.tacr.elza.repository.FundRepository;
  */
 public class DataExchangeControllerTest extends AbstractControllerTest {
 
-    private final static String ALL_IN_ONE_XML = "all-in-one-import.xml";
     private final static String STRUCT_OBJ_1_TYPE = "SRD_PACKET";
     private final static String STRUCT_OBJ_1_ITEM_1_TYPE = "SRD_PACKET_TYPE";
     private final static String STRUCT_OBJ_1_ITEM_1_SPEC = "SRD_PACKET_TYPE_BOX";
