@@ -723,7 +723,7 @@ enum OperationLogicalType {
  * Field names for FieldValueFilter
  */
 enum FondsFilterField {
-    fundId, name, createDate, internalCode, fundNumber, unitdate, mark, institutionCode
+    fundId, name, createDate, internalCode, fundNumber, unitdate, mark, institutionId, institutionCode
 }
 
 /**
@@ -935,7 +935,7 @@ namespace ElzaAPI.fund {
     };
 
     /**
-     * Searches for funds
+     * Search for funds
      */
     @route("/search")
     @post op searchFunds(
@@ -958,6 +958,7 @@ namespace ElzaAPI.fund {
     /**
      * Search for archive files (AS)
      */
+    #deprecated "this request should replace by POST /search"
     @get op findFunds(
         /** vyhledávaný výraz */
         @query fulltext?: string;

@@ -72,22 +72,22 @@ public class FundControllerTest extends AbstractControllerTest {
         assertEquals(fund.getId(), fundDetail.getId());
     }
 
-    @Test
-    public void findFunds() {
-        CreateFund cf = createFund("fund5", "fund5", 5, "aaaaaaaa-1111-2222-3333-444455556666", "mark5");
-        Fund fund = fundsApi.fundCreateFund(cf);
-        assertNotNull(fund);
-
-        cf = createFund("fund6", "fundUpd6", 6, null, "mark6");
-        fund = fundsApi.fundCreateFund(cf);
-        assertNotNull(fund);
-
-        FindFundsResult funds = findFunds("fundUpd6", null, 10, 0);
-        assertTrue(funds.getTotalCount() == 1);
-
-        funds = findFunds(null, "in1", 10, 0);
-        assertTrue(funds.getTotalCount() == 2);
-    }
+//    @Test
+//    public void findFunds() {
+//        CreateFund cf = createFund("fund5", "fund5", 5, "aaaaaaaa-1111-2222-3333-444455556666", "mark5");
+//        Fund fund = fundsApi.fundCreateFund(cf);
+//        assertNotNull(fund);
+//
+//        cf = createFund("fund6", "fundUpd6", 6, null, "mark6");
+//        fund = fundsApi.fundCreateFund(cf);
+//        assertNotNull(fund);
+//
+//        FindFundsResult funds = findFunds("fundUpd6", null, 10, 0);
+//        assertTrue(funds.getTotalCount() == 1);
+//
+//        funds = findFunds(null, "in1", 10, 0);
+//        assertTrue(funds.getTotalCount() == 2);
+//    }
 
     @Test
     public void searchFunds() {

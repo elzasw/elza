@@ -77,7 +77,6 @@ import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
-import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.AbstractFilter;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
 import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
@@ -86,8 +85,6 @@ import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
 import cz.tacr.elza.controller.vo.FieldValueFilter;
 import cz.tacr.elza.controller.vo.FileType;
-import cz.tacr.elza.controller.vo.FindFundsResult;
-import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
@@ -270,9 +267,6 @@ public class ArrangementService {
 
     @Autowired
     private GroovyService groovyService;
-
-    @Autowired
-    private ClientFactoryVO factoryVo;
 
     //TODO: add translation or refactor
     public static final String UNDEFINED = "výjimka";
@@ -997,47 +991,65 @@ public class ArrangementService {
     public ArrNode findNodeByUUID(String uuid) {
         return nodeRepository.findOneByUuid(uuid);
     }
-    
-    // TODO FindАondsVersionResult
-    //     List<ArffFundVersion>
-    //     int totalCount
-    /*
-    public FindАondsVersionResult findFundsBySearchParams(SearchParams searchParams) {
-    	
-    }*/
+
+    /**
+     * Třída pro získání seznamu ArrFundVersion
+     */
+    public static class FindFundVersionsResult {
+    	final List<ArrFundVersion> fundVersionList;
+    	final int totalCount;
+
+    	public FindFundVersionsResult(List<ArrFundVersion> fundVersionList, int totalCount) {
+			this.fundVersionList = fundVersionList;
+			this.totalCount = totalCount;
+		}
+
+		public List<ArrFundVersion> getFundVersionList() {
+			return fundVersionList;
+		}
+
+		public int getTotalCount() {
+			return totalCount;
+		}
+    }
 
     /**
      * Vyhledávání v seznamu fondů podle parametrů
      * 
      * @param searchParams
-     * @return seznam ArrFund + total
+     * @return FindFundVersionsResult
      */
-    public FindFundsResult findFundsBySearchParams(SearchParams searchParams) {
+    public FindFundVersionsResult findFundsBySearchParams(SearchParams searchParams) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<ArrFund> cq = cb.createQuery(ArrFund.class);
-        Root<ArrFund> fundRoot = cq.from(ArrFund.class);
+        CriteriaQuery<ArrFundVersion> cq = cb.createQuery(ArrFundVersion.class);
+        Root<ArrFundVersion> fundVersionRoot = cq.from(ArrFundVersion.class);
+        Join<ArrFundVersion, ArrFund> fundJoin = fundVersionRoot.join(ArrFundVersion.FIELD_FUND);
 
-        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
-        Root<ArrFund> countRoot = countQuery.from(ArrFund.class);
-        countQuery.select(cb.count(countRoot));
-
-        List<Predicate> predicates = buildPredicateFromParams(cb, cq, fundRoot, searchParams);
+        List<Predicate> predicates = buildPredicateFromParams(cb, cq, fundJoin, searchParams);
         if (!predicates.isEmpty()) {
         	cq.where(predicates.toArray(new Predicate[predicates.size()]));
         }
 
-        List<Predicate> countPredicates = buildPredicateFromParams(cb, countQuery, countRoot, searchParams);
-        if (!countPredicates.isEmpty()) {
-        	countQuery.where(countPredicates.toArray(new Predicate[countPredicates.size()]));
+        TypedQuery<ArrFundVersion> query = em.createQuery(cq).setFirstResult(searchParams.getOffset()).setMaxResults(searchParams.getSize());
+        List<ArrFundVersion> fundVersionList = query.getResultList();
+        int totalCount = fundVersionList.size();
+
+		// get total number of records if needed
+        if (searchParams.getOffset() > 0 || searchParams.getSize() == totalCount) {
+            CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+            Root<ArrFundVersion> countRoot = countQuery.from(ArrFundVersion.class);
+            Join<ArrFundVersion, ArrFund> countFundJoin = countRoot.join(ArrFundVersion.FIELD_FUND);
+            countQuery.select(cb.count(countRoot));
+
+            List<Predicate> countPredicates = buildPredicateFromParams(cb, countQuery, countFundJoin, searchParams);
+            if (!countPredicates.isEmpty()) {
+            	countQuery.where(countPredicates.toArray(new Predicate[countPredicates.size()]));
+            }
+
+            totalCount = em.createQuery(countQuery).getSingleResult().intValue();
         }
 
-        TypedQuery<ArrFund> query = em.createQuery(cq)
-        							.setFirstResult(searchParams.getOffset())
-        							.setMaxResults(searchParams.getSize());
-        Long total = em.createQuery(countQuery).getSingleResult();
-        List<Fund> funds = query.getResultList().stream().map(f -> factoryVo.createFund(f, "TODO: uuid")).toList();
-
-        return new FindFundsResult(funds, total.intValue());
+        return new FindFundVersionsResult(fundVersionList, totalCount);
     }
 
     /**
@@ -1049,16 +1061,19 @@ public class ArrangementService {
      * @param searchParams
      * @return seznam Predicate
      */
-    private List<Predicate> buildPredicateFromParams(final CriteriaBuilder cb, final CriteriaQuery<?> cq, final Root<ArrFund> root, final SearchParams searchParams) {
+    private List<Predicate> buildPredicateFromParams(final CriteriaBuilder cb, 
+    												 final CriteriaQuery<?> cq,
+    												 final Join<ArrFundVersion, ArrFund> fund,
+    												 final SearchParams searchParams) {
     	List<Predicate> predicates = new ArrayList<>();
 
         // zpracování filtru
     	for (AbstractFilter filter : searchParams.getFilters()) {
     		if (filter instanceof MultimatchContainsFilter) {
-    			predicates.add(createPredicate(cb, root, (MultimatchContainsFilter) filter));
+    			predicates.add(createPredicate(cb, fund, (MultimatchContainsFilter) filter));
 
     		} else if (filter instanceof FieldValueFilter) {
-    			predicates.add(createPredicate(cb, root, (FieldValueFilter) filter));
+    			predicates.add(createPredicate(cb, fund, (FieldValueFilter) filter));
 
     		} else if (filter instanceof LogicalFilter) {
     			// TODO implement this type of filter as needed
@@ -1078,7 +1093,7 @@ public class ArrangementService {
         	usrPermissionSubquery.select(usrPermissionRoot.get(UsrPermissionView.FIELD_FUND_ID));
         	usrPermissionSubquery.where(cb.equal(usrPermissionRoot.get(UsrPermissionView.FIELD_USER_ID), userId));
 
-        	predicates.add(cb.in(root.get(ArrFund.FIELD_FUND_ID)).value(usrPermissionSubquery));
+        	predicates.add(cb.in(fund.get(ArrFund.FIELD_FUND_ID)).value(usrPermissionSubquery));
         }
 
         return predicates;
@@ -1088,26 +1103,26 @@ public class ArrangementService {
      * Vytvoření predikátu na základě třídy MultimatchContainsFilter
      * 
      * @param cb
-     * @param fundRoot
+     * @param fund
      * @param filter
      * @return
      */
-    private Predicate createPredicate(final CriteriaBuilder cb, Root<ArrFund> fundRoot, MultimatchContainsFilter filter) {
+    private Predicate createPredicate(final CriteriaBuilder cb, final Join<ArrFundVersion, ArrFund> fund, MultimatchContainsFilter filter) {
     	String value = filter.getValue().toLowerCase();
     	return cb.or(
-				cb.like(cb.lower(fundRoot.get(ArrFund.FIELD_NAME)), "%" + value + "%"),
-				cb.like(cb.lower(fundRoot.get(ArrFund.FIELD_INTERNAL_CODE)), "%" + value + "%"));
+				cb.like(cb.lower(fund.get(ArrFund.FIELD_NAME)), "%" + value + "%"),
+				cb.like(cb.lower(fund.get(ArrFund.FIELD_INTERNAL_CODE)), "%" + value + "%"));
     }
 
     /**
      * Vytvoření predikátu na základě třídy FieldValueFilter
      * 
      * @param cb
-     * @param fundRoot
+     * @param fund
      * @param filter
      * @return
      */
-    private Predicate createPredicate(final CriteriaBuilder cb, Root<ArrFund> fundRoot, FieldValueFilter filter) {
+    private Predicate createPredicate(final CriteriaBuilder cb, Join<ArrFundVersion, ArrFund> fund, FieldValueFilter filter) {
         String fieldName = getArrFundFieldName(filter.getField().getValue());
 	    String value = filter.getValue();
 	    OperationCompareType op = filter.getOperation();
@@ -1115,10 +1130,10 @@ public class ArrangementService {
 		// if looking for 'institutionCode' - join ParInstitution by FIELD_INSTITUTION
 		Expression<String> expression;
 		if (fieldName.equals(ArrFund.FIELD_INSTITUTION_CODE)) {
-			Join<ArrFund, ParInstitution> joinInstitution = fundRoot.join(ArrFund.FIELD_INSTITUTION);
+			Join<ArrFund, ParInstitution> joinInstitution = fund.join(ArrFund.FIELD_INSTITUTION);
 			expression = joinInstitution.get(ParInstitution.FIELD_INTERNAL_CODE);
 		} else {
-			expression = fundRoot.get(fieldName);
+			expression = fund.get(fieldName);
 		}
 
 		switch (op) {

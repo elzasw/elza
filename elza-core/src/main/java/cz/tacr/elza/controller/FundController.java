@@ -63,20 +63,16 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.FilteredResult;
-import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.ArrangementService.FindFundVersionsResult;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.StructObjService;
-import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 
 @RestController
@@ -93,12 +89,6 @@ public class FundController implements FundsApi {
 
     @Autowired
     private AccessPointService accessPointService;
-
-    @Autowired
-    private FundRepository fundRepository;
-
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private ClientFactoryVO factoryVo;
@@ -161,49 +151,82 @@ public class FundController implements FundsApi {
         return ResponseEntity.ok(factoryVo.createFund(fundVersion.getFund(), rootNode.getUuid()));
     }
 
-    @Override
-    public ResponseEntity<FindFundsResult> fundFindFunds(@RequestParam(value = "fulltext", required = false) String fulltext,
-                                                     @RequestParam(value = "institutionIdentifier", required = false) String institutionIdentifier,
-                                                     @RequestParam(value = "max", required = false, defaultValue = "200") Integer max,
-                                                     @RequestParam(value = "from", required = false, defaultValue = "0") Integer from) {
-        UserDetail userDetail = userService.getLoggedUserDetail();
-        FilteredResult<ArrFund> funds;
-        Integer institutionId = null;
-        if (institutionIdentifier != null && !institutionIdentifier.isEmpty()) {
-            ParInstitution institution = arrangementService.getInstitution(institutionIdentifier);
-            if (institution != null) {
-                institutionId = institution.getInstitutionId();
-            } else {
-                FindFundsResult fundsResult = new FindFundsResult();
-                return ResponseEntity.ok(fundsResult);
-            }
-        }
-
-        if (userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL)) {
-            // read all funds
-            funds = fundRepository.findFunds(fulltext, institutionId, from, max);
-
-        } else {
-            Integer userId = userDetail.getId();
-            funds = fundRepository.findFundsWithPermissions(fulltext, institutionId, from, max, userId);
-        }
-
-        List<ArrFund> fundList = funds.getList();
-        FindFundsResult fundsResult = new FindFundsResult();
-        fundsResult.setTotalCount(funds.getTotalCount());
-        fundList.forEach(f -> {
-            Fund fund = factoryVo.createFund(f.getFund(), "TODO: uuid");
-            fundsResult.addFundsItem(fund);
-        });
-
-        return ResponseEntity.ok(fundsResult);
-    }
+//    @Deprecated
+//    @Override
+//    public ResponseEntity<FindFundsResult> fundFindFunds(@RequestParam(value = "fulltext", required = false) String fulltext,
+//                                                     @RequestParam(value = "institutionIdentifier", required = false) String institutionIdentifier,
+//                                                     @RequestParam(value = "max", required = false, defaultValue = "200") Integer max,
+//                                                     @RequestParam(value = "from", required = false, defaultValue = "0") Integer from) {
+//        //UserDetail userDetail = userService.getLoggedUserDetail();
+//        //FilteredResult<ArrFund> funds;
+//    	FieldValueFilter institutionIdFilter = null;
+//        if (institutionIdentifier != null && !institutionIdentifier.isEmpty()) {
+//            ParInstitution institution = arrangementService.getInstitution(institutionIdentifier);
+//            if (institution != null) {
+//                Integer institutionId = institution.getInstitutionId();
+//                institutionIdFilter = new FieldValueFilter()
+//                		                    .field(FondsFilterField.INSTITUTION_ID)
+//                		                    .value(institutionId.toString())
+//                							.operation(OperationCompareType.EQ);
+//            } else {
+//                return ResponseEntity.ok(new FindFundsResult());
+//            }
+//        }
+//
+//        FieldValueFilter nameFilter = new FieldValueFilter().field(FondsFilterField.NAME).value(fulltext)
+//        		.operation(OperationCompareType.CONTAINS);
+//
+//        FieldValueFilter internalCodeFilter = new FieldValueFilter().field(FondsFilterField.INTERNAL_CODE).value(fulltext)
+//        		.operation(OperationCompareType.CONTAINS);
+//        
+//        FieldValueFilter fundNumberFilter = new FieldValueFilter().field(FondsFilterField.FUND_NUMBER).value(fulltext)
+//        		.operation(OperationCompareType.CONTAINS);
+//
+//        FieldValueFilter markFilter = new FieldValueFilter().field(FondsFilterField.MARK).value(fulltext)
+//        		.operation(OperationCompareType.CONTAINS);
+//
+//        SearchParams searchParams = new SearchParams()
+//        		.addFiltersItem(nameFilter)
+//        		.addFiltersItem(internalCodeFilter)
+//        		.addFiltersItem(fundNumberFilter)
+//        		.addFiltersItem(markFilter)
+//        		.offset(from)
+//        		.size(max);
+//
+//        if (institutionIdFilter != null) {
+//        	searchParams.addFiltersItem(institutionIdFilter);
+//        }
+//
+//        FindFundVersionsResult fundVersionsResult = arrangementService.findFundsBySearchParams(searchParams);
+//        List<Fund> funds = fundVersionsResult.getFundVersionList().stream().map(fv -> factoryVo.createFund(fv)).toList();
+//
+////        if (userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL)) {
+////            // read all funds
+////            funds = fundRepository.findFunds(fulltext, institutionId, from, max);
+////
+////        } else {
+////            Integer userId = userDetail.getId();
+////            funds = fundRepository.findFundsWithPermissions(fulltext, institutionId, from, max, userId);
+////        }
+////
+////        List<ArrFund> fundList = funds.getList();
+////        FindFundsResult fundsResult = new FindFundsResult();
+////        fundsResult.setTotalCount(funds.getTotalCount());
+////        fundList.forEach(f -> {
+////            Fund fund = factoryVo.createFund(f.getFund(), "TODO: uuid");
+////            fundsResult.addFundsItem(fund);
+////        });
+//
+////        return ResponseEntity.ok(fundsResult);
+//        return ResponseEntity.ok(new FindFundsResult(funds, fundVersionsResult.getTotalCount()));
+//    }
 
     @Override
     public ResponseEntity<FindFundsResult> fundSearchFunds(SearchParams searchParams) {
-        FindFundsResult fundsResult = arrangementService.findFundsBySearchParams(searchParams);
+        FindFundVersionsResult fundVersionsResult = arrangementService.findFundsBySearchParams(searchParams);
+        List<Fund> funds = fundVersionsResult.getFundVersionList().stream().map(fv -> factoryVo.createFund(fv)).toList();
 
-        return ResponseEntity.ok(fundsResult);
+        return ResponseEntity.ok(new FindFundsResult(funds, fundVersionsResult.getTotalCount()));
     }
 
     @Override

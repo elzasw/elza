@@ -985,10 +985,11 @@ paths:
                 $ref: '#/components/schemas/FindFundsResult'
       tags:
         - funds
+      deprecated: true
   /fund/search:
     post:
       operationId: fund_searchFunds
-      description: Searches for funds
+      description: Search for funds
       parameters: []
       responses:
         '200':
@@ -2240,6 +2241,7 @@ components:
         - fundNumber
         - unitdate
         - mark
+        - institutionId
         - institutionCode
       description: Field names for FieldValueFilter
     FsItem:
