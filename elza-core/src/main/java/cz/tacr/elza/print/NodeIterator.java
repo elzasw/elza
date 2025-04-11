@@ -140,7 +140,10 @@ public class NodeIterator implements Iterator<Node>, NodeProvider {
             // node not found, try to use load
             List<Node> tmpNodes = this.nodeLoader.loadNodes(Collections.singletonList(nodeId));
             if (tmpNodes.size() > 0) {
-                node = tmpNodes.get(0);
+                node = tmpNodes.get(0);                
+                node.setNodeProvider(this);
+                // Add to the active nodes map
+                activeNodesMap.put(nodeId, node);
             }
         }
         return node;

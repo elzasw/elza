@@ -244,6 +244,9 @@ public class Node {
         if (parentNodeId == null) {
         	return ownItems;
         }
+        if(nodeProvider==null) {
+            throw new IllegalStateException("Node provider not set");
+        }
         Node parentNode = nodeProvider.getNode(parentNodeId);
         List<Item> inheritedItems = parentNode.getOwnAndInheritedItems(typeCode);
         if(CollectionUtils.isEmpty(inheritedItems)) {
