@@ -802,14 +802,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		return fundsApi.fundCreateFund(createFund);
 	}
 
-	protected FindFundsResult findFunds(final String fulltext, final String institutionIdentifier, final Integer max,
-			final Integer from) {
-		Response response = get(
-				spec -> spec.queryParam("fulltext", fulltext).queryParam("institutionIdentifier", institutionIdentifier)
-						.queryParam("max", max).queryParam("from", from),
-				FUNDS_V1);
-		return response.getBody().as(FindFundsResult.class);
-	}
+//	protected FindFundsResult findFunds(final String fulltext, final String institutionIdentifier, final Integer max,
+//			final Integer from) {
+//		Response response = get(
+//				spec -> spec.queryParam("fulltext", fulltext).queryParam("institutionIdentifier", institutionIdentifier)
+//						.queryParam("max", max).queryParam("from", from),
+//				FUNDS_V1);
+//		return response.getBody().as(FindFundsResult.class);
+//	}
 
 	/**
 	 * Uzavření verze archivní pomůcky.

@@ -126,6 +126,7 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 		return new FilteredResult<>(firstResult, maxResults, totalCount, results);
 	}
 
+	@Deprecated
 	@Override
 	public FilteredResult<ArrFund> findFunds(String search, Integer institutionId, int firstResult, int maxResults) {
 		TypedQuery<ArrFund> data = buildFundFindQuery(true, search, institutionId, firstResult, maxResults, ArrFund.class);
@@ -225,6 +226,7 @@ public class FundRepositoryImpl implements FundRepositoryCustom {
 		return q;
 	}
 
+	@Deprecated
 	private <T> TypedQuery<T> buildFundFindQuery(final boolean dataQuery,
 												 final String search,
 												 final Integer institutionId,

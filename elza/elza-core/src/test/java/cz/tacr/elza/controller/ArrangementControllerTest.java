@@ -1462,9 +1462,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     	// import fund from xml
     	importXmlFile(null, 1, getResourceFile(XML_FUND));
 
-    	// waiting of indexing
-    	helperTestService.massIndexerStartAndWait(ArrDescItem.class);
-
     	List<ArrFundVersion> fundVersions = fundVersionRepository.findAll();
         assertTrue(fundVersions.size() == 1);
 
@@ -1482,7 +1479,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(descItemTypeIds.size() > 0);
         assertNotNull(itemTypeId);
 
-        // filter without filters -> get all nodes
+        // filtering without filters -> get all nodes
         filterNodes(fundVersion.getFundVersionId(), new Filters());
         List<FilterNode> filteredNodes = getFilteredNodes(fundVersion.getFundVersionId(), 0, 10, descItemTypeIds);
         assertTrue(filteredNodes.size() == 5);
@@ -1498,16 +1495,22 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     	filterMap.put(itemTypeId, filter);
     	filters.setFilters(filterMap);
 
-        // filter with SELECTED filter -> get 1 item (beta)
-        filterNodes(fundVersion.getFundVersionId(), filters);
-        filteredNodes = getFilteredNodes(fundVersion.getFundVersionId(), 0, 10, descItemTypeIds);
+        // filtering with SELECTED filter -> get 1 item (beta)
+    	// this cycle is needed to wait for full indexing
+    	int counter = 100;
+    	do {
+    		counter--;
+    		Thread.sleep(100);
+    		filterNodes(fundVersion.getFundVersionId(), filters);
+    		filteredNodes = getFilteredNodes(fundVersion.getFundVersionId(), 0, 10, descItemTypeIds);
+    	} while (filteredNodes.size() != 1 && counter > 0);
         assertTrue(filteredNodes.size() == 1);
 
         // change filter to UNSELECT type
     	filter.setValues(Arrays.asList(null, "beta", "gamma"));
     	filter.setValuesType(ValuesTypes.UNSELECTED);
 
-        // filter with UNSELECTED filter -> get 1 item (alfa)
+        // filtering with UNSELECTED filter -> get 1 item (alfa)
         filterNodes(fundVersion.getFundVersionId(), filters);
         filteredNodes = getFilteredNodes(fundVersion.getFundVersionId(), 0, 10, descItemTypeIds);
         assertTrue(filteredNodes.size() == 1);

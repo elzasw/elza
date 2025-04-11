@@ -641,11 +641,21 @@ public class ClientFactoryVO {
     }
 
     /**
-     * Vytvoření ArrFund a načtení verzí.
+     * Vytvoření ArrFund z ArrFundVersion
+     * 
+     * @param arrFundVersion
+     * @return Fund
+     */
+    public Fund createFund(final ArrFundVersion arrFundVersion) {
+    	return createFund(arrFundVersion.getFund(), arrFundVersion.getRootNode().getUuid());
+    }
+
+    /**
+     * Vytvoření Fund z ArrFund.
      *
-     * @param arrFund archivní soubor     *
+     * @param arrFund archivní soubor
      * @param uuid
-     * @return VO
+     * @return Fund
      */
     public Fund createFund(final ArrFund arrFund, String uuid) {
         Assert.notNull(arrFund, "AS musí být vyplněn");
