@@ -242,7 +242,7 @@ class FundPage extends AbstractReactComponent {
                     update
                     initialValues={data}
                     scopeList={scopeList}
-                    onSubmitForm={this.handleCallEditFundVersion}
+                    onSubmitForm={(_data) => this.handleCallEditFundVersion(fundDetail, _data)}
                 />,
             ),
         );
