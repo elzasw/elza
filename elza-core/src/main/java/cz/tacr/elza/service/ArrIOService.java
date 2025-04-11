@@ -25,6 +25,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -546,11 +547,16 @@ public class ArrIOService {
         ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
         FileDownload.addContentDispositionAsAttachment(response, getExportFileName(version.getFund(), "-table"));
         ArrayList<Integer> filteredIds = filterTreeService.getFilteredIds(versionId);
+        
+    	var csvFormatter = CSV_EXCEL_FORMAT.builder()
+    			.setHeader(columNames.toArray(new String[columNames.size()]))
+    			.build();
+    	
         int page = 0;
         int pageSize = 100;
         try (ServletOutputStream os = response.getOutputStream();
-             OutputStreamWriter out = new OutputStreamWriter(os, CSV_EXCEL_ENCODING);
-             CSVPrinter csvp = CSV_EXCEL_FORMAT.withHeader(columNames.toArray(new String[columNames.size()])).print(out)) {
+             OutputStreamWriter out = new OutputStreamWriter(os, CSV_EXCEL_ENCODING);        		
+            CSVPrinter csvp = csvFormatter.print(out)) {
             List<FilterNode> filteredData;
             int i = 1;
             do {
@@ -564,7 +570,8 @@ public class ArrIOService {
 
                     Map<Integer, DescItemValues> valuesMap = node.getValuesMap();
                     for (RulItemType rulItemType : orderedItemTypeMap.values()) {
-                        DescItemValues descItemValues = valuesMap.get(rulItemType.getItemTypeId());
+                    	// read value
+                        DescItemValues descItemValues = valuesMap == null ? null : valuesMap.get(rulItemType.getItemTypeId());
                         String value = null;
                         if (descItemValues != null && !descItemValues.getValues().isEmpty()) {
                             value = descItemValues.getValues().stream().map(v -> {

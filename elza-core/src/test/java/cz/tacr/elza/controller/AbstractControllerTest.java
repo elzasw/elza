@@ -510,6 +510,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 	protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.000ZZZZZ");
 
+	protected final static String ALL_IN_ONE_XML = "all-in-one-import.xml";
+
 	public static final String SCOPE_GLOBAL = "GLOBAL";
 	public static final String SCOPE_COPY = "COPY";
 
@@ -722,8 +724,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param url
 	 * @return
 	 */
-	protected static Response multipart(final Function<RequestSpecification, RequestSpecification> params,
-			final String url) {
+	protected static Response multipart(final Function<RequestSpecification, RequestSpecification> params, final String url) {
 		Assert.assertNotNull(params);
 		Assert.assertNotNull(url);
 

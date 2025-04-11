@@ -369,8 +369,11 @@ List<GroovyItem> generate(final GroovyAe ae, final AccessPointCacheProvider apcp
     // odkazy na geografické doplňky a autory
     List<GroovyItem> rels = GroovyUtils.findAllItems(ae, "PT_REL", GroovyPart.PreferredFilter.ALL, "REL_ENTITY")
     for (GroovyItem rel : rels) {
-        // geografický doplněk
-        if (Arrays.asList("RT_RESIDENCE", "RT_VENUE", "RT_LOCATION").contains(rel.getSpecCode())) {
+        // geografický doplněk          
+        if ( (ae.isChildOf("PARTY_GROUP") && "RT_RESIDENCE".equals(rel.getSpecCode())) ||
+             (ae.isChildOf("ARTWORK") && "RT_LOCATION".equals(rel.getSpecCode())) ||
+             (ae.isChildOf("EVENT") && "RT_VENUE".equals(rel.getSpecCode())) 
+            ) {
             if (rel.getValue() != null) {
                 if (rel.getIntValue() > 0) {
                 	String geoName = getGeoName(rel, apcp)
