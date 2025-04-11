@@ -2,7 +2,6 @@ package cz.tacr.elza.controller;
 
 import static cz.tacr.elza.repository.ExceptionThrow.node;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -88,7 +87,6 @@ import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
-
 
 /**
  * Kontroler pro pravidla.

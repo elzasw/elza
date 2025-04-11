@@ -2249,16 +2249,16 @@
         <shortcut>nrz</shortcut>
         <item-type-assign code="ZP2015_RECORD_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_RECORD_TYPE_DIED">
-        <name>záznamy zemřelých</name>
-        <description>záznamy zemřelých</description>
-        <shortcut>zrl</shortcut>
-        <item-type-assign code="ZP2015_RECORD_TYPE"/>
-    </item-spec>
     <item-spec code="ZP2015_RECORD_TYPE_MARRIED">
         <name>záznamy oddaných</name>
         <description>záznamy oddaných</description>
         <shortcut>odd</shortcut>
+        <item-type-assign code="ZP2015_RECORD_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_RECORD_TYPE_DIED">
+        <name>záznamy zemřelých</name>
+        <description>záznamy zemřelých</description>
+        <shortcut>zrl</shortcut>
         <item-type-assign code="ZP2015_RECORD_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_RECORD_TYPE_INDEX_BORN">
@@ -2267,16 +2267,16 @@
         <shortcut>inrz</shortcut>
         <item-type-assign code="ZP2015_RECORD_TYPE"/>
     </item-spec>
-    <item-spec code="ZP2015_RECORD_TYPE_INDEX_DIED">
-        <name>rejstřík zemřelých</name>
-        <description>rejstřík zemřelých</description>
-        <shortcut>izrl</shortcut>
-        <item-type-assign code="ZP2015_RECORD_TYPE"/>
-    </item-spec>
     <item-spec code="ZP2015_RECORD_TYPE_INDEX_MARRIED">
         <name>rejstřík oddaných</name>
         <description>rejstřík oddaných</description>
         <shortcut>iodd</shortcut>
+        <item-type-assign code="ZP2015_RECORD_TYPE"/>
+    </item-spec>
+    <item-spec code="ZP2015_RECORD_TYPE_INDEX_DIED">
+        <name>rejstřík zemřelých</name>
+        <description>rejstřík zemřelých</description>
+        <shortcut>izrl</shortcut>
         <item-type-assign code="ZP2015_RECORD_TYPE"/>
     </item-spec>
     <!-- Prvky popisu pro vyznamenání -->

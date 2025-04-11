@@ -806,8 +806,6 @@ when
       "ZP2015_DESCRIPTION_DATE",
       // ZP 5.2.10 Jazyk
       "ZP2015_LANGUAGE",
-      // ZP 5.2.10 písmo
-      "ZP2015_WRITING",
       // ZP 5.2.11 Edice a literatura
       "ZP2015_EDITION",
       // Obecná příloha 
@@ -855,6 +853,8 @@ when
       "ZP2015_ITEM_MAT",
       // ZP5.2.9 Díl, část, pořadí vydání jednotky popisu
       "ZP2015_PART",
+      // ZP 5.2.10 Písmo
+      "ZP2015_WRITING",
       // číslo digitalizátu
       "ZP2015_DAO_ID",
       // odkaz na digitalizát
