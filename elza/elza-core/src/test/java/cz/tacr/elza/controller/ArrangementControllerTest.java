@@ -25,11 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -39,18 +35,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.hibernate.SessionFactory;
-import org.hibernate.search.mapper.orm.Search;
-import org.hibernate.search.mapper.orm.coordination.common.spi.CoordinationStrategy;
-import org.hibernate.search.mapper.orm.mapping.SearchMapping;
-import org.hibernate.search.mapper.orm.mapping.impl.HibernateOrmMapping;
-import org.hibernate.search.mapper.orm.outboxpolling.OutboxPollingExtension;
-import org.hibernate.search.mapper.orm.outboxpolling.mapping.OutboxPollingSearchMapping;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.Message;
@@ -84,7 +72,11 @@ import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.filter.ColumnFilters;
+import cz.tacr.elza.controller.vo.filter.Condition;
+import cz.tacr.elza.controller.vo.filter.Filter;
 import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.controller.vo.filter.ValuesTypes;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.NodeData;
@@ -97,6 +89,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -1462,5 +1455,61 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             assertEquals(ArrangementCode.ALREADY_INDEFINABLE, e.getErrorCode());
         }
         assertNull(descItemResult);
+    }
+
+    @Test
+    public void testFilterNodes() throws InterruptedException {
+    	// import fund from xml
+    	importXmlFile(null, 1, getResourceFile(XML_FUND));
+
+    	// waiting of indexing
+    	helperTestService.massIndexerStartAndWait(ArrDescItem.class);
+
+    	List<ArrFundVersion> fundVersions = fundVersionRepository.findAll();
+        assertTrue(fundVersions.size() == 1);
+
+        // prepare: fundVersion and list of ids of rulDescItem and itemTypeId by code
+        ArrFundVersion fundVersion = fundVersions.iterator().next();
+        List<RulDescItemTypeExtVO> itemTypes = getDescItemTypes();
+        Set<Integer> descItemTypeIds = new HashSet<>();
+        Integer itemTypeId = null;
+        for (RulDescItemTypeExtVO item : itemTypes) {
+        	descItemTypeIds.add(item.getId());
+        	if (item.getCode().equals("SRD_STORAGE_ID")) {
+        		itemTypeId = item.getId();
+        	}
+        }
+        assertTrue(descItemTypeIds.size() > 0);
+        assertNotNull(itemTypeId);
+
+        // filter without filters -> get all nodes
+        filterNodes(fundVersion.getFundVersionId(), new Filters());
+        List<FilterNode> filteredNodes = getFilteredNodes(fundVersion.getFundVersionId(), 0, 10, descItemTypeIds);
+        assertTrue(filteredNodes.size() == 5);
+
+    	// create filter SELECT type
+    	Filter filter = new Filter();
+    	filter.setConditionType(Condition.NONE);
+    	filter.setValues(Arrays.asList("beta"));
+    	filter.setValuesType(ValuesTypes.SELECTED);
+
+        Filters filters = new Filters();
+    	Map<Integer, Filter> filterMap = new HashMap<>();
+    	filterMap.put(itemTypeId, filter);
+    	filters.setFilters(filterMap);
+
+        // filter with SELECTED filter -> get 1 item (beta)
+        filterNodes(fundVersion.getFundVersionId(), filters);
+        filteredNodes = getFilteredNodes(fundVersion.getFundVersionId(), 0, 10, descItemTypeIds);
+        assertTrue(filteredNodes.size() == 1);
+
+        // change filter to UNSELECT type
+    	filter.setValues(Arrays.asList(null, "beta", "gamma"));
+    	filter.setValuesType(ValuesTypes.UNSELECTED);
+
+        // filter with UNSELECTED filter -> get 1 item (alfa)
+        filterNodes(fundVersion.getFundVersionId(), filters);
+        filteredNodes = getFilteredNodes(fundVersion.getFundVersionId(), 0, 10, descItemTypeIds);
+        assertTrue(filteredNodes.size() == 1);
     }
 }

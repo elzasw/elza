@@ -244,6 +244,9 @@ public class Node {
         if (parentNodeId == null) {
         	return ownItems;
         }
+        if(nodeProvider==null) {
+            throw new IllegalStateException("Node provider not set");
+        }
         Node parentNode = nodeProvider.getNode(parentNodeId);
         List<Item> inheritedItems = parentNode.getOwnAndInheritedItems(typeCode);
         if(CollectionUtils.isEmpty(inheritedItems)) {
@@ -275,6 +278,10 @@ public class Node {
         	return Collections.emptyList();
         }
         Node parentNode = nodeProvider.getNode(parentNodeId);
+        if(parentNode==null) {
+            log.error("Parent node for node {} not found, parent node id: {}", nodeId, parentNodeId);
+            throw new IllegalStateException("Parent node for node " + nodeId + " not found, parent node id: " + parentNodeId);
+        }
         List<Item> inheritedItems = parentNode.getOwnAndInheritedItems(typeCode);
         if(CollectionUtils.isEmpty(inheritedItems)) {
         	// if no inherited items, return only own
@@ -284,7 +291,8 @@ public class Node {
         List<Item> result = new ArrayList<>(inheritedItems.size());
         // Append inherited items if not previously inhibited
         for(Item inheritedItem : inheritedItems) {
-            if(inheritedItem.getDescItemObjectId()!=null && inhibitedItemIds!=null && 
+            if(inheritedItem.getDescItemObjectId()!=null && 
+            		inhibitedItemIds!=null &&
             		inhibitedItemIds.contains(inheritedItem.getDescItemObjectId())) {
                 continue;
             }

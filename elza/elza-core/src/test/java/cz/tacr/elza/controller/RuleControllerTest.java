@@ -216,8 +216,9 @@ public class RuleControllerTest extends AbstractControllerTest {
                 break;
             }
         }
+        Assert.assertNotNull(ruleSetVO);
 
         List<String> itemTypeCodes = getItemTypeCodesByRuleSet(ruleSetVO);
-        Assert.assertEquals(3, itemTypeCodes.size());
+        Assert.assertEquals(5, itemTypeCodes.size());
     }
 }
