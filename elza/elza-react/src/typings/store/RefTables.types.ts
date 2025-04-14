@@ -120,13 +120,27 @@ export interface IssueType {
     name: string;
 }
 
+export interface InstitutionType {
+    id: number;
+    code: string;
+    name: string;
+}
+
+export interface Institution {
+    id: number;
+    intitutionType: InstitutionType;
+    accessPointId: number;
+    name: string;
+    code: string;
+}
+
 export interface RefTablesState {
     apTypes: BaseRefTableStore<ApTypeVO>;
     descItemTypes: BaseRefTableStore<DescItemTypeRef>;
     eidTypes: unknown;
     externalSystems: unknown;
     groups: unknown;
-    institutions: unknown;
+    institutions: BaseRefTableStore<Institution>;
     issueStates: unknown;
     issueTypes: RefTablesDataStore<IssueType>;
     outputTypes: BaseRefTableStore<OutputType>;
