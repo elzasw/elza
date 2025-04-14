@@ -1,13 +1,16 @@
-import { Button, Input, Menu, MenuButton, MenuItem, MenuList, MenuPopover, MenuTrigger, SearchBox, Tag, TagDismissData, TagDismissEvent, TagGroup } from "@fluentui/react-components";
+import { Input, InteractionTag, InteractionTagPrimary, InteractionTagSecondary, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tag, TagDismissData, TagDismissEvent, TagGroup } from "@fluentui/react-components";
 import { AddRegular } from "@fluentui/react-icons";
 import { Icon } from "components"
-import { FilterChange, FundFilterModal } from "./FundFilterModal";
+import { FilterChange } from "./FundFilterModal";
 import { Field, Form } from "react-final-form";
 import { AbstractFilter, FieldValueFilter, FilterType, FondsFilterField, MultimatchContainsFilter, OperationCompareType } from "elza-api";
 import { useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { messages } from "./messages";
-import { useTestFluentModal, useTestModal } from "components/shared/dialog/FluentModalDialog";
+import { useFilterModal } from "./hooks";
+import { useSelector } from "react-redux";
+import { AppState } from "typings/store";
+// import { useTestFluentModal, useTestModal } from "components/shared/dialog/FluentModalDialog";
 
 interface Props {
   onChange: (filters: AbstractFilter[]) => void;
@@ -24,21 +27,28 @@ function isFieldValueFilter(filter: unknown): filter is FieldValueFilter {
   return filter["field"];
 }
 
+function formatPosition(x: number, y: number) {
+  return { x, y };
+}
+
 export function FundFilters({
   onChange,
   currentFilters,
 }: Props) {
-  const [addFilter, setAddFilter] = useState<FondsFilterField>();
   const [filters, setFilters] = useState<(FieldValueFilter | MultimatchContainsFilter)[]>(currentFilters as any || []);
+  const allInstitutions = useSelector(({ refTables }: AppState) => refTables.institutions.items);
 
-  const showModal = useTestModal();
-  const showFluentModal = useTestFluentModal();
-
+  const showFilterModal = useFilterModal();
   const addFilterButtonRef = useRef<HTMLButtonElement>(null);
   const { formatMessage } = useIntl();
 
-  function getFiltersList() {
-    return [FondsFilterField.InstitutionCode, FondsFilterField.InternalCode, FondsFilterField.FundNumber]
+  function getFiltersList(): FondsFilterField[] {
+    return [
+      FondsFilterField.InstitutionCode,
+      FondsFilterField.InternalCode,
+      FondsFilterField.FundNumber,
+      FondsFilterField.Mark
+    ]
   }
 
   function handleFulltext({ fulltext }: FulltextValues) {
@@ -46,12 +56,10 @@ export function FundFilters({
     const index = _filters.findIndex((filter) => !isFieldValueFilter(filter));
 
     if (index >= 0) {
-      console.log('#fp - remove fulltext', index, _filters[index]);
       _filters.splice(index, 1);
     }
 
     if (fulltext) {
-      console.log('#fp - add fulltext', fulltext);
       _filters.push({
         filterType: "contains",
         value: fulltext,
@@ -62,30 +70,38 @@ export function FundFilters({
     onChange(_filters);
   }
 
-  function handleFilterConfirm(data: FilterChange) {
+  function handleFilterConfirm({ name, value, operation }: FilterChange) {
     const _filters = [...filters];
-    const filter = _filters.find(f => isFieldValueFilter(f) && f.field == data.name)
+    const filter = _filters.find(f => isFieldValueFilter(f) && f.field == name)
 
-    if (!filter || filter[data.name] != data.value) {
+    if (!filter || filter[name] != value) {
       _filters.push({
         filterType: FilterType.FieldValue,
-        field: data.name,
-        value: data.value,
-        operation: OperationCompareType.Eq,
+        field: name,
+        value,
+        operation,
       });
     }
     setFilters(_filters);
-    setAddFilter(undefined);
     onChange(_filters);
   }
 
-  function handleFilterClose() {
-    setAddFilter(undefined);
+  function handleFilterReplace({ name, value, operation }: FilterChange, index: number) {
+    const _filters = [...filters];
+
+    _filters.splice(index, 1, {
+      filterType: FilterType.FieldValue,
+      field: name,
+      value,
+      operation,
+    });
+
+    setFilters(_filters);
+    onChange(_filters);
   }
 
   function handleFilterRemove(_e: TagDismissEvent, data: TagDismissData<string>) {
     const [field, value] = data.value.split(";");
-    console.log("#fp - remove filter", field, value, filters);
 
     const index = filters.findIndex(f => isFieldValueFilter(f) && f.field == field && f.value == value);
     const _filters = [...filters];
@@ -99,17 +115,36 @@ export function FundFilters({
     }
   }
 
-  async function handleTestModal() {
-    const { result } = await showModal()
-    console.log("#ff - modal result", result);
+  function formatFilterValue(value: string, field: FondsFilterField) {
+    switch (field) {
+      case FondsFilterField.InstitutionCode:
+        return allInstitutions.find(({ code }) => code === value)?.name || value;
+      case FondsFilterField.FundNumber:
+      case FondsFilterField.InternalCode:
+      case FondsFilterField.Mark:
+      default:
+        return value;
+    }
   }
-  async function handleTestFluentModal() {
-    const { result } = await showFluentModal()
-    console.log("#ff - fluent modal result", result);
+
+  function formatOperation(operation: OperationCompareType, field: FondsFilterField) {
+    switch (operation) {
+      case OperationCompareType.Eq:
+        if (field === FondsFilterField.InstitutionCode) {
+          return ": "
+        }
+        return <div style={{ padding: "0 5px", fontSize: "1.4rem" }}>=</div>
+      case OperationCompareType.Neq:
+        return <div style={{ padding: "0 5px", fontSize: "1.4rem" }}>≠</div>
+      case OperationCompareType.Contains:
+        return ": "
+      default:
+        return operation;
+    }
   }
 
   const addFilterButtonRect = addFilterButtonRef.current?.getBoundingClientRect() || undefined;
-  const initialPosition = addFilterButtonRect ? { x: addFilterButtonRect.left, y: addFilterButtonRect.bottom } : undefined;
+  const initialPosition = addFilterButtonRect ? formatPosition(addFilterButtonRect.left, addFilterButtonRect.bottom) : undefined;
 
   return <div style={{ display: "flex" }}>
     <div style={{ display: "flex", alignItems: "center", margin: "5px" }}>
@@ -132,26 +167,32 @@ export function FundFilters({
       </Form>
     </div>
     <div style={{ display: "flex", alignItems: "center", margin: "5px" }}>
-      <Button onClick={handleTestModal}>testmodal</Button>
-      <Button onClick={handleTestFluentModal}>testfluent</Button>
       <Menu>
         <MenuTrigger disableButtonEnhancement={true}>
           <Tag
             appearance="outline"
             ref={addFilterButtonRef}
           >
-            <AddRegular />{/* <Icon glyph="fa-plus" /> */}&nbsp;Filtr
+            <AddRegular />&nbsp;Filtr
           </Tag>
-          {/* <MenuButton */}
-          {/*   appearance='subtle' */}
-          {/*   icon={<Icon glyph="fa-plus" />} */}
-          {/*   ref={addFilterButtonRef} */}
-          {/* >Filtr</MenuButton> */}
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
             {getFiltersList().map((fieldName) => {
-              return <MenuItem onClick={() => setAddFilter(fieldName)}>{formatMessage(messages[fieldName])}</MenuItem>
+              return <MenuItem
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+
+                  const { data } = await showFilterModal({ name: fieldName }, initialPosition)
+                  if (data) {
+                    handleFilterConfirm({
+                      ...data,
+                      name: fieldName
+                    });
+                  }
+                }}
+              >{formatMessage(messages[fieldName])}</MenuItem>
             })}
           </MenuList>
         </MenuPopover>
@@ -161,20 +202,37 @@ export function FundFilters({
       <TagGroup onDismiss={handleFilterRemove}>
         {filters.filter((filter) => isFieldValueFilter(filter)).map((filter, index) => {
           if (isFieldValueFilter(filter)) {
-            return <Tag
-              dismissible={true}
-              dismissIcon={{ "aria-label": "remove" }}
+            return <InteractionTag
               value={`${filter.field};${filter.value}`}
               key={index}
             >
-              {formatMessage(messages[filter.field])}: {filter.value}
-            </Tag>
+              <InteractionTagPrimary onClick={async (e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+
+                const { data } = await showFilterModal({
+                  name: filter.field,
+                  value: filter.value,
+                  operation: filter.operation,
+                }, formatPosition(rect.left, rect.top + rect.height));
+                if (data) {
+                  handleFilterReplace({
+                    ...data,
+                    name: filter.field
+                  }, index);
+                }
+              }}>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <b>{formatMessage(messages[filter.field])}</b>
+                  {formatOperation(filter.operation, filter.field)}
+                  {formatFilterValue(filter.value, filter.field)}
+                </div>
+              </InteractionTagPrimary>
+              <InteractionTagSecondary aria-label="remove" />
+            </InteractionTag>
           }
           return;
         })}
       </TagGroup>
     </div>
-    <FundFilterModal initialPosition={initialPosition} filterName={addFilter} onFilterChange={handleFilterConfirm} onClose={handleFilterClose} />
-    {/* {JSON.stringify(filters)} */}
   </div>
 }
