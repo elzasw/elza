@@ -41,6 +41,7 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -1024,9 +1025,10 @@ public class ArrangementService {
         CriteriaQuery<ArrFundVersion> cq = cb.createQuery(ArrFundVersion.class);
         Root<ArrFundVersion> fundVersionRoot = cq.from(ArrFundVersion.class);
         Join<ArrFundVersion, ArrFund> fundJoin = fundVersionRoot.join(ArrFundVersion.FIELD_FUND);
+        fundVersionRoot.fetch(ArrFundVersion.FIELD_FUND);
 
-        List<Predicate> predicates = buildPredicateFromParams(cb, cq, fundJoin, searchParams);
-        if (!predicates.isEmpty()) {
+        List<Predicate> predicates = buildPredicateFromParams(cb, cq, fundVersionRoot, fundJoin, searchParams);
+        if (!predicates.isEmpty()) {            
         	cq.where(predicates.toArray(new Predicate[predicates.size()]));
         }
 
@@ -1038,10 +1040,10 @@ public class ArrangementService {
         if (searchParams.getOffset() > 0 || searchParams.getSize() == totalCount) {
             CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
             Root<ArrFundVersion> countRoot = countQuery.from(ArrFundVersion.class);
-            Join<ArrFundVersion, ArrFund> countFundJoin = countRoot.join(ArrFundVersion.FIELD_FUND);
+            Join<ArrFundVersion, ArrFund> countFundJoin = countRoot.join(ArrFundVersion.FIELD_FUND);            
             countQuery.select(cb.count(countRoot));
 
-            List<Predicate> countPredicates = buildPredicateFromParams(cb, countQuery, countFundJoin, searchParams);
+            List<Predicate> countPredicates = buildPredicateFromParams(cb, countQuery, countRoot, countFundJoin, searchParams);
             if (!countPredicates.isEmpty()) {
             	countQuery.where(countPredicates.toArray(new Predicate[countPredicates.size()]));
             }
@@ -1057,15 +1059,20 @@ public class ArrangementService {
      * 
      * @param cb
      * @param cq
+     * @param fundVersion 
      * @param root
      * @param searchParams
      * @return seznam Predicate
      */
     private List<Predicate> buildPredicateFromParams(final CriteriaBuilder cb, 
     												 final CriteriaQuery<?> cq,
+    												 final Root<ArrFundVersion> fundVersionRoot, 
     												 final Join<ArrFundVersion, ArrFund> fund,
     												 final SearchParams searchParams) {
     	List<Predicate> predicates = new ArrayList<>();
+    	
+        // search only in opened versions        
+        predicates.add(cb.isNull(fundVersionRoot.get(ArrFundVersion.FIELD_LOCK_CHANGE_ID)));    	
 
         // zpracování filtru
     	for (AbstractFilter filter : searchParams.getFilters()) {
@@ -1111,8 +1118,12 @@ public class ArrangementService {
     	String value = filter.getValue().toLowerCase();
     	return cb.or(
 				cb.like(cb.lower(fund.get(ArrFund.FIELD_NAME)), "%" + value + "%"),
-				cb.like(cb.lower(fund.get(ArrFund.FIELD_INTERNAL_CODE)), "%" + value + "%"));
+				cb.like(cb.lower(fund.get(ArrFund.FIELD_INTERNAL_CODE)), "%" + value + "%"),
+				cb.like(cb.lower(fund.get(ArrFund.FIELD_MARK)), "%" + value + "%")
+				);
     }
+    
+    public static final String FIELD_INSTITUTION_CODE = "institutionCode";
 
     /**
      * Vytvoření predikátu na základě třídy FieldValueFilter
@@ -1123,16 +1134,33 @@ public class ArrangementService {
      * @return
      */
     private Predicate createPredicate(final CriteriaBuilder cb, Join<ArrFundVersion, ArrFund> fund, FieldValueFilter filter) {
-        String fieldName = getArrFundFieldName(filter.getField().getValue());
-	    String value = filter.getValue();
+    	String fieldName = filter.getField().getValue();
+		Class<?> fieldType = String.class;				
 	    OperationCompareType op = filter.getOperation();
+	    String value = filter.getValue();
 
 		// if looking for 'institutionCode' - join ParInstitution by FIELD_INSTITUTION
+	    // TODO: fundNumber is number - cannot be compared as string 
 		Expression<String> expression;
-		if (fieldName.equals(ArrFund.FIELD_INSTITUTION_CODE)) {
+		if (fieldName.equals(FIELD_INSTITUTION_CODE)) {
 			Join<ArrFund, ParInstitution> joinInstitution = fund.join(ArrFund.FIELD_INSTITUTION);
 			expression = joinInstitution.get(ParInstitution.FIELD_INTERNAL_CODE);
 		} else {
+			switch (fieldName) {
+			case ArrFund.FIELD_FUND_NUMBER:
+			// case ArrFund.FIELD_INSTITUTION_ID:
+				fieldType = Integer.class;
+				break;
+			case ArrFund.FIELD_NAME:
+			case ArrFund.FIELD_MARK:
+			case ArrFund.FIELD_UNITDATE:
+			case ArrFund.FIELD_INTERNAL_CODE:		
+				break;
+			default:
+	    		throw new BusinessException("Invalid field name for class ArrFund", BaseCode.PROPERTY_IS_INVALID)
+    				.set("fieldName", fieldName);
+			}
+			
 			expression = fund.get(fieldName);
 		}
 
@@ -1162,24 +1190,6 @@ public class ArrangementService {
 		default:
 			throw new IllegalArgumentException("Unexpected operation: " + op);
 		}
-    }
-
-    /**
-     * Ověření názvu pole třídy ArrFund že takové pole existuje
-     * filtr: pouze jména, které začínají malým písmenem
-     * 
-     * @param fieldName
-     * @return string
-     */
-    private String getArrFundFieldName(String fieldName) {
-    	Field[] fields = ArrFund.class.getDeclaredFields();
-    	// všechny názvy polí ArrFund, kromě těch, které začínají velkým písmenem
-    	List<String> fieldNames = Arrays.stream(fields).map(Field::getName).filter(s -> s.matches("^[a-z].*")).toList();
-    	if (!fieldNames.contains(fieldName)) {
-    		throw new BusinessException("Invalid field name for class ArrFund", BaseCode.PROPERTY_IS_INVALID)
-    			.set("fieldName", fieldName);
-    	}
-    	return fieldName;  
     }
 
     /**
