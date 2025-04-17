@@ -243,5 +243,5 @@ when
     $di: DescItem(  dataType=="RECORD_REF" && $ap: ap ) from $ownDescItems
     Ap( stateApproval!="APPROVED" ) from $ap
 then
-    results.createError($di.getDescItemId(), "Prvek odkazuje na neschválenou entitu, id: "+$ap.getId()+", prvek popisu: "+$di.getType()+".", "ZP2015_POL_BASIC");
+    results.createError($di.getDescItemId(), "Prvek odkazuje na neschválenou entitu, id: "+$ap.getId()+", prvek popisu: "+$di.getType()+".", "ZP2015_POL_ENTITY");
 end
