@@ -47,6 +47,13 @@ public class DescItem {
      * Strukt. hodnota.
      */
     private Structured structured;
+    
+    /**
+     * Access point
+     * 
+     * Contains only basic information
+     */
+    private Ap ap;
 
     /**
      * Typ změny atributu.
@@ -86,6 +93,7 @@ public class DescItem {
         this.dataType = descItem.dataType;
         this.integerValue = descItem.integerValue;
         this.structured = descItem.structured;
+        this.ap = descItem.ap;
         this.change = descItem.change;
         this.nodeId = descItem.nodeId;
         this.readOnly = descItem.readOnly;
@@ -155,6 +163,14 @@ public class DescItem {
     public void setNodeId(final Integer nodeId) {
         this.nodeId = nodeId;
     }
+    
+	public Ap getAp() {
+		return ap;
+	}
+	
+	public void setAp(Ap ap) {
+		this.ap = ap;
+	}
 
     public boolean isUndefined() {
         return undefined;

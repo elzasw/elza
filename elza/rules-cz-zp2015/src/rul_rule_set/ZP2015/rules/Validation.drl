@@ -1,8 +1,9 @@
 package ZP2015;
 
 import java.util.Arrays;
-import cz.tacr.elza.drools.model.Level
-import cz.tacr.elza.drools.model.ActiveLevel
+import cz.tacr.elza.drools.model.Level;
+import cz.tacr.elza.drools.model.ActiveLevel;
+import cz.tacr.elza.drools.model.Ap;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Structured;
 import cz.tacr.elza.drools.model.StructObjItem;
@@ -234,4 +235,13 @@ when
     not DescItem( string matches "^\\[[1-9][0-9]*:[1-9][0-9]*\\]$" ) from $di
 then
 	results.createError($di.getDescItemId(), "Měřítko musí být ve formátu n:m nebo [n:m]", "ZP2015_POL_BASIC");
+end
+
+rule "Kontrola schválení přístupového bodu"
+when
+    $activeLevel : ActiveLevel( $ownDescItems: ownDescItems)
+    $di: DescItem(  dataType=="RECORD_REF" && $ap: ap ) from $ownDescItems
+    Ap( stateApproval!="APPROVED" ) from $ap
+then
+    results.createError($di.getDescItemId(), "Prvek odkazuje na neschválenou entitu, id: "+$ap.getId()+", prvek popisu: "+$di.getType()+".", "ZP2015_POL_BASIC");
 end

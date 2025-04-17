@@ -2,16 +2,14 @@ package cz.tacr.elza.drools.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
-import cz.tacr.elza.service.StructObjValueService;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,7 +24,6 @@ import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -37,7 +34,7 @@ import cz.tacr.elza.drools.model.EventSource;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.NewLevel;
 import cz.tacr.elza.drools.model.NewLevelApproach;
-import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -60,9 +57,6 @@ public class ScriptModelFactory {
     private DescItemFactory descItemFactory;
 
     @Autowired
-    private DescItemRepository descItemRepository;
-
-    @Autowired
     private NodeCacheService nodeCacheService;
 
 	@Autowired
@@ -75,7 +69,7 @@ public class ScriptModelFactory {
     private DescriptionItemService descItemService;
 
     @Autowired
-    private StructObjValueService structObjService;
+	private ApStateRepository apStateRepository;
 
     /**
 	 * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a prvky
@@ -126,12 +120,15 @@ public class ScriptModelFactory {
 	 * @return
 	 */
 	private DescItemReader createDescItemReader(ArrFundVersion version) {
+		
+		ApProviderImpl apProvider = new ApProviderImpl(apStateRepository, staticDataService.getData());
 
-		DescItemReader descItemReader = new DescItemReader(version, descItemRepository,
+		DescItemReader descItemReader = new DescItemReader(version,
 		        descItemFactory,
 		        nodeCacheService,
 		        structItemRepos,
-                descItemService);
+                descItemService,
+                apProvider);
 		return descItemReader;
 	}
 
@@ -394,7 +391,7 @@ public class ScriptModelFactory {
 	private void addEffectiveDescItems(final Level level) {
         Level tmpLevel = level.getParent();
         List<DescItem> descItemLevel = level.getDescItems();
-		Validate.notNull(descItemLevel);
+		Objects.requireNonNull(descItemLevel);
         while (tmpLevel != null) {
             // atributy procházeného rodiče
             List<DescItem> descItems = tmpLevel.getDescItems();
