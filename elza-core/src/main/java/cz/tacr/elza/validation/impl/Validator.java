@@ -27,6 +27,8 @@ import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.DataValidationResult;
 import cz.tacr.elza.domain.vo.DataValidationResults;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.service.ArrangementService;
 
@@ -48,13 +50,13 @@ public class Validator {
     final List<ArrDescItem> descItems;
 
     final DescItemFactory descItemFactory;
-
-    private final ApStateRepository stateRepository;
+    
+    final Map<Integer, ApState> apStatesMap;
 
     public Validator(final List<RulItemTypeExt> requiredItemTypes,
                      final List<ArrDescItem> descItems,
                      final DescItemFactory descItemFactory,
-                     final ApStateRepository stateRepository) {
+                     final Map<Integer, ApState> apStatesMap) {
         this.requiredItemTypes = requiredItemTypes;
         if (descItems == null) {
             this.descItems = Collections.emptyList();
@@ -62,7 +64,7 @@ public class Validator {
             this.descItems = descItems;
         }
 		this.descItemFactory = descItemFactory;
-        this.stateRepository = stateRepository;
+        this.apStatesMap = apStatesMap;
 	}
 
 	public DataValidationResults getValidationResults() {
@@ -226,17 +228,16 @@ public class Validator {
                 }
 
                 if (data instanceof ArrDataRecordRef) {
-                    ApAccessPoint accessPoint = ((ArrDataRecordRef) data).getRecord();
-                    ApState apState = stateRepository.findLastByAccessPoint(accessPoint);
+                	ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
+                    ApState apState = apStatesMap.get(dataRecordRef.getRecordId());
+                    if(apState==null){
+	                    throw new BusinessException("Nenalezene stav entity s ID="+dataRecordRef.getRecordId(),
+	                    		BaseCode.DB_INTEGRITY_PROBLEM);
+                    }
                     // Kontrola stavu entity
                     if (apState.getDeleteChangeId() != null) {
                         validationResults.createError(descItem, "Prvek " + name + " odkazuje na zneplatněnou entitu ("
-                                + accessPoint.getAccessPointId() + ").",
-                                                      policyTypeCode);
-                    } else
-                    if (apState.getStateApproval() != ApState.StateApproval.APPROVED) {
-                        validationResults.createError(descItem, "Prvek " + name + " odkazuje na neschválenou entitu ("
-                                + accessPoint.getAccessPointId() + ").",
+                                + apState.getAccessPointId() + ").",
                                                       policyTypeCode);
                     }
                 }

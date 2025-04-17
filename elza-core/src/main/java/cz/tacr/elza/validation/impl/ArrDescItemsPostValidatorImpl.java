@@ -1,11 +1,24 @@
 package cz.tacr.elza.validation.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import cz.tacr.elza.repository.ApStateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -65,17 +78,34 @@ public class ArrDescItemsPostValidatorImpl implements ArrDescItemsPostValidator 
 				        ArrangementCode.NODE_NOT_FOUND)
 				                .set("id", level.getNodeId());
 			}
-			//Node node = restoredNode.getNode();
-
 			descItems = restoredNode.getDescItems();
         } else {
 			descItems = arrangementServiceInternal.getDescItems(version.getLockChange(), level.getNode());
+        }
+        
+        // Read entities
+        Map<Integer, ApState> apStatesMap = Collections.emptyMap();
+        Set<Integer> apIds = new HashSet<>();        
+        for (ArrDescItem descItem : descItems) {
+			if(descItem.getData() == null) {
+				continue;
+			}
+			ArrData data = HibernateUtils.unproxy(descItem.getData());
+			if(data instanceof ArrDataRecordRef) {
+				apIds.add (  ((ArrDataRecordRef) data).getRecordId() );
+			}
+		}
+        if(apIds.size()>0) {
+        	// read states
+			List<ApState> apStates = stateRepository.findLastByAccessPointIds(apIds);
+			// create map of apStates with id as key
+			apStatesMap = apStates.stream().collect(Collectors.toMap(ApState::getAccessPointId, Function.identity()));
         }
 
         List<RulItemTypeExt> nodeTypes = ruleService.getDescriptionItemTypes(version, level.getNode());
 
         // create validator and validate
-        Validator validator = new Validator(nodeTypes, descItems, descItemFactory, stateRepository);
+        Validator validator = new Validator(nodeTypes, descItems, descItemFactory, apStatesMap);
         validator.validate();
 
         List<DataValidationResult> validationResultList = validator.getValidationResultList();

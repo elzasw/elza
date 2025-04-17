@@ -33,8 +33,6 @@ public class DescItemReader {
 	//Map<Level, ArrNode> items = new HashMap<>();
 	Map<Level, Integer> levelNodeMap = new HashMap<>();
 
-	private final DescItemRepository descItemRepository;
-
 	private final DescItemFactory descItemFactory;
 
 	private final NodeCacheService nodeCacheService;
@@ -45,19 +43,22 @@ public class DescItemReader {
 
     private final DescriptionItemService descItemService;
 
-	public DescItemReader(ArrFundVersion version, DescItemRepository descItemRepository,
-						  DescItemFactory descItemFactory,
-						  NodeCacheService nodeCacheService,
+	private final ApProvider apProvider;
+
+	public DescItemReader(final ArrFundVersion version,
+						  final DescItemFactory descItemFactory,
+						  final NodeCacheService nodeCacheService,
 						  final StructuredItemRepository structItemRepos,
-                          DescriptionItemService descItemService
+                          final DescriptionItemService descItemService,
+                          final ApProvider apProvider
                           )
 	{
 		this.version = version;
-		this.descItemRepository = descItemRepository;
 		this.descItemFactory = descItemFactory;
 		this.nodeCacheService = nodeCacheService;
 		this.structItemRepos = structItemRepos;
         this.descItemService = descItemService;
+        this.apProvider = apProvider;
 	}
 
 	/**
@@ -92,7 +93,7 @@ public class DescItemReader {
 
             for (Level level : levels) {
                 List<ArrDescItem> levelDescItems = cachedNodes.get(level.getNodeId()).getDescItems();
-                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos);
+                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos, apProvider);
                 level.setDescItems(items);
             }
         } else {
@@ -103,7 +104,7 @@ public class DescItemReader {
 
             for (Level level : levels) {
                 List<ArrDescItem> levelDescItems = descItemsMap.get(level.getNodeId());
-                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos);
+                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos, apProvider);
                 level.setDescItems(items);
             }
         }
