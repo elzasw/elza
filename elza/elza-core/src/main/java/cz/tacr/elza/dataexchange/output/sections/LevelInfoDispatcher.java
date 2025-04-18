@@ -1,5 +1,7 @@
 package cz.tacr.elza.dataexchange.output.sections;
 
+import java.util.Objects;
+
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
@@ -18,8 +20,7 @@ public class LevelInfoDispatcher implements LoadDispatcher<LevelInfoImpl> {
 
     private ExportContext context;
 
-    public LevelInfoDispatcher(ExportContext context,
-                               SectionOutputStream os, LevelInfoListener levelInfoListener) {
+    public LevelInfoDispatcher(ExportContext context, SectionOutputStream os, LevelInfoListener levelInfoListener) {
         this.context = context;
         this.os = os;
         this.levelInfoListener = levelInfoListener;
@@ -31,13 +32,13 @@ public class LevelInfoDispatcher implements LoadDispatcher<LevelInfoImpl> {
 
     @Override
     public void onLoad(LevelInfoImpl result) {
-        Validate.isTrue(levelInfo == null);
+    	Validate.isTrue(levelInfo == null);
         levelInfo = result;
     }
 
     @Override
     public void onLoadEnd() {
-        Validate.notNull(levelInfo);
+    	Objects.requireNonNull(levelInfo);
 
         if (levelInfoListener != null) {
             levelInfoListener.onInit(levelInfo);

@@ -46,6 +46,7 @@ import cz.tacr.elza.schema.v2.DescriptionItemStructObjectRef;
 import cz.tacr.elza.schema.v2.DigitalArchivalObject;
 import cz.tacr.elza.schema.v2.DigitalArchivalObjects;
 import cz.tacr.elza.schema.v2.FundInfo;
+import cz.tacr.elza.schema.v2.InhibitedItem;
 import cz.tacr.elza.schema.v2.Level;
 import cz.tacr.elza.schema.v2.ObjectFactory;
 import cz.tacr.elza.schema.v2.StructuredObject;
@@ -91,8 +92,16 @@ class XmlSectionOutputStream implements SectionOutputStream {
         if (levelInfo.getParentNodeId() != null) {
             level.setPid(levelInfo.getParentNodeId().toString());
         }
+
         // convert description items references
         convertItems(levelInfo.getItems(), level.getDdOrDoOrDp());
+
+        // convert inhibited items
+        levelInfo.getInhibitedItems().forEach(i -> {
+        	InhibitedItem inhItem = new InhibitedItem();
+        	inhItem.setRefItem(i.getDescItemObjectId().toString());
+        	level.getInhs().add(inhItem);
+        });
 
         // convert daos
         convertDaos(levelInfo.getDaos(), level);
@@ -105,7 +114,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
     }
 
     private void convertDaos(Collection<ArrDao> daos, Level level) {
-        if(daos==null||daos.size()==0) {
+        if (daos == null || daos.size() == 0) {
             return;
         }
         Validate.isTrue(level.getDaos() == null, "Level already have some DAOs");
@@ -116,6 +125,7 @@ class XmlSectionOutputStream implements SectionOutputStream {
             xmlDao.setDoid(dao.getCode());
             xmlDaos.getDao().add(xmlDao);
         }
+
         // append only non empty
         if (xmlDaos.getDao().size() > 0) {
             level.setDaos(xmlDaos);

@@ -68,8 +68,6 @@ class XmlElementReaderDelegate extends EventReaderDelegate {
 
 	/**
 	 * One active element handler
-	 * 
-	 *
 	 */
     private static class HandlerScope {
 

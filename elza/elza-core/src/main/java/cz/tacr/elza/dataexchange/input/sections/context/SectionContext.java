@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.Validate;
@@ -69,9 +70,9 @@ public class SectionContext {
                    ImportInitHelper initHelper) {
         this.nodeStorageDispatcher = new NodeStorageDispatcher(storageManager, batchSize);
         this.structObjectStorageDispatcher = new StructObjStorageDispatcher(storageManager, batchSize);
-        this.createChange = Validate.notNull(createChange);
-        this.ruleSet = Validate.notNull(ruleSet);
-        this.staticData = Validate.notNull(staticData);
+        this.createChange = Objects.requireNonNull(createChange);
+        this.ruleSet = Objects.requireNonNull(ruleSet);
+        this.staticData = Objects.requireNonNull(staticData);
         this.arrangementService = initHelper.getArrangementService();
         this.structObjService = initHelper.getStructObjService();
         this.dmsService = initHelper.getDmsService();
@@ -90,7 +91,7 @@ public class SectionContext {
     }
     
     public ArrFund getFund() {
-        Validate.notNull(rootAdapter);
+    	Objects.requireNonNull(rootAdapter);
 
         return rootAdapter.getFund();
     }
@@ -140,7 +141,7 @@ public class SectionContext {
      * Create root node for section and stores all remaining packets.
      */
     public NodeContext setRootNode(ArrNode rootNode, String importNodeId) {
-        Validate.notNull(rootAdapter);
+    	Objects.requireNonNull(rootAdapter);
 
         // create root context node
         return rootAdapter.createRoot(this, rootNode, importNodeId);
@@ -148,7 +149,7 @@ public class SectionContext {
 
     public void setProcessingStructType(String structTypeCode) {
         StructType st = staticData.getStructuredTypeByCode(structTypeCode);
-        Validate.notNull(st);
+        Objects.requireNonNull(st);
         this.processingStructType = st.getStructuredType();
     }
 
@@ -162,7 +163,7 @@ public class SectionContext {
      * @return
      */
     public StructObjContext addStructObject(String importId, String uuid, Boolean assignable) {
-        Validate.notNull(processingStructType);
+    	Objects.requireNonNull(processingStructType);
 
         // create entity
         ArrStructuredObject entity = new ArrStructuredObject.Builder(getCreateChange(),
@@ -188,10 +189,10 @@ public class SectionContext {
                         String fileName,
                         String mimetype,
                         Consumer<OutputStream> dataProvider) throws IOException {
-        Validate.notNull(importId);
-        Validate.notNull(name);
-        Validate.notNull(fileName);
-        Validate.notNull(mimetype);
+    	Objects.requireNonNull(importId);
+    	Objects.requireNonNull(name);
+    	Objects.requireNonNull(fileName);
+    	Objects.requireNonNull(mimetype);
 
         ArrFile dmsFile = new ArrFile();
         dmsFile.setName(name);
@@ -203,7 +204,7 @@ public class SectionContext {
         // save file
         dmsService.createFile(dmsFile, dataProvider);
 
-        Validate.notNull(dmsFile.getFileId());
+        Objects.requireNonNull(dmsFile.getFileId());
 
         Validate.isTrue(importIdFileMap.get(importId) == null, "Duplicated local id, value: %s", importId);
         importIdFileMap.put(importId, dmsFile);
@@ -217,7 +218,7 @@ public class SectionContext {
     }
 
     public void close() {
-        Validate.notNull(rootAdapter);
+    	Objects.requireNonNull(rootAdapter);
 
         rootAdapter.onSectionClose();
         rootAdapter = null;
@@ -229,8 +230,8 @@ public class SectionContext {
         this.rootAdapter = rootAdapter;
     }
 
-    NodeContext addNode(ArrNodeWrapper nodeWrapper, ArrLevelWrapper levelWrapper, String importId, int depth) {
-        NodeContext node = new NodeContext(this, nodeWrapper.getIdHolder(), nodeStorageDispatcher, depth);
+    NodeContext addNode(NodeContext parentNodeCtx, ArrNodeWrapper nodeWrapper, ArrLevelWrapper levelWrapper, String importId, int depth) {
+        NodeContext node = new NodeContext(this, parentNodeCtx, nodeWrapper.getIdHolder(), nodeStorageDispatcher, depth);
         if (importIdNodeCtxMap.putIfAbsent(importId, node) != null) {
             throw new DEImportException("Fund level has duplicate id, levelId:" + importId);
         }

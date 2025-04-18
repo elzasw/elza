@@ -8,25 +8,21 @@ import org.hibernate.Session;
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
 import cz.tacr.elza.dataexchange.input.storage.EntityWrapper;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrNode;
 
-public class ArrDescItemWrapper implements EntityWrapper {
+public class ArrInhibitedItemWrapper implements EntityWrapper {
 
-    private final ArrDescItem entity;
+    private final ArrInhibitedItem entity;
 
     private final EntityIdHolder<ArrNode> nodeIdHolder;
 
-    private EntityIdHolder<ArrData> dataIdHolder;
+    private final Integer descItemObjectId;
 
-    ArrDescItemWrapper(ArrDescItem entity, EntityIdHolder<ArrNode> nodeIdHolder) {
+    ArrInhibitedItemWrapper(ArrInhibitedItem entity, EntityIdHolder<ArrNode> nodeIdHolder, Integer descItemObjectId) {
         this.entity = Objects.requireNonNull(entity);
         this.nodeIdHolder = Objects.requireNonNull(nodeIdHolder);
-    }
-
-    void setDataIdHolder(EntityIdHolder<ArrData> dataIdHolder) {
-        this.dataIdHolder = dataIdHolder;
+        this.descItemObjectId = Objects.requireNonNull(descItemObjectId);
     }
 
     @Override
@@ -44,11 +40,9 @@ public class ArrDescItemWrapper implements EntityWrapper {
         // prepare node reference
         Validate.isTrue(entity.getNode() == null);
         entity.setNode(nodeIdHolder.getEntityRef(session));
-        // prepare data reference
-        Validate.isTrue(entity.isUndefined());
-        if (dataIdHolder != null) {
-            entity.setData(dataIdHolder.getEntityRef(session));
-        }
+
+        // set correct ObjectId
+        entity.setDescItemObjectId(descItemObjectId);
     }
 
     @Override

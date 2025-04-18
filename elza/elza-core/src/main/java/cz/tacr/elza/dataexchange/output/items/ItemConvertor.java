@@ -36,6 +36,7 @@ public class ItemConvertor {
      */
     public final DescriptionItem convert(ArrItem item) {
         DescriptionItem converted = convert(item.getData());
+        converted.setId(item.getDescItemObjectId().toString());
 
         ItemType itemType = staticDataProvider.getItemTypeById(item.getItemTypeId());
         converted.setT(itemType.getCode());

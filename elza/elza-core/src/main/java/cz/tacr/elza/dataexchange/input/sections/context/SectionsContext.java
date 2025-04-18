@@ -3,6 +3,7 @@ package cz.tacr.elza.dataexchange.input.sections.context;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -111,7 +112,7 @@ public class SectionsContext {
     }
 
     public void setFundInfo(FundInfo fundInfo) {
-        Validate.notNull(currentSection);
+    	Objects.requireNonNull(currentSection);
 
         if (importPosition != null) {
             LOG.warn("Fund info will be ignored during subsection import");
@@ -121,13 +122,13 @@ public class SectionsContext {
     }
 
     public SectionContext getCurrentSection() {
-        Validate.notNull(currentSection);
+    	Objects.requireNonNull(currentSection);
 
         return currentSection;
     }
 
     public void endSection() {
-        Validate.notNull(currentSection);
+    	Objects.requireNonNull(currentSection);
 
         currentSection.storeNodes();
 
