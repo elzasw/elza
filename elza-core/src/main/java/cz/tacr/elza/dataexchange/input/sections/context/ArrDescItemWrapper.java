@@ -1,5 +1,7 @@
 package cz.tacr.elza.dataexchange.input.sections.context;
 
+import java.util.Objects;
+
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Session;
 
@@ -19,8 +21,8 @@ public class ArrDescItemWrapper implements EntityWrapper {
     private EntityIdHolder<ArrData> dataIdHolder;
 
     ArrDescItemWrapper(ArrDescItem entity, EntityIdHolder<ArrNode> nodeIdHolder) {
-        this.entity = Validate.notNull(entity);
-        this.nodeIdHolder = Validate.notNull(nodeIdHolder);
+        this.entity = Objects.requireNonNull(entity);
+        this.nodeIdHolder = Objects.requireNonNull(nodeIdHolder);
     }
 
     void setDataIdHolder(EntityIdHolder<ArrData> dataIdHolder) {
