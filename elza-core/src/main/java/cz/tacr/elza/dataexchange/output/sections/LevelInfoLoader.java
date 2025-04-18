@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import jakarta.persistence.EntityManager;
-
-import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.dataexchange.output.loaders.AbstractBatchLoader;
@@ -16,6 +15,7 @@ import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -122,14 +122,16 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
     }
 
     private LevelInfoImpl createLevelInfo(Integer nodeId, Integer parentNodeId, CachedNode cachedNode, Map<Integer, ArrDao> daoMap) {
-        Validate.notNull(nodeId);
-        Validate.notNull(cachedNode);
+    	Objects.requireNonNull(nodeId);
+    	Objects.requireNonNull(cachedNode);
 
         LevelInfoImpl levelInfo = new LevelInfoImpl(nodeId, parentNodeId);
         // show UUID by condition
         if (includeUuid) {
             levelInfo.setNodeUuid(cachedNode.getUuid());
         }
+
+        // add desc items
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems != null) {
             // sort items by item type and position & filter by condition
@@ -138,12 +140,18 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
                 .forEachOrdered(levelInfo::addItem);
         }
 
+        // add inhibited items
+        List<ArrInhibitedItem> inhibitedItems = cachedNode.getInhibitedItems();
+        if (inhibitedItems != null) {
+        	levelInfo.addInhibitedItems(inhibitedItems);
+        }
+
         // add daos
         List<ArrDaoLink> daoLinks = cachedNode.getDaoLinks();
         if (daoLinks != null) {
             daoLinks.forEach(daoLink -> {
                 ArrDao dao = daoMap.get(daoLink.getDaoId());
-                Validate.notNull(dao, "Missing dao: %s", daoLink.getDaoId());
+                Objects.requireNonNull(dao, "Missing dao: " + daoLink.getDaoId());
                 levelInfo.addDao(dao);
             });
         }

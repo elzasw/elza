@@ -76,6 +76,13 @@ public class NodeStorageDispatcher {
         }
     }
 
+    public void addInhibitedItem(ArrInhibitedItemWrapper inhItem, int depth) {
+    	NodeDepthBatch batch = getBatch(depth);
+        if (batch.addInhibitedItem(inhItem)) {
+            batch.storeInhibitedItems();
+        }
+    }
+
     private void dispatch(int depthLimit, Consumer<NodeDepthBatch> storeAction) {
         for (int i = 0; i <= depthLimit; i++) {
             NodeDepthBatch batch = depthStack.get(i);
@@ -106,6 +113,8 @@ public class NodeStorageDispatcher {
 
         private final List<ArrDescItemWrapper> descItems;
 
+        private final List<ArrInhibitedItemWrapper> inhibitedItems;
+
         private final MultiValuedMap<DataType, ArrDataWrapper> dataTypeMap;
 
         public NodeDepthBatch(StorageManager storageManager, int batchSize) {
@@ -115,6 +124,7 @@ public class NodeStorageDispatcher {
             this.nodes = new ArrayList<>(batchSize);
             this.levels = new ArrayList<>(batchSize);
             this.descItems = new ArrayList<>(batchSize);
+            this.inhibitedItems = new ArrayList<>(batchSize);
             this.dataTypeMap = new ArrayListValuedHashMap<>(batchSize);
         }
 
@@ -143,6 +153,14 @@ public class NodeStorageDispatcher {
         }
 
         /**
+         * @return True when InhibitedItem batch is full.
+         */
+        public boolean addInhibitedItem(ArrInhibitedItemWrapper inhItem) {
+        	inhibitedItems.add(inhItem);
+            return inhibitedItems.size() >= batchSize;
+        }
+
+        /**
          * @return True data batch is full.
          */
         public boolean addData(ArrDataWrapper data) {
@@ -160,6 +178,7 @@ public class NodeStorageDispatcher {
             storeLevels(false);
             storeData();
             storeDescItems(false);
+            storeInhibitedItems();
         }
 
         public void storeNodes() {
@@ -206,6 +225,14 @@ public class NodeStorageDispatcher {
             for (DataType dt : DataType.values()) {
                 storeData(dt);
             }
+        }
+
+        public void storeInhibitedItems() {
+            if (inhibitedItems.isEmpty()) {
+                return;
+            }
+            storageManager.storeGeneric(inhibitedItems);
+            inhibitedItems.clear();
         }
     }
 }
