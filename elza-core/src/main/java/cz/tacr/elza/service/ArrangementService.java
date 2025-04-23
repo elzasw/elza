@@ -11,7 +11,6 @@ import static java.util.stream.Collectors.toSet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -41,7 +40,6 @@ import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -737,7 +735,6 @@ public class ArrangementService {
         level.setNode(createNode(fund, uuid, createChange));
         return levelRepository.saveAndFlush(level);
     }
-
 
     /**
      * Vytvoření jednoznačného identifikátoru požadavku.

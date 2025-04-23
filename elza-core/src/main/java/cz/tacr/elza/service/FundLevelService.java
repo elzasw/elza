@@ -1156,12 +1156,12 @@ public class FundLevelService {
         Validate.notNull(change, "Změna musí být vyplněna");
         Validate.isTrue(prevLevel.getDeleteChange() == null, "Předchozí verze musí být platná");
 
-        ArrLevel newNode = copyLevelData(prevLevel);
-        newNode.setCreateChange(change);
+        ArrLevel newLevel = copyLevelData(prevLevel);
+        newLevel.setCreateChange(change);
 
         prevLevel.setDeleteChange(change);
         levelRepository.saveAndFlush(prevLevel);
-        return newNode;
+        return newLevel;
     }
 
     /**
@@ -1173,12 +1173,13 @@ public class FundLevelService {
     private ArrLevel copyLevelData(ArrLevel level) {
         Assert.notNull(level, "Level musí být vyplněn");
 
-        ArrLevel newNode = new ArrLevel();
-        newNode.setNode(level.getNode());
-        newNode.setNodeParent(level.getNodeParent());
-        newNode.setPosition(level.getPosition());
+        ArrLevel newLevel = new ArrLevel();
+        newLevel.setNode(level.getNode());
+        newLevel.setNodeParent(level.getNodeParent());
+        newLevel.setPosition(level.getPosition());
+        newLevel.setList(level.getList());
 
-        return newNode;
+        return newLevel;
     }
 
     /**
@@ -1210,7 +1211,6 @@ public class FundLevelService {
 
         return updatedLevels;
     }
-
 
     /**
      * Najde seznam uzlů k přesunutí.
@@ -1318,5 +1318,18 @@ public class FundLevelService {
                                                                               parentLevel, newLevel));
 
 		return newLevel;
+	}
+
+	/**
+	 * Set the level operating mode
+	 * 	TREE (-> list = false), LIST (-> list = true)
+	 * 
+	 * @param node
+	 * @param mode
+	 */
+	public void setLevelMode(ArrNode node, Boolean mode) {
+		ArrLevel arrLevel = findLevelByNode(node);
+		arrLevel.setList(mode);
+		levelRepository.save(arrLevel);
 	}
 }

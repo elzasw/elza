@@ -73,6 +73,13 @@ public class ArrLevel {
     @Column(nullable = false)
     private Integer position;
 
+    /**
+     * Příznak "lokální databáze" umožňující práci s velkým množstvím záznamů na jedné úrovni
+     * TREE (-> list = false), LIST (-> list = true)
+     */
+    @Column(nullable = false)
+    private Boolean list = false;
+
     public Integer getLevelId() {
         return levelId;
     }
@@ -173,7 +180,15 @@ public class ArrLevel {
         this.position = position;
     }
 
-    @Override
+    public Boolean getList() {
+		return list;
+	}
+
+	public void setList(Boolean list) {
+		this.list = list;
+	}
+
+	@Override
     public boolean equals(final Object obj) {
         if (!(obj instanceof ArrLevel)) {
             return false;
