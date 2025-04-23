@@ -391,7 +391,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     public List<ArrLevel> findLevelsSubtree(final Integer nodeId, final int skip, final int max, final boolean ignoreRootNodes) {
         RecursiveQueryBuilder<ArrLevel> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrLevel.class);
 
-        rqBuilder.addSqlPart("WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, path) AS (")
+        rqBuilder.addSqlPart("WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, list, path) AS (")
         .addSqlPart("SELECT t.*, '000001' AS path FROM arr_level t WHERE t.node_id = :nodeId AND t.delete_change_id IS NULL ")
         .addSqlPart("UNION ALL ")
         .addSqlPart("SELECT t.*, CONCAT(td.path, '.', RIGHT(CONCAT('000000', t.position), 6)) AS deep ")
@@ -424,7 +424,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
         RecursiveQueryBuilder<ArrLevel> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrLevel.class);
 
-        rqBuilder.addSqlPart("WITH RECURSIVE fundTree(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, depth) AS (")
+        rqBuilder.addSqlPart("WITH RECURSIVE fundTree(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, list, depth) AS (")
         	.addSqlPart("SELECT l.*, 0 FROM arr_level l WHERE l.node_id = :nodeId AND l.delete_change_id IS NULL ")
         	.addSqlPart("UNION ALL ")
         	.addSqlPart("SELECT l.*, ft.depth + 1 FROM arr_level l JOIN fundTree ft ON ft.node_id=l.node_id_parent WHERE l.delete_change_id IS NULL) ")

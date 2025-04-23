@@ -682,4 +682,12 @@
 		<addNotNullConstraint tableName="ap_external_system" columnName="scope_id"/>
 	</changeSet>
 
+	<changeSet id="20250422084500" author="sergey.iryupin">
+        <addColumn tableName="arr_level">
+            <column name="list" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+	</changeSet>
+
 </databaseChangeLog>

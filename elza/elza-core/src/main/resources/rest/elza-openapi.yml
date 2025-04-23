@@ -1028,6 +1028,7 @@ paths:
   /fund/{fundId}/fsrepo/{fsrepoId}/item-data:
     get:
       operationId: fund_fsRepoItemData
+      description: Get file of data
       parameters:
         - $ref: '#/components/parameters/FundIdParameter'
         - $ref: '#/components/parameters/FsRepoIdParameter'
@@ -1051,6 +1052,7 @@ paths:
   /fund/{fundId}/fsrepo/{fsrepoId}/items:
     get:
       operationId: fund_fsRepoItems
+      description: Return list of filesystem items
       parameters:
         - $ref: '#/components/parameters/FundIdParameter'
         - $ref: '#/components/parameters/FsRepoIdParameter'
@@ -1087,6 +1089,7 @@ paths:
   /fund/{fundId}/fsrepo/{fsrepoId}/linkitem/{nodeId}:
     put:
       operationId: fund_fsCreateDAOLink
+      description: Create DAO link
       parameters:
         - $ref: '#/components/parameters/FundIdParameter'
         - $ref: '#/components/parameters/FsRepoIdParameter'
@@ -1121,6 +1124,31 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/FsRepo'
+      tags:
+        - funds
+  /fund/{fundId}/node/{nodeId}/mode:
+    post:
+      operationId: fund_setLevelMode
+      description: Set mode (TREE/LIST) of ArrLevel
+      parameters:
+        - $ref: '#/components/parameters/FundIdParameter'
+        - $ref: '#/components/parameters/NodeIdParameter'
+        - name: list
+          in: query
+          required: true
+          description: TREE (-> list = false), LIST (-> list = true)
+          schema:
+            type: boolean
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
       tags:
         - funds
   /fund/{fundId}/usedItemtypes/{fundVersionId}:
