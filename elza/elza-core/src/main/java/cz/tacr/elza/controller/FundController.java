@@ -72,6 +72,7 @@ import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.ArrangementService.FindFundVersionsResult;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 
@@ -113,6 +114,9 @@ public class FundController implements FundsApi {
 
     @Autowired
     private DaoService daoService;
+
+    @Autowired
+    private FundLevelService fundLevelService;
 
     @Override
     @Transactional
@@ -331,6 +335,24 @@ public class FundController implements FundsApi {
             result = Collections.emptyList();
         }
         return ResponseEntity.ok(result);
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Void> fundSetLevelMode(@PathVariable("fundId") Integer fundId,
+    											 @PathVariable("nodeId") Integer nodeId,
+    											 @RequestParam(value = "list", required = true) Boolean mode) {
+
+        ArrNode node = arrangementService.getNode(nodeId);
+        if (!node.getFundId().equals(fundId)) {
+            throw new BusinessException("The node doesn't belong to the fund.", BaseCode.INVALID_STATE)
+            	.set("nodeId", nodeId)
+            	.set("fundId", fundId);
+        }
+
+        fundLevelService.setLevelMode(node, mode);
+
+        return ResponseEntity.ok(null);
     }
 
     @Override

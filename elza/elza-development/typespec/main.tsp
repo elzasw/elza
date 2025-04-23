@@ -1037,6 +1037,9 @@ namespace ElzaAPI.fund {
     @route("{fundId}/fsrepos")
     @get op fsRepos(...FundIdParameter): FsRepo[];
 
+    /**
+     * Create DAO link
+     */
     @route("{fundId}/fsrepo/{fsrepoId}/linkitem/{nodeId}")
     @put op fsCreateDAOLink (
         ...FundIdParameter,
@@ -1045,6 +1048,9 @@ namespace ElzaAPI.fund {
         @query path?: string
     ): integer;
 
+    /**
+     * Return list of filesystem items
+     */
     @route("{fundId}/fsrepo/{fsrepoId}/items")
     op fsRepoItems(
         ...FundIdParameter,
@@ -1057,6 +1063,9 @@ namespace ElzaAPI.fund {
         @query lastKey?: string
     ): FsItems;
 
+    /**
+     * Get file of data
+     */
     @route("{fundId}/fsrepo/{fsrepoId}/item-data")
     op fsRepoItemData(
         ...FundIdParameter,
@@ -1067,6 +1076,24 @@ namespace ElzaAPI.fund {
         @header contentType: "*/*";
         @body data: bytes;
     };
+
+    /**
+     * Set mode (TREE/LIST) of ArrLevel
+     */
+    @route("{fundId}/node/{nodeId}/mode")
+    @post op setLevelMode(
+        ...FundIdParameter,
+        ...NodeIdParameter,
+        /** TREE (-> list = false), LIST (-> list = true) */
+        @query list: boolean
+   ): {
+         /** The mode has changed */
+         @Http.statusCode statusCode: 200;
+       } | {
+          /** ID does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
 }
 
 @tag("descitems")
