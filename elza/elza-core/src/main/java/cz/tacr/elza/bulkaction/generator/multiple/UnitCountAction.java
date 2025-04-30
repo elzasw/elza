@@ -332,7 +332,7 @@ public class UnitCountAction extends Action {
             }
             descItem.setItemSpec(rulItemSpec);
         }
-        bulkAction.saveDescItem(descItem);
+        bulkAction.saveNewDescItem(descItem);
 	}
 
     public boolean isCountedObject(Integer packetId) {
