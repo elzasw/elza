@@ -138,7 +138,7 @@ public class SealUnitId extends BulkActionDFS {
             newItem.setItemId(null);
             newItem.setCreateChange(getChange());
             newItem.setReadOnly(true);
-            newItem = this.saveDescItem(newItem);
+            newItem = this.saveNewDescItem(newItem);
 
             // lock if not locked
             fixedValue = new ArrLockedValue();

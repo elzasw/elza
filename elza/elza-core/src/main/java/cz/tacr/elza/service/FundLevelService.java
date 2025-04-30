@@ -935,7 +935,7 @@ public class FundLevelService {
                 ArrDescItem descItemCreated = descriptionItemService
                         .createDescriptionItemWithData(descItem, change,
                                                        fundContext, changeContext, items);
-                arrangementCacheService.createDescItem(descItemCreated, changeContext);
+                arrangementCacheService.addToCacheNode(descItemCreated, changeContext);
                 items.add(descItemCreated);
             }
         }

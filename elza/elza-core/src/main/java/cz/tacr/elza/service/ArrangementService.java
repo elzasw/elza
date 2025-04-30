@@ -2084,15 +2084,16 @@ public class ArrangementService {
         refTemplateMapTypeRepository.delete(refTemplateMapType);
     }
 
+    // TODO refactoring this recursive method
     public void synchronizeNodes(final Integer nodeId,
                                  final Integer nodeVersion,
                                  final Boolean childrenNodes,
                                  final ArrChange change) {
         ArrNode node = getNode(nodeId);
         if (node != null) {
-            List<ArrDescItem> nodeItems = descriptionItemService.findByNodeAndDeleteChangeIsNull(node);
-            if (CollectionUtils.isNotEmpty(nodeItems)) {
-                for (ArrDescItem descItem : nodeItems) {
+            List<ArrDescItem> descItems = descriptionItemService.findByNodeAndDeleteChangeIsNull(node);
+            if (CollectionUtils.isNotEmpty(descItems)) {
+                for (ArrDescItem descItem : descItems) {
                     synchronizeNodes(descItem, nodeId, nodeVersion, change);
                 }
             }
@@ -2108,7 +2109,10 @@ public class ArrangementService {
         }
     }
 
-    public void synchronizeNodes(final ArrDescItem descItem, final Integer nodeId, final Integer nodeVersion, ArrChange change) {
+    public void synchronizeNodes(final ArrDescItem descItem, 
+    						     final Integer nodeId, 
+    						     final Integer nodeVersion, 
+    						     ArrChange change) {
         if (descItem.getData().getDataType().getCode().equals(DataType.URI_REF.getCode())) {
             ArrDataUriRef dataUriRef = HibernateUtils.unproxy(descItem.getData());
 
