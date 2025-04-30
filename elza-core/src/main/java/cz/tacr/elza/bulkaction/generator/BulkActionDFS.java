@@ -1,8 +1,10 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import java.util.List;
+import java.util.Objects;
 
-import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
@@ -10,7 +12,6 @@ import cz.tacr.elza.bulkaction.BulkAction;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.RuleService;
@@ -23,6 +24,8 @@ import cz.tacr.elza.service.eventnotification.EventNotificationService;
  *
  */
 public abstract class BulkActionDFS extends BulkAction {
+
+	private static final Logger logger = LoggerFactory.getLogger(BulkActionDFS.class);	
 
 	protected Result result;
 
@@ -45,9 +48,8 @@ public abstract class BulkActionDFS extends BulkAction {
 		result = new Result();
 
         for (Integer nodeId : runContext.getInputNodeIds()) {
-            ArrNode nodeRef = nodeRepository.getOne(nodeId);
-            ArrLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(nodeRef);
-            Validate.notNull(level);
+            ArrLevel level = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
+            Objects.requireNonNull(level);
 
             run(level);
 		}
@@ -66,8 +68,6 @@ public abstract class BulkActionDFS extends BulkAction {
 	 * Generování hodnot - rekurzivní volání pro procházení celého stromu
 	 *
 	 * @param level
-	 *            uzel
-	 * @param rootNode
 	 */
 	protected void run(ArrLevel level) {
 		if (bulkActionRun.isInterrupted()) {
@@ -76,14 +76,23 @@ public abstract class BulkActionDFS extends BulkAction {
 			        ArrangementCode.BULK_ACTION_INTERRUPTED).set("code", bulkActionRun.getBulkActionCode());
 		}
 
-		// update serial number
-		update(level);
+		logger.debug("Getting all ArrLevels from {}", level);
+		List<ArrLevel> levels = levelRepository.findLevelsSubtree(level.getNodeId(), 0, 0, false);
 
-		List<ArrLevel> childLevels = getChildren(level);
+		// update serial number		
+		logger.debug("Updating {} levels...", levels.size());
+		levels.forEach(lvl -> update(lvl));
 
-		for (ArrLevel childLevel : childLevels) {
-			run(childLevel);
-		}
+		logger.debug("All levels updated.");
+
+//		// update serial number		
+//		update(level);
+//
+//		List<ArrLevel> childLevels = getChildren(level);
+//
+//		for (ArrLevel childLevel : childLevels) {
+//			run(childLevel);
+//		}
 	}
 
 	protected abstract void update(ArrLevel level);

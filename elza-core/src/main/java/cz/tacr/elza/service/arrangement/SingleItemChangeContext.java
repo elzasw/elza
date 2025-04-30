@@ -59,6 +59,7 @@ public class SingleItemChangeContext implements BatchChangeContext {
         nodeVersion = descItemUpdated.getNode().getVersion();
         descItemObjectId = descItemUpdated.getDescItemObjectId();
     }
+
     public void validateAndPublish() {
         // validace uzlu
         int validationPriority = 10;
@@ -79,7 +80,10 @@ public class SingleItemChangeContext implements BatchChangeContext {
     @Override
     public void addRemovedItem(ArrDescItem item) {
         throw new IllegalStateException("Unsupported operation");
-
     }
 
+	@Override
+	public boolean isNodeCacheSyncDelayed() {
+		return false;
+	}
 }

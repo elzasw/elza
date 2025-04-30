@@ -4,6 +4,7 @@ import static cz.tacr.elza.repository.ExceptionThrow.version;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.transaction.Transactional;
 
@@ -15,6 +16,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
@@ -32,7 +34,6 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
-
 
 /**
  * Abstraktní třída pro tvorbu hromadných akcí.
@@ -152,49 +153,43 @@ public abstract class BulkAction {
 	abstract public String getName();
 
     /**
-     * Uložení nového/existující atributu.
+     * Uložení nového atributu.
      *
      * @param descItem ukládaný atribut
      * @return finální atribut
      */
-    public ArrDescItem saveDescItem(final ArrDescItem descItem) {
+    public ArrDescItem saveNewDescItem(final ArrDescItem descItem) {
         ArrDescItem result;
-        if (multipleItemChangeContext == null) {
-            if (descItem.getDescItemObjectId() == null) {
-                result = descriptionItemService.createDescriptionItem(descItem, descItem.getNode(), version,
-                                                                      getChange());
-            } else {
-                result = descriptionItemService.updateDescriptionItem(descItem, version, getChange(), false);
-            }
+    	Validate.isTrue(descItem.getDescItemObjectId() == null);
+        if (multipleItemChangeContext == null) {            
+        	result = descriptionItemService.createDescriptionItem(descItem, descItem.getNode(), version, getChange());
         } else {
-            if (descItem.getDescItemObjectId() == null) {
-                result = descriptionItemService.createDescriptionItemInBatch(descItem, descItem.getNode(), version,
-                                                                           getChange(), multipleItemChangeContext);
-            } else {
-                result = descriptionItemService.updateValueAsNewVersion(version, getChange(),
-                                                                        descItem,
-                                                                        multipleItemChangeContext,
-                                                                        false);
-            }
+        	result = descriptionItemService.createDescriptionItemInBatch(descItem, descItem.getNode(), version, getChange(), multipleItemChangeContext);
             multipleItemChangeContext.flushIfNeeded();
         }
         return result;
     }
 
     /**
-     * Smazání existujícího atributu.
-     *
-     * @param descItem atribut ke smazání
-     * @param version  verze archivní pomůcky
-     * @param change   změna
+     * Uložení existující atributu.
+     * 
+     * @param descItem
+     * @param arrData
      * @return finální atribut
      */
-    /*protected ArrDescItem deleteDescItem(final ArrDescItem descItem,
-                                         final ArrFundVersion version,
-                                         final ArrChange change) {
-        return descriptionItemService.deleteDescriptionItem(descItem, version, change, true);
-    }*/
-
+    public ArrDescItem updateDescItem(final ArrDescItem descItem, final ArrData arrData) {
+        ArrDescItem result;
+    	Validate.isTrue(descItem.getDescItemObjectId() != null);
+        if (multipleItemChangeContext == null) {
+        	//result = descriptionItemService.updateDescriptionItem(descItem, version, getChange(), false);
+        	throw new SystemException("The functionality is not implemented.");
+        } else {
+        	result = descriptionItemService.updateItemValueAsNewVersion(version, getChange(), descItem, descItem.getItemSpec(), arrData,
+                    													descItem.getPosition(), descItem.getReadOnly(), multipleItemChangeContext, false);
+            multipleItemChangeContext.flushIfNeeded();
+        }
+        return result;
+    }
 
     /**
      * Vyhledá potomky uzlu.
@@ -212,7 +207,7 @@ public abstract class BulkAction {
      * @param version verze archivní pomůcky
      */
     protected void checkVersion(ArrFundVersion version) {
-		Validate.notNull(version);
+    	Objects.requireNonNull(version);
         if (version.getLockChange() != null) {
             throw new BusinessException("Nelze aplikovat na uzavřenou verzi archivní pomůcky", ArrangementCode.VERSION_ALREADY_CLOSED);
         }
@@ -226,20 +221,17 @@ public abstract class BulkAction {
 
 		// Run action
 		run(runContext);
-
 	}
 
     /**
-     * Načtení požadovaného atributu
+     * Načtení požadovaného atributu.
      *
      * @param node
      *            uzel
      * @return nalezený atribut
      */
     public ArrDescItem loadSingleDescItem(final ArrNode node, RulItemType descItemType) {
-        List<ArrDescItem> descItems = descriptionItemService.findByNodeAndDeleteChangeIsNullAndItemTypeId(
-                                                                                                      node, descItemType
-                                                                                                              .getItemTypeId());
+        List<ArrDescItem> descItems = descriptionItemService.findByNodeAndDeleteChangeIsNullAndItemTypeId(node, descItemType.getItemTypeId());
         if (descItems.size() == 0) {
             return null;
         }
@@ -252,18 +244,26 @@ public abstract class BulkAction {
         return descItems.get(0);
     }
 
+    /**
+     * Smazání prvků.
+     * 
+     * @param items
+     * @param moveAfter
+     */
     public void deleteDescItems(List<ArrDescItem> items, final boolean moveAfter) {
-        ArrNode node = items.get(0).getNode();
-        if(multipleItemChangeContext==null) {
-            descriptionItemService.deleteDescriptionItems(items, getFundVersion(), getChange(),
-                                                          moveAfter, false);
+        if (multipleItemChangeContext == null) {
+            descriptionItemService.deleteDescriptionItems(items, getFundVersion(), getChange(), moveAfter, false);
         } else {
-            descriptionItemService.deleteDescriptionItems(items, getFundVersion(), getChange(),
-                                                          moveAfter, false, multipleItemChangeContext);
+            descriptionItemService.deleteDescriptionItems(items, getFundVersion(), getChange(), moveAfter, false, multipleItemChangeContext);
             multipleItemChangeContext.flushIfNeeded();
         }
     }
 
+    /**
+     * Smazání prvku.
+     * 
+     * @param oldDescItem
+     */
     public void deleteDescItem(ArrDescItem oldDescItem) {
         List<ArrDescItem> items = Collections.singletonList(oldDescItem);
         deleteDescItems(items, true);

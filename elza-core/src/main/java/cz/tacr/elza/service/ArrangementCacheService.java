@@ -7,11 +7,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -134,14 +134,18 @@ public class ArrangementCacheService {
      * @param flush
      *            priznak na provedeni flush
      */
-    public void createDescItem(final ArrDescItem descItem, BatchChangeContext changeContext) {
-        Validate.notNull(descItem);
-        Validate.notNull(descItem.getNodeId());
+    public void addToCacheNode(final ArrDescItem descItem, BatchChangeContext changeContext) {
+        if (changeContext.isNodeCacheSyncDelayed()) {
+        	return;
+        }
+
+    	Objects.requireNonNull(descItem);
+    	Objects.requireNonNull(descItem.getNodeId());
 
         final Integer nodeId = descItem.getNodeId();
 
         CachedNode cachedNode = nodeCacheService.getNode(nodeId);
-		cachedNode.addDescItem(descItem);
+        cachedNode.addDescItem(descItem);
         nodeCacheService.saveNode(cachedNode, changeContext.getFlushNodeCache());
     }
 
@@ -225,9 +229,14 @@ public class ArrangementCacheService {
      * @param flush
      *            priznak pro flush zmen
      */
-    public void changeDescItems(final Integer nodeId, final Collection<ArrDescItem> descItemList,
+    public void changeDescItems(final Integer nodeId, 
+    						    final Collection<ArrDescItem> descItemList,
                                 final boolean move,
                                 BatchChangeContext changeContext) {
+        if (changeContext.isNodeCacheSyncDelayed()) {
+        	return;
+        }
+
         CachedNode cachedNode = nodeCacheService.getNode(nodeId);
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems == null) {

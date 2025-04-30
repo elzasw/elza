@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Lists;
@@ -498,7 +497,7 @@ public class DescriptionItemService {
         ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, createChange,
                                                                     fundContext, batchChangeCtx,
                                                                     null);
-        arrangementCacheService.createDescItem(descItemCreated, batchChangeCtx);
+        arrangementCacheService.addToCacheNode(descItemCreated, batchChangeCtx);
         return descItemCreated;
     }
 
@@ -1079,7 +1078,7 @@ public class DescriptionItemService {
 
             changeContext.addCreatedItem(savedItem);
 
-            arrangementCacheService.createDescItem(savedItem, changeContext);
+            arrangementCacheService.addToCacheNode(savedItem, changeContext);
         }
 
         return result;
@@ -1624,15 +1623,15 @@ public class DescriptionItemService {
      *            Flag if updated item should be readonly
      * @return
      */
-	private ArrDescItem updateItemValueAsNewVersion(final ArrFundVersion fundVersion,
-                                                    final ArrChange change,
-                                                    ArrDescItem descItemDB,
-                                                    RulItemSpec itemSpec,
-                                                    final ArrData srcData,
-                                                    final Integer newPosition,
-                                                    final Boolean readOnly,
-                                                    final BatchChangeContext batchChangeContext,
-                                                    boolean forceUpdate) {
+	public ArrDescItem updateItemValueAsNewVersion(final ArrFundVersion fundVersion,
+                                                   final ArrChange change,
+                                                   ArrDescItem descItemDB,
+                                                   RulItemSpec itemSpec,
+                                                   final ArrData srcData,
+                                                   final Integer newPosition,
+                                                   final Boolean readOnly,
+                                                   final BatchChangeContext batchChangeContext,
+                                                   boolean forceUpdate) {
         Integer oldPosition = descItemDB.getPosition();
         boolean move = false;
         if (!Objects.equals(oldPosition, newPosition)) {
@@ -1975,7 +1974,7 @@ public class DescriptionItemService {
 
             ArrDescItem savedItem = descItemFactory.saveItemVersionWithData(newDescItem, true);
             changeContext.addCreatedItem(savedItem);
-            arrangementCacheService.createDescItem(savedItem, changeContext);
+            arrangementCacheService.addToCacheNode(savedItem, changeContext);
 
             changeContext.flushIfNeeded();
         }
@@ -2118,7 +2117,7 @@ public class DescriptionItemService {
                 descItem.setDeleteChange(null);
                 descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
                 ArrDescItem created = createDescriptionItemWithData(descItem, change, fundContext, changeContext, null);
-                arrangementCacheService.createDescItem(created, changeContext);
+                arrangementCacheService.addToCacheNode(created, changeContext);
             }
         }
 
@@ -2262,7 +2261,7 @@ public class DescriptionItemService {
                     newDescItem.setPosition(1);
 
                     ArrDescItem savedItem = descItemFactory.saveItemVersionWithData(newDescItem, true);
-                    arrangementCacheService.createDescItem(savedItem, changeContext);
+                    arrangementCacheService.addToCacheNode(savedItem, changeContext);
 
                     changeContext.flushIfNeeded();
                 }
@@ -2504,7 +2503,7 @@ public class DescriptionItemService {
         descItem.setDescItemObjectId(descItemObjectId == null ? arrangementService.getNextDescItemObjectId() : descItemObjectId);
 
         ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, change, fundContext, changeContext, null);
-        arrangementCacheService.createDescItem(descItemCreated, changeContext);
+        arrangementCacheService.addToCacheNode(descItemCreated, changeContext);
 
         // nastavujeme prázdné hodnoty
         //descItem.setItem(descItemFactory.createItemByType(descItemType.getDataType()));
@@ -2524,8 +2523,10 @@ public class DescriptionItemService {
     }
 
     public MultipleItemChangeContext createChangeContext(int fundVersionId) {
-        return new MultipleItemChangeContext(fundVersionId,
-                descItemRepository, nodeCacheService, ruleService,
-                eventNotificationService);
+        return createChangeContext(fundVersionId, false);
+    }
+
+    public MultipleItemChangeContext createChangeContext(int fundVersionId, boolean nodeCacheSyncDelayed) {
+        return new MultipleItemChangeContext(fundVersionId, descItemRepository, nodeCacheService, ruleService, eventNotificationService, nodeCacheSyncDelayed);
     }
 }

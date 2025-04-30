@@ -20,4 +20,11 @@ public interface BatchChangeContext {
      * @return
      */
     boolean getFlushNodeCache();
+    
+    /**
+     * Pokud je aktualizace NodeCache zpožděna, dokud nebudou zpracovány všechny záznamy
+     * 
+     * @return
+     */
+    boolean isNodeCacheSyncDelayed();
 }
