@@ -15,6 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -62,7 +63,6 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemUnitdateVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemUnitidVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemUriRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
-import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -89,8 +89,6 @@ import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ChangeType;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.SysLanguage;
@@ -219,17 +217,15 @@ public class ApFactory {
     public ApState create(ApAccessPointVO apVO) {
         Integer id = apVO.getId();
         if (id != null) {
-            ApAccessPoint ap = apRepository.findById(id)
-                    .orElseThrow(ap(id));
+            ApAccessPoint ap = apRepository.findById(id).orElseThrow(ap(id));
             ApState apState = stateRepository.findLastByAccessPoint(ap);
-            return Validate.notNull(apState);
+            return Objects.requireNonNull(apState);
         }
         Validate.isTrue(!apVO.isInvalid());
         // prepare type and scope
         StaticDataProvider staticData = staticDataService.getData();
         ApType type = staticData.getApTypeById(apVO.getTypeId());
-        ApScope scope = scopeRepository.findById(apVO.getScopeId())
-                .orElseThrow(scope(apVO.getScopeId()));
+        ApScope scope = scopeRepository.findById(apVO.getScopeId()).orElseThrow(scope(apVO.getScopeId()));
         // create new AP
         ApAccessPoint accessPoint = new ApAccessPoint();
         //accessPoint.setAccessPointId(accessPointId);
@@ -238,8 +234,8 @@ public class ApFactory {
         accessPoint.setUuid(apVO.getUuid());
         ApState apState = new ApState();
         apState.setStateApproval(ApState.StateApproval.NEW);
-        apState.setApType(Validate.notNull(type));
-        apState.setScope(Validate.notNull(scope));
+        apState.setApType(Objects.requireNonNull(type));
+        apState.setScope(Objects.requireNonNull(scope));
         apState.setAccessPoint(accessPoint);
         return apState;
     }
@@ -301,7 +297,14 @@ public class ApFactory {
             }
             result.setType(state.getTypeName() != null? state.getTypeName() : state.getRevTypeName() != null? state.getRevTypeName() : null);
             result.setComment(state.getComment() != null? state.getComment() : state.getRevComment() != null? state.getRevComment() : null);
-            result.setUsername(state.getUser() == null ? null : state.getUser().getUsername());
+            if (state.getUser() != null) {
+            	UsrUser user = state.getUser();
+                ApAccessPointVO apVO = new ApAccessPointVO();
+                if (user.getAccessPoint() != null) {
+                	apVO = createVO(user.getAccessPoint());
+                }
+            	result.setUsername(String.format("%s (%s)", apVO.getName(), user.getUsername()));
+            }
             result.setScope(state.getScopeName());
             results.add(result);
         }
