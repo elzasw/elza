@@ -28,6 +28,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.BulkActionCode;
+import cz.tacr.elza.repository.DataStructureRefRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
@@ -37,7 +38,6 @@ import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
 
 /**
  * Abstraktní třída pro tvorbu hromadných akcí.
- *
  */
 public abstract class BulkAction {
 
@@ -56,6 +56,9 @@ public abstract class BulkAction {
     @Autowired
     protected DescItemRepository descItemRepository;
 
+    @Autowired
+    protected DataStructureRefRepository structureRefRepository;
+    
     @Autowired
     protected ApplicationContext appCtx;
 
