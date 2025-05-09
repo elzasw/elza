@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,20 +40,24 @@ import cz.tacr.elza.controller.vo.DmsFileVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrChange.Type;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputFile;
 import cz.tacr.elza.domain.ArrOutputResult;
 import cz.tacr.elza.domain.DmsFile;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.ExternalSystemService;
+import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.attachment.AttachmentService;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 
@@ -82,6 +87,15 @@ public class DmsController {
 
     @Autowired
     private DmsService dmsService;
+
+    @Autowired
+    private ExternalSystemService externalSystemService;
+
+    @Autowired
+    private FileSystemRepoService fileSystemRepoService;
+    
+    @Autowired
+    private UserService userService;    
 
     /**
      * Načtení seznamu editovatelných mime typů.
@@ -171,6 +185,33 @@ public class DmsController {
             IOUtils.copy(in, out);
         }
     }
+
+    // TODO: In Spring6 change to: "/api/digirepo/{repoId}/{*filePath}"
+    @RequestMapping(value = "/api/digirepo/{repoId}", method = RequestMethod.GET)
+    @Transactional
+    public void getFile(HttpServletResponse response, @PathVariable(value = "repoId") Integer repoId,
+                        @RequestParam(value = "filePath") String filePath)
+            throws IOException {
+        // check permissions RD_ALL 
+        userService.authorizeRequest(AuthorizationRequest.hasPermission(UsrPermission.Permission.FUND_RD_ALL));
+
+        // read file repo
+        ArrDigitalRepository digiRep = externalSystemService.getDigitalRepository(repoId);
+
+        Path fp = fileSystemRepoService.resolvePath(digiRep, filePath);
+        String contentType = fileSystemRepoService.getMimetype(filePath);
+        if (StringUtils.isEmpty(contentType)) {
+            contentType = "application/binary";
+            FileDownload.addContentDispositionAsAttachment(response, fp.getFileName().toString());
+        }
+        response.setContentType(filePath);
+        
+        try (ServletOutputStream out = response.getOutputStream();
+                InputStream in = fileSystemRepoService.getInputStream(digiRep, filePath);) {
+            IOUtils.copy(in, out);
+        }
+
+    }    
 
     /**
      * Stažení souboru
