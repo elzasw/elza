@@ -68,6 +68,16 @@ model Fund {
 }
 
 /**
+ * Archivní soubor pro výsledky vyhledávání
+ */
+model FundSearchResult extends Fund {
+    /** počet JP nalezených v AS */
+    count: integer;
+    /** identifikátor otevřené verze AS */
+    fundVersionId: integer;
+}
+
+/**
  * Zakládaný archivní souboru
  */
 model FundDetail {
@@ -175,13 +185,13 @@ model FsRepo {
 }
 
 model FundIdParameter {
-    /** Fund ID*/
+    /** Fund ID */
     @path
     fundId: integer;
 }
 
 model FundVersionIdParameter {
-    /** Fund ID Version*/
+    /** Fund ID Version */
     @path
     fundVersionId: integer;
 }
@@ -1753,6 +1763,29 @@ namespace ElzaAPI.Node {
     }
 
     /**
+     * Found nodes of the archive file (fund)
+     */
+    model SearchResult {
+        /** node id */
+        id: integer;
+        /** hloubka zanoření ve stromu */
+        depth: integer;
+        /** název uzlu */
+        name: string;
+        /** ikonka */
+        icon: string;
+        /** true - uzel má další potomky, false - uzel nemá další potomky */
+        hasChildren: boolean;
+        /** referenční označení. Od kořene k uzlu */
+        referenceMarkInt: integer[];
+        referenceMark: string[];
+        /** verze uzlu */
+        version: integer;
+        /** oprávnění pořádat v dané JP */
+        arrPerm?: boolean;
+    }
+
+    /**
      * Get quote by fundVersionId & nodeId
      */
 	@route("/plain-text/{fundVersionId}/{nodeId}")
@@ -1766,6 +1799,47 @@ namespace ElzaAPI.Node {
        } | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * Search for archive files (funds)
+     */
+    @route("/search")
+    @post op search(
+        /** search parameters */
+        @body body: SearchParams
+    ): FundSearchResult[] | {
+          /** Bad Request, query with incorrect parameters */
+          @Http.statusCode statusCode: 400;
+          @body data: BaseException;
+       } | {
+          /** Unauthorized */
+          @Http.statusCode statusCode: 401;
+          @body data: BaseException;
+       } | {
+          /** Forbidden */
+          @Http.statusCode statusCode: 403;
+          @body data: BaseException;
+       };
+
+    /**
+     * Search for nodes in archive file (fund)
+     */
+    @route("/search/{fundId}")
+    @get op getSearchResult(
+        ...FundIdParameter;
+    ): SearchResult[] | {
+          /** Bad Request, query with incorrect parameters */
+          @Http.statusCode statusCode: 400;
+          @body data: BaseException;
+       } | {
+          /** Unauthorized */
+          @Http.statusCode statusCode: 401;
+          @body data: BaseException;
+       } | {
+          /** Forbidden */
+          @Http.statusCode statusCode: 403;
           @body data: BaseException;
        };
 }

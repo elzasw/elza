@@ -1400,6 +1400,82 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - node
+  /node/search:
+    post:
+      operationId: Node_search
+      description: Search for archive files (funds)
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FundSearchResult'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - node
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchParams'
+        description: search parameters
+  /node/search/{fundId}:
+    get:
+      operationId: Node_getSearchResult
+      description: Search for nodes in archive file (fund)
+      parameters:
+        - $ref: '#/components/parameters/FundIdParameter'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Node.SearchResult'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - node
   /report/definitions:
     get:
       operationId: Report_getDefinitions
@@ -2413,6 +2489,21 @@ components:
             type: string
           description: Seznam oblastí entit
       description: Zakládaný archivní souboru
+    FundSearchResult:
+      type: object
+      required:
+        - count
+        - fundVersionId
+      properties:
+        count:
+          type: integer
+          description: počet JP nalezených v AS
+        fundVersionId:
+          type: integer
+          description: identifikátor otevřené verze AS
+      allOf:
+        - $ref: '#/components/schemas/Fund'
+      description: Archivní soubor pro výsledky vyhledávání
     FundSections:
       type: object
       required:
@@ -2604,6 +2695,49 @@ components:
           type: string
           description: vytvořená citace
       description: Received quote
+    Node.SearchResult:
+      type: object
+      required:
+        - id
+        - depth
+        - name
+        - icon
+        - hasChildren
+        - referenceMarkInt
+        - referenceMark
+        - version
+      properties:
+        id:
+          type: integer
+          description: node id
+        depth:
+          type: integer
+          description: hloubka zanoření ve stromu
+        name:
+          type: string
+          description: název uzlu
+        icon:
+          type: string
+          description: ikonka
+        hasChildren:
+          type: boolean
+          description: true - uzel má další potomky, false - uzel nemá další potomky
+        referenceMarkInt:
+          type: array
+          items:
+            type: integer
+          description: referenční označení. Od kořene k uzlu
+        referenceMark:
+          type: array
+          items:
+            type: string
+        version:
+          type: integer
+          description: verze uzlu
+        arrPerm:
+          type: boolean
+          description: oprávnění pořádat v dané JP
+      description: Found nodes of the archive file (fund)
     NodeItem:
       type: object
       properties:

@@ -3,20 +3,28 @@ package cz.tacr.elza.controller;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 
+import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
+import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.test.controller.vo.CreateFund;
 import cz.tacr.elza.test.controller.vo.FieldValueFilter;
 import cz.tacr.elza.test.controller.vo.FindFundsResult;
 import cz.tacr.elza.test.controller.vo.FondsFilterField;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.FundDetail;
+import cz.tacr.elza.test.controller.vo.FundSearchResult;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
+import cz.tacr.elza.test.controller.vo.NodeSearchResult;
 import cz.tacr.elza.test.controller.vo.OperationCompareType;
 import cz.tacr.elza.test.controller.vo.SearchParams;
 import cz.tacr.elza.test.controller.vo.UpdateFund;
@@ -24,7 +32,7 @@ import cz.tacr.elza.test.controller.vo.UpdateFund;
 public class FundControllerTest extends AbstractControllerTest {
 
     @Test
-    public void createFund() {
+    public void createFundTest() {
     	CreateFund cf = createFund("fund1", "fund1", 1, "aaaaaaaa-c903-4b8a-be7b-dfe15ae342e1", "mark1");
         Fund fund = fundsApi.fundCreateFund(cf);
         assertNotNull(fund);
@@ -35,7 +43,7 @@ public class FundControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void updateFund() {
+    public void updateFundTest() {
     	CreateFund cf = createFund("fund2", "fundUpd2", 2, null, "mark1");
         Fund fund = fundsApi.fundCreateFund(cf);
 
@@ -62,7 +70,7 @@ public class FundControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void getFund() {
+    public void getFundTest() {
         CreateFund cf = createFund("fund4", "fundUpd4", 4, null, "mark4");
         Fund fund = fundsApi.fundCreateFund(cf);
         assertNotNull(fund);
@@ -72,25 +80,8 @@ public class FundControllerTest extends AbstractControllerTest {
         assertEquals(fund.getId(), fundDetail.getId());
     }
 
-//    @Test
-//    public void findFunds() {
-//        CreateFund cf = createFund("fund5", "fund5", 5, "aaaaaaaa-1111-2222-3333-444455556666", "mark5");
-//        Fund fund = fundsApi.fundCreateFund(cf);
-//        assertNotNull(fund);
-//
-//        cf = createFund("fund6", "fundUpd6", 6, null, "mark6");
-//        fund = fundsApi.fundCreateFund(cf);
-//        assertNotNull(fund);
-//
-//        FindFundsResult funds = findFunds("fundUpd6", null, 10, 0);
-//        assertTrue(funds.getTotalCount() == 1);
-//
-//        funds = findFunds(null, "in1", 10, 0);
-//        assertTrue(funds.getTotalCount() == 2);
-//    }
-
     @Test
-    public void searchFunds() {
+    public void searchFundsTest() {
         CreateFund cf = createFund("fund1", "fundCode1", 1, "aaaaaaaa-1111-2222-3333-444455556666", "mark1");
         fundsApi.fundCreateFund(cf);
 
@@ -134,6 +125,46 @@ public class FundControllerTest extends AbstractControllerTest {
     	// fondy, které mají parametr "fundNumber" (není nulový) == 1
     	result = fundsApi.fundSearchFunds(params);
     	assertTrue(result.getTotalCount() == 1);
+    }
+
+    @Test
+    public void nodeSearchTest() throws InterruptedException {
+    	Fund fund = createFund("fund1", "internalCode");
+    	assertNotNull(fund);
+
+    	// create ArrNode with value in fund
+        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
+        List<ArrNodeVO> nodes = createLevels(fundVersion);
+        ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, "value", null, null, null);
+        createDescItem(descItem, fundVersion, nodes.get(0), typeVo);
+
+        // create filter
+        MultimatchContainsFilter containsFilter = new MultimatchContainsFilter();
+    	containsFilter.setValue("value");
+
+    	// create search params
+    	SearchParams params = new SearchParams();
+        params.setOffset(0);
+        params.setSize(100);
+    	params.addFiltersItem(containsFilter);
+
+    	// waiting for reindexing to get result
+    	List<FundSearchResult> fundResult = null;
+    	int counter = 0;
+        try {
+	    	do {
+	    		Thread.sleep(100);
+	    		fundResult = nodeApi.nodeSearch(params);
+	    		counter++;
+	    	} while (fundResult.size() == 0 && counter < 1000);
+	    } catch (Exception e) {
+	        fail("Exception while waiting on result: " + e);
+	    }
+    	assertEquals(1, fundResult.size());
+
+    	List<NodeSearchResult> nodeResult = nodeApi.nodeGetSearchResult(fund.getId());
+    	assertEquals(1, nodeResult.size());
     }
 
     private CreateFund createFund(String name, String internalCode, Integer fundNumber, String uuid, String mark) {

@@ -641,7 +641,7 @@ public class ClientFactoryVO {
     }
 
     /**
-     * Vytvoření ArrFund z ArrFundVersion
+     * Vytvoření Fund z ArrFundVersion
      * 
      * @param arrFundVersion
      * @return Fund

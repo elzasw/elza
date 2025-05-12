@@ -72,7 +72,6 @@ import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.filter.ColumnFilters;
 import cz.tacr.elza.controller.vo.filter.Condition;
 import cz.tacr.elza.controller.vo.filter.Filter;
 import cz.tacr.elza.controller.vo.filter.Filters;
@@ -1003,114 +1002,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(nodeExtendVO.getUuid());
         assertNotNull(nodeExtendVO.getName());
         assertNotNull(nodeExtendVO.getFundName());
-    }
-
-    /**
-     * Vytvoření levelů v archivní pomůcce.
-     * <p>
-     * Create 4 levels under root
-     *
-     * @param fundVersion verze archivní pomůcky
-     * @return vytvořené levely
-     */
-    private List<ArrNodeVO> createLevels(final ArrFundVersionVO fundVersion) {
-
-        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
-        input.setVersionId(fundVersion.getId());
-        TreeData treeData = getFundTree(input);
-        TreeNodeVO parentNode;
-
-        // Musí existovat root node
-        assertNotNull(treeData.getNodes());
-        // Musí existovat pouze root node
-        assertTrue(treeData.getNodes().size() == 1);
-
-        TreeNodeVO rootTreeNodeVO = treeData.getNodes().iterator().next();
-        ArrNodeVO rootNode = convertTreeNode(rootTreeNodeVO);
-
-        // přidání prvního levelu pod root
-        helperTestService.waitForWorkers();
-        ArrangementController.NodeWithParent newLevel1 = addLevel(FundLevelService.AddLevelDirection.CHILD, 
-        		fundVersion, rootNode, rootNode, "Série");
-
-        // rodič nového uzlu musí být root
-        assertTrue(newLevel1.getParentNode().getId().equals(rootNode.getId()));
-        // verze root uzlu musí být povýšena
-        assertTrue(!newLevel1.getParentNode().getVersion().equals(rootNode.getVersion()));
-
-        helperTestService.waitForWorkers();
-        parentNode = newLevel1.getParentNode();
-        rootNode.setId(parentNode.getId());
-        rootNode.setVersion(parentNode.getVersion());
-
-        // přidání druhého levelu pod root
-        helperTestService.waitForWorkers();
-        ArrangementController.NodeWithParent newLevel2 = addLevel(FundLevelService.AddLevelDirection.CHILD,
-                fundVersion, rootNode, rootNode, null);
-
-        // rodič nového uzlu musí být root
-        assertTrue(newLevel2.getParentNode().getId().equals(rootNode.getId()));
-        // verze root uzlu musí být povýšena
-        assertTrue(!newLevel2.getParentNode().getVersion().equals(rootNode.getVersion()));
-
-        helperTestService.waitForWorkers();
-        parentNode = newLevel2.getParentNode();
-        rootNode.setId(parentNode.getId());
-        rootNode.setVersion(parentNode.getVersion());
-
-        // přidání třetího levelu na první pozici pod root
-        helperTestService.waitForWorkers();
-        ArrangementController.NodeWithParent newLevel3 = addLevel(FundLevelService.AddLevelDirection.BEFORE,
-                fundVersion, newLevel1.getNode(), rootNode, null);
-
-        // rodič nového uzlu musí být root
-        assertTrue(newLevel3.getParentNode().getId().equals(rootNode.getId()));
-        // verze root uzlu musí být povýšena
-        assertTrue(!newLevel3.getParentNode().getVersion().equals(rootNode.getVersion()));
-
-        helperTestService.waitForWorkers();
-        parentNode = newLevel3.getParentNode();
-        rootNode.setId(parentNode.getId());
-        rootNode.setVersion(parentNode.getVersion());
-
-        // přidání uzlu za první uzel pod root (za child3)
-        helperTestService.waitForWorkers();
-        ArrangementController.NodeWithParent newLevel4 = addLevel(FundLevelService.AddLevelDirection.AFTER,
-                fundVersion, newLevel3.getNode(), rootNode, null);
-
-        // rodič nového uzlu musí být root
-        assertTrue(newLevel4.getParentNode().getId().equals(rootNode.getId()));
-        // verze root uzlu musí být povýšena
-        assertTrue(!newLevel4.getParentNode().getVersion().equals(rootNode.getVersion()));
-
-        helperTestService.waitForWorkers();
-        parentNode = newLevel4.getParentNode();
-        rootNode.setId(parentNode.getId());
-        rootNode.setVersion(parentNode.getVersion());
-
-        input = new ArrangementController.FaTreeParam();
-        input.setVersionId(fundVersion.getId());
-        input.setNodeId(rootNode.getId());
-        treeData = getFundTree(input);
-
-        // Kontrola pořadí uzlů
-        Iterator<TreeNodeVO> nodeClientIterator = treeData.getNodes().iterator();
-        TreeNodeVO node1 = nodeClientIterator.next();
-        TreeNodeVO node2 = nodeClientIterator.next();
-        TreeNodeVO node3 = nodeClientIterator.next();
-        TreeNodeVO node4 = nodeClientIterator.next();
-        assertTrue(node1.getId().equals(newLevel3.getNode().getId()));
-        assertTrue(node2.getId().equals(newLevel4.getNode().getId()));
-        assertTrue(node3.getId().equals(newLevel1.getNode().getId()));
-        assertTrue(node4.getId().equals(newLevel2.getNode().getId()));
-
-        List<ArrNodeVO> nodes = new ArrayList<>(treeData.getNodes().size() + 1);
-        nodes.add(rootNode);
-        nodes.add(newLevel3.getNode());
-        nodes.add(newLevel4.getNode());
-        nodes.add(newLevel1.getNode());
-        nodes.add(newLevel2.getNode());
-        return nodes;
     }
 
     /**
