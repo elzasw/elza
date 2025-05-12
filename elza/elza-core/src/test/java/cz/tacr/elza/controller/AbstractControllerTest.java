@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.HEAD;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -175,6 +177,7 @@ import cz.tacr.elza.test.controller.DaosApi;
 import cz.tacr.elza.test.controller.DescitemsApi;
 import cz.tacr.elza.test.controller.FundsApi;
 import cz.tacr.elza.test.controller.IoApi;
+import cz.tacr.elza.test.controller.NodeApi;
 import cz.tacr.elza.test.controller.ReportApi;
 import cz.tacr.elza.test.controller.SearchApi;
 import cz.tacr.elza.test.controller.vo.ApStateUpdate;
@@ -200,7 +203,6 @@ import cz.tacr.elza.test.controller.vo.DataUnitid;
 import cz.tacr.elza.test.controller.vo.DataUriRef;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.Fund;
-import cz.tacr.elza.test.controller.vo.FindFundsResult;
 import cz.tacr.elza.websocket.WebSocketStompClientElza;
 import io.restassured.RestAssured;
 import io.restassured.config.EncoderConfig;
@@ -538,6 +540,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 	protected ReportApi reportApi;
 
+	protected NodeApi nodeApi;
+
 	protected static Map<String, String> cookies = null;
 
 	@Override
@@ -562,6 +566,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		ioApi = new cz.tacr.elza.test.controller.IoApi(elzaApiClient);
 		descitemsApi = new cz.tacr.elza.test.controller.DescitemsApi(elzaApiClient);
 		reportApi = new cz.tacr.elza.test.controller.ReportApi(elzaApiClient);
+		nodeApi = new cz.tacr.elza.test.controller.NodeApi(elzaApiClient);
 
 		loginAsAdmin();
 
@@ -3672,6 +3677,114 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		delete(spec -> spec.pathParam("templateId", templateId).pathParam("mapTypeId", mapTypeId),
 				DELETE_NODE_TEMPLATE_MAP_TYPE);
 	}
+
+    /**
+     * Vytvoření levelů v archivní pomůcce.
+     * <p>
+     * Create 4 levels under root
+     *
+     * @param fundVersion verze archivní pomůcky
+     * @return vytvořené levely
+     */
+    protected List<ArrNodeVO> createLevels(final ArrFundVersionVO fundVersion) {
+
+        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
+        input.setVersionId(fundVersion.getId());
+        TreeData treeData = getFundTree(input);
+        TreeNodeVO parentNode;
+
+        // Musí existovat root node
+        assertNotNull(treeData.getNodes());
+        // Musí existovat pouze root node
+        assertTrue(treeData.getNodes().size() == 1);
+
+        TreeNodeVO rootTreeNodeVO = treeData.getNodes().iterator().next();
+        ArrNodeVO rootNode = convertTreeNode(rootTreeNodeVO);
+
+        // přidání prvního levelu pod root
+        helperTestService.waitForWorkers();
+        ArrangementController.NodeWithParent newLevel1 = addLevel(FundLevelService.AddLevelDirection.CHILD, 
+        		fundVersion, rootNode, rootNode, "Série");
+
+        // rodič nového uzlu musí být root
+        assertTrue(newLevel1.getParentNode().getId().equals(rootNode.getId()));
+        // verze root uzlu musí být povýšena
+        assertTrue(!newLevel1.getParentNode().getVersion().equals(rootNode.getVersion()));
+
+        helperTestService.waitForWorkers();
+        parentNode = newLevel1.getParentNode();
+        rootNode.setId(parentNode.getId());
+        rootNode.setVersion(parentNode.getVersion());
+
+        // přidání druhého levelu pod root
+        helperTestService.waitForWorkers();
+        ArrangementController.NodeWithParent newLevel2 = addLevel(FundLevelService.AddLevelDirection.CHILD,
+                fundVersion, rootNode, rootNode, null);
+
+        // rodič nového uzlu musí být root
+        assertTrue(newLevel2.getParentNode().getId().equals(rootNode.getId()));
+        // verze root uzlu musí být povýšena
+        assertTrue(!newLevel2.getParentNode().getVersion().equals(rootNode.getVersion()));
+
+        helperTestService.waitForWorkers();
+        parentNode = newLevel2.getParentNode();
+        rootNode.setId(parentNode.getId());
+        rootNode.setVersion(parentNode.getVersion());
+
+        // přidání třetího levelu na první pozici pod root
+        helperTestService.waitForWorkers();
+        ArrangementController.NodeWithParent newLevel3 = addLevel(FundLevelService.AddLevelDirection.BEFORE,
+                fundVersion, newLevel1.getNode(), rootNode, null);
+
+        // rodič nového uzlu musí být root
+        assertTrue(newLevel3.getParentNode().getId().equals(rootNode.getId()));
+        // verze root uzlu musí být povýšena
+        assertTrue(!newLevel3.getParentNode().getVersion().equals(rootNode.getVersion()));
+
+        helperTestService.waitForWorkers();
+        parentNode = newLevel3.getParentNode();
+        rootNode.setId(parentNode.getId());
+        rootNode.setVersion(parentNode.getVersion());
+
+        // přidání uzlu za první uzel pod root (za child3)
+        helperTestService.waitForWorkers();
+        ArrangementController.NodeWithParent newLevel4 = addLevel(FundLevelService.AddLevelDirection.AFTER,
+                fundVersion, newLevel3.getNode(), rootNode, null);
+
+        // rodič nového uzlu musí být root
+        assertTrue(newLevel4.getParentNode().getId().equals(rootNode.getId()));
+        // verze root uzlu musí být povýšena
+        assertTrue(!newLevel4.getParentNode().getVersion().equals(rootNode.getVersion()));
+
+        helperTestService.waitForWorkers();
+        parentNode = newLevel4.getParentNode();
+        rootNode.setId(parentNode.getId());
+        rootNode.setVersion(parentNode.getVersion());
+
+        input = new ArrangementController.FaTreeParam();
+        input.setVersionId(fundVersion.getId());
+        input.setNodeId(rootNode.getId());
+        treeData = getFundTree(input);
+
+        // Kontrola pořadí uzlů
+        Iterator<TreeNodeVO> nodeClientIterator = treeData.getNodes().iterator();
+        TreeNodeVO node1 = nodeClientIterator.next();
+        TreeNodeVO node2 = nodeClientIterator.next();
+        TreeNodeVO node3 = nodeClientIterator.next();
+        TreeNodeVO node4 = nodeClientIterator.next();
+        assertTrue(node1.getId().equals(newLevel3.getNode().getId()));
+        assertTrue(node2.getId().equals(newLevel4.getNode().getId()));
+        assertTrue(node3.getId().equals(newLevel1.getNode().getId()));
+        assertTrue(node4.getId().equals(newLevel2.getNode().getId()));
+
+        List<ArrNodeVO> nodes = new ArrayList<>(treeData.getNodes().size() + 1);
+        nodes.add(rootNode);
+        nodes.add(newLevel3.getNode());
+        nodes.add(newLevel4.getNode());
+        nodes.add(newLevel1.getNode());
+        nodes.add(newLevel2.getNode());
+        return nodes;
+    }
 
 	/**
 	 * Připojení Websocket
