@@ -1,7 +1,8 @@
 import { FluentDialogContext } from "components/shared/dialog/FluentModalDialog";
 import { useContext } from "react";
-import { FilterObject, FundFilterModal } from "./FundFilterModal";
+import { FundFilterModal } from "./FundFilterModal";
 import { Position } from "components/shared/draggable-window";
+import { FilterObject } from "./types";
 
 export function useFilterModal() {
   const { showModal: _showModal } = useContext(FluentDialogContext);
