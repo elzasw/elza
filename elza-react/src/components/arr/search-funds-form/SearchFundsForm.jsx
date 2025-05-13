@@ -1,20 +1,18 @@
-import React from 'react';
 import { connect } from 'react-redux';
 import { Modal } from 'react-bootstrap';
 import classNames from 'classnames';
 import { createReferenceMark, getNodeIcon } from 'components/arr/ArrUtils.jsx';
-import { AbstractReactComponent, i18n, Icon } from 'components/shared';
-import { WebApi } from '../../actions/WebApi';
+import { AbstractReactComponent, i18n, Icon, HorizontalLoader } from 'components/shared';
+import { WebApi } from 'actions/WebApi';
 
 import * as types from 'actions/constants/ActionTypes';
 
 import { routerNavigate } from 'actions/router.jsx';
 import { modalDialogHide } from 'actions/global/modalDialog.jsx';
-import * as fundSearchActions from '../../actions/arr/fundSearch.jsx';
-import Search from '../shared/search/Search';
-import HorizontalLoader from '../shared/loading/HorizontalLoader';
+import * as fundSearchActions from 'actions/arr/fundSearch.jsx';
+// import Search from '../../shared/search/Search';
 
-import { createFundRoot, getParentNode } from './ArrUtils.jsx';
+import { createFundRoot, getParentNode } from '../ArrUtils.jsx';
 
 import { fundsSelectFund } from 'actions/fund/fund.jsx';
 import { selectFundTab } from 'actions/arr/fund.jsx';
@@ -27,7 +25,9 @@ import {
 import { fundSelectSubNode } from 'actions/arr/node.jsx';
 
 import './SearchFundsForm.scss';
-import { urlNode } from "../../constants";
+import { urlNode } from "../../../constants";
+import { Input, SearchBox } from '@fluentui/react-components';
+import { Form, Field } from 'react-final-form';
 
 const FUND_NAME_MAX_CHARS = 60;
 
@@ -60,6 +60,10 @@ class SearchFundsForm extends AbstractReactComponent {
      */
     handleSearch = fulltext => {
         this.props.dispatch(fundSearchActions.fundSearchFulltextChange({ fulltext }));
+    };
+
+    handleFluentSearch = ({ fulltext }) => {
+        this.props.dispatch(fundSearchActions.fundSearchFulltextChange({ fulltext: fulltext || "" }));
     };
 
     /**
@@ -270,12 +274,30 @@ class SearchFundsForm extends AbstractReactComponent {
 
         return (
             <Modal.Body>
-                <Search
-                    onSearch={this.handleSearch}
-                    onClear={this.handleClearSearch}
-                    placeholder={i18n('search.input.search')}
-                    value={fundSearch.fulltext}
-                />
+                {/* <Search */}
+                {/*     onSearch={this.handleSearch} */}
+                {/*     onClear={this.handleClearSearch} */}
+                {/*     placeholder={i18n('search.input.search')} */}
+                {/*     value={fundSearch.fulltext} */}
+                {/* /> */}
+                <Form initialValues={{ fulltext: fundSearch.fulltext }} onSubmit={this.handleFluentSearch}>
+                    {({ handleSubmit, form }) => {
+                        return <form onSubmit={handleSubmit}>
+                            <Field name="fulltext">
+                                {({ input }) => {
+                                    const handleChange = (e, data) => {
+                                        input.onChange(e);
+                                        // Submit form on value reset
+                                        if (e.type === "click" && data.value === "") {
+                                            form.submit();
+                                        }
+                                    }
+                                    return <SearchBox {...input} onChange={handleChange} />
+                                }}
+                            </Field>
+                        </form>
+                    }}
+                </Form>
                 {fundSearch.isFetching && <HorizontalLoader hover showText={false} key="loader" />}
                 {isFulltext && i18n('arr.fund.search.result.count', totalCount)}
                 <div className={`fund-search ${isFulltext && totalCount > 0 ? 'result' : 'no-fulltext'}`}>
