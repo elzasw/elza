@@ -707,15 +707,6 @@ model ApValidationIssues {
 }
 
 /**
- * Types of filters
- */
-enum FilterType {
-    fieldValue,
-    contains,
-    logical
-}
-
-/**
  * Operation type for FieldValueFilter
  */
 enum OperationCompareType {
@@ -730,10 +721,51 @@ enum OperationLogicalType {
 }
 
 /**
+ * Type of field for FieldValueFilter
+ */
+enum FieldType {
+    FUND, NODE
+}
+
+/**
+ * Used as a parent for filter fields
+ */
+@discriminator("fieldType")
+model AbstractField {
+    fieldType: FieldType;
+}
+
+/**
+ * Fund field names for filter
+ */
+model FundsFilterField extends AbstractField {
+    fieldType: FieldType.FUND;
+    fieldName: FundsFieldName;
+}
+
+/**
  * Field names for FieldValueFilter
  */
-enum FondsFilterField {
+enum FundsFieldName {
     fundId, name, createDate, internalCode, fundNumber, unitdate, mark, institutionId, institutionCode
+}
+
+/**
+ * Node (descItem) field names for filter
+ */ 
+model NodesFilterField extends AbstractField {
+    fieldType: FieldType.NODE;
+    typeCode: string;
+    specCode?: string;
+}
+
+/**
+ * Types of filters
+ */
+enum FilterType {
+    fieldValue,
+    contains,
+    logical
 }
 
 /**
@@ -750,7 +782,7 @@ model AbstractFilter {
 model FieldValueFilter extends AbstractFilter {
     filterType: FilterType.fieldValue;
     /** searched field */
-    field: FondsFilterField;
+    field: AbstractField;
     /** searched value */
     value: string;
     /** operation type */

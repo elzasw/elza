@@ -9,8 +9,11 @@ import org.hibernate.search.mapper.pojo.bridge.binding.TypeBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
 
 import cz.tacr.elza.domain.ArrCachedNode;
+import cz.tacr.elza.service.SpringContext;
 
 public class ArrCachedNodeBinder implements TypeBinder {
+
+    private IndexConfigReader configurationReader = SpringContext.getBean(IndexConfigReader.class);
 
 	@Override
 	public void bind(TypeBindingContext context) {
@@ -27,6 +30,14 @@ public class ArrCachedNodeBinder implements TypeBinder {
 			.field(FULLTEXT_ATT, f -> f.asString().analyzer(CLASSIC_TOKENIZER_CZ))
 			.multiValued()
 			.toReference();
+
+        // item type codes
+        for (String itemCode : configurationReader.getItemTypeCodes()) {
+            context.indexSchemaElement()
+    			.field(itemCode.toLowerCase(), f -> f.asString())
+    			.multiValued()
+    			.toReference();
+        }
 
         context.bridge(ArrCachedNode.class, new ArrCachedNodeBridge());
 	}

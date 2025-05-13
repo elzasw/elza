@@ -83,6 +83,7 @@ import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
 import cz.tacr.elza.controller.vo.FieldValueFilter;
+import cz.tacr.elza.controller.vo.FundsFilterField;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
@@ -1131,7 +1132,7 @@ public class ArrangementService {
      * @return
      */
     private Predicate createPredicate(final CriteriaBuilder cb, Join<ArrFundVersion, ArrFund> fund, FieldValueFilter filter) {
-    	String fieldName = filter.getField().getValue();
+    	String fieldName = ((FundsFilterField) filter.getField()).getFieldName().getValue();
 		Class<?> fieldType = String.class;				
 	    OperationCompareType op = filter.getOperation();
 	    String value = filter.getValue();
@@ -1185,7 +1186,7 @@ public class ArrangementService {
 		case NOT_NULL:
 			return cb.isNotNull(expression);
 		default:
-			throw new IllegalArgumentException("Unexpected operation: " + op);
+			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
 		}
     }
 
