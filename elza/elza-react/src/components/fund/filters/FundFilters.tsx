@@ -1,13 +1,13 @@
 import { Input, InteractionTag, InteractionTagPrimary, InteractionTagSecondary, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tag, TagDismissData, TagDismissEvent, TagGroup, makeStyles, tokens } from "@fluentui/react-components";
 import { AddRegular } from "@fluentui/react-icons";
 import { Icon } from "components"
-import { FilterObject } from "./FundFilterModal";
 import { Field, Form } from "react-final-form";
 import { AbstractFilter, FieldType, FieldValueFilter, FilterType, FundsFieldName, FundsFilterField } from "elza-api";
 import { useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { messages } from "./messages";
 import { useFilterModal } from "./hooks";
+import { FilterObject } from "./types";
 
 interface Props {
   onChange: (filters: AbstractFilter[]) => void;

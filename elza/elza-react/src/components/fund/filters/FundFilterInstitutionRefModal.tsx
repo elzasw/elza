@@ -5,10 +5,10 @@ import { useInitialFocus } from "./utils";
 import { useSelector } from "react-redux";
 import { AppState, Institution } from "typings/store";
 import { messages } from "./messages";
-import { FilterType, OperationCompareType } from "elza-api";
+import { FieldType, FilterType, OperationCompareType } from "elza-api";
 import { useIntl } from "react-intl";
-import { FilterFormProps } from "./FundFilterModal";
 import { FilterWindow } from "./FilterWindow";
+import { FilterFormProps } from "./types";
 
 function formatOperation(operation: OperationCompareType) {
   switch (operation) {
@@ -53,7 +53,6 @@ export function FundFilterInstitutionRefModal({
   }, [initialValue, allInstitutions])
 
   const handleInstitutionSelect = (_e: SelectionEvents, data: OptionOnSelectData) => {
-    console.log("#ic - option select", _e, data);
     setQuery(data.optionText || "");
     setValue(data.optionValue || "");
   }
@@ -74,7 +73,10 @@ export function FundFilterInstitutionRefModal({
         </>,
         getFilterValue: ({ filterType, name, operation, data }) => ({
           filterType,
-          field: name,
+          field: {
+            fieldType: FieldType.Fund,
+            fieldName: name,
+          },
           operation,
           value: data.code,
         }),
@@ -82,7 +84,6 @@ export function FundFilterInstitutionRefModal({
       });
     }
   }, [filterName, onFilterChange, value, operation, isDirty, institutions, formatMessage]);
-  console.log("#ic - test")
 
   const filteredInstitutions = isDirty ? institutions.filter((institution) => institution.name.toLowerCase().indexOf((query || "").toLowerCase()) >= 0) : institutions;
 

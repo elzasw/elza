@@ -1,11 +1,11 @@
 import { Input, InputOnChangeData } from "@fluentui/react-components";
 import { useInitialFocus } from "./utils";
 import { useCallback, useRef, useState } from "react";
-import { FilterType, OperationCompareType } from "elza-api";
-import { FilterFormProps } from "./FundFilterModal";
+import { FieldType, FilterType, OperationCompareType } from "elza-api";
 import { useIntl } from "react-intl";
 import { messages } from "./messages";
 import { FilterWindow } from "./FilterWindow";
+import { FilterFormProps } from "./types";
 
 function formatOperation(operation: OperationCompareType) {
   switch (operation) {
@@ -59,7 +59,10 @@ export function FundFilterTextForm({
         </>,
         getFilterValue: ({ filterType, name, operation, data }) => ({
           filterType,
-          field: name,
+          field: {
+            fieldType: FieldType.Fund,
+            fieldName: name
+          },
           operation,
           value: data,
         }),

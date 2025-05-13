@@ -1,34 +1,12 @@
 import { Button } from "@fluentui/react-components";
 import { DraggableWindow } from "components/shared";
 import { Position } from "components/shared/draggable-window";
-import { FieldValueFilter, FilterType, FundsFieldName, MultimatchContainsFilter, OperationCompareType } from "elza-api";
+import { FundsFieldName } from "elza-api";
 import { FundFilterInstitutionRefModal } from "./FundFilterInstitutionRefModal";
 import { FundFilterNumberForm } from "./FundFilterNumber";
 import { Institution } from "typings/store";
 import { FundFilterTextForm } from "./FundFilterText";
-
-export interface FilterChange {
-  name: FundsFieldName;
-  value: string;
-  operation: OperationCompareType;
-}
-
-export interface FilterObject<T = unknown> {
-  filterType: FilterType;
-  name?: FundsFieldName;
-  operation?: OperationCompareType;
-  data: T;
-  getDisplayValue: (filter: FilterObject<T>) => React.ReactNode;
-  getFilterValue: (filter: FilterObject<T>) => FieldValueFilter | MultimatchContainsFilter;
-  getSerializedString: (filter: FilterObject<T>) => string;
-}
-
-export interface FilterFormProps<T = unknown> {
-  filterName: FundsFieldName;
-  onFilterChange: (data: FilterObject<T>) => void;
-  onClose: () => void;
-  initialValue?: Partial<FilterObject<T>>;
-}
+import { FilterObject } from "./types";
 
 export interface Props {
   filterName: FundsFieldName;
@@ -37,6 +15,7 @@ export interface Props {
   initialPosition?: Position;
   initialValue?: Partial<FilterObject>;
 }
+
 export function FundFilterModal({
   filterName,
   onFilterChange,
