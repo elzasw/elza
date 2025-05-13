@@ -1,59 +1,67 @@
-import { Input, InteractionTag, InteractionTagPrimary, InteractionTagSecondary, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tag, TagDismissData, TagDismissEvent, TagGroup } from "@fluentui/react-components";
+import { Input, InteractionTag, InteractionTagPrimary, InteractionTagSecondary, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tag, TagDismissData, TagDismissEvent, TagGroup, makeStyles, tokens } from "@fluentui/react-components";
 import { AddRegular } from "@fluentui/react-icons";
 import { Icon } from "components"
-import { FilterChange } from "./FundFilterModal";
+import { FilterObject } from "./FundFilterModal";
 import { Field, Form } from "react-final-form";
-import { AbstractFilter, FieldValueFilter, FilterType, FondsFilterField, MultimatchContainsFilter, OperationCompareType } from "elza-api";
+import { AbstractFilter, FieldType, FieldValueFilter, FilterType, FundsFieldName, FundsFilterField } from "elza-api";
 import { useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { messages } from "./messages";
 import { useFilterModal } from "./hooks";
-import { useSelector } from "react-redux";
-import { AppState } from "typings/store";
-// import { useTestFluentModal, useTestModal } from "components/shared/dialog/FluentModalDialog";
 
 interface Props {
   onChange: (filters: AbstractFilter[]) => void;
-  currentFilters: AbstractFilter[];
+  currentFilters: FilterObject[];
 }
 
 interface FulltextValues {
   fulltext: string;
 }
 
-
-
 function isFieldValueFilter(filter: unknown): filter is FieldValueFilter {
-  return filter["field"];
+  return filter["filterType"] === FilterType.FieldValue;
+}
+
+function isFundsFilterField(field: unknown): field is FundsFilterField {
+  return field["fieldType"] === FieldType.Fund;
 }
 
 function formatPosition(x: number, y: number) {
   return { x, y };
 }
 
+const useStyles = makeStyles({
+  tagGroup: {
+    display: "flex",
+    flexWrap: "wrap",
+    rowGap: tokens.spacingVerticalXS,
+  }
+})
+
 export function FundFilters({
   onChange,
   currentFilters,
 }: Props) {
-  const [filters, setFilters] = useState<(FieldValueFilter | MultimatchContainsFilter)[]>(currentFilters as any || []);
-  const allInstitutions = useSelector(({ refTables }: AppState) => refTables.institutions.items);
+  const [filters, setFilters] = useState<FilterObject[]>(currentFilters as any || []);
 
   const showFilterModal = useFilterModal();
   const addFilterButtonRef = useRef<HTMLButtonElement>(null);
   const { formatMessage } = useIntl();
+  const styles = useStyles();
 
-  function getFiltersList(): FondsFilterField[] {
+  function getFiltersList(): FundsFieldName[] {
     return [
-      FondsFilterField.InstitutionCode,
-      FondsFilterField.InternalCode,
-      FondsFilterField.FundNumber,
-      FondsFilterField.Mark
+      FundsFieldName.InstitutionCode,
+      FundsFieldName.InternalCode,
+      FundsFieldName.FundNumber,
+      FundsFieldName.Mark,
+      FundsFieldName.Name,
     ]
   }
 
   function handleFulltext({ fulltext }: FulltextValues) {
     const _filters = [...filters];
-    const index = _filters.findIndex((filter) => !isFieldValueFilter(filter));
+    const index = _filters.findIndex((filter) => filter.filterType === FilterType.Contains);
 
     if (index >= 0) {
       _filters.splice(index, 1);
@@ -61,8 +69,14 @@ export function FundFilters({
 
     if (fulltext) {
       _filters.push({
-        filterType: "contains",
-        value: fulltext,
+        filterType: FilterType.Contains,
+        data: { value: fulltext },
+        getFilterValue: () => ({
+          filterType: FilterType.Contains,
+          value: fulltext,
+        }),
+        getSerializedString: () => fulltext,
+        getDisplayValue: () => fulltext,
       });
     }
 
@@ -70,31 +84,21 @@ export function FundFilters({
     onChange(_filters);
   }
 
-  function handleFilterConfirm({ name, value, operation }: FilterChange) {
+  function handleFilterConfirm(filter: FilterObject) {
     const _filters = [...filters];
-    const filter = _filters.find(f => isFieldValueFilter(f) && f.field == name)
+    const _filter = _filters.find(f => isFieldValueFilter(f) && isFundsFilterField(f.field) && f.field.fieldName == filter.name)
 
-    if (!filter || filter[name] != value) {
-      _filters.push({
-        filterType: FilterType.FieldValue,
-        field: name,
-        value,
-        operation,
-      });
+    if (!_filter || _filter.getSerializedString(_filter) != filter.getSerializedString(filter)) {
+      _filters.push(filter);
     }
     setFilters(_filters);
     onChange(_filters);
   }
 
-  function handleFilterReplace({ name, value, operation }: FilterChange, index: number) {
+  function handleFilterReplace(filter: FilterObject, index: number) {
     const _filters = [...filters];
 
-    _filters.splice(index, 1, {
-      filterType: FilterType.FieldValue,
-      field: name,
-      value,
-      operation,
-    });
+    _filters.splice(index, 1, filter);
 
     setFilters(_filters);
     onChange(_filters);
@@ -103,7 +107,7 @@ export function FundFilters({
   function handleFilterRemove(_e: TagDismissEvent, data: TagDismissData<string>) {
     const [field, value] = data.value.split(";");
 
-    const index = filters.findIndex(f => isFieldValueFilter(f) && f.field == field && f.value == value);
+    const index = filters.findIndex(f => f.name == field && f.getSerializedString(f) == value);
     const _filters = [...filters];
 
     if (index >= 0) {
@@ -115,31 +119,15 @@ export function FundFilters({
     }
   }
 
-  function formatFilterValue(value: string, field: FondsFilterField) {
-    switch (field) {
-      case FondsFilterField.InstitutionCode:
-        return allInstitutions.find(({ code }) => code === value)?.name || value;
-      case FondsFilterField.FundNumber:
-      case FondsFilterField.InternalCode:
-      case FondsFilterField.Mark:
-      default:
-        return value;
-    }
-  }
+  async function handleFilterEdit(e: React.MouseEvent, filter: FilterObject, index: number) {
+    const rect = e.currentTarget.getBoundingClientRect();
 
-  function formatOperation(operation: OperationCompareType, field: FondsFilterField) {
-    switch (operation) {
-      case OperationCompareType.Eq:
-        if (field === FondsFilterField.InstitutionCode) {
-          return ": "
-        }
-        return <div style={{ padding: "0 5px", fontSize: "1.4rem" }}>=</div>
-      case OperationCompareType.Neq:
-        return <div style={{ padding: "0 5px", fontSize: "1.4rem" }}>≠</div>
-      case OperationCompareType.Contains:
-        return ": "
-      default:
-        return operation;
+    const { data } = await showFilterModal(filter, formatPosition(rect.left, rect.top + rect.height));
+    if (data) {
+      handleFilterReplace({
+        ...data,
+        name: filter.name
+      }, index);
     }
   }
 
@@ -199,38 +187,21 @@ export function FundFilters({
       </Menu>
     </div>
     <div style={{ display: "flex", alignItems: "center", margin: "5px" }}>
-      <TagGroup onDismiss={handleFilterRemove}>
-        {filters.filter((filter) => isFieldValueFilter(filter)).map((filter, index) => {
-          if (isFieldValueFilter(filter)) {
-            return <InteractionTag
-              value={`${filter.field};${filter.value}`}
-              key={index}
-            >
-              <InteractionTagPrimary onClick={async (e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-
-                const { data } = await showFilterModal({
-                  name: filter.field,
-                  value: filter.value,
-                  operation: filter.operation,
-                }, formatPosition(rect.left, rect.top + rect.height));
-                if (data) {
-                  handleFilterReplace({
-                    ...data,
-                    name: filter.field
-                  }, index);
-                }
-              }}>
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <b>{formatMessage(messages[filter.field])}</b>
-                  {formatOperation(filter.operation, filter.field)}
-                  {formatFilterValue(filter.value, filter.field)}
-                </div>
-              </InteractionTagPrimary>
-              <InteractionTagSecondary aria-label="remove" />
-            </InteractionTag>
-          }
-          return;
+      <TagGroup className={styles.tagGroup} onDismiss={handleFilterRemove}>
+        {filters.filter(({ filterType }) => filterType === FilterType.FieldValue).map((filter, index) => {
+          return <InteractionTag
+            value={`${filter.name};${filter.getSerializedString(filter)}`}
+            key={index}
+          >
+            <InteractionTagPrimary onClick={async (e) => {
+              handleFilterEdit(e, filter, index);
+            }}>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                {filter.getDisplayValue(filter)}
+              </div>
+            </InteractionTagPrimary>
+            <InteractionTagSecondary aria-label="remove" />
+          </InteractionTag>
         })}
       </TagGroup>
     </div>
