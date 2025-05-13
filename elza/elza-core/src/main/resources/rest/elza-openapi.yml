@@ -1704,6 +1704,19 @@ components:
       schema:
         type: integer
   schemas:
+    AbstractField:
+      type: object
+      required:
+        - fieldType
+      properties:
+        fieldType:
+          $ref: '#/components/schemas/FieldType'
+      discriminator:
+        propertyName: fieldType
+        mapping:
+          FUND: '#/components/schemas/FundsFilterField'
+          NODE: '#/components/schemas/NodesFilterField'
+      description: Used as a parent for filter fields
     AbstractFilter:
       type: object
       required:
@@ -2289,6 +2302,12 @@ components:
           type: string
           description: value of property
       description: Pairs name-value for external system and user
+    FieldType:
+      type: string
+      enum:
+        - FUND
+        - NODE
+      description: Type of field for FieldValueFilter
     FieldValueFilter:
       type: object
       required:
@@ -2303,7 +2322,7 @@ components:
         #    - fieldValue
         field:
           allOf:
-            - $ref: '#/components/schemas/FondsFilterField'
+            - $ref: '#/components/schemas/AbstractField'
           description: searched field
         value:
           type: string
@@ -2335,19 +2354,6 @@ components:
         totalCount:
           type: integer
       description: Výsledek vyhledávání AS
-    FondsFilterField:
-      type: string
-      enum:
-        - fundId
-        - name
-        - createDate
-        - internalCode
-        - fundNumber
-        - unitdate
-        - mark
-        - institutionId
-        - institutionCode
-      description: Field names for FieldValueFilter
     FsItem:
       type: object
       required:
@@ -2519,6 +2525,34 @@ components:
           items:
             type: integer
       description: Specifies multiple sections for fund version
+    FundsFieldName:
+      type: string
+      enum:
+        - fundId
+        - name
+        - createDate
+        - internalCode
+        - fundNumber
+        - unitdate
+        - mark
+        - institutionId
+        - institutionCode
+      description: Field names for FieldValueFilter
+    FundsFilterField:
+      type: object
+      required:
+        #- fieldType
+        - fieldName
+      properties:
+        #fieldType:
+        #  type: string
+        #  enum:
+        #    - FUND
+        fieldName:
+          $ref: '#/components/schemas/FundsFieldName'
+      allOf:
+        - $ref: '#/components/schemas/AbstractField'
+      description: Fund field names for filter
     ImportFundDataMultiPart:
       type: object
       required:
@@ -2776,6 +2810,23 @@ components:
             - $ref: '#/components/schemas/ItemData'
           description: item data
       description: Náhrada za třídu ArrItemVO
+    NodesFilterField:
+      type: object
+      required:
+        #- fieldType
+        - typeCode
+      properties:
+        #fieldType:
+        #  type: string
+        #  enum:
+        #    - NODE
+        typeCode:
+          type: string
+        specCode:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/AbstractField'
+      description: Node (descItem) field names for filter
     OperationCompareType:
       type: string
       enum:

@@ -31,6 +31,8 @@ import cz.tacr.elza.controller.vo.FundSearchResult;
 import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.controller.vo.NodeSearchResult;
+import cz.tacr.elza.controller.vo.NodesFilterField;
+import cz.tacr.elza.controller.vo.OperationCompareType;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.domain.ArrCachedNode;
@@ -185,20 +187,10 @@ public class NodeSearchService {
 		// zpracování filtru
     	for (AbstractFilter filter : searchParams.getFilters()) {
     		if (filter instanceof MultimatchContainsFilter) {
-    	        /* rozdělení zadaného výrazu podle mezer */
-    	        String[] tokens = StringUtils.split(((MultimatchContainsFilter) filter).getValue(), ' ');
-
-    	        /* hledání výsledků pomocí AND (must) tak že každý obsahuje dané části zadaného výrazu */
-    	        BooleanPredicateClausesStep<?> bool = factory.bool();
-    	        for (String token : tokens) {
-    	            String searchValue = "*" + token + "*";
-    	            SearchPredicate predicate = factory.bool().should(factory.wildcard().field(ArrDescItem.FULLTEXT_ATT).matching(searchValue)).toPredicate();
-    	            bool.must(predicate);
-    	        }
-    	        return bool.toPredicate();
+    	        return multimatchContainsPredicate(factory, (MultimatchContainsFilter) filter);
 
     		} else if (filter instanceof FieldValueFilter) {
-    			throw new BusinessException("Filter type 'FieldValueFilter' is not yet implemented", ArrangementCode.REQUEST_INVALID);
+    			return fieldValuePredicate(factory, (FieldValueFilter) filter);
 
     		} else if (filter instanceof LogicalFilter) {
     			throw new BusinessException("Filter type 'LogicalFilter' is not yet implemented", ArrangementCode.REQUEST_INVALID);
@@ -209,6 +201,53 @@ public class NodeSearchService {
     	}
 
     	return null;
+	}
+
+	private SearchPredicate multimatchContainsPredicate(final SearchPredicateFactory factory, final MultimatchContainsFilter filter) {
+        /* rozdělení zadaného výrazu podle mezer */
+        String[] tokens = StringUtils.split(filter.getValue(), ' ');
+
+        /* hledání výsledků pomocí AND (must) tak že každý obsahuje dané části zadaného výrazu */
+        BooleanPredicateClausesStep<?> bool = factory.bool();
+        for (String token : tokens) {
+            String searchValue = "*" + token + "*";
+            SearchPredicate predicate = factory.bool().should(factory.wildcard().field(ArrDescItem.FULLTEXT_ATT).matching(searchValue)).toPredicate();
+            bool.must(predicate);
+        }
+        return bool.toPredicate();
+	}
+
+	private SearchPredicate fieldValuePredicate(final SearchPredicateFactory factory, final FieldValueFilter filter) {
+    	String fieldName = ((NodesFilterField) filter.getField()).getTypeCode();
+	    OperationCompareType op = filter.getOperation();
+	    String value = filter.getValue().toLowerCase();
+
+		switch (op) {
+		case EQ:
+			return factory.match().field(fieldName).matching(value).toPredicate();
+		case NEQ:
+			return factory.bool().mustNot(factory.match().field(fieldName).matching(value)).toPredicate();
+		case GT:
+			return factory.range().field(fieldName).greaterThan(value).toPredicate();
+		case LT:
+			return factory.range().field(fieldName).lessThan(value).toPredicate();
+		case GTE:
+			return factory.range().field(fieldName).atLeast(value).toPredicate();
+		case LTE:
+			return factory.range().field(fieldName).atMost(value).toPredicate();
+		case STARTWITH:
+			return factory.wildcard().field(fieldName).matching(value + "*").toPredicate();
+		case ENDWITH:
+			return factory.wildcard().field(fieldName).matching("*" + value).toPredicate();
+		case CONTAINS:
+			return factory.wildcard().field(fieldName).matching("*" + value + "*").toPredicate();
+		case IS_NULL:
+			throw new BusinessException("Comparison operation (IS_NULL) is not implemented.", ArrangementCode.REQUEST_INVALID);
+		case NOT_NULL:
+			throw new BusinessException("Comparison operation (NOT_NULL) is not implemented.", ArrangementCode.REQUEST_INVALID);
+		default:
+			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
+		}
 	}
 
 	protected ArrFundToNodeList getFundToNodeListFromSession(Integer fundId) {

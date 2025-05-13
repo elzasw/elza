@@ -17,14 +17,17 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.test.controller.vo.CreateFund;
+import cz.tacr.elza.test.controller.vo.FieldType;
 import cz.tacr.elza.test.controller.vo.FieldValueFilter;
 import cz.tacr.elza.test.controller.vo.FindFundsResult;
-import cz.tacr.elza.test.controller.vo.FondsFilterField;
+import cz.tacr.elza.test.controller.vo.FundsFilterField;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.FundDetail;
 import cz.tacr.elza.test.controller.vo.FundSearchResult;
+import cz.tacr.elza.test.controller.vo.FundsFieldName;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.test.controller.vo.NodeSearchResult;
+import cz.tacr.elza.test.controller.vo.NodesFilterField;
 import cz.tacr.elza.test.controller.vo.OperationCompareType;
 import cz.tacr.elza.test.controller.vo.SearchParams;
 import cz.tacr.elza.test.controller.vo.UpdateFund;
@@ -106,8 +109,9 @@ public class FundControllerTest extends AbstractControllerTest {
     	result = fundsApi.fundSearchFunds(params);
     	assertTrue(result.getTotalCount() == 3);
 
+    	// create filter
     	FieldValueFilter valueFilter = new FieldValueFilter();
-    	valueFilter.setField(FondsFilterField.INTERNAL_CODE);
+    	valueFilter.setField(new FundsFilterField().fieldType(FieldType.FUND).fieldName(FundsFieldName.INTERNAL_CODE));
     	valueFilter.setValue("Code");
     	valueFilter.setOperation(OperationCompareType.CONTAINS);
     	params.addFiltersItem(valueFilter);
@@ -116,8 +120,9 @@ public class FundControllerTest extends AbstractControllerTest {
     	result = fundsApi.fundSearchFunds(params);
     	assertTrue(result.getTotalCount() == 2);
 
+    	// change filter
     	valueFilter = new FieldValueFilter();
-    	valueFilter.setField(FondsFilterField.FUND_NUMBER);
+    	valueFilter.setField(new FundsFilterField().fieldType(FieldType.FUND).fieldName(FundsFieldName.FUND_NUMBER));
     	valueFilter.setValue("");
     	valueFilter.setOperation(OperationCompareType.NOT_NULL);
     	params.addFiltersItem(valueFilter);
@@ -139,7 +144,7 @@ public class FundControllerTest extends AbstractControllerTest {
         ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, "value", null, null, null);
         createDescItem(descItem, fundVersion, nodes.get(0), typeVo);
 
-        // create filter
+        // create MultimatchContainsFilter filter
         MultimatchContainsFilter containsFilter = new MultimatchContainsFilter();
     	containsFilter.setValue("value");
 
@@ -165,6 +170,19 @@ public class FundControllerTest extends AbstractControllerTest {
 
     	List<NodeSearchResult> nodeResult = nodeApi.nodeGetSearchResult(fund.getId());
     	assertEquals(1, nodeResult.size());
+    	
+        // create FieldValueFilter filter
+    	FieldValueFilter valueFilter = new FieldValueFilter();
+    	valueFilter.setField(new NodesFilterField().typeCode("SRD_TITLE".toLowerCase()));
+    	valueFilter.setValue("alu");
+    	valueFilter.setOperation(OperationCompareType.CONTAINS);
+ 
+    	// set FieldValueFilter in params
+    	params.filters(List.of(valueFilter));
+    	
+    	// try to search using FieldValueFilter
+    	fundResult = nodeApi.nodeSearch(params);
+    	assertEquals(1, fundResult.size());
     }
 
     private CreateFund createFund(String name, String internalCode, Integer fundNumber, String uuid, String mark) {

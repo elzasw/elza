@@ -10,9 +10,13 @@ import org.hibernate.search.engine.backend.document.DocumentElement;
 import org.hibernate.search.mapper.pojo.bridge.TypeBridge;
 import org.hibernate.search.mapper.pojo.bridge.runtime.TypeBridgeWriteContext;
 
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cache.RestoredNode;
 
 public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 
@@ -26,9 +30,9 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 	@Override
 	public void write(DocumentElement document, ArrCachedNode arrCachedNode, TypeBridgeWriteContext context) {
 
-    	var cachedNode = nodeCacheService.deserialize(arrCachedNode);
+    	RestoredNode cachedNode = nodeCacheService.deserialize(arrCachedNode);
     	nodeCacheService.reloadCachedNodes(Collections.singletonList(cachedNode));
-    	
+
     	// TODO: do not index deleted levels
 
     	document.addValue(FIELD_FUND_ID, cachedNode.getFundId());
@@ -38,6 +42,17 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
             	String fullTextValue = item.getFulltextValue();
             	if (StringUtils.isNotBlank(fullTextValue)) {
             		document.addValue(FULLTEXT_ATT, fullTextValue);
+            	}
+            	// get dataType
+            	DataType dataType = DataType.fromId(item.getData().getDataTypeId());
+            	String itemTypeCode = item.getItemType().getCode().toLowerCase();
+            	if (dataType != null) {
+            		switch (dataType) {
+					case STRING:
+					case TEXT:
+						document.addValue(itemTypeCode, fullTextValue.toLowerCase());
+						break;
+            		}
             	}
             }
     	}
