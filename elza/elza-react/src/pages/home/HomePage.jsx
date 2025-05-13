@@ -10,7 +10,7 @@ import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import { LinkContainer } from 'react-router-bootstrap';
 import { WebApi } from "../../actions/WebApi";
-import SearchFundsForm from '../../components/arr/search-funds-form/SearchFundsForm.jsx';
+import SearchFundsForm from '../../components/arr/search-funds-form/SearchFundsForm';
 import { Button } from '../../components/ui';
 import { FOCUS_KEYS, urlFundTree, URL_ENTITY } from '../../constants.tsx';
 import PageLayout from '../shared/layout/PageLayout';
