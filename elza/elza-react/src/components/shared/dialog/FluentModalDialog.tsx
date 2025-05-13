@@ -2,7 +2,7 @@ import { Button, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface
 import { DismissRegular, ChevronUpRegular, ChevronDownRegular } from "@fluentui/react-icons";
 import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { DraggableWindow } from "..";
-import SearchFundsForm from "components/arr/SearchFundsForm";
+import SearchFundsForm from "components/arr/search-funds-form/SearchFundsForm";
 import { DraggableWindowDragger } from "../draggable-window";
 
 interface DialogProps<R, D> {

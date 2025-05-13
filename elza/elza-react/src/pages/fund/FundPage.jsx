@@ -30,7 +30,7 @@ import { routerNavigate } from '../../actions/router';
 import * as perms from '../../actions/user/Permission';
 import { ExportForm, FundForm, i18n, Icon, ImportForm } from '../../components';
 import IssueLists from '../../components/arr/IssueLists';
-import SearchFundsForm from '../../components/arr/SearchFundsForm';
+import SearchFundsForm from '../../components/arr/search-funds-form/SearchFundsForm';
 import { AbstractReactComponent, ListBox } from '../../components/shared';
 import ListPager from '../../components/shared/listPager/ListPager';
 import { urlEntity, urlFund, urlFundTree } from "../../constants";

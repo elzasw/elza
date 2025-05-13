@@ -1,5 +1,5 @@
-@import "../../variables.scss";
-@import "./ReferenceMark.scss";
+@import "../../../variables.scss";
+@import "../ReferenceMark.scss";
 
 $rowHeight: 24px;
 
@@ -32,7 +32,6 @@ $rowHeight: 24px;
                 height: 100%;
                 overflow-y: auto;
 
-
                 .exp-col,
                 .detail-col {
                     flex-grow: 1;
@@ -51,8 +50,6 @@ $rowHeight: 24px;
                 .referenceMark {
                     @extend .referenceMark;
                 }
-
-                ;
 
                 .item {
                     display: flex;
@@ -131,7 +128,6 @@ $rowHeight: 24px;
                 }
             }
         }
-
     }
 }
 

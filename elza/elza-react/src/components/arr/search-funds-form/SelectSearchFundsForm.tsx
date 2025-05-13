@@ -4,9 +4,9 @@ import { Modal, FormCheck } from 'react-bootstrap';
 import classNames from 'classnames';
 import { createReferenceMark, getNodeIcon } from 'components/arr/ArrUtils.jsx'
 import { i18n, Icon } from 'components/shared';
-import { fundSearchFulltextClear, fundSearchFulltextChange, fundSearchExpandFund, fundSearchFetchIfNeeded } from '../../actions/arr/fundSearch'
-import Search from "../shared/search/Search";
-import HorizontalLoader from "../shared/loading/HorizontalLoader";
+import { fundSearchFulltextClear, fundSearchFulltextChange, fundSearchExpandFund, fundSearchFetchIfNeeded } from '../../../actions/arr/fundSearch'
+import Search from "../../shared/search/Search";
+import HorizontalLoader from "../../shared/loading/HorizontalLoader";
 import './SearchFundsForm.scss';
 import { AppState, FundSearchFundType, FundSearchNodeType } from 'typings/store/index.js';
 import { useThunkDispatch } from 'utils/hooks';
@@ -74,7 +74,7 @@ export const SelectSearchFundsForm = ({ onSubmit }: Props) => {
         const { expanded } = fund;
         const expColCls = 'exp-col ' + (expanded ? 'fa fa-minus-square-o' : 'fa fa-plus-square-o');
 
-        let cls = classNames({
+        const cls = classNames({
             item: true,
             opened: expanded,
             closed: !expanded,
