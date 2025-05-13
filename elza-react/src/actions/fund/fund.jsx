@@ -84,7 +84,7 @@ export function fundsFetchIfNeeded(size = DEFAULT_FUND_LIST_MAX_SIZE) {
             dispatch(fundsRequest(dataKey));
 
             const {data} = await Api.funds.fundSearchFunds({
-                filters: filter.filter,
+                filters: filter.filter?.map((filter) => filter.getFilterValue(filter)),
                 size,
                 offset: filter.from
             });
