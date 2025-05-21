@@ -555,7 +555,7 @@ public class ClientFactoryDO {
                 case EQ: {
                     if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new EqDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
@@ -564,8 +564,8 @@ public class ClientFactoryDO {
                     } else if (dataType == DataType.UNITDATE) {
                         Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                         condition = new EqIntervalDescItemCondition<>(conditionValue,
-                                ArrDescItem.NORMALIZED_FROM_ATT,
-                                ArrDescItem.NORMALIZED_TO_ATT);
+                                ArrDescItem.NORM_FROM,
+                                ArrDescItem.NORM_TO);
                     } else if (dataType == DataType.DATE) {
                         Date conditionValue = getConditionValueDate(filter.getCondition());
                         condition = new EqDescItemCondition<>(conditionValue, ArrDescItem.DATE_ATT);
@@ -578,7 +578,7 @@ public class ClientFactoryDO {
                 case GE: {
                     if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new GeDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
@@ -596,11 +596,11 @@ public class ClientFactoryDO {
                 case GT: {
                     if (dataType == DataType.UNITDATE) {
                         ArrDataUnitdate unitDate = getConditionValueUnitdate(filter.getCondition());
-                        String attributeName = ArrDescItem.NORMALIZED_TO_ATT;
+                        String attributeName = ArrDescItem.NORM_TO;
                         condition = new GtDescItemCondition<>(unitDate.getNormalizedFrom(), attributeName);
                     } else if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new GtDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
@@ -618,7 +618,7 @@ public class ClientFactoryDO {
                 case INTERVAL: {
                     if (dataType == DataType.INT) {
                         Interval<Integer> conditionValue = getConditionValueIntervalInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new IntervalDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Interval<Double> conditionValue = getConditionValueIntervalDouble(filter.getCondition());
@@ -636,7 +636,7 @@ public class ClientFactoryDO {
                 case LE: {
                     if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new LeDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
@@ -654,11 +654,11 @@ public class ClientFactoryDO {
                 case LT: {
                     if (dataType == DataType.UNITDATE) {
                         ArrDataUnitdate unitDate = getConditionValueUnitdate(filter.getCondition());
-                        String attributeName = ArrDescItem.NORMALIZED_FROM_ATT;
+                        String attributeName = ArrDescItem.NORM_FROM;
                         condition = new LtDescItemCondition<>(unitDate.getNormalizedTo(), attributeName);
                     } else if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new LtDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
@@ -676,7 +676,7 @@ public class ClientFactoryDO {
                 case NE: {
                     if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new NeDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
@@ -705,7 +705,7 @@ public class ClientFactoryDO {
                 case NOT_INTERVAL: {
                     if (dataType == DataType.INT) {
                         Interval<Integer> conditionValue = getConditionValueIntervalInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new NotIntervalDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Interval<Double> conditionValue = getConditionValueIntervalDouble(filter.getCondition());
@@ -723,15 +723,15 @@ public class ClientFactoryDO {
                 case INTERSECT: {
                     Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                     condition = new IntersectDescItemCondition<>(conditionValue,
-                            ArrDescItem.NORMALIZED_FROM_ATT,
-                            ArrDescItem.NORMALIZED_TO_ATT);
+                            ArrDescItem.NORM_FROM,
+                            ArrDescItem.NORM_TO);
                     break;
                 }
                 case SUBSET: {
                     Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                     condition = new SubsetDescItemCondition<>(conditionValue,
-                            ArrDescItem.NORMALIZED_FROM_ATT,
-                            ArrDescItem.NORMALIZED_TO_ATT);
+                            ArrDescItem.NORM_FROM,
+                            ArrDescItem.NORM_TO);
                     break;
                 }
                 default:

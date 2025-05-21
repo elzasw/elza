@@ -214,7 +214,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         assertNotNull(formData);
         List<ArrItemVO> descItems = formData.getDescItems();
         assertEquals(1, descItems.size());
-        ArrItemTextVO descItemTextVO = checkExistsTextVO(descItems, "SRD_TITLE", TEXT_VALUE_XY);
+        ArrItemTextVO descItemTextVO = checkExistsTextVO(descItems, SRD_TITLE, TEXT_VALUE_XY);
         assertTrue(descItemTextVO.getReadOnly());
 
         // opakovaný import dao/update
@@ -238,7 +238,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         assertNotNull(formData);
         descItems = formData.getDescItems();
         assertEquals(1, descItems.size());
-        descItemTextVO = checkExistsTextVO(descItems, "SRD_TITLE", TEXT_VALUE_YZ);
+        descItemTextVO = checkExistsTextVO(descItems, SRD_TITLE, TEXT_VALUE_YZ);
         assertTrue(descItemTextVO.getReadOnly());
 
         helperTestService.waitForWorkers();
@@ -303,7 +303,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         assertNotNull(formData);
         List<ArrItemVO> descItems = formData.getDescItems();
         assertEquals(2, descItems.size());
-        ArrItemTextVO descItemTextVO = checkExistsTextVO(descItems, "SRD_TITLE", TEXT_VALUE_XY);
+        ArrItemTextVO descItemTextVO = checkExistsTextVO(descItems, SRD_TITLE, TEXT_VALUE_XY);
         assertTrue(descItemTextVO.getReadOnly() == null || !descItemTextVO.getReadOnly());
 
         // prepnuti na sc2
@@ -357,7 +357,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         assertNotNull(formData);
         descItems = formData.getDescItems();
         assertEquals(2, descItems.size());
-        descItemTextVO = checkExistsTextVO(descItems, "SRD_TITLE", "update value");
+        descItemTextVO = checkExistsTextVO(descItems, SRD_TITLE, "update value");
         assertTrue(descItemTextVO.getReadOnly() == null || !descItemTextVO.getReadOnly());
 
         helperTestService.waitForWorkers();
@@ -463,7 +463,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         items.getStrOrLongOrEnm().add(ite);
 
         its = objFactory.createItemString();
-        its.setType("SRD_TITLE");
+        its.setType(SRD_TITLE);
         its.setValue(textValue);
         items.getStrOrLongOrEnm().add(its);
 
@@ -480,7 +480,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         items.getStrOrLongOrEnm().add(ite);
 
         its = objFactory.createItemString();
-        its.setType("SRD_TITLE");
+        its.setType(SRD_TITLE);
         its.setValue(textValue);
         items.getStrOrLongOrEnm().add(its);
         return items;
@@ -489,7 +489,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
     private Items createDaoItems(String textValue) {
         cz.tacr.elza.ws.types.v1.Items items = objFactory.createItems();
         cz.tacr.elza.ws.types.v1.ItemString its = objFactory.createItemString();
-        its.setType("SRD_TITLE");
+        its.setType(SRD_TITLE);
         its.setValue(textValue);
         its.setReadOnly(true);
         items.getStrOrLongOrEnm().add(its);

@@ -2,11 +2,17 @@ package cz.tacr.elza.domain.bridge;
 
 import static cz.tacr.elza.domain.ApCachedAccessPoint.DATA;
 import static cz.tacr.elza.domain.ApCachedAccessPoint.FIELD_ACCESSPOINT_ID;
+import static cz.tacr.elza.domain.ArrDescItem.NORM_FROM;
+import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
+import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.AP_TYPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SCOPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.REV_STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.USERNAME;
+import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.ANALYZED;
+import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.NOT_ANALYZED;
+import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.SORTABLE;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.CLASSIC_TOKENIZER_CZ;
 
 import cz.tacr.elza.domain.ApCachedAccessPoint;
@@ -39,15 +45,6 @@ import java.util.Map;
  * - getItemSpecCodesByTypeCode(itemTypeCode)
  */
 public class ApCachedAccessPointBinder implements TypeBinder {
-
-    public static final String NOT_ANALYZED = "";
-    public static final String ANALYZED = "_analyzed";
-    public static final String SORTABLE = "_sortable";
-
-    public static final String REL_AP_ID = "rel_accesspoint_id";
-
-    public static final String NORM_FROM = "_from";
-    public static final String NORM_TO = "_to";
 
     private IndexConfigReader configurationReader = SpringContext.getBean(IndexConfigReader.class);
     private TypeBindingContext context;
@@ -94,8 +91,8 @@ public class ApCachedAccessPointBinder implements TypeBinder {
 	            fields.put(name + SORTABLE, createSortableField(name));
 	            fields.put(name + ANALYZED, createAnalyzedField(name));
 	            fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
-	            createLongField(name + NORM_FROM);
-	            createLongField(name + NORM_TO);
+	            createLongField(name + "_" + NORM_FROM);
+	            createLongField(name + "_" + NORM_TO);
 	            for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
 	            	String nameAddSpec = "data_" + pref + itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase();
 		            fields.put(nameAddSpec + ANALYZED, createAnalyzedField(nameAddSpec));

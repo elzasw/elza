@@ -2,6 +2,9 @@ package cz.tacr.elza.domain.bridge;
 
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_FUND_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FULLTEXT_ATT;
+import static cz.tacr.elza.domain.ArrDescItem.NORM_FROM;
+import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
+import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
 
 import java.util.Collections;
 
@@ -11,10 +14,10 @@ import org.hibernate.search.mapper.pojo.bridge.TypeBridge;
 import org.hibernate.search.mapper.pojo.bridge.runtime.TypeBridgeWriteContext;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ArrCachedNode;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 
@@ -45,12 +48,27 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
             	}
             	// get dataType
             	DataType dataType = DataType.fromId(item.getData().getDataTypeId());
-            	String itemTypeCode = item.getItemType().getCode().toLowerCase();
+            	String itemTypeCodeLowerCase = item.getItemType().getCode().toLowerCase();
             	if (dataType != null) {
             		switch (dataType) {
+            		case ENUM:
+						document.addValue(itemTypeCodeLowerCase, item.getItemSpec().getCode().toLowerCase());
+						break;
+            		case RECORD_REF:
+						document.addValue(REL_AP_ID, ((ArrDataRecordRef) item.getData()).getRecordId());
+            		case STRUCTURED:
 					case STRING:
 					case TEXT:
-						document.addValue(itemTypeCode, fullTextValue.toLowerCase());
+						document.addValue(itemTypeCodeLowerCase, fullTextValue.toLowerCase());
+						if (item.getItemSpec() != null) {
+							String itemSpecCode = item.getItemSpec().getCode().toLowerCase();
+							document.addValue(itemTypeCodeLowerCase + "_" + itemSpecCode, fullTextValue.toLowerCase());
+						}
+						break;
+					case UNITDATE:
+						ArrDataUnitdate unitDate = (ArrDataUnitdate) item.getData();
+						document.addValue(itemTypeCodeLowerCase + "_" + NORM_FROM, unitDate.getNormalizedFrom());
+						document.addValue(itemTypeCodeLowerCase + "_" + NORM_TO, unitDate.getNormalizedTo());
 						break;
             		}
             	}

@@ -10,6 +10,10 @@ import org.hibernate.search.backend.lucene.analysis.LuceneAnalysisConfigurer;
 
 public class LuceneAnalyzerConfigurer implements LuceneAnalysisConfigurer {
 
+    public static final String NOT_ANALYZED = "";
+    public static final String ANALYZED = "_analyzed";
+    public static final String SORTABLE = "_sortable";
+
 	public final static String CLASSIC_TOKENIZER_CZ = "classic_tokenizer_cz"; 
 	public final static String KEYWORD_TOKENIZER_CZ = "keyword_tokenizer_cz"; 
 

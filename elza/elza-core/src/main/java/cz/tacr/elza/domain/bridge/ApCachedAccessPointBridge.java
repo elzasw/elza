@@ -4,9 +4,12 @@ import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
 import static cz.tacr.elza.groovy.GroovyResult.PT_PREFER_NAME;
 import static cz.tacr.elza.domain.ApCachedAccessPoint.DATA;
 import static cz.tacr.elza.domain.ApCachedAccessPoint.FIELD_ACCESSPOINT_ID;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.REL_AP_ID;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.NORM_FROM;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.NORM_TO;
+import static cz.tacr.elza.domain.ArrDescItem.NORM_FROM;
+import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
+import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
+import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.ANALYZED;
+import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.NOT_ANALYZED;
+import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.SORTABLE;
 
 import java.util.List;
 import java.util.Map;
@@ -182,13 +185,13 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
 
                 // indexování polí unitdate
                 if (dataType == DataType.UNITDATE) {
-                	document.addValue(name + SEPARATOR + itemTypeCode + NORM_FROM, item.getData().getNormalizedFrom());
-                	document.addValue(name + SEPARATOR + itemTypeCode + NORM_TO, item.getData().getNormalizedTo());
+                	document.addValue(name + SEPARATOR + itemTypeCode + SEPARATOR + NORM_FROM, item.getData().getNormalizedFrom());
+                	document.addValue(name + SEPARATOR + itemTypeCode + SEPARATOR + NORM_TO, item.getData().getNormalizedTo());
                 }
 
                 // indexování polí s více než 32766 znaky
                 if (dataType == DataType.TEXT) {
-                    document.addValue(name + SEPARATOR + itemTypeCode + ApCachedAccessPointBinder.ANALYZED, value);
+                    document.addValue(name + SEPARATOR + itemTypeCode + ANALYZED, value);
                 } else {
                     addField(name + SEPARATOR + itemTypeCode, value.toLowerCase(), document, name);
                 }
@@ -226,19 +229,19 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
      */
     private void addSortField(String name, String value, DocumentElement document) {
         String valueTrans = removeDiacritic(value); //TODO pasek
-        document.addValue(name + ApCachedAccessPointBinder.SORTABLE, valueTrans);
+        document.addValue(name + SORTABLE, valueTrans);
     }
 
     private void addStringField(String name, String value, DocumentElement document) {
-        document.addValue(name + ApCachedAccessPointBinder.NOT_ANALYZED, value); //TODO pasek
+        document.addValue(name + NOT_ANALYZED, value); //TODO pasek
     }
 
     private void addField(String name, String value, DocumentElement document, String prefixName) {
         // Pridani raw hodnoty fieldu (bez tranliterace - NOT_ANALYZED) //TODO pasek
-        document.addValue(name + ApCachedAccessPointBinder.NOT_ANALYZED, value);
+        document.addValue(name + NOT_ANALYZED, value);
 
         if (isFieldForTransliteration(name, prefixName)) {
-            document.addValue(name + ApCachedAccessPointBinder.ANALYZED, value);
+            document.addValue(name + ANALYZED, value);
         }
     }
 

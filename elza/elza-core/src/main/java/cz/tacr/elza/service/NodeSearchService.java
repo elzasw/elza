@@ -1,5 +1,9 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.domain.ArrDescItem.NORM_FROM;
+import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
+import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,9 +39,15 @@ import cz.tacr.elza.controller.vo.NodesFilterField;
 import cz.tacr.elza.controller.vo.OperationCompareType;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrCachedNode;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
@@ -62,11 +72,14 @@ public class NodeSearchService {
 
 	@Autowired
 	private LevelTreeCacheService levelTreeCacheService;
-	
+
 	@Autowired
 	private ClientFactoryVO clientFactory;
-	
-	/**
+
+    @Autowired
+    private StaticDataService staticDataService;
+
+    /**
      * @return vrací session uživatele
      */
     @Bean
@@ -218,33 +231,183 @@ public class NodeSearchService {
 	}
 
 	private SearchPredicate fieldValuePredicate(final SearchPredicateFactory factory, final FieldValueFilter filter) {
-    	String fieldName = ((NodesFilterField) filter.getField()).getTypeCode();
+    	String itemTypeCode = ((NodesFilterField) filter.getField()).getTypeCode();
+    	String itemSpecCode = ((NodesFilterField) filter.getField()).getSpecCode();
+
+	    StaticDataProvider sdp = staticDataService.getData();
+	    ItemType itemType = sdp.getItemTypeByCode(itemTypeCode.toUpperCase());
+	    Objects.requireNonNull(itemType);
+
+	    String fieldName = itemTypeCode.toLowerCase();
+	    String fieldSpecName = itemSpecCode != null ? fieldSpecName = fieldName + "_" + itemSpecCode.toLowerCase() : null;
+	    DataType dataType = itemType.getDataType();
+		switch (dataType) {
+		case ENUM:
+			return getPredicateByEnum(factory, fieldName, itemSpecCode, filter);
+		case RECORD_REF:
+			return getPredicateByRecordRef(factory, fieldName, fieldSpecName, filter);
+		case STRING:
+		case TEXT:
+			return getPredicateByStringOrText(factory, fieldName, fieldSpecName, filter);
+		case UNITDATE:
+			return getPredicateByUnitdate(factory, fieldName, filter);
+		}
+
+		return null;
+	}
+
+	private SearchPredicate getPredicateByRecordRef(final SearchPredicateFactory factory,
+			                                        final String fieldTypeName,
+			                                        final String fieldTypeSpecName,
+			                                        final FieldValueFilter filter) {
 	    OperationCompareType op = filter.getOperation();
 	    String value = filter.getValue().toLowerCase();
-
+	    // find by name of ap
+	    if (!value.matches("-?\\d+")) {
+	    	return getPredicateByStringOrText(factory, fieldTypeName, fieldTypeSpecName, filter);
+	    }
+	    // find by recordId
+	    Integer intValue = Integer.parseInt(value);
 		switch (op) {
 		case EQ:
-			return factory.match().field(fieldName).matching(value).toPredicate();
+			return factory.match().field(REL_AP_ID).matching(intValue).toPredicate();
 		case NEQ:
-			return factory.bool().mustNot(factory.match().field(fieldName).matching(value)).toPredicate();
+			return factory.bool().mustNot(factory.match().field(REL_AP_ID).matching(intValue)).toPredicate();
+		default:
+			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
+		}
+	}
+
+	private SearchPredicate getPredicateByEnum(final SearchPredicateFactory factory,
+			   								   final String fieldTypeName,
+			   								   final String specValue,
+			   								   final FieldValueFilter filter) {
+	    OperationCompareType op = filter.getOperation();
+		switch (op) {
+		case EQ:
+			return factory.match().field(fieldTypeName).matching(specValue.toLowerCase()).toPredicate();
+		case NEQ:
+			return factory.bool().mustNot(factory.match().field(fieldTypeName).matching(specValue.toLowerCase())).toPredicate();
+		default:
+			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
+		}
+	}
+
+	private SearchPredicate getPredicateByStringOrText(final SearchPredicateFactory factory,
+													   final String fieldTypeName,
+													   final String fieldTypeSpecName,
+											   		   final FieldValueFilter filter) {
+	    OperationCompareType op = filter.getOperation();
+	    String value = filter.getValue().toLowerCase();
+	    BooleanPredicateClausesStep<?> bool = factory.bool();
+		switch (op) {
+		case EQ:
+			bool.must(factory.match().field(fieldTypeName).matching(value));
+			if (fieldTypeSpecName != null) {
+				bool.must(factory.match().field(fieldTypeSpecName).matching(value));
+			}
+			break;
+		case NEQ:
+			bool.mustNot(factory.match().field(fieldTypeName).matching(value));
+			if (fieldTypeSpecName != null) {
+				bool.mustNot(factory.match().field(fieldTypeSpecName).matching(value));
+			}
+			break;
 		case GT:
-			return factory.range().field(fieldName).greaterThan(value).toPredicate();
+			bool.must(factory.range().field(fieldTypeName).greaterThan(value));
+			if (fieldTypeSpecName != null) {
+				bool.must(factory.range().field(fieldTypeSpecName).greaterThan(value));
+			}
+			break;
 		case LT:
-			return factory.range().field(fieldName).lessThan(value).toPredicate();
+			bool.must(factory.range().field(fieldTypeName).lessThan(value));
+			if (fieldTypeSpecName != null) {
+				bool.must(factory.range().field(fieldTypeSpecName).lessThan(value));
+			}
+			break;
 		case GTE:
-			return factory.range().field(fieldName).atLeast(value).toPredicate();
+			bool.must(factory.range().field(fieldTypeName).atLeast(value));
+			if (fieldTypeSpecName != null) {
+				bool.must(factory.range().field(fieldTypeSpecName).atLeast(value));
+			}
+			break;
 		case LTE:
-			return factory.range().field(fieldName).atMost(value).toPredicate();
+			bool.must(factory.range().field(fieldTypeName).atMost(value));
+			if (fieldTypeSpecName != null) {
+				bool.must(factory.range().field(fieldTypeSpecName).atMost(value));
+			}
+			break;
 		case STARTWITH:
-			return factory.wildcard().field(fieldName).matching(value + "*").toPredicate();
+			bool.must(factory.wildcard().field(fieldTypeName).matching(value + "*"));
+			if (fieldTypeSpecName != null) {
+				bool.must(factory.wildcard().field(fieldTypeSpecName).matching(value + "*"));
+			}
+			break;
 		case ENDWITH:
-			return factory.wildcard().field(fieldName).matching("*" + value).toPredicate();
+			bool.must(factory.wildcard().field(fieldTypeName).matching("*" + value));
+			if (fieldTypeSpecName != null) {
+				bool.must(factory.wildcard().field(fieldTypeSpecName).matching("*" + value));
+			}
+			break;
 		case CONTAINS:
-			return factory.wildcard().field(fieldName).matching("*" + value + "*").toPredicate();
+			bool.must(factory.wildcard().field(fieldTypeName).matching("*" + value + "*"));
+			if (fieldTypeSpecName != null) {
+				bool.must(factory.wildcard().field(fieldTypeSpecName).matching("*" + value + "*"));
+			}
+			break;
 		case IS_NULL:
-			throw new BusinessException("Comparison operation (IS_NULL) is not implemented.", ArrangementCode.REQUEST_INVALID);
+			throw new BusinessException("Comparison of type IS_NULL is not implemented.", ArrangementCode.REQUEST_INVALID);
 		case NOT_NULL:
-			throw new BusinessException("Comparison operation (NOT_NULL) is not implemented.", ArrangementCode.REQUEST_INVALID);
+			throw new BusinessException("Comparison of type NOT_NULL is not implemented..", ArrangementCode.REQUEST_INVALID);
+		default:
+			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
+		}
+		
+		return bool.toPredicate();
+	}
+
+	private SearchPredicate getPredicateByUnitdate(final SearchPredicateFactory factory, 
+			                                       final String fieldName,
+	   		   							           final FieldValueFilter filter) {
+	    OperationCompareType op = filter.getOperation();
+        ArrDataUnitdate value = new ArrDataUnitdate();
+        UnitDateConverter.convertToUnitDate(filter.getValue(), value);
+
+		String fieldNormalizedFrom = fieldName + "_" + NORM_FROM;
+		String fieldNormalizedTo = fieldName + "_" + NORM_TO;        
+        Long normalizedFrom = value.getNormalizedFrom();
+        Long normalizedTo = value.getNormalizedTo();
+		switch (op) {
+		case EQ:
+			return factory.bool()
+					.must(factory.match().field(fieldNormalizedFrom).matching(normalizedFrom))
+					.must(factory.match().field(fieldNormalizedTo).matching(normalizedTo))
+					.toPredicate();
+		case NEQ:
+			return factory.bool()
+					.mustNot(factory.match().field(fieldNormalizedFrom).matching(normalizedFrom))
+					.toPredicate();
+		case GT:
+			return factory.range().field(fieldNormalizedFrom).greaterThan(normalizedTo).toPredicate();
+		case LT:
+			return factory.range().field(fieldNormalizedTo).lessThan(normalizedFrom).toPredicate();
+		case GTE:
+			throw new BusinessException("Comparison of type GTE is not implemented.", ArrangementCode.REQUEST_INVALID);
+		case LTE:
+			throw new BusinessException("Comparison of type LTE is not implemented.", ArrangementCode.REQUEST_INVALID);
+		case STARTWITH:
+			throw new BusinessException("Comparison of type STARTWITH is not implemented.", ArrangementCode.REQUEST_INVALID);
+		case ENDWITH:
+			throw new BusinessException("Comparison of type ENDWITH is not implemented.", ArrangementCode.REQUEST_INVALID);
+		case CONTAINS:
+			return factory.bool()
+					.must(factory.range().field(fieldNormalizedFrom).lessThan(normalizedFrom))
+					.must(factory.range().field(fieldNormalizedTo).greaterThan(normalizedTo))
+					.toPredicate();
+		case IS_NULL:
+			throw new BusinessException("Comparison of type IS_NULL is not implemented.", ArrangementCode.REQUEST_INVALID);
+		case NOT_NULL:
+			throw new BusinessException("Comparison of type NOT_NULL is not implemented..", ArrangementCode.REQUEST_INVALID);
 		default:
 			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
 		}

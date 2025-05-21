@@ -287,6 +287,10 @@ paths:
                 type: integer
         '404':
           description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
       tags:
         - accesspoints
   /accesspoint/{id}/part/{partId}/prefer-name:
@@ -1249,7 +1253,7 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ImportFundDataMultiPart'
+              $ref: '#/components/schemas/ImportFundData'
         description: Doplnění způsobu importu
   /fund/{id}/structuredObject:
     delete:
@@ -1926,13 +1930,8 @@ components:
     DataBit:
       type: object
       required:
-        #- dataType
         - bitValue
       properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - BIT
         bitValue:
           type: boolean
       allOf:
@@ -1941,13 +1940,8 @@ components:
     DataCoordinates:
       type: object
       required:
-        #- dataType
         - value
       properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - COORDINATES
         value:
           type: string
       allOf:
@@ -1955,13 +1949,8 @@ components:
     DataDate:
       type: object
       required:
-        #- dataType
         - value
       properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - DATE
         value:
           type: string
           format: date
@@ -1970,13 +1959,8 @@ components:
     DataDecimal:
       type: object
       required:
-        #- dataType
         - value
       properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - DECIMAL
         value:
           type: number
           format: decimal
@@ -1984,25 +1968,13 @@ components:
         - $ref: '#/components/schemas/ItemData'
     DataEnum:
       type: object
-      #required:
-      #  - dataType
-      #properties:
-      #  dataType:
-      #    type: string
-      #    enum:
-      #      - ENUM
       allOf:
         - $ref: '#/components/schemas/ItemData'
     DataFileRef:
       type: object
       required:
-        #- dataType
         - fileId
       properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - FILE_REF
         fileId:
           type: integer
       allOf:
@@ -2010,13 +1982,8 @@ components:
     DataFormattedText:
       type: object
       required:
-        #- dataType
         - value
       properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - FORMATTED_TEXT
         value:
           type: string
       allOf:
@@ -2024,13 +1991,8 @@ components:
     DataInteger:
       type: object
       required:
-        #- dataType
         - integerValue
       properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - INT
         integerValue:
           type: integer
       allOf:
@@ -2038,13 +2000,8 @@ components:
     DataJsonTable:
       type: object
       required:
-        #- dataType
         - value
       properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - JSON_TABLE
         value:
           type: string
       allOf:
@@ -2052,13 +2009,8 @@ components:
     DataRecordRef:
       type: object
       required:
-        #- dataType
         - value
       properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - RECORD_REF
         value:
           type: integer
       allOf:
@@ -2066,13 +2018,8 @@ components:
     DataString:
       type: object
       required:
-        #- dataType
         - stringValue
       properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - STRING
         stringValue:
           type: string
       allOf:
@@ -2080,13 +2027,8 @@ components:
     DataStructureRef:
       type: object
       required:
-        #- dataType
         - structuredObjectId
       properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - STRUCTURED
         structuredObjectId:
           type: integer
       allOf:
@@ -2094,13 +2036,8 @@ components:
     DataText:
       type: object
       required:
-        #- dataType
         - textValue
       properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - TEXT
         textValue:
           type: string
       allOf:
@@ -2128,13 +2065,8 @@ components:
     DataUnitdate:
       type: object
       required:
-        #- dataType
         - value
       properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - UNITDATE
         value:
           type: string
       allOf:
@@ -2142,13 +2074,8 @@ components:
     DataUnitid:
       type: object
       required:
-        #- dataType
         - unitId
       properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - UNITID
         unitId:
           type: string
       allOf:
@@ -2156,13 +2083,8 @@ components:
     DataUriRef:
       type: object
       required:
-        #- dataType
         - value
       properties:
-        #dataType:
-        #  type: string
-        #  enum:
-        #    - URI_REF
         nodeId:
           type: integer
         value:
@@ -2311,15 +2233,9 @@ components:
     FieldValueFilter:
       type: object
       required:
-        #- filterType
         - field
-        - value
         - operation
       properties:
-        #filterType:
-        #  type: string
-        #  enum:
-        #    - fieldValue
         field:
           allOf:
             - $ref: '#/components/schemas/AbstractField'
@@ -2541,23 +2457,15 @@ components:
     FundsFilterField:
       type: object
       required:
-        #- fieldType
         - fieldName
       properties:
-        #fieldType:
-        #  type: string
-        #  enum:
-        #    - FUND
         fieldName:
           $ref: '#/components/schemas/FundsFieldName'
       allOf:
         - $ref: '#/components/schemas/AbstractField'
       description: Fund field names for filter
-    ImportFundDataMultiPart:
+    ImportFundData:
       type: object
-      required:
-        - importType
-        - dataFile
       properties:
         importType:
           type: string
@@ -2565,7 +2473,10 @@ components:
         dataFile:
           type: string
           format: binary
-      description: Data k importu
+          description: File to upload
+      required:
+        - importType
+        - dataFile
     InvalidatedEntities:
       type: object
       required:
@@ -2659,14 +2570,9 @@ components:
     LogicalFilter:
       type: object
       required:
-        #- filterType
         - filters
         - operation
       properties:
-        #filterType:
-        #  type: string
-        #  enum:
-        #    - logical
         filters:
           description: collection of filters
           type: array
@@ -2682,13 +2588,8 @@ components:
     MultimatchContainsFilter:
       type: object
       required:
-        #- filterType
         - value
       properties:
-        #filterType:
-        #  type: string
-        #  enum:
-        #    - contains
         value:
           type: string
           description: searched value
@@ -2813,13 +2714,8 @@ components:
     NodesFilterField:
       type: object
       required:
-        #- fieldType
         - typeCode
       properties:
-        #fieldType:
-        #  type: string
-        #  enum:
-        #    - NODE
         typeCode:
           type: string
         specCode:
@@ -3016,13 +2912,8 @@ components:
     Report.ValueAccesspointId:
       type: object
       required:
-        #- valueType
         - accesspointId
       properties:
-        #valueType:
-        #  type: string
-        #  enum:
-        #    - AP_ID
         accesspointId:
           type: integer
       allOf:
@@ -3031,13 +2922,8 @@ components:
     Report.ValueDate:
       type: object
       required:
-        #- valueType
         - dateValue
       properties:
-        #valueType:
-        #  type: string
-        #  enum:
-        #    - DATE
         dateValue:
           type: string
           format: date-time
@@ -3047,13 +2933,8 @@ components:
     Report.ValueFondId:
       type: object
       required:
-        #- valueType
         - fondId
       properties:
-        #valueType:
-        #  type: string
-        #  enum:
-        #    - FUND_ID
         fondId:
           type: integer
       allOf:
@@ -3062,13 +2943,8 @@ components:
     Report.ValueInteger:
       type: object
       required:
-        #- valueType
         - intValue
       properties:
-        #valueType:
-        #  type: string
-        #  enum:
-        #    - INT
         intValue:
           type: integer
       allOf:
@@ -3077,13 +2953,8 @@ components:
     Report.ValueString:
       type: object
       required:
-        #- valueType
         - textValue
       properties:
-        #valueType:
-        #  type: string
-        #  enum:
-        #    - STRING
         textValue:
           type: string
       allOf:
