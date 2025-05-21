@@ -136,9 +136,9 @@ model CreateFund {
  */ 
 model ImportFundData {
     /** Import type. Only 'CSV' is supported */
-    importType: string;
+    importType: HttpPart<string>;
     /** File to upload */
-    dataFile: bytes;
+    dataFile: HttpPart<bytes>;
 }
 
 /**
@@ -381,80 +381,96 @@ model ItemData {
  * ItemData classes extensions
  */
 model DataBit extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.BIT;
     bitValue: boolean;
 }
 
 model DataCoordinates extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.COORDINATES;
     value: string;
 }
 
 model DataDate extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.DATE;
     value: plainDate;
 }
 
 model DataDecimal extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.DECIMAL;
     value: decimal;
 }
 
 model DataFileRef extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.FILE_REF;
     fileId: integer;
 }
 
 model DataInteger extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.INT;
     integerValue: integer;
 }
 
 model DataJsonTable extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.JSON_TABLE;
     value: string;
 }
 
 model DataEnum extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.ENUM;
 }
 
 model DataRecordRef extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.RECORD_REF;
     value: integer;
 }
 
 model DataString extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.STRING;
     stringValue: string;
 }
 
 model DataStructureRef extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.STRUCTURED;
     structuredObjectId: integer;
 }
 
 model DataText extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.TEXT;
     textValue: string;
 }
 
 model DataFormattedText extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.FORMATTED_TEXT;
     value: string;
 }
 
 model DataUnitdate extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.UNITDATE;
     value: string;
 }
 
 model DataUnitid extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.UNITID;
     unitId: string;
 }
 
 model DataUriRef extends ItemData {
+    @invisible(Lifecycle)
     dataType: DataType.URI_REF;
     nodeId?: integer;
     value: string;
@@ -739,6 +755,7 @@ model AbstractField {
  * Fund field names for filter
  */
 model FundsFilterField extends AbstractField {
+    @invisible(Lifecycle)
     fieldType: FieldType.FUND;
     fieldName: FundsFieldName;
 }
@@ -754,6 +771,7 @@ enum FundsFieldName {
  * Node (descItem) field names for filter
  */ 
 model NodesFilterField extends AbstractField {
+    @invisible(Lifecycle)
     fieldType: FieldType.NODE;
     typeCode: string;
     specCode?: string;
@@ -780,11 +798,12 @@ model AbstractFilter {
  * Compares specified attribute of the entity with specified value using specified operation
  */
 model FieldValueFilter extends AbstractFilter {
+    @invisible(Lifecycle)
     filterType: FilterType.fieldValue;
     /** searched field */
     field: AbstractField;
     /** searched value */
-    value: string;
+    value?: string;
     /** operation type */
     operation: OperationCompareType;
 }
@@ -793,6 +812,7 @@ model FieldValueFilter extends AbstractFilter {
  * Performs fulltext search over the whole entity
  */
 model MultimatchContainsFilter extends AbstractFilter {
+    @invisible(Lifecycle)
     filterType: FilterType.contains;
     /** searched value */
     value: string;
@@ -802,6 +822,7 @@ model MultimatchContainsFilter extends AbstractFilter {
  * Join subfilters using logical operator, result may be used in other LogicalFilter as one of subfilter
  */
 model LogicalFilter extends AbstractFilter {
+    @invisible(Lifecycle)
     filterType: FilterType.logical;
     /** collection of filters */
     filters: AbstractFilter[];
@@ -849,6 +870,9 @@ model ResultEntityRef {
     items?: EntityRef[];
 }
 
+/**
+ * Administrativní funkce
+ */
 @tag("admin")
 @route("/admin")
 namespace ElzaAPI.Admin {
@@ -900,15 +924,16 @@ namespace ElzaAPI.Dao {
         /** dao id */
         @path id: integer,
         /** new scenario */
-        @body body: string
+        @body body: string;
+        @header contentType: "application/json";
     ): {
-         /** The scenario has been changed */
-         @Http.statusCode statusCode: 200;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+        /** The scenario has been changed */
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 }
 
 @route("/daorepository")
@@ -938,13 +963,13 @@ namespace ElzaAPI.ExternalSystem {
         /** request body */
         @body body: ExtSystemProperty[]
     ): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-       } | {
-          /** Id does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+        /** Pending, processing, finished */
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Delete one property of external system
@@ -954,13 +979,13 @@ namespace ElzaAPI.ExternalSystem {
         /** external system property id */
         @body extSysPropertyId: integer[]
     ): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-       } | {
-          /** Id does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+        /** Pending, processing, finished */
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 }
 
 @tag("funds")
@@ -972,8 +997,8 @@ namespace ElzaAPI.fund {
     @post op createFund(
         @body body: CreateFund;
     ): Fund | {
-          /** Invalid data for AS creation */
-          @Http.statusCode statusCode: 400;
+        /** Invalid data for AS creation */
+        @Http.statusCode statusCode: 400;
     };
 
     /**
@@ -984,18 +1009,18 @@ namespace ElzaAPI.fund {
         /** search parameters */
         @body content: SearchParams;
     ): FindFundsResult | {
-          /** Bad Request, query with incorrect parameters */
-          @Http.statusCode statusCode: 400;
-          @body data: BaseException;
-       } | {
-          /** Unauthorized */
-          @Http.statusCode statusCode: 401;
-          @body data: BaseException;
-       } | {
-          /** Forbidden */
-          @Http.statusCode statusCode: 403;
-          @body data: BaseException;
-       };
+        /** Bad Request, query with incorrect parameters */
+        @Http.statusCode statusCode: 400;
+        @body data: BaseException;
+    } | {
+        /** Unauthorized */
+        @Http.statusCode statusCode: 401;
+        @body data: BaseException;
+    } | {
+        /** Forbidden */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    };
 
     /**
      * Search for archive files (AS)
@@ -1020,8 +1045,8 @@ namespace ElzaAPI.fund {
         /** fund ID. Might be ID or fund UUID */
         @path id: string;
     ): FundDetail | {
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
     };
 
     /**
@@ -1033,9 +1058,9 @@ namespace ElzaAPI.fund {
         @path id: string;
         @body body: UpdateFund;
     ): FundDetail | {
-          @Http.statusCode statusCode: 400;
+        @Http.statusCode statusCode: 400;
     } | {
-          @Http.statusCode statusCode: 404;
+        @Http.statusCode statusCode: 404;
     };
 
     /**
@@ -1046,12 +1071,12 @@ namespace ElzaAPI.fund {
         /** Fund ID. Might be ID or fund UUID */
         @path id: string;
         /** Doplnění způsobu importu */
-        @body body: ImportFundData;
+        @multipartBody body: ImportFundData;
         @header contentType: "multipart/form-data";
     ): void | {
-          @Http.statusCode statusCode: 400;
+        @Http.statusCode statusCode: 400;
     } | {
-          @Http.statusCode statusCode: 406;
+        @Http.statusCode statusCode: 406;
     };
 
     /**
@@ -1071,13 +1096,16 @@ namespace ElzaAPI.fund {
     @route("{fundId}/usedItemtypes/{fundVersionId}") 
     @get op usedItemTypes(
         ...FundIdParameter,
-		...FundVersionIdParameter): UsedItemType[];
+		...FundVersionIdParameter
+    ): UsedItemType[];
 
     /**
      * Return list of filesystem repositories
      */
     @route("{fundId}/fsrepos")
-    @get op fsRepos(...FundIdParameter): FsRepo[];
+    @get op fsRepos(
+        ...FundIdParameter
+    ): FsRepo[];
 
     /**
      * Create DAO link
@@ -1088,7 +1116,11 @@ namespace ElzaAPI.fund {
         ...FsRepoIdParameter,
         ...NodeIdParameter,
         @query path?: string
-    ): integer;
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer;
+    };
 
     /**
      * Return list of filesystem items
@@ -1128,14 +1160,14 @@ namespace ElzaAPI.fund {
         ...NodeIdParameter,
         /** TREE (-> list = false), LIST (-> list = true) */
         @query list: boolean
-   ): {
-         /** The mode has changed */
-         @Http.statusCode statusCode: 200;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+    ): {
+        /** The mode has changed */
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 }
 
 @tag("descitems")
@@ -1164,10 +1196,10 @@ namespace ElzaAPI.DescItem {
         /** new attribute value */
         @body body: NodeItem
     ): ItemDataResult | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 }
 
 @tag("accesspoints")
@@ -1180,13 +1212,13 @@ namespace ElzaAPI.AccessPoint {
     @delete op deleteAccessPoints(
         @body body: DeleteAccessPointsDetail
     ): {
-         /** The entities has been deleted */
-         @Http.statusCode statusCode: 200;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+        /** The entities has been deleted */
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Invalidation of access point (delete/replace)
@@ -1198,13 +1230,13 @@ namespace ElzaAPI.AccessPoint {
         /** addition for method of invalidation */
         @body body?: DeleteAccessPointDetail
     ): {
-         /** The entity has been deleted */
-         @Http.statusCode statusCode: 200;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+        /** The entity has been deleted */
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Restore deleted entity and return to original state
@@ -1214,13 +1246,13 @@ namespace ElzaAPI.AccessPoint {
         /** id of accesspoint */
         @path id: string,
     ): {
-         /** The entity has been restored */
-         @Http.statusCode statusCode: 200;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+        /** The entity has been restored */
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
      /**
      * Get invalidated (deleted) entities
@@ -1314,11 +1346,15 @@ namespace ElzaAPI.AccessPoint {
         @body body: ApPartFormVO,
         /** accesspoint version */
         @query apVersion?: integer
-    ): integer | {
-          /** id does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer; 
+    } | {
+        /** id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Update a revision part of ApAccessPoint
@@ -1333,11 +1369,15 @@ namespace ElzaAPI.AccessPoint {
         @body body: ApPartFormVO,
         /** accesspoint version */
         @query apVersion?: integer
-    ): integer | {
-          /** id does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer; 
+    } | {
+        /** id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Delete part of ApAccessPoint
@@ -1350,10 +1390,15 @@ namespace ElzaAPI.AccessPoint {
         @path partId: integer,
         /** actual version of ApAccessPoint */
         @query apVersion?: integer
-    ): integer | {
-          /** requested resource does not exists */
-          @Http.statusCode statusCode: 404;
-       };
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer; 
+    }  | {
+        /** requested resource does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Change state of ApAccessPoint
@@ -1366,7 +1411,11 @@ namespace ElzaAPI.AccessPoint {
         @body body: ApStateUpdate;
         /** actual version of ApAccessPoint */
         @query apVersion?: integer,
-    ): integer;
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer; 
+    };
 
     /**
      * Set the preferred name of ApAccessPoint
@@ -1379,7 +1428,11 @@ namespace ElzaAPI.AccessPoint {
         @path partId: integer,
         /** actual version of ApAccessPoint */
         @query apVersion?: integer
-    ): integer;
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer; 
+    };
 
     /**
      * Creating a new revision of access point
@@ -1388,14 +1441,14 @@ namespace ElzaAPI.AccessPoint {
     @post op createRevision(
         /** id of accesspoint */
         @path id: integer
-    ):  {
-         /** The revision has been created */
-         @Http.statusCode statusCode: 200;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+    ): {
+        /** The revision has been created */
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Deleting a revision of access point 
@@ -1404,14 +1457,14 @@ namespace ElzaAPI.AccessPoint {
     @delete op deleteRevision(
         /** id of accesspoint */
         @path id: integer
-    ):  {
-         /** The revision has been deleted */
-         @Http.statusCode statusCode: 200;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+    ): {
+        /** The revision has been deleted */
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
    /**
      * List of automatically generated description elements for revision
@@ -1421,14 +1474,14 @@ namespace ElzaAPI.AccessPoint {
         /** id of accesspoint */
         @path id: string
     ): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-         @body data: ResultAutoItems;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+        /** Pending, processing, finished */
+        @Http.statusCode statusCode: 200;
+        @body data: ResultAutoItems;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Change state of revision of ApAccessPoint
@@ -1441,10 +1494,14 @@ namespace ElzaAPI.AccessPoint {
         @body body: RevStateChange;
         /** actual version of ApAccessPoint */
         @query apVersion?: integer;
-    ): integer | {
-          /** requested resource does not exists */
-          @Http.statusCode statusCode: 404;
-       };
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer; 
+    } | {
+        /** requested resource does not exists */
+        @Http.statusCode statusCode: 404;
+    };
 
     /**
      * Set the preferred name of revision of ApAccessPoint
@@ -1457,10 +1514,14 @@ namespace ElzaAPI.AccessPoint {
         @path partId: integer,
         /** actual version of ApAccessPoint */
         @query apVersion?: integer;
-    ): integer | {
-          /** requested resource does not exists */
-          @Http.statusCode statusCode: 404;
-       };
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer; 
+    } | {
+        /** requested resource does not exists */
+        @Http.statusCode statusCode: 404;
+    };
 
     /**
      * Delete part of revision of ApAccessPoint
@@ -1476,12 +1537,13 @@ namespace ElzaAPI.AccessPoint {
     ): {
          /** actual version of ApAccessPoint */
          @Http.statusCode statusCode: 200;
+         @header contentType: "application/json";
          @body data: integer;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException; 
-       };
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException; 
+    };
 
     /**
      * Merge ApRevision & ApAccessPoint
@@ -1494,7 +1556,11 @@ namespace ElzaAPI.AccessPoint {
         @body body: ApStateUpdate;
         /** actual version of ApAccessPoint */
         @query apVersion?: integer;
-    ): integer;
+    ): {
+         @Http.statusCode statusCode: 200;
+         @header contentType: "application/json";
+         @body data: integer;
+    };
 }
 
 @tag("io")
@@ -1507,7 +1573,11 @@ namespace ElzaAPI.Io {
     @post op exportRequest(
         /** Export request parameters */
         @body body: ExportParams
-	): integer;
+	): {
+         @Http.statusCode statusCode: 200;
+         @header contentType: "application/json";
+         @body data: integer;
+    };
 
     /**
      * Getting the export status by request id
@@ -1516,18 +1586,18 @@ namespace ElzaAPI.Io {
 	@get op getExportStatus(
 		@path requestId: integer
 	): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-         @body data: ExportRequestStatus;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       } | {
-          /** Failed to export requested data */
-          @Http.statusCode statusCode: 500;
-          @body data: BaseException;
-       };
+        /** Pending, processing, finished */
+        @Http.statusCode statusCode: 200;
+        @body data: ExportRequestStatus;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Failed to export requested data */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+    };
 
     /**
      * Getting the generated file by request id
@@ -1538,18 +1608,18 @@ namespace ElzaAPI.Io {
 	): {
         @header contentType: "*/*";
         @body data: bytes;
-       } | {
-         /** Processing */ 
-         @Http.statusCode statusCode: 102;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException; 
-       } | { 
-          /** Failed to export requested data */
-          @Http.statusCode statusCode: 500;
-          @body data: BaseException; 
-       };
+    } | {
+        /** Processing */
+        @Http.statusCode statusCode: 102;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Failed to export requested data */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+    };
 }
 
 @tag("report")
@@ -1651,6 +1721,7 @@ namespace ElzaAPI.Report {
      * Report INTEGER value
      */ 
     model ValueInteger extends Value {
+        @invisible(Lifecycle)
         valueType: ValueType.INT;
         intValue: integer;
     }
@@ -1659,6 +1730,7 @@ namespace ElzaAPI.Report {
      * Report STRING value
      */ 
     model ValueString extends Value {
+        @invisible(Lifecycle)
         valueType: ValueType.STRING;
         textValue: string;
     }
@@ -1667,6 +1739,7 @@ namespace ElzaAPI.Report {
      * Report DATE value
      */ 
     model ValueDate extends Value {
+        @invisible(Lifecycle)
         valueType: ValueType.DATE;
         dateValue: offsetDateTime;
     }
@@ -1675,6 +1748,7 @@ namespace ElzaAPI.Report {
      * Report ACCESSPOINT_ID value
      */
     model ValueAccesspointId extends Value {
+        @invisible(Lifecycle)
         valueType: ValueType.AP_ID;
         accesspointId: integer;
     }
@@ -1683,6 +1757,7 @@ namespace ElzaAPI.Report {
      * Report data FOND_ID value
      */
     model ValueFondId extends Value {
+        @invisible(Lifecycle)
         valueType: ValueType.FUND_ID;
         fondId: integer;
     }
@@ -1728,7 +1803,11 @@ namespace ElzaAPI.Report {
         @path code: string;
         /** hodnoty zadaných parametrů */
         @body body: ReportParameters;
-    ): integer;
+    ): {
+         @Http.statusCode statusCode: 200;
+         @header contentType: "application/json";
+         @body data: integer;
+    };
 
     /**
      * Get the status of running statistics
@@ -1737,18 +1816,18 @@ namespace ElzaAPI.Report {
     @get op getReportStatus(
         @path requestId: integer;
     ): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-         @body data: RequestProcessState;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       } | {
-          /** Request execution failed */
-          @Http.statusCode statusCode: 500;
-          @body data: BaseException;
-       };
+        /** Pending, processing, finished */
+        @Http.statusCode statusCode: 200;
+        @body data: RequestProcessState;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Request execution failed */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+    };
 
     /**
      * Download statistics results by request id
@@ -1761,22 +1840,22 @@ namespace ElzaAPI.Report {
         @Http.statusCode statusCode: 200;
         @header contentType: "application/json";
         @body data: ReportData;
-       } | {
+    } | {
         @Http.statusCode statusCode: 200;
         @header contentType: "text/csv";
         @body data: bytes;
-       } | {
-         /** Processing */ 
-         @Http.statusCode statusCode: 102;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException; 
-       } | { 
-          /** Failed to export requested data */
-          @Http.statusCode statusCode: 500;
-          @body data: BaseException; 
-       };
+    } | {
+        /** Processing */ 
+        @Http.statusCode statusCode: 102;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException; 
+    } | { 
+        /** Failed to export requested data */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException; 
+    };
 }
 
 @tag("node")
@@ -1825,14 +1904,14 @@ namespace ElzaAPI.Node {
         @path fundVersionId: integer;
         @path nodeId: integer;
     ): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-         @body data: PlainTextRepresentation[];
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+        /** Pending, processing, finished */
+        @Http.statusCode statusCode: 200;
+        @body data: PlainTextRepresentation[];
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Search for archive files (funds)
@@ -1842,18 +1921,18 @@ namespace ElzaAPI.Node {
         /** search parameters */
         @body body: SearchParams
     ): FundSearchResult[] | {
-          /** Bad Request, query with incorrect parameters */
-          @Http.statusCode statusCode: 400;
-          @body data: BaseException;
-       } | {
-          /** Unauthorized */
-          @Http.statusCode statusCode: 401;
-          @body data: BaseException;
-       } | {
-          /** Forbidden */
-          @Http.statusCode statusCode: 403;
-          @body data: BaseException;
-       };
+        /** Bad Request, query with incorrect parameters */
+        @Http.statusCode statusCode: 400;
+        @body data: BaseException;
+    } | {
+        /** Unauthorized */
+        @Http.statusCode statusCode: 401;
+        @body data: BaseException;
+    } | {
+        /** Forbidden */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    };
 
     /**
      * Search for nodes in archive file (fund)
@@ -1862,18 +1941,18 @@ namespace ElzaAPI.Node {
     @get op getSearchResult(
         ...FundIdParameter;
     ): SearchResult[] | {
-          /** Bad Request, query with incorrect parameters */
-          @Http.statusCode statusCode: 400;
-          @body data: BaseException;
-       } | {
-          /** Unauthorized */
-          @Http.statusCode statusCode: 401;
-          @body data: BaseException;
-       } | {
-          /** Forbidden */
-          @Http.statusCode statusCode: 403;
-          @body data: BaseException;
-       };
+        /** Bad Request, query with incorrect parameters */
+        @Http.statusCode statusCode: 400;
+        @body data: BaseException;
+    } | {
+        /** Unauthorized */
+        @Http.statusCode statusCode: 401;
+        @body data: BaseException;
+    } | {
+        /** Forbidden */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    };
 }
 
 @tag("search")
@@ -1886,18 +1965,18 @@ namespace ElzaAPI.Search {
         /** search parameters */
         @body body: SearchParams;
     ): ResultEntityRef | {
-          /** Bad Request, query with incorrect parameters */
-          @Http.statusCode statusCode: 400;
-          @body data: BaseException;
-       } | {
-          /** Unauthorized */
-          @Http.statusCode statusCode: 401;
-          @body data: BaseException;
-       } | {
-          /** Forbidden */
-          @Http.statusCode statusCode: 403;
-          @body data: BaseException;
-       };
+        /** Bad Request, query with incorrect parameters */
+        @Http.statusCode statusCode: 400;
+        @body data: BaseException;
+    } | {
+        /** Unauthorized */
+        @Http.statusCode statusCode: 401;
+        @body data: BaseException;
+    } | {
+        /** Forbidden */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    };
 
     /**
      * Searches for array descriptions
@@ -1907,21 +1986,21 @@ namespace ElzaAPI.Search {
         /** search parameters */
         @body body: SearchParams;
     ): ResultEntityRef | {
-          /** Bad Request, query with incorrect parameters */
-          @Http.statusCode statusCode: 400;
-          @body data: BaseException;
-       } | {
-          /** Unauthorized */
-          @Http.statusCode statusCode: 401;
-          @body data: BaseException;
-       } | {
-          /** Forbidden */
-          @Http.statusCode statusCode: 403;
-          @body data: BaseException;
-       };
+        /** Bad Request, query with incorrect parameters */
+        @Http.statusCode statusCode: 400;
+        @body data: BaseException;
+    } | {
+        /** Unauthorized */
+        @Http.statusCode statusCode: 401;
+        @body data: BaseException;
+    } | {
+        /** Forbidden */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    };
 }
 
-@service({
+@service(#{
     title: "ELZA API",
 })
 namespace ElzaAPI {

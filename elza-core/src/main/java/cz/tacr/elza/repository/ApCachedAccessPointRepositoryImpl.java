@@ -2,6 +2,9 @@ package cz.tacr.elza.repository;
 
 import static cz.tacr.elza.domain.ApCachedAccessPoint.DATA;
 import static cz.tacr.elza.domain.ApCachedAccessPoint.FIELD_ACCESSPOINT_ID;
+import static cz.tacr.elza.domain.ArrDescItem.NORM_FROM;
+import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
+import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.AP_TYPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.INDEX;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.NM_MAIN;
@@ -12,10 +15,7 @@ import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SEPARATOR;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.REV_STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.USERNAME;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.ANALYZED;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.REL_AP_ID;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.NORM_FROM;
-import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBinder.NORM_TO;
+import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.ANALYZED;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -266,13 +266,13 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     	}
     	if (StringUtils.isNotEmpty(searchFilterVO.getCreation())) {
     		ArrDataUnitdate creDate = UnitDateConverter.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
-    		bool.must(factory.range().field(DATA_CRE_DATE + NORM_FROM).atMost(creDate.getNormalizedFrom()))
-    			.must(factory.range().field(DATA_CRE_DATE + NORM_TO).atLeast(creDate.getNormalizedTo()));
+    		bool.must(factory.range().field(DATA_CRE_DATE + SEPARATOR + NORM_FROM).atMost(creDate.getNormalizedFrom()))
+    			.must(factory.range().field(DATA_CRE_DATE + SEPARATOR + NORM_TO).atLeast(creDate.getNormalizedTo()));
     	}
     	if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
     		ArrDataUnitdate extDate = UnitDateConverter.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
-    		bool.must(factory.range().field(DATA_EXT_DATE + NORM_FROM).atMost(extDate.getNormalizedFrom()))
-    			.must(factory.range().field(DATA_EXT_DATE + NORM_TO).atLeast(extDate.getNormalizedTo()));
+    		bool.must(factory.range().field(DATA_EXT_DATE + SEPARATOR + NORM_FROM).atMost(extDate.getNormalizedFrom()))
+    			.must(factory.range().field(DATA_EXT_DATE + SEPARATOR + NORM_TO).atLeast(extDate.getNormalizedTo()));
     	}
 
     	if (!bool.hasClause()) {
