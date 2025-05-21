@@ -27,7 +27,8 @@ import cz.tacr.elza.ws.types.v1.StructuredObject;
 import cz.tacr.elza.ws.types.v1.StructuredObjectIdentifiers;
 
 public class StructuredObjectServiceTest extends AbstractControllerTest {
-    @Test
+
+	@Test
     public void structObjTest() {
 
         String addressFundService = RestAssured.baseURI + ":" + RestAssured.port + "/services"
@@ -101,12 +102,12 @@ public class StructuredObjectServiceTest extends AbstractControllerTest {
     private Items createItems(String titleValue) {
         Items soItems = new Items();
         ItemString si1 = new ItemString();
-        si1.setType("SRD_TITLE");
+        si1.setType(SRD_TITLE);
         si1.setValue(titleValue);
         soItems.getStrOrLongOrEnm().add(si1);
 
         ItemString si2 = new ItemString();
-        si2.setType("SRD_UNIT_DATE");
+        si2.setType(SRD_UNIT_DATE);
         si2.setValue("2015");
         soItems.getStrOrLongOrEnm().add(si2);
 

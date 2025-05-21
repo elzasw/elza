@@ -29,6 +29,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.FileSystemUtils;
 
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.packageimport.PackageUtils;
 import cz.tacr.elza.packageimport.autoimport.PackageInfoWrapper;
@@ -70,6 +71,7 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
     private List<String> partTypeCodes;
     private List<String> itemTypeCodes;
     private Map<String, List<String>> typeSpecMap;
+    private Map<String, DataType> itemTypeDataTypeMap;
 
     private Map<String, PackageInfoWrapper> latestVersionMap;
 
@@ -84,6 +86,7 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
         partTypeCodes = new ArrayList<>();
         itemTypeCodes = new ArrayList<>();
         typeSpecMap = new HashMap<>();
+        itemTypeDataTypeMap = new HashMap<>();
 
         // vyčištění složek s indexovými soubory
         if (cleanIndexDir) {
@@ -92,13 +95,17 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
         }
 
         // get item type codes from DB
-
-        List<Item> itemTypeItems = jdbcTemplate.query("SELECT * FROM rul_item_type", (rs, rowNum) -> new Item(rs.getInt("item_type_id"), rs.getString("code")));
+        List<Item> itemTypeItems = jdbcTemplate.query("SELECT * FROM rul_item_type", (rs, rowNum) -> new Item(rs.getInt("item_type_id"), rs.getInt("data_type_id"), rs.getString("code")));
         Map<Integer, String> itemTypeMap = itemTypeItems.stream().collect(Collectors.toMap(Item::getItemId, Item::getCode));
         itemTypeCodes.addAll(itemTypeItems.stream().map(i -> i.code).collect(Collectors.toList()));
 
+        // get data type from DB
+        List<Item> dataTypes = jdbcTemplate.query("SELECT * FROM rul_data_type", (rs, rowNum) -> new Item(rs.getInt("data_type_id"), null, rs.getString("code")));
+        Map<Integer, String> dataTypeMap = dataTypes.stream().collect(Collectors.toMap(Item::getItemId, Item::getCode));
+        itemTypeItems.forEach(item -> itemTypeDataTypeMap.put(item.getCode(), DataType.valueOf(dataTypeMap.get(item.getDataTypeId()))));
+
         // get item spec codes from DB
-        List<Item> itemSpecItems = jdbcTemplate.query("SELECT * FROM rul_item_spec", (rs, rowNum) -> new Item(rs.getInt("item_spec_id"), rs.getString("code")));
+        List<Item> itemSpecItems = jdbcTemplate.query("SELECT * FROM rul_item_spec", (rs, rowNum) -> new Item(rs.getInt("item_spec_id"), null, rs.getString("code")));
         Map<Integer, String> itemSpecMap = itemSpecItems.stream().collect(Collectors.toMap(Item::getItemId, Item::getCode));
         List<String> itemSpecCodes = itemSpecItems.stream().map(i -> i.getCode()).collect(Collectors.toList());
 
@@ -229,6 +236,11 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 		return typeSpecMap.getOrDefault(itemTypeCode, new ArrayList<>());
 	}
 
+	@Override
+	public DataType getDataTypeByItemTypeCode(String itemTypeCode) {
+		return itemTypeDataTypeMap.get(itemTypeCode);
+	}
+
 	public List<PackageInfoWrapper> getPackagesToImport() {
         return packagesToImport;
     }
@@ -253,21 +265,26 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
         }
     }
 
-    private class Item { // for item_type & item_spec
+    private class Item { // for rul_item_type & rul_item_spec & rul_data_type
     	Integer itemId;
+    	Integer dataTypeId;
     	String code;
-		Item(Integer itemId, String code) {
+		Item(Integer itemId, Integer dataTypeId, String code) {
 			this.itemId = itemId;
+			this.dataTypeId = dataTypeId;
 			this.code = code;
 		}
 		public Integer getItemId() {
 			return itemId;
 		}
+		public Integer getDataTypeId() {
+			return dataTypeId;
+		}
 		public String getCode() {
 			return code;
 		}
     }
-    
+
     private class Assign { // for assigning typeId & specId
     	Integer typeId;
     	Integer specId;

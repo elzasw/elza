@@ -6,10 +6,10 @@
     "compile": "tsp compile main.tsp"
   },
   "dependencies": {
-    "@typespec/compiler": "^0.65",
-    "@typespec/http": "^0.65",
-    "@typespec/openapi3": "^0.65",
-    "@typespec/rest": "^0.65"
+    "@typespec/compiler": "^1.0.0",
+    "@typespec/http": "^1.0.1",
+    "@typespec/openapi3": "^1.0.0",
+    "@typespec/rest": "^0.70.0"
   },
   "private": true
 }
