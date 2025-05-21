@@ -388,15 +388,15 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         BooleanPredicateClausesStep<?> bool;
         switch (condition) {
             case CONTAINS:
-            	SearchPredicate fromPredicate = factory.range().field(ArrDescItem.NORMALIZED_FROM_ATT).atLeast(secondsFrom).toPredicate();
-            	SearchPredicate toPredicate = factory.range().field(ArrDescItem.NORMALIZED_TO_ATT).atMost(secondsTo).toPredicate();
+            	SearchPredicate fromPredicate = factory.range().field(ArrDescItem.NORM_FROM).atLeast(secondsFrom).toPredicate();
+            	SearchPredicate toPredicate = factory.range().field(ArrDescItem.NORM_TO).atMost(secondsTo).toPredicate();
             	bool = factory.bool().must(fromPredicate).must(toPredicate);
                 break;
             case GE:
-            	bool = factory.bool().must(factory.range().field(ArrDescItem.NORMALIZED_FROM_ATT).atLeast(secondsFrom).toPredicate());
+            	bool = factory.bool().must(factory.range().field(ArrDescItem.NORM_FROM).atLeast(secondsFrom).toPredicate());
                 break;
             case LE:
-            	bool = factory.bool().must(factory.range().field(ArrDescItem.NORMALIZED_TO_ATT).atMost(secondsTo).toPredicate());
+            	bool = factory.bool().must(factory.range().field(ArrDescItem.NORM_TO).atMost(secondsTo).toPredicate());
                 break;
             default:
                 throw new IllegalStateException("Neznámý typ podmínky " + condition);
@@ -494,8 +494,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         PointsConfig intConfig = new PointsConfig(NumberFormat.getIntegerInstance(), Integer.class);
         PointsConfig longConfig = new PointsConfig(NumberFormat.getNumberInstance(), Long.class);
         stringNumericConfigHashMap.put(ArrDescItem.FIELD_ITEM_SPEC_ID, intConfig);
-        stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_FROM_ATT, longConfig);
-        stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_TO_ATT, longConfig);
+        stringNumericConfigHashMap.put(ArrDescItem.NORM_FROM, longConfig);
+        stringNumericConfigHashMap.put(ArrDescItem.NORM_TO, longConfig);
 
         parser.setPointsConfigMap(stringNumericConfigHashMap);
 

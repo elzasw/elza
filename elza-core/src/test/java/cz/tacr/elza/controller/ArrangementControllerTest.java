@@ -222,7 +222,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         Fund fund = createFund("Test fulltext " + i, "TST" + 1);
 
-        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
+        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode(SRD_TITLE);
 
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
         List<ArrNodeVO> nodes = createLevels(fundVersion);
@@ -718,8 +718,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // vytvoření další hodnoty - vícenásobné
         helperTestService.waitForWorkers();
-        type = findDescItemTypeByCode("SRD_OTHER_ID");
-        spec = findDescItemSpecByCode("SRD_OTHERID_CJ", type);
+        type = findDescItemTypeByCode(SRD_OTHER_ID);
+        spec = findDescItemSpecByCode(SRD_OTHERID_CJ, type);
         descItem = buildDescItem(type.getCode(), spec.getCode(), "1", 1, null, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
@@ -741,7 +741,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.CopySiblingResult copySiblingResult =
                 copyOlderSiblingAttribute(fundVersion.getId(), type.getId(), nodes.get(2));
 
-        type = findDescItemTypeByCode("SRD_UNIT_DATE");
+        type = findDescItemTypeByCode(SRD_UNIT_DATE);
         descItem = buildDescItem(type.getCode(), null, "1920", 1, null, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
@@ -815,8 +815,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // vytváření hodnoty pro dědictví
         helperTestService.waitForWorkers();
-        type = findDescItemTypeByCode("SRD_ENTITY_ROLE");
-        spec = findDescItemSpecByCode("SRD_ENTITY_ROLE_1", type);
+        type = findDescItemTypeByCode(SRD_ENTITY_ROLE);
+        spec = findDescItemSpecByCode(SRD_ENTITY_ROLE_1, type);
         descItem = buildDescItem(type.getCode(), spec.getCode(), accessPoint, null, null, null);
         descItemResult = createDescItem(descItem, fundVersion, rootNode, type);
     }
@@ -1077,7 +1077,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         }
 
         // vytvoření hodnoty
-        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
+        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode(SRD_TITLE);
         int index = 0;
         for (ArrNodeVO node : nodes) {
             ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, index + "value" + index, null, null, null);
@@ -1102,7 +1102,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         helperTestService.waitForIndexUpdate();
 
         // nalezení hodnot podle změněné hodnoty
-        RulItemType type = itemTypeRepository.findOneByCode("SRD_TITLE");
+        RulItemType type = itemTypeRepository.findOneByCode(SRD_TITLE);
         type.setDataType(dataTypeRepository.findByCode("TEXT"));  // kvůli transakci (no session)
         List<ArrDescItem> itemsContainingText = new TransactionTemplate(tm).execute(a -> {
         	return descItemRepository.findByNodesContainingText(nodeRepository.findAllById(nodeIds), type, null, "valXYZ");
@@ -1193,7 +1193,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrNodeVO node2 = nodesSource.get(2);
 
         // vytvoření hodnoty
-        RulDescItemTypeExtVO type = findDescItemTypeByCode("SRD_TITLE");
+        RulDescItemTypeExtVO type = findDescItemTypeByCode(SRD_TITLE);
         ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null, null);
         ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node1, type);
         ArrItemVO descItemCreated = descItemResult.getItem();

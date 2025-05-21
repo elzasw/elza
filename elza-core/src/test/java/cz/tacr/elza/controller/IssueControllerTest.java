@@ -294,7 +294,7 @@ public class IssueControllerTest extends AbstractControllerTest {
      */
     private Fund createFund() {
         Fund fund = createFund("Test issue", "TST1");
-        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
+        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode(SRD_TITLE);
         return fund;
     }
 

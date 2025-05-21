@@ -48,7 +48,31 @@ public abstract class AbstractTest {
 
     // import fund
     protected final static String XML_FUND = "fund-filter-nodes.xml";
-    
+
+    // item type code for title
+    protected final static String SRD_TITLE = "SRD_TITLE";
+
+    // item type code for unit-date
+    protected final static String SRD_UNIT_DATE = "SRD_UNIT_DATE";
+
+    // item type code for other-id - Jiná označení
+    protected final static String SRD_OTHER_ID = "SRD_OTHER_ID";
+
+    // item spec code for other-id
+    protected final static String SRD_OTHERID_CJ = "SRD_OTHERID_CJ";
+
+    // item type for enum 
+    protected final static String SRD_LANGUAGE = "SRD_LANGUAGE";
+
+    // item spec for SRD_LANGUAGE enum
+    protected final static String SRD_LANGUAGE_1 = "SRD_LANGUAGE_1";
+
+    // item type for record_ref
+    protected final static String SRD_ENTITY_ROLE = "SRD_ENTITY_ROLE";
+
+    // item spec for record_ref
+    protected final static String SRD_ENTITY_ROLE_1 = "SRD_ENTITY_ROLE_1";
+
     @Autowired
     protected ClientFactoryVO clientFactoryVO;
     @Autowired

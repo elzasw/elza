@@ -10,10 +10,12 @@ import java.util.List;
 
 import org.junit.Test;
 
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.test.controller.vo.CreateFund;
@@ -137,12 +139,39 @@ public class FundControllerTest extends AbstractControllerTest {
     	Fund fund = createFund("fund1", "internalCode");
     	assertNotNull(fund);
 
-    	// create ArrNode with value in fund
-        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
+    	// create levels (nodes)
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
         List<ArrNodeVO> nodes = createLevels(fundVersion);
-        ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, "value", null, null, null);
-        createDescItem(descItem, fundVersion, nodes.get(0), typeVo);
+
+        // create item by SRD_TITLE
+        RulDescItemTypeExtVO typeTitle = findDescItemTypeByCode(SRD_TITLE);
+        ArrItemVO itemTitle = buildDescItem(typeTitle.getCode(), null, "value", null, null, null);
+        createDescItem(itemTitle, fundVersion, nodes.get(0), typeTitle);
+
+        // create item by SRD_UNIT_DATE
+        RulDescItemTypeExtVO typeUnitdate = findDescItemTypeByCode(SRD_UNIT_DATE);
+        ArrItemVO itemUnitdate = buildDescItem(typeUnitdate.getCode(), null, "15.5.2025", null, null, null);
+        createDescItem(itemUnitdate, fundVersion, nodes.get(0), typeUnitdate);
+
+        // create item by SRD_OTHER_ID
+        RulDescItemTypeExtVO typeOtherId = findDescItemTypeByCode(SRD_OTHER_ID);
+        RulDescItemSpecExtVO specOtherId = findDescItemSpecByCode(SRD_OTHERID_CJ, typeOtherId);
+        ArrItemVO itemOtherId = buildDescItem(typeOtherId.getCode(), specOtherId.getCode(), "13", null, null, null);
+        createDescItem(itemOtherId, fundVersion, nodes.get(0), typeOtherId);
+
+        // create item by SRD_LANGUAGE
+        RulDescItemTypeExtVO typeLng = findDescItemTypeByCode(SRD_LANGUAGE);
+        RulDescItemSpecExtVO specLng = findDescItemSpecByCode(SRD_LANGUAGE_1, typeLng);
+        ArrItemVO itemLng = buildDescItem(typeLng.getCode(), specLng.getCode(), null, null, null, null);
+        createDescItem(itemLng, fundVersion, nodes.get(0), typeLng);
+
+        // create item by SRD_ENTITY_ROLE
+        List<ApAccessPointVO> accessPoints = findRecord(null, null, null, null, null);
+        ApAccessPointVO accessPoint = accessPoints.get(0);
+        RulDescItemTypeExtVO typeAp = findDescItemTypeByCode(SRD_ENTITY_ROLE);
+        RulDescItemSpecExtVO specAp = findDescItemSpecByCode(SRD_ENTITY_ROLE_1, typeAp);
+        ArrItemVO itemAp = buildDescItem(typeAp.getCode(), specAp.getCode(), accessPoint, null, null, null);
+        createDescItem(itemAp, fundVersion, nodes.get(0), typeAp);
 
         // create MultimatchContainsFilter filter
         MultimatchContainsFilter containsFilter = new MultimatchContainsFilter();
@@ -170,17 +199,61 @@ public class FundControllerTest extends AbstractControllerTest {
 
     	List<NodeSearchResult> nodeResult = nodeApi.nodeGetSearchResult(fund.getId());
     	assertEquals(1, nodeResult.size());
-    	
+
         // create FieldValueFilter filter
     	FieldValueFilter valueFilter = new FieldValueFilter();
-    	valueFilter.setField(new NodesFilterField().typeCode("SRD_TITLE".toLowerCase()));
+    	valueFilter.setField(new NodesFilterField().typeCode(SRD_TITLE.toLowerCase()));
     	valueFilter.setValue("alu");
     	valueFilter.setOperation(OperationCompareType.CONTAINS);
- 
+
     	// set FieldValueFilter in params
     	params.filters(List.of(valueFilter));
-    	
-    	// try to search using FieldValueFilter
+
+    	// try to search text using FieldValueFilter
+    	fundResult = nodeApi.nodeSearch(params);
+    	assertEquals(1, fundResult.size());
+
+    	// change filter by SRD_UNIT_DATE
+    	valueFilter.setField(new NodesFilterField().typeCode(SRD_UNIT_DATE.toLowerCase()));
+    	valueFilter.setValue("15.5.2025");
+    	valueFilter.setOperation(OperationCompareType.EQ);
+
+    	// try to search unitdate using FieldValueFilter
+    	fundResult = nodeApi.nodeSearch(params);
+    	assertEquals(1, fundResult.size());
+
+    	// change filter by SRD_OTHER_ID
+    	valueFilter.setField(new NodesFilterField().typeCode(SRD_OTHER_ID.toLowerCase()).specCode(SRD_OTHERID_CJ.toLowerCase()));
+    	valueFilter.setValue("13");
+    	valueFilter.setOperation(OperationCompareType.CONTAINS);
+
+    	// try to search otherId using FieldValueFilter
+    	fundResult = nodeApi.nodeSearch(params);
+    	assertEquals(1, fundResult.size());
+
+    	// change filter by SRD_LANGUAGE
+    	valueFilter.setField(new NodesFilterField().typeCode(SRD_LANGUAGE.toLowerCase()).specCode(SRD_LANGUAGE_1.toLowerCase()));
+    	valueFilter.setValue(null);
+    	valueFilter.setOperation(OperationCompareType.EQ);
+
+    	// try to search language using FieldValueFilter
+    	fundResult = nodeApi.nodeSearch(params);
+    	assertEquals(1, fundResult.size());
+
+    	// change filter by RECORD_REF search by name
+    	valueFilter.setField(new NodesFilterField().typeCode(SRD_ENTITY_ROLE.toLowerCase()).specCode(SRD_ENTITY_ROLE_1.toLowerCase()));
+    	valueFilter.setValue(accessPoint.getName());
+    	valueFilter.setOperation(OperationCompareType.STARTWITH);
+
+    	// try to search by AP name using FieldValueFilter
+    	fundResult = nodeApi.nodeSearch(params);
+    	assertEquals(1, fundResult.size());
+
+    	// change filter by RECORD_REF search by apId
+    	valueFilter.setValue(accessPoint.getId().toString());
+    	valueFilter.setOperation(OperationCompareType.EQ);
+
+    	// try to search by AP id using FieldValueFilter
     	fundResult = nodeApi.nodeSearch(params);
     	assertEquals(1, fundResult.size());
     }

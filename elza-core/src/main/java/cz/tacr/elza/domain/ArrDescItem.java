@@ -55,12 +55,13 @@ public class ArrDescItem extends ArrItem {
 	public static final String FIELD_ITEM_SPEC = "itemSpec";
 	public static final String FIELD_ITEM_SPEC_ID = "itemSpecId";
 	public static final String FULLTEXT_ATT = "fulltextValue";
-	public static final String INTGER_ATT = "valueInt";
+	public static final String INTEGER_ATT = "valueInt";
 	public static final String DECIMAL_ATT = "valueDecimal";
 	public static final String DATE_ATT = "valueDate";
 	public static final String BOOLEAN_ATT = "valueBoolean";
-	public static final String NORMALIZED_FROM_ATT = "normalizedFrom";
-	public static final String NORMALIZED_TO_ATT = "normalizedTo";
+	public static final String NORM_FROM = "norm_from";
+	public static final String NORM_TO = "norm_to";
+	public static final String REL_AP_ID = "rel_ap_id";
 
 	@JsonIgnore
     @RestResource(exported = false)
