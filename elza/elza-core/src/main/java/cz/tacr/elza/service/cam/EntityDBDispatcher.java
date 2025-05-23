@@ -456,8 +456,17 @@ public class EntityDBDispatcher {
                 }
                 stateNew = accessPointService.copyState(state, procCtx.getApChange());
                 if (deletedEntity && syncQueue) {
-                    // retain deleted state
-                    stateNew.setDeleteChange(procCtx.getApChange());
+                	
+                	// If system is CAM_COMPLETE and entity is return to non deleted state -> 
+                	// -> we respect new state and entity is not further marked as deleted 
+                	if(procCtx.getApExternalSystem().getType().equals(ApExternalSystemType.CAM_COMPLETE)) {
+                		// nop
+                		log.info("Deleted entity is restored to non deleted state, ap id: {}, ext. entity id: {}", state.getAccessPointId(), 
+                				entity.getEid()!=null?entity.getEid().getValue():"");
+                	} else {
+                		// retain deleted state
+                		stateNew.setDeleteChange(procCtx.getApChange());
+                	}
                 }
                 stateNew.setApType(apType);
                 state = stateRepository.save(stateNew);
