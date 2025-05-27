@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.multiple.ItemGeneratorConfig.CreateItem;
 import cz.tacr.elza.bulkaction.generator.multiple.ItemGeneratorConfig.DeleteItem;
@@ -407,7 +407,7 @@ public class ItemGeneratorAction extends Action {
     }
 
     @Override
-    public void init(BulkAction bulkAction, ArrBulkActionRun bulkActionRun) {
+    public void init(BulkActionTransactional bulkAction, ArrBulkActionRun bulkActionRun) {
         super.init(bulkAction, bulkActionRun);
 
         StaticDataProvider sdp = getStaticDataProvider();        

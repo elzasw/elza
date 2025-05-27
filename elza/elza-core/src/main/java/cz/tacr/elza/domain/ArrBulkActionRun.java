@@ -88,9 +88,6 @@ public class ArrBulkActionRun {
     @Column(length = 10000)
     private String error;
 
-    @Transient
-    private boolean interrupted = false;
-
     @RestResource(exported = false)
     @OneToMany(mappedBy = "bulkActionRun", fetch = FetchType.LAZY, targetEntity = ArrBulkActionNode.class)
     private List<ArrBulkActionNode> arrBulkActionNodes = new ArrayList<>(0);
@@ -287,25 +284,6 @@ public class ArrBulkActionRun {
 
     public Integer getFundVersionId() {
         return fundVersionId;
-    }
-
-    public boolean isInterrupted() {
-        return interrupted;
-    }
-
-    /**
-     * Try to interrupt bulk action
-     *
-     * @param interrupted
-     * @return Return true if action was interrupted. Return false if action is
-     *         not running and cannot be interrupted
-     */
-    public synchronized boolean setInterrupted(final boolean interrupted) {
-        if (state != State.RUNNING) {
-            return false;
-        }
-        this.interrupted = interrupted;
-        return true;
     }
 
     /**

@@ -2,10 +2,11 @@ package cz.tacr.elza.bulkaction.generator;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Objects;
 
-import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import cz.tacr.elza.bulkaction.BulkActionDFS;
 import cz.tacr.elza.bulkaction.generator.unitid.UnitIdException;
 import cz.tacr.elza.bulkaction.generator.unitid.UnitIdPart;
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -21,6 +22,7 @@ import cz.tacr.elza.domain.ArrLockedValue;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.LockedValueRepository;
 import cz.tacr.elza.service.ArrangementCacheService;
 
@@ -62,6 +64,9 @@ public class SealUnitId extends BulkActionDFS {
     @Autowired
     LockedValueRepository usedValueRepository;
 
+    @Autowired
+    FundRepository fundRepository;
+
     Deque<StackUnitId> nodeIdStack = new ArrayDeque<>();
 
     private RulItemType itemType;
@@ -78,7 +83,7 @@ public class SealUnitId extends BulkActionDFS {
 
         // prepare item type
         ItemType itemType = staticDataProvider.getItemTypeByCode(config.getItemType());
-        Validate.notNull(itemType);
+        Objects.requireNonNull(itemType);
 
         // check if supported source data type
         if (itemType.getDataType() != DataType.UNITID) {
@@ -128,7 +133,9 @@ public class SealUnitId extends BulkActionDFS {
             parentUnitId.setLastSibling(stackUnitId);
         }
 
-        ArrFund fund = runContext.getFund();
+        Integer fundVersionId = runContext.getFundVersionId();
+		Objects.requireNonNull(fundVersionId);
+        ArrFund fund = fundRepository.findByFundVersionId(fundVersionId);
 
         // find as used value
         ArrLockedValue fixedValue = usedValueRepository.findByFundAndItemTypeAndValue(fund, itemType, value);
@@ -136,6 +143,7 @@ public class SealUnitId extends BulkActionDFS {
             // create new ArrDescItem
             ArrDescItem newItem = new ArrDescItem(descItem);
             newItem.setItemId(null);
+            newItem.setDescItemObjectId(null);
             newItem.setCreateChange(getChange());
             newItem.setReadOnly(true);
             newItem = this.saveNewDescItem(newItem);
