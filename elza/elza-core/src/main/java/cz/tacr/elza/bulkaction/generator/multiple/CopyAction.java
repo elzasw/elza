@@ -9,7 +9,7 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.CopyActionResult;
@@ -52,7 +52,7 @@ public class CopyAction extends Action {
     }
 
     @Override
-    public void init(BulkAction bulkAction, ArrBulkActionRun bulkActionRun) {
+    public void init(BulkActionTransactional bulkAction, ArrBulkActionRun bulkActionRun) {
         super.init(bulkAction, bulkActionRun);
 
         StaticDataProvider sdp = getStaticDataProvider();

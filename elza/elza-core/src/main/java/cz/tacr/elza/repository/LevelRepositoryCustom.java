@@ -121,6 +121,17 @@ public interface LevelRepositoryCustom {
     List<ArrLevel> findLevelsSubtree(Integer nodeId, final int skip, final int max, final boolean ignoreRootNode);
 
     /**
+     * Vyhledání id potomků v podstromu.
+     *
+     * @param nodeId uzel prohledávání
+     * @param skip   počet přeskočených záznamů
+     * @param max    maximální počet vyhledaných záznamů
+     * @param ignoreRootNode
+     * @return seznam id
+     */
+    List<Integer> findLevelIdsSubtree(Integer nodeId, final int skip, final int max, final boolean ignoreRootNode);
+
+    /**
      * Iterate subtree BFS from specified node. Nodes in same depth are not ordered correctly,
      * but their position is fixed by sort of parent nodeId and level position.
      *

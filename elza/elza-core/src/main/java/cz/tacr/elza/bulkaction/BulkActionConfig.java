@@ -4,7 +4,7 @@ package cz.tacr.elza.bulkaction;
  * Konfigurace hromadné akce.
  *
  */
-public abstract interface BulkActionConfig {
+public interface BulkActionConfig {
 
 	/**
 	 * Return name of bulk action
@@ -19,5 +19,5 @@ public abstract interface BulkActionConfig {
 
 	boolean isFastAction();
 
-	abstract public BulkAction createBulkAction();
+	public BulkAction createBulkAction();
 }
