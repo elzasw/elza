@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -43,7 +43,7 @@ import cz.tacr.elza.service.FundLevelService;
 /**
  * Funkce řadící uzly archivního souboru podle hodnot jednotek popisu.
  */
-public class PersistentSortBulkAction extends BulkAction {
+public class PersistentSortBulkAction extends BulkActionTransactional {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 

@@ -7,7 +7,7 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.UnitIdResult;
 import cz.tacr.elza.bulkaction.generator.unitid.SealedUnitIdTree;
@@ -36,7 +36,7 @@ import cz.tacr.elza.repository.LockedValueRepository;
  * Hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
  *
  */
-public class GenerateUnitId extends BulkAction {
+public class GenerateUnitId extends BulkActionTransactional {
 
     /**
      * Typ atributu
