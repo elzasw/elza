@@ -14,7 +14,7 @@ public class BrokenActionConfig extends BaseActionConfig {
     }
 
     @Override
-    public BulkAction createBulkAction() {
+    public BulkActionTransactional createBulkAction() {
         throw new BusinessException("Broken action, try to upgrade package with action", innerException, BaseCode.SYSTEM_ERROR);
     }
 }

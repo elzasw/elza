@@ -1,11 +1,11 @@
 package cz.tacr.elza.bulkaction.generator.unitid;
 
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 
 public class UnitIdGeneratorParams {
-    final BulkAction bulkAction;
+    final BulkActionTransactional bulkAction;
     final RulItemType itemType;
     final RulItemType levelItemType;
     final SealedUnitIdTree sealedUnitIdTree;
@@ -13,7 +13,7 @@ public class UnitIdGeneratorParams {
     final RulItemType prevItemType;
     final RulItemSpec prevItemSpec;
 
-    public UnitIdGeneratorParams(BulkAction bulkAction, RulItemType itemType, RulItemType levelItemType,
+    public UnitIdGeneratorParams(BulkActionTransactional bulkAction, RulItemType itemType, RulItemType levelItemType,
             SealedUnitIdTree sealedUnitIdTree, RulItemSpec extraSlashLevelType,
             RulItemType prevItemType,
             RulItemSpec prevItemSpec) {
@@ -26,7 +26,7 @@ public class UnitIdGeneratorParams {
         this.prevItemSpec = prevItemSpec;
     }
 
-    public BulkAction getBulkAction() {
+    public BulkActionTransactional getBulkAction() {
         return bulkAction;
     }
 

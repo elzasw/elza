@@ -25,7 +25,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.AccessPointAggregationResult;
@@ -107,7 +107,7 @@ public class AccessPointAggregationAction extends Action {
     }
 
     @Override
-    public void init(BulkAction bulkAction, ArrBulkActionRun bulkActionRun) {
+    public void init(BulkActionTransactional bulkAction, ArrBulkActionRun bulkActionRun) {
         super.init(bulkAction, bulkActionRun);
 
         results = new LinkedHashMap<>();

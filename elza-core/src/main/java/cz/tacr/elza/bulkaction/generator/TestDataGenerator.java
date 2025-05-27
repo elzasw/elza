@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.primitives.Ints;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.TestDataGeneratorResult;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -41,7 +41,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  *
  *
  */
-public class TestDataGenerator extends BulkAction {
+public class TestDataGenerator extends BulkActionTransactional {
 
     /**
      * Action type

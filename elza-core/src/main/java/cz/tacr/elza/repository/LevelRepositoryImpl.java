@@ -392,14 +392,13 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         RecursiveQueryBuilder<ArrLevel> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrLevel.class);
 
         rqBuilder.addSqlPart("WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, list, path) AS (")
-        .addSqlPart("SELECT t.*, '000001' AS path FROM arr_level t WHERE t.node_id = :nodeId AND t.delete_change_id IS NULL ")
-        .addSqlPart("UNION ALL ")
-        .addSqlPart("SELECT t.*, CONCAT(td.path, '.', RIGHT(CONCAT('000000', t.position), 6)) AS deep ")
-        .addSqlPart("FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent ")
-        .addSqlPart("WHERE t.delete_change_id IS NULL) ")
-
-        .addSqlPart("SELECT t.* FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
-        .addSqlPart("WHERE t.delete_change_id IS NULL ");
+        	.addSqlPart("SELECT t.*, '000001' AS path FROM arr_level t WHERE t.node_id = :nodeId AND t.delete_change_id IS NULL ")
+        	.addSqlPart("UNION ALL ")
+        	.addSqlPart("SELECT t.*, CONCAT(td.path, '.', RIGHT(CONCAT('000000', t.position), 6)) AS deep ")
+        	.addSqlPart("FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent ")
+        	.addSqlPart("WHERE t.delete_change_id IS NULL) ")
+        	.addSqlPart("SELECT t.* FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
+        	.addSqlPart("WHERE t.delete_change_id IS NULL ");
         if (ignoreRootNodes) {
             rqBuilder.addSqlPart("AND n.node_id <> :nodeId ");
         }
@@ -409,6 +408,35 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         rqBuilder.prepareQuery(entityManager);
         rqBuilder.setParameter("nodeId", nodeId);
         NativeQuery<ArrLevel> query = rqBuilder.getQuery();
+        query.setFirstResult(skip);
+        if (max > 0) {
+            query.setMaxResults(max);
+        }
+
+        return query.getResultList();
+    }
+
+    @Override
+    public List<Integer> findLevelIdsSubtree(final Integer nodeId, final int skip, final int max, final boolean ignoreRootNodes) {
+        RecursiveQueryBuilder<Integer> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(Integer.class);
+
+        rqBuilder.addSqlPart("WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, list, path) AS (")
+        	.addSqlPart("SELECT t.*, '000001' AS path FROM arr_level t WHERE t.node_id = :nodeId AND t.delete_change_id IS NULL ")
+        	.addSqlPart("UNION ALL ")
+        	.addSqlPart("SELECT t.*, CONCAT(td.path, '.', RIGHT(CONCAT('000000', t.position), 6)) AS deep ")
+        	.addSqlPart("FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent ")
+        	.addSqlPart("WHERE t.delete_change_id IS NULL) ")
+        	.addSqlPart("SELECT t.level_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
+        	.addSqlPart("WHERE t.delete_change_id IS NULL ");
+        if (ignoreRootNodes) {
+            rqBuilder.addSqlPart("AND n.node_id <> :nodeId ");
+        }
+
+        rqBuilder.addSqlPart("ORDER BY t.path");
+
+        rqBuilder.prepareQuery(entityManager);
+        rqBuilder.setParameter("nodeId", nodeId);
+        NativeQuery<Integer> query = rqBuilder.getQuery();
         query.setFirstResult(skip);
         if (max > 0) {
             query.setMaxResults(max);
