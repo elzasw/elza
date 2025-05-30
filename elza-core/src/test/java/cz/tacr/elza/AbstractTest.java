@@ -52,6 +52,9 @@ public abstract class AbstractTest {
     // item type code for title
     protected final static String SRD_TITLE = "SRD_TITLE";
 
+    // item type code serial number
+    protected final static String SRD_SERIAL_NUMBER = "SRD_SERIAL_NUMBER";
+
     // item type code for unit-date
     protected final static String SRD_UNIT_DATE = "SRD_UNIT_DATE";
 

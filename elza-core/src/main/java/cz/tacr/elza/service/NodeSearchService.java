@@ -242,6 +242,8 @@ public class NodeSearchService {
 	    String fieldSpecName = itemSpecCode != null ? fieldSpecName = fieldName + "_" + itemSpecCode.toLowerCase() : null;
 	    DataType dataType = itemType.getDataType();
 		switch (dataType) {
+		case INT:
+			return getPredicateByInt(factory, fieldName, filter);
 		case ENUM:
 			return getPredicateByEnum(factory, fieldName, itemSpecCode, filter);
 		case RECORD_REF:
@@ -251,9 +253,24 @@ public class NodeSearchService {
 			return getPredicateByStringOrText(factory, fieldName, fieldSpecName, filter);
 		case UNITDATE:
 			return getPredicateByUnitdate(factory, fieldName, filter);
+		default:
+			throw new IllegalArgumentException("Unsupported dataType: " + dataType);
 		}
+	}
 
-		return null;
+	private SearchPredicate getPredicateByInt(final SearchPredicateFactory factory, 
+											  final String fieldTypeName,
+											  final FieldValueFilter filter) {
+	    OperationCompareType op = filter.getOperation();
+	    Integer value = Integer.parseInt(filter.getValue());
+		switch (op) {
+		case EQ:
+			return factory.match().field(fieldTypeName).matching(value).toPredicate();
+		case NEQ:
+			return factory.bool().mustNot(factory.match().field(fieldTypeName).matching(value)).toPredicate();
+		default:
+			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
+		}
 	}
 
 	private SearchPredicate getPredicateByRecordRef(final SearchPredicateFactory factory,
