@@ -46,6 +46,9 @@ public class ArrCachedNodeBinder implements TypeBinder {
         	DataType dataType = configurationReader.getDataTypeByItemTypeCode(itemTypeCode);
         	Objects.requireNonNull(dataType);
     		switch (dataType) {
+    		case INT:
+    	        createIntField(itemTypeCode.toLowerCase());
+    	        break;
     		case ENUM:
 				createStringField(itemTypeCode.toLowerCase());
 				break;

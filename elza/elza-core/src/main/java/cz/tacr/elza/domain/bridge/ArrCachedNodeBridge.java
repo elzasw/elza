@@ -51,6 +51,9 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
             	String itemTypeCodeLowerCase = item.getItemType().getCode().toLowerCase();
             	if (dataType != null) {
             		switch (dataType) {
+            		case INT:
+            			document.addValue(itemTypeCodeLowerCase, item.getValueInt());
+            			break;
             		case ENUM:
 						document.addValue(itemTypeCodeLowerCase, item.getItemSpec().getCode().toLowerCase());
 						break;

@@ -136,10 +136,10 @@ public class FundControllerTest extends AbstractControllerTest {
 
     @Test
     public void nodeSearchTest() throws InterruptedException {
-    	Fund fund = createFund("fund1", "internalCode");
-    	assertNotNull(fund);
+        Fund fund = createFund("fund1", "internalCode");
+        assertNotNull(fund);
 
-    	// create levels (nodes)
+        // create levels (nodes)
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
         List<ArrNodeVO> nodes = createLevels(fundVersion);
 
@@ -148,6 +148,11 @@ public class FundControllerTest extends AbstractControllerTest {
         ArrItemVO itemTitle = buildDescItem(typeTitle.getCode(), null, "value", null, null, null);
         createDescItem(itemTitle, fundVersion, nodes.get(0), typeTitle);
 
+        // create item by SRD_SERIAL_NUMBER
+        RulDescItemTypeExtVO typeSN = findDescItemTypeByCode(SRD_SERIAL_NUMBER);
+        ArrItemVO itemSN = buildDescItem(typeSN.getCode(), null, 1, null, null, null);
+        createDescItem(itemSN, fundVersion, nodes.get(0), typeSN);
+        
         // create item by SRD_UNIT_DATE
         RulDescItemTypeExtVO typeUnitdate = findDescItemTypeByCode(SRD_UNIT_DATE);
         ArrItemVO itemUnitdate = buildDescItem(typeUnitdate.getCode(), null, "15.5.2025", null, null, null);
@@ -175,87 +180,94 @@ public class FundControllerTest extends AbstractControllerTest {
 
         // create MultimatchContainsFilter filter
         MultimatchContainsFilter containsFilter = new MultimatchContainsFilter();
-    	containsFilter.setValue("value");
+        containsFilter.setValue("value");
 
-    	// create search params
-    	SearchParams params = new SearchParams();
-        params.setOffset(0);
-        params.setSize(100);
-    	params.addFiltersItem(containsFilter);
+        // create search params
+        SearchParams params = new SearchParams();
+        params.addFiltersItem(containsFilter);
 
-    	// waiting for reindexing to get result
-    	List<FundSearchResult> fundResult = null;
-    	int counter = 0;
+        // waiting for reindexing to get result
+        List<FundSearchResult> fundResult = null;
+        int counter = 0;
         try {
-	    	do {
-	    		Thread.sleep(100);
-	    		fundResult = nodeApi.nodeSearch(params);
-	    		counter++;
-	    	} while (fundResult.size() == 0 && counter < 1000);
-	    } catch (Exception e) {
-	        fail("Exception while waiting on result: " + e);
-	    }
-    	assertEquals(1, fundResult.size());
+            do {
+                Thread.sleep(100);
+                fundResult = nodeApi.nodeSearch(params);
+                counter++;
+            } while (fundResult.size() == 0 && counter < 1000);
+        } catch (Exception e) {
+            fail("Exception while waiting on result: " + e);
+        }
+        assertEquals(1, fundResult.size());
 
-    	List<NodeSearchResult> nodeResult = nodeApi.nodeGetSearchResult(fund.getId());
-    	assertEquals(1, nodeResult.size());
+        List<NodeSearchResult> nodeResult = nodeApi.nodeGetSearchResult(fund.getId());
+        assertEquals(1, nodeResult.size());
 
         // create FieldValueFilter filter
-    	FieldValueFilter valueFilter = new FieldValueFilter();
-    	valueFilter.setField(new NodesFilterField().typeCode(SRD_TITLE.toLowerCase()));
-    	valueFilter.setValue("alu");
-    	valueFilter.setOperation(OperationCompareType.CONTAINS);
+        FieldValueFilter valueFilter = new FieldValueFilter();
+        valueFilter.setField(new NodesFilterField().typeCode(SRD_TITLE));
+        valueFilter.setValue("alu");
+        valueFilter.setOperation(OperationCompareType.CONTAINS);
 
-    	// set FieldValueFilter in params
-    	params.filters(List.of(valueFilter));
+        // set FieldValueFilter in params
+        params.filters(List.of(valueFilter));
 
-    	// try to search text using FieldValueFilter
-    	fundResult = nodeApi.nodeSearch(params);
-    	assertEquals(1, fundResult.size());
+        // try to search text using FieldValueFilter
+        fundResult = nodeApi.nodeSearch(params);
+        assertEquals(1, fundResult.size());
 
-    	// change filter by SRD_UNIT_DATE
-    	valueFilter.setField(new NodesFilterField().typeCode(SRD_UNIT_DATE.toLowerCase()));
-    	valueFilter.setValue("15.5.2025");
-    	valueFilter.setOperation(OperationCompareType.EQ);
+        // change filter by SRD_SERIAL_NUMBER
+        valueFilter.setField(new NodesFilterField().typeCode(SRD_SERIAL_NUMBER));
+        valueFilter.setValue("1");
+        valueFilter.setOperation(OperationCompareType.EQ);
 
-    	// try to search unitdate using FieldValueFilter
-    	fundResult = nodeApi.nodeSearch(params);
-    	assertEquals(1, fundResult.size());
+        // try to search serial number using FieldValueFilter
+        fundResult = nodeApi.nodeSearch(params);
+        assertEquals(1, fundResult.size());
 
-    	// change filter by SRD_OTHER_ID
-    	valueFilter.setField(new NodesFilterField().typeCode(SRD_OTHER_ID.toLowerCase()).specCode(SRD_OTHERID_CJ.toLowerCase()));
-    	valueFilter.setValue("13");
-    	valueFilter.setOperation(OperationCompareType.CONTAINS);
+        // change filter by SRD_UNIT_DATE
+        valueFilter.setField(new NodesFilterField().typeCode(SRD_UNIT_DATE));
+        valueFilter.setValue("15.5.2025");
+        valueFilter.setOperation(OperationCompareType.EQ);
 
-    	// try to search otherId using FieldValueFilter
-    	fundResult = nodeApi.nodeSearch(params);
-    	assertEquals(1, fundResult.size());
+        // try to search unitdate using FieldValueFilter
+        fundResult = nodeApi.nodeSearch(params);
+        assertEquals(1, fundResult.size());
 
-    	// change filter by SRD_LANGUAGE
-    	valueFilter.setField(new NodesFilterField().typeCode(SRD_LANGUAGE.toLowerCase()).specCode(SRD_LANGUAGE_1.toLowerCase()));
-    	valueFilter.setValue(null);
-    	valueFilter.setOperation(OperationCompareType.EQ);
+        // change filter by SRD_OTHER_ID
+        valueFilter.setField(new NodesFilterField().typeCode(SRD_OTHER_ID).specCode(SRD_OTHERID_CJ));
+        valueFilter.setValue("13");
+        valueFilter.setOperation(OperationCompareType.CONTAINS);
 
-    	// try to search language using FieldValueFilter
-    	fundResult = nodeApi.nodeSearch(params);
-    	assertEquals(1, fundResult.size());
+        // try to search otherId using FieldValueFilter
+        fundResult = nodeApi.nodeSearch(params);
+        assertEquals(1, fundResult.size());
 
-    	// change filter by RECORD_REF search by name
-    	valueFilter.setField(new NodesFilterField().typeCode(SRD_ENTITY_ROLE.toLowerCase()).specCode(SRD_ENTITY_ROLE_1.toLowerCase()));
-    	valueFilter.setValue(accessPoint.getName());
-    	valueFilter.setOperation(OperationCompareType.STARTWITH);
+        // change filter by SRD_LANGUAGE
+        valueFilter.setField(new NodesFilterField().typeCode(SRD_LANGUAGE).specCode(SRD_LANGUAGE_1));
+        valueFilter.setValue(null);
+        valueFilter.setOperation(OperationCompareType.EQ);
 
-    	// try to search by AP name using FieldValueFilter
-    	fundResult = nodeApi.nodeSearch(params);
-    	assertEquals(1, fundResult.size());
+        // try to search language using FieldValueFilter
+        fundResult = nodeApi.nodeSearch(params);
+        assertEquals(1, fundResult.size());
 
-    	// change filter by RECORD_REF search by apId
-    	valueFilter.setValue(accessPoint.getId().toString());
-    	valueFilter.setOperation(OperationCompareType.EQ);
+        // change filter by RECORD_REF search by name
+        valueFilter.setField(new NodesFilterField().typeCode(SRD_ENTITY_ROLE).specCode(SRD_ENTITY_ROLE_1));
+        valueFilter.setValue(accessPoint.getName());
+        valueFilter.setOperation(OperationCompareType.STARTWITH);
 
-    	// try to search by AP id using FieldValueFilter
-    	fundResult = nodeApi.nodeSearch(params);
-    	assertEquals(1, fundResult.size());
+        // try to search by AP name using FieldValueFilter
+        fundResult = nodeApi.nodeSearch(params);
+        assertEquals(1, fundResult.size());
+
+        // change filter by RECORD_REF search by apId
+        valueFilter.setValue(accessPoint.getId().toString());
+        valueFilter.setOperation(OperationCompareType.EQ);
+
+        // try to search by AP id using FieldValueFilter
+        fundResult = nodeApi.nodeSearch(params);
+        assertEquals(1, fundResult.size());
     }
 
     private CreateFund createFund(String name, String internalCode, Integer fundNumber, String uuid, String mark) {
