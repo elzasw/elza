@@ -195,15 +195,15 @@ public class NodeSearchService {
 	 */
 	private SearchPredicate createSearchPredicate(SearchPredicateFactory factory, SearchParams searchParams) {
 
-		// TODO add the possibility of accumulating predicates in a loop
+		BooleanPredicateClausesStep<?> bool = factory.bool();
 
 		// zpracování filtru
     	for (AbstractFilter filter : searchParams.getFilters()) {
     		if (filter instanceof MultimatchContainsFilter) {
-    	        return multimatchContainsPredicate(factory, (MultimatchContainsFilter) filter);
+    	        bool.must(multimatchContainsPredicate(factory, (MultimatchContainsFilter) filter));
 
     		} else if (filter instanceof FieldValueFilter) {
-    			return fieldValuePredicate(factory, (FieldValueFilter) filter);
+    			bool.must(fieldValuePredicate(factory, (FieldValueFilter) filter));
 
     		} else if (filter instanceof LogicalFilter) {
     			throw new BusinessException("Filter type 'LogicalFilter' is not yet implemented", ArrangementCode.REQUEST_INVALID);
@@ -213,7 +213,7 @@ public class NodeSearchService {
     		}
     	}
 
-    	return null;
+    	return bool.toPredicate();
 	}
 
 	private SearchPredicate multimatchContainsPredicate(final SearchPredicateFactory factory, final MultimatchContainsFilter filter) {
