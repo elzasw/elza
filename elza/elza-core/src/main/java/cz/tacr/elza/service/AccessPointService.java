@@ -453,22 +453,48 @@ public class AccessPointService {
     }
 
     /**
-     * Získání objektu pomocí id nebo uuid
+     * Získání objektu pomocí id nebo uuid.
+     * 
+     * Je možné také získat ID objektu na základě externího ID předaného 
+     * ve formě EXT_SYSTEM_CODE-ID.
      *
      * @param id řetězec znaků, id nebo uuid
      * @return ApAccessPoint
      */
+    @Transactional
     public ApAccessPoint getAccessPointByIdOrUuid(String id) {
         ApAccessPoint accessPoint;
-        if (UuidUtils.isUUID(id)) {
-            accessPoint = apAccessPointRepository.findAccessPointByUuid(id);
-        } else {
-            accessPoint = apAccessPointRepository.findById(Integer.valueOf(id)).orElse(null);
+        // Check if number
+        try {
+        	Integer idInt = Integer.valueOf(id);
+        	accessPoint = apAccessPointRepository.findById(idInt).orElse(null);
+        } catch (NumberFormatException e) {
+            // Not a number
+            if (UuidUtils.isUUID(id)) {
+                accessPoint = apAccessPointRepository.findAccessPointByUuid(id);
+            } else {
+            	logger.debug("Looking for external id={}", id);
+            	accessPoint = null;
+            	// Split by - into external system code and id
+            	String[] parts = id.split("-");
+            	if (parts.length == 2) {
+            		ApBinding binding = externalSystemService.findByValueAndExternalSystemCode(parts[1], parts[0]);
+            		if (binding != null) {
+            			Optional<ApBindingState> bindingState = externalSystemService.getBindingState(binding);
+            			if (bindingState.isPresent()) {
+            				accessPoint = bindingState.get().getAccessPoint();
+            			}
+            		} else {
+            			logger.debug("Binding not found for external system code: {}, value: {}", parts[1], parts[0]);
+            		}
+            	}
+            }
         }
         if (accessPoint == null) {
             logger.error("Přístupový bod neexistuje id={}", id);
             throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).set("id", id);
         }
+        // check permissions?
         return accessPoint;
     }
 
