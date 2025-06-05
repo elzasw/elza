@@ -24,6 +24,11 @@ import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.exception.ExceptionUtils;
 
+/**
+ * Item import processor over CAM Protocol
+ * 
+ * This component will try to download entity from CAM and import it. 
+ */
 @Component
 @Scope("prototype")
 public class ItemSyncImportProcessor implements ItemSyncProcessor {
