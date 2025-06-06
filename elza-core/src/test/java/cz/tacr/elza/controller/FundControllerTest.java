@@ -28,7 +28,9 @@ import cz.tacr.elza.test.controller.vo.FundDetail;
 import cz.tacr.elza.test.controller.vo.FundSearchResult;
 import cz.tacr.elza.test.controller.vo.FundsFieldName;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
-import cz.tacr.elza.test.controller.vo.NodeSearchResult;
+import cz.tacr.elza.test.controller.vo.NodeData;
+import cz.tacr.elza.test.controller.vo.NodeDataParam;
+import cz.tacr.elza.test.controller.vo.NodeTreeData;
 import cz.tacr.elza.test.controller.vo.NodesFilterField;
 import cz.tacr.elza.test.controller.vo.OperationCompareType;
 import cz.tacr.elza.test.controller.vo.SearchParams;
@@ -200,8 +202,8 @@ public class FundControllerTest extends AbstractControllerTest {
         }
         assertEquals(1, fundResult.size());
 
-        List<NodeSearchResult> nodeResult = nodeApi.nodeGetSearchResult(fund.getId());
-        assertEquals(1, nodeResult.size());
+    	List<NodeTreeData> nodeResult = nodeApi.nodeGetSearchResult(fund.getId());
+    	assertEquals(1, nodeResult.size());
 
         // create FieldValueFilter filter
         FieldValueFilter valueFilter = new FieldValueFilter();
@@ -268,6 +270,33 @@ public class FundControllerTest extends AbstractControllerTest {
         // try to search by AP id using FieldValueFilter
         fundResult = nodeApi.nodeSearch(params);
         assertEquals(1, fundResult.size());
+    }
+
+    @Test
+    public void nodeGetNodeDataTest() {
+    	Fund fund = createFund("fund1", "internalCode");
+    	assertNotNull(fund);
+
+    	// create levels (nodes)
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
+        List<ArrNodeVO> nodes = createLevels(fundVersion);
+
+        // create item by SRD_TITLE
+        RulDescItemTypeExtVO typeTitle = findDescItemTypeByCode(SRD_TITLE);
+        ArrItemVO itemTitle = buildDescItem(typeTitle.getCode(), null, "value", null, null, null);
+        createDescItem(itemTitle, fundVersion, nodes.get(0), typeTitle);
+
+        // create NodeDataParam
+        NodeDataParam param = new NodeDataParam();
+        param.setFundVersionId(fundVersion.getId());
+        param.setNodeId(nodes.get(0).getId());
+        param.setFormData(true);
+        param.setSiblingsMaxCount(100);
+        param.setParents(true);
+        param.setChildren(true);
+
+        NodeData nodeData = nodeApi.nodeGetNodeData(param);
+        assertNotNull(nodeData);
     }
 
     private CreateFund createFund(String name, String internalCode, Integer fundNumber, String uuid, String mark) {
