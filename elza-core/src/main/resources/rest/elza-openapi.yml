@@ -1372,6 +1372,26 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - io
+  /node/node-data:
+    post:
+      operationId: Node_getNodeData
+      description: Get data for a unit of description (JP)
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeData'
+      tags:
+        - node
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodeDataParam'
   /node/plain-text/{fundVersionId}/{nodeId}:
     get:
       operationId: Node_getPlainText
@@ -1459,7 +1479,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Node.SearchResult'
+                  $ref: '#/components/schemas/NodeTreeData'
         '400':
           description: The server could not understand the request due to invalid syntax.
           content:
@@ -1775,7 +1795,7 @@ components:
     ApPartFormVO:
       type: object
       format: partform
-      description: Data for create/update a part
+      description: Data for create/update a part (external)
     ApStateApproval:
       type: string
       enum:
@@ -2155,6 +2175,27 @@ components:
           type: integer
           description: id replaced access point
       description: Deleted archive entity
+    DigitizationRequest:
+      type: object
+      required:
+        - description
+        - digitizationFrontdeskId
+        - nodesCount
+        - nodes
+      properties:
+        description:
+          type: string
+        digitizationFrontdeskId:
+          type: integer
+        nodesCount:
+          type: integer
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeTreeData'
+      allOf:
+        - $ref: '#/components/schemas/Request'
+      description: Náhrada `ArrDigitizationRequestVO`
     EntityRef:
       type: object
       required:
@@ -2270,6 +2311,56 @@ components:
         totalCount:
           type: integer
       description: Výsledek vyhledávání AS
+    FormItemSpec:
+      type: object
+      required:
+        - itemSpecId
+        - type
+        - repeatable
+      properties:
+        itemSpecId:
+          type: integer
+        type:
+          $ref: '#/components/schemas/MandatoryType'
+        repeatable:
+          type: boolean
+      description: Náhrada `DescItemSpecLiteVO`
+    FormItemType:
+      type: object
+      required:
+        - itemTypeId
+        - type
+        - repeatable
+        - undefinable
+        - favoriteSpecIds
+      properties:
+        itemTypeId:
+          type: integer
+          description: identifikator typu
+        type:
+          allOf:
+            - $ref: '#/components/schemas/MandatoryType'
+          description: typ
+        repeatable:
+          type: boolean
+          description: opakovatelnost
+        undefinable:
+          type: boolean
+          description: 'počítanýstav počítanýho atributu: 0/1 vypnutý/zapnutýatribut se může nastavit jako nedefinovaný 0/1 - nemůže/může'
+        specs:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormItemSpec'
+          description: seznam specifikací atributu
+        favoriteSpecIds:
+          type: array
+          items:
+            type: integer
+          description: seznam identifikátorů oblíbených specifikací u typu
+      description: |-
+        Odlehčená verze specifikace hodnoty atributu
+
+        Náhrada `ItemTypeLiteVO`
     FsItem:
       type: object
       required:
@@ -2521,13 +2612,13 @@ components:
           UNITDATE: '#/components/schemas/DataUnitdate'
           UNITID: '#/components/schemas/DataUnitid'
           URI_REF: '#/components/schemas/DataUriRef'
-      description: Item data
+      description: Item data parent
     ItemDataResult:
       type: object
       properties:
         parent:
           allOf:
-            - $ref: '#/components/schemas/Node'
+            - $ref: '#/components/schemas/NodeBase'
           description: parent node
         item:
           allOf:
@@ -2585,6 +2676,14 @@ components:
       allOf:
         - $ref: '#/components/schemas/AbstractFilter'
       description: Join subfilters using logical operator, result may be used in other LogicalFilter as one of subfilter
+    MandatoryType:
+      type: string
+      enum:
+        - REQUIRED
+        - RECOMMENDED
+        - POSSIBLE
+        - IMPOSSIBLE
+      description: Item mandatory type
     MultimatchContainsFilter:
       type: object
       required:
@@ -2596,23 +2695,6 @@ components:
       allOf:
         - $ref: '#/components/schemas/AbstractFilter'
       description: Performs fulltext search over the whole entity
-    Node:
-      type: object
-      required:
-        - id
-        - version
-        - uuid
-      properties:
-        id:
-          type: integer
-          description: id of node
-        version:
-          type: integer
-          description: node version
-        uuid:
-          type: string
-          description: node uuid
-      description: Náhrada za třídu ArrNodeVO
     Node.PlainTextRepresentation:
       type: object
       required:
@@ -2630,49 +2712,245 @@ components:
           type: string
           description: vytvořená citace
       description: Received quote
-    Node.SearchResult:
+    NodeAccordionData:
       type: object
       required:
         - id
-        - depth
-        - name
-        - icon
-        - hasChildren
-        - referenceMarkInt
+        - accordionLeft
+        - accordionRight
         - referenceMark
         - version
       properties:
         id:
           type: integer
-          description: node id
-        depth:
-          type: integer
-          description: hloubka zanoření ve stromu
-        name:
+          description: nodeid uzlu
+        accordionLeft:
           type: string
-          description: název uzlu
-        icon:
+          description: popis levé části accordionu
+        accordionRight:
           type: string
-          description: ikonka
-        hasChildren:
-          type: boolean
-          description: true - uzel má další potomky, false - uzel nemá další potomky
-        referenceMarkInt:
-          type: array
-          items:
-            type: integer
-          description: referenční označení. Od kořene k uzlu
+          description: popis pravé části accordionu
         referenceMark:
           type: array
           items:
             type: string
+          description: označení JP
+        nodeConformity:
+          allOf:
+            - $ref: '#/components/schemas/NodeConformity'
+          description: Informace o stavu JP
+        digitizationRequests:
+          type: array
+          items:
+            $ref: '#/components/schemas/DigitizationRequest'
+          description: seznam otevřených požadavků na digitalizaci
         version:
           type: integer
-          description: verze uzlu
+          description: db verze JP
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/WfSimpleIssue'
+          description: seznam otevřených připomínek
+      description: |-
+        Struktura pro položky v accordionu.
+
+        Náhrada `AccordionNodeVO`
+    NodeBase:
+      type: object
+      required:
+        - id
+        - version
+        - uuid
+      properties:
+        id:
+          type: integer
+          description: id of node
+        version:
+          type: integer
+          description: node version
+        uuid:
+          type: string
+          description: node uuid
+      description: Náhrada za třídu `ArrNodeVO`
+    NodeConformity:
+      type: object
+      required:
+        - state
+        - date
+        - missingList
+        - errorList
+        - viewPolicyTypeIds
+      properties:
+        state:
+          $ref: '#/components/schemas/NodeConformityState'
+        date:
+          type: string
+          format: date
+          description: datum validace
+        missingList:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeConformityMissing'
+          description: seznam chybějících hodnot
+        errorList:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeConformityError'
+          description: seznam chybných hodnot
+        viewPolicyTypeIds:
+          type: array
+          items:
+            type: integer
+          description: seznam uplatnenych politik pro zobrazeni
+      description: |-
+        Pro validace JP
+
+        Náhrada `NodeConformityVO`
+    NodeConformityError:
+      type: object
+      required:
+        - descItemObjectId
+        - description
+        - policyTypeId
+      properties:
+        descItemObjectId:
+          type: integer
+          description: identifikátor hodnoty atributu
+        description:
+          type: string
+          description: popis chyby
+        policyTypeId:
+          type: integer
+          description: identifikátor typu oprávnění
+      description: Náhrada `NodeConformityErrorVO`
+    NodeConformityMissing:
+      type: object
+      required:
+        - descItemTypeId
+        - descItemSpecId
+        - description
+        - policyTypeId
+      properties:
+        descItemTypeId:
+          type: integer
+          description: identifikátor typu
+        descItemSpecId:
+          type: integer
+          description: identifikátor specifikace
+        description:
+          type: string
+          description: popis chybějící položky
+        policyTypeId:
+          type: integer
+          description: identifikátor typu oprávnění
+      description: Náhrada `NodeConformityMissingVO`
+    NodeConformityState:
+      type: string
+      enum:
+        - OK
+        - ERR
+      description: Stav JP
+    NodeData:
+      type: object
+      required:
+        - formData
+        - parents
+        - children
+        - siblings
+        - nodeIndex
+        - nodeCount
+      properties:
+        formData:
+          allOf:
+            - $ref: '#/components/schemas/NodeFormData'
+          description: data formuláře požadované JP
+        parents:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeTreeData'
+          description: požadovaní rodiče ke kořeni
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeTreeData'
+          description: požadovaní přímí potomci
+        siblings:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeAccordionData'
+          description: požadovaní sourozenci
+        nodeIndex:
+          type: integer
+          description: index požadované JP
+        nodeCount:
+          type: integer
+          description: celkový počet JP v úrovni požadované JP
+      description: |-
+        Received data of the unit of description
+
+        Náhrada `NodeDataVO`
+    NodeDataParam:
+      type: object
+      required:
+        - fundVersionId
+        - nodeId
+        - formData
+        - siblingsMaxCount
+        - parents
+        - children
+      properties:
+        fundVersionId:
+          type: integer
+          description: version fund
+        nodeId:
+          type: integer
+          description: id of node
+        formData:
+          type: boolean
+          description: load description unit form data as well?
+        siblingsFrom:
+          type: integer
+          description: load (if not null) siblings of the description unit?
+        siblingsMaxCount:
+          type: integer
+          description: max number of siblings returned
+        siblingsFilter:
+          type: string
+          description: full-text filtering in siblings
+        parents:
+          type: boolean
+          description: Load parents description units to root?
+        children:
+          type: boolean
+          description: Load children description units?
+      description: Parameters for get information about the description unit and its "surroundings"
+    NodeFormData:
+      type: object
+      required:
+        - parent
+        - descItems
+        - itemTypes
+        - arrPerm
+      properties:
+        parent:
+          allOf:
+            - $ref: '#/components/schemas/NodeBase'
+          description: rodič
+        descItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeItem'
+          description: seznam hodnot atributu
+        itemTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormItemType'
+          description: typy atributů
         arrPerm:
           type: boolean
           description: oprávnění pořádat v dané JP
-      description: Found nodes of the archive file (fund)
+      description: Náhrada `DescFormDataNewVO`
     NodeItem:
       type: object
       properties:
@@ -2710,7 +2988,47 @@ components:
           allOf:
             - $ref: '#/components/schemas/ItemData'
           description: item data
-      description: Náhrada za třídu ArrItemVO
+      description: Náhrada za třídu `ArrItemVO`
+    NodeTreeData:
+      type: object
+      required:
+        - id
+        - depth
+        - name
+        - hasChildren
+        - referenceMark
+        - version
+      properties:
+        id:
+          type: integer
+          description: node id
+        depth:
+          type: integer
+          description: hloubka zanoření ve stromu
+        name:
+          type: string
+          description: název uzlu
+        icon:
+          type: string
+          description: ikonka
+        hasChildren:
+          type: boolean
+          description: true - uzel má další potomky, false - uzel nemá další potomky
+        referenceMark:
+          type: array
+          items:
+            type: string
+          description: referenční označení. Od kořene k uzlu
+        version:
+          type: integer
+          description: verze uzlu
+        arrPerm:
+          type: boolean
+          description: oprávnění pořádat v dané JP
+      description: |-
+        Data uzlu stromu odesílané klientovi pro strom fa.
+
+        Náhrada `TreeNodeVO`
     NodesFilterField:
       type: object
       required:
@@ -2976,6 +3294,41 @@ components:
         - SCOPE_ID
         - AP_TYPE_ID
       description: Types of statistics values
+    Request:
+      type: object
+      required:
+        - id
+        - code
+        - state
+        - rejectReason
+        - username
+        - create
+        - send
+        - responseExternalSystem
+        - externalSystemCode
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        state:
+          $ref: '#/components/schemas/RequestState'
+        rejectReason:
+          type: string
+        username:
+          type: string
+        create:
+          type: string
+          format: date
+        send:
+          type: string
+          format: date
+        responseExternalSystem:
+          type: string
+          format: date
+        externalSystemCode:
+          type: string
+      description: Náhrada `ArrRequestVO`
     RequestProcessState:
       type: string
       enum:
@@ -2984,6 +3337,15 @@ components:
         - FINISHED
         - ERROR
       description: Status of async request
+    RequestState:
+      type: string
+      enum:
+        - OPEN
+        - QUEUED
+        - SENT
+        - PROCESSED
+        - REJECTED
+      description: Request state
     ResultAutoItems:
       type: object
       properties:
@@ -3111,3 +3473,20 @@ components:
         count:
           type: integer
       description: Fund node item type id and quantity
+    WfSimpleIssue:
+      type: object
+      required:
+        - id
+        - number
+        - description
+      properties:
+        id:
+          type: integer
+          description: indentifikátor připomínky
+        number:
+          type: integer
+          description: číslo připomínky v rámci protokolu
+        description:
+          type: string
+          description: text připomínky
+      description: Náhrada `WfSimpleIssueVO`
