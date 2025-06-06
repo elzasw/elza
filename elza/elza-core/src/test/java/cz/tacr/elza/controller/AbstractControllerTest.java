@@ -138,8 +138,7 @@ import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.NodeData;
-import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
+import cz.tacr.elza.controller.vo.nodes.NodeDataVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemBitVO;
@@ -196,6 +195,7 @@ import cz.tacr.elza.test.controller.vo.DataRecordRef;
 import cz.tacr.elza.test.controller.vo.DataString;
 import cz.tacr.elza.test.controller.vo.DataStructureRef;
 import cz.tacr.elza.test.controller.vo.ItemData;
+import cz.tacr.elza.test.controller.vo.NodeDataParam;
 import cz.tacr.elza.test.controller.vo.NodeItem;
 import cz.tacr.elza.test.controller.vo.DataText;
 import cz.tacr.elza.test.controller.vo.DataUnitdate;
@@ -1896,8 +1896,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 *              potomky, předky, ...)
 	 * @return požadovaná data
 	 */
-	public NodeData getNodeData(final NodeDataParam param) {
-		return post(spec -> spec.body(param), NODE_DATA).getBody().as(NodeData.class);
+	public NodeDataVO getNodeData(final NodeDataParam param) {
+		return post(spec -> spec.body(param), NODE_DATA).getBody().as(NodeDataVO.class);
 	}
 
 	/**

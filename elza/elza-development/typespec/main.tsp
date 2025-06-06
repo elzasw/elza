@@ -367,7 +367,7 @@ enum DataType {
 }
 
 /**
- * Item data
+ * Item data parent
  */
 @discriminator("dataType")
 model ItemData {
@@ -493,15 +493,15 @@ enum ChangeType {
  */
 model ItemDataResult {
     /** parent node */
-    parent?: Node;
+    parent?: NodeBase;
     /** item */
     item?: NodeItem;
 }
 
 /**
- * Náhrada za třídu ArrNodeVO
+ * Náhrada za třídu `ArrNodeVO`
  */
-model Node {
+model NodeBase {
     /** id of node */
     id: integer;
     /** node version */
@@ -511,7 +511,7 @@ model Node {
 }
 
 /**
- * Náhrada za třídu ArrItemVO
+ * Náhrada za třídu `ArrItemVO`
  */
 model NodeItem {
     /** id of item */
@@ -692,10 +692,262 @@ model InvalidatedEntities {
 }
 
 /**
- * Data for create/update a part
+ * Data for create/update a part (external)
  */
 model ApPartFormVO {
-    // this is an external class
+    /** this is an external class */
+}
+
+/**
+ * Skupina zapouzdrující typy hodnot atributů pro UI
+ *
+ * Náhrada `ItemTypeGroupVO`
+ */
+// TODO find a way to generate classes not used in requests
+model ItemTypeGroup {
+    code: string;
+    name: string;
+    types?: FormItemType[];
+}
+
+/**
+ * Item mandatory type
+ */
+enum MandatoryType {
+    REQUIRED, RECOMMENDED, POSSIBLE, IMPOSSIBLE
+}
+
+/**
+ * Náhrada `DescItemSpecLiteVO`
+ */
+model FormItemSpec {
+    itemSpecId: integer;
+    type: MandatoryType;
+    repeatable: boolean;
+}
+
+/**
+ * Odlehčená verze specifikace hodnoty atributu
+ *
+ * Náhrada `ItemTypeLiteVO`
+ */
+model FormItemType {
+    /** identifikator typu */
+    itemTypeId: integer;
+    /** typ */
+    type: MandatoryType;
+    /** opakovatelnost */
+    repeatable: boolean;
+    /** počítaný */
+    //?cal: integer;
+    /** stav počítanýho atributu: 0/1 vypnutý/zapnutý */
+    //?calSt: integer;
+    /** atribut se může nastavit jako nedefinovaný 0/1 - nemůže/může */
+    undefinable: boolean;
+    /** seznam specifikací atributu */
+    specs?: FormItemSpec[];
+    /** seznam identifikátorů oblíbených specifikací u typu */
+    favoriteSpecIds: integer[];
+    /** šířka atributu (0 - maximální počet sloupců, 1..N - počet sloupců) */
+    //?width: integer;
+}
+
+/**
+ * Náhrada `DescFormDataNewVO`
+ */
+model NodeFormData {
+    /** rodič */
+    parent: NodeBase;
+    /** seznam hodnot atributu */
+    descItems: NodeItem[];
+    /** typy atributů */
+    itemTypes: FormItemType[];
+    /** oprávnění pořádat v dané JP */
+    arrPerm: boolean;
+}
+
+/**
+ * Data uzlu stromu odesílané klientovi pro strom fa.
+ *
+ * Náhrada `TreeNodeVO`
+ */
+model NodeTreeData {
+    /** node id */
+    id: integer;
+    /** hloubka zanoření ve stromu */
+    depth: integer;
+    /** název uzlu */
+    name: string;
+    /** ikonka */
+    icon?: string;
+    /** true - uzel má další potomky, false - uzel nemá další potomky */
+    hasChildren: boolean;
+    /** referenční označení. Od kořene k uzlu */
+    referenceMark: string[];
+    /** verze uzlu */
+    version: integer;
+    /** oprávnění pořádat v dané JP */
+    arrPerm?: boolean;
+}
+
+/**
+ * Stav JP
+ */
+enum NodeConformityState {
+    OK, ERR
+}
+
+/**
+ * Náhrada `NodeConformityMissingVO`
+ */
+model NodeConformityMissing {
+    /** identifikátor typu */
+    descItemTypeId: integer;
+    /** identifikátor specifikace */
+    descItemSpecId: integer;
+    /** popis chybějící položky */
+    description: string;
+    /** identifikátor typu oprávnění */
+    policyTypeId: integer;
+}
+
+/**
+ * Náhrada `NodeConformityErrorVO`
+ */
+model NodeConformityError {
+    /** identifikátor hodnoty atributu */
+    descItemObjectId: integer;
+    /** popis chyby */
+    description: string;
+    /** identifikátor typu oprávnění */
+    policyTypeId: integer;
+}
+
+/**
+ * Pro validace JP
+ *
+ * Náhrada `NodeConformityVO`
+ */
+model NodeConformity {
+    state: NodeConformityState;
+    /** datum validace */
+    date: plainDate;
+    /** seznam chybějících hodnot */
+    missingList: NodeConformityMissing[];
+    /** seznam chybných hodnot */
+    errorList: NodeConformityError[];
+    /** seznam uplatnenych politik pro zobrazeni */
+    viewPolicyTypeIds: integer[];
+}
+
+/**
+ * Request state
+ */
+enum RequestState {
+    OPEN, QUEUED, SENT, PROCESSED, REJECTED
+}
+
+/**
+ * Náhrada `ArrRequestVO`
+ */
+model Request {
+    id: integer;
+    code: string;
+    state: RequestState;
+    rejectReason: string;
+    username: string;
+    create: plainDate;
+    send: plainDate;
+    responseExternalSystem: plainDate;
+    externalSystemCode: string;
+}
+
+/**
+ * Náhrada `ArrDigitizationRequestVO`
+ */
+model DigitizationRequest extends Request {
+    description: string;
+    digitizationFrontdeskId: integer;
+    nodesCount: integer;
+    nodes: NodeTreeData[];
+}
+
+/**
+ * Náhrada `WfSimpleIssueVO`
+ */
+model WfSimpleIssue {
+    /** indentifikátor připomínky */
+    id: integer;
+    /** číslo připomínky v rámci protokolu */
+    number: integer;
+    /** text připomínky */
+    description: string;
+}
+
+/**
+ * Struktura pro položky v accordionu.
+ *
+ * Náhrada `AccordionNodeVO`
+ */
+model NodeAccordionData {
+    /** nodeid uzlu */
+    id: integer;
+    /** popis levé části accordionu */
+    accordionLeft: string;
+    /** popis pravé části accordionu */
+    accordionRight: string;
+    /** označení JP */
+    referenceMark: string[];
+    /** Informace o stavu JP */
+    nodeConformity?: NodeConformity;
+    /** seznam otevřených požadavků na digitalizaci */
+    digitizationRequests?: DigitizationRequest[];
+    /** db verze JP */
+    version: integer;
+    /** seznam otevřených připomínek */
+    issues?: WfSimpleIssue[];
+}
+
+/**
+ * Received data of the unit of description
+ *
+ * Náhrada `NodeDataVO`
+ */
+model NodeData {
+    /** data formuláře požadované JP */
+    formData: NodeFormData;
+    /** požadovaní rodiče ke kořeni */
+    parents: NodeTreeData[];
+    /** požadovaní přímí potomci */
+    children: NodeTreeData[];
+    /** požadovaní sourozenci */
+    siblings: NodeAccordionData[];
+    /** index požadované JP */
+    nodeIndex: integer;
+    /** celkový počet JP v úrovni požadované JP */
+    nodeCount: integer;
+}
+
+/**
+ * Parameters for get information about the description unit and its "surroundings"
+ */
+model NodeDataParam {
+    /** version fund */
+    fundVersionId: integer;
+    /** id of node */
+    nodeId: integer;
+    /** load description unit form data as well? */
+    formData: boolean;
+    /** load (if not null) siblings of the description unit? */
+    siblingsFrom?: integer;
+    /** max number of siblings returned */
+    siblingsMaxCount: integer;
+    /** full-text filtering in siblings */
+    siblingsFilter?: string;
+    /** Load parents description units to root? */
+    parents: boolean;
+    /** Load children description units? */
+    children: boolean;
 }
 
 /**
@@ -1212,7 +1464,6 @@ namespace ElzaAPI.AccessPoint {
     @delete op deleteAccessPoints(
         @body body: DeleteAccessPointsDetail
     ): {
-        /** The entities has been deleted */
         @Http.statusCode statusCode: 200;
     } | {
         /** ID does not exists */
@@ -1230,7 +1481,6 @@ namespace ElzaAPI.AccessPoint {
         /** addition for method of invalidation */
         @body body?: DeleteAccessPointDetail
     ): {
-        /** The entity has been deleted */
         @Http.statusCode statusCode: 200;
     } | {
         /** ID does not exists */
@@ -1246,7 +1496,6 @@ namespace ElzaAPI.AccessPoint {
         /** id of accesspoint */
         @path id: string,
     ): {
-        /** The entity has been restored */
         @Http.statusCode statusCode: 200;
     } | {
         /** ID does not exists */
@@ -1287,11 +1536,7 @@ namespace ElzaAPI.AccessPoint {
     @get op getAutoitems(
         /** id of accesspoint */
         @path id: string
-    ): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-         @body data: ResultAutoItems;
-       } | {
+    ): ResultAutoItems | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
           @body data: BaseException;
@@ -1306,11 +1551,7 @@ namespace ElzaAPI.AccessPoint {
         @path id: string,
         /** additional copy options */
         @body body: CopyAccessPointDetail
-    ): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-         @body data: EntityRef;
-       } | {
+    ): EntityRef | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
           @body data: BaseException;
@@ -1442,7 +1683,6 @@ namespace ElzaAPI.AccessPoint {
         /** id of accesspoint */
         @path id: integer
     ): {
-        /** The revision has been created */
         @Http.statusCode statusCode: 200;
     } | {
         /** ID does not exists */
@@ -1458,7 +1698,6 @@ namespace ElzaAPI.AccessPoint {
         /** id of accesspoint */
         @path id: integer
     ): {
-        /** The revision has been deleted */
         @Http.statusCode statusCode: 200;
     } | {
         /** ID does not exists */
@@ -1473,11 +1712,7 @@ namespace ElzaAPI.AccessPoint {
     @get op getRevAutoitems(
         /** id of accesspoint */
         @path id: string
-    ): {
-        /** Pending, processing, finished */
-        @Http.statusCode statusCode: 200;
-        @body data: ResultAutoItems;
-    } | {
+    ): ResultAutoItems | {
         /** ID does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
@@ -1585,11 +1820,7 @@ namespace ElzaAPI.Io {
 	@route("/export-status/{requestId}")
 	@get op getExportStatus(
 		@path requestId: integer
-	): {
-        /** Pending, processing, finished */
-        @Http.statusCode statusCode: 200;
-        @body data: ExportRequestStatus;
-    } | {
+	): ExportRequestStatus | {
         /** ID does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
@@ -1815,11 +2046,7 @@ namespace ElzaAPI.Report {
     @route("/status/{requestId}")
     @get op getReportStatus(
         @path requestId: integer;
-    ): {
-        /** Pending, processing, finished */
-        @Http.statusCode statusCode: 200;
-        @body data: RequestProcessState;
-    } | {
+    ): RequestProcessState | {
         /** ID does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
@@ -1836,11 +2063,7 @@ namespace ElzaAPI.Report {
 	@get op getReport(
 		@path requestId: integer;
         @query format: ReportFormat;
-	): {
-        @Http.statusCode statusCode: 200;
-        @header contentType: "application/json";
-        @body data: ReportData;
-    } | {
+	): ReportData | {
         @Http.statusCode statusCode: 200;
         @header contentType: "text/csv";
         @body data: bytes;
@@ -1874,40 +2097,13 @@ namespace ElzaAPI.Node {
     }
 
     /**
-     * Found nodes of the archive file (fund)
-     */
-    model SearchResult {
-        /** node id */
-        id: integer;
-        /** hloubka zanoření ve stromu */
-        depth: integer;
-        /** název uzlu */
-        name: string;
-        /** ikonka */
-        icon: string;
-        /** true - uzel má další potomky, false - uzel nemá další potomky */
-        hasChildren: boolean;
-        /** referenční označení. Od kořene k uzlu */
-        referenceMarkInt: integer[];
-        referenceMark: string[];
-        /** verze uzlu */
-        version: integer;
-        /** oprávnění pořádat v dané JP */
-        arrPerm?: boolean;
-    }
-
-    /**
      * Get quote by fundVersionId & nodeId
      */
 	@route("/plain-text/{fundVersionId}/{nodeId}")
 	@get op getPlainText(
         @path fundVersionId: integer;
         @path nodeId: integer;
-    ): {
-        /** Pending, processing, finished */
-        @Http.statusCode statusCode: 200;
-        @body data: PlainTextRepresentation[];
-    } | {
+    ): PlainTextRepresentation[] | {
         /** ID does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
@@ -1940,7 +2136,7 @@ namespace ElzaAPI.Node {
     @route("/search/{fundId}")
     @get op getSearchResult(
         ...FundIdParameter;
-    ): SearchResult[] | {
+    ): NodeTreeData[] | {
         /** Bad Request, query with incorrect parameters */
         @Http.statusCode statusCode: 400;
         @body data: BaseException;
@@ -1953,6 +2149,14 @@ namespace ElzaAPI.Node {
         @Http.statusCode statusCode: 403;
         @body data: BaseException;
     };
+
+    /**
+     * Get data for a unit of description (JP)
+     */
+    @route("/node-data")
+    @post op getNodeData(
+        @body param: NodeDataParam;
+    ): NodeData;
 }
 
 @tag("search")
