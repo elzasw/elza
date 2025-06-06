@@ -94,8 +94,8 @@ import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
-import cz.tacr.elza.controller.vo.nodes.NodeData;
-import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
+import cz.tacr.elza.controller.vo.nodes.NodeDataParamVO;
+import cz.tacr.elza.controller.vo.nodes.NodeDataVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.ItemType;
@@ -1378,8 +1378,8 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/nodeData", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    public NodeData getNodeData(final @RequestBody NodeDataParam param) {
-        return levelTreeCacheService.getNodeData(param, userService.getLoggedUserDetail());
+    public NodeDataVO getNodeData(final @RequestBody NodeDataParamVO param) {
+        return levelTreeCacheService.getNodeDataOld(param, userService.getLoggedUserDetail());
     }
 
     /**
@@ -1424,14 +1424,14 @@ public class ArrangementController {
      * @param versionId id verze stromu
      * @return formulář
      */
-    @RequestMapping(value = "/nodes/{nodeId}/{versionId}/form", method = RequestMethod.GET)
+	@RequestMapping(value = "/nodes/{nodeId}/{versionId}/form", method = RequestMethod.GET)
     @Transactional
     public DescFormDataNewVO getNodeFormData(@PathVariable(value = "nodeId") final Integer nodeId,
                                              @PathVariable(value = "versionId") final Integer versionId) {
         Validate.notNull(versionId, "Identifikátor verze musí být vyplněn");
         Validate.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
 
-        return formService.getNodeFormData(versionId, nodeId);
+        return formService.getNodeFormDataOld(versionId, nodeId);
     }
 
     /**
@@ -1486,7 +1486,7 @@ public class ArrangementController {
         if(siblings!=null) {
         	// TODO: prepre form data in batch
         	for(TreeNode s: siblings) {
-                DescFormDataNewVO formData = formService.getNodeFormData(fundVersion, s.getId());
+                DescFormDataNewVO formData = formService.getNodeFormDataOld(fundVersion, s.getId());
                 forms.put(s.getId(), formData);
         	}
         }

@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -25,8 +26,10 @@ import cz.tacr.elza.controller.ArrangementController.DescItemResult;
 import cz.tacr.elza.controller.arrangement.UpdateItemResult;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.NodeFormData;
 import cz.tacr.elza.controller.vo.ItemDataResult;
-import cz.tacr.elza.controller.vo.Node;
+import cz.tacr.elza.controller.vo.FormItemType;
+import cz.tacr.elza.controller.vo.NodeBase;
 import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
@@ -126,17 +129,98 @@ public class ArrangementFormService {
         this.userService = userService;
 	}
 
+	@Deprecated
 	@Transactional
 	@AuthMethod(permission = { UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD })
-	public DescFormDataNewVO getNodeFormData(@AuthParam(type = AuthParam.Type.FUND_VERSION) Integer versionId,
-	        Integer nodeId) {
+	public DescFormDataNewVO getNodeFormDataOld(@AuthParam(type = AuthParam.Type.FUND_VERSION) Integer versionId, Integer nodeId) {
 		ArrFundVersion version = arrangementService.getFundVersion(versionId);
-		return getNodeFormData(version, nodeId);
+		return getNodeFormDataOld(version, nodeId);
 	}
 
 	@Transactional
 	@AuthMethod(permission = { UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD })
-	public DescFormDataNewVO getNodeFormData(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion version, Integer nodeId) {
+	public NodeFormData getNodeFormData(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion version, Integer nodeId) {
+		// získat seznam rodičovských nodů
+		List<Integer> parentNodeIds = this.levelTreeCache.getParentNodes(version, nodeId);
+		
+		ArrChange lockChange = version.getLockChange();
+		ArrNode node;
+		List<ArrDescItem> descItems;
+		Set<Integer> inhibitedDescItemIds;
+		Set<Integer> inhibitedDescItemObjectIds;
+		List<ArrDescItem> parentsDescItems;
+		RestoredNode restoredNode = null;
+		Collection<RestoredNode> parentRestoredNodes = new ArrayList<>();
+		if (lockChange == null) {
+			// read node from cache
+			restoredNode = nodeCacheService.getNode(nodeId);
+			node = restoredNode.getNode();
+			parentRestoredNodes = nodeCacheService.getNodes(parentNodeIds).values();
+		} else {
+			// read node from db
+			node = nodeRepository.findById(nodeId).orElseThrow(node(nodeId));
+			// TODO: add support for inheritence for nodes from DB
+		}
+
+		List<RulItemTypeExt> itemTypes;
+		try {
+			itemTypes = ruleService.getDescriptionItemTypes(version, node);
+		} catch (Exception e) {
+			logger.error("Chyba v pravidlech", e);
+			throw new BusinessException("Chyba v pravidlech", e, BaseCode.SYSTEM_ERROR);
+		}
+
+		Set<Integer> itemTypeIdsWithInheritance = itemTypes.stream()
+				.filter(i -> i.isInheritance())
+				.map(i -> i.getItemTypeId())
+				.collect(Collectors.toSet());
+		if (lockChange == null) {
+			descItems = restoredNode.getDescItems();
+			// v uzlu, kde je dědičnost potlačena, stále zobrazujeme zděděné záznamy
+			// sbíráme id záznamy (descItemId) s potlačenou dědičností od nadřazených uzlů
+			inhibitedDescItemIds = getInhibitedDescItemIds(parentRestoredNodes);
+			// sbíráme všechny descItems s povolenou dědičností z nadřazených uzlů
+			parentsDescItems = parentRestoredNodes.stream()
+					.flatMap(i -> i.getDescItems().stream())
+					.filter(i -> itemTypeIdsWithInheritance.contains(i.getDescItemTypeId()))
+					.toList();
+			// seznam descItemId s potlačenou dědičností pro aktuální uzel
+			inhibitedDescItemObjectIds = restoredNode.getInhibitedItems().stream().map(i -> i.getDescItemObjectId()).collect(Collectors.toSet());
+		} else {
+			descItems = arrangementInternal.getDescItems(lockChange, node);
+			inhibitedDescItemIds = arrangementInternal.getInhibitedDescItemIds(lockChange, parentNodeIds);
+			parentsDescItems = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(parentNodeIds, itemTypeIdsWithInheritance);
+			inhibitedDescItemObjectIds = arrangementInternal.getInhibitedDescItemObjectIds(lockChange, List.of(nodeId));
+		}
+
+		// získat seznam descItems, které lze zdědit
+		for (ArrDescItem descItem : parentsDescItems) {
+			// pokud typ prvku umožňuje dědění (již filtrováno) & dědičnost tohoto prvku není potlačena
+			if (!inhibitedDescItemIds.contains(descItem.getItemId())) {
+				// přidat tento prvek do seznamu
+				descItems.add(descItem);
+			}
+		}
+
+		Integer fundId = version.getFund().getFundId();
+		String ruleCode = version.getRuleSet().getCode();
+
+		NodeBase nodeParent = new NodeBase(node.getNodeId(), node.getVersion(), node.getUuid());
+		List<NodeItem> nodeItems = factoryVo.createNodeItems(nodeId, descItems, inhibitedDescItemObjectIds);
+		List<FormItemType> formItemTypes = factoryVo.createFormItemTypes(ruleCode, fundId, itemTypes);
+
+        boolean arrPerm = userService.hasFullArrPerm(version.getFundId());
+		if (!arrPerm) {
+			Map<Integer, Boolean> permNodeIdMap = levelTreeCache.calcPermNodeIdMap(version, Collections.singleton(nodeId));
+			arrPerm = permNodeIdMap.get(nodeId);
+		}
+		return new NodeFormData(nodeParent, nodeItems, formItemTypes, arrPerm);
+	}
+
+	@Deprecated
+	@Transactional
+	@AuthMethod(permission = { UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD })
+	public DescFormDataNewVO getNodeFormDataOld(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion version, Integer nodeId) {
 
 		// získat seznam rodičovských nodů
 		List<Integer> parentNodeIds = this.levelTreeCache.getParentNodes(version, nodeId);
@@ -451,7 +535,7 @@ public class ArrangementFormService {
 		ArrNode node = descItemCreated.getNode();
 		ItemDataResult itemDataResult = new ItemDataResult();
 		itemDataResult.setItem(factoryVo.createNodeItem(descItemCreated));
-		itemDataResult.setParent(new Node(node.getNodeId(), node.getVersion(), node.getUuid()));
+		itemDataResult.setParent(new NodeBase(node.getNodeId(), node.getVersion(), node.getUuid()));
 
 		return itemDataResult;
 	}

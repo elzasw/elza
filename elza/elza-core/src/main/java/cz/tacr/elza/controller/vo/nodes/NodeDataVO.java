@@ -11,7 +11,7 @@ import java.util.Collection;
  *
  * @since 07.03.2018
  */
-public class NodeData {
+public class NodeDataVO {
 
     private ArrangementController.DescFormDataNewVO formData;             // data formuláře požadované JP
     private Collection<TreeNodeVO> parents;     // požadovaní rodiče ke kořeni

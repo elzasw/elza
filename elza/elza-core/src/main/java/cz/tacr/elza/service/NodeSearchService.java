@@ -34,7 +34,7 @@ import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundSearchResult;
 import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
-import cz.tacr.elza.controller.vo.NodeSearchResult;
+import cz.tacr.elza.controller.vo.NodeTreeData;
 import cz.tacr.elza.controller.vo.NodesFilterField;
 import cz.tacr.elza.controller.vo.OperationCompareType;
 import cz.tacr.elza.controller.vo.SearchParams;
@@ -157,30 +157,30 @@ public class NodeSearchService {
 	 * @param fundId
 	 * @return
 	 */
-	public List<NodeSearchResult> nodeGetSearchResult(Integer fundId) {
+	public List<NodeTreeData> nodeGetSearchResult(Integer fundId) {
         ArrFundToNodeList fundToNodeList = getFundToNodeListFromSession(fundId);
         if (fundToNodeList != null) {
             List<Integer> nodeIdList = fundToNodeList.getNodeIdList();
             ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundToNodeList.getFundId());
             List<Integer> sortedList = levelTreeCacheService.sortNodesByTreePosition(nodeIdList, fundVersion);
             List<TreeNodeVO> treeNodes = levelTreeCacheService.getNodesByIds(sortedList, fundVersion);
-            
-            List<NodeSearchResult> result = new ArrayList<>(treeNodes.size());
-            treeNodes.forEach(node -> {
-            	NodeSearchResult nodeSearch = new NodeSearchResult();
-            	nodeSearch.setId(node.getId());
-            	nodeSearch.setName(node.getName());
-            	nodeSearch.setIcon(node.getIcon());
-            	nodeSearch.setHasChildren(node.isHasChildren());
-            	nodeSearch.setDepth(node.getDepth());
-            	nodeSearch.setReferenceMark(Arrays.asList(node.getReferenceMark()));
-            	nodeSearch.setReferenceMarkInt(Arrays.asList(node.getReferenceMarkInt()));
-            	nodeSearch.setVersion(node.getVersion());
-            	nodeSearch.setArrPerm(node.isArrPerm());
 
-            	result.add(nodeSearch);
+            // TODO dočasné řešení do úplné výměny TreeNodeVO => NodeTree
+            List<NodeTreeData> result = new ArrayList<>(treeNodes.size());
+            treeNodes.forEach(node -> {
+            	NodeTreeData nodeData = new NodeTreeData();
+            	nodeData.setId(node.getId());
+            	nodeData.setName(node.getName());
+            	nodeData.setIcon(node.getIcon());
+            	nodeData.setHasChildren(node.isHasChildren());
+            	nodeData.setDepth(node.getDepth());
+            	nodeData.setReferenceMark(Arrays.asList(node.getReferenceMark()));
+            	nodeData.setVersion(node.getVersion());
+            	nodeData.setArrPerm(node.isArrPerm());
+
+            	result.add(nodeData);
             });
-            
+
             return result;
         }
         return Collections.emptyList();

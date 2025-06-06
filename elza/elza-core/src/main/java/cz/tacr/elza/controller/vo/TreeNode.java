@@ -44,7 +44,7 @@ public class TreeNode implements Comparable<TreeNode> {
         this.position = position;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
