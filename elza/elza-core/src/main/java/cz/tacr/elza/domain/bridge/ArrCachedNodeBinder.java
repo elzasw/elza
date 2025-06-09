@@ -99,7 +99,7 @@ public class ArrCachedNodeBinder implements TypeBinder {
 
     private IndexFieldReference<BigDecimal> createBigDecimalField(String name) {
     	return context.indexSchemaElement()
-        		.field(name, f -> f.asBigDecimal())
+        		.field(name, f -> f.asBigDecimal().decimalScale(2))
         		.multiValued()
         		.toReference();
     }    
