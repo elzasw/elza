@@ -4,6 +4,7 @@ import static cz.tacr.elza.domain.ArrDescItem.NORM_FROM;
 import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
 import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -244,6 +245,8 @@ public class NodeSearchService {
 		switch (dataType) {
 		case INT:
 			return getPredicateByInt(factory, fieldName, filter);
+		case DECIMAL:
+			return getPredicateByDecimal(factory, fieldName, filter);
 		case ENUM:
 			return getPredicateByEnum(factory, fieldName, itemSpecCode, filter);
 		case RECORD_REF:
@@ -263,6 +266,21 @@ public class NodeSearchService {
 											  final FieldValueFilter filter) {
 	    OperationCompareType op = filter.getOperation();
 	    Integer value = Integer.parseInt(filter.getValue());
+		switch (op) {
+		case EQ:
+			return factory.match().field(fieldTypeName).matching(value).toPredicate();
+		case NEQ:
+			return factory.bool().mustNot(factory.match().field(fieldTypeName).matching(value)).toPredicate();
+		default:
+			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
+		}
+	}
+
+	private SearchPredicate getPredicateByDecimal(final SearchPredicateFactory factory, 
+			  final String fieldTypeName,
+			  final FieldValueFilter filter) {
+	    OperationCompareType op = filter.getOperation();
+	    BigDecimal value = BigDecimal.valueOf(Double.parseDouble(filter.getValue()));
 		switch (op) {
 		case EQ:
 			return factory.match().field(fieldTypeName).matching(value).toPredicate();
@@ -394,14 +412,15 @@ public class NodeSearchService {
 		String fieldNormalizedTo = fieldName + "_" + NORM_TO;        
         Long normalizedFrom = value.getNormalizedFrom();
         Long normalizedTo = value.getNormalizedTo();
-		switch (op) {
+        BooleanPredicateClausesStep<?> bool = factory.bool();
+        switch (op) {
 		case EQ:
-			return factory.bool()
+			return bool
 					.must(factory.match().field(fieldNormalizedFrom).matching(normalizedFrom))
 					.must(factory.match().field(fieldNormalizedTo).matching(normalizedTo))
 					.toPredicate();
 		case NEQ:
-			return factory.bool()
+			return bool
 					.mustNot(factory.match().field(fieldNormalizedFrom).matching(normalizedFrom))
 					.toPredicate();
 		case GT:
@@ -409,15 +428,23 @@ public class NodeSearchService {
 		case LT:
 			return factory.range().field(fieldNormalizedTo).lessThan(normalizedFrom).toPredicate();
 		case GTE:
-			throw new BusinessException("Comparison of type GTE is not implemented.", ArrangementCode.REQUEST_INVALID);
+			bool.should(factory.bool()
+					.must(factory.match().field(fieldNormalizedFrom).matching(normalizedFrom))
+					.must(factory.match().field(fieldNormalizedTo).matching(normalizedTo)));
+			bool.should(factory.range().field(fieldNormalizedFrom).greaterThan(normalizedTo));
+			return bool.toPredicate();
 		case LTE:
-			throw new BusinessException("Comparison of type LTE is not implemented.", ArrangementCode.REQUEST_INVALID);
+			bool.should(factory.bool()
+					.must(factory.match().field(fieldNormalizedFrom).matching(normalizedFrom))
+					.must(factory.match().field(fieldNormalizedTo).matching(normalizedTo)));
+			bool.should(factory.range().field(fieldNormalizedTo).lessThan(normalizedFrom));
+			return bool.toPredicate();
 		case STARTWITH:
 			throw new BusinessException("Comparison of type STARTWITH is not implemented.", ArrangementCode.REQUEST_INVALID);
 		case ENDWITH:
 			throw new BusinessException("Comparison of type ENDWITH is not implemented.", ArrangementCode.REQUEST_INVALID);
 		case CONTAINS:
-			return factory.bool()
+			return bool
 					.must(factory.range().field(fieldNormalizedFrom).lessThan(normalizedFrom))
 					.must(factory.range().field(fieldNormalizedTo).greaterThan(normalizedTo))
 					.toPredicate();
