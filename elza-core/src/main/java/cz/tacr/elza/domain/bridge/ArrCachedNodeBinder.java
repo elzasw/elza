@@ -8,6 +8,7 @@ import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
 import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.CLASSIC_TOKENIZER_CZ;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
@@ -49,6 +50,9 @@ public class ArrCachedNodeBinder implements TypeBinder {
     		case INT:
     	        createIntField(itemTypeCode.toLowerCase());
     	        break;
+    		case DECIMAL:
+    	        createBigDecimalField(itemTypeCode.toLowerCase());
+    	        break;
     		case ENUM:
 				createStringField(itemTypeCode.toLowerCase());
 				break;
@@ -89,6 +93,13 @@ public class ArrCachedNodeBinder implements TypeBinder {
     private IndexFieldReference<Integer> createIntField(String name) {
     	return context.indexSchemaElement()
         		.field(name, f -> f.asInteger())
+        		.multiValued()
+        		.toReference();
+    }    
+
+    private IndexFieldReference<BigDecimal> createBigDecimalField(String name) {
+    	return context.indexSchemaElement()
+        		.field(name, f -> f.asBigDecimal())
         		.multiValued()
         		.toReference();
     }    
