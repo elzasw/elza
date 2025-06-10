@@ -81,26 +81,27 @@ public class ArrCachedNodeBinder implements TypeBinder {
         		.field(name, f -> f.asString())
         		.multiValued()
         		.toReference();
-    }    
+    }
 
     private IndexFieldReference<Long> createLongField(String name) {
     	return context.indexSchemaElement()
         		.field(name, f -> f.asLong())
         		.multiValued()
         		.toReference();
-    }    
+    }
 
     private IndexFieldReference<Integer> createIntField(String name) {
     	return context.indexSchemaElement()
         		.field(name, f -> f.asInteger())
         		.multiValued()
         		.toReference();
-    }    
+    }
 
     private IndexFieldReference<BigDecimal> createBigDecimalField(String name) {
     	return context.indexSchemaElement()
+    		    // type BigDecimal need to define decimalScale
         		.field(name, f -> f.asBigDecimal().decimalScale(2))
         		.multiValued()
         		.toReference();
-    }    
+    }
 }
