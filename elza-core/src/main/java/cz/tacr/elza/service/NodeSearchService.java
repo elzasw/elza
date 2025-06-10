@@ -425,16 +425,14 @@ public class NodeSearchService {
 		case LT:
 			return factory.range().field(fieldNormalizedTo).lessThan(normalizedFrom).toPredicate();
 		case GTE:
-			bool.should(factory.bool()
-					.must(factory.match().field(fieldNormalizedFrom).matching(normalizedFrom))
-					.must(factory.match().field(fieldNormalizedTo).matching(normalizedTo)));
-			bool.should(factory.range().field(fieldNormalizedFrom).greaterThan(normalizedTo));
+			// (from1, to1), (from2, to2) -> from2 > to1 OR to2 > from1
+			bool.should(factory.range().field(fieldNormalizedFrom).greaterThan(normalizedTo))
+				.should(factory.range().field(fieldNormalizedTo).greaterThan(normalizedFrom));
 			return bool.toPredicate();
 		case LTE:
-			bool.should(factory.bool()
-					.must(factory.match().field(fieldNormalizedFrom).matching(normalizedFrom))
-					.must(factory.match().field(fieldNormalizedTo).matching(normalizedTo)));
-			bool.should(factory.range().field(fieldNormalizedTo).lessThan(normalizedFrom));
+			// (from1, to1), (from2, to2) -> to2 < from1 OR from2 < to1 
+			bool.should(factory.range().field(fieldNormalizedTo).lessThan(normalizedFrom))
+				.should(factory.range().field(fieldNormalizedFrom).lessThan(normalizedTo));
 			return bool.toPredicate();
 		case STARTWITH:
 			throw new BusinessException("Comparison of type STARTWITH is not implemented.", ArrangementCode.REQUEST_INVALID);
