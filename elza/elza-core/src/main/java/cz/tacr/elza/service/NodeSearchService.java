@@ -241,12 +241,17 @@ public class NodeSearchService {
 
 	    String fieldName = itemTypeCode.toLowerCase();
 	    String fieldSpecName = itemSpecCode != null ? fieldSpecName = fieldName + "_" + itemSpecCode.toLowerCase() : null;
+	    OperationCompareType op = filter.getOperation();
 	    DataType dataType = itemType.getDataType();
 		switch (dataType) {
-		case INT:
-			return getPredicateByInt(factory, fieldName, filter);
-		case DECIMAL:
-			return getPredicateByDecimal(factory, fieldName, filter);
+		case INT: {
+		    Integer value = Integer.parseInt(filter.getValue());
+			return getPredicateByNumber(factory, fieldName, op, value);
+		}
+		case DECIMAL: {
+		    BigDecimal value = BigDecimal.valueOf(Double.parseDouble(filter.getValue()));
+			return getPredicateByNumber(factory, fieldName, op, value);
+		}
 		case ENUM:
 			return getPredicateByEnum(factory, fieldName, itemSpecCode, filter);
 		case RECORD_REF:
@@ -261,31 +266,23 @@ public class NodeSearchService {
 		}
 	}
 
-	private SearchPredicate getPredicateByInt(final SearchPredicateFactory factory, 
-											  final String fieldTypeName,
-											  final FieldValueFilter filter) {
-	    OperationCompareType op = filter.getOperation();
-	    Integer value = Integer.parseInt(filter.getValue());
+	private <T extends Number> SearchPredicate getPredicateByNumber(final SearchPredicateFactory factory, 
+											  					 	final String fieldTypeName,
+											  					 	final OperationCompareType op,
+											  					 	final T value) {
 		switch (op) {
 		case EQ:
 			return factory.match().field(fieldTypeName).matching(value).toPredicate();
 		case NEQ:
 			return factory.bool().mustNot(factory.match().field(fieldTypeName).matching(value)).toPredicate();
-		default:
-			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
-		}
-	}
-
-	private SearchPredicate getPredicateByDecimal(final SearchPredicateFactory factory, 
-			  final String fieldTypeName,
-			  final FieldValueFilter filter) {
-	    OperationCompareType op = filter.getOperation();
-	    BigDecimal value = BigDecimal.valueOf(Double.parseDouble(filter.getValue()));
-		switch (op) {
-		case EQ:
-			return factory.match().field(fieldTypeName).matching(value).toPredicate();
-		case NEQ:
-			return factory.bool().mustNot(factory.match().field(fieldTypeName).matching(value)).toPredicate();
+		case GT:
+			return factory.range().field(fieldTypeName).greaterThan(value).toPredicate();
+		case LT:
+			return factory.range().field(fieldTypeName).lessThan(value).toPredicate();
+		case GTE:
+			return factory.range().field(fieldTypeName).atLeast(value).toPredicate();
+		case LTE:
+			return factory.range().field(fieldTypeName).atMost(value).toPredicate();
 		default:
 			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
 		}
