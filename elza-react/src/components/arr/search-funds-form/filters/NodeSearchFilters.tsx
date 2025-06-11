@@ -149,6 +149,7 @@ export function NodeSearchFilters({
           <Tag
             appearance="outline"
             ref={addFilterButtonRef}
+            style={{ cursor: "pointer" }}
           >
             <AddRegular />&nbsp;Filtr
           </Tag>
