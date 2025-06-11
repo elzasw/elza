@@ -2,7 +2,7 @@ import { Input, InteractionTag, InteractionTagPrimary, InteractionTagSecondary, 
 import { AddRegular } from "@fluentui/react-icons";
 import { Icon } from "components"
 import { Field, Form } from "react-final-form";
-import { AbstractFilter, FieldType, FieldValueFilter, FilterType, FundsFieldName, FundsFilterField } from "elza-api";
+import { AbstractFilter, FilterType, FundsFieldName } from "elza-api";
 import { useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { messages } from "./messages";
@@ -16,14 +16,6 @@ interface Props {
 
 interface FulltextValues {
   fulltext: string;
-}
-
-function isFieldValueFilter(filter: unknown): filter is FieldValueFilter {
-  return filter["filterType"] === FilterType.FieldValue;
-}
-
-function isFundsFilterField(field: unknown): field is FundsFilterField {
-  return field["fieldType"] === FieldType.Fund;
 }
 
 function formatPosition(x: number, y: number) {
@@ -86,7 +78,7 @@ export function FundFilters({
 
   function handleFilterConfirm(filter: FilterObject) {
     const _filters = [...filters];
-    const _filter = _filters.find(f => isFieldValueFilter(f) && isFundsFilterField(f.field) && f.field.fieldName == filter.name)
+    const _filter = _filters.find(f => f.name == filter.name)
 
     if (!_filter || _filter.getSerializedString(_filter) != filter.getSerializedString(filter)) {
       _filters.push(filter);
