@@ -72,11 +72,11 @@ export function FilterDescItemModal({
       fieldComponent: FilterFieldNumber,
     },
     [RulDataTypeCodeEnum.STRING]: {
-      operations: [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.Contains],
+      operations: [OperationCompareType.Contains, OperationCompareType.Eq, OperationCompareType.Neq],
       fieldComponent: FilterFieldText,
     },
     [RulDataTypeCodeEnum.TEXT]: {
-      operations: [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.Contains],
+      operations: [OperationCompareType.Contains, OperationCompareType.Eq, OperationCompareType.Neq],
       fieldComponent: FilterFieldText,
     },
     // [RulDataTypeCodeEnum.COORDINATES]: {operations: [OperationCompareType.Eq, OperationCompareType.Neq]},
