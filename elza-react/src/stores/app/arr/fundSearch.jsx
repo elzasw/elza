@@ -1,9 +1,10 @@
 import { indexById } from 'stores/app/utils';
 import * as types from './../../../actions/constants/ActionTypes';
-import { getDataKey } from 'actions/arr/fundSearch';
+import { /* getDataKey, */ generateDataKey } from 'actions/arr/fundSearch';
 
 const initialState = {
     fulltext: '',
+    filters: [],
     isIdSearch: false,
     funds: [],
     isFetching: false,
@@ -22,7 +23,7 @@ export default function fundSearch(state = initialState, action = {}) {
     let index;
     switch (action.type) {
         case types.FUND_SEARCH_FULLTEXT_CHANGE: {
-            if (action.fulltext === '') {
+            if (action.fulltext === '' && !action.filters) {
                 return {
                     ...initialState,
                     isIdSearch: state.isIdSearch,
@@ -31,6 +32,7 @@ export default function fundSearch(state = initialState, action = {}) {
                 return {
                     ...state,
                     fulltext: action.fulltext != undefined ? action.fulltext : state.fulltext,
+                    filters: action.filters || state.filters,
                     isIdSearch: action.isIdSearch != undefined ? action.isIdSearch : state.isIdSearch,
                 };
             }
@@ -39,7 +41,7 @@ export default function fundSearch(state = initialState, action = {}) {
             return {
                 ...state,
                 isFetching: true,
-                currentDataKey: getDataKey(state.fulltext, state.isIdSearch),
+                currentDataKey: generateDataKey(state.filters),
             };
         }
         case types.FUND_SEARCH_FULLTEXT_RECEIVE: {
