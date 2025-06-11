@@ -100,13 +100,19 @@ export function FilterDescItemModal({
   const [descItemTypes, setDescItemTypes] = useState<DescItemTypeRef[]>([]);
   const [descItemTypesFetched, setDescItemTypesFetched] = useState<boolean>(false);
 
-  const dataTypes = useSelector(({ refTables }: AppState) => refTables.rulDataTypes.items);
+  const dataTypes = useSelector(({ refTables }: AppState) => refTables.rulDataTypes);
 
   // desc item types filtered by possible data types
-  const allDescItemTypes = useSelector(({ refTables }: AppState) => refTables.descItemTypes.items.filter(({ dataTypeId }) => {
-    const dataType = dataTypes.find(({ id }) => id === dataTypeId);
-    return !!availableDataTypesMap[dataType.code];
-  }));
+  const allDescItemTypes = useSelector(({ refTables }: AppState) => {
+    if (!dataTypes.fetched) { return null; }
+    return refTables.descItemTypes.items.filter(({ dataTypeId }) => {
+      const dataType = dataTypes.items?.find(({ id }) => id === dataTypeId);
+      if (dataType) {
+        return !!availableDataTypesMap[dataType.code];
+      }
+    })
+  });
+
   const arrangementRuleSets = useSelector(({ refTables }: AppState) =>
     refTables.ruleSet.items.filter(({ ruleType }) => ruleType === RuleType.ARRANGEMENT));
 
@@ -127,7 +133,7 @@ export function FilterDescItemModal({
     : descItemTypes;
 
   const selectedItemType = itemTypeCode && descItemTypes.find(({ code }) => code === itemTypeCode);
-  const selectedDataType = dataTypes.find(({ id }) => id === selectedItemType?.dataTypeId);
+  const selectedDataType = dataTypes?.items.find(({ id }) => id === selectedItemType?.dataTypeId);
   const dataTypeFilterDefinition = selectedDataType?.code && availableDataTypesMap[selectedDataType.code];
 
   // desc item spec of selected item type filtered by query
@@ -141,7 +147,7 @@ export function FilterDescItemModal({
   }, [])
 
   useEffect(() => {
-    if (!descItemTypesFetched && arrangementRuleSets.length > 0 && allDescItemTypes.length > 0) {
+    if (!descItemTypesFetched && arrangementRuleSets.length > 0 && allDescItemTypes?.length > 0) {
       (async function () {
         const promises = arrangementRuleSets.map(({ id }) => WebApi.getItemTypeCodesByRuleSet(id));
         const itemTypes = await Promise.all(promises);
