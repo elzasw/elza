@@ -134,6 +134,19 @@ export interface Institution {
     code: string;
 }
 
+export enum RuleType {
+    ARRANGEMENT = "ARRANGEMENT",
+    ENTITY = "ENTITY",
+}
+
+export interface RuleSet {
+    code: string;
+    gridViews: unknown | null;
+    id: number;
+    name: string;
+    ruleType: RuleType;
+}
+
 export interface RefTablesState {
     apTypes: BaseRefTableStore<ApTypeVO>;
     descItemTypes: BaseRefTableStore<DescItemTypeRef>;
@@ -148,7 +161,7 @@ export interface RefTablesState {
     partTypes: BaseRefTableStore<RulPartTypeVO>;
     recordTypes: BaseRefTableStore<unknown>;
     rulDataTypes: BaseRefTableStore<RulDataTypeVO>;
-    ruleSet: unknown;
+    ruleSet: BaseRefTableStore<RuleSet>;
     scopesData: ScopesData;
     structureTypes: StructureTypes;
     templates: Templates;

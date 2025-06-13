@@ -41,6 +41,7 @@ import cz.tacr.elza.config.rules.TypeInfo;
 import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.factory.RuleFactory;
 import cz.tacr.elza.controller.factory.WfFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
@@ -81,6 +82,8 @@ import cz.tacr.elza.controller.vo.DataText;
 import cz.tacr.elza.controller.vo.DataUnitdate;
 import cz.tacr.elza.controller.vo.DataUnitid;
 import cz.tacr.elza.controller.vo.DataUriRef;
+import cz.tacr.elza.controller.vo.FormItemSpec;
+import cz.tacr.elza.controller.vo.FormItemType;
 import cz.tacr.elza.controller.vo.DataType;
 import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundDetail;
@@ -88,7 +91,8 @@ import cz.tacr.elza.controller.vo.GisExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.GisExternalSystemVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ItemData;
-import cz.tacr.elza.controller.vo.Node;
+import cz.tacr.elza.controller.vo.MandatoryType;
+import cz.tacr.elza.controller.vo.NodeBase;
 import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
@@ -109,6 +113,7 @@ import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
@@ -131,6 +136,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroup;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -234,6 +240,7 @@ import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.attachment.AttachmentService;
 import cz.tacr.elza.ws.types.v1.Items;
+import jakarta.validation.Valid;
 
 /**
  * Tovární třída pro vytváření VO objektů a jejich seznamů.
@@ -850,7 +857,7 @@ public class ClientFactoryVO {
         nodeItem.setReadOnly(item.getReadOnly());
 
         ArrData arrData = item.getData();
-        if(arrData==null) {
+        if (arrData == null) {
         	nodeItem.setUndefined(true);
         } else {
         	StaticDataProvider sdp = staticDataService.getData();
@@ -871,8 +878,59 @@ public class ClientFactoryVO {
      * @param nodeId
      * @param items seznam DO atributů
      * @param inhibitedDescItemObjectIds
+     * @return seznam NodeItem
+     */
+    public List<NodeItem> createNodeItems(final Integer nodeId, final List<ArrDescItem> items, final Set<Integer> inhibitedDescItemObjectIds) {
+        if (items == null) {
+            return null;
+        }
+        List<NodeItem> result = new ArrayList<>(items.size());
+
+//        List<ApAccessPoint> apList = new ArrayList<>();
+//        for (ArrDescItem item : items) {
+//            ArrData data = HibernateUtils.unproxy(item.getData());
+//            if (data instanceof ArrDataRecordRef) {
+//                ApAccessPoint ap = ((ArrDataRecordRef) data).getRecord();
+//                apList.add(ap);
+//            }
+//        }
+//
+//        List<ApAccessPointVO> apListVO = apFactory.createVO(apList);
+//        Iterator<ApAccessPointVO> apVoIt = apListVO.iterator();
+
+        int inhPos = -items.size();
+        for (ArrDescItem item : items) {
+        	NodeItem nodeItem = createNodeItem(item);
+            if (!nodeItem.getNodeId().equals(nodeId)) {
+            	nodeItem.setNodeId(item.getNodeId());
+            	nodeItem.setPosition(inhPos++);
+            }
+            if (inhibitedDescItemObjectIds.contains(item.getDescItemObjectId())) {
+            	nodeItem.setInhibited(true);
+            }
+//            ArrData data = HibernateUtils.unproxy(item.getData());
+//            if (data instanceof ArrDataRecordRef) {
+//                ApAccessPointVO apVo = apVoIt.next();
+//                ((ArrItemRecordRefVO) nodeItem).setRecord(apVo);
+//            }
+            result.add(nodeItem);
+        }
+
+        // řazení záznamů podle position
+        Collections.sort(result, (o1, o2) -> o1.getPosition() - o2.getPosition());
+
+        return result;
+    }
+
+    /**
+     * Vytvoří seznam atributů z seznamu ArrDescItem.
+     *
+     * @param nodeId
+     * @param items seznam DO atributů
+     * @param inhibitedDescItemObjectIds
      * @return seznam VO atributů
      */
+    @Deprecated
     public List<ArrItemVO> createItems(final Integer nodeId, final List<ArrDescItem> items, final Set<Integer> inhibitedDescItemObjectIds) {
         if (items == null) {
             return null;
@@ -1056,6 +1114,39 @@ public class ClientFactoryVO {
     }
 
     /**
+     * Převedení seznamu RulItemTypeExt -> FormItemType
+     * 
+     * @param itemTypes
+     * @return
+     */
+    public List<FormItemType> createFormItemTypes(final List<RulItemTypeExt> itemTypes) {
+    	return itemTypes.stream()
+    			.map(i -> {
+    				FormItemType fit = new FormItemType();
+    		        List<RulItemSpecExt> rulItemSpecs = i.getRulItemSpecList();
+    		        List<FormItemSpec> specs = rulItemSpecs.stream()
+    		        		.filter(s -> s.getType() != RulItemSpec.Type.IMPOSSIBLE)
+    		        		.map(s -> {
+    		        			FormItemSpec spec = new FormItemSpec();
+    		        			spec.setItemSpecId(s.getItemSpecId());
+    		        			spec.setRepeatable(s.getRepeatable());
+    		        			spec.setType(MandatoryType.valueOf(s.getType().name()));
+    		        			return spec;
+    		        		})
+    		        		.toList();
+
+    		        fit.setItemTypeId(i.getItemTypeId());
+    		        fit.setType(MandatoryType.valueOf(i.getType().name()));
+    		        fit.setRepeatable(i.getRepeatable());
+    		        fit.setUndefinable(i.getIndefinable());
+    		        fit.setSpecs(specs);
+    		        fit.setFavoriteSpecIds(null); // TODO
+    				return fit;
+    			})
+    			.toList();
+    }
+    
+    /**
      * Vytvoření seznamu rozšířených typů, ignoruje nemožné typy.
      *
      * @param fundId    identifikátor AS
@@ -1063,6 +1154,96 @@ public class ClientFactoryVO {
      * @param itemTypes seznam typů hodnot atributů
      * @return seznam skupin s typy hodnot atributů
      */
+    public List<FormItemType> createFormItemTypes(final String ruleCode, final Integer fundId, final List<RulItemTypeExt> itemTypes) {
+
+    	List<FormItemType> formItemTypes = createFormItemTypes(itemTypes);
+
+    	Map<Integer, String> codeToId = itemTypes.stream().collect(Collectors.toMap(RulItemTypeExt::getItemTypeId, RulItemTypeExt::getCode));
+    	
+        // načtený globální oblíbených
+        List<UISettings> favoritesItemTypes = settingsService.getGlobalSettings(UISettings.SettingsType.FAVORITE_ITEM_SPECS.toString(), UISettings.EntityType.ITEM_TYPE);
+
+        // typeId -> list<specId>
+        // naplnění mapy podle oblíbených z nastavení
+        Map<Integer, List<Integer>> typeSpecsMap = new HashMap<>();
+        for (UISettings favoritesItemType : favoritesItemTypes) {
+            SettingFavoriteItemSpecs setting = SettingFavoriteItemSpecs.newInstance(favoritesItemType, staticDataService);
+            if (CollectionUtils.isNotEmpty(setting.getFavoriteItems())) {
+                StaticDataProvider sdp = staticDataService.getData();
+                List<Integer> itemSpecsIds = new ArrayList<>();
+                for (FavoriteItem fi : setting.getFavoriteItems()) {
+                    RulItemSpec ris = sdp.getItemSpecByCode(fi.getValue());
+                    Validate.notNull(ris, "Cannot find specification: %s", fi.getValue());
+                    itemSpecsIds.add(ris.getItemSpecId());
+                }
+                typeSpecsMap.put(favoritesItemType.getEntityId(), itemSpecsIds);
+            }
+        }
+
+        // Prepare list of groups
+        ViewConfiguration viewConfig = elzaRules.getViewConfiguration(ruleCode, fundId);
+        Map<GroupConfiguration, ItemTypeGroup> itemTypeGroupMap = new HashMap<>();
+
+        // prepare empty groups
+        if (viewConfig != null) {
+            for (GroupConfiguration groupConfig : viewConfig.getGroups()) {
+                ItemTypeGroup group = new ItemTypeGroup(groupConfig.getCode(), groupConfig.getName());
+                itemTypeGroupMap.put(groupConfig, group);
+            }
+        }
+
+        // prepare default group for all other items
+        ItemTypeGroup defaultGroup = new ItemTypeGroup(elzaRules.getDefaultGroupConfigurationCode(), null);
+
+        for (FormItemType itemType: formItemTypes) {
+
+            // získání a vyplnění oblíbených specifikací u typu
+            List<Integer> favoriteSpecIds = typeSpecsMap.get(itemType.getItemTypeId());
+            itemType.setFavoriteSpecIds(favoriteSpecIds);
+
+            TypeInfo typeInfo = null;
+            ItemTypeGroup itemTypeGroup;
+
+            String itemTypeCode = codeToId.get(itemType.getItemTypeId());
+            GroupConfiguration groupConfig = null;
+            if (viewConfig != null) {
+                groupConfig = viewConfig.getGroupForType(itemTypeCode);
+            }
+            if (groupConfig != null) {
+                itemTypeGroup = itemTypeGroupMap.get(groupConfig);
+                // get type info
+                typeInfo = groupConfig.getTypeInfo(itemTypeCode);
+            } else {
+                itemTypeGroup = defaultGroup;
+            }
+
+//            // set width from type info
+//            Integer width = 1;
+//            if (typeInfo != null && typeInfo.getWidth() != null) {
+//                width = typeInfo.getWidth();
+//            }
+//
+//            itemType.setWidth(width);
+
+            List<FormItemType> formItemType = itemTypeGroup.getTypes();
+            formItemType.add(itemType);
+        }
+
+        // remove empty groups and return result
+        return formItemTypes.stream()
+                //.filter(s -> s.getType() > 0) // ignorují se nemožné TODO
+                .collect(Collectors.toList());
+    }    
+
+    /**
+     * Vytvoření seznamu rozšířených typů, ignoruje nemožné typy.
+     *
+     * @param fundId    identifikátor AS
+     * @param ruleCode  kód pravidel
+     * @param itemTypes seznam typů hodnot atributů
+     * @return seznam skupin s typy hodnot atributů
+     */
+    @Deprecated
     public List<ItemTypeLiteVO> createItemTypes(final String ruleCode, final Integer fundId, final List<RulItemTypeExt> itemTypes) {
 
         List<ItemTypeLiteVO> itemTypeExtList = itemTypes.stream().map(i -> ItemTypeLiteVO.newInstance(i)).collect(Collectors.toList());
@@ -2217,9 +2398,4 @@ public class ClientFactoryVO {
     public List<RulExportFilterVO> createExportFilterList(final List<RulExportFilter> exportFilters) {
         return exportFilters.stream().map(i -> new RulExportFilterVO(i)).collect(Collectors.toList());
     }
-
-	public Node createNode(ArrNode arrNode) {
-		Node node = new Node(arrNode.getNodeId(), arrNode.getVersion(), arrNode.getUuid());
-		return node;
-	}
 }
