@@ -8,7 +8,8 @@ package cz.tacr.elza.controller.vo.nodes;
  * 3) request při přejití na index v úrovni
  * 4) request na filtrování v úrovni
  */
-public class NodeDataParam {
+@Deprecated
+public class NodeDataParamVO {
 
     /**
      * Verze AS.

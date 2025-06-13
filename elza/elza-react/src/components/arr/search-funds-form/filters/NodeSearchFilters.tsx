@@ -2,7 +2,7 @@ import { Input, InteractionTag, InteractionTagPrimary, InteractionTagSecondary, 
 import { AddRegular } from "@fluentui/react-icons";
 import { Icon } from "components"
 import { Field, Form } from "react-final-form";
-import { AbstractFilter, FilterType, FundsFieldName } from "elza-api";
+import { FilterType } from "elza-api";
 import { useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { messages } from "./messages";
@@ -10,7 +10,7 @@ import { useFilterModal } from "./hooks";
 import { FilterObject } from "./types";
 
 interface Props {
-  onChange: (filters: AbstractFilter[]) => void;
+  onChange: (filters: FilterObject[]) => void;
   currentFilters: FilterObject[];
 }
 
@@ -30,7 +30,7 @@ const useStyles = makeStyles({
   }
 })
 
-export function FundFilters({
+export function NodeSearchFilters({
   onChange,
   currentFilters,
 }: Props) {
@@ -41,13 +41,9 @@ export function FundFilters({
   const { formatMessage } = useIntl();
   const styles = useStyles();
 
-  function getFiltersList(): FundsFieldName[] {
+  function getFiltersList(): string[] {
     return [
-      FundsFieldName.InstitutionCode,
-      FundsFieldName.InternalCode,
-      FundsFieldName.FundNumber,
-      FundsFieldName.Mark,
-      FundsFieldName.Name,
+      "DescItem"
     ]
   }
 
@@ -78,7 +74,10 @@ export function FundFilters({
 
   function handleFilterConfirm(filter: FilterObject) {
     const _filters = [...filters];
-    const _filter = _filters.find(f => f.name == filter.name)
+    const _filter = _filters.find(f => {
+      f.getSerializedString(f) == filter.getSerializedString(filter)
+    }
+    )
 
     if (!_filter || _filter.getSerializedString(_filter) != filter.getSerializedString(filter)) {
       _filters.push(filter);
@@ -123,10 +122,8 @@ export function FundFilters({
     }
   }
 
-  const addFilterButtonRect = addFilterButtonRef.current?.getBoundingClientRect() || undefined;
-  const initialPosition = addFilterButtonRect ? formatPosition(addFilterButtonRect.left, addFilterButtonRect.bottom) : undefined;
 
-  return <div style={{ display: "flex" }}>
+  return <div style={{ display: "flex", flexWrap: "wrap" }}>
     <div style={{ display: "flex", alignItems: "center", margin: "5px" }}>
       <Form<FulltextValues> initialValues={{ fulltext: "" }} onSubmit={handleFulltext}>
         {({ handleSubmit, values, form }) => {
@@ -152,6 +149,7 @@ export function FundFilters({
           <Tag
             appearance="outline"
             ref={addFilterButtonRef}
+            style={{ cursor: "pointer" }}
           >
             <AddRegular />&nbsp;Filtr
           </Tag>
@@ -163,6 +161,9 @@ export function FundFilters({
                 onClick={async (e) => {
                   e.stopPropagation();
                   e.preventDefault();
+
+                  const addFilterButtonRect = addFilterButtonRef.current?.getBoundingClientRect() || undefined;
+                  const initialPosition = addFilterButtonRect ? formatPosition(addFilterButtonRect.left, addFilterButtonRect.bottom) : undefined;
 
                   const { data } = await showFilterModal({ name: fieldName }, initialPosition)
                   if (data) {
@@ -181,6 +182,7 @@ export function FundFilters({
     <div style={{ display: "flex", alignItems: "center", margin: "5px" }}>
       <TagGroup className={styles.tagGroup} onDismiss={handleFilterRemove}>
         {filters.filter(({ filterType }) => filterType === FilterType.FieldValue).map((filter, index) => {
+          console.log("#nsf", filter, filter.getSerializedString(filter));
           return <InteractionTag
             value={`${filter.name};${filter.getSerializedString(filter)}`}
             key={index}

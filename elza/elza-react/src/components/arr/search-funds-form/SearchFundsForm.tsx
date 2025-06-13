@@ -14,11 +14,14 @@ import { Form, Field } from 'react-final-form';
 import { AppState, FundSearchFundType, FundSearchNodeType } from 'typings/store';
 import { useSelector } from 'react-redux';
 import { useThunkDispatch } from 'utils/hooks';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { NodeSearchFilters } from './filters/NodeSearchFilters';
+import { FilterObject } from './filters/types';
 
 const FUND_NAME_MAX_CHARS = 60;
 
 export function SearchFundsFormFn() {
+    // const [currentFilters, setCurrentFilters] = useState<FilterObject[]>([]);
     const arrRegion = useSelector((state: AppState) => state.arrRegion);
     const { fundSearch } = arrRegion;
     const dispatch = useThunkDispatch();
@@ -38,11 +41,11 @@ export function SearchFundsFormFn() {
         }
     }, [dispatch, fundSearch.isIdSearch])
 
-    const handleFluentSearch = ({ fulltext }: { fulltext: string }) => {
-        console.log('#fs', fulltext);
-        dispatch(fundSearchActions.fundSearchFulltextChange({
-            fulltext: fulltext || "",
-            isIdSearch: undefined
+    const handleFluentSearch = (filters: FilterObject[]) => {
+        console.log('#fs', filters);
+        // setCurrentFilters(filters);
+        dispatch(fundSearchActions.fundSearchFiltersChange({
+            filters: filters
         }));
     };
 
@@ -133,29 +136,32 @@ export function SearchFundsFormFn() {
         );
     }
 
-    const isFulltext = fundSearch.fulltext.length > 0;
+    const isFulltext = fundSearch.filters.length > 0;
     const totalCount = getTotalCount(fundSearch.funds);
+
+    console.log('#sff', /* currentFilters, */ fundSearch);
 
     return (
         <Modal.Body>
-            <Form initialValues={{ fulltext: fundSearch.fulltext }} onSubmit={handleFluentSearch}>
-                {({ handleSubmit, form }) => {
-                    return <form onSubmit={handleSubmit}>
-                        <Field name="fulltext">
-                            {({ input }) => {
-                                const handleChange = (e: SearchBoxChangeEvent, data: InputOnChangeData) => {
-                                    input.onChange(e);
-                                    // Submit form on value reset
-                                    if (e.type === "click" && data.value === "") {
-                                        form.submit();
-                                    }
-                                }
-                                return <SearchBox {...input} type='search' onChange={handleChange} />
-                            }}
-                        </Field>
-                    </form>
-                }}
-            </Form>
+            {/* <Form initialValues={{ fulltext: fundSearch.fulltext }} onSubmit={handleFluentSearch}> */}
+            {/*     {({ handleSubmit, form }) => { */}
+            {/*         return <form onSubmit={handleSubmit}> */}
+            {/*             <Field name="fulltext"> */}
+            {/*                 {({ input }) => { */}
+            {/*                     const handleChange = (e: SearchBoxChangeEvent, data: InputOnChangeData) => { */}
+            {/*                         input.onChange(e); */}
+            {/*                         // Submit form on value reset */}
+            {/*                         if (e.type === "click" && data.value === "") { */}
+            {/*                             form.submit(); */}
+            {/*                         } */}
+            {/*                     } */}
+            {/*                     return <SearchBox {...input} type='search' onChange={handleChange} /> */}
+            {/*                 }} */}
+            {/*             </Field> */}
+            {/*         </form> */}
+            {/*     }} */}
+            {/* </Form> */}
+            <NodeSearchFilters onChange={(filters) => handleFluentSearch(filters)} currentFilters={fundSearch.filters} />
             {fundSearch.isFetching && <HorizontalLoader hover showText={false} key="loader" />}
             {isFulltext && i18n('arr.fund.search.result.count', totalCount)}
             <div className={`fund-search ${isFulltext && totalCount > 0 ? 'result' : 'no-fulltext'}`}>

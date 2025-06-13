@@ -6,6 +6,7 @@ import static cz.tacr.elza.domain.ArrDescItem.NORM_FROM;
 import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
 import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 
 import org.apache.commons.lang3.StringUtils;
@@ -53,6 +54,9 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
             		switch (dataType) {
             		case INT:
             			document.addValue(itemTypeCodeLowerCase, item.getValueInt());
+            			break;
+            		case DECIMAL:
+            			document.addValue(itemTypeCodeLowerCase, new BigDecimal(item.getValueDouble()));
             			break;
             		case ENUM:
 						document.addValue(itemTypeCodeLowerCase, item.getItemSpec().getCode().toLowerCase());

@@ -7,6 +7,7 @@ import { ApValidationErrorsVO } from "api/ApValidationErrorsVO";
 import { SubNodeForm, SubNodeFormCache } from "./SubNodeForm.types";
 import { FundOutput } from "./Outputs.types";
 import { FundDataGrid } from "./DataGrid.types";
+import { FilterObject } from "components/fund/filters/types";
 
 export interface SplitterState {
     leftWidth: number;
@@ -257,6 +258,7 @@ export interface FundSearchFundType {
 
 export interface FundSearch {
     fulltext: string;
+    filters: FilterObject[];
     funds: FundSearchFundType[];
     fetched: boolean;
     isFetching: boolean;
