@@ -2,12 +2,14 @@ import { Input, InteractionTag, InteractionTagPrimary, InteractionTagSecondary, 
 import { AddRegular } from "@fluentui/react-icons";
 import { Icon } from "components"
 import { Field, Form } from "react-final-form";
-import { FilterType } from "elza-api";
+import { FilterType, OperationCompareType } from "elza-api";
 import { useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { messages } from "./messages";
 import { useFilterModal } from "./hooks";
 import { FilterObject } from "./types";
+import { useSelector } from "react-redux";
+import { AppState, SettingsType } from "typings/store";
 
 interface Props {
   onChange: (filters: FilterObject[]) => void;
@@ -30,6 +32,21 @@ const useStyles = makeStyles({
   }
 })
 
+interface SearchNodeFilterSetting{
+  itemType: string;
+  itemSpec?: string | null;
+  operation?: OperationCompareType;
+  name?: string;
+}
+
+interface SearchNodeFilterSettings{
+  options: SearchNodeFilterSetting[];
+}
+
+function convertSearchNodeFilterSettings(valueString: string):SearchNodeFilterSettings{
+  return JSON.parse(valueString);
+}
+
 export function NodeSearchFilters({
   onChange,
   currentFilters,
@@ -40,10 +57,40 @@ export function NodeSearchFilters({
   const addFilterButtonRef = useRef<HTMLButtonElement>(null);
   const { formatMessage } = useIntl();
   const styles = useStyles();
+  const filterSettings = useSelector(({userDetail}:AppState) => userDetail.settings.filter(({settingsType}) => settingsType === SettingsType.SEARCH_NODE_FILTERS))
+  const descItemTypes = useSelector(({refTables}:AppState) => refTables.descItemTypes.items);
+
+  function getPresetFilters(){
+    const presetFilters:SearchNodeFilterSetting[] = [];
+    filterSettings.forEach(({value}) => {
+      presetFilters.push(...convertSearchNodeFilterSettings(value).options);
+    })
+    return presetFilters;
+  }
+
+  function formatPresetFilter(name: string){
+    const presetFilter = presetFilters.find(f => f.name == name);
+    if(!presetFilter) return null;
+
+    const presetType = descItemTypes.find(({code}) => presetFilter.itemType === code);
+    const presetSpec = presetType?.descItemSpecs.find(({code}) => presetFilter.itemSpec === code);
+
+    return {
+      operation: presetFilter.operation,
+      data: {
+        itemType: presetType,
+        itemSpec: presetSpec,
+      },
+      name: "DescItem"
+    }
+  }
+
+  const presetFilters = getPresetFilters();
 
   function getFiltersList(): string[] {
     return [
-      "DescItem"
+      "DescItem",
+      ...presetFilters.map(({name}) => name)
     ]
   }
 
@@ -165,7 +212,9 @@ export function NodeSearchFilters({
                   const addFilterButtonRect = addFilterButtonRef.current?.getBoundingClientRect() || undefined;
                   const initialPosition = addFilterButtonRect ? formatPosition(addFilterButtonRect.left, addFilterButtonRect.bottom) : undefined;
 
-                  const { data } = await showFilterModal({ name: fieldName }, initialPosition)
+                  const _presetFilter = formatPresetFilter(fieldName);
+
+                  const { data } = await showFilterModal(_presetFilter ? _presetFilter : { name: fieldName }, initialPosition)
                   if (data) {
                     handleFilterConfirm({
                       ...data,
@@ -173,7 +222,7 @@ export function NodeSearchFilters({
                     });
                   }
                 }}
-              >{formatMessage(messages[fieldName])}</MenuItem>
+              >{messages[fieldName] ? formatMessage(messages[fieldName]) : fieldName}</MenuItem>
             })}
           </MenuList>
         </MenuPopover>
@@ -182,7 +231,6 @@ export function NodeSearchFilters({
     <div style={{ display: "flex", alignItems: "center", margin: "5px" }}>
       <TagGroup className={styles.tagGroup} onDismiss={handleFilterRemove}>
         {filters.filter(({ filterType }) => filterType === FilterType.FieldValue).map((filter, index) => {
-          console.log("#nsf", filter, filter.getSerializedString(filter));
           return <InteractionTag
             value={`${filter.name};${filter.getSerializedString(filter)}`}
             key={index}
