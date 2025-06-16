@@ -7,6 +7,7 @@ import static cz.tacr.elza.domain.ArrDescItem.NORM_FROM;
 import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
 import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.CLASSIC_TOKENIZER_CZ;
+import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.KEYWORD_TOKENIZER_CZ;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -78,7 +79,7 @@ public class ArrCachedNodeBinder implements TypeBinder {
 
     private IndexFieldReference<String> createStringField(String name) {
     	return context.indexSchemaElement()
-        		.field(name, f -> f.asString())
+        		.field(name, f -> f.asString().analyzer(KEYWORD_TOKENIZER_CZ))
         		.multiValued()
         		.toReference();
     }

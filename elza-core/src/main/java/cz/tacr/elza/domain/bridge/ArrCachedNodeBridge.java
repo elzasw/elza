@@ -66,10 +66,10 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
             		case STRUCTURED:
 					case STRING:
 					case TEXT:
-						document.addValue(itemTypeCodeLowerCase, fullTextValue.toLowerCase());
+						document.addValue(itemTypeCodeLowerCase, fullTextValue);
 						if (item.getItemSpec() != null) {
 							String itemSpecCode = item.getItemSpec().getCode().toLowerCase();
-							document.addValue(itemTypeCodeLowerCase + "_" + itemSpecCode, fullTextValue.toLowerCase());
+							document.addValue(itemTypeCodeLowerCase + "_" + itemSpecCode, fullTextValue);
 						}
 						break;
 					case UNITDATE:
