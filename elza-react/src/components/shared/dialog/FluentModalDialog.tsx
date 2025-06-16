@@ -181,7 +181,7 @@ export function CollapsibleDragWindow<R, D>({
         />
       </DraggableWindowDragger>
       <div style={{
-        padding: "20px",
+        padding: "0 20px 20px",
         flexGrow: 1,
         display: open ? "flex" : "none",
         flexDirection: "column",
