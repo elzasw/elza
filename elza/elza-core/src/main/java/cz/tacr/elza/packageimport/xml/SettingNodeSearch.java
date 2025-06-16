@@ -55,6 +55,9 @@ public class SettingNodeSearch extends Setting {
         
         @XmlAttribute(name = "operation", required = false)
         String operation;
+
+        @XmlAttribute(name = "name", required = false)
+        String name;
     }
 
 	@Override
