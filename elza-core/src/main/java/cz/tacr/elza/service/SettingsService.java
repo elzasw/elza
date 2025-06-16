@@ -29,6 +29,7 @@ import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import cz.tacr.elza.packageimport.xml.SettingItemTypes;
 import cz.tacr.elza.packageimport.xml.SettingMenu;
+import cz.tacr.elza.packageimport.xml.SettingNodeSearch;
 import cz.tacr.elza.packageimport.xml.SettingPartsOrder;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.packageimport.xml.SettingStructTypeSettings;
@@ -191,6 +192,9 @@ public class SettingsService {
         settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.MENU,
                 SettingMenu::newInstance,
                 SettingMenu.class));
+        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.SEARCH_NODE_FILTERS,
+                SettingNodeSearch::newInstance,
+                SettingNodeSearch.class));
         settingsConvertors.add(new StructTypeSettingsConvertor());
 
 		// default convertor
@@ -392,7 +396,7 @@ public class SettingsService {
         return null;
     }
 
-    private SettingConvertor getConvertor(String settingsType, Class cls) {
+    private SettingConvertor getConvertor(String settingsType, Class<? extends Setting> cls) {
         for(SettingConvertor sc: settingsConvertors) {
             if(sc.canConvertTo(settingsType, cls)) {
                 return sc;
