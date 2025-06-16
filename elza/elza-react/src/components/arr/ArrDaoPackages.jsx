@@ -69,6 +69,7 @@ class ArrDaoPackages extends AbstractReactComponent {
                         key="list"
                         items={list.rows}
                         onFocus={this.handleSelect}
+                        onSelect={this.handleSelect}
                         activeIndex={activeIndex}
                         renderItemContent={props => (
                             <div className={classNames({active: props.active})}>
