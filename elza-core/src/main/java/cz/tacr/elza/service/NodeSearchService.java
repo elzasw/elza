@@ -330,7 +330,7 @@ public class NodeSearchService {
 													   final String fieldTypeSpecName,
 											   		   final FieldValueFilter filter) {
 	    OperationCompareType op = filter.getOperation();
-	    String value = filter.getValue().toLowerCase();
+	    String value = filter.getValue();
 	    BooleanPredicateClausesStep<?> bool = factory.bool();
 		switch (op) {
 		case EQ:
@@ -394,7 +394,7 @@ public class NodeSearchService {
 		default:
 			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
 		}
-		
+
 		return bool.toPredicate();
 	}
 
