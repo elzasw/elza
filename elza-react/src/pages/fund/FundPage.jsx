@@ -479,7 +479,6 @@ class FundPage extends AbstractReactComponent {
 
     handleSelect(item) {
         const { history, dispatch } = this.props;
-        console.log("#fp", item);
 
         this.handleToggleDrawer(true)
 
@@ -529,7 +528,6 @@ class FundPage extends AbstractReactComponent {
 
     handleToggleDrawer = (state) => {
         const { sidebarOpen } = this.state;
-        console.log('#fp - toggle drawer - from:', sidebarOpen, "to:", !sidebarOpen);
         this.setState({ sidebarOpen: state !== undefined ? state : !sidebarOpen });
     }
 
@@ -546,8 +544,6 @@ class FundPage extends AbstractReactComponent {
         if (fundRegion.fundDetail.id !== null) {
             activeIndex = indexById(fundRegion.funds, fundRegion.fundDetail.id);
         }
-
-        console.log("#fp - detail", fundRegion.fundDetail);
 
         const leftPanel = (
             <div className="fund-list-container">
