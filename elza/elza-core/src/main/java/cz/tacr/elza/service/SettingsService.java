@@ -228,23 +228,23 @@ public class SettingsService {
 
         // Read UI menu settings
         List<UISettings> menuSettingsList = getGlobalSettings(UISettings.SettingsType.MENU);
+        List<UISettings> filterSettingsList = getGlobalSettings(UISettings.SettingsType.SEARCH_NODE_FILTERS);
 
         List<UISettings> userSettingsList = null;
         if (userId != null) {
             userSettingsList = settingsRepository.findByUserId(userId);
         }
 
-        // TODO: rewrite using some shared function
-        if (CollectionUtils.isEmpty(menuSettingsList)) {
-            return userSettingsList;
-        }
-        if (CollectionUtils.isEmpty(userSettingsList)) {
-            return menuSettingsList;
-        }
-
         List<UISettings> result = new ArrayList<>(menuSettingsList.size() + userSettingsList.size());
-        result.addAll(menuSettingsList);
-        result.addAll(userSettingsList);
+        if (!CollectionUtils.isEmpty(menuSettingsList)) {
+        	result.addAll(menuSettingsList);
+        }
+        if (!CollectionUtils.isEmpty(userSettingsList)) {
+        	result.addAll(userSettingsList);
+        }
+        if(!CollectionUtils.isEmpty(filterSettingsList)) {
+        	result.addAll(filterSettingsList);
+        }
         return result;
     }
 
