@@ -51,6 +51,29 @@ export interface Permission {
     scopeIdsMap: Record<number, boolean>;
 }
 
+export enum EntityType {
+    FUND = "FUND"
+}
+
+// TODO sjednotit s src/api/settings/SettingsType.ts
+export enum SettingsType {
+    FUND_READ_MODE = "FUND_READ_MODE",
+    FUND_TEMPLATES = "FUND_TEMPLATES",
+    FUND_STRICT_MODE = "FUND_STRICT_MODE",
+    FUND_RIGHT_PANEL = "FUND_RIGHT_PANEL",
+    FUND_CENTER_PANEL = "FUND_CENTER_PANEL",
+    SEARCH_NODE_FILTERS = "SEARCH_NODE_FILTERS",
+    TEXT_FRAGMENTS = "TEXT_FRAGMENTS",
+}
+
+export interface Setting {
+    entityId?: number | null;
+    entityType?: EntityType | null;
+    id: number;
+    settingsType: SettingsType;
+    value: string;
+}
+
 export interface UserDetail {
     accessPoint: unknown | null;
     active: boolean;
@@ -69,7 +92,7 @@ export interface UserDetail {
     isAdmin: () => unknown;
     permissions: unknown | null;
     permissionsMap: Record<PermissionType, Permission>;
-    settings: unknown | null;
+    settings: Setting[] | null;
     userPermissions: Permission[];
     username: string;
 }
