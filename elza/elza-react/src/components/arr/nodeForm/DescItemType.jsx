@@ -1122,7 +1122,7 @@ class DescItemType extends AbstractReactComponent {
         // Zprávy o chybějících položkách
         const missings = conformityInfoMissings;
         if (missings && missings.length > 0) {
-            const messages = missings.map(missing => missing.description);
+            const messages = missings.map(missing => <div>{missing.description}</div>);
             const tooltip = <div>{messages}</div>;
             actions.push(
                 <TooltipTrigger key="state" content={tooltip} holdOnHover placement="auto">
@@ -1441,7 +1441,7 @@ class DescItemType extends AbstractReactComponent {
                 }
                 const errors = conformityInfo.errors[descItem.descItemObjectId];
                 if (errors && errors.length > 0) {
-                    const messages = errors.map(error => error.description);
+                    const messages = errors.map(error => <div>{error.description}</div>);
                     const tooltip = <div>{messages}</div>;
                     actions.push(
                         <TooltipTrigger key="info" content={tooltip} holdOnHover placement="auto" showDelay={1}>

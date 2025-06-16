@@ -235,7 +235,7 @@ public class SettingsService {
             userSettingsList = settingsRepository.findByUserId(userId);
         }
 
-        List<UISettings> result = new ArrayList<>(menuSettingsList.size() + userSettingsList.size());
+        List<UISettings> result = new ArrayList<>();
         if (!CollectionUtils.isEmpty(menuSettingsList)) {
         	result.addAll(menuSettingsList);
         }
