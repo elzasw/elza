@@ -120,17 +120,28 @@ export function FilterDescItemModal({
 
   const { formatMessage } = useIntl();
 
-  const isDirty = itemTypeCode != initialValue?.data?.code || (initialValue.operation && operation != initialValue.operation) || (!itemTypeCode && itemTypeQuery && true);
+  const isDirty = itemTypeCode != initialValue?.data?.code || (initialValue.operation && operation != initialValue.operation) || (!itemTypeCode && !!itemTypeQuery);
   const inputRef = useRef(null)
   useInitialFocus(inputRef);
 
   // desc item types filtered by query
-  const filteredItemTypes = isDirty
-    ? descItemTypes.filter((type) => {
-      const string_norm = `${type.name}       ${type.shortcut}`.normalize('NFD').replace(/\p{Diacritic}/gu, '');
-      return string_norm.toLowerCase().indexOf((itemTypeQuery || "").toLowerCase()) >= 0
+  const filterItemTypes = () => {
+    if (!itemTypeQuery || !isDirty) { return descItemTypes; }
+
+    const normalizedQuery = (itemTypeQuery).toLowerCase();
+
+    return descItemTypes.filter(({ name, shortcut }) => {
+      const sources = [
+        name.toLowerCase(),
+        shortcut.toLowerCase(),
+        name.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase(), // without diacritic
+        shortcut.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase() // without diacritic
+      ]
+      return sources.find((normalizedSource) => normalizedSource.indexOf(normalizedQuery) >= 0) != undefined;
     })
-    : descItemTypes;
+  }
+
+  const filteredItemTypes = filterItemTypes();
 
   const selectedItemType = itemTypeCode && descItemTypes.find(({ code }) => code === itemTypeCode);
   const selectedDataType = dataTypes?.items.find(({ id }) => id === selectedItemType?.dataTypeId);
