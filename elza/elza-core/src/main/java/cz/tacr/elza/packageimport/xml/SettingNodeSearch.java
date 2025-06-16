@@ -47,7 +47,7 @@ public class SettingNodeSearch extends Setting {
     @XmlType(name = "pinned-filter", namespace = "node-search-settings")
     public static class PresetFilter {
 
-        @XmlAttribute(name = "item-type", required = true)
+		@XmlAttribute(name = "item-type", required = true)
         String itemType;
     	
         @XmlAttribute(name = "item-spec", required = false)
@@ -58,6 +58,38 @@ public class SettingNodeSearch extends Setting {
 
         @XmlAttribute(name = "name", required = false)
         String name;
+
+        public String getItemType() {
+			return itemType;
+		}
+
+		public void setItemType(String itemType) {
+			this.itemType = itemType;
+		}
+
+		public String getItemSpec() {
+			return itemSpec;
+		}
+
+		public void setItemSpec(String itemSpec) {
+			this.itemSpec = itemSpec;
+		}
+
+		public String getOperation() {
+			return operation;
+		}
+
+		public void setOperation(String operation) {
+			this.operation = operation;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
     }
 
 	@Override
