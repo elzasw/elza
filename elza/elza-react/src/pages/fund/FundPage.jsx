@@ -33,14 +33,17 @@ import IssueLists from '../../components/arr/IssueLists';
 import SearchFundsForm from '../../components/arr/search-funds-form/SearchFundsForm';
 import { AbstractReactComponent, ListBox } from '../../components/shared';
 import ListPager from '../../components/shared/listPager/ListPager';
-import { urlEntity, urlFund, urlFundTree } from "../../constants";
+import { urlEntity, urlFund, urlFundOutputs, urlFundTree, urlFundWithVersion } from "../../constants";
 import { objectById } from '../../shared/utils';
 import { indexById } from '../../stores/app/utils';
 import PageLayout from '../shared/layout/PageLayout';
 import './FundPage.scss';
-import { Menu, MenuButton, MenuItem, MenuList, MenuPopover, MenuTrigger } from '@fluentui/react-components';
+import { Button, DrawerBody, DrawerHeader, DrawerHeaderTitle, InlineDrawer, Menu, MenuButton, MenuItem, MenuList, MenuPopover, MenuTrigger } from '@fluentui/react-components';
+import { Dismiss24Regular } from "@fluentui/react-icons"
 import { FundFilters } from 'components/fund/filters/FundFilters';
 import { FundPageRibbon } from 'components/fund/FundPageRibbon';
+
+const OUTPUT_MAX_NUMBER = 10;
 
 
 /**
@@ -56,7 +59,10 @@ class FundPage extends AbstractReactComponent {
         maxSize: DEFAULT_FUND_LIST_MAX_SIZE,
     };
 
-    state = {institutions: []};
+    state = {
+        institutions: [],
+        sidebarOpen: false,
+    };
 
     constructor(props) {
         super(props);
@@ -78,7 +84,7 @@ class FundPage extends AbstractReactComponent {
         );
 
         this.buildRibbon = this.buildRibbon.bind(this);
-        WebApi.getInstitutions(true).then(institutions => this.setState({institutions}));
+        WebApi.getInstitutions(true).then(institutions => this.setState({ institutions }));
     }
 
     UNSAFE_componentWillReceiveProps() {
@@ -89,7 +95,7 @@ class FundPage extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        const {dispatch, fundRegion, history, select = false} = this.props;
+        const { dispatch, fundRegion, history, select = false } = this.props;
         dispatch(fundsFetchIfNeeded());
         dispatch(refInstitutionsFetchIfNeeded());
 
@@ -103,15 +109,17 @@ class FundPage extends AbstractReactComponent {
 
             if (matchId) {
                 dispatch(fundsSelectFund(matchId));
+
+                this.handleToggleDrawer(true)
             }
         }
     }
 
     handleAddFund() {
-        const {userDetail} = this.props;
+        const { userDetail } = this.props;
         let initData = {};
         if (!userDetail.hasOne(perms.ADMIN, perms.FUND_ADMIN)) {
-            initData.fundAdmins = [{id: 'default', user: userDetail}];
+            initData.fundAdmins = [{ id: 'default', user: userDetail }];
         }
         WebApi.getAllScopes().then(scopes => {
             this.props.dispatch(
@@ -146,11 +154,11 @@ class FundPage extends AbstractReactComponent {
                 <ExportForm
                     fund={true}
                     initialValues={{
-                        includeUUID:true,
+                        includeUUID: true,
                         includeAccessPoints: true
                     }}
-                    onSubmitForm={({exportFilterId, includeUUID, includeAccessPoints}) => {
-                        return dispatch(exportFund(fundDetail.versionId, {exportFilterId, includeUUID, includeAccessPoints}));
+                    onSubmitForm={({ exportFilterId, includeUUID, includeAccessPoints }) => {
+                        return dispatch(exportFund(fundDetail.versionId, { exportFilterId, includeUUID, includeAccessPoints }));
                     }}
                 />,
             ),
@@ -185,7 +193,7 @@ class FundPage extends AbstractReactComponent {
      * Zobrazení dualogu uzavření verze AS.
      */
     async handleRuleSetUpdateFundVersion(fundId) {
-        const {institutionsAll} = this.props;
+        const { institutionsAll } = this.props;
         const fundDetail = await getFundDetail(fundId);
         const institution = objectById(institutionsAll.items, fundDetail.institutionId);
 
@@ -216,7 +224,7 @@ class FundPage extends AbstractReactComponent {
     }
 
     async handleEditFundVersion(fundId) {
-        const {ruleSet, institutionsAll} = this.props;
+        const { ruleSet, institutionsAll } = this.props;
         const fundDetail = await getFundDetail(fundId);
         const rules = objectById(ruleSet.items, fundDetail.activeVersion.ruleSetId);
         const institution = objectById(institutionsAll.items, fundDetail.institutionId);
@@ -249,7 +257,7 @@ class FundPage extends AbstractReactComponent {
     }
 
     async handleCallEditFundVersion(fundDetail, data) {
-        const {dispatch} = this.props;
+        const { dispatch } = this.props;
 
         dispatch(scopesDirty(fundDetail.versionId));
         return dispatch(
@@ -283,7 +291,7 @@ class FundPage extends AbstractReactComponent {
     }
 
     async handleDeleteFund(fundId) {
-        const {dispatch} = this.props;
+        const { dispatch } = this.props;
         const fundDetail = await getFundDetail(fundId);
 
         const response = await dispatch(showConfirmDialog(i18n('arr.fund.action.delete.confirm', fundDetail.name)));
@@ -293,7 +301,7 @@ class FundPage extends AbstractReactComponent {
     }
 
     async handleDeleteFundHistory(fundId) {
-        const {dispatch} = this.props;
+        const { dispatch } = this.props;
         const fundDetail = await getFundDetail(fundId);
 
         const response = await dispatch(showConfirmDialog(i18n('arr.fund.action.deletehistory.confirm', fundDetail.name)));
@@ -303,13 +311,13 @@ class FundPage extends AbstractReactComponent {
     }
 
     copyToClipboard = async (string) => {
-        if(navigator.clipboard){
+        if (navigator.clipboard) {
             navigator.clipboard.writeText(string);
         }
     };
 
     handleIssuesSettings = async (fundId) => {
-        const {dispatch} = this.props;
+        const { dispatch } = this.props;
         const fundDetail = await getFundDetail(fundId);
 
         dispatch(
@@ -321,7 +329,7 @@ class FundPage extends AbstractReactComponent {
         const { dispatch } = this.props;
 
         // Load fund detail
-        const {id, versions} = await getFundDetail(item.id);
+        const { id, versions } = await getFundDetail(item.id);
 
         dispatch(globalFundTreeInvalidate());
         // redirecting to arrangement page of the loaded fund
@@ -330,12 +338,13 @@ class FundPage extends AbstractReactComponent {
 
     renderListItem(props) {
         const { institutionsAll, userDetail } = this.props;
-        const {item} = props;
-        const institution = institutionsAll.items.find(({code}) => code == item.institutionIdentifier);
+        const { item } = props;
+        // hide institution name, when only one is present
+        const institution = institutionsAll.items.length > 1 ? institutionsAll.items.find(({ code }) => code == item.institutionIdentifier) : undefined;
 
         const itemActions = [];
         if (item.id !== null) {
-            if (userDetail.hasOne(perms.FUND_ADMIN, {type: perms.FUND_VER_WR, fundId: item.id})) {
+            if (userDetail.hasOne(perms.FUND_ADMIN, { type: perms.FUND_VER_WR, fundId: item.id })) {
                 itemActions.push(
                     <MenuItem
                         key="edit-version"
@@ -363,7 +372,7 @@ class FundPage extends AbstractReactComponent {
                     </MenuItem>,
                 );
             }
-            if (userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL, {type: perms.FUND_ISSUE_ADMIN, fundId: item.id})) {
+            if (userDetail.hasOne(perms.FUND_ISSUE_ADMIN_ALL, { type: perms.FUND_ISSUE_ADMIN, fundId: item.id })) {
                 itemActions.push(
                     <MenuItem
                         key="fa-lecturing"
@@ -375,7 +384,7 @@ class FundPage extends AbstractReactComponent {
                     </MenuItem>,
                 );
             }
-            if (userDetail.hasOne(perms.FUND_EXPORT_ALL, {type: perms.FUND_EXPORT, fundId: item.id})) {
+            if (userDetail.hasOne(perms.FUND_EXPORT_ALL, { type: perms.FUND_EXPORT, fundId: item.id })) {
                 itemActions.push(
                     <MenuItem
                         key="fa-export"
@@ -413,36 +422,47 @@ class FundPage extends AbstractReactComponent {
             }
         }
         return <>
-            <div style={{flexGrow: 1, flexShrink: 1, overflow: "hidden"}}>
+            <div style={{ flexGrow: 1, flexShrink: 1, overflow: "hidden" }}>
                 <div className="item-row" key={item.id}>
-                    <Link className="name main link" title={item.name} key={`fund-${item.id}`} to={urlFundTree(item.id)}>
+                    <Link className="name main link" title={item.name} key={`fund-${item.id}`} to={urlFundTree(item.id)} onMouseDown={(e) => e.stopPropagation()}>
                         {item.name}
                     </Link>
-                    {institution && <Link className="name desc-part link bubble shrink" title={institution.name} key={`fund-${item.id}`} to={urlEntity(institution.accessPointId)}>
-                        <div>
-                            {institution.name}
-                        </div>
-                    </Link>}
-                    {!institution && <span className="desc-part">{item.institutionIdentifier}</span>}
-                    <div style={{flexGrow: 1}}></div>
+                    <div style={{ flexGrow: 1 }}></div>
                 </div>
                 <div className="item-row desc" key={item.id + '-x'}>
-                    <div style={{display: "flex", width: "100%"}}>
+                    <div style={{ display: "flex", width: "100%" }}>
                         {/* <span className="desc-part id bubble" onClick={() => this.copyToClipboard(item.id)}>{item.id}</span> */}
-                        {item.internalCode && <span className="desc-part bubble internal-code" onClick={() => this.copyToClipboard(item.internalCode)}>{item.internalCode}</span>}
-                        {item.fundNumber && <span className="desc-part bubble" onClick={() => this.copyToClipboard(item.fundNumber)}>{item.fundNumber}</span>}
+                        {item.fundNumber && <span className="desc-part bubble internal-code" onClick={() => this.copyToClipboard(item.fundNumber)}>{item.fundNumber}</span>}
+                        {item.internalCode && <span className="desc-part bubble" onClick={() => this.copyToClipboard(item.internalCode)}>{item.internalCode}</span>}
                         {item.mark && <span className="desc-part bubble" onClick={() => this.copyToClipboard(item.mark)}>{item.mark}</span>}
-
-                        {item.createDate && <span className="desc-part muted">vytvořeno: {new Date(item.createDate).toLocaleDateString()}, {new Date(item.createDate).toLocaleTimeString(undefined, {timeStyle: "short"})}</span>}
+                        {institution && <Link className="name desc-part link bubble shrink" title={institution.name} key={`fund-${item.id}`} to={urlEntity(institution.accessPointId)} onMouseDown={(e) => e.stopPropagation()}>
+                            <div>
+                                {institution.name}
+                            </div>
+                        </Link>}
+                        {item.unitdate && <span className="desc-part bubble id" onClick={() => this.copyToClipboard(item.unitdate)}>{item.unitdate}</span>}
                     </div>
-                    <div style={{flexGrow: 1}}></div>
+                    <div style={{ flexGrow: 1 }}></div>
                 </div>
             </div>
-            <div className="fund-actions">
+            <div style={{
+                // flexGrow: 1,
+                // flexShrink: 1,
+                overflow: "hidden",
+            }}>
+                {/* <div style={{ display: "flex", justifyContent: "flex-end", columnGap: "10px" }}> */}
+                {/*     <Link ><Icon glyph="fa-code-fork" /> 3</Link> */}
+                {/*     <Link to={urlFundOutputs(item.id, item.versionId)}><Icon glyph="fa-print" /> 0</Link> */}
+                {/* </div> */}
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    {item.createDate && <span className="desc-part muted">vytvořeno: {new Date(item.createDate).toLocaleDateString()}, {new Date(item.createDate).toLocaleTimeString(undefined, { timeStyle: "short" })}</span>}
+                </div>
+            </div>
+            <div className="fund-actions" onMouseDown={(e) => { e.stopPropagation() }}>
                 {itemActions.length > 0 &&
                     <Menu>
                         <MenuTrigger disableButtonEnhancement={true}>
-                            <MenuButton appearance='subtle' icon={<Icon glyph="fa-ellipsis-v"/>}/>
+                            <MenuButton appearance='subtle' icon={<Icon glyph="fa-ellipsis-v" />} />
                         </MenuTrigger>
                         <MenuPopover>
                             <MenuList>
@@ -458,7 +478,11 @@ class FundPage extends AbstractReactComponent {
     }
 
     handleSelect(item) {
-        const {history, dispatch} = this.props;
+        const { history, dispatch } = this.props;
+        console.log("#fp", item);
+
+        this.handleToggleDrawer(true)
+
         history.push(urlFund(item.id));
         dispatch(fundsSelectFund(item.id));
     }
@@ -476,72 +500,146 @@ class FundPage extends AbstractReactComponent {
     }
 
     handleFilterPrev = () => {
-        const {filter} = this.props.fundRegion;
-        let {from} = filter;
+        const { filter } = this.props.fundRegion;
+        let { from } = filter;
 
         if (from >= DEFAULT_FUND_LIST_MAX_SIZE) {
             from = from - DEFAULT_FUND_LIST_MAX_SIZE;
-            this.props.dispatch(fundsFilter({...filter, from}));
+            this.props.dispatch(fundsFilter({ ...filter, from }));
         }
     };
 
     handleFilterNext = () => {
-        const {filter, fundsCount} = this.props.fundRegion;
-        let {from} = filter;
+        const { filter, fundsCount } = this.props.fundRegion;
+        let { from } = filter;
 
         if (from < fundsCount - DEFAULT_FUND_LIST_MAX_SIZE) {
             from = from + DEFAULT_FUND_LIST_MAX_SIZE;
-            this.props.dispatch(fundsFilter({...filter, from}));
+            this.props.dispatch(fundsFilter({ ...filter, from }));
         }
     };
 
     handleFilterInstitution = institutionIdentifier => {
-        const {filter} = this.props.fundRegion;
+        const { filter } = this.props.fundRegion;
 
         if (institutionIdentifier !== filter.institutionIdentifier) {
-            this.props.dispatch(fundsFilter({...filter, institutionIdentifier}));
+            this.props.dispatch(fundsFilter({ ...filter, institutionIdentifier }));
         }
     };
 
+    handleToggleDrawer = (state) => {
+        const { sidebarOpen } = this.state;
+        console.log('#fp - toggle drawer - from:', sidebarOpen, "to:", !sidebarOpen);
+        this.setState({ sidebarOpen: state !== undefined ? state : !sidebarOpen });
+    }
+
     handleFiltersChange = (filters) => {
-        const {dispatch, fundRegion} = this.props;
+        const { dispatch, fundRegion } = this.props;
         dispatch(fundsFilter({ ...fundRegion.filter, filter: filters }));
     }
 
     render() {
-        const {splitter, fundRegion, maxSize} = this.props;
+        const { splitter, fundRegion, maxSize } = this.props;
+        const { sidebarOpen } = this.state;
 
         let activeIndex;
         if (fundRegion.fundDetail.id !== null) {
             activeIndex = indexById(fundRegion.funds, fundRegion.fundDetail.id);
         }
 
+        console.log("#fp - detail", fundRegion.fundDetail);
+
         const leftPanel = (
             <div className="fund-list-container">
                 <div className="filter-container">
-                    <FundFilters currentFilters={fundRegion.filter.filter} onChange={this.handleFiltersChange}/>
+                    <FundFilters currentFilters={fundRegion.filter.filter} onChange={this.handleFiltersChange} />
                 </div>
-                <ListBox
-                    className="fund-listbox"
-                    ref="fundList"
-                    items={fundRegion.funds}
-                    activeIndex={activeIndex}
-                    renderItemContent={this.renderListItem}
-                    // onFocus={this.handleSelect}
-                    // onSelect={this.handleSelect}
-                />
-                {(
-                    fundRegion.fundsCount > maxSize ||
-                    fundRegion.filter.from !== 0
-                ) && (
-                    <ListPager
-                        prev={this.handleFilterPrev}
-                        next={this.handleFilterNext}
-                        from={fundRegion.filter.from}
-                        pageSize={maxSize}
-                        totalCount={fundRegion.fundsCount}
-                    />
-                )}
+                <div style={{ position: "relative", display: "flex", flexGrow: 1, flexShrink: 1, height: "400px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
+                        <ListBox
+                            className="fund-listbox"
+                            ref="fundList"
+                            items={fundRegion.funds}
+                            activeIndex={activeIndex}
+                            renderItemContent={this.renderListItem}
+                            // onFocus={this.handleSelect}
+                            onSelect={this.handleSelect}
+                        />
+                        {(
+                            fundRegion.fundsCount > maxSize ||
+                            fundRegion.filter.from !== 0
+                        ) && (
+                                <ListPager
+                                    prev={this.handleFilterPrev}
+                                    next={this.handleFilterNext}
+                                    from={fundRegion.filter.from}
+                                    pageSize={maxSize}
+                                    totalCount={fundRegion.fundsCount}
+                                />
+                            )}
+                    </div>
+                    <InlineDrawer position='end' separator={true} open={sidebarOpen} size='medium' style={{ height: "auto" }}>
+                        <DrawerHeader>
+                            <DrawerHeaderTitle
+                                action={
+                                    <Button
+                                        appearance="subtle"
+                                        aria-label="Close"
+                                        icon={<Dismiss24Regular />}
+                                        onClick={() => this.handleToggleDrawer(false)}
+                                    />
+                                }
+                            >{fundRegion.fundDetail.name}</DrawerHeaderTitle>
+                        </DrawerHeader>
+                        <DrawerBody style={{ overflow: "auto" }}>
+                            <div style={{ marginBottom: "10px" }}>
+                                <div><b>Výstupy</b></div>
+                                {/* <div style={{overflow: "auto"}}> */}
+                                {fundRegion.fundDetail.validNamedOutputs?.slice(0, OUTPUT_MAX_NUMBER).sort((a, b) => new Date(b.generatedDate) - new Date(a.generatedDate)).map(({ name, id, generatedDate }) => {
+                                    return <div style={{ marginBottom: "5px" }}>
+                                        <div>
+                                            <Link to={urlFundOutputs(fundRegion.fundDetail.id, undefined, id)}>
+                                                {name}
+                                            </Link>
+                                        </div>
+                                        {generatedDate && <div>
+                                            {new Date(generatedDate).toLocaleDateString()}, {new Date(generatedDate).toLocaleTimeString()}
+                                        </div>}
+                                    </div>
+                                })}
+                                <div>
+                                    <Link to={urlFundOutputs(fundRegion.fundDetail.id)}>
+                                        Všechny výstupy...
+                                    </Link>
+                                </div>
+                                {/* </div> */}
+                            </div>
+                            <div style={{ marginBottom: "10px" }}>
+                                <div><b>Verze</b></div>
+                                <Link to={urlFundTree(fundRegion.fundDetail.id)}>
+                                    Aktuální verze
+                                </Link>
+                                {fundRegion.fundDetail.versions?.map(({ createDate, id }) => {
+                                    return <div>
+                                        <Link to={urlFundWithVersion(fundRegion.fundDetail.id, id)}>
+                                            {new Date(createDate).toLocaleDateString()}
+                                            {", "}
+                                            {new Date(createDate).toLocaleTimeString()}
+                                        </Link>
+                                    </div>
+                                })}
+                            </div>
+                            <div style={{ marginBottom: "10px" }}>
+                                <div><b>Oblasti entit</b></div>
+                                {fundRegion.fundDetail.apScopes?.map(({ name }) => {
+                                    return <div>
+                                        {name}
+                                    </div>
+                                })}
+                            </div>
+                        </DrawerBody>
+                    </InlineDrawer>
+                </div>
             </div>
         );
 
@@ -561,14 +659,14 @@ class FundPage extends AbstractReactComponent {
                 ribbon={this.buildRibbon()}
                 // leftPanel={leftPanel}
                 centerPanel={leftPanel}
-                // rightPanel={rightPanel}
+            // rightPanel={rightPanel}
             />
         );
     }
 }
 
 function mapStateToProps(state) {
-    const {focus, splitter, fundRegion, userDetail, refTables} = state;
+    const { focus, splitter, fundRegion, userDetail, refTables } = state;
 
     return {
         focus,
