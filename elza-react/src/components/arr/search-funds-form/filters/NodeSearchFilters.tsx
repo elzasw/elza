@@ -3,13 +3,15 @@ import { AddRegular } from "@fluentui/react-icons";
 import { Icon } from "components"
 import { Field, Form } from "react-final-form";
 import { FilterType, OperationCompareType } from "elza-api";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { messages } from "./messages";
 import { useFilterModal } from "./hooks";
 import { FilterObject } from "./types";
 import { useSelector } from "react-redux";
 import { AppState, SettingsType } from "typings/store";
+import { useThunkDispatch } from "utils/hooks";
+import { descItemTypesFetchIfNeeded } from "actions/refTables/descItemTypes";
 
 interface Props {
   onChange: (filters: FilterObject[]) => void;
@@ -59,6 +61,12 @@ export function NodeSearchFilters({
   const styles = useStyles();
   const filterSettings = useSelector(({userDetail}:AppState) => userDetail.settings.filter(({settingsType}) => settingsType === SettingsType.SEARCH_NODE_FILTERS))
   const descItemTypes = useSelector(({refTables}:AppState) => refTables.descItemTypes.items);
+
+  const dispatch = useThunkDispatch();
+  // Load used refTables data, if not present
+  useEffect(() => {
+    dispatch(descItemTypesFetchIfNeeded());
+  }, [])
 
   function getPresetFilters(){
     const presetFilters:SearchNodeFilterSetting[] = [];
