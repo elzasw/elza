@@ -255,7 +255,7 @@ when
     $di: DescItem( type=="ZP2015_TITLE" && $label: string ) from $ownDescItems
     eval( $label.length()> 250)
 then
-    results.createError($di.getDescItemId(), "Obsah(budoucí Název) na úrovni série přesahuje doporučenou délku 250 znaků, délka: "+$di.getString().length()+".", "ZP2015_POL_BASIC");
+    results.createError($di.getDescItemId(), "Obsah (budoucí Název) na úrovni série přesahuje doporučenou délku 250 znaků, délka: "+$di.getString().length()+".", "ZP2015_POL_EXTENDED");
 end
 
 
@@ -265,7 +265,7 @@ when
     $l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES")) from $ownDescItems
     $di: DescItem( type=="ZP2015_TITLE" && string matches ".*\\n.*") from $ownDescItems
 then
-    results.createError($di.getDescItemId(), "Obsah(budoucí Název) na úrovni série je na více samostatných řádcích.", "ZP2015_POL_BASIC");
+    results.createError($di.getDescItemId(), "Obsah (budoucí Název) na úrovni série je na více samostatných řádcích.", "ZP2015_POL_EXTENDED");
 end
 
 
@@ -279,7 +279,7 @@ when
     $di: DescItem( type=="ZP2015_TITLE" && $label: string ) from $ownDescItems
     eval( $label.length()> 250)    
 then
-    results.createError($di.getDescItemId(), "Obsah(budoucí Název) na složce, jednotlivosti nebo její části přesahuje doporučenou délku 250 znaků, délka: "+$di.getString().length()+".", "ZP2015_POL_BASIC");
+    results.createError($di.getDescItemId(), "Obsah (budoucí Název) na složce, jednotlivosti nebo její části přesahuje doporučenou délku 250 znaků, délka: "+$di.getString().length()+".", "ZP2015_POL_EXTENDED");
 end
 
 rule "Kontrola přípustných znaků na na složce a níže"
@@ -290,6 +290,6 @@ when
 	DescItem(type=="ZP2015_UNIT_CONTENT") from $ownDescItems
     $di: DescItem( type=="ZP2015_TITLE" && string matches ".*\\n.*") from $ownDescItems
 then
-    results.createError($di.getDescItemId(), "Obsah(budoucí Název) na složce, jednotlivosti nebo její části je na více samostatných řádcích.", "ZP2015_POL_BASIC");
+    results.createError($di.getDescItemId(), "Obsah (budoucí Název) na složce, jednotlivosti nebo její části je na více samostatných řádcích.", "ZP2015_POL_EXTENDED");
 end
 
