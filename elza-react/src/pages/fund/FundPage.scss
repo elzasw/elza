@@ -63,9 +63,18 @@
                 padding: 8px 16px;
                 display: flex;
                 border-bottom: $primary-border;
-                background: $shade-0;
+                // background: $shade-0;
+
+                &:nth-child(even) {
+                    background: transparent;
+                }
+
+                &:hover {
+                    background: $shade-1;
+                }
 
                 &.active {
+                    background: $shade-2;
 
                     // background: $shade-1;
                     &:hover {
