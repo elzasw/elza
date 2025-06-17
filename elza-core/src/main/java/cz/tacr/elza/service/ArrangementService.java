@@ -83,7 +83,7 @@ import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
 import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
 import cz.tacr.elza.controller.vo.FieldValueFilter;
-import cz.tacr.elza.controller.vo.FundsFilterField;
+import cz.tacr.elza.controller.vo.FondsField;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
@@ -1132,7 +1132,7 @@ public class ArrangementService {
      * @return
      */
     private Predicate createPredicate(final CriteriaBuilder cb, Join<ArrFundVersion, ArrFund> fund, FieldValueFilter filter) {
-    	String fieldName = ((FundsFilterField) filter.getField()).getFieldName().getValue();
+    	String fieldName = ((FondsField) filter.getField()).getFieldName().getValue();
 		Class<?> fieldType = String.class;				
 	    OperationCompareType op = filter.getOperation();
 	    String value = filter.getValue();
@@ -1145,8 +1145,9 @@ public class ArrangementService {
 			expression = joinInstitution.get(ParInstitution.FIELD_INTERNAL_CODE);
 		} else {
 			switch (fieldName) {
-			case ArrFund.FIELD_FUND_NUMBER:
-			// case ArrFund.FIELD_INSTITUTION_ID:
+			// fondsNumber -> fundNumber
+			case "fondsNumber":
+				fieldName = ArrFund.FIELD_FUND_NUMBER;
 				fieldType = Integer.class;
 				break;
 			case ArrFund.FIELD_NAME:
@@ -1158,7 +1159,7 @@ public class ArrangementService {
 	    		throw new BusinessException("Invalid field name for class ArrFund", BaseCode.PROPERTY_IS_INVALID)
     				.set("fieldName", fieldName);
 			}
-			
+
 			expression = fund.get(fieldName);
 		}
 

@@ -51,19 +51,28 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
             	if (StringUtils.isNotBlank(fullTextValue)) {
             		document.addValue(FULLTEXT_ATT, fullTextValue);
             	}
+            	// item type & ipem spec codes
+            	String itemTypeCodeLowerCase = item.getItemType().getCode().toLowerCase();
+            	String itemSpecCodeLowerCase = null;
+            	if (item.getItemSpec() != null) {
+            		itemSpecCodeLowerCase = item.getItemSpec().getCode().toLowerCase();
+            	}
             	// get dataType
             	DataType dataType = DataType.fromId(item.getData().getDataTypeId());
-            	String itemTypeCodeLowerCase = item.getItemType().getCode().toLowerCase();
             	if (dataType != null) {
             		switch (dataType) {
             		case INT:
             			document.addValue(itemTypeCodeLowerCase, item.getValueInt());
             			break;
             		case DECIMAL:
-            			document.addValue(itemTypeCodeLowerCase, new BigDecimal(item.getValueDouble()));
+            			BigDecimal decimalValue = new BigDecimal(item.getValueDouble());
+            			document.addValue(itemTypeCodeLowerCase, decimalValue);
+						if (itemSpecCodeLowerCase != null) {
+							document.addValue(itemTypeCodeLowerCase + "_" + itemSpecCodeLowerCase, decimalValue);
+						}
             			break;
             		case ENUM:
-						document.addValue(itemTypeCodeLowerCase, item.getItemSpec().getCode().toLowerCase());
+						document.addValue(itemTypeCodeLowerCase, itemSpecCodeLowerCase);
 						break;
             		case RECORD_REF:
 						document.addValue(REL_AP_ID, ((ArrDataRecordRef) item.getData()).getRecordId());
@@ -71,9 +80,8 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 					case STRING:
 					case TEXT:
 						document.addValue(itemTypeCodeLowerCase, fullTextValue);
-						if (item.getItemSpec() != null) {
-							String itemSpecCode = item.getItemSpec().getCode().toLowerCase();
-							document.addValue(itemTypeCodeLowerCase + "_" + itemSpecCode, fullTextValue);
+						if (itemSpecCodeLowerCase != null) {
+							document.addValue(itemTypeCodeLowerCase + "_" + itemSpecCodeLowerCase, fullTextValue);
 						}
 						break;
 					case UNITDATE:

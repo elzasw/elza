@@ -30,13 +30,13 @@ import org.springframework.web.context.annotation.SessionScope;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.AbstractFilter;
+import cz.tacr.elza.controller.vo.DescItemField;
 import cz.tacr.elza.controller.vo.FieldValueFilter;
 import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundSearchResult;
 import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.controller.vo.NodeTreeData;
-import cz.tacr.elza.controller.vo.NodesFilterField;
 import cz.tacr.elza.controller.vo.OperationCompareType;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
@@ -232,8 +232,8 @@ public class NodeSearchService {
 	}
 
 	private SearchPredicate fieldValuePredicate(final SearchPredicateFactory factory, final FieldValueFilter filter) {
-    	String itemTypeCode = ((NodesFilterField) filter.getField()).getTypeCode();
-    	String itemSpecCode = ((NodesFilterField) filter.getField()).getSpecCode();
+    	String itemTypeCode = ((DescItemField) filter.getField()).getTypeCode();
+    	String itemSpecCode = ((DescItemField) filter.getField()).getSpecCode();
 
 	    StaticDataProvider sdp = staticDataService.getData();
 	    ItemType itemType = sdp.getItemTypeByCode(itemTypeCode.toUpperCase());
@@ -246,11 +246,11 @@ public class NodeSearchService {
 		switch (dataType) {
 		case INT: {
 		    Integer value = Integer.parseInt(filter.getValue());
-			return getPredicateByNumber(factory, fieldName, op, value);
+			return getPredicateByNumber(factory, fieldName, fieldSpecName, op, value);
 		}
 		case DECIMAL: {
 		    BigDecimal value = BigDecimal.valueOf(Double.parseDouble(filter.getValue()));
-			return getPredicateByNumber(factory, fieldName, op, value);
+			return getPredicateByNumber(factory, fieldName, fieldSpecName, op, value);
 		}
 		case ENUM:
 			return getPredicateByEnum(factory, fieldName, itemSpecCode, filter);
@@ -268,21 +268,23 @@ public class NodeSearchService {
 
 	private <T extends Number> SearchPredicate getPredicateByNumber(final SearchPredicateFactory factory, 
 											  					 	final String fieldTypeName,
+							                                        final String fieldTypeSpecName,
 											  					 	final OperationCompareType op,
 											  					 	final T value) {
+		String fieldName = fieldTypeName + (fieldTypeSpecName != null ? "_" + fieldTypeSpecName : "");
 		switch (op) {
 		case EQ:
-			return factory.match().field(fieldTypeName).matching(value).toPredicate();
+			return factory.match().field(fieldName).matching(value).toPredicate();
 		case NEQ:
-			return factory.bool().mustNot(factory.match().field(fieldTypeName).matching(value)).toPredicate();
+			return factory.bool().mustNot(factory.match().field(fieldName).matching(value)).toPredicate();
 		case GT:
-			return factory.range().field(fieldTypeName).greaterThan(value).toPredicate();
+			return factory.range().field(fieldName).greaterThan(value).toPredicate();
 		case LT:
-			return factory.range().field(fieldTypeName).lessThan(value).toPredicate();
+			return factory.range().field(fieldName).lessThan(value).toPredicate();
 		case GTE:
-			return factory.range().field(fieldTypeName).atLeast(value).toPredicate();
+			return factory.range().field(fieldName).atLeast(value).toPredicate();
 		case LTE:
-			return factory.range().field(fieldTypeName).atMost(value).toPredicate();
+			return factory.range().field(fieldName).atMost(value).toPredicate();
 		default:
 			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
 		}

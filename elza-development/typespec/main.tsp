@@ -1019,7 +1019,6 @@ enum FondsFieldName {
     fondsId, name, createDate, internalCode, fondsNumber, unitdate, mark, institutionId, institutionCode
 }
 
-
 /**
  * Fund field names for filter
  */
@@ -1044,7 +1043,6 @@ enum NodeFieldName {
  * Node specifici search field
  */
 model NodeField extends AbstractField {
-
     /**
      * Type of field
      */

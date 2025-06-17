@@ -19,19 +19,19 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.test.controller.vo.CreateFund;
+import cz.tacr.elza.test.controller.vo.DescItemField;
 import cz.tacr.elza.test.controller.vo.FieldType;
 import cz.tacr.elza.test.controller.vo.FieldValueFilter;
 import cz.tacr.elza.test.controller.vo.FindFundsResult;
-import cz.tacr.elza.test.controller.vo.FundsFilterField;
+import cz.tacr.elza.test.controller.vo.FondsField;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.FundDetail;
 import cz.tacr.elza.test.controller.vo.FundSearchResult;
-import cz.tacr.elza.test.controller.vo.FundsFieldName;
+import cz.tacr.elza.test.controller.vo.FondsFieldName;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.test.controller.vo.NodeData;
 import cz.tacr.elza.test.controller.vo.NodeDataParam;
 import cz.tacr.elza.test.controller.vo.NodeTreeData;
-import cz.tacr.elza.test.controller.vo.NodesFilterField;
 import cz.tacr.elza.test.controller.vo.OperationCompareType;
 import cz.tacr.elza.test.controller.vo.SearchParams;
 import cz.tacr.elza.test.controller.vo.UpdateFund;
@@ -115,7 +115,7 @@ public class FundControllerTest extends AbstractControllerTest {
 
     	// create filter
     	FieldValueFilter valueFilter = new FieldValueFilter();
-    	valueFilter.setField(new FundsFilterField().fieldType(FieldType.FUND).fieldName(FundsFieldName.INTERNAL_CODE));
+    	valueFilter.setField(new FondsField().fieldType(FieldType.FONDS_FIELD).fieldName(FondsFieldName.INTERNAL_CODE));
     	valueFilter.setValue("Code");
     	valueFilter.setOperation(OperationCompareType.CONTAINS);
     	params.addFiltersItem(valueFilter);
@@ -126,7 +126,7 @@ public class FundControllerTest extends AbstractControllerTest {
 
     	// change filter
     	valueFilter = new FieldValueFilter();
-    	valueFilter.setField(new FundsFilterField().fieldType(FieldType.FUND).fieldName(FundsFieldName.FUND_NUMBER));
+    	valueFilter.setField(new FondsField().fieldType(FieldType.FONDS_FIELD).fieldName(FondsFieldName.FONDS_NUMBER));
     	valueFilter.setValue("");
     	valueFilter.setOperation(OperationCompareType.NOT_NULL);
     	params.addFiltersItem(valueFilter);
@@ -207,7 +207,7 @@ public class FundControllerTest extends AbstractControllerTest {
 
         // create FieldValueFilter filter
         FieldValueFilter valueFilter = new FieldValueFilter();
-        valueFilter.setField(new NodesFilterField().typeCode(SRD_TITLE));
+        valueFilter.setField(new DescItemField().typeCode(SRD_TITLE));
         valueFilter.setValue("alu");
         valueFilter.setOperation(OperationCompareType.CONTAINS);
 
@@ -219,7 +219,7 @@ public class FundControllerTest extends AbstractControllerTest {
         assertEquals(1, fundResult.size());
 
         // change filter by SRD_SERIAL_NUMBER
-        valueFilter.setField(new NodesFilterField().typeCode(SRD_SERIAL_NUMBER));
+        valueFilter.setField(new DescItemField().typeCode(SRD_SERIAL_NUMBER));
         valueFilter.setValue("1");
         valueFilter.setOperation(OperationCompareType.EQ);
 
@@ -228,7 +228,7 @@ public class FundControllerTest extends AbstractControllerTest {
         assertEquals(1, fundResult.size());
 
         // change filter by SRD_UNIT_DATE
-        valueFilter.setField(new NodesFilterField().typeCode(SRD_UNIT_DATE));
+        valueFilter.setField(new DescItemField().typeCode(SRD_UNIT_DATE));
         valueFilter.setValue("15.5.2025");
         valueFilter.setOperation(OperationCompareType.EQ);
 
@@ -237,7 +237,7 @@ public class FundControllerTest extends AbstractControllerTest {
         assertEquals(1, fundResult.size());
 
         // change filter by SRD_OTHER_ID
-        valueFilter.setField(new NodesFilterField().typeCode(SRD_OTHER_ID).specCode(SRD_OTHERID_CJ));
+        valueFilter.setField(new DescItemField().typeCode(SRD_OTHER_ID).specCode(SRD_OTHERID_CJ));
         valueFilter.setValue("13");
         valueFilter.setOperation(OperationCompareType.CONTAINS);
 
@@ -246,7 +246,7 @@ public class FundControllerTest extends AbstractControllerTest {
         assertEquals(1, fundResult.size());
 
         // change filter by SRD_LANGUAGE
-        valueFilter.setField(new NodesFilterField().typeCode(SRD_LANGUAGE).specCode(SRD_LANGUAGE_1));
+        valueFilter.setField(new DescItemField().typeCode(SRD_LANGUAGE).specCode(SRD_LANGUAGE_1));
         valueFilter.setValue(null);
         valueFilter.setOperation(OperationCompareType.EQ);
 
@@ -255,7 +255,7 @@ public class FundControllerTest extends AbstractControllerTest {
         assertEquals(1, fundResult.size());
 
         // change filter by RECORD_REF search by name
-        valueFilter.setField(new NodesFilterField().typeCode(SRD_ENTITY_ROLE).specCode(SRD_ENTITY_ROLE_1));
+        valueFilter.setField(new DescItemField().typeCode(SRD_ENTITY_ROLE).specCode(SRD_ENTITY_ROLE_1));
         valueFilter.setValue(accessPoint.getName());
         valueFilter.setOperation(OperationCompareType.STARTWITH);
 
