@@ -221,7 +221,7 @@ export function FilterDescItemModal({
         getFilterValue: ({ filterType, operation, data }) => ({
           filterType,
           field: {
-            fieldType: FieldType.NodeField,
+            fieldType: FieldType.DescItem,
             typeCode: data.itemType.code,
             specCode: data.itemSpec?.code,
           },
