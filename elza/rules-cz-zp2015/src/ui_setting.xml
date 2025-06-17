@@ -48,6 +48,6 @@
     
     <node-search-settings>
       <ns11:pinned-filter item-type="ZP2015_UNIT_DATE" operation="GT" name="Je později než" />
-      <ns11:pinned-filter item-type="ZP2015_UNIT_DATE" operation="GT" name="Je dříve než" />
+      <ns11:pinned-filter item-type="ZP2015_UNIT_DATE" operation="LT" name="Je dříve než" />
     </node-search-settings>
 </settings>
