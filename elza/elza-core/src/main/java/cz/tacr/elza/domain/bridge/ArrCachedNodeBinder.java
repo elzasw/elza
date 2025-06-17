@@ -53,6 +53,10 @@ public class ArrCachedNodeBinder implements TypeBinder {
     	        break;
     		case DECIMAL:
     	        createBigDecimalField(itemTypeCode.toLowerCase());
+				// added field itemType_itemSpec -> value
+	            for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
+	            	createBigDecimalField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase());
+	            }
     	        break;
     		case ENUM:
 				createStringField(itemTypeCode.toLowerCase());

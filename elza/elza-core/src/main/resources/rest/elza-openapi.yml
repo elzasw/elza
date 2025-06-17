@@ -1738,8 +1738,9 @@ components:
       discriminator:
         propertyName: fieldType
         mapping:
-          FUND: '#/components/schemas/FundsFilterField'
-          NODE: '#/components/schemas/NodesFilterField'
+          FONDS_FIELD: '#/components/schemas/FondsField'
+          NODE_FIELD: '#/components/schemas/NodeField'
+          DESC_ITEM: '#/components/schemas/DescItemField'
       description: Used as a parent for filter fields
     AbstractFilter:
       type: object
@@ -2175,6 +2176,18 @@ components:
           type: integer
           description: id replaced access point
       description: Deleted archive entity
+    DescItemField:
+      type: object
+      required:
+        - typeCode
+      properties:
+        typeCode:
+          type: string
+        specCode:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/AbstractField'
+      description: Node (descItem) field names for filter
     DigitizationRequest:
       type: object
       required:
@@ -2268,8 +2281,9 @@ components:
     FieldType:
       type: string
       enum:
-        - FUND
-        - NODE
+        - FONDS_FIELD
+        - NODE_FIELD
+        - DESC_ITEM
       description: Type of field for FieldValueFilter
     FieldValueFilter:
       type: object
@@ -2311,6 +2325,32 @@ components:
         totalCount:
           type: integer
       description: Výsledek vyhledávání AS
+    FondsField:
+      type: object
+      required:
+        - fieldName
+      properties:
+        fieldName:
+          $ref: '#/components/schemas/FondsFieldName'
+      allOf:
+        - $ref: '#/components/schemas/AbstractField'
+      description: Fund field names for filter
+    FondsFieldName:
+      type: string
+      enum:
+        - fondsId
+        - name
+        - createDate
+        - internalCode
+        - fondsNumber
+        - unitdate
+        - mark
+        - institutionId
+        - institutionCode
+      description: |-
+        Funds specific field names
+
+        Fields are used for FundsFilterField.
     FormItemSpec:
       type: object
       required:
@@ -2532,29 +2572,6 @@ components:
           items:
             type: integer
       description: Specifies multiple sections for fund version
-    FundsFieldName:
-      type: string
-      enum:
-        - fundId
-        - name
-        - createDate
-        - internalCode
-        - fundNumber
-        - unitdate
-        - mark
-        - institutionId
-        - institutionCode
-      description: Field names for FieldValueFilter
-    FundsFilterField:
-      type: object
-      required:
-        - fieldName
-      properties:
-        fieldName:
-          $ref: '#/components/schemas/FundsFieldName'
-      allOf:
-        - $ref: '#/components/schemas/AbstractField'
-      description: Fund field names for filter
     ImportFundData:
       type: object
       properties:
@@ -2925,6 +2942,28 @@ components:
           type: boolean
           description: Load children description units?
       description: Parameters for get information about the description unit and its "surroundings"
+    NodeField:
+      type: object
+      required:
+        - fieldName
+      properties:
+        fieldName:
+          allOf:
+            - $ref: '#/components/schemas/NodeFieldName'
+          description: Name of field (from enum NodeFieldName)
+      allOf:
+        - $ref: '#/components/schemas/AbstractField'
+      description: Node specifici search field
+    NodeFieldName:
+      type: string
+      enum:
+        - conformityError
+        - conformityMissing
+        - uuid
+      description: |-
+        Node specific field names
+
+        Node fields are used for FieldValueFilter.
     NodeFormData:
       type: object
       required:
@@ -3029,18 +3068,6 @@ components:
         Data uzlu stromu odesílané klientovi pro strom fa.
 
         Náhrada `TreeNodeVO`
-    NodesFilterField:
-      type: object
-      required:
-        - typeCode
-      properties:
-        typeCode:
-          type: string
-        specCode:
-          type: string
-      allOf:
-        - $ref: '#/components/schemas/AbstractField'
-      description: Node (descItem) field names for filter
     OperationCompareType:
       type: string
       enum:
