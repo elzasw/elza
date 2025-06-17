@@ -992,9 +992,14 @@ enum OperationLogicalType {
  * Type of field for FieldValueFilter
  */
 enum FieldType {
-    FUND, 
-    NODE,
-    NODE_FIELD
+    /** Field for archival fonds */
+    FONDS_FIELD,
+
+    /** Node specific field */
+    NODE_FIELD,
+
+    /** Description item field */
+    DESC_ITEM
 }
 
 /**
@@ -1010,20 +1015,19 @@ model AbstractField {
  * 
  * Fields are used for FundsFilterField.
  */
-enum FundsFieldName {
-    fundId, name, createDate, internalCode, fundNumber, unitdate, mark, institutionId, institutionCode
+enum FondsFieldName {
+    fondsId, name, createDate, internalCode, fondsNumber, unitdate, mark, institutionId, institutionCode
 }
 
 
 /**
  * Fund field names for filter
  */
-model FundsFilterField extends AbstractField {
+model FondsField extends AbstractField {
     @invisible(Lifecycle)
-    fieldType: FieldType.FUND;
-    fieldName: FundsFieldName;
+    fieldType: FieldType.FONDS_FIELD;
+    fieldName: FondsFieldName;
 }
-
 
 /**
  * Node specific field names
@@ -1036,11 +1040,10 @@ enum NodeFieldName {
     uuid
 }
 
-
 /**
  * Node specifici search field
  */
-model NodeFilterField extends AbstractField {
+model NodeField extends AbstractField {
 
     /**
      * Type of field
@@ -1054,14 +1057,12 @@ model NodeFilterField extends AbstractField {
     fieldName: NodeFieldName;
 }
 
-
-
 /**
  * Node (descItem) field names for filter
  */ 
-model NodesFilterField extends AbstractField {
+model DescItemField extends AbstractField {
     @invisible(Lifecycle)
-    fieldType: FieldType.NODE;
+    fieldType: FieldType.DESC_ITEM;
     typeCode: string;
     specCode?: string;
 }
