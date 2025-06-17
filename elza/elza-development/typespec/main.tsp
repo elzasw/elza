@@ -992,7 +992,9 @@ enum OperationLogicalType {
  * Type of field for FieldValueFilter
  */
 enum FieldType {
-    FUND, NODE
+    FUND, 
+    NODE,
+    NODE_FIELD
 }
 
 /**
@@ -1004,6 +1006,16 @@ model AbstractField {
 }
 
 /**
+ * Funds specific field names
+ * 
+ * Fields are used for FundsFilterField.
+ */
+enum FundsFieldName {
+    fundId, name, createDate, internalCode, fundNumber, unitdate, mark, institutionId, institutionCode
+}
+
+
+/**
  * Fund field names for filter
  */
 model FundsFilterField extends AbstractField {
@@ -1012,12 +1024,37 @@ model FundsFilterField extends AbstractField {
     fieldName: FundsFieldName;
 }
 
+
 /**
- * Field names for FieldValueFilter
+ * Node specific field names
+ * 
+ * Node fields are used for FieldValueFilter.
  */
-enum FundsFieldName {
-    fundId, name, createDate, internalCode, fundNumber, unitdate, mark, institutionId, institutionCode
+enum NodeFieldName {
+    conformityError, 
+    conformityMissing,
+    uuid
 }
+
+
+/**
+ * Node specifici search field
+ */
+model NodeFilterField extends AbstractField {
+
+    /**
+     * Type of field
+     */
+    @invisible(Lifecycle)
+    fieldType: FieldType.NODE_FIELD;
+
+    /**
+     * Name of field (from enum NodeFieldName)
+     */
+    fieldName: NodeFieldName;
+}
+
+
 
 /**
  * Node (descItem) field names for filter
