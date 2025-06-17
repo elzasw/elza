@@ -612,15 +612,16 @@ class FundPage extends AbstractReactComponent {
                             </div>
                             <div style={{ marginBottom: "10px" }}>
                                 <div><b>Verze</b></div>
-                                <Link to={urlFundTree(fundRegion.fundDetail.id)}>
-                                    Aktuální verze
-                                </Link>
-                                {fundRegion.fundDetail.versions?.map(({ createDate, id }) => {
-                                    return <div>
+                                {fundRegion.fundDetail.versions?.map(({ lockDate, id }) => {
+                                    return <div style={{ fontWeight: fundRegion.fundDetail.versionId === id ? "bold" : undefined }}>
                                         <Link to={urlFundWithVersion(fundRegion.fundDetail.id, id)}>
-                                            {new Date(createDate).toLocaleDateString()}
-                                            {", "}
-                                            {new Date(createDate).toLocaleTimeString()}
+                                            {lockDate ? <>
+                                                {new Date(lockDate).toLocaleDateString()}
+                                                {", "}
+                                                {new Date(lockDate).toLocaleTimeString()}
+                                            </> : <>
+                                                Aktuální verze
+                                            </>}
                                         </Link>
                                     </div>
                                 })}
