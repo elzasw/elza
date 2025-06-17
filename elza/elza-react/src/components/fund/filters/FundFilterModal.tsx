@@ -1,7 +1,7 @@
 import { Button } from "@fluentui/react-components";
 import { DraggableWindow } from "components/shared";
 import { Position } from "components/shared/draggable-window";
-import { FundsFieldName } from "elza-api";
+import { FondsFieldName } from "elza-api";
 import { FundFilterInstitutionRefModal } from "./FundFilterInstitutionRefModal";
 import { FundFilterNumberForm } from "./FundFilterNumber";
 import { Institution } from "typings/store";
@@ -9,7 +9,7 @@ import { FundFilterTextForm } from "./FundFilterText";
 import { FilterObject } from "./types";
 
 export interface Props {
-  filterName: FundsFieldName;
+  filterName: FondsFieldName;
   onFilterChange: (data: FilterObject) => void;
   onClose: () => void;
   initialPosition?: Position;
@@ -31,7 +31,7 @@ export function FundFilterModal({
   </div>
 
   switch (filterName) {
-    case FundsFieldName.InstitutionCode:
+    case FondsFieldName.InstitutionCode:
       filterForm = <FundFilterInstitutionRefModal
         initialValue={initialValue as FilterObject<Institution>}
         filterName={filterName}
@@ -39,7 +39,7 @@ export function FundFilterModal({
         onClose={onClose}
       />
       break;
-    case FundsFieldName.FundNumber:
+    case FondsFieldName.FondsNumber:
       filterForm = <FundFilterNumberForm
         initialValue={initialValue as FilterObject<string>}
         filterName={filterName}
@@ -47,9 +47,9 @@ export function FundFilterModal({
         onClose={onClose}
       />
       break;
-    case FundsFieldName.Mark:
-    case FundsFieldName.Name:
-    case FundsFieldName.InternalCode:
+    case FondsFieldName.Mark:
+    case FondsFieldName.Name:
+    case FondsFieldName.InternalCode:
       filterForm = <FundFilterTextForm
         initialValue={initialValue as FilterObject<string>}
         filterName={filterName}

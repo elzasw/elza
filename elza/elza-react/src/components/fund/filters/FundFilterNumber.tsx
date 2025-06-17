@@ -56,7 +56,7 @@ export function FundFilterNumberForm({
         getFilterValue: ({ filterType, name, operation, data }) => ({
           filterType,
           field: {
-            fieldType: FieldType.Fund,
+            fieldType: FieldType.FondsField,
             fieldName: name
           },
           operation,
