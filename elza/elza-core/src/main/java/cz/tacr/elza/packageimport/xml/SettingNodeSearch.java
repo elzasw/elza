@@ -59,7 +59,10 @@ public class SettingNodeSearch extends Setting {
         @XmlAttribute(name = "name", required = false)
         String name;
 
-        public String getItemType() {
+		@XmlAttribute(name = "fixed-field", required = false)
+        boolean fixedField = false;
+
+		public String getItemType() {
 			return itemType;
 		}
 
@@ -89,6 +92,14 @@ public class SettingNodeSearch extends Setting {
 
 		public void setName(String name) {
 			this.name = name;
+		}
+
+		public Boolean getFixedField() {
+			return fixedField;
+		}
+
+		public void setFixedField(Boolean fixedField) {
+			this.fixedField = fixedField;
 		}
     }
 
