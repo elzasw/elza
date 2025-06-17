@@ -2,7 +2,7 @@ import { Input, InteractionTag, InteractionTagPrimary, InteractionTagSecondary, 
 import { AddRegular } from "@fluentui/react-icons";
 import { Icon } from "components"
 import { Field, Form } from "react-final-form";
-import { AbstractFilter, FilterType, FundsFieldName } from "elza-api";
+import { AbstractFilter, FilterType, FondsFieldName } from "elza-api";
 import { useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { messages } from "./messages";
@@ -41,13 +41,13 @@ export function FundFilters({
   const { formatMessage } = useIntl();
   const styles = useStyles();
 
-  function getFiltersList(): FundsFieldName[] {
+  function getFiltersList(): FondsFieldName[] {
     return [
-      FundsFieldName.InstitutionCode,
-      FundsFieldName.InternalCode,
-      FundsFieldName.FundNumber,
-      FundsFieldName.Mark,
-      FundsFieldName.Name,
+      FondsFieldName.InstitutionCode,
+      FondsFieldName.InternalCode,
+      FondsFieldName.FondsNumber,
+      FondsFieldName.Mark,
+      FondsFieldName.Name,
     ]
   }
 

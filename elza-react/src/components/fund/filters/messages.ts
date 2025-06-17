@@ -1,24 +1,24 @@
-import { FundsFieldName, OperationCompareType } from "elza-api";
+import { FondsFieldName, OperationCompareType } from "elza-api";
 import { defineMessages } from "react-intl";
 
 export const messages = defineMessages({
-  [FundsFieldName.InstitutionCode]: {
+  [FondsFieldName.InstitutionCode]: {
     id: "fund_filter_institutionId",
     defaultMessage: "Instituce"
   },
-  [FundsFieldName.FundNumber]: {
+  [FondsFieldName.FondsNumber]: {
     id: "fund_filter_fundNumber",
     defaultMessage: "Číslo AS"
   },
-  [FundsFieldName.Mark]: {
+  [FondsFieldName.Mark]: {
     id: "fund_filter_mark",
     defaultMessage: "Značka AS"
   },
-  [FundsFieldName.InternalCode]: {
+  [FondsFieldName.InternalCode]: {
     id: "fund_filter_internalCode",
     defaultMessage: "Interní kód"
   },
-  [FundsFieldName.Name]: {
+  [FondsFieldName.Name]: {
     id: "fund_filter_name",
     defaultMessage: "Název"
   },

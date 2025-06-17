@@ -1,8 +1,8 @@
-import { FieldValueFilter, FilterType, FundsFieldName, MultimatchContainsFilter, OperationCompareType } from "elza-api";
+import { FieldValueFilter, FilterType, FondsFieldName, MultimatchContainsFilter, OperationCompareType } from "elza-api";
 
 export interface FilterObject<T = unknown> {
   filterType: FilterType;
-  name?: FundsFieldName;
+  name?: FondsFieldName;
   operation?: OperationCompareType;
   data: T;
   getDisplayValue: (filter: FilterObject<T>) => React.ReactNode;
@@ -11,7 +11,7 @@ export interface FilterObject<T = unknown> {
 }
 
 export interface FilterFormProps<T = unknown> {
-  filterName: FundsFieldName;
+  filterName: FondsFieldName;
   onFilterChange: (data: FilterObject<T>) => void;
   onClose: () => void;
   initialValue?: Partial<FilterObject<T>>;
