@@ -271,7 +271,7 @@ public class NodeSearchService {
 							                                        final String fieldTypeSpecName,
 											  					 	final OperationCompareType op,
 											  					 	final T value) {
-		String fieldName = fieldTypeName + (fieldTypeSpecName != null ? "_" + fieldTypeSpecName : "");
+		String fieldName = fieldTypeSpecName != null ? fieldTypeSpecName : fieldTypeName;
 		switch (op) {
 		case EQ:
 			return factory.match().field(fieldName).matching(value).toPredicate();
