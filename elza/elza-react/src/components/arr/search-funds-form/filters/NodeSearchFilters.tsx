@@ -1,4 +1,4 @@
-import { Input, InteractionTag, InteractionTagPrimary, InteractionTagSecondary, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tag, TagDismissData, TagDismissEvent, TagGroup, makeStyles, tokens } from "@fluentui/react-components";
+import { Divider, Input, InteractionTag, InteractionTagPrimary, InteractionTagSecondary, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tag, TagDismissData, TagDismissEvent, TagGroup, makeStyles, tokens } from "@fluentui/react-components";
 import { AddRegular } from "@fluentui/react-icons";
 import { Icon } from "components"
 import { Field, Form } from "react-final-form";
@@ -34,18 +34,19 @@ const useStyles = makeStyles({
   }
 })
 
-interface SearchNodeFilterSetting{
+interface SearchNodeFilterSetting {
   itemType: string;
   itemSpec?: string | null;
   operation?: OperationCompareType;
   name?: string;
+  fixedField?: boolean | null;
 }
 
-interface SearchNodeFilterSettings{
+interface SearchNodeFilterSettings {
   options: SearchNodeFilterSetting[];
 }
 
-function convertSearchNodeFilterSettings(valueString: string):SearchNodeFilterSettings{
+function convertSearchNodeFilterSettings(valueString: string): SearchNodeFilterSettings {
   return JSON.parse(valueString);
 }
 
@@ -59,8 +60,9 @@ export function NodeSearchFilters({
   const addFilterButtonRef = useRef<HTMLButtonElement>(null);
   const { formatMessage } = useIntl();
   const styles = useStyles();
-  const filterSettings = useSelector(({userDetail}:AppState) => userDetail.settings.filter(({settingsType}) => settingsType === SettingsType.SEARCH_NODE_FILTERS))
-  const descItemTypes = useSelector(({refTables}:AppState) => refTables.descItemTypes.items);
+  // userDetail.settings || [] used to prevent error when default user is used
+  const filterSettings = useSelector(({ userDetail }: AppState) => (userDetail.settings || []).filter(({ settingsType }) => settingsType === SettingsType.SEARCH_NODE_FILTERS))
+  const descItemTypes = useSelector(({ refTables }: AppState) => refTables.descItemTypes.items);
 
   const dispatch = useThunkDispatch();
   // Load used refTables data, if not present
@@ -68,20 +70,17 @@ export function NodeSearchFilters({
     dispatch(descItemTypesFetchIfNeeded());
   }, [])
 
-  function getPresetFilters(){
-    const presetFilters:SearchNodeFilterSetting[] = [];
-    filterSettings.forEach(({value}) => {
+  function getPresetFilters() {
+    const presetFilters: SearchNodeFilterSetting[] = [];
+    filterSettings.forEach(({ value }) => {
       presetFilters.push(...convertSearchNodeFilterSettings(value).options);
     })
     return presetFilters;
   }
 
-  function formatPresetFilter(name: string){
-    const presetFilter = presetFilters.find(f => f.name == name);
-    if(!presetFilter) return null;
-
-    const presetType = descItemTypes.find(({code}) => presetFilter.itemType === code);
-    const presetSpec = presetType?.descItemSpecs.find(({code}) => presetFilter.itemSpec === code);
+  function formatPresetFilter(presetFilter: SearchNodeFilterSetting) {
+    const presetType = descItemTypes.find(({ code }) => presetFilter.itemType === code);
+    const presetSpec = presetType?.descItemSpecs.find(({ code }) => presetFilter.itemSpec === code);
 
     return {
       operation: presetFilter.operation,
@@ -98,7 +97,7 @@ export function NodeSearchFilters({
   function getFiltersList(): string[] {
     return [
       "DescItem",
-      ...presetFilters.map(({name}) => name)
+      // ...presetFilters.map(({ name }) => name)
     ]
   }
 
@@ -211,6 +210,30 @@ export function NodeSearchFilters({
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
+            {presetFilters.length > 0 && <>
+              {presetFilters.filter(({ fixedField }) => !fixedField).map((filter) => {
+                return <MenuItem
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+
+                    const addFilterButtonRect = addFilterButtonRef.current?.getBoundingClientRect() || undefined;
+                    const initialPosition = addFilterButtonRect ? formatPosition(addFilterButtonRect.left, addFilterButtonRect.bottom) : undefined;
+
+                    const _presetFilter = formatPresetFilter(filter);
+
+                    const { data } = await showFilterModal(_presetFilter, initialPosition)
+                    if (data) {
+                      handleFilterConfirm({
+                        ...data,
+                        name: filter.name
+                      });
+                    }
+                  }}
+                >{filter.name}</MenuItem>
+              })}
+              <Divider />
+            </>}
             {getFiltersList().map((fieldName) => {
               return <MenuItem
                 onClick={async (e) => {
@@ -220,9 +243,7 @@ export function NodeSearchFilters({
                   const addFilterButtonRect = addFilterButtonRef.current?.getBoundingClientRect() || undefined;
                   const initialPosition = addFilterButtonRect ? formatPosition(addFilterButtonRect.left, addFilterButtonRect.bottom) : undefined;
 
-                  const _presetFilter = formatPresetFilter(fieldName);
-
-                  const { data } = await showFilterModal(_presetFilter ? _presetFilter : { name: fieldName }, initialPosition)
+                  const { data } = await showFilterModal({ name: fieldName }, initialPosition)
                   if (data) {
                     handleFilterConfirm({
                       ...data,
