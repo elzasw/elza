@@ -1,4 +1,4 @@
-import { OperationCompareType } from "elza-api";
+import { NodeFieldName, OperationCompareType } from "elza-api";
 import { defineMessages } from "react-intl";
 
 export const messages = defineMessages({
@@ -33,5 +33,17 @@ export const messages = defineMessages({
   "DescItem": {
     id: "search_funds_form_desc_item",
     defaultMessage: "Prvek popisu",
-  }
+  },
+  [NodeFieldName.Uuid]: {
+    id: "search_funds_form_uuid",
+    defaultMessage: "UUID",
+  },
+  [NodeFieldName.ConformityMissing]: {
+    id: "search_funds_form_conformity_missing",
+    defaultMessage: "Chybějící",
+  },
+  [NodeFieldName.ConformityError]: {
+    id: "search_funds_form_conformity_error",
+    defaultMessage: "Chyba",
+  },
 })
