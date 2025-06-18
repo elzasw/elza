@@ -53,9 +53,9 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
             	}
             	// item type & ipem spec codes
             	String itemTypeCodeLowerCase = item.getItemType().getCode().toLowerCase();
-            	String itemSpecCodeLowerCase = null;
+            	String itemTypeAndSpecCodeLowerCase = null;
             	if (item.getItemSpec() != null) {
-            		itemSpecCodeLowerCase = item.getItemSpec().getCode().toLowerCase();
+            		itemTypeAndSpecCodeLowerCase = itemTypeCodeLowerCase + "_" + item.getItemSpec().getCode().toLowerCase();
             	}
             	// get dataType
             	DataType dataType = DataType.fromId(item.getData().getDataTypeId());
@@ -67,12 +67,12 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
             		case DECIMAL:
             			BigDecimal decimalValue = new BigDecimal(item.getValueDouble());
             			document.addValue(itemTypeCodeLowerCase, decimalValue);
-						if (itemSpecCodeLowerCase != null) {
-							document.addValue(itemTypeCodeLowerCase + "_" + itemSpecCodeLowerCase, decimalValue);
+						if (itemTypeAndSpecCodeLowerCase != null) {
+							document.addValue(itemTypeAndSpecCodeLowerCase, decimalValue);
 						}
             			break;
             		case ENUM:
-						document.addValue(itemTypeCodeLowerCase, itemSpecCodeLowerCase);
+						document.addValue(itemTypeCodeLowerCase, item.getItemSpec().getCode().toLowerCase());
 						break;
             		case RECORD_REF:
 						document.addValue(REL_AP_ID, ((ArrDataRecordRef) item.getData()).getRecordId());
@@ -80,14 +80,18 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 					case STRING:
 					case TEXT:
 						document.addValue(itemTypeCodeLowerCase, fullTextValue);
-						if (itemSpecCodeLowerCase != null) {
-							document.addValue(itemTypeCodeLowerCase + "_" + itemSpecCodeLowerCase, fullTextValue);
+						if (itemTypeAndSpecCodeLowerCase != null) {
+							document.addValue(itemTypeAndSpecCodeLowerCase, fullTextValue);
 						}
 						break;
 					case UNITDATE:
 						ArrDataUnitdate unitDate = (ArrDataUnitdate) item.getData();
 						document.addValue(itemTypeCodeLowerCase + "_" + NORM_FROM, unitDate.getNormalizedFrom());
 						document.addValue(itemTypeCodeLowerCase + "_" + NORM_TO, unitDate.getNormalizedTo());
+						if (itemTypeAndSpecCodeLowerCase != null) {
+							document.addValue(itemTypeAndSpecCodeLowerCase + "_" + NORM_FROM, unitDate.getNormalizedFrom());
+							document.addValue(itemTypeAndSpecCodeLowerCase + "_" + NORM_TO, unitDate.getNormalizedTo());
+						}
 						break;
             		}
             	}
