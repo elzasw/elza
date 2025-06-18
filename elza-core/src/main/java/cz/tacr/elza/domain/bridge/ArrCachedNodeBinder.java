@@ -74,6 +74,11 @@ public class ArrCachedNodeBinder implements TypeBinder {
 			case UNITDATE:
 				createLongField(itemTypeCode.toLowerCase() + "_" + NORM_FROM);
 				createLongField(itemTypeCode.toLowerCase() + "_" + NORM_TO);
+				// added field itemType_itemSpec -> value
+	            for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
+	            	createLongField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase() + "_" + NORM_FROM);
+	            	createLongField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase() + "_" + NORM_TO);
+	            }
 				break;
     		}
         }

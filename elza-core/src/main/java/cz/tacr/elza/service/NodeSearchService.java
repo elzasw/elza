@@ -239,26 +239,29 @@ public class NodeSearchService {
 	    ItemType itemType = sdp.getItemTypeByCode(itemTypeCode.toUpperCase());
 	    Objects.requireNonNull(itemType);
 
+	    // field name in index
 	    String fieldName = itemTypeCode.toLowerCase();
-	    String fieldSpecName = itemSpecCode != null ? fieldSpecName = fieldName + "_" + itemSpecCode.toLowerCase() : null;
+	    if (itemSpecCode != null) {
+	    	fieldName += "_" + itemSpecCode.toLowerCase();
+	    }
 	    OperationCompareType op = filter.getOperation();
 	    DataType dataType = itemType.getDataType();
 		switch (dataType) {
 		case INT: {
 		    Integer value = Integer.parseInt(filter.getValue());
-			return getPredicateByNumber(factory, fieldName, fieldSpecName, op, value);
+			return getPredicateByNumber(factory, fieldName, op, value);
 		}
 		case DECIMAL: {
 		    BigDecimal value = BigDecimal.valueOf(Double.parseDouble(filter.getValue()));
-			return getPredicateByNumber(factory, fieldName, fieldSpecName, op, value);
+			return getPredicateByNumber(factory, fieldName, op, value);
 		}
 		case ENUM:
-			return getPredicateByEnum(factory, fieldName, itemSpecCode, filter);
+			return getPredicateByEnum(factory, itemTypeCode.toLowerCase(), itemSpecCode.toLowerCase(), filter);
 		case RECORD_REF:
-			return getPredicateByRecordRef(factory, fieldName, fieldSpecName, filter);
+			return getPredicateByRecordRef(factory, fieldName, filter);
 		case STRING:
 		case TEXT:
-			return getPredicateByStringOrText(factory, fieldName, fieldSpecName, filter);
+			return getPredicateByStringOrText(factory, fieldName, filter);
 		case UNITDATE:
 			return getPredicateByUnitdate(factory, fieldName, filter);
 		default:
@@ -267,11 +270,9 @@ public class NodeSearchService {
 	}
 
 	private <T extends Number> SearchPredicate getPredicateByNumber(final SearchPredicateFactory factory, 
-											  					 	final String fieldTypeName,
-							                                        final String fieldTypeSpecName,
+											  					 	final String fieldName,
 											  					 	final OperationCompareType op,
 											  					 	final T value) {
-		String fieldName = fieldTypeSpecName != null ? fieldTypeSpecName : fieldTypeName;
 		switch (op) {
 		case EQ:
 			return factory.match().field(fieldName).matching(value).toPredicate();
@@ -291,14 +292,13 @@ public class NodeSearchService {
 	}
 
 	private SearchPredicate getPredicateByRecordRef(final SearchPredicateFactory factory,
-			                                        final String fieldTypeName,
-			                                        final String fieldTypeSpecName,
+			                                        final String fieldName,
 			                                        final FieldValueFilter filter) {
 	    OperationCompareType op = filter.getOperation();
 	    String value = filter.getValue().toLowerCase();
 	    // find by name of ap
 	    if (!value.matches("-?\\d+")) {
-	    	return getPredicateByStringOrText(factory, fieldTypeName, fieldTypeSpecName, filter);
+	    	return getPredicateByStringOrText(factory, fieldName, filter);
 	    }
 	    // find by recordId
 	    Integer intValue = Integer.parseInt(value);
@@ -328,76 +328,32 @@ public class NodeSearchService {
 	}
 
 	private SearchPredicate getPredicateByStringOrText(final SearchPredicateFactory factory,
-													   final String fieldTypeName,
-													   final String fieldTypeSpecName,
+													   final String fieldName,
 											   		   final FieldValueFilter filter) {
 	    OperationCompareType op = filter.getOperation();
 	    String value = filter.getValue();
-	    BooleanPredicateClausesStep<?> bool = factory.bool();
 		switch (op) {
 		case EQ:
-			bool.must(factory.match().field(fieldTypeName).matching(value));
-			if (fieldTypeSpecName != null) {
-				bool.must(factory.match().field(fieldTypeSpecName).matching(value));
-			}
-			break;
+			return factory.match().field(fieldName).matching(value).toPredicate();
 		case NEQ:
-			bool.mustNot(factory.match().field(fieldTypeName).matching(value));
-			if (fieldTypeSpecName != null) {
-				bool.mustNot(factory.match().field(fieldTypeSpecName).matching(value));
-			}
-			break;
+			return factory.bool().mustNot(factory.match().field(fieldName).matching(value)).toPredicate();
 		case GT:
-			bool.must(factory.range().field(fieldTypeName).greaterThan(value));
-			if (fieldTypeSpecName != null) {
-				bool.must(factory.range().field(fieldTypeSpecName).greaterThan(value));
-			}
-			break;
+			return factory.range().field(fieldName).greaterThan(value).toPredicate();
 		case LT:
-			bool.must(factory.range().field(fieldTypeName).lessThan(value));
-			if (fieldTypeSpecName != null) {
-				bool.must(factory.range().field(fieldTypeSpecName).lessThan(value));
-			}
-			break;
+			return factory.range().field(fieldName).lessThan(value).toPredicate();
 		case GTE:
-			bool.must(factory.range().field(fieldTypeName).atLeast(value));
-			if (fieldTypeSpecName != null) {
-				bool.must(factory.range().field(fieldTypeSpecName).atLeast(value));
-			}
-			break;
+			return factory.range().field(fieldName).atLeast(value).toPredicate();
 		case LTE:
-			bool.must(factory.range().field(fieldTypeName).atMost(value));
-			if (fieldTypeSpecName != null) {
-				bool.must(factory.range().field(fieldTypeSpecName).atMost(value));
-			}
-			break;
+			return factory.range().field(fieldName).atMost(value).toPredicate();
 		case STARTWITH:
-			bool.must(factory.wildcard().field(fieldTypeName).matching(value + "*"));
-			if (fieldTypeSpecName != null) {
-				bool.must(factory.wildcard().field(fieldTypeSpecName).matching(value + "*"));
-			}
-			break;
+			return factory.wildcard().field(fieldName).matching(value + "*").toPredicate();
 		case ENDWITH:
-			bool.must(factory.wildcard().field(fieldTypeName).matching("*" + value));
-			if (fieldTypeSpecName != null) {
-				bool.must(factory.wildcard().field(fieldTypeSpecName).matching("*" + value));
-			}
-			break;
+			return factory.wildcard().field(fieldName).matching("*" + value).toPredicate();
 		case CONTAINS:
-			bool.must(factory.wildcard().field(fieldTypeName).matching("*" + value + "*"));
-			if (fieldTypeSpecName != null) {
-				bool.must(factory.wildcard().field(fieldTypeSpecName).matching("*" + value + "*"));
-			}
-			break;
-		case IS_NULL:
-			throw new BusinessException("Comparison of type IS_NULL is not implemented.", ArrangementCode.REQUEST_INVALID);
-		case NOT_NULL:
-			throw new BusinessException("Comparison of type NOT_NULL is not implemented..", ArrangementCode.REQUEST_INVALID);
+			return factory.wildcard().field(fieldName).matching("*" + value + "*").toPredicate();
 		default:
 			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
 		}
-
-		return bool.toPredicate();
 	}
 
 	private SearchPredicate getPredicateByUnitdate(final SearchPredicateFactory factory, 
@@ -436,19 +392,11 @@ public class NodeSearchService {
 			bool.should(factory.range().field(fieldNormalizedTo).lessThan(normalizedFrom))
 				.should(factory.range().field(fieldNormalizedFrom).lessThan(normalizedTo));
 			return bool.toPredicate();
-		case STARTWITH:
-			throw new BusinessException("Comparison of type STARTWITH is not implemented.", ArrangementCode.REQUEST_INVALID);
-		case ENDWITH:
-			throw new BusinessException("Comparison of type ENDWITH is not implemented.", ArrangementCode.REQUEST_INVALID);
 		case CONTAINS:
 			return bool
 					.must(factory.range().field(fieldNormalizedFrom).lessThan(normalizedFrom))
 					.must(factory.range().field(fieldNormalizedTo).greaterThan(normalizedTo))
 					.toPredicate();
-		case IS_NULL:
-			throw new BusinessException("Comparison of type IS_NULL is not implemented.", ArrangementCode.REQUEST_INVALID);
-		case NOT_NULL:
-			throw new BusinessException("Comparison of type NOT_NULL is not implemented..", ArrangementCode.REQUEST_INVALID);
 		default:
 			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
 		}
