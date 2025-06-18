@@ -202,7 +202,9 @@ public class StartupService implements SmartLifecycle {
         ApFulltextProviderImpl fulltextProvider = new ApFulltextProviderImpl(accessPointService);
         ArrDataRecordRef.setFulltextProvider(fulltextProvider);                
         ApCachedAccessPointBridge.init(applicationContext.getBean(SettingsService.class), applicationContext.getBean(AccessPointCacheService.class));
-        ArrCachedNodeBridge.init(applicationContext.getBean(NodeCacheService.class));
+        ArrCachedNodeBridge.init(applicationContext.getBean(NodeCacheService.class),
+        		this.ruleService,
+        		applicationContext.getBean(ArrangementInternalService.class));
 
         //----- stage 2 ------
         TransactionTemplate tt = new TransactionTemplate(txManager);

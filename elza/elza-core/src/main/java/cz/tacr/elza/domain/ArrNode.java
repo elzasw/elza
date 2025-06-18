@@ -4,8 +4,12 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.AssociationInverseSide;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.ObjectPath;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.PropertyValue;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -22,6 +26,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 
 
 /**
@@ -60,8 +65,21 @@ public class ArrNode extends AbstractVersionableEntity implements Versionable, S
 
     @OneToMany(mappedBy = "node", fetch = FetchType.LAZY)
     private List<ArrLevel> levels;
+    
+    
+    @OneToMany(mappedBy = "node", fetch = FetchType.LAZY)    
+    // This is the crucial part for Hibernate Search dependency tracking
+    // But does not work
+    // @AssociationInverseSide(
+    //    inversePath = @ObjectPath(@PropertyValue(propertyName = "node2"))
+    //)
+    private Set<ArrNodeConformity> nodeConformity;    
 
-    public Integer getNodeId() {
+    // Also good to have the link back to the cached node
+    @OneToOne(mappedBy = "node", fetch = FetchType.LAZY)
+    private ArrCachedNode cachedNode;    
+
+	public Integer getNodeId() {
         return nodeId;
     }
 
@@ -136,7 +154,24 @@ public class ArrNode extends AbstractVersionableEntity implements Versionable, S
         this.levels = levels;
     }
 
-    @Override
+    
+    public Set<ArrNodeConformity> getNodeConformity() {
+		return nodeConformity;
+	}
+
+	public void setNodeConformity(Set<ArrNodeConformity> nodeConformity) {
+		this.nodeConformity = nodeConformity;
+	}
+
+	public ArrCachedNode getCachedNode() {
+		return cachedNode;
+	}
+
+	public void setCachedNode(ArrCachedNode cachedNode) {
+		this.cachedNode = cachedNode;
+	}
+
+	@Override
     public int compareTo(final ArrNode o) {
         return getNodeId().compareTo(o.getNodeId());
     }
