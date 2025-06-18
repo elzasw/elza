@@ -31,11 +31,13 @@ import org.springframework.web.context.annotation.SessionScope;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.AbstractFilter;
 import cz.tacr.elza.controller.vo.DescItemField;
+import cz.tacr.elza.controller.vo.FieldType;
 import cz.tacr.elza.controller.vo.FieldValueFilter;
 import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundSearchResult;
 import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
+import cz.tacr.elza.controller.vo.NodeField;
 import cz.tacr.elza.controller.vo.NodeTreeData;
 import cz.tacr.elza.controller.vo.OperationCompareType;
 import cz.tacr.elza.controller.vo.SearchParams;
@@ -219,7 +221,7 @@ public class NodeSearchService {
 
 	private SearchPredicate multimatchContainsPredicate(final SearchPredicateFactory factory, final MultimatchContainsFilter filter) {
         /* odstraňujeme interpunkční znaménka a rozdělujeme na tokeny */
-        String[] tokens = filter.getValue().replaceAll("[\\p{Punct}]", "").split("\\s+");
+        String[] tokens = filter.getValue().replaceAll("[\\p{Punct}]", " ").split("\\s+");
 
         /* hledání výsledků pomocí AND (must) tak že každý obsahuje dané části zadaného výrazu */
         BooleanPredicateClausesStep<?> bool = factory.bool();
@@ -232,6 +234,17 @@ public class NodeSearchService {
 	}
 
 	private SearchPredicate fieldValuePredicate(final SearchPredicateFactory factory, final FieldValueFilter filter) {
+		// search by NODE_FIELD
+		if (filter.getField().getFieldType().equals(FieldType.NODE_FIELD)) {
+			String fieldName = ((NodeField) filter.getField()).getFieldName().getValue();
+			return getPredicateByStringOrText(factory, fieldName, filter);
+		}
+
+		// search by DESC_ITEM
+		if (!filter.getField().getFieldType().equals(FieldType.DESC_ITEM)) {
+			throw new IllegalArgumentException("Unsupported field type: " + filter.getField());
+		}
+
     	String itemTypeCode = ((DescItemField) filter.getField()).getTypeCode();
     	String itemSpecCode = ((DescItemField) filter.getField()).getSpecCode();
 

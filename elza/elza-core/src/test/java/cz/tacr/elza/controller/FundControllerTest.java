@@ -18,6 +18,8 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.bridge.ArrCachedNodeBinder;
 import cz.tacr.elza.test.controller.vo.CreateFund;
 import cz.tacr.elza.test.controller.vo.DescItemField;
 import cz.tacr.elza.test.controller.vo.FieldType;
@@ -31,6 +33,8 @@ import cz.tacr.elza.test.controller.vo.FondsFieldName;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.test.controller.vo.NodeData;
 import cz.tacr.elza.test.controller.vo.NodeDataParam;
+import cz.tacr.elza.test.controller.vo.NodeField;
+import cz.tacr.elza.test.controller.vo.NodeFieldName;
 import cz.tacr.elza.test.controller.vo.NodeTreeData;
 import cz.tacr.elza.test.controller.vo.OperationCompareType;
 import cz.tacr.elza.test.controller.vo.SearchParams;
@@ -270,6 +274,17 @@ public class FundControllerTest extends AbstractControllerTest {
         // try to search by AP id using FieldValueFilter
         fundResult = nodeApi.nodeSearch(params);
         assertEquals(1, fundResult.size());
+        
+        // try to search by NODE_FIELD field type
+        valueFilter.setField(new NodeField().fieldName(NodeFieldName.CONFORMITY_MISSING));
+        valueFilter.setValue("Není uveden zpracovatel");
+        valueFilter.setOperation(OperationCompareType.CONTAINS);
+
+//        List<ArrNodeConformityMissing> missing = missingRepository.findAll();
+//        
+//        // try to search by CONFORMITY_MISSING id using FieldValueFilter
+//        fundResult = nodeApi.nodeSearch(params);
+//        assertEquals(1, fundResult.size());
     }
 
     @Test
