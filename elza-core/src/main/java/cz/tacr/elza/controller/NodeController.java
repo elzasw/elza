@@ -44,6 +44,7 @@ public class NodeController implements NodeApi {
 
 	// GET /node/search/{fundId}
 	@Override
+	@Transactional
 	public ResponseEntity<List<NodeTreeData>> nodeGetSearchResult(Integer fundId) {
 		return ResponseEntity.ok(nodeSearchService.nodeGetSearchResult(fundId));
 	}
