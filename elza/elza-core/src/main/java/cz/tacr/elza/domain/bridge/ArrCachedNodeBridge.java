@@ -60,6 +60,7 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
     	// TODO: do not index deleted levels
 
     	document.addValue(FIELD_FUND_ID, cachedNode.getFundId());
+    	document.addValue(ArrCachedNodeBinder.UUID, cachedNode.getUuid());
     	if (cachedNode.getDescItems() != null) {
             for (ArrDescItem item : cachedNode.getDescItems()) {
             	// skip item with no data

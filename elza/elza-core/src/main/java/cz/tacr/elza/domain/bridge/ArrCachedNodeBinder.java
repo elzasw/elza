@@ -24,6 +24,7 @@ public class ArrCachedNodeBinder implements TypeBinder {
 	
 	public static final String CONFORMITY_ERROR = "conformityError";
 	public static final String CONFORMITY_MISSING = "conformityMissing";
+	public static final String UUID = "uuid";
 
     private IndexConfigReader configurationReader = SpringContext.getBean(IndexConfigReader.class);
 
@@ -88,6 +89,7 @@ public class ArrCachedNodeBinder implements TypeBinder {
         
 		createStringField(CONFORMITY_ERROR);
 		createStringField(CONFORMITY_MISSING);
+		createStringField(UUID);
 
         context.bridge(ArrCachedNode.class, new ArrCachedNodeBridge());
 	}
