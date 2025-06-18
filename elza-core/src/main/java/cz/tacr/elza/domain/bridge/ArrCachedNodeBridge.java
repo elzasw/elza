@@ -120,23 +120,22 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
             }
     	}
     	
-    	// index node conformity
-        if(conformityErrors!=null&&!conformityErrors.getState().equals(ArrNodeConformity.State.OK)) {
-        	if(conformityErrors.getErrorList()!=null) {
-        		for(ArrNodeConformityError error: conformityErrors.getErrorList()) {
-        			if(StringUtils.isNotBlank(error.getDescription())) {
+    	// index node conformity error & missing
+        if (conformityErrors != null && !conformityErrors.getState().equals(ArrNodeConformity.State.OK)) {
+        	if (conformityErrors.getErrorList() != null) {
+        		for (ArrNodeConformityError error : conformityErrors.getErrorList()) {
+        			if (StringUtils.isNotBlank(error.getDescription())) {
         				document.addValue(ArrCachedNodeBinder.CONFORMITY_ERROR, error.getDescription());
         			}
         		}
         	}
-        	if(conformityErrors.getMissingList()!=null) {
-				for(ArrNodeConformityMissing missing: conformityErrors.getMissingList()) {
-					if(StringUtils.isNotBlank(missing.getDescription())) {
+        	if (conformityErrors.getMissingList() != null) {
+				for (ArrNodeConformityMissing missing : conformityErrors.getMissingList()) {
+					if (StringUtils.isNotBlank(missing.getDescription())) {
 						document.addValue(ArrCachedNodeBinder.CONFORMITY_MISSING, missing.getDescription());
 					}
 				}
 			}
         }
-    	
 	}
 }

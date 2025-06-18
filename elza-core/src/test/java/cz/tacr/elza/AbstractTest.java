@@ -32,6 +32,7 @@ import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
 import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeConformityMissingRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.StartupService;
 
@@ -98,6 +99,8 @@ public abstract class AbstractTest {
     protected FundVersionRepository fundVersionRepository;
     @Autowired
     protected NodeRepository nodeRepository;
+    @Autowired
+    protected NodeConformityMissingRepository missingRepository;
     @Autowired
     protected HelperTestService helperTestService;
     @Autowired
