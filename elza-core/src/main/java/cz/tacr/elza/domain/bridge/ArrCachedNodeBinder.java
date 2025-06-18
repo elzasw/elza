@@ -21,6 +21,9 @@ import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.service.SpringContext;
 
 public class ArrCachedNodeBinder implements TypeBinder {
+	
+	public static final String CONFORMITY_ERROR = "conformityError";
+	public static final String CONFORMITY_MISSING = "conformityMissing";
 
     private IndexConfigReader configurationReader = SpringContext.getBean(IndexConfigReader.class);
 
@@ -82,6 +85,9 @@ public class ArrCachedNodeBinder implements TypeBinder {
 				break;
     		}
         }
+        
+		createStringField(CONFORMITY_ERROR);
+		createStringField(CONFORMITY_MISSING);
 
         context.bridge(ArrCachedNode.class, new ArrCachedNodeBridge());
 	}

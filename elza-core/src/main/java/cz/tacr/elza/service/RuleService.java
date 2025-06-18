@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +71,7 @@ import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -303,10 +306,8 @@ public class RuleService {
 
         ArrLevel level = levelRepository.findById(faLevelId)
                 .orElseThrow(ExceptionThrow.level(faLevelId));
-        Integer nodeId = level.getNodeId();
-
-        ArrNode nodeBeforeValidation = nodeRepository.getOneCheckExist(nodeId);
-        Integer nodeVersionBeforeValidation = nodeBeforeValidation.getVersion();
+        // Get node and store its version
+        ArrNode node = level.getNode();
 
         ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
@@ -336,16 +337,7 @@ public class RuleService {
         }
 
         validationResults.addAll(validationResultsBasic);
-        ArrNodeConformityExt result = updateNodeConformityInfo(level, version, validationResults);
-
-        entityManager.detach(nodeBeforeValidation);
-        ArrNode nodeAfterValidation = nodeRepository.getOneCheckExist(nodeId);
-        Integer nodeVersionAfterValidation = nodeAfterValidation.getVersion();
-
-        if (!nodeVersionBeforeValidation.equals(nodeVersionAfterValidation)) {
-            logger.info("Během validace došlo ke změně verze uzlu " + nodeId);
-            //throw new LockVersionChangeException("Behem validace doslo ke zmene verze uzlu " + nodeId);
-        }
+        ArrNodeConformityExt result = updateNodeConformityInfo(node, version, validationResults);
 
         return result;
     }
@@ -373,12 +365,20 @@ public class RuleService {
      * @param validationResults seznam validačních chyb
      */
     // Only one thread can update data in the nodeConformity tables
-    private ArrNodeConformityExt updateNodeConformityInfo(final ArrLevel level,
+    private ArrNodeConformityExt updateNodeConformityInfo(final ArrNode node,
                                                           final ArrFundVersion version,
                                                           final List<DataValidationResult> validationResults) {
 
         ArrNodeConformity conformityInfo = nodeConformityRepository
-                .findByNodeAndFundVersion(level.getNode(), version);
+                .findByNodeAndFundVersion(node, version);
+    	// try to load conformity info from node
+    	/*ArrNodeConformity conformityInfo = null;
+    	for(ArrNodeConformity nc: node.getNodeConformity()) {
+    		if(nc.getFundVersion().getFundVersionId().equals(version.getFundVersionId())) {
+    			conformityInfo = nc;
+    		}
+    	}*/
+        State origState = State.OK;
 
         List<ArrNodeConformityMissing> confPrevMissing;
         List<ArrNodeConformityError> confPrevErrors;
@@ -386,7 +386,8 @@ public class RuleService {
         List<ArrNodeConformityError> confNextErrors = new ArrayList<>();
         if (conformityInfo != null) {
             // we can skip reading errors if prev state was ok
-            if (State.OK != conformityInfo.getState()) {
+        	 origState = conformityInfo.getState();
+            if (State.OK != origState) {
                 List<ArrNodeConformity> confInfoList = Collections.singletonList(conformityInfo);
                 confPrevMissing = nodeConformityMissingRepository.findByNodeConformityInfos(confInfoList);
                 confPrevErrors = this.nodeConformityErrorRepository.findByNodeConformity(conformityInfo);
@@ -396,7 +397,7 @@ public class RuleService {
             }
         } else {
             conformityInfo = new ArrNodeConformity();
-            conformityInfo.setNode(level.getNode());
+            conformityInfo.setNode(node);
             conformityInfo.setFundVersion(version);
 
             confPrevMissing = Collections.emptyList();
@@ -435,6 +436,17 @@ public class RuleService {
         }
 
         ArrNodeConformityExt result = new ArrNodeConformityExt(conformityInfo, confNextMissing, confNextErrors);
+        
+        // run reindex of node if needed
+        if( origState!=State.OK || result.getState()!=State.OK) {
+        	logger.trace("Reindexing node {}", node.getNodeId());
+        	
+            SearchSession searchSession = Search.session(entityManager);
+            ArrCachedNode cachedNode = node.getCachedNode();
+            if(cachedNode!=null) {
+            	searchSession.indexingPlan().addOrUpdate(cachedNode);
+            }            
+        }
 
         return result;
     }

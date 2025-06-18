@@ -8,6 +8,7 @@ import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.engine.backend.document.DocumentElement;
@@ -19,6 +20,13 @@ import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityExt;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.service.ArrangementInternalService;
+import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 
@@ -26,9 +34,15 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 
     // TODO převést na použití Bean
 	private static NodeCacheService nodeCacheService;
+	private static RuleService ruleService;
+	private static ArrangementInternalService arrangementInternalService;
 
-	public static void init(NodeCacheService nodeCacheService) {
+	public static void init(final NodeCacheService nodeCacheService, 
+			final RuleService ruleService,
+			final ArrangementInternalService arrangementInternalService) {
 		ArrCachedNodeBridge.nodeCacheService = nodeCacheService;
+		ArrCachedNodeBridge.ruleService = ruleService;
+		ArrCachedNodeBridge.arrangementInternalService = arrangementInternalService;
 	}
 
 	@Override
@@ -36,7 +50,13 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 
     	RestoredNode cachedNode = nodeCacheService.deserialize(arrCachedNode);
     	nodeCacheService.reloadCachedNodes(Collections.singletonList(cachedNode));
+    	
+    	ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(cachedNode.getFundId());
 
+    	// read node_conformity for last opened version
+    	Map<Integer, ArrNodeConformityExt> errors = ruleService.getNodeConformityInfoForNodes(Collections.singletonList(cachedNode.getNodeId()), fundVersion);
+    	ArrNodeConformityExt conformityErrors = errors.get(cachedNode.getNodeId());
+    	
     	// TODO: do not index deleted levels
 
     	document.addValue(FIELD_FUND_ID, cachedNode.getFundId());
@@ -97,5 +117,24 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
             	}
             }
     	}
+    	
+    	// index node conformity
+        if(conformityErrors!=null&&!conformityErrors.getState().equals(ArrNodeConformity.State.OK)) {
+        	if(conformityErrors.getErrorList()!=null) {
+        		for(ArrNodeConformityError error: conformityErrors.getErrorList()) {
+        			if(StringUtils.isNotBlank(error.getDescription())) {
+        				document.addValue(ArrCachedNodeBinder.CONFORMITY_ERROR, error.getDescription());
+        			}
+        		}
+        	}
+        	if(conformityErrors.getMissingList()!=null) {
+				for(ArrNodeConformityMissing missing: conformityErrors.getMissingList()) {
+					if(StringUtils.isNotBlank(missing.getDescription())) {
+						document.addValue(ArrCachedNodeBinder.CONFORMITY_MISSING, missing.getDescription());
+					}
+				}
+			}
+        }
+    	
 	}
 }
