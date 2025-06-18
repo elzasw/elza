@@ -218,8 +218,8 @@ public class NodeSearchService {
 	}
 
 	private SearchPredicate multimatchContainsPredicate(final SearchPredicateFactory factory, final MultimatchContainsFilter filter) {
-        /* rozdělení zadaného výrazu podle mezer */
-        String[] tokens = StringUtils.split(filter.getValue(), ' ');
+        /* odstraňujeme interpunkční znaménka a rozdělujeme na tokeny */
+        String[] tokens = filter.getValue().replaceAll("[\\p{Punct}]", "").split("\\s+");
 
         /* hledání výsledků pomocí AND (must) tak že každý obsahuje dané části zadaného výrazu */
         BooleanPredicateClausesStep<?> bool = factory.bool();

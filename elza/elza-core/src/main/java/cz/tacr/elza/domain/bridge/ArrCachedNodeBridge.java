@@ -73,9 +73,11 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
             	}
             	// item type & ipem spec codes
             	String itemTypeCodeLowerCase = item.getItemType().getCode().toLowerCase();
+            	String itemSpecCodeLowerCase = null;
             	String itemTypeAndSpecCodeLowerCase = null;
             	if (item.getItemSpec() != null) {
-            		itemTypeAndSpecCodeLowerCase = itemTypeCodeLowerCase + "_" + item.getItemSpec().getCode().toLowerCase();
+            		itemSpecCodeLowerCase = item.getItemSpec().getCode().toLowerCase();
+            		itemTypeAndSpecCodeLowerCase = itemTypeCodeLowerCase + "_" + itemSpecCodeLowerCase;
             	}
             	// get dataType
             	DataType dataType = DataType.fromId(item.getData().getDataTypeId());
@@ -92,7 +94,7 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 						}
             			break;
             		case ENUM:
-						document.addValue(itemTypeCodeLowerCase, item.getItemSpec().getCode().toLowerCase());
+						document.addValue(itemTypeCodeLowerCase, itemSpecCodeLowerCase);
 						break;
             		case RECORD_REF:
 						document.addValue(REL_AP_ID, ((ArrDataRecordRef) item.getData()).getRecordId());
