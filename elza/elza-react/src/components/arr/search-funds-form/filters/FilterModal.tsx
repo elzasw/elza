@@ -3,6 +3,8 @@ import { DraggableWindow } from "components/shared";
 import { Position } from "components/shared/draggable-window";
 import { FilterObject } from "./types";
 import { FilterDescItemModal } from "./FilterDescItemModal";
+import { NodeFieldName } from "elza-api";
+import { FilterText } from "./FilterText";
 
 export interface Props {
   filterName: string;
@@ -29,6 +31,16 @@ export function FilterModal({
   switch (filterName) {
     case "DescItem":
       filterForm = <FilterDescItemModal
+        initialValue={initialValue as FilterObject<string>}
+        filterName={filterName}
+        onFilterChange={onFilterChange}
+        onClose={onClose}
+      />
+      break;
+    case NodeFieldName.ConformityError:
+    case NodeFieldName.ConformityMissing:
+    case NodeFieldName.Uuid:
+      filterForm = <FilterText
         initialValue={initialValue as FilterObject<string>}
         filterName={filterName}
         onFilterChange={onFilterChange}

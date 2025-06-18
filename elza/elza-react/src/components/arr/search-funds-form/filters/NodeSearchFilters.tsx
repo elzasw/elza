@@ -1,8 +1,8 @@
 import { Divider, Input, InteractionTag, InteractionTagPrimary, InteractionTagSecondary, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tag, TagDismissData, TagDismissEvent, TagGroup, makeStyles, tokens } from "@fluentui/react-components";
-import { AddRegular } from "@fluentui/react-icons";
+import { AddRegular, DismissRegular } from "@fluentui/react-icons";
 import { Icon } from "components"
 import { Field, Form } from "react-final-form";
-import { FilterType, OperationCompareType } from "elza-api";
+import { FieldType, FilterType, NodeFieldName, OperationCompareType } from "elza-api";
 import { useEffect, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { messages } from "./messages";
@@ -92,12 +92,14 @@ export function NodeSearchFilters({
     }
   }
 
-  const presetFilters = getPresetFilters();
+  const presetMenuFilters = getPresetFilters()?.filter(({ fixedField }) => !fixedField);
+  const presetFixedFilters = getPresetFilters()?.filter(({ fixedField }) => fixedField);
 
-  function getFiltersList(): string[] {
+  function getNodeFiltersList(): string[] {
     return [
-      "DescItem",
-      // ...presetFilters.map(({ name }) => name)
+      NodeFieldName.ConformityError,
+      NodeFieldName.ConformityMissing,
+      NodeFieldName.Uuid,
     ]
   }
 
@@ -119,6 +121,51 @@ export function NodeSearchFilters({
         }),
         getSerializedString: () => fulltext,
         getDisplayValue: () => fulltext,
+      });
+    }
+
+    setFilters(_filters);
+    onChange(_filters);
+  }
+
+  function handleFixedFilter({
+    name,
+    itemType,
+    itemSpec,
+    value,
+    operation
+  }: {
+    value: string,
+    itemType: string,
+    itemSpec: string,
+    name: string,
+    operation: OperationCompareType,
+  }) {
+    const _filters = [...filters];
+    const index = _filters.findIndex((filter) => filter.name === name);
+
+    // replace or delete when filter already exists
+    if (index >= 0) {
+      _filters.splice(index, 1);
+    }
+
+    if (value) {
+      _filters.push({
+        name,
+        filterType: FilterType.FieldValue,
+        data: { value, itemType, itemSpec, operation },
+        getFilterValue: () => ({
+          filterType: FilterType.FieldValue,
+          field: {
+            fieldType: FieldType.DescItem,
+            typeCode: itemType,
+            specCode: itemSpec,
+          },
+          operation,
+          value,
+        }),
+        getSerializedString: () => `${name}:${value}`,
+        getDisplayValue: () => `${name}:${value}`,
       });
     }
 
@@ -187,16 +234,40 @@ export function NodeSearchFilters({
                 {...input}
                 type="text"
                 contentBefore={<Icon glyph="fa-search" />}
-                contentAfter={values.fulltext && <Icon onClick={() => {
+                contentAfter={values.fulltext && <DismissRegular onClick={() => {
                   handleFulltext({ fulltext: "" });
                   form.reset()
-                }} glyph="fa-times" />}
+                }} />}
               />
             }}</Field>
           </form>
         }}
       </Form>
     </div>
+    {presetFixedFilters.length > 0 && presetFixedFilters.map(({ name, itemType, itemSpec, operation }) => {
+      const initialValues = { value: "", itemType, itemSpec, name, operation }
+      return <div style={{ display: "flex", alignItems: "center", margin: "5px" }}>
+        <Form initialValues={initialValues} onSubmit={handleFixedFilter}>
+          {({ handleSubmit, values, form }) => {
+            return <form onSubmit={handleSubmit}>
+              <Field name="value">{({ input }) => {
+                return <Input
+                  {...input}
+                  placeholder={name}
+                  type="text"
+                  contentBefore={<Icon glyph="fa-filter" />}
+                  contentAfter={values.value && <DismissRegular onClick={() => {
+                    handleFixedFilter(initialValues);
+                    form.reset()
+                  }} />}
+                />
+              }}</Field>
+            </form>
+          }}
+        </Form>
+      </div>
+    })
+    }
     <div style={{ display: "flex", alignItems: "center", margin: "5px" }}>
       <Menu>
         <MenuTrigger disableButtonEnhancement={true}>
@@ -210,8 +281,8 @@ export function NodeSearchFilters({
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
-            {presetFilters.length > 0 && <>
-              {presetFilters.filter(({ fixedField }) => !fixedField).map((filter) => {
+            {presetMenuFilters.length > 0 && <>
+              {presetMenuFilters.map((filter) => {
                 return <MenuItem
                   onClick={async (e) => {
                     e.stopPropagation();
@@ -234,7 +305,27 @@ export function NodeSearchFilters({
               })}
               <Divider />
             </>}
-            {getFiltersList().map((fieldName) => {
+            {["DescItem"].map((fieldName) => {
+              return <MenuItem
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+
+                  const addFilterButtonRect = addFilterButtonRef.current?.getBoundingClientRect() || undefined;
+                  const initialPosition = addFilterButtonRect ? formatPosition(addFilterButtonRect.left, addFilterButtonRect.bottom) : undefined;
+
+                  const { data } = await showFilterModal({ name: fieldName }, initialPosition)
+                  if (data) {
+                    handleFilterConfirm({
+                      ...data,
+                      name: fieldName
+                    });
+                  }
+                }}
+              >{messages[fieldName] ? formatMessage(messages[fieldName]) : fieldName}</MenuItem>
+            })}
+            {getNodeFiltersList().length > 0 && <Divider />}
+            {getNodeFiltersList().map((fieldName) => {
               return <MenuItem
                 onClick={async (e) => {
                   e.stopPropagation();
@@ -259,7 +350,10 @@ export function NodeSearchFilters({
     </div>
     <div style={{ display: "flex", alignItems: "center", margin: "5px" }}>
       <TagGroup className={styles.tagGroup} onDismiss={handleFilterRemove}>
-        {filters.filter(({ filterType }) => filterType === FilterType.FieldValue).map((filter, index) => {
+        {filters.filter(({ filterType, name }) =>
+          filterType !== FilterType.Contains // hide fulltext filter
+          && presetFixedFilters.find(({ name: _name }) => _name !== name) // hide fixed filters
+        ).map((filter, index) => {
           return <InteractionTag
             value={`${filter.name};${filter.getSerializedString(filter)}`}
             key={index}

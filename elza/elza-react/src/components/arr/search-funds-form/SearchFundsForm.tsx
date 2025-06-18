@@ -9,8 +9,8 @@ import * as fundSearchActions from 'actions/arr/fundSearch.jsx';
 
 import './SearchFundsForm.scss';
 import { urlNode } from "../../../constants.js";
-import { InputOnChangeData, SearchBox, SearchBoxChangeEvent } from '@fluentui/react-components';
-import { Form, Field } from 'react-final-form';
+// import { InputOnChangeData, SearchBox, SearchBoxChangeEvent } from '@fluentui/react-components';
+// import { Form, Field } from 'react-final-form';
 import { AppState, FundSearchFundType, FundSearchNodeType } from 'typings/store';
 import { useSelector } from 'react-redux';
 import { useThunkDispatch } from 'utils/hooks';
@@ -138,8 +138,6 @@ export function SearchFundsFormFn() {
 
     const isFulltext = fundSearch.filters.length > 0;
     const totalCount = getTotalCount(fundSearch.funds);
-
-    console.log('#sff', /* currentFilters, */ fundSearch);
 
     return (
         <Modal.Body>
