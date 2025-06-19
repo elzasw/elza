@@ -29,6 +29,9 @@ public class SearchFilterVO {
 
     private SyncStateVO syncState = null;
 
+    // seznam ID entit, které budou z výsledku odfiltrovány
+    private List<Integer> excludeAps = null;
+
     public String getSearch() {
         return search;
     }
@@ -123,5 +126,13 @@ public class SearchFilterVO {
 
 	public void setSyncState(SyncStateVO syncState) {
 		this.syncState = syncState;
+	}
+
+	public List<Integer> getExcludeAps() {
+		return excludeAps;
+	}
+
+	public void setExcludeAps(List<Integer> excludeAps) {
+		this.excludeAps = excludeAps;
 	}
 }
