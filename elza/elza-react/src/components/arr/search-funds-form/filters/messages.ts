@@ -40,7 +40,7 @@ export const messages = defineMessages({
   },
   [NodeFieldName.ConformityMissing]: {
     id: "search_funds_form_conformity_missing",
-    defaultMessage: "Chybějící",
+    defaultMessage: "Chybějící prvek",
   },
   [NodeFieldName.ConformityError]: {
     id: "search_funds_form_conformity_error",
