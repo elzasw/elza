@@ -78,3 +78,4 @@ export {default as GroupDetail} from 'components/admin/GroupDetail';
 export {default as AddUserForm} from 'components/admin/AddUserForm';
 export {default as AddGroupForm} from 'components/admin/AddGroupForm';
 export {default as PasswordForm} from 'components/admin/PasswordForm';
+export {EntityItem, FundItem, HomePageRibbon} from 'components/home';

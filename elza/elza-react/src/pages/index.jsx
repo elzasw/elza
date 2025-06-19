@@ -17,7 +17,7 @@ export {default as ArrOutputPage} from 'pages/arr/ArrOutputPage.jsx';
 export {default as ArrRequestPage} from 'pages/arr/ArrRequestPage.jsx';
 
 export {default as RegistryPage} from 'pages/registry/RegistryPage.jsx';
-export {default as HomePage} from 'pages/home/HomePage.jsx';
+export {default as HomePage} from 'pages/home/HomePage.tsx';
 export {default as FundPage} from 'pages/fund/FundPage.jsx';
 
 export {EntityCreatePage} from 'pages/entity/EntityCreatePage';
