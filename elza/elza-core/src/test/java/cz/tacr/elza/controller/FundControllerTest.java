@@ -18,8 +18,7 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.domain.ArrNodeConformityMissing;
-import cz.tacr.elza.domain.bridge.ArrCachedNodeBinder;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.test.controller.vo.CreateFund;
 import cz.tacr.elza.test.controller.vo.DescItemField;
 import cz.tacr.elza.test.controller.vo.FieldType;
@@ -274,17 +273,18 @@ public class FundControllerTest extends AbstractControllerTest {
         // try to search by AP id using FieldValueFilter
         fundResult = nodeApi.nodeSearch(params);
         assertEquals(1, fundResult.size());
-        
-        // try to search by NODE_FIELD field type
-        valueFilter.setField(new NodeField().fieldName(NodeFieldName.CONFORMITY_MISSING));
-        valueFilter.setValue("Není uveden zpracovatel");
-        valueFilter.setOperation(OperationCompareType.CONTAINS);
 
-//        List<ArrNodeConformityMissing> missing = missingRepository.findAll();
-//        
-//        // try to search by CONFORMITY_MISSING id using FieldValueFilter
-//        fundResult = nodeApi.nodeSearch(params);
-//        assertEquals(1, fundResult.size());
+        // get ArrNode for uuid
+        ArrNode node = nodeRepository.findById(nodes.get(0).getId()).get();
+
+        // try to search by NODE_FIELD field type
+        valueFilter.setField(new NodeField().fieldName(NodeFieldName.UUID));
+        valueFilter.setValue(node.getUuid());
+        valueFilter.setOperation(OperationCompareType.EQ);
+
+        // try to search by UUID id using FieldValueFilter
+        fundResult = nodeApi.nodeSearch(params);
+        assertEquals(1, fundResult.size());
     }
 
     @Test

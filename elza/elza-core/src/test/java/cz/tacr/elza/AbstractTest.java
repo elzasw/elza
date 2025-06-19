@@ -100,8 +100,6 @@ public abstract class AbstractTest {
     @Autowired
     protected NodeRepository nodeRepository;
     @Autowired
-    protected NodeConformityMissingRepository missingRepository;
-    @Autowired
     protected HelperTestService helperTestService;
     @Autowired
     protected StartupService startupService;
