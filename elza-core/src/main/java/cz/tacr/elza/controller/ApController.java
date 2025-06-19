@@ -743,6 +743,13 @@ public class ApController {
                     logger.error("Missing entity in AP Cache, accessPointId: {}", record.getData());
                     continue;
                 }
+                // entity, jejichž ID je v seznamu, by neměly být ve výsledku
+                if (filter.getExcludeAps() != null) {
+                	Integer recordId = record.getAccessPointId();
+                	if (filter.getExcludeAps().contains(recordId)) {
+                		continue;
+                	}
+                }
                 ArchiveEntityVO ae = ArchiveEntityVO.valueOf(entity);
                 data.add(ae);
             }
