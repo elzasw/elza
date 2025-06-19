@@ -29,7 +29,7 @@ export function FilterText({
   onClose = () => { console.warn("'onClose' not defined") },
   initialValue,
 }: FilterFormProps<string>) {
-  const availableOperations = [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.Contains];
+  const availableOperations = [OperationCompareType.Contains, OperationCompareType.Eq, OperationCompareType.Neq];
 
   const [value, setValue] = useState<string>(initialValue?.data || "");
   const [operation, setOperation] = useState<OperationCompareType>(initialValue.operation || availableOperations?.[0] || OperationCompareType.Eq);
@@ -66,7 +66,7 @@ export function FilterText({
           operation,
           value: data,
         }),
-        getSerializedString: ({ data }) => data,
+        getSerializedString: ({ data, name, operation }) => `${name}-${operation}-${data}`,
       });
     }
   }, [filterName, onFilterChange, value, operation, isDirty, formatMessage]);

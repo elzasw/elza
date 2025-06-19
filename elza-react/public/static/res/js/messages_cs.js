@@ -853,7 +853,7 @@ var messages = {
     "arr.node.status.okx": "Ok*",
     "arr.node.status.err": "Chyba",
     "arr.node.status.err.errors": "Chyby",
-    "arr.node.status.err.missing": "Chybějící",
+    "arr.node.status.err.missing": "Chybějící prvky",
     "arr.node.status.undefined": "Nezvalidovaný",
     "arr.node.noSelection.title": "Není vybrána jednotka popisu",
     "arr.node.noSelection.message": "Prosím vyberte jednotku popisu.",
