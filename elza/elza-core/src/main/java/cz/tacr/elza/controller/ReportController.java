@@ -18,6 +18,8 @@ import cz.tacr.elza.common.ResponseFactory;
 import cz.tacr.elza.controller.vo.ReportReportCategory;
 import cz.tacr.elza.controller.vo.ReportReportFormat;
 import cz.tacr.elza.controller.vo.ReportReportParameters;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.report.ReportProcessor;
@@ -58,6 +60,7 @@ public class ReportController implements ReportApi {
 	 * @return requestId
 	 */
 	@Override
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN, UsrPermission.Permission.REPORT_ALL})
 	public ResponseEntity<Integer> reportGenerateReport(final String code, final ReportReportParameters reportParameters) {
 		ReportProcessor processor = reportService.getReportProcessor(code);
 		if (processor == null) {
@@ -77,6 +80,7 @@ public class ReportController implements ReportApi {
 	 * @return request process state
 	 */
 	@Override
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN, UsrPermission.Permission.REPORT_ALL})
 	public ResponseEntity reportGetReportStatus(Integer requestId) {
 		ReportRequest reportRequest = reportWorker.getReportRequest(requestId);
 		if (reportRequest == null) {
@@ -113,6 +117,7 @@ public class ReportController implements ReportApi {
 	 * @return report data
 	 */
 	@Override
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN, UsrPermission.Permission.REPORT_ALL})
 	public ResponseEntity reportGetReport(Integer requestId, ReportReportFormat format) {
 		ReportRequest reportRequest = reportWorker.getReportRequest(requestId);
 		if (reportRequest == null) {
