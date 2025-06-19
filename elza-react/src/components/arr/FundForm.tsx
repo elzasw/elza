@@ -18,12 +18,12 @@ import './FundForm.scss';
 import { useThunkDispatch } from 'utils/hooks/useThunkDispatch.js';
 
 interface IFundForm extends ConnectedProps<typeof connector> {
-    onClose: () => void;
+    onClose?: () => void;
     onSubmitForm: any;
-    create: boolean;
-    update: boolean;
-    approve: boolean;
-    ruleSet: any;
+    create?: boolean;
+    update?: boolean;
+    approve?: boolean;
+    ruleSet?: any;
     refTables: any;
     scopeList: FundScope[];
 }
@@ -221,6 +221,6 @@ const mapState = (state: any) => ({
 });
 const connector = connect(mapState);
 
-export default reduxForm({
+export default connector(reduxForm<object, IFundForm>({
     form: 'fundForm',
-})(connector(FundForm));
+})(FundForm));

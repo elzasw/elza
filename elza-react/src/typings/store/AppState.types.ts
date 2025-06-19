@@ -8,6 +8,7 @@ import { SubNodeForm, SubNodeFormCache } from "./SubNodeForm.types";
 import { FundOutput } from "./Outputs.types";
 import { FundDataGrid } from "./DataGrid.types";
 import { FilterObject } from "components/fund/filters/types";
+import { ApAccessPointVO } from "api";
 
 export interface SplitterState {
     leftWidth: number;
@@ -333,6 +334,49 @@ export interface App {
     shared: unknown;
 }
 
+export interface ActiveVersion {
+    config?: unknown;
+    createDate?: string;
+    id: number;
+    issues: unknown[];
+    lockDate?: string | null;
+    packageId?: unknown | null;
+    ruleSetId?: number;
+    strictMode?: boolean;
+}
+
+export interface ArrRegionFrontFund {
+    id: number;
+    lockdate?: string | null;
+    lastUseTemplateName?: unknown;
+    name: string;
+    versionId: number;
+    activeVersion?: ActiveVersion;
+    fundDataGrid?: unknown;
+    fundFiles?: unknown;
+    fundOutput?: unknown;
+    fundTree: unknown;
+    fundTreeDaosLeft: unknown;
+    fundTreeDaosRight: unknown;
+    fundTreeMovementsLeft: unknown;
+    fundTreeMovementsRight: unknown;
+    nodes: unknown;
+}
+
+export interface RegistryRegionFrontEntity {
+    id: number;
+    data: ApAccessPointVO;
+}
+
+export interface StateRegion {
+    adminRegion: unknown;
+    app: unknown;
+    arrRegion: unknown;
+    arrRegionFront: ArrRegionFrontFund[];
+    fundRegion: unknown;
+    registryRegionFront: RegistryRegionFrontEntity[];
+}
+
 export interface AppState {
     splitter: SplitterState;
     adminRegion: AdminRegionState;
@@ -347,7 +391,7 @@ export interface AppState {
     modalDialog: ModalDialogState;
     refTables: RefTablesState;
     router: unknown;
-    stateRegion: unknown;
+    stateRegion: StateRegion;
     status: unknown;
     structures: unknown;
     tab: unknown;
