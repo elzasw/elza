@@ -297,7 +297,7 @@ export function NodeSearchFilters({
                     if (data) {
                       handleFilterConfirm({
                         ...data,
-                        name: filter.name
+                        name: _presetFilter.name
                       });
                     }
                   }}
