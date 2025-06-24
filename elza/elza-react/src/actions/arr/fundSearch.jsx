@@ -34,7 +34,6 @@ export function fundSearchFetchIfNeeded() {
         const { currentDataKey, filters, funds } = fundSearch;
         if (!filters || filters.length <= 0) { return; }
         const newDataKey = generateDataKey(filters);
-        console.log("#sff - fetch if needed", filters, currentDataKey, newDataKey);
 
         if (newDataKey !== currentDataKey) {
             dispatch(fundSearchFulltextRequest());

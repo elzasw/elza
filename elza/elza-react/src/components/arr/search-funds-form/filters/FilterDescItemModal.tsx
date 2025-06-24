@@ -1,5 +1,5 @@
 import { Combobox, OptionOnSelectData, SelectionEvents, Option, Menu, MenuTrigger, MenuButton, MenuPopover, MenuItem } from "@fluentui/react-components";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useInitialFocus } from "./utils";
 import { useSelector } from "react-redux";
 import { AppState, DescItemTypeRef, RuleType } from "typings/store";
@@ -17,6 +17,8 @@ import { FilterFieldText } from "./fields/FilterFieldText";
 import { FilterFieldUnitdate } from "./fields/FilterFieldUnitdate";
 import { WebApi } from "actions";
 import { refRuleSetFetchIfNeeded } from "actions/refTables/ruleSet";
+import { RulDescItemSpecExtVO } from "api/RulDescItemSpecExtVO";
+import { FilterFieldRecordRef } from "./fields/FilterFieldRecordRef";
 
 function formatOperation(operation: OperationCompareType) {
   switch (operation) {
@@ -44,6 +46,9 @@ interface DataTypeFilterDefinition {
   fieldComponent?: (props: {
     onChange: (value: string, isValid?: boolean) => void;
     value: string;
+    label?: string; // text value for descItems with reference id or code in value
+    itemType?: DescItemTypeRef;
+    itemSpec?: RulDescItemSpecExtVO;
   }) => JSX.Element;
 }
 
@@ -87,7 +92,10 @@ export function FilterDescItemModal({
     [RulDataTypeCodeEnum.ENUM]: {
       operations: [OperationCompareType.Eq, OperationCompareType.Neq],
     },
-    // [RulDataTypeCodeEnum.RECORD_REF]: {operations: [OperationCompareType.Eq, OperationCompareType.Neq]},
+    [RulDataTypeCodeEnum.RECORD_REF]: {
+      operations: [OperationCompareType.Eq, OperationCompareType.Neq],
+      fieldComponent: FilterFieldRecordRef,
+    },
   }
 
   const [itemTypeCode, setItemTypeCode] = useState<string>(initialValue?.data?.itemType.code);
@@ -95,6 +103,7 @@ export function FilterDescItemModal({
   const [itemTypeQuery, setItemTypeQuery] = useState<string>(initialValue?.data?.itemType?.name || "");
   const [itemSpecQuery, setItemSpecQuery] = useState<string>(initialValue?.data?.itemSpec?.name || "");
   const [itemValue, setItemValue] = useState<string>(initialValue?.data?.itemValue);
+  const [itemLabel, setItemLabel] = useState<string>(initialValue?.data?.itemLabel);
   const [isValueValid, setIsValueValid] = useState<boolean>(initialValue?.data?.itemValue ? true : false);
   const [operation, setOperation] = useState<OperationCompareType>(initialValue.operation);
   const [descItemTypes, setDescItemTypes] = useState<DescItemTypeRef[]>([]);
@@ -144,6 +153,7 @@ export function FilterDescItemModal({
   const filteredItemTypes = filterItemTypes();
 
   const selectedItemType = itemTypeCode && descItemTypes.find(({ code }) => code === itemTypeCode);
+  const selectedItemSpec = itemSpecCode && selectedItemType?.descItemSpecs.find(({ code }) => code === itemSpecCode);
   const selectedDataType = dataTypes?.items.find(({ id }) => id === selectedItemType?.dataTypeId);
   const dataTypeFilterDefinition = selectedDataType?.code && availableDataTypesMap[selectedDataType.code];
 
@@ -192,8 +202,9 @@ export function FilterDescItemModal({
     setItemSpecCode(data.optionValue || "");
   }
 
-  const handleValueChange = (value: string = "", valid: boolean = true) => {
+  const handleValueChange = (value: string = "", valid: boolean = true, valueLabel?: string) => {
     setItemValue(value);
+    setItemLabel(valueLabel || value);
     setIsValueValid(value != "" && valid);
   }
 
@@ -209,6 +220,7 @@ export function FilterDescItemModal({
           itemType,
           itemSpec,
           itemValue,
+          itemLabel,
         },
         operation,
         getDisplayValue: ({ operation, data }) => <>
@@ -216,7 +228,7 @@ export function FilterDescItemModal({
           {formatOperation(operation)}
           {data.itemSpec && data.itemSpec.name}
           {data.itemSpec && data.itemValue && ": "}
-          {data.itemValue && data.itemValue}
+          {data.itemLabel && data.itemLabel}
         </>,
         getFilterValue: ({ filterType, operation, data }) => ({
           filterType,
@@ -230,15 +242,15 @@ export function FilterDescItemModal({
         }),
         getSerializedString: ({ data, operation }) => {
           if (data.itemSpec && data.itemValue) {
-            return `${data.itemType.name} - ${data.itemSpec.name} ${operation} ${data.itemValue}`
+            return `${data.itemType.code} - ${data.itemSpec.code} ${operation} ${data.itemValue}`
           }
           else if (data.itemSpec && !data.itemValue) {
-            return `${data.itemType.name} ${operation} ${data.itemSpec.name}`
+            return `${data.itemType.code} ${operation} ${data.itemSpec.code}`
           }
           else if (!data.itemSpec && data.itemValue) {
-            return `${data.itemType.name} ${operation} ${data.itemValue}`
+            return `${data.itemType.code} ${operation} ${data.itemValue}`
           }
-          return data.itemType.name;
+          return data.itemType.code;
         },
       });
     }
@@ -247,6 +259,7 @@ export function FilterDescItemModal({
     itemTypeCode,
     itemSpecCode,
     itemValue,
+    itemLabel,
     descItemTypes,
     operation,
     isDirty,
@@ -315,7 +328,7 @@ export function FilterDescItemModal({
         })}
       </Combobox>}
     {!!dataTypeFilterDefinition?.fieldComponent
-      && <dataTypeFilterDefinition.fieldComponent value={itemValue} onChange={handleValueChange} />}
+      && <dataTypeFilterDefinition.fieldComponent value={itemValue} label={itemLabel} onChange={handleValueChange} itemType={selectedItemType} itemSpec={selectedItemSpec} />}
   </BaseFilterWindow>
 }
 
