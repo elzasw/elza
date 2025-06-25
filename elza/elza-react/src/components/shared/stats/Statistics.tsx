@@ -5,6 +5,9 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { urlAdminUser } from '../../../../src/constants';
 import './Statistics.scss';
+import { AppState } from 'typings/store';
+import { useSelector } from 'react-redux';
+import * as perms from 'actions/user/Permission.jsx';
 
 type LoggedUserWithCount = LoggedUser & { count: number };
 
@@ -57,6 +60,8 @@ export const StatsAdmin = () => {
     const [statsGeneral, setStatsGeneral] = useState<HorizontalListItem[]>([]);
     const [statsUsers, setStatsUsers] = useState<HorizontalListItem[]>([]);
 
+    const userDetail = useSelector(({userDetail}:AppState) => userDetail);
+
     useEffect(() => {
         Api.admin.adminInfo({ overrideErrorHandler: true }).then(({ data }) => {
             const arrItemsGeneral: HorizontalListItem[] = getHorizontalListItems(
@@ -70,9 +75,11 @@ export const StatsAdmin = () => {
             setStatsGeneral(arrItemsGeneral);
             setStatsUsers(arrItemsUsers);
         });
-        Api.admin.adminLoggedUsers({ overrideErrorHandler: true }).then(({ data: _loggedUsers }) => {
-            setLoggedUsers(_loggedUsers?.users || []);
-        });
+        if(userDetail.hasOne(perms.USER_CONTROL_ENTITITY, perms.GROUP_CONTROL_ENTITITY)){
+            Api.admin.adminLoggedUsers({ overrideErrorHandler: true }).then(({ data: _loggedUsers }) => {
+                setLoggedUsers(_loggedUsers?.users || []);
+            });
+        }
     }, []);
 
     return (
