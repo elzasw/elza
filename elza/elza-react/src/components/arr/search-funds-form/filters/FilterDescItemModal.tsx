@@ -19,6 +19,8 @@ import { WebApi } from "actions";
 import { refRuleSetFetchIfNeeded } from "actions/refTables/ruleSet";
 import { RulDescItemSpecExtVO } from "api/RulDescItemSpecExtVO";
 import { FilterFieldRecordRef } from "./fields/FilterFieldRecordRef";
+import { RulDataTypeVO } from "api/RulDataTypeVO";
+import { FilterValueFieldProps } from "./fields/types";
 
 function formatOperation(operation: OperationCompareType) {
   switch (operation) {
@@ -43,13 +45,7 @@ function formatOperation(operation: OperationCompareType) {
 
 interface DataTypeFilterDefinition {
   operations: OperationCompareType[];
-  fieldComponent?: (props: {
-    onChange: (value: string, isValid?: boolean) => void;
-    value: string;
-    label?: string; // text value for descItems with reference id or code in value
-    itemType?: DescItemTypeRef;
-    itemSpec?: RulDescItemSpecExtVO;
-  }) => JSX.Element;
+  fieldComponent?: (props: FilterValueFieldProps) => JSX.Element;
 }
 
 type DataTypeFiltersMap = Partial<Record<RulDataTypeCodeEnum, DataTypeFilterDefinition>>;
@@ -152,13 +148,36 @@ export function FilterDescItemModal({
 
   const filteredItemTypes = filterItemTypes();
 
-  const selectedItemType = itemTypeCode && descItemTypes.find(({ code }) => code === itemTypeCode);
-  const selectedItemSpec = itemSpecCode && selectedItemType?.descItemSpecs.find(({ code }) => code === itemSpecCode);
-  const selectedDataType = dataTypes?.items.find(({ id }) => id === selectedItemType?.dataTypeId);
-  const dataTypeFilterDefinition = selectedDataType?.code && availableDataTypesMap[selectedDataType.code];
+  let selectedItemType: DescItemTypeRef | undefined;
+  let selectedItemSpec: RulDescItemSpecExtVO | undefined;
+  let selectedDataType: RulDataTypeVO | undefined;
+  let dataTypeFilterDefinition: DataTypeFilterDefinition | undefined;
 
-  // desc item spec of selected item type filtered by query
-  const filteredItemSpecs = isDirty ? selectedItemType?.descItemSpecs?.filter((spec) => spec.name.toLowerCase().indexOf((itemSpecQuery || "").toLowerCase()) >= 0) : selectedItemType?.descItemSpecs || [];
+  let filteredItemSpecs = [];
+
+  if (itemTypeCode && descItemTypes.length > 0 && dataTypes) {
+
+    selectedItemType = descItemTypes.find(({ code }) => code === itemTypeCode);
+    if (!selectedItemType) {
+      throw `Missing item type: ${itemTypeCode}`;
+    }
+
+    selectedDataType = dataTypes.items.find(({ id }) => id === selectedItemType.dataTypeId);
+    if (!selectedDataType) {
+      throw `Missing data type: ${selectedItemType.dataTypeId}`;
+    }
+
+    // desc item spec of selected item type filtered by query
+    filteredItemSpecs = isDirty
+      ? selectedItemType.descItemSpecs?.filter((spec) => spec.name.toLowerCase().indexOf((itemSpecQuery || "").toLowerCase()) >= 0)
+      : selectedItemType.descItemSpecs || [];
+
+    if (itemSpecCode) {
+      selectedItemSpec = selectedItemType.descItemSpecs.find(({ code }) => code === itemSpecCode);
+    }
+
+    dataTypeFilterDefinition = availableDataTypesMap[selectedDataType.code];
+  }
 
   // Load used refTables data, if not present
   useEffect(() => {
@@ -328,7 +347,13 @@ export function FilterDescItemModal({
         })}
       </Combobox>}
     {!!dataTypeFilterDefinition?.fieldComponent
-      && <dataTypeFilterDefinition.fieldComponent value={itemValue} label={itemLabel} onChange={handleValueChange} itemType={selectedItemType} itemSpec={selectedItemSpec} />}
+      && <dataTypeFilterDefinition.fieldComponent
+        value={itemValue}
+        label={itemLabel}
+        onChange={handleValueChange}
+        itemType={selectedItemType}
+        itemSpec={selectedItemSpec}
+      />}
   </BaseFilterWindow>
 }
 
