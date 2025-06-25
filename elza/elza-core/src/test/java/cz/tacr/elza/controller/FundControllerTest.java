@@ -257,10 +257,10 @@ public class FundControllerTest extends AbstractControllerTest {
         fundResult = nodeApi.nodeSearch(params);
         assertEquals(1, fundResult.size());
 
-        // change filter by RECORD_REF search by name
+        // change filter by RECORD_REF search by id
         valueFilter.setField(new DescItemField().typeCode(SRD_ENTITY_ROLE).specCode(SRD_ENTITY_ROLE_1));
-        valueFilter.setValue(accessPoint.getName());
-        valueFilter.setOperation(OperationCompareType.STARTWITH);
+        valueFilter.setValue(accessPoint.getId().toString());
+        valueFilter.setOperation(OperationCompareType.EQ);
 
         // try to search by AP name using FieldValueFilter
         fundResult = nodeApi.nodeSearch(params);
