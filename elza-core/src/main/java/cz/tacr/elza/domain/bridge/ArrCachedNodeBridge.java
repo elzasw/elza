@@ -98,7 +98,13 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 						document.addValue(itemTypeCodeLowerCase, itemSpecCodeLowerCase);
 						break;
             		case RECORD_REF:
-						document.addValue(REL_AP_ID, ((ArrDataRecordRef) item.getData()).getRecordId());
+            			Integer recordId = ((ArrDataRecordRef) item.getData()).getRecordId();
+						document.addValue(REL_AP_ID, recordId);
+            			document.addValue(itemTypeCodeLowerCase, recordId);
+						if (itemTypeAndSpecCodeLowerCase != null) {
+							document.addValue(itemTypeAndSpecCodeLowerCase, recordId);
+						}
+						break;
             		case STRUCTURED:
 					case STRING:
 					case TEXT:
@@ -120,7 +126,7 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
             	}
             }
     	}
-    	
+
     	// index node conformity error & missing
         if (conformityErrors != null && !conformityErrors.getState().equals(ArrNodeConformity.State.OK)) {
         	if (conformityErrors.getErrorList() != null) {

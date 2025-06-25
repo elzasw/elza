@@ -317,9 +317,9 @@ public class NodeSearchService {
 	    Integer intValue = Integer.parseInt(value);
 		switch (op) {
 		case EQ:
-			return factory.match().field(REL_AP_ID).matching(intValue).toPredicate();
+			return factory.match().field(fieldName).matching(intValue).toPredicate();
 		case NEQ:
-			return factory.bool().mustNot(factory.match().field(REL_AP_ID).matching(intValue)).toPredicate();
+			return factory.bool().mustNot(factory.match().field(fieldName).matching(intValue)).toPredicate();
 		default:
 			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
 		}
