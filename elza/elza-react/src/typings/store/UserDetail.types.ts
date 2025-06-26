@@ -1,4 +1,5 @@
 import * as permissions from 'actions/user/Permission';
+import { UISettingsVO } from 'api/UISettingsVO';
 export enum AuthType {
     PASSWORD = "PASSWORD"
 }
@@ -66,13 +67,13 @@ export enum SettingsType {
     TEXT_FRAGMENTS = "TEXT_FRAGMENTS",
 }
 
-export interface Setting {
-    entityId?: number | null;
-    entityType?: EntityType | null;
-    id: number;
-    settingsType: SettingsType;
-    value: string;
-}
+// export interface Setting {
+//     entityId?: number | null;
+//     entityType?: EntityType | null;
+//     id: number;
+//     settingsType: SettingsType;
+//     value: string;
+// }
 
 export interface UserDetail {
     accessPoint: unknown | null;
@@ -92,7 +93,7 @@ export interface UserDetail {
     isAdmin: () => unknown;
     permissions: unknown | null;
     permissionsMap: Record<PermissionType, Permission>;
-    settings: Setting[] | null;
+    settings: UISettingsVO[] | null;
     userPermissions: Permission[];
     username: string;
 }

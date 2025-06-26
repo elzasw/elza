@@ -307,6 +307,18 @@ export interface ExternalSystem {
 
 type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCode" | "publishOnlyApproved" | "userInfo" | "viewFileUrl" | "viewThumbnailUrl" | "sendNotification">;
 
+export interface RegistryDetail {
+    coordinatesInternalId?: number;
+    currentDataKey?: number | string;
+    data?: ApAccessPointVO;
+    fetched?: boolean;
+    getDataKey?: () => unknown;
+    id?: number;
+    isFetching?: boolean;
+    reducer?: unknown;
+    variantRecordInternalId?: number;
+}
+
 export interface App {
     apExtSystemList: SimpleList<ApExternalSystemSimpleVO>;
     apValidation: DetailStoreState<ApValidationErrorsVO>;
@@ -324,7 +336,7 @@ export interface App {
     languageList: unknown;
     mimeTypesList: unknown;
     preparedRequestList: unknown;
-    registryDetail: unknown;
+    registryDetail: RegistryDetail;
     registryDetailHistory: unknown;
     registryLayerList: unknown;
     registryList: unknown;
