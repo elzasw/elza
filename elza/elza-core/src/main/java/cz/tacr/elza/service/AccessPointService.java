@@ -380,13 +380,15 @@ public class AccessPointService {
     @AuthMethod(permission = {UsrPermission.Permission.ADMIN, UsrPermission.Permission.AP_SCOPE_RD_ALL})
     public InvalidatedEntities findInvalidatedEntities(final Integer page, final Integer pageSize) {
     	Page<ApState> invalidated = apStateRepository.findAccessPointsDeletedPageable(PageRequest.of(page, pageSize));
-    	if (invalidated.isEmpty()) {
+    	if (invalidated.getTotalElements() == 0) {
     		return new InvalidatedEntities(0, Collections.emptyList());
     	}
 
     	Long totalCount = invalidated.getTotalElements();
+    	List<ApState> states = invalidated.getContent();
+
     	List<DeletedEntity> deletedEntity = new ArrayList<>(invalidated.getSize());
-    	List<ApAccessPoint> accessPoints = invalidated.getContent().stream().map(i -> i.getAccessPoint()).toList();
+    	List<ApAccessPoint> accessPoints = states.stream().map(i -> i.getAccessPoint()).toList();
 
     	// reading all data to prepare the result
     	List<ApBindingState> bindingStateAll = bindingStateRepository.findByAccessPoints(accessPoints);
@@ -396,7 +398,7 @@ public class AccessPointService {
     	Map<ApAccessPoint, List<ApIndex>> indexMap = indexDisplayAll.stream().collect(Collectors.groupingBy(i -> i.getPart().getAccessPoint()));
 
     	// creating a list of returned objects DeletedEntity
-    	invalidated.forEach(state -> deletedEntity.add(createDeletedEntity(state, bindingMap, indexMap)));
+    	states.forEach(state -> deletedEntity.add(createDeletedEntity(state, bindingMap, indexMap)));
 
     	return new InvalidatedEntities(totalCount.intValue(), deletedEntity);
     }
