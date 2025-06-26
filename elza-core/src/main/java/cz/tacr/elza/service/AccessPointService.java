@@ -398,7 +398,11 @@ public class AccessPointService {
     	Map<ApAccessPoint, List<ApIndex>> indexMap = indexDisplayAll.stream().collect(Collectors.groupingBy(i -> i.getPart().getAccessPoint()));
 
     	// creating a list of returned objects DeletedEntity
-    	states.forEach(state -> deletedEntity.add(createDeletedEntity(state, bindingMap, indexMap)));
+    	states.forEach(state -> {
+    		List<ApBindingState> bindingStates = bindingMap.get(state.getAccessPoint());
+    		List<ApIndex> indexes = indexMap.get(state.getAccessPoint());
+    		deletedEntity.add(createDeletedEntity(state, bindingStates, indexes));
+    	});
 
     	return new InvalidatedEntities(totalCount.intValue(), deletedEntity);
     }
@@ -407,20 +411,32 @@ public class AccessPointService {
      * Vytvoření objektu třídy DeletedEntity
      * 
      * @param state
-     * @param bindingMap
-     * @param indexMap
+     * @param bindingStates
+     * @param indexes
      * @return DeletedEntity
      */
-    private DeletedEntity createDeletedEntity(ApState state, Map<ApAccessPoint, List<ApBindingState>> bindingMap, Map<ApAccessPoint, List<ApIndex>> indexMap) {
-		List<ApIndex> indexes = indexMap.get(state.getAccessPoint());
+    private DeletedEntity createDeletedEntity(ApState state, List<ApBindingState> bindingStates, List<ApIndex> indexes) {
 
-		// define name of ap
-		Optional<ApIndex> preferredPartIndex = indexes.stream().filter(i -> i.getPartId().equals(state.getAccessPoint().getPreferredPartId())).findFirst();
-        String name = preferredPartIndex.isPresent() ? preferredPartIndex.get().getIndexValue() : null;
+    	// define name and description of ap
+    	String name = null;
+    	String description = null;
+    	if (indexes != null) {
+    		Optional<ApIndex> preferredPartIndex = indexes.stream().filter(i -> { 
+    			return i.getPartId().equals(state.getAccessPoint().getPreferredPartId());
+    		}).findFirst();
+    		name = preferredPartIndex.isPresent() ? preferredPartIndex.get().getIndexValue() : null;
+    		Optional<ApIndex> bodyPartIndex = indexes.stream().filter(i -> {
+				ApPart part = i.getPart();
+				if (part != null && part.getPartType() != null) {
+					return part.getPartType().getCode().equals(StaticDataProvider.DEFAULT_BODY_PART_TYPE);
+				}
+				return false;
+			}).findFirst();
+    		description = bodyPartIndex.isPresent() ? bodyPartIndex.get().getIndexValue() : null;
+    	}
 
         String bindingValue = null;
         Integer externalSystemId = null;
-        List<ApBindingState> bindingStates = bindingMap.get(state.getAccessPoint());
 		if (bindingStates != null && !bindingStates.isEmpty()) {
 			// each ap should have only one bindingState
 			ApBinding binding = bindingStates.iterator().next().getBinding();
@@ -429,16 +445,6 @@ public class AccessPointService {
 				externalSystemId = binding.getExternalSystemId();
 			}
         }
-
-		// define description of ap
-		Optional<ApIndex> bodyPartIndex = indexes.stream().filter(i -> {
-				ApPart part = i.getPart();
-				if (part != null && part.getPartType() != null) {
-					return part.getPartType().getCode().equals(StaticDataProvider.DEFAULT_BODY_PART_TYPE);
-				}
-				return false;
-			}).findFirst();
-        String description = bodyPartIndex.isPresent() ? bodyPartIndex.get().getIndexValue() : null;
 
         DeletedEntity de = new DeletedEntity();
 		de.setAccessPointId(state.getAccessPointId());
@@ -450,7 +456,7 @@ public class AccessPointService {
 		de.setDeleteChangeId(state.getDeleteChangeId());
 		de.setDeleteDate(state.getDeleteChange().getChangeDate());
 		de.setReplacedBy(state.getReplacedById());
-		
+
 		return de;
     }
 
