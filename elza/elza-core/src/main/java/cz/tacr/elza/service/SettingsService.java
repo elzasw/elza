@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -264,10 +265,15 @@ public class SettingsService {
 
         List<UISettings> result = new ArrayList<>();
 
+        // Copy global settings
+        Map<Integer, UISettings> globalSettingsMap = new HashMap<>();
+        // TODO: run as a single query
         List<UISettings> menuSettingsList = getGlobalSettings(UISettings.SettingsType.MENU);
-        Map<Integer, UISettings> globalSettingsMap = menuSettingsList.stream()
-                .collect(Collectors.toMap(UISettings::getSettingsId, Function.identity()));
+        menuSettingsList.forEach(s -> globalSettingsMap.put(s.getSettingsId(), s));
         result.addAll(menuSettingsList);
+        List<UISettings> filterSettingsList = getGlobalSettings(UISettings.SettingsType.SEARCH_NODE_FILTERS);
+        filterSettingsList.forEach(s -> globalSettingsMap.put(s.getSettingsId(), s));
+        result.addAll(filterSettingsList);
 
         List<UISettings> settingsListDB = settingsRepository.findByUser(user);
 
