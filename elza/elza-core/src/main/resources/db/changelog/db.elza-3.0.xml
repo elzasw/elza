@@ -689,5 +689,9 @@
             </column>
         </addColumn>
 	</changeSet>
+	<changeSet id="20250629083800" author="ppy">
+		<!-- reindexace pro Elza 3.2 -->
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20230315100801"/>
+	</changeSet>
 
 </databaseChangeLog>
