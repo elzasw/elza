@@ -1,7 +1,10 @@
 package cz.tacr.elza.exception;
 
+import java.util.Collection;
+
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.security.UserPermission;
 
 /**
  * Výjimka pro neautorizovaný přístup.
@@ -15,4 +18,8 @@ public class AccessDeniedException extends AbstractException {
         set("permission", permission);
     }
 
+	public AccessDeniedException(String message, Collection<UserPermission> userPermission) {
+        super(message, BaseCode.INSUFFICIENT_PERMISSIONS);
+        set("permission", userPermission);
+	}
 }
