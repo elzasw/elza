@@ -14,6 +14,12 @@ import cz.tacr.elza.controller.vo.FundSearchResult;
 import cz.tacr.elza.controller.vo.NodeData;
 import cz.tacr.elza.controller.vo.NodeDataParam;
 import cz.tacr.elza.controller.vo.SearchParams;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.NodeSearchService;
@@ -38,21 +44,35 @@ public class NodeController implements NodeApi {
 
     // POST /node/search
     @Override
+	@Transactional
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN, UsrPermission.Permission.FUND_RD_ALL})
 	public ResponseEntity<List<FundSearchResult>> nodeSearch(SearchParams searchParams) {
-		return ResponseEntity.ok(nodeSearchService.nodeSearch(searchParams));
+    	var userDetail = userService.getLoggedUserDetail();    
+        AuthorizationRequest fundRead = AuthorizationRequest.hasPermission(Permission.ADMIN)
+                .or(Permission.FUND_RD_ALL);
+    	if (fundRead.matches(userDetail)) {
+    		return ResponseEntity.ok(nodeSearchService.nodeSearch(searchParams));    		
+    	}
+    	// TODO
+        // user can read only some funds -> we have to get list of allowed funds 
+    	// and pass it to search service    	
+    	
+		throw new AccessDeniedException("User has no permissions to search for nodes.", userDetail.getUserPermission());
 	}
 
 	// GET /node/search/{fundId}
 	@Override
-	//@Transactional
-	public ResponseEntity<List<NodeTreeData>> nodeGetSearchResult(Integer fundId) {
+	@Transactional
+	@AuthMethod(permission = {Permission.ADMIN, Permission.FUND_RD_ALL, Permission.FUND_RD})
+	public ResponseEntity<List<NodeTreeData>> nodeGetSearchResult(@AuthParam(type = AuthParam.Type.FUND) Integer fundId) {
 		return ResponseEntity.ok(nodeSearchService.nodeGetSearchResult(fundId));
 	}
 
 	// GET /node/plain-text/{fundVersionId}/{nodeId}
 	@Override
 	@Transactional
-	public ResponseEntity<List<NodePlainTextRepresentation>> nodeGetPlainText(Integer fundVersionId, Integer nodeId) {
+	@AuthMethod(permission = {Permission.ADMIN, Permission.FUND_RD_ALL, Permission.FUND_RD})
+	public ResponseEntity<List<NodePlainTextRepresentation>> nodeGetPlainText(@AuthParam(type = AuthParam.Type.FUND_VERSION) Integer fundVersionId, Integer nodeId) {
 		return ResponseEntity.ok(arrangementService.getNodePlainText(fundVersionId, nodeId));
 	}
 
@@ -65,6 +85,7 @@ public class NodeController implements NodeApi {
 	// POST /node/node-data
 	@Override
     @Transactional
+    // kontrola oprávnění uvnitř metody služby
     public ResponseEntity<NodeData> nodeGetNodeData(final @RequestBody NodeDataParam param) {
         return ResponseEntity.ok(levelTreeCacheService.getNodeData(param, userService.getLoggedUserDetail()));
     }
