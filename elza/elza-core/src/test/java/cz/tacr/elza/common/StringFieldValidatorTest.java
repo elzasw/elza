@@ -97,11 +97,14 @@ public class StringFieldValidatorTest {
 		result = validator.validate(dataText);
 		assertEquals(1, result.size());
 		assertEquals(StringFieldValidator.ERR_INVALID_CHRS, result.iterator().next().getMessage());
-
+		
+	    // double spaces are allowed on multiline text
+		/*
 		dataText.setTextValue("qwerty  12345");
 		result = validator.validate(dataText);
 		assertEquals(1, result.size());
 		assertEquals(StringFieldValidator.ERR_DOUBLE_SPCS, result.iterator().next().getMessage());
+		*/
 
 		dataText.setTextValue("");
 		result = validator.validate(dataText);

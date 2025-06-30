@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -73,7 +74,7 @@ public class AdminController implements AdminApi {
     public ResponseEntity<AdminInfo> adminInfo() {
         UserDetail userDetail = userService.getLoggedUserDetail();
         if(userDetail==null) {
-            throw new AccessDeniedException("User not authorized.", null);
+            throw new AccessDeniedException("User not authorized.", Collections.emptyList());
         }
         
         AdminInfo ai = new AdminInfo();
