@@ -1562,17 +1562,17 @@ private void processEvent(AbstractEventSimple event) {
     	Objects.requireNonNull(param);
     	Objects.requireNonNull(param.getNodeId());
     	Objects.requireNonNull(param.getFundVersionId());
+    	ArrFundVersion fundVersion = arrangementService.getFundVersion(param.getFundVersionId());
 
     	// kontrola oprávnění ADMIN, FUND_RD_ALL, FUND_RD
         AuthorizationRequest fundRead = AuthorizationRequest.hasPermission(Permission.ADMIN)
                 .or(Permission.FUND_RD_ALL)
-                .or(Permission.FUND_RD, param.getFundVersionId());
+                .or(Permission.FUND_RD, fundVersion);
         if (!fundRead.matches(userDetail)) {
             throw new SystemException("Uživatel nemá oprávnění na AS.", 
             		BaseCode.INSUFFICIENT_PERMISSIONS).set("fundVersionId", param.getFundVersionId());
         }
-
-        ArrFundVersion fundVersion = arrangementService.getFundVersion(param.getFundVersionId());
+        
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(fundVersion);
 
         TreeNode node = treeMap.get(param.getNodeId());
