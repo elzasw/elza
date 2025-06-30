@@ -76,6 +76,7 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDao.DaoType;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrFund;
@@ -99,6 +100,7 @@ import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.LevelRepositoryCustom;
 import cz.tacr.elza.repository.LevelRepositoryCustom.LevelInfo;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.UserPermission;
 import cz.tacr.elza.service.event.CacheInvalidateEvent;
@@ -1560,6 +1562,15 @@ private void processEvent(AbstractEventSimple event) {
     	Objects.requireNonNull(param);
     	Objects.requireNonNull(param.getNodeId());
     	Objects.requireNonNull(param.getFundVersionId());
+
+    	// kontrola oprávnění ADMIN, FUND_RD_ALL, FUND_RD
+        AuthorizationRequest fundRead = AuthorizationRequest.hasPermission(Permission.ADMIN)
+                .or(Permission.FUND_RD_ALL)
+                .or(Permission.FUND_RD, param.getFundVersionId());
+        if (!fundRead.matches(userDetail)) {
+            throw new SystemException("Uživatel nemá oprávnění na AS.", 
+            		BaseCode.INSUFFICIENT_PERMISSIONS).set("fundVersionId", param.getFundVersionId());
+        }
 
         ArrFundVersion fundVersion = arrangementService.getFundVersion(param.getFundVersionId());
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(fundVersion);
