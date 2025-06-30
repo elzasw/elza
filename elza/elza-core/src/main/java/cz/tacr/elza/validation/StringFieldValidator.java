@@ -66,10 +66,12 @@ public class StringFieldValidator implements ConstraintValidator<ValidStringFiel
         }
 
         // check double-space
-        if (value.indexOf("  ") >= 0) {
-        	context.buildConstraintViolationWithTemplate(ERR_DOUBLE_SPCS).addConstraintViolation();
-        	logger.error("Validation failed - value contains double spaces: {}", logValue);
-        	valid = false;
+		if(!multiline) {
+            if (value.indexOf("  ") >= 0) {
+            	context.buildConstraintViolationWithTemplate(ERR_DOUBLE_SPCS).addConstraintViolation();
+            	logger.error("Validation failed - value contains double spaces: {}", logValue);
+        	    valid = false;
+            }
         }
 
         // check blank string
