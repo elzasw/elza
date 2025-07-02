@@ -186,7 +186,7 @@ export function registryDelete(id) {
 
 export function registryCreateRevision(id, history, select) {
     return (dispatch, getState) => {
-        Api.accesspoints.createRevision(id).then(() => {
+        Api.accesspoints.accessPointCreateRevision(id).then(() => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
@@ -204,7 +204,7 @@ export function registryCreateRevision(id, history, select) {
 
 export function registryDeleteRevision(id, history, select) {
     return (dispatch, getState) => {
-        Api.accesspoints.deleteRevision(id).then(() => {
+        Api.accesspoints.accessPointDeleteRevision(id).then(() => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
