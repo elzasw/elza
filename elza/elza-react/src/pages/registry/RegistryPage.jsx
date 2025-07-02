@@ -536,7 +536,7 @@ class RegistryPage extends AbstractReactComponent {
 
     handleRestoreEntity = async () => {
         const { registryDetail: { id } } = this.props;
-        await Api.accesspoints.restoreAccessPoint(id);
+        await Api.accesspoints.accessPointRestoreAccessPoint(id);
         this.props.dispatch(registryDetailInvalidate());
     }
 
