@@ -221,12 +221,13 @@ public class DataRepositoryImpl implements DataRepositoryCustom {
         selections.add(valueExpression);
 
         //oříznutá hodnota převedená na string, kvůli řazení
+        Expression<String> substringValue;
         if(dataTypeClass==ArrDataString.class || dataTypeClass==ArrDataText.class) {
-            Expression<String> substringValue = builder.substring(valueSelection.as(String.class), 0, 100);
-            selections.add(substringValue);        	
+            substringValue = builder.substring(valueSelection.as(String.class), 0, 100);
         } else {
-        	selections.add(valueSelection);
+        	substringValue = valueSelection;
         }
+        selections.add(substringValue);
 
         //id odkazovaného objektu
         Path<Integer> idPath = typeHelper.getIdSelection(builder);
