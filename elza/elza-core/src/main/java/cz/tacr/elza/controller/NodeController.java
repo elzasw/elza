@@ -45,7 +45,7 @@ public class NodeController implements NodeApi {
     // POST /node/search
     @Override
 	@Transactional
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN, UsrPermission.Permission.FUND_RD_ALL})
+    // kontrola oprávnění uvnitř metody
 	public ResponseEntity<List<FundSearchResult>> nodeSearch(SearchParams searchParams) {
     	var userDetail = userService.getLoggedUserDetail();    
         AuthorizationRequest fundRead = AuthorizationRequest.hasPermission(Permission.ADMIN)
@@ -56,7 +56,7 @@ public class NodeController implements NodeApi {
     	// TODO
         // user can read only some funds -> we have to get list of allowed funds 
     	// and pass it to search service    	
-    	
+
 		throw new AccessDeniedException("User has no permissions to search for nodes.", userDetail.getUserPermission());
 	}
 
