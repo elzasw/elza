@@ -1114,13 +1114,15 @@ public class ArrangementService {
      */
     private Predicate createPredicate(final CriteriaBuilder cb, final Join<ArrFundVersion, ArrFund> fund, MultimatchContainsFilter filter) {
     	String value = filter.getValue().toLowerCase();
+    	Integer intValue = value.matches("-?\\d+") ? Integer.valueOf(value) : 0;
     	return cb.or(
 				cb.like(cb.lower(fund.get(ArrFund.FIELD_NAME)), "%" + value + "%"),
 				cb.like(cb.lower(fund.get(ArrFund.FIELD_INTERNAL_CODE)), "%" + value + "%"),
-				cb.like(cb.lower(fund.get(ArrFund.FIELD_MARK)), "%" + value + "%")
+				cb.like(cb.lower(fund.get(ArrFund.FIELD_MARK)), "%" + value + "%"),
+				cb.equal(fund.get(ArrFund.FIELD_FUND_NUMBER), intValue)
 				);
     }
-    
+
     public static final String FIELD_INSTITUTION_CODE = "institutionCode";
 
     /**
