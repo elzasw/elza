@@ -338,9 +338,10 @@ class FundPage extends AbstractReactComponent {
 
     renderListItem(props) {
         const { institutionsAll, userDetail } = this.props;
+        const { institutions } = this.state;
         const { item } = props;
-        // hide institution name, when only one is present
-        const institution = institutionsAll.items.length > 1 ? institutionsAll.items.find(({ code }) => code == item.institutionIdentifier) : undefined;
+        // hide institution name, when only one is used for funds
+        const institution = institutions?.length > 1 ? institutionsAll.items.find(({ code }) => code == item.institutionIdentifier) : undefined;
 
         const itemActions = [];
         if (item.id !== null) {
