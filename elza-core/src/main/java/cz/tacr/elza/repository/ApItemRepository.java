@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,6 +14,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulItemType;
 
@@ -91,5 +93,12 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
     List<RefRecordsFromIds> findArrDataRecordRefRecordIdsByAccessPointIds(@Param("apIds") Collection<Integer> apIds);
 
     @Query("SELECT i FROM ApItem i JOIN FETCH i.part p LEFT JOIN FETCH p.parentPart JOIN FETCH p.accessPoint JOIN arr_data_record_ref d ON i.data = d WHERE d.binding = :binding AND i.deleteChange IS NULL")
-    List<ApItem> findUnbindedItemByBinding(@Param("binding") ApBinding binding); 
+    List<ApItem> findUnbindedItemByBinding(@Param("binding") ApBinding binding);
+
+    @Query("SELECT i.dataId FROM ApItem i JOIN i.part p WHERE p.accessPointId IN :apIds")
+	List<Integer> findAllDataIdByAccessPointIdIn(@Param("apIds") Collection<Integer> apIds);
+
+    @Query("DELETE FROM ApItem i JOIN i.part p WHERE p.accessPointId IN :apIds")
+    @Modifying
+    void deleteAllByAccessPointIdIn(@Param("apIds") Collection<Integer> apIds);
 }
