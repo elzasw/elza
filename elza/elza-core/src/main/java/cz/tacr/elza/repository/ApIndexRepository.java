@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,7 +16,6 @@ import cz.tacr.elza.domain.RulPartType;
 
 @Repository
 public interface ApIndexRepository extends JpaRepository<ApIndex, Integer> {
-
 
     @Query("SELECT i FROM ap_index i JOIN FETCH i.part p JOIN p.accessPoint ap WHERE ap.accessPointId = :accessPointId AND p.deleteChange IS NULL")
     List<ApIndex> findIndicesByAccessPoint(@Param("accessPointId") Integer accessPointId);
@@ -66,4 +66,8 @@ public interface ApIndexRepository extends JpaRepository<ApIndex, Integer> {
 
     @Query("SELECT i FROM ap_index i JOIN FETCH i.part p JOIN p.accessPoint ap WHERE ap.accessPointId = :accessPointId AND p = ap.preferredPart AND i.indexType = :indexType")
     ApIndex findPreferredPartIndexByAccessPointIdAndIndexType(@Param("accessPointId") Integer accessPointId, @Param("indexType") String indexType);
+
+    @Query("DELETE FROM ap_index i JOIN i.part p WHERE p.accessPointId IN :apIds")
+    @Modifying
+    void deleteAllByAccessPointIdIn(@Param("apIds") Collection<Integer> apIds);
 }
