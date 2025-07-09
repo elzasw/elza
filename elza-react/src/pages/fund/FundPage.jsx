@@ -538,13 +538,16 @@ class FundPage extends AbstractReactComponent {
     }
 
     render() {
-        const { splitter, fundRegion, maxSize } = this.props;
+        const { splitter, fundRegion, maxSize, ruleSet } = this.props;
         const { sidebarOpen } = this.state;
 
         let activeIndex;
         if (fundRegion.fundDetail.id !== null) {
             activeIndex = indexById(fundRegion.funds, fundRegion.fundDetail.id);
         }
+
+        const activeVersion = fundRegion.fundDetail.versions?.find(({ id }) => fundRegion.fundDetail.activeVersion.id === id);
+        const activeRuleSet = activeVersion?.ruleSetId != undefined ? ruleSet.itemsMap[activeVersion.ruleSetId] : undefined;
 
         const leftPanel = (
             <div className="fund-list-container">
@@ -590,6 +593,10 @@ class FundPage extends AbstractReactComponent {
                         </DrawerHeader>
                         <DrawerBody style={{ overflow: "auto" }}>
                             <div style={{ marginBottom: "10px" }}>
+                                {activeRuleSet && <>
+                                    <div><b>Pravidla</b></div>
+                                    {activeRuleSet?.name}
+                                </>}
                                 <div><b>Výstupy</b></div>
                                 {/* <div style={{overflow: "auto"}}> */}
                                 {fundRegion.fundDetail.validNamedOutputs?.slice(0, OUTPUT_MAX_NUMBER).sort((a, b) => new Date(b.generatedDate) - new Date(a.generatedDate)).map(({ name, id, generatedDate }) => {
