@@ -1030,6 +1030,9 @@ public class ArrangementService {
         	cq.where(predicates.toArray(new Predicate[predicates.size()]));
         }
 
+        // case insensitive sorting
+        cq.orderBy(cb.asc(cb.lower(fundJoin.get(ArrFund.FIELD_NAME))));
+
         TypedQuery<ArrFundVersion> query = em.createQuery(cq).setFirstResult(searchParams.getOffset()).setMaxResults(searchParams.getSize());
         List<ArrFundVersion> fundVersionList = query.getResultList();
         int totalCount = fundVersionList.size();

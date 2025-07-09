@@ -231,7 +231,6 @@ public class FundController implements FundsApi {
         FindFundVersionsResult fundVersionsResult = arrangementService.findFundsBySearchParams(searchParams);
         List<Fund> funds = fundVersionsResult.getFundVersionList().stream()
         		.map(fv -> factoryVo.createFund(fv))
-        		.sorted(Comparator.comparing(f -> f.getName()))
         		.toList();
 
         return ResponseEntity.ok(new FindFundsResult(funds, fundVersionsResult.getTotalCount()));
