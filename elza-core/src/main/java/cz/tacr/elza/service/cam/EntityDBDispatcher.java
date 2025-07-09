@@ -517,12 +517,12 @@ public class EntityDBDispatcher {
                     state.setReplacedBy(replacedBy);
                 }
             }
-            state = accessPointService.deleteAccessPoint(state, accessPoint, procCtx.getApChange());
+            state = accessPointService.invalidateAccessPoint(state, accessPoint, procCtx.getApChange());
             break;
 
         case ERS_INVALID:
             // odstranění entity, která v CAM označena jako neplatná
-            state = accessPointService.deleteAccessPoint(state, accessPoint, procCtx.getApChange());
+            state = accessPointService.invalidateAccessPoint(state, accessPoint, procCtx.getApChange());
             break;
 
         default:

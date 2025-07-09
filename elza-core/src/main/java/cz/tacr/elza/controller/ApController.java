@@ -612,8 +612,7 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/scopes/{scopeId}", method = RequestMethod.DELETE)
     public void deleteScope(@PathVariable final Integer scopeId) {
-        ApScope scope = scopeRepository.findById(scopeId)
-                .orElseThrow(scope(scopeId));
+        ApScope scope = scopeRepository.findById(scopeId).orElseThrow(scope(scopeId));
         accessPointService.deleteScope(scope);
     }
 

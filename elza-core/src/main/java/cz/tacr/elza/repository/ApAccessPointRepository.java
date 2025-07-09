@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -24,6 +25,9 @@ public interface ApAccessPointRepository extends ElzaJpaRepository<ApAccessPoint
 
     @Query("SELECT a.accessPointId FROM ap_access_point a WHERE a.state = :state")
     List<Integer> findAccessPointIdByState(@Param("state") ApStateEnum state);
+
+    @Query("SELECT ap.accessPointId FROM ap_state s JOIN s.accessPoint ap WHERE s.scope = :scope")
+    List<Integer> findAccessPointIdsByApScope(@Param("scope") ApScope scope);
 
     @Query("SELECT ap FROM ap_access_point ap WHERE ap.uuid IN :uuids")
     List<ApAccessPoint> findApAccessPointsByUuids(@Param("uuids") Collection<String> uuids);
