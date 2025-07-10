@@ -167,6 +167,7 @@ class Ribbon extends AbstractReactComponent {
                 userDetail.hasOne(perms.GROUP_CONTROL_ENTITITY, perms.USR_PERM) ||
                 userDetail.hasOne(perms.USER_CONTROL_ENTITITY, perms.USR_PERM);
             const administersGroup = userDetail.hasOne(perms.GROUP_CONTROL_ENTITITY, perms.USR_PERM);
+            const canSeeReports = userDetail.hasOne(perms.REPORT_ALL);
 
             section = (
                 <RibbonGroup key="ribbon-group-admin" className="large">
@@ -194,7 +195,7 @@ class Ribbon extends AbstractReactComponent {
                             </Button>
                         </LinkContainer>
                     )}
-                    {isSuperuser && [
+                    {canSeeReports &&
                         <LinkContainer key="ribbon-btn-admin-reports" to="/admin/reports">
                             <Button variant={'default'}>
                                 <Icon glyph="fa-line-chart" />
@@ -202,7 +203,9 @@ class Ribbon extends AbstractReactComponent {
                                     <FormattedMessage {...messages.reports} />
                                 </span>
                             </Button>
-                        </LinkContainer>,
+                        </LinkContainer>
+                    }
+                    {isSuperuser && [
                         <LinkContainer key="ribbon-btn-admin-packages" to="/admin/packages">
                             <Button variant={'default'}>
                                 <Icon glyph="fa-archive" />
@@ -370,6 +373,7 @@ class Ribbon extends AbstractReactComponent {
                         perms.USR_PERM,
                         perms.USER_CONTROL_ENTITITY,
                         perms.GROUP_CONTROL_ENTITITY,
+                        perms.REPORT_ALL,
                     ) && (
                             <LinkContainer key="ribbon-btn-admin" to="/admin">
                                 <Button variant={'default'}>

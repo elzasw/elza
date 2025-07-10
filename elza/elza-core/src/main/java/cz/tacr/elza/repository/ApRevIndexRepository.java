@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -26,4 +27,8 @@ public interface ApRevIndexRepository extends JpaRepository<ApRevIndex, Integer>
 
     @Query("SELECT i FROM ap_rev_index i WHERE i.part IN :parts AND i.indexType = :indexType")
     List<ApRevIndex> findByPartsAndIndexType(@Param("parts") Collection<ApRevPart> parts, @Param("indexType") String indexType);
+
+    @Query("DELETE FROM ap_rev_index i JOIN i.part p WHERE p.revisionId IN :revisionIds")
+    @Modifying
+    void deleteAllByRevisionIdIn(@Param("revisionIds") Collection<Integer> revisionIds);
 }

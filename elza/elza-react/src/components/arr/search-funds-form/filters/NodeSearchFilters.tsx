@@ -9,9 +9,10 @@ import { messages } from "./messages";
 import { useFilterModal } from "./hooks";
 import { FilterObject } from "./types";
 import { useSelector } from "react-redux";
-import { AppState, SettingsType } from "typings/store";
+import { AppState } from "typings/store";
 import { useThunkDispatch } from "utils/hooks";
 import { descItemTypesFetchIfNeeded } from "actions/refTables/descItemTypes";
+import { SettingsType } from "api/settings/SettingsType";
 
 interface Props {
   onChange: (filters: FilterObject[]) => void;

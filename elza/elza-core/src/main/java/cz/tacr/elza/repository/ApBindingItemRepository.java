@@ -39,7 +39,11 @@ public interface ApBindingItemRepository extends ElzaJpaRepository<ApBindingItem
     @Query("SELECT bi FROM ap_binding_item bi WHERE bi.item IS NOT NULL AND bi.item IN :items AND bi.deleteChange IS NULL")
     List<ApBindingItem> findByItems(@Param("items") Collection<ApItem> apItems);
 
+    @Modifying
     void deleteByBinding(ApBinding binding);
+
+    @Modifying
+	void deleteAllByBindingIdIn(Collection<Integer> bindingIds);
 
     /**
      * Find deleted or existing parts since last sync

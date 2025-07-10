@@ -87,6 +87,9 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
     @Modifying
     void deleteAllByScope(ApScope scope);
 
+    @Modifying
+    void deleteAllByAccessPointIdIn(Collection<Integer> apIds);
+
 //    @Query("select s" +
 //            " from ap_state s" +
 //            " join ap_external_id eid on eid.accessPoint = s.accessPoint" +

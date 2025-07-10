@@ -1,19 +1,10 @@
 import { Combobox, Option, OptionOnSelectData, SelectionEvents } from "@fluentui/react-components";
 import { WebApi } from "actions";
 import { ApAccessPointVO } from "api";
-import { RulDescItemSpecExtVO } from "api/RulDescItemSpecExtVO";
 import { useEffect, useState } from "react";
-import { DescItemTypeRef } from "typings/store";
+import { FilterValueFieldProps } from "./types";
 
-export interface Props {
-  onChange: (value: string, isValid?: boolean, valueLabel?: string) => void;
-  value?: string;
-  label?: string;
-  itemType?: DescItemTypeRef;
-  itemSpec?: RulDescItemSpecExtVO;
-}
-
-export const FilterFieldRecordRef = ({ onChange, itemType, itemSpec, label = "" }: Props) => {
+export const FilterFieldRecordRef = ({ onChange, itemType, itemSpec, label = "" }: FilterValueFieldProps) => {
   const [query, setQuery] = useState(label);
   const [accessPoints, setAccessPoints] = useState<ApAccessPointVO[]>([]);
 
