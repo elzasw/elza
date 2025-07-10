@@ -113,15 +113,33 @@ export function useTestModal() {
   }
 }
 
-interface CollapsibleDragWindowProps<R, D> {
-  onResult: (result: R, data: D) => void;
+interface SearchFundsWindowProps {
+  onResult: () => void;
 }
 
-export function CollapsibleDragWindow<R, D>({
-  onResult
-}: CollapsibleDragWindowProps<R, D>) {
-  const initialWidth = 500;
-  const initialHeight = 500;
+export function SearchFundsWindow({ onResult }: SearchFundsWindowProps) {
+  return <CollapsibleDragWindow
+    title="Vyhledavani v arch. souborech"
+    onClose={onResult}
+  >
+    <SearchFundsForm />
+  </CollapsibleDragWindow>
+}
+
+interface CollapsibleDragWindowProps {
+  onClose: () => void;
+  title: string;
+  initialWidth?: number;
+  initialHeight?: number;
+}
+
+export function CollapsibleDragWindow({
+  onClose = () => { return; },
+  title,
+  children,
+  initialWidth = 500,
+  initialHeight = 500,
+}: PropsWithChildren<CollapsibleDragWindowProps>) {
   const initialPosition = { x: window.innerWidth / 2 - initialWidth / 2, y: window.innerHeight / 2 - initialHeight / 2 };
 
   const [open, setOpen] = useState(true);
@@ -154,7 +172,7 @@ export function CollapsibleDragWindow<R, D>({
         background: "var(--shade-0)",
         // border: "var(--primary-border)",
         minWidth: "300px",
-        width: "500px",
+        width: initialWidth,
         minHeight: open ? "300px" : undefined,
         height: open ? height : "auto",
         zIndex: 10000,
@@ -167,7 +185,7 @@ export function CollapsibleDragWindow<R, D>({
       }}
     >
       <DraggableWindowDragger style={{ display: "flex", padding: "5px", alignItems: "center" }}>
-        <div>&nbsp;Vyhledavani v arch. souborech</div>
+        <div>&nbsp;{title}</div>
         <div style={{ flexGrow: 1 }}></div>
         <Button
           icon={open ? <ChevronUpRegular /> : <ChevronDownRegular />}
@@ -176,7 +194,7 @@ export function CollapsibleDragWindow<R, D>({
         />
         <Button
           icon={<DismissRegular />}
-          onClick={() => onResult(undefined, undefined)}
+          onClick={() => onClose()}
           appearance="subtle"
         />
       </DraggableWindowDragger>
@@ -186,9 +204,8 @@ export function CollapsibleDragWindow<R, D>({
         display: open ? "flex" : "none",
         flexDirection: "column",
         overflow: "hidden",
-        // borderTop: "var(--primary-border)"
       }}>
-        <SearchFundsForm />
+        {children}
       </div>
     </div>
   </DraggableWindow>
@@ -202,7 +219,7 @@ export function useSearchFundsModal() {
       isSingleInstance: true,
       name: "search-funds-modal",
       createDialog: ({ handleResult }) => {
-        return <CollapsibleDragWindow onResult={handleResult} />
+        return <SearchFundsWindow onResult={() => handleResult(undefined, undefined)} />
       }
     })
   }

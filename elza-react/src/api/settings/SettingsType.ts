@@ -83,4 +83,9 @@ export enum SettingsType {
      * Nastavení atributů dle části v detailu přístupového bodu.
      */
     ITEM_TYPES = 'ITEM_TYPES',
+
+    /**
+     * Preset filters for searching in nodes
+     */
+    SEARCH_NODE_FILTERS = "SEARCH_NODE_FILTERS",
 }

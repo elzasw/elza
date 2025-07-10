@@ -4,13 +4,13 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.domain.ApScope;
 
 @Repository
 public interface ApPartRepository extends JpaRepository<ApPart, Integer> {
@@ -47,4 +47,7 @@ public interface ApPartRepository extends JpaRepository<ApPart, Integer> {
             " join ap_item i on i.part_id = p.part_id and i.delete_change_id is null" +
             " where p.delete_change_id is not null", nativeQuery = true)
     int countDeletedPartsWithUndeletedItem();
+
+    @Modifying
+    void deleteAllByAccessPointIdIn(Collection<Integer> apIds);
 }
