@@ -1,8 +1,11 @@
 package cz.tacr.elza.drools.model;
 
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
@@ -22,11 +25,11 @@ public class DescItem {
     /**
      * Typ atributu
      */
-    private String type;
+    private RulItemType itemType;
     /**
      * Specifikace.
      */
-    private String specCode;
+    private RulItemSpec itemSpec;
 
     /**
      * Datový typ.
@@ -77,9 +80,9 @@ public class DescItem {
 
     private ArrDataUnitdate unitDate;
 
-    public DescItem(final String type, final String spec) {
-        this.type = type;
-        this.specCode = spec;
+    public DescItem(final RulItemType itemType, final RulItemSpec specType) {
+        this.itemType = itemType;
+        this.itemSpec = specType;
     }
 
     /**
@@ -88,8 +91,8 @@ public class DescItem {
      */
     public DescItem(final DescItem descItem) {
         this.descItemId = descItem.descItemId;
-        this.type = descItem.type;
-        this.specCode = descItem.specCode;
+        this.itemType = descItem.itemType;
+        this.itemSpec = descItem.itemSpec;
         this.dataType = descItem.dataType;
         this.integerValue = descItem.integerValue;
         this.structured = descItem.structured;
@@ -103,8 +106,8 @@ public class DescItem {
         readOnly = descItem.getReadOnly() == null ? false : descItem.getReadOnly();
         undefined = descItem.isUndefined();
         descItemId = descItem.getItemId();
-        type = descItem.getItemType().getCode();
-        specCode = descItem.getItemSpec() == null ? null : descItem.getItemSpec().getCode();
+        itemType = descItem.getItemType();
+        itemSpec = descItem.getItemSpec();
         dataType = DataType.fromId(descItem.getItemType().getDataTypeId()).getCode();
     }
 
@@ -113,7 +116,15 @@ public class DescItem {
     }
 
     public String getType() {
-        return type;
+        return itemType.getCode();
+    }
+    
+    public String getTypeName() {
+    	return itemType.getName();
+    }
+
+    public String getTypeShortcut() {
+    	return itemType.getShortcut();
     }
 
     public DescItemChange getChange() {
@@ -125,7 +136,10 @@ public class DescItem {
     }
 
     public String getSpecCode() {
-        return specCode;
+    	if(itemSpec == null) {
+	    	return null;
+    	}
+        return itemSpec.getCode();
     }
 
     public Integer getInteger() {
@@ -210,7 +224,7 @@ public class DescItem {
     public Long getNormalizedFrom() {
         if (this.unitDate == null) {
             throw new BusinessException("Item is not unitDate, dataType: " + this.dataType
-                    + ", itemType: " + this.type,
+                    + ", itemType: " + this.itemType.getCode(),
                     BaseCode.INVALID_STATE);
         }
         return unitDate.getNormalizedFrom();
@@ -219,7 +233,7 @@ public class DescItem {
     public Long getNormalizedTo() {
         if (this.unitDate == null) {
             throw new BusinessException("Item is not unitDate, dataType: " + this.dataType
-                    + ", itemType: " + this.type,
+                    + ", itemType: " + this.itemType.getCode(),
                     BaseCode.INVALID_STATE);
         }
         return unitDate.getNormalizedTo();
