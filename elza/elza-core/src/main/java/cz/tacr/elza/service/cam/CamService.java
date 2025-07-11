@@ -355,6 +355,8 @@ public class CamService {
                               Map<Integer, String> partUuidMap,
                               Map<Integer, String> stateMap, 
                               BatchInfoXml batchInfoXml) {
+    	log.debug("Updating binding, extSyncsQueueItemId: {}", extSyncsQueueItem.getExtSyncsQueueItemId());
+    	
         ApState state = accessPointService.getStateInternal(extSyncsQueueItem.getAccessPointId());
         ApAccessPoint accessPoint = state.getAccessPoint();
         ApExternalSystem apExternalSystem = externalSystemService.getExternalSystemInternal(extSyncsQueueItem.getExternalSystemId());
@@ -937,7 +939,7 @@ public class CamService {
         BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdateXml, externalSystem, apikeyId, apikeyValue);
         if(log.isDebugEnabled()) {
         	if(batchUpdateResult instanceof BatchUpdateResultXml) {
-                log.debug("Upload result success: {}(id: {}), batchId: {}: ", externalSystem.getName(), externalSystemId,
+                log.debug("Upload result success: {}(id: {}), batchId: {} ", externalSystem.getName(), externalSystemId,
       				  batchUpdateXml.getInf().getBid().getValue());	        	
         	} else {
 	        	BatchUpdateErrorXml batchUpdateErrorXml = (BatchUpdateErrorXml) batchUpdateResult;
