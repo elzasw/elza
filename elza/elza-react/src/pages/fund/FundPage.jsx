@@ -534,7 +534,7 @@ class FundPage extends AbstractReactComponent {
 
     handleFiltersChange = (filters) => {
         const { dispatch, fundRegion } = this.props;
-        dispatch(fundsFilter({ ...fundRegion.filter, filter: filters }));
+        dispatch(fundsFilter({ ...fundRegion.filter, filter: filters, from: 0 }));
     }
 
     render() {
