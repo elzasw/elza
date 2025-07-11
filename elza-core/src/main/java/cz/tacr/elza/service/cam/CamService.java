@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.schema.cam.BatchEntityRecordRevXml;
 import cz.tacr.cam.schema.cam.BatchInfoXml;
+import cz.tacr.cam.schema.cam.BatchUpdateErrorXml;
 import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
 import cz.tacr.cam.schema.cam.BatchUpdateSavedXml;
 import cz.tacr.cam.schema.cam.BatchUpdateXml;
@@ -912,8 +913,9 @@ public class CamService {
         UsrUser user = userService.getUserInternal(userId);
 
         // check if sending user has some extra privileges
-        log.debug("Upload to: {}(id: {}), user: {}(id: {})", externalSystem.getName(), externalSystemId,
-                  (user != null) ? user.getUsername() : null, userId);
+        log.debug("Upload to: {}(id: {}), user: {}(id: {}), batchId: {}", externalSystem.getName(), externalSystemId,
+                  (user != null) ? user.getUsername() : null, userId,
+                		  batchUpdateXml.getInf().getBid().getValue());
         List<SysExternalSystemProperty> extSysProperties;
         String apikeyId = null, apikeyValue = null;
         if (user != null) {
@@ -933,6 +935,17 @@ public class CamService {
         }
 
         BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdateXml, externalSystem, apikeyId, apikeyValue);
+        if(log.isDebugEnabled()) {
+        	if(batchUpdateResult instanceof BatchUpdateResultXml) {
+                log.debug("Upload result success: {}(id: {}), batchId: {}: ", externalSystem.getName(), externalSystemId,
+      				  batchUpdateXml.getInf().getBid().getValue());	        	
+        	} else {
+	        	BatchUpdateErrorXml batchUpdateErrorXml = (BatchUpdateErrorXml) batchUpdateResult;
+	        	log.debug("Upload result error: {}(id: {}), batchId: {}: {}", externalSystem.getName(), externalSystemId,
+	        			  batchUpdateXml.getInf().getBid().getValue(), 
+	        			  batchUpdateErrorXml.getMessages());
+        	}
+        }
         return batchUpdateResult;
     }
 
