@@ -30,7 +30,7 @@ when
 	// chybi UJ
 	not DescItem(type=="ZP2015_STORAGE_ID") from $activeLevel.descItems
 then
-	results.createMissing("ZP2015_STORAGE_ID", "Chybí ukládací jednotka (pravidlo UJ_012)", "ZP2015_POL_STORAGE_ID");
+	results.createMissing("ZP2015_STORAGE_ID", "Chybí ukládací jednotka (pravidlo UJ_012).", "ZP2015_POL_STORAGE_ID");
 end
 
 rule "HP_015 Větev archivního popisu zakončená složkou má složku s EJ"
@@ -50,7 +50,7 @@ when
 	           specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE", "ZP2015_FOLDER_DAO")) from $items
 	)
 then
-	results.createMissing("ZP2015_FOLDER_TYPE", "Chybí složka určující evidenční jednotku (pravidlo HP_015)", "ZP2015_POL_BASIC");
+	results.createMissing("ZP2015_FOLDER_TYPE", "Chybí složka určující evidenční jednotku (pravidlo HP_015).", "ZP2015_POL_BASIC");
 end
 
 
@@ -62,7 +62,7 @@ when
 	// zneplatněný záznam
 	not DescItem(type=="ZP2015_INVALID_RECORD") from $activeLevel.descItems
 then
-	results.createMissing("ZP2015_UNIT_DATE", "Není uvedena datace", "ZP2015_POL_BASIC");
+	results.createMissing("ZP2015_UNIT_DATE", "Není uvedena datace.", "ZP2015_POL_BASIC");
 end
 
 rule "Nadřazená datace zahrnuje dataci úrovně"
@@ -73,7 +73,7 @@ when
 	DescItem( type in ("ZP2015_UNIT_DATE") 
 	           && (normalizedFrom>$datace.normalizedFrom || normalizedTo<$datace.normalizedTo ) ) from $parentItems	
 then
-	results.createMissing("ZP2015_UNIT_DATE", "Datace není zahrnuta v časovém rozsahu vyšší úrovně", "ZP2015_POL_BASIC");
+	results.createMissing("ZP2015_UNIT_DATE", "Datace není zahrnuta v časovém rozsahu vyšší úrovně.", "ZP2015_POL_BASIC");
 end
 
 /*
@@ -104,7 +104,7 @@ when
     // neni ulozeno v DA
     not DescItem(type=="ZP2015_AIP_ID") from $activeLevel.descItems
 then
-	results.createMissing("ZP2015_STORAGE_ID", "Neevidovaná jednotlivost není uložena v hromadinové ukládací jednotce (UJ_016)", "ZP2015_POL_STORAGE_ID");
+	results.createMissing("ZP2015_STORAGE_ID", "Neevidovaná jednotlivost není uložena v hromadinové ukládací jednotce (UJ_016).", "ZP2015_POL_STORAGE_ID");
 end
 
 // uplatni se jen pro pomucky dle ZP, neuplatní se pro kartotéku a složku manipulačního seznamu
@@ -116,7 +116,7 @@ when
 	not DescItem(type=="ZP2015_EXTRA_UNITS" ) from $ownItems
     $descItem: DescItem(type=="ZP2015_UNIT_COUNT"  && integer.intValue()<2 ) from $ownItems
 then
-	results.createError($descItem.getDescItemId(), "Počet archiválií musí být větší nebo roven 2", "ZP2015_POL_BASIC");
+	results.createError($descItem.getDescItemId(), "Počet archiválií musí být větší nebo roven 2.", "ZP2015_POL_BASIC");
 end
 
 // uplatni se pro složku manipulační seznamu dle ZP
@@ -128,7 +128,7 @@ when
 	DescItem(type=="ZP2015_EXTRA_UNITS" ) from $items
     $descItem: DescItem(type=="ZP2015_UNIT_COUNT"  && integer.intValue()<1 ) from $items
 then
-	results.createError($descItem.getDescItemId(), "Počet archiválií musí být větší nebo roven 1", "ZP2015_POL_BASIC");
+	results.createError($descItem.getDescItemId(), "Počet archiválií musí být větší nebo roven 1.", "ZP2015_POL_BASIC");
 end
 
 // uplatni se pro KTT dle ZP
@@ -139,7 +139,7 @@ when
 	DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KTT") ) from $items
     $descItem: DescItem(type=="ZP2015_UNIT_COUNT"  && integer.intValue()<1 ) from $items
 then
-	results.createError($descItem.getDescItemId(), "Počet archiválií u kartotéky musí být větší nebo roven 1", "ZP2015_POL_BASIC");
+	results.createError($descItem.getDescItemId(), "Počet archiválií u kartotéky musí být větší nebo roven 1.", "ZP2015_POL_BASIC");
 end
 
 // Povinné pokud je nastaven typ pořádání
@@ -158,7 +158,7 @@ when
 	)
 then
 	results.createMissing("ZP2015_SERIAL_NUMBER",
-	"Pořadové číslo musí být nastaveno (případně ref. označení pro nejvyšší úrovně popisu)",
+	"Pořadové číslo musí být nastaveno (případně ref. označení pro nejvyšší úrovně popisu).",
 	"ZP2015_POL_SERIAL_NO");
 end
 
@@ -170,7 +170,7 @@ when
 	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $activeLevel.descItems
 	not DescItem(type=="ZP2015_UNIT_ID") from $activeLevel.ownDescItems
 then
-	results.createMissing("ZP2015_UNIT_ID", "Referenční označení musí byt přiřazeno", "ZP2015_POL_REF_NO");
+	results.createMissing("ZP2015_UNIT_ID", "Referenční označení musí byt přiřazeno.", "ZP2015_POL_REF_NO");
 end
 
 // Kontrola, zda každý list má v hierarchii zdroj akvizice
@@ -183,7 +183,7 @@ when
 		  ( "ZP2015_UNIT_SOURCE" ) )
 		  from $items )
 then
-	results.createMissing("ZP2015_UNIT_SOURCE", "Není uveden zdroj akvizice", "ZP2015_POL_BASIC");
+	results.createMissing("ZP2015_UNIT_SOURCE", "Není uveden zdroj akvizice.", "ZP2015_POL_BASIC");
 end
 
 // Kontrola, zda každý list má v hierarchii fyzický stav
@@ -197,7 +197,7 @@ when
 		  from $items )
 then
 	results.createMissing("ZP2015_UNIT_CURRENT_STATUS",
-	"Není uveden fyzický stav jednotky popisu a technické požadavky", "ZP2015_POL_BASIC");
+	"Není uveden fyzický stav jednotky popisu a technické požadavky.", "ZP2015_POL_BASIC");
 end
 
 // Kontrola, zda každý list má zpracovatele
@@ -210,7 +210,7 @@ when
 		  ( "ZP2015_ARRANGER" ) )
 		  from $items )
 then
-	results.createMissing("ZP2015_ARRANGER", "Není uveden zpracovatel", "ZP2015_POL_BASIC");
+	results.createMissing("ZP2015_ARRANGER", "Není uveden zpracovatel.", "ZP2015_POL_BASIC");
 end
 
 rule "Kontrola syntaxe měřítka - mapy"
@@ -222,7 +222,7 @@ when
     not DescItem( string matches "^1:[1-9][0-9]*$" ) from $di
     not DescItem( string matches "^\\[1:[1-9][0-9]*\\]$" ) from $di
 then
-	results.createError($di.getDescItemId(), "Měřítko musí být ve formátu 1:n nebo [1:n]", "ZP2015_POL_BASIC");
+	results.createError($di.getDescItemId(), "Měřítko musí být ve formátu 1:n nebo [1:n].", "ZP2015_POL_BASIC");
 end
 
 rule "Kontrola syntaxe měřítka - tech.výkresy"
@@ -234,7 +234,7 @@ when
     not DescItem( string matches "^[1-9][0-9]*:[1-9][0-9]*$" ) from $di
     not DescItem( string matches "^\\[[1-9][0-9]*:[1-9][0-9]*\\]$" ) from $di
 then
-	results.createError($di.getDescItemId(), "Měřítko musí být ve formátu n:m nebo [n:m]", "ZP2015_POL_BASIC");
+	results.createError($di.getDescItemId(), "Měřítko musí být ve formátu n:m nebo [n:m].", "ZP2015_POL_BASIC");
 end
 
 rule "Kontrola schválení přístupového bodu"
