@@ -211,6 +211,7 @@ public class EntityDBDispatcher {
      * @throws SyncImpossibleException 
      */
     public void takeEntities(ProcessingContext procCtx, List<EntityXml> entities) {
+    	log.debug("Take entities, count: {}", entities.size());
 
         ApExternalSystem apExternalSystem = procCtx.getApExternalSystem();
         if (procCtx.getApChange() == null) {
@@ -346,6 +347,10 @@ public class EntityDBDispatcher {
      * @param async
      */
     public void connectEntity(ProcessingContext procCtx, ApState state, EntityXml entity, boolean replace, boolean async) {
+    	log.debug("Connect entity, accessPointId: {}, entityId: {}",
+    			state.getAccessPointId(),
+    			entity.getEid().getValue());
+    	
     	Objects.requireNonNull(procCtx.getApChange());
 
     	this.procCtx = procCtx;

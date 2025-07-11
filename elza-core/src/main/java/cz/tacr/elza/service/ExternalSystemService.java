@@ -419,6 +419,8 @@ public class ExternalSystemService {
      */
     public ApBinding createBinding(final String value,
                                    final String externalSystemCode) {
+    	log.debug("creating binding, externalSystemCode: {}, value: {}",externalSystemCode, value);
+    	
         ApExternalSystem apExternalSystem = apExternalSystemRepository.findByCode(externalSystemCode);
         if (apExternalSystem == null) {
             throw new BusinessException("External system not exists, code: " + externalSystemCode,
@@ -446,6 +448,8 @@ public class ExternalSystemService {
     public ApBinding createApBinding(final String value,
                                      final ApExternalSystem apExternalSystem,
                                      final boolean flush) {
+    	log.debug("Creating binding, extSystem: {}, value: {}, flush: {}", apExternalSystem.getName(), value, flush);
+    	
     	Objects.requireNonNull(value);
     	Objects.requireNonNull(apExternalSystem);
 
