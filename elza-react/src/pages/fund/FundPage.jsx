@@ -32,7 +32,6 @@ import { ExportForm, FundForm, i18n, Icon, ImportForm } from '../../components';
 import IssueLists from '../../components/arr/IssueLists';
 import SearchFundsForm from '../../components/arr/search-funds-form/SearchFundsForm';
 import { AbstractReactComponent, ListBox } from '../../components/shared';
-import ListPager from '../../components/shared/listPager/ListPager';
 import { urlEntity, urlFund, urlFundOutputs, urlFundTree, urlFundWithVersion } from "../../constants";
 import { objectById } from '../../shared/utils';
 import { indexById } from '../../stores/app/utils';
@@ -42,6 +41,7 @@ import { Button, DrawerBody, DrawerHeader, DrawerHeaderTitle, InlineDrawer, Menu
 import { Dismiss24Regular } from "@fluentui/react-icons"
 import { FundFilters } from 'components/fund/filters/FundFilters';
 import { FundPageRibbon } from 'components/fund/FundPageRibbon';
+import { FundPager } from 'components/fund/FundPager';
 
 const OUTPUT_MAX_NUMBER = 10;
 
@@ -551,7 +551,14 @@ class FundPage extends AbstractReactComponent {
 
         const leftPanel = (
             <div className="fund-list-container">
-                <div className="filter-container">
+                <div className="filter-container" style={{ display: "flex" }}>
+                    <FundPager
+                        onPrevious={this.handleFilterPrev}
+                        onNext={this.handleFilterNext}
+                        from={fundRegion.filter.from}
+                        pageSize={maxSize}
+                        totalCount={fundRegion.fundsCount}
+                    />
                     <FundFilters currentFilters={fundRegion.filter.filter} onChange={this.handleFiltersChange} />
                 </div>
                 <div style={{ position: "relative", display: "flex", flexGrow: 1, flexShrink: 1, height: "400px" }}>
@@ -565,18 +572,6 @@ class FundPage extends AbstractReactComponent {
                             // onFocus={this.handleSelect}
                             onSelect={this.handleSelect}
                         />
-                        {(
-                            fundRegion.fundsCount > maxSize ||
-                            fundRegion.filter.from !== 0
-                        ) && (
-                                <ListPager
-                                    prev={this.handleFilterPrev}
-                                    next={this.handleFilterNext}
-                                    from={fundRegion.filter.from}
-                                    pageSize={maxSize}
-                                    totalCount={fundRegion.fundsCount}
-                                />
-                            )}
                     </div>
                     <InlineDrawer position='end' separator={true} open={sidebarOpen} size='medium' style={{ height: "auto" }}>
                         <DrawerHeader>
