@@ -143,7 +143,6 @@ public class ExternalSystemService {
      *
      * @return seznam externích systémů
      */
-    @AuthMethod(permission = UsrPermission.Permission.ADMIN)
     public List<SysExternalSystem> findAll() {
         UserDetail userDetail = userService.getLoggedUserDetail();
         if(userDetail==null) {
