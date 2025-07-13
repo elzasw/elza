@@ -119,6 +119,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.projection.ApStateInfo;
+import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionUtils;
 import cz.tacr.elza.exception.Level;
@@ -399,9 +400,25 @@ public class AccessPointService {
      * @param pageSize
      * @return InvalidatedEntities
      */
-    @AuthMethod(permission = {UsrPermission.Permission.ADMIN, UsrPermission.Permission.AP_SCOPE_RD_ALL})
     public InvalidatedEntities findInvalidatedEntities(final Integer page, final Integer pageSize) {
-    	Page<ApState> invalidated = stateRepository.findAccessPointsDeletedPageable(PageRequest.of(page, pageSize));
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        if(userDetail==null) {
+            throw new AccessDeniedException("User not authorized.", Collections.emptyList());
+        }
+        AuthorizationRequest adminPermission = AuthorizationRequest.hasPermission(Permission.ADMIN)
+        		.or(Permission.AP_SCOPE_RD_ALL);
+        Page<ApState> invalidated;
+        if(adminPermission.matches(userDetail)) {
+        	invalidated = stateRepository.findAccessPointsDeletedPageable(PageRequest.of(page, pageSize));
+        } else {
+        	// get scopes with read permission
+        	var allowedScopeIds = userService.getUserScopeIds();
+        	if(CollectionUtils.isEmpty(allowedScopeIds)) {
+        		return new InvalidatedEntities(0, Collections.emptyList());
+        	}
+        	invalidated = stateRepository.findAccessPointsDeletedPageable(PageRequest.of(page, pageSize), allowedScopeIds);
+        }
+            	
     	if (invalidated.getTotalElements() == 0) {
     		return new InvalidatedEntities(0, Collections.emptyList());
     	}
