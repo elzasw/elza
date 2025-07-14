@@ -36,6 +36,19 @@ public class ApExternalSystem extends SysExternalSystem {
 
     @Column(nullable = true)
     private Boolean publishOnlyApproved;
+    
+    public ApExternalSystem() {
+    	
+    }
+
+	public ApExternalSystem(ApExternalSystem aes) {
+		super(aes);
+		this.type = aes.getType();
+		this.scope = aes.getScope();
+		this.scopeId = aes.getScopeId();
+		this.userInfo = aes.getUserInfo();
+		this.publishOnlyApproved = aes.getPublishOnlyApproved();
+	}
 
 	public ApExternalSystemType getType() {
         return type;

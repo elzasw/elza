@@ -10,13 +10,13 @@
  * @since 19.10.2016
  */
 import React from 'react';
-import {lenToBytesStr, roughSizeOfObject} from 'components/Utils.jsx';
+import { lenToBytesStr, roughSizeOfObject } from 'components/Utils.jsx';
 //import {store} from '../stores/AppStoreState.jsx';
-import {createException} from 'components/ExceptionUtils.jsx';
+import { createException } from 'components/ExceptionUtils.jsx';
 import i18n from './i18n';
 
 import $ from 'jquery';
-import {logout} from 'actions/global/login';
+import { logout } from 'actions/global/login';
 
 const serverContextPath = window.serverContextPath;
 
@@ -171,7 +171,10 @@ function ajaxCallRaw(url, params, method, data, contentType = false, ignoreError
                 }
 
                 let result = resolveException(xhr.status, xhr.statusText, xhr.responseJSON);
-                reject(result);
+                reject({
+                    ...result,
+                    processed: true // mark exception as processed
+                });
             },
         });
     });
@@ -236,7 +239,10 @@ function ajaxCall(url, params, method, data) {
                 }
 
                 let result = resolveException(xhr.status, xhr.statusText, xhr.responseJSON);
-                reject(result);
+                reject({
+                    ...result,
+                    processed: true // mark exception as processed
+                });
             },
         });
     });
