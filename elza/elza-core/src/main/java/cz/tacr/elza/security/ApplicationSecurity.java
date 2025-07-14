@@ -365,6 +365,6 @@ public class ApplicationSecurity {
     @Bean
     @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
     public UserDetailsService userDetailsService() {
-        return new InMemoryUserDetailsManager(User.withUsername("admin").password("{noop}admin").roles("ADMIN_USER").build());
+    	return userService;
     }
 }

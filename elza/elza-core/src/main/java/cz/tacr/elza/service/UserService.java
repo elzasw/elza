@@ -29,8 +29,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
@@ -94,7 +98,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  *
  */
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
@@ -2343,4 +2347,57 @@ public class UserService {
         invalidateCache(trgUser);
         changeUserEvent(trgUser);
     }
+
+	@Override
+	@Transactional
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		logger.debug("loadUserByUsername: {}", username);
+		UsrUser user = findByUsername(username);
+		if (user == null) {
+			throw new UsernameNotFoundException(username);
+		}
+		var userDetail = createUserDetail(user);
+		
+		return new UserDetails() {
+
+			@Override
+			public Collection<? extends GrantedAuthority> getAuthorities() {
+				// TODO: add proper authorities
+				GrantedAuthority ga = new SimpleGrantedAuthority("USER");
+				return Collections.singletonList(ga);
+			}
+
+			@Override
+			public String getPassword() {
+				return null;
+			}
+
+			@Override
+			public String getUsername() {
+				return username;
+			}
+
+			@Override
+			public boolean isAccountNonExpired() {
+				// TODO Auto-generated method stub
+				return true;
+			}
+
+			@Override
+			public boolean isAccountNonLocked() {
+				return true;
+			}
+
+			@Override
+			public boolean isCredentialsNonExpired() {
+				return true;
+			}
+
+			@Override
+			public boolean isEnabled() {
+				return true;
+			}
+			
+		};
+	}
 }
