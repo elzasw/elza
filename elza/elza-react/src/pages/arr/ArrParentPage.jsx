@@ -126,8 +126,13 @@ export default class ArrParentPage extends AbstractReactComponent {
         const activeFund = this.getActiveFund(this.props);
 
         // skip loading data, if fund is currently open
-        if(activeFund?.id === fundId && activeFund.activeVersion?.id == versionId){
-            return activeFund;
+        if(activeFund?.id === fundId){
+            if(versionId == undefined){
+                return activeFund;
+            }
+            else if( activeFund?.activeVersion?.id == versionId){
+                return activeFund;
+            }
         }
 
         try{
@@ -141,7 +146,7 @@ export default class ArrParentPage extends AbstractReactComponent {
         catch(e) {
             console.error("Nepodařilo se získat detail o AS", e, fundId);
             throw `Nepodařilo se získat detail o AS - ${fundId}`;
-        };
+        }
     }
 
     // Function to determine whether the fundId in the url is the id of the
@@ -159,8 +164,13 @@ export default class ArrParentPage extends AbstractReactComponent {
         const urlFundId = id ? parseInt(id) : null;
         const urlVersionId = versionId ? parseInt(versionId) : null;
 
-        if(activeFund.id === urlFundId && activeFund.activeVersion?.id == urlVersionId){
-            return true;
+        if(activeFund.id === urlFundId){
+            if(urlVersionId == undefined){
+                return true;
+            }
+            else if(activeFund?.activeVersion?.id == urlVersionId){
+                return true;
+            }
         }
         return false;
     }
