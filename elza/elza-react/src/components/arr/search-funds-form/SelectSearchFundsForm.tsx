@@ -4,12 +4,14 @@ import { Modal, FormCheck } from 'react-bootstrap';
 import classNames from 'classnames';
 import { createReferenceMark, getNodeIcon } from 'components/arr/ArrUtils.jsx'
 import { i18n, Icon } from 'components/shared';
-import { fundSearchFulltextClear, fundSearchFulltextChange, fundSearchExpandFund, fundSearchFetchIfNeeded } from '../../../actions/arr/fundSearch'
+import { fundSearchExpandFund } from '../../../actions/arr/fundSearch'
 import Search from "../../shared/search/Search";
 import HorizontalLoader from "../../shared/loading/HorizontalLoader";
 import './SearchFundsForm.scss';
-import { AppState, FundSearchFundType, FundSearchNodeType } from 'typings/store/index.js';
+import { FundSearchFundType, FundSearchNodeType } from 'typings/store/index.js';
 import { useThunkDispatch } from 'utils/hooks';
+import { FieldType, FilterType, NodeFieldName, OperationCompareType } from 'elza-api';
+import { Api } from 'api';
 
 const FUND_NAME_MAX_CHARS = 60;
 
@@ -24,40 +26,82 @@ interface Props {
 
 export const SelectSearchFundsForm = ({ onSubmit }: Props) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const dispatch = useThunkDispatch();
-    const arrRegion = useSelector(({ arrRegion }: AppState) => (arrRegion));
-    const { fundSearch } = arrRegion;
+    const [query, setQuery] = useState<string>("");
+    const [isIdSearch, setIsIdSearch] = useState<boolean>(false);
+    const [funds, setFunds] = useState<FundSearchFundType[]>([]);
+    const [isFetching, setIsFetching] = useState(false);
+    const [isFetched, setIsFetched] = useState(false);
 
     /**
 * Vyhledání v archivních souborech.
 */
-    const handleSearch = (fulltext: string) => {
-        dispatch(fundSearchFulltextChange({ fulltext, isIdSearch: undefined }));
+    const handleSearch = async (fulltext: string) => {
+        setQuery(fulltext);
+        setIsFetching(true);
+
+        const filter = isIdSearch ? {
+            filterType: FilterType.FieldValue,
+            field: {
+                fieldType: FieldType.NodeField,
+                fieldName: NodeFieldName.Uuid,
+            },
+            value: fulltext,
+            operation: OperationCompareType.Contains,
+        } : {
+            filterType: FilterType.Contains,
+            value: fulltext,
+        }
+
+        const { data } = await Api.node.nodeSearch({
+            filters: [filter],
+        })
+
+        setFunds(data.map((fund) => ({
+            ...fund,
+            expanded: false,
+            nodes: [],
+            fetched: false,
+            isFetching: false,
+            icon: undefined,
+        })))
+
+        setIsFetching(false);
+        setIsFetched(true);
     };
 
-    const handleRadioChange = (isIdSearch: boolean) => () => {
-        dispatch(fundSearchFulltextClear());
-        dispatch(fundSearchFulltextChange({ fulltext: undefined, isIdSearch }));
+    const handleRadioChange = (_isIdSearch: boolean) => () => {
+        setIsIdSearch(_isIdSearch);
     };
     /**
 * Smazání výsledků vyhledávání.
 */
     const handleClearSearch = () => {
-        dispatch(fundSearchFulltextClear());
+        setQuery("")
     };
 
     /**
 * Zobrazení seznamu výskytů hledaného výrazu v AS
 */
-    const handleFundClick = (fund: FundSearchFundType) => {
-        dispatch(fundSearchExpandFund(fund));
+    const handleFundExpand = async (fund: FundSearchFundType) => {
+        if (!fund.expanded) {
+            const { data } = await Api.node.nodeGetSearchResult(fund.id)
+            const index = funds.findIndex(({ id }) => id === fund.id);
+            const newFunds = [...funds];
+            newFunds.splice(index, 1, { ...fund, nodes: data, expanded: true })
+            setFunds(newFunds);
+        } else {
+            const index = funds.findIndex(({ id }) => id === fund.id);
+            const newFunds = [...funds];
+            newFunds.splice(index, 1, { ...fund, expanded: false })
+            setFunds(newFunds);
+        }
     };
 
     /**
 * Přejít na detail uzlu
 */
     const handleNodeClick = (item: FundSearchNodeType) => {
-        const itemFund = fundSearch.funds.find((fund) => fund.nodes.some((node) => node.id === item.id));
+        const itemFund = funds.find((fund) => fund.nodes.some((node) => node.id === item.id));
         if (!itemFund) { throw Error("Cannot submit node without fund") }
 
         setIsSubmitting(true);
@@ -88,7 +132,7 @@ export const SelectSearchFundsForm = ({ onSubmit }: Props) => {
 
         return <div key={fund.id} className="fund">
             <div className={cls}>
-                <span className={expColCls} onClick={() => handleFundClick(fund)} />
+                <span className={expColCls} onClick={() => handleFundExpand(fund)} />
                 <Icon className="item-icon" glyph="fa-database" />
                 <div title={fund.name} className="item-label">{name} {fund.count && `(${fund.count})`}</div>
             </div>
@@ -117,11 +161,11 @@ export const SelectSearchFundsForm = ({ onSubmit }: Props) => {
     const renderResult = () => {
         const result: ReactNode[] = [];
 
-        if (fundSearch.fetched) {
+        if (funds.length > 0) {
             result.push(
                 <div key="result" className="result-list">
-                    {fundSearch.funds.length > 0 &&
-                        fundSearch.funds.map(fund => renderFund(fund))
+                    {funds.length > 0 &&
+                        funds.map(fund => renderFund(fund))
                     }
                 </div>
             )
@@ -136,18 +180,13 @@ export const SelectSearchFundsForm = ({ onSubmit }: Props) => {
         return count;
     }
 
-    useEffect(() => {
-        dispatch(fundSearchFetchIfNeeded());
-    }, [fundSearch])
-
     if (isSubmitting) {
         return <Modal.Body>
             <HorizontalLoader hover showText={false} key="loader" />
         </Modal.Body>
     }
 
-    const isFulltext = fundSearch.fulltext.length > 0;
-    const totalCount = getTotalCount(fundSearch.funds);
+    const totalCount = getTotalCount(funds);
 
     return (
         <Modal.Body>
@@ -157,26 +196,26 @@ export const SelectSearchFundsForm = ({ onSubmit }: Props) => {
                     type="radio"
                     name="searchType"
                     onChange={handleRadioChange(false)}
-                    checked={!fundSearch.isIdSearch}
+                    checked={!isIdSearch}
                 />
                 <FormCheck
                     label={i18n("arr.fund.search.id")}
                     type="radio"
                     name="searchType"
                     onChange={handleRadioChange(true)}
-                    checked={fundSearch.isIdSearch}
+                    checked={isIdSearch}
                 />
             </div>
             <Search
                 onSearch={handleSearch}
                 onClear={handleClearSearch}
                 placeholder={i18n('search.input.search')}
-                value={fundSearch.fulltext}
+                value={query}
             />
-            {fundSearch.isFetching && <HorizontalLoader hover showText={false} key="loader" />}
-            {isFulltext && i18n('arr.fund.search.result.count', totalCount)}
-            <div className={`fund-search ${isFulltext && totalCount > 0 ? 'result' : 'no-fulltext'}`}>
-                {isFulltext
+            {isFetching && <HorizontalLoader hover showText={false} key="loader" />}
+            {isFetched && i18n('arr.fund.search.result.count', totalCount)}
+            <div className={`fund-search ${isFetched && totalCount > 0 ? 'result' : 'no-fulltext'}`}>
+                {isFetched
                     ? renderResult()
                     : i18n('arr.fund.search.noFulltext'
                     )}
