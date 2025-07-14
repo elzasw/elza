@@ -2198,8 +2198,9 @@ public class PackageService {
                     entityRuleSet = item;
                 }
 
-                // pokud je hodnota `compatibility-rul-package` větší aktuální verze balíčku
-                if (ruleSet.getCompatibilityRulPackage() > rulPackage.getVersion()) {
+                // pokud je hodnota `compatibility-rul-package` != null && větší aktuální verze balíčku 
+                if (ruleSet.getCompatibilityRulPackage() != null 
+                		&& ruleSet.getCompatibilityRulPackage() > rulPackage.getVersion()) {
                 	pkgCtx.addCodeRuleToRevalidateFunds(ruleSet.getCode());
                 }
 
