@@ -32,7 +32,7 @@ import { ExportForm, FundForm, i18n, Icon, ImportForm } from '../../components';
 import IssueLists from '../../components/arr/IssueLists';
 import SearchFundsForm from '../../components/arr/search-funds-form/SearchFundsForm';
 import { AbstractReactComponent, ListBox } from '../../components/shared';
-import { urlEntity, urlFund, urlFundOutputs, urlFundTree, urlFundWithVersion } from "../../constants";
+import { urlEntity, urlFund, urlFundOutputs, urlFundTree } from "../../constants";
 import { objectById } from '../../shared/utils';
 import { indexById } from '../../stores/app/utils';
 import PageLayout from '../shared/layout/PageLayout';
@@ -617,7 +617,7 @@ class FundPage extends AbstractReactComponent {
                                 <div><b>Verze</b></div>
                                 {fundRegion.fundDetail.versions?.map(({ lockDate, id }) => {
                                     return <div style={{ fontWeight: fundRegion.fundDetail.versionId === id ? "bold" : undefined }}>
-                                        <Link to={urlFundWithVersion(fundRegion.fundDetail.id, id)}>
+                                        <Link to={urlFundTree(fundRegion.fundDetail.id, lockDate ? id : undefined)}>
                                             {lockDate ? <>
                                                 {new Date(lockDate).toLocaleDateString()}
                                                 {", "}
