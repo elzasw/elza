@@ -234,10 +234,10 @@ export interface VisiblePolicy {
 }
 
 export interface FundSearchNodeType {
-    arrPerm: boolean;
+    arrPerm?: boolean;
     depth: number;
     hasChildren: boolean;
-    icon: string;
+    icon?: string;
     id: number;
     name: string;
     referenceMark: string[];
@@ -246,15 +246,15 @@ export interface FundSearchNodeType {
 
 export interface FundSearchFundType {
     count: number;
-    expanded: boolean;
-    fetched: boolean;
-    isFetching: boolean;
+    expanded?: boolean;
+    fetched?: boolean;
+    isFetching?: boolean;
     fundVersionId: number;
-    icon: string;
+    icon?: string;
     id: number;
-    internalCode: string | null;
+    internalCode?: string | null;
     name: string;
-    nodes: FundSearchNodeType[];
+    nodes?: FundSearchNodeType[];
 }
 
 export interface FundSearch {

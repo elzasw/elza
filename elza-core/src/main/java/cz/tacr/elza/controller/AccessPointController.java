@@ -150,7 +150,7 @@ public class AccessPointController implements AccesspointsApi {
         for (ApRevision revision : revisions) {
             revisionService.deleteRevision(revision.getState(), revision);
         }
-        accessPointService.deleteAccessPoints(apStates);
+        accessPointService.invalidateAccessPoints(apStates);
 
         return ResponseEntity.ok().build();
     }

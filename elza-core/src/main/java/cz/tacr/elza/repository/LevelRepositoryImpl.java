@@ -101,7 +101,8 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         String currentVerCond = "l.delete_change_id IS NULL";
         String verCond = lockChange != null ? specifiedVerCond : currentVerCond;
 
-        rqBuilder.addSqlPart("WITH RECURSIVE parentPath(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, path) AS (")
+        // It is important to control that the list of fields parentPath() includes ALL fiels of ArrLevel
+        rqBuilder.addSqlPart("WITH RECURSIVE parentPath(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, list, path) AS (")
                 .addSqlPart("SELECT l.*, 1 FROM arr_level l WHERE l.node_id = :nodeId AND ")
                 .addSqlPart(verCond)
                 .addSqlPart(" UNION ALL ")

@@ -1572,7 +1572,7 @@ private void processEvent(AbstractEventSimple event) {
             throw new SystemException("Uživatel nemá oprávnění na AS.", 
             		BaseCode.INSUFFICIENT_PERMISSIONS).set("fundVersionId", param.getFundVersionId());
         }
-        
+
         Map<Integer, TreeNode> treeMap = getVersionTreeCache(fundVersion);
 
         TreeNode node = treeMap.get(param.getNodeId());

@@ -13,15 +13,29 @@ import jakarta.validation.constraints.NotEmpty;
 @ConfigurationProperties(prefix = "elza.security.kerberos", ignoreUnknownFields = false)
 public class KerberosProperties {
 
+	/**
+	 * Name of the service principal
+	 */
 	@NotEmpty
 	private String servicePrincipal;
 
+	/**
+	 * Name of the keytab with secret for the service principal
+	 */
 	@NotEmpty
 	private String keytabLocation;
+
+	private String adDomain;
+
+	private String adServer;
 
 	private boolean kerberosClientDebug = false;
 
 	private boolean ticketValidatorDebug = false;
+
+	private String ldapSearchBase;
+
+	private String ldapSearchFilter;
 
 	public String getServicePrincipal() {
 		return servicePrincipal;
@@ -53,5 +67,37 @@ public class KerberosProperties {
 
 	public void setTicketValidatorDebug(boolean ticketValidatorDebug) {
 		this.ticketValidatorDebug = ticketValidatorDebug;
+	}
+
+	public String getAdDomain() {
+		return adDomain;
+	}
+
+	public void setAdDomain(String adDomain) {
+		this.adDomain = adDomain;
+	}
+
+	public String getAdServer() {
+		return adServer;
+	}
+
+	public void setAdServer(String adServer) {
+		this.adServer = adServer;
+	}
+
+	public String getLdapSearchBase() {
+		return ldapSearchBase;
+	}
+
+	public void setLdapSearchBase(String ldapSearchBase) {
+		this.ldapSearchBase = ldapSearchBase;
+	}
+
+	public String getLdapSearchFilter() {
+		return ldapSearchFilter;
+	}
+	
+	public void setLdapSearchFilter(String ldapSearchFilter) {
+		this.ldapSearchFilter = ldapSearchFilter;
 	}
 }

@@ -127,8 +127,20 @@ function globalErrorHandler(message, url, line, column, error) {
 
 window.addEventListener('unhandledrejection', ({ reason }) => {
     console.error('Unhandled Promise rejection:', reason);
+
+    // Ignore already processed exceptions
+    if(reason.processed){
+        return;
+    }
+
     // Call your global error handler here
-    globalErrorHandler(reason.message, reason.fileName, reason.lineNumber, reason.columnNumber, reason);
+    globalErrorHandler(
+        reason.message,
+        reason.fileName,
+        reason.lineNumber,
+        reason.columnNumber,
+        reason.stackTrace ? reason.stackTrace : JSON.stringify(reason)
+    );
 });
 
 window.onerror = globalErrorHandler;

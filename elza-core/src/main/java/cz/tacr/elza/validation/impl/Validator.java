@@ -236,7 +236,7 @@ public class Validator {
                     }
                     // Kontrola stavu entity
                     if (apState.getDeleteChangeId() != null) {
-                        validationResults.createError(descItem, "Prvek " + name + " odkazuje na zneplatněnou entitu ("
+                        validationResults.createError(descItem, "Prvek " + name + " odkazuje na zneplatněnou entitu (id: "
                                 + apState.getAccessPointId() + ").",
                                                       policyTypeCode);
                     }

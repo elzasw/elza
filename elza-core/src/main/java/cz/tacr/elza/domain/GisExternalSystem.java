@@ -23,8 +23,17 @@ public class GisExternalSystem extends SysExternalSystem {
     @Enumerated(EnumType.STRING)
     @Column(length = StringLength.LENGTH_ENUM, nullable = false)
     private GisSystemType type;
+    
+    public GisExternalSystem() {
+    	
+    }
 
-    public GisSystemType getType() {
+    public GisExternalSystem(GisExternalSystem ges) {
+    	super(ges);
+		type = ges.getType();
+	}
+
+	public GisSystemType getType() {
         return type;
     }
 

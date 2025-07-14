@@ -1,14 +1,11 @@
-import React from 'react';
 import { connect } from 'react-redux';
-import { AbstractReactComponent, i18n, Icon, RibbonGroup, RibbonSplit, Utils } from '../../components/shared';
+import { AbstractReactComponent, i18n, Utils } from '../../components/shared';
 import { DetailActions } from '../../shared/detail';
-import Ribbon from '../../components/page/Ribbon';
 import ImportForm from '../../components/form/ImportForm';
 import RegistryList from '../../components/registry/RegistryList';
-import { Button } from '../../components/ui';
 import {
     registryDelete, registryDetailFetchIfNeeded, registryListInvalidate, registryCreateRevision,
-    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear, goToAe, AREA_REGISTRY_DETAIL
+    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, goToAe, AREA_REGISTRY_DETAIL
 } from '../../actions/registry/registry.jsx';
 import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog.jsx';
 import { refRecordTypesFetchIfNeeded } from '../../actions/refTables/recordTypes.jsx';
@@ -50,9 +47,8 @@ import { routerNavigate } from 'actions/router';
 import { isInteger, isUuid } from 'utils/regex';
 import { ApCopyModal } from 'components/registry/modal/ap-copy';
 import { AP_EXT_SYSTEM_TYPE } from '../../constants';
-import { isMenuItemHidden } from 'api/settings/utils';
-import { MenuOptions } from 'api/settings/MenuOption';
-import { EntityRibbon } from 'components/registry/EntityRibbon.tsx';
+import { EntityRibbon } from 'components/registry/EntityRibbon';
+import { EntitySelectRibbon } from 'components/registry/EntitySelectRibbon.tsx';
 
 /**
  * Stránka rejstříků.
@@ -536,25 +532,29 @@ class RegistryPage extends AbstractReactComponent {
 
     handleRestoreEntity = async () => {
         const { registryDetail: { id } } = this.props;
-        await Api.accesspoints.restoreAccessPoint(id);
+        await Api.accesspoints.accessPointRestoreAccessPoint(id);
         this.props.dispatch(registryDetailInvalidate());
     }
 
     buildRibbon = () => {
         const {
-            // registryDetail: { data, id },
-            // userDetail,
-            // extSystems,
             module,
             customRibbon,
-            // registryDetail,
             select,
             revisionActive,
         } = this.props;
 
+        if (select) {
+            return <EntitySelectRibbon
+                module={module}
+                customRibbon={customRibbon}
+                onAddRegistry={this.handleAddRegistry}
+            />
+        }
+
         return <EntityRibbon
             module={module}
-            select={select}
+            select={false}
             revisionActive={revisionActive}
             customRibbon={customRibbon}
             onAddRegistry={this.handleAddRegistry}

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -26,4 +27,11 @@ public interface ApRevItemRepository extends JpaRepository<ApRevItem, Integer> {
 
     @Query("SELECT COUNT(i) > 0 FROM ApRevItem i WHERE i.partId = :partId AND i.origObjectId = :objectId AND i.deleteChange IS NULL")
     boolean existByPartIdAndOrigObjectId(@Param("partId") Integer partId, @Param("objectId") Integer objectId);
+
+    @Query("SELECT i.dataId FROM ApRevItem i JOIN i.part p WHERE p.revisionId IN :revisionIds")
+    List<Integer> findAllDataIdByRevisionIdIn(@Param("revisionIds") Collection<Integer> revisionIds);
+
+    @Query("DELETE FROM ApRevItem i JOIN i.part p WHERE p.revisionId IN :revisionIds")
+    @Modifying
+	void deleteAllByRevisionIdIn(@Param("revisionIds") Collection<Integer> revisionIds);
 }

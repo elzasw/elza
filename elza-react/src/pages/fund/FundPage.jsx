@@ -32,8 +32,7 @@ import { ExportForm, FundForm, i18n, Icon, ImportForm } from '../../components';
 import IssueLists from '../../components/arr/IssueLists';
 import SearchFundsForm from '../../components/arr/search-funds-form/SearchFundsForm';
 import { AbstractReactComponent, ListBox } from '../../components/shared';
-import ListPager from '../../components/shared/listPager/ListPager';
-import { urlEntity, urlFund, urlFundOutputs, urlFundTree, urlFundWithVersion } from "../../constants";
+import { urlEntity, urlFund, urlFundOutputs, urlFundTree } from "../../constants";
 import { objectById } from '../../shared/utils';
 import { indexById } from '../../stores/app/utils';
 import PageLayout from '../shared/layout/PageLayout';
@@ -42,6 +41,7 @@ import { Button, DrawerBody, DrawerHeader, DrawerHeaderTitle, InlineDrawer, Menu
 import { Dismiss24Regular } from "@fluentui/react-icons"
 import { FundFilters } from 'components/fund/filters/FundFilters';
 import { FundPageRibbon } from 'components/fund/FundPageRibbon';
+import { FundPager } from 'components/fund/FundPager';
 
 const OUTPUT_MAX_NUMBER = 10;
 
@@ -338,9 +338,10 @@ class FundPage extends AbstractReactComponent {
 
     renderListItem(props) {
         const { institutionsAll, userDetail } = this.props;
+        const { institutions } = this.state;
         const { item } = props;
-        // hide institution name, when only one is present
-        const institution = institutionsAll.items.length > 1 ? institutionsAll.items.find(({ code }) => code == item.institutionIdentifier) : undefined;
+        // hide institution name, when only one is used for funds
+        const institution = institutions?.length > 1 ? institutionsAll.items.find(({ code }) => code == item.institutionIdentifier) : undefined;
 
         const itemActions = [];
         if (item.id !== null) {
@@ -533,11 +534,11 @@ class FundPage extends AbstractReactComponent {
 
     handleFiltersChange = (filters) => {
         const { dispatch, fundRegion } = this.props;
-        dispatch(fundsFilter({ ...fundRegion.filter, filter: filters }));
+        dispatch(fundsFilter({ ...fundRegion.filter, filter: filters, from: 0 }));
     }
 
     render() {
-        const { splitter, fundRegion, maxSize } = this.props;
+        const { splitter, fundRegion, maxSize, ruleSet } = this.props;
         const { sidebarOpen } = this.state;
 
         let activeIndex;
@@ -545,9 +546,19 @@ class FundPage extends AbstractReactComponent {
             activeIndex = indexById(fundRegion.funds, fundRegion.fundDetail.id);
         }
 
+        const activeVersion = fundRegion.fundDetail.versions?.find(({ id }) => fundRegion.fundDetail.activeVersion.id === id);
+        const activeRuleSet = activeVersion?.ruleSetId != undefined ? ruleSet.itemsMap[activeVersion.ruleSetId] : undefined;
+
         const leftPanel = (
             <div className="fund-list-container">
-                <div className="filter-container">
+                <div className="filter-container" style={{ display: "flex" }}>
+                    <FundPager
+                        onPrevious={this.handleFilterPrev}
+                        onNext={this.handleFilterNext}
+                        from={fundRegion.filter.from}
+                        pageSize={maxSize}
+                        totalCount={fundRegion.fundsCount}
+                    />
                     <FundFilters currentFilters={fundRegion.filter.filter} onChange={this.handleFiltersChange} />
                 </div>
                 <div style={{ position: "relative", display: "flex", flexGrow: 1, flexShrink: 1, height: "400px" }}>
@@ -561,18 +572,6 @@ class FundPage extends AbstractReactComponent {
                             // onFocus={this.handleSelect}
                             onSelect={this.handleSelect}
                         />
-                        {(
-                            fundRegion.fundsCount > maxSize ||
-                            fundRegion.filter.from !== 0
-                        ) && (
-                                <ListPager
-                                    prev={this.handleFilterPrev}
-                                    next={this.handleFilterNext}
-                                    from={fundRegion.filter.from}
-                                    pageSize={maxSize}
-                                    totalCount={fundRegion.fundsCount}
-                                />
-                            )}
                     </div>
                     <InlineDrawer position='end' separator={true} open={sidebarOpen} size='medium' style={{ height: "auto" }}>
                         <DrawerHeader>
@@ -589,6 +588,10 @@ class FundPage extends AbstractReactComponent {
                         </DrawerHeader>
                         <DrawerBody style={{ overflow: "auto" }}>
                             <div style={{ marginBottom: "10px" }}>
+                                {activeRuleSet && <>
+                                    <div><b>Pravidla</b></div>
+                                    {activeRuleSet?.name}
+                                </>}
                                 <div><b>Výstupy</b></div>
                                 {/* <div style={{overflow: "auto"}}> */}
                                 {fundRegion.fundDetail.validNamedOutputs?.slice(0, OUTPUT_MAX_NUMBER).sort((a, b) => new Date(b.generatedDate) - new Date(a.generatedDate)).map(({ name, id, generatedDate }) => {
@@ -614,7 +617,7 @@ class FundPage extends AbstractReactComponent {
                                 <div><b>Verze</b></div>
                                 {fundRegion.fundDetail.versions?.map(({ lockDate, id }) => {
                                     return <div style={{ fontWeight: fundRegion.fundDetail.versionId === id ? "bold" : undefined }}>
-                                        <Link to={urlFundWithVersion(fundRegion.fundDetail.id, id)}>
+                                        <Link to={urlFundTree(fundRegion.fundDetail.id, lockDate ? id : undefined)}>
                                             {lockDate ? <>
                                                 {new Date(lockDate).toLocaleDateString()}
                                                 {", "}
