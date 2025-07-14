@@ -75,6 +75,16 @@ public class PackageContext {
      */
     private boolean syncNodeCache;
 
+    /**
+     * Revalidate funds with given rules by rul-set code
+     */
+    private Set<String> revalidateFundsWithRule = new HashSet<>();
+
+    /**
+     * Prepared package dir
+     */
+	private File packageDir;
+
     public PackageContext(ResourcePathResolver resourcePathResolver) {
 		this.resourcePathResolver = resourcePathResolver;
 	}
@@ -134,8 +144,10 @@ public class PackageContext {
 	}
 
 	public File preparePackageDir() {
-        // create path for package data
-        File packageDir = this.resourcePathResolver.getPackageDir(rulPackage).toFile();
+		Validate.isTrue(packageDir == null);
+
+		// create path for package data
+        packageDir = this.resourcePathResolver.getPackageDir(rulPackage).toFile();
 
         logger.info("New package directory: {}", packageDir);
 
@@ -321,4 +333,16 @@ public class PackageContext {
     public List<RuleUpdateContext> getRuleUpdateContexts() {
         return Collections.unmodifiableList(ruleUpdateContexts);
     }
+
+    public void addCodeRuleToRevalidateFunds(String code) {
+    	revalidateFundsWithRule.add(code);
+    }
+
+	public Set<String> getRevalidateFundsWithRule() {
+		return revalidateFundsWithRule;
+	}
+
+	public File getPackageDir() {
+		return packageDir;
+	}
 }

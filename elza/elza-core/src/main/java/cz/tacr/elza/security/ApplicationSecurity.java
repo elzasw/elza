@@ -49,7 +49,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.kerberos.authentication.KerberosAuthenticationProvider;
 import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
 import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosClient;
@@ -362,9 +364,17 @@ public class ApplicationSecurity {
         return ticketValidator;
     }
 
-    @Bean
-    @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
+    // @Bean
+    // @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
     public UserDetailsService userDetailsService() {
-    	return userService;
+    	return new UserDetailsService() {
+
+			@Override
+			public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+				return userService.loadUserByUsername(username);
+			}
+    		
+    	};
+    	//return userService;
     }
 }

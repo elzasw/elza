@@ -98,7 +98,7 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
  *
  */
 @Service
-public class UserService implements UserDetailsService {
+public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
@@ -2348,7 +2348,7 @@ public class UserService implements UserDetailsService {
         changeUserEvent(trgUser);
     }
 
-	@Override
+	//@Override
 	@Transactional
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		logger.debug("loadUserByUsername: {}", username);
@@ -2369,7 +2369,7 @@ public class UserService implements UserDetailsService {
 
 			@Override
 			public String getPassword() {
-				return null;
+				return "{noop}";
 			}
 
 			@Override
