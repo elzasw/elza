@@ -124,9 +124,9 @@ export default class ArrParentPage extends AbstractReactComponent {
     resolveUrlsRaw = async (fundId, versionId) => {
         const {dispatch} = this.props;
         const activeFund = this.getActiveFund(this.props);
-        
+
         // skip loading data, if fund is currently open
-        if(activeFund?.id === fundId && getFundVersion(activeFund) == versionId){
+        if(activeFund?.id === fundId && activeFund.activeVersion?.id == versionId){
             return activeFund;
         }
 
@@ -159,7 +159,7 @@ export default class ArrParentPage extends AbstractReactComponent {
         const urlFundId = id ? parseInt(id) : null;
         const urlVersionId = versionId ? parseInt(versionId) : null;
 
-        if(activeFund.id === urlFundId && getFundVersion(activeFund) == urlVersionId){
+        if(activeFund.id === urlFundId && activeFund.activeVersion?.id == urlVersionId){
             return true;
         }
         return false;

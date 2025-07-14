@@ -236,7 +236,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     @Transactional
     public void enqueueNodes(final Integer fundVersionId,
                              final Collection<Integer> nodeList,
-                        final Integer priority) {
+                             final Integer priority) {
         List<ArrAsyncRequest> reqList = new ArrayList<>(nodeList.size());
         int pri = (priority == null) ? 1 : priority;
         for (Integer nodeId : nodeList) {
