@@ -115,10 +115,10 @@ public class AdminController implements AdminApi {
     	boolean isAdmin = false;
     	boolean userControl = false, groupControl = false;
     	if (!userService.hasPermission(Permission.ADMIN)) {
-    		if(userService.hasPermission(Permission.USER_CONTROL_ENTITITY)) {
+    		if(userService.hasPermission(Permission.USER_CONTROL_ENTITY)) {
     			userControl = true;
     		}
-    		if(userService.hasPermission(Permission.GROUP_CONTROL_ENTITITY)) {
+    		if(userService.hasPermission(Permission.GROUP_CONTROL_ENTITY)) {
     			groupControl = true;
     		}
     	} else {
@@ -126,8 +126,8 @@ public class AdminController implements AdminApi {
     	}
     	if(!isAdmin && !userControl && !groupControl) {
 			Permission[] perms = { UsrPermission.Permission.ADMIN, 
-			        UsrPermission.Permission.USER_CONTROL_ENTITITY,
-			        UsrPermission.Permission.GROUP_CONTROL_ENTITITY };    		
+			        UsrPermission.Permission.USER_CONTROL_ENTITY,
+			        UsrPermission.Permission.GROUP_CONTROL_ENTITY };    		
     		throw new AccessDeniedException("Missing permissions: " + Arrays.toString(perms), perms);
     	}
 
@@ -146,7 +146,7 @@ public class AdminController implements AdminApi {
 
 	        // if not admin - add only managed users
             if(!isAdmin) {
-            	if(!userService.hasPermission(UsrPermission.Permission.USER_CONTROL_ENTITITY, userDetail.getId())) {
+            	if(!userService.hasPermission(UsrPermission.Permission.USER_CONTROL_ENTITY, userDetail.getId())) {
             		continue;
             	}
             }

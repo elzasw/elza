@@ -41,7 +41,7 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
             .filter(
                 p =>
                     !p.inherited &&
-                    (p.permission === perms.USER_CONTROL_ENTITITY || p.permission === perms.GROUP_CONTROL_ENTITITY),
+                    (p.permission === perms.USER_CONTROL_ENTITY || p.permission === perms.GROUP_CONTROL_ENTITY),
             )
             .map(p => {
                 return p;
@@ -60,9 +60,9 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
 
     renderItem = props => {
         const { item, isActive } = props;
-        if (item.permission === perms.USER_CONTROL_ENTITITY) {
+        if (item.permission === perms.USER_CONTROL_ENTITY) {
             return renderUserItem({ item: item.userControl, selected: isActive });
-        } else if (item.permission === perms.GROUP_CONTROL_ENTITITY) {
+        } else if (item.permission === perms.GROUP_CONTROL_ENTITY) {
             return renderGroupItem({ item: item.groupControl, selected: isActive });
         }
     };
@@ -79,9 +79,9 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
                         const { permissions } = this.state;
                         const permissionsMap = {};
                         permissions.forEach(p => {
-                            if (p.permission === perms.USER_CONTROL_ENTITITY) {
+                            if (p.permission === perms.USER_CONTROL_ENTITY) {
                                 permissionsMap[`u-${p.userControl.id}`] = p;
-                            } else if (p.permission === perms.GROUP_CONTROL_ENTITITY) {
+                            } else if (p.permission === perms.GROUP_CONTROL_ENTITY) {
                                 permissionsMap[`g-${p.groupControl.id}`] = p;
                             }
                         });
@@ -92,13 +92,13 @@ class ControlledEntitiesPanel extends AbstractReactComponent {
                                 // jen pokud ještě přidaný není
                                 if (item.user) {
                                     let p = {
-                                        permission: perms.USER_CONTROL_ENTITITY,
+                                        permission: perms.USER_CONTROL_ENTITY,
                                         userControl: item.user,
                                     };
                                     permissionsToAdd.push(p);
                                 } else if (item.group) {
                                     let p = {
-                                        permission: perms.GROUP_CONTROL_ENTITITY,
+                                        permission: perms.GROUP_CONTROL_ENTITY,
                                         groupControl: item.group,
                                     };
                                     permissionsToAdd.push(p);

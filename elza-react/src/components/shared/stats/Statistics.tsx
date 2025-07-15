@@ -75,7 +75,7 @@ export const StatsAdmin = () => {
             setStatsGeneral(arrItemsGeneral);
             setStatsUsers(arrItemsUsers);
         });
-        if(userDetail.hasOne(perms.USER_CONTROL_ENTITITY, perms.GROUP_CONTROL_ENTITITY)){
+        if(userDetail.hasOne(perms.USER_CONTROL_ENTITY, perms.GROUP_CONTROL_ENTITY)){
             Api.admin.adminLoggedUsers({ overrideErrorHandler: true }).then(({ data: _loggedUsers }) => {
                 setLoggedUsers(_loggedUsers?.users || []);
             });

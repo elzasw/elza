@@ -172,12 +172,12 @@ export enum Permission {
     /**
      * Spravovaná entita - uživatel.
      */
-    USER_CONTROL_ENTITITY = 'USER_CONTROL_ENTITITY',
+    USER_CONTROL_ENTITY = 'USER_CONTROL_ENTITY',
 
     /**
      * Spravovaná entita skupina.
      */
-    GROUP_CONTROL_ENTITITY = 'GROUP_CONTROL_ENTITITY',
+    GROUP_CONTROL_ENTITY = 'GROUP_CONTROL_ENTITY',
 
     /**
      * Správa protokolů pro konkrétní AS

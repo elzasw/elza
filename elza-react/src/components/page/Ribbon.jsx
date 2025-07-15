@@ -164,9 +164,9 @@ class Ribbon extends AbstractReactComponent {
             const isSuperuser = userDetail.hasOne(perms.ADMIN);
             // Users can be administered if controlls some group or user
             const administersUser =
-                userDetail.hasOne(perms.GROUP_CONTROL_ENTITITY, perms.USR_PERM) ||
-                userDetail.hasOne(perms.USER_CONTROL_ENTITITY, perms.USR_PERM);
-            const administersGroup = userDetail.hasOne(perms.GROUP_CONTROL_ENTITITY, perms.USR_PERM);
+                userDetail.hasOne(perms.GROUP_CONTROL_ENTITY, perms.USR_PERM) ||
+                userDetail.hasOne(perms.USER_CONTROL_ENTITY, perms.USR_PERM);
+            const administersGroup = userDetail.hasOne(perms.GROUP_CONTROL_ENTITY, perms.USR_PERM);
             const canSeeReports = userDetail.hasOne(perms.REPORT_ALL);
 
             section = (
@@ -371,8 +371,8 @@ class Ribbon extends AbstractReactComponent {
                     {userDetail.hasOne(
                         perms.ADMIN,
                         perms.USR_PERM,
-                        perms.USER_CONTROL_ENTITITY,
-                        perms.GROUP_CONTROL_ENTITITY,
+                        perms.USER_CONTROL_ENTITY,
+                        perms.GROUP_CONTROL_ENTITY,
                         perms.REPORT_ALL,
                     ) && (
                             <LinkContainer key="ribbon-btn-admin" to="/admin">

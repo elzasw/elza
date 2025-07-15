@@ -694,4 +694,9 @@
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20230315100801"/>
 	</changeSet>
 
+	<changeSet id="20250715131500" author="sergey.iryupin">
+		<sql>UPDATE usr_permission SET permission = 'USER_CONTROL_ENTITY' WHERE permission = 'USER_CONTROL_ENTITITY'</sql>
+		<sql>UPDATE usr_permission SET permission = 'GROUP_CONTROL_ENTITY' WHERE permission = 'GROUP_CONTROL_ENTITITY'</sql>
+	</changeSet>
+
 </databaseChangeLog>
