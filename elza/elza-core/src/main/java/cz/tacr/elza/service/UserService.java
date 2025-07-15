@@ -797,7 +797,7 @@ public class UserService {
         return true;
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITY})
     public void changeGroupPermission(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group,
                                       @NotNull final List<UsrPermission> permissions) {
         ChangedPermissionResult result = changePermission(null, group, permissions, ChangePermissionType.SYNCHRONIZE,
@@ -807,7 +807,7 @@ public class UserService {
         }
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY})
     public void changeUserPermission(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
                                      @NotNull final List<UsrPermission> permissions) {
         ChangedPermissionResult result = changePermission(user, null, permissions, ChangePermissionType.SYNCHRONIZE,
@@ -818,7 +818,7 @@ public class UserService {
         }
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY})
     public ChangedPermissionResult addUserPermission(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
                                                  @NotNull final List<UsrPermission> permissions, final boolean checkPermission) {
         ChangedPermissionResult result = changePermission(user, null, permissions, ChangePermissionType.ADD,
@@ -831,7 +831,7 @@ public class UserService {
         return result;
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITY})
     public ChangedPermissionResult addGroupPermission(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group,
                                                   @NotNull final List<UsrPermission> permissions, final boolean checkPermission) {
         ChangedPermissionResult result = changePermission(null, group, permissions, ChangePermissionType.ADD,
@@ -843,7 +843,7 @@ public class UserService {
         return result;
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY})
     public void deleteUserPermission(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
                                      @NotNull final List<UsrPermission> permissions) {
         ChangedPermissionResult result = changePermission(user, null, permissions, ChangePermissionType.DELETE, true);
@@ -853,7 +853,7 @@ public class UserService {
         }
     }
 
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITY})
     public void deleteGroupPermission(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group,
                                       @NotNull final List<UsrPermission> permissions) {
         ChangedPermissionResult result = changePermission(null, group, permissions, ChangePermissionType.DELETE, true);
@@ -869,7 +869,7 @@ public class UserService {
      * @param user   uživatel
      * @param fundId id AS
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY})
     public void deleteUserFundPermissions(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
                                           @NotNull final Integer fundId) {
         List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
@@ -884,7 +884,7 @@ public class UserService {
      *
      * @param user   uživatel
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY})
     public void deleteUserFundAllPermissions(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user) {
         List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
         List<UsrPermission> permissionsToDelete = permissionsDB.stream()
@@ -899,7 +899,7 @@ public class UserService {
      * @param group  skupina
      * @param fundId id AS
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITY})
     public void deleteGroupFundPermissions(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group,
                                            @NotNull final Integer fundId) {
         List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
@@ -914,7 +914,7 @@ public class UserService {
      *
      * @param group  skupina
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITY})
     public void deleteGroupFundAllPermissions(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group) {
         List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
         List<UsrPermission> permissionsToDelete = permissionsDB.stream()
@@ -929,7 +929,7 @@ public class UserService {
      * @param user    uživatel
      * @param scopeId id typu rejstříku
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY})
     public void deleteUserScopePermissions(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
                                            @NotNull final Integer scopeId) {
         List<UsrPermission> permissionsDB = permissionRepository.findByUserOrderByPermissionIdAsc(user);
@@ -945,7 +945,7 @@ public class UserService {
      * @param group   skupina
      * @param scopeId id typu rejstříku
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITY})
     public void deleteGroupScopePermissions(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group,
                                             @NotNull final Integer scopeId) {
         List<UsrPermission> permissionsDB = permissionRepository.findByGroupOrderByPermissionIdAsc(group);
@@ -1122,7 +1122,7 @@ public class UserService {
      *
      * @return skupina
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITY})
     public UsrGroup deleteGroup(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group) {
 
         List<UsrGroupUser> groupUserList = groupUserRepository.findByGroup(group);
@@ -1154,7 +1154,7 @@ public class UserService {
      * @param description popis skupiny
      * @return skupina
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITY})
     public UsrGroup changeGroup(@AuthParam(type = AuthParam.Type.GROUP) @NotNull final UsrGroup group,
                                 @NotEmpty final String name,
                                 final String description) {
@@ -1174,7 +1174,7 @@ public class UserService {
      * @param valuesMap     data autentizací
      * @return upravený uživatel
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY})
     public UsrUser changeUser(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
                               @Nullable final Integer accessPointId,
                               @NotNull @NotEmpty final String username,
@@ -1334,7 +1334,7 @@ public class UserService {
      * @param newPassword nové heslo (v plaintextu)
      * @return uživatel
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY})
     public UsrUser changePassword(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
                                   @NotEmpty final String newPassword) {
         return changePasswordPrivate(user, newPassword);
@@ -1693,7 +1693,7 @@ public class UserService {
      * @param userId id
      * @return objekt
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY})
 	public UsrUser getUser(@AuthParam(type = AuthParam.Type.USER) final Integer userId) {
 		Validate.notNull(userId, "Identifikátor uživatele musí být vyplněno");
         return userRepository.getOneCheckExist(userId);
@@ -1750,7 +1750,7 @@ public class UserService {
      * @param groupId id
      * @return objekt
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.GROUP_CONTROL_ENTITY})
     public UsrGroup getGroup(@AuthParam(type = AuthParam.Type.GROUP) final Integer groupId) {
         Assert.notNull(groupId, "Identifikátor skupiny musí být vyplněn");
         return groupRepository.getOneCheckExist(groupId);
@@ -1763,7 +1763,7 @@ public class UserService {
      * @param active je aktivní?
      * @return uživatel
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITITY})
+    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY})
     public UsrUser changeActive(@AuthParam(type = AuthParam.Type.USER) @NotNull final UsrUser user,
                                 @NotNull final Boolean active) {
         user.setActive(active);
@@ -2074,7 +2074,7 @@ public class UserService {
 
 		// if we do not have right ADMIN, FUND_ADMIN or USR_PERM
 		// we have to have rights FUND_CREATE (In such case we can create it only for logged user)
-		// or USER_CONTROL_ENTITITY (In such case we can create it only for managed entities).
+		// or USER_CONTROL_ENTITY (In such case we can create it only for managed entities).
 
         // check if user is same as logged user
         UserDetail userDetail = getLoggedUserDetail();
@@ -2097,8 +2097,8 @@ public class UserService {
 		if (!hasPermission) {
 			Permission[] perms = { UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.USR_PERM,
 			        UsrPermission.Permission.FUND_CREATE,
-			        UsrPermission.Permission.USER_CONTROL_ENTITITY,
-			        UsrPermission.Permission.GROUP_CONTROL_ENTITITY };
+			        UsrPermission.Permission.USER_CONTROL_ENTITY,
+			        UsrPermission.Permission.GROUP_CONTROL_ENTITY };
 			throw new AccessDeniedException("Cannot set permissions for new fund.", perms);
 		}
 
@@ -2296,7 +2296,7 @@ public class UserService {
      * @param fromUserId
      *            Source user
      */
-    @AuthMethod(permission = { Permission.USR_PERM, Permission.USER_CONTROL_ENTITITY })
+    @AuthMethod(permission = { Permission.USR_PERM, Permission.USER_CONTROL_ENTITY })
     public void copyPermissions(Integer trgUserId, @NotNull Integer fromUserId) {
         UsrUser trgUser = userRepository.findOneWithDetail(trgUserId);
         UserDetail trgUserDetail = createUserDetail(trgUser);
