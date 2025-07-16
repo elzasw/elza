@@ -139,35 +139,41 @@
         </dependency>
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports-pdf</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>net.sf.jasperreports</groupId>
+		    <artifactId>jasperreports-barcode4j</artifactId>
+		</dependency>
+		<dependency>
+		    <groupId>net.sf.jasperreports</groupId>
+		    <artifactId>jasperreports-barbecue</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-fonts</artifactId>
 		</dependency>
+
 		<!-- pro tisk čárových kódů -->
+		<dependency>
+		    <groupId>com.google.zxing</groupId>
+		    <artifactId>core</artifactId>
+		    <version>3.5.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>javase</artifactId>
+			<version>3.5.3</version>
+		</dependency>
 		<dependency>
 	    	<groupId>com.singingbush</groupId>
     		<artifactId>barcode4j</artifactId>
-    		<version>2.2.4</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.apache.xmlgraphics</groupId>
-		    <artifactId>batik-bridge</artifactId>
-		    <version>1.17</version>
-		    <!-- řešení konfliktů balíčků java.xml -->
-		    <exclusions>
-				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-    		<groupId>net.sourceforge.barbecue</groupId>
-    		<artifactId>barbecue</artifactId>
-    		<version>1.5-beta1</version>
+    		<version>2.4.0</version>
 		</dependency>
 
-        <dependency>
-            <groupId>org.apache.groovy</groupId>
-            <artifactId>groovy</artifactId>
+		<dependency>
+		    <groupId>org.apache.groovy</groupId>
+		    <artifactId>groovy</artifactId>
 		</dependency>
 
         <dependency>
