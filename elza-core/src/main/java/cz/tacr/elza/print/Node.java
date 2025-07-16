@@ -409,7 +409,9 @@ public class Node {
             if (typeCode.equals(item.getType().getCode())) {
                 // check if item already found
                 if (found != null) {
-                    throw new IllegalStateException("Multiple items with same code exists: " + typeCode);
+                	log.error("Multiple items with same code exists: {}, nodeId: {}, uuid: {}", typeCode, this.nodeId.getArrNodeId(), this.uuid);
+                    throw new IllegalStateException("Multiple items with same code exists: " + typeCode + 
+                    		", nodeId: " + this.nodeId.getArrNodeId() + ", uuid: "+this.uuid);
                 }
                 found = item;
             }
