@@ -24,8 +24,8 @@ export function FundPager({
   const padding = (fundsCountLength - _from.toString().length) + (fundsCountLength - to.toString().length);
 
   return <div style={{ margin: "5px" }}>
-    <Button icon={<ChevronLeftRegular />} onClick={() => onPrevious()} />
-    <Button icon={<ChevronRightRegular />} onClick={() => onNext()} />
+    <Button disabled={from === 0} icon={<ChevronLeftRegular />} onClick={() => onPrevious()} />
+    <Button disabled={from + pageSize >= totalCount} icon={<ChevronRightRegular />} onClick={() => onNext()} />
     <span style={{
       margin: "0 5px",
       paddingRight: `${padding}ch`,
