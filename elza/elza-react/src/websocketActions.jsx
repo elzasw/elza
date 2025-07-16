@@ -207,14 +207,14 @@ export class websocket {
 
     // Handles websocket connection errors (e.g. unintentional disconnects)
     onWebsocketError = (error) => {
-        console.log("#ws websocket error", error);
+        console.warn("#ws websocket error", error);
 
-        this.handleError(error);
+        this.reconnect();
     }
 
     // Handles error message received through STOMP
     onStompError = (error) => {
-        console.log("#ws stomp error", error);
+        console.error("#ws stomp error", error);
 
         this.handleError(error);
     };
