@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.20.0.final using JasperReports Library version 6.20.0-2bc7ab61c56f459e8176eb05c7705e145cd400ad  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="index" pageWidth="595" pageHeight="842" sectionType="Part" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="d2716064-8ae4-40cf-a575-33afba400e3a">
+<!-- Created with Jaspersoft Studio version 7.0.3.final using JasperReports Library version 7.0.3-41034ca841d452f3305ba55b9042260aaa1ab5dd  -->
+<jasperReport name="index" language="java" pageWidth="595" pageHeight="842" sectionType="Part" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="d2716064-8ae4-40cf-a575-33afba400e3a">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
-	<import value="cz.tacr.elza.*"/>
-	<import value="cz.tacr.elza.print.JRDataIterableNodes"/>
+	<import>cz.tacr.elza.*</import>
+	<import>cz.tacr.elza.print.JRDataIterableNodes</import>
 	<parameter name="titlePage" class="net.sf.jasperreports.engine.JasperReport"/>
 	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
 	<parameter name="output" class="cz.tacr.elza.print.Output"/>
@@ -14,240 +13,238 @@
 	<parameter name="puvodcePage" class="net.sf.jasperreports.engine.JasperReport"/>
 	<parameter name="lastPage" class="net.sf.jasperreports.engine.JasperReport"/>
 	<parameter name="attPage" class="net.sf.jasperreports.engine.JasperReport">
-		<parameterDescription><![CDATA[Page with attachments]]></parameterDescription>
+		<description><![CDATA[Page with attachments]]></description>
 	</parameter>
 	<parameter name="toc" class="net.sf.jasperreports.engine.JasperReport">
-		<parameterDescription><![CDATA[Table of content]]></parameterDescription>
+		<description><![CDATA[Table of content]]></description>
 	</parameter>
-	<queryString>
-		<![CDATA[]]>
-	</queryString>
+	<query language="sql"><![CDATA[]]></query>
 	<variable name="personFilter" class="cz.tacr.elza.print.RecordsFilter">
-		<variableExpression><![CDATA[new cz.tacr.elza.print.RecordsFilter().addType("PERSON").addType("DYNASTY").addItemType("ZP2015_ORIGINATOR").addItemType("ZP2015_ENTITY_ROLE").addItemType("ZP2015_AP_REF")]]></variableExpression>
+		<expression><![CDATA[new cz.tacr.elza.print.RecordsFilter().addType("PERSON").addType("DYNASTY").addItemType("ZP2015_ORIGINATOR").addItemType("ZP2015_ENTITY_ROLE").addItemType("ZP2015_AP_REF")]]></expression>
 	</variable>
 	<detail>
 		<part uuid="d7db2050-8991-444e-bf92-503b5f47b1d0">
-			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
-				<subreportParameter name="REPORT_DATA_SOURCE">
-					<subreportParameterExpression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="fund">
-					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="output">
-					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportExpression><![CDATA[$P{titlePage}]]></subreportExpression>
-			</p:subreportPart>
+			<component kind="subreportPart">
+				<expression><![CDATA[$P{titlePage}]]></expression>
+				<parameter name="REPORT_DATA_SOURCE">
+					<expression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></expression>
+				</parameter>
+				<parameter name="fund">
+					<expression><![CDATA[$P{fund}]]></expression>
+				</parameter>
+				<parameter name="output">
+					<expression><![CDATA[$P{output}]]></expression>
+				</parameter>
+			</component>
 		</part>
-		<part evaluationTime="Report" uuid="7f441f5b-9019-48ce-a511-ac1a7f3e7abe">
+		<part uuid="7f441f5b-9019-48ce-a511-ac1a7f3e7abe" evaluationTime="Report">
 			<property name="net.sf.jasperreports.bookmarks.data.source.parameter" value="REPORT_DATA_SOURCE"/>
-			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
-				<subreportParameter name="fund">
-					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="output">
-					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportExpression><![CDATA[$P{toc}]]></subreportExpression>
-			</p:subreportPart>
+			<component kind="subreportPart">
+				<expression><![CDATA[$P{toc}]]></expression>
+				<parameter name="fund">
+					<expression><![CDATA[$P{fund}]]></expression>
+				</parameter>
+				<parameter name="output">
+					<expression><![CDATA[$P{output}]]></expression>
+				</parameter>
+			</component>
 		</part>
 		<part uuid="62dead71-ce25-4cae-9e67-0089b8179190">
-			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
-				<subreportParameter name="output">
-					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="fund">
-					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="REPORT_DATA_SOURCE">
-					<subreportParameterExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getStructured(Collections.singletonList("ZP2015_ORIGINATOR_SIMPLE")))]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportExpression><![CDATA[$P{puvodcePage}]]></subreportExpression>
-			</p:subreportPart>
+			<component kind="subreportPart">
+				<expression><![CDATA[$P{puvodcePage}]]></expression>
+				<parameter name="output">
+					<expression><![CDATA[$P{output}]]></expression>
+				</parameter>
+				<parameter name="fund">
+					<expression><![CDATA[$P{fund}]]></expression>
+				</parameter>
+				<parameter name="REPORT_DATA_SOURCE">
+					<expression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getStructured(Collections.singletonList("ZP2015_ORIGINATOR_SIMPLE")))]]></expression>
+				</parameter>
+			</component>
 		</part>
 		<part uuid="e28b4afa-fff0-45ff-9513-709de678c84b">
-			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
-				<subreportParameter name="REPORT_DATA_SOURCE">
-					<subreportParameterExpression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="fund">
-					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="output">
-					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportExpression><![CDATA[$P{introPage}]]></subreportExpression>
-			</p:subreportPart>
+			<component kind="subreportPart">
+				<expression><![CDATA[$P{introPage}]]></expression>
+				<parameter name="REPORT_DATA_SOURCE">
+					<expression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></expression>
+				</parameter>
+				<parameter name="fund">
+					<expression><![CDATA[$P{fund}]]></expression>
+				</parameter>
+				<parameter name="output">
+					<expression><![CDATA[$P{output}]]></expression>
+				</parameter>
+			</component>
 		</part>
 		<part uuid="e26f7783-e6ea-46b1-b3a3-787acfd2f50e">
 			<printWhenExpression><![CDATA[$P{output}.getAttPagePlaceHolders("ZP2015_ATTACHMENT").size()>0]]></printWhenExpression>
-			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
-				<subreportParameter name="output">
-					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="fund">
-					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="REPORT_DATA_SOURCE">
-					<subreportParameterExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getAttPagePlaceHolders("ZP2015_ATTACHMENT"))]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportExpression><![CDATA[$P{attPage}]]></subreportExpression>
-			</p:subreportPart>
+			<component kind="subreportPart">
+				<expression><![CDATA[$P{attPage}]]></expression>
+				<parameter name="output">
+					<expression><![CDATA[$P{output}]]></expression>
+				</parameter>
+				<parameter name="fund">
+					<expression><![CDATA[$P{fund}]]></expression>
+				</parameter>
+				<parameter name="REPORT_DATA_SOURCE">
+					<expression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getAttPagePlaceHolders("ZP2015_ATTACHMENT"))]]></expression>
+				</parameter>
+			</component>
 		</part>
 		<part uuid="43ca8116-fb27-4587-a630-b8b6559634f9">
-			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
-				<subreportParameter name="REPORT_DATA_SOURCE">
-					<subreportParameterExpression><![CDATA[new JRDataIterableNodes($P{output}.createFlatNodeIterator())]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="output">
-					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="fund">
-					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportExpression><![CDATA[$P{contentPage}]]></subreportExpression>
-			</p:subreportPart>
+			<component kind="subreportPart">
+				<expression><![CDATA[$P{contentPage}]]></expression>
+				<parameter name="REPORT_DATA_SOURCE">
+					<expression><![CDATA[new JRDataIterableNodes($P{output}.createFlatNodeIterator())]]></expression>
+				</parameter>
+				<parameter name="output">
+					<expression><![CDATA[$P{output}]]></expression>
+				</parameter>
+				<parameter name="fund">
+					<expression><![CDATA[$P{fund}]]></expression>
+				</parameter>
+			</component>
 		</part>
 		<part uuid="865dd405-8fba-4e49-8bda-88300e9c2212">
 			<printWhenExpression><![CDATA[$P{output}.getRecordsByType("PARTY_GROUP").getRecords().size()>0]]></printWhenExpression>
-			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
-				<subreportParameter name="output">
-					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="fund">
-					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="REPORT_DATA_SOURCE">
-					<subreportParameterExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getRecordsByType("PARTY_GROUP").getRecords())]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="registryName">
-					<subreportParameterExpression><![CDATA["Rejstřík korporativní"]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="printDescription">
-					<subreportParameterExpression><![CDATA[true]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportExpression><![CDATA[$P{registryPage}]]></subreportExpression>
-			</p:subreportPart>
+			<component kind="subreportPart">
+				<expression><![CDATA[$P{registryPage}]]></expression>
+				<parameter name="output">
+					<expression><![CDATA[$P{output}]]></expression>
+				</parameter>
+				<parameter name="fund">
+					<expression><![CDATA[$P{fund}]]></expression>
+				</parameter>
+				<parameter name="REPORT_DATA_SOURCE">
+					<expression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getRecordsByType("PARTY_GROUP").getRecords())]]></expression>
+				</parameter>
+				<parameter name="registryName">
+					<expression><![CDATA["Rejstřík korporativní"]]></expression>
+				</parameter>
+				<parameter name="printDescription">
+					<expression><![CDATA[true]]></expression>
+				</parameter>
+			</component>
 		</part>
 		<part uuid="542597fe-0018-4554-bd4b-a344db057935">
 			<printWhenExpression><![CDATA[$P{output}.getFilteredRecords($V{personFilter}).getRecords().size()>0]]></printWhenExpression>
-			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
-				<subreportParameter name="output">
-					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="fund">
-					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="registryName">
-					<subreportParameterExpression><![CDATA["Rejstřík osobní"]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="printDescription">
-					<subreportParameterExpression><![CDATA[true]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="REPORT_DATA_SOURCE">
-					<subreportParameterExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getFilteredRecords($V{personFilter}).getRecords())]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportExpression><![CDATA[$P{registryPage}]]></subreportExpression>
-			</p:subreportPart>
+			<component kind="subreportPart">
+				<expression><![CDATA[$P{registryPage}]]></expression>
+				<parameter name="output">
+					<expression><![CDATA[$P{output}]]></expression>
+				</parameter>
+				<parameter name="fund">
+					<expression><![CDATA[$P{fund}]]></expression>
+				</parameter>
+				<parameter name="registryName">
+					<expression><![CDATA["Rejstřík osobní"]]></expression>
+				</parameter>
+				<parameter name="printDescription">
+					<expression><![CDATA[true]]></expression>
+				</parameter>
+				<parameter name="REPORT_DATA_SOURCE">
+					<expression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getFilteredRecords($V{personFilter}).getRecords())]]></expression>
+				</parameter>
+			</component>
 		</part>
 		<part uuid="637ea92e-1620-4d92-9005-0f7249b16339">
 			<printWhenExpression><![CDATA[$P{output}.getRecordsByType("GEO").getRecords().size()>0]]></printWhenExpression>
-			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
-				<subreportParameter name="output">
-					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="fund">
-					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="REPORT_DATA_SOURCE">
-					<subreportParameterExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getRecordsByType("GEO").getRecords())]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="registryName">
-					<subreportParameterExpression><![CDATA["Rejstřík zeměpisný"]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="printDescription">
-					<subreportParameterExpression><![CDATA[false]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportExpression><![CDATA[$P{registryPage}]]></subreportExpression>
-			</p:subreportPart>
+			<component kind="subreportPart">
+				<expression><![CDATA[$P{registryPage}]]></expression>
+				<parameter name="output">
+					<expression><![CDATA[$P{output}]]></expression>
+				</parameter>
+				<parameter name="fund">
+					<expression><![CDATA[$P{fund}]]></expression>
+				</parameter>
+				<parameter name="REPORT_DATA_SOURCE">
+					<expression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getRecordsByType("GEO").getRecords())]]></expression>
+				</parameter>
+				<parameter name="registryName">
+					<expression><![CDATA["Rejstřík zeměpisný"]]></expression>
+				</parameter>
+				<parameter name="printDescription">
+					<expression><![CDATA[false]]></expression>
+				</parameter>
+			</component>
 		</part>
 		<part uuid="466d25ae-70ff-4aaa-ad7c-1c9980e558db">
 			<printWhenExpression><![CDATA[$P{output}.getRecordsByType("EVENT").getRecords().size()>0]]></printWhenExpression>
-			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
-				<subreportParameter name="REPORT_DATA_SOURCE">
-					<subreportParameterExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getRecordsByType("EVENT").getRecords())]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="registryName">
-					<subreportParameterExpression><![CDATA["Rejstřík událostí"]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="output">
-					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="fund">
-					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="printDescription">
-					<subreportParameterExpression><![CDATA[false]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportExpression><![CDATA[$P{registryPage}]]></subreportExpression>
-			</p:subreportPart>
+			<component kind="subreportPart">
+				<expression><![CDATA[$P{registryPage}]]></expression>
+				<parameter name="REPORT_DATA_SOURCE">
+					<expression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getRecordsByType("EVENT").getRecords())]]></expression>
+				</parameter>
+				<parameter name="registryName">
+					<expression><![CDATA["Rejstřík událostí"]]></expression>
+				</parameter>
+				<parameter name="output">
+					<expression><![CDATA[$P{output}]]></expression>
+				</parameter>
+				<parameter name="fund">
+					<expression><![CDATA[$P{fund}]]></expression>
+				</parameter>
+				<parameter name="printDescription">
+					<expression><![CDATA[false]]></expression>
+				</parameter>
+			</component>
 		</part>
 		<part uuid="60955a12-9c97-4e1b-ab8c-ee959e932211">
 			<printWhenExpression><![CDATA[$P{output}.getRecordsByType("ARTWORK").getRecords().size()>0]]></printWhenExpression>
-			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
-				<subreportParameter name="REPORT_DATA_SOURCE">
-					<subreportParameterExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getRecordsByType("ARTWORK").getRecords())]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="registryName">
-					<subreportParameterExpression><![CDATA["Rejstřík děl"]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="fund">
-					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="output">
-					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="printDescription">
-					<subreportParameterExpression><![CDATA[false]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportExpression><![CDATA[$P{registryPage}]]></subreportExpression>
-			</p:subreportPart>
+			<component kind="subreportPart">
+				<expression><![CDATA[$P{registryPage}]]></expression>
+				<parameter name="REPORT_DATA_SOURCE">
+					<expression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getRecordsByType("ARTWORK").getRecords())]]></expression>
+				</parameter>
+				<parameter name="registryName">
+					<expression><![CDATA["Rejstřík děl"]]></expression>
+				</parameter>
+				<parameter name="fund">
+					<expression><![CDATA[$P{fund}]]></expression>
+				</parameter>
+				<parameter name="output">
+					<expression><![CDATA[$P{output}]]></expression>
+				</parameter>
+				<parameter name="printDescription">
+					<expression><![CDATA[false]]></expression>
+				</parameter>
+			</component>
 		</part>
 		<part uuid="be6151b6-7a27-472a-92e6-58615a084c40">
 			<printWhenExpression><![CDATA[$P{output}.getRecordsByType("TERM").getRecords().size()>0]]></printWhenExpression>
-			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
-				<subreportParameter name="REPORT_DATA_SOURCE">
-					<subreportParameterExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getRecordsByType("TERM").getRecords())]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="registryName">
-					<subreportParameterExpression><![CDATA["Rejstřík věcný"]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="printDescription">
-					<subreportParameterExpression><![CDATA[true]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="fund">
-					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="output">
-					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportExpression><![CDATA[$P{registryPage}]]></subreportExpression>
-			</p:subreportPart>
+			<component kind="subreportPart">
+				<expression><![CDATA[$P{registryPage}]]></expression>
+				<parameter name="REPORT_DATA_SOURCE">
+					<expression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{output}.getRecordsByType("TERM").getRecords())]]></expression>
+				</parameter>
+				<parameter name="registryName">
+					<expression><![CDATA["Rejstřík věcný"]]></expression>
+				</parameter>
+				<parameter name="printDescription">
+					<expression><![CDATA[true]]></expression>
+				</parameter>
+				<parameter name="fund">
+					<expression><![CDATA[$P{fund}]]></expression>
+				</parameter>
+				<parameter name="output">
+					<expression><![CDATA[$P{output}]]></expression>
+				</parameter>
+			</component>
 		</part>
 		<part uuid="cadbaf17-2f33-4477-aa7f-0de8a1c33d89">
-			<p:subreportPart xmlns:p="http://jasperreports.sourceforge.net/jasperreports/parts" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/parts http://jasperreports.sourceforge.net/xsd/parts.xsd">
-				<subreportParameter name="REPORT_DATA_SOURCE">
-					<subreportParameterExpression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="fund">
-					<subreportParameterExpression><![CDATA[$P{fund}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="output">
-					<subreportParameterExpression><![CDATA[$P{output}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportExpression><![CDATA[$P{lastPage}]]></subreportExpression>
-			</p:subreportPart>
+			<component kind="subreportPart">
+				<expression><![CDATA[$P{lastPage}]]></expression>
+				<parameter name="REPORT_DATA_SOURCE">
+					<expression><![CDATA[new net.sf.jasperreports.engine.JREmptyDataSource()]]></expression>
+				</parameter>
+				<parameter name="fund">
+					<expression><![CDATA[$P{fund}]]></expression>
+				</parameter>
+				<parameter name="output">
+					<expression><![CDATA[$P{output}]]></expression>
+				</parameter>
+			</component>
 		</part>
 	</detail>
 </jasperReport>
