@@ -2198,10 +2198,12 @@ public class PackageService {
                     entityRuleSet = item;
                 }
 
-                // pokud je hodnota `compatibility-rul-package` != null && větší aktuální verze balíčku 
-                if (ruleSet.getCompatibilityRulPackage() != null 
-                		&& ruleSet.getCompatibilityRulPackage() > rulPackage.getVersion()) {
-                	pkgCtx.addCodeRuleToRevalidateFunds(ruleSet.getCode());
+                // pokud je hodnota `compatibility-rul-package` != null && větší původní/předchozí verze balíčku 
+                if (ruleSet.getCompatibilityRulPackage() != null) {
+                    if (pkgCtx.getOldPackageVersion() == null ||
+                    		ruleSet.getCompatibilityRulPackage() > pkgCtx.getOldPackageVersion()) {
+                    	pkgCtx.addCodeRuleToRevalidateFunds(ruleSet.getCode());
+                    }
                 }
 
                 RuleUpdateContext ruc = new RuleUpdateContext(RuleState.UPDATE, pkgCtx, item, this.resourcePathResolver);
