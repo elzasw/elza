@@ -433,7 +433,7 @@ class FundPage extends AbstractReactComponent {
                 <div className="item-row desc" key={item.id + '-x'}>
                     <div style={{ display: "flex", width: "100%" }}>
                         {/* <span className="desc-part id bubble" onClick={() => this.copyToClipboard(item.id)}>{item.id}</span> */}
-                        {item.fundNumber && <span className="desc-part bubble internal-code" onClick={() => this.copyToClipboard(item.fundNumber)}>{item.fundNumber}</span>}
+                        {item.fundNumber != undefined && <span className="desc-part bubble internal-code" onClick={() => this.copyToClipboard(item.fundNumber)}>{item.fundNumber}</span>}
                         {item.internalCode && <span className="desc-part bubble" onClick={() => this.copyToClipboard(item.internalCode)}>{item.internalCode}</span>}
                         {item.mark && <span className="desc-part bubble" onClick={() => this.copyToClipboard(item.mark)}>{item.mark}</span>}
                         {institution && <Link className="name desc-part link bubble shrink" title={institution.name} key={`fund-${item.id}`} to={urlEntity(institution.accessPointId)} onMouseDown={(e) => e.stopPropagation()}>
