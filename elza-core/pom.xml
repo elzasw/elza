@@ -10,8 +10,9 @@
     <name>ELZA Core</name>
 
     <properties>
-        <drools.version>8.44.0.Final</drools.version> <!-- 7.74.1.Final, 8.44.0.Final -->
+        <drools.version>10.1.0</drools.version> <!-- 8.44.0.Final, 7.74.1.Final -->
         <kerberos.version>2.1.1</kerberos.version>
+        <zxing.version>3.5.3</zxing.version>
     </properties>
 
     <dependencies>
@@ -23,7 +24,6 @@
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
-            <!--<version>3.5.5</version>-->
 		</dependency>		
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -158,12 +158,12 @@
 		<dependency>
 		    <groupId>com.google.zxing</groupId>
 		    <artifactId>core</artifactId>
-		    <version>3.5.3</version>
+		    <version>${zxing.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.zxing</groupId>
 			<artifactId>javase</artifactId>
-			<version>3.5.3</version>
+			<version>${zxing.version}</version>
 		</dependency>
 		<dependency>
 	    	<groupId>com.singingbush</groupId>
@@ -211,7 +211,7 @@
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-transports-http</artifactId>
 		</dependency>
-		<!-- Drools -->
+		<!-- https://mvnrepository.com/artifact/org.drools/drools-core -->
         <dependency>
             <groupId>org.drools</groupId>
             <artifactId>drools-core</artifactId>
