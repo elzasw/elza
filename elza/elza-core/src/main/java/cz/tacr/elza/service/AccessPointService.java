@@ -3049,6 +3049,18 @@ public class AccessPointService {
         }
     }
 
+    public void checkPermissionForRead(final ApState state) {
+        if (userService.hasPermission(Permission.AP_SCOPE_RD_ALL)
+                || userService.hasPermission(Permission.AP_SCOPE_RD, state.getScopeId())) {
+            return;
+        }
+
+        throw new SystemException("Nedostatečné oprávnění pro čtení přístupového bodu",
+                BaseCode.INSUFFICIENT_PERMISSIONS)
+                        .set("accessPointId", state.getAccessPointId())
+                        .set("scopeId", state.getScopeId());
+    }
+
     public void checkPermissionForEdit(final ApState state) {
         checkPermissionForEdit(state, (RevStateApproval) null);
     }
