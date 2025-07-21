@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { AppState, DescItemTypeRef, RuleType } from "typings/store";
 import { messages } from "./messages";
 import { FieldType, FilterType, OperationCompareType } from "elza-api";
-import { useIntl } from "react-intl";
+import { IntlShape, useIntl } from "react-intl";
 import { BaseFilterWindow } from "./FilterWindow";
 import { FilterFormProps } from "./types";
 import { descItemTypesFetchIfNeeded } from "actions/refTables/descItemTypes";
@@ -22,7 +22,7 @@ import { FilterFieldRecordRef } from "./fields/FilterFieldRecordRef";
 import { RulDataTypeVO } from "api/RulDataTypeVO";
 import { FilterValueFieldProps } from "./fields/types";
 
-function formatOperation(operation: OperationCompareType) {
+function formatOperation(operation: OperationCompareType, intl?: IntlShape) {
   switch (operation) {
     case OperationCompareType.Eq:
       return ": "
@@ -38,9 +38,24 @@ function formatOperation(operation: OperationCompareType) {
       return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}>{">="}</div>
     case OperationCompareType.Lte:
       return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}>{"<="}</div>
+    case OperationCompareType.NotNull:
+    case OperationCompareType.IsNull:
+      return <div style={{ padding: "0 5px" }}>{intl?.formatMessage(messages[operation]) || operation}</div>
     default:
       return operation;
   }
+}
+
+function formatDisplayValue(operation: OperationCompareType, data: any, dataType: RulDataTypeVO, intl: IntlShape) {
+  return <>
+    <b>{data.itemType.shortcut}</b>
+    {dataType.code === RulDataTypeCodeEnum.ENUM && formatOperation(operation, intl)}
+    {data.itemSpec && dataType.code !== RulDataTypeCodeEnum.ENUM && <>&nbsp;(</>}
+    {data.itemSpec && data.itemSpec.name}
+    {data.itemSpec && dataType.code !== RulDataTypeCodeEnum.ENUM && ")"}
+    {dataType.code !== RulDataTypeCodeEnum.ENUM && formatOperation(operation, intl)}
+    {data.itemLabel && data.itemLabel}
+  </>
 }
 
 interface DataTypeFilterDefinition {
@@ -65,31 +80,31 @@ export function FilterDescItemModal({
 }: FilterFormProps<any>) {
   const availableDataTypesMap: DataTypeFiltersMap = {
     [RulDataTypeCodeEnum.INT]: {
-      operations: [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.Lt, OperationCompareType.Gt, OperationCompareType.Lte, OperationCompareType.Gte],
+      operations: [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.Lt, OperationCompareType.Gt, OperationCompareType.Lte, OperationCompareType.Gte, OperationCompareType.IsNull, OperationCompareType.NotNull],
       fieldComponent: FilterFieldNumber,
     },
     [RulDataTypeCodeEnum.DECIMAL]: {
-      operations: [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.Lt, OperationCompareType.Gt, OperationCompareType.Lte, OperationCompareType.Gte],
+      operations: [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.Lt, OperationCompareType.Gt, OperationCompareType.Lte, OperationCompareType.Gte, OperationCompareType.IsNull, OperationCompareType.NotNull],
       fieldComponent: FilterFieldNumber,
     },
     [RulDataTypeCodeEnum.STRING]: {
-      operations: [OperationCompareType.Contains, OperationCompareType.Eq, OperationCompareType.Neq],
+      operations: [OperationCompareType.Contains, OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.IsNull, OperationCompareType.NotNull],
       fieldComponent: FilterFieldText,
     },
     [RulDataTypeCodeEnum.TEXT]: {
-      operations: [OperationCompareType.Contains, OperationCompareType.Eq, OperationCompareType.Neq],
+      operations: [OperationCompareType.Contains, OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.IsNull, OperationCompareType.NotNull],
       fieldComponent: FilterFieldText,
     },
     // [RulDataTypeCodeEnum.COORDINATES]: {operations: [OperationCompareType.Eq, OperationCompareType.Neq]},
     [RulDataTypeCodeEnum.UNITDATE]: {
-      operations: [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.Lt, OperationCompareType.Gt, OperationCompareType.Lte, OperationCompareType.Gte],
+      operations: [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.Lt, OperationCompareType.Gt, OperationCompareType.Lte, OperationCompareType.Gte, OperationCompareType.IsNull, OperationCompareType.NotNull],
       fieldComponent: FilterFieldUnitdate,
     },
     [RulDataTypeCodeEnum.ENUM]: {
-      operations: [OperationCompareType.Eq, OperationCompareType.Neq],
+      operations: [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.IsNull, OperationCompareType.NotNull],
     },
     [RulDataTypeCodeEnum.RECORD_REF]: {
-      operations: [OperationCompareType.Eq, OperationCompareType.Neq],
+      operations: [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.IsNull, OperationCompareType.NotNull],
       fieldComponent: FilterFieldRecordRef,
     },
   }
@@ -123,7 +138,8 @@ export function FilterDescItemModal({
 
   const dispatch = useThunkDispatch();
 
-  const { formatMessage } = useIntl();
+  const intl = useIntl();
+  const { formatMessage } = intl;
 
   const isDirty = itemTypeCode != initialValue?.data?.code || (initialValue.operation && operation != initialValue.operation) || (!itemTypeCode && !!itemTypeQuery);
   const inputRef = useRef(null)
@@ -230,6 +246,15 @@ export function FilterDescItemModal({
   const handleFilterChange = useCallback(() => {
     const itemType = itemTypeCode && descItemTypes.find(({ code }) => code === itemTypeCode);
     const itemSpec = itemSpecCode && itemType?.descItemSpecs?.find(({ code }) => code === itemSpecCode);
+    const dataType = dataTypes.itemsMap[itemType.dataTypeId];
+
+    let _itemValue = itemValue;
+    let _itemLabel = itemLabel;
+    // remove value when not used by operation
+    if (operation === OperationCompareType.IsNull || operation === OperationCompareType.NotNull) {
+      _itemValue = undefined;
+      _itemLabel = undefined;
+    }
 
     if (isDirty && itemType) {
       onFilterChange({
@@ -238,27 +263,25 @@ export function FilterDescItemModal({
         data: {
           itemType,
           itemSpec,
-          itemValue,
-          itemLabel,
+          itemValue: _itemValue,
+          itemLabel: _itemLabel,
         },
         operation,
         getDisplayValue: ({ operation, data }) => <>
-          <b>{data.itemType.shortcut}</b>
-          {formatOperation(operation)}
-          {data.itemSpec && data.itemSpec.name}
-          {data.itemSpec && data.itemValue && ": "}
-          {data.itemLabel && data.itemLabel}
+          {formatDisplayValue(operation, data, dataType, intl)}
         </>,
-        getFilterValue: ({ filterType, operation, data }) => ({
-          filterType,
-          field: {
-            fieldType: FieldType.DescItem,
-            typeCode: data.itemType.code,
-            specCode: data.itemSpec?.code,
-          },
-          operation,
-          value: data.itemValue,
-        }),
+        getFilterValue: ({ filterType, operation, data }) => {
+          return ({
+            filterType,
+            field: {
+              fieldType: FieldType.DescItem,
+              typeCode: data.itemType.code,
+              specCode: data.itemSpec?.code,
+            },
+            operation,
+            value: data.itemValue,
+          })
+        },
         getSerializedString: ({ data, operation }) => {
           if (data.itemSpec && data.itemValue) {
             return `${data.itemType.code} - ${data.itemSpec.code} ${operation} ${data.itemValue}`
@@ -282,15 +305,30 @@ export function FilterDescItemModal({
     descItemTypes,
     operation,
     isDirty,
+    intl,
+    dataTypes,
   ]);
+
+  function validate() {
+    if (itemTypeCode == "") { return false; }
+    if (!operation) { return false; }
+
+    // if operation is IsNull or NotNull, ignore invalid value
+    if (
+      operation === OperationCompareType.IsNull
+      || operation === OperationCompareType.NotNull
+      // if value field component is defined filter value is required
+      || !dataTypeFilterDefinition?.fieldComponent
+    ) {
+      return true;
+    }
+
+    return isValueValid;
+  }
 
   return <BaseFilterWindow
     filterName={formatMessage(messages[filterName])}
-    isValid={itemTypeCode != ""
-      && !!operation
-      && dataTypeFilterDefinition?.fieldComponent ? isValueValid : true
-        && selectedItemType?.useSpecification ? itemSpecCode != undefined : true
-    }
+    isValid={validate()}
     isDirty={isDirty}
     onClose={onClose}
     onFilterConfirm={handleFilterChange}
@@ -347,6 +385,8 @@ export function FilterDescItemModal({
         })}
       </Combobox>}
     {!!dataTypeFilterDefinition?.fieldComponent
+      && operation != OperationCompareType.IsNull
+      && operation != OperationCompareType.NotNull
       && <dataTypeFilterDefinition.fieldComponent
         value={itemValue}
         label={itemLabel}
