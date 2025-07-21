@@ -562,7 +562,7 @@ class FundPage extends AbstractReactComponent {
                     <FundFilters currentFilters={fundRegion.filter.filter} onChange={this.handleFiltersChange} />
                 </div>
                 <div style={{ position: "relative", display: "flex", flexGrow: 1, flexShrink: 1, height: "400px" }}>
-                    <div style={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
+                    <div style={{ display: "flex", flexDirection: "column", flexGrow: 1, overflow: "hidden" }}>
                         <ListBox
                             className="fund-listbox"
                             ref="fundList"
@@ -573,7 +573,7 @@ class FundPage extends AbstractReactComponent {
                             onSelect={this.handleSelect}
                         />
                     </div>
-                    <InlineDrawer className="drawer" position='end' separator={true} open={sidebarOpen} size='medium' style={{ height: "auto" }}>
+                    <InlineDrawer className="drawer" position='end' separator={true} open={sidebarOpen} size='small' style={{ height: "auto", flexShrink: 0 }}>
                         <DrawerHeader>
                             <DrawerHeaderTitle
                                 action={
