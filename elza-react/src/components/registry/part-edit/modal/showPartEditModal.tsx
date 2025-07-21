@@ -65,13 +65,15 @@ export const showPartEditModal = (
 
                 // console.log('SUBMIT EDIT', apId, modifiedPart.id, submitData);
 
-                const result = !updatedPart
-                    ? await Api.accesspoints.accessPointUpdatePart(apId, modifiedPart.id, submitData, apVersion)
-                    : await Api.accesspoints.accessPointUpdateRevisionPart(apId, modifiedPart.id, submitData, apVersion);
+                if (!updatedPart) {
+                    await Api.accesspoints.accessPointUpdatePart(apId, modifiedPart.id, submitData, apVersion);
+                }
+                else {
+                    await Api.accesspoints.accessPointUpdateRevisionPart(apId, modifiedPart.id, submitData, apVersion);
+                }
                 onClose();
                 await dispatch(goToAe(history, apId, true, !select, revision))
                 onUpdateFinish();
-                return result
             }
             const items = getRevisionItems(
                 revision ? part?.items || [] : undefined,
