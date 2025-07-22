@@ -58,7 +58,7 @@ function formatSpec(operation: OperationCompareType, data: any, dataType: RulDat
   }
   if (dataType.code === RulDataTypeCodeEnum.ENUM) {
     if (ignoreValue) { return undefined; }
-    return data.itemSpec;
+    return data.itemSpec.name;
   }
   return <>
     &nbsp;
