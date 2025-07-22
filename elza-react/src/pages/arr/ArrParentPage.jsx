@@ -127,7 +127,8 @@ export default class ArrParentPage extends AbstractReactComponent {
 
         // skip loading data, if fund is currently open
         if(activeFund?.id === fundId){
-            if(versionId == undefined){
+            // current/latest version (versionId == undefined) doesn't have lock date
+            if(versionId == undefined && !activeFund?.activeVersion?.lockDate){
                 return activeFund;
             }
             else if( activeFund?.activeVersion?.id == versionId){
