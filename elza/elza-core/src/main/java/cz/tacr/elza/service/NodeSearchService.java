@@ -252,13 +252,24 @@ public class NodeSearchService {
 	    ItemType itemType = sdp.getItemTypeByCode(itemTypeCode.toUpperCase());
 	    Objects.requireNonNull(itemType);
 
+	    DataType dataType = itemType.getDataType();
+
 	    // field name in index
 	    String fieldName = itemTypeCode.toLowerCase();
-	    if (itemSpecCode != null) {
+	    if (itemSpecCode != null && dataType != DataType.ENUM) {
 	    	fieldName += "_" + itemSpecCode.toLowerCase();
 	    }
+
+	    // tyto operace jsou nezávislé na datovém typu
 	    OperationCompareType op = filter.getOperation();
-	    DataType dataType = itemType.getDataType();
+		switch (op) {
+			case NOT_NULL:
+				return factory.exists().field(fieldName).toPredicate();
+			case IS_NULL:
+				return factory.bool().mustNot(factory.exists().field(fieldName)).toPredicate();
+		}
+
+		// predikáty v závislosti na datovém typu
 		switch (dataType) {
 		case INT: {
 		    Integer value = Integer.parseInt(filter.getValue());
@@ -269,7 +280,7 @@ public class NodeSearchService {
 			return getPredicateByNumber(factory, fieldName, op, value);
 		}
 		case ENUM:
-			return getPredicateByEnum(factory, itemTypeCode.toLowerCase(), itemSpecCode.toLowerCase(), filter);
+			return getPredicateByEnum(factory, fieldName, itemSpecCode.toLowerCase(), filter);
 		case RECORD_REF:
 			return getPredicateByRecordRef(factory, fieldName, filter);
 		case STRING:
