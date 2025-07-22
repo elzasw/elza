@@ -30,7 +30,7 @@ function formatOperation(operation: OperationCompareType, intl?: IntlShape) {
     case OperationCompareType.Neq:
       return <div style={{ padding: "0 5px", fontSize: "1.4rem" }}>≠</div>
     case OperationCompareType.Contains:
-      return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}>*</div>
+      return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}>∋</div>
     case OperationCompareType.Gt:
       return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}>{">"}</div>
     case OperationCompareType.Lt:
@@ -39,11 +39,10 @@ function formatOperation(operation: OperationCompareType, intl?: IntlShape) {
       return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}>{">="}</div>
     case OperationCompareType.Lte:
       return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}>{"<="}</div>
-    // case OperationCompareType.Intersect:
-    //   return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}><ShapeIntersectFilled /></div>
+    case OperationCompareType.Intersect:
+      return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}><ShapeIntersectFilled /></div>
     case OperationCompareType.NotNull:
     case OperationCompareType.IsNull:
-    case OperationCompareType.Intersect:
       return <div style={{ padding: "0 5px" }}>{intl?.formatMessage(messages[operation]) || operation}</div>
     default:
       return <div style={{ padding: "0 5px" }}>{operation}</div>;
