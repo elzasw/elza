@@ -245,8 +245,9 @@ public class NodeSearchService {
 			throw new IllegalArgumentException("Unsupported field type: " + filter.getField());
 		}
 
-    	String itemTypeCode = ((DescItemField) filter.getField()).getTypeCode();
-    	String itemSpecCode = ((DescItemField) filter.getField()).getSpecCode();
+		DescItemField itemField = (DescItemField) filter.getField();
+    	String itemTypeCode = itemField.getTypeCode();
+    	String itemSpecCode = itemField.getSpecCode();
 
 	    StaticDataProvider sdp = staticDataService.getData();
 	    ItemType itemType = sdp.getItemTypeByCode(itemTypeCode.toUpperCase());
@@ -254,19 +255,22 @@ public class NodeSearchService {
 
 	    DataType dataType = itemType.getDataType();
 
-	    // field name in index
+	    // název pole pro index
 	    String fieldName = itemTypeCode.toLowerCase();
 	    if (itemSpecCode != null && dataType != DataType.ENUM) {
 	    	fieldName += "_" + itemSpecCode.toLowerCase();
 	    }
 
+	    // speciální případ pro UNITDATE NOT_NULL/IS_NULL
+	    String existsName = dataType == DataType.UNITDATE ? fieldName + "_" + NORM_FROM : fieldName;
+
 	    // tyto operace jsou nezávislé na datovém typu
 	    OperationCompareType op = filter.getOperation();
 		switch (op) {
 			case NOT_NULL:
-				return factory.exists().field(fieldName).toPredicate();
+				return factory.exists().field(existsName).toPredicate();
 			case IS_NULL:
-				return factory.bool().mustNot(factory.exists().field(fieldName)).toPredicate();
+				return factory.bool().mustNot(factory.exists().field(existsName)).toPredicate();
 		}
 
 		// predikáty v závislosti na datovém typu
@@ -412,14 +416,21 @@ public class NodeSearchService {
 				.should(factory.range().field(fieldNormalizedTo).greaterThan(normalizedFrom));
 			return bool.toPredicate();
 		case LTE:
-			// (from1, to1), (from2, to2) -> to2 < from1 OR from2 < to1 
+			// (from1, to1), (from2, to2) -> (to2 < from1 OR from2 < to1) 
 			bool.should(factory.range().field(fieldNormalizedTo).lessThan(normalizedFrom))
 				.should(factory.range().field(fieldNormalizedFrom).lessThan(normalizedTo));
 			return bool.toPredicate();
 		case CONTAINS:
+			// (from1, to1), (from2, to2) -> (from1 <= from2 AND to1 >= to2)
 			return bool
-					.must(factory.range().field(fieldNormalizedFrom).lessThan(normalizedFrom))
-					.must(factory.range().field(fieldNormalizedTo).greaterThan(normalizedTo))
+					.must(factory.range().field(fieldNormalizedFrom).atMost(normalizedFrom))
+					.must(factory.range().field(fieldNormalizedTo).atLeast(normalizedTo))
+					.toPredicate();
+		case INTERSECT:
+			// (from1, to1), (from2, to2) -> (to2 >= from1 AND from2 <= to1)  
+			return bool
+					.must(factory.range().field(fieldNormalizedFrom).atMost(normalizedTo))
+					.must(factory.range().field(fieldNormalizedTo).atLeast(normalizedFrom))
 					.toPredicate();
 		default:
 			throw new IllegalArgumentException("Unsupported comparison operation: " + op);

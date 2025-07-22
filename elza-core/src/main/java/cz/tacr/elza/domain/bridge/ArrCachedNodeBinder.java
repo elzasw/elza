@@ -92,7 +92,7 @@ public class ArrCachedNodeBinder implements TypeBinder {
 				break;
     		}
         }
-        
+
 		createStringField(CONFORMITY_ERROR);
 		createStringField(CONFORMITY_MISSING);
 		createStringField(UUID);
