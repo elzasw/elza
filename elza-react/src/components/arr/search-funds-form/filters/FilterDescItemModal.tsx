@@ -1,4 +1,5 @@
 import { Combobox, OptionOnSelectData, SelectionEvents, Option, Menu, MenuTrigger, MenuButton, MenuPopover, MenuItem } from "@fluentui/react-components";
+import { ShapeIntersectFilled } from "@fluentui/react-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useInitialFocus } from "./utils";
 import { useSelector } from "react-redux";
@@ -38,11 +39,14 @@ function formatOperation(operation: OperationCompareType, intl?: IntlShape) {
       return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}>{">="}</div>
     case OperationCompareType.Lte:
       return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}>{"<="}</div>
+    // case OperationCompareType.Intersect:
+    //   return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}><ShapeIntersectFilled /></div>
     case OperationCompareType.NotNull:
     case OperationCompareType.IsNull:
+    case OperationCompareType.Intersect:
       return <div style={{ padding: "0 5px" }}>{intl?.formatMessage(messages[operation]) || operation}</div>
     default:
-      return operation;
+      return <div style={{ padding: "0 5px" }}>{operation}</div>;
   }
 }
 
@@ -148,6 +152,7 @@ export function FilterDescItemModal({
     [RulDataTypeCodeEnum.UNITDATE]: {
       operations: [
         OperationCompareType.Contains,
+        OperationCompareType.Intersect,
         OperationCompareType.Eq,
         OperationCompareType.Neq,
         OperationCompareType.Lt,
