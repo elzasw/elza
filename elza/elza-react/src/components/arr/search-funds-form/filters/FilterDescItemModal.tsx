@@ -46,15 +46,34 @@ function formatOperation(operation: OperationCompareType, intl?: IntlShape) {
   }
 }
 
+function formatSpec(operation: OperationCompareType, data: any, dataType: RulDataTypeVO) {
+  const ignoreValue = operation === OperationCompareType.NotNull || operation === OperationCompareType.IsNull;
+
+  if (!data.itemSpec) {
+    return undefined;
+  }
+  if (dataType.code === RulDataTypeCodeEnum.ENUM) {
+    if (ignoreValue) { return undefined; }
+    return data.itemSpec;
+  }
+  return <>
+    &nbsp;
+    ({data.itemSpec.name})
+  </>
+}
+
+function formatLabel(operation: OperationCompareType, data: any) {
+  const ignoreValue = operation === OperationCompareType.NotNull || operation === OperationCompareType.IsNull;
+  return !ignoreValue && data.itemLabel
+}
+
 function formatDisplayValue(operation: OperationCompareType, data: any, dataType: RulDataTypeVO, intl: IntlShape) {
   return <>
     <b>{data.itemType.shortcut}</b>
     {dataType.code === RulDataTypeCodeEnum.ENUM && formatOperation(operation, intl)}
-    {data.itemSpec && dataType.code !== RulDataTypeCodeEnum.ENUM && <>&nbsp;(</>}
-    {data.itemSpec && data.itemSpec.name}
-    {data.itemSpec && dataType.code !== RulDataTypeCodeEnum.ENUM && ")"}
+    {formatSpec(operation, data, dataType)}
     {dataType.code !== RulDataTypeCodeEnum.ENUM && formatOperation(operation, intl)}
-    {data.itemLabel && data.itemLabel}
+    {formatLabel(operation, data)}
   </>
 }
 
@@ -250,8 +269,13 @@ export function FilterDescItemModal({
 
     let _itemValue = itemValue;
     let _itemLabel = itemLabel;
+    let _itemSpec = itemSpec;
     // remove value when not used by operation
     if (operation === OperationCompareType.IsNull || operation === OperationCompareType.NotNull) {
+      // remove spec when used as value in enum type
+      if (dataType.code === RulDataTypeCodeEnum.ENUM) {
+        _itemSpec = undefined;
+      }
       _itemValue = undefined;
       _itemLabel = undefined;
     }
@@ -262,7 +286,7 @@ export function FilterDescItemModal({
         name: itemType.code,
         data: {
           itemType,
-          itemSpec,
+          itemSpec: _itemSpec,
           itemValue: _itemValue,
           itemLabel: _itemLabel,
         },
@@ -292,7 +316,7 @@ export function FilterDescItemModal({
           else if (!data.itemSpec && data.itemValue) {
             return `${data.itemType.code} ${operation} ${data.itemValue}`
           }
-          return data.itemType.code;
+          return `${data.itemType.code} ${operation}`;
         },
       });
     }
@@ -325,6 +349,9 @@ export function FilterDescItemModal({
 
     return isValueValid;
   }
+
+  const hideValue = operation === OperationCompareType.IsNull || operation === OperationCompareType.NotNull;
+  const hideSpec = hideValue && selectedDataType?.code === RulDataTypeCodeEnum.ENUM;
 
   return <BaseFilterWindow
     filterName={formatMessage(messages[filterName])}
@@ -369,6 +396,7 @@ export function FilterDescItemModal({
     }
     {selectedItemType?.useSpecification
       && selectedItemType?.descItemSpecs?.length > 0
+      && !hideSpec
       && <Combobox
         ref={inputRef}
         clearable={true}
@@ -385,8 +413,7 @@ export function FilterDescItemModal({
         })}
       </Combobox>}
     {!!dataTypeFilterDefinition?.fieldComponent
-      && operation != OperationCompareType.IsNull
-      && operation != OperationCompareType.NotNull
+      && !hideValue
       && <dataTypeFilterDefinition.fieldComponent
         value={itemValue}
         label={itemLabel}
