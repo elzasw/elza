@@ -99,31 +99,81 @@ export function FilterDescItemModal({
 }: FilterFormProps<any>) {
   const availableDataTypesMap: DataTypeFiltersMap = {
     [RulDataTypeCodeEnum.INT]: {
-      operations: [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.Lt, OperationCompareType.Gt, OperationCompareType.Lte, OperationCompareType.Gte, OperationCompareType.IsNull, OperationCompareType.NotNull],
+      operations: [
+        OperationCompareType.Eq,
+        OperationCompareType.Neq,
+        OperationCompareType.Lt,
+        OperationCompareType.Gt,
+        OperationCompareType.Lte,
+        OperationCompareType.Gte,
+        OperationCompareType.IsNull,
+        OperationCompareType.NotNull
+      ],
       fieldComponent: FilterFieldNumber,
     },
     [RulDataTypeCodeEnum.DECIMAL]: {
-      operations: [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.Lt, OperationCompareType.Gt, OperationCompareType.Lte, OperationCompareType.Gte, OperationCompareType.IsNull, OperationCompareType.NotNull],
+      operations: [
+        OperationCompareType.Eq,
+        OperationCompareType.Neq,
+        OperationCompareType.Lt,
+        OperationCompareType.Gt,
+        OperationCompareType.Lte,
+        OperationCompareType.Gte,
+        OperationCompareType.IsNull,
+        OperationCompareType.NotNull
+      ],
       fieldComponent: FilterFieldNumber,
     },
     [RulDataTypeCodeEnum.STRING]: {
-      operations: [OperationCompareType.Contains, OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.IsNull, OperationCompareType.NotNull],
+      operations: [
+        OperationCompareType.Contains,
+        OperationCompareType.Eq,
+        OperationCompareType.Neq,
+        OperationCompareType.IsNull,
+        OperationCompareType.NotNull
+      ],
       fieldComponent: FilterFieldText,
     },
     [RulDataTypeCodeEnum.TEXT]: {
-      operations: [OperationCompareType.Contains, OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.IsNull, OperationCompareType.NotNull],
+      operations: [
+        OperationCompareType.Contains,
+        OperationCompareType.Eq,
+        OperationCompareType.Neq,
+        OperationCompareType.IsNull,
+        OperationCompareType.NotNull
+      ],
       fieldComponent: FilterFieldText,
     },
     // [RulDataTypeCodeEnum.COORDINATES]: {operations: [OperationCompareType.Eq, OperationCompareType.Neq]},
     [RulDataTypeCodeEnum.UNITDATE]: {
-      operations: [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.Lt, OperationCompareType.Gt, OperationCompareType.Lte, OperationCompareType.Gte, OperationCompareType.IsNull, OperationCompareType.NotNull],
+      operations: [
+        OperationCompareType.Contains,
+        OperationCompareType.Eq,
+        OperationCompareType.Neq,
+        OperationCompareType.Lt,
+        OperationCompareType.Gt,
+        OperationCompareType.Lte,
+        OperationCompareType.Gte,
+        OperationCompareType.IsNull,
+        OperationCompareType.NotNull
+      ],
       fieldComponent: FilterFieldUnitdate,
     },
     [RulDataTypeCodeEnum.ENUM]: {
-      operations: [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.IsNull, OperationCompareType.NotNull],
+      operations: [
+        OperationCompareType.Eq,
+        OperationCompareType.Neq,
+        OperationCompareType.IsNull,
+        OperationCompareType.NotNull
+      ],
     },
     [RulDataTypeCodeEnum.RECORD_REF]: {
-      operations: [OperationCompareType.Eq, OperationCompareType.Neq, OperationCompareType.IsNull, OperationCompareType.NotNull],
+      operations: [
+        OperationCompareType.Eq,
+        OperationCompareType.Neq,
+        OperationCompareType.IsNull,
+        OperationCompareType.NotNull
+      ],
       fieldComponent: FilterFieldRecordRef,
     },
   }
