@@ -883,10 +883,18 @@ public class AccessPointService {
      */
     private void deleteAccessPoints(final List<Integer> apIds) {
     	// určujeme revize, pokud existují
-    	List<Integer> revisionIds = revisionRepository.findAllRevisionIdsByAccessPointIdIn(apIds);
+    	List<Integer> revisionIds = new ArrayList<>();
+    	ObjectListIterator.forEachPage(apIds, p -> {
+    		List<Integer> revisionIdsNext = revisionRepository.findAllRevisionIdsByAccessPointIdIn(p);
+    		revisionIds.addAll(revisionIdsNext);
+    	});
 
-    	// ap_key_value(s) ke mazání 
-    	List<Integer> keyValueIdsToDelete = keyValueRepository.findAllIdByAccessPointIdIn(apIds);
+    	// ap_key_value(s) ke mazání
+    	List<Integer> keyValueIdsToDelete = new ArrayList<>();
+    	ObjectListIterator.forEachPage(apIds, p -> {
+    		List<Integer> keyIdsNext = keyValueRepository.findAllIdByAccessPointIdIn(p);
+    		keyValueIdsToDelete.addAll(keyIdsNext);
+    	});
 
     	// mazání bindings
     	List<Integer> bindingIds = new ArrayList<>();
@@ -935,9 +943,7 @@ public class AccessPointService {
     	});
 
     	// mazání keyValues
-    	ObjectListIterator.forEachPage(keyValueIdsToDelete, p -> {
-    		keyValueRepository.deleteAllById(p);
-    	});
+    	ObjectListIterator.forEachPage(keyValueIdsToDelete, p -> keyValueRepository.deleteAllById(p));
     }
 
     /**
@@ -3041,6 +3047,18 @@ public class AccessPointService {
                 .set("scopeId", state.getScopeId())
                 .set("state", state.getStateApproval());
         }
+    }
+
+    public void checkPermissionForRead(final ApState state) {
+        if (userService.hasPermission(Permission.AP_SCOPE_RD_ALL)
+                || userService.hasPermission(Permission.AP_SCOPE_RD, state.getScopeId())) {
+            return;
+        }
+
+        throw new SystemException("Nedostatečné oprávnění pro čtení přístupového bodu",
+                BaseCode.INSUFFICIENT_PERMISSIONS)
+                        .set("accessPointId", state.getAccessPointId())
+                        .set("scopeId", state.getScopeId());
     }
 
     public void checkPermissionForEdit(final ApState state) {
