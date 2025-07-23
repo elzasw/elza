@@ -30,6 +30,18 @@ export const messages = defineMessages({
     id: "fund_filter_operation_lower_than_equal",
     defaultMessage: "Menší nebo rovno"
   },
+  [OperationCompareType.IsNull]: {
+    id: "fund_filter_operation_is_null",
+    defaultMessage: "Nevyplněn"
+  },
+  [OperationCompareType.NotNull]: {
+    id: "fund_filter_operation_not_null",
+    defaultMessage: "Vyplněn"
+  },
+  [OperationCompareType.Intersect]: {
+    id: "fund_filter_operation_intersect",
+    defaultMessage: "Spadá částečně do"
+  },
   "DescItem": {
     id: "search_funds_form_desc_item",
     defaultMessage: "Prvek popisu",

@@ -126,9 +126,12 @@ export function FundFilters({
   const addFilterButtonRect = addFilterButtonRef.current?.getBoundingClientRect() || undefined;
   const initialPosition = addFilterButtonRect ? formatPosition(addFilterButtonRect.left, addFilterButtonRect.bottom) : undefined;
 
+  const fulltextFilter = currentFilters?.find((filter) => filter.filterType === FilterType.Contains);
+  const fulltextValue = fulltextFilter?.getSerializedString(fulltextFilter) || "";
+
   return <div style={{ display: "flex" }}>
     <div style={{ display: "flex", alignItems: "center", margin: "5px" }}>
-      <Form<FulltextValues> initialValues={{ fulltext: "" }} onSubmit={handleFulltext}>
+      <Form<FulltextValues> initialValues={{ fulltext: fulltextValue }} onSubmit={handleFulltext}>
         {({ handleSubmit, values, form }) => {
           return <form onSubmit={handleSubmit}>
             <Field name="fulltext">{({ input }) => {
