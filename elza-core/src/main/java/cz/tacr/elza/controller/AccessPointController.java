@@ -197,7 +197,7 @@ public class AccessPointController implements AccesspointsApi {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(id);
         ApState apState = accessPointService.getStateInternal(accessPoint);
 
-        accessPointService.checkPermissionForEdit(apState);
+        accessPointService.checkPermissionForRead(apState);
         ApValidationIssues validationIssues = accessPointService.validate(accessPoint, apState, true, includeRevision);
 
         return ResponseEntity.ok(validationIssues);

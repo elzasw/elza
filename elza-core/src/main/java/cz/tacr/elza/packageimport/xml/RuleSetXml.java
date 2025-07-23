@@ -28,6 +28,12 @@ public class RuleSetXml {
     @XmlElement(name = "rule-item-type-filter")
     private String ruleItemTypeFilter;
 
+    /**
+     * Kompatibilní balíček.
+     */
+    @XmlElement(name="compatibility-rul-package")
+    private Integer compatibilityRulPackage;    
+
     public String getCode() {
         return code;
     }
@@ -59,4 +65,12 @@ public class RuleSetXml {
     public void setRuleItemTypeFilter(String ruleItemTypeFilter) {
         this.ruleItemTypeFilter = ruleItemTypeFilter;
     }
+
+	public Integer getCompatibilityRulPackage() {
+		return compatibilityRulPackage;
+	}
+
+	public void setCompatibilityRulPackage(Integer compatibilityRulPackage) {
+		this.compatibilityRulPackage = compatibilityRulPackage;
+	}
 }

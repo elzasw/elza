@@ -1,5 +1,7 @@
 package cz.tacr.elza.packageimport;
 
+import static cz.tacr.elza.repository.ExceptionThrow.version;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,6 +59,8 @@ import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulActionRecommended;
@@ -86,6 +90,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.WfIssueState;
 import cz.tacr.elza.domain.WfIssueType;
 import cz.tacr.elza.domain.bridge.IndexConfigReaderImpl;
+import cz.tacr.elza.domain.projection.NodeIdFundVersionIdInfo;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -155,6 +160,7 @@ import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputFilterRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.OutputResultRepository;
@@ -460,6 +466,9 @@ public class PackageService {
     private PartTypeRepository partTypeRepository;
 
     @Autowired
+    private NodeRepository nodeRepository;
+
+    @Autowired
     private NodeCacheService nodeCacheService;
 
     @Autowired
@@ -508,28 +517,36 @@ public class PackageService {
         // stop services - outside transaction
         preImportPackage();
 
-        TransactionTemplate transactionTemplate2 = new TransactionTemplate(txManager);
-        transactionTemplate2.executeWithoutResult(ts -> {
-            importPackageInternal(file, true);
-        });
+        importPackageInternal(file, true);
     }
 
+    /**
+     * Import balíčku.
+     * 
+     * @param file
+     * @param startTasks
+     */
     public void importPackageInternal(final File file, boolean startTasks) {
 
         // read package and do basic checks
-        PackageContext pkgCtx = new PackageContext(resourcePathResolver);
+        final PackageContext pkgCtx = new PackageContext(resourcePathResolver);
 
         File oldPackageDir = null;
-        File packageDir = null;
 
         try {
             pkgCtx.init(file);
 
-            processRulPackage(pkgCtx);
-            packageDir = pkgCtx.preparePackageDir();
-
             // do import
-            importPackageInternal(pkgCtx);
+            TransactionTemplate transactionTemplate = new TransactionTemplate(txManager);
+            transactionTemplate.executeWithoutResult(ts -> {
+            	try {
+                    processRulPackage(pkgCtx);
+                    pkgCtx.preparePackageDir();
+					importPackageInternal(pkgCtx);
+				} catch (IOException e) {
+					throw new SystemException(e);
+				}
+            });
 
             // get old package dir as last step - delete only when success
             oldPackageDir = pkgCtx.getOldPackageDir();
@@ -537,8 +554,8 @@ public class PackageService {
             logger.error("Failed to import package", e);
 
             // drop new package dir
-            if (packageDir != null) {
-                FileSystemUtils.deleteRecursively(packageDir);
+            if (pkgCtx.getPackageDir() != null) {
+                FileSystemUtils.deleteRecursively(pkgCtx.getPackageDir());
             }
 
             if (e instanceof AbstractException) {
@@ -550,18 +567,19 @@ public class PackageService {
             if (pkgCtx != null) {
 
                 // start services after import
-                postImportPackage(pkgCtx, startTasks);
+                TransactionTemplate transactionTemplate = new TransactionTemplate(txManager);
+                transactionTemplate.executeWithoutResult(ts -> {
+                	postImportPackage(pkgCtx, startTasks);
+                });
 
                 pkgCtx.close();
-                pkgCtx = null;
                 accessPoints = null;
             }
         }
 
-        if (oldPackageDir != null && !oldPackageDir.equals(packageDir)) {
+        if (oldPackageDir != null && !oldPackageDir.equals(pkgCtx.getPackageDir())) {
             FileSystemUtils.deleteRecursively(oldPackageDir);
         }
-
     }
 
     public void preImportPackage() {
@@ -625,6 +643,18 @@ public class PackageService {
 
             structObjValueService.addToValidateByTypes(revalidateStructureTypes);
 
+            // revalidate nodes in funds
+            Set<String> ruleCodes = pkgCtx.getRevalidateFundsWithRule();
+            if (!ruleCodes.isEmpty()) {
+	            List<NodeIdFundVersionIdInfo> nodeIdFundVersionIds = nodeRepository.findNodeIdFundversionIdByRuleCodes(ruleCodes);
+	            Map<Integer, List<Integer>> nodeIdFundVersionMap = nodeIdFundVersionIds
+	            		.stream()
+	                    .collect(Collectors.groupingBy(i -> i.getFundVersionId(),
+	                                                   Collectors.mapping(i -> i.getNodeId(), Collectors.toList())));
+	            for (Integer fundVersionId : nodeIdFundVersionMap.keySet()) {
+	                asyncRequestService.enqueueNodes(fundVersionId, nodeIdFundVersionMap.get(fundVersionId));
+	            }
+            }
 
         } finally {
             if (startTasks) {
@@ -699,8 +729,7 @@ public class PackageService {
 
         // AP ------------------------------------------------------------------------------------------------------
 
-        ExternalIdTypes externalIdTypes = pkgCtx.convertXmlStreamToObject(ExternalIdTypes.class,
-                EXTERNAL_ID_TYPE_XML);
+        ExternalIdTypes externalIdTypes = pkgCtx.convertXmlStreamToObject(ExternalIdTypes.class, EXTERNAL_ID_TYPE_XML);
         processExternalIdTypes(externalIdTypes, rulPackage);
 
         // END AP --------------------------------------------------------------------------------------------------
@@ -731,7 +760,6 @@ public class PackageService {
         });
 
         eventNotificationService.publishEvent(new ActionEvent(EventType.PACKAGE));
-
     }
 
     /**
@@ -769,7 +797,7 @@ public class PackageService {
         });
         List<String> sortedPkg = g.topologicalSort();
         logger.debug("Sorted packages: {}", sortedPkg);
-
+        
         // import balíčku
         for (String codePkg : sortedPkg) {
             PackageInfoWrapper pkgZip = latestVersionMap.get(codePkg);
@@ -786,19 +814,16 @@ public class PackageService {
             }
 
             logger.info("Reading package from file: {}", pkgZip.getPath().toString());
-
+            
             try {
-                TransactionTemplate transactionTemplate2 = new TransactionTemplate(txManager);
-                transactionTemplate2.executeWithoutResult(ts -> {
-                    importPackageInternal(pkgZip.getPath().toFile(), false);
-                });
+            	importPackageInternal(pkgZip.getPath().toFile(), false);
             } catch (Exception e) {
                 logger.error("Failed to import package file: {}", pkgZip, e);
-            }
+            }            
         }
     }
 
-    /**
+	/**
      * Získání objektu PackageInfoWrapper ze souboru PACKAGE_XML z archivu
      *
      * @param path
@@ -2150,8 +2175,7 @@ public class PackageService {
      *
      * @param pkgCtx package context
      */
-    private void processRuleSets(
-            final PackageContext pkgCtx) {
+    private void processRuleSets(final PackageContext pkgCtx) {
         RuleSets xmlRulesets = pkgCtx.convertXmlStreamToObject(RuleSets.class, RULE_SET_XML);
         RulPackage rulPackage = pkgCtx.getPackage();
 
@@ -2159,7 +2183,6 @@ public class PackageService {
         List<RulRuleSet> rulRuleSetsNew = new ArrayList<>();
 
         RulRuleSet entityRuleSet = null;
-
 
         if (xmlRulesets != null && !CollectionUtils.isEmpty(xmlRulesets.getRuleSets())) {
             for (RuleSetXml ruleSet : xmlRulesets.getRuleSets()) {
@@ -2175,16 +2198,23 @@ public class PackageService {
                     entityRuleSet = item;
                 }
 
-                RuleUpdateContext ruc = new RuleUpdateContext(RuleState.UPDATE, pkgCtx,
-                        item, this.resourcePathResolver);
+                // pokud je hodnota `compatibility-rul-package` != null && větší původní/předchozí verze balíčku 
+                if (ruleSet.getCompatibilityRulPackage() != null) {
+                    if (pkgCtx.getOldPackageVersion() == null ||
+                    		ruleSet.getCompatibilityRulPackage() > pkgCtx.getOldPackageVersion()) {
+                    	pkgCtx.addCodeRuleToRevalidateFunds(ruleSet.getCode());
+                    }
+                }
+
+                RuleUpdateContext ruc = new RuleUpdateContext(RuleState.UPDATE, pkgCtx, item, this.resourcePathResolver);
                 pkgCtx.addRuleUpdateContext(ruc);
             }
         }
 
-        // Uložení pravidel
+        // uložení pravidel
         rulRuleSetsNew = ruleSetRepository.saveAll(rulRuleSetsNew);
 
-        //nastavení pravidel pro entity u oblastí, které žádné nemají
+        // nastavení pravidel pro entity u oblastí, které žádné nemají
         if (entityRuleSet != null) {
             List<ApScope> scopes = scopeRepository.findScopeByRuleSetIdIsNull();
             if (CollectionUtils.isNotEmpty(scopes)) {
@@ -2197,12 +2227,12 @@ public class PackageService {
 
         // Naplnění pravidel ke smazání, které již nejsou v xml
         for (RulRuleSet dbRuleset : rulRuleSets) {
-            Optional<RulRuleSet> found = rulRuleSetsNew.stream().filter(n -> n.getCode().equals(dbRuleset.getCode()))
+            Optional<RulRuleSet> found = rulRuleSetsNew.stream().filter(n -> n.getCode().equals(dbRuleset
+            		.getCode()))
                     .findFirst();
             if (!found.isPresent()) {
                 // rules not found -> have to be deleted
-                RuleUpdateContext ruc = new RuleUpdateContext(RuleState.DELETE, pkgCtx,
-                        dbRuleset, this.resourcePathResolver);
+                RuleUpdateContext ruc = new RuleUpdateContext(RuleState.DELETE, pkgCtx, dbRuleset, this.resourcePathResolver);
                 pkgCtx.addRuleUpdateContext(ruc);
             }
         }
@@ -2216,8 +2246,7 @@ public class PackageService {
                 RulRuleSet dbRuleset = ruleSetRepository.findByCode(code);
                 Validate.notNull(dbRuleset, "Ruleset not exists, code: {}", code);
                 // rules not found -> have to be added
-                ruc = new RuleUpdateContext(RuleState.ADDON, pkgCtx,
-                        dbRuleset, this.resourcePathResolver);
+                ruc = new RuleUpdateContext(RuleState.ADDON, pkgCtx, dbRuleset, this.resourcePathResolver);
                 pkgCtx.addRuleUpdateContext(ruc);
             }
         }

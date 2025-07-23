@@ -33,10 +33,10 @@ public interface DataRepository extends JpaRepository<ArrData, Integer>, DataRep
     @Query("DELETE FROM arr_data d WHERE d.dataId IN (SELECT i.dataId FROM arr_structured_item i WHERE i.structuredObject = :structuredObject)")
     void deleteByStructuredObject(@Param("structuredObject") ArrStructuredObject structuredObject);
 
-    @Query("SELECT it.dataId FROM arr_item it WHERE it.itemType = ?1")
+    @Query("SELECT it.dataId FROM arr_item it WHERE it.itemType = ?1 and it.dataId is not null")
     List<Integer> findIdsByItemTypeFromArrItem(RulItemType dbItemType);
 
-    @Query("SELECT it.dataId FROM ApItem it WHERE it.itemType = ?1")
+    @Query("SELECT it.dataId FROM ApItem it WHERE it.itemType = ?1 and it.dataId is not null")
     List<Integer> findIdsByItemTypeFromApItem(RulItemType dbItemType);
 
     /**

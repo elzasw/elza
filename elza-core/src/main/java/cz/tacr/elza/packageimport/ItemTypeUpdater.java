@@ -742,6 +742,7 @@ public class ItemTypeUpdater {
     }
     
     private void changeText2String(List<Integer> ids) {
+    	logger.info("Converting from text to string, dataIds: {}", ids);
         // request all current arr_data_string
         Collection<DataTextRepository.OnlyValues> srcValues = dataTextRepository.findValuesByDataIdIn(ids);
         // drop all old strings

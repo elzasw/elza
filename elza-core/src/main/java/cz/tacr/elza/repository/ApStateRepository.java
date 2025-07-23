@@ -29,6 +29,14 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
     		" AND st.createChangeId IN (SELECT max(s.createChangeId) FROM ap_state s WHERE s.accessPoint = st.accessPoint)" +
     		" ORDER BY st.deleteChangeId DESC")
     Page<ApState> findAccessPointsDeletedPageable(Pageable pageable);
+    
+    @Query("SELECT st FROM ap_state st" +
+    		" JOIN FETCH st.accessPoint ap" +
+    		" WHERE st.deleteChange IS NOT NULL" +
+    		" AND st.createChangeId IN (SELECT max(s.createChangeId) FROM ap_state s WHERE s.accessPoint = st.accessPoint)" +
+    		" AND st.scopeId IN :scopeIds" +
+    		" ORDER BY st.deleteChangeId DESC")
+    Page<ApState> findAccessPointsDeletedPageable(Pageable pageable, Collection<Integer> scopeIds);
 
     @Query("SELECT s1" +
             " FROM ap_state s1" +
