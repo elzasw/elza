@@ -6,14 +6,21 @@ import jakarta.persistence.Table;
 /**
  * Digitalizační linka.
  *
- * @author Martin Šlapa
  * @since 05. 12. 2016
  */
 @Entity(name = "arr_digitization_frontdesk")
 @Table
 public class ArrDigitizationFrontdesk extends SysExternalSystem {
+	
+	public ArrDigitizationFrontdesk() {
+		
+	}
 
-    @Override
+    public ArrDigitizationFrontdesk(ArrDigitizationFrontdesk adf) {
+		super(adf);
+	}
+
+	@Override
     public String toString() {
         return "ArrDigitizationFrontdesk pk=" + getExternalSystemId();
     }

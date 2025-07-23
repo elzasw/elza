@@ -2,7 +2,6 @@ package cz.tacr.elza.drools;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -52,7 +51,7 @@ public class ScenarioOfNewLevelRules extends Rules {
         RuleSet ruleSet = sdp.getRuleSetById(version.getRuleSetId());
         List<RulArrangementRule> rulArrangementRules = ruleSet.getRulesByType(RulArrangementRule.RuleType.NEW_LEVEL);
 
-        NewLevelApproaches newLevelApproaches = new NewLevelApproaches();
+        NewLevelApproaches newLevelApproaches = new NewLevelApproaches(sdp);
 
         List<Level> levels = scriptModelFactory.createFactsForNewLevel(level, directionLevel, version);
         LinkedList<Object> facts = new LinkedList<>();

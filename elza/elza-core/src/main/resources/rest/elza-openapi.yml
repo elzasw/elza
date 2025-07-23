@@ -3080,6 +3080,7 @@ components:
         - STARTWITH
         - ENDWITH
         - CONTAINS
+        - INTERSECT
         - IS_NULL
         - NOT_NULL
       description: Operation type for FieldValueFilter

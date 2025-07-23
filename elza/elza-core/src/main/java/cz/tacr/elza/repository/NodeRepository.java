@@ -93,7 +93,7 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
             "LEFT JOIN arr_node_conformity nc ON nc.node = n " +
     		"WHERE n.fund = :fund AND l.deleteChange IS NULL AND nc IS NULL")
     List<ArrNode> findByNodeConformityIsNull(@Param(value= "fund") ArrFund fund);
-    
+
     /**
      * @return vrací seznam dvojic nodeId a fundVersionId podle accessPointId
      */
@@ -106,4 +106,15 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
             "JOIN arr_fund_version fv ON n.fund = fv.fund AND fv.lockChange IS NULL " +
             "WHERE i.deleteChange IS NULL AND rf.recordId = :accessPointId")
     List<NodeIdFundVersionIdInfo> findNodeIdFundversionIdByAccessPointId(@Param(value = "accessPointId") Integer accessPointId);
+
+    /**
+     * @return vrací seznam dvojic nodeId a fundVersionId podle ruleCodes
+     */
+    @Query("SELECT new cz.tacr.elza.domain.projection.NodeIdFundVersionIdInfo(n.nodeId, fv.fundVersionId) " + 
+            "FROM arr_node n " +
+    		"JOIN arr_fund f ON n.fundId = f.fundId " +
+            "JOIN arr_fund_version fv ON n.fundId = fv.fundId AND fv.lockChange IS NULL " +
+    		"JOIN rul_rule_set rs ON fv.ruleSetId = rs.ruleSetId " +
+            "WHERE rs.code IN :ruleCodes")
+	List<NodeIdFundVersionIdInfo> findNodeIdFundversionIdByRuleCodes(@Param(value = "ruleCodes") Collection<String> ruleCodes);
 }
