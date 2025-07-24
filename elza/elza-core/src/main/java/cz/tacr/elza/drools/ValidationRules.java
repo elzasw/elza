@@ -100,7 +100,7 @@ public class ValidationRules extends Rules {
                              System.currentTimeMillis() - startTime);
 
                 StatelessKieSession ksession = createKieStatelessSession(path);
-                ksession.setGlobal("results", validationResults);
+                ksession.setGlobal("dvResults", validationResults);
                 executeStateless(ksession, facts);
 
                 long endTime = System.currentTimeMillis();
@@ -127,7 +127,7 @@ public class ValidationRules extends Rules {
                 logger.trace("Executing extension (workerId: {}), path: {}", Thread.currentThread().getId(), path);
 
                 StatelessKieSession ksession = createKieStatelessSession(path);
-                ksession.setGlobal("results", validationResults);
+                ksession.setGlobal("dvResults", validationResults);
                 executeStateless(ksession, facts);
 
                 long endTime = System.currentTimeMillis();
