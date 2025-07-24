@@ -125,6 +125,7 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformity.State;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrRefTemplate;
@@ -168,6 +169,7 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.repository.vo.UsedItemTypeVO;
+import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
 import cz.tacr.elza.service.arrangement.DeleteFundHistoryAction;
@@ -871,7 +873,7 @@ public class ArrangementService {
      * @param fundId id archivní pomůcky
      * @return verze
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.ADMIN, UsrPermission.Permission.FUND_ADMIN})
     public ArrFundVersion getOpenVersionByFundId(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId) {
         Validate.notNull(fundId, "Nebyl vyplněn identifikátor AS");
         return fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
@@ -883,7 +885,7 @@ public class ArrangementService {
      * @param fundId id archivní pomůcky
      * @return verze
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.ADMIN, UsrPermission.Permission.FUND_ADMIN})
     public ArrFundVersion getOpenVersionByFund(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) {
         Validate.notNull(fund, "Nebyl vyplněn AS");
         Validate.notNull(fund.getFundId(), "Nebyl vyplněn identifikator AS");
@@ -1092,9 +1094,13 @@ public class ArrangementService {
     		}
     	}
 
-    	// filtrování podle práv uživatele  
+    	// filtrování podle práv uživatele
     	UserDetail userDetail = userService.getLoggedUserDetail();
-        if (!userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL)) {
+        AuthorizationRequest arFundReadAll = AuthorizationRequest.hasPermission(Permission.ADMIN)
+                .or(Permission.FUND_ADMIN)
+                .or(Permission.FUND_ARR_ALL)
+                .or(Permission.FUND_RD_ALL);    	
+        if (!arFundReadAll.matches(userDetail)) {
         	Integer userId = userDetail.getId();
         	Subquery<Integer> usrPermissionSubquery = cq.subquery(Integer.class);
         	Root<UsrPermissionView> usrPermissionRoot = usrPermissionSubquery.from(UsrPermissionView.class);
