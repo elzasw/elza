@@ -26,7 +26,7 @@ export function isFundSearchAction(action) {
     }
 }
 
-export function fundSearchFetchIfNeeded() {
+export function fundSearchFetchIfNeeded(force = false) {
     return async (dispatch, getState) => {
         const {
             arrRegion: { fundSearch },
@@ -35,7 +35,7 @@ export function fundSearchFetchIfNeeded() {
         if (!filters || filters.length <= 0) { return; }
         const newDataKey = generateDataKey(filters);
 
-        if (newDataKey !== currentDataKey) {
+        if (newDataKey !== currentDataKey || force) {
             dispatch(fundSearchFulltextRequest());
             const result = await Api.node.nodeSearch({
                 filters: filters?.map((filter) => filter.getFilterValue(filter)),
