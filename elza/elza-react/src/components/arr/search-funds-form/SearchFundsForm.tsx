@@ -49,6 +49,10 @@ export function SearchFundsFormFn() {
         }));
     };
 
+    const handleRefresh = () => {
+        dispatch(fundSearchActions.fundSearchFetchIfNeeded(true));
+    }
+
     /**
      * Zobrazení seznamu výskytů hledaného výrazu v AS
      */
@@ -159,7 +163,7 @@ export function SearchFundsFormFn() {
             {/*         </form> */}
             {/*     }} */}
             {/* </Form> */}
-            <NodeSearchFilters onChange={(filters) => handleFluentSearch(filters)} currentFilters={fundSearch.filters} />
+            <NodeSearchFilters onChange={(filters) => handleFluentSearch(filters)} onRefresh={handleRefresh} currentFilters={fundSearch.filters} />
             {fundSearch.isFetching && <HorizontalLoader hover showText={false} key="loader" />}
             {isFulltext && i18n('arr.fund.search.result.count', totalCount)}
             <div className={`fund-search ${isFulltext && totalCount > 0 ? 'result' : 'no-fulltext'}`}>
