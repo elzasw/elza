@@ -137,4 +137,9 @@ public class ItemSyncImportProcessor implements ItemSyncProcessor {
     public void addBindingValue(String value) {
         bindingValues.add(value);
     }
+    
+    @Override
+    public String toString() {
+    	return "ItemSyncImportProcessor, externalSystemId: " + externalSystemId + ", queueItemIds: " + queueItemIds; 
+    }
 }
