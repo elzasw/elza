@@ -173,17 +173,17 @@ public class IOController implements IoApi {
     @Override
     public ResponseEntity<Resource> ioGetExportFile(@PathVariable Integer requestId) {
 
-        IOExportRequest result = ioExportWorker.getExportState(requestId);
-        if (result == null) {
+        IOExportRequest request = ioExportWorker.getExportState(requestId);
+        if (request == null) {
             return ResponseEntity.notFound().build();
         }
 
-        switch (result.getState()) {
+        switch (request.getState()) {
         case FINISHED:
-            Path filePath = resourcePathResolver.getExportFilePathByIOExportRequest(result);
+            Path filePath = resourcePathResolver.getExportTrasnformDir().resolve(request.getRequestId() + request.getFileExt());
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_ENCODING, StandardCharsets.UTF_8.name());
-            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE);
+            headers.add(HttpHeaders.CONTENT_TYPE, request.getMediaType());
             try {
                 long fileSize = Files.size(filePath);
                 headers.add(HttpHeaders.CONTENT_LENGTH, Long.toString(fileSize));
@@ -192,9 +192,9 @@ public class IOController implements IoApi {
             }
 
             // Content-Disposition: attachment; filename="filename.jpg"
-            String fileName = result.getDownloadFileName();
+            String fileName = request.getDownloadFileName();
             if (StringUtils.isBlank(fileName)) {
-                fileName = "elzaData.xml";
+                fileName = "elzaData"  + request.getFileExt();
             }
             FileDownload.addContentDispositionAsAttachment(headers, fileName);
 
@@ -207,7 +207,7 @@ public class IOController implements IoApi {
         case PROCESSING:
             return ResponseEntity.status(102).build();
         case ERROR:
-            return ResponseFactory.responseException(500, result.getException());
+            return ResponseFactory.responseException(500, request.getException());
         default:
             throw new IllegalStateException();
         }

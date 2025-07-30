@@ -159,7 +159,7 @@ public class DEExportService {
     }
 
     public List<String> getTransformationNames() throws IOException {
-        Path transformDir = initHelper.getResourcePathResolver().getExportXmlTrasnformDir();
+        Path transformDir = initHelper.getResourcePathResolver().getExportTrasnformDir();
         if (!Files.exists(transformDir)) {
             return Collections.emptyList();
         }

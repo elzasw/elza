@@ -15,8 +15,6 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.dataexchange.output.IOExportFundXmlRequest;
-import cz.tacr.elza.dataexchange.output.IOExportRequest;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulArrangementRule;
 import cz.tacr.elza.domain.RulComponent;
@@ -39,8 +37,7 @@ public class ResourcePathResolver {
     private static final String DMS_DIR = "dms";
     public static final String DPKG_DIR = "dpkg";
 
-    private static final String EXPORT_XML_DIR = "export-xml";
-    private static final String EXPORT_CSV_DIR = "export-csv";
+    private static final String EXPORT_DIR = "export";
     private static final String IMPORT_XML_DIR = "import-xml";
 
     private static final String RULESET_TEMPLATES_DIR = "templates";
@@ -115,31 +112,12 @@ public class ResourcePathResolver {
     }
 
     /**
-     * @return Path to export XML transformations directory (may not exist).
+     * @return Path to export transformations directory (may not exist).
      */
-    public Path getExportXmlTrasnformDir() {
-        Path path = Paths.get(workDir, TRANSFORMS_DIR, EXPORT_XML_DIR);
+    public Path getExportTrasnformDir() {
+        Path path = Paths.get(workDir, TRANSFORMS_DIR, EXPORT_DIR);
 
         return path;
-    }
-
-    /**
-     * @return Path to export CSV transformations directory (may not exist).
-     */
-    public Path getExportCsvTrasnformDir() {
-        Path path = Paths.get(workDir, TRANSFORMS_DIR, EXPORT_CSV_DIR);
-
-        return path;
-    }
-
-    /**
-     * @return Path to export by IOExportRequest
-     */
-    public Path getExportFilePathByIOExportRequest(IOExportRequest request) {
-    	String fileName = request.getRequestId() + request.getFileNameExt();
-    	return request.getFileNameExt().equals(IOExportFundXmlRequest.FILE_NAME_EXT) ?
-    			getExportXmlTrasnformDir().resolve(fileName)
-    			: getExportCsvTrasnformDir().resolve(fileName);
     }
 
     /**
