@@ -432,6 +432,12 @@ public class NodeSearchService {
 					.must(factory.range().field(fieldNormalizedFrom).atMost(normalizedTo))
 					.must(factory.range().field(fieldNormalizedTo).atLeast(normalizedFrom))
 					.toPredicate();
+		case IS_IN:
+			// (from1, to1), (from2, to2) -> (from1 >= from2 AND to1 <= to2)
+			return bool
+					.must(factory.range().field(fieldNormalizedFrom).atLeast(normalizedFrom))
+					.must(factory.range().field(fieldNormalizedTo).atMost(normalizedTo))
+					.toPredicate();
 		default:
 			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
 		}

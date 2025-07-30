@@ -42,6 +42,10 @@ export const messages = defineMessages({
     id: "fund_filter_operation_intersect",
     defaultMessage: "Spadá částečně do"
   },
+  [OperationCompareType.IsIn]: {
+    id: "fund_filter_operation_is_in",
+    defaultMessage: "Spadá zcela do"
+  },
   "DescItem": {
     id: "search_funds_form_desc_item",
     defaultMessage: "Prvek popisu",
