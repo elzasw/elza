@@ -81,7 +81,7 @@ public class IOExportWorker implements SmartLifecycle {
         RemovalListener<Integer, IOExportRequest> removalListener = new RemovalListener<Integer, IOExportRequest>() {
             @Override
             public void onRemoval(RemovalNotification<Integer, IOExportRequest> notification) {
-                Path filePath = resourcePathResolver.getExportXmlTrasnformDir().resolve(notification.getKey() + ".xml");
+                Path filePath = resourcePathResolver.getExportTrasnformDir().resolve(notification.getKey() + ".xml");
                 try {
                     Files.delete(filePath);
                 } catch (IOException e) {
@@ -139,18 +139,14 @@ public class IOExportWorker implements SmartLifecycle {
         SecurityContext secCtx = userService.createSecurityContext(request.getUserId());
         SecurityContextHolder.setContext(secCtx);
 
+        Path exportTrasnformDir = resourcePathResolver.getExportTrasnformDir();
+        Files.createDirectories(exportTrasnformDir);
+        Path exportFile = Files.createFile(exportTrasnformDir.resolve(request.getRequestId() + request.getFileExt()));
+
         if (request instanceof IOExportFundXmlRequest) {
-	        Path exportXmlTrasnformDir = resourcePathResolver.getExportXmlTrasnformDir();
-	        Files.createDirectories(exportXmlTrasnformDir);
-	        Path xmlFile = Files.createFile(exportXmlTrasnformDir.resolve(request.getRequestId() + request.getFileNameExt()));
-	
-	        exportService.exportXmlDataToFile(((IOExportFundXmlRequest) request).getExportParams(), xmlFile);
+	        exportService.exportXmlDataToFile(((IOExportFundXmlRequest) request).getExportParams(), exportFile);
         } else if (request instanceof IOExportFundsCsv) {
-	        Path exportCsvTrasnformDir = resourcePathResolver.getExportCsvTrasnformDir();
-	        Files.createDirectories(exportCsvTrasnformDir);
-	        Path csvFile = Files.createFile(exportCsvTrasnformDir.resolve(request.getRequestId() + request.getFileNameExt()));
-	
-	        exportService.exportCsvDataToFile(((IOExportFundsCsv) request).getSearchParams(), csvFile);
+	        exportService.exportCsvDataToFile(((IOExportFundsCsv) request).getSearchParams(), exportFile);
         } else {
         	throw new SystemException("This type of request is not processed", BaseCode.INVALID_STATE);
         }

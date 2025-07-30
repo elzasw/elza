@@ -1035,7 +1035,7 @@ public class ArrangementService {
         // case insensitive sorting
         cq.orderBy(cb.asc(cb.lower(fundJoin.get(ArrFund.FIELD_NAME))));
 
-        // offset by default
+        // offset by default = 0
         if (searchParams.getOffset() == null) {
         	searchParams.setOffset(0);
         }

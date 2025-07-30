@@ -8,13 +8,13 @@ import { modalDialogHide } from 'actions/global/modalDialog.jsx';
 import * as fundSearchActions from 'actions/arr/fundSearch.jsx';
 
 import './SearchFundsForm.scss';
-import { urlNode } from "../../../constants.js";
+import { urlFundNode } from "../../../constants.js";
 // import { InputOnChangeData, SearchBox, SearchBoxChangeEvent } from '@fluentui/react-components';
 // import { Form, Field } from 'react-final-form';
 import { AppState, FundSearchFundType, FundSearchNodeType } from 'typings/store';
 import { useSelector } from 'react-redux';
 import { useThunkDispatch } from 'utils/hooks';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { NodeSearchFilters } from './filters/NodeSearchFilters';
 import { FilterObject } from './filters/types';
 
@@ -63,9 +63,9 @@ export function SearchFundsFormFn() {
     /**
      * Přejít na detail uzlu
      */
-    const handleNodeClick = (item: FundSearchNodeType) => {
-        // Přepnutí na stránku pořádání a zavření dialogu
-        dispatch(routerNavigate(urlNode(item.id)));
+    const handleNodeClick = (nodeId: number, fundId: number) => {
+        // Přepnutí na jednotku popisu v příslušném archivním souboru
+        dispatch(routerNavigate(urlFundNode(fundId, undefined, nodeId)));
         dispatch(modalDialogHide());
     };
 
@@ -98,7 +98,7 @@ export function SearchFundsFormFn() {
                     </div>
                 </div>
                 {expanded && fund.nodes &&
-                    <div className="nodes">{fund.nodes.map((node) => renderNode(node))}</div>}
+                    <div className="nodes">{fund.nodes.map((node) => renderNode(node, fund))}</div>}
             </div>
         );
     }
@@ -126,11 +126,11 @@ export function SearchFundsFormFn() {
     /**
      * Render JP.
      */
-    function renderNode(node: FundSearchNodeType) {
+    function renderNode(node: FundSearchNodeType, fund: FundSearchFundType) {
         const levels = createReferenceMark(node, null, undefined);
         const iconProps = getNodeIcon(true, node.icon);
         return (
-            <div key={node.id} className="node" onClick={() => handleNodeClick(node)}>
+            <div key={node.id} className="node" onClick={() => handleNodeClick(node.id, fund.id)}>
                 <div className="levels">{levels}</div>
                 <Icon className="item-icon" {...iconProps} />
                 <div title={node.name} className="item-label">
