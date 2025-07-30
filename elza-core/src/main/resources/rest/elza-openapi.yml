@@ -3120,6 +3120,7 @@ components:
         - ENDWITH
         - CONTAINS
         - INTERSECT
+        - IS_IN
         - IS_NULL
         - NOT_NULL
       description: Operation type for FieldValueFilter

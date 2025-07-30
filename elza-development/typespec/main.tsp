@@ -978,7 +978,7 @@ model ApValidationIssues {
  * Operation type for FieldValueFilter
  */
 enum OperationCompareType {
-    EQ, NEQ, GT, LT, GTE, LTE, STARTWITH, ENDWITH, CONTAINS, INTERSECT, IS_NULL, NOT_NULL
+    EQ, NEQ, GT, LT, GTE, LTE, STARTWITH, ENDWITH, CONTAINS, INTERSECT, IS_IN, IS_NULL, NOT_NULL
 }
 
 /**
