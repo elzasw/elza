@@ -1,5 +1,8 @@
 package cz.tacr.elza.dataexchange.output;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
 import org.springframework.http.MediaType;
 import cz.tacr.elza.controller.vo.SearchParams;
 
@@ -12,12 +15,17 @@ public class IOExportFundsCsv extends IOExportRequest {
 
 	final private SearchParams searchParams;
 
-	public IOExportFundsCsv(Integer userId, Integer requestId, String downloadFileName, SearchParams searchParams) {
-		super(userId, requestId, downloadFileName, MediaType.TEXT_PLAIN_VALUE, FILE_NAME_EXT);
-		this.searchParams = searchParams;
+	public IOExportFundsCsv(Integer userId, Integer requestId, String dlFileName, SearchParams params, DEExportService service) {
+		super(userId, requestId, dlFileName, MediaType.TEXT_PLAIN_VALUE, FILE_NAME_EXT, service);
+		this.searchParams = params;
 	}
 
 	public SearchParams getSearchParams() {
 		return searchParams;
+	}
+
+	@Override
+	void exportToFile(Path exportFile) throws IOException {
+        exportService.exportCsvDataToFile(searchParams, exportFile);
 	}
 }
