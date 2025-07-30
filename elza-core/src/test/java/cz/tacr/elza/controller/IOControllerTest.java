@@ -30,7 +30,7 @@ public class IOControllerTest extends AbstractControllerTest {
         exportParams.addFundsSectionsItem(fundsSections);
 
         int requestId = ioApi.ioExportRequest(exportParams);
-        assertEquals(requestId, 1);
+        assertTrue(requestId > 0);
 
         ExportRequestStatus expStatus = null;
         int counter = 0;

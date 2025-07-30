@@ -25,7 +25,10 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 
+import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.UserService;
 
 @Service
@@ -97,7 +100,19 @@ public class IOExportWorker implements SmartLifecycle {
 
     public int addExportRequest(final Integer userId, final String downloadFileName, DEExportParams exportParams) {
         synchronized (lock) {
-            IOExportRequest exportRequest = new IOExportRequest(userId, ++requestCount, downloadFileName, exportParams);
+            IOExportRequest exportRequest = new IOExportFundXmlRequest(userId, ++requestCount, downloadFileName, exportParams);
+
+            // store result
+            mapExportResult.put(exportRequest.getRequestId(), exportRequest);
+            exportRequests.add(exportRequest);         
+            lock.notifyAll();
+            return exportRequest.getRequestId();
+        }        
+    }
+
+    public int addExportRequest(final Integer userId, final String downloadFileName, SearchParams searchParams) {
+        synchronized (lock) {
+            IOExportRequest exportRequest = new IOExportFundsCsv(userId, ++requestCount, downloadFileName, searchParams);
 
             // store result
             mapExportResult.put(exportRequest.getRequestId(), exportRequest);
@@ -124,12 +139,21 @@ public class IOExportWorker implements SmartLifecycle {
         SecurityContext secCtx = userService.createSecurityContext(request.getUserId());
         SecurityContextHolder.setContext(secCtx);
 
-        Path exportXmlTrasnformDir = resourcePathResolver.getExportXmlTrasnformDir();
-        Files.createDirectories(exportXmlTrasnformDir);
-
-        Path xmlFile = Files.createFile(exportXmlTrasnformDir.resolve(request.getRequestId() + ".xml"));
-
-        exportService.exportXmlDataToFile(request.getExportParams(), xmlFile);
+        if (request instanceof IOExportFundXmlRequest) {
+	        Path exportXmlTrasnformDir = resourcePathResolver.getExportXmlTrasnformDir();
+	        Files.createDirectories(exportXmlTrasnformDir);
+	        Path xmlFile = Files.createFile(exportXmlTrasnformDir.resolve(request.getRequestId() + request.getFileNameExt()));
+	
+	        exportService.exportXmlDataToFile(((IOExportFundXmlRequest) request).getExportParams(), xmlFile);
+        } else if (request instanceof IOExportFundsCsv) {
+	        Path exportCsvTrasnformDir = resourcePathResolver.getExportCsvTrasnformDir();
+	        Files.createDirectories(exportCsvTrasnformDir);
+	        Path csvFile = Files.createFile(exportCsvTrasnformDir.resolve(request.getRequestId() + request.getFileNameExt()));
+	
+	        exportService.exportCsvDataToFile(((IOExportFundsCsv) request).getSearchParams(), csvFile);
+        } else {
+        	throw new SystemException("This type of request is not processed", BaseCode.INVALID_STATE);
+        }
     }
 
     public void run() {
