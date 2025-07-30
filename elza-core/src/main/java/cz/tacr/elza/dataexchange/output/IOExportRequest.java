@@ -1,5 +1,8 @@
 package cz.tacr.elza.dataexchange.output;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
 /**
  * Parameters for io export request.
  */
@@ -22,13 +25,23 @@ public abstract class IOExportRequest {
     
     protected final String fileExt;
 
-    public IOExportRequest(final Integer userId, final Integer requestId, final String downloadFileName, final String mediaType, final String fileExt) {
+    protected final DEExportService exportService;
+
+    public IOExportRequest(final Integer userId, 
+    		               final Integer requestId, 
+    		               final String downloadFileName, 
+    		               final String mediaType, 
+    		               final String fileExt,
+    		               final DEExportService exportService) {
         this.userId = userId;
         this.requestId = requestId;
         this.downloadFileName = downloadFileName;
         this.mediaType = mediaType;
         this.fileExt = fileExt;
+        this.exportService = exportService;
     }
+
+    abstract void exportToFile(Path exportFile) throws IOException;
 
     public Integer getUserId() {
         return userId;
