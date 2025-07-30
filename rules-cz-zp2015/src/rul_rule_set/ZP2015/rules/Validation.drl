@@ -280,7 +280,7 @@ when
     $di: DescItem( type=="ZP2015_TITLE" && $label: string ) from $ownDescItems
     eval( $label.length()> 250)    
 then
-    dvResults.createError($di.getDescItemId(), "Obsah (budoucí Název) na složce, jednotlivosti nebo její části přesahuje délku 250 znaků při současném uvedení prvku Tematický popis, délka: "+$di.getString().length()+".", "ZP2015_BASIC");
+    dvResults.createError($di.getDescItemId(), "Obsah (budoucí Název) na složce, jednotlivosti nebo její části přesahuje délku 250 znaků při současném uvedení prvku Tematický popis, délka: "+$di.getString().length()+".", "ZP2015_POL_BASIC");
 end
 
 rule "Kontrola přípustných znaků na složce a níže (základní)"
