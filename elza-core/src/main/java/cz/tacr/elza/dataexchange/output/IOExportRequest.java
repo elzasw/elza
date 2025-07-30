@@ -18,13 +18,16 @@ public abstract class IOExportRequest {
 
     protected Exception exception;
 
-    protected final String fileNameExt;
+    protected final String mediaType;
+    
+    protected final String fileExt;
 
-    public IOExportRequest(final Integer userId, final Integer requestId, final String downloadFileName, final String fileNameExt) {
+    public IOExportRequest(final Integer userId, final Integer requestId, final String downloadFileName, final String mediaType, final String fileExt) {
         this.userId = userId;
         this.requestId = requestId;
         this.downloadFileName = downloadFileName;
-        this.fileNameExt = fileNameExt;
+        this.mediaType = mediaType;
+        this.fileExt = fileExt;
     }
 
     public Integer getUserId() {
@@ -47,8 +50,12 @@ public abstract class IOExportRequest {
         return downloadFileName;
     }
 
-    public String getFileNameExt() {
-		return fileNameExt;
+    public String getMediaType() {
+		return mediaType;
+	}
+
+	public String getFileExt() {
+		return fileExt;
 	}
 
 	public void setStateProcessing() {
