@@ -78,7 +78,7 @@ public class ExtSyncsProcessor implements Runnable {
             }
             status = ThreadStatus.STOPPED;
             lock.notifyAll();
-            logger.error("ExtSyncsProcessor - thread finished");
+            logger.info("ExtSyncsProcessor - thread finished");
         }
     }
 
