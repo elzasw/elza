@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +27,7 @@ import cz.tacr.elza.controller.vo.RequestProcessState;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
+import cz.tacr.elza.dataexchange.output.IOExportFundXmlRequest;
 import cz.tacr.elza.dataexchange.output.IOExportRequest;
 import cz.tacr.elza.dataexchange.output.IOExportWorker;
 import cz.tacr.elza.domain.ArrFund;
@@ -64,7 +64,7 @@ public class IOController implements IoApi {
     public ResponseEntity<Integer> ioExportRequest(@RequestBody ExportParams exportParams) {
         UsrUser user = userService.getLoggedUser();
 
-        // convert ExportParams to IOExportRequest
+        // convert ExportParams -> IOExportRequest
         DEExportParams deExportParams = new DEExportParams();
         if (exportParams.getExportFilterId() != null) {
             deExportParams.setExportFilterId(exportParams.getExportFilterId());
@@ -131,7 +131,7 @@ public class IOController implements IoApi {
     }
 
     @Override
-    public ResponseEntity ioGetExportStatus(@PathVariable("requestId") Integer requestId) {
+    public ResponseEntity ioGetExportStatus(@PathVariable Integer requestId) {
 
         logger.debug("Get export status: {}", requestId);
 
@@ -180,7 +180,7 @@ public class IOController implements IoApi {
 
         switch (result.getState()) {
         case FINISHED:
-            Path filePath = resourcePathResolver.getExportXmlTrasnformDir().resolve(requestId + ".xml");
+            Path filePath = resourcePathResolver.getExportFilePathByIOExportRequest(result);
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_ENCODING, StandardCharsets.UTF_8.name());
             headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE);

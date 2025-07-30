@@ -1035,12 +1035,20 @@ public class ArrangementService {
         // case insensitive sorting
         cq.orderBy(cb.asc(cb.lower(fundJoin.get(ArrFund.FIELD_NAME))));
 
-        TypedQuery<ArrFundVersion> query = em.createQuery(cq).setFirstResult(searchParams.getOffset()).setMaxResults(searchParams.getSize());
+        // offset by default
+        if (searchParams.getOffset() == null) {
+        	searchParams.setOffset(0);
+        }
+
+        TypedQuery<ArrFundVersion> query = em.createQuery(cq).setFirstResult(searchParams.getOffset());
+        if (searchParams.getSize() != null) {
+        	query.setMaxResults(searchParams.getSize());
+        }
         List<ArrFundVersion> fundVersionList = query.getResultList();
         int totalCount = fundVersionList.size();
 
 		// get total number of records if needed
-        if (searchParams.getOffset() > 0 || searchParams.getSize() == totalCount) {
+        if (searchParams.getOffset() > 0 || (searchParams.getSize() != null && searchParams.getSize() == totalCount)) {
             CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
             Root<ArrFundVersion> countRoot = countQuery.from(ArrFundVersion.class);
             Join<ArrFundVersion, ArrFund> countFundJoin = countRoot.join(ArrFundVersion.FIELD_FUND);            
