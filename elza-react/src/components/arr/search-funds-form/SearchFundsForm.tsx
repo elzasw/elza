@@ -8,7 +8,7 @@ import { modalDialogHide } from 'actions/global/modalDialog.jsx';
 import * as fundSearchActions from 'actions/arr/fundSearch.jsx';
 
 import './SearchFundsForm.scss';
-import { urlFundNode, urlNode } from "../../../constants.js";
+import { urlFundNode } from "../../../constants.js";
 // import { InputOnChangeData, SearchBox, SearchBoxChangeEvent } from '@fluentui/react-components';
 // import { Form, Field } from 'react-final-form';
 import { AppState, FundSearchFundType, FundSearchNodeType } from 'typings/store';
