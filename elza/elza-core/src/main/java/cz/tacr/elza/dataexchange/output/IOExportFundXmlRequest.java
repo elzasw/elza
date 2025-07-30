@@ -1,5 +1,8 @@
 package cz.tacr.elza.dataexchange.output;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
 import org.springframework.http.MediaType;
 
 /**
@@ -11,12 +14,17 @@ public class IOExportFundXmlRequest extends IOExportRequest {
 
 	final private DEExportParams exportParams;
 
-    public IOExportFundXmlRequest(Integer userId, Integer requestId, String downloadFileName, DEExportParams exportParams) {
-		super(userId, requestId, downloadFileName, MediaType.APPLICATION_XML_VALUE, FILE_NAME_EXT);
-		this.exportParams = exportParams;
+    public IOExportFundXmlRequest(Integer userId, Integer requestId, String dlFileName, DEExportParams params, DEExportService service) {
+		super(userId, requestId, dlFileName, MediaType.APPLICATION_XML_VALUE, FILE_NAME_EXT, service);
+		this.exportParams = params;
 	}
 
     public DEExportParams getExportParams() {
         return exportParams;
     }
+
+	@Override
+	void exportToFile(Path exportFile) throws IOException {
+        exportService.exportXmlDataToFile(exportParams, exportFile);
+	}
 }
