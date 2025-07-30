@@ -27,8 +27,6 @@ import com.google.common.cache.RemovalNotification;
 
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.core.ResourcePathResolver;
-import cz.tacr.elza.exception.SystemException;
-import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.UserService;
 
 @Service
@@ -100,7 +98,7 @@ public class IOExportWorker implements SmartLifecycle {
 
     public int addExportRequest(final Integer userId, final String downloadFileName, DEExportParams exportParams) {
         synchronized (lock) {
-            IOExportRequest exportRequest = new IOExportFundXmlRequest(userId, ++requestCount, downloadFileName, exportParams);
+            IOExportRequest exportRequest = new IOExportFundXmlRequest(userId, ++requestCount, downloadFileName, exportParams, exportService);
 
             // store result
             mapExportResult.put(exportRequest.getRequestId(), exportRequest);
@@ -112,7 +110,7 @@ public class IOExportWorker implements SmartLifecycle {
 
     public int addExportRequest(final Integer userId, final String downloadFileName, SearchParams searchParams) {
         synchronized (lock) {
-            IOExportRequest exportRequest = new IOExportFundsCsv(userId, ++requestCount, downloadFileName, searchParams);
+            IOExportRequest exportRequest = new IOExportFundsCsv(userId, ++requestCount, downloadFileName, searchParams, exportService);
 
             // store result
             mapExportResult.put(exportRequest.getRequestId(), exportRequest);
@@ -142,14 +140,7 @@ public class IOExportWorker implements SmartLifecycle {
         Path exportTrasnformDir = resourcePathResolver.getExportTrasnformDir();
         Files.createDirectories(exportTrasnformDir);
         Path exportFile = Files.createFile(exportTrasnformDir.resolve(request.getRequestId() + request.getFileExt()));
-
-        if (request instanceof IOExportFundXmlRequest) {
-	        exportService.exportXmlDataToFile(((IOExportFundXmlRequest) request).getExportParams(), exportFile);
-        } else if (request instanceof IOExportFundsCsv) {
-	        exportService.exportCsvDataToFile(((IOExportFundsCsv) request).getSearchParams(), exportFile);
-        } else {
-        	throw new SystemException("This type of request is not processed", BaseCode.INVALID_STATE);
-        }
+        request.exportToFile(exportFile);
     }
 
     public void run() {
