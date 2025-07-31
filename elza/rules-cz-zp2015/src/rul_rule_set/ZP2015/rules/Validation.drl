@@ -142,9 +142,11 @@ then
 	dvResults.createError($descItem.getDescItemId(), "Počet archiválií u kartotéky musí být větší nebo roven 1.", "ZP2015_POL_BASIC");
 end
 
-// Povinné pokud je nastaven typ pořádání
-// výjimkou je kořen nebo hlavní série pokud mají nastaveno ref.označení
-// Možné zlepšení: Kontrolovat, že žádný rodič nemá pořadové číslo, pokud ho nemá posuzovaná JP
+// Povinné pokud je nastaven typ pořádání dle ZP
+// výjimky jsou:
+//  - kořen nebo dílčí list - vždy
+// - série pokud mají nastaveno ref.označení (asi jsou kořenem pomůcky)
+// ? Možné zlepšení: Kontrolovat, že žádný rodič nemá pořadové číslo, pokud ho nemá posuzovaná JP
 rule "Pořadové číslo - povinné"
 no-loop
 when
@@ -152,13 +154,14 @@ when
 	DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT") ) from $items
 	not DescItem(type=="ZP2015_SERIAL_NUMBER") from $activeLevel.ownDescItems
 	// Výjimka pro nejvyšší série a kořen
+	not DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION") ) from $items
 	not (
 	  DescItem(type=="ZP2015_UNIT_ID" ) from $activeLevel.ownDescItems
-	  and DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES") ) from $items
+	  and DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_SERIES") ) from $items
 	)
 then
 	dvResults.createMissing("ZP2015_SERIAL_NUMBER",
-	"Pořadové číslo musí být nastaveno (případně ref. označení pro nejvyšší úrovně popisu).",
+	"Pořadové číslo musí být nastaveno (případně referenční označení pro série).",
 	"ZP2015_POL_SERIAL_NO");
 end
 
