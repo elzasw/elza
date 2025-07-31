@@ -67,7 +67,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 	protected void init(ArrBulkActionRun bulkActionRun) {
 		super.init(bulkActionRun);
 
-        multipleItemChangeContext = descriptionItemService.createChangeContext(version.getFundVersionId(), true);
+        multipleItemChangeContext = descriptionItemService.createChangeContext(bulkActionRun.getFundVersionId(), true);
 
 		// prepare item type
 		ItemType itemType = staticDataProvider.getItemTypeByCode(config.getItemType());
@@ -140,7 +140,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 	            ArrDataInteger dataInteger = new ArrDataInteger();
 				dataInteger.setIntegerValue(counter);
 				descItem.setData(dataInteger);
-                saveNewDescItem(descItem);
+                saveNewDescItem(getFondsVersion(), descItem);
 				countChanges++;
 			} else {
 				ArrData data = HibernateUtils.unproxy(descItem.getData());
@@ -157,7 +157,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 				// uložit pouze při rozdílu
 				if (counter != value) {
 					dataInteger.setIntegerValue(counter);
-	                updateDescItem(descItem, dataInteger);
+	                updateDescItem(getFondsVersion(), descItem, dataInteger);
 					countChanges++;
 				}
 			}
@@ -220,7 +220,6 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 
 			counter++;
 
-			ArrDataString item;
 			// vytvoření nového atributu
 			if (descItem == null) {
 	            descItem = new ArrDescItem();
@@ -230,7 +229,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 	            ArrDataString dataString = new ArrDataString();
 				descItem.setData(dataString);
 				dataString.setStringValue(prepareValue());
-                saveNewDescItem(descItem);
+                saveNewDescItem(getFondsVersion(), descItem);
 				countChanges++;
 			} else {
 				ArrData data = HibernateUtils.unproxy(descItem.getData());
@@ -251,7 +250,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 					// uložit pouze při rozdílu
 					if (!nextValue.equals(value)) {
 						dataString.setStringValue(nextValue);
-						updateDescItem(descItem, dataString);
+						updateDescItem(getFondsVersion(), descItem, dataString);
 						countChanges++;
 					}
 				}

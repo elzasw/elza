@@ -43,6 +43,7 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ExceptionThrow;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.NodeRepository;
@@ -227,8 +228,17 @@ public class ArrangementInternalService {
         }
     }
 
+    /**
+     * Load fund version and fetched fund and change
+     * @param fundVersionId
+     * @return
+     */
     public ArrFundVersion getFundVersionById(final Integer fundVersionId) {
-        return fundVersionRepository.getOneCheckExist(fundVersionId);
+    	var fundVersion = fundVersionRepository.findByIdWithFetchForExport(fundVersionId);
+    	if(fundVersion==null) {
+    		throw ExceptionThrow.version(fundVersionId).get();
+    	}
+        return fundVersion;
     }
 
     public List<ArrNode> findNodesByStructuredObjectId(Integer structuredObjectId) {

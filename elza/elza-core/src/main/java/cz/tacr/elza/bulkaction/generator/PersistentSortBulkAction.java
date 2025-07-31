@@ -25,7 +25,6 @@ import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -78,8 +77,8 @@ public class PersistentSortBulkAction extends BulkActionTransactional {
     }
 
     @Override
-    protected void init(ArrBulkActionRun bulkActionRun) {
-        super.init(bulkActionRun);
+    protected void init(ActionRunContext runContext) {
+        super.init(runContext);
 
         String jsonConfig = bulkActionRun.getConfig();
 
