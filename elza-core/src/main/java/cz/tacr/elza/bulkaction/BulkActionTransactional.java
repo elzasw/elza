@@ -203,15 +203,14 @@ public abstract class BulkActionTransactional implements BulkAction {
      * @param arrData
      * @return finální atribut
      */
-    public ArrDescItem updateDescItem(final ArrDescItem descItem, final ArrData arrData) {
+    public ArrDescItem updateDescItem(final ArrDescItem descItem, final ArrData arrData, boolean forceUpdate) {
         ArrDescItem result;
     	Validate.isTrue(descItem.getDescItemObjectId() != null);
         if (multipleItemChangeContext == null) {
         	//result = descriptionItemService.updateDescriptionItem(descItem, version, getChange(), false);
         	throw new SystemException("The functionality is not implemented.");
         } else {
-        	result = descriptionItemService.updateItemValueAsNewVersion(getFondsVersion(), getChange(), descItem, descItem.getItemSpec(), arrData,
-                    													descItem.getPosition(), descItem.getReadOnly(), multipleItemChangeContext, false);
+        	result = descriptionItemService.updateValueAsNewVersion(getFondsVersion(), getChange(), descItem, multipleItemChangeContext, forceUpdate); 
             multipleItemChangeContext.flushIfNeeded();
         }
         return result;

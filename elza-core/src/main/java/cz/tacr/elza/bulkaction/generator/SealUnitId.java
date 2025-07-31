@@ -105,13 +105,23 @@ public class SealUnitId extends BulkActionDFS {
         StackUnitId parentUnitId = getFromStack(parentNodeId);
         // get unit id
         ArrDescItem descItem = loadSingleDescItem(level.getNode(), itemType);
+        // skip levels without UNIT_ID
         if (descItem == null || descItem.getData() == null) {
-            // item without unitid -> error
-            throw new SystemException(
-                    "Every level of description has to has valid unit id. Found level without unit id",
-                    BaseCode.DB_INTEGRITY_PROBLEM)
-                            .set("nodeId", level.getNodeId());
+        	return;
         }
+
+        // Unit id exists -> check if we have parents with valid unit id
+		if (parentUnitId == null) {
+			// parentUnitId does not have to exists for root node
+			// in all other cases it has to exists
+			if (!getFondsVersion().getRootNodeId().equals(parentNodeId)) {
+				// item without unitid -> error
+				throw new SystemException(
+						"Every parent level of description has to has valid unit id. Found level without unit id.",
+						BaseCode.ID_NOT_EXIST).set("nodeId", level.getNodeId());
+
+			}
+		}
 
         ArrData data = descItem.getData();
         ArrDataUnitid dataUnitId = HibernateUtils.unproxy(data);
@@ -133,25 +143,32 @@ public class SealUnitId extends BulkActionDFS {
             parentUnitId.setLastSibling(stackUnitId);
         }
 
-        Integer fundVersionId = runContext.getFundVersionId();
-		Objects.requireNonNull(fundVersionId);
-        ArrFund fund = fundRepository.findByFundVersionId(fundVersionId);
+        ArrFund fund = getFondsVersion().getFund();
 
-        // find as used value
-        ArrLockedValue fixedValue = usedValueRepository.findByFundAndItemTypeAndValue(fund, itemType, value);
-        if (fixedValue == null) {
-            // create new ArrDescItem
-            ArrDescItem newItem = new ArrDescItem(descItem);
+        ArrDescItem srcItem;
+        // check that descItem is locked/readonly
+		if (!Boolean.TRUE.equals(descItem.getReadOnly())) {
+			// make it as readonly
+            // update descItem
+            var newItem = new ArrDescItem(descItem);
             newItem.setItemId(null);
-            newItem.setDescItemObjectId(null);
             newItem.setCreateChange(getChange());
             newItem.setReadOnly(true);
-            newItem = this.saveNewDescItem(getFondsVersion(), newItem);
+            newItem.setData(ArrData.makeCopyWithoutId(dataUnitId));
 
+            newItem = this.updateDescItem(getFondsVersion(), newItem, true);
+            srcItem = newItem;
+		} else {
+			srcItem = descItem;
+		}
+
+		// find as used value
+        ArrLockedValue fixedValue = usedValueRepository.findByFundAndItemTypeAndValue(fund, itemType, value);
+        if (fixedValue == null) {
             // lock if not locked
             fixedValue = new ArrLockedValue();
             fixedValue.setFund(fund);
-            fixedValue.setItem(newItem);
+            fixedValue.setItem(srcItem);
             fixedValue.setCreateChange(getChange());
 
             fixedValue = usedValueRepository.save(fixedValue);
@@ -164,7 +181,7 @@ public class SealUnitId extends BulkActionDFS {
                                 .set("fixedAtItemId", fixedValue.getItemId())
                                 .set("otherItemId", descItem.getItemId());
             }
-        }
+        }        
 
         // store on stack
         nodeIdStack.push(stackUnitId);
@@ -183,8 +200,8 @@ public class SealUnitId extends BulkActionDFS {
             }
         }
         throw new SystemException(
-                "Incorrect sibling unitId",
-                BaseCode.DB_INTEGRITY_PROBLEM)
+                "Incorrect sibling unitId.",
+                BaseCode.INVALID_STATE)
                         .set("siblingUnitId", siblUnitId)
                         .set("unitId", unitId);
     }
@@ -206,8 +223,8 @@ public class SealUnitId extends BulkActionDFS {
             }
         }
         throw new SystemException(
-                "Incorrect child unitId",
-                BaseCode.DB_INTEGRITY_PROBLEM)
+                "Incorrect child unitId.",
+                BaseCode.INVALID_STATE)
                         .set("parentUnitId", parentUnitId)
                         .set("unitId", unitId);
 

@@ -151,13 +151,17 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 					                .set("expected", "ArrItemInt")
 					                .set("actual", descItem.getData().getClass().getSimpleName());
 				}
-				ArrDataInteger dataInteger = (ArrDataInteger) ArrData.makeCopyWithoutId(data);
-				Integer value = dataInteger.getIntegerValue();
+				
+				ArrDataInteger srcDataInt = (ArrDataInteger)data;
 
 				// uložit pouze při rozdílu
-				if (counter != value) {
+				if (counter != srcDataInt.getIntegerValue().intValue()) {
+					ArrDataInteger dataInteger = (ArrDataInteger) ArrData.makeCopyWithoutId(data);
 					dataInteger.setIntegerValue(counter);
-	                updateDescItem(getFondsVersion(), descItem, dataInteger);
+					
+					var newDescItem = new ArrDescItem(descItem);
+					newDescItem.setData(dataInteger);					
+	                updateDescItem(getFondsVersion(), newDescItem, false);
 					countChanges++;
 				}
 			}
@@ -240,17 +244,21 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 					                .set("expected", "ArrDataString")
 					                .set("actual", descItem.getData().getClass().getSimpleName());
 				}
-				ArrDataString dataString = (ArrDataString) ArrData.makeCopyWithoutId(data);
-				String value = dataString.getStringValue();
-				if (useCurrentNumbering && StringUtils.isNotBlank(value)) {
+				ArrDataString srcDataString = (ArrDataString)data;
+				if (useCurrentNumbering && StringUtils.isNotBlank(srcDataString.getStringValue())) {
 					// read current value
-					setLastNumber(value);
+					setLastNumber(srcDataString.getStringValue());
 				} else {
 					String nextValue = prepareValue();
 					// uložit pouze při rozdílu
-					if (!nextValue.equals(value)) {
+					if (!nextValue.equals(srcDataString.getStringValue())) {
+						ArrDataString dataString = (ArrDataString) ArrData.makeCopyWithoutId(data);
 						dataString.setStringValue(nextValue);
-						updateDescItem(getFondsVersion(), descItem, dataString);
+												
+						var newDescItem = new ArrDescItem(descItem);
+						newDescItem.setData(dataString);					
+		                updateDescItem(getFondsVersion(), newDescItem, false);
+
 						countChanges++;
 					}
 				}
