@@ -1,4 +1,4 @@
-import React, {FC, useState} from 'react';
+import React, { FC, useState } from 'react';
 import {
     ConfigProps,
     Field,
@@ -8,26 +8,28 @@ import {
     reduxForm,
     SubmitHandler,
 } from 'redux-form';
-import {Col, Modal, Row} from 'react-bootstrap';
-import {connect} from "react-redux";
-import {Action} from "redux";
-import {ThunkDispatch} from "redux-thunk";
-import {Button} from "../../ui";
+import { Col, Modal, Row } from 'react-bootstrap';
+import { connect } from "react-redux";
+import { Link } from "react-router-dom";
+import { Action } from "redux";
+import { ThunkDispatch } from "redux-thunk";
+import { Button } from "../../ui";
 import i18n from "../../i18n";
 import './ExtSyncsModal.scss';
-import {ArchiveEntityVO} from "../../../api/ArchiveEntityVO";
-import {getMapFromList, indexById} from "../../../shared/utils";
+import { ArchiveEntityVO } from "../../../api/ArchiveEntityVO";
+import { getMapFromList, indexById } from "../../../shared/utils";
 import InifiniteList from "../../../shared/list/InifiniteList";
-import {FormInputField, HorizontalLoader, Icon, TooltipTrigger} from "../../shared";
-import {ExtAsyncQueueState} from "../../../api/ExtAsyncQueueState";
-import {ExtStatesField} from "../field/ExtStatesField";
-import {ScopesField} from "../../admin/ScopesField";
-import {FundScope} from "../../../types";
-import {WebApi} from "../../../actions/WebApi";
-import {SyncsFilterVO} from "../../../api/SyncsFilterVO";
-import {ExtSyncsQueueItemVO} from "../../../api/ExtSyncsQueueItemVO";
+import { FormInputField, HorizontalLoader, Icon, TooltipTrigger } from "../../shared";
+import { ExtAsyncQueueState } from "../../../api/ExtAsyncQueueState";
+import { ExtStatesField } from "../field/ExtStatesField";
+import { ScopesField } from "../../admin/ScopesField";
+import { FundScope } from "../../../types";
+import { WebApi } from "../../../actions/WebApi";
+import { SyncsFilterVO } from "../../../api/SyncsFilterVO";
+import { ExtSyncsQueueItemVO } from "../../../api/ExtSyncsQueueItemVO";
 import * as ExtStateInfo from "../form/filter/ExtStateInfo";
-import {dateToDateTimeString, localUTCToDateTime, utcToDateTime} from "../../../shared/utils/commons";
+import { dateToDateTimeString, localUTCToDateTime, utcToDateTime } from "../../../shared/utils/commons";
+import { urlEntity } from '../../../constants';
 
 const FORM_NAME = "extSyncs";
 
@@ -77,34 +79,34 @@ const createFilter = (values): SyncsFilterVO => {
     };
 }
 
-const StateInfoIcon:FC<{
+const StateInfoIcon: FC<{
     stateMessage: string;
 }> = ({
     stateMessage
 }) => {
-    const renderTooltip = () => {
-        return <div className="state-info-tooltip">
-            {stateMessage}
-        </div>
+        const renderTooltip = () => {
+            return <div className="state-info-tooltip">
+                {stateMessage}
+            </div>
+        }
+
+        return <TooltipTrigger content={renderTooltip()}>
+            <span className="state-info">
+                <Icon glyph="fa-info-circle" />
+            </span>
+        </TooltipTrigger>
     }
 
-    return <TooltipTrigger content={renderTooltip()}>
-    <span className="state-info">
-            <Icon glyph="fa-info-circle"/>
-    </span>
-        </TooltipTrigger>
-}
-
-const ExtSyncsModal:FC<Props> = ({
-    handleSubmit, 
-    onClose, 
-    submitting, 
-    extSystems, 
-    scopes, 
-    scopesMap, 
-    reset, 
+const ExtSyncsModal: FC<Props> = ({
+    handleSubmit,
+    onClose,
+    submitting,
+    extSystems,
+    scopes,
+    scopesMap,
+    reset,
     onNavigateAp
- }) => {
+}) => {
     const [data, setData] = useState<Data>({
         isFetching: false,
         fetched: false,
@@ -119,7 +121,7 @@ const ExtSyncsModal:FC<Props> = ({
         return WebApi.findExternalSyncs(0, count, externalSystemCode, filter);
     }
 
-    const fetchWithState = (tmpData:Data, count:number, externalSystemCode: string, filter) => {
+    const fetchWithState = (tmpData: Data, count: number, externalSystemCode: string, filter) => {
         setData(tmpData);
         return fetchData(count, externalSystemCode, filter).then(result => {
             tmpData = {
@@ -142,7 +144,7 @@ const ExtSyncsModal:FC<Props> = ({
         const count = 50;
         const externalSystemCode = values.extSystem;
         const filter = createFilter(values);
-        let tmpData = {
+        const tmpData = {
             ...data,
             externalSystemCode,
             lastCount: count,
@@ -158,7 +160,7 @@ const ExtSyncsModal:FC<Props> = ({
             return false;
         }
         const count = data.lastCount + 50;
-        let tmpData = {
+        const tmpData = {
             ...data,
             lastCount: count,
             isFetching: true,
@@ -184,12 +186,12 @@ const ExtSyncsModal:FC<Props> = ({
             <Col>
                 <Row>
                     <Col xs={12}>
-                        <Button className="ap" variant="link" onClick={() => onNavigateAp(item.accessPointId)}>
+                        <Link to={urlEntity(item.accessPointId)} className="ap" variant="link" onClick={() => onNavigateAp(item.accessPointId)}>
                             {item.accessPointName}
-                        </Button>
+                        </Link>
                     </Col>
                 </Row>
-                <Row className={exception? "font-red" : "font-black"}>
+                <Row className={exception ? "font-red" : undefined}>
                     <Col xs={4}>
                         <span className="label">
                             {i18n('ap.ext-syncs.date')}
@@ -207,21 +209,21 @@ const ExtSyncsModal:FC<Props> = ({
                             {i18n('ap.ext-syncs.state')}
                         </span>
                         {ExtStateInfo.getName(item.state)}
-                        {item.stateMessage && 
-                            <StateInfoIcon stateMessage={item.stateMessage}/>
+                        {item.stateMessage &&
+                            <StateInfoIcon stateMessage={item.stateMessage} />
                         }
                     </Col>
                 </Row>
             </Col>
             <Col xs lg="2">
                 <Button size="small" variant="outline-danger" onClick={() => onDelete(item.id)}>
-                    <Icon glyph="fa-trash"/>
+                    <Icon glyph="fa-trash" />
                 </Button>
             </Col>
         </Row>
     };
 
-    const renderResults = (data:Data) => {
+    const renderResults = (data: Data) => {
         return <InifiniteList scrollableTarget="ListScrollableLayout" fetchMore={fetchMore} list={data}>
             <div className="result-items">
                 {data.data.map((item, index) => renderResultItem(item, index))}
@@ -235,13 +237,13 @@ const ExtSyncsModal:FC<Props> = ({
                 <Col className="search-panel" xs={3}>
                     <div className="search-fields">
                         <Field name="extSystem"
-                               label={i18n('ap.ext-syncs.ext-system')}
-                               type="autocomplete"
-                               component={FormInputField}
-                               getItemId={item => item && item.code}
-                               useIdAsValue
-                               items={extSystems}
-                               disabled={submitting}
+                            label={i18n('ap.ext-syncs.ext-system')}
+                            type="autocomplete"
+                            component={FormInputField}
+                            getItemId={item => item && item.code}
+                            useIdAsValue
+                            items={extSystems}
+                            disabled={submitting}
                         />
                         <FieldArray
                             name="states"
@@ -263,7 +265,7 @@ const ExtSyncsModal:FC<Props> = ({
                     </div>
                 </Col>
                 <Col id="ListScrollableLayout" className="results" xs={9}>
-                    {data.isFetching && <HorizontalLoader hover/>}
+                    {data.isFetching && <HorizontalLoader hover />}
                     {data.fetched && !data.isFetching && data.data.length === 0 && <div className="text-center mt-5"><h2>{i18n('ap.ext-syncs.label.no-entities')}</h2></div>}
                     {data.fetched && data.data.length > 0 && renderResults(data)}
                     {!data.fetched && <div className="text-center mt-5"><h2>{i18n('ap.ext-syncs.label.params')}</h2></div>}
