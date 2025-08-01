@@ -1,7 +1,6 @@
 package cz.tacr.elza.drools.model;
 
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -125,6 +124,14 @@ public class DescItem {
 
     public String getTypeShortcut() {
     	return itemType.getShortcut();
+    }
+
+    public String getSpecName() {
+    	return itemSpec == null ? null : itemSpec.getName();
+    }
+
+    public String getSpecShortcut() {
+    	return itemSpec == null ? null : itemSpec.getShortcut();
     }
 
     public DescItemChange getChange() {

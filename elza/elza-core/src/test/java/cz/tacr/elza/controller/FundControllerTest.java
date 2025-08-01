@@ -5,10 +5,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
+import org.springframework.core.io.Resource;
 
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -21,6 +23,8 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.test.controller.vo.CreateFund;
 import cz.tacr.elza.test.controller.vo.DescItemField;
+import cz.tacr.elza.test.controller.vo.ExportParams;
+import cz.tacr.elza.test.controller.vo.ExportRequestStatus;
 import cz.tacr.elza.test.controller.vo.FieldType;
 import cz.tacr.elza.test.controller.vo.FieldValueFilter;
 import cz.tacr.elza.test.controller.vo.FindFundsResult;
@@ -28,6 +32,7 @@ import cz.tacr.elza.test.controller.vo.FondsField;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.FundDetail;
 import cz.tacr.elza.test.controller.vo.FundSearchResult;
+import cz.tacr.elza.test.controller.vo.FundSections;
 import cz.tacr.elza.test.controller.vo.FondsFieldName;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.test.controller.vo.NodeData;
@@ -36,6 +41,7 @@ import cz.tacr.elza.test.controller.vo.NodeField;
 import cz.tacr.elza.test.controller.vo.NodeFieldName;
 import cz.tacr.elza.test.controller.vo.NodeTreeData;
 import cz.tacr.elza.test.controller.vo.OperationCompareType;
+import cz.tacr.elza.test.controller.vo.RequestProcessState;
 import cz.tacr.elza.test.controller.vo.SearchParams;
 import cz.tacr.elza.test.controller.vo.UpdateFund;
 
@@ -140,7 +146,7 @@ public class FundControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void nodeSearchTest() throws InterruptedException {
+    public void nodeSearchTest() {
         Fund fund = createFund("fund1", "internalCode");
         assertNotNull(fund);
 
@@ -314,6 +320,43 @@ public class FundControllerTest extends AbstractControllerTest {
         assertNotNull(nodeData);
     }
 
+    @Test
+    public void fundExportFunds() throws IOException {
+    	CreateFund cf = createFund("fundExport", "internalCode", 1, "aaaaaaaa-1111-2222-3333-444455556666", "mark1");
+        Fund fund = fundsApi.fundCreateFund(cf);
+        assertNotNull(fund);
+
+        // create MultimatchContainsFilter filter
+        MultimatchContainsFilter containsFilter = new MultimatchContainsFilter();
+        containsFilter.setValue("fund");
+
+        // create search params, no offset & no size
+        SearchParams params = new SearchParams().addFiltersItem(containsFilter);
+
+        // send export request
+        int requestId = fundsApi.fundExportFunds(params);
+        assertTrue(requestId > 0);
+
+        // waiting for creating export file
+        ExportRequestStatus expStatus = null;
+        int counter = 0;
+        try {
+            do {
+                Thread.sleep(50);
+                expStatus = ioApi.ioGetExportStatus(requestId);
+                counter++;
+            } while (expStatus.getState() != RequestProcessState.FINISHED && counter < 1000);
+        } catch (Exception e) {
+            fail("Exception while waiting on result: " + e);
+        }
+        assertNotNull(expStatus);
+        assertEquals(RequestProcessState.FINISHED, expStatus.getState());
+
+        Resource file = ioApi.ioGetExportFile(requestId);
+        assertNotNull(file);
+        assertTrue(file.contentLength() > 100);
+    }
+    
     private CreateFund createFund(String name, String internalCode, Integer fundNumber, String uuid, String mark) {
         RulRuleSetVO ruleSet = getRuleSets().get(0);
         ParInstitutionVO institution = getInstitutions().get(0);

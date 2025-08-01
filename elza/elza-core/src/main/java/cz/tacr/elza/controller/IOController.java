@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.ResponseEntity.BodyBuilder;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -64,7 +62,7 @@ public class IOController implements IoApi {
     public ResponseEntity<Integer> ioExportRequest(@RequestBody ExportParams exportParams) {
         UsrUser user = userService.getLoggedUser();
 
-        // convert ExportParams to IOExportRequest
+        // convert ExportParams -> IOExportRequest
         DEExportParams deExportParams = new DEExportParams();
         if (exportParams.getExportFilterId() != null) {
             deExportParams.setExportFilterId(exportParams.getExportFilterId());
@@ -131,7 +129,7 @@ public class IOController implements IoApi {
     }
 
     @Override
-    public ResponseEntity ioGetExportStatus(@PathVariable("requestId") Integer requestId) {
+    public ResponseEntity ioGetExportStatus(@PathVariable Integer requestId) {
 
         logger.debug("Get export status: {}", requestId);
 
@@ -173,17 +171,17 @@ public class IOController implements IoApi {
     @Override
     public ResponseEntity<Resource> ioGetExportFile(@PathVariable Integer requestId) {
 
-        IOExportRequest result = ioExportWorker.getExportState(requestId);
-        if (result == null) {
+        IOExportRequest request = ioExportWorker.getExportState(requestId);
+        if (request == null) {
             return ResponseEntity.notFound().build();
         }
 
-        switch (result.getState()) {
+        switch (request.getState()) {
         case FINISHED:
-            Path filePath = resourcePathResolver.getExportXmlTrasnformDir().resolve(requestId + ".xml");
+            Path filePath = resourcePathResolver.getExportTrasnformDir().resolve(request.getRequestId() + request.getFileExt());
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_ENCODING, StandardCharsets.UTF_8.name());
-            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE);
+            headers.add(HttpHeaders.CONTENT_TYPE, request.getMediaType());
             try {
                 long fileSize = Files.size(filePath);
                 headers.add(HttpHeaders.CONTENT_LENGTH, Long.toString(fileSize));
@@ -192,9 +190,9 @@ public class IOController implements IoApi {
             }
 
             // Content-Disposition: attachment; filename="filename.jpg"
-            String fileName = result.getDownloadFileName();
+            String fileName = request.getDownloadFileName();
             if (StringUtils.isBlank(fileName)) {
-                fileName = "elzaData.xml";
+                fileName = "elzaData"  + request.getFileExt();
             }
             FileDownload.addContentDispositionAsAttachment(headers, fileName);
 
@@ -207,7 +205,7 @@ public class IOController implements IoApi {
         case PROCESSING:
             return ResponseEntity.status(102).build();
         case ERROR:
-            return ResponseFactory.responseException(500, result.getException());
+            return ResponseFactory.responseException(500, request.getException());
         default:
             throw new IllegalStateException();
         }

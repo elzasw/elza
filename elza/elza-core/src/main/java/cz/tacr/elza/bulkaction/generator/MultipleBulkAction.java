@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
@@ -19,7 +19,6 @@ import cz.tacr.elza.bulkaction.generator.multiple.TypeLevel;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -68,8 +67,8 @@ public class MultipleBulkAction extends BulkActionTransactional {
 	 * @param runContext
 	 */
 	@Override
-	protected void init(ArrBulkActionRun bulkActionRun) {
-		super.init(bulkActionRun);
+	protected void init(ActionRunContext runContext) {
+		super.init(runContext);
 
 		// initialize actions from configuration
 		for (ActionConfig ac : config.getActions()) {
@@ -117,7 +116,7 @@ public class MultipleBulkAction extends BulkActionTransactional {
         // prepare parent nodes
         for (ArrNode startingNode : startingNodes) {
             // read parents
-			List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(startingNode.getNodeId(), version.getLockChange(), true);
+			List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(startingNode.getNodeId(), getFondsVersion().getLockChange(), true);
 
             LevelWithItems parentLevel = null;
             for(ArrLevel level: levels) {
@@ -154,7 +153,7 @@ public class MultipleBulkAction extends BulkActionTransactional {
         for (ArrNode node : startingNodes) {
 
             LevelWithItems levelWithItems = nodeStartingLevels.get(node);
-			Validate.notNull(levelWithItems);
+			Objects.requireNonNull(levelWithItems);
 
             // read whole subtree
             NodeHierarchy treeNode = levelTreeCacheService.createTreeNodeMap(null, node.getNodeId());

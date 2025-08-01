@@ -64,7 +64,7 @@ EventEmitter.defaultMaxListeners = 0;
 /** IE FIxy **/
 const IE = Utils.detectIE();
 if (IE !== false) {
-    (function() {
+    (function () {
         const html = document.getElementsByTagName('html')[0];
         if (IE < 12) {
             html.className = html.className + ' ie ie' + IE;
@@ -78,7 +78,7 @@ if (IE !== false) {
  */
 if (!String.prototype.startsWith) {
     // eslint-disable-next-line no-extend-native
-    String.prototype.startsWith = function(str) {
+    String.prototype.startsWith = function (str) {
         return this.lastIndexOf(str, 0) === 0;
     };
 }
@@ -92,13 +92,22 @@ AjaxUtils.setStore(store);
 // Web socket - až po initu store
 store.dispatch(storeRestoreFromStorage());
 
+const ignoredMessages = [
+    "ResizeObserver loop completed with undelivered notifications."
+]
+
 function globalErrorHandler(message, url, line, column, error) {
+    if (ignoredMessages.includes(message)) {
+        return;
+    }
+
     let stackTrace = error;
     try {
         if (stackTrace.stack) {
             stackTrace = stackTrace.stack;
         }
     } catch (e) { }
+
 
     store.dispatch(
         addToastr(
@@ -129,7 +138,7 @@ window.addEventListener('unhandledrejection', ({ reason }) => {
     console.error('Unhandled Promise rejection:', reason);
 
     // Ignore already processed exceptions
-    if(reason.processed){
+    if (reason.processed) {
         return;
     }
 
