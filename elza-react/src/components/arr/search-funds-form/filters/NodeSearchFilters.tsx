@@ -1,5 +1,5 @@
-import { Divider, Input, InteractionTag, InteractionTagPrimary, InteractionTagSecondary, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tag, TagDismissData, TagDismissEvent, TagGroup, makeStyles, tokens } from "@fluentui/react-components";
-import { AddRegular, DismissRegular } from "@fluentui/react-icons";
+import { Button, Divider, Input, InteractionTag, InteractionTagPrimary, InteractionTagSecondary, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tag, TagDismissData, TagDismissEvent, TagGroup, makeStyles, tokens } from "@fluentui/react-components";
+import { AddRegular, DismissRegular, ArrowSyncRegular } from "@fluentui/react-icons";
 import { Icon } from "components"
 import { Field, Form } from "react-final-form";
 import { FieldType, FilterType, NodeFieldName, OperationCompareType } from "elza-api";
@@ -16,6 +16,7 @@ import { SettingsType } from "api/settings/SettingsType";
 
 interface Props {
   onChange: (filters: FilterObject[]) => void;
+  onRefresh: () => void;
   currentFilters: FilterObject[];
 }
 
@@ -53,6 +54,7 @@ function convertSearchNodeFilterSettings(valueString: string): SearchNodeFilterS
 
 export function NodeSearchFilters({
   onChange,
+  onRefresh,
   currentFilters,
 }: Props) {
   const [filters, setFilters] = useState<FilterObject[]>(currentFilters as any || []);
@@ -224,10 +226,15 @@ export function NodeSearchFilters({
     }
   }
 
+  const fulltextFilter = currentFilters?.find((filter) => filter.filterType === FilterType.Contains);
+  const fulltextValue = fulltextFilter?.getSerializedString(fulltextFilter) || "";
 
   return <div style={{ display: "flex", flexWrap: "wrap" }}>
+    {<div style={{ display: "flex", alignItems: "center", margin: "5px" }}>
+      <Button appearance="outline" onClick={onRefresh} icon={<ArrowSyncRegular />} disabled={currentFilters.length === 0} />
+    </div>}
     <div style={{ display: "flex", alignItems: "center", margin: "5px" }}>
-      <Form<FulltextValues> initialValues={{ fulltext: "" }} onSubmit={handleFulltext}>
+      <Form<FulltextValues> initialValues={{ fulltext: fulltextValue }} onSubmit={handleFulltext}>
         {({ handleSubmit, values, form }) => {
           return <form onSubmit={handleSubmit}>
             <Field name="fulltext">{({ input }) => {

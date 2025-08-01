@@ -35,7 +35,7 @@ return generate(AE, AP_CACHE_PROVIDER);
 // Priklad: Kladno, Kladno, Česko
 static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
 
-    // seznam vyloučených typů území
+    // seznam vyloučených územních celků pro blízké státy
     List<String> excludeTerritory = Arrays.asList(
         "GT_LAND",       // země
         "GT_AREA",       // oblast
@@ -44,7 +44,25 @@ static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
         "GT_ADMREGION"   // kraj
         )
 
-    // seznam omezených zemí
+    // seznam vyloučených územních celků pro ostatní státy
+    List<String> otherExcludeTerritory = Arrays.asList(
+        "GT_LAND",       // země
+        "GT_AREA",       // oblast
+        "GT_VOJVODSTVI", // vojvodství
+        "GT_COUNTY",     // župa
+        "GT_ADMREGION",   // kraj
+        "GT_AUTONOMOUSPART", // autonomní část státu
+        "GT_REGION",         // region
+        "GT_CANTON",         // kanton
+        "GT_OKRUH",          // okruh
+        "GT_PROVINCE",       // provincie
+        "GT_DEPARTEMENT",    // departement
+        "GT_SHIRE",          // hrabství
+        "GT_TERRITORIALUNIT", // jiná část státu
+        "GT_DISTRICT"         // okres
+        )
+
+    // seznam blízkých států
 	List<String> excludeLands = Arrays.asList(
         "slovensko",
 		"polsko",
@@ -82,13 +100,26 @@ static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
     for (CachedAccessPoint ap : caps) {
         String geoType = GroovyUtils.findItemSpecCodeByItemTypeCode(ap, "GEO_TYPE")
         //System.out.println(geoType)
-        // v České republice tento typ (GT_ADMREGION) nevykazujeme
-        if (isCesko(country) && Objects.equals(geoType, "GT_ADMREGION")) {
-            continue
-        }
-        // nezobrazené typy území pro seznam zemí
-        if (country!=null && excludeLands.contains(country.toLowerCase()) && excludeTerritory.contains(geoType)) {
-            continue
+        if (country!=null) {
+            if (isCesko(country)) {
+                // v České republice tento typ (GT_ADMREGION) nevykazujeme
+                if( Objects.equals(geoType, "GT_ADMREGION")) {
+                    continue
+                }
+            } else  {            
+                // neni CR
+                if(excludeLands.contains(country.toLowerCase())) {
+                    // potlačení územních celků pro blízké (okolní) státy
+                    if(excludeTerritory.contains(geoType)) {
+                        continue
+                    }
+                } else {
+                    // potlačení územních celků pro ostatní/nesousední státy
+                    if(otherExcludeTerritory.contains(geoType)) {
+                        continue
+                    }
+                }
+            }
         }
         if (Objects.equals(geoType, "GT_CONTINENT") || Objects.equals(geoType, "GT_PLANET")) {
             break;

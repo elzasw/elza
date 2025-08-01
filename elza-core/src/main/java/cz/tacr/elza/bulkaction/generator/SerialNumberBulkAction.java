@@ -67,7 +67,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 	protected void init(ArrBulkActionRun bulkActionRun) {
 		super.init(bulkActionRun);
 
-        multipleItemChangeContext = descriptionItemService.createChangeContext(version.getFundVersionId(), true);
+        multipleItemChangeContext = descriptionItemService.createChangeContext(bulkActionRun.getFundVersionId(), true);
 
 		// prepare item type
 		ItemType itemType = staticDataProvider.getItemTypeByCode(config.getItemType());
@@ -140,7 +140,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 	            ArrDataInteger dataInteger = new ArrDataInteger();
 				dataInteger.setIntegerValue(counter);
 				descItem.setData(dataInteger);
-                saveNewDescItem(descItem);
+                saveNewDescItem(getFondsVersion(), descItem);
 				countChanges++;
 			} else {
 				ArrData data = HibernateUtils.unproxy(descItem.getData());
@@ -151,13 +151,17 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 					                .set("expected", "ArrItemInt")
 					                .set("actual", descItem.getData().getClass().getSimpleName());
 				}
-				ArrDataInteger dataInteger = (ArrDataInteger) ArrData.makeCopyWithoutId(data);
-				Integer value = dataInteger.getIntegerValue();
+				
+				ArrDataInteger srcDataInt = (ArrDataInteger)data;
 
 				// uložit pouze při rozdílu
-				if (counter != value) {
+				if (counter != srcDataInt.getIntegerValue().intValue()) {
+					ArrDataInteger dataInteger = (ArrDataInteger) ArrData.makeCopyWithoutId(data);
 					dataInteger.setIntegerValue(counter);
-	                updateDescItem(descItem, dataInteger);
+					
+					var newDescItem = new ArrDescItem(descItem);
+					newDescItem.setData(dataInteger);					
+	                updateDescItem(getFondsVersion(), newDescItem, false);
 					countChanges++;
 				}
 			}
@@ -220,7 +224,6 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 
 			counter++;
 
-			ArrDataString item;
 			// vytvoření nového atributu
 			if (descItem == null) {
 	            descItem = new ArrDescItem();
@@ -230,7 +233,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 	            ArrDataString dataString = new ArrDataString();
 				descItem.setData(dataString);
 				dataString.setStringValue(prepareValue());
-                saveNewDescItem(descItem);
+                saveNewDescItem(getFondsVersion(), descItem);
 				countChanges++;
 			} else {
 				ArrData data = HibernateUtils.unproxy(descItem.getData());
@@ -241,17 +244,21 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 					                .set("expected", "ArrDataString")
 					                .set("actual", descItem.getData().getClass().getSimpleName());
 				}
-				ArrDataString dataString = (ArrDataString) ArrData.makeCopyWithoutId(data);
-				String value = dataString.getStringValue();
-				if (useCurrentNumbering && StringUtils.isNotBlank(value)) {
+				ArrDataString srcDataString = (ArrDataString)data;
+				if (useCurrentNumbering && StringUtils.isNotBlank(srcDataString.getStringValue())) {
 					// read current value
-					setLastNumber(value);
+					setLastNumber(srcDataString.getStringValue());
 				} else {
 					String nextValue = prepareValue();
 					// uložit pouze při rozdílu
-					if (!nextValue.equals(value)) {
+					if (!nextValue.equals(srcDataString.getStringValue())) {
+						ArrDataString dataString = (ArrDataString) ArrData.makeCopyWithoutId(data);
 						dataString.setStringValue(nextValue);
-						updateDescItem(descItem, dataString);
+												
+						var newDescItem = new ArrDescItem(descItem);
+						newDescItem.setData(dataString);					
+		                updateDescItem(getFondsVersion(), newDescItem, false);
+
 						countChanges++;
 					}
 				}

@@ -17,7 +17,6 @@ import cz.tacr.elza.bulkaction.generator.unitid.UnitIdGeneratorParams;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -77,8 +76,8 @@ public class GenerateUnitId extends BulkActionTransactional {
 	 *
 	 */
 	@Override
-	protected void init(ArrBulkActionRun bulkActionRun) {
-		super.init(bulkActionRun);
+	protected void init(ActionRunContext runContext) {
+		super.init(runContext);
 
 		// read item type for UnitId
 		String unitIdCode = config.getItemType();
@@ -117,7 +116,7 @@ public class GenerateUnitId extends BulkActionTransactional {
     }
 
     private SealedUnitIdTree buildUsedIdTree() {
-        ArrFund fund = getFundVersion().getFund();
+        ArrFund fund = getFondsVersion().getFund();
 
         List<ArrLockedValue> lockedItems = findByFundAndItemType(fund, descItemType);
 
@@ -169,7 +168,7 @@ public class GenerateUnitId extends BulkActionTransactional {
         int countChanges = 0;
 
         for (Integer nodeId : runContext.getInputNodeIds()) {
-            ArrNode nodeRef = nodeRepository.getOne(nodeId);
+            ArrNode nodeRef = nodeRepository.getReferenceById(nodeId);
             ArrLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(nodeRef);
             Objects.requireNonNull(level);
 

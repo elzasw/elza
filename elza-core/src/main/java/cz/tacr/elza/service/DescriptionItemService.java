@@ -1615,7 +1615,7 @@ public class DescriptionItemService {
      *
      * @param version
      * @param change
-     * @param descItemDB
+     * @param descItemDB current DB value
      * @param itemSpec
      * @param srcData
      * @param newPosition
@@ -1623,7 +1623,7 @@ public class DescriptionItemService {
      *            Flag if updated item should be readonly
      * @return
      */
-	public ArrDescItem updateItemValueAsNewVersion(final ArrFundVersion fundVersion,
+	private ArrDescItem updateItemValueAsNewVersion(final ArrFundVersion fundVersion,
                                                    final ArrChange change,
                                                    ArrDescItem descItemDB,
                                                    RulItemSpec itemSpec,
@@ -1643,6 +1643,7 @@ public class DescriptionItemService {
 
         ArrData dataNew = descItemFactory.saveData(descItemDB.getItemType(), srcData);
 
+        // invalidate original item and get new copy
         ArrDescItem descItemNew = prepareNewDescItem(descItemDB, dataNew, change);
 
         // create new item based on source

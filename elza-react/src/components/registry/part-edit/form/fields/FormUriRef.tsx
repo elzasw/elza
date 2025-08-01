@@ -60,7 +60,7 @@ export const FormUriRef:FC<CommonFieldProps<ApItemUriRefVO>> = ({
     }
 
     return <Row>
-        <Col xs={10}>
+        <Col>
             <RevisionFieldExample
                 label={label}
                 prevValue={getValue(item)}
@@ -72,8 +72,9 @@ export const FormUriRef:FC<CommonFieldProps<ApItemUriRefVO>> = ({
                 onRevert={!isNew ? handleRevert : undefined}
                 onDelete={isDeleted ? undefined : handleDelete}
                 isDeleted={isDeleted}
+                equalSplit={true}
             >
-                <div style={{display: "flex"}}>
+                <div style={{display: "flex", flexDirection: "column", marginLeft: "16px"}}>
                     <Field
                         name={`${name}.updatedItem.description`}
                         label="Název"
