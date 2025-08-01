@@ -3,10 +3,11 @@
  */
 
 import * as types from 'actions/constants/ActionTypes';
-import {WebApi} from 'actions/index.jsx';
-import {Api} from "../../api";
+import { WebApi } from 'actions/index.jsx';
+import { Api } from "../../api";
 
-import {DEFAULT_LIST_SIZE} from '../../constants.tsx';
+import { DEFAULT_LIST_SIZE } from '../../constants.tsx';
+import { downloadExportFile } from '../global/downloadExportFile.ts';
 
 export const DEFAULT_FUND_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 
@@ -76,14 +77,14 @@ export async function getFundDetail(id) {
 export function fundsFetchIfNeeded(size = DEFAULT_FUND_LIST_MAX_SIZE) {
     return async (dispatch, getState) => {
         const state = getState();
-        const {fundRegion} = state;
-        const {filter} = fundRegion;
+        const { fundRegion } = state;
+        const { filter } = fundRegion;
         const dataKey = _fundRegionDataKey(fundRegion);
 
         if (fundRegion.currentDataKey !== dataKey) {
             dispatch(fundsRequest(dataKey));
 
-            const {data} = await Api.funds.fundSearchFunds({
+            const { data } = await Api.funds.fundSearchFunds({
                 filters: filter.filter?.map((filter) => filter.getFilterValue(filter)),
                 size,
                 offset: filter.from
@@ -98,6 +99,19 @@ export function fundsFetchIfNeeded(size = DEFAULT_FUND_LIST_MAX_SIZE) {
             }
         }
     };
+}
+
+export function fundsExportResults() {
+    return async (dispatch, getState) => {
+        const { fundRegion } = getState();
+        const { filter } = fundRegion;
+
+        const { data: fileId } = await Api.funds.fundExportFunds({
+            filters: filter.filter?.map((filter) => filter.getFilterValue(filter))
+        });
+
+        dispatch(downloadExportFile(fileId));
+    }
 }
 
 function fundsRequest(dataKey) {
