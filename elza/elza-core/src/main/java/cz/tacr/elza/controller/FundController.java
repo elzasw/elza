@@ -6,8 +6,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -251,8 +253,9 @@ public class FundController implements FundsApi {
     public ResponseEntity<Integer> fundExportFunds(@RequestBody SearchParams searchParams) {
         UsrUser user = userService.getLoggedUser();
         Integer userId = (user == null ? null : user.getUserId());
+        String downloadFileName = "funds_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss")) + ".csv";
 
-        int id = ioExportWorker.addExportRequest(userId, null, searchParams);
+        int id = ioExportWorker.addExportRequest(userId, downloadFileName, searchParams);
         return ResponseEntity.ok(id);
     }
 
