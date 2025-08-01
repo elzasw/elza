@@ -100,20 +100,24 @@ static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
     for (CachedAccessPoint ap : caps) {
         String geoType = GroovyUtils.findItemSpecCodeByItemTypeCode(ap, "GEO_TYPE")
         //System.out.println(geoType)
-        // v České republice tento typ (GT_ADMREGION) nevykazujeme
-        if (isCesko(country) && Objects.equals(geoType, "GT_ADMREGION")) {
-            continue
-        }        
-        if (country!=null) {            
-            if(excludeLands.contains(country.toLowerCase())) {
-                // potlačení územních celků pro blízké (okolní) státy
-                if(excludeTerritory.contains(geoType)) {
+        if (country!=null) {
+            if (isCesko(country)) {
+                // v České republice tento typ (GT_ADMREGION) nevykazujeme
+                if( Objects.equals(geoType, "GT_ADMREGION")) {
                     continue
                 }
-            } else {
-                // potlačení územních celků pro ostatní/nesousední státy
-                if(otherExcludeTerritory.contains(geoType)) {
-                    continue
+            } else  {            
+                // neni CR
+                if(excludeLands.contains(country.toLowerCase())) {
+                    // potlačení územních celků pro blízké (okolní) státy
+                    if(excludeTerritory.contains(geoType)) {
+                        continue
+                    }
+                } else {
+                    // potlačení územních celků pro ostatní/nesousední státy
+                    if(otherExcludeTerritory.contains(geoType)) {
+                        continue
+                    }
                 }
             }
         }
