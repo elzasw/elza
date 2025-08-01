@@ -359,7 +359,7 @@ public class DEExportService {
 	    		String name = fund.getName();
 	    		String createDate = fund.getCreateDate().toString();
 	    		String internalCode = fund.getInternalCode();
-	    		String fundNumber = fund.getFundNumber().toString();
+	    		String fundNumber = fund.getFundNumber() == null ? null : fund.getFundNumber().toString();
 	    		String unitDate = fund.getUnitdate();
 	    		String mark = fund.getMark();
 	    		String managed = Boolean.toString(fund.getManaged());
