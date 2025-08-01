@@ -105,7 +105,7 @@ static String getGeoName(GroovyItem item, AccessPointCacheProvider apcp) {
             continue
         }        
         if (country!=null) {            
-            if(excludeLands.contains(country.toLowerCase)) {
+            if(excludeLands.contains(country.toLowerCase())) {
                 // potlačení územních celků pro blízké (okolní) státy
                 if(excludeTerritory.contains(geoType)) {
                     continue
