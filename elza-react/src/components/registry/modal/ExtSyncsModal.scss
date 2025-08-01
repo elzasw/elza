@@ -1,3 +1,5 @@
+@import "../../../variables.scss";
+
 $border-color: #dee2e6;
 $max-height: 600px;
 
@@ -59,7 +61,7 @@ $max-height: 600px;
             }
 
             .font-red {
-                color: red;
+                color: $color-warn;
             }
             .font-black {
                 color: black;
