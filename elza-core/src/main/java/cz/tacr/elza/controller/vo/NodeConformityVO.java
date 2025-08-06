@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +81,9 @@ public class NodeConformityVO {
     }
 
     public List<NodeConformityMissingVO> getMissingList() {
+    	if (missingList == null) {
+    		return Collections.emptyList();
+    	}
         return missingList;
     }
 
@@ -88,6 +92,9 @@ public class NodeConformityVO {
     }
 
     public List<NodeConformityErrorVO> getErrorList() {
+    	if (errorList == null) {
+    		return Collections.emptyList();
+    	}
         return errorList;
     }
 
@@ -96,6 +103,9 @@ public class NodeConformityVO {
     }
 
     public Map<Integer, Boolean> getPolicyTypeIdsVisible() {
+    	if (policyTypeIdsVisible == null) {
+    		return Collections.emptyMap();
+    	}
         return policyTypeIdsVisible;
     }
 

@@ -2331,7 +2331,7 @@ private void processEvent(AbstractEventSimple event) {
 
         public List<ArrDigitizationRequestVO> getDigitizationRequests() {
         	if (digitizationRequests == null) {
-        		return Collections.EMPTY_LIST;
+        		return Collections.emptyList();
         	}
             return digitizationRequests;
         }
