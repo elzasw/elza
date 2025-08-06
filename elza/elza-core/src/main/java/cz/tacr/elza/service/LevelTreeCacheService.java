@@ -1,6 +1,5 @@
 package cz.tacr.elza.service;
 
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,7 +22,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -2332,6 +2330,9 @@ private void processEvent(AbstractEventSimple event) {
         }
 
         public List<ArrDigitizationRequestVO> getDigitizationRequests() {
+        	if (digitizationRequests == null) {
+        		return Collections.EMPTY_LIST;
+        	}
             return digitizationRequests;
         }
 
