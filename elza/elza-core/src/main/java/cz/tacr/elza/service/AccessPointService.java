@@ -89,7 +89,6 @@ import cz.tacr.elza.domain.ApChange.Type;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevItem;
 import cz.tacr.elza.domain.ApRevPart;
@@ -1476,7 +1475,7 @@ public class AccessPointService {
 
         ApItem updatedItem = itemService.updateItem(change, apItem, drr);
 
-        generateSync(apState, apItem.getPart());
+        updateAndValidate(apState.getAccessPointId());
 
         return updatedItem;
     }
@@ -1592,7 +1591,7 @@ public class AccessPointService {
         accessPoint.setPreferredPart(apPart);
 
         itemService.createItems(apPart, apPartFormVO.getItems(), apChange, null, null);
-        generateSync(apState, apPart);
+        accessPoint = updateAndValidate(accessPoint);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         publishAccessPointCreateEvent(accessPoint);
@@ -1661,7 +1660,7 @@ public class AccessPointService {
 
         itemService.deleteItems(deleteItems, change);
 
-        generateSync(state, apPart);
+        //updatePartValueAndValidate(state, apPart);
 
         // při změně hodnot v preferované části musíme reindexovat
         if (apAccessPoint.getPreferredPartId().equals(apPart.getPartId())) {
@@ -1729,11 +1728,11 @@ public class AccessPointService {
      * @param async
      * @return true nebo false
      */
-    public boolean updatePartValues(final ApState state,
-                                    final Integer prefPartId,
-                                    final List<ApPart> partList,
-                                    final Map<Integer, List<ApItem>> itemMap,
-                                    final boolean async) {
+    public boolean updatePartsIndexes(final ApState state,
+                                      final Integer prefPartId,
+                                      final List<ApPart> partList,
+                                      final Map<Integer, List<ApItem>> itemMap,
+                                      final boolean async) {
         boolean success = true;
         for (ApPart part : partList) {
             List<ApPart> childrenParts = findChildrenParts(part, partList);
@@ -1860,7 +1859,7 @@ public class AccessPointService {
         return items;
     }
 
-    public boolean updatePartValue(final ApState state, final ApPart apPart) {
+    public boolean updatePartIndexes(final ApState state, final ApPart apPart) {
         ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
         List<ApPart> childrenParts = partService.findPartsByParentPart(apPart);
 
@@ -1880,7 +1879,7 @@ public class AccessPointService {
             // update parent part indexes
             ApPart parentPart = apPart.getParentPart();
             if (parentPart != null) {
-                success = updatePartValue(state, parentPart);
+                success = updatePartIndexes(state, parentPart);
             }
         }
 
@@ -2456,7 +2455,7 @@ public class AccessPointService {
 
         // create indexes
         for (ApPart part : partsFrom) {
-            updatePartValue(trgState, fromIdToPartMap.get(part.getPartId()));
+            updatePartIndexes(trgState, fromIdToPartMap.get(part.getPartId()));
         }
 
         ApValidationIssues apValidationIssues = validate(trgState.getAccessPoint(), trgState, true, true);
@@ -3283,14 +3282,6 @@ public class AccessPointService {
         return headers;
     }
 
-    @Transactional(TxType.MANDATORY)
-    public void generateSync(final ApState apState, final ApPart apPart) {
-        boolean successfulGeneration = updatePartValue(apState, apPart);
-
-        logger.debug("Validate accessPointId={}, partId={}, successfulGeneration={}", apState.getAccessPointId(), apPart.getPartId(), successfulGeneration);
-        validate(apState.getAccessPoint(), apState, successfulGeneration, true);
-    }
-
     public boolean isRevalidaceRequired(ApState.StateApproval state, ApState.StateApproval newState) {
         return state != null 
                 && newState != null
@@ -3327,11 +3318,11 @@ public class AccessPointService {
         Map<Integer, List<ApItem>> itemMap = itemService.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
-        return updateAndValidate(accessPoint, apState, partList, itemMap, false);        
+        return updatePartsIndexesAndValidate(accessPoint, apState, partList, itemMap, false);        
     }    
 
     /**
-     * Updates parts and validate AccessPoint
+     * Updates parts indexes and validate AccessPoint
      * 
      * @param accessPoint
      * @param apState
@@ -3341,14 +3332,13 @@ public class AccessPointService {
      * @return
      */
     @Transactional(TxType.MANDATORY)
-    public ApAccessPoint updateAndValidate(final ApAccessPoint accessPoint,
-                             final ApState apState,
-                             final List<ApPart> partList,
-                             final Map<Integer, List<ApItem>> itemMap,
-                             boolean async) {
-
+    public ApAccessPoint updatePartsIndexesAndValidate(final ApAccessPoint accessPoint,
+                                                       final ApState apState,
+                                                       final List<ApPart> partList,
+                                                       final Map<Integer, List<ApItem>> itemMap,
+                                                       boolean async) {
         Integer prefPartId = accessPoint.getPreferredPartId();
-        boolean successfulGeneration = updatePartValues(apState, prefPartId, partList, itemMap, async);
+        boolean successfulGeneration = updatePartsIndexes(apState, prefPartId, partList, itemMap, async);
 
         logger.debug("Validate accessPointid={}, version={}, partListSize={}, successfulGeneration={}", accessPoint.getAccessPointId(), accessPoint.getVersion(), partList.size(), successfulGeneration);
         ApValidationIssues apValidationIssues = validate(accessPoint, apState, successfulGeneration, true);
