@@ -81,10 +81,10 @@ export const FormUnitdate:FC<CommonFieldProps<ApItemUnitdateVO>> = ({
                 label={label}
                 prevValue={prevValue}
                 disableRevision={disableRevision}
-                value={props.input.value}
                 onRevert={!isNew ? handleRevert : undefined}
                 onDelete={isDeleted ? undefined : handleDelete}
                 isDeleted={isDeleted}
+                isUpdated={updatedItem?.changeType === "UPDATED"}
             >
                 <ReduxFormFieldErrorDecorator
                     {...props as any}
