@@ -251,8 +251,8 @@ public class AccessPointController implements AccesspointsApi {
     	// nepovolujeme prázdné řádky pro ApItemStringVO i ApItemStringVO
     	apPartForm.validateItems();
 
-        ApAccessPoint apAccessPoint = accessPointService.lockAccessPoint(id, apVersion);
-        ApState state = accessPointService.getStateInternal(apAccessPoint);
+        ApAccessPoint accessPoint = accessPointService.lockAccessPoint(id, apVersion);
+        ApState state = accessPointService.getStateInternal(accessPoint);
         ApRevState revState = revisionService.findRevStateByState(state);
         CreatedPart createdPart = new CreatedPart();
 
@@ -263,14 +263,14 @@ public class AccessPointController implements AccesspointsApi {
         } else {
             accessPointService.checkPermissionForEdit(state);
 
-            ApPart apPart = partService.createPart(apAccessPoint, apPartForm);
-            accessPointService.generateSync(state, apPart);
+            ApPart apPart = partService.createPart(accessPoint, apPartForm);
+            accessPoint = accessPointService.updateAndValidate(accessPoint);
             apCacheService.createApCachedAccessPoint(id);
 
             createdPart.setPartId(apPart.getPartId());
         }
 
-        createdPart.setApVersion(apAccessPoint.getVersion());
+        createdPart.setApVersion(accessPoint.getVersion());
         return ResponseEntity.ok(createdPart);
     }
 
@@ -326,6 +326,7 @@ public class AccessPointController implements AccesspointsApi {
             revisionService.updatePart(state, revision, apPart, apPartForm);
         } else {
             if (accessPointService.updatePart(accessPoint, state, apPart, apPartForm)) {
+                accessPoint = accessPointService.updateAndValidate(accessPoint);
             	apCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
             }
         }

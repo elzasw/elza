@@ -554,7 +554,7 @@ public class EntityDBDispatcher {
             break;
         }
 
-        accessPointService.updateAndValidate(accessPoint, state, syncRes.getParts(), syncRes.getItemMap(), syncQueue);
+        accessPointService.updatePartsIndexesAndValidate(accessPoint, state, syncRes.getParts(), syncRes.getItemMap(), syncQueue);
         if (accessPointService.isRevalidaceRequired(oldStateApproval, newStateApproval)) {
             ruleService.revalidateNodesWithApRef(accessPoint.getAccessPointId());
         }
@@ -635,7 +635,7 @@ public class EntityDBDispatcher {
                                                  prefPart,
                                                  apState.getApType());
 
-        accessPointService.updateAndValidate(accessPoint, apState, partList, itemMap, async);
+        accessPointService.updatePartsIndexesAndValidate(accessPoint, apState, partList, itemMap, async);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }
 
@@ -737,7 +737,7 @@ public class EntityDBDispatcher {
                 dataRef.setRecord(accessPoint);
                 dataRecordRefRepository.save(dataRef);
                 ApPart part = item.getPart();
-                accessPointService.updatePartValue(apState, part);
+                accessPointService.updatePartIndexes(apState, part);
                 updatedApIds.add(part.getAccessPointId());                
             }
         }
