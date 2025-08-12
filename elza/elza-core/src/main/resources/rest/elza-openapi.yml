@@ -990,6 +990,45 @@ paths:
       tags:
         - funds
       deprecated: true
+  /fund/export:
+    post:
+      operationId: fund_exportFunds
+      description: Export fonds
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - funds
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchParams'
+        description: search parameters
   /fund/search:
     post:
       operationId: fund_searchFunds
@@ -3081,6 +3120,7 @@ components:
         - ENDWITH
         - CONTAINS
         - INTERSECT
+        - IS_IN
         - IS_NULL
         - NOT_NULL
       description: Operation type for FieldValueFilter

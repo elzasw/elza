@@ -115,13 +115,14 @@ public class MoveDescItem extends BulkActionDFS {
 			descItem.setData(trgData);
 
 			/*ArrDescItem trgItem = */
-			descriptionItemService.createDescriptionItem(descItem, currNode, version, getChange());
+			var fondsVersion = getFondsVersion();
+			descriptionItemService.createDescriptionItem(descItem, currNode, fondsVersion, getChange());
 			// delete old one
             List<ArrDescItem> items = Collections.singletonList(srcDescItem);
-            descriptionItemService.deleteDescriptionItems(items, version, getChange(), true, false);
+            descriptionItemService.deleteDescriptionItems(items, fondsVersion, getChange(), true, false);
 
 			// validace uzlu
-			ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(descItem.getNode().getNodeId()),
+			ruleService.conformityInfo(fondsVersion.getFundVersionId(), Arrays.asList(descItem.getNode().getNodeId()),
 			        NodeTypeOperation.SAVE_DESC_ITEM, null, null, Arrays.asList(descItem));
 		}
 	}

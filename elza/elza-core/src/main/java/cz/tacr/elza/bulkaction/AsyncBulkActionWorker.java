@@ -25,6 +25,7 @@ import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.UserService;
 
@@ -184,7 +185,14 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
             logger.info("Bulk action interrupted: {}", this);
     	}
         ArrBulkActionRun bulkActionRun = bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId());
-        bulkActionRun.setError(e.getLocalizedMessage());
+        // Build message
+        String errorMsg;
+        if(e instanceof AbstractException) {
+        	errorMsg = e.toString();
+        } else {
+        	errorMsg = e.getLocalizedMessage();
+        }
+        bulkActionRun.setError(errorMsg);
         bulkActionRun.setState(actionState);
 
         // protože hromadná akce skončila chybou vrátíme výstup do původního stavu

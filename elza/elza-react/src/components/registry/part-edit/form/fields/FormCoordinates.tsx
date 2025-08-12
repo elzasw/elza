@@ -156,12 +156,12 @@ export const FormCoordinates:FC<CommonFieldProps<ApItemCoordinatesVO> & {additio
                         label={label}
                         prevValue={prevValue}
                         disableRevision={disableRevision}
-                        value={props.input.value}
                         onRevert={!isNew ? handleRevert : undefined}
                         onDelete={isDeleted ? undefined : handleDelete}
                         isDeleted={isDeleted}
                         equalSplit={true}
                         alignTop={true}
+                        isUpdated={updatedItem?.changeType === "UPDATED"}
                     >
                         <div style={{display: "flex"}}>
                             <div style={{flexGrow: 1}}>

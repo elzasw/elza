@@ -4,11 +4,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
-import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.primitives.Ints;
@@ -17,7 +17,6 @@ import cz.tacr.elza.bulkaction.ActionRunContext;
 import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.TestDataGeneratorResult;
-import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
@@ -71,14 +70,14 @@ public class TestDataGenerator extends BulkActionTransactional {
 	TestDataConfig config;
 
 	public TestDataGenerator(TestDataConfig testDataConfig) {
-		Validate.notNull(testDataConfig);
+		Objects.requireNonNull(testDataConfig);
 
 		this.config = testDataConfig;
 	}
 
 	@Override
-	protected void init(ArrBulkActionRun bulkActionRun) {
-		super.init(bulkActionRun);
+	protected void init(ActionRunContext runContext) {
+		super.init(runContext);
 
 		List<Integer> unitsCount = config.getItemsToGenerate();
 		unitsToGenerate = Ints.toArray(unitsCount);
@@ -92,9 +91,9 @@ public class TestDataGenerator extends BulkActionTransactional {
 	public void run(ActionRunContext runContext) {
 
 		for (Integer nodeId : runContext.getInputNodeIds()) {
-            ArrNode nodeRef = nodeRepository.getOne(nodeId);
+            ArrNode nodeRef = nodeRepository.getReferenceById(nodeId);
             ArrLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(nodeRef);
-            Validate.notNull(level);
+            Objects.requireNonNull(level);
 
             generate(level);
 		}
@@ -120,7 +119,7 @@ public class TestDataGenerator extends BulkActionTransactional {
         entityManager.flush(); //aktualizace verzí v nodech
         for(ArrLevel createdLevel: createdLevels) {
         	// Do final notifications to client
-        	ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(createdLevel.getNode().getNodeId()),
+        	ruleService.conformityInfo(getFondsVersionId(), Arrays.asList(createdLevel.getNode().getNodeId()),
                 NodeTypeOperation.CONNECT_NODE, null, null, null);
         }
 	}
@@ -157,8 +156,7 @@ public class TestDataGenerator extends BulkActionTransactional {
     private Collection<? extends ArrLevel> copyLevels(List<ArrLevel> childLevels, int startPos,
                                                       ArrLevel parentLevel) {
 
-        MultipleItemChangeContext createChange = this.descriptionItemService.createChangeContext(version
-                .getFundVersionId());
+        MultipleItemChangeContext createChange = this.descriptionItemService.createChangeContext(getFondsVersionId());
 
 		List<ArrLevel> result = new LinkedList<>();
 
@@ -168,10 +166,10 @@ public class TestDataGenerator extends BulkActionTransactional {
 		{
 			ArrLevel newLevel = fundLevelService.createLevel(getChange(), parentLevel.getNode(), pos,
                                                                     null,
-                                                                    version.getFund());
+                                                                    getFondsVersion().getFund());
 
         	eventNotificationService
-            .publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, version, parentLevel, newLevel));
+            .publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, getFondsVersion(), parentLevel, newLevel));
 
 			result.add(newLevel);
 
@@ -204,7 +202,7 @@ public class TestDataGenerator extends BulkActionTransactional {
 		List<ArrDescItem> sourceDescItems = restoredNode.getDescItems();
         descriptionItemService.copyDescItemWithDataToNode(trgLevel.getNode(),
                                                           sourceDescItems, this.getChange(),
-                                                          version, changeContext);
+                                                          getFondsVersion(), changeContext);
 	}
 
 	@Override

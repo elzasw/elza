@@ -129,7 +129,7 @@ export function FundFilters({
   const fulltextFilter = currentFilters?.find((filter) => filter.filterType === FilterType.Contains);
   const fulltextValue = fulltextFilter?.getSerializedString(fulltextFilter) || "";
 
-  return <div style={{ display: "flex" }}>
+  return <div style={{ display: "flex", flexGrow: 1, alignItems: "flex-start" }}>
     <div style={{ display: "flex", alignItems: "center", margin: "5px" }}>
       <Form<FulltextValues> initialValues={{ fulltext: fulltextValue }} onSubmit={handleFulltext}>
         {({ handleSubmit, values, form }) => {

@@ -936,12 +936,12 @@ public class UnitDateConverter {
 				if(ldt.getHour()==0&&ldt.getMinute()==0&&ldt.getSecond()==0) {
 					return ldt;
 				}
-				LocalDateTime.of(ldt.toLocalDate(), LocalTime.of(0, 0, 0));
+				return LocalDateTime.of(ldt.toLocalDate(), LocalTime.of(0, 0, 0));
 			} else {
 				if(ldt.getHour()==23&&ldt.getMinute()==59&&ldt.getSecond()==59) {
 					return ldt;
 				}
-				LocalDateTime.of(ldt.toLocalDate(), LocalTime.of(23, 59, 59));
+				return LocalDateTime.of(ldt.toLocalDate(), LocalTime.of(23, 59, 59));
 			}
 		case DT:
 			// full date time -> nothing to change
