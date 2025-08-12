@@ -21,7 +21,7 @@ export const RevisionFieldExample = ({
     prevValue,
     isDeleted,
     label,
-    children,
+    children, // current value display components
     disableRevision = true,
     alignTop,
     equalSplit,
@@ -105,38 +105,3 @@ export const RevisionFieldExample = ({
         />
     </div>
 }
-
-// ----------
-// textarea
-// ----------
-//
-// return <div>
-//     <label>
-//         {label}&nbsp; &nbsp;<Icon glyph="fa-undo"/>
-//     </label>
-//     <div style={{display: "flex", flexDirection: "row"}}>
-//         {props.input.value && <>
-//         <div style={{ display: "flex", padding: "0px", flex: 1, maxWidth: "50%"}}>
-//             <div style={{flexGrow: 1}}>
-//             {props.input.value}
-//             </div>
-//         </div>
-//             <div style={{margin: "0 10px"}}>
-//             🡒
-//             </div>
-//             </>}
-//         <div style={{flex:1}}>
-//             <ReduxFormFieldErrorDecorator
-//                 {...props as any}
-//                 input={{
-//                     ...props.input as any,
-//                     onBlur: handleChange // inject modified onChange handler
-//                 }}
-//                 disabled={disabled}
-//                 maxLength={limitLength}
-//                 renderComponent={FormInput}
-//                 type="textarea"
-//                 />
-//         </div>
-//     </div>
-// </div>
