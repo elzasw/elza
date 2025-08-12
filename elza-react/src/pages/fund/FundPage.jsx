@@ -14,6 +14,7 @@ import {
 import { globalFundTreeInvalidate } from '../../actions/arr/globalFundTree';
 import {
     DEFAULT_FUND_LIST_MAX_SIZE,
+    fundsExportResults,
     fundsFetchIfNeeded,
     fundsFilter,
     fundsFundDetailFetchIfNeeded,
@@ -38,12 +39,20 @@ import { indexById } from '../../stores/app/utils';
 import PageLayout from '../shared/layout/PageLayout';
 import './FundPage.scss';
 import { Button, DrawerBody, DrawerHeader, DrawerHeaderTitle, InlineDrawer, Menu, MenuButton, MenuItem, MenuList, MenuPopover, MenuTrigger } from '@fluentui/react-components';
-import { Dismiss24Regular } from "@fluentui/react-icons"
+import { Dismiss24Regular, ArrowDownloadRegular } from "@fluentui/react-icons"
 import { FundFilters } from 'components/fund/filters/FundFilters';
 import { FundPageRibbon } from 'components/fund/FundPageRibbon';
 import { FundPager } from 'components/fund/FundPager';
+import { defineMessages, FormattedMessage } from 'react-intl';
 
 const OUTPUT_MAX_NUMBER = 10;
+
+const messages = defineMessages({
+    fundPageExportResults: {
+        id: "fundPage_export_results",
+        defaultMessage: "Stáhnout CSV",
+    }
+})
 
 
 /**
@@ -537,6 +546,11 @@ class FundPage extends AbstractReactComponent {
         dispatch(fundsFilter({ ...fundRegion.filter, filter: filters, from: 0 }));
     }
 
+    handleExportResults = () => {
+        const { dispatch } = this.props;
+        dispatch(fundsExportResults());
+    }
+
     render() {
         const { splitter, fundRegion, maxSize, ruleSet } = this.props;
         const { sidebarOpen } = this.state;
@@ -560,6 +574,11 @@ class FundPage extends AbstractReactComponent {
                         totalCount={fundRegion.fundsCount}
                     />
                     <FundFilters currentFilters={fundRegion.filter.filter} onChange={this.handleFiltersChange} />
+                    <div style={{ margin: "5px", flexShrink: 0 }} onClick={this.handleExportResults}>
+                        <Button icon={<ArrowDownloadRegular />}>
+                            <FormattedMessage {...messages.fundPageExportResults} />
+                        </Button>
+                    </div>
                 </div>
                 <div style={{ position: "relative", display: "flex", flexGrow: 1, flexShrink: 1, height: "400px" }}>
                     <div style={{ display: "flex", flexDirection: "column", flexGrow: 1, overflow: "hidden" }}>

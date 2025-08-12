@@ -63,11 +63,11 @@ export const FormNumber:FC<CommonFieldProps<ApItemIntVO>> = ({
             return <RevisionFieldExample
                 label={label}
                 prevValue={prevValue?.toString()}
-                value={props.input.value.toString()}
                 disableRevision={disableRevision}
                 onRevert={!isNew ? handleRevert : undefined}
                 onDelete={ isDeleted ? undefined : handleDelete}
                 isDeleted={isDeleted}
+                isUpdated={updatedItem?.changeType === "UPDATED"}
             >
                 <ReduxFormFieldErrorDecorator
                     {...props as any}

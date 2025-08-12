@@ -242,12 +242,12 @@ public class StartupService implements SmartLifecycle {
             tt.executeWithoutResult(r -> adminService.reindexInternal());
         }
 
-        // vyklizení složky pro exportní soubory xml
-        Path exportXmlTrasnformDir = resourcePathResolver.getExportXmlTrasnformDir();
+        // vyklizení složky pro exportní soubory xml & csv
+        Path exportTrasnformDir = resourcePathResolver.getExportTrasnformDir();
         try {
-        	FileSystemUtils.deleteRecursively(exportXmlTrasnformDir);
+        	FileSystemUtils.deleteRecursively(exportTrasnformDir);
         } catch (IOException e) {
-            logger.error("Error cleanup folder {}", exportXmlTrasnformDir, e);
+            logger.error("Error cleanup folder {}", exportTrasnformDir, e);
         }
 
         running = true;

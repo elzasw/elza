@@ -85,8 +85,6 @@ import cz.tacr.elza.repository.ItemTypeRepository;
 /**
  * Serviska pro import/export dat pro ArrItem.
  *
- * @author Martin Šlapa
- * @since 27.06.2016
  */
 @Service
 public class ArrIOService {

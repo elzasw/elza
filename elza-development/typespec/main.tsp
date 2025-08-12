@@ -978,7 +978,7 @@ model ApValidationIssues {
  * Operation type for FieldValueFilter
  */
 enum OperationCompareType {
-    EQ, NEQ, GT, LT, GTE, LTE, STARTWITH, ENDWITH, CONTAINS, INTERSECT, IS_NULL, NOT_NULL
+    EQ, NEQ, GT, LT, GTE, LTE, STARTWITH, ENDWITH, CONTAINS, INTERSECT, IS_IN, IS_NULL, NOT_NULL
 }
 
 /**
@@ -1365,6 +1365,31 @@ namespace ElzaAPI.fund {
         @Http.statusCode statusCode: 400;
     } | {
         @Http.statusCode statusCode: 406;
+    };
+
+    /**
+     * Export fonds
+     */
+    @route("/export")
+    @post op exportFunds(
+        /** search parameters */
+        @body content: SearchParams;
+    ): {
+         @Http.statusCode statusCode: 200;
+         @header contentType: "application/json";
+         @body data: integer;
+    } | {
+        /** Bad Request, query with incorrect parameters */
+        @Http.statusCode statusCode: 400;
+        @body data: BaseException;
+    } | {
+        /** Unauthorized */
+        @Http.statusCode statusCode: 401;
+        @body data: BaseException;
+    } | {
+        /** Forbidden */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
     };
 
     /**

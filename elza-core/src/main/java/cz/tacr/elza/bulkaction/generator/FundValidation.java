@@ -41,7 +41,7 @@ public class FundValidation extends BulkActionTransactional {
 
         List<ArrLevel> childLevels = getChildren(level);
 
-        bulkActionService.setConformityInfoInNewTransaction(level.getLevelId(), version.getFundVersionId());
+        bulkActionService.setConformityInfoInNewTransaction(level.getLevelId(), getFondsVersionId());
 
         for (ArrLevel childLevel : childLevels) {
             generate(childLevel);
@@ -52,7 +52,7 @@ public class FundValidation extends BulkActionTransactional {
 	public void run(ActionRunContext runContext) {
 
         // v případě, že existuje nějaké přepočítávání uzlů, je nutné to ukončit
-        asyncRequestService.terminateNodeWorkersByFund(version.getFundVersionId());
+        asyncRequestService.terminateNodeWorkersByFund(getFondsVersionId());
 
 		for (Integer nodeId : runContext.getInputNodeIds()) {
             ArrLevel level = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);

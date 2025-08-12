@@ -137,8 +137,8 @@ export function CollapsibleDragWindow({
   onClose = () => { return; },
   title,
   children,
-  initialWidth = 500,
-  initialHeight = 500,
+  initialWidth = 650,
+  initialHeight = 700,
 }: PropsWithChildren<CollapsibleDragWindowProps>) {
   const initialPosition = { x: window.innerWidth / 2 - initialWidth / 2, y: window.innerHeight / 2 - initialHeight / 2 };
 

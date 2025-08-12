@@ -44,19 +44,24 @@ public class ExtSyncsProcessor implements Runnable {
 
     @Override
     public void run() {
+    	logger.info("ExtSyncsProcessor - thread started.");
         synchronized (lock) {
             try {
                 while (status == ThreadStatus.RUNNING) {
+                	logger.trace("ExtSyncsProcessor - activating.");
                     // pokud true - pauza po ukončení práce procesoru
                     boolean wait = true;
                     try {
                         ItemSyncProcessor itemProcessor = camService.nextItemSyncProcessor(importListSize);
                         if (itemProcessor != null) {
+                        	logger.trace("ExtSyncsProcessor - processing item: {}.", itemProcessor.toString());
                             itemProcessor.process();
                             // pokud je vše v pořádku - maximální velikost dávky pro čtení
                             importListSize = DEFAULT_IMPORT_LIST_SIZE;
                             // pauza po ukončení práce procesoru není potřeba
                             wait = false;
+                        } else {
+                        	logger.trace("ExtSyncsProcessor - no item to process.");
                         }
                     } catch (Exception ex) {
                         logger.error("Failed to process item. ", ex);
@@ -65,6 +70,7 @@ public class ExtSyncsProcessor implements Runnable {
                     }
                     if (wait) {
                         try {
+                        	logger.trace("ExtSyncsProcessor - waiting.");
                             // wake up every minute to retry
                             lock.wait(QUEUE_CHECK_TIME_INTERVAL);
                         } catch (InterruptedException e) {
@@ -77,9 +83,9 @@ public class ExtSyncsProcessor implements Runnable {
                 logger.error("ExtSyncsProcessor - processor thread error " + e.toString());
             }
             status = ThreadStatus.STOPPED;
-            lock.notifyAll();
-            logger.error("ExtSyncsProcessor - thread finished");
+            lock.notifyAll();            
         }
+        logger.info("ExtSyncsProcessor - thread finished.");
     }
 
 }

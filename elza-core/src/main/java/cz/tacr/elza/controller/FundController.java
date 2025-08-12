@@ -6,8 +6,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -53,6 +55,7 @@ import cz.tacr.elza.controller.vo.UsedItemType;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.dataexchange.output.IOExportWorker;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -63,6 +66,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -74,6 +78,7 @@ import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 
 @RestController
@@ -81,6 +86,12 @@ import cz.tacr.elza.service.dao.FileSystemRepoService;
 public class FundController implements FundsApi {
 
     private static final Logger logger = LoggerFactory.getLogger(FundController.class);
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private IOExportWorker ioExportWorker;
 
     @Autowired
     private RuleSetRepository ruleSetRepository;
@@ -118,6 +129,7 @@ public class FundController implements FundsApi {
     @Autowired
     private FundLevelService fundLevelService;
 
+    // POST /fund
     @Override
     @Transactional
     public ResponseEntity<Fund> fundCreateFund(@RequestBody CreateFund createFund) {
@@ -225,8 +237,9 @@ public class FundController implements FundsApi {
 //        return ResponseEntity.ok(new FindFundsResult(funds, fundVersionsResult.getTotalCount()));
 //    }
 
+    // POST /fund/search
     @Override
-    public ResponseEntity<FindFundsResult> fundSearchFunds(SearchParams searchParams) {
+    public ResponseEntity<FindFundsResult> fundSearchFunds(@RequestBody SearchParams searchParams) {
         FindFundVersionsResult fundVersionsResult = arrangementService.findFundsBySearchParams(searchParams);
         List<Fund> funds = fundVersionsResult.getFundVersionList().stream()
         		.map(fv -> factoryVo.createFund(fv))
@@ -235,6 +248,18 @@ public class FundController implements FundsApi {
         return ResponseEntity.ok(new FindFundsResult(funds, fundVersionsResult.getTotalCount()));
     }
 
+    // POST /fund/export
+    @Override
+    public ResponseEntity<Integer> fundExportFunds(@RequestBody SearchParams searchParams) {
+        UsrUser user = userService.getLoggedUser();
+        Integer userId = (user == null ? null : user.getUserId());
+        String downloadFileName = "funds_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss")) + ".csv";
+
+        int id = ioExportWorker.addExportRequest(userId, downloadFileName, searchParams);
+        return ResponseEntity.ok(id);
+    }
+
+    // GET /fund/{id}
     @Override
     public ResponseEntity<FundDetail> fundGetFund(@PathVariable("id") String id) {
         Validate.notNull(id, "Musí být zadáno id AS");
@@ -248,11 +273,12 @@ public class FundController implements FundsApi {
         return ResponseEntity.ok(factoryVo.createFundDetail(fundVersion.getFund(), rootNode.getUuid()));
     }
 
+    // PUT /fund/{id}/import
     @Override
     @Transactional
     public ResponseEntity<Void> fundImportFundData(@PathVariable("id") String id,
-                                               @RequestPart(value = "importType", required = true) String importType,
-                                               @RequestPart(value = "dataFile", required = true) MultipartFile dataFile) {
+                                               	   @RequestPart(value = "importType", required = true) String importType,
+                                               	   @RequestPart(value = "dataFile", required = true) MultipartFile dataFile) {
         Validate.notNull(id, "Musí být zadáno id AS");
 
         ArrFund fund = arrangementService.getFund(Integer.valueOf(id));

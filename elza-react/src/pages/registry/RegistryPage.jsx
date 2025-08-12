@@ -264,9 +264,8 @@ class RegistryPage extends AbstractReactComponent {
                 this,
                 i18n('ap.ext-syncs.title'),
                 <ExtSyncsModal
-                    onNavigateAp={accessPointId => {
+                    onNavigateAp={() => {
                         dispatch(modalDialogHide());
-                        dispatch(goToAe(history, accessPointId, true, !select));
                     }}
                     initialValues={initialValues}
                     extSystems={extSystems}
