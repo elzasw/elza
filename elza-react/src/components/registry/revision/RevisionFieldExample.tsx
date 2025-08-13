@@ -7,8 +7,8 @@ import FormInput from '../../shared/form/FormInput';
 
 interface Props extends PropsWithChildren {
     prevValue?: string;
-    value?: string;
     isDeleted?: boolean;
+    isUpdated?: boolean;
     label: string;
     disableRevision?: boolean;
     alignTop?: boolean;
@@ -19,7 +19,6 @@ interface Props extends PropsWithChildren {
 
 export const RevisionFieldExample = ({
     prevValue,
-    value,
     isDeleted,
     label,
     children,
@@ -28,12 +27,13 @@ export const RevisionFieldExample = ({
     equalSplit,
     onRevert,
     onDelete,
+    isUpdated,
 }: Props) => {
-    const valuesEqual = value === prevValue;
     const isLongValue = prevValue && prevValue.length > 1000 || false;
 
     const renderPrevValue = () => {
-        if(!isLongValue) { return prevValue }
+        if (!isLongValue) { return prevValue }
+        // Omezi zobrazeni do textarea, pokud je text dlouhy
         return <FormInput
             style={{
                 resize: isDeleted ? undefined : "none",
@@ -47,19 +47,19 @@ export const RevisionFieldExample = ({
         </FormInput>
     };
 
-    const renderValue = () => <div style={{flex: 1}}>{children}</div>;
+    const renderValue = () => <div style={{ flex: 1 }}>{children}</div>;
 
     const renderActions = () => {
         const actions: React.ReactNode[] = [];
-        if(!disableRevision && !valuesEqual && onRevert){
+        if (!disableRevision && isUpdated && onRevert) {
             actions.push(<SmallButton
                 onClick={onRevert}
             >
-                <Icon glyph="fa-undo"/>
+                <Icon glyph="fa-undo" />
             </SmallButton>)
         }
 
-        if(actions.length === 0) {return <></>}
+        if (actions.length === 0) { return <></> }
 
         return <div className="actions">
             {actions}
@@ -68,15 +68,15 @@ export const RevisionFieldExample = ({
 
     const renderHidableActions = () => {
         const actions: React.ReactNode[] = [];
-        if(onDelete){
+        if (onDelete) {
             actions.push(<SmallButton
                 onClick={onDelete}
             >
-                <Icon glyph="fa-trash"/>
+                <Icon glyph="fa-trash" />
             </SmallButton>)
         }
 
-        if(actions.length === 0) {return <></>}
+        if (actions.length === 0) { return <></> }
 
         return <div className="actions hidable">
             {actions}
@@ -94,7 +94,7 @@ export const RevisionFieldExample = ({
         <RevisionDisplay
             renderPrevValue={renderPrevValue}
             renderValue={renderValue}
-            valuesEqual={valuesEqual}
+            valuesEqual={!isUpdated}
             alignTop={alignTop}
             isDeleted={isDeleted}
             disableRevision={disableRevision}
@@ -102,7 +102,7 @@ export const RevisionFieldExample = ({
             expandLeft={isLongValue}
             isField={true}
             isNew={!prevValue}
-            />
+        />
     </div>
 }
 

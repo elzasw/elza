@@ -166,10 +166,10 @@ public class TestDataGenerator extends BulkActionTransactional {
 		{
 			ArrLevel newLevel = fundLevelService.createLevel(getChange(), parentLevel.getNode(), pos,
                                                                     null,
-                                                                    getFondsVersion().getFund());
+                                                                    getFundVersion().getFund());
 
         	eventNotificationService
-            .publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, getFondsVersion(), parentLevel, newLevel));
+            .publishEvent(EventFactory.createAddNodeEvent(EventType.ADD_LEVEL_UNDER, getFundVersion(), parentLevel, newLevel));
 
 			result.add(newLevel);
 
@@ -202,7 +202,7 @@ public class TestDataGenerator extends BulkActionTransactional {
 		List<ArrDescItem> sourceDescItems = restoredNode.getDescItems();
         descriptionItemService.copyDescItemWithDataToNode(trgLevel.getNode(),
                                                           sourceDescItems, this.getChange(),
-                                                          getFondsVersion(), changeContext);
+                                                          getFundVersion(), changeContext);
 	}
 
 	@Override
