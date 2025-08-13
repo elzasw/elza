@@ -120,7 +120,7 @@ public abstract class BulkActionTransactional implements BulkAction {
 	 * 
 	 * Valid only in execute method
 	 */
-	private ArrFundVersion fondsVersion;
+	private ArrFundVersion fundsVersion;
 
 	@Override
 	public void terminate() {
@@ -142,7 +142,7 @@ public abstract class BulkActionTransactional implements BulkAction {
 	}
 
 	protected void cleanup(ActionRunContext runContext) {
-		this.fondsVersion = null;
+		this.fundsVersion = null;
 	}
 
 	protected abstract void run(ActionRunContext runContext);
@@ -155,15 +155,15 @@ public abstract class BulkActionTransactional implements BulkAction {
 	protected void init(ActionRunContext runContext) {
 		this.bulkActionRun = runContext.getBulkActionRun();
 
-		this.fondsVersion = arrInternalService.getFundVersionById(runContext.getFundVersionId());
-		checkVersion(fondsVersion);
-		
+		this.fundsVersion = arrInternalService.getFundVersionById(runContext.getFundVersionId());
+		checkVersion(fundsVersion);
+
 		staticDataProvider = staticDataService.getData();
 	}
-	
-	public ArrFundVersion getFondsVersion() {
-		Objects.requireNonNull(fondsVersion);
-		return fondsVersion;
+
+	public ArrFundVersion getFundVersion() {
+		Objects.requireNonNull(fundsVersion);
+		return fundsVersion;
 	}	
 
     /**
@@ -188,9 +188,9 @@ public abstract class BulkActionTransactional implements BulkAction {
         ArrDescItem result;
     	Validate.isTrue(descItem.getDescItemObjectId() == null);
         if (multipleItemChangeContext == null) {            
-        	result = descriptionItemService.createDescriptionItem(descItem, descItem.getNode(), getFondsVersion(), getChange());
+        	result = descriptionItemService.createDescriptionItem(descItem, descItem.getNode(), getFundVersion(), getChange());
         } else {
-        	result = descriptionItemService.createDescriptionItemInBatch(descItem, descItem.getNode(), getFondsVersion(), getChange(), multipleItemChangeContext);
+        	result = descriptionItemService.createDescriptionItemInBatch(descItem, descItem.getNode(), getFundVersion(), getChange(), multipleItemChangeContext);
             multipleItemChangeContext.flushIfNeeded();
         }
         return result;
@@ -210,7 +210,7 @@ public abstract class BulkActionTransactional implements BulkAction {
         	//result = descriptionItemService.updateDescriptionItem(descItem, version, getChange(), false);
         	throw new SystemException("The functionality is not implemented.");
         } else {
-        	result = descriptionItemService.updateValueAsNewVersion(getFondsVersion(), getChange(), descItem, multipleItemChangeContext, forceUpdate); 
+        	result = descriptionItemService.updateValueAsNewVersion(getFundVersion(), getChange(), descItem, multipleItemChangeContext, forceUpdate); 
             multipleItemChangeContext.flushIfNeeded();
         }
         return result;
@@ -266,9 +266,9 @@ public abstract class BulkActionTransactional implements BulkAction {
      */
     public void deleteDescItems(List<ArrDescItem> items, final boolean moveAfter) {
         if (multipleItemChangeContext == null) {
-            descriptionItemService.deleteDescriptionItems(items, getFondsVersion(), getChange(), moveAfter, false);
+            descriptionItemService.deleteDescriptionItems(items, getFundVersion(), getChange(), moveAfter, false);
         } else {
-            descriptionItemService.deleteDescriptionItems(items, getFondsVersion(), getChange(), moveAfter, false, multipleItemChangeContext);
+            descriptionItemService.deleteDescriptionItems(items, getFundVersion(), getChange(), moveAfter, false, multipleItemChangeContext);
             multipleItemChangeContext.flushIfNeeded();
         }
     }

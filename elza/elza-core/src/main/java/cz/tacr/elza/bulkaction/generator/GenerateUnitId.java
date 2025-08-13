@@ -116,7 +116,7 @@ public class GenerateUnitId extends BulkActionTransactional {
     }
 
     private SealedUnitIdTree buildUsedIdTree() {
-        ArrFund fund = getFondsVersion().getFund();
+        ArrFund fund = getFundVersion().getFund();
 
         List<ArrLockedValue> lockedItems = findByFundAndItemType(fund, descItemType);
 
