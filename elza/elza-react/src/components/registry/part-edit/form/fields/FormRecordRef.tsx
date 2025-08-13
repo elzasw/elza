@@ -69,15 +69,15 @@ export const FormRecordRef:FC<CommonFieldProps<ApItemAccessPointRefVO> & {
         form.change(`${name}.updatedItem`, newUpdatedItem)
         handleValueUpdate(form);
     }
-    
+
     const handleRevert = () => {
         if(!updatedItem){ throw Error("No updated item to revert."); }
         if(!item){ throw Error("No original item to revert to."); }
 
         const newUpdatedItem: ApItemAccessPointRefVO = {
-            ...updatedItem, 
+            ...updatedItem,
             changeType: "ORIGINAL",
-            value: item?.value, 
+            value: item?.value,
             accessPoint: item?.accessPoint,
             specId: item?.specId,
             externalUrl: item?.externalUrl,
@@ -107,16 +107,16 @@ export const FormRecordRef:FC<CommonFieldProps<ApItemAccessPointRefVO> & {
                     label={label}
                     prevValue={prevValue}
                     disableRevision={disableRevision}
-                    value={getDisplayValue(updatedItem, itemType)}
                     onRevert={!isNew ? handleRevert : undefined}
                     onDelete={isDeleted ? undefined : handleDelete}
                     isDeleted={isDeleted}
+                    isUpdated={updatedItem?.changeType === "UPDATED"}
                 >
                     <div style={{display: "flex"}}>
-                        <Form.Control 
-                            style={{flexShrink: 1}} 
-                            value={getDisplayValue(updatedItem, itemType)} 
-                            disabled={true} 
+                        <Form.Control
+                            style={{flexShrink: 1}}
+                            value={getDisplayValue(updatedItem, itemType)}
+                            disabled={true}
                         />
                         <Button
                             disabled={disabled}

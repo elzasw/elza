@@ -2,8 +2,8 @@ package cz.tacr.elza.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +13,9 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
+
 /**
  * Serviska pro generování.
  */
@@ -26,18 +26,15 @@ public class AccessPointGeneratorService {
 
     private final AccessPointService accessPointService;
     private final PartService partService;
-    private final ApItemRepository itemRepository;
     private final AccessPointCacheService accessPointCacheService;
 
     @Autowired
     public AccessPointGeneratorService(final AccessPointService accessPointService,
                                        final PartService partService,
-                                       final AccessPointCacheService accessPointCacheService,
-                                       final ApItemRepository itemRepository) {
+                                       final AccessPointCacheService accessPointCacheService) {
         this.accessPointService = accessPointService;
         this.partService = partService;
         this.accessPointCacheService = accessPointCacheService;
-        this.itemRepository = itemRepository;
     }
 
     /**
@@ -48,7 +45,7 @@ public class AccessPointGeneratorService {
     public void processRequest(final Integer accessPointId) {
         logger.info("Asynchronní zpracování AP={}", accessPointId);
         CachedAccessPoint cap = accessPointCacheService.findCachedAccessPoint(accessPointId);
-        Validate.notNull(cap);
+        Objects.requireNonNull(cap);
         generateAndSetResult(cap);
         logger.info("Asynchronní zpracování AP={} - END", accessPointId);
     }
@@ -70,9 +67,8 @@ public class AccessPointGeneratorService {
         Map<Integer, List<ApItem>> itemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
          */
-        accessPoint = accessPointService.updateAndValidate(accessPoint, cap.getApState(),
-                                                           partList, itemMap, true);
-                
+        accessPoint = accessPointService.updatePartsIndexesAndValidate(accessPoint, cap.getApState(), partList, itemMap, true);
+
         accessPointCacheService.createApCachedAccessPoint(cap.getAccessPointId());
     }
 }
