@@ -2452,6 +2452,8 @@ public class AccessPointService {
             state.setReplacedBy(trgState.getAccessPoint());
             invalidateAccessPoint(state, srcAccessPoint, change);
         }
+        
+        // TODO: replace next calls with updatePartsIndexesAndValidate
 
         // create indexes
         for (ApPart part : partsFrom) {
@@ -3370,6 +3372,7 @@ public class AccessPointService {
         }
 
         // Prepare map of errors
+        // partId -> error builder
         Map<Integer, StringBuilder> partErrors;
         if (CollectionUtils.isNotEmpty(apValidationIssues.getPartErrors())) {
             partErrors = new HashMap<>();
@@ -3390,6 +3393,7 @@ public class AccessPointService {
         }
 
         List<ApPart> partList = partService.findPartsByAccessPoint(accessPoint);
+        // flag if exists part error
         boolean partError = false;
         if (CollectionUtils.isNotEmpty(partList)) {
             for (ApPart part : partList) {
@@ -3410,7 +3414,14 @@ public class AccessPointService {
 
         // Validate that all part errors were processed
         if (partErrors.size() > 0) {
-            Validate.isTrue(false, "Unprocessed part errors, count: %s", partErrors.size());
+        	logger.error("Unprocessed part errors, count: {}, part ids: {}, errors: {}", partErrors.size(),
+        			partErrors.keySet(),
+        			partErrors.values());
+        	throw new BusinessException("Unprocessed part errors, count: " + partErrors.size(),
+        			BaseCode.INVALID_STATE)
+        		.set("count", partErrors.size())
+        		.set("partIds", partErrors.keySet())
+        		.set("errors", partErrors.values());
         }
 
         if (StringUtils.isNotEmpty(accessPointErrors.toString()) || partError) {
