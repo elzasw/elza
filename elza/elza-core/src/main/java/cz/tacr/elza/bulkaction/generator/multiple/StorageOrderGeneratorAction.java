@@ -62,7 +62,7 @@ public class StorageOrderGeneratorAction extends Action {
     public void init(BulkActionTransactional bulkAction, ArrBulkActionRun bulkActionRun) {
         super.init(bulkAction, bulkActionRun);
 
-        fundVersion = bulkAction.getFundVersion();
+        fundVersion = bulkAction.getFondsVersion();
         change = bulkAction.getChange();
 
         StaticDataProvider sdp = getStaticDataProvider();
