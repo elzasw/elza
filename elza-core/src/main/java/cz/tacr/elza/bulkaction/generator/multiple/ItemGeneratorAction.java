@@ -90,8 +90,8 @@ public class ItemGeneratorAction extends Action {
         }
 
         public void init(ArrBulkActionRun bulkActionRun) {
-            fund = bulkActionRun.getFundVersion().getFund();
-            fundVersion = bulkActionRun.getFundVersion();
+        	fundVersion = bulkAction.getFondsVersion();
+            fund = fundVersion.getFund();
             change = bulkActionRun.getChange();
 
             StaticDataProvider sdp = getStaticDataProvider();
@@ -170,13 +170,12 @@ public class ItemGeneratorAction extends Action {
          * @param bulkActionRun
          */
         public void init(ArrBulkActionRun bulkActionRun) {
-        	fundVersion = bulkAction.getFundVersion();
+        	fundVersion = bulkAction.getFondsVersion();
             fund = fundVersion.getFund();
-
             change = bulkActionRun.getChange();
 
             StaticDataProvider sdp = getStaticDataProvider();
-            
+
             // read target type info
             trgItemType = sdp.getItemTypeByCode(createConfig.getItemType());
             if (trgItemType == null) {

@@ -116,7 +116,7 @@ public class MultipleBulkAction extends BulkActionTransactional {
         // prepare parent nodes
         for (ArrNode startingNode : startingNodes) {
             // read parents
-			List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(startingNode.getNodeId(), getFundVersion().getLockChange(), true);
+			List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(startingNode.getNodeId(), getFondsVersion().getLockChange(), true);
 
             LevelWithItems parentLevel = null;
             for(ArrLevel level: levels) {
