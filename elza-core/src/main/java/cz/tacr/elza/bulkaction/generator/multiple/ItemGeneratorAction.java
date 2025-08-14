@@ -90,7 +90,7 @@ public class ItemGeneratorAction extends Action {
         }
 
         public void init(ArrBulkActionRun bulkActionRun) {
-        	fundVersion = bulkAction.getFundVersion();
+        	fundVersion = bulkAction.getFondsVersion();
             fund = fundVersion.getFund();
             change = bulkActionRun.getChange();
 
@@ -170,7 +170,7 @@ public class ItemGeneratorAction extends Action {
          * @param bulkActionRun
          */
         public void init(ArrBulkActionRun bulkActionRun) {
-        	fundVersion = bulkAction.getFundVersion();
+        	fundVersion = bulkAction.getFondsVersion();
             fund = fundVersion.getFund();
             change = bulkActionRun.getChange();
 
