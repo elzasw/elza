@@ -665,7 +665,13 @@ public class AccessPointService {
                     mergeParts(accessPoint, replacedBy, change);
                 }
                 // vygenerování indexů
-                updateAndValidate(replacedBy.getAccessPointId());
+                if(revState==null) {
+                	updateAndValidate(replacedBy.getAccessPointId());
+                } else {
+                	// should we also update indexes for revision?
+                	// currently indexes are updated inside edit operations
+                }
+                
                 // je třeba aktualizovat ap cache
                 macc.add(replacedBy.getAccessPointId());
             }
@@ -2460,7 +2466,7 @@ public class AccessPointService {
             updatePartIndexes(trgState, fromIdToPartMap.get(part.getPartId()));
         }
 
-        ApValidationIssues apValidationIssues = validate(trgState.getAccessPoint(), trgState, true, true);
+        ApValidationIssues apValidationIssues = validate(trgState.getAccessPoint(), trgState, true, false);
         ApAccessPoint trgAccessPoint = updateValidationErrors(trgState.getAccessPoint(), apValidationIssues, true);
         macc.add(trgAccessPoint.getAccessPointId());
 
@@ -3314,6 +3320,13 @@ public class AccessPointService {
         return updateAndValidate(accessPoint);
     }
     
+    /**
+     * Update and validate accessPoint
+     * 
+     * Method will not validate revision
+     * @param accessPoint
+     * @return
+     */
     public ApAccessPoint updateAndValidate(ApAccessPoint accessPoint) {
         ApState apState = getStateInternal(accessPoint);
         List<ApPart> partList = partService.findPartsByAccessPoint(accessPoint);
@@ -3325,6 +3338,8 @@ public class AccessPointService {
 
     /**
      * Updates parts indexes and validate AccessPoint
+     * 
+     * Method will validate only accesspoint itself and not its revision
      * 
      * @param accessPoint
      * @param apState
@@ -3343,7 +3358,7 @@ public class AccessPointService {
         boolean successfulGeneration = updatePartsIndexes(apState, prefPartId, partList, itemMap, async);
 
         logger.debug("Validate accessPointid={}, version={}, partListSize={}, successfulGeneration={}", accessPoint.getAccessPointId(), accessPoint.getVersion(), partList.size(), successfulGeneration);
-        ApValidationIssues apValidationIssues = validate(accessPoint, apState, successfulGeneration, true);
+        ApValidationIssues apValidationIssues = validate(accessPoint, apState, successfulGeneration, false);
         return updateValidationErrors(accessPoint, apValidationIssues, successfulGeneration);
     }
 
