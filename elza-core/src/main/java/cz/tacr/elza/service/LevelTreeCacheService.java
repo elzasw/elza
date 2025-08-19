@@ -169,9 +169,6 @@ public class LevelTreeCacheService implements NodePermissionChecker {
     private ArrangementFormService formService;
 
     @Autowired
-    private StaticDataService staticDataService;
-
-    @Autowired
     private IssueDataService issueDataService;
 
     @Autowired
@@ -1578,7 +1575,10 @@ private void processEvent(AbstractEventSimple event) {
             throw new SystemException("Node podle id nenalezen nodeId=" + param.getNodeId(), BaseCode.INVALID_STATE);
         }
 
+        // třída výsledků
         NodeData result = new NodeData();
+        result.setNodeIndex(0);
+        result.setNodeCount(0);
 
         TreeNode parentNode = node.getParent();
         if (parentNode == null) { // pokud nemá rodiče, jedná se o kořen a ten je vždy pouze jediný
@@ -1601,20 +1601,35 @@ private void processEvent(AbstractEventSimple event) {
             result.setChildren(getChildren(node, fundVersion));
         }
 
-        int siblingsFrom = param.getSiblingsFrom() == null ? 0 : param.getSiblingsFrom();
+        Integer siblingsFrom = param.getSiblingsFrom();
         int maxCount = param.getSiblingsMaxCount() == null || param.getSiblingsMaxCount() > 1000 ? 1000 : param.getSiblingsMaxCount();
         String fulltext = StringUtils.isEmpty(param.getSiblingsFilter()) ? null : param.getSiblingsFilter().trim();
-        if (siblingsFrom < 0) {
-            throw new IllegalArgumentException("Index pro sourozence nesmí být záporný: " + siblingsFrom);
+        // pokud siblingsFrom == null - pole `siblings` nevyplňujeme
+        if (siblingsFrom != null) {
+	        if (siblingsFrom < 0) {
+	            throw new IllegalArgumentException("Index pro sourozence nesmí být záporný: " + siblingsFrom);
+	        }
+	        LevelTreeCacheService.SiblingsNew siblings = 
+	        		fulltext != null ? 
+	        			getNodeSiblings(node, fundVersion, 0, maxCount, fulltext, userDetail) :
+	        				getNodeSiblings(node, fundVersion, siblingsFrom, maxCount, fulltext, userDetail);
+	        result.setNodeIndex(siblings.getNodeIndex());
+	        result.setNodeCount(siblings.getSiblingsCount());
+	        result.setSiblings(siblings.getSiblings());
         }
-        // pokud je zafiltrováno, je nutné brát výsledky (index + počet sourozenů) vzhledem k filtru
-        LevelTreeCacheService.SiblingsNew siblings = 
-        		fulltext != null ? 
-        			getNodeSiblings(node, fundVersion, 0, maxCount, fulltext, userDetail) :
-        				getNodeSiblings(node, fundVersion, siblingsFrom, maxCount, fulltext, userDetail);
-        result.setNodeIndex(siblings.getNodeIndex());
-        result.setNodeCount(siblings.getSiblingsCount());
-        result.setSiblings(siblings.getSiblings());
+
+        // vyplňujeme pole `node`
+        NodeParam nodeParam = NodeParam.create()
+                .accordion()
+                .referenceMark()
+                .digitizationRequest()
+                .nodeConformity();
+        LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
+        nodesMap.put(node.getId(), node);
+        LinkedHashMap<Integer, Node> nodeMap = getNodes(nodesMap, null, nodeParam, fundVersion);
+        Map<Integer, List<WfIssue>> nodeToIssueMap = issueDataService.groupOpenIssueByNodeId(nodeMap.keySet(), userDetail);
+        List<NodeAccordionData> accordionNodes = convertToAccordionNodeData(nodeMap.values(), nodeToIssueMap);
+        result.setNode(accordionNodes.get(0));
 
         return result;
     }

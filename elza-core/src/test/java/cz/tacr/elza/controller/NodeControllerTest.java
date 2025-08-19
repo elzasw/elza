@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.List;
@@ -203,9 +204,10 @@ public class NodeControllerTest extends AbstractControllerTest {
 
         NodeData nodeData = nodeApi.nodeGetNodeData(param);
         assertNotNull(nodeData);
-        assertNotNull(nodeData.getChildren());
         assertNotNull(nodeData.getFormData());
-        assertNotNull(nodeData.getParents());
-        assertNotNull(nodeData.getSiblings());
+        assertNotNull(nodeData.getNode());
+        assertTrue(!nodeData.getChildren().isEmpty());
+        assertTrue(nodeData.getParents().isEmpty());
+        assertTrue(nodeData.getSiblings().isEmpty());
     }
 }

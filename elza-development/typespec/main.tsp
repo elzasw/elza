@@ -916,12 +916,14 @@ model NodeAccordionData {
 model NodeData {
     /** data formuláře požadované JP */
     formData: NodeFormData;
+    /** node data */
+    node: NodeAccordionData;
     /** požadovaní rodiče ke kořeni */
     parents: NodeTreeData[];
     /** požadovaní přímí potomci */
     children: NodeTreeData[];
     /** požadovaní sourozenci */
-    siblings: NodeAccordionData[];
+    siblings?: NodeAccordionData[];
     /** index požadované JP */
     nodeIndex: integer;
     /** celkový počet JP v úrovni požadované JP */

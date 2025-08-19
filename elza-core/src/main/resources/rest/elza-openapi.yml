@@ -2911,6 +2911,7 @@ components:
       type: object
       required:
         - formData
+        - node
         - parents
         - children
         - siblings
@@ -2921,6 +2922,10 @@ components:
           allOf:
             - $ref: '#/components/schemas/NodeFormData'
           description: data formuláře požadované JP
+        node:
+          allOf:
+            - $ref: '#/components/schemas/NodeAccordionData'
+          description: node data
         parents:
           type: array
           items:
