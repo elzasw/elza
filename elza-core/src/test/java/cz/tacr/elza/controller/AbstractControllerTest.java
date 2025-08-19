@@ -1896,6 +1896,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 *              potomky, předky, ...)
 	 * @return požadovaná data
 	 */
+	@Deprecated
 	public NodeDataVO getNodeData(final NodeDataParam param) {
 		return post(spec -> spec.body(param), NODE_DATA).getBody().as(NodeDataVO.class);
 	}

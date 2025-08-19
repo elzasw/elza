@@ -1886,7 +1886,7 @@ private void processEvent(AbstractEventSimple event) {
             accordionNode.setId(node.getId());
             accordionNode.setAccordionLeft(node.getAccordionLeft());
             accordionNode.setAccordionRight(node.getAccordionRight());
-            accordionNode.setReferenceMark(Arrays.asList(node.getReferenceMark()));
+            accordionNode.setReferenceMark(node.getReferenceMark() == null ? null : Arrays.asList(node.getReferenceMark()));
             accordionNode.setVersion(node.getVersion());
 
             // set list of DigitizationRequest
