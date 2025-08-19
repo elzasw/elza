@@ -1015,7 +1015,7 @@ private void processEvent(AbstractEventSimple event) {
                     						   	 null, 
                     						   	 nodeMap.get(treeNode.getId()).getVersion());
             if (subtreeRoot != null) {
-            	String[] referenceMark = createClientNodeReferenceMark(treeNode, levelTypeId, viewTitles, valuesMap, (String[]) parentReferenceMark.toArray());
+            	String[] referenceMark = createClientNodeReferenceMark(treeNode, levelTypeId, viewTitles, valuesMap, parentReferenceMark.toArray(new String[0]));
                 node.setReferenceMark(Arrays.asList(referenceMark));
             }
 
