@@ -1376,6 +1376,7 @@ public class ArrangementController {
      * @param param parametry dat, které chceme získat (formálář, sourozence, potomky, předky, ...)
      * @return požadovaná data
      */
+    @Deprecated
     @RequestMapping(value = "/nodeData", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
     public NodeDataVO getNodeData(final @RequestBody NodeDataParamVO param) {
