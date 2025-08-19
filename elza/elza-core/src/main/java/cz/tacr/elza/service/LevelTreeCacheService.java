@@ -1601,22 +1601,20 @@ private void processEvent(AbstractEventSimple event) {
             result.setChildren(getChildren(node, fundVersion));
         }
 
-        Integer siblingsFrom = param.getSiblingsFrom();
-        String fulltext = StringUtils.isEmpty(param.getSiblingsFilter()) ? null : param.getSiblingsFilter().trim();
+        int siblingsFrom = param.getSiblingsFrom() == null ? 0 : param.getSiblingsFrom();
         int maxCount = param.getSiblingsMaxCount() == null || param.getSiblingsMaxCount() > 1000 ? 1000 : param.getSiblingsMaxCount();
-        if (siblingsFrom != null) {
-            if (siblingsFrom < 0) {
-                throw new IllegalArgumentException("Index pro sourozence nesmí být záporný: " + siblingsFrom);
-            }
-            LevelTreeCacheService.SiblingsNew siblings = getNodeSiblings(node, fundVersion, siblingsFrom, maxCount, fulltext, userDetail);
-            result.setNodeIndex(siblings.getNodeIndex());
-            result.setNodeCount(siblings.getSiblingsCount());
-            result.setSiblings(siblings.getSiblings());
-        } else if (fulltext != null) { // pokud je zafiltrováno, je nutné brát výsledky (index + počet sourozenů) vzhledem k filtru
-            LevelTreeCacheService.SiblingsNew siblings = getNodeSiblings(node, fundVersion, 0, maxCount, fulltext, userDetail);
-            result.setNodeIndex(siblings.getNodeIndex());
-            result.setNodeCount(siblings.getSiblingsCount());
+        String fulltext = StringUtils.isEmpty(param.getSiblingsFilter()) ? null : param.getSiblingsFilter().trim();
+        if (siblingsFrom < 0) {
+            throw new IllegalArgumentException("Index pro sourozence nesmí být záporný: " + siblingsFrom);
         }
+        // pokud je zafiltrováno, je nutné brát výsledky (index + počet sourozenů) vzhledem k filtru
+        LevelTreeCacheService.SiblingsNew siblings = 
+        		fulltext != null ? 
+        			getNodeSiblings(node, fundVersion, 0, maxCount, fulltext, userDetail) :
+        				getNodeSiblings(node, fundVersion, siblingsFrom, maxCount, fulltext, userDetail);
+        result.setNodeIndex(siblings.getNodeIndex());
+        result.setNodeCount(siblings.getSiblingsCount());
+        result.setSiblings(siblings.getSiblings());
 
         return result;
     }
@@ -2633,7 +2631,12 @@ private void processEvent(AbstractEventSimple event) {
      * @param userDetail  přihlášený uživatel
      * @return požadovaní sourozenci
      */
-    public SiblingsNew getNodeSiblings(final TreeNode node, final ArrFundVersion fundVersion, final int fromIndex, final int maxCount, @Nullable final String fulltextFilter, @Nullable UserDetail userDetail) {
+    public SiblingsNew getNodeSiblings(final TreeNode node, 
+    					               final ArrFundVersion fundVersion, 
+    					               final int fromIndex, 
+    					               final int maxCount, 
+    					               @Nullable final String fulltextFilter, 
+    					               @Nullable final UserDetail userDetail) {
         LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
         TreeNode parentNode = node.getParent();
 
