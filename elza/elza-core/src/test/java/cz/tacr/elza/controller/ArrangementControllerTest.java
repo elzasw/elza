@@ -622,14 +622,13 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
         RulDescItemTypeExtVO type = findDescItemTypeByCode("SRD_SCALE");
         ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null, null);
-        DataText ds = new DataText();
-        ds.setTextValue("value");
-        ds.setDataType(DataType.TEXT);
-        NodeItem nodeItem = buildDescItem(type, rootNode, ds, null, null); // new
         ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, rootNode, type);
-        ItemDataResult itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem); // new
         rootNode = descItemResult.getParent();
         ArrItemVO descItemCreated = descItemResult.getItem();
+
+        // new
+        NodeItem nodeItem = buildNodeItem("SRD_SCALE", null, DataType.TEXT, "value", rootNode); // new
+        ItemDataResult itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem); // new
         NodeItem nodeItemCreated = itemDataResult.getItem(); // new
 
         assertNotNull(((ArrItemTextVO) descItem).getValue().equals(((ArrItemTextVO) descItemCreated).getValue()));
@@ -820,7 +819,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         descItemResult = createDescItem(descItem, fundVersion, rootNode, type);
     }
 
-    /**
+	/**
      * Přesunutí a smazání levelů
      *
      * @param nodes       založené uzly (1. je root)
