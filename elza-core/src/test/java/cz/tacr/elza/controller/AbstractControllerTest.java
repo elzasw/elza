@@ -159,7 +159,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.core.data.DataType;
+//import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.UsrAuthentication;
@@ -198,6 +198,7 @@ import cz.tacr.elza.test.controller.vo.ItemData;
 import cz.tacr.elza.test.controller.vo.NodeDataParam;
 import cz.tacr.elza.test.controller.vo.NodeItem;
 import cz.tacr.elza.test.controller.vo.DataText;
+import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.test.controller.vo.DataUnitdate;
 import cz.tacr.elza.test.controller.vo.DataUnitid;
 import cz.tacr.elza.test.controller.vo.DataUriRef;
@@ -213,7 +214,9 @@ import io.restassured.response.Response;
 import io.restassured.response.ResponseBody;
 import io.restassured.response.ResponseOptions;
 import io.restassured.specification.RequestSpecification;
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotNull;
 
 public abstract class AbstractControllerTest extends AbstractTest {
 
@@ -1455,28 +1458,36 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	/**
 	 * Vytvoření objektu pro hodnotu atributu (nová).
 	 *
-	 * @param type       typ atributu
-	 * @param node       atributový uzel
-	 * @param value      hodnota
-	 * @param itemSpecId id spec atributu
-	 * @param undefined  nezjištěný (bez hodnoty)
+	 * @param typeCode kód typu atributu
+	 * @param specCode kód speku atributu
+	 * @param dataType typ hodnoty
+	 * @param value    hodnota
+	 * @param node     atributový uzel
 	 * @return vytvořený object hodnoty atributu
 	 */
-	protected NodeItem buildDescItem(final RulDescItemTypeExtVO type,
-			                         final ArrNodeVO node,
-									 final ItemData itemData, 
-									 final Integer itemSpecId, 
-									 final Boolean undefined) {
-		Validate.notNull(type, "Musí být vyplněn typ atributu");
-		Validate.notNull(type.getDataTypeId(), "Musí být vyplněn kód typu atributu");
+	protected NodeItem buildNodeItem(@Nonnull  final String typeCode,
+			                         @Nullable final String specCode,
+			                         @Nonnull  final DataType dataType,
+			                         @Nullable final Object value,
+			                         @Nonnull  final ArrNodeVO node) {
+		Validate.notNull(typeCode, "Musí být vyplněn kód typu atributu");
+		Validate.notNull(dataType, "Musí být vyplněn typ hodnoty");
 		Validate.notNull(node, "Musí být vyplněn atributový uzel");
+
+        RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
+        Integer specId = null;
+        if (specCode != null) {
+        	RulDescItemSpecExtVO spec = findDescItemSpecByCode(specCode, type);
+        	specId = spec.getId();
+        }
+        ItemData itemData = createItemDataByDataTypeAndValue(dataType, value);
 
 		NodeItem nodeItem = new NodeItem();
 		nodeItem.setItemTypeId(type.getId());
-		nodeItem.setItemSpecId(itemSpecId);
+		nodeItem.setItemSpecId(specId);
 		nodeItem.setNodeId(node.getId());
 		nodeItem.setNodeVersion(node.getVersion());
-		nodeItem.setUndefined(undefined);
+		//nodeItem.setUndefined(null);
 		nodeItem.setData(itemData);
 
 		return nodeItem;
@@ -1485,16 +1496,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	/**
 	 * Získání odpovídající třídy s daty
 	 * 
-	 * @param dataTypeId datový typ id 
-	 * @param value		 hodnota
+	 * @param dataType datový typ 
+	 * @param value	   hodnota
 	 * @return
 	 */
-	public ItemData getItemDataByDataTypeId(final Integer dataTypeId, final Object value) {
-    	Validate.notNull(dataTypeId, "Id datového typu musí být vyplněna");
-    	Validate.notNull(value, "Hodnota musí být vyplněna");
+	public ItemData createItemDataByDataTypeAndValue(@Nonnull final DataType dataType, @Nullable final Object value) {
+    	Validate.notNull(dataType, "Id datového typu musí být vyplněna");
 
     	ItemData data = new ItemData();
-        DataType dataType = DataType.fromId(dataTypeId);
         switch (dataType) {
 	        case INT:
 	            data = new DataInteger();
@@ -1560,7 +1569,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	        	((DataBit) data).setBitValue(((boolean) value));
 	        	break;
 	        default:
-	            throw new NotImplementedException("Neimplementovaný datový typ atributu -> dataTypeId: " + dataTypeId);
+	            throw new NotImplementedException("Neimplementovaný datový typ atributu -> dataType: " + dataType);
         }
     	return data;
     }
@@ -1587,8 +1596,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param objectId identifikátor hodnoty atributu
 	 * @return vytvořený object hodnoty atributu
 	 */
-	protected ApItemVO buildApItem(final String typeCode, final String specCode, final Object value,
-			final Integer position, final Integer objectId) {
+	protected ApItemVO buildApItem(final String typeCode, 
+			                       final String specCode, 
+			                       final Object value,
+			                       final Integer position, 
+			                       final Integer objectId) {
 		Assert.assertNotNull("Musí být vyplněn kód typu atributu", typeCode);
 
 		RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
@@ -1601,7 +1613,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 			Assert.assertNotNull("Specifikace atributu neexistuje -> CODE: " + specCode, spec);
 		}
 
-		DataType dataType = DataType.fromId(type.getDataTypeId());
+		cz.tacr.elza.core.data.DataType dataType = cz.tacr.elza.core.data.DataType.fromId(type.getDataTypeId());
 		ApItemVO item;
 
 		switch (dataType) {
