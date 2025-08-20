@@ -247,7 +247,8 @@ model FsItems {
 model ExportParams {
     apIds?: integer[];
     fundsSections?: FundSections[];
-    exportFilterId?: integer;
+    /** kód nebo ID filtru */
+    exportFilter?: string;
     includeUUID?: boolean = true;
     includeAccessPoints?: boolean = true;
 }

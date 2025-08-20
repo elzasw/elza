@@ -190,16 +190,15 @@ public class DEExportService {
         log.debug("Exporting data, apIds={}, funds/sections={}", params.getApIds(), params.getFundsSections());
 
         // create export context
-        ExportContext context = new ExportContext(builder, staticDataService.getData(),
-                                                  ObjectListIterator.getMaxBatchSize());
+        ExportContext context = new ExportContext(builder, staticDataService.getData(), ObjectListIterator.getMaxBatchSize());
         context.setFundsSections(params.getFundsSections());
         if (params.getApIds() != null) {
             params.getApIds().forEach(context::addApId);
         }
 
         // prepare filter
-        if (params.getExportFilterId() != null) {
-            RulExportFilter expFilterDB = ruleService.getExportFilter(params.getExportFilterId());
+        if (params.getExportFilter() != null) {
+            RulExportFilter expFilterDB = ruleService.getExportFilter(params.getExportFilter());
             // create bean for export filter
             ExportFilterConfig efc = loadConfig(expFilterDB);
             ExportFilter expFilter = efc.createFilter(initHelper.getEm(), staticDataService.getData(), elzaLocale, initHelper.getDataService());

@@ -64,9 +64,7 @@ public class IOController implements IoApi {
 
         // convert ExportParams -> IOExportRequest
         DEExportParams deExportParams = new DEExportParams();
-        if (exportParams.getExportFilterId() != null) {
-            deExportParams.setExportFilterId(exportParams.getExportFilterId());
-        }
+        deExportParams.setExportFilter(exportParams.getExportFilter());
         deExportParams.setIncludeUUID(exportParams.getIncludeUUID());
         deExportParams.setIncludeAccessPoints(exportParams.getIncludeAccessPoints());
 
