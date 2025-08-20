@@ -14,7 +14,7 @@ public class DEExportParams {
 
     private Collection<FundSections> fundsSections;
 
-    private Integer exportFilterId;
+    private String exportFilter;
 
     private boolean includeAccessPoints = true;
 
@@ -43,12 +43,12 @@ public class DEExportParams {
         fundsSections.add(fundsSection);
     }
 
-    public Integer getExportFilterId() {
-        return exportFilterId;
+    public String getExportFilter() {
+        return exportFilter;
     }
 
-    public void setExportFilterId(Integer exportFilterId) {
-        this.exportFilterId = exportFilterId;
+    public void setExportFilter(String exportFilter) {
+        this.exportFilter = exportFilter;
     }
 
     public boolean isIncludeUUID() {

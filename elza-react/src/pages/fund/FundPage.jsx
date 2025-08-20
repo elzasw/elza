@@ -166,8 +166,8 @@ class FundPage extends AbstractReactComponent {
                         includeUUID: true,
                         includeAccessPoints: true
                     }}
-                    onSubmitForm={({ exportFilterId, includeUUID, includeAccessPoints }) => {
-                        return dispatch(exportFund(fundDetail.versionId, { exportFilterId, includeUUID, includeAccessPoints }));
+                    onSubmitForm={({ exportFilter, includeUUID, includeAccessPoints }) => {
+                        return dispatch(exportFund(fundDetail.versionId, { exportFilter, includeUUID, includeAccessPoints }));
                     }}
                 />,
             ),

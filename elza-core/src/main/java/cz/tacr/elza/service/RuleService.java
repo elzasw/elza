@@ -2013,11 +2013,16 @@ public class RuleService {
     /**
      * Return export filter
      *
-     * @param exportFilterId
+     * @param exportFilter kód nebo ID filtru
      * @return
      */
     @Transactional(TxType.MANDATORY)
-    public RulExportFilter getExportFilter(Integer exportFilterId) {
-        return exportFilterRepository.getOneCheckExist(exportFilterId);
+    public RulExportFilter getExportFilter(String exportFilter) {
+        try {
+        	Integer exportFilterId = Integer.valueOf(exportFilter);
+        	return exportFilterRepository.findById(exportFilterId).orElse(null);
+        } catch (NumberFormatException e) {
+        	return exportFilterRepository.findByCode(exportFilter);
+        }
     }
 }

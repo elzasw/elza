@@ -2275,8 +2275,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FundSections'
-        exportFilterId:
-          type: integer
+        exportFilter:
+          type: string
+          description: kód nebo ID filtru
         includeUUID:
           type: boolean
           default: true
@@ -2914,7 +2915,6 @@ components:
         - node
         - parents
         - children
-        - siblings
         - nodeIndex
         - nodeCount
       properties:
