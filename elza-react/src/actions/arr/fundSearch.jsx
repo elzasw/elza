@@ -42,7 +42,7 @@ export function fundSearchFetchIfNeeded(force = false) {
                 // size,
                 // offset: filters.from
             })
-            dispatch(fundSearchFulltextReceive(result.data));
+            dispatch(fundSearchFulltextReceive(result.data.fonds));
         }
 
         funds.forEach(async (fund) => {
