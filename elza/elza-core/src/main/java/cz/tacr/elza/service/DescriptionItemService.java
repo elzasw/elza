@@ -1767,7 +1767,7 @@ public class DescriptionItemService {
                                       final boolean allNodes, final boolean forceUpdate) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
-        Assert.hasText(findText, "Musí být vyplněn hledaný text");
+        Assert.hasLength(findText, "Musí být vyplněn hledaný text");
 
         Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, ArrNode::getNodeId);
 
