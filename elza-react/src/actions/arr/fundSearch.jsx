@@ -37,12 +37,16 @@ export function fundSearchFetchIfNeeded(force = false) {
 
         if (newDataKey !== currentDataKey || force) {
             dispatch(fundSearchFulltextRequest());
-            const result = await Api.node.nodeSearch({
+            const { data } = await Api.node.nodeSearch({
                 filters: filters?.map((filter) => filter.getFilterValue(filter)),
                 // size,
                 // offset: filters.from
             })
-            dispatch(fundSearchFulltextReceive(result.data.fonds));
+            dispatch(fundSearchFulltextReceive({
+                funds: data.fonds,
+                partialResult: data.partialResult,
+                totalCount: data.totalCount
+            }));
         }
 
         funds.forEach(async (fund) => {
@@ -91,10 +95,12 @@ function fundSearchFulltextRequest() {
     };
 }
 
-function fundSearchFulltextReceive(funds) {
+function fundSearchFulltextReceive({ funds, partialResult, totalCount }) {
     return {
         type: types.FUND_SEARCH_FULLTEXT_RECEIVE,
         funds,
+        partialResult,
+        totalCount,
     };
 }
 

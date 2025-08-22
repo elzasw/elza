@@ -141,7 +141,7 @@ export function SearchFundsFormFn() {
     }
 
     const isFulltext = fundSearch.filters.length > 0;
-    const totalCount = getTotalCount(fundSearch.funds);
+    const displayedCount = getTotalCount(fundSearch.funds);
 
     return (
         <Modal.Body>
@@ -165,8 +165,11 @@ export function SearchFundsFormFn() {
             {/* </Form> */}
             <NodeSearchFilters onChange={(filters) => handleFluentSearch(filters)} onRefresh={handleRefresh} currentFilters={fundSearch.filters} />
             {fundSearch.isFetching && <HorizontalLoader hover showText={false} key="loader" />}
-            {isFulltext && i18n('arr.fund.search.result.count', totalCount)}
-            <div className={`fund-search ${isFulltext && totalCount > 0 ? 'result' : 'no-fulltext'}`}>
+            {isFulltext && <>
+                {i18n('arr.fund.search.result.count', fundSearch.totalCount)}
+                {fundSearch.partialResult && <>&nbsp;({i18n('arr.fund.search.result.displayedCount', displayedCount)})</>}
+            </>}
+            <div className={`fund-search ${isFulltext && displayedCount > 0 ? 'result' : 'no-fulltext'}`}>
                 {isFulltext ? renderResult() : i18n('arr.fund.search.noFulltext')}
             </div>
         </Modal.Body>
