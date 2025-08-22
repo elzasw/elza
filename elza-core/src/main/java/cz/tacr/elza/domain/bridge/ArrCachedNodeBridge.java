@@ -105,9 +105,14 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 							document.addValue(itemTypeAndSpecCodeLowerCase, recordId);
 						}
 						break;
+            		case COORDINATES:
             		case STRUCTURED:
+            		case FILE_REF:
+            		case URI_REF:
+            		case UNITID:
 					case STRING:
 					case TEXT:
+					case BIT:
 						document.addValue(itemTypeCodeLowerCase, fullTextValue);
 						if (itemTypeAndSpecCodeLowerCase != null) {
 							document.addValue(itemTypeAndSpecCodeLowerCase, fullTextValue);

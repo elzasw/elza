@@ -72,9 +72,14 @@ public class ArrCachedNodeBinder implements TypeBinder {
 					createIntField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase());
 	            }
 				break;
+    		case COORDINATES:
     		case STRUCTURED:
+    		case FILE_REF:
+    		case URI_REF:
+    		case UNITID:
 			case STRING:
 			case TEXT:
+    		case BIT:
 				createStringField(itemTypeCode.toLowerCase());
 				// added field itemType_itemSpec -> value
 	            for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
