@@ -95,7 +95,8 @@
                 <type code="ZP2015_DAO_LINK" width="0"/>
                 <type code="ZP2015_EXTRA_UNITS" width="2"/>
                 <type code="ZP2015_UNIT_EXT_TYPE" width="1"/>
-                <type code="ZP2015_CONNECTED_RECORD" width="2"/>                
+                <type code="ZP2015_CONNECTED_RECORD" width="2"/>
+                <type code="ZP2015_AGENDA_TYPE" width="2"/>                
             </group>
             <group code="03_OUTPUT_ITEMS">
               <name>Prvky popisu výstupu</name>
