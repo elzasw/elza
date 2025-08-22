@@ -1173,6 +1173,7 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+<!-- dříve Typ dokumentace ("ZP2015_DOCUMENTATION_TYPE"), změna na "ZP2015_AGENDA_TYPE", viz bug 9178-->
     <item-type code="ZP2015_AGENDA_TYPE" data-type="ENUM">
         <name>Typ agendy</name>
         <shortcut>Typ agendy</shortcut>
