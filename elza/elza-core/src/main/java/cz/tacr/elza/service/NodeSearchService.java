@@ -309,8 +309,14 @@ public class NodeSearchService {
 			return getPredicateByEnum(factory, fieldName, itemSpecCodeLowerCase, filter);
 		case RECORD_REF:
 			return getPredicateByRecordRef(factory, fieldName, filter);
+		case COORDINATES:
+		case STRUCTURED:
+		case FILE_REF:
+		case URI_REF:
+		case UNITID:
 		case STRING:
 		case TEXT:
+		case BIT:
 			return getPredicateByStringOrText(factory, fieldName, filter);
 		case UNITDATE:
 			return getPredicateByUnitdate(factory, fieldName, filter);
