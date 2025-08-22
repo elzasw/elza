@@ -694,6 +694,17 @@
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20230315100801"/>
 	</changeSet>
 
+	<changeSet id="20250812151500" author="sergey.iryupin">
+		<sql dbms="postgresql">INSERT INTO arr_async_request (async_request_id, type, priority, access_point_id)
+			SELECT row_number() OVER (ORDER BY access_point_id) + (SELECT coalesce(
+				(SELECT max(async_request_id) FROM arr_async_request), 0)),
+				'AP', 1,
+				access_point_id
+			FROM ap_access_point WHERE state = 'ERROR'</sql>
+		<sql dbms="postgresql">UPDATE db_hibernate_sequences SET next_val = (SELECT (coalesce(max(async_request_id), 0)+20) FROM arr_async_request)
+			WHERE sequence_name = 'arr_async_request|async_request_id'</sql>
+	</changeSet>
+
 	<changeSet id="20250715131500" author="sergey.iryupin">
 		<sql>UPDATE usr_permission SET permission = 'USER_CONTROL_ENTITY' WHERE permission = 'USER_CONTROL_ENTITITY'</sql>
 		<sql>UPDATE usr_permission SET permission = 'GROUP_CONTROL_ENTITY' WHERE permission = 'GROUP_CONTROL_ENTITITY'</sql>

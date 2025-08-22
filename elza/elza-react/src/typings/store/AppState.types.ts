@@ -264,6 +264,8 @@ export interface FundSearch {
     fetched: boolean;
     isFetching: boolean;
     isIdSearch: boolean;
+    partialResult: boolean;
+    totalCount: number;
 }
 
 export interface ArrRegion {

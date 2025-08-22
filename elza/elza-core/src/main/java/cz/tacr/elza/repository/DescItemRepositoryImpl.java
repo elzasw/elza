@@ -200,7 +200,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
                                                        final RulItemType itemType,
                                                        final Set<RulItemSpec> specifications,
                                                        final String text) {
-        if (StringUtils.isBlank(text)) {
+        if (StringUtils.isEmpty(text)) {
             throw new IllegalArgumentException("Parametr text nesmí mít prázdnou hodnotu.");
         }
 
