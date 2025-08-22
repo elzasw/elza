@@ -157,10 +157,10 @@ public abstract class BulkActionTransactional implements BulkAction {
 
 		this.fondsVersion = arrInternalService.getFundVersionById(runContext.getFundVersionId());
 		checkVersion(fondsVersion);
-		
+
 		staticDataProvider = staticDataService.getData();
 	}
-	
+
 	public ArrFundVersion getFondsVersion() {
 		Objects.requireNonNull(fondsVersion);
 		return fondsVersion;

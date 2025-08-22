@@ -78,6 +78,18 @@ model FundSearchResult extends Fund {
 }
 
 /**
+ * Seznam archivních souborů jako výsledek vyhledávání
+ */
+model NodeSearchResult {
+    /** seznam archivních souborů */
+    fonds: FundSearchResult[];
+    /** celkový počet */
+    totalCount: int64;
+    /** znak částečného výsledku */
+    partialResult: boolean;
+}
+
+/**
  * Zakládaný archivní souboru
  */
 model FundDetail {
@@ -2180,7 +2192,7 @@ namespace ElzaAPI.Node {
     @post op search(
         /** search parameters */
         @body body: SearchParams
-    ): FundSearchResult[] | {
+    ): NodeSearchResult | {
         /** Bad Request, query with incorrect parameters */
         @Http.statusCode statusCode: 400;
         @body data: BaseException;

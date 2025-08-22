@@ -1,15 +1,12 @@
-import React, { useState, ReactNode, useEffect } from 'react';
-import { useSelector } from "react-redux";
+import { useState, ReactNode } from 'react';
 import { Modal, FormCheck } from 'react-bootstrap';
 import classNames from 'classnames';
 import { createReferenceMark, getNodeIcon } from 'components/arr/ArrUtils.jsx'
 import { i18n, Icon } from 'components/shared';
-import { fundSearchExpandFund } from '../../../actions/arr/fundSearch'
 import Search from "../../shared/search/Search";
 import HorizontalLoader from "../../shared/loading/HorizontalLoader";
 import './SearchFundsForm.scss';
 import { FundSearchFundType, FundSearchNodeType } from 'typings/store/index.js';
-import { useThunkDispatch } from 'utils/hooks';
 import { FieldType, FilterType, NodeFieldName, OperationCompareType } from 'elza-api';
 import { Api } from 'api';
 
@@ -56,7 +53,7 @@ export const SelectSearchFundsForm = ({ onSubmit }: Props) => {
             filters: [filter],
         })
 
-        setFunds(data.map((fund) => ({
+        setFunds(data.fonds.map((fund) => ({
             ...fund,
             expanded: false,
             nodes: [],

@@ -2,7 +2,6 @@ package cz.tacr.elza.service;
 
 import static cz.tacr.elza.domain.ArrDescItem.NORM_FROM;
 import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
-import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -15,7 +14,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
@@ -38,6 +36,7 @@ import cz.tacr.elza.controller.vo.FundSearchResult;
 import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.controller.vo.NodeField;
+import cz.tacr.elza.controller.vo.NodeSearchResult;
 import cz.tacr.elza.controller.vo.NodeTreeData;
 import cz.tacr.elza.controller.vo.OperationCompareType;
 import cz.tacr.elza.controller.vo.SearchParams;
@@ -63,6 +62,12 @@ import jakarta.persistence.PersistenceContext;
 @Service
 @Configuration
 public class NodeSearchService {
+
+	private final static int NODE_SEARCH_LIMIT = 10_000;
+
+	private final static int NODE_SEARCH_BY_FUND_LIMIT = 1_000;
+
+	private final static int TIME_REQUEST_MS_LIMIT = 10_000; // 10s 
 
     @PersistenceContext
     private EntityManager em;
@@ -97,25 +102,41 @@ public class NodeSearchService {
 	 * @param searchParams
 	 * @return
 	 */
-	public List<FundSearchResult> nodeSearch(SearchParams searchParams) {
+	public NodeSearchResult nodeSearch(SearchParams searchParams) {
+		// uložit čas zahájení procesu vyhledávání
+		long startTime = System.currentTimeMillis();
+
 		SearchSession searchSession = Search.session(em);
 		SearchPredicateFactory factory = searchSession.scope(ArrCachedNode.class).predicate();
 		SearchPredicate predicate = createSearchPredicate(factory, searchParams);
 
-        SearchResult<ArrCachedNode> resultList = searchSession.search(ArrCachedNode.class).where(predicate).fetchAll();
+		// vyhledávání s maximálním limitem počtu záznamů
+        SearchResult<ArrCachedNode> resultList = searchSession.search(ArrCachedNode.class).where(predicate).fetch(NODE_SEARCH_LIMIT);
+        long totalCount = resultList.total().hitCount();
+        boolean partialResult = resultList.timedOut() || totalCount > resultList.hits().size();
 
         // map: fundId -> ArrFundToNodeList
         Map<Integer, ArrFundToNodeList> fundToNodeListMap = new HashMap<>();
 
-        resultList.hits().forEach(arrCachedNode -> {
+		for (ArrCachedNode arrCachedNode : resultList.hits()) {
         	CachedNode cachedNode = nodeCacheService.deserialize(arrCachedNode.getData());
         	ArrFundToNodeList fundToNodeList = fundToNodeListMap.get(cachedNode.getFundId());
         	if (fundToNodeList == null) {
         		fundToNodeList = new ArrFundToNodeList(cachedNode.getFundId(), new ArrayList<>());
         		fundToNodeListMap.put(cachedNode.getFundId(), fundToNodeList);
         	}
-        	fundToNodeList.getNodeIdList().add(arrCachedNode.getNodeId());
-        });
+        	// omezit počet uzlů pro fond
+        	if (fundToNodeList.getNodeIdList().size() < NODE_SEARCH_BY_FUND_LIMIT) {
+        		fundToNodeList.getNodeIdList().add(arrCachedNode.getNodeId());
+        	} else {
+        		partialResult = true;
+        	}
+        	// omezit proces časovým limitem
+        	if (System.currentTimeMillis() - startTime > TIME_REQUEST_MS_LIMIT) {
+        		partialResult = true;
+        		break;
+        	}
+        }
 
         Collection<ArrFundToNodeList> fundToNodeList = fundToNodeListMap.values();
 
@@ -151,7 +172,7 @@ public class NodeSearchService {
         	result.add(fundSearch);
         });
 
-        return result;
+        return new NodeSearchResult(result, totalCount, partialResult);
 	}
 
 	/**
@@ -248,6 +269,7 @@ public class NodeSearchService {
 		DescItemField itemField = (DescItemField) filter.getField();
     	String itemTypeCode = itemField.getTypeCode();
     	String itemSpecCode = itemField.getSpecCode();
+    	String itemSpecCodeLowerCase = itemSpecCode != null ? itemSpecCode.toLowerCase() : null; 
 
 	    StaticDataProvider sdp = staticDataService.getData();
 	    ItemType itemType = sdp.getItemTypeByCode(itemTypeCode.toUpperCase());
@@ -258,7 +280,7 @@ public class NodeSearchService {
 	    // název pole pro index
 	    String fieldName = itemTypeCode.toLowerCase();
 	    if (itemSpecCode != null && dataType != DataType.ENUM) {
-	    	fieldName += "_" + itemSpecCode.toLowerCase();
+	    	fieldName += "_" + itemSpecCodeLowerCase;
 	    }
 
 	    // speciální případ pro UNITDATE NOT_NULL/IS_NULL
@@ -284,7 +306,7 @@ public class NodeSearchService {
 			return getPredicateByNumber(factory, fieldName, op, value);
 		}
 		case ENUM:
-			return getPredicateByEnum(factory, fieldName, itemSpecCode.toLowerCase(), filter);
+			return getPredicateByEnum(factory, fieldName, itemSpecCodeLowerCase, filter);
 		case RECORD_REF:
 			return getPredicateByRecordRef(factory, fieldName, filter);
 		case STRING:
@@ -342,14 +364,14 @@ public class NodeSearchService {
 
 	private SearchPredicate getPredicateByEnum(final SearchPredicateFactory factory,
 			   								   final String fieldTypeName,
-			   								   final String specValue,
+			   								   final String specValueLowerCase,
 			   								   final FieldValueFilter filter) {
 	    OperationCompareType op = filter.getOperation();
 		switch (op) {
 		case EQ:
-			return factory.match().field(fieldTypeName).matching(specValue.toLowerCase()).toPredicate();
+			return factory.match().field(fieldTypeName).matching(specValueLowerCase).toPredicate();
 		case NEQ:
-			return factory.bool().mustNot(factory.match().field(fieldTypeName).matching(specValue.toLowerCase())).toPredicate();
+			return factory.bool().mustNot(factory.match().field(fieldTypeName).matching(specValueLowerCase)).toPredicate();
 		default:
 			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
 		}
