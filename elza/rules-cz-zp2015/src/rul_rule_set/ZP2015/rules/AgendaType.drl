@@ -1,4 +1,4 @@
-package ZP2015_JinaOznaceniDoporucene;
+package ZP2015_TypAgendy;
 
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulItemType;
