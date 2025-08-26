@@ -24,12 +24,14 @@ import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.service.SpringContext;
 
 public class ArrCachedNodeBinder implements TypeBinder {
-	
+
     private final static Logger log = LoggerFactory.getLogger(ArrCachedNodeBinder.class);
 
     public static final String CONFORMITY_ERROR = "conformityError";
-	public static final String CONFORMITY_MISSING = "conformityMissing";
-	public static final String UUID = "uuid";
+
+    public static final String CONFORMITY_MISSING = "conformityMissing";
+
+    public static final String UUID = "uuid";
 
     private IndexConfigReader configurationReader = SpringContext.getBean(IndexConfigReader.class);
 
@@ -39,6 +41,8 @@ public class ArrCachedNodeBinder implements TypeBinder {
 	public void bind(TypeBindingContext context) {
 		log.debug("Bind ArrCachedNodeBinder");
 
+		try {
+		
 		this.context = context;
 
 		// při změně pole data přepočti index
@@ -112,6 +116,10 @@ public class ArrCachedNodeBinder implements TypeBinder {
 		createStringField(UUID);
 
         context.bridge(ArrCachedNode.class, new ArrCachedNodeBridge());
+
+		} catch (Exception e) {
+			log.error("Binder fail:", e);
+		}
 	}
 
     private IndexFieldReference<GeoPoint> createGeoPointField(String name) {
