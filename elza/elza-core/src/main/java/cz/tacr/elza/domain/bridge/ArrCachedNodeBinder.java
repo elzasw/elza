@@ -16,6 +16,8 @@ import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.engine.spatial.GeoPoint;
 import org.hibernate.search.mapper.pojo.bridge.binding.TypeBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrCachedNode;
@@ -23,7 +25,9 @@ import cz.tacr.elza.service.SpringContext;
 
 public class ArrCachedNodeBinder implements TypeBinder {
 	
-	public static final String CONFORMITY_ERROR = "conformityError";
+    private final static Logger log = LoggerFactory.getLogger(ArrCachedNodeBinder.class);
+
+    public static final String CONFORMITY_ERROR = "conformityError";
 	public static final String CONFORMITY_MISSING = "conformityMissing";
 	public static final String UUID = "uuid";
 
@@ -33,6 +37,8 @@ public class ArrCachedNodeBinder implements TypeBinder {
 
 	@Override
 	public void bind(TypeBindingContext context) {
+		log.debug("Bind ArrCachedNodeBinder");
+
 		this.context = context;
 
 		// při změně pole data přepočti index
