@@ -23,6 +23,8 @@ import org.hibernate.search.engine.backend.types.Projectable;
 import org.hibernate.search.engine.backend.types.Sortable;
 import org.hibernate.search.mapper.pojo.bridge.binding.TypeBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,11 +48,16 @@ import java.util.Map;
  */
 public class ApCachedAccessPointBinder implements TypeBinder {
 
+    private final static Logger log = LoggerFactory.getLogger(ApCachedAccessPointBinder.class);
+
     private IndexConfigReader configurationReader = SpringContext.getBean(IndexConfigReader.class);
+
     private TypeBindingContext context;
 
     @Override
     public void bind(TypeBindingContext context) {
+    	log.debug("Bind ApCachedAccessPointBinder");
+
     	this.context = context;
         Map<String, IndexFieldReference<String>> fields = new HashMap<>();
 
