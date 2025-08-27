@@ -69,9 +69,16 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
     private List<PackageInfoWrapper> packagesToImport;
     private List<PackageInfoWrapper> allPackages;
     private List<String> partTypeCodes;
+
     private List<String> itemTypeCodes;
     private Map<String, List<String>> typeSpecMap;
     private Map<String, DataType> itemTypeDataTypeMap;
+
+    //private Map<String, ItemTypeInfo> itemTypeMap;
+    // ItemTypeInfo
+    //  - code
+    //  - dataType
+    //  - List<String> specs
 
     private Map<String, PackageInfoWrapper> latestVersionMap;
 
@@ -94,15 +101,19 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
         	FileSystemUtils.deleteRecursively(luceneIndexesDir);
         }
 
+        // get data type from DB
+        List<Item> dataTypes = jdbcTemplate.query("SELECT * FROM rul_data_type", (rs, rowNum) -> new Item(rs.getInt("data_type_id"), null, rs.getString("code")));
+        Map<Integer, String> dataTypeMap = dataTypes.stream().collect(Collectors.toMap(Item::getItemId, Item::getCode));
+
         // get item type codes from DB
         List<Item> itemTypeItems = jdbcTemplate.query("SELECT * FROM rul_item_type", (rs, rowNum) -> new Item(rs.getInt("item_type_id"), rs.getInt("data_type_id"), rs.getString("code")));
         Map<Integer, String> itemTypeMap = itemTypeItems.stream().collect(Collectors.toMap(Item::getItemId, Item::getCode));
         itemTypeCodes.addAll(itemTypeItems.stream().map(i -> i.code).collect(Collectors.toList()));
 
-        // get data type from DB
-        List<Item> dataTypes = jdbcTemplate.query("SELECT * FROM rul_data_type", (rs, rowNum) -> new Item(rs.getInt("data_type_id"), null, rs.getString("code")));
-        Map<Integer, String> dataTypeMap = dataTypes.stream().collect(Collectors.toMap(Item::getItemId, Item::getCode));
-        itemTypeItems.forEach(item -> itemTypeDataTypeMap.put(item.getCode(), DataType.valueOf(dataTypeMap.get(item.getDataTypeId()))));
+        // create map itemCode -> dataType
+        itemTypeItems.forEach(item -> {
+        	itemTypeDataTypeMap.put(item.getCode(), DataType.valueOf(dataTypeMap.get(item.getDataTypeId())));	
+        });
 
         // get item spec codes from DB
         List<Item> itemSpecItems = jdbcTemplate.query("SELECT * FROM rul_item_spec", (rs, rowNum) -> new Item(rs.getInt("item_spec_id"), null, rs.getString("code")));
@@ -199,6 +210,7 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
         for (ItemType itemType : itemTypes.getItemTypes()) {
             if (!itemTypeCodes.contains(itemType.getCode())) {
                 itemTypeCodes.add(itemType.getCode());
+                itemTypeDataTypeMap.put(itemType.getCode(), DataType.valueOf(itemType.getDataType()));
             }
         }
         ItemSpecs itemSpecs = PackageUtils.convertXmlStreamToObject(ItemSpecs.class, streamMap.get(ITEM_SPEC_XML));
