@@ -36,110 +36,109 @@ public class ArrCachedNodeBinder implements TypeBinder {
 
     private TypeBindingContext context;
 
-	@Override
-	public void bind(TypeBindingContext context) {
-		log.debug("Bind ArrCachedNodeBinder");
+    @Override
+    public void bind(TypeBindingContext context) {
+        log.debug("Bind ArrCachedNodeBinder");
 
-		try {
-		
-		this.context = context;
+        try {
+            this.context = context;
 
-		// při změně pole data přepočti index
-        context.dependencies().use(DATA);
+            // při změně pole data přepočti index
+            context.dependencies().use(DATA);
 
-        createIntField(FIELD_FUND_ID);
+            createIntField(FIELD_FUND_ID);
 
-        // pro type RECORD_REF
-        createIntField(REL_AP_ID);
+            // pro type RECORD_REF
+            createIntField(REL_AP_ID);
 
-        context.indexSchemaElement()
-			.field(FULLTEXT_ATT, f -> f.asString().analyzer(CLASSIC_TOKENIZER_CZ))
-			.multiValued()
-			.toReference();
+            context.indexSchemaElement()
+                .field(FULLTEXT_ATT, f -> f.asString().analyzer(CLASSIC_TOKENIZER_CZ))
+                .multiValued()
+                .toReference();
 
-        // item type codes
-        for (String itemTypeCode : configurationReader.getItemTypeCodes()) {
-        	DataType dataType = configurationReader.getDataTypeByItemTypeCode(itemTypeCode);
-        	Objects.requireNonNull(dataType);
-    		switch (dataType) {
-    		case INT:
-    	        createIntField(itemTypeCode.toLowerCase());
-    	        break;
-    		case DECIMAL:
-    	        createBigDecimalField(itemTypeCode.toLowerCase());
-				// added field itemType_itemSpec -> value
-	            for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
-	            	createBigDecimalField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase());
-	            }
-    	        break;
-    		case ENUM:
-				createStringField(itemTypeCode.toLowerCase());
-				break;
-    		case RECORD_REF:
-				createIntField(itemTypeCode.toLowerCase());
-				// added field itemType_itemSpec -> value
-	            for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
-					createIntField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase());
-	            }
-				break;
-    		case STRUCTURED:
-			case STRING:
-			case TEXT:
-				createStringField(itemTypeCode.toLowerCase());
-				// added field itemType_itemSpec -> value
-	            for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
-					createStringField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase());
-	            }
-				break;
-			case UNITDATE:
-				createLongField(itemTypeCode.toLowerCase() + "_" + NORM_FROM);
-				createLongField(itemTypeCode.toLowerCase() + "_" + NORM_TO);
-				// added field itemType_itemSpec -> value
-	            for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
-	            	createLongField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase() + "_" + NORM_FROM);
-	            	createLongField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase() + "_" + NORM_TO);
-	            }
-				break;
-    		}
+            // item type codes
+            for (String itemTypeCode : configurationReader.getItemTypeCodes()) {
+                log.debug("itemTypeCode: {}", itemTypeCode);
+                DataType dataType = configurationReader.getDataTypeByItemTypeCode(itemTypeCode);
+                Objects.requireNonNull(dataType);
+                switch (dataType) {
+                case INT:
+                    createIntField(itemTypeCode.toLowerCase());
+                    break;
+                case DECIMAL:
+                    createBigDecimalField(itemTypeCode.toLowerCase());
+                    // added field itemType_itemSpec -> value
+                    for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
+                        createBigDecimalField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase());
+                    }
+                    break;
+                case ENUM:
+                    createStringField(itemTypeCode.toLowerCase());
+                    break;
+                case RECORD_REF:
+                    createIntField(itemTypeCode.toLowerCase());
+                    // added field itemType_itemSpec -> value
+                    for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
+                        createIntField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase());
+                    }
+                    break;
+                case STRUCTURED:
+                case STRING:
+                case TEXT:
+                    createStringField(itemTypeCode.toLowerCase());
+                    // added field itemType_itemSpec -> value
+                    for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
+                        createStringField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase());
+                    }
+                    break;
+                case UNITDATE:
+                    createLongField(itemTypeCode.toLowerCase() + "_" + NORM_FROM);
+                    createLongField(itemTypeCode.toLowerCase() + "_" + NORM_TO);
+                    // added field itemType_itemSpec -> value
+                    for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
+                        createLongField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase() + "_" + NORM_FROM);
+                        createLongField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase() + "_" + NORM_TO);
+                    }
+                    break;
+                }
+            }
+
+            createStringField(CONFORMITY_ERROR);
+            createStringField(CONFORMITY_MISSING);
+            createStringField(UUID);
+
+            context.bridge(ArrCachedNode.class, new ArrCachedNodeBridge());
+        } catch (Exception e) {
+            log.error("Binder fail:", e);
         }
-
-		createStringField(CONFORMITY_ERROR);
-		createStringField(CONFORMITY_MISSING);
-		createStringField(UUID);
-
-        context.bridge(ArrCachedNode.class, new ArrCachedNodeBridge());
-
-		} catch (Exception e) {
-			log.error("Binder fail:", e);
-		}
-	}
+    }
 
     private IndexFieldReference<String> createStringField(String name) {
-    	return context.indexSchemaElement()
-        		.field(name, f -> f.asString().analyzer(KEYWORD_TOKENIZER_CZ))
-        		.multiValued()
-        		.toReference();
+        return context.indexSchemaElement()
+                .field(name, f -> f.asString().analyzer(KEYWORD_TOKENIZER_CZ))
+                .multiValued()
+                .toReference();
     }
 
     private IndexFieldReference<Long> createLongField(String name) {
-    	return context.indexSchemaElement()
-        		.field(name, f -> f.asLong())
-        		.multiValued()
-        		.toReference();
+        return context.indexSchemaElement()
+                .field(name, f -> f.asLong())
+                .multiValued()
+                .toReference();
     }
 
     private IndexFieldReference<Integer> createIntField(String name) {
-    	return context.indexSchemaElement()
-        		.field(name, f -> f.asInteger())
-        		.multiValued()
-        		.toReference();
+        return context.indexSchemaElement()
+                .field(name, f -> f.asInteger())
+                .multiValued()
+                .toReference();
     }
 
     private IndexFieldReference<BigDecimal> createBigDecimalField(String name) {
-    	return context.indexSchemaElement()
-    		    // type BigDecimal need to define decimalScale
-        		.field(name, f -> f.asBigDecimal().decimalScale(2))
-        		.multiValued()
-        		.toReference();
+        return context.indexSchemaElement()
+                // type BigDecimal need to define decimalScale
+                .field(name, f -> f.asBigDecimal().decimalScale(2))
+                .multiValued()
+                .toReference();
     }
 }
