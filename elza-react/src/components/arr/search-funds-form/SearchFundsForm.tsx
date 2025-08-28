@@ -144,7 +144,7 @@ export function SearchFundsFormFn() {
     const displayedCount = getTotalCount(fundSearch.funds);
 
     return (
-        <Modal.Body>
+        <Modal.Body className="search-funds-form">
             {/* <Form initialValues={{ fulltext: fundSearch.fulltext }} onSubmit={handleFluentSearch}> */}
             {/*     {({ handleSubmit, form }) => { */}
             {/*         return <form onSubmit={handleSubmit}> */}
