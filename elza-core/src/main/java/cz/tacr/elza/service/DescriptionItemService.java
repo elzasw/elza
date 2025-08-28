@@ -1,5 +1,7 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.common.TextUtils.normalizeText;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -2300,7 +2302,7 @@ public class DescriptionItemService {
 			ds.setStringValue(getReplacedDataValue(ds.getStringValue(), searchString, replaceString));
 		} else if (dataNew instanceof ArrDataText) {
 			ArrDataText dt = (ArrDataText) dataNew;
-			dt.setTextValue(getReplacedDataValue(dt.getTextValue(), searchString, replaceString));
+			dt.setTextValue(getReplacedDataValue(normalizeText(dt.getTextValue()), searchString, replaceString));
 		} else if (dataNew instanceof ArrDataUnitid) {
             ArrDataUnitid dt = (ArrDataUnitid) dataNew;
             dt.setUnitId(getReplacedDataValue(dt.getUnitId(), searchString, replaceString));
