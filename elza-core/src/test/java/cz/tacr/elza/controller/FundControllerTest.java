@@ -39,6 +39,7 @@ import cz.tacr.elza.test.controller.vo.NodeData;
 import cz.tacr.elza.test.controller.vo.NodeDataParam;
 import cz.tacr.elza.test.controller.vo.NodeField;
 import cz.tacr.elza.test.controller.vo.NodeFieldName;
+import cz.tacr.elza.test.controller.vo.NodeSearchResult;
 import cz.tacr.elza.test.controller.vo.NodeTreeData;
 import cz.tacr.elza.test.controller.vo.OperationCompareType;
 import cz.tacr.elza.test.controller.vo.RequestProcessState;
@@ -198,18 +199,18 @@ public class FundControllerTest extends AbstractControllerTest {
         params.addFiltersItem(containsFilter);
 
         // waiting for reindexing to get result
-        List<FundSearchResult> fundResult = null;
+        NodeSearchResult fundResult = null;
         int counter = 0;
         try {
             do {
                 Thread.sleep(100);
                 fundResult = nodeApi.nodeSearch(params);
                 counter++;
-            } while (fundResult.size() == 0 && counter < 1000);
+            } while (fundResult.getTotalCount() == 0 && counter < 1000);
         } catch (Exception e) {
             fail("Exception while waiting on result: " + e);
         }
-        assertEquals(1, fundResult.size());
+        assertEquals(1, fundResult.getFonds().size());
 
     	List<NodeTreeData> nodeResult = nodeApi.nodeGetSearchResult(fund.getId());
     	assertEquals(1, nodeResult.size());
@@ -225,7 +226,7 @@ public class FundControllerTest extends AbstractControllerTest {
 
         // try to search text using FieldValueFilter
         fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.size());
+        assertEquals(1, fundResult.getFonds().size());
 
         // change filter by SRD_SERIAL_NUMBER
         valueFilter.setField(new DescItemField().typeCode(SRD_SERIAL_NUMBER));
@@ -234,7 +235,7 @@ public class FundControllerTest extends AbstractControllerTest {
 
         // try to search serial number using FieldValueFilter
         fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.size());
+        assertEquals(1, fundResult.getFonds().size());
 
         // change filter by SRD_UNIT_DATE
         valueFilter.setField(new DescItemField().typeCode(SRD_UNIT_DATE));
@@ -243,7 +244,7 @@ public class FundControllerTest extends AbstractControllerTest {
 
         // try to search unitdate using FieldValueFilter
         fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.size());
+        assertEquals(1, fundResult.getFonds().size());
 
         // change filter by SRD_OTHER_ID
         valueFilter.setField(new DescItemField().typeCode(SRD_OTHER_ID).specCode(SRD_OTHERID_CJ));
@@ -252,7 +253,7 @@ public class FundControllerTest extends AbstractControllerTest {
 
         // try to search otherId using FieldValueFilter
         fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.size());
+        assertEquals(1, fundResult.getFonds().size());
 
         // change filter by SRD_LANGUAGE
         valueFilter.setField(new DescItemField().typeCode(SRD_LANGUAGE).specCode(SRD_LANGUAGE_1));
@@ -261,7 +262,7 @@ public class FundControllerTest extends AbstractControllerTest {
 
         // try to search language using FieldValueFilter
         fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.size());
+        assertEquals(1, fundResult.getFonds().size());
 
         // change filter by RECORD_REF search by id
         valueFilter.setField(new DescItemField().typeCode(SRD_ENTITY_ROLE).specCode(SRD_ENTITY_ROLE_1));
@@ -270,7 +271,7 @@ public class FundControllerTest extends AbstractControllerTest {
 
         // try to search by AP name using FieldValueFilter
         fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.size());
+        assertEquals(1, fundResult.getFonds().size());
 
         // change filter by RECORD_REF search by apId
         valueFilter.setValue(accessPoint.getId().toString());
@@ -278,7 +279,7 @@ public class FundControllerTest extends AbstractControllerTest {
 
         // try to search by AP id using FieldValueFilter
         fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.size());
+        assertEquals(1, fundResult.getFonds().size());
 
         // get ArrNode for uuid
         ArrNode node = nodeRepository.findById(nodes.get(0).getId()).get();
@@ -290,7 +291,7 @@ public class FundControllerTest extends AbstractControllerTest {
 
         // try to search by UUID id using FieldValueFilter
         fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.size());
+        assertEquals(1, fundResult.getFonds().size());
     }
 
     @Test

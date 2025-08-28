@@ -9,11 +9,15 @@ import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.engine.backend.document.DocumentElement;
+import org.hibernate.search.engine.spatial.GeoPoint;
 import org.hibernate.search.mapper.pojo.bridge.TypeBridge;
 import org.hibernate.search.mapper.pojo.bridge.runtime.TypeBridgeWriteContext;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrCachedNode;
@@ -105,9 +109,17 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 							document.addValue(itemTypeAndSpecCodeLowerCase, recordId);
 						}
 						break;
+            		case COORDINATES:
+            			Geometry geometry = item.getValueGeometry();
+						document.addValue(itemTypeCodeLowerCase, getGeoPoint(geometry));
+            			break;
             		case STRUCTURED:
+            		case FILE_REF:
+            		case URI_REF:
+            		case UNITID:
 					case STRING:
 					case TEXT:
+					case BIT:
 						document.addValue(itemTypeCodeLowerCase, fullTextValue);
 						if (itemTypeAndSpecCodeLowerCase != null) {
 							document.addValue(itemTypeAndSpecCodeLowerCase, fullTextValue);
@@ -144,5 +156,15 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 				}
 			}
         }
+	}
+
+	// Geometry -> GeoPoint
+	private GeoPoint getGeoPoint(Geometry geometry) {
+		if (geometry == null) {
+			return null;
+		}
+
+		Coordinate coordinate = geometry.getCoordinate();
+		return GeoPoint.of(coordinate.getX(), coordinate.getY());
 	}
 }

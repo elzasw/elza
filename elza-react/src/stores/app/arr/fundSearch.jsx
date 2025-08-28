@@ -10,6 +10,8 @@ const initialState = {
     isFetching: false,
     fetched: false,
     currentDataKey: '',
+    totalCount: 0,
+    partialResult: false,
 };
 
 const initialFundState = {
@@ -55,6 +57,8 @@ export default function fundSearch(state = initialState, action = {}) {
                         ...fund,
                     };
                 }),
+                partialResult: action.partialResult,
+                totalCount: action.totalCount,
             };
         }
         case types.FUND_SEARCH_EXPAND_FUND: {

@@ -28,7 +28,7 @@ export function EntityItem({ entity }: Props) {
             <div className="background-text">{entity.name}</div>
           </div>
           <div style={{ zIndex: 2 }} className="history-name">
-            {truncateStringWithTooltip(entity.name, 120)}
+            {entity.name && truncateStringWithTooltip(entity.name, 120)}
           </div>
         </Button>
       </LinkContainer>

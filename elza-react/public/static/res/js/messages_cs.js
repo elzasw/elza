@@ -518,7 +518,8 @@ var messages = {
     "issueList.new.unnamed": "Nepojmenovaný",
     "issueList.missing.name": "Bez jména",
 
-    "arr.fund.search.result.count": "Počet nalezených výsledků: {0}",
+    "arr.fund.search.result.count": "Počet nalezených záznamů: {0}",
+    "arr.fund.search.result.displayedCount": "zobrazeno: {0}",
     "arr.fund.search.noFulltext": "Pro zobrazení výsledků hledání v archivních souborech zadejte vyhledávací podmínku.",
 
     "change.arr.output.generating.title": "Generuje se výstup",

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.vo.NodePlainTextRepresentation;
+import cz.tacr.elza.controller.vo.NodeSearchResult;
 import cz.tacr.elza.controller.vo.NodeTreeData;
 import cz.tacr.elza.controller.vo.FundSearchResult;
 import cz.tacr.elza.controller.vo.NodeData;
@@ -46,7 +47,7 @@ public class NodeController implements NodeApi {
     @Override
 	@Transactional
     // kontrola oprávnění uvnitř metody
-	public ResponseEntity<List<FundSearchResult>> nodeSearch(SearchParams searchParams) {
+	public ResponseEntity<NodeSearchResult> nodeSearch(SearchParams searchParams) {
     	var userDetail = userService.getLoggedUserDetail();    
         AuthorizationRequest fundRead = AuthorizationRequest.hasPermission(Permission.ADMIN)
                 .or(Permission.FUND_RD_ALL);
