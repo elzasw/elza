@@ -705,4 +705,9 @@
 			WHERE sequence_name = 'arr_async_request|async_request_id'</sql>
 	</changeSet>
 
+	<changeSet id="20250828160400" author="sergey.iryupin">
+		<!-- reindexace pro Elza 3.2 -->
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20230315100801"/>
+	</changeSet>
+
 </databaseChangeLog>
