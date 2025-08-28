@@ -13,6 +13,8 @@ import static cz.tacr.elza.domain.ArrDescItem.DECIMAL_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORM_FROM;
 import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
 
+import static cz.tacr.elza.common.string.Normalizer.normalizeLineEnds;
+
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.engine.backend.document.DocumentElement;
 import org.hibernate.search.mapper.pojo.bridge.TypeBridge;
@@ -41,9 +43,9 @@ public class ArrDescItemBridge implements TypeBridge<ArrDescItem> {
     	document.addValue(FIELD_CREATE_CHANGE_ID, arrDescItem.getCreateChangeId());
     	document.addValue(FIELD_DELETE_CHANGE_ID, arrDescItem.getDeleteChangeId());
 
-    	String fullText = arrDescItem.getFulltextValue(); 
+    	String fullText = arrDescItem.getFulltextValue();
     	if (StringUtils.isNotBlank(fullText)) {
-    		document.addValue(FULLTEXT_ATT, fullText);
+    		document.addValue(FULLTEXT_ATT, normalizeLineEnds(fullText));
     	}
 		document.addValue(INTEGER_ATT, arrDescItem.getValueInt());
 		document.addValue(DECIMAL_ATT, arrDescItem.getValueDouble());
