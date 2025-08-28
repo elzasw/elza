@@ -1474,9 +1474,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/FundSearchResult'
+                $ref: '#/components/schemas/NodeSearchResult'
         '400':
           description: The server could not understand the request due to invalid syntax.
           content:
@@ -3067,6 +3065,26 @@ components:
             - $ref: '#/components/schemas/ItemData'
           description: item data
       description: Náhrada za třídu `ArrItemVO`
+    NodeSearchResult:
+      type: object
+      required:
+        - fonds
+        - totalCount
+        - partialResult
+      properties:
+        fonds:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundSearchResult'
+          description: seznam archivních souborů
+        totalCount:
+          type: integer
+          format: int64
+          description: celkový počet
+        partialResult:
+          type: boolean
+          description: znak částečného výsledku
+      description: Seznam archivních souborů jako výsledek vyhledávání
     NodeTreeData:
       type: object
       required:

@@ -36,6 +36,7 @@ import cz.tacr.elza.controller.vo.FundSearchResult;
 import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.controller.vo.NodeField;
+import cz.tacr.elza.controller.vo.NodeSearchResult;
 import cz.tacr.elza.controller.vo.NodeTreeData;
 import cz.tacr.elza.controller.vo.OperationCompareType;
 import cz.tacr.elza.controller.vo.SearchParams;
@@ -101,7 +102,7 @@ public class NodeSearchService {
 	 * @param searchParams
 	 * @return
 	 */
-	public List<FundSearchResult> nodeSearch(SearchParams searchParams) {
+	public NodeSearchResult nodeSearch(SearchParams searchParams) {
 		// uložit čas zahájení procesu vyhledávání
 		long startTime = System.currentTimeMillis();
 
@@ -111,8 +112,8 @@ public class NodeSearchService {
 
 		// vyhledávání s maximálním limitem počtu záznamů
         SearchResult<ArrCachedNode> resultList = searchSession.search(ArrCachedNode.class).where(predicate).fetch(NODE_SEARCH_LIMIT);
-
-        // TODO define object to return number of all records by query
+        long totalCount = resultList.total().hitCount();
+        boolean partialResult = resultList.timedOut() || totalCount > resultList.hits().size();
 
         // map: fundId -> ArrFundToNodeList
         Map<Integer, ArrFundToNodeList> fundToNodeListMap = new HashMap<>();
@@ -127,9 +128,12 @@ public class NodeSearchService {
         	// omezit počet uzlů pro fond
         	if (fundToNodeList.getNodeIdList().size() < NODE_SEARCH_BY_FUND_LIMIT) {
         		fundToNodeList.getNodeIdList().add(arrCachedNode.getNodeId());
+        	} else {
+        		partialResult = true;
         	}
         	// omezit proces časovým limitem
         	if (System.currentTimeMillis() - startTime > TIME_REQUEST_MS_LIMIT) {
+        		partialResult = true;
         		break;
         	}
         }
@@ -168,7 +172,7 @@ public class NodeSearchService {
         	result.add(fundSearch);
         });
 
-        return result;
+        return new NodeSearchResult(result, totalCount, partialResult);
 	}
 
 	/**
@@ -305,8 +309,14 @@ public class NodeSearchService {
 			return getPredicateByEnum(factory, fieldName, itemSpecCodeLowerCase, filter);
 		case RECORD_REF:
 			return getPredicateByRecordRef(factory, fieldName, filter);
+		case COORDINATES:
+		case STRUCTURED:
+		case FILE_REF:
+		case URI_REF:
+		case UNITID:
 		case STRING:
 		case TEXT:
+		case BIT:
 			return getPredicateByStringOrText(factory, fieldName, filter);
 		case UNITDATE:
 			return getPredicateByUnitdate(factory, fieldName, filter);

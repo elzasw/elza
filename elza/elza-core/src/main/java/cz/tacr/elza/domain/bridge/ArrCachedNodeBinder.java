@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
+import org.hibernate.search.engine.spatial.GeoPoint;
 import org.hibernate.search.mapper.pojo.bridge.binding.TypeBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
 
@@ -72,9 +73,16 @@ public class ArrCachedNodeBinder implements TypeBinder {
 					createIntField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase());
 	            }
 				break;
+    		case COORDINATES:
+    			createGeoPointField(itemTypeCode.toLowerCase());
+    			break;
     		case STRUCTURED:
+    		case FILE_REF:
+    		case URI_REF:
+    		case UNITID:
 			case STRING:
 			case TEXT:
+    		case BIT:
 				createStringField(itemTypeCode.toLowerCase());
 				// added field itemType_itemSpec -> value
 	            for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
@@ -99,6 +107,13 @@ public class ArrCachedNodeBinder implements TypeBinder {
 
         context.bridge(ArrCachedNode.class, new ArrCachedNodeBridge());
 	}
+
+    private IndexFieldReference<GeoPoint> createGeoPointField(String name) {
+    	return context.indexSchemaElement()
+        		.field(name, f -> f.asGeoPoint())
+        		.multiValued()
+        		.toReference();
+    }
 
     private IndexFieldReference<String> createStringField(String name) {
     	return context.indexSchemaElement()

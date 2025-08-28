@@ -1,5 +1,7 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.common.string.Normalizer.normalizeLineEnds;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -105,7 +107,6 @@ import cz.tacr.elza.service.vo.TitleItemsByType;
 
 /**
  * Description Item management
- *
  */
 @Service
 public class DescriptionItemService {
@@ -1767,7 +1768,7 @@ public class DescriptionItemService {
                                       final boolean allNodes, final boolean forceUpdate) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
-        Assert.hasText(findText, "Musí být vyplněn hledaný text");
+        Assert.hasLength(findText, "Musí být vyplněn hledaný text");
 
         Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, ArrNode::getNodeId);
 
@@ -2300,7 +2301,7 @@ public class DescriptionItemService {
 			ds.setStringValue(getReplacedDataValue(ds.getStringValue(), searchString, replaceString));
 		} else if (dataNew instanceof ArrDataText) {
 			ArrDataText dt = (ArrDataText) dataNew;
-			dt.setTextValue(getReplacedDataValue(dt.getTextValue(), searchString, replaceString));
+			dt.setTextValue(getReplacedDataValue(normalizeLineEnds(dt.getTextValue()), searchString, replaceString));
 		} else if (dataNew instanceof ArrDataUnitid) {
             ArrDataUnitid dt = (ArrDataUnitid) dataNew;
             dt.setUnitId(getReplacedDataValue(dt.getUnitId(), searchString, replaceString));
