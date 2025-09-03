@@ -1506,7 +1506,7 @@ namespace ElzaAPI.DescItem {
      */
     @route("/{fundVersionId}/create")
     @put op createDescItem(
-        /** id AP version */
+        /** id version AS */
         @path fundVersionId: integer,
         /** new attribute value */
         @body body: NodeItem
@@ -1517,12 +1517,27 @@ namespace ElzaAPI.DescItem {
      */
     @route("/{fundVersionId}/{createNewVersion}/update")
     @put op updateDescItem(
-        /** id AP version */
+        /** id version AS */
         @path fundVersionId: integer,
         /** create a new version or not? */ 
         @path createNewVersion: boolean,
         /** new attribute value */
         @body body: NodeItem
+    ): ItemDataResult | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Delete attribute value
+     */
+    @route("/{fundVersionId}")
+    @delete op deleteDescItem(
+        /** id version AS */
+        @path fundVersionId: integer,
+        /** attribute value */
+        @body body: NodeItem;
     ): ItemDataResult | {
         /** ID does not exists */
         @Http.statusCode statusCode: 404;

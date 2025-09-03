@@ -311,10 +311,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String DESC_ITEM_CSV_EXPORT = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/csv/export";
 	@Deprecated
 	protected static final String CREATE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create";
-	protected static final String CREATE_DESC_ITEM_NEW = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/create";
 	@Deprecated
 	protected static final String UPDATE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}";
-	protected static final String UPDATE_DESC_ITEM_NEW = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}/new";
+	@Deprecated
 	protected static final String DELETE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/delete";
 	protected static final String DELETE_DESC_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}";
 	protected static final String DELETE_OUTPUT_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}";
@@ -1293,6 +1292,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param node        uzel
 	 * @return smazaná hodnota atributu
 	 */
+	@Deprecated
 	protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem,
 			final ArrFundVersionVO fundVersion, final ArrNodeVO node) {
 		return deleteDescItem(descItem, fundVersion.getId(), node.getId(), node.getVersion());
@@ -1307,6 +1307,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param nodeVersion   verze uzlu
 	 * @return smazaná hodnota atributu
 	 */
+	@Deprecated
 	protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem, final Integer fundVersionId,
 			final Integer nodeId, final Integer nodeVersion) {
 		Response response = post(spec -> spec.body(descItem).pathParam("fundVersionId", fundVersionId)
