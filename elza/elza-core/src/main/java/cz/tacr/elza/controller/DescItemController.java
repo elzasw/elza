@@ -33,7 +33,7 @@ public class DescItemController implements DescitemsApi {
     /**
      * Vytvoření hodnoty atributu (nová).
      *
-     * @param fundVersionId  identfikátor verze AP
+     * @param fundVersionId  identfikátor verze AS
      * @param nodeItem       hodnota atributu
      * @return hodnota atributu
      */
@@ -66,7 +66,7 @@ public class DescItemController implements DescitemsApi {
     /**
      * Aktualizace hodnoty atributu (nová).
      *
-     * @param fundVersionId    identfikátor verze AP
+     * @param fundVersionId    identfikátor verze AS
      * @param createNewVersion vytvořit novou verzi?
      * @param nodeItem         hodnota atributu
      */
@@ -87,5 +87,28 @@ public class DescItemController implements DescitemsApi {
 		ArrDescItem descItemUpdated = descriptionItemService.updateDescriptionItem(nodeItem, nodeItem.getNodeVersion(), nodeItem.getNodeId(), fundVersionId, createNewVersion, false);
 
         return ResponseEntity.ok(formService.createItemDataResult(descItemUpdated));
+    }
+
+    /**
+     * Smazání hodnoty atributu (nová).
+     *
+     * @param fundVersionId identfikátor verze AS
+     * @param nodeId        node id
+     * @param nodeVersion   node version
+     */
+    @Override
+    @Transactional
+    // DELETE /descItems/{fundVersionId}
+    public ResponseEntity<ItemDataResult> descItemDeleteDescItem(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
+                                          					     @RequestBody final NodeItem nodeItem) {
+        Validate.notNull(nodeItem, "Hodnota atributu musí být vyplněna");
+        Validate.notNull(nodeItem.getNodeId(), "Nebyl vyplněn identifikátor uzlu JP");
+        Validate.notNull(nodeItem.getNodeVersion(), "Nebyla vyplněna verze uzlu JP");
+        Validate.notNull(nodeItem.getItemObjectId(), "Identifikátor hodnoty atributu musí být vyplněn");
+        Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
+
+        ArrDescItem descItemDeleted = descriptionItemService.deleteDescriptionItem(nodeItem.getItemObjectId(), nodeItem.getNodeVersion(), nodeItem.getNodeId(), fundVersionId, false);
+
+        return ResponseEntity.ok(formService.createItemDataResult(descItemDeleted));
     }
 }

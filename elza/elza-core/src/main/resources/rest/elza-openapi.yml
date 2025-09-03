@@ -780,6 +780,39 @@ paths:
             schema:
               type: string
         description: new scenario
+  /descItems/{fundVersionId}:
+    delete:
+      operationId: DescItem_deleteDescItem
+      description: Delete attribute value
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: id version AS
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDataResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - descitems
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodeItem'
+        description: attribute value
   /descItems/{fundVersionId}/create:
     put:
       operationId: DescItem_createDescItem
@@ -788,7 +821,7 @@ paths:
         - name: fundVersionId
           in: path
           required: true
-          description: id AP version
+          description: id version AS
           schema:
             type: integer
       responses:
@@ -815,7 +848,7 @@ paths:
         - name: fundVersionId
           in: path
           required: true
-          description: id AP version
+          description: id version AS
           schema:
             type: integer
         - name: createNewVersion
