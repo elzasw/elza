@@ -531,10 +531,10 @@ public class ArrangementFormService {
 		return descItemResult;
 	}
 
-	public ItemDataResult createItemDataResult(final ArrDescItem descItemCreated) {
-		ArrNode node = descItemCreated.getNode();
+	public ItemDataResult createItemDataResult(final ArrDescItem descItem) {
+		ArrNode node = descItem.getNode();
 		ItemDataResult itemDataResult = new ItemDataResult();
-		itemDataResult.setItem(factoryVo.createNodeItem(descItemCreated));
+		itemDataResult.setItem(factoryVo.createNodeItem(descItem));
 		itemDataResult.setParent(new NodeBase(node.getNodeId(), node.getVersion(), node.getUuid()));
 
 		return itemDataResult;

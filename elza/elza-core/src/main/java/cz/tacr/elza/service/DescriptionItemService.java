@@ -262,10 +262,12 @@ public class DescriptionItemService {
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
         ArrNode node = arrangementService.getNode(nodeId);
         ArrDescItem descItem = fetchOpenItemFromDB(descItemObjectId);
+        // pokud chceme vrátit smazanou hodnotu
+        descItem.setData(HibernateUtils.unproxy(descItem.getData()));
 
         // kontrola zákazu změn
         if (!forceUpdate) {
-            if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
+            if (descItem.getReadOnly() != null && descItem.getReadOnly()) {
                 throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
             }
         }

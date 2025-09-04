@@ -37,8 +37,8 @@ public class DescItemController implements DescitemsApi {
      * @param nodeItem       hodnota atributu
      * @return hodnota atributu
      */
-    @Transactional
     @Override
+    @Transactional
     // @RequestMapping "/descItems/{fundVersionId}/create"
     public ResponseEntity<ItemDataResult> descItemCreateDescItem(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                                                  @RequestBody final NodeItem nodeItem) {

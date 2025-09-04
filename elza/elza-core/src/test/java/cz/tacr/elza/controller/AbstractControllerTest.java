@@ -216,7 +216,6 @@ import io.restassured.response.ResponseOptions;
 import io.restassured.specification.RequestSpecification;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
 
 public abstract class AbstractControllerTest extends AbstractTest {
 
