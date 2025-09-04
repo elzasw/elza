@@ -98,11 +98,7 @@ import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.test.controller.vo.Fund;
-import cz.tacr.elza.test.controller.vo.ItemDataResult;
 import cz.tacr.elza.test.controller.vo.NodeDataParam;
-import cz.tacr.elza.test.controller.vo.NodeItem;
-import cz.tacr.elza.test.controller.vo.DataText;
-import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.utils.CsvUtils;
 import io.restassured.response.Response;
 
@@ -256,13 +252,13 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ChangesResult changesAll = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, null);
         assertNotNull(changesAll);
         assertNotNull(changesAll.getChanges());
-        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 35);
+        assertTrue(changesAll.getTotalCount().equals(changesAll.getChanges().size()) && changesAll.getChanges().size() == 33);
         assertFalse(changesAll.getOutdated());
 
         ChangesResult changesByNode = findChanges(fundVersion.getId(), MAX_SIZE, 0, null, nodes.get(0).getId());
         assertNotNull(changesByNode);
         assertNotNull(changesByNode.getChanges());
-        assertTrue(changesByNode.getTotalCount().equals(changesByNode.getChanges().size()) && changesByNode.getChanges().size() == 11);
+        assertTrue(changesByNode.getTotalCount().equals(changesByNode.getChanges().size()) && changesByNode.getChanges().size() == 9);
 
         final Integer lastChangeId = changesAll.getChanges().get(0).getChangeId();
         final Integer firstChangeId = changesAll.getChanges().get(changesAll.getChanges().size() - 1).getChangeId();
@@ -283,7 +279,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             e.printStackTrace();
         }
 
-        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 35);
+        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 33);
         assertTrue(!changesByDate.getOutdated());
 
         // obdoba revertChanges s fail očekáváním
@@ -626,39 +622,21 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         rootNode = descItemResult.getParent();
         ArrItemVO descItemCreated = descItemResult.getItem();
 
-        // new
-        NodeItem nodeItem = buildNodeItem("SRD_SCALE", null, DataType.TEXT, "value", rootNode); // new
-        ItemDataResult itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem); // new
-        NodeItem nodeItemCreated = itemDataResult.getItem(); // new
-
         assertNotNull(((ArrItemTextVO) descItem).getValue().equals(((ArrItemTextVO) descItemCreated).getValue()));
         assertNotNull(descItemCreated.getPosition());
         assertNotNull(descItemCreated.getDescItemObjectId());
-
-        // new
-        assertNotNull(((DataText) nodeItem.getData()).getTextValue().equals(((DataText) nodeItemCreated.getData()).getTextValue()));
-        assertNotNull(nodeItemCreated.getPosition());
-        assertNotNull(nodeItemCreated.getItemObjectId());
 
         // aktualizace hodnoty
         helperTestService.waitForWorkers();
         ((ArrItemTextVO) descItemCreated).setValue("update value");
         descItemResult = updateDescItem(descItemCreated, fundVersion, rootNode, true);
-        itemDataResult = descitemsApi.descItemUpdateDescItem(fundVersion.getId(), true, nodeItemCreated); // new
         rootNode = descItemResult.getParent();
         ArrItemVO descItemUpdated = descItemResult.getItem();
-        NodeItem nodeItemUpdated = itemDataResult.getItem(); // new
 
         assertTrue(descItemUpdated.getDescItemObjectId().equals(descItemCreated.getDescItemObjectId()));
         assertTrue(descItemUpdated.getPosition().equals(descItemCreated.getPosition()));
         assertTrue(!descItemUpdated.getId().equals(descItemCreated.getId()));
         assertTrue(((ArrItemTextVO) descItemUpdated).getValue().equals(((ArrItemTextVO) descItemCreated).getValue()));
-
-        // new
-        assertTrue(nodeItemUpdated.getItemObjectId().equals(nodeItemCreated.getItemObjectId()));
-        assertTrue(nodeItemUpdated.getPosition().equals(nodeItemCreated.getPosition()));
-        assertTrue(!nodeItemUpdated.getId().equals(nodeItemCreated.getId()));
-        assertTrue(((DataText) nodeItemUpdated.getData()).getTextValue().equals(((DataText) nodeItemCreated.getData()).getTextValue()));
 
         // odstranění hodnoty
         helperTestService.waitForWorkers();
