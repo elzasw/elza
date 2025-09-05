@@ -323,6 +323,31 @@ public class ArrangementFormService {
 		return inhibitedDescItemIds;
 	}
 
+	/**
+     * Update description item and return data (nová).
+     * 
+     * Method is called from WebSocket Controller
+     *
+     * @param fundVersionId
+     * @param nodeId
+     * @param nodeVersion
+     * @param nodeItem
+     * @param createVersion
+     */
+	@Transactional
+	@AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
+	public void updateDescItem(@AuthParam(type = AuthParam.Type.FUND_VERSION) int fundVersionId,
+							   @AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
+							   int nodeVersion, final NodeItem nodeItem, boolean createVersion,
+							   StompHeaderAccessor requestHeaders) {
+
+		ArrDescItem descItemUpdated = descriptionItemService.updateDescriptionItem(nodeItem, nodeItem.getNodeVersion(), nodeItem.getNodeId(), fundVersionId, createVersion, false);
+
+		// odeslání dat zpět
+		wsStompService.sendReceiptAfterCommit(createItemDataResult(descItemUpdated), requestHeaders);
+	}
+
+	@Deprecated
 	@Transactional
 	@AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
 	public void updateDescItem(@AuthParam(type = AuthParam.Type.FUND_VERSION) int fundVersionId,
@@ -468,6 +493,7 @@ public class ArrangementFormService {
      * @param descItemVO
      * @param createVersion
      */
+	@Deprecated
 	@Transactional
 	@AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
 	public void updateDescItem(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion fundVersion,
@@ -510,7 +536,7 @@ public class ArrangementFormService {
 		LevelTreeCacheService.Node node = levelTreeCache.getSimpleNode(descItemUpdated.getNodeId(), fundVersion);
 		UpdateItemResult updateResult = new UpdateItemResult(descItemUpdated, descItemVo, itemTypesVO, node);
 
-		// Odeslání dat zpět
+		// odeslání dat zpět
 		wsStompService.sendReceiptAfterCommit(updateResult, requestHeaders);
 	}
 
