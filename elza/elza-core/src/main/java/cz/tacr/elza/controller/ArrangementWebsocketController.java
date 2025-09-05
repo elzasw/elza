@@ -30,6 +30,10 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ArrInhibitedItemVO;
+import cz.tacr.elza.controller.vo.DataString;
+import cz.tacr.elza.controller.vo.DataText;
+import cz.tacr.elza.controller.vo.ItemData;
+import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
@@ -52,6 +56,7 @@ import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 import cz.tacr.elza.websocket.WebSocketAwareController;
 import cz.tacr.elza.websocket.service.WebScoketStompService;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 
 /**
  * Kontroler pro zpracování websocket požadavků pro některé kritické modifikace v pořádíní.
@@ -63,22 +68,55 @@ import jakarta.transaction.Transactional;
 public class ArrangementWebsocketController {
 
 	@Autowired
-	ArrangementFormService arrangementFormService;
-    @Autowired
-    ArrangementService arrangementService;
+	private ArrangementFormService arrangementFormService;
+
+	@Autowired
+	private ArrangementService arrangementService;
+
     @Autowired
     private ClientFactoryDO factoryDO;
+    
     @Autowired
     private WebScoketStompService webScoketStompService;
+    
     @Autowired
     private FundVersionRepository fundVersionRepository;
+    
     @Autowired
     private ItemTypeRepository itemTypeRepository;
+    
     @Autowired
     private FundLevelService fundLevelService;
+
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
 
+    @MessageMapping("/arrangement/descItems/{fundVersionId}/update/{createNewVersion}")
+	public void updateDescItem(@Payload final NodeItem nodeItem,
+	        	               @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
+	                           @DestinationVariable(value = "createNewVersion") final Boolean createNewVersion,
+                               final StompHeaderAccessor requestHeaders) {
+
+		Objects.requireNonNull(nodeItem);
+		Objects.requireNonNull(fundVersionId);
+		Objects.requireNonNull(createNewVersion);
+		Integer nodeId = Objects.requireNonNull(nodeItem.getNodeId());
+		Integer nodeVersion = Objects.requireNonNull(nodeItem.getNodeVersion());
+
+		ItemData itemData = nodeItem.getData();
+
+        // nepovolujeme prázdné řádky pro DataText i DataString
+    	if (itemData instanceof DataText) {
+    		Validate.isTrue(StringUtils.isNotBlank(((DataText) itemData).getTextValue()), "Textové pole nesmí být prázdné");
+    	}
+    	if (itemData instanceof DataString) {
+    		Validate.isTrue(StringUtils.isNotBlank(((DataString) itemData).getStringValue()), "Stringové pole nesmí být prázdné");
+    	}
+
+		arrangementFormService.updateDescItem(fundVersionId, nodeId, nodeVersion, nodeItem, createNewVersion, requestHeaders);
+    }
+
+    @Deprecated
 	@MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}")
 	public void updateDescItem(
 	        @Payload final ArrItemVO descItemVO,
@@ -94,8 +132,7 @@ public class ArrangementWebsocketController {
 		Objects.requireNonNull(descItemVO);
 
         // authorize request as logged used
-		UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) requestHeaders
-		        .getHeader("simpUser");
+		UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) requestHeaders.getHeader("simpUser");
 		SecurityContext sc = new SecurityContextImpl();
 		sc.setAuthentication(token);
 		SecurityContextHolder.setContext(sc);
@@ -108,9 +145,8 @@ public class ArrangementWebsocketController {
     		Validate.isTrue(StringUtils.isNotBlank(((ArrItemStringVO) descItemVO).getValue()), "Stringové pole nesmí být prázdné");
     	}
 
-		arrangementFormService.updateDescItem(fundVersionId, nodeId, nodeVersion, descItemVO,
-		        BooleanUtils.isNotFalse(createNewVersion),
-		        requestHeaders);
+		arrangementFormService.updateDescItem(fundVersionId, nodeId, nodeVersion, descItemVO, 
+				                              BooleanUtils.isNotFalse(createNewVersion), requestHeaders);
 	}
 
     @MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk")

@@ -40,11 +40,17 @@ import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.service.FundLevelService;
+import cz.tacr.elza.test.controller.vo.DataText;
+import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.test.controller.vo.Fund;
+import cz.tacr.elza.test.controller.vo.ItemDataResult;
+import cz.tacr.elza.test.controller.vo.NodeItem;
 
 public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
-    private final String UPDATE_DESK_ITEMS_MSG_MAPPING = "/app/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk";
+	private final String UPDATE_DESC_ITEM_MSG_MAPPING = "/app/arrangement/descItems/{fundVersionId}/update/{createNewVersion}";
+
+    private final String UPDATE_DESC_ITEMS_MSG_MAPPING = "/app/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk";
 
     private final String ADD_LEVEL_MSG_MAPPING = "/app/arrangement/levels/add";
 
@@ -55,22 +61,55 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         RCP_ERROR
     };
 
+    final Map<String, Message<byte[]>> receiptStore = new HashMap<>();
+
+    MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
+
+    ObjectMapper mapper = new ObjectMapper();
+
     private ArrFundVersionVO fundVersion;
 
     private TreeData treeData;
 
     @Test
+    public void updateDescItemTest() throws InterruptedException, ExecutionException, IllegalAccessException, StreamReadException, DatabindException, IOException {
+        StompSession session = getSession();
+
+        // vytvoření fund
+        Fund fund = createFund("Test fund name", "internalCode");
+		assertNotNull(fund);
+
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
+        List<ArrNodeVO> nodes = createLevels(fundVersion);
+        ArrNodeVO rootNode = nodes.get(0);
+
+        // vytvoření descItem
+        NodeItem nodeItem = buildNodeItem("SRD_SCALE", null, DataType.TEXT, "value", rootNode);
+        ItemDataResult itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        NodeItem nodeItemCreated = itemDataResult.getItem();
+
+        // změna dat
+        ((DataText) nodeItemCreated.getData()).setTextValue("update value");
+
+        // volání soketu
+        Receiptable receiptUpdate = session.send(createDestination(UPDATE_DESC_ITEM_MSG_MAPPING, fundVersion.getId(), true), nodeItemCreated);
+        ReceiptStatus status = waitingForReceipt(receiptUpdate, sessionHandler);
+        assertEquals(ReceiptStatus.RCP_RECEIVED, status);
+
+        Message<byte[]> recepipt = receiptStore.get(receiptUpdate.getReceiptId());
+        assertNotNull(recepipt);
+
+        ItemDataResult updateResult = mapper.readValue(recepipt.getPayload(), new TypeReference<ItemDataResult>(){});
+        NodeItem nodeItemUpdate = updateResult.getItem();
+        assertNotNull(nodeItemUpdate);
+        assertTrue(((DataText) nodeItemUpdate.getData()).getTextValue().equals(((DataText) nodeItemCreated.getData()).getTextValue()));
+
+        session.disconnect();
+    }
+
+    @Test
     public void updateDescItemsTest() throws InterruptedException, ExecutionException, IllegalAccessException, JsonParseException, JsonMappingException, IOException {
-        final Map<String, Message<byte[]>> receiptStore = new HashMap<>();
-        ObjectMapper mapper = new ObjectMapper();
-        Message<byte[]> recepipt;
-        ReceiptStatus status;
-
-        MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
-        StompSession session = connectWebSocketStompClient(sessionHandler, receiptStore);
-        session.setAutoReceipt(true);
-
-        FieldUtils.writeField(StompCommand.RECEIPT, "body", true, true);
+        StompSession session = getSession();
 
         initFundVersionAndTreeData();
 
@@ -92,11 +131,11 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         ArrUpdateItemVO[] createItems = { new ArrUpdateItemVO(UpdateOp.CREATE, newItem) };
 
         Receiptable receiptCreate = session
-                .send(createDestination(UPDATE_DESK_ITEMS_MSG_MAPPING, fundVersionId, nodeId, nodeVersion), createItems);
-        status = waitingForReceipt(receiptCreate, sessionHandler);
+                .send(createDestination(UPDATE_DESC_ITEMS_MSG_MAPPING, fundVersionId, nodeId, nodeVersion), createItems);
+        ReceiptStatus status = waitingForReceipt(receiptCreate, sessionHandler);
         assertEquals(ReceiptStatus.RCP_RECEIVED, status);
 
-        recepipt = receiptStore.get(receiptCreate.getReceiptId());
+        Message<byte[]> recepipt = receiptStore.get(receiptCreate.getReceiptId());
         assertNotNull(recepipt);
 
         List<UpdateItemResult> addResults = mapper.readValue(recepipt.getPayload(), new TypeReference<List<UpdateItemResult>>(){});
@@ -110,7 +149,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         ArrUpdateItemVO[] updateItems = { new ArrUpdateItemVO(UpdateOp.UPDATE, updateItem) };
 
         Receiptable receiptUpdate = session
-                .send(createDestination(UPDATE_DESK_ITEMS_MSG_MAPPING, fundVersionId, nodeId, ++nodeVersion), updateItems);
+                .send(createDestination(UPDATE_DESC_ITEMS_MSG_MAPPING, fundVersionId, nodeId, ++nodeVersion), updateItems);
         status = waitingForReceipt(receiptUpdate, sessionHandler);
         assertEquals(ReceiptStatus.RCP_RECEIVED, status);
 
@@ -127,7 +166,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         ArrUpdateItemVO[] deleteItems = { new ArrUpdateItemVO(UpdateOp.DELETE, deleleItem) };
 
         Receiptable receiptDelete = session
-                .send(createDestination(UPDATE_DESK_ITEMS_MSG_MAPPING, fundVersionId, nodeId, ++nodeVersion), deleteItems);
+                .send(createDestination(UPDATE_DESC_ITEMS_MSG_MAPPING, fundVersionId, nodeId, ++nodeVersion), deleteItems);
         status = waitingForReceipt(receiptDelete, sessionHandler);
         assertEquals(ReceiptStatus.RCP_RECEIVED, status);
 
@@ -144,13 +183,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
     @Test
     public void addLevelTest() throws InterruptedException, ExecutionException, IllegalAccessException {
-        final Map<String, Message<byte[]>> receiptStore = new HashMap<>();
-        MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
-        
-        StompSession session = connectWebSocketStompClient(sessionHandler, receiptStore);
-        session.setAutoReceipt(true);
-
-        FieldUtils.writeField(StompCommand.RECEIPT, "body", true, true);
+	    StompSession session = getSession();
 
         //session.subscribe("/topic/api/changes", sessionHandler); // funguje i bez tohoto řádku
 
@@ -185,17 +218,8 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void inhibitedItemTest() throws InterruptedException, ExecutionException, IllegalAccessException, StreamReadException, DatabindException, IOException {
-    	final Map<String, Message<byte[]>> receiptStore = new HashMap<>();
-        MyStompSessionHandler sessionHandler = new MyStompSessionHandler();
-        ObjectMapper mapper = new ObjectMapper();
-        Message<byte[]> recepipt;
-        ReceiptStatus status;
-
-        StompSession session = connectWebSocketStompClient(sessionHandler, receiptStore);
-        session.setAutoReceipt(true);
-
-        FieldUtils.writeField(StompCommand.RECEIPT, "body", true, true);
+    public void inhibitedItemTest() throws IllegalAccessException, InterruptedException, ExecutionException, StreamReadException, DatabindException, IOException {
+        StompSession session = getSession();
 
         initFundVersionAndTreeData();
 
@@ -229,10 +253,10 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         addLevelParam.setCount(1); // přidat jen 1 úroveň
 
         Receiptable receiptable = session.send(ADD_LEVEL_MSG_MAPPING, addLevelParam);
-        status = waitingForReceipt(receiptable, sessionHandler);
+        ReceiptStatus status = waitingForReceipt(receiptable, sessionHandler);
         assertEquals(ReceiptStatus.RCP_RECEIVED, status);
 
-        recepipt = receiptStore.get(receiptable.getReceiptId());
+        Message<byte[]> recepipt = receiptStore.get(receiptable.getReceiptId());
         assertNotNull(recepipt);
 
         ArrangementController.NodesWithParent nodesWithParent = mapper.readValue(recepipt.getPayload(), ArrangementController.NodesWithParent.class);
@@ -291,6 +315,15 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         //session.disconnect();
     }
 
+    private StompSession getSession() throws InterruptedException, ExecutionException, IllegalAccessException { 
+	    StompSession session = connectWebSocketStompClient(sessionHandler, receiptStore);
+	    session.setAutoReceipt(true);
+
+	    FieldUtils.writeField(StompCommand.RECEIPT, "body", true, true);
+
+	    return session;
+    }
+    
     private Integer findItemTypeId(String code) {
         List<RulDescItemTypeExtVO> itemTypes = getDescItemTypes();
         for (RulDescItemTypeExtVO item : itemTypes) {
@@ -306,6 +339,12 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
                 .replace("{fundVersionId}", fundVersionId.toString())
                 .replace("{nodeId}", nodeId.toString())
                 .replace("{nodeVersion}", nodeVersion.toString());
+    }
+
+    private String createDestination(String pattern, Integer fundVersionId, Boolean createNewVersion) {
+        return pattern
+                .replace("{fundVersionId}", fundVersionId.toString())
+                .replace("{createNewVersion}", createNewVersion.toString());
     }
 
     private void initFundVersionAndTreeData() {

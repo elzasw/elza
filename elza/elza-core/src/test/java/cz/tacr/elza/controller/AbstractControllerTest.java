@@ -3845,8 +3845,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @return
 	 * @throws InterruptedException
 	 */
-	protected ReceiptStatus waitingForReceipt(Receiptable receipt, MyStompSessionHandler sessionHandler)
-			throws InterruptedException {
+	protected ReceiptStatus waitingForReceipt(Receiptable receipt, MyStompSessionHandler sessionHandler) throws InterruptedException {
 		AtomicReference<ReceiptStatus> receiptStatus = new AtomicReference<ReceiptStatus>();
 		receipt.addReceiptTask(() -> {
 			logger.debug("Receipt received");
