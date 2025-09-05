@@ -117,6 +117,7 @@ import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.WfTask.Status;
 import cz.tacr.elza.domain.projection.ApStateInfo;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
@@ -326,6 +327,9 @@ public class AccessPointService {
 
     @Autowired
     private ApFactory apFactory;
+
+    @Autowired
+    private TaskService taskService;
 
     @Autowired
     private EntityManager em;
@@ -602,8 +606,7 @@ public class AccessPointService {
      */
     public void deleteAccessPoint(final ApState apState,
                                   final ApAccessPoint replacedBy,
-                                  final boolean mergeAp)
-            throws SyncImpossibleException {
+                                  final boolean mergeAp) throws SyncImpossibleException {
 
         logger.info("Deleting accessPoint, id: {}, replacedBy: {}, mergeAp: {}", apState.getAccessPointId(),
                     replacedBy != null ? replacedBy.getAccessPointId() : null, mergeAp);
@@ -680,6 +683,7 @@ public class AccessPointService {
                 accessPointCacheService.createApCachedAccessPoint(apId);
             }
         }
+
         invalidateAccessPointPublishAndReindex(apState, accessPoint, change);
         logger.info("Deleted accessPoint, id: {}, replacedBy: {}", apState.getAccessPointId(),
                     replacedBy != null ? replacedBy.getAccessPointId() : null);
@@ -811,6 +815,9 @@ public class AccessPointService {
             // aktualizace náhradní entity v cache
             accessPointCacheService.createApCachedAccessPoint(apState.getReplacedById());
         }
+
+        // close if exists WfTask
+        taskService.closeWfTask(apState, Status.CANCELLED);
 
         return apState;
     }
@@ -2557,11 +2564,12 @@ public class AccessPointService {
     /**
      * Změna stavu přístupového bodu
      *
-     * @param accessPoint přístupový bod
+     * @param accessPoint      přístupový bod
      * @param newStateApproval nový stav schvalování
-     * @param newComment komentář k stavu (nepovinně)
-     * @param newTypeId ID typu - <b>pokud je {@code null}, typ se nemění</b>
-     * @param newScopeId ID oblasti entit - <b>pokud je {@code null}, oblast se nemění</b>
+     * @param newComment       komentář k stavu (nepovinně)
+     * @param newTypeId        ID typu - <b>pokud je {@code null}, typ se nemění</b>
+     * @param newScopeId       ID oblasti entit - <b>pokud je {@code null}, oblast se nemění</b>
+     * @param assignTo         ID uživatele
      * @return nový stav přístupového bodu (nebo starý, pokud nedošlo k žádné změně)
      */
     @Transactional
@@ -2569,7 +2577,8 @@ public class AccessPointService {
                                  @NotNull StateApproval newStateApproval,
                                  @Nullable String newComment,
                                  @Nullable Integer newTypeId,
-                                 @Nullable Integer newScopeId) {
+                                 @Nullable Integer newScopeId,
+                                 @Nullable Integer assignTo) {
 
         Validate.notNull(newStateApproval, "AP State is null");
 
@@ -2662,7 +2671,6 @@ public class AccessPointService {
                 .set("newState", newStateApproval);
         }
 
-
         if (!update) {
             // nothing to update
             /*
@@ -2697,6 +2705,14 @@ public class AccessPointService {
 
         if (newApType != null) {
             saveWithLock(accessPoint);
+        }
+
+        // close if exists WfTask
+        taskService.closeWfTask(oldApState, Status.FINISHED);
+
+        if (assignTo != null) {
+        	// create new WfTask
+            taskService.createTaskApState(newApState, assignTo);
         }
 
         publishAccessPointUpdateEvent(accessPoint);
