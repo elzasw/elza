@@ -1174,6 +1174,21 @@ model ResultEntityRef {
 }
 
 /**
+ * Entity processor (user)
+ */
+model Participant {
+    userId: integer;
+    name: string;
+    username: string;
+    /** if user has ability to save and modify new entity */
+    canWrite: boolean;
+    /** if user has ability to approve entity */
+    canConfirm: boolean;
+    /** if user has ability to change approved entity */
+    canEditConfirmed: boolean;
+}
+
+/**
  * Administrativní funkce
  */
 @tag("admin")
@@ -1553,6 +1568,7 @@ namespace ElzaAPI.AccessPoint {
      */
     @route("")
     @delete op deleteAccessPoints(
+        /** seznam ID nebo UUID, které chceme smazat */
         @body body: DeleteAccessPointsDetail
     ): {
         @Http.statusCode statusCode: 200;
@@ -1571,7 +1587,7 @@ namespace ElzaAPI.AccessPoint {
         @path id: string,
         /** addition for method of invalidation */
         @body body?: DeleteAccessPointDetail
-    ): {
+   ): {
         @Http.statusCode statusCode: 200;
     } | {
         /** ID does not exists */
@@ -1585,7 +1601,7 @@ namespace ElzaAPI.AccessPoint {
     @route("/{id}/restore")
     @put op restoreAccessPoint(
         /** id of accesspoint */
-        @path id: string,
+        @path id: string
     ): {
         @Http.statusCode statusCode: 200;
     } | {
@@ -1619,6 +1635,15 @@ namespace ElzaAPI.AccessPoint {
           @Http.statusCode statusCode: 404;
           @body data: BaseException;
        };
+
+    /**
+     * Get a list of entity processors
+     */
+    @route("/{id}/lastParticipants")
+    @get op getLastParticipants(
+        /** id of accesspoint */
+        @path id: integer,
+    ): Participant[];
 
     /**
      * List of automatically generated elements of the description
@@ -1740,9 +1765,11 @@ namespace ElzaAPI.AccessPoint {
         /** id of accesspoint */
         @path id: integer,
         /** data for change ApState */
-        @body body: ApStateUpdate;
+        @body body: ApStateUpdate,
         /** actual version of ApAccessPoint */
         @query apVersion?: integer,
+        /** userId */
+        @query assignTo?: integer
     ): {
         @Http.statusCode statusCode: 200;
         @header contentType: "application/json";
@@ -1817,9 +1844,11 @@ namespace ElzaAPI.AccessPoint {
         /** id of accesspoint */
         @path id: integer,
         /** data for change state of revision of ApAccessPoint */
-        @body body: RevStateChange;
+        @body body: RevStateChange,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
+        @query apVersion?: integer,
+        /** userId */
+        @query assignTo?: integer
     ): {
         @Http.statusCode statusCode: 200;
         @header contentType: "application/json";
@@ -1839,7 +1868,7 @@ namespace ElzaAPI.AccessPoint {
         /** partId of revision */
         @path partId: integer,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
+        @query apVersion?: integer
     ): {
         @Http.statusCode statusCode: 200;
         @header contentType: "application/json";
@@ -1859,7 +1888,7 @@ namespace ElzaAPI.AccessPoint {
         /** partId of revision */
         @path partId: integer,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
+        @query apVersion?: integer
     ): {
          /** actual version of ApAccessPoint */
          @Http.statusCode statusCode: 200;
@@ -1879,10 +1908,10 @@ namespace ElzaAPI.AccessPoint {
         /** id of accesspoint */
         @path id: integer,
         /** data for change ApState */
-        @body body: ApStateUpdate;
+        @body body: ApStateUpdate,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
-    ): {
+        @query apVersion?: integer
+   ): {
          @Http.statusCode statusCode: 200;
          @header contentType: "application/json";
          @body data: integer;
@@ -2293,6 +2322,57 @@ namespace ElzaAPI.Search {
         @Http.statusCode statusCode: 403;
         @body data: BaseException;
     };
+}
+
+/**
+ * Processing tasks
+ */
+@tag("tasks")
+@route("/tasks")
+namespace ElzaAPI.Tasks {
+    /**
+     * Task status
+     */
+    enum Status {
+        NEW, CANCELLED, FINISHED
+    }
+
+    /**
+     * Entity type for task
+     */
+    enum EntityType {
+        AP, AP_REV
+    }
+
+    /**
+     * Task detail
+     */
+    model ViewDetail {
+        taskId: integer;
+        created: offsetDateTime;
+        closed?: offsetDateTime;
+        assigneeId: integer;
+        assigneeName: string;
+        creatorId?: integer;
+        creatorName?: string;
+        closedById?: integer;
+        closedByName?: string;
+        status: Status;
+        taskTypeId: integer;
+        taskTypeCode: string;
+        taskTypeName: string;
+        description: string;
+        primaryEntityId: integer;
+        primaryEntityName: string;
+        primaryEntityType: EntityType;
+    }
+
+    /**
+     * Task list for a given user
+     */
+    @route("/my")
+    @get op getMyTasks(
+    ): ViewDetail[];
 }
 
 @service(#{
