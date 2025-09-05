@@ -95,6 +95,9 @@ import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.WfCommentRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.repository.WfIssueRepository;
+import cz.tacr.elza.repository.WfTaskApRevStateRepository;
+import cz.tacr.elza.repository.WfTaskApStateRepository;
+import cz.tacr.elza.repository.WfTaskRepository;
 import cz.tacr.elza.service.AdminService;
 import cz.tacr.elza.service.AsyncRequestService;
 
@@ -240,6 +243,12 @@ public class HelperTestService {
     private ApCachedAccessPointRepository apCachedAccessPointRepository;
     @Autowired
     private SysViewUpdateRepository viewUpdateRepository;
+	@Autowired
+	private WfTaskRepository wfTaskRepository;
+	@Autowired
+	private WfTaskApStateRepository wfTaskApStateRepository;
+	@Autowired
+	private WfTaskApRevStateRepository wfTaskApRevStateRepository;
 
     @Autowired
     private PackageService packageService;
@@ -303,6 +312,10 @@ public class HelperTestService {
     private void deleteTablesInternal() {
 
         logger.debug("Cleaning table contents...");
+
+        wfTaskApRevStateRepository.deleteAll();
+        wfTaskApStateRepository.deleteAll();
+        wfTaskRepository.deleteAll();
 
         viewUpdateRepository.deleteAll();
         daoDigitizationRequestNodeRepository.deleteAll();

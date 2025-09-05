@@ -23,6 +23,8 @@ tags:
     description: Práce s úrovněmi a uzly
   - name: search
     description: Vyhledávání
+  - name: tasks
+    description: Úkoly
 servers:
   - url: http://localhost
     description: Výchozí server
@@ -51,6 +53,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DeleteAccessPointsDetail'
+        description: seznam ID nebo UUID, které chceme smazat
   /accesspoint/invalidated:
     get:
       operationId: AccessPoint_getInvalidatedEntities
@@ -169,6 +172,28 @@ paths:
             schema:
               $ref: '#/components/schemas/CopyAccessPointDetail'
         description: additional copy options
+  /accesspoint/{id}/lastParticipants:
+    get:
+      operationId: AccessPoint_getLastParticipants
+      description: Get a list of entity processors
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Participant'
+      tags:
+        - accesspoints
   /accesspoint/{id}/part:
     post:
       operationId: AccessPoint_createPart
@@ -589,6 +614,13 @@ paths:
           schema:
             type: integer
           explode: false
+        - name: assignTo
+          in: query
+          required: false
+          description: userId
+          schema:
+            type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -622,6 +654,13 @@ paths:
           in: query
           required: false
           description: actual version of ApAccessPoint
+          schema:
+            type: integer
+          explode: false
+        - name: assignTo
+          in: query
+          required: false
+          description: userId
           schema:
             type: integer
           explode: false
@@ -1767,6 +1806,22 @@ paths:
             schema:
               $ref: '#/components/schemas/SearchParams'
         description: search parameters
+  /tasks/my:
+    get:
+      operationId: Tasks_getMyTasks
+      description: Task list for a given user
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tasks.ViewDetail'
+      tags:
+        - tasks
 components:
   parameters:
     FsRepoIdParameter:
@@ -3199,6 +3254,32 @@ components:
           items:
             type: string
       description: Part validation issues/errors
+    Participant:
+      type: object
+      required:
+        - userId
+        - name
+        - username
+        - canWrite
+        - canConfirm
+        - canEditConfirmed
+      properties:
+        userId:
+          type: integer
+        name:
+          type: string
+        username:
+          type: string
+        canWrite:
+          type: boolean
+          description: if user has ability to save and modify new entity
+        canConfirm:
+          type: boolean
+          description: if user has ability to approve entity
+        canEditConfirmed:
+          type: boolean
+          description: if user has ability to change approved entity
+      description: Entity processor (user)
     ReplaceType:
       type: string
       enum:
@@ -3553,6 +3634,72 @@ components:
         - asc
         - desc
       description: Order of sorting
+    Tasks.EntityType:
+      type: string
+      enum:
+        - AP
+        - AP_REV
+      description: Entity type for task
+    Tasks.Status:
+      type: string
+      enum:
+        - NEW
+        - CANCELLED
+        - FINISHED
+      description: Task status
+    Tasks.ViewDetail:
+      type: object
+      required:
+        - taskId
+        - created
+        - assigneeId
+        - assigneeName
+        - status
+        - taskTypeId
+        - taskTypeCode
+        - taskTypeName
+        - description
+        - primaryEntityId
+        - primaryEntityName
+        - primaryEntityType
+      properties:
+        taskId:
+          type: integer
+        created:
+          type: string
+          format: date-time
+        closed:
+          type: string
+          format: date-time
+        assigneeId:
+          type: integer
+        assigneeName:
+          type: string
+        creatorId:
+          type: integer
+        creatorName:
+          type: string
+        closedById:
+          type: integer
+        closedByName:
+          type: string
+        status:
+          $ref: '#/components/schemas/Tasks.Status'
+        taskTypeId:
+          type: integer
+        taskTypeCode:
+          type: string
+        taskTypeName:
+          type: string
+        description:
+          type: string
+        primaryEntityId:
+          type: integer
+        primaryEntityName:
+          type: string
+        primaryEntityType:
+          $ref: '#/components/schemas/Tasks.EntityType'
+      description: Task detail
     UpdateFund:
       type: object
       properties:
