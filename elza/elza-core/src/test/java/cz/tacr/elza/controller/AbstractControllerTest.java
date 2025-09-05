@@ -2523,15 +2523,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
 	 * Vytvořené nového uživatele.
      *
-	 * @param ap
+	 * @param accessPointId
 	 * @param userName
 	 * @param password
      * @return vytvořený uživatel
      */
-	protected UsrUserVO createUser(final ApAccessPointVO ap, String userName, String password) {
+	protected UsrUserVO createUser(final Integer accessPointId, String userName, String password) {
         Map<UsrAuthentication.AuthType, String> valueMap = new HashMap<>();
         valueMap.put(UsrAuthentication.AuthType.PASSWORD, password);
-        UsrUserVO user = createUser(userName, valueMap, ap.getId());
+        UsrUserVO user = createUser(userName, valueMap, accessPointId);
 		assertNotNull(user);
 		assertNotNull(user.getId());
         return user;

@@ -104,7 +104,7 @@ public class ReportControllerTest extends AbstractControllerTest {
         ApAccessPointVO ap = records.get(0);
 
         // vytvoření uživatele & login
-        UsrUserVO user = createUser(ap, UserControllerTest.USER, UserControllerTest.PASS);
+        UsrUserVO user = createUser(ap.getId(), UserControllerTest.USER, UserControllerTest.PASS);
         UsrPermissionVO permissionFA = new UsrPermissionVO();
         permissionFA.setPermission(UsrPermission.Permission.FUND_ADMIN);
         UsrPermissionVO permissionRA = new UsrPermissionVO();
