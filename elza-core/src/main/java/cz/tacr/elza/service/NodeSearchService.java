@@ -21,6 +21,7 @@ import org.hibernate.search.engine.search.query.SearchResult;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
@@ -63,11 +64,14 @@ import jakarta.persistence.PersistenceContext;
 @Configuration
 public class NodeSearchService {
 
-	private final static int NODE_SEARCH_LIMIT = 10_000;
+	@Value("${elza.search.node.maxCount:10000}")
+	protected int nodeSearchLimit;
 
-	private final static int NODE_SEARCH_BY_FUND_LIMIT = 1_000;
+	@Value("${elza.search.node.maxCountPerFunds:1000}")
+	protected int nodeSearchByFundLimit;
 
-	private final static int TIME_REQUEST_MS_LIMIT = 10_000; // 10s 
+	@Value("${elza.search.node.maxTimeMs:10000}") // 10s
+	protected int timeRequestMsLimit;
 
     @PersistenceContext
     private EntityManager em;
@@ -111,7 +115,7 @@ public class NodeSearchService {
 		SearchPredicate predicate = createSearchPredicate(factory, searchParams);
 
 		// vyhledávání s maximálním limitem počtu záznamů
-        SearchResult<ArrCachedNode> resultList = searchSession.search(ArrCachedNode.class).where(predicate).fetch(NODE_SEARCH_LIMIT);
+        SearchResult<ArrCachedNode> resultList = searchSession.search(ArrCachedNode.class).where(predicate).fetch(nodeSearchLimit);
         long totalCount = resultList.total().hitCount();
         boolean partialResult = resultList.timedOut() || totalCount > resultList.hits().size();
 
@@ -126,13 +130,13 @@ public class NodeSearchService {
         		fundToNodeListMap.put(cachedNode.getFundId(), fundToNodeList);
         	}
         	// omezit počet uzlů pro fond
-        	if (fundToNodeList.getNodeIdList().size() < NODE_SEARCH_BY_FUND_LIMIT) {
+        	if (fundToNodeList.getNodeIdList().size() < nodeSearchByFundLimit) {
         		fundToNodeList.getNodeIdList().add(arrCachedNode.getNodeId());
         	} else {
         		partialResult = true;
         	}
         	// omezit proces časovým limitem
-        	if (System.currentTimeMillis() - startTime > TIME_REQUEST_MS_LIMIT) {
+        	if (System.currentTimeMillis() - startTime > timeRequestMsLimit) {
         		partialResult = true;
         		break;
         	}
