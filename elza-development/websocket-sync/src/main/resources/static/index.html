@@ -81,7 +81,7 @@
 				if (!text) {
 					return;
 				}
-				stompClient.send('/fund/chat', headers, JSON.stringify({
+				stompClient.send('/app/chat', headers, JSON.stringify({
 					'recipient' : recipient,
 					'text' : text,
 					'sent' : new Date().getTime()
@@ -97,7 +97,7 @@
 				var cnt = prompt('Enter number of messages:', 10000);
 				if (!isNaN(cnt)) {
 					for (i = 1; i <= cnt; i++) {
-						stompClient.send('/fund/traffic', {}, JSON.stringify({
+						stompClient.send('/app/traffic', {}, JSON.stringify({
 							'text' : i,
 							'sent' : new Date().getTime()
 						}));
@@ -106,12 +106,12 @@
 			}
 
 			function sendErrorMessage() {
-				stompClient.send('/fund/error', {}, null);
+				stompClient.send('/app/error', {}, null);
 			}
 
 			function sendMalformedMessage() {
 				// var part1 = 'SEND\r\n' +
-				// 'destination:/fund/traffic\r\ncontent-';
+				// 'destination:/app/traffic\r\ncontent-';
 				var part2 = 'length:33\r\n\r\n' +
 						'{\'text\':995,\'sent\':1472634344273}\u0000';
 				// stompClient.ws.send(part1);

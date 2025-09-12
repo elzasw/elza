@@ -1,4 +1,4 @@
-package cz.tacr.elza.websocket.core;
+package cz.tacr.elza.websocket;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

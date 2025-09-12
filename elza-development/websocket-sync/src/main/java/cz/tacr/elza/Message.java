@@ -1,4 +1,4 @@
-package cz.tacr.elza.websocket;
+package cz.tacr.elza;
 
 import java.security.Principal;
 import java.util.Date;
