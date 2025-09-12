@@ -200,7 +200,7 @@ export function NodeSearchFilters({
   }
 
   function handleFilterRemove(_e: TagDismissEvent, data: TagDismissData<string>) {
-    const [field, value] = data.value.split(";");
+    const {field, value} = JSON.parse(data.value) as {field:string; value:string};
 
     const index = filters.findIndex(f => f.name == field && f.getSerializedString(f) == value);
     const _filters = [...filters];
@@ -363,7 +363,7 @@ export function NodeSearchFilters({
           && presetFixedFilters.find(({ name: _name }) => _name !== name) // hide fixed filters
         ).map((filter, index) => {
           return <InteractionTag
-            value={`${filter.name};${filter.getSerializedString(filter)}`}
+            value={JSON.stringify({field: filter.name, value: filter.getSerializedString(filter)})}
             key={index}
           >
             <InteractionTagPrimary onClick={async (e) => {

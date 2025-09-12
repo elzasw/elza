@@ -51,7 +51,7 @@ export const RevisionFieldExample = ({
 
     const renderActions = () => {
         const actions: React.ReactNode[] = [];
-        if (!disableRevision && isUpdated && onRevert) {
+        if (!disableRevision && (isUpdated || isDeleted) && onRevert) {
             actions.push(<SmallButton
                 onClick={onRevert}
             >
@@ -94,7 +94,7 @@ export const RevisionFieldExample = ({
         <RevisionDisplay
             renderPrevValue={renderPrevValue}
             renderValue={renderValue}
-            valuesEqual={!isUpdated}
+            valuesEqual={!isUpdated && !isDeleted}
             alignTop={alignTop}
             isDeleted={isDeleted}
             disableRevision={disableRevision}
