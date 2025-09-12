@@ -1,8 +1,8 @@
-package cz.tacr.elza.websocket;
+package cz.tacr.elza;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 @SpringBootApplication
 public class WebSocketApp extends SpringBootServletInitializer {
