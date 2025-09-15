@@ -23,6 +23,14 @@ import org.springframework.web.socket.server.support.HttpSessionHandshakeInterce
 @EnableWebSocketMessageBroker
 public class MessageBrokerConfigurer implements WebSocketMessageBrokerConfigurer {
 
+	public static final String APP_DESTINATION_PREFIX = "/app";
+
+	public static final String USER_DESTINATION_PREFIX = "/user";
+
+	public static final String BROKER_DESTINATION = "/topic";
+
+	public static final String STOMP_ENDPOINT = "/stomp";
+
 	@Autowired
     @Qualifier("clientInboundChannelExecutor")
     private WebSocketThreadPoolTaskExecutor clientInboundChannelExecutor;
@@ -38,12 +46,11 @@ public class MessageBrokerConfigurer implements WebSocketMessageBrokerConfigurer
 
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
-        registration.addDecoratorFactory(delegate -> new ExecutorWebSocketHandlerDecorator(delegate,
-                clientInboundChannelExecutor));
-        registration.addDecoratorFactory(delegate -> new ExecutorWebSocketHandlerDecorator(delegate,
-                clientOutboundChannelExecutor));
-        registration.setSendBufferSizeLimit(512 * 1024);
-        registration.setMessageSizeLimit(512 * 1024);
+        registration
+        		.addDecoratorFactory(delegate -> new ExecutorWebSocketHandlerDecorator(delegate, clientInboundChannelExecutor))
+        		.addDecoratorFactory(delegate -> new ExecutorWebSocketHandlerDecorator(delegate,clientOutboundChannelExecutor))
+        		.setSendBufferSizeLimit(512 * 1024)
+        		.setMessageSizeLimit(512 * 1024);
         //super.configureWebSocketTransport(registration); // TODO Spring Boot v3
         // by https://docs.spring.io/spring-framework/reference/web/websocket/stomp/server-config.html
     }
@@ -51,9 +58,9 @@ public class MessageBrokerConfigurer implements WebSocketMessageBrokerConfigurer
     @Override
     public void configureMessageBroker(final MessageBrokerRegistry registry) {
         registry
-        		.setApplicationDestinationPrefixes("/app")
-        		.setUserDestinationPrefix("/user") // direct message for subscribed user
-        		.enableSimpleBroker("/topic")
+        		.setApplicationDestinationPrefixes(APP_DESTINATION_PREFIX)
+        		.setUserDestinationPrefix(USER_DESTINATION_PREFIX) // direct message for subscribed user
+        		.enableSimpleBroker(BROKER_DESTINATION)
                 // Hearth beat interval
                 // 30000 - write interval for outgoing channel 
                 //       - timeout for inbound channel is 3*30000 = 90s
@@ -71,7 +78,7 @@ public class MessageBrokerConfigurer implements WebSocketMessageBrokerConfigurer
     public void registerStompEndpoints(final StompEndpointRegistry registry) {
         registry
         		.setErrorHandler(new StompSubProtocolErrorHandler())
-        		.addEndpoint("/stomp")
+        		.addEndpoint(STOMP_ENDPOINT)
                 .setAllowedOrigins("*") // kvůli reverse-proxy
                 // copy HTTP session attributes to simpSessionAttributes
                 .addInterceptors(new HttpSessionHandshakeInterceptor());
