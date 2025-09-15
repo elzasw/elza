@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ObjectUtils;
 
+import cz.tacr.elza.websocket.MessageBrokerConfigurer;
 import cz.tacr.elza.websocket.WebSocketAwareController;
 
 @Controller
@@ -24,8 +25,6 @@ import cz.tacr.elza.websocket.WebSocketAwareController;
 public class TestController {
 
 	private static final Logger logger = LoggerFactory.getLogger(TestController.class);
-
-	public static final String BROKER_DESTINATION = "/fundNotification";
 
 	private static final ConcurrentHashMap<String, Integer> SESSION_MESSAGE = new ConcurrentHashMap<>();
 
@@ -41,7 +40,9 @@ public class TestController {
 	public void chat(Message message, StompHeaderAccessor headerAccessor) throws Exception {
 		message.updateMessage(headerAccessor.getUser());
 
-		String dest = BROKER_DESTINATION + "/chat";
+		logger.info("{}", message);
+		
+		String dest = MessageBrokerConfigurer.BROKER_DESTINATION + "/chat";
 		String user = message.getRecipient();
 
 		if (ObjectUtils.isEmpty(message.getRecipient())) {
