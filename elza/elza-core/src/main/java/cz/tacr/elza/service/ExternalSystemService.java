@@ -28,8 +28,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import cz.tacr.cam.schema.cam.EntityRecordRevInfoXml;
+import cz.tacr.cam.v1.schema.cam.EntityRecordRevInfoXml;
 import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.cam.BindingSyncInfo;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.ExtSystemProperty;
@@ -76,7 +77,6 @@ import cz.tacr.elza.repository.GisExternalSystemRepository;
 import cz.tacr.elza.repository.SysExternalSystemPropertyRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.cam.BindingSyncInfo;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
@@ -604,7 +604,8 @@ public class ExternalSystemService {
     }
 
     public ApBindingItem createApBindingItem(final ApBinding binding,
-                                             ApChange apChange, final String value,
+                                             ApChange apChange, 
+                                             final String value,
                                              final ApPart part,
                                              final ApItem item) {
     	Objects.requireNonNull(binding);

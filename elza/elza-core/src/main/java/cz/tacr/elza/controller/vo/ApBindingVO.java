@@ -8,7 +8,7 @@ import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
 
-import cz.tacr.cam.schema.cam.EntityRecordStateXml;
+import cz.tacr.cam.v1.schema.cam.EntityRecordStateXml;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;

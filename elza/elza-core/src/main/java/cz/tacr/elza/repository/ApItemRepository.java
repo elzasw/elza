@@ -98,7 +98,7 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
     @Query("SELECT i.dataId FROM ApItem i JOIN i.part p WHERE p.accessPointId IN :apIds")
 	List<Integer> findAllDataIdByAccessPointIdIn(@Param("apIds") Collection<Integer> apIds);
 
-    @Query("DELETE FROM ApItem i JOIN i.part p WHERE p.accessPointId IN :apIds")
+    @Query("DELETE FROM ApItem i WHERE i.part.partId IN (SELECT p.partId FROM ApPart p WHERE p.accessPointId IN :apIds)")
     @Modifying
     void deleteAllByAccessPointIdIn(@Param("apIds") Collection<Integer> apIds);
 }
