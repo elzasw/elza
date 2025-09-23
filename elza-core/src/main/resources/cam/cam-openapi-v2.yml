@@ -1,0 +1,830 @@
+openapi: 3.0.4
+info:
+  title: CAM API
+  version: '2.0'
+  description: |-
+    API umožňuje vyžádání entit a změn v entitách z CAM systému.
+
+    Změny ve verzi 2.0:
+
+    Zavedeny typy EntityId, EntityUuid, EntityRef, TransactionId, ExportRequestId
+
+    Operace GET /entities/{id}
+    - vstupem je číslo nebo uuid (dříve byl řetězec)
+    - definován nový návratový kód EntityNotFound
+
+    Operace POST /export/snapshots
+    - upraveny vstupní parametry jako pole čísel nebo uuid (dříve pole string)
+    - metoda je nově asynchronní, vrací se pouze informace o zahájení operace
+
+    Operace POST /export/revisions
+    - upraveny vstupní parametry jako pole čísel nebo uuid (dříve pole string)
+    - metoda je nově asynchronní, vrací se pouze informace o zahájení operace
+
+    Vyhledávání POST /search
+    - struktura QueryParamsDef: odstraněno pole codes, vyhledávání v definované skupině entit pomocí ID se nepoužívá
+    - navíc možnost vyhledávání dle userRole a user
+    - limit na velikost stránky je 1000
+
+    Získání změn v entitách GET /updates?fromTransId={fromTransId}&toTransId={toTransId}
+    - limit na velikost stránky je 50000
+
+    Zaslání změnové dávky POST /batches
+    - metoda je nově asynchronní, vrací se pouze informace o zahájení operace
+    - pro ověření stavu zpracování změnové dávky se použije GET /batches/{updateRequestId}/status
+    - pro získání výsledku zpracování změnové dávky se použije GET /batches/{updateRequestId}/result
+
+    Nová operace pro zaslání testovací změnové dávky POST /batches/test
+tags:
+  - name: Updates
+    description: Informace o změnách entit
+  - name: Search
+    description: Vyhledávání entit
+  - name: Batch updates
+    description: Dávková aktualizace a vkládání entit
+  - name: Export
+    description: Export entit
+  - name: Entity
+    description: Entita a její detail
+paths:
+  /batches:
+    post:
+      operationId: postNewBatch
+      description: |-
+        Zaslání dávky se seznamem změn a nových záznamů entit.
+
+        Metoda provede synchronně validaci požadavku dle schématu a ověření, že dávka již nebyla zpracována.
+        Následně vrací zpět identifikátor požadavku na změnu, který odpovídá ID zaslané dávky.
+      parameters:
+        - name: force
+          in: query
+          required: false
+          description: |-
+            Volitelný atribut pro vynucení zápisu dávky i když existují varování. 
+            Pro použití příznaku je nutné mít odpovídající oprávnění.
+          schema:
+            type: boolean
+          explode: false
+        - name: forceKey
+          in: query
+          required: false
+          description: |-
+            Volitelný atribut pro vynucení zápisu dávky i když existují varování.
+
+            Hodnota klíče je předána v odpovědi na neúspěšný pokus o uložení dávky.
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/UpdateRequestId'
+        '403':
+          description: Nedostatečná oprávnění pro provedení požadované změny
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: Aktualizační dávka již existuje
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - Batch updates
+      requestBody:
+        required: true
+        content:
+          text/xml:
+            schema:
+              type: string
+              format: binary
+        description: |-
+          XML s dávkou změn a nových záznamů entit
+
+          Kořenový element je <batchUpdate> dle schematu http://cam.tacr.cz/2025
+  /batches/test:
+    post:
+      operationId: postNewBatchTest
+      description: |-
+        Zaslání testovací dávky se seznamem změn a nových záznamů entit.
+
+        Metoda provede validaci požadavku dle schématu a ověření, že dávka již nebyla zpracována.
+        Následně dojde k zpracování dávky ovšem bez reálného zápisu do databáze.
+
+        Metoda je synchronní. V případě příliš velkého množství změn může být vrácena chyba
+        a ověření neproběhne.
+      parameters: []
+      responses:
+        '200':
+          description: Výsledek zpracování aktualizační dávky
+          content:
+            text/xml:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: Nedostatečná oprávnění pro provedení požadované změny
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: Aktualizační dávka již existuje
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - Batch updates
+      requestBody:
+        required: true
+        content:
+          text/xml:
+            schema:
+              type: string
+              format: binary
+        description: |-
+          XML s dávkou změn a nových záznamů entit
+
+          Kořenový element je <batchUpdate> dle schematu http://cam.tacr.cz/2025
+  /batches/{updateRequestId}/result:
+    get:
+      operationId: getBatchResult
+      description: Vrátí výsledek zpracování dávky
+      parameters:
+        - name: updateRequestId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UpdateRequestId'
+      responses:
+        '102':
+          description: Informational
+        '200':
+          description: Výsledek zpracování aktualizační dávky
+          content:
+            text/xml:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: Nedostatečná oprávnění pro provedení požadované změny
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '404':
+          description: Aktualizační dávka nebyla nalezena.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - Batch updates
+  /batches/{updateRequestId}/status:
+    get:
+      operationId: getBatchStatus
+      description: Vrátí aktuální stav zpracování změnového požadavku.
+      parameters:
+        - name: updateRequestId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UpdateRequestId'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchUpdateStatus'
+        '403':
+          description: Nedostatečná oprávnění pro provedení požadované změny
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '404':
+          description: Aktualizační dávka nebyla nalezena.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - Batch updates
+  /entities/{entityId}:
+    get:
+      operationId: getEntityById
+      description: Vrátí aktuální podobu záznamu entity
+      parameters:
+        - name: entityId
+          in: path
+          required: true
+          description: ID přístupového bodu (uvádí se číselný identifikátor nebo UUID)
+          schema:
+            $ref: '#/components/schemas/EntityRef'
+      responses:
+        '200':
+          description: Úspěšné nalezení záznamu entity.
+          content:
+            text/xml:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Informace o nenalezení požadované entity
+      tags:
+        - Entity
+  /entities/{entityId}/revision/{revisionId}:
+    get:
+      operationId: getEntityRevisionById
+      description: Vrátí podobu záznamu entity v dané revizi
+      parameters:
+        - name: entityId
+          in: path
+          required: true
+          description: ID přístupového bodu (uvádí se číselný identifikátor nebo UUID)
+          schema:
+            $ref: '#/components/schemas/EntityRef'
+        - name: revisionId
+          in: path
+          required: true
+          description: UUID revize, která je požadována
+          schema:
+            $ref: '#/components/schemas/Uuid'
+      responses:
+        '200':
+          description: Úspěšné nalezení záznamu entity.
+          content:
+            text/xml:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Informace o nenalezení požadované entity
+      tags:
+        - Entity
+  /export/download/{id}:
+    get:
+      operationId: downloadExport
+      description: Stáhne data exportu
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/ExportRequestId'
+      responses:
+        '102':
+          description: Informational
+        '200':
+          description: The request has succeeded.
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: The server cannot find the requested resource.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - Export
+  /export/revisions:
+    post:
+      operationId: exportRevisions
+      description: |-
+        Vrátí revize záznamů entit
+
+        Metoda je asynchronní, vrací se pouze informace o zahájení operace.
+        Výsledek je zapotřebí získat pomocí operace getExportStatus, resp. downloadExport.
+
+        Výsledkem operace je stažení XML souboru obsahujícího seznam záznamů dle schématu http://cam.tacr.cz/2025
+        s kořenovým elementem <entityReocrdRevisions>. XML obsahuje seznam změn v záznamech entit, neobsahuje 
+        úplné záznamy entit.
+      parameters:
+        - name: fromTransId
+          in: query
+          required: true
+          description: Změny po této transakci budou vráceny.
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ExportRequestId'
+      tags:
+        - Export
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/EntityRef'
+        description: Seznam číselných identifikátorů nebo UUID entit
+  /export/snapshots:
+    post:
+      operationId: exportSnapshots
+      description: |-
+        Vrátí aktuální podobu požadovaných záznamů entit.
+
+        Metoda je asynchronní, vrací se pouze informace o zahájení operace.
+        Výsledek je zapotřebí získat pomocí operace getExportStatus, resp. downloadExport.
+
+        Výsledkem operace je stažení XML souboru obsahujícího seznam záznamů dle schématu http://cam.tacr.cz/2025
+        s kořenovým elementem <entities>.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ExportRequestId'
+      tags:
+        - Export
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/EntityRef'
+        description: seznam číselných identifikátorů nebo UUID entit
+  /export/status/{id}:
+    get:
+      operationId: getExportStatus
+      description: Vrátí aktuální stav požadavku na export entit.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/ExportRequestId'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportRequestStatus'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - Export
+  /search:
+    post:
+      operationId: searchEntities
+      description: Vyhledání entit.
+      parameters:
+        - name: page
+          in: query
+          required: true
+          description: číslo stránky
+          schema:
+            type: integer
+            format: int32
+          explode: false
+        - name: pageSize
+          in: query
+          required: true
+          description: Velikost stránky, počet záznamů na stránku
+          schema:
+            type: integer
+            format: int32
+            maximum: 1000
+          explode: false
+        - name: searchType
+          in: query
+          required: false
+          description: Typ vyhledávání
+          schema:
+            $ref: '#/components/schemas/SearchType'
+          explode: false
+      responses:
+        '200':
+          description: Seznam nalezených záznamů, vrací se stručná informace
+          content:
+            text/xml:
+              schema:
+                type: string
+                format: binary
+      tags:
+        - Search
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryParamsDef'
+  /updates:
+    get:
+      operationId: getUpdatesFromTo
+      description: Vrátí stránkovaný seznam aktualizovaných záznamů entit mezi dvěma transakcemi.
+      parameters:
+        - name: fromTransId
+          in: query
+          required: true
+          description: ID transakce po níž budou vráceny provedené aktualizace
+          schema:
+            $ref: '#/components/schemas/TransactionId'
+          explode: false
+        - name: toTransId
+          in: query
+          required: true
+          description: ID transakce do níž (včetně) budou vráceny provedené aktualizace
+          schema:
+            $ref: '#/components/schemas/TransactionId'
+          explode: false
+        - name: page
+          in: query
+          required: true
+          description: číslo stránky
+          schema:
+            type: integer
+            format: int32
+          explode: false
+        - name: pageSize
+          in: query
+          required: true
+          description: |-
+            Velikost stránky, počet záznamů na stránku
+
+            Maxmimální hodnota je 50000
+          schema:
+            type: integer
+            format: int32
+            maximum: 50000
+          explode: false
+      responses:
+        '200':
+          description: Seznam změněných záznamů entit.
+          content:
+            text/xml:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Transakce neexistuje
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorTransactionNotFound'
+      tags:
+        - Updates
+  /updates/from/{fromTransId}:
+    get:
+      operationId: getUpdatesFrom
+      description: |-
+        Vrátí seznam aktualizovaných záznamů entit po té co daná 
+        transakce byla zapsána. Pokud je aktualizací příliš mnoho, 
+        tak je nutné použít funkci /updates pro jejich načtění.
+      parameters:
+        - name: fromTransId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/TransactionId'
+      responses:
+        '200':
+          description: Seznam změněných záznamů entit.
+          content:
+            text/xml:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Transakce neexistuje
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorTransactionNotFound'
+      tags:
+        - Updates
+components:
+  schemas:
+    BaseException:
+      type: object
+      required:
+        - type
+        - code
+      properties:
+        type:
+          type: string
+          description: Typ chyby
+        code:
+          type: string
+          description: Kód chyby
+        message:
+          type: string
+          description: Uživatelská zpráva
+        properties:
+          type: object
+          description: Další informace o chybě
+        stackTrace:
+          type: string
+          description: Stack trace
+      description: Obecná výjimka při selhání operace
+    BatchUpdateStatus:
+      type: object
+      required:
+        - state
+      properties:
+        state:
+          $ref: '#/components/schemas/RequestProcessState'
+        progress:
+          type: integer
+      description: Stav zpracování aktualizační dávky
+    EntityId:
+      type: integer
+      format: int32
+      description: Číselný identifikátor entity
+    EntityRef:
+      type: string
+      description: Reference na entitu, může být ID nebo UUID.
+    ErrorTransactionNotFound:
+      type: object
+      required:
+        - transactionId
+      properties:
+        transactionId:
+          allOf:
+            - $ref: '#/components/schemas/TransactionId'
+          description: Identifikátor nenalezné transakce
+      description: Transakce neexistuje
+    ExportRequestId:
+      type: string
+      minLength: 1
+      description: Identifikátor požadavku na export
+    ExportRequestStatus:
+      type: object
+      required:
+        - state
+      properties:
+        state:
+          $ref: '#/components/schemas/RequestProcessState'
+        progress:
+          type: integer
+      description: Status of request
+    QueryAndDef:
+      type: object
+      required:
+        - conds
+      properties:
+        conds:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryBaseCondDef'
+          description: Pole dílčích podmínek
+      allOf:
+        - $ref: '#/components/schemas/QueryBaseCondDef'
+      description: Logická podmínka AND
+    QueryBaseCondDef:
+      type: object
+      required:
+        - condType
+      properties:
+        condType:
+          type: string
+          enum:
+            - AND
+            - OR
+            - NOT
+            - PART
+            - INDEX
+            - VALUE
+          description: Diskriminátor určující typ podmínky
+      discriminator:
+        propertyName: condType
+        mapping:
+          AND: '#/components/schemas/QueryAndDef'
+          OR: '#/components/schemas/QueryOrDef'
+          NOT: '#/components/schemas/QueryNotDef'
+          PART: '#/components/schemas/QueryPartCondDef'
+          INDEX: '#/components/schemas/QueryIndexCondDef'
+          VALUE: '#/components/schemas/QueryValueCondDef'
+      description: Podmínka pro hledání, použije se jedna konkrétní
+    QueryComparator:
+      type: string
+      enum:
+        - CT_EQ
+        - CT_GT
+        - CT_GTE
+        - CT_LT
+        - CT_LTE
+        - CT_STARTS_WITH
+        - CT_ENDS_WITH
+        - CT_CONTAINS
+      description: Operátor použitý pro porovnání
+    QueryIndexCondDef:
+      type: object
+      required:
+        - name
+        - comparator
+      properties:
+        name:
+          type: string
+          description: Název indexu
+        comparator:
+          allOf:
+            - $ref: '#/components/schemas/QueryComparator'
+          description: Operátor pro porovnání hodnot
+        value:
+          type: string
+          description: hledaná hodnota
+      allOf:
+        - $ref: '#/components/schemas/QueryBaseCondDef'
+      description: Podmínka vyhledávání hodnoty indexu
+    QueryNotDef:
+      type: object
+      required:
+        - cond
+      properties:
+        cond:
+          allOf:
+            - $ref: '#/components/schemas/QueryBaseCondDef'
+          description: Negovaná podmínka
+      allOf:
+        - $ref: '#/components/schemas/QueryBaseCondDef'
+      description: Logická podmínka NOT
+    QueryOrDef:
+      type: object
+      required:
+        - conds
+      properties:
+        conds:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryBaseCondDef'
+          description: Pole dílčích podmínek
+      allOf:
+        - $ref: '#/components/schemas/QueryBaseCondDef'
+      description: Logická podmínka OR
+    QueryParamsDef:
+      type: object
+      properties:
+        userRoles:
+          allOf:
+            - $ref: '#/components/schemas/UserRole'
+          description: |-
+            Volitelné uvedení role uživatele
+
+            Lze uvést jen při zadání uživatele
+        userUuid:
+          allOf:
+            - $ref: '#/components/schemas/Uuid'
+          description: |-
+            Volitelné uvedení uživatele, který naposledy 
+            provedl změnu
+        userName:
+          type: string
+          description: Volitelné úplné jméno uživatele
+        types:
+          type: array
+          items:
+            type: string
+          description: Pole tříd/podtříd v nichž se vyhledává
+        state:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecordState'
+          description: Stavy záznamů v nichž je vyhledáváno
+        cond:
+          allOf:
+            - $ref: '#/components/schemas/QueryBaseCondDef'
+          description: Další volitelné podmínky pro vyhledávání
+      description: Parametry pro dotazování
+    QueryPartCondDef:
+      type: object
+      properties:
+        partType:
+          allOf:
+            - $ref: '#/components/schemas/QueryPartType'
+          description: Omezení na typ části, speciální omezení je PT_PREF_NAME učující, že se jedná o preferované jméno
+        onePart:
+          type: boolean
+          description: Pokud je true, tak hledané prvky popisu jsou v jedné části
+        cond:
+          allOf:
+            - $ref: '#/components/schemas/QueryBaseCondDef'
+          description: Podmínky vztahující se k  části určené touto podmínkou.
+      allOf:
+        - $ref: '#/components/schemas/QueryBaseCondDef'
+      description: Lze omezit na konkrétní typ části nebo požadovat, aby vše bylo z jedné části
+    QueryPartType:
+      type: string
+      enum:
+        - PT_BODY
+        - PT_CRE
+        - PT_EVENT
+        - PT_EXT
+        - PT_IDENT
+        - PT_PREF_NAME
+        - PT_NAME
+        - PT_REL
+      description: Typy částí popisu pro vyhledávání
+    QueryValueCondDef:
+      type: object
+      properties:
+        itemTypes:
+          type: array
+          items:
+            type: string
+          description: pole typů prvků popisu
+        itemSpecs:
+          type: array
+          items:
+            type: string
+          description: pole specifikací
+        comparator:
+          allOf:
+            - $ref: '#/components/schemas/QueryComparator'
+          description: Operátor pro porovnání hodnot
+        value:
+          type: string
+          description: hledaná hodnota
+      allOf:
+        - $ref: '#/components/schemas/QueryBaseCondDef'
+      description: Podmínka vyhledávání hodnoty prvku popisu
+    RecordState:
+      type: string
+      enum:
+        - RS_NEW
+        - RS_APPROVED
+        - RS_INVALID
+        - RS_REPLACED
+      description: Stavy záznamů
+    RequestProcessState:
+      type: string
+      enum:
+        - PENDING
+        - PROCESSING
+        - FINISHED
+        - ERROR
+      description: Stav asynchronní operace
+    SearchType:
+      type: string
+      enum:
+        - EXACT
+        - FULLTEXT
+    TransactionId:
+      type: string
+      minLength: 1
+      description: Identifikátor transakce
+    UpdateRequestId:
+      type: string
+      minLength: 36
+      maxLength: 36
+      format: uuid
+      description: UUID požadavku na změnu
+    UserRole:
+      type: string
+      enum:
+        - EDITOR
+        - APPROVER
+        - SENDER
+      description: |-
+        Dostupné role uživatele
+        - SENDER - odesílatel záznamu
+        - EDITOR - kdo záznam změnil
+        - APPROVER - kdo záznam schválil
+    Uuid:
+      type: string
+      minLength: 36
+      maxLength: 36
+      format: uuid
+      description: Typ pro UUID

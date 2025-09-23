@@ -9,9 +9,8 @@ import java.util.Collections;
 import java.util.List;
 
 import jakarta.transaction.Transactional;
-
+import cz.tacr.elza.cam.v1.CamConnector;
 import cz.tacr.elza.common.FactoryUtils;
-import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.AsyncTypeEnum;

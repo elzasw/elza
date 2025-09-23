@@ -8,6 +8,7 @@ package cz.tacr.elza.api;
 public enum ApExternalSystemType {
 
     CAM,
+    CAM_V2,
     /**
      * Same as CAM except UUID is preferred as ID
      */
@@ -15,6 +16,5 @@ public enum ApExternalSystemType {
     /**
      * Automatické přebírání nových záznamů z CAMu
      */
-    CAM_COMPLETE
-
+    CAM_COMPLETE,
 }
