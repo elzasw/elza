@@ -6,6 +6,7 @@ export const DEFAULT_LIST_SIZE = 200;
 
 export enum AP_EXT_SYSTEM_TYPE {
     CAM = 'CAM',
+    CAM_V2 = 'CAM_V2',
     CAM_UUID = 'CAM_UUID',
     CAM_COMPLETE = 'CAM_COMPLETE',
 }

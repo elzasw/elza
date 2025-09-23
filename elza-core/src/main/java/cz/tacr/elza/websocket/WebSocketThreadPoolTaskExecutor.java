@@ -24,7 +24,7 @@ import org.springframework.web.socket.WebSocketSession;
  */
 public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WebSocketThreadPoolTaskExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketThreadPoolTaskExecutor.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -49,7 +49,7 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
     public synchronized void addSession(WebSocketSession session) {
         String sessionId = session.getId();
         Validate.notNull(sessionId, "WebSocket session id cannot be null");
-        LOG.debug("Adding WebSocket session: {}", sessionId);
+        logger.debug("Adding WebSocket session: {}", sessionId);
 
 		WebSocketTaskProcessor processor = new WebSocketTaskProcessor();
 		if (webSocketTaskProcessors.put(sessionId, processor) != null) {
@@ -69,11 +69,11 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 	 */
 	public synchronized void stopSessionExecution(String sessionId) {
         Validate.notNull(sessionId, "WebSocket session id cannot be null");
-        LOG.debug("Stop WebSocket session execution: {}", sessionId);
+        logger.debug("Stop WebSocket session execution: {}", sessionId);
 
 		WebSocketTaskProcessor processor = webSocketTaskProcessors.get(sessionId);
 		if (processor == null) {
-            LOG.error("WebSocket session does not exist, id: {}. Cannot be stopped.", sessionId);
+            logger.error("WebSocket session does not exist, id: {}. Cannot be stopped.", sessionId);
             return;
 		}
 		processor.block();
@@ -89,11 +89,11 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
     public synchronized void removeSession(WebSocketSession session) {
         String sessionId = session.getId();
         Validate.notNull(sessionId, "WebSocket session id cannot be null");
-        LOG.debug("Remove WebSocket session: {}", sessionId);
+        logger.debug("Remove WebSocket session: {}", sessionId);
 
 		WebSocketTaskProcessor processor = webSocketTaskProcessors.remove(sessionId);
 		if (processor == null) {
-            LOG.error("WebSocket session does not exist, id: {}. Cannot be removed.", sessionId);
+            logger.error("WebSocket session does not exist, id: {}. Cannot be removed.", sessionId);
             return;
 		}
         sessions.remove(sessionId);
@@ -110,14 +110,14 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
         String sessionId = SimpMessageHeaderAccessor.getSessionId(message.getHeaders());
         SimpMessageType messageType = SimpMessageHeaderAccessor.getMessageType(message.getHeaders());
 		synchronized (this) {
-            LOG.debug("Executing message ({}, {}) for WebSocket session: {}, handler: {}",
+            logger.debug("Executing message ({}, {}) for WebSocket session: {}, handler: {}",
                       this.getThreadNamePrefix(),
                       messageType, sessionId,
                       mhr.getClass().toString());
 
 			WebSocketTaskProcessor processor = webSocketTaskProcessors.get(sessionId);
 			if (processor == null) {
-                LOG.debug("WebSocket session does not exist, id: {}. Message is not processed.", sessionId);
+                logger.debug("WebSocket session does not exist, id: {}. Message is not processed.", sessionId);
                 return;
 			}
             // send heartbeat as priority/first message
@@ -126,13 +126,13 @@ public class WebSocketThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
             case CONNECT_ACK:
             case HEARTBEAT:
                 if (!processor.addPriority(mhr)) {
-                    LOG.error("Cannot add priority message to the processor, sessionId: {}. Message is not processed.",
+                    logger.error("Cannot add priority message to the processor, sessionId: {}. Message is not processed.",
                               sessionId);
                 }
                 break;
             default:
                 if (!processor.add(mhr)) {
-                    LOG.error("Cannot add message to the processor, sessionId: {}. Message is not processed.",
+                    logger.error("Cannot add message to the processor, sessionId: {}. Message is not processed.",
                               sessionId);
                 }
             }

@@ -59,7 +59,7 @@ springdoc:
 spring:
   application:
      name: elza
-     version: ${project.parent.version}
+     #version: ${project.parent.version}
   datasource:
     url: ${elza.data.url}
     username: ${elza.data.user}
