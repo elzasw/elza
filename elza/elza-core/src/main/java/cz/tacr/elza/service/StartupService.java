@@ -24,6 +24,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.FileSystemUtils;
 
 import cz.tacr.elza.bulkaction.BulkActionConfigManager;
+import cz.tacr.elza.cam.CamScheduler;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.DatabaseType;
 import cz.tacr.elza.core.ResourcePathResolver;
@@ -44,7 +45,6 @@ import cz.tacr.elza.repository.VisiblePolicyRepository;
 //import cz.tacr.elza.search.DbQueueProcessor; TODO hibernate search 6
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
-import cz.tacr.elza.service.cam.CamScheduler;
 
 /**
  * Service to manage tasks during application startup.

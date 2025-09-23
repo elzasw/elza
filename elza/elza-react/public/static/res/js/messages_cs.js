@@ -1459,6 +1459,7 @@ var messages = {
     "admin.extSystem.edit.title": "Upravení externího systému",
     "admin.extSystem.delete.confirm": "Opravdu chcete externí systém odstranit?",
     "admin.extSystem.cam": "CAM",
+    "admin.extSystem.cam-v2": "CAM v2",
     "admin.extSystem.cam-uuid": "CAM - UUID",
     "admin.extSystem.cam-complete": "CAM - Kompletní",
     "admin.extSystem.gis-view": "Zobrazení",

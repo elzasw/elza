@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.service.cam.CamService;
-import cz.tacr.elza.service.cam.ItemSyncProcessor;
+import cz.tacr.elza.cam.ItemSyncProcessor;
+import cz.tacr.elza.cam.v1.CamService;
 
 @Component
 public class ExtSyncsProcessor implements Runnable {

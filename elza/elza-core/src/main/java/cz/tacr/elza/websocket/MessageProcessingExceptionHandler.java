@@ -27,15 +27,15 @@ public class MessageProcessingExceptionHandler {
 
     @Autowired
     @Qualifier("clientInboundChannelExecutor")
-    private transient WebSocketThreadPoolTaskExecutor executor;
+    private WebSocketThreadPoolTaskExecutor executor;
 
     @Autowired
     @Qualifier("clientOutboundChannel")
-    private transient AbstractSubscribableChannel clientOutboundChannel;
+    private AbstractSubscribableChannel clientOutboundChannel;
 
     @Autowired
     @Qualifier("brokerMessageConverter")
-    private transient SmartMessageConverter messageConverter;
+    private SmartMessageConverter messageConverter;
 
     /**
      * Entry point for any exception caused by business logic or WebSocket communication.
