@@ -1430,8 +1430,7 @@ public class UserService {
 		Integer userId = details.getId();
 		if (userId != null) {
 			// userId is set -> user have to be in the repository
-			user = userRepository.findById(userId)
-                    .orElse(null);
+			user = userRepository.findById(userId).orElse(null);
 		}
 		return user;
     }

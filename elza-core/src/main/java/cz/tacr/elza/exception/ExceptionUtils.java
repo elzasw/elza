@@ -4,10 +4,9 @@ import java.util.Collection;
 import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import cz.tacr.cam.client.ApiException;
+import cz.tacr.cam.v1.client.ApiException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.ErrorCode;
 import cz.tacr.elza.exception.codes.RegistryCode;

@@ -31,9 +31,11 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.cam.ApiCamConnector;
+import cz.tacr.elza.cam.CamFactory;
+import cz.tacr.elza.cam.v1.CamConnector;
+import cz.tacr.elza.cam.v1.CamInstance;
 import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.connector.CamConnector;
-import cz.tacr.elza.connector.CamInstance;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApBindingVO;
 import cz.tacr.elza.controller.vo.ApChangeVO;
@@ -135,6 +137,8 @@ public class ApFactory {
 
     private final CamConnector camConnector;
 
+    private final CamFactory camFactory;
+
     private final ApIndexRepository indexRepository;
 
     private final ApTypeRepository apTypeRepository;
@@ -164,6 +168,7 @@ public class ApFactory {
                      final ApBindingStateRepository bindingStateRepository,
                      final ApBindingItemRepository bindingItemRepository,
                      final CamConnector camConnector,
+                     final CamFactory camFactory,
                      final ApIndexRepository indexRepository,
                      final ApTypeRepository apTypeRepository,
                      final UserRepository userRepository,
@@ -182,6 +187,7 @@ public class ApFactory {
         this.bindingStateRepository = bindingStateRepository;
         this.bindingItemRepository = bindingItemRepository;
         this.camConnector = camConnector;
+        this.camFactory = camFactory;
         this.indexRepository = indexRepository;
         this.apTypeRepository = apTypeRepository;
         this.userRepository = userRepository;
@@ -492,16 +498,17 @@ public class ApFactory {
         if (CollectionUtils.isNotEmpty(bindings)) {
             for (ApBindingVO binding : bindings) {
                 ApExternalSystem externalSystem = sdp.getApExternalSystemById(binding.getExternalSystemId());
-                CamInstance camInstance = camConnector.get(externalSystem);
-                if (camInstance != null) {
+                //CamInstance camInstance = camConnector.get(externalSystem);
+                ApiCamConnector connector = camFactory.getConnector(externalSystem);
+                if (connector != null) {
                     String value = binding.getValue();
                     if (StringUtils.isNotEmpty(value)) {
-                        String url = camInstance.getEntityDetailUrl(value);
+                        String url = connector.getDetailUrl(externalSystem) + value;
                         binding.setDetailUrl(url);
                     }
                     String extReplacedBy = binding.getExtReplacedBy();
                     if (StringUtils.isNotEmpty(extReplacedBy)) {
-                        String url = camInstance.getEntityDetailUrl(extReplacedBy);
+                        String url = connector.getDetailUrl(externalSystem) + extReplacedBy;
                         binding.setDetailUrlExtReplacedBy(url);
                     }
                 }
@@ -767,8 +774,9 @@ public class ApFactory {
             case RECORD_REF:
                 item = new ApItemAccessPointRefVO(apItem, ((externalSystemId, value) -> {
                     ApExternalSystem externalSystem = sdp.getApExternalSystemById(externalSystemId);
-                    CamInstance camInstance = camConnector.get(externalSystem);
-                    return camInstance.getEntityDetailUrl(value);
+                    //CamInstance camInstance = camConnector.get(externalSystem);
+                    ApiCamConnector connector = camFactory.getConnector(externalSystem);
+                    return connector.getDetailUrl(externalSystem) + value;
                 }));
                 break;
             case DECIMAL:

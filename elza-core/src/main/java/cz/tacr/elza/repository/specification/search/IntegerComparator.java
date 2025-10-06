@@ -1,6 +1,6 @@
 package cz.tacr.elza.repository.specification.search;
 
-import cz.tacr.cam.client.controller.vo.QueryComparator;
+import cz.tacr.cam.v1.client.controller.vo.QueryComparator;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
@@ -25,15 +25,15 @@ public class IntegerComparator implements Comparator {
         Join<ApItem, ArrData> dataJoin = ctx.getApItemRoot().join(ApItem.FIELD_DATA, JoinType.INNER);
         int numberValue = Integer.parseInt(value);
         switch (comparator) {
-            case EQ:
+            case CT_EQ:
                 return cb.equal(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.INTEGER_VALUE), numberValue);
-            case GT:
+            case CT_GT:
                 return cb.greaterThan(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.INTEGER_VALUE), numberValue);
-            case GTE:
+            case CT_GTE:
                 return cb.greaterThanOrEqualTo(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.INTEGER_VALUE), numberValue);
-            case LT:
+            case CT_LT:
                 return cb.lessThan(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.INTEGER_VALUE), numberValue);
-            case LTE:
+            case CT_LTE:
                 return cb.lessThanOrEqualTo(cb.treat(dataJoin, ArrDataInteger.class).get(ArrDataInteger.INTEGER_VALUE), numberValue);
             default:
                 throw new IllegalArgumentException(unimplementedMessage(comparator, DataType.INT));

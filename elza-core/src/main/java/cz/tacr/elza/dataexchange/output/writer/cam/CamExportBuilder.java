@@ -15,8 +15,9 @@ import jakarta.xml.bind.Marshaller;
 import org.apache.commons.lang3.Validate;
 import org.w3c.dom.Document;
 
-import cz.tacr.cam.schema.cam.EntitiesXml;
-import cz.tacr.cam.schema.cam.EntityXml;
+import cz.tacr.cam.v1.schema.cam.EntitiesXml;
+import cz.tacr.cam.v1.schema.cam.EntityXml;
+import cz.tacr.elza.cam.v1.EntityXmlBuilder;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -31,8 +32,6 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.GroovyService;
-import cz.tacr.elza.service.cam.EntityXmlBuilder;
-
 import jakarta.xml.bind.JAXBContext;
 import javax.xml.stream.XMLStreamException;
 

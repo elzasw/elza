@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,11 +30,12 @@ public interface PermissionRepository extends JpaRepository<UsrPermission, Integ
      * @param user uživatel
      * @return seznam všech jeho oprávnění
      */
-
     @Query("SELECT p" +
             " FROM usr_permission p" +
             " WHERE p.user = :user OR p.group.groupId IN (SELECT gu.group.groupId FROM usr_group_user gu WHERE gu.user = :user)")
     List<UsrPermission> getAllPermissions(@Param("user") UsrUser user);
+
+    List<UsrPermission> findAllByUserIn(@Param("users") Collection<UsrUser> user);
 
     /**
      * Načtení všech oprávnění uživatele - přímo přiřazených a přiřazených přes skupiny.

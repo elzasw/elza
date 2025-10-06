@@ -1,6 +1,7 @@
 package cz.tacr.elza.common.db;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import jakarta.persistence.EntityManager;
 
@@ -91,7 +92,7 @@ public class HibernateUtils {
      *             When object is null.
      */
     public static boolean isInitialized(Object object) {
-        Validate.notNull(object);
+        Objects.requireNonNull(object);
         return Hibernate.isInitialized(object);
     }
 
