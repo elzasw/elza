@@ -710,4 +710,73 @@
 		<sql>UPDATE usr_permission SET permission = 'GROUP_CONTROL_ENTITY' WHERE permission = 'GROUP_CONTROL_ENTITITY'</sql>
 	</changeSet>
 
+	<changeSet id="20250623133000" author="sergey.iryupin">
+		<!-- typ úkolu -->
+        <createTable tableName="wf_task_type">
+            <column name="task_type_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="nvarchar(250)"/>
+            <column name="package_id" type="integer">
+                <constraints nullable="false" foreignKeyName="fk_task_type_package_id" references="rul_package(package_id)"/>
+            </column>
+		</createTable>
+		<!-- tabulka popisující úkol -->
+        <createTable tableName="wf_task">
+            <column name="task_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="time_created" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="time_closed" type="timestamp with time zone"/>
+            <column name="assignee_id" type="int">
+				<constraints nullable="false" foreignKeyName="fk_wf_task_assignee_id" references="usr_user(user_id)"/>
+			</column>
+            <column name="creator_id" type="int">
+				<constraints nullable="true" foreignKeyName="fk_wf_task_creator_id" references="usr_user(user_id)"/>
+			</column>
+            <column name="closed_by_id" type="int">
+				<constraints nullable="true" foreignKeyName="fk_wf_task_closed_by_id" references="usr_user(user_id)"/>
+			</column>
+            <column name="status" type="nvarchar(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="task_type_id" type="int">
+				<constraints nullable="false" foreignKeyName="fk_wf_task_task_type" references="wf_task_type(task_type_id)"/>
+            </column>
+            <column name="description" type="${type.text}"/>
+		</createTable>
+		<!-- Úkol vázaný na revizi entity -->
+        <createTable tableName="wf_task_ap_rev_state">
+            <column name="task_ap_rev_state_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="task_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_wf_task_ap_rev_state_task_id" references="wf_task(task_id)"/>
+            </column>
+            <column name="state_id" type="int">
+				<constraints nullable="false" foreignKeyName="fk_wf_task_ap_rev_state_state_id" references="ap_rev_state(state_id)"/>
+			</column>
+		</createTable>
+		<!-- Úkol vázaný na stav entity -->
+        <createTable tableName="wf_task_ap_state">
+            <column name="task_ap_state_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="task_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_wf_task_ap_state_task_id" references="wf_task(task_id)"/>
+            </column>
+            <column name="state_id" type="int">
+				<constraints nullable="false" foreignKeyName="fk_wf_task_ap_state_state_id" references="ap_state(state_id)"/>
+			</column>
+		</createTable>
+	</changeSet>
+
 </databaseChangeLog>

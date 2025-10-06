@@ -176,8 +176,6 @@ public class UserDetail {
     }
 
     public boolean hasPermission(UsrPermission usrPermission) {
-        UsrPermission.Permission permission = usrPermission.getPermission();
-        
         for (UserPermission currPerm: userPermission) {
             // check if same type
             if (currPerm.hasPermission(usrPermission)) {

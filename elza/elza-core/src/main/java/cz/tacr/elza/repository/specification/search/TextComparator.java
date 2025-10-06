@@ -1,7 +1,6 @@
 package cz.tacr.elza.repository.specification.search;
 
-
-import cz.tacr.cam.client.controller.vo.QueryComparator;
+import cz.tacr.cam.v1.client.controller.vo.QueryComparator;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
@@ -26,13 +25,13 @@ public class TextComparator implements Comparator {
         Join<ApItem, ArrData> dataJoin = ctx.getApItemRoot().join(ApItem.FIELD_DATA, JoinType.INNER);
         String lowerValue = value.toLowerCase();
         switch (comparator) {
-            case EQ:
+            case CT_EQ:
                 return cb.equal(cb.lower(cb.treat(dataJoin, ArrDataText.class).get(ArrDataText.TEXT_VALUE)), lowerValue);
-            case CONTAIN:
+            case CT_CONTAIN:
                 return cb.like(cb.lower(cb.treat(dataJoin, ArrDataText.class).get(ArrDataText.TEXT_VALUE)), "%" + lowerValue + "%");
-            case START_WITH:
+            case CT_START_WITH:
                 return cb.like(cb.lower(cb.treat(dataJoin, ArrDataText.class).get(ArrDataText.TEXT_VALUE)), lowerValue + "%");
-            case END_WITH:
+            case CT_END_WITH:
                 return cb.like(cb.lower(cb.treat(dataJoin, ArrDataText.class).get(ArrDataText.TEXT_VALUE)), "%" + lowerValue);
             default:
                 throw new IllegalArgumentException(unimplementedMessage(comparator, DataType.TEXT));

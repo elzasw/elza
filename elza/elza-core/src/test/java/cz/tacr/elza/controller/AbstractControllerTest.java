@@ -216,7 +216,6 @@ import io.restassured.response.ResponseOptions;
 import io.restassured.specification.RequestSpecification;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
 
 public abstract class AbstractControllerTest extends AbstractTest {
 
@@ -311,10 +310,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String DESC_ITEM_CSV_EXPORT = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/csv/export";
 	@Deprecated
 	protected static final String CREATE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create";
-	protected static final String CREATE_DESC_ITEM_NEW = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/create";
 	@Deprecated
 	protected static final String UPDATE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}";
-	protected static final String UPDATE_DESC_ITEM_NEW = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}/new";
+	@Deprecated
 	protected static final String DELETE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/delete";
 	protected static final String DELETE_DESC_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}";
 	protected static final String DELETE_OUTPUT_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}";
@@ -1293,6 +1291,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param node        uzel
 	 * @return smazaná hodnota atributu
 	 */
+	@Deprecated
 	protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem,
 			final ArrFundVersionVO fundVersion, final ArrNodeVO node) {
 		return deleteDescItem(descItem, fundVersion.getId(), node.getId(), node.getVersion());
@@ -1307,6 +1306,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param nodeVersion   verze uzlu
 	 * @return smazaná hodnota atributu
 	 */
+	@Deprecated
 	protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem, final Integer fundVersionId,
 			final Integer nodeId, final Integer nodeVersion) {
 		Response response = post(spec -> spec.body(descItem).pathParam("fundVersionId", fundVersionId)
@@ -2523,15 +2523,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
     /**
 	 * Vytvořené nového uživatele.
      *
-	 * @param ap
+	 * @param accessPointId
 	 * @param userName
 	 * @param password
      * @return vytvořený uživatel
      */
-	protected UsrUserVO createUser(final ApAccessPointVO ap, String userName, String password) {
+	protected UsrUserVO createUser(final Integer accessPointId, String userName, String password) {
         Map<UsrAuthentication.AuthType, String> valueMap = new HashMap<>();
         valueMap.put(UsrAuthentication.AuthType.PASSWORD, password);
-        UsrUserVO user = createUser(userName, valueMap, ap.getId());
+        UsrUserVO user = createUser(userName, valueMap, accessPointId);
 		assertNotNull(user);
 		assertNotNull(user.getId());
         return user;
@@ -3845,8 +3845,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @return
 	 * @throws InterruptedException
 	 */
-	protected ReceiptStatus waitingForReceipt(Receiptable receipt, MyStompSessionHandler sessionHandler)
-			throws InterruptedException {
+	protected ReceiptStatus waitingForReceipt(Receiptable receipt, MyStompSessionHandler sessionHandler) throws InterruptedException {
 		AtomicReference<ReceiptStatus> receiptStatus = new AtomicReference<ReceiptStatus>();
 		receipt.addReceiptTask(() -> {
 			logger.debug("Receipt received");

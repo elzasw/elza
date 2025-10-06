@@ -1,6 +1,6 @@
 package cz.tacr.elza.repository.specification.search;
 
-import cz.tacr.cam.client.controller.vo.QueryComparator;
+import cz.tacr.cam.v1.client.controller.vo.QueryComparator;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
@@ -45,7 +45,7 @@ public class BitComparator implements Comparator {
         CriteriaBuilder cb = ctx.cb;
         Join<ApItem, ArrData> dataJoin = ctx.getApItemRoot().join(ApItem.FIELD_DATA, JoinType.INNER);
         boolean booleanValue = parseBool(value.toLowerCase());
-        if (comparator == QueryComparator.EQ) {
+        if (comparator == QueryComparator.CT_EQ) {
             return cb.equal(cb.treat(dataJoin, ArrDataBit.class).get(ArrDataBit.BIT_VALUE), booleanValue);
         }
         throw new IllegalArgumentException(unimplementedMessage(comparator, DataType.BIT));

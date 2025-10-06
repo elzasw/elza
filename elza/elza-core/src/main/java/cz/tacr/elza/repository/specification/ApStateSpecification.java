@@ -23,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.data.jpa.domain.Specification;
 
-import cz.tacr.cam.client.controller.vo.QueryComparator;
+import cz.tacr.cam.v1.client.controller.vo.QueryComparator;
 import cz.tacr.elza.controller.vo.Area;
 import cz.tacr.elza.controller.vo.ExtensionFilterVO;
 import cz.tacr.elza.controller.vo.RelationFilterVO;
@@ -203,7 +203,7 @@ public class ApStateSpecification implements Specification<ApState> {
                             throw new NotImplementedException("Neimplementovaný stav oblasti: " + area);
                     }
                     if (searchFilterVO.getOnlyMainPart() && !area.equals(Area.ALL_PARTS)) {
-                        and = processValueCondDef(ctx, and, keyWord, partTypeCode, "NM_MAIN", null, QueryComparator.CONTAIN, prefPart);
+                        and = processValueCondDef(ctx, and, keyWord, partTypeCode, "NM_MAIN", null, QueryComparator.CT_CONTAIN, prefPart);
                     } else {
                         and = processIndexCondDef(ctx, and, keyWord, partTypeCode, prefPart);
                     }
@@ -215,11 +215,11 @@ public class ApStateSpecification implements Specification<ApState> {
                     String itemTypeCode = itemType != null ? itemType.getCode() : null;  
                     String itemSpecCode = ext.getItemSpecId() != null ? sdp.getItemSpecById(ext.getItemSpecId()).getCode() : null;
                     // výchozí komparátor
-                    QueryComparator comparator = QueryComparator.CONTAIN;
+                    QueryComparator comparator = QueryComparator.CT_CONTAIN;
                     // komparátor pro celá čísla (INT) nebo booleovské hodnoty (BIT)
                     if (itemType != null && 
                     		(itemType.getDataType().equals(DataType.INT) || itemType.getDataType().equals(DataType.BIT))) {
-                    	comparator = QueryComparator.EQ;
+                    	comparator = QueryComparator.CT_EQ;
                     }
                     and = processValueCondDef(ctx, and, String.valueOf(ext.getValue()), ext.getPartTypeCode(), 
                                               itemTypeCode, itemSpecCode, comparator, false);
@@ -231,11 +231,11 @@ public class ApStateSpecification implements Specification<ApState> {
                         // relation without item type
                         if(rel.getRelTypeId()==null) {
                             and = processValueCondDef(ctx, and, String.valueOf(rel.getCode()),
-                                                      DataType.RECORD_REF, QueryComparator.EQ);
+                                                      DataType.RECORD_REF, QueryComparator.CT_EQ);
                         } else {
                             String itemTypeCode = rel.getRelTypeId() != null ? sdp.getItemTypeById(rel.getRelTypeId()).getCode() : null;                                                
                             String itemSpecCode = rel.getRelSpecId() != null ? sdp.getItemSpecById(rel.getRelSpecId()).getCode() : null;
-                            and = processValueCondDef(ctx, and, String.valueOf(rel.getCode()), null, itemTypeCode, itemSpecCode, QueryComparator.EQ, false);
+                            and = processValueCondDef(ctx, and, String.valueOf(rel.getCode()), null, itemTypeCode, itemSpecCode, QueryComparator.CT_EQ, false);
                         }
                     }
                 }
@@ -244,13 +244,13 @@ public class ApStateSpecification implements Specification<ApState> {
             	// TODO: rework processValueCondDef to accept Object and such conversion will not be needed anymore
                 ArrDataUnitdate arrDataUnitdate = UnitDateConverter.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());                
                 String intervalCreation = UnitDateConverter.convertToString(arrDataUnitdate);
-                and = processValueCondDef(ctx, and, intervalCreation, "PT_CRE", "CRE_DATE", null, QueryComparator.CONTAIN, false);
+                and = processValueCondDef(ctx, and, intervalCreation, "PT_CRE", "CRE_DATE", null, QueryComparator.CT_CONTAIN, false);
             }
             if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
             	// TODO: rework processValueCondDef to accept Object and such conversion will not be needed anymore
                 ArrDataUnitdate arrDataUnitdate = UnitDateConverter.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
                 String intervalExtinction = UnitDateConverter.convertToString(arrDataUnitdate);
-                and = processValueCondDef(ctx, and, intervalExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CONTAIN, false);
+                and = processValueCondDef(ctx, and, intervalExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CT_CONTAIN, false);
             }
             return cb.and(condition, and);
         }
@@ -357,20 +357,20 @@ public class ApStateSpecification implements Specification<ApState> {
         Join<ApPart, ApIndex> apIndexRoot = ctx.getApIndexRoot();
 
         return cb.and(condition, and, cb.equal(apIndexRoot.get(ApIndex.INDEX_TYPE), "DISPLAY_NAME"),
-                createPredicateIndexComp(ctx, QueryComparator.CONTAIN, value));
+                createPredicateIndexComp(ctx, QueryComparator.CT_CONTAIN, value));
     }
 
     private Predicate createPredicateIndexComp(final Ctx ctx, QueryComparator comparator, String value) {
         CriteriaBuilder cb = ctx.cb;
         Join<ApPart, ApIndex> aeIndexRoot = ctx.getApIndexRoot();
         switch (comparator) {
-            case EQ:
+            case CT_EQ:
                 return cb.equal(cb.lower(aeIndexRoot.get(ApIndex.VALUE)), value.toLowerCase());
-            case CONTAIN:
+            case CT_CONTAIN:
                 return cb.like(cb.lower(aeIndexRoot.get(ApIndex.VALUE)), "%" + value.toLowerCase() + "%");
-            case START_WITH:
+            case CT_START_WITH:
                 return cb.like(cb.lower(aeIndexRoot.get(ApIndex.VALUE)), value.toLowerCase() + "%");
-            case END_WITH:
+            case CT_END_WITH:
                 return cb.like(cb.lower(aeIndexRoot.get(ApIndex.VALUE)), "%" + value.toLowerCase());
             default:
                 throw new IllegalArgumentException("Není možné v indexu použít comparator: " + comparator);

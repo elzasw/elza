@@ -1,6 +1,6 @@
 package cz.tacr.elza.service;
 
-import static cz.tacr.elza.common.TextUtils.normalizeText;
+import static cz.tacr.elza.common.string.Normalizer.normalizeLineEnds;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -107,7 +107,6 @@ import cz.tacr.elza.service.vo.TitleItemsByType;
 
 /**
  * Description Item management
- *
  */
 @Service
 public class DescriptionItemService {
@@ -263,10 +262,12 @@ public class DescriptionItemService {
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
         ArrNode node = arrangementService.getNode(nodeId);
         ArrDescItem descItem = fetchOpenItemFromDB(descItemObjectId);
+        // pokud chceme vrátit smazanou hodnotu
+        descItem.setData(HibernateUtils.unproxy(descItem.getData()));
 
         // kontrola zákazu změn
         if (!forceUpdate) {
-            if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
+            if (descItem.getReadOnly() != null && descItem.getReadOnly()) {
                 throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
             }
         }
@@ -2302,7 +2303,7 @@ public class DescriptionItemService {
 			ds.setStringValue(getReplacedDataValue(ds.getStringValue(), searchString, replaceString));
 		} else if (dataNew instanceof ArrDataText) {
 			ArrDataText dt = (ArrDataText) dataNew;
-			dt.setTextValue(getReplacedDataValue(normalizeText(dt.getTextValue()), searchString, replaceString));
+			dt.setTextValue(getReplacedDataValue(normalizeLineEnds(dt.getTextValue()), searchString, replaceString));
 		} else if (dataNew instanceof ArrDataUnitid) {
             ArrDataUnitid dt = (ArrDataUnitid) dataNew;
             dt.setUnitId(getReplacedDataValue(dt.getUnitId(), searchString, replaceString));
