@@ -22,6 +22,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
+import org.hibernate.search.engine.search.predicate.dsl.MatchPredicateOptionsStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
@@ -211,23 +212,26 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
         SearchPredicateFactory factory = getSearchSession().scope(ArrDescItem.class).predicate();        
 
         // by nodes
-        BooleanPredicateClausesStep<?> boolItems = factory.bool();
+        BooleanPredicateClausesStep<?> nodeItems = factory.bool();
         nodes.forEach(node -> {
-        	boolItems.should(factory.match().field(ArrDescItem.FIELD_NODE_ID).matching(node.getNodeId()));
+        	nodeItems.should(factory.match().field(ArrDescItem.FIELD_NODE_ID).matching(node.getNodeId()));
         });
 
         // deleteChange is null
-    	SearchPredicate nullDeleteChangePredicate = factory.bool().mustNot(factory.exists().field(ArrDescItem.FIELD_DELETE_CHANGE_ID)).toPredicate();
+    	BooleanPredicateClausesStep<?> nullDeleteChange = factory.bool().mustNot(factory.exists().field(ArrDescItem.FIELD_DELETE_CHANGE_ID));
 
         // by itemType
-        SearchPredicate itemTypePredicate = factory.match().field(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID).matching(itemType.getItemTypeId()).toPredicate();
+        MatchPredicateOptionsStep<?> itemTypeId = factory.match().field(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID).matching(itemType.getItemTypeId());
 
-        // by itemSpec
+        // by itemSpecs
+        BooleanPredicateClausesStep<?> itemSpecs = factory.bool();
         if (itemType.getUseSpecification()) {
         	specifications.forEach(spec -> {
-        		boolItems.should(factory.match().field(ArrDescItem.FIELD_ITEM_SPEC_ID).matching(spec.getItemSpecId()));
+        		itemSpecs.should(factory.match().field(ArrDescItem.FIELD_ITEM_SPEC_ID).matching(spec.getItemSpecId()));
         	});
-        }
+        } else {
+			itemSpecs.should(factory.matchAll());
+		}
 
         // by text
         String searchValue = '*' + text + '*';
@@ -235,9 +239,10 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
         // final predicate
         SearchPredicate finalPredicate = factory.bool()
-        		.must(boolItems.toPredicate())
-        		.must(nullDeleteChangePredicate)
-        		.must(itemTypePredicate)
+        		.must(nodeItems)
+        		.must(nullDeleteChange)
+        		.must(itemTypeId)
+        		.must(itemSpecs)
         		.must(textPredicate)
         		.toPredicate();
 
