@@ -20,10 +20,10 @@ import jakarta.persistence.criteria.Root;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.search.engine.search.predicate.SearchPredicate;
 import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 import org.hibernate.search.engine.search.predicate.dsl.MatchPredicateOptionsStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
+import org.hibernate.search.engine.search.predicate.dsl.WildcardPredicateOptionsStep;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.slf4j.Logger;
@@ -209,44 +209,42 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
             throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
         }
 
-        SearchPredicateFactory factory = getSearchSession().scope(ArrDescItem.class).predicate();        
+        SearchPredicateFactory factory = getSearchSession().scope(ArrDescItem.class).predicate();
+        BooleanPredicateClausesStep<?> finalPredicate = factory.bool();
 
         // by nodes
         BooleanPredicateClausesStep<?> nodeItems = factory.bool();
         nodes.forEach(node -> {
         	nodeItems.should(factory.match().field(ArrDescItem.FIELD_NODE_ID).matching(node.getNodeId()));
         });
+        finalPredicate.must(nodeItems);
 
         // deleteChange is null
     	BooleanPredicateClausesStep<?> nullDeleteChange = factory.bool().mustNot(factory.exists().field(ArrDescItem.FIELD_DELETE_CHANGE_ID));
+    	finalPredicate.must(nullDeleteChange);
 
         // by itemType
         MatchPredicateOptionsStep<?> itemTypeId = factory.match().field(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID).matching(itemType.getItemTypeId());
+        finalPredicate.must(itemTypeId);
 
         // by itemSpecs
-        BooleanPredicateClausesStep<?> itemSpecs = factory.bool();
         if (itemType.getUseSpecification()) {
+            BooleanPredicateClausesStep<?> itemSpecs = factory.bool();
         	specifications.forEach(spec -> {
         		itemSpecs.should(factory.match().field(ArrDescItem.FIELD_ITEM_SPEC_ID).matching(spec.getItemSpecId()));
         	});
-        } else {
-			itemSpecs.should(factory.matchAll());
-		}
+        	finalPredicate.must(itemSpecs);
+        }
 
         // by text
         String searchValue = '*' + text + '*';
-        SearchPredicate textPredicate = factory.wildcard().field(ArrDescItem.FULLTEXT_ATT).matching(searchValue).toPredicate();
+        WildcardPredicateOptionsStep<?> textPredicate = factory.wildcard().field(ArrDescItem.FULLTEXT_ATT).matching(searchValue);
+        finalPredicate.must(textPredicate);
 
-        // final predicate
-        SearchPredicate finalPredicate = factory.bool()
-        		.must(nodeItems)
-        		.must(nullDeleteChange)
-        		.must(itemTypeId)
-        		.must(itemSpecs)
-        		.must(textPredicate)
-        		.toPredicate();
-
-        List<ArrDescItem> fetchedData = getSearchSession().search(ArrDescItem.class).where(finalPredicate).fetchAll().hits();
+        List<ArrDescItem> fetchedData = getSearchSession().search(ArrDescItem.class)
+							        		.where(finalPredicate.toPredicate())
+							        		.fetchAll()
+							        		.hits();
         dataService.findItemsWithData(fetchedData);
 
 		return fetchedData;
