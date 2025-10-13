@@ -15,7 +15,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.List;
 
-
 /**
  * Repository pro {@link ArrNodeExtension}.
  *
@@ -29,7 +28,9 @@ public interface NodeExtensionRepository extends JpaRepository<ArrNodeExtension,
 
     List<ArrNodeExtension> findByNodeIdInAndDeleteChangeIsNull(Collection<Integer> nodeIds);
 
-    void deleteByNodeFund(ArrFund fund);
+    @Modifying
+    @Query("DELETE FROM arr_node_extension i WHERE i.node IN (SELECT n FROM arr_node n WHERE n.fund = ?1)")
+    int deleteByNodeFund(ArrFund fund);
 
     void deleteByNodeIdIn(Collection<Integer> nodeIds);
 
