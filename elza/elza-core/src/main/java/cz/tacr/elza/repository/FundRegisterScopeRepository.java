@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-
 /**
  * Repository pro {@link ArrFundRegisterScope}.
  *
@@ -35,4 +34,6 @@ public interface FundRegisterScopeRepository extends JpaRepository<ArrFundRegist
     List<ArrFundRegisterScope> findByFund(ArrFund fund);
 
     ArrFundRegisterScope findByFundAndScope(ArrFund fund, ApScope scope);
+
+	void deleteByFund(ArrFund fund);
 }

@@ -266,18 +266,15 @@ public class DeleteFundAction {
         arrRefTemplateMapTypeRepository.deleteByFund(fund);
         arrRefTemplateRepository.deleteByFund(fund);
 
-        em.flush();
+        faRegisterRepository.deleteByFund(fund);
 
-        //?
-        faRegisterRepository.findByFund(fund).forEach(faScope -> faRegisterRepository.delete(faScope));
-
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.FUND_DELETE, fundId));
-
-        fundRepository.deleteById(fundId);
+        fundRepository.delete(fund);
 
         // TODO: rewrite to better solution
         Query deleteNotUseChangesQuery = revertingChangesService.createDeleteNotUseChangesQuery();
         deleteNotUseChangesQuery.executeUpdate();
+
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.FUND_DELETE, fundId));
 
         logger.info("Fund deleted: {}", fundId);
     }

@@ -20,16 +20,22 @@ import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.KEYWORD_TOKENI
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.mapper.pojo.bridge.binding.TypeBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.domain.ArrDescItem;
 
 public class ArrDescItemBinder implements TypeBinder {
 
+    private final static Logger log = LoggerFactory.getLogger(ArrDescItemBinder.class);
+
     private TypeBindingContext context;
 
     @Override
     public void bind(TypeBindingContext context) {
-    	this.context = context;
+		log.debug("Bind ArrDescItemBinder");
+
+		this.context = context;
 
     	// při změně pole data, itemSpec nebo deleteChange přepočti index
         context.dependencies().use(FIELD_DATA).use(FIELD_ITEM_SPEC).use(FIELD_DELETE_CHANGE);

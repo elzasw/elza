@@ -18,6 +18,8 @@ import org.hibernate.search.mapper.pojo.bridge.TypeBridge;
 import org.hibernate.search.mapper.pojo.bridge.runtime.TypeBridgeWriteContext;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ArrCachedNode;
@@ -36,18 +38,24 @@ import cz.tacr.elza.service.cache.RestoredNode;
 
 public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 
-    // TODO převést na použití Bean
+	// TODO převést na použití Bean
 	private static NodeCacheService nodeCacheService;
 	private static RuleService ruleService;
 	private static ArrangementInternalService arrangementInternalService;
 
-	public static void init(final NodeCacheService nodeCacheService, 
-			final RuleService ruleService,
-			final ArrangementInternalService arrangementInternalService) {
+    public static void init(final NodeCacheService nodeCacheService, 
+                            final RuleService ruleService,
+			                final ArrangementInternalService arrangementInternalService) {
 		ArrCachedNodeBridge.nodeCacheService = nodeCacheService;
 		ArrCachedNodeBridge.ruleService = ruleService;
 		ArrCachedNodeBridge.arrangementInternalService = arrangementInternalService;
 	}
+
+	private final static Logger log = LoggerFactory.getLogger(ArrCachedNodeBridge.class);
+
+    public ArrCachedNodeBridge() {
+        log.debug("Creating ArrDescItemBridge");
+    }
 
 	@Override
 	public void write(DocumentElement document, ArrCachedNode arrCachedNode, TypeBridgeWriteContext context) {
