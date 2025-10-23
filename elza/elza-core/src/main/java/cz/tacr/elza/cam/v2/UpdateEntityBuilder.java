@@ -1,9 +1,9 @@
-package cz.tacr.elza.cam.v1;
+package cz.tacr.elza.cam.v2;
 
-import static cz.tacr.cam.v1.schema.cam.EntityRecordStateXml.ERS_APPROVED;
-import static cz.tacr.cam.v1.schema.cam.EntityRecordStateXml.ERS_INVALID;
-import static cz.tacr.cam.v1.schema.cam.EntityRecordStateXml.ERS_NEW;
-import static cz.tacr.cam.v1.schema.cam.EntityRecordStateXml.ERS_REPLACED;
+import static cz.tacr.cam.v2.schema.cam.EntityRecordStateXml.ERS_APPROVED;
+import static cz.tacr.cam.v2.schema.cam.EntityRecordStateXml.ERS_INVALID;
+import static cz.tacr.cam.v2.schema.cam.EntityRecordStateXml.ERS_NEW;
+import static cz.tacr.cam.v2.schema.cam.EntityRecordStateXml.ERS_REPLACED;
 import static cz.tacr.elza.domain.ApState.StateApproval.APPROVED;
 import static cz.tacr.elza.domain.ApState.StateApproval.NEW;
 
@@ -24,22 +24,22 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cz.tacr.cam.v1.client.ApiException;
-import cz.tacr.cam.v1.schema.cam.BatchEntityRecordRevXml;
-import cz.tacr.cam.v1.schema.cam.CodeXml;
-import cz.tacr.cam.v1.schema.cam.DeleteItemsXml;
-import cz.tacr.cam.v1.schema.cam.DeletePartXml;
-import cz.tacr.cam.v1.schema.cam.EntityIdXml;
-import cz.tacr.cam.v1.schema.cam.EntityRecordStateXml;
-import cz.tacr.cam.v1.schema.cam.EntityXml;
-import cz.tacr.cam.v1.schema.cam.ItemRefXml;
-import cz.tacr.cam.v1.schema.cam.NewItemsXml;
-import cz.tacr.cam.v1.schema.cam.PartTypeXml;
-import cz.tacr.cam.v1.schema.cam.PartXml;
-import cz.tacr.cam.v1.schema.cam.SetRecordStateXml;
-import cz.tacr.cam.v1.schema.cam.UpdateItemsXml;
-import cz.tacr.cam.v1.schema.cam.UuidXml;
-import cz.tacr.elza.cam.v1.export.CamUtils;
+import cz.tacr.cam.v2.client.ApiException;
+import cz.tacr.cam.v2.schema.cam.BatchEntityRecordRevXml;
+import cz.tacr.cam.v2.schema.cam.CodeXml;
+import cz.tacr.cam.v2.schema.cam.DeleteItemsXml;
+import cz.tacr.cam.v2.schema.cam.DeletePartXml;
+import cz.tacr.cam.v2.schema.cam.EntityIdXml;
+import cz.tacr.cam.v2.schema.cam.EntityRecordStateXml;
+import cz.tacr.cam.v2.schema.cam.EntityXml;
+import cz.tacr.cam.v2.schema.cam.ItemRefXml;
+import cz.tacr.cam.v2.schema.cam.NewItemsXml;
+import cz.tacr.cam.v2.schema.cam.PartTypeXml;
+import cz.tacr.cam.v2.schema.cam.PartXml;
+import cz.tacr.cam.v2.schema.cam.SetRecordStateXml;
+import cz.tacr.cam.v2.schema.cam.UpdateItemsXml;
+import cz.tacr.cam.v2.schema.cam.UuidXml;
+import cz.tacr.elza.cam.v2.export.CamUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
@@ -109,14 +109,14 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
     private Map<Integer, BindingPartInfo> bindingMap = new HashMap<>();
 
     public UpdateEntityBuilder(final ExternalSystemService externalSystemService,
-    		                   final ApBindingItemRepository bindingItemRepository,
-    		                   final StaticDataProvider sdp,
-    		                   final ApState state,
-    		                   final ApBindingState bindingState,
-    		                   final GroovyService groovyService,
-    		                   final DataService dataService,
-    		                   final ApScope scope,
-    		                   final ApExternalSystem externalSystem) {
+    		final ApBindingItemRepository bindingItemRepository,
+    		final StaticDataProvider sdp,
+    		final ApState state,
+    		final ApBindingState bindingState,
+    		final GroovyService groovyService,
+    		final DataService dataService,
+    		final ApScope scope,
+    		final ApExternalSystem externalSystem) {
         super(sdp, bindingState.getAccessPoint(), groovyService, dataService, scope, externalSystem, externalSystemService);
         this.bindingItemRepository = bindingItemRepository;
         this.bindingState = bindingState;
@@ -125,8 +125,8 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
 
     protected UpdateItemsXml createUpdateItems(ApBindingItem changedPart, List<ApBindingItem> changedItems) {
         UpdateItemsXml updateItemsXml = new UpdateItemsXml();
-        updateItemsXml.setPid(new UuidXml(changedPart.getValue()));
-        updateItemsXml.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
+        updateItemsXml.setPartUuid(new UuidXml(changedPart.getValue()));
+        updateItemsXml.setType(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
 
         for (ApBindingItem bindingItem : changedItems) {
             Object i = createItem(bindingItem.getItem(), bindingItem.getValue());
@@ -218,8 +218,7 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         itemList = filterOutItemsWithoutExtSysMapping(changedPart.getPart(), itemList);
         if (CollectionUtils.isNotEmpty(itemList)) {
             // filter bindined items
-            List<ApItem> filteredList = itemList.stream().filter(i -> !bi.isBinded(i))
-                    .collect(Collectors.toList());
+            List<ApItem> filteredList = itemList.stream().filter(i -> !bi.isBinded(i)).collect(Collectors.toList());
             if (filteredList.size() > 0) {
                 NewItemsXml newItems = createNewItems(changedPart, filteredList);
                 // some new items does not have to be created
@@ -258,14 +257,14 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
             return null;
         }
         DeleteItemsXml ret = new DeleteItemsXml();
-        ret.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
-        ret.setPid(new UuidXml(changedPart.getValue()));
-        List<ItemRefXml> itemRefs = ret.getList();
+        ret.setType(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
+        ret.setPartUuid(new UuidXml(changedPart.getValue()));
+        List<ItemRefXml> itemRefs = ret.getItemRef();
 
         for (ApBindingItem di : deletedItems) {
             ItemRefXml itemRf = new ItemRefXml();
             // TODO: improve with sdp
-            itemRf.setT(new CodeXml(di.getItem().getItemType().getCode()));
+            itemRf.setType(new CodeXml(di.getItem().getItemType().getCode()));
             itemRf.setUuid(new UuidXml(di.getValue()));
             // TODO: set type and spec
             itemRefs.add(itemRf);
@@ -305,9 +304,9 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
     @Override
     protected BatchEntityRecordRevXml createBatchEntityRecordRef() {
         BatchEntityRecordRevXml batchEntityRecordRevXml = new BatchEntityRecordRevXml();
-        batchEntityRecordRevXml.setEid(new EntityIdXml(Long.parseLong(bindingState.getBinding().getValue())));
+        batchEntityRecordRevXml.setEntityId(new EntityIdXml(Long.parseLong(bindingState.getBinding().getValue())));
         batchEntityRecordRevXml.setRev(new UuidXml(bindingState.getExtRevision()));
-        batchEntityRecordRevXml.setLid("LID" + UUID.randomUUID().toString());
+        batchEntityRecordRevXml.setLocalId("LID" + UUID.randomUUID().toString());
         return batchEntityRecordRevXml;
     }
 
@@ -342,21 +341,21 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         EntityRecordStateXml nextExtState;
         // pokud je v CAMu zneplatnena, tak neumime vyresit
         // - simulate ApiException - cannot restore invalidate entity from Elza
-        if (externalEntityXml.getEns() == ERS_INVALID || externalEntityXml.getEns() == ERS_REPLACED) {
+        if (externalEntityXml.getState() == ERS_INVALID || externalEntityXml.getState() == ERS_REPLACED) {
             String errMessage = "Cannot restore invalidated entity in ext. system from Elza, accessPointId=" + apState.getAccessPointId() + 
-                                ", external state: " + externalEntityXml.getEns();
+                                ", external state: " + externalEntityXml.getState();
             logger.error(errMessage);
             throw new ApiException(errMessage);
         }
-        if (apState.getStateApproval() == APPROVED && externalEntityXml.getEns() == ERS_NEW) {
+        if (apState.getStateApproval() == APPROVED && externalEntityXml.getState() == ERS_NEW) {
             addUpdate(new SetRecordStateXml(ERS_APPROVED, null));
             nextExtState = ERS_APPROVED;
-        } else if (apState.getStateApproval() == NEW && externalEntityXml.getEns() == ERS_APPROVED) {
+        } else if (apState.getStateApproval() == NEW && externalEntityXml.getState() == ERS_APPROVED) {
             addUpdate(new SetRecordStateXml(ERS_NEW, null));
             nextExtState = ERS_NEW;
         } else {
             // same state in Elza and ext. system (ERS_NEW or ERS_APPROVED)
-            nextExtState = externalEntityXml.getEns();
+            nextExtState = externalEntityXml.getState();
         }
         bingingStates.put(apState.getAccessPointId(), nextExtState.toString());
 
@@ -372,13 +371,13 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
             prefPartUuid = getPartUuids().get(accessPoint.getPreferredPartId());
             Objects.requireNonNull(prefPartUuid);
         }
-        if (!Objects.equals(prefPartUuid, prefNameXml.getPid().getValue())) {
+        if (!Objects.equals(prefPartUuid, prefNameXml.getPartUuid().getValue())) {
             setPrefName(new UuidXml(prefPartUuid));
         }
         
         // změna podtřídy entity
         ApType apType = sdp.getApTypeById(apState.getApTypeId());
-		if (!apType.getCode().equals(externalEntityXml.getEnt().getValue())) {
+		if (!apType.getCode().equals(externalEntityXml.getEntityType().getValue())) {
 			setEntityType(apType.getCode());
 		}
 

@@ -11,7 +11,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +26,10 @@ import cz.tacr.elza.cam.ProcessingContext;
 import cz.tacr.elza.cam.v1.CamHelper;
 import cz.tacr.elza.cam.v1.CamService;
 import cz.tacr.elza.cam.v1.SyncEntityRequest;
+import cz.tacr.elza.cam.v1.export.CamUtils;
 import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.schema.SchemaManager;
-import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
@@ -124,7 +123,7 @@ public class ImportServiceImpl implements ImportService {
 
         try {
             switch (request.getDataFormat()) {
-            case SchemaManager.CAM_SCHEMA_URL:
+            case SchemaManager.CAM_SCHEMA_2019:
                 importCamSchema(request);
                 break;
             default:
@@ -145,7 +144,7 @@ public class ImportServiceImpl implements ImportService {
     private void importCamSchema(ImportRequest request) throws JAXBException, IOException {
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
-        unmarshaller.setSchema(schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL));
+        unmarshaller.setSchema(schemaManager.getSchema(SchemaManager.CAM_SCHEMA_2019));
         DataHandler binData = request.getBinData();
         // read CAM xml
         Object obj = unmarshaller.unmarshal(binData.getInputStream());

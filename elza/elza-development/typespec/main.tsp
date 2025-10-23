@@ -1916,6 +1916,23 @@ namespace ElzaAPI.AccessPoint {
          @header contentType: "application/json";
          @body data: integer;
     };
+
+    /**
+     * Decision on forced export ELZA -> CAM
+     */
+    @route("/export/{queueItemId}") 
+    @put op exportForceOrNo(
+        /** id of queue */
+        @path queueItemId: integer,
+        /** force export: yes or no */
+        @query force: boolean
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 }
 
 @tag("io")

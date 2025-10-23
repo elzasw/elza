@@ -36,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.cam.ApiCamConnector;
-import cz.tacr.elza.cam.CamFactory;
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.factory.ApFactory;
@@ -156,9 +155,6 @@ public class ApController {
 
     @Autowired
     private RuleService ruleService;
-
-    @Autowired
-    private CamFactory camFactory;
 
     @Autowired
     private AccessPointConnectorService apConnectorService;
@@ -833,7 +829,7 @@ public class ApController {
         int fromPage = from / max;
 
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-        ApiCamConnector connector = camFactory.getConnector(apExternalSystem);
+        ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
 
         return connector.search(fromPage + 1, max, filter, apExternalSystem);
     }
@@ -876,7 +872,7 @@ public class ApController {
         ApExternalSystem apExternalSystem = sdp.getApExternalSystemByCode(externalSystemCode);
         Validate.notNull(apExternalSystem, "External system code is incorrect: {}", externalSystemCode);
 
-        ApiCamConnector connector = camFactory.getConnector(apExternalSystem);
+        ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
 
         return connector.takeArchiveEntity(archiveEntityId, scopeId, apExternalSystem);
     }
@@ -910,7 +906,7 @@ public class ApController {
 
         accessPointService.checkUniqueExtSystem(accessPoint, apExternalSystem);
 
-        ApiCamConnector connector = camFactory.getConnector(apExternalSystem);
+        ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
 
         connector.connectArchiveEntity(archiveEntityId, state, apExternalSystem, replace);
     }
@@ -964,7 +960,7 @@ public class ApController {
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
 
-        ApiCamConnector connector = camFactory.getConnector(apExternalSystem);
+        ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
 
         connector.synchronizeEntity(state, bindingState, apExternalSystem);
     }
@@ -998,7 +994,7 @@ public class ApController {
         ApState state = accessPointService.getStateInternal(accessPoint);
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
 
-        ApiCamConnector connector = camFactory.getConnector(apExternalSystem);
+        ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
         
         connector.takeRelArchiveEntities(state, apExternalSystem);
     }

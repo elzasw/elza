@@ -5,6 +5,7 @@ import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ExtSyncsQueueItem;
 
 public interface ApiCamConnector {
 
@@ -20,4 +21,7 @@ public interface ApiCamConnector {
 	
 	String getDetailUrl(ApExternalSystem extSystem);
 
+	void synchronizeAccessPointsForExternalSystem(String extSysCode);
+
+	void exportApForce(ExtSyncsQueueItem queueItem);
 }

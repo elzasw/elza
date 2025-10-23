@@ -1,20 +1,20 @@
-package cz.tacr.elza.cam.v1;
+package cz.tacr.elza.cam.v2;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import cz.tacr.cam.v1.schema.cam.CodeXml;
-import cz.tacr.cam.v1.schema.cam.DateTimeXml;
-import cz.tacr.cam.v1.schema.cam.EntityIdXml;
-import cz.tacr.cam.v1.schema.cam.EntityRecordRefXml;
-import cz.tacr.cam.v1.schema.cam.EntityRecordStateXml;
-import cz.tacr.cam.v1.schema.cam.EntityXml;
-import cz.tacr.cam.v1.schema.cam.LongStringXml;
-import cz.tacr.cam.v1.schema.cam.RevInfoXml;
-import cz.tacr.cam.v1.schema.cam.UuidXml;
-import cz.tacr.elza.cam.v1.export.CamUtils;
+import cz.tacr.cam.v2.schema.cam.CodeXml;
+import cz.tacr.cam.v2.schema.cam.DateTimeXml;
+import cz.tacr.cam.v2.schema.cam.EntityIdXml;
+import cz.tacr.cam.v2.schema.cam.EntityRecordRefXml;
+import cz.tacr.cam.v2.schema.cam.EntityRecordStateXml;
+import cz.tacr.cam.v2.schema.cam.EntityXml;
+import cz.tacr.cam.v2.schema.cam.LongStringXml;
+import cz.tacr.cam.v2.schema.cam.RevisionInfoXml;
+import cz.tacr.cam.v2.schema.cam.UuidXml;
+import cz.tacr.elza.cam.v2.export.CamUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
@@ -52,10 +52,10 @@ public class EntityXmlBuilder extends CamXmlBuilder {
                            Map<Integer, Collection<ApIndex>> indexMap) {
 
         EntityXml ent = new EntityXml();
-        ent.setEid(new EntityIdXml(apState.getAccessPointId()));
-        ent.setEuid(new UuidXml(apState.getAccessPoint().getUuid()));
+        ent.setEntityId(new EntityIdXml(apState.getAccessPointId()));
+        ent.setEntityUuid(new UuidXml(apState.getAccessPoint().getUuid()));
         // entity class
-        ent.setEnt(new CodeXml(apState.getApType().getCode()));
+        ent.setEntityType(new CodeXml(apState.getApType().getCode()));
 
         // set state
         EntityRecordStateXml ens;
@@ -64,8 +64,8 @@ public class EntityXmlBuilder extends CamXmlBuilder {
                 ApAccessPoint replacedBy = apState.getReplacedBy();
                 // set ID/UUID if available in binding
                 ens = EntityRecordStateXml.ERS_REPLACED;
-                ent.setReid(new EntityIdXml(replacedBy.getAccessPointId()));
-                ent.setReud(new UuidXml(replacedBy.getUuid()));
+                EntityRecordRefXml entityRecordRef = new EntityRecordRefXml(new EntityIdXml(replacedBy.getAccessPointId()), new UuidXml(replacedBy.getUuid()));
+                ent.setReplacedBy(entityRecordRef);
             } else {
                 ens = EntityRecordStateXml.ERS_INVALID;
             }
@@ -83,26 +83,26 @@ public class EntityXmlBuilder extends CamXmlBuilder {
                 throw new SystemException("Missing mapping of internal state to CAM state");
             }
         }
-        ent.setEns(ens);
+        ent.setState(ens);
 
-        RevInfoXml revInfo = createRevInfo();
-        ent.setRevi(revInfo);
+        RevisionInfoXml revInfo = createRevInfo();
+        ent.setRevision(revInfo);
 
         // Prepare empty parts
-        ent.setPrts(this.createParts(partList, itemMap, indexMap));
+        ent.setParts(this.createParts(partList, itemMap, indexMap));
 
         return ent;
     }
 
-    private RevInfoXml createRevInfo() {
-        RevInfoXml revInfo = new RevInfoXml();
+    private RevisionInfoXml createRevInfo() {
+    	RevisionInfoXml revInfo = new RevisionInfoXml();
 
         // Set revision id to UUID of accesspoint
         // TODO: User proper UUID of revision (when will be available)
-        revInfo.setRid(new UuidXml(UUID.randomUUID().toString()));
+        revInfo.setRev(new UuidXml(UUID.randomUUID().toString()));
 
         ApChange createChange = apState.getCreateChange();
-        revInfo.setModt(new DateTimeXml(createChange.getChangeDate().toLocalDateTime()));
+        revInfo.setCreatedAt(new DateTimeXml(createChange.getChangeDate().toLocalDateTime()));
 
         // User info
         String usr = "system";
@@ -111,7 +111,7 @@ public class EntityXmlBuilder extends CamXmlBuilder {
             // TODO: Improve user info
             usr = user.getUsername();
         }
-        revInfo.setUsr(new LongStringXml(usr));
+        revInfo.setExternalUser(new LongStringXml(usr));
         return revInfo;
     }
 
@@ -151,7 +151,7 @@ public class EntityXmlBuilder extends CamXmlBuilder {
 
         UuidXml uuidXml = CamUtils.getObjectFactory().createUuidXml();
         uuidXml.setValue(uuid);
-        entityRecordRef.setEuid(uuidXml);
+        entityRecordRef.setEntityUuid(uuidXml);
         return entityRecordRef;
 	}
 

@@ -43,6 +43,7 @@ import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.groovy.GroovyItem;
+import cz.tacr.elza.service.AccessPointConnectorService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.PartService;
@@ -56,6 +57,9 @@ import cz.tacr.elza.service.cache.CachedAccessPoint;
 @RestController
 @RequestMapping("/api/v1")
 public class AccessPointController implements AccesspointsApi {
+
+    @Autowired
+    AccessPointConnectorService apConnectService;
 
     @Autowired
     AccessPointCacheService apCacheService;
@@ -86,6 +90,14 @@ public class AccessPointController implements AccesspointsApi {
 
     @Autowired
     ApFactory apFactory;
+
+    // PUT /accesspoint/export/{queueItemId}
+    @Override
+    @Transactional
+    public ResponseEntity<Void> accessPointExportForceOrNo(Integer queueItemId, Boolean force) {
+    	apConnectService.exportForceOrNo(queueItemId, force);
+    	return ResponseEntity.ok().build();
+    }
 
     @Override
     @Transactional

@@ -1211,7 +1211,6 @@ var messages = {
     "validationResult.show": "Zobrazit výsledek validace",
     "validationResult.title": "Výsledek validace archivní entity",
 
-
     "ap.not-in-ext": "Nesdíleno",
     "ap.push-to-ext.confirmation": "Opravdu chcete odeslat záznam entity s rozpracovanou revizí?",
     "ap.push-to-ext.title": "Zápis entity",
@@ -1462,6 +1461,7 @@ var messages = {
     "admin.extSystem.cam-v2": "CAM v2",
     "admin.extSystem.cam-uuid": "CAM - UUID",
     "admin.extSystem.cam-complete": "CAM - Kompletní",
+	"admin.extSystem.cam-complete-v2": "CAM - Kompletní v2",
     "admin.extSystem.gis-view": "Zobrazení",
     "admin.extSystem.gis-edit": "Editace",
     "admin.extSystem.apiKeyId": "ApiKey - ID",

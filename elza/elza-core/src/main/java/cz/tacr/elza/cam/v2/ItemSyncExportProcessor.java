@@ -1,23 +1,25 @@
-package cz.tacr.elza.cam.v1;
+package cz.tacr.elza.cam.v2;
 
-import org.apache.commons.collections4.CollectionUtils;
+import java.util.UUID;
+
+import javax.xml.validation.Schema;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.cam.v1.client.ApiException;
-import cz.tacr.cam.v1.schema.cam.BatchUpdateErrorXml;
-import cz.tacr.cam.v1.schema.cam.BatchUpdateResultXml;
-import cz.tacr.cam.v1.schema.cam.BatchUpdateSavedXml;
-import cz.tacr.cam.v1.schema.cam.ErrorMessageXml;
+import cz.tacr.cam.v2.client.ApiException;
+import cz.tacr.cam.v2.schema.cam.BatchUpdateXml;
 import cz.tacr.elza.cam.ItemSyncProcessor;
+import cz.tacr.elza.cam.JaxbUtils;
+import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.service.AccessPointConnectorService;
 
-@Component
+@Component("ItemSyncExportProcessorV2")
 @Scope("prototype")
 public class ItemSyncExportProcessor implements ItemSyncProcessor {
 
@@ -25,6 +27,9 @@ public class ItemSyncExportProcessor implements ItemSyncProcessor {
 
     @Autowired
     private CamService camService;
+
+    @Autowired
+    private SchemaManager schemaManager;
 
     @Autowired
     private AccessPointConnectorService apConnectService;
@@ -52,22 +57,14 @@ public class ItemSyncExportProcessor implements ItemSyncProcessor {
 					apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.EXPORT_OK);
 					return true;
 				}
-				BatchUpdateResultXml uploadResult = camService.upload(queueItem, uploadWorker.getBatchUpdate());
-				if (uploadResult instanceof BatchUpdateSavedXml) {
-					BatchUpdateSavedXml savedXml = (BatchUpdateSavedXml) uploadResult;
-					uploadWorker.process(camService, savedXml);
-				} else {
-					// mark as failed
-					BatchUpdateErrorXml batchUpdateErrorXml = (BatchUpdateErrorXml) uploadResult;
+				BatchUpdateXml batchUpdate = uploadWorker.getBatchUpdate();
+				Schema schema = schemaManager.getSchema(SchemaManager.CAM_SCHEMA_2025);
+		        String batchUpdateString = JaxbUtils.asString(batchUpdate, schema);
+		        String batchUpdateInfoUuid = batchUpdate.getInfo().getUuid().getValue();
+				UUID uuidResponse = camService.upload(queueItem, batchUpdateString, batchUpdateInfoUuid);
+				uploadWorker.createBinding(camService, uuidResponse);
+				apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.EXPORT_PROCESSING, null, uuidResponse.toString(), batchUpdateString, null);
 
-					StringBuilder message = new StringBuilder();
-					if (CollectionUtils.isNotEmpty(batchUpdateErrorXml.getMessages())) {
-						for (ErrorMessageXml errorMessage : batchUpdateErrorXml.getMessages()) {
-							message.append(errorMessage.getMsg().getValue()).append("\n");
-						}
-					}
-					apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.ERROR, message.toString());
-				}
 			} catch (ApiException e) {
 				// if ApiException -> it means we connected server and it is logical failure
 				log.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);

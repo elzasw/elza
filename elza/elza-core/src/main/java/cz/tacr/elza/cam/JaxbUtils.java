@@ -1,6 +1,6 @@
 package cz.tacr.elza.cam;
 
-
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -19,9 +19,7 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.PackageCode;
 
 /**
  *
@@ -47,6 +45,19 @@ public abstract class JaxbUtils {
             return (T) unmarshaller.unmarshal(in);
         } catch (Exception e) {
             throw new SystemException("Nepodařilo se načíst objekt " + classObject.getSimpleName() + " ze streamu", e, PackageCode.PARSE_ERROR).set("class", classObject.toString());
+        }
+    }
+
+    public static <T> String asString(final T body, Schema schema) {
+        try {
+            JAXBContext jaxbContext = JAXBContext.newInstance(body.getClass());
+            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+            jaxbMarshaller.setSchema(schema);
+            ByteArrayOutputStream result = new ByteArrayOutputStream();
+            jaxbMarshaller.marshal(body, result);
+            return result.toString(StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new IllegalStateException("Problém při konverzi xml objektu do xml string", e);
         }
     }
 
