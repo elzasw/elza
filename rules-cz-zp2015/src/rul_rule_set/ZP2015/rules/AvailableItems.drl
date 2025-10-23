@@ -1444,6 +1444,10 @@ when
         "ZP2015_UNIT_TYPE_FSN",
         // Fotoalba
         "ZP2015_UNIT_TYPE_FAL",
+        // Kinematografické záznamy (díla) v analogové i digitální podobě
+        "ZP2015_UNIT_TYPE_KZA",
+        // Zvukové záznamy (díla) v analogové i digitální podobě
+        "ZP2015_UNIT_TYPE_ZZA",
         // Tisky do roku 1800
         "ZP2015_UNIT_TYPE_TIO",
         // Tisky po roce 1800
@@ -1492,10 +1496,6 @@ when
         "ZP2015_UNIT_TYPE_MFS",
         // Digitální fotografie
         "ZP2015_UNIT_TYPE_DFO",
-        // Kinematografické záznamy (díla) v analogové i digitální podobě
-        "ZP2015_UNIT_TYPE_KZA",
-        // Zvukové záznamy (díla) v analogové i digitální podobě
-        "ZP2015_UNIT_TYPE_ZZA",
         // Štočky
         "ZP2015_UNIT_TYPE_STO",
         // Předměty numizmatické povahy
@@ -4222,12 +4222,12 @@ then
 end
 */
 
-rule "Doporučené prvky pro Kinematografické filmy v inv, kat (jednotlivost)"
+rule "Doporučené prvky pro Kinematografické filmy v inv, kat"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KZA") ) from $ownItems
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $ownItems    
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $ownItems    
     // Rodic je INV 
     Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV", "ZP2015_ARRANGEMENT_KAT")) from $items
@@ -4257,9 +4257,31 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ITEM_MAT", 
         // ZP5.13.1 Délka filmového záznamu
         "ZP2015_MOVIE_LENGTH",
+        // Role entit
         "ZP2015_ENTITY_ROLE") )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+rule "Povinnost prvku pro Kinematografické filmy v inv (část jednotlivosti)"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KZA") ) from $ownItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_PART") ) from $ownItems    
+    // Rodic je INV 
+    Level( $items: descItems ) 
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+    // nastaveni prvku  
+    $itemType: RulItemTypeExt( code in (
+        // ZP5.2.8 Technika, adjustace, nosič a látka záznamu
+        "ZP2015_ITEM_MAT", 
+        // ZP5.13.1 Délka filmového záznamu
+        "ZP2015_MOVIE_LENGTH",
+        // Role entit
+        "ZP2015_ENTITY_ROLE") )
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
 rule "Povinnost prvku pro Kinematografické filmy v kat"
@@ -4376,7 +4398,39 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
-rule "RE_021_03 Povinné role entit pro Kinematografické filmy v KAT"
+rule "RE_021_03 Doporučené role entit pro Kinematografické filmy v INV (část jednotlivosti)"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KZA") ) from $ownItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_PART") ) from $ownItems
+    // Rodic je INV 
+    Level( $items: descItems ) 
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+    // nastaveni prvku  
+    $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+    $itemSpec: RulItemSpecExt( code in ( 
+        // produkční společnosti/producenti 
+        "ZP2015_ENTITY_ROLE_18",
+        // režiséři
+        "ZP2015_ENTITY_ROLE_27",
+        // scénáristé
+        "ZP2015_ENTITY_ROLE_28",
+        // kameramani
+        "ZP2015_ENTITY_ROLE_29",
+        // autoři námětů
+        "ZP2015_ENTITY_ROLE_9",
+        // autoři dialogů
+        "ZP2015_ENTITY_ROLE_2",
+        // autoři hudby
+        "ZP2015_ENTITY_ROLE_6",
+        // autoři textové složky / textaři
+        "ZP2015_ENTITY_ROLE_10"
+        ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
+end
+
+rule "RE_021_04 Povinné role entit pro Kinematografické filmy v KAT"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_KZA") ) from $ownItems
@@ -4492,12 +4546,12 @@ then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
-rule "Povinnost prvku pro Zvukové záznamy v inv"
+rule "Povinnost prvku pro Zvukové záznamy v inv (jednotlivost)"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_ZZA") ) from $ownItems
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $ownItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $ownItems
     // Rodic je INV 
     Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -4507,9 +4561,31 @@ when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
         "ZP2015_ITEM_MAT", 
         // ZP5.14.1 Délka zvukového záznamu
         "ZP2015_RECORD_LENGTH",
+        // Role entit
         "ZP2015_ENTITY_ROLE") )
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+rule "Povinnost prvku pro Zvukové záznamy v inv (část jednotlivosti)"
+no-loop
+salience -100
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_ZZA") ) from $ownItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_PART") ) from $ownItems
+    // Rodic je INV 
+    Level( $items: descItems ) 
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+    // nastaveni prvku  
+    $itemType: RulItemTypeExt( code in (
+        // ZP5.2.8 Technika, adjustace, nosič a látka záznamu
+        "ZP2015_ITEM_MAT", 
+        // ZP5.14.1 Délka zvukového záznamu
+        "ZP2015_RECORD_LENGTH",
+        // Role entit
+        "ZP2015_ENTITY_ROLE") )
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
 rule "Povinnost prvku pro Zvukové záznamy v kat"
@@ -4588,11 +4664,11 @@ then
     $itemSpec.setMinType(RulItemSpec.Type.POSSIBLE);
 end
 
-rule "RE_022_02 Povinné role entit pro Zvukové záznamy v INV"
+rule "RE_022_02 Povinné role entit pro Zvukové záznamy v INV (jednotlivost)"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_ZZA") ) from $ownItems
-    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $ownItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ITEM") ) from $ownItems
     // Rodic je INV
     Level( $items: descItems ) 
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
@@ -4618,7 +4694,37 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
-rule "RE_022_03 Povinné role entit pro Zvukové záznamy v KAT"
+rule "RE_022_03 Doporučené role entit pro Zvukové záznamy v INV (část jednotlivosti)"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_ZZA") ) from $ownItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_PART") ) from $ownItems
+    // Rodic je INV
+    Level( $items: descItems ) 
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+    // nastaveni prvku  
+    $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+    $itemSpec: RulItemSpecExt( code in ( 
+        // produkční společnosti/producenti 
+        "ZP2015_ENTITY_ROLE_18",
+        // režiséři
+        "ZP2015_ENTITY_ROLE_27",
+        // scénáristé
+        "ZP2015_ENTITY_ROLE_28",
+        // autoři námětů
+        "ZP2015_ENTITY_ROLE_9",
+        // autoři dialogů
+        "ZP2015_ENTITY_ROLE_2",
+        // autoři hudby
+        "ZP2015_ENTITY_ROLE_6",
+        // autoři textové složky / textaři
+        "ZP2015_ENTITY_ROLE_10"
+        ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
+end
+
+rule "RE_022_04 Povinné role entit pro Zvukové záznamy v KAT"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_ZZA") ) from $ownItems
