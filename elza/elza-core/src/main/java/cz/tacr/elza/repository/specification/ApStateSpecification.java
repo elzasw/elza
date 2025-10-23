@@ -1,6 +1,5 @@
 package cz.tacr.elza.repository.specification;
 
-import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.DEFAULT_INTERVAL_DELIMITER;
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
 import java.util.ArrayList;

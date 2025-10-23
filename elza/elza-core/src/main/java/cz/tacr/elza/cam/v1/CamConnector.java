@@ -15,6 +15,7 @@ import java.util.Optional;
 import javax.xml.validation.Schema;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,7 @@ import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
@@ -90,6 +92,11 @@ public class CamConnector implements ApiCamConnector {
      * External system ID to CamInstance map
      */
     private final Map<Integer, CamInstance> instanceMap = new HashMap<>();
+
+	@Override
+	public void synchronizeAccessPointsForExternalSystem(String extSysCode) {
+		camService.synchronizeAccessPointsForExternalSystem(extSysCode);
+	}
 
 	@Override
     public String getDetailUrl(ApExternalSystem extSystem) {
@@ -192,6 +199,11 @@ public class CamConnector implements ApiCamConnector {
         camService.connectAccessPoint(state, entity, procCtx, replace);
 	}
 
+	@Override
+	public void exportApForce(ExtSyncsQueueItem queueItem) {
+		throw new NotImplementedException("Method is not implemented in CAM v1");
+	}
+
 	public QueryResultXml search(final int page,
                                  final int pageSize,
                                  final QueryParamsDef query,
@@ -227,7 +239,7 @@ public class CamConnector implements ApiCamConnector {
     public BatchUpdateResultXml postNewBatch(final BatchUpdateXml batchUpdate,
                                              final ApExternalSystem externalSystem,
                                              final String apikeyId, final String apikeyValue) throws ApiException {
-        Schema schema = schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL);
+        Schema schema = schemaManager.getSchema(SchemaManager.CAM_SCHEMA_2019);
         File xmlFile = JaxbUtils.asFile(batchUpdate, schema);
         
         if(logger.isDebugEnabled()) {

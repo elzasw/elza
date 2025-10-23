@@ -64,13 +64,11 @@ public class ApiClientCam extends ApiClient {
                         null);
         SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
-
         HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
         loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder()
                 .sslSocketFactory(sslSocketFactory, trustManager)
-                .addInterceptor(loggingInterceptor)
                 .addInterceptor(new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
@@ -97,6 +95,9 @@ public class ApiClientCam extends ApiClient {
                 return chain.proceed(newRequest);
             }
         });
+        if (log.isDebugEnabled()) {
+        	builder.addInterceptor(loggingInterceptor);
+        }
         OkHttpClient httpClient = builder.build();
         setHttpClient(httpClient);
     }

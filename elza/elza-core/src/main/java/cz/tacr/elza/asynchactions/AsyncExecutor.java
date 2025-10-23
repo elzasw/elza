@@ -234,8 +234,7 @@ public abstract class AsyncExecutor {
                 for (ArrAsyncRequest request : requests) {
                     if (isFailedRequest(request)) {
                         deleteRequests.add(request);
-                        logger.debug("Bude odstraněn požadavek z fronty z důvodu jeho chybového stavu. ID: {}", request
-                                .getAsyncRequestId());
+                        logger.debug("Bude odstraněn požadavek z fronty z důvodu jeho chybového stavu. ID: {}", request.getAsyncRequestId());
                     } else {
                         IAsyncRequest ar = readRequest(request);
                         results.add(ar);

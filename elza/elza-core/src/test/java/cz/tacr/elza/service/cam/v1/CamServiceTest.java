@@ -1,4 +1,4 @@
-package cz.tacr.elza.service.cam;
+package cz.tacr.elza.service.cam.v1;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -58,7 +58,8 @@ import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
 
 public class CamServiceTest extends AbstractControllerTest {
-    static public final String SYSTEM_CODE = "TESTSYSTEM";
+
+	static public final String SYSTEM_CODE = "TESTSYSTEM";
     static public final Long EXT_ID_1 = 1L;
     static public final String EXT_UUID_1 = UUID.randomUUID().toString();
     static public final Long EXT_ID_2 = 2L;
@@ -140,7 +141,7 @@ public class CamServiceTest extends AbstractControllerTest {
         // create transaction
         TransactionTemplate tt = new TransactionTemplate(transactionManager).execute(a -> {
         	// prepare bindings
-        	ApScope scope = scopeRepository.getOne(scopeVo.getId());
+        	ApScope scope = scopeRepository.findById(scopeVo.getId()).orElseThrow();
 
             ApExternalSystem externalSystem = externalSystemService.findApExternalSystemByCode(SYSTEM_CODE);
 
