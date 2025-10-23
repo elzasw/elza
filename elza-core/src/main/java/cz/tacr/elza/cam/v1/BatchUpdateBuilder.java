@@ -68,7 +68,6 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
     	Object entityRef = createBatchEntityRecordRef();
         UpdateEntityXml result = new UpdateEntityXml(entityRef, change);
         trgList.add(result);
-
     }
 
     protected void addUpdate(NewItemsXml change) {
@@ -121,10 +120,10 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
     	// read binding
     	ApAccessPoint ap = recordRef.getRecord();
     	ApBinding binding = null;
-    	if(ap!=null) {
+    	if (ap != null) {
     		//
     		ApBindingState bindingState = this.externalSystemService.findByAccessPointAndExternalSystem(ap, apExternalSystem);
-    		if(bindingState!=null) {
+    		if (bindingState != null) {
     			binding = bindingState.getBinding();
     		}
     	} else {
@@ -137,7 +136,7 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
     		}
         }
 
-    	if(binding == null) {
+    	if (binding == null) {
     		return null;
     	}
 

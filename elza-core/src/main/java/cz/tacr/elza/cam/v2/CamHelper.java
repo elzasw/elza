@@ -2,9 +2,6 @@ package cz.tacr.elza.cam.v2;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import cz.tacr.cam.v2.schema.cam.EntityRecordRefXml;
 import cz.tacr.cam.v2.schema.cam.EntityXml;
@@ -78,11 +75,4 @@ public class CamHelper {
         }
         return extIdent;
     }
-
-//    public static Map<String, EntityXml> getEntitiesByUuid(List<EntityXml> entities) {
-//        Map<String, EntityXml> uuids = entities.stream()
-//                .collect(Collectors.toMap(CamHelper::getEntityUuid, Function.identity()));
-//        return uuids;
-//
-//    }
 }

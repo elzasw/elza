@@ -21,7 +21,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
-
+import cz.tacr.elza.service.AccessPointConnectorService;
 import cz.tacr.elza.service.AccessPointItemService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -32,9 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.cam.ApiCamConnector;
-import cz.tacr.elza.cam.CamFactory;
-import cz.tacr.elza.cam.v1.CamConnector;
-import cz.tacr.elza.cam.v1.CamInstance;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApBindingVO;
@@ -135,10 +132,6 @@ public class ApFactory {
 
     private final ApPartRepository partRepository;
 
-    private final CamConnector camConnector;
-
-    private final CamFactory camFactory;
-
     private final ApIndexRepository indexRepository;
 
     private final ApTypeRepository apTypeRepository;
@@ -157,6 +150,8 @@ public class ApFactory {
 
     private final AccessPointCacheService accessPointCacheService;
 
+    private final AccessPointConnectorService accessPointConnectorService;
+
     private final ElzaLocale elzaLocale;
 
     @Autowired
@@ -167,8 +162,6 @@ public class ApFactory {
                      final ApPartRepository partRepository,
                      final ApBindingStateRepository bindingStateRepository,
                      final ApBindingItemRepository bindingItemRepository,
-                     final CamConnector camConnector,
-                     final CamFactory camFactory,
                      final ApIndexRepository indexRepository,
                      final ApTypeRepository apTypeRepository,
                      final UserRepository userRepository,
@@ -178,6 +171,7 @@ public class ApFactory {
                      final RevisionItemService revisionItemService,
                      final AccessPointItemService apItemService,
                      final AccessPointCacheService accessPointCacheService,
+                     final AccessPointConnectorService apConnectorService,
                      final ElzaLocale elzaLocale) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
@@ -186,8 +180,6 @@ public class ApFactory {
         this.partRepository = partRepository;
         this.bindingStateRepository = bindingStateRepository;
         this.bindingItemRepository = bindingItemRepository;
-        this.camConnector = camConnector;
-        this.camFactory = camFactory;
         this.indexRepository = indexRepository;
         this.apTypeRepository = apTypeRepository;
         this.userRepository = userRepository;
@@ -197,6 +189,7 @@ public class ApFactory {
         this.revisionItemService = revisionItemService;
         this.apItemService = apItemService;
         this.accessPointCacheService = accessPointCacheService;
+        this.accessPointConnectorService = apConnectorService;
         this.elzaLocale = elzaLocale;
     }
 
@@ -498,8 +491,7 @@ public class ApFactory {
         if (CollectionUtils.isNotEmpty(bindings)) {
             for (ApBindingVO binding : bindings) {
                 ApExternalSystem externalSystem = sdp.getApExternalSystemById(binding.getExternalSystemId());
-                //CamInstance camInstance = camConnector.get(externalSystem);
-                ApiCamConnector connector = camFactory.getConnector(externalSystem);
+                ApiCamConnector connector = accessPointConnectorService.getConnector(externalSystem);
                 if (connector != null) {
                     String value = binding.getValue();
                     if (StringUtils.isNotEmpty(value)) {
@@ -774,8 +766,7 @@ public class ApFactory {
             case RECORD_REF:
                 item = new ApItemAccessPointRefVO(apItem, ((externalSystemId, value) -> {
                     ApExternalSystem externalSystem = sdp.getApExternalSystemById(externalSystemId);
-                    //CamInstance camInstance = camConnector.get(externalSystem);
-                    ApiCamConnector connector = camFactory.getConnector(externalSystem);
+                    ApiCamConnector connector = accessPointConnectorService.getConnector(externalSystem);
                     return connector.getDetailUrl(externalSystem) + value;
                 }));
                 break;

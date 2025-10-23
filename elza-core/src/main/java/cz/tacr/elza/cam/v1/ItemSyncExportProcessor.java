@@ -1,8 +1,5 @@
 package cz.tacr.elza.cam.v1;
 
-import java.time.OffsetDateTime;
-import java.util.Collections;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +15,7 @@ import cz.tacr.cam.v1.schema.cam.ErrorMessageXml;
 import cz.tacr.elza.cam.ItemSyncProcessor;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
-import cz.tacr.elza.exception.ExceptionUtils;
+import cz.tacr.elza.service.AccessPointConnectorService;
 
 @Component
 @Scope("prototype")
@@ -28,6 +25,9 @@ public class ItemSyncExportProcessor implements ItemSyncProcessor {
 
     @Autowired
     private CamService camService;
+
+    @Autowired
+    private AccessPointConnectorService apConnectService;
 
     private ExtSyncsQueueItem queueItem;
 
@@ -43,16 +43,13 @@ public class ItemSyncExportProcessor implements ItemSyncProcessor {
 		// objekt
 		synchronized (camService) {
 
-			log.debug("Starting upload of queue item, id: {}, accessPointId: {}", queueItem.getExtSyncsQueueItemId(),
-					queueItem.getAccessPointId());
+			log.debug("Starting upload of queue item, id: {}, accessPointId: {}", queueItem.getExtSyncsQueueItemId(), queueItem.getAccessPointId());
 
-			camService.setQueueItemStateTA(Collections.singletonList(queueItem), ExtAsyncQueueState.EXPORT_START,
-					OffsetDateTime.now(), null);
+			apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.EXPORT_START);
 			try {
 				UploadWorker uploadWorker = camService.prepareUpload(queueItem);
 				if (uploadWorker == null) {
-					camService.setQueueItemStateTA(Collections.singletonList(queueItem), ExtAsyncQueueState.EXPORT_OK,
-							OffsetDateTime.now(), null);
+					apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.EXPORT_OK);
 					return true;
 				}
 				BatchUpdateResultXml uploadResult = camService.upload(queueItem, uploadWorker.getBatchUpdate());
@@ -69,24 +66,20 @@ public class ItemSyncExportProcessor implements ItemSyncProcessor {
 							message.append(errorMessage.getMsg().getValue()).append("\n");
 						}
 					}
-					camService.setQueueItemStateTA(Collections.singletonList(queueItem), ExtAsyncQueueState.ERROR,
-							OffsetDateTime.now(), message.toString());
+					apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.ERROR, message.toString());
 				}
 			} catch (ApiException e) {
 				// if ApiException -> it means we connected server and it is logical failure
 				log.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);
-				camService.setQueueItemStateTA(Collections.singletonList(queueItem), ExtAsyncQueueState.ERROR,
-						OffsetDateTime.now(), ExceptionUtils.getApiExceptionInfo(e));
+				apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.ERROR, CamException.getApiExceptionInfo(e));
 				return true;
 			} catch (Exception e) {
 				// other exception -> retry later
 				log.error("Failed to synchronize: {}", e.getMessage(), e);
-				camService.setQueueItemStateTA(Collections.singletonList(queueItem), ExtAsyncQueueState.EXPORT_NEW,
-						OffsetDateTime.now(), e.getMessage());
+				apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.EXPORT_NEW, e.getMessage());
 				return false;
 			}
-			log.debug("Queue item was uploaded, id: {}, accessPointId: {}", queueItem.getExtSyncsQueueItemId(),
-					queueItem.getAccessPointId());
+			log.debug("Queue item was uploaded, id: {}, accessPointId: {}", queueItem.getExtSyncsQueueItemId(), queueItem.getAccessPointId());
 		}
 
         return true;

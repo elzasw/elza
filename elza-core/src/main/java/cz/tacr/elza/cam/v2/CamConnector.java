@@ -15,8 +15,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.xml.validation.Schema;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +33,6 @@ import cz.tacr.cam.v2.client.controller.vo.BatchUpdateStatus;
 import cz.tacr.cam.v2.client.controller.vo.QueryParamsDef;
 import cz.tacr.cam.v2.client.controller.vo.SearchType;
 import cz.tacr.cam.v2.schema.cam.BatchUpdateResultXml;
-import cz.tacr.cam.v2.schema.cam.BatchUpdateXml;
 import cz.tacr.cam.v2.schema.cam.EntitiesXml;
 import cz.tacr.cam.v2.schema.cam.EntityXml;
 import cz.tacr.cam.v2.schema.cam.QueryResultXml;
@@ -43,23 +40,24 @@ import cz.tacr.cam.v2.schema.cam.UpdatesFromXml;
 import cz.tacr.cam.v2.schema.cam.UpdatesXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.cam.ApiCamConnector;
-import cz.tacr.elza.cam.JaxbUtils;
 import cz.tacr.elza.cam.ProcessingContext;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ExtSyncsQueueItem;
+import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.PackageCode;
+import cz.tacr.elza.service.AccessPointConnectorService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
 import jakarta.annotation.Nullable;
@@ -75,8 +73,8 @@ public class CamConnector implements ApiCamConnector {
     public static final String APIKEY_VALUE = "apiKeyValue";
 
     @Autowired
-    private SchemaManager schemaManager;
-
+    private AccessPointConnectorService apConnectService;
+    
     @Autowired
     private ExternalSystemService externalSystemService;
 
@@ -96,6 +94,11 @@ public class CamConnector implements ApiCamConnector {
      * External system ID to CamInstance map
      */
     private final Map<Integer, CamInstance> instanceMap = new HashMap<>();
+
+	@Override
+	public void synchronizeAccessPointsForExternalSystem(String extSysCode) {
+		camService.synchronizeAccessPointsForExternalSystem(extSysCode);
+	}
 
 	@Override
     public String getDetailUrl(ApExternalSystem extSystem) {
@@ -192,10 +195,22 @@ public class CamConnector implements ApiCamConnector {
         } catch (ApiException e) {
             throw prepareExtSystemException(e);
         }
-        
+
         ProcessingContext procCtx = new ProcessingContext(state.getScope(), extSystem, staticDataService);
 
         camService.connectAccessPoint(state, entity, procCtx, replace);
+	}
+
+	@Override
+	public void exportApForce(ExtSyncsQueueItem queueItem) {
+		try {
+			UUID uuid = camService.upload(queueItem, queueItem.getData(), null);
+			apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.EXPORT_PROCESSING, null, uuid.toString(), queueItem.getData(), null);
+		} catch (ApiException e) {
+			logger.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);
+			apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.ERROR, CamException.getApiExceptionInfo(e));
+			throw new BusinessException("Failed to synchronize ELZA -> CAM.", e, BaseCode.INVALID_STATE);
+		}
 	}
 
 	public QueryResultXml search(final int page,
@@ -231,43 +246,51 @@ public class CamConnector implements ApiCamConnector {
         return unmarshalString(EntitiesXml.class, stringApiResponse);
     }
 
-    public BatchUpdateResultXml postNewBatch(final BatchUpdateXml batchUpdate,
-                                             final ApExternalSystem externalSystem,
-                                             final String apikeyId, final String apikeyValue,
-                                             @Nullable final Boolean force, @Nullable final String forceKey) throws ApiException {
-        Schema schema = schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL);
-        File xmlFile = JaxbUtils.asFile(batchUpdate, schema);
-        
-        if(logger.isDebugEnabled()) {
-        	// log file content if needed
-        	byte[] encoded;
-			try {
-				encoded = Files.readAllBytes(xmlFile.toPath());
-				String data = new String(encoded, "utf-8");
-                if (apikeyId != null) {
-                    logger.debug("postNewBatch: Sending data to {} as {}: {}", externalSystem.getName(), apikeyId,
-                                 data);
-                } else {
-                    logger.debug("postNewBatch: Sending data to {}: {}", externalSystem.getName(), data);
-                }
-			} catch (IOException e) {
-                logger.error("postNewBatch: Failed to log data", e);
-			}        	
+    public UUID postNewBatch(final String batchUpdate,
+                             final ApExternalSystem externalSystem,
+                             final String apikeyId, 
+                             final String apikeyValue,
+                             @Nullable final Boolean force,
+                             @Nullable final String forceKey) throws ApiException {
+    	// log file content if needed
+        if (logger.isDebugEnabled()) {
+            if (apikeyId != null) {
+                logger.debug("postNewBatch: Sending data to {} as {}: {}", externalSystem.getName(), apikeyId, batchUpdate);
+            } else {
+                logger.debug("postNewBatch: Sending data to {}: {}", externalSystem.getName(), batchUpdate);
+            }
         }
+
+        File xmlFile = null;
         try {
-            ApiResponse<UUID> fileApiResponse = get(externalSystem, apikeyId, apikeyValue)
+        	xmlFile = File.createTempFile("cam-", ".api.xml");        
+        	Files.writeString(xmlFile.toPath(), batchUpdate);
+        } catch (IOException e) {
+        	logger.error("Failed to write XML file: {}" + xmlFile.getAbsolutePath(), e);
+            throw new SystemException("Nepodařilo se uložit batchUpdate do souboru", e, 
+            		BaseCode.EXPORT_FAILED).set("xmlFile", xmlFile.getAbsolutePath());
+        }
+
+        try {
+            ApiResponse<UUID> uuidApiResponse = get(externalSystem, apikeyId, apikeyValue)
                 .getBatchUpdatesApi()
                 .postNewBatchWithHttpInfo(xmlFile, force, forceKey);
-            return null; // unmarshal(BatchUpdateResultXml.class, fileApiResponse); TODO unmarshal UUID
+            return uuidApiResponse.getData();
         } finally {
             xmlFile.delete();
         }
     }
 
-    public BatchUpdateResultXml getBatchStatus(final UUID updateRequestId,
-                                               final ApExternalSystem externalSystem) throws ApiException {
+    public BatchUpdateStatus getBatchStatus(final UUID updateRequestId,
+                                            final ApExternalSystem externalSystem) throws ApiException {
         ApiResponse<BatchUpdateStatus> fileApiResponse = get(externalSystem).getBatchUpdatesApi().getBatchStatusWithHttpInfo(updateRequestId);
-        return null; // unmarshal(BatchUpdateResultXml.class, fileApiResponse); TODO unmarshal BatchUpdateStatus
+        return fileApiResponse.getData();
+    }
+
+    public BatchUpdateResultXml getBatchResult(final UUID updateRequestId,
+                                               final ApExternalSystem externalSystem) throws ApiException {
+    	ApiResponse<File> fileApiResponse = get(externalSystem).getBatchUpdatesApi().getBatchResultWithHttpInfo(updateRequestId);
+    	return unmarshal(BatchUpdateResultXml.class, fileApiResponse);
     }
 
     public UpdatesFromXml getUpdatesFrom(final String fromTransId,
@@ -291,9 +314,9 @@ public class CamConnector implements ApiCamConnector {
      * @param apExternalSystem
      */
     public void invalidate(ApExternalSystem apExternalSystem) {
-        if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
+        if (apExternalSystem.getType() == ApExternalSystemType.CAM_V2 ||
                         apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
-                        apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
+                        apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE_V2) {
             instanceMap.remove(apExternalSystem.getExternalSystemId());
         }
     }
@@ -307,10 +330,9 @@ public class CamConnector implements ApiCamConnector {
     }
 
     public CamInstance get(ApExternalSystem apExternalSystem, String apikeyId, String apikeyValue) {
-        if (apExternalSystem.getType() == ApExternalSystemType.CAM ||
-        		apExternalSystem.getType() == ApExternalSystemType.CAM_V2 ||
-                apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
-                apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
+        if (apExternalSystem.getType() == ApExternalSystemType.CAM_V2 ||
+                apExternalSystem.getType() == ApExternalSystemType.CAM_UUID_V2 ||
+                apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE_V2) {
         	// if apikeyId & apikeyValue define - use its
         	if (apikeyId != null && apikeyValue != null) {
                 return new CamInstance(apExternalSystem.getUrl(), apikeyId, apikeyValue);
