@@ -54,6 +54,35 @@ paths:
             schema:
               $ref: '#/components/schemas/DeleteAccessPointsDetail'
         description: seznam ID nebo UUID, které chceme smazat
+  /accesspoint/export/{queueItemId}:
+    put:
+      operationId: AccessPoint_exportForceOrNo
+      description: Decision on forced export ELZA -> CAM
+      parameters:
+        - name: queueItemId
+          in: path
+          required: true
+          description: id of queue
+          schema:
+            type: integer
+        - name: force
+          in: query
+          required: true
+          description: 'force export: yes or no'
+          schema:
+            type: boolean
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - accesspoints
   /accesspoint/invalidated:
     get:
       operationId: AccessPoint_getInvalidatedEntities

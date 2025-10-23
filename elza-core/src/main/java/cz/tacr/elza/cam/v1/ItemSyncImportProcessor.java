@@ -22,7 +22,7 @@ import cz.tacr.cam.v1.schema.cam.EntityXml;
 import cz.tacr.elza.cam.ItemSyncProcessor;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
-import cz.tacr.elza.exception.ExceptionUtils;
+import cz.tacr.elza.service.AccessPointConnectorService;
 
 /**
  * Item import processor over CAM Protocol
@@ -40,6 +40,9 @@ public class ItemSyncImportProcessor implements ItemSyncProcessor {
 
     @Autowired
     private CamConnector camConnector;
+
+    @Autowired
+    private AccessPointConnectorService apConnectService;
 
     private List<Integer> queueItemIds = new ArrayList<>();
     private Set<String> bindingValues = new HashSet<>();
@@ -68,35 +71,31 @@ public class ItemSyncImportProcessor implements ItemSyncProcessor {
                         .getResponseBody(), e);
                 // pokud není nalezena žádná položka, přestane se pokoušet o čtení
                 if (e.getCode() == 404) {
-                    camService.setQueueItemState(itemQueueId,
-                            ExtAsyncQueueState.ERROR,
-                            OffsetDateTime.now(),
-                            ExceptionUtils.getApiExceptionInfo(e));
+                	apConnectService.setQueueItemStateTA(itemQueueId,
+                                                         ExtAsyncQueueState.ERROR,
+                                                         CamException.getApiExceptionInfo(e));
                     return true;
                 }
                 // code >=400 && <500 =-> it means we connected server and it is logical failure
                 if (e.getCode() >= 400 && e.getCode() < 500) {
-                    camService.setQueueItemState(itemQueueId,
-                                                 ExtAsyncQueueState.ERROR,
-                                                 OffsetDateTime.now(),
-                                                 ExceptionUtils.getApiExceptionInfo(e));
+                	apConnectService.setQueueItemStateTA(itemQueueId,
+                                                         ExtAsyncQueueState.ERROR,
+                                                         CamException.getApiExceptionInfo(e));
                     return true;
                 }
 
                 // záznam bude načten znovu
                 // TODO: store as last queue state in the queue info
-                camService.setQueueItemState(itemQueueId,
-                        null, // stav se nemění
-                        OffsetDateTime.now(),
-                        ExceptionUtils.getApiExceptionInfo(e));
+                apConnectService.setQueueItemStateTA(itemQueueId,
+                                                     null, // stav se nemění
+                                                     CamException.getApiExceptionInfo(e));
                 return false;
             } catch (Exception e) {
                 // zkusme si tento záznam přečíst znovu
                 // TODO: store as last queue state in the queue info
-                camService.setQueueItemState(itemQueueId,
-                                             null, // stav se nemění
-                                             OffsetDateTime.now(),
-                                             e.getMessage());
+            	apConnectService.setQueueItemStateTA(itemQueueId,
+                                                     null, // stav se nemění
+                                                     e.getMessage());
                 return false;
             }
 
