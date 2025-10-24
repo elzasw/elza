@@ -1,4 +1,4 @@
-package cz.tacr.elza.cam.v1;
+package cz.tacr.elza.cam.v2;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -6,19 +6,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cz.tacr.cam.v1.schema.cam.BatchUpdateXml;
-import cz.tacr.cam.v1.schema.cam.CodeXml;
-import cz.tacr.cam.v1.schema.cam.DeleteItemsXml;
-import cz.tacr.cam.v1.schema.cam.DeletePartXml;
-import cz.tacr.cam.v1.schema.cam.EntityIdXml;
-import cz.tacr.cam.v1.schema.cam.EntityRecordRefXml;
-import cz.tacr.cam.v1.schema.cam.EntityRecordStateXml;
-import cz.tacr.cam.v1.schema.cam.NewItemsXml;
-import cz.tacr.cam.v1.schema.cam.PartXml;
-import cz.tacr.cam.v1.schema.cam.SetRecordStateXml;
-import cz.tacr.cam.v1.schema.cam.UpdateEntityXml;
-import cz.tacr.cam.v1.schema.cam.UpdateItemsXml;
-import cz.tacr.cam.v1.schema.cam.UuidXml;
+import cz.tacr.cam.v2.schema.cam.BatchUpdateXml;
+import cz.tacr.cam.v2.schema.cam.CodeXml;
+import cz.tacr.cam.v2.schema.cam.DeleteItemsXml;
+import cz.tacr.cam.v2.schema.cam.DeletePartXml;
+import cz.tacr.cam.v2.schema.cam.EntityIdXml;
+import cz.tacr.cam.v2.schema.cam.EntityRecordRefXml;
+import cz.tacr.cam.v2.schema.cam.EntityRecordStateXml;
+import cz.tacr.cam.v2.schema.cam.NewItemsXml;
+import cz.tacr.cam.v2.schema.cam.PartXml;
+import cz.tacr.cam.v2.schema.cam.SetRecordStateXml;
+import cz.tacr.cam.v2.schema.cam.UpdateEntityXml;
+import cz.tacr.cam.v2.schema.cam.UpdateItemsXml;
+import cz.tacr.cam.v2.schema.cam.UuidXml;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
@@ -29,6 +29,7 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.GroovyService;
+import jakarta.xml.bind.JAXBElement;
 
 abstract public class BatchUpdateBuilder extends CamXmlBuilder {
 
@@ -64,47 +65,47 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
      * @param batchEntityRef
      * @param change
      */
-    protected void addChange(Object change) {
+    protected void addChange(JAXBElement<?> change) {
     	Object entityRef = createBatchEntityRecordRef();
         UpdateEntityXml result = new UpdateEntityXml(entityRef, change);
         trgList.add(result);
     }
 
-    protected void addUpdate(NewItemsXml change) {
-        addChange(change);
+    protected void addUpdate(NewItemsXml newItems) {
+        addChange(objectFactory.createUpdateEntityXmlNewItems(newItems));
     }
 
-    protected void addUpdate(PartXml change) {
-        addChange(change);
+    protected void addUpdate(PartXml part) {
+        addChange(objectFactory.createUpdateEntityXmlNewPart(part));
     }
 
-    protected void addUpdate(DeletePartXml change) {
-        addChange(change);
+    protected void addUpdate(DeletePartXml deletePart) {
+        addChange(objectFactory.createUpdateEntityXmlDeletePart(deletePart));
     }
 
-    protected void addUpdate(SetRecordStateXml change) {
-        addChange(change);
+    protected void addUpdate(SetRecordStateXml setRecordState) {
+        addChange(objectFactory.createUpdateEntityXmlSetState(setRecordState));
     }
 
-    protected void addUpdate(DeleteItemsXml change) {
-        addChange(change);
+    protected void addUpdate(DeleteItemsXml deleteItems) {
+        addChange(objectFactory.createUpdateEntityXmlDeleteItems(deleteItems));
     }
 
-    protected void addUpdate(UpdateItemsXml change) {
-        addChange(change);
+    protected void addUpdate(UpdateItemsXml updateItems) {
+        addChange(objectFactory.createUpdateEntityXmlUpdateItems(updateItems));
     }
 
     protected void setPrefName(UuidXml prefName) {
-        addChange(prefName);
+        addChange(objectFactory.createUpdateEntityXmlSetPrefferedName(prefName));
     }
     
     protected void setApType(CodeXml apType) {
-		addChange(apType);
+		addChange(objectFactory.createUpdateEntityXmlSetEntityType(apType));
 	}
 
     protected void setRecordState(EntityRecordStateXml recordState) {
     	SetRecordStateXml srs = new SetRecordStateXml(recordState, null);
-    	addChange(srs);
+    	addChange(objectFactory.createUpdateEntityXmlSetState(srs));
     }
 
     /**
@@ -120,10 +121,10 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
     	// read binding
     	ApAccessPoint ap = recordRef.getRecord();
     	ApBinding binding = null;
-    	if (ap != null) {
+    	if(ap!=null) {
     		//
     		ApBindingState bindingState = this.externalSystemService.findByAccessPointAndExternalSystem(ap, apExternalSystem);
-    		if (bindingState != null) {
+    		if(bindingState!=null) {
     			binding = bindingState.getBinding();
     		}
     	} else {
@@ -142,7 +143,7 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
 
         EntityRecordRefXml entityRecordRef = new EntityRecordRefXml();
         long entityId = Long.parseLong(binding.getValue());
-        entityRecordRef.setEid(new EntityIdXml(entityId));
+        entityRecordRef.setEntityId(new EntityIdXml(entityId));
         return entityRecordRef;
     }
 

@@ -5,7 +5,8 @@
 
 Změny:
 	- 24.2.2025 - nová verze API 2
-	- 31.8.2025 - přidání odkazu na entitu ze zjištění, přepracování atributů elementu TimeInterval (odstranění zkratek, volitenlé atributy pro odhad), doplnění dokumentace</xs:documentation>
+	- 31.8.2025 - přidání odkazu na entitu ze zjištění, přepracování atributů elementu TimeInterval (odstranění zkratek, volitenlé atributy pro odhad), doplnění dokumentace
+	- 17.10.2025 - oprava pojmenování atributu v BatchEntityRecordRev (entityUuid)</xs:documentation>
 	</xs:annotation>
 	<xs:element name="batchChangeFailure" type="s1:BatchChangeFailure">
 		<xs:annotation>
@@ -232,6 +233,9 @@ Identifikátor může být UUID verze 1 nebo verze 4.</xs:documentation>
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:complexType name="AddIssue">
+		<xs:annotation>
+			<xs:documentation>Přidání upozornění k entitě.</xs:documentation>
+		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="s1:Issue">
 				<xs:sequence/>
@@ -305,14 +309,14 @@ Vrací se seznam informací o revizích entit. U každé revize je vyplněno:
 V závislosti na užití odkazu jsou vyplněny identifikátory: entityId a entityUuid. V případě požadavku na změnu entity musí alespoň jeden z nich být vyplněn. Při vracení informací o entitě z CAM jsou nastaveny oba dva. Součástí odkazu je také volitelná informace o poslední verzi metadat (metadataRev).</xs:documentation>
 		</xs:annotation>
 		<xs:sequence/>
-		<xs:attribute name="enityUuid" use="optional" type="s1:UUID">
-			<xs:annotation>
-				<xs:documentation>Identifikátor entity typu UUID</xs:documentation>
-			</xs:annotation>
-		</xs:attribute>
 		<xs:attribute name="entityId" use="optional" type="s1:EntityId">
 			<xs:annotation>
 				<xs:documentation>Číselný identifikátor entity.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="entityUuid" use="optional" type="s1:UUID">
+			<xs:annotation>
+				<xs:documentation>Identifikátor entity typu UUID</xs:documentation>
 			</xs:annotation>
 		</xs:attribute>
 		<xs:attribute name="localId" use="required" type="xs:ID">

@@ -1,5 +1,6 @@
 package cz.tacr.elza.cam;
 
+import java.time.Duration;
 import java.util.List;
 
 import jakarta.transaction.Transactional;
@@ -14,19 +15,18 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.cam.SyncConfig.SynchronizationInfo;
-import cz.tacr.elza.cam.v1.CamService;
+import cz.tacr.elza.service.AccessPointConnectorService;
 
 /**
  * Časovač pro noční synchronizace přístupových bodů s CAM
  */
 @Service
-public class CamScheduler
-        implements SchedulingConfigurer {
-
+public class CamScheduler implements SchedulingConfigurer {
 
     private static final Logger log = LoggerFactory.getLogger(CamScheduler.class);
+
     @Autowired
-    private CamService camService;
+    private AccessPointConnectorService apConnectService;
 
     @Autowired
     private SyncConfig syncConfig;
@@ -53,24 +53,20 @@ public class CamScheduler
         }
     }
 
-    private void configureTask(SynchronizationInfo syncConfig,
-                                 ScheduledTaskRegistrar taskRegistrar) {
-        if (StringUtils.isNotBlank(syncConfig.syncAt)) {
-            taskRegistrar.addCronTask(() -> runSync(syncConfig.getCode()),
-                                      syncConfig.resetAt);
+    private void configureTask(SynchronizationInfo syncConfig, ScheduledTaskRegistrar taskRegistrar) {
+        if (StringUtils.isNotBlank(syncConfig.getSyncAt())) {
+            taskRegistrar.addCronTask(() -> runSync(syncConfig.getCode()), syncConfig.getResetAt());
         }
-        if (syncConfig.syncDelay != null && syncConfig.syncDelay > 0) {
-            taskRegistrar.addFixedDelayTask(() -> runSync(syncConfig.getCode()),
-                                            syncConfig.syncDelay * 1000);
+        if (syncConfig.getSyncDelay() != null && syncConfig.getSyncDelay() > 0) {
+            taskRegistrar.addFixedDelayTask(() -> runSync(syncConfig.getCode()), Duration.ofSeconds(syncConfig.getSyncDelay()));
         }
     }
 
-    private void runSync(String code) {
+    private void runSync(String extSysCode) {
         if (enabled) {
             log.debug("Accesspoint synchronization started.");
-            camService.synchronizeAccessPointsForExternalSystem(code);
+            apConnectService.getConnector(extSysCode).synchronizeAccessPointsForExternalSystem(extSysCode);
             log.debug("Accesspoint synchronization finished.");
         }
     }
-
 }

@@ -25,7 +25,8 @@ public class SchemaManager {
     private static Logger logger = LoggerFactory.getLogger(SchemaManager.class);
 
     public static final String EAD3_SCHEMA_URL = "http://ead3.archivists.org/schema/";
-    public static final String CAM_SCHEMA_URL = "http://cam.tacr.cz/2019";
+    public static final String CAM_SCHEMA_2019 = "http://cam.tacr.cz/2019";
+    public static final String CAM_SCHEMA_2025 = "http://cam.tacr.cz/2025";
 
     private SchemaFactory schemaFactory;
 
@@ -84,8 +85,10 @@ public class SchemaManager {
         switch (url) {
         case EAD3_SCHEMA_URL:
             return "/schema/ead3.xsd";
-        case CAM_SCHEMA_URL:
+        case CAM_SCHEMA_2019:
             return "/cam/cam-2019.xsd";
+        case CAM_SCHEMA_2025:
+            return "/cam/cam-2025.xsd";
         default:
             return null;
         }

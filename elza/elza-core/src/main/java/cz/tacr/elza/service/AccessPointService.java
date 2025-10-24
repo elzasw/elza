@@ -2528,7 +2528,11 @@ public class AccessPointService {
         publishQueueEvent(item, EventType.ACCESS_POINT_EXPORT_STARTED);
     }
 
-    public void publishExtQueueProcessCompletedEvent(final ExtSyncsQueueItem item) {
+	public void publishExtQueueProcessNeedConfirmEvent(ExtSyncsQueueItem item) {
+        publishQueueEvent(item, EventType.ACCESS_POINT_EXPORT_NEED_CONFIRM);
+	}
+
+	public void publishExtQueueProcessCompletedEvent(final ExtSyncsQueueItem item) {
         publishQueueEvent(item, EventType.ACCESS_POINT_EXPORT_COMPLETED);
     }
 
