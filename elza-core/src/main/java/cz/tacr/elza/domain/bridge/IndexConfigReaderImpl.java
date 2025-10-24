@@ -237,6 +237,7 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
             if (!itemTypeMap.keySet().contains(itemType.getCode())) {
             	ItemTypeInfo itemTypeInfo = new ItemTypeInfo(itemType.getCode(), DataType.valueOf(itemType.getDataType()));
             	itemTypeMap.put(itemType.getCode(), itemTypeInfo);
+                itemTypeDataTypeMap.put(itemType.getCode(), DataType.valueOf(itemType.getDataType()));
             }
         }
         ItemSpecs itemSpecs = PackageUtils.convertXmlStreamToObject(ItemSpecs.class, streamMap.get(ITEM_SPEC_XML));

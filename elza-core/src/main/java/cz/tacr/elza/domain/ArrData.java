@@ -6,6 +6,7 @@ import java.util.Objects;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.locationtech.jts.geom.Geometry;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -141,6 +142,12 @@ public abstract class ArrData implements NodeCacheSerializable, AccessPointCache
     @JsonIgnore
     @Transient
     public abstract String getFulltextValue();
+
+    @JsonIgnore
+    @Transient
+    public Geometry getValueGeometry() {
+        return null;
+    }
 
     @JsonIgnore
     @Transient

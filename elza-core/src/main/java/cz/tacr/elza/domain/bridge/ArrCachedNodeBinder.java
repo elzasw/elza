@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
+import org.hibernate.search.engine.spatial.GeoPoint;
 import org.hibernate.search.mapper.pojo.bridge.binding.TypeBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ public class ArrCachedNodeBinder implements TypeBinder {
 
     private TypeBindingContext context;
 
+		this.context = context; 		
     @Override
     public void bind(TypeBindingContext context) {
         log.debug("Bind ArrCachedNodeBinder");

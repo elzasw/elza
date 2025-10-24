@@ -77,7 +77,7 @@ export function fundSubNodeDaosRequest(versionId, nodeId, routingKey) {
 
 export function fundSubNodeDaoChangeScenario(daoId, scenario, versionId, nodeId) {
     return (dispatch) => {
-        return Api.daos.changeLinkScenario(daoId, scenario).then((response)=>{
+        return Api.daos.daoChangeLinkScenario(daoId, scenario).then((response)=>{
             dispatch(fundSubNodeDaosInvalidate(versionId, [nodeId]));
             return response;
         });

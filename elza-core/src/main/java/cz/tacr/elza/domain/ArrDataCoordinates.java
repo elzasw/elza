@@ -48,6 +48,11 @@ public class ArrDataCoordinates extends ArrData {
     }
 
     @Override
+    public Geometry getValueGeometry() {
+        return value;
+    }
+
+    @Override
     public String getFulltextValue() {
         String str = GeometryConvertor.convert(value);
         return str;

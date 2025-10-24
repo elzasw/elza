@@ -5,7 +5,7 @@ import java.util.Date;
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.TypeBinderRef;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.TypeBinding;
-
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -127,7 +127,7 @@ public class ArrDescItem extends ArrItem {
 		if (data instanceof ArrDataCoordinates) {
 			return null;
 		}
-        return indexData.getFulltextValue();
+		return indexData.getFulltextValue();
     }
 
 	@JsonIgnore
@@ -143,6 +143,11 @@ public class ArrDescItem extends ArrItem {
     @JsonIgnore
     public Date getValueDate() {
         return indexData.getValueDate();
+    }
+
+    @JsonIgnore
+    public Geometry getValueGeometry() {
+        return indexData.getValueGeometry();
     }
 
     @JsonIgnore
@@ -235,8 +240,15 @@ public class ArrDescItem extends ArrItem {
             return (data == null) ? null : data.getDate();
         }
 
-        @Override
-        public Boolean isValue() { return (data == null) ? null : data.getValueBoolean();}
+		@Override
+		public Geometry getValueGeometry() {
+        	return (data == null) ? null : data.getValueGeometry();
+		}
+
+		@Override
+        public Boolean isValue() { 
+        	return (data == null) ? null : data.getValueBoolean();
+        }
     }
 
     @Override

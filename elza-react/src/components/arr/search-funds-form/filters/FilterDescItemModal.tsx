@@ -184,6 +184,76 @@ export function FilterDescItemModal({
       ],
       fieldComponent: FilterFieldRecordRef,
     },
+    [RulDataTypeCodeEnum.STRUCTURED]: {
+      operations: [
+        OperationCompareType.Contains,
+        OperationCompareType.Eq,
+        OperationCompareType.Neq,
+        OperationCompareType.IsNull,
+        OperationCompareType.NotNull
+      ],
+      fieldComponent: FilterFieldText,
+    },
+    [RulDataTypeCodeEnum.URI_REF]: {
+      operations: [
+        OperationCompareType.Contains,
+        OperationCompareType.Eq,
+        OperationCompareType.Neq,
+        OperationCompareType.IsNull,
+        OperationCompareType.NotNull
+      ],
+      fieldComponent: FilterFieldText,
+    },
+    [RulDataTypeCodeEnum.BIT]: {
+      operations: [
+        OperationCompareType.IsNull,
+        OperationCompareType.NotNull
+      ]
+    },
+    [RulDataTypeCodeEnum.DATE]: {
+      operations: [
+        OperationCompareType.IsNull,
+        OperationCompareType.NotNull
+      ]
+    },
+    [RulDataTypeCodeEnum.UNITID]: {
+      operations: [
+        OperationCompareType.Contains,
+        OperationCompareType.Eq,
+        OperationCompareType.Neq,
+        OperationCompareType.IsNull,
+        OperationCompareType.NotNull
+      ],
+      fieldComponent: FilterFieldText,
+    },
+    [RulDataTypeCodeEnum.FILE_REF]: {
+      operations: [
+        OperationCompareType.Contains,
+        OperationCompareType.Eq,
+        OperationCompareType.Neq,
+        OperationCompareType.IsNull,
+        OperationCompareType.NotNull
+      ],
+      fieldComponent: FilterFieldText,
+    },
+    // [RulDataTypeCodeEnum.JSON_TABLE]: {
+    //   operations: [
+    //     OperationCompareType.IsNull,
+    //     OperationCompareType.NotNull
+    //   ]
+    // },
+    [RulDataTypeCodeEnum.COORDINATES]: {
+      operations: [
+        OperationCompareType.IsNull,
+        OperationCompareType.NotNull
+      ]
+    },
+    // [RulDataTypeCodeEnum.FORMATTED_TEXT]: {
+    //   operations: [
+    //     OperationCompareType.IsNull,
+    //     OperationCompareType.NotNull
+    //   ]
+    // },
   }
 
   const [itemTypeCode, setItemTypeCode] = useState<string>(initialValue?.data?.itemType.code);
