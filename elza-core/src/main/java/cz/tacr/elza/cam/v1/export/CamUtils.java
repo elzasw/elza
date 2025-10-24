@@ -1,4 +1,4 @@
-package cz.tacr.elza.dataexchange.output.writer.cam;
+package cz.tacr.elza.cam.v1.export;
 
 import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.CENTURY;
 import static cz.tacr.elza.domain.converter.UnitDateConverterConsts.DATE;
@@ -24,14 +24,14 @@ import cz.tacr.cam.v1.schema.cam.PartXml;
 import cz.tacr.cam.v1.schema.cam.PartsXml;
 import cz.tacr.cam.v1.schema.cam.StringXml;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.dataexchange.output.writer.cam.CamDataType;
+import cz.tacr.elza.dataexchange.output.writer.cam.CamItemType;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.exception.SystemException;
 
 public class CamUtils {
 
     final protected static ObjectFactory objectFactory = new ObjectFactory();
-
-    public final static String CAM_SCHEMA = "http://cam.tacr.cz/2019";
 
     public static ObjectFactory getObjectFactory() {
         return objectFactory;

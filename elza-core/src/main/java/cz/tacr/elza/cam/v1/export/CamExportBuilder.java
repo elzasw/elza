@@ -1,4 +1,4 @@
-package cz.tacr.elza.dataexchange.output.writer.cam;
+package cz.tacr.elza.cam.v1.export;
 
 import java.io.OutputStream;
 import java.io.Writer;
@@ -183,7 +183,7 @@ public class CamExportBuilder implements ExportBuilder {
         try {
             Marshaller marshaller = jaxbContext.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            marshaller.setSchema(schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL));
+            marshaller.setSchema(schemaManager.getSchema(SchemaManager.CAM_SCHEMA_2019));
             marshaller.marshal(jaxbEnts, os);
         } catch (JAXBException e) {
             throw new XMLStreamException("Failed to save with JAXB", e);
@@ -200,7 +200,7 @@ public class CamExportBuilder implements ExportBuilder {
             Marshaller marshaller = jaxbContext.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
-            marshaller.setSchema(schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL));
+            marshaller.setSchema(schemaManager.getSchema(SchemaManager.CAM_SCHEMA_2019));
             marshaller.marshal(jaxbEnt, writer);
         } catch (JAXBException e) {
             throw new XMLStreamException("Failed to save with JAXB", e);
@@ -217,7 +217,7 @@ public class CamExportBuilder implements ExportBuilder {
             Marshaller marshaller = jaxbContext.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             marshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
-            marshaller.setSchema(schemaManager.getSchema(SchemaManager.CAM_SCHEMA_URL));
+            marshaller.setSchema(schemaManager.getSchema(SchemaManager.CAM_SCHEMA_2019));
             marshaller.marshal(jaxbEnt, xmlDoc);
         } catch (JAXBException e) {
             throw new XMLStreamException("Failed to save with JAXB", e);

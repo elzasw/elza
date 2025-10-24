@@ -39,8 +39,8 @@ import cz.tacr.cam.v1.schema.cam.PartXml;
 import cz.tacr.cam.v1.schema.cam.SetRecordStateXml;
 import cz.tacr.cam.v1.schema.cam.UpdateItemsXml;
 import cz.tacr.cam.v1.schema.cam.UuidXml;
+import cz.tacr.elza.cam.v1.export.CamUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
-import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApExternalSystem;
@@ -109,14 +109,14 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
     private Map<Integer, BindingPartInfo> bindingMap = new HashMap<>();
 
     public UpdateEntityBuilder(final ExternalSystemService externalSystemService,
-    		final ApBindingItemRepository bindingItemRepository,
-    		final StaticDataProvider sdp,
-    		final ApState state,
-    		final ApBindingState bindingState,
-    		final GroovyService groovyService,
-    		final DataService dataService,
-    		final ApScope scope,
-    		final ApExternalSystem externalSystem) {
+    		                   final ApBindingItemRepository bindingItemRepository,
+    		                   final StaticDataProvider sdp,
+    		                   final ApState state,
+    		                   final ApBindingState bindingState,
+    		                   final GroovyService groovyService,
+    		                   final DataService dataService,
+    		                   final ApScope scope,
+    		                   final ApExternalSystem externalSystem) {
         super(sdp, bindingState.getAccessPoint(), groovyService, dataService, scope, externalSystem, externalSystemService);
         this.bindingItemRepository = bindingItemRepository;
         this.bindingState = bindingState;
