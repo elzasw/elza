@@ -88,9 +88,10 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 
     private List<PackageInfoWrapper> packagesToImport;
     private List<PackageInfoWrapper> allPackages;
+
     private List<String> partTypeCodes;
     private List<String> itemSpecCodes;
-
+    private Map<String, DataType> itemTypeDataTypeMap;
     private Map<String, ItemTypeInfo> itemTypeMap;
 
     private Map<String, PackageInfoWrapper> latestVersionMap;
@@ -104,13 +105,14 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
     public void init() throws IOException {
         packagesToImport = new ArrayList<>();
         partTypeCodes = new ArrayList<>();
+        itemTypeDataTypeMap = new HashMap<>();
         itemSpecCodes = new ArrayList<>();
         itemTypeMap = new HashMap<>();
 
         // vyčištění složek s indexovými soubory
         if (cleanIndexDir) {
-        	Path luceneIndexesDir = Paths.get(workDir, ResourcePathResolver.LUCENE_DIR, ResourcePathResolver.INDEXES_DIR);
-        	FileSystemUtils.deleteRecursively(luceneIndexesDir);
+            Path luceneIndexesDir = Paths.get(workDir, ResourcePathResolver.LUCENE_DIR, ResourcePathResolver.INDEXES_DIR);
+            FileSystemUtils.deleteRecursively(luceneIndexesDir);
         }
 
         // get current packages from db
@@ -127,78 +129,78 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
         Path dpkgDir = Paths.get(workDir, ResourcePathResolver.DPKG_DIR);
         if (Files.exists(dpkgDir)) {
 
-	        logger.info("Checking folder {} for packages...", dpkgDir);
+            logger.info("Checking folder {} for packages...", dpkgDir);
 
-	        latestVersionMap = packageInfoList.stream()
-	                .collect(Collectors.toMap(PackageInfo::getCode, p -> new PackageInfoWrapper(p, null)));
+            latestVersionMap = packageInfoList.stream()
+                    .collect(Collectors.toMap(PackageInfo::getCode, p -> new PackageInfoWrapper(p, null)));
 
-	        try (Stream<Path> streamPaths = Files.list(dpkgDir)) {
+            try (Stream<Path> streamPaths = Files.list(dpkgDir)) {
 
-	            // vyhledani poslednich verzi balicku
-	            for (Path path : streamPaths.collect(Collectors.toList())) {
-	                // check if file is package
-	                if (Files.isDirectory(path) || !path.getFileName().toString().endsWith("zip")) {
-	                    continue;
-	                }
-	                logger.info("Reading package info: {}", path);
+                // vyhledani poslednich verzi balicku
+                for (Path path : streamPaths.collect(Collectors.toList())) {
+                    // check if file is package
+                    if (Files.isDirectory(path) || !path.getFileName().toString().endsWith("zip")) {
+                        continue;
+                    }
+                    logger.info("Reading package info: {}", path);
 
-	                PackageInfoWrapper pkg = getPackageInfo(path);
+                    PackageInfoWrapper pkg = getPackageInfo(path);
 
-	                if (pkg == null) {
-	                    logger.error("Cannot read package info from file : {}. File is skipped.", path.toString());
-	                    continue;
-	                }
+                    if (pkg == null) {
+                        logger.error("Cannot read package info from file : {}. File is skipped.", path.toString());
+                        continue;
+                    }
 
-	                PackageInfoWrapper mapPkg = latestVersionMap.get(pkg.getCode());
+                    PackageInfoWrapper mapPkg = latestVersionMap.get(pkg.getCode());
 
-	                // žádné informace o balíčku nebo nižší verzi
-	                boolean readFromFile = true;
-	                if (mapPkg != null) {
-	                	// mame data z db
-	                	if (mapPkg.getVersion() > pkg.getVersion()) {
-	                		throw new IllegalStateException("Package is an older version than the one already imported. New package version: "
-		                			+ pkg.getVersion() + ", old package version: " + mapPkg.getVersion());
-	                	}
-	                	// verze v databázi a v zip archivu jsou stejné i to není vývoj
-	                	if (mapPkg.getVersion().equals(pkg.getVersion()) && !testing) {
-	                		readFromFile = false;
-	                	}
-	                }
+                    // žádné informace o balíčku nebo nižší verzi
+                    boolean readFromFile = true;
+                    if (mapPkg != null) {
+                        // mame data z db
+                        if (mapPkg.getVersion() > pkg.getVersion()) {
+                            throw new IllegalStateException("Package is an older version than the one already imported. New package version: "
+                                    + pkg.getVersion() + ", old package version: " + mapPkg.getVersion());
+                        }
+                        // verze v databázi a v zip archivu jsou stejné i to není vývoj
+                        if (mapPkg.getVersion().equals(pkg.getVersion()) && !testing) {
+                            readFromFile = false;
+                        }
+                    }
 
-	                // pokud balíček není stažen nebo jeho verze neodpovídá stažené (menší) nebo probíhá vývoj 
-                	if (readFromFile) {
-	                	packagesToImport.add(new PackageInfoWrapper(pkg.getPkg(), path));
-	                    latestVersionMap.put(pkg.getCode(), new PackageInfoWrapper(pkg.getPkg(), path));
+                    // pokud balíček není stažen nebo jeho verze neodpovídá stažené (menší) nebo probíhá vývoj 
+                    if (readFromFile) {
+                        packagesToImport.add(new PackageInfoWrapper(pkg.getPkg(), path));
+                        latestVersionMap.put(pkg.getCode(), new PackageInfoWrapper(pkg.getPkg(), path));
 
-	                    Map<String, ByteArrayInputStream> streamMap = PackageUtils.createStreamsMap(pkg.getPath().toFile());
-	                	readTypeAndSpecDataFromZipFilePackage(streamMap);
+                        Map<String, ByteArrayInputStream> streamMap = PackageUtils.createStreamsMap(pkg.getPath().toFile());
+                        readTypeAndSpecDataFromZipFilePackage(streamMap);
 
-	                	// remove the read package
-	                	packagesMap.remove(pkg.getCode());
-                	}
-	            }
-	            allPackages = new ArrayList<>(latestVersionMap.values());
-	
-	        } catch (IOException e) {
-	            logger.error("Error processing a package zip file.", e);
-	            throw new SystemException("Error processing a package zip file.", e);
-	        }
+                        // remove the read package
+                        packagesMap.remove(pkg.getCode());
+                    }
+                }
+                allPackages = new ArrayList<>(latestVersionMap.values());
+    
+            } catch (IOException e) {
+                logger.error("Error processing a package zip file.", e);
+                throw new SystemException("Error processing a package zip file.", e);
+            }
 
-	        // reading data from db
-	        readTypeAndSpecDataFromDb(packagesMap.values());
+            // reading data from db
+            readTypeAndSpecDataFromDb(packagesMap.values());
         }
     }
 
     private void readTypeAndSpecDataFromDb(Collection<Integer> packageIds) {
-    	if (packageIds.isEmpty()) {
-    		return;
-    	}
-    	// prepare string condition
-    	String strList = packageIds.stream().map(String::valueOf).collect(Collectors.joining(","));
-    	String condition = String.format(" WHERE package_id IN (%s)", strList);
+        if (packageIds.isEmpty()) {
+            return;
+        }
+        // prepare string condition
+        String strList = packageIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        String condition = String.format(" WHERE package_id IN (%s)", strList);
 
         // create dataTypeMap<data_type_id, DataType> from rul_data_type from db
-    	Map<Integer, DataType> dataTypeMap = new HashMap<>();
+        Map<Integer, DataType> dataTypeMap = new HashMap<>();
         jdbcTemplate.query(SELECT_RUL_DATA_TYPE, (rs, rowNum) -> dataTypeMap.put(rs.getInt(DATA_TYPE_ID), DataType.fromCode(rs.getString(CODE))));
 
         // get item type codes from db
@@ -212,18 +214,18 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
         // get item type spec assign from db
         List<RulItemTypeSpecAssign> typeSpecAssign = jdbcTemplate.query(SELECT_RUL_ITEM_TYPE_SPEC, (rs, rowNum) -> new RulItemTypeSpecAssign(rs.getInt(ITEM_TYPE_ID), rs.getInt(ITEM_SPEC_ID)));
         Map<Integer, List<Integer>> typeSpecsMap = typeSpecAssign.stream().collect(Collectors.groupingBy(
-                			RulItemTypeSpecAssign::getTypeId, Collectors.mapping(RulItemTypeSpecAssign::getSpecId, Collectors.toList())
-                		));
+                            RulItemTypeSpecAssign::getTypeId, Collectors.mapping(RulItemTypeSpecAssign::getSpecId, Collectors.toList())
+                        ));
 
         // create Map<String, ItemTypeInfo>
         for (RulItemType itemType : itemTypeItems) {
-        	ItemTypeInfo itemTypeInfo = new ItemTypeInfo(itemType.getId(), itemType.getCode(), dataTypeMap.get(itemType.getDataTypeId()));
-        	List<Integer> itemSpecs = typeSpecsMap.get(itemType.getId());
-        	if (itemSpecs != null) {
-        		List<String> specs = itemSpecs.stream().map(spec -> itemSpecMap.get(spec)).toList();
-        		itemTypeInfo.setSpecs(specs);
-        	}
-        	itemTypeMap.put(itemType.getCode(), itemTypeInfo);
+            ItemTypeInfo itemTypeInfo = new ItemTypeInfo(itemType.getId(), itemType.getCode(), dataTypeMap.get(itemType.getDataTypeId()));
+            List<Integer> itemSpecs = typeSpecsMap.get(itemType.getId());
+            if (itemSpecs != null) {
+                List<String> specs = itemSpecs.stream().map(spec -> itemSpecMap.get(spec)).toList();
+                itemTypeInfo.setSpecs(specs);
+            }
+            itemTypeMap.put(itemType.getCode(), itemTypeInfo);
         }
 
         // get part type codes from db
@@ -235,21 +237,21 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
         ItemTypes itemTypes = PackageUtils.convertXmlStreamToObject(ItemTypes.class, streamMap.get(ITEM_TYPE_XML));
         for (ItemType itemType : itemTypes.getItemTypes()) {
             if (!itemTypeMap.keySet().contains(itemType.getCode())) {
-            	ItemTypeInfo itemTypeInfo = new ItemTypeInfo(itemType.getCode(), DataType.valueOf(itemType.getDataType()));
-            	itemTypeMap.put(itemType.getCode(), itemTypeInfo);
+                ItemTypeInfo itemTypeInfo = new ItemTypeInfo(itemType.getCode(), DataType.valueOf(itemType.getDataType()));
+                itemTypeMap.put(itemType.getCode(), itemTypeInfo);
                 itemTypeDataTypeMap.put(itemType.getCode(), DataType.valueOf(itemType.getDataType()));
             }
         }
         ItemSpecs itemSpecs = PackageUtils.convertXmlStreamToObject(ItemSpecs.class, streamMap.get(ITEM_SPEC_XML));
         for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
-        	if (!itemSpecCodes.contains(itemSpec.getCode())) {
-        		itemSpecCodes.add(itemSpec.getCode());
-        		for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
-        			ItemTypeInfo itemTypeInfo = itemTypeMap.get(itemTypeAssign.getCode());
-        			List<String> listItemSpecCodes = itemTypeInfo.getSpecs();
-        			listItemSpecCodes.add(itemSpec.getCode());
-        		}
-        	}
+            if (!itemSpecCodes.contains(itemSpec.getCode())) {
+                itemSpecCodes.add(itemSpec.getCode());
+                for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
+                    ItemTypeInfo itemTypeInfo = itemTypeMap.get(itemTypeAssign.getCode());
+                    List<String> listItemSpecCodes = itemTypeInfo.getSpecs();
+                    listItemSpecCodes.add(itemSpec.getCode());
+                }
+            }
         }
         PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class, streamMap.get(PART_TYPE_XML));
         if (partTypes != null) {
@@ -273,17 +275,17 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 
     @Override
     public Collection<String> getItemSpecCodesByTypeCode(String itemTypeCode) {
-		ItemTypeInfo itemType = itemTypeMap.get(itemTypeCode);
-		return itemType != null ? itemType.getSpecs() : Collections.emptyList();
-	}
+        ItemTypeInfo itemType = itemTypeMap.get(itemTypeCode);
+        return itemType != null ? itemType.getSpecs() : Collections.emptyList();
+    }
 
-	@Override
-	public DataType getDataTypeByItemTypeCode(String itemTypeCode) {
-		ItemTypeInfo itemType = itemTypeMap.get(itemTypeCode);
-		return itemType != null ? itemType.getDataType() : null;
-	}
+    @Override
+    public DataType getDataTypeByItemTypeCode(String itemTypeCode) {
+        ItemTypeInfo itemType = itemTypeMap.get(itemTypeCode);
+        return itemType != null ? itemType.getDataType() : null;
+    }
 
-	public List<PackageInfoWrapper> getPackagesToImport() {
+    public List<PackageInfoWrapper> getPackagesToImport() {
         return packagesToImport;
     }
 
@@ -308,84 +310,84 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
     }
 
     private class ItemTypeInfo {
-    	final Integer id;
-    	final String code;
-    	final DataType dataType;
-    	List<String> specs = new ArrayList<>();
-    	public ItemTypeInfo(Integer id, String code, DataType dataType) {
-    		this.id = id;
-    		this.code = code;
-			this.dataType = dataType;
-		}
-    	public ItemTypeInfo(String code, DataType dataType) {
-    		this.id = null;
-    		this.code = code;
-			this.dataType = dataType;
-		}
-		public Integer getId() {
-			return id;
-		}
-		public String getCode() {
-			return code;
-		}
-		public DataType getDataType() {
-			return dataType;
-		}
-		public void setSpecs(List<String> specs) {
-			this.specs = specs;
-		}
-		public List<String> getSpecs() {
-			return specs;
-		}
+        final Integer id;
+        final String code;
+        final DataType dataType;
+        List<String> specs = new ArrayList<>();
+        public ItemTypeInfo(Integer id, String code, DataType dataType) {
+            this.id = id;
+            this.code = code;
+            this.dataType = dataType;
+        }
+        public ItemTypeInfo(String code, DataType dataType) {
+            this.id = null;
+            this.code = code;
+            this.dataType = dataType;
+        }
+        public Integer getId() {
+            return id;
+        }
+        public String getCode() {
+            return code;
+        }
+        public DataType getDataType() {
+            return dataType;
+        }
+        public void setSpecs(List<String> specs) {
+            this.specs = specs;
+        }
+        public List<String> getSpecs() {
+            return specs;
+        }
     }
 
     private class RulItemType { // from rul_item_type: id, dataTypeId, code
-    	final Integer id;
-    	final Integer dataTypeId;
-    	final String code;
-    	RulItemType(Integer id, Integer dataTypeId, String code) {
-			this.id = id;
-			this.dataTypeId = dataTypeId;
-			this.code = code;
-		}
-		public Integer getId() {
-			return id;
-		}
-		public Integer getDataTypeId() {
-			return dataTypeId;
-		}
-		public String getCode() {
-			return code;
-		}
+        final Integer id;
+        final Integer dataTypeId;
+        final String code;
+        RulItemType(Integer id, Integer dataTypeId, String code) {
+            this.id = id;
+            this.dataTypeId = dataTypeId;
+            this.code = code;
+        }
+        public Integer getId() {
+            return id;
+        }
+        public Integer getDataTypeId() {
+            return dataTypeId;
+        }
+        public String getCode() {
+            return code;
+        }
     }
 
     private class RulItemSpec { // from rul_item_spec: id, code
-    	final Integer id;
-    	final String code;
-    	RulItemSpec(Integer id, String code) {
-			this.id = id;
-			this.code = code;
-		}
-		public Integer getId() {
-			return id;
-		}
-		public String getCode() {
-			return code;
-		}
+        final Integer id;
+        final String code;
+        RulItemSpec(Integer id, String code) {
+            this.id = id;
+            this.code = code;
+        }
+        public Integer getId() {
+            return id;
+        }
+        public String getCode() {
+            return code;
+        }
     }
 
     private class RulItemTypeSpecAssign { // from rul_item_type_spec_assign: typeId, specId
-    	final Integer typeId;
-    	final Integer specId;
-		RulItemTypeSpecAssign(Integer typeId, Integer specId) {
-			this.typeId = typeId;
-			this.specId = specId;
-		}
-		public Integer getTypeId() {
-			return typeId;
-		}
-		public Integer getSpecId() {
-			return specId;
-		}
+        final Integer typeId;
+        final Integer specId;
+        RulItemTypeSpecAssign(Integer typeId, Integer specId) {
+            this.typeId = typeId;
+            this.specId = specId;
+        }
+        public Integer getTypeId() {
+            return typeId;
+        }
+        public Integer getSpecId() {
+            return specId;
+        }
     }
 }
