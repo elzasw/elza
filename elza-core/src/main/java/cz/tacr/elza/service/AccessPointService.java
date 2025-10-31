@@ -852,6 +852,7 @@ public class AccessPointService {
     public void deleteScope(final ApScope scope) {
         Validate.notNull(scope, "Scope musí být vyplněn");
         Validate.notNull(scope.getScopeId(), "Identifikátor scope musí být vyplněn");
+        logger.info("Deleting APs in scope, scopeId: {}", scope.getScopeId());
 
         List<ApState> apStates = stateRepository.findByScope(scope);
         if (!deleteWithEntities) {
@@ -866,7 +867,7 @@ public class AccessPointService {
 
         fundRegisterScopeRepository.deleteAll(fundRegisterScopeRepository.findByScope(scope));
         scopeRepository.delete(scope);
-        
+
         logger.info("APs in scope successfully deleted, scopeId: {}", scope.getScopeId());
     }
 
@@ -893,30 +894,52 @@ public class AccessPointService {
     		List<Integer> revisionIdsNext = revisionRepository.findAllRevisionIdsByAccessPointIdIn(p);
     		revisionIds.addAll(revisionIdsNext);
     	});
+        logger.debug("Defined revisions to delete, size: {}", revisionIds.size());
 
-    	// ap_key_value(s) ke mazání
-    	List<Integer> keyValueIdsToDelete = new ArrayList<>();
-    	ObjectListIterator.forEachPage(apIds, p -> {
-    		List<Integer> keyIdsNext = keyValueRepository.findAllIdByAccessPointIdIn(p);
-    		keyValueIdsToDelete.addAll(keyIdsNext);
-    	});
-
-    	// mazání bindings
+    	// určujeme bindings, pokud existují
     	List<Integer> bindingIds = new ArrayList<>();
     	ObjectListIterator.forEachPage(apIds, p -> {
         	List<Integer> idsNext = bindingStateRepository.findAllBindingIdByAccessPointIdIn(p);
         	bindingIds.addAll(idsNext);
     	});
+        logger.debug("Defined bindings to delete, size: {}", bindingIds.size());
+
+    	// určujeme ap_key_value(s) ke mazání
+    	List<Integer> keyValueIds = new ArrayList<>();
     	ObjectListIterator.forEachPage(apIds, p -> {
-	    	bindingItemRepository.deleteAllByBindingIdIn(p);
+    		List<Integer> keyIdsNext = keyValueRepository.findAllIdByAccessPointIdIn(p);
+    		keyValueIds.addAll(keyIdsNext);
+    	});
+        logger.debug("Defined key values to delete, size: {}", keyValueIds.size());
+
+        // odpojení bindingId od arr_data_record_ref
+        ObjectListIterator.forEachPage(bindingIds, p -> dataRecordRefRepository.disconnectBindings(p));
+        logger.debug("Disconnected bindings, size: {}", bindingIds.size());
+
+        // odpojení recordId od arr_data_record_ref
+        ObjectListIterator.forEachPage(apIds, p -> dataRecordRefRepository.disconnectRecords(p));
+        logger.debug("Disconnected records, size: {}", apIds.size());
+
+        // mazání bindings
+    	ObjectListIterator.forEachPage(bindingIds, p -> {
+    		bindingItemRepository.deleteAllByBindingIdIn(p);
 	    	bindingStateRepository.deleteAllByBindingIdIn(p);
 	    	bindingRepository.deleteAllById(p);
     	});
+    	// pro úspěšné mazání ap_item(s)
     	bindingItemRepository.flush();
+        logger.debug("Deleted bindings, size: {}", bindingIds.size());
 
     	// mazání index i revIndex
-    	ObjectListIterator.forEachPage(apIds, p -> indexRepository.deleteAllByAccessPointIdIn(p));
-    	ObjectListIterator.forEachPage(revisionIds, p -> revIndexRepository.deleteAllByRevisionIdIn(p));
+    	ObjectListIterator.forEachPage(apIds, p -> {
+    		indexRepository.deleteAllByAccessPointIdIn(p);
+            logger.debug("Deleting index, idx size: {}", p.size());
+        });
+    	ObjectListIterator.forEachPage(revisionIds, p -> {
+    		revIndexRepository.deleteAllByRevisionIdIn(p);
+            logger.debug("Deleting revIndex, revIdx size: {}", p.size());
+    	});
+        logger.debug("Deleted index & revIndex, idx size: {}, revIdx size: {}", apIds.size(), revisionIds.size());
 
     	// mazání items i data
     	ObjectListIterator.forEachPage(apIds, p -> {
@@ -924,6 +947,8 @@ public class AccessPointService {
         	itemRepository.deleteAllByAccessPointIdIn(p);
         	dataRepository.deleteAllById(dataIds);
     	});
+    	dataRepository.flush();
+        logger.debug("Deleted items & data by APs, size: {}", apIds.size());
 
     	// mazání revision items i data
     	ObjectListIterator.forEachPage(revisionIds, p -> {
@@ -931,6 +956,7 @@ public class AccessPointService {
 	    	revItemRepository.deleteAllByRevisionIdIn(p);
 	    	dataRepository.deleteAllById(revDataIds);
     	});
+        logger.debug("Deleted revItems & data by APs, size: {}", revisionIds.size());
 
     	// mazání revision
     	ObjectListIterator.forEachPage(revisionIds, p -> {
@@ -938,6 +964,7 @@ public class AccessPointService {
 	    	revStateRepository.deleteAllByRevisionIdIn(p);
 	    	revisionRepository.deleteAllById(p);
     	});
+        logger.debug("Deleted revisions, size: {}", revisionIds.size());
 
     	// mazání parts, states, cached APs i APs
     	ObjectListIterator.forEachPage(apIds, p -> {
@@ -945,10 +972,13 @@ public class AccessPointService {
     		stateRepository.deleteAllByAccessPointIdIn(p);
     		cachedAccessPointRepository.deleteAllByAccessPointIdIn(p);
     		accessPointRepository.deleteAllById(p);
+            logger.debug("Deleting parts, states, cached & APs, size: {}", p.size());
     	});
+        logger.debug("Deleted parts, states, cached & APs, size: {}", apIds.size());
 
     	// mazání keyValues
-    	ObjectListIterator.forEachPage(keyValueIdsToDelete, p -> keyValueRepository.deleteAllById(p));
+    	ObjectListIterator.forEachPage(keyValueIds, p -> keyValueRepository.deleteAllById(p));
+        logger.debug("Deleted keyValues, size: {}", keyValueIds.size());
     }
 
     /**
