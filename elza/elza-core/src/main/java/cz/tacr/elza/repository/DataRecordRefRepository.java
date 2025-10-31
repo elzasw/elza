@@ -40,6 +40,14 @@ public interface DataRecordRefRepository extends JpaRepository<ArrDataRecordRef,
     @Modifying
     void disconnectBinding(@Param("binding") ApBinding binding);
 
+    @Query("UPDATE arr_data_record_ref drr SET drr.binding = NULL WHERE drr.bindingId IN :bindings")
+    @Modifying
+    void disconnectBindings(@Param("bindings") Collection<Integer> bindings);
+
+    @Query("UPDATE arr_data_record_ref drr SET drr.record = NULL WHERE drr.recordId IN :records")
+    @Modifying
+    void disconnectRecords(@Param("records") Collection<Integer> records);
+
     @Query("SELECT drr.dataId FROM arr_data_record_ref drr WHERE drr.record = :record")
     List<Integer> findIdsByRecord(@Param("record") ApAccessPoint record);
 }
