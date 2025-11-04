@@ -2,9 +2,6 @@ package cz.tacr.elza.controller.vo;
 
 import java.util.Date;
 
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.RevStateApproval;
-
 public class ApStateHistoryVO {
 
     /**
@@ -32,6 +29,11 @@ public class ApStateHistoryVO {
      */
     private String state;
 
+    /**
+     * Typ operace
+     */
+    private String operation;
+    
     /**
      * Komentář změny.
      */
@@ -77,7 +79,15 @@ public class ApStateHistoryVO {
         this.state = state;
     }
 
-    public String getComment() {
+    public String getOperation() {
+		return operation;
+	}
+
+	public void setOperation(String operation) {
+		this.operation = operation;
+	}
+
+	public String getComment() {
         return comment;
     }
 

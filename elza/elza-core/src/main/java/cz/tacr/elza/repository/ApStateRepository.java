@@ -116,16 +116,17 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
      */
     List<ApState> findByScope(ApScope scope);
 
-    @Query("SELECT new cz.tacr.elza.domain.projection.ApStateInfo(c.changeDate, s.stateApproval, rs.stateApproval, scope.name, tp.name, rtp.name, s.comment, rs.comment, usr)" +
+    @Query("SELECT new cz.tacr.elza.domain.projection.ApStateInfo(c.changeDate, c.type, s.stateApproval, rs.stateApproval, scope.name, tp.name, rtp.name, s.comment, rs.comment, usr)" +
             " FROM ap_change c" +
             " LEFT JOIN c.user usr" +
             " LEFT JOIN ap_state s ON s.createChangeId = c.changeId" +
+            " LEFT JOIN ap_binding_state bs ON bs.createChangeId = c.changeId" +
             " LEFT JOIN s.apType tp" +
             " LEFT JOIN s.scope scope" +
             " LEFT JOIN ap_revision r ON r.createChangeId = c.changeId" +
             " LEFT JOIN ap_rev_state rs ON rs.createChangeId = c.changeId" +
             " LEFT JOIN rs.type rtp" +
-            " WHERE s.accessPoint = :accessPoint" +
+            " WHERE s.accessPoint = :accessPoint OR bs.accessPoint = :accessPoint" +
             "   OR rs.revisionId IN" +
             "     (SELECT revisionId FROM ap_revision WHERE stateId IN (SELECT stateId FROM ap_state WHERE accessPoint = :accessPoint)" +
             "       AND ((mergeState IS NULL AND deleteChange IS NULL) OR (mergeState IS NOT NULL AND deleteChange IS NOT NULL)))" +
