@@ -154,6 +154,7 @@ import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
+import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
@@ -253,7 +254,10 @@ public class AccessPointService {
     private DataService dataService;
 
     @Autowired
-    private ApItemRepository itemRepository;
+    private ApItemRepository apItemRepository;
+
+    @Autowired
+    private ItemRepository itemRepository;
 
     @Autowired
     private ApRevItemRepository revItemRepository;
@@ -878,7 +882,28 @@ public class AccessPointService {
      */
     private void deleteUnassignedByScope(final ApScope scope) {
     	List<Integer> ids = accessPointRepository.findAccessPointIdsByApScope(scope);
-    	deleteAccessPoints(ids);
+
+    	// if arr_data_record_ref.recordId in (apIds) exists in arr_item (AS)
+		List<Integer> records = itemRepository.findArrDataRecordRefRecordIdsByAccessPointIds(ids);
+		if (!records.isEmpty()) {
+			logger.error("Not possible to delete access points that have links in funds. apIds: {}", records);
+            throw new BusinessException(
+                    "Nelze smazat/zneplatnit přístupový bod(y), který je připojen k jednotce popisu.",
+                    RegistryCode.EXIST_FOREIGN_DATA)
+                            .set("apIds", records);
+		}
+
+    	// if arr_data_record_ref.recordId in (apIds) exists in ap_item (AP) in other scope
+		records = apItemRepository.findArrDataRecordRefRecordIdsByAccessPointIdsInOtherScope(ids, scope);
+		if (!records.isEmpty()) {
+			logger.error("Not possible to delete access points that have links in other scope. apIds: {}", records);
+            throw new BusinessException(
+                    "Nelze smazat/zneplatnit přístupový bod(y), který je připojen v jiné oblasti.",
+                    RegistryCode.EXIST_FOREIGN_DATA)
+                            .set("apIds", records);
+		}
+
+		deleteAccessPoints(ids);
         logger.info("APs successfully deleted, ids.size: {}", ids.size());
     }
 
@@ -888,7 +913,7 @@ public class AccessPointService {
      * @param apids
      */
     private void deleteAccessPoints(final List<Integer> apIds) {
-    	// určujeme revize, pokud existují
+   	// určujeme revize, pokud existují
     	List<Integer> revisionIds = new ArrayList<>();
     	ObjectListIterator.forEachPage(apIds, p -> {
     		List<Integer> revisionIdsNext = revisionRepository.findAllRevisionIdsByAccessPointIdIn(p);
@@ -916,10 +941,6 @@ public class AccessPointService {
         ObjectListIterator.forEachPage(bindingIds, p -> dataRecordRefRepository.disconnectBindings(p));
         logger.debug("Disconnected bindings, size: {}", bindingIds.size());
 
-        // odpojení recordId od arr_data_record_ref
-        ObjectListIterator.forEachPage(apIds, p -> dataRecordRefRepository.disconnectRecords(p));
-        logger.debug("Disconnected records, size: {}", apIds.size());
-
         // mazání bindings
     	ObjectListIterator.forEachPage(bindingIds, p -> {
     		bindingItemRepository.deleteAllByBindingIdIn(p);
@@ -941,10 +962,11 @@ public class AccessPointService {
     	});
         logger.debug("Deleted index & revIndex, idx size: {}, revIdx size: {}", apIds.size(), revisionIds.size());
 
-    	// mazání items i data
+    	// mazání items i data & odpojení recordId od arr_data_record_ref
     	ObjectListIterator.forEachPage(apIds, p -> {
-        	List<Integer> dataIds = itemRepository.findAllDataIdByAccessPointIdIn(p);
-        	itemRepository.deleteAllByAccessPointIdIn(p);
+        	List<Integer> dataIds = apItemRepository.findAllDataIdByAccessPointIdIn(p);
+        	dataRecordRefRepository.disconnectRecords(dataIds); // odpojení recordId
+        	apItemRepository.deleteAllByAccessPointIdIn(p);
         	dataRepository.deleteAllById(dataIds);
     	});
     	dataRepository.flush();
@@ -3269,7 +3291,7 @@ public class AccessPointService {
     }
 
     public Resource exportCoordinates(FileType fileType, Integer itemId) {
-        ApItem item = itemRepository.findById(itemId).orElseThrow(() ->
+        ApItem item = apItemRepository.findById(itemId).orElseThrow(() ->
                 		new ObjectNotFoundException("ApItem nenalezen", BaseCode.ID_NOT_EXIST));
         String coordinates = dataService.convertCoordinates(fileType, item.getData());
 
@@ -3685,7 +3707,7 @@ public class AccessPointService {
             logger.error("Existují {} vymazané Parts s nevymazanými Item", partsWithItem);
             throw new IllegalStateException("There are deleted Part(s) with non-deleted Item(s)");
         }
-        int itemsWithBindingItem = itemRepository.countDeletedItemsWithUndeletedBindingItem();
+        int itemsWithBindingItem = apItemRepository.countDeletedItemsWithUndeletedBindingItem();
         if (itemsWithBindingItem > 0) {
             logger.error("Existují {} vymazané Items s nevymazanými BindingItem", itemsWithBindingItem);
             throw new IllegalStateException("There are deleted Items(s) with non-deleted BindingItem(s)");
@@ -3764,11 +3786,11 @@ public class AccessPointService {
      */
     private void mergeParts(ApAccessPoint accessPoint, ApAccessPoint targetAccessPoint, ApChange change, ApRevState revState) {
         List<ApPart> fromParts = partService.findPartsByAccessPoint(accessPoint);
-        List<ApItem> srcItems = dataService.findItemsWithData(itemRepository.findValidItemsByAccessPoint(accessPoint));
+        List<ApItem> srcItems = dataService.findItemsWithData(apItemRepository.findValidItemsByAccessPoint(accessPoint));
         Map<Integer, List<ApItem>> fromItemMap = srcItems.stream().collect(Collectors.groupingBy(ApItem::getPartId));
 
         List<ApPart> toParts = partService.findPartsByAccessPoint(targetAccessPoint);
-        List<ApItem> trgItems = dataService.findItemsWithData(itemRepository.findValidItemsByAccessPoint(targetAccessPoint));
+        List<ApItem> trgItems = dataService.findItemsWithData(apItemRepository.findValidItemsByAccessPoint(targetAccessPoint));
         Map<Integer, List<ApItem>> toItemMap = trgItems.stream().collect(Collectors.groupingBy(ApItem::getPartId));
 
         // příprava seznamu objektů ke sloučení
@@ -4013,7 +4035,7 @@ public class AccessPointService {
                                                   position);
 
         dataRepository.save(newData);
-        return itemRepository.save(newItem);
+        return apItemRepository.save(newItem);
     }
 
     /**
