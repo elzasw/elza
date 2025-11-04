@@ -14,6 +14,7 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulItemType;
@@ -101,4 +102,10 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
     @Query("DELETE FROM ApItem i JOIN i.part p WHERE p.accessPointId IN :apIds")
     @Modifying
     void deleteAllByAccessPointIdIn(@Param("apIds") Collection<Integer> apIds);
+
+    @Query("SELECT DISTINCT ref.recordId FROM ApItem i "
+    	    + "JOIN arr_data_record_ref ref ON ref.dataId = i.dataId "
+    		+ "JOIN ap_state s ON s.accessPointId = ref.recordId AND s.deleteChangeId IS NULL "
+            + "WHERE i.deleteChange IS NULL AND ref.recordId IN :recordIds AND s.scope <> :scope")
+	List<Integer> findArrDataRecordRefRecordIdsByAccessPointIdsInOtherScope(@Param("recordIds") List<Integer> ids, @Param("scope") ApScope scope);
 }
