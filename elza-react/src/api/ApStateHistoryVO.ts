@@ -9,25 +9,30 @@ export interface ApStateHistoryVO {
     /**
      * Uživatelské jméno osoby, která změnu proveda.
      */
-    username:string;
+    username: string;
 
     /**
      * Název oblasti.
      */
-    scope:string;
+    scope: string;
 
     /**
      * Typ přístupového bodu.
      */
-    type:string;
+    type: string;
 
     /**
      * Stav změny.
      */
     state: StateApproval;
 
-    /**
+	/**
+	 * Typ operace.
+	 */
+	operation: string;
+
+	/**
      * Komentář změny.
      */
-    comment:string;
+    comment: string;
 }
