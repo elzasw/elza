@@ -5,6 +5,8 @@ import java.util.List;
 
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
+
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +14,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import jakarta.transaction.Transactional;
 
 /**
  * Repozitory pro {@link ArrDataRecordRef}
@@ -33,6 +36,9 @@ public interface DataRecordRefRepository extends JpaRepository<ArrDataRecordRef,
      */
     long countAllByRecord(ApAccessPoint record);
 
+    @Query("SELECT drr.dataId FROM arr_data_record_ref drr WHERE drr.record = :record")
+    List<Integer> findIdsByRecord(@Param("record") ApAccessPoint record);
+
     @Query("SELECT drr FROM arr_data_record_ref drr LEFT JOIN drr.binding WHERE drr.binding IN :bindings")
     List<ArrDataRecordRef> findByBindingIn(@Param("bindings") List<ApBinding> bindings);
 
@@ -40,6 +46,11 @@ public interface DataRecordRefRepository extends JpaRepository<ArrDataRecordRef,
     @Modifying
     void disconnectBinding(@Param("binding") ApBinding binding);
 
-    @Query("SELECT drr.dataId FROM arr_data_record_ref drr WHERE drr.record = :record")
-    List<Integer> findIdsByRecord(@Param("record") ApAccessPoint record);
+    @Query("UPDATE arr_data_record_ref drr SET drr.binding = NULL WHERE drr.bindingId IN :bindings")
+    @Modifying
+    void disconnectBindings(@Param("bindings") Collection<Integer> bindings);
+
+    @Query("UPDATE arr_data_record_ref drr SET drr.record = NULL WHERE drr.dataId IN :dataIds")
+    @Modifying
+    void disconnectRecords(@Param("dataIds") Collection<Integer> dataIds);
 }

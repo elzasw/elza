@@ -79,4 +79,9 @@ public interface ItemRepository extends JpaRepository<ArrItem, Integer>, DeleteF
     @Modifying
     @Query("UPDATE arr_item SET createChange = :change WHERE itemId IN :itemIds")
     void updateCreateChange(@Param("itemIds") Collection<Integer> itemIds, @Param("change") ArrChange change);
+
+    @Query("SELECT DISTINCT ref.recordId FROM arr_item i "
+    	    + "JOIN arr_data_record_ref ref ON ref.dataId = i.dataId "
+            + "WHERE i.deleteChange IS NULL AND ref.recordId IN :recordIds")
+    List<Integer> findArrDataRecordRefRecordIdsByAccessPointIds(@Param("recordIds") List<Integer> recordIds);
 }
