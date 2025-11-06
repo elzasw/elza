@@ -294,6 +294,7 @@ public class ApFactory {
             if (state.getRevState() != null) {
                 result.setState("REV_" + state.getRevState().toString());
             }
+            result.setOperation(state.getType().name());
             result.setType(state.getTypeName() != null? state.getTypeName() : state.getRevTypeName() != null? state.getRevTypeName() : null);
             result.setComment(state.getComment() != null? state.getComment() : state.getRevComment() != null? state.getRevComment() : null);
             if (state.getUser() != null) {

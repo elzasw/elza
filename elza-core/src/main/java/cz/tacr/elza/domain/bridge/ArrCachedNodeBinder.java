@@ -37,7 +37,6 @@ public class ArrCachedNodeBinder implements TypeBinder {
 
     private TypeBindingContext context;
 
-		this.context = context; 		
     @Override
     public void bind(TypeBindingContext context) {
         log.debug("Bind ArrCachedNodeBinder");
@@ -60,7 +59,6 @@ public class ArrCachedNodeBinder implements TypeBinder {
 
             // item type codes
             for (String itemTypeCode : configurationReader.getItemTypeCodes()) {
-                log.debug("itemTypeCode: {}", itemTypeCode);
                 DataType dataType = configurationReader.getDataTypeByItemTypeCode(itemTypeCode);
                 Objects.requireNonNull(dataType);
                 switch (dataType) {
@@ -84,9 +82,16 @@ public class ArrCachedNodeBinder implements TypeBinder {
                         createIntField(itemTypeCode.toLowerCase() + "_" + itemSpecCode.toLowerCase());
                     }
                     break;
+                case COORDINATES:
+                    createGeoPointField(itemTypeCode.toLowerCase());
+                    break;
                 case STRUCTURED:
+                case FILE_REF:
+                case URI_REF:
+                case UNITID:
                 case STRING:
                 case TEXT:
+                case BIT:
                     createStringField(itemTypeCode.toLowerCase());
                     // added field itemType_itemSpec -> value
                     for (String itemSpecCode : configurationReader.getItemSpecCodesByTypeCode(itemTypeCode)) {
@@ -113,6 +118,13 @@ public class ArrCachedNodeBinder implements TypeBinder {
         } catch (Exception e) {
             log.error("Binder fail:", e);
         }
+    }
+
+    private IndexFieldReference<GeoPoint> createGeoPointField(String name) {
+        return context.indexSchemaElement()
+                .field(name, f -> f.asGeoPoint())
+                .multiValued()
+                .toReference();
     }
 
     private IndexFieldReference<String> createStringField(String name) {
