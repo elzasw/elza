@@ -32,6 +32,8 @@ import cz.tacr.elza.controller.vo.AbstractFilter;
 import cz.tacr.elza.controller.vo.DescItemField;
 import cz.tacr.elza.controller.vo.FieldType;
 import cz.tacr.elza.controller.vo.FieldValueFilter;
+import cz.tacr.elza.controller.vo.FondsField;
+import cz.tacr.elza.controller.vo.FondsFieldName;
 import cz.tacr.elza.controller.vo.Fund;
 import cz.tacr.elza.controller.vo.FundSearchResult;
 import cz.tacr.elza.controller.vo.LogicalFilter;
@@ -259,6 +261,19 @@ public class NodeSearchService {
 	}
 
 	private SearchPredicate fieldValuePredicate(final SearchPredicateFactory factory, final FieldValueFilter filter) {
+		// search by FONDS_FIELD
+		if (filter.getField().getFieldType().equals(FieldType.FONDS_FIELD)) {
+			FondsFieldName fieldName = ((FondsField) filter.getField()).getFieldName();
+		    OperationCompareType op = filter.getOperation();
+			switch (fieldName) {
+			case INSTITUTION_ID:
+			    Integer value = Integer.parseInt(filter.getValue());
+				return getPredicateByNumber(factory, fieldName.name(), op, value);
+			default:
+				throw new IllegalArgumentException("Unsupported fonds field name: " + fieldName);
+			}
+		}
+
 		// search by NODE_FIELD
 		if (filter.getField().getFieldType().equals(FieldType.NODE_FIELD)) {
 			String fieldName = ((NodeField) filter.getField()).getFieldName().getValue();
@@ -293,10 +308,10 @@ public class NodeSearchService {
 	    // tyto operace jsou nezávislé na datovém typu
 	    OperationCompareType op = filter.getOperation();
 		switch (op) {
-			case NOT_NULL:
-				return factory.exists().field(existsName).toPredicate();
-			case IS_NULL:
-				return factory.bool().mustNot(factory.exists().field(existsName)).toPredicate();
+		case NOT_NULL:
+			return factory.exists().field(existsName).toPredicate();
+		case IS_NULL:
+			return factory.bool().mustNot(factory.exists().field(existsName)).toPredicate();
 		}
 
 		// predikáty v závislosti na datovém typu

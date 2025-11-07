@@ -1,6 +1,6 @@
 package cz.tacr.elza.domain;
 
-import org.apache.commons.lang3.Validate;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -77,18 +77,18 @@ public class ArrAsyncRequest {
     public static ArrAsyncRequest create(final ArrFundVersion fundVersion,
                                          final ArrBulkActionRun bulkActionRun,
                                          final Integer priority) {
-        Validate.notNull(fundVersion);
-        Validate.notNull(bulkActionRun);
-        Validate.notNull(priority);
+        Objects.requireNonNull(fundVersion);
+        Objects.requireNonNull(bulkActionRun);
+        Objects.requireNonNull(priority);
         return new ArrAsyncRequest(fundVersion, bulkActionRun, priority);
     }
 
     public static ArrAsyncRequest create(final ArrFundVersion fundVersion,
                                          final ArrNode node,
                                          final Integer priority) {
-        Validate.notNull(fundVersion);
-        Validate.notNull(node);
-        Validate.notNull(priority);
+        Objects.requireNonNull(fundVersion);
+        Objects.requireNonNull(node);
+        Objects.requireNonNull(priority);
         return new ArrAsyncRequest(fundVersion, node, priority);
     }
 
@@ -96,16 +96,16 @@ public class ArrAsyncRequest {
                                          final ArrOutput output,
                                          final Integer priority,
                                          final Integer userId) {
-        Validate.notNull(fundVersion);
-        Validate.notNull(output);
-        Validate.notNull(priority);
+        Objects.requireNonNull(fundVersion);
+        Objects.requireNonNull(output);
+        Objects.requireNonNull(priority);
         return new ArrAsyncRequest(fundVersion, output, priority, userId);
     }
 
     public static ArrAsyncRequest create(final ApAccessPoint accessPoint,
                                        final Integer priority) {
-        Validate.notNull(accessPoint);
-        Validate.notNull(priority);
+        Objects.requireNonNull(accessPoint);
+        Objects.requireNonNull(priority);
         return new ArrAsyncRequest(accessPoint, priority);
     }
 

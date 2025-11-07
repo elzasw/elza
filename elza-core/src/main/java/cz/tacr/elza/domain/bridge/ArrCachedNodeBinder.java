@@ -1,11 +1,12 @@
 package cz.tacr.elza.domain.bridge;
 
 import static cz.tacr.elza.domain.ArrCachedNode.DATA;
-import static cz.tacr.elza.domain.ArrDescItem.FIELD_FUND_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FULLTEXT_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORM_FROM;
 import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
 import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
+import static cz.tacr.elza.domain.ArrFund.FIELD_FUND_ID;
+import static cz.tacr.elza.domain.ArrFund.FIELD_INSTITUTION_ID;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.CLASSIC_TOKENIZER_CZ;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.KEYWORD_TOKENIZER_CZ;
 
@@ -48,6 +49,8 @@ public class ArrCachedNodeBinder implements TypeBinder {
             context.dependencies().use(DATA);
 
             createIntField(FIELD_FUND_ID);
+
+            createIntField(FIELD_INSTITUTION_ID);
 
             // pro type RECORD_REF
             createIntField(REL_AP_ID);
