@@ -1458,6 +1458,10 @@ when
         "ZP2015_UNIT_TYPE_PKT",
         // Cenné papíry
         "ZP2015_UNIT_TYPE_CPA",
+        // Předměty faleristické povahy
+        "ZP2015_UNIT_TYPE_PFP",
+        // Předměty numizmatické povahy
+        "ZP2015_UNIT_TYPE_PNP",
         // Jiné
         "ZP2015_UNIT_TYPE_JIN"
          ) ) from $itemType.rulItemSpecList
@@ -1498,10 +1502,6 @@ when
         "ZP2015_UNIT_TYPE_DFO",
         // Štočky
         "ZP2015_UNIT_TYPE_STO",
-        // Předměty numizmatické povahy
-        "ZP2015_UNIT_TYPE_PNP",
-        // Předměty faleristické povahy
-        "ZP2015_UNIT_TYPE_PFP",
         // Neevidovaná jednotlivost
         "ZP2015_UNIT_TYPE_OTHER"    
          ) ) from $itemType.rulItemSpecList
@@ -5625,6 +5625,20 @@ then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
+rule "Povinnost prvku pro Faleristické předměty v INV (část jednotlivosti)"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PFP") ) from $ownItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_PART") ) from $ownItems
+    // Rodic je INV nebo KAT 
+    Level( $items: descItems ) 
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+    // nastaveni prvku  
+    $itemType: RulItemTypeExt( code in ("ZP2015_ENTITY_ROLE") )
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
 rule "Povinnost prvku pro Faleristické předměty v kat"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -5714,7 +5728,27 @@ then
     $itemSpec.setMinType(RulItemSpec.Type.RECOMMENDED);
 end
 
-rule "RE_030_04 Povinné role entit pro Faleristické předměty v KAT"
+rule "RE_030_04 Doporučené role entit pro Faleristické předměty v INV (část jednotlivosti)"
+no-loop
+when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PFP") ) from $ownItems
+    not DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_STV") ) from $ownItems
+    DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_PART") ) from $ownItems
+    // Rodic je INV
+    Level( $items: descItems ) 
+    not(DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_STV") ) from $items)
+    DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_INV")) from $items
+    // nastaveni prvku  
+    $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
+    $itemSpec: RulItemSpecExt( code in ( 
+        // vydavatelé
+        "ZP2015_ENTITY_ROLE_15"      
+     ) ) from $itemType.rulItemSpecList
+then
+    $itemSpec.setType(RulItemSpec.Type.RECOMMENDED);
+end
+
+rule "RE_030_05 Povinné role entit pro Faleristické předměty v KAT"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PFP") ) from $ownItems
@@ -5750,7 +5784,7 @@ then
     $itemSpec.setType(RulItemSpec.Type.REQUIRED);
 end
 
-rule "RE_030_05 Doporučené role entit pro Faleristické předměty v KAT"
+rule "RE_030_06 Doporučené role entit pro Faleristické předměty v KAT"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
     not DescItem(type=="ZP2015_UNIT_SUBTYPE" && specCode in ("ZP2015_UNIT_SUBTYPE_STV") ) from $ownItems
