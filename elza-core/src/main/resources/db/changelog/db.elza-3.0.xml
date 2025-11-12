@@ -710,4 +710,14 @@
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20230315100801"/>
 	</changeSet>
 
+	<changeSet id="20251105110500" author="sergey.iryupin">
+		<!-- urychlit mazání záznamů -->
+        <createIndex indexName="ap_item_data_idx" tableName="ap_item">
+            <column name="data_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_rev_item_data_idx" tableName="ap_rev_item">
+            <column name="data_id" type="int"/>
+        </createIndex>
+	</changeSet>
+
 </databaseChangeLog>

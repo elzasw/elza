@@ -2838,7 +2838,7 @@ end
 rule "Povolení vybraných jiných datací (ZP2015_DATE_OTHER) pro typáře"
 no-loop
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
-    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PFP") ) from $ownItems
+    DescItem(type=="ZP2015_UNIT_TYPE" && specCode in ("ZP2015_UNIT_TYPE_PEC", "ZP2015_UNIT_TYPE_RAZ") ) from $ownItems
     $itemType : RulItemTypeExt(code == "ZP2015_DATE_OTHER")
     $itemSpec : RulItemSpecExt(code in ("ZP2015_DATE_USAGE")) from $itemType.rulItemSpecList
 then
