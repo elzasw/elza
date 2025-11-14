@@ -28,7 +28,7 @@ public interface ApRevIndexRepository extends JpaRepository<ApRevIndex, Integer>
     @Query("SELECT i FROM ap_rev_index i WHERE i.part IN :parts AND i.indexType = :indexType")
     List<ApRevIndex> findByPartsAndIndexType(@Param("parts") Collection<ApRevPart> parts, @Param("indexType") String indexType);
 
-    @Query("DELETE FROM ap_rev_index i WHERE i.part.partId IN (SELECT p.partId FROM ApRevPart p WHERE p.revisionId IN :apIds)")
+    @Query("DELETE FROM ap_rev_index i WHERE i.part.partId IN (SELECT p.partId FROM ApRevPart p WHERE p.revisionId IN :revisionIds)")
     @Modifying
     void deleteAllByRevisionIdIn(@Param("revisionIds") Collection<Integer> revisionIds);
 }
