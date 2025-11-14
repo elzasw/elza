@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.data.DataType;
@@ -37,13 +39,15 @@ public class ScheduledCleanupWorker {
     @Autowired
     private DataRepository dataRepository;
 
+    @Autowired
+    protected PlatformTransactionManager tm;
+
     /**
      * Delete all arr_data that are not related to tables:
      * - ap_item
      * - ap_rev_item
      * - arr_item
      */
-    @Transactional
     private void deleteData(Collection<DataIdTypeId> data) {
     	log.debug("Deleting {} from add_data...", data.size());
     	// data -> Map<typeId, List<dataId>>
@@ -61,9 +65,16 @@ public class ScheduledCleanupWorker {
     @Scheduled(cron = "${elza.cleanup.cron:0 0 3 * * *}")
 	public void scheduledCleanup() {
     	log.debug("Deleting from add_data started...");
+		List<DataIdTypeId> dataIds;
     	try {
-	    	List<DataIdTypeId> data = dataRepository.findUnlinkedDataIds(PageRequest.of(0, maxBatchSize));
-	    	ObjectListIterator.forEachPage(data, p -> deleteData(p));
+    		do {
+    			dataIds = dataRepository.findUnlinkedDataIds(PageRequest.of(0, maxBatchSize));
+		    	ObjectListIterator.forEachPage(dataIds, p -> {
+		    		new TransactionTemplate(tm).executeWithoutResult(ts -> {
+	                    deleteData(p);
+	                });
+	            });
+    		} while (!dataIds.isEmpty());
     	} catch (Exception e) {
     		log.error("Error in cleanup process. ", e);
     	}
