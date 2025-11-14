@@ -962,22 +962,17 @@ public class AccessPointService {
     	});
         logger.debug("Deleted index & revIndex, idx size: {}, revIdx size: {}", apIds.size(), revisionIds.size());
 
-    	// mazání items i data & odpojení recordId od arr_data_record_ref
+    	// mazání items & odpojení recordId od arr_data_record_ref
     	ObjectListIterator.forEachPage(apIds, p -> {
         	List<Integer> dataIds = apItemRepository.findAllDataIdByAccessPointIdIn(p);
         	dataRecordRefRepository.disconnectRecords(dataIds); // odpojení recordId
         	apItemRepository.deleteAllByAccessPointIdIn(p);
-        	dataRepository.deleteAllById(dataIds);
     	});
-    	dataRepository.flush();
+    	dataRecordRefRepository.flush();
         logger.debug("Deleted items & data by APs, size: {}", apIds.size());
 
-    	// mazání revision items i data
-    	ObjectListIterator.forEachPage(revisionIds, p -> {
-	    	List<Integer> revDataIds = revItemRepository.findAllDataIdByRevisionIdIn(p);
-	    	revItemRepository.deleteAllByRevisionIdIn(p);
-	    	dataRepository.deleteAllById(revDataIds);
-    	});
+    	// mazání revision items
+    	ObjectListIterator.forEachPage(revisionIds, p -> revItemRepository.deleteAllByRevisionIdIn(p));
         logger.debug("Deleted revItems & data by APs, size: {}", revisionIds.size());
 
     	// mazání revision
