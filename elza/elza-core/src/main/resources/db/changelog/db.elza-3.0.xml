@@ -710,4 +710,29 @@
         <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20230315100801"/>
 	</changeSet>
 
+	<changeSet id="20251105110500" author="sergey.iryupin">
+		<!-- urychlit mazání záznamů -->
+        <createIndex indexName="ap_item_data_idx" tableName="ap_item">
+            <column name="data_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_rev_item_data_idx" tableName="ap_rev_item">
+            <column name="data_id" type="int"/>
+        </createIndex>
+	</changeSet>
+	<changeSet id="20251113080500" author="ppy">
+	  <sql dbms="postgresql">
+	  INSERT INTO ext_syncs_queue_item(ext_syncs_queue_item_id, access_point_id, external_system_id, state, date) 
+      SELECT ROW_NUMBER() OVER (ORDER BY bs.access_point_id) + (select dhs.next_val from db_hibernate_sequences dhs where dhs.sequence_name = 'ext_syncs_queue_item|ext_syncs_queue_item_id'), 
+             bs.access_point_id, 
+             aes.external_system_id, 'UPDATE' as state, now() as date 
+      FROM ap_external_system aes
+      JOIN ap_binding bnd on bnd.external_system_id = aes.external_system_id 
+	  JOIN ap_binding_state bs on bs.binding_id = bnd.binding_id and bs.delete_change_id is null and bs.ext_state in ('ERS_APPROVED', 'ERS_NEW')
+      LEFT JOIN ap_state st on st.access_point_id = bs.access_point_id and st.delete_change_id is null
+      WHERE aes."type" = 'CAM_COMPLETE' AND st.access_point_id is null	  
+	  </sql>
+	  <sql dbms="postgresql">UPDATE db_hibernate_sequences SET next_val = (SELECT (coalesce(max(ext_syncs_queue_item_id), 0)+20) FROM ext_syncs_queue_item)
+		   WHERE sequence_name = 'ext_syncs_queue_item|ext_syncs_queue_item_id'</sql>
+	</changeSet>
+
 </databaseChangeLog>
