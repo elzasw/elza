@@ -449,7 +449,7 @@ public class EntityDBDispatcher {
             }
         }
 
-        // check s AP class/subclass was cha
+        // check s AP class/subclass was changed
         ApType apType = sdp.getApTypeByCode(entity.getEnt().getValue());        
         if (!state.getApTypeId().equals(apType.getApTypeId())) {
             log.debug("Změna třídy (typu) entity: typeId={} -> newTypeId={}", state.getApTypeId(), apType.getApTypeId());
@@ -461,17 +461,8 @@ public class EntityDBDispatcher {
                 }
                 stateNew = accessPointService.copyState(state, procCtx.getApChange());
                 if (deletedEntity && syncQueue) {
-                	
-                	// If system is CAM_COMPLETE and entity is return to non deleted state -> 
-                	// -> we respect new state and entity is not further marked as deleted 
-                	if(procCtx.getApExternalSystem().getType().equals(ApExternalSystemType.CAM_COMPLETE)) {
-                		// nop
-                		log.info("Deleted entity is restored to non deleted state, ap id: {}, ext. entity id: {}", state.getAccessPointId(), 
-                				entity.getEid()!=null?entity.getEid().getValue():"");
-                	} else {
-                		// retain deleted state
-                		stateNew.setDeleteChange(procCtx.getApChange());
-                	}
+               		// retain deleted state
+               		stateNew.setDeleteChange(procCtx.getApChange());
                 }
                 stateNew.setApType(apType);
                 state = stateRepository.save(stateNew);
@@ -536,20 +527,32 @@ public class EntityDBDispatcher {
             // synchronizace stavu entit
             // pokud je entita lokalne smazana a jedna se o pozadavek z fronty
             // musi entita zustat smazana
-            if (syncQueue && state.getDeleteChangeId() != null) {
-                break;
-            } else {
-                // kontrola shody stavu
-                if (!newStateApproval.equals(state.getStateApproval())) {
-                    if (stateNew == null) {
-                        state.setDeleteChange(procCtx.getApChange());
-                        state = stateRepository.save(state);
-                        stateNew = accessPointService.copyState(state, procCtx.getApChange());
-                    }
-                    stateNew.setStateApproval(newStateApproval);
-                    state = stateRepository.save(stateNew);
-                }
+            if (syncQueue && state.getDeleteChangeId() != null) {            	
+            	// If system is NOT CAM_COMPLETE 
+            	// -> we respect previous state and entity is retained as deleted 
+            	if(!procCtx.getApExternalSystem().getType().equals(ApExternalSystemType.CAM_COMPLETE)) {
+            		break;
+            	}
             }
+
+            // check new state or if entity was deleted
+			if (!newStateApproval.equals(state.getStateApproval())||state.getDeleteChangeId() != null) {
+				// prepare new state if not already prepared
+				if (stateNew == null) {
+					state.setDeleteChange(procCtx.getApChange());
+					state = stateRepository.save(state);
+					stateNew = accessPointService.copyState(state, procCtx.getApChange());
+				}
+				if(state.getDeleteChangeId() != null) {
+	        		// entity is return to non deleted state
+	        		log.info("Deleted entity is restored to non deleted state, ap id: {}, ext. entity id: {}", state.getAccessPointId(), 
+	        				entity.getEid()!=null?entity.getEid().getValue():"");
+	        		state.setDeleteChange(null);
+				}
+
+				stateNew.setStateApproval(newStateApproval);
+				state = stateRepository.save(stateNew);
+			}
 
             break;
         }

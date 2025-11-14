@@ -3,6 +3,7 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -13,11 +14,10 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemType;
-
+import cz.tacr.elza.repository.vo.DataIdTypeId;
 
 /**
  * Repository for ArrData
- * 
  */
 @Repository
 public interface DataRepository extends JpaRepository<ArrData, Integer>, DataRepositoryCustom {
@@ -51,4 +51,24 @@ public interface DataRepository extends JpaRepository<ArrData, Integer>, DataRep
     @Modifying
     @Query(value = "UPDATE arr_data SET data_type_id = :dataTypeId WHERE data_id IN (:ids)", nativeQuery = true)
     int updateDataType(@Param("ids") Collection<Integer> ids, @Param("dataTypeId") Integer dataTypeId);
+
+    /**
+     * List of dataId not related to ap_item & ap_rev_item & arr_item
+     * 
+     * @param pageable limit on the number of results
+     * @return List of DataIdTypeId
+     */
+    @Query("""
+            SELECT new cz.tacr.elza.repository.vo.DataIdTypeId(d.dataId, d.dataTypeId) FROM arr_data d
+            WHERE NOT EXISTS (
+              SELECT 1 FROM ApItem api WHERE api.data = d
+            )
+            AND NOT EXISTS (
+              SELECT 1 FROM ApRevItem ari WHERE ari.data = d
+            )
+            AND NOT EXISTS (
+              SELECT 1 FROM arr_item itm WHERE itm.data = d
+            )
+            """)
+    List<DataIdTypeId> findUnlinkedDataIds(Pageable pageable);
 }
