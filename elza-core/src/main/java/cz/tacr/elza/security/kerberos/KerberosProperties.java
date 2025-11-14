@@ -25,10 +25,6 @@ public class KerberosProperties {
 	@NotEmpty
 	private String keytabLocation;
 
-	private String adDomain;
-
-	private String adServer;
-
 	private boolean kerberosClientDebug = false;
 
 	private boolean ticketValidatorDebug = false;
@@ -67,22 +63,6 @@ public class KerberosProperties {
 
 	public void setTicketValidatorDebug(boolean ticketValidatorDebug) {
 		this.ticketValidatorDebug = ticketValidatorDebug;
-	}
-
-	public String getAdDomain() {
-		return adDomain;
-	}
-
-	public void setAdDomain(String adDomain) {
-		this.adDomain = adDomain;
-	}
-
-	public String getAdServer() {
-		return adServer;
-	}
-
-	public void setAdServer(String adServer) {
-		this.adServer = adServer;
 	}
 
 	public String getLdapSearchBase() {
