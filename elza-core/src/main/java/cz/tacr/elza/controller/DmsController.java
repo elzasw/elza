@@ -333,7 +333,7 @@ public class DmsController {
     }
 
     /**
-     * Načtení konkrétního objektu s informacemi o souboru s vyžádáním obsahu pro editovatelný soubor.
+     * Načtení konkrétního objektu s informacemi o souboru s vyžádáním obsahu pro editovatelný (text) soubor.
      *
      * @param fundId id AS
      * @param fileId id souboru
@@ -348,15 +348,13 @@ public class DmsController {
         ArrFile file = dmsService.getArrFile(fileId);
         Assert.isTrue(fundId.equals(file.getFund().getFundId()), "Nesouhlasí id AS");
 
-        if (!attachmentService.isEditable(file.getMimeType())) {
-            throw new BusinessException("Soubor není možné editovat ručně.", BaseCode.INVALID_STATE);
-        }
-
         ArrFileVO result = ArrFileVO.newInstance(file, attachmentService);
 
-        try (InputStream is = dmsService.downloadFile(file)) {
-            String text = IOUtils.toString(is, "utf-8");
-            result.setContent(text);
+        if (attachmentService.isEditable(file.getMimeType())) {
+	        try (InputStream is = dmsService.downloadFile(file)) {
+	            String text = IOUtils.toString(is, "utf-8");
+	            result.setContent(text);
+	        }
         }
 
         return result;
