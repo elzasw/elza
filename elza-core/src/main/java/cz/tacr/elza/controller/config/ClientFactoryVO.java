@@ -41,7 +41,6 @@ import cz.tacr.elza.config.rules.TypeInfo;
 import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.factory.ApFactory;
-import cz.tacr.elza.controller.factory.RuleFactory;
 import cz.tacr.elza.controller.factory.WfFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
@@ -92,7 +91,6 @@ import cz.tacr.elza.controller.vo.GisExternalSystemVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ItemData;
 import cz.tacr.elza.controller.vo.MandatoryType;
-import cz.tacr.elza.controller.vo.NodeBase;
 import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
@@ -113,7 +111,6 @@ import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
@@ -240,7 +237,6 @@ import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.attachment.AttachmentService;
 import cz.tacr.elza.ws.types.v1.Items;
-import jakarta.validation.Valid;
 
 /**
  * Tovární třída pro vytváření VO objektů a jejich seznamů.
@@ -530,8 +526,12 @@ public class ClientFactoryVO {
      * @return
      */
     private static ItemData convertUriRef(ArrData arrData) {
-    	DataUriRef data = new DataUriRef(((ArrDataUriRef) arrData).getUriRefValue(), DataType.URI_REF);
+    	ArrDataUriRef adur = (ArrDataUriRef) arrData;
+    	DataUriRef data = new DataUriRef(adur.getUriRefValue(), DataType.URI_REF);
         data.setDataId(arrData.getDataId());
+        data.setDescription(adur.getDescription());
+        data.setRefTemplateId(adur.getRefTemplateId());
+        data.setNodeId(adur.getNodeId());
         return data;
     }
 
