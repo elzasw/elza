@@ -13,6 +13,7 @@
         <drools.version>10.1.0</drools.version> <!-- 8.44.0.Final, 7.74.1.Final -->
         <kerberos.version>2.1.1</kerberos.version>
         <zxing.version>3.5.3</zxing.version>
+        <jaxb.version>4.0.11</jaxb.version> <!-- 4.0.0 -->
     </properties>
 
     <dependencies>
@@ -466,7 +467,7 @@
             <plugin>
                 <groupId>org.jvnet.jaxb</groupId>
                 <artifactId>jaxb-maven-plugin</artifactId>
-                <version>4.0.0</version>
+                <version>${jaxb.version}</version>
                 <executions>
                     <execution>
                         <id>generate-elza-schema</id>
@@ -492,7 +493,7 @@
                                 <plugin>
                                     <groupId>org.jvnet.jaxb</groupId>
                                     <artifactId>jaxb-plugins</artifactId>
-                                    <version>4.0.0</version>
+                                    <version>${jaxb.version}</version>
                                 </plugin>
                             </plugins>
                         </configuration>
@@ -523,7 +524,7 @@
                                 <plugin>
                                     <groupId>org.jvnet.jaxb</groupId>
                                     <artifactId>jaxb-plugins</artifactId>
-                                    <version>4.0.0</version>
+                                    <version>${jaxb.version}</version>
                                 </plugin>
                             </plugins>
                         </configuration>
@@ -554,7 +555,7 @@
                                 <plugin>
                                     <groupId>org.jvnet.jaxb</groupId>
                                     <artifactId>jaxb-plugins</artifactId>
-                                    <version>4.0.0</version>
+                                    <version>${jaxb.version}</version>
                                 </plugin>
                             </plugins>
                         </configuration>
@@ -588,7 +589,7 @@
                                 <plugin>
                                     <groupId>org.jvnet.jaxb</groupId>
                                     <artifactId>jaxb-plugins</artifactId>
-                                    <version>4.0.0</version>
+                                    <version>${jaxb.version}</version>
                                 </plugin>
                             </plugins>
                         </configuration>
@@ -622,7 +623,7 @@
                                 <plugin>
                                     <groupId>org.jvnet.jaxb</groupId>
                                     <artifactId>jaxb-plugins</artifactId>
-                                    <version>4.0.0</version>
+                                    <version>${jaxb.version}</version>
                                 </plugin>
                             </plugins>
                         </configuration>
@@ -647,19 +648,13 @@
                     <dependency>
                         <groupId>org.jvnet.jaxb</groupId>
                         <artifactId>jaxb-plugins</artifactId>
-                        <version>4.0.0</version>
+                        <version>${jaxb.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.jvnet.jaxb</groupId>
                         <artifactId>jaxb-plugin-annotate</artifactId>
-                        <version>4.0.0</version>
+                        <version>${jaxb.version}</version>
                     </dependency>
-                    <!--
-                    <dependency>
-                        <groupId>org.jvnet.jaxb2_commons</groupId>
-                        <artifactId>jaxb2-value-constructor</artifactId>
-                        <version>3.0</version>
-                    </dependency>-->
                 </dependencies>
             </plugin>
             <plugin>
