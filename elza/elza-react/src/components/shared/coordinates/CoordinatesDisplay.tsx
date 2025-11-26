@@ -21,6 +21,8 @@ interface Props {
     id?: number;
     arrangement?: boolean;
     isUndefined?: boolean;
+  isInherited?: boolean;
+  isInhibited?: boolean;
 }
 
 const getFormatData = (geometry: Geometry) => {
@@ -83,6 +85,8 @@ export const CoordinatesDisplay: React.FC<Props> = ({
     id,
     arrangement = false,
     isUndefined = false,
+    isInherited,
+    isInhibited,
 }) => {
     const dispatch = useThunkDispatch();
     const { formatMessage } = useIntl()
@@ -150,7 +154,10 @@ export const CoordinatesDisplay: React.FC<Props> = ({
                         >
                             <Icon glyph="fa-map" />
                             &nbsp;
-                            <span>
+                            <span style={{
+                              textDecoration: isInhibited ? "line-through" : undefined,
+                              opacity: isInherited ? 0.5 : undefined,
+                            }}>
                                 {formatLabel()}
                             </span>
                         </Button>
