@@ -170,6 +170,7 @@ export class websocket {
             headers,
             body: data,
         });
+        return headers.receipt;
     };
 
     addListener = (listener) => {
