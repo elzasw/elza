@@ -19,10 +19,10 @@ import Icon from 'components/shared/icon/FontIcon';
 
 interface ArrHistoryFormProps {
     versionId: number;
-    locked: boolean;
+    locked?: boolean;
     onDeleteChanges: (nodeId: number | null, changeId: number, selectedChangeId: number) => Promise<void>;
     onClose?: () => void;
-    node?: NodeBase;
+    node?: SubNode;
 }
 
 enum ChangeType {
@@ -339,8 +339,8 @@ export const ArrHistoryFormFn = ({
                                 className="selected-node-info-container"
                                 type="static"
                             >
-                                <span title={`${currentNode.name}`} className="node-info">
-                                    {`${currentNode.name}`}
+                                <span title={`${currentNode.accordionLeft}`} className="node-info">
+                                    {`${currentNode.accordionLeft}`}
                                 </span>
                                 <Button
                                     variant="outline-secondary"
