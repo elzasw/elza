@@ -18,8 +18,10 @@ export function useStrictMode() {
       "FUND",
       activeFund.id,
     );
-    return strictModeSetting ? JSON.parse(strictModeSetting.value) : true;
+    const strictModeValue = strictModeSetting ? JSON.parse(strictModeSetting?.value) : true;
+    return strictModeValue == null ? true : strictModeValue;
   });
+
 
   return strictMode;
 }
