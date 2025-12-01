@@ -411,7 +411,7 @@ class AddNodeForm extends AbstractReactComponent {
 
       const nodeSetting = nodeSettings.nodes.find(({ id }) => id === parentNode.id);
 
-      if(nodeSetting.copyAll){
+      if(nodeSetting?.copyAll){
         const { data } = await Api.node.nodeGetNodeData({
           fundVersionId: versionId,
           nodeId: node.id,
