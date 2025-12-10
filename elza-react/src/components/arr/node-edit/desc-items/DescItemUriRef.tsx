@@ -21,6 +21,8 @@ import { findInSources, useValueManager } from "./utils";
 import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
 import { SelectSearchFundsForm } from "components/arr/search-funds-form/SelectSearchFundsForm";
 import { i18n } from "components";
+import { defineMessages, useIntl } from "react-intl";
+import { messages as commonMessages } from "./commonMessages";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemUriRef) => Promise<void>;
@@ -29,6 +31,21 @@ interface Props extends DescItemProps {
 interface NodeItemUriRef extends NodeItem {
   data: DataUriRef;
 }
+
+const messages = defineMessages({
+  description: {
+    id: "desc_item_uri_ref_description",
+    defaultMessage: "Popisek",
+  },
+  uri: {
+    id: "desc_item_uri_ref_uri",
+    defaultMessage: "Odkaz",
+  },
+  refTemplate: {
+    id: "desc_item_uri_ref_refTemplate",
+    defaultMessage: "Šablona synchronizace",
+  },
+});
 
 export function DescItemUriRef({
   item,
@@ -40,6 +57,7 @@ export function DescItemUriRef({
     throw "Incorrect data type";
   }
 
+  const { formatMessage } = useIntl();
   const dispatch = useAppThunkDispatch();
   const activeFund = useActiveFund();
   const isInherited = item.nodeId !== nodeId;
@@ -134,7 +152,6 @@ export function DescItemUriRef({
   }
 
   function handleNavigate() {
-    console.log("#diur - navigate", value, data?.nodeId);
     if (value?.startsWith(ELZA_SCHEME_NODE)) {
       if (data?.nodeId) {
         dispatch(routerNavigate(`/node/${data.nodeId}`));
@@ -191,9 +208,12 @@ export function DescItemUriRef({
         >
           <Input
             disabled={isDisabled}
-            value={item.undefined ? "Výjimka" : value}
+            value={
+              item.undefined ? formatMessage(commonMessages.undefined) : value
+            }
             onChange={handleValueInputChange}
             onBlur={() => handleChange()}
+            placeholder={formatMessage(messages.uri)}
             style={{
               flexGrow: 2,
               marginBottom: "4px",
@@ -248,6 +268,7 @@ export function DescItemUriRef({
                 marginBottom: "4px",
                 textDecoration: item.inhibited ? "line-through" : undefined,
               }}
+              placeholder={formatMessage(messages.description)}
             />
             {isDescriptionDirty && <EditStateDisplay />}
             <ConflictValue
@@ -270,6 +291,7 @@ export function DescItemUriRef({
           <Combobox
             title={query}
             value={query}
+            placeholder={formatMessage(messages.refTemplate)}
             onChange={(e) => setQuery(e.target.value)}
             onOptionSelect={(_e, data) => {
               const _refTemplateId = parseInt(data.optionValue);
