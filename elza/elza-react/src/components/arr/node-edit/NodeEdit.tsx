@@ -146,6 +146,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
         formData={formData}
         nodeData={nodeData}
         onAddDescItem={handleAddDescItemType}
+        daos={daos}
       />
       {/* <div
         style={{
