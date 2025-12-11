@@ -1,5 +1,13 @@
 import { EditFilled } from "@fluentui/react-icons";
+import { FormattedMessage, defineMessages } from "react-intl";
 
+const messages = defineMessages({
+  unsaved: {
+    id: "edit_state_unsaved",
+    defaultMessage: "Neuloženo"
+  }
+
+})
 export function EditStateDisplay() {
   return (
     <div
@@ -20,7 +28,7 @@ export function EditStateDisplay() {
       }}
     >
       <EditFilled />
-      &nbsp;Upraveno
+      &nbsp;<FormattedMessage {...messages.unsaved} />
     </div>
   );
 }
