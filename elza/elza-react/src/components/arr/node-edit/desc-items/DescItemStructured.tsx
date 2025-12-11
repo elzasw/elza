@@ -1,9 +1,12 @@
 import {
+  Button,
   Combobox,
   Option,
   OptionOnSelectData,
   SelectionEvents,
+  Tooltip,
 } from "@fluentui/react-components";
+import { DocumentAddRegular } from "@fluentui/react-icons";
 import { WebApi } from "actions";
 import { DataStructureRef, DataType, NodeItem } from "elza-api";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
@@ -11,6 +14,13 @@ import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useActiveFund } from "../hooks";
 import { AnonymousStructure } from "./AnonymousStructure";
 import { DescItemProps } from "./types";
+import { i18n } from "components";
+import AddStructureDataForm from "components/arr/structure/AddStructureDataForm";
+import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
+import { useAppThunkDispatch } from "utils/hooks";
+import { structureTypeInvalidate } from "actions/arr/structureType";
+import DescItemFactory from "components/arr/nodeForm/DescItemFactory";
+import { FormattedMessage, defineMessages } from "react-intl";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemStructureRef) => Promise<void>;
@@ -19,6 +29,13 @@ interface Props extends DescItemProps {
 interface NodeItemStructureRef extends NodeItem {
   data: DataStructureRef;
 }
+
+const messages = defineMessages({
+  addNewStructure: {
+    id: "desc_item_structure_action_addNewStructure",
+    defaultMessage: "Přidat",
+  },
+});
 
 export function DescItemStructured({
   item,
@@ -30,6 +47,8 @@ export function DescItemStructured({
   if (item.data?.dataType !== DataType.Structured) {
     throw "Incorrect data type";
   }
+
+  const dispatch = useAppThunkDispatch();
 
   const { id: fundId, versionId: fundVersionId } = useActiveFund();
   const structureTypes = useAppSelector(
@@ -94,13 +113,58 @@ export function DescItemStructured({
     setStructure(
       structures.find(({ id }) => id === parseInt(_data.optionValue)),
     );
-    await onChange({
+
+    const id = parseInt(_data.optionValue);
+    if (!isNaN(id)) {
+      return await handleChange(parseInt(_data.optionValue));
+    }
+  }
+
+  async function handleChange(id: number) {
+    return await onChange({
       ...item,
       data: {
         ...data,
-        structuredObjectId: parseInt(_data.optionValue),
+        structuredObjectId: id,
       },
     });
+  }
+
+  function addNewStructure() {
+    WebApi.createStructureData(fundVersionId, structureType.code, query).then(
+      (structureData) => {
+        dispatch(
+          modalDialogShow(
+            this,
+            i18n("arr.structure.modal.add.title", structureType.code),
+            <AddStructureDataForm
+              //@ts-expect-error TODO fix wrong types (missing fundId)
+              fundId={fundId}
+              fundVersionId={fundVersionId}
+              structureData={structureData}
+              descItemFactory={DescItemFactory}
+              onSubmit={() => {
+                WebApi.confirmStructureData(
+                  fundVersionId,
+                  structureData.id,
+                ).then((structure) => {
+                  // TODO add types
+                  handleChange(structure.id);
+                });
+              }}
+              onSubmitSuccess={() => {
+                dispatch(modalDialogHide());
+                dispatch(structureTypeInvalidate());
+              }}
+            />,
+            "",
+            () => {
+              WebApi.deleteStructureData(fundVersionId, structureData.id);
+            },
+          ),
+        );
+      },
+    );
   }
 
   useEffect(() => {
@@ -132,7 +196,14 @@ export function DescItemStructured({
     item.undefined || isInherited || item.inhibited || _isDisabled;
 
   return (
-    <div style={{ display: "flex", flex: 1, position: "relative" }}>
+    <div
+      style={{
+        position: "relative",
+        display: "inline-flex",
+        flex: 1,
+        alignItems: "center",
+      }}
+    >
       {!structureType.anonymous && (
         // <Input
         //   style={{ flex: 1, minWidth: "60px" }}
@@ -155,6 +226,7 @@ export function DescItemStructured({
               flex: 1,
               flexGrow: 5,
               // paddingLeft: "80px",
+              paddingRight: "37px",
             }}
             input={{
               style: {
@@ -162,6 +234,7 @@ export function DescItemStructured({
                 textDecoration: item.inhibited ? "line-through" : undefined,
                 flex: 1,
                 flexBasis: `${(query || "").length + 3}ch`,
+                zIndex: 1,
               },
             }}
             listbox={{ style: { maxHeight: "400px", minWidth: "400px" } }}
@@ -182,15 +255,37 @@ export function DescItemStructured({
           <div
             style={{
               position: "absolute",
-              right: "40px",
+              right: "70px",
               height: "90%",
               display: "flex",
               alignItems: "center",
               opacity: 0.5,
               background: "var(--shade-0)",
+              pointerEvents: "none",
+              zIndex: 0,
             }}
           >
             {structure?.complement}
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              right: "1px",
+            }}
+          >
+            <Tooltip
+              relationship="label"
+              appearance="inverted"
+              content={<FormattedMessage {...messages.addNewStructure} />}
+            >
+              <Button
+                style={{ height: "29px" }}
+                appearance="subtle"
+                icon={<DocumentAddRegular />}
+                onClick={addNewStructure}
+                tabIndex={-1}
+              />
+            </Tooltip>
           </div>
         </>
       )}
