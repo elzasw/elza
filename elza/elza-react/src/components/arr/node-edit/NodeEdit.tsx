@@ -129,6 +129,9 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
   //     setTimeout(() => (element.style.outline = "3px solid transparent"), 500);
   //   }
   // }
+  //
+
+  const isFirstNode = activeParent.childNodes.findIndex((node:any) => node.id === nodeId) === 0; // TODO add types
 
   return (
     <div
@@ -201,7 +204,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                 }}
               >
                 {descItemTypes.map(
-                  ({ typeRef, typeForm, typeWidth, descItems }, typeIndex) => {
+                  ({ typeRef, typeForm, typeWidth, descItems }) => {
                     return (
                       <div
                         key={typeRef.id}
@@ -255,7 +258,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                                 appearance="subtle"
                                 icon={<CopyAddRegular />}
                                 onClick={() => handleCopyFromPrev(typeRef.id)}
-                                disabled={typeIndex === 0}
+                                disabled={isFirstNode}
                                 tabIndex={-1}
                               />
                             </Tooltip>
