@@ -113,7 +113,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
   }
 
   async function handleCopyToggle(descItemTypeId: number) {
-    const copy = nodeSetting.descItemTypeCopyIds.includes(descItemTypeId);
+    const copy = nodeSetting?.descItemTypeCopyIds?.includes(descItemTypeId);
     if (!copy) {
       dispatch(copyDescItemType(activeParent.id, descItemTypeId));
     } else {
