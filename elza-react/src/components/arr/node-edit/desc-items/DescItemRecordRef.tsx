@@ -4,6 +4,7 @@ import {
   Option,
   OptionOnSelectData,
   SelectionEvents,
+  Tooltip,
 } from "@fluentui/react-components";
 import { DatabasePersonRegular } from "@fluentui/react-icons";
 import { WebApi } from "actions";
@@ -24,6 +25,7 @@ import { useActiveFund } from "../hooks";
 import { RegistrySelectPage } from "pages";
 import classNames from "classnames";
 import { MODAL_DIALOG_VARIANT } from "../../../../constants";
+import { FormattedMessage, defineMessages } from "react-intl";
 // import { Link } from "react-router-dom";
 // import { Input } from "@fluentui/react-components";
 
@@ -34,6 +36,13 @@ interface Props extends DescItemProps {
 interface NodeItemRecordRef extends NodeItem {
   data: DataRecordRef;
 }
+
+const messages = defineMessages({
+  openInAccessPoints: {
+    id: "desc_item_record_ref_action_openInAccessPoints",
+    defaultMessage: "Otevřít v archivních entitách",
+  },
+});
 
 export function DescItemRecordRef({
   item,
@@ -240,14 +249,23 @@ export function DescItemRecordRef({
           right: "1px",
         }}
       >
-        <Button
-          style={{ height: "29px" }}
-          appearance="subtle"
-          disabled={item.itemSpecId == undefined && selectedSpecId == undefined}
-          icon={<DatabasePersonRegular />}
-          onClick={handleSelectModule}
-          tabIndex={-1}
-        />
+        <Tooltip
+          relationship="label"
+          appearance="inverted"
+          content={<FormattedMessage {...messages.openInAccessPoints} />}
+        >
+          <Button
+            style={{ height: "29px" }}
+            appearance="subtle"
+            disabled={
+              (item.itemSpecId == undefined && selectedSpecId == undefined) ||
+              isDisabled
+            }
+            icon={<DatabasePersonRegular />}
+            onClick={handleSelectModule}
+            tabIndex={-1}
+          />
+        </Tooltip>
       </div>
     </div>
   );

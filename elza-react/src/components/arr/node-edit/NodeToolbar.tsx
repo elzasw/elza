@@ -1,6 +1,5 @@
 import {
-  Button,
-  Dropdown,
+  Badge,
   Menu,
   MenuButton,
   MenuItem,
@@ -17,28 +16,34 @@ import {
   CopyRegular,
   DeleteRegular,
   HistoryRegular,
-  TextQuoteRegular,
-  SettingsCogMultipleRegular,
   LinkMultipleRegular,
+  SettingsCogMultipleRegular,
+  TextQuoteRegular,
+  CameraAddRegular,
+  CameraRegular,
 } from "@fluentui/react-icons";
 import { WebApi } from "actions";
 import * as issuesActions from "actions/arr/issues";
 import { deleteNode } from "actions/arr/node";
 import { toggleCopyAllDescItemType } from "actions/arr/nodeSetting";
+import { fundSubNodeDaoChangeScenario } from "actions/arr/subNodeDaos";
 import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
+import { routerNavigate } from "actions/router";
 import IssueForm from "components/form/IssueForm";
 import i18n from "components/i18n";
 import { showConfirmDialog } from "components/shared/dialog";
 import { NodeAccordionData, NodeFormData } from "elza-api";
 import { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, defineMessages, useIntl } from "react-intl";
 import { IssueVO } from "types";
+import { ArrDaoVO } from "typings/dao";
 import { DescItemTypeRef } from "typings/store";
-import { processNodeNavigation } from "utils/ArrShared";
 import { useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
+import { urlFundNode } from "../../../constants";
 import ArrHistoryForm from "../ArrHistoryForm";
 import { isFundRootId } from "../ArrUtils";
+import { NodeSettingsModal } from "../node-settings-form";
 import { QuoteModal, messages as quoteMessages } from "../quote";
 import { TextFragmentsWindow } from "../text-fragments";
 import { AddDescItemTypeForm } from "./AddDescItemType";
@@ -50,13 +55,6 @@ import {
 } from "./ToolbarOverflow";
 import { useActiveFund, useActiveParent } from "./hooks";
 import { useTemplates } from "./templates/templates";
-import { routerNavigate } from "actions/router";
-import { urlFundNode } from "../../../constants";
-import { ScenarioDropdown } from "../sub-node-dao";
-import { Icon } from "components";
-import { NodeSettingsModal } from "../node-settings-form";
-import { ArrDaoVO } from "typings/dao";
-import { fundSubNodeDaoChangeScenario } from "actions/arr/subNodeDaos";
 
 export interface Props {
   formData?: NodeFormData;
@@ -64,6 +62,65 @@ export interface Props {
   onAddDescItem: (descItemType: DescItemTypeRef) => void;
   daos?: ArrDaoVO[];
 }
+
+export const messages = defineMessages({
+  addDescItem: {
+    id: "node_action_addDescItem",
+    defaultMessage: "Prvek popisu",
+  },
+  toggleCopyFromPrevious: {
+    id: "node_action_toggleCopyFromPrevious",
+    defaultMessage: "Nastavení opakovaného kopírování všech hodnot PP",
+  },
+  visiblePolicy: {
+    id: "node_action_visiblePolicy",
+    defaultMessage: "Pravidla kontroly",
+  },
+  showHistory: {
+    id: "node_action_showHistory",
+    defaultMessage: "Historie",
+  },
+  deleteNode: {
+    id: "node_action_deleteNode",
+    defaultMessage: "Smazat jednotku popisu",
+  },
+  showSymbols: {
+    id: "node_action_showSymbols",
+    defaultMessage: "Symboly",
+  },
+  showQuotes: {
+    id: "node_action_showQuotes",
+    defaultMessage: "Citace",
+  },
+  addComment: {
+    id: "node_action_addComment",
+    defaultMessage: "Přidat připomínku",
+  },
+  createTemplate: {
+    id: "node_action_createTemplate",
+    defaultMessage: "Vytvořit šablonu",
+  },
+  applyTemplate: {
+    id: "node_action_applyTemplate",
+    defaultMessage: "Použít šablonu",
+  },
+  copyUUID: {
+    id: "node_action_copyUUID",
+    defaultMessage: "Kopirovat UUID jednotky popisu",
+  },
+  syncNode: {
+    id: "node_action_syncNode",
+    defaultMessage: "Synchronizovat JP ze zdrojovych AS",
+  },
+  digitizationRequest: {
+    id: "node_action_digitizationRequest",
+    defaultMessage: "Požadavek na digitalizaci",
+  },
+  digitizationSync: {
+    id: "node_action_digitizationSync",
+    defaultMessage: "Synchronizovat DAO",
+  },
+});
 
 export const NodeToolbar = ({
   formData,
@@ -81,6 +138,8 @@ export const NodeToolbar = ({
   const activeFund = useActiveFund();
   const activeParent = useActiveParent(); // TODO use different way of getting active parent node
   const { createTemplate, applyTemplate } = useTemplates({ descItems });
+
+  const { formatMessage } = useIntl();
 
   const issueProtocol = useAppSelector(({ app }) => app.issueProtocol as any); // TODO add types
   const issueTypes = useAppSelector(({ refTables }) => refTables.issueTypes);
@@ -247,7 +306,7 @@ export const NodeToolbar = ({
       groupId: "1",
       items: [
         {
-          label: "Prvek popisu",
+          label: formatMessage(messages.addDescItem),
           showLabel: true,
           icon: <AddRegular />,
           appearance: "primary",
@@ -260,7 +319,7 @@ export const NodeToolbar = ({
       groupId: "2",
       items: [
         {
-          label: "Nastavení opakovaného kopírování všech hodnot PP",
+          label: formatMessage(messages.toggleCopyFromPrevious),
           showLabel: false,
           icon: <CopyRegular />,
           appearance: nodeSetting?.copyAll ? "primary" : "subtle",
@@ -268,7 +327,7 @@ export const NodeToolbar = ({
           action: handleToggleCopyFromPrevious,
         },
         {
-          label: "Pravidla kontroly",
+          label: formatMessage(messages.visiblePolicy),
           showLabel: false,
           icon: <SettingsCogMultipleRegular />,
           appearance: "subtle",
@@ -276,7 +335,7 @@ export const NodeToolbar = ({
           action: handleVisiblePolicy,
         },
         {
-          label: "Historie",
+          label: formatMessage(messages.showHistory),
           showLabel: false,
           icon: <HistoryRegular />,
           appearance: "subtle",
@@ -284,7 +343,7 @@ export const NodeToolbar = ({
           action: handleShowHistory,
         },
         {
-          label: "Smazat Jednotku popisu",
+          label: formatMessage(messages.deleteNode),
           showLabel: false,
           icon: <DeleteRegular />,
           appearance: "subtle",
@@ -298,12 +357,13 @@ export const NodeToolbar = ({
       groupId: "3",
       items: [
         {
-          label: "Symboly",
+          label: formatMessage(messages.showSymbols),
           showLabel: false,
           icon: <span>Ω</span>,
           appearance: "subtle",
           id: "symbols",
           action: handleShowSpecialCharacters,
+          isVisible: false,
         },
       ],
     },
@@ -311,7 +371,7 @@ export const NodeToolbar = ({
       groupId: "4",
       items: [
         {
-          label: "Citace",
+          label: formatMessage(messages.showQuotes),
           showLabel: true,
           icon: <TextQuoteRegular />,
           appearance: "subtle",
@@ -324,7 +384,7 @@ export const NodeToolbar = ({
       groupId: "5",
       items: [
         {
-          label: "Přidat připomínku",
+          label: formatMessage(messages.addComment),
           showLabel: false,
           icon: <CommentRegular />,
           appearance: "subtle",
@@ -337,7 +397,7 @@ export const NodeToolbar = ({
       groupId: "6",
       items: [
         {
-          label: "Vytvořit šablonu",
+          label: formatMessage(messages.createTemplate),
           showLabel: true,
           icon: <AddRegular />,
           appearance: "subtle",
@@ -345,11 +405,19 @@ export const NodeToolbar = ({
           action: handleCreateTemplate,
         },
         {
-          label: "Použít šablonu",
+          label: formatMessage(messages.applyTemplate),
           showLabel: true,
           appearance: "subtle",
           id: "apply-template",
           action: handleApplyTemplate,
+        },
+        {
+          label: formatMessage(messages.copyUUID),
+          showLabel: true,
+          icon: <CopyRegular />,
+          appearance: "subtle",
+          id: "copy-uuid",
+          action: handleCopyUuid,
         },
       ],
     },
@@ -357,15 +425,30 @@ export const NodeToolbar = ({
       groupId: "7",
       items: [
         {
-          label: "Kopirovat UUID jednotky popisu",
+          label: formatMessage(messages.digitizationRequest),
           showLabel: true,
-          icon: <CopyRegular />,
+          icon: <CameraAddRegular />,
           appearance: "subtle",
-          id: "copy-uuid",
-          action: handleCopyUuid,
+          id: "digitization-request",
+          action: () => console.log("digitization-request"),
+          isVisible: false,
         },
         {
-          label: "Synchronizovat JP ze zdrojovych AS",
+          label: formatMessage(messages.digitizationSync),
+          showLabel: true,
+          icon: <CameraRegular />,
+          appearance: "subtle",
+          id: "digitization-sync",
+          action: () => console.log("digitization-sync"),
+          isVisible: false,
+        },
+      ],
+    },
+    {
+      groupId: "8",
+      items: [
+        {
+          label: formatMessage(messages.syncNode),
           showLabel: true,
           icon: <ArrowSyncRegular />,
           appearance: "subtle",
@@ -467,6 +550,7 @@ export const NodeToolbar = ({
                           appearance={appearance}
                           onClick={action}
                           icon={icon}
+                          tooltip={!showLabel && label}
                         >
                           {showLabel ? label : undefined}
                         </ToolbarOverflowButton>

@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, ReactElement, ReactNode } from "react";
 import { MoreHorizontal20Filled } from "@fluentui/react-icons";
 import {
   ToolbarButton,
@@ -14,6 +14,7 @@ import {
   useOverflowMenu,
   useIsOverflowItemVisible,
   useIsOverflowGroupVisible,
+  Tooltip,
 } from "@fluentui/react-components";
 import type {
   ToolbarButtonProps,
@@ -140,16 +141,27 @@ export const ToolbarOverflowDivider = ({
 type ToolbarOverflowMenuProps = {
   overflowId: string;
   overflowGroupId: string;
+  tooltip?: string | ReactElement;
 } & ToolbarButtonProps;
 
 export const ToolbarOverflowButton = ({
   overflowId,
   overflowGroupId,
+  tooltip,
   ...props
 }: ToolbarOverflowMenuProps) => {
-  return (
+  const button = (
     <OverflowItem id={overflowId} groupId={overflowGroupId}>
       <ToolbarButton style={{ flexShrink: 0 }} {...props} />
     </OverflowItem>
   );
+
+  if (tooltip) {
+    return (
+      <Tooltip appearance="inverted" relationship="label" content={tooltip}>
+        {button}
+      </Tooltip>
+    );
+  }
+  return button;
 };

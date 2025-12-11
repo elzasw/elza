@@ -4,6 +4,7 @@ import {
   Input,
   Option,
   Textarea,
+  Tooltip,
 } from "@fluentui/react-components";
 import { ArrowEnterRegular, SearchRegular } from "@fluentui/react-icons";
 import { WebApi } from "actions";
@@ -21,7 +22,7 @@ import { findInSources, useValueManager } from "./utils";
 import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
 import { SelectSearchFundsForm } from "components/arr/search-funds-form/SelectSearchFundsForm";
 import { i18n } from "components";
-import { defineMessages, useIntl } from "react-intl";
+import { FormattedMessage, defineMessages, useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
 
 interface Props extends DescItemProps {
@@ -44,6 +45,14 @@ const messages = defineMessages({
   refTemplate: {
     id: "desc_item_uri_ref_refTemplate",
     defaultMessage: "Šablona synchronizace",
+  },
+  fundSearch: {
+    id: "desc_item_uri_ref_fundSearch",
+    defaultMessage: "Vyhledat v archivních souborech",
+  },
+  goToUri: {
+    id: "desc_item_uri_ref_goToUri",
+    defaultMessage: "Přejít na odkaz",
   },
 });
 
@@ -165,7 +174,7 @@ export function DescItemUriRef({
     dispatch(
       modalDialogShow(
         this,
-        i18n("arr.fund.title.search"),
+        formatMessage(messages.fundSearch),
         <SelectSearchFundsForm
           onSubmit={async ({ node, fund }) => {
             // TODO new api
@@ -221,18 +230,30 @@ export function DescItemUriRef({
             }}
             contentAfter={
               <>
-                <Button
-                  appearance="subtle"
-                  icon={<SearchRegular />}
-                  onClick={handleSearch}
-                  tabIndex={-1}
-                />
-                <Button
-                  appearance="subtle"
-                  icon={<ArrowEnterRegular />}
-                  onClick={handleNavigate}
-                  tabIndex={-1}
-                />
+                <Tooltip
+                  relationship="label"
+                  appearance="inverted"
+                  content={<FormattedMessage {...messages.fundSearch} />}
+                >
+                  <Button
+                    appearance="subtle"
+                    icon={<SearchRegular />}
+                    onClick={handleSearch}
+                    tabIndex={-1}
+                  />
+                </Tooltip>
+                <Tooltip
+                  relationship="label"
+                  appearance="inverted"
+                  content={<FormattedMessage {...messages.goToUri} />}
+                >
+                  <Button
+                    appearance="subtle"
+                    icon={<ArrowEnterRegular />}
+                    onClick={handleNavigate}
+                    tabIndex={-1}
+                  />
+                </Tooltip>
               </>
             }
           />

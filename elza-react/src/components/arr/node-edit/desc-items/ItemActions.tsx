@@ -1,4 +1,4 @@
-import { Button } from "@fluentui/react-components";
+import { Button, Tooltip } from "@fluentui/react-components";
 import {
   DismissRegular,
   EyeOffFilled,
@@ -6,6 +6,7 @@ import {
 } from "@fluentui/react-icons";
 import { WebApi } from "actions";
 import { FormItemType, MandatoryType, NodeItem } from "elza-api";
+import { FormattedMessage, defineMessages } from "react-intl";
 import { DescItemTypeRef } from "typings/store";
 
 interface Props {
@@ -17,6 +18,26 @@ interface Props {
   typeForm: FormItemType;
   typeRef: DescItemTypeRef;
 }
+
+const messages = defineMessages({
+  delete: {
+    id: "desc_item_action_delete",
+    defaultMessage: "Odstranit hodnotu",
+  },
+  inhibit: {
+    id: "desc_item_action_inhibit",
+    defaultMessage: "Potlačit zděděnou hodnotu",
+  },
+  allow: {
+    id: "desc_item_action_allow",
+    defaultMessage: "Povolit zděděnou hodnotu",
+  },
+  setUndefined: {
+    id: "desc_item_action_set_undefined",
+    defaultMessage:
+      "Nastavení hodnoty na 'výjimka' z důvodu nezjištění, neexistence nebo neuvádění na základě výjimky z pravidel",
+  },
+});
 
 export function ItemActions({
   item,
@@ -52,32 +73,56 @@ export function ItemActions({
     <div style={{ display: "flex", alignItems: "flex-start" }}>
       {!isInherited &&
         (hasValue || isOptional || (typeForm.repeatable && isSpecOptional)) && (
-          <Button
-            appearance="subtle"
-            icon={<DismissRegular />}
-            onClick={() => onDelete()}
-            tabIndex={-1}
-          ></Button>
+          <Tooltip
+            relationship="label"
+            appearance="inverted"
+            content={<FormattedMessage {...messages.delete} />}
+          >
+            <Button
+              appearance="subtle"
+              icon={<DismissRegular />}
+              onClick={() => onDelete()}
+              tabIndex={-1}
+            />
+          </Tooltip>
         )}
       {isInherited && (
-        <Button
-          appearance="subtle"
-          icon={item.inhibited ? <ArrowUndoRegular /> : <DismissRegular />}
-          onClick={() => handleToggleInhibited()}
-          tabIndex={-1}
-        ></Button>
+        <Tooltip
+          relationship="label"
+          appearance="inverted"
+          content={
+            item.inhibited ? (
+              <FormattedMessage {...messages.allow} />
+            ) : (
+              <FormattedMessage {...messages.inhibit} />
+            )
+          }
+        >
+          <Button
+            appearance="subtle"
+            icon={item.inhibited ? <ArrowUndoRegular /> : <DismissRegular />}
+            onClick={() => handleToggleInhibited()}
+            tabIndex={-1}
+          />
+        </Tooltip>
       )}
       {canSetUndefined &&
         !(typeRef.useSpecification && !spec) &&
         !item.inhibited &&
         !item.undefined &&
         !item.data?.dataId && (
-          <Button
-            appearance="subtle"
-            icon={<EyeOffFilled />}
-            onClick={() => onSetUndefined()}
-            tabIndex={-1}
-          ></Button>
+          <Tooltip
+            relationship="label"
+            appearance="inverted"
+            content={<FormattedMessage {...messages.setUndefined} />}
+          >
+            <Button
+              appearance="subtle"
+              icon={<EyeOffFilled />}
+              onClick={() => onSetUndefined()}
+              tabIndex={-1}
+            />
+          </Tooltip>
         )}
     </div>
   );
