@@ -1,4 +1,9 @@
-import { Button, Spinner, mergeClasses } from "@fluentui/react-components";
+import {
+  Button,
+  Spinner,
+  Tooltip,
+  mergeClasses,
+} from "@fluentui/react-components";
 import { AddRegular, CopyAddRegular, CopyRegular } from "@fluentui/react-icons";
 import { WebApi } from "actions";
 import { NodeItem } from "elza-api";
@@ -18,12 +23,24 @@ import { buildGroups } from "./utils";
 import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
 import { useAppThunkDispatch } from "utils/hooks";
 import { ArrDaoVO } from "typings/dao";
+import { FormattedMessage, defineMessages } from "react-intl";
 
 interface Props {
   fondsVersionId: number;
   nodeId: number;
   nodeVersionId: number;
 }
+
+const messages = defineMessages({
+  copyFromPrev: {
+    id: "desc_item_action_copyFromPrev",
+    defaultMessage: "Kopírovat hodnoty PP z předchozí JP",
+  },
+  copyToggle: {
+    id: "desc_item_action_copyToggle",
+    defaultMessage: "Nastavení opakovaného kopírování hodnot PP",
+  },
+});
 
 export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
   const dispatch = useAppThunkDispatch();
@@ -217,36 +234,58 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                             // fontSize: `${1 + (typeWidth ? typeWidth * 0.1 : 0.4)}em`,
                           }}
                         >
-                          <div>{typeRef.shortcut}</div>
+                          <Tooltip
+                            relationship="label"
+                            appearance="inverted"
+                            content={typeRef.description}
+                          >
+                            <div>{typeRef.shortcut}</div>
+                          </Tooltip>
                           <div className="actions">
-                            <Button
-                              className="hidable-button"
-                              size="small"
-                              appearance="subtle"
-                              icon={<CopyAddRegular />}
-                              onClick={() => handleCopyFromPrev(typeRef.id)}
-                              tabIndex={-1}
-                            />
-                            <Button
-                              className={
-                                nodeSetting?.descItemTypeCopyIds.includes(
-                                  typeRef.id,
-                                )
-                                  ? undefined
-                                  : "hidable-button"
+                            <Tooltip
+                              relationship="label"
+                              appearance="inverted"
+                              content={
+                                <FormattedMessage {...messages.copyFromPrev} />
                               }
-                              size="small"
-                              appearance={
-                                nodeSetting?.descItemTypeCopyIds.includes(
-                                  typeRef.id,
-                                )
-                                  ? "primary"
-                                  : "subtle"
+                            >
+                              <Button
+                                className="hidable-button"
+                                size="small"
+                                appearance="subtle"
+                                icon={<CopyAddRegular />}
+                                onClick={() => handleCopyFromPrev(typeRef.id)}
+                                tabIndex={-1}
+                              />
+                            </Tooltip>
+                            <Tooltip
+                              relationship="label"
+                              appearance="inverted"
+                              content={
+                                <FormattedMessage {...messages.copyToggle} />
                               }
-                              icon={<CopyRegular />}
-                              onClick={() => handleCopyToggle(typeRef.id)}
-                              tabIndex={-1}
-                            />
+                            >
+                              <Button
+                                className={
+                                  nodeSetting?.descItemTypeCopyIds.includes(
+                                    typeRef.id,
+                                  )
+                                    ? undefined
+                                    : "hidable-button"
+                                }
+                                size="small"
+                                appearance={
+                                  nodeSetting?.descItemTypeCopyIds.includes(
+                                    typeRef.id,
+                                  )
+                                    ? "primary"
+                                    : "subtle"
+                                }
+                                icon={<CopyRegular />}
+                                onClick={() => handleCopyToggle(typeRef.id)}
+                                tabIndex={-1}
+                              />
+                            </Tooltip>
                           </div>
                         </div>
                         <div>

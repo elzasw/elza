@@ -1,4 +1,4 @@
-import { Button, Input, Textarea } from "@fluentui/react-components";
+import { Button, Input, Textarea, Tooltip } from "@fluentui/react-components";
 import {
   DocumentAddRegular,
   MapRegular,
@@ -17,7 +17,7 @@ import {
   addToastrDanger,
   addToastrInfo,
 } from "components/shared/toastr/ToastrActions";
-import { useIntl } from "react-intl";
+import { FormattedMessage, defineMessages, useIntl } from "react-intl";
 import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
 import { i18n } from "components";
 import { ExportCoordinateModal } from "components/shared/coordinates";
@@ -32,6 +32,21 @@ interface Props extends DescItemProps {
 interface NodeItemCoordinates extends NodeItem {
   data: DataCoordinates;
 }
+
+const messages = defineMessages({
+  showInMap: {
+    id: "desc_item_coordinates_action_showInMap",
+    defaultMessage: "Zobrazit v mapě",
+  },
+  export: {
+    id: "desc_item_coordinates_export",
+    defaultMessage: "Exportovat",
+  },
+  import: {
+    id: "desc_item_coordinates_import",
+    defaultMessage: "Importovat",
+  },
+});
 
 export function DescItemCoordinates({ item, nodeId, onChange }: Props) {
   if (
@@ -179,35 +194,55 @@ export function DescItemCoordinates({ item, nodeId, onChange }: Props) {
                   icon={<MapRegular />}
                   onClick={handleShowInMap}
                   tabIndex={-1}
-                ></Button>
+                />
               )}
             </PolygonShowInMap>
             {data?.value && (
               <>
-                <Button
-                  disabled={isDisabled}
-                  appearance="subtle"
-                  icon={<CopyRegular />}
-                  onClick={handleCopyToClipboard}
-                  tabIndex={-1}
-                ></Button>
-                <Button
-                  disabled={isDisabled}
-                  appearance="subtle"
-                  icon={<ArrowExportRegular />}
-                  onClick={handleExport}
-                  tabIndex={-1}
-                ></Button>
+                <Tooltip
+                  relationship="label"
+                  appearance="inverted"
+                  content={
+                    <FormattedMessage {...globalMessages.copyToClipboard} />
+                  }
+                >
+                  <Button
+                    disabled={isDisabled}
+                    appearance="subtle"
+                    icon={<CopyRegular />}
+                    onClick={handleCopyToClipboard}
+                    tabIndex={-1}
+                  />
+                </Tooltip>
+                <Tooltip
+                  relationship="label"
+                  appearance="inverted"
+                  content={<FormattedMessage {...messages.export} />}
+                >
+                  <Button
+                    disabled={isDisabled}
+                    appearance="subtle"
+                    icon={<ArrowExportRegular />}
+                    onClick={handleExport}
+                    tabIndex={-1}
+                  />
+                </Tooltip>
               </>
             )}
             {!data?.value && (
-              <Button
-                disabled={isDisabled}
-                appearance="subtle"
-                icon={<DocumentAddRegular />}
-                onClick={handleImport}
-                tabIndex={-1}
-              ></Button>
+              <Tooltip
+                relationship="label"
+                appearance="inverted"
+                content={<FormattedMessage {...messages.import} />}
+              >
+                <Button
+                  disabled={isDisabled}
+                  appearance="subtle"
+                  icon={<DocumentAddRegular />}
+                  onClick={handleImport}
+                  tabIndex={-1}
+                />
+              </Tooltip>
             )}
           </>
         }
