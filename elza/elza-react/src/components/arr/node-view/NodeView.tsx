@@ -4,6 +4,7 @@ import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useNodeFormData } from "../node-edit/hooks";
 import { buildGroups } from "../node-edit/utils";
 import {
+  DescItemBit,
   DescItemCoordinates,
   DescItemDecimal,
   DescItemEnum,
@@ -37,6 +38,7 @@ const dataTypeMap = {
   [DataType.Coordinates]: DescItemCoordinates,
   [DataType.Structured]: DescItemStructured,
   [DataType.FileRef]: DescItemFileRef,
+  [DataType.Bit]: DescItemBit,
 };
 
 export function NodeView({ fondsVersionId, nodeId, nodeVersionId }: Props) {
