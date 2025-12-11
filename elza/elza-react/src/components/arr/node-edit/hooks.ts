@@ -180,6 +180,8 @@ export function useNodeFormData(
   return { formData, nodeData, addDescItem, addEmptyDescItem, deleteDescItem };
 }
 
+// Generator stabilnich klicu prvku popisu s moznosti naparovat existujici
+// novy prvek popisu na prvek popisu vytvoreny na serveru po ulozeni
 let keymap: Record<string, string> = {};
 let counter = 0;
 
