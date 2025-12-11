@@ -1,15 +1,15 @@
 import { Input } from "@fluentui/react-components";
-import { DataType, DataUnitdate, NodeItem } from "elza-api";
-import { ConflictValue } from "./ConflictValue";
-import { EditStateDisplay } from "./EditStateDisplay";
-import { DescItemProps } from "./types";
-import { useValueManager } from "./utils";
-import { useState } from "react";
 import {
   convertToEstimateWithConfirmation,
   validateUnitDate,
 } from "components/registry/field/UnitdateField";
+import { DataType, DataUnitdate, NodeItem } from "elza-api";
+import { useMemo } from "react";
 import { useAppThunkDispatch } from "utils/hooks";
+import { ConflictValue } from "./ConflictValue";
+import { EditStateDisplay } from "./EditStateDisplay";
+import { DescItemProps } from "./types";
+import { useValueManager } from "./utils";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemUnitdate) => Promise<void>;
@@ -40,8 +40,6 @@ export function DescItemUnitdate({
     item.undefined || isInherited || item.inhibited || _isDisabled;
 
   const data = item.data as DataUnitdate;
-  const [validationMessage, setValidationMessage] = useState("");
-  const [isValid, setIsValid] = useState(true);
 
   const {
     value,
@@ -52,6 +50,10 @@ export function DescItemUnitdate({
     resetConflict,
     finishChange,
   } = useValueManager<string>(data?.value, item);
+
+  const {valid: isValid, message: validationMessage} = useMemo(() => {
+    return validateUnitDate(value);
+  }, [value])
 
   async function handleChange(force?: boolean) {
     if (
@@ -84,9 +86,6 @@ export function DescItemUnitdate({
     currentTarget,
   }: React.ChangeEvent<HTMLInputElement>) {
     setValue(currentTarget.value);
-    const validation = validateUnitDate(currentTarget.value);
-    setValidationMessage(validation.message);
-    setIsValid(validation.valid);
   }
 
   return (
@@ -115,6 +114,7 @@ export function DescItemUnitdate({
         value={value?.toString()}
         conflictValue={conflictValue?.toString()}
         isDirty={isDirty}
+        isValid={isValid}
         onResolve={resolveConflict}
       >
         {(conflictValue) => (
