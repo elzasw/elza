@@ -4,11 +4,12 @@ import {
   OptionOnSelectData,
   SelectionEvents,
 } from "@fluentui/react-components";
-import { FormItemType, MandatoryType } from "elza-api";
+import { FormItemSpec, FormItemType, MandatoryType } from "elza-api";
 import { useRef, useState } from "react";
 import { DescItemTypeRef } from "typings/store";
 import { useStrictMode } from "../hooks";
 import { findInSources } from "./utils";
+import { RulDescItemSpecExtVO } from "api/RulDescItemSpecExtVO";
 
 interface Props {
   value: number;
@@ -40,6 +41,11 @@ export function DescItemSpec({
   const formSpecs = typeForm.specs;
   const refSpecs = typeRef.descItemSpecs;
 
+  function getLabel(spec: {form:FormItemSpec, rule: RulDescItemSpecExtVO}){
+    if (!spec) { return ""; }
+    return spec?.rule[labelSource] || spec?.rule.name || `spec_${spec?.rule.id}`;
+  }
+
   const allSpecs = refSpecs.map((refSpec) => ({
     form: formSpecs.find(({ itemSpecId }) => itemSpecId === refSpec.id),
     rule: refSpec,
@@ -53,7 +59,7 @@ export function DescItemSpec({
   const spec = allSpecs.find(({ rule }) => rule && rule.id === value);
 
   // const [selectedSpec, setSelectedSpec] = useState(value);
-  const [query, setQuery] = useState(spec?.rule[labelSource] || "");
+  const [query, setQuery] = useState(getLabel(spec));
   const [filteredSpecs, setFilteredSpecs] = useState(specs);
   const fieldRef = useRef<HTMLInputElement>(null);
 
@@ -73,7 +79,7 @@ export function DescItemSpec({
   }: React.ChangeEvent<HTMLInputElement>) {
     const _query = currentTarget.value;
 
-    if (_query && _query != spec?.rule[labelSource]) {
+    if (_query && _query != getLabel(spec)) {
       const filteredSpecs = specs.filter(({ rule: { name, shortcut } }) => {
         return findInSources(_query, [name, shortcut]);
       });
@@ -101,13 +107,13 @@ export function DescItemSpec({
         onOpenChange={(_e, open) => {
           if (open) {
             fieldRef.current?.setSelectionRange(0, query?.length || 0);
-            if (query == spec?.rule[labelSource]) {
+            if (query == getLabel(spec)) {
               setFilteredSpecs(specs);
             }
           }
         }}
         onBlur={() => {
-          setQuery(spec?.rule[labelSource] || "");
+          setQuery(getLabel(spec));
         }}
         onOptionSelect={handleOptionSelect}
         multiselect={false}
@@ -133,7 +139,7 @@ export function DescItemSpec({
               }}
               value={rule.id.toString()}
             >
-              {rule[labelSource] || rule.name}
+              {getLabel({rule, form})}
             </Option>
           );
         })}

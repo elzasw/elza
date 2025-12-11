@@ -185,6 +185,7 @@ export function DescItemField({
           typeRef={typeRef}
           value={specId}
           onChange={handleSpecChange}
+          labelSource="name"
         />
       )}
       <div style={{ whiteSpace: "pre-wrap", display: "flex", flex: 1 }}>
