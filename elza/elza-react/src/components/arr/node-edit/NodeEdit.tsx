@@ -201,7 +201,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                 }}
               >
                 {descItemTypes.map(
-                  ({ typeRef, typeForm, typeWidth, descItems }) => {
+                  ({ typeRef, typeForm, typeWidth, descItems }, typeIndex) => {
                     return (
                       <div
                         key={typeRef.id}
@@ -255,6 +255,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                                 appearance="subtle"
                                 icon={<CopyAddRegular />}
                                 onClick={() => handleCopyFromPrev(typeRef.id)}
+                                disabled={typeIndex === 0}
                                 tabIndex={-1}
                               />
                             </Tooltip>
