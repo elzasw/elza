@@ -40,18 +40,17 @@ export function DescItemSpec({
   const formSpecs = typeForm.specs;
   const refSpecs = typeRef.descItemSpecs;
 
-  const specs = refSpecs
-    .map((refSpec) => ({
-      form: formSpecs.find(({ itemSpecId }) => itemSpecId === refSpec.id),
-      rule: refSpec,
-    }))
-    .filter(
-      // Hide impossible when in strict mode
-      ({ form }) =>
-        !strictMode || (form && form?.type != MandatoryType.Impossible),
-    );
+  const allSpecs = refSpecs.map((refSpec) => ({
+    form: formSpecs.find(({ itemSpecId }) => itemSpecId === refSpec.id),
+    rule: refSpec,
+  }));
+  const specs = allSpecs.filter(
+    // Hide impossible when in strict mode
+    ({ form }) =>
+      !strictMode || (form && form?.type != MandatoryType.Impossible),
+  );
 
-  const spec = specs.find(({ rule }) => rule && rule.id === value);
+  const spec = allSpecs.find(({ rule }) => rule && rule.id === value);
 
   // const [selectedSpec, setSelectedSpec] = useState(value);
   const [query, setQuery] = useState(spec?.rule[labelSource] || "");
