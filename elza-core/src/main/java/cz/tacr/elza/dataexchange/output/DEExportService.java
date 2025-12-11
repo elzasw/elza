@@ -286,9 +286,11 @@ public class DEExportService {
             // check all access points
             if (CollectionUtils.isNotEmpty(accessPointIds)) {
                 ObjectListIterator.forEachPage(accessPointIds, page -> {
-                    if (stateRepository.countValidByAccessPointIds(page) != page.size()) {
+                	var validIdsCount = stateRepository.countValidByAccessPointIds(page);
+                    if ( validIdsCount != page.size()) {
+                    	log.error("Not all access points are valid, pageSize={}, validIdsCount={}, apIds={}.", page.size(), validIdsCount, page);
                         List<Integer> deletedApIds = stateRepository.findDeletedAccessPointIdsByAccessPointIds(page);
-                        throw new BusinessException("Entity(es) has been deleted", RegistryCode.CANT_EXPORT_DELETED_AP)
+                        throw new BusinessException("Entity(-ies) has been deleted.", RegistryCode.CANT_EXPORT_DELETED_AP)
                                         .set(ApAccessPoint.FIELD_ACCESS_POINT_ID, deletedApIds);
                     }
                 });
