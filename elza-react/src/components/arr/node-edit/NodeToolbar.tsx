@@ -55,6 +55,10 @@ import {
 } from "./ToolbarOverflow";
 import { useActiveFund, useActiveParent } from "./hooks";
 import { useTemplates } from "./templates/templates";
+import ArrRequestForm from "../ArrRequestForm";
+import ConfirmForm from "components/shared/form/ConfirmForm";
+import SyncNodes from "../SyncNodes";
+import { objectById } from "shared/utils";
 
 export interface Props {
   formData?: NodeFormData;
@@ -281,6 +285,85 @@ export const NodeToolbar = ({
     applyTemplate();
   }
 
+  function handleDigitizationRequest() {
+    const nodeId = nodeData.id;
+    const versionId = activeFund.versionId;
+
+    const form = (
+      <ArrRequestForm
+        fundVersionId={versionId}
+        type="DIGITIZATION"
+        onSubmitForm={(send: any, data: any) => {
+          //TODO add types
+          return WebApi.arrDigitizationRequestAddNodes(
+            versionId,
+            data.requestId,
+            send,
+            data.description,
+            [nodeId],
+            parseInt(data.digitizationFrontdesk),
+          );
+        }}
+        onSubmitSuccess={(result, dispatch) => dispatch(modalDialogHide())}
+      />
+    );
+    dispatch(
+      modalDialogShow(
+        this,
+        i18n("arr.request.digitizationRequest.form.title"),
+        form,
+      ),
+    );
+  }
+
+  function handleDigitizationSync() {
+    const nodeId = nodeData.id;
+    const versionId = activeFund.versionId;
+
+    const confirmForm = (
+      <ConfirmForm
+        confirmMessage={i18n("arr.daos.node.sync.confirm-message")}
+        submittingMessage={i18n("arr.daos.node.sync.submitting-message")}
+        submitTitle={i18n("global.action.run")}
+        onSubmit={async () => {
+          const result = await WebApi.syncDaoLink(versionId, nodeId);
+          dispatch(modalDialogHide());
+          return result;
+        }}
+      />
+    );
+    dispatch(
+      modalDialogShow(this, i18n("arr.daos.node.sync.title"), confirmForm),
+    );
+  }
+
+  function handleRefSync() {
+    const nodeId = nodeData.id;
+    let nodeVersion = nodeData.version;
+
+    if (!nodeVersion) {
+      console.error("Nedohledána verze pro JP", nodeId);
+      // const subNode = objectById(node.childNodes, nodeId);
+      // if (subNode == null) {
+      //     console.error("Nedohledána verze pro JP", nodeId);
+      // } else {
+      //     nodeVersion = subNode.version;
+      // }
+    }
+
+    dispatch(
+      modalDialogShow(
+        this,
+        i18n("arr.syncNodes.title"),
+        <SyncNodes
+          nodeId={nodeId}
+          nodeVersion={nodeVersion}
+          fundId={activeFund.id}
+        />,
+      ),
+    );
+  }
+
   async function handleCopyUuid() {
     await navigator.clipboard.writeText(parent.uuid);
   }
@@ -421,29 +504,29 @@ export const NodeToolbar = ({
         },
       ],
     },
-    {
-      groupId: "7",
-      items: [
-        {
-          label: formatMessage(messages.digitizationRequest),
-          showLabel: true,
-          icon: <CameraAddRegular />,
-          appearance: "subtle",
-          id: "digitization-request",
-          action: () => console.log("digitization-request"),
-          isVisible: false,
-        },
-        {
-          label: formatMessage(messages.digitizationSync),
-          showLabel: true,
-          icon: <CameraRegular />,
-          appearance: "subtle",
-          id: "digitization-sync",
-          action: () => console.log("digitization-sync"),
-          isVisible: false,
-        },
-      ],
-    },
+    // {
+    //   groupId: "7",
+    //   items: [
+    //     {
+    //       label: formatMessage(messages.digitizationRequest),
+    //       showLabel: true,
+    //       icon: <CameraAddRegular />,
+    //       appearance: "subtle",
+    //       id: "digitization-request",
+    //       action: handleDigitizationRequest,
+    //       isVisible: false,
+    //     },
+    //     {
+    //       label: formatMessage(messages.digitizationSync),
+    //       showLabel: true,
+    //       icon: <CameraRegular />,
+    //       appearance: "subtle",
+    //       id: "digitization-sync",
+    //       action: handleDigitizationSync,
+    //       isVisible: daos.length > 0,
+    //     },
+    //   ],
+    // },
     {
       groupId: "8",
       items: [
@@ -453,7 +536,7 @@ export const NodeToolbar = ({
           icon: <ArrowSyncRegular />,
           appearance: "subtle",
           id: "sync-node",
-          action: () => console.log("sync-node"),
+          action: handleRefSync,
         },
       ],
     },
@@ -474,7 +557,7 @@ export const NodeToolbar = ({
       return null;
     }
 
-    const dao = daos[0]; // je predpoklad, ze napojeny soubor je vzdy jen 1
+    const dao = daos[0]; // je predpoklad, ze pri pouziti scenaru je napojeny soubor vzdy jen 1
     return dao.daoLink?.scenario ? dao : null;
   }
 
