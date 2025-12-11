@@ -6,10 +6,11 @@ import {
   NodeConformityError,
   NodeItem,
 } from "elza-api";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { DescItemTypeRef } from "typings/store";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import {
+  DescItemBit,
   DescItemCoordinates,
   DescItemDecimal,
   DescItemEnum,
@@ -55,6 +56,7 @@ const dataTypeComponentMap = {
   [DataType.Coordinates]: DescItemCoordinates,
   [DataType.FileRef]: DescItemFileRef,
   [DataType.UriRef]: DescItemUriRef,
+  [DataType.Bit]: DescItemBit,
 };
 
 export function DescItemField({
@@ -188,7 +190,13 @@ export function DescItemField({
           labelSource="name"
         />
       )}
-      <div style={{ whiteSpace: "pre-wrap", display: "flex", flex: 1 }}>
+      <div
+        style={{
+          whiteSpace: "pre-wrap",
+          display: "flex",
+          flex: dataTypeCode === DataType.Bit ? undefined : 1,
+        }}
+      >
         {DataTypeComponent ? (
           <DataTypeComponent
             item={item}

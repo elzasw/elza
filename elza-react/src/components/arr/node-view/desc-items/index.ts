@@ -10,3 +10,4 @@ export * from "./DescItemUriRef";
 export * from "./DescItemCoordinates";
 export * from "./DescItemStructured";
 export * from "./DescItemFileRef";
+export * from "./DescItemBit";
