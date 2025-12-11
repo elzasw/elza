@@ -5,11 +5,12 @@ interface Props {
   value: string;
   conflictValue: string;
   isDirty: boolean;
+  isValid?: boolean;
   children: (conflictValue: string) => ReactNode;
   onResolve: (reset?: boolean) => void;
 }
 
-export function ConflictValue({ conflictValue, children, onResolve }: Props) {
+export function ConflictValue({ conflictValue, children, onResolve, isValid = true }: Props) {
   return (
     conflictValue && (
       <div style={{ display: "flex", flexDirection: "column" }}>
@@ -20,7 +21,7 @@ export function ConflictValue({ conflictValue, children, onResolve }: Props) {
             justifyContent: "flex-end",
           }}
         >
-          <Button appearance="primary" onClick={() => onResolve()}>
+          <Button appearance="primary" onClick={() => onResolve()} disabled={!isValid}>
             Uložit
           </Button>
         </div>
