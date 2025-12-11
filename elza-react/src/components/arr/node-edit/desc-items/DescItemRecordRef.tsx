@@ -246,6 +246,7 @@ export function DescItemRecordRef({
           disabled={item.itemSpecId == undefined && selectedSpecId == undefined}
           icon={<DatabasePersonRegular />}
           onClick={handleSelectModule}
+          tabIndex={-1}
         />
       </div>
     </div>

@@ -225,11 +225,13 @@ export function DescItemUriRef({
                   appearance="subtle"
                   icon={<SearchRegular />}
                   onClick={handleSearch}
+                  tabIndex={-1}
                 />
                 <Button
                   appearance="subtle"
                   icon={<ArrowEnterRegular />}
                   onClick={handleNavigate}
+                  tabIndex={-1}
                 />
               </>
             }

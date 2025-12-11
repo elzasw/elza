@@ -56,6 +56,7 @@ export function ItemActions({
             appearance="subtle"
             icon={<DismissRegular />}
             onClick={() => onDelete()}
+            tabIndex={-1}
           ></Button>
         )}
       {isInherited && (
@@ -63,6 +64,7 @@ export function ItemActions({
           appearance="subtle"
           icon={item.inhibited ? <ArrowUndoRegular /> : <DismissRegular />}
           onClick={() => handleToggleInhibited()}
+          tabIndex={-1}
         ></Button>
       )}
       {canSetUndefined &&
@@ -74,6 +76,7 @@ export function ItemActions({
             appearance="subtle"
             icon={<EyeOffFilled />}
             onClick={() => onSetUndefined()}
+            tabIndex={-1}
           ></Button>
         )}
     </div>

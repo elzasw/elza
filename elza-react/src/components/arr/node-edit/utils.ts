@@ -1,5 +1,5 @@
 import { RulDataTypeVO } from "api/RulDataTypeVO";
-import { NodeFormData, MandatoryType, DataType } from "elza-api";
+import { NodeFormData, MandatoryType, DataType, NodeItem } from "elza-api";
 import { DescItemGroup, DescItemTypeRef } from "typings/store";
 import { createEmptyDescItem } from "./desc-items/utils";
 import { ViewDescItemGroups } from "./types";
@@ -17,10 +17,14 @@ export function buildGroups(
     return [];
   }
 
-  const forcedItemTypes = skipForcedItems ? [] : itemTypes.filter(
-    ({ type }) =>
-      type === MandatoryType.Required || type === MandatoryType.Recommended,
-  );
+  const _descItems: NodeItem[] = [...descItems];
+
+  const forcedItemTypes = skipForcedItems
+    ? []
+    : itemTypes.filter(
+        ({ type }) =>
+          type === MandatoryType.Required || type === MandatoryType.Recommended,
+      );
 
   forcedItemTypes.forEach(({ itemTypeId, specs, repeatable }) => {
     const itemTypeRef = itemTypeRefs[itemTypeId];
@@ -39,15 +43,8 @@ export function buildGroups(
       (itemTypeRef.useSpecification || repeatable) &&
       dataType.code !== DataType.Enum;
 
-    console.log(
-      "#add forced",
-      itemTypeRef.name,
-      "addSpec:",
-      addSpec,
-      "useSpec:",
-      itemTypeRef.useSpecification,
-      "repeatable:",
-      repeatable,
+    const descItemTypeCount = descItems.filter(
+      ({ itemTypeId: _itemTypeId }) => _itemTypeId === itemTypeId,
     );
 
     if (forcedSpecs.length > 0 && addSpec) {
@@ -57,12 +54,12 @@ export function buildGroups(
             _itemTypeId === itemTypeId && _itemSpecId === itemSpecId,
         );
         if (!descItem) {
-          descItems.push({
+          _descItems.push({
             ...createEmptyDescItem(
               itemTypeId,
               nodeId,
               nodeVersionId,
-              descItems.length,
+              descItemTypeCount.length,
               dataType.code,
             ),
             itemSpecId,
@@ -74,12 +71,12 @@ export function buildGroups(
         ({ itemTypeId: _itemTypeId }) => _itemTypeId === itemTypeId,
       );
       if (!descItem) {
-        descItems.push(
+        _descItems.push(
           createEmptyDescItem(
             itemTypeId,
             nodeId,
             nodeVersionId,
-            descItems.length,
+            descItemTypeCount.length,
             dataType.code,
           ),
         );
@@ -87,11 +84,9 @@ export function buildGroups(
     }
   });
 
-  console.log("#fit", descItems);
-
   const descItemGroups: Array<ViewDescItemGroups> = [];
 
-  descItems.forEach((item) => {
+  _descItems.forEach((item) => {
     let groupRef: DescItemGroup = undefined;
     let typeWidth: number = undefined;
 
