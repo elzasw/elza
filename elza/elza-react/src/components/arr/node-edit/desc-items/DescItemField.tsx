@@ -6,7 +6,7 @@ import {
   NodeConformityError,
   NodeItem,
 } from "elza-api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DescItemTypeRef } from "typings/store";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import {
@@ -39,6 +39,7 @@ interface Props {
   nodeVersionId: number;
   errors?: NodeConformityError[];
   onDelete?: (item: NodeItem) => Promise<void>;
+  onItemCreated?: (item: NodeItem) => void;
 }
 
 const dataTypeComponentMap = {
@@ -64,6 +65,7 @@ export function DescItemField({
   nodeId,
   errors = [],
   onDelete,
+  onItemCreated,
 }: Props) {
   const [specId, setSpecId] = useState<number | undefined>(item.itemSpecId);
   const [isSaving, setIsSaving] = useState(false);
@@ -108,7 +110,11 @@ export function DescItemField({
 
     try {
       if (newItem.itemObjectId === undefined) {
-        await Api.descItems.descItemCreateDescItem(fondsVersionId, newItem);
+        const { data } = await Api.descItems.descItemCreateDescItem(
+          fondsVersionId,
+          newItem,
+        );
+        onItemCreated(data.item);
       } else {
         await new Promise<void>((resolve, reject) => {
           ws.send(
@@ -179,7 +185,6 @@ export function DescItemField({
           typeRef={typeRef}
           value={specId}
           onChange={handleSpecChange}
-          key={specId}
         />
       )}
       <div style={{ whiteSpace: "pre-wrap", display: "flex", flex: 1 }}>
@@ -190,7 +195,6 @@ export function DescItemField({
             typeForm={typeForm}
             typeRef={typeRef}
             nodeId={nodeId}
-            // key={item.itemObjectId}
             isDisabled={
               typeRef.useSpecification &&
               item.itemSpecId == undefined &&

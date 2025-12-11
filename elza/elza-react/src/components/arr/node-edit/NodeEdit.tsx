@@ -7,7 +7,12 @@ import { DescItemTypeRef } from "typings/store";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { NodeToolbar } from "./NodeToolbar";
 import { DescItemField } from "./desc-items";
-import { useActiveFund, useActiveParent, useNodeFormData } from "./hooks";
+import {
+  useActiveFund,
+  useActiveParent,
+  useKeyGen,
+  useNodeFormData,
+} from "./hooks";
 import { useStyles } from "./styles";
 import { buildGroups } from "./utils";
 import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
@@ -28,6 +33,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
   const activeFund = useActiveFund();
 
   const [daos, setDaos] = useState<ArrDaoVO[]>();
+  const { getKey, pairKey } = useKeyGen(nodeId);
 
   const itemTypeRefs = useAppSelector(
     ({ refTables }) => refTables.descItemTypes.itemsMap,
@@ -42,11 +48,8 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     ),
   ); // TODO add types
 
-  const { formData, nodeData, addDescItem, deleteDescItem } = useNodeFormData(
-    fondsVersionId,
-    nodeId,
-    nodeVersionId,
-  );
+  const { formData, nodeData, addEmptyDescItem, deleteDescItem } =
+    useNodeFormData(fondsVersionId, nodeId, nodeVersionId);
 
   useEffect(() => {
     if (nodeData?.id) {
@@ -80,7 +83,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
   }
 
   function handleAddDescItemType(descItemType: DescItemTypeRef) {
-    addDescItem(descItemType.id);
+    addEmptyDescItem(descItemType.id);
   }
 
   async function handleCopyFromPrev(descItemTypeId: number) {
@@ -156,7 +159,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
         )}
         {viewDescItemGroups.map(({ group, descItemTypes }) => {
           return (
-            <div style={{ margin: "4px" }}>
+            <div style={{ margin: "4px" }} key={group.code}>
               <div
                 style={{
                   opacity: 0.5,
@@ -184,6 +187,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                   ({ typeRef, typeForm, typeWidth, descItems }) => {
                     return (
                       <div
+                        key={typeRef.id}
                         style={{
                           outlineColor: "transparent",
                           outlineOffset: "4px",
@@ -221,6 +225,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                               appearance="subtle"
                               icon={<CopyAddRegular />}
                               onClick={() => handleCopyFromPrev(typeRef.id)}
+                              tabIndex={-1}
                             />
                             <Button
                               className={
@@ -240,6 +245,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                               }
                               icon={<CopyRegular />}
                               onClick={() => handleCopyToggle(typeRef.id)}
+                              tabIndex={-1}
                             />
                           </div>
                         </div>
@@ -251,26 +257,55 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                                 { position: positionB },
                               ) => positionA - positionB,
                             )
-                            .map((item, index) => {
+                            .map((item) => {
                               const itemErrors =
                                 nodeData?.nodeConformity.errorList.filter(
                                   ({ descItemObjectId }) =>
                                     descItemObjectId === item.itemObjectId,
                                 );
 
+                              const key = getKey(
+                                item.itemObjectId ||
+                                  `${item.itemTypeId}_${item.itemSpecId}_new`,
+                              );
+
+                              function handleItemCreated(item: NodeItem) {
+                                pairKey(item.itemObjectId, key);
+                              }
+
                               return (
-                                <DescItemField
-                                  key={`${item.id}_${item.itemSpecId}_${index}`}
-                                  typeRef={typeRef}
-                                  typeForm={typeForm}
-                                  item={item}
-                                  fondsVersionId={fondsVersionId}
-                                  nodeId={nodeId}
-                                  nodeVersionId={nodeVersionId}
-                                  typeWidth={typeWidth}
-                                  errors={itemErrors}
-                                  onDelete={handleDeleteDescItem}
-                                />
+                                <div key={key}>
+                                  <div>
+                                    <DescItemField
+                                      typeRef={typeRef}
+                                      typeForm={typeForm}
+                                      item={item}
+                                      fondsVersionId={fondsVersionId}
+                                      nodeId={nodeId}
+                                      nodeVersionId={nodeVersionId}
+                                      typeWidth={typeWidth}
+                                      errors={itemErrors}
+                                      onDelete={handleDeleteDescItem}
+                                      onItemCreated={handleItemCreated}
+                                    />
+                                  </div>
+                                  {false && (
+                                    <div
+                                      style={{
+                                        background: "var(--shade-3)",
+                                        display: "inline-block",
+                                        padding: "4px",
+                                        lineHeight: "1em",
+                                        borderRadius: "4px",
+                                        border: "var(--primary-border)",
+                                      }}
+                                    >
+                                      objId: {item.itemObjectId}, specId:{" "}
+                                      {item.itemSpecId}, pos: {item.position},
+                                      genKey: {key}
+                                    </div>
+                                  )}
+                                </div>
                               );
                             })}
                           {typeForm.repeatable &&
@@ -282,12 +317,13 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                                 style={{ borderStyle: "dashed", color: "#666" }}
                                 icon={<AddRegular />}
                                 onClick={() =>
-                                  addDescItem(
+                                  addEmptyDescItem(
                                     typeRef.id,
                                     descItems[descItems.length - 1].position +
                                       1,
                                   )
                                 }
+                                tabIndex={-1}
                               >
                                 {typeRef.shortcut}
                               </Button>

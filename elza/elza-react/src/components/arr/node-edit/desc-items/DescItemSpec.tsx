@@ -59,7 +59,6 @@ export function DescItemSpec({
   const fieldRef = useRef<HTMLInputElement>(null);
 
   function handleOptionSelect(_e: SelectionEvents, data: OptionOnSelectData) {
-    console.log("#dis - option select", data);
     if (!data.optionValue) {
       return;
     }

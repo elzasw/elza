@@ -2,7 +2,7 @@ import { useAppSelector } from "utils/hooks/useAppSelector";
 import { getOneSettings } from "../ArrUtils";
 import { useCallback, useEffect, useState } from "react";
 import { Api } from "api";
-import { NodeAccordionData, NodeFormData } from "elza-api";
+import { NodeAccordionData, NodeFormData, NodeItem } from "elza-api";
 import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
 import { AnyMessage } from "typings/websocket/Message";
 import { EventType } from "typings/websocket";
@@ -18,10 +18,11 @@ export function useStrictMode() {
       "FUND",
       activeFund.id,
     );
-    const strictModeValue = strictModeSetting ? JSON.parse(strictModeSetting?.value) : true;
+    const strictModeValue = strictModeSetting
+      ? JSON.parse(strictModeSetting?.value)
+      : true;
     return strictModeValue == null ? true : strictModeValue;
   });
-
 
   return strictMode;
 }
@@ -56,12 +57,10 @@ function useWSNodeChanges(nodeId: number, callback: (version: number) => void) {
   const { addListener, removeListener } = useWebsocket();
 
   const handleMessage = (message: AnyMessage) => {
-    console.log("#ne-ws", message);
     if (
       message.eventType === EventType.NODES_CHANGE &&
       message.entityIds.includes(nodeId)
     ) {
-      console.log("#ne-ws - this node", message);
       callback(message.versionId);
     }
   };
@@ -117,10 +116,19 @@ export function useNodeFormData(
     loadData();
   });
 
-  function addDescItem(typeId: number, position: number = 1) {
+  function addDescItem(item: NodeItem) {
     if (nodeVersionId == undefined) {
       throw "'NodeVersionId' missing";
     }
+
+    const _formData = {
+      ...formData,
+      descItems: [...formData.descItems, item],
+    };
+    setFormData(_formData);
+  }
+
+  function addEmptyDescItem(typeId: number, position: number = 1) {
     const typeRef = itemTypeRefs[typeId];
     if (!typeRef) {
       throw `Could not find type ref for id: ${typeId}`;
@@ -129,21 +137,15 @@ export function useNodeFormData(
     if (!dataType) {
       throw `Could not find data type ref for id: ${typeRef.dataTypeId}`;
     }
-
-    const _formData = {
-      ...formData,
-      descItems: [
-        ...formData.descItems,
-        createEmptyDescItem(
-          typeRef.id,
-          nodeId,
-          nodeVersionId,
-          position,
-          dataType.code,
-        ),
-      ],
-    };
-    setFormData(_formData);
+    addDescItem(
+      createEmptyDescItem(
+        typeRef.id,
+        nodeId,
+        nodeVersionId,
+        position,
+        dataType.code,
+      ),
+    );
   }
 
   async function deleteDescItem(itemId: number) {
@@ -175,5 +177,45 @@ export function useNodeFormData(
     }
   }
 
-  return { formData, nodeData, addDescItem, deleteDescItem };
+  return { formData, nodeData, addDescItem, addEmptyDescItem, deleteDescItem };
+}
+
+let keymap: Record<string, string> = {};
+let counter = 0;
+
+export function useKeyGen(nodeId: number) {
+  useEffect(() => {
+    keymap = {};
+    counter = 0;
+  }, [nodeId]);
+
+  function generateKey() {
+    const key = `desc-item-${counter}`;
+    counter++;
+    return key;
+  }
+
+  function getKey(_id: number | string) {
+    const id = _id.toString();
+    const key = keymap[id];
+    if (key == undefined) {
+      const _key = generateKey();
+      keymap[id] = _key;
+      return _key;
+    } else {
+      return key;
+    }
+  }
+
+  function pairKey(id: number | string, oldKey: string) {
+    const oldId = Object.entries(keymap).find(
+      ([_key, value]) => value === oldKey,
+    )?.[0];
+    if (oldId != undefined) {
+      // delete keymap[oldId];
+      keymap[id] = oldKey;
+    }
+  }
+
+  return { getKey, pairKey };
 }

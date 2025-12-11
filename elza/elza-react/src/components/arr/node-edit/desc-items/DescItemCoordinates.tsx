@@ -178,6 +178,7 @@ export function DescItemCoordinates({ item, nodeId, onChange }: Props) {
                   appearance="subtle"
                   icon={<MapRegular />}
                   onClick={handleShowInMap}
+                  tabIndex={-1}
                 ></Button>
               )}
             </PolygonShowInMap>
@@ -188,12 +189,14 @@ export function DescItemCoordinates({ item, nodeId, onChange }: Props) {
                   appearance="subtle"
                   icon={<CopyRegular />}
                   onClick={handleCopyToClipboard}
+                  tabIndex={-1}
                 ></Button>
                 <Button
                   disabled={isDisabled}
                   appearance="subtle"
                   icon={<ArrowExportRegular />}
                   onClick={handleExport}
+                  tabIndex={-1}
                 ></Button>
               </>
             )}
@@ -203,6 +206,7 @@ export function DescItemCoordinates({ item, nodeId, onChange }: Props) {
                 appearance="subtle"
                 icon={<DocumentAddRegular />}
                 onClick={handleImport}
+                tabIndex={-1}
               ></Button>
             )}
           </>
