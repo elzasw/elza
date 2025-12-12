@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo.nodes.descitems;
 
+import org.apache.commons.lang3.StringUtils;
+
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.*;
@@ -65,7 +67,11 @@ public class ArrItemUriRefVO extends ArrItemVO {
     public ArrData createDataEntity(EntityManager em) {
         ArrDataUriRef data = new ArrDataUriRef();
         data.setUriRefValue(value.trim());
-        data.setDescription(description == null? null : description.trim());
+        
+        String descr = (description!=null)?description.trim():null;
+        if(StringUtils.isNotEmpty(descr)) {
+        	data.setDescription(descr);
+        }
         data.setDataType(DataType.URI_REF.getEntity());
         data.setSchema(ArrDataUriRef.createSchema(value));
         return data;

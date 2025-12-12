@@ -20,6 +20,7 @@ import jakarta.annotation.Nonnull;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
@@ -1311,10 +1312,11 @@ public class EntityDBDispatcher {
             itemType = sdp.getItemType(itemLink.getT().getValue());
             itemSpec = itemLink.getS() == null ? null : sdp.getItemSpec(itemLink.getS().getValue());
             uuid = CamHelper.getUuid(itemLink.getUuid());
-
             ArrDataUriRef dataUriRef = new ArrDataUriRef();
             dataUriRef.setUriRefValue(itemLink.getUrl().getValue());
-            dataUriRef.setDescription(itemLink.getNm().getValue());
+            if(itemLink.getNm()!=null && StringUtils.isNotEmpty(itemLink.getNm().getValue())) {
+            	dataUriRef.setDescription(itemLink.getNm().getValue());
+            }
             String schema = ArrDataUriRef.createSchema(itemLink.getUrl().getValue());
             if (schema == null) {
                 log.info("Schema URL: {} is null, will be set {}", itemLink.getUrl().getValue(), SCHEMA_UNKNOWN);
@@ -1522,10 +1524,24 @@ public class EntityDBDispatcher {
                 } else {
                     ApItem il = bindingItem.getItem();
                     ArrDataUriRef dataUriRef = HibernateUtils.unproxy(il.getData());
+                    
+                    // Read description
+                    // Empty strings have to be compared correctly. 
+                    var currDescription = dataUriRef.getDescription();
+                    if(StringUtils.isEmpty(currDescription)) {
+                    	currDescription = null;
+                    }
+                    String otherDescription = null;
+                    if(itemLink.getNm()!=null) {
+                    	otherDescription = itemLink.getNm().getValue();
+                    	if(StringUtils.isEmpty(otherDescription)) {
+                    		otherDescription = null;
+                    	}
+                    }
                     if (!(il.getItemType().getCode().equals(itemLink.getT().getValue()) &&
                             compareItemSpec(il.getItemSpec(), itemLink.getS()) &&
                             dataUriRef.getUriRefValue().equals(itemLink.getUrl().getValue()) &&
-                            Objects.equals(dataUriRef.getDescription(), itemLink.getNm().getValue()))) {
+                            Objects.equals(currDescription, otherDescription))) {
 
                     	result.addChanged(bindingItem, itemLink);
                     } else {
