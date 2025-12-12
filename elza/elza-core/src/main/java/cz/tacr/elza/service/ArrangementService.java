@@ -7,6 +7,7 @@ import static cz.tacr.elza.repository.ExceptionThrow.refTemplate;
 import static cz.tacr.elza.repository.ExceptionThrow.refTemplateMapType;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 import static java.util.stream.Collectors.toSet;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -2315,7 +2316,7 @@ public class ArrangementService {
 
     }
 
-    // Future improvment: use batch updates
+    // Future improvement: use batch updates
     private void importFundBatch(ArrFundVersion fundVersion, ArrChange change, Collection<CSVRecord> recs,
                                  MultipleItemChangeContext changeContext) {
         StaticDataProvider sdp = this.staticDataService.getData();
@@ -2357,7 +2358,9 @@ public class ArrangementService {
                     String descr = dataIter.next();
                     dataUriRef.setSchema(ArrDataUriRef.createSchema(url));
                     dataUriRef.setUriRefValue(url);
-                    dataUriRef.setDescription(descr);
+                    if(StringUtils.isNotEmpty(descr)) {
+                    	dataUriRef.setDescription(descr);
+                    }
                     data = dataUriRef;
                 }
                     break;
