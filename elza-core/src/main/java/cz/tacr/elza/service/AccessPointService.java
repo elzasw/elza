@@ -2730,6 +2730,8 @@ public class AccessPointService {
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         oldApState.setDeleteChange(change);
         oldApState = stateRepository.save(oldApState);
+        // flush to DB
+        stateRepository.flush();
 
         ApState newApState = copyState(oldApState, change);
         if (newApScope != null) {
