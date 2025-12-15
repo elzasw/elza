@@ -58,10 +58,17 @@ public interface DataRepository extends JpaRepository<ArrData, Integer>, DataRep
      * @param pageable limit on the number of results
      * @return List of DataIdTypeId
      */
-    @Query("SELECT new cz.tacr.elza.repository.vo.DataIdTypeId(d.dataId, d.dataTypeId) FROM arr_data d "
-    		+ "LEFT JOIN ApItem i ON i.dataId = d.dataId "
-		    + "LEFT JOIN ApRevItem ri ON ri.dataId = d.dataId "
-            + "LEFT JOIN arr_item ar ON ar.dataId = d.dataId "
-		    + "WHERE i IS NULL AND ri IS NULL AND ar IS NULL")
+    @Query("""
+            SELECT new cz.tacr.elza.repository.vo.DataIdTypeId(d.dataId, d.dataTypeId) FROM arr_data d
+            WHERE NOT EXISTS (
+              SELECT 1 FROM ApItem api WHERE api.data = d
+            )
+            AND NOT EXISTS (
+              SELECT 1 FROM ApRevItem ari WHERE ari.data = d
+            )
+            AND NOT EXISTS (
+              SELECT 1 FROM arr_item itm WHERE itm.data = d
+            )
+            """)
     List<DataIdTypeId> findUnlinkedDataIds(Pageable pageable);
 }

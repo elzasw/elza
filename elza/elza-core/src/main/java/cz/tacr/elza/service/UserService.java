@@ -1445,7 +1445,17 @@ public class UserService {
 		if (auth == null) {
 			return null;
 		}
-		UserDetail details = (UserDetail) auth.getDetails();
+		var authDetail = auth.getDetails();
+		if (authDetail == null) {
+			logger.error("Auth detail is null");
+			throw new SystemException("Auth detail is null");
+		}
+		if(!(authDetail instanceof UserDetail)) {
+			logger.error("Auth detail has unexpected type: {}", authDetail.getClass().getName());
+			throw new SystemException("Auth detail has unexpected type: " + authDetail.getClass().getName(),
+					BaseCode.INVALID_STATE);
+		}
+		UserDetail details = (UserDetail) authDetail; 
 
 		Integer userId = details.getId();
 		// admin has no userId but has detail
@@ -2398,5 +2408,21 @@ public class UserService {
 			}
 			
 		};
+	}
+
+	/**
+	 * Create authentication object with details for user
+	 * @param user
+	 * @return
+	 */
+	@Transactional(value = Transactional.TxType.MANDATORY)
+	public Authentication createAuthentication(UsrUser user) {
+
+		UserDetail userDetail = createUserDetail(user);
+
+		UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(user.getUsername(),
+				StringUtils.EMPTY, null);
+		result.setDetails(userDetail);
+		return result;
 	}
 }

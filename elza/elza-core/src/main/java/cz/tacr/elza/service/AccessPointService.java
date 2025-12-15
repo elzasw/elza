@@ -103,6 +103,8 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -798,6 +800,9 @@ public class AccessPointService {
         partService.deleteConstraintsForParts(accessPoint);
         apState.setDeleteChange(change);
         apState = stateRepository.save(apState);
+        
+        // flush state to the DB - prevent conflict of multiple states for the same access point
+        stateRepository.flush();
 
         //
         // Connection to external items should be preserved for later
@@ -969,22 +974,17 @@ public class AccessPointService {
     	});
         logger.debug("Deleted index & revIndex, idx size: {}, revIdx size: {}", apIds.size(), revisionIds.size());
 
-    	// mazání items i data & odpojení recordId od arr_data_record_ref
+    	// mazání items & odpojení recordId od arr_data_record_ref
     	ObjectListIterator.forEachPage(apIds, p -> {
         	List<Integer> dataIds = apItemRepository.findAllDataIdByAccessPointIdIn(p);
         	dataRecordRefRepository.disconnectRecords(dataIds); // odpojení recordId
         	apItemRepository.deleteAllByAccessPointIdIn(p);
-        	dataRepository.deleteAllById(dataIds);
     	});
-    	dataRepository.flush();
+    	dataRecordRefRepository.flush();
         logger.debug("Deleted items & data by APs, size: {}", apIds.size());
 
-    	// mazání revision items i data
-    	ObjectListIterator.forEachPage(revisionIds, p -> {
-	    	List<Integer> revDataIds = revItemRepository.findAllDataIdByRevisionIdIn(p);
-	    	revItemRepository.deleteAllByRevisionIdIn(p);
-	    	dataRepository.deleteAllById(revDataIds);
-    	});
+    	// mazání revision items
+    	ObjectListIterator.forEachPage(revisionIds, p -> revItemRepository.deleteAllByRevisionIdIn(p));
         logger.debug("Deleted revItems & data by APs, size: {}", revisionIds.size());
 
     	// mazání revision
@@ -1329,12 +1329,17 @@ public class AccessPointService {
         // replace in Arrangement
         final List<ArrDescItem> arrItems = descItemRepository.findArrItemByRecord(replaced);
 
+        if(arrItems.isEmpty()) {
+        	logger.debug("No ArrItems which needs replacement.");
+	        return;
+        }
         logger.debug("Number of ArrItems which needs replacement: {}", arrItems.size());
 
         // ArrItems
         final Map<Integer, List<ArrDescItem>> itemsByFundId = arrItems.stream().collect(Collectors.groupingBy(item -> item.getNode().getFundId()));
 
         Set<Integer> fundIds = itemsByFundId.keySet();
+        
         // fund to scopes
         Map<Integer, Set<Integer>> fundIdsToScopes = fundIds.stream().collect(toMap(Function.identity(), scopeRepository::findIdsByFundId));
 
@@ -2503,10 +2508,12 @@ public class AccessPointService {
                 copyItem(item, toPart, change, item.getPosition());
             }
         }
-
+        
         // set preferred part
         trgState.getAccessPoint().setPreferredPart(fromIdToPartMap.get(srcAccessPoint.getPreferredPartId()));
-
+        // try to flush to db to detect any inconsistency
+		em.flush();
+        
         logger.debug("Copied parts({}) and items.", fromIdToPartMap.size());
 
         // prepare to update cache
@@ -2747,6 +2754,8 @@ public class AccessPointService {
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         oldApState.setDeleteChange(change);
         oldApState = stateRepository.save(oldApState);
+        // flush to DB
+        stateRepository.flush();
 
         ApState newApState = copyState(oldApState, change);
         if (newApScope != null) {
@@ -4045,6 +4054,20 @@ public class AccessPointService {
                     drr.setRecord(apState.getAccessPoint());
                 }
             }
+        } else 
+        if(newData instanceof ArrDataText) {
+        	ArrDataText dt = (ArrDataText) newData;
+			if(StringUtils.isEmpty(dt.getTextValue())) {
+				logger.warn("Cannot copy empty text value, skipping, dataId: {}", oldData.getDataId());
+				return null;
+			}
+        } else 
+        if(newData instanceof ArrDataString) {
+			ArrDataString ds = (ArrDataString) newData;
+			if(StringUtils.isEmpty(ds.getStringValue())) {
+				logger.warn("Cannot copy empty string value, skipping, dataId: {}", oldData.getDataId());
+				return null;
+			}	        
         }
 
         ApItem newItem = itemService.createItem(partTo, newData,

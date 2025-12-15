@@ -1073,6 +1073,8 @@ public class RevisionService {
         // změna stavu entity
         apState.setDeleteChange(change);
         apState = stateRepository.save(apState);
+        // Flush to DB before creating new state
+        stateRepository.flush();
 
         ApState newState = accessPointService.copyState(apState, change);
         newState.setStateApproval(newStateApproval);
@@ -1083,6 +1085,9 @@ public class RevisionService {
 
         // smazání revize
         deleteRevision(revision, newState, revState, change, revParts, revItems);
+        
+        // flush to DB after creating new state and deleting revision
+		stateRepository.flush();
 
         // valiudace
         accessPoint = accessPointService.updateAndValidate(accessPoint.getAccessPointId());
