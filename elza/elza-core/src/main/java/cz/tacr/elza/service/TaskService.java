@@ -99,15 +99,16 @@ public class TaskService {
         List<ApState> apStates = apStateRepository.findLastByAccessPointIds(apIds);
         Map<Integer, Integer> apIdScopeIdMap = apStates.stream().collect(Collectors.toMap(s -> s.getStateId(), s -> s.getScopeId()));
 
+        // Permissions by user
 		List<UsrPermission> permisions = permissionRepository.findAllByUserIn(users);
-		Map<Integer, List<UsrPermission>> permissionMap = permisions.stream().collect(Collectors.groupingBy(UsrPermission::getPermissionId));
+		Map<Integer, List<UsrPermission>> permissionMap = permisions.stream().collect(Collectors.groupingBy(UsrPermission::getUserId));
 
 		users.forEach(u -> {
 			Integer apId = u.getAccessPointId();
 			ApIndex apIndex = apIndexMap.get(apId);
 			String apName = apIndex != null ? apIndex.getIndexValue() : null; 
 			Integer scopeId = apIdScopeIdMap.get(apId);
-			List<UsrPermission> permissions = permissionMap.get(apId);
+			List<UsrPermission> permissions = permissionMap.get(u.getUserId());
 
 			Participant p = new Participant();
 			p.setUserId(u.getUserId());
@@ -123,6 +124,9 @@ public class TaskService {
 	}
 
 	private boolean hasPermission(final Permission permission, final Integer scopeId, final List<UsrPermission> permissions) {
+		if(permissions == null) {
+			return false;
+		}
 		for (UsrPermission up : permissions) {
 			if (up.getPermission().equals(permission)
 					|| (up.getPermission().equals(permission) && Objects.equals(scopeId, up.getScopeId()))
