@@ -33,6 +33,7 @@ import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.service.ModelFactory;
 import cz.tacr.elza.drools.service.ScriptModelFactory;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.service.RuleService;
@@ -109,6 +110,7 @@ public class ValidationRules extends Rules {
                              endTime - startTime);
             } catch (Exception e) {
                 logger.error("Failed to validate, exception: ", e);
+                throw new SystemException("Failed to validate rules.", e, ArrangementCode.INVALID_RULE);
             }
 		}
 

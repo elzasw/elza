@@ -4038,17 +4038,15 @@ public class AccessPointService {
         if(newData instanceof ArrDataText) {
         	ArrDataText dt = (ArrDataText) newData;
 			if(StringUtils.isEmpty(dt.getTextValue())) {
-				logger.error("Prázdná textová hodnota, dataId: {}", oldData.getDataId());
-				throw new BusinessException("Prázdná textová hodnota", BaseCode.INVALID_STATE)
-					.set("dataId", oldData.getDataId());
+				logger.warn("Cannot copy empty text value, skipping, dataId: {}", oldData.getDataId());
+				return null;
 			}
         } else 
         if(newData instanceof ArrDataString) {
 			ArrDataString ds = (ArrDataString) newData;
 			if(StringUtils.isEmpty(ds.getStringValue())) {
-				logger.error("Prázdná textová hodnota, dataId: {}", oldData.getDataId());
-				throw new BusinessException("Prázdná textová hodnota", BaseCode.INVALID_STATE)
-					.set("dataId", oldData.getDataId());
+				logger.warn("Cannot copy empty string value, skipping, dataId: {}", oldData.getDataId());
+				return null;
 			}	        
         }
 
