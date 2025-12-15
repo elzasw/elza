@@ -178,7 +178,7 @@
                 <name>Podmínky a omezení přístupu</name>
                 <!-- 4.4.1 Podmínky přístupu, práva k jednotce popisu a její reprodukci -->
                 <type code="ZP2015_UNIT_ACCESS" width="0"/>
-                <type code="ZP2015_PUBLISHED"  width="2"/>
+                <type code="ZP2015_PUBLISHED"  width="1"/>
                 <type code="ZP2015_RESTRICTION_ACCESS_SHARED" width="2"/>
                 <type code="ZP2015_RESTRICTION_ACCESS_INLINE" width="2"/>                
                 <!-- 4.4.2 Možnost zveřejnění informací o jednotce popisu -->
