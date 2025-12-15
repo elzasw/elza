@@ -103,6 +103,8 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -2499,10 +2501,12 @@ public class AccessPointService {
                 copyItem(item, toPart, change, item.getPosition());
             }
         }
-
+        
         // set preferred part
         trgState.getAccessPoint().setPreferredPart(fromIdToPartMap.get(srcAccessPoint.getPreferredPartId()));
-
+        // try to flush to db to detect any inconsistency
+		em.flush();
+        
         logger.debug("Copied parts({}) and items.", fromIdToPartMap.size());
 
         // prepare to update cache
@@ -4030,6 +4034,22 @@ public class AccessPointService {
                     drr.setRecord(apState.getAccessPoint());
                 }
             }
+        } else 
+        if(newData instanceof ArrDataText) {
+        	ArrDataText dt = (ArrDataText) newData;
+			if(StringUtils.isEmpty(dt.getTextValue())) {
+				logger.error("Prázdná textová hodnota, dataId: {}", oldData.getDataId());
+				throw new BusinessException("Prázdná textová hodnota", BaseCode.INVALID_STATE)
+					.set("dataId", oldData.getDataId());
+			}
+        } else 
+        if(newData instanceof ArrDataString) {
+			ArrDataString ds = (ArrDataString) newData;
+			if(StringUtils.isEmpty(ds.getStringValue())) {
+				logger.error("Prázdná textová hodnota, dataId: {}", oldData.getDataId());
+				throw new BusinessException("Prázdná textová hodnota", BaseCode.INVALID_STATE)
+					.set("dataId", oldData.getDataId());
+			}	        
         }
 
         ApItem newItem = itemService.createItem(partTo, newData,
