@@ -55,11 +55,12 @@ public class ExtSyncsProcessor implements Runnable {
                         ItemSyncProcessor itemProcessor = camService.nextItemSyncProcessor(importListSize);
                         if (itemProcessor != null) {
                         	logger.trace("ExtSyncsProcessor - processing item: {}.", itemProcessor.toString());
-                            itemProcessor.process();
-                            // pokud je vše v pořádku - maximální velikost dávky pro čtení
-                            importListSize = DEFAULT_IMPORT_LIST_SIZE;
-                            // pauza po ukončení práce procesoru není potřeba
-                            wait = false;
+                            if(itemProcessor.process()) {
+                                // pokud je vše v pořádku - maximální velikost dávky pro čtení
+                                importListSize = DEFAULT_IMPORT_LIST_SIZE;
+                                // pauza po ukončení práce procesoru není potřeba
+                                wait = false;	                            
+                            }
                         } else {
                         	logger.trace("ExtSyncsProcessor - no item to process.");
                         }

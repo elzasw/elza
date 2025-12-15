@@ -734,5 +734,42 @@
 	  <sql dbms="postgresql">UPDATE db_hibernate_sequences SET next_val = (SELECT (coalesce(max(ext_syncs_queue_item_id), 0)+20) FROM ext_syncs_queue_item)
 		   WHERE sequence_name = 'ext_syncs_queue_item|ext_syncs_queue_item_id'</sql>
 	</changeSet>
+	<changeSet id="20251212082200" author="ppy">
+	  <sql dbms="postgresql">
+         DELETE FROM ap_cached_access_point WHERE access_point_id IN 
+           (SELECT s.access_point_id FROM ap_state s 
+            WHERE s.delete_change_id IS NULL
+            GROUP BY s.access_point_id 
+            HAVING COUNT(s.state_id) &gt; 1)	  
+	  </sql>
+	  <sql dbms="postgresql">
+		UPDATE ap_state s SET delete_change_id = update_state.create_change_id 
+		FROM (
+		  SELECT st.state_id, st_last.create_change_id FROM ap_state st 
+		  JOIN (SELECT s.access_point_id, max(s.state_id) as stat_id FROM ap_state s 
+			WHERE s.delete_change_id IS NULL
+			GROUP BY s.access_point_id 
+			HAVING COUNT(s.state_id) &gt; 1) src ON src.access_point_id = st.access_point_id AND st.delete_change_id IS NULL AND st.state_id &lt;&gt; src.stat_id 
+		  JOIN ap_state st_last ON st_last.state_id = src.stat_id 
+          ) update_state 
+        WHERE s.state_id = update_state.state_id	  
+	  </sql>
+	  <dropIndex tableName="ap_state" indexName="ap_state_access_point_delete_change_idx"/>
+	  <!-- Speedup revision search and guarantee unique -->
+	  <sql dbms="postgresql">CREATE UNIQUE INDEX ap_state_delete_change_null_unique_idx ON ap_state(access_point_id) WHERE delete_change_id IS NULL</sql>
+	</changeSet>
+	<changeSet id="20251212125700" author="ppy">
+	  <sql>DELETE FROM ap_cached_access_point WHERE access_point_id IN (
+        SELECT DISTINCT p.access_point_id FROM arr_data_uri_ref adur 
+        JOIN ap_item itm ON itm.data_id = adur.data_id 
+        JOIN ap_part p ON p.part_id = itm.part_id 
+        WHERE adur.description = '')</sql>
+      <sql>DELETE FROM arr_cached_node WHERE node_id IN (
+        SELECT di.node_id FROM arr_data_uri_ref adur 
+        JOIN arr_item itm ON itm.data_id = adur.data_id 
+        JOIN arr_desc_item di ON di.item_id = itm.item_id 
+        WHERE adur.description = '')</sql>
+      <sql>UPDATE arr_data_uri_ref SET description = null WHERE description=''</sql>	  
+	</changeSet>
 
 </databaseChangeLog>
