@@ -794,6 +794,9 @@ public class AccessPointService {
         partService.deleteConstraintsForParts(accessPoint);
         apState.setDeleteChange(change);
         apState = stateRepository.save(apState);
+        
+        // flush state to the DB - prevent conflict of multiple states for the same access point
+        stateRepository.flush();
 
         //
         // Connection to external items should be preserved for later
@@ -1317,12 +1320,17 @@ public class AccessPointService {
         // replace in Arrangement
         final List<ArrDescItem> arrItems = descItemRepository.findArrItemByRecord(replaced);
 
+        if(arrItems.isEmpty()) {
+        	logger.debug("No ArrItems which needs replacement.");
+	        return;
+        }
         logger.debug("Number of ArrItems which needs replacement: {}", arrItems.size());
 
         // ArrItems
         final Map<Integer, List<ArrDescItem>> itemsByFundId = arrItems.stream().collect(Collectors.groupingBy(item -> item.getNode().getFundId()));
 
         Set<Integer> fundIds = itemsByFundId.keySet();
+        
         // fund to scopes
         Map<Integer, Set<Integer>> fundIdsToScopes = fundIds.stream().collect(toMap(Function.identity(), scopeRepository::findIdsByFundId));
 
