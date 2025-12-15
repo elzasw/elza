@@ -330,9 +330,10 @@ class FundDataGrid extends AbstractReactComponent {
                         }
                     }
 
+                    // if enum is without data, it has no specification
                     return (
-                        <div className="cell-value-wrapper">
-                            {hasDescItemTypeValue(col.dataType) ? spec.name + ': ' + itemValue : spec.name}
+                        <div className="cell-value-wrapper">                            
+                            {hasDescItemTypeValue(col.dataType) ? spec.name + ': ' + itemValue : (spec ? spec.name : '')}
                         </div>
                     );
                 } else {

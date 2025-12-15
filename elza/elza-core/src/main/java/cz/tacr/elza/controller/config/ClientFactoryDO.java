@@ -330,11 +330,15 @@ public class ClientFactoryDO {
 	        	((ArrDataDate) data).setValue(((DataDate) itemData).getValue());
 	        	break;
 	        case URI_REF:
-	        	data = new ArrDataUriRef();
-	        	String stringValue = ((DataUriRef) itemData).getValue();
-	        	((ArrDataUriRef) data).setUriRefValue(stringValue);
-	        	((ArrDataUriRef) data).setSchema(ArrDataUriRef.createSchema(stringValue));
-	        	((ArrDataUriRef) data).setDescription(((DataUriRef) itemData).getDescription());
+	        	var srcUriRef = (DataUriRef) itemData;
+	        	var dataUriRef = new ArrDataUriRef();
+	        	String stringValue = srcUriRef.getValue();
+	        	dataUriRef.setUriRefValue(stringValue);
+	        	dataUriRef.setSchema(ArrDataUriRef.createSchema(stringValue));
+	        	if(StringUtils.isNotEmpty(srcUriRef.getDescription())) {
+	        		dataUriRef.setDescription(srcUriRef.getDescription());
+	        	}
+	        	data = dataUriRef;
 	        	break;
 	        case BIT:
 	        	data = new ArrDataBit();
