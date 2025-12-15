@@ -8,9 +8,15 @@ import Scope from '../shared/scope/Scope';
 import FormInputField from '../../components/shared/form/FormInputField';
 import { useSelector } from 'react-redux';
 import { StateApproval, StateApprovalCaption } from '../../api/StateApproval';
-import { AppState } from "typings/store";
+import { AppState, UserDetail } from "typings/store";
 import { WebApi } from 'actions';
 import { ApTypeVO } from 'api/ApTypeVO';
+import UserField from 'components/admin/UserField';
+import { Api } from 'api';
+import { Participant } from 'elza-api';
+import { UserInfoVO } from 'api/UserInfoVO';
+import { UserVO } from 'api/UserVO';
+import { UsrUserVO } from 'api/UsrUserVO';
 
 const stateToOption = (item: StateApproval) => ({
     id: item,
@@ -47,6 +53,7 @@ export const ApStateChangeForm = ({
     const apTypes = useSelector((appState: AppState) => appState.refTables.apTypes)
 
     const [states, setStates] = useState<string[]>([]);
+  // const [lastParticipants, setLastParticipants] = useState<Participant[]>([]);
 
     let preselectedScopeId: number | null | undefined = initialValues?.scopeId;
     if (preselectedScopeId == undefined) {
@@ -59,6 +66,8 @@ export const ApStateChangeForm = ({
     useEffect(() => {
         (async () => {
             const data = await WebApi.getStateApproval(accessPointId)
+            // const {data: _lastParticipants} = await Api.accesspoints.accessPointGetLastParticipants(accessPointId);
+            // setLastParticipants(_lastParticipants)
             setStates(data)
         })()
     }, [accessPointId])
@@ -111,6 +120,39 @@ export const ApStateChangeForm = ({
                             label={i18n('ap.state.title.comment')}
                             name={'comment'}
                         />
+                        <Field
+                            name={'assignedUser'}
+                        >{({input}) => {
+                          function handleChange(user: UsrUserVO){
+                            input.onChange(user);
+                          }
+                          //@ts-expect-error TODO wrong types on FormInputField
+                          return <FormInputField type="static" label={i18n('ap.state.title.assignedUser')}>
+                            <UserField
+                            disabled={submitting}
+                            value={input.value}
+                            onChange={handleChange}
+                              getItemName={(user: UsrUserVO) => {
+                                if(!user){
+                                  return "";
+                                }
+                                return `${user.accessPoint?.name} (${user.username})`;
+                              }}
+                            />
+                          </FormInputField>
+                        }}</Field>
+                        {/*<Field name="lastParticipants">
+                          {() => {
+                            //@ts-expect-error TODO wrong types on FormInputField
+                            return <FormInputField type="static" label={i18n('ap.state.title.lastParticipants')}>
+                              {lastParticipants.map((particpant) => {
+                                return <div>
+                                  {particpant.name} ({particpant.username})
+                                </div>
+                              })}
+                            </FormInputField>
+                          }}
+                        </Field>*/}
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" variant="outline-secondary" disabled={submitting} onClick={handleSubmit}>

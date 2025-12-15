@@ -439,7 +439,7 @@ class RegistryPage extends AbstractReactComponent {
                         typeId: data.typeId,
                         scopeId: data.scopeId !== '' ? parseInt(data.scopeId) : null,
                     };
-                    await Api.accesspoints.accessPointChangeState(id, finalData, version);
+                    await Api.accesspoints.accessPointChangeState(id, finalData, version, data.assignedUser?.id);
 
                     dispatch(modalDialogHide());
                     dispatch(goToAe(history, id, true, !select, revisionActive));
@@ -482,7 +482,8 @@ class RegistryPage extends AbstractReactComponent {
                     typeId: newTypeId,
                 }}
                 onSubmit={async (data) => {
-                    await dispatch(registryChangeStateRevision(id, version, data, history, select))
+                  const { assignedUser, ...state } = data;
+                    await dispatch(registryChangeStateRevision(id, version, state, history, select, assignedUser.id))
 
                     dispatch(modalDialogHide());
                     dispatch(goToAe(history, id, true, !select, revisionActive));
