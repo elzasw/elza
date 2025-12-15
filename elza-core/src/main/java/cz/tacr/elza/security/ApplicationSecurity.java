@@ -21,6 +21,8 @@ import com.nimbusds.jose.util.Resource;
 import com.nimbusds.jose.util.ResourceRetriever;
 
 import cz.tacr.elza.security.kerberos.KerberosProperties;
+import cz.tacr.elza.security.ldap.ActiveDirectoryUserDetailProvider;
+import cz.tacr.elza.security.ldap.LdapProperties;
 import cz.tacr.elza.security.oauth2.JwtUserDetailProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +50,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -58,7 +59,6 @@ import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosC
 import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosTicketValidator;
 import org.springframework.security.kerberos.client.config.SunJaasKrb5LoginConfig;
 import org.springframework.security.kerberos.client.ldap.KerberosLdapContextSource;
-import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
 import org.springframework.security.ldap.authentication.NullLdapAuthoritiesPopulator;
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
 import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
@@ -67,10 +67,8 @@ import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
@@ -138,6 +136,9 @@ public class ApplicationSecurity {
     private Optional<OAuth2Properties> optionalOAuth2Props;
 
     @Autowired
+    private Optional<LdapProperties> optionalLdapProps;
+
+    @Autowired
     private Optional<KerberosProperties> optionalKerberosProps;
 
     private SessionRegistry sessionRegistry = null;
@@ -161,7 +162,7 @@ public class ApplicationSecurity {
 
         ap.add(new PasswordAutheticationProvider(userService));
         if (optionalSsoHeaderProperties.isPresent()) {
-            ap.add(new SsoHeaderAuthenticationProvider(userService));
+            ap.add(new SsoHeaderAuthenticationProvider(userService, txManager));
         }
         if (optionalOAuth2Props.isPresent()) {
         	log.debug("Adding JWT based provider.");
@@ -171,17 +172,21 @@ public class ApplicationSecurity {
             ap.add(new JwtUserDetailProvider(jwtDecoder, txManager, userService, apService,
                     itemTypeRepository, optionalOAuth2Props.get()));
         }
-        if(optionalKerberosProps.isPresent()) {
-			if (optionalKerberosProps.get().getAdDomain() != null) {
+        if(optionalLdapProps.isPresent()) {
+			if (optionalLdapProps.get().getAdDomain() != null) {
 				log.debug("Adding ActiveDirectory provider, domain: {}, server: {}.",
-						optionalKerberosProps.get().getAdDomain(), optionalKerberosProps.get().getAdServer());
+						optionalLdapProps.get().getAdDomain(), optionalLdapProps.get().getAdServer());
 				// adding active directory domain
-				ap.add(adLdapAuthProvider());
-			} else {
-				// adding default Kerberos provider
-				log.debug("Adding generic Kerberos Authentication provider.");
-				ap.add(kerberosAuthenticationProvider());
+				var adProvider = new ActiveDirectoryUserDetailProvider(optionalLdapProps.get(), txManager, userService);
+				
+				ap.add(adProvider);
 			}
+        }
+        if(optionalKerberosProps.isPresent()) {
+			// adding default Kerberos provider
+			log.debug("Adding generic Kerberos Authentication provider.");
+			ap.add(kerberosAuthenticationProvider());
+			
 			log.debug("Adding generic Kerberos Service Authentication provider.");
 			ap.add(kerberosServiceAuthenticationProvider());
         }
@@ -275,7 +280,7 @@ public class ApplicationSecurity {
 		loginConfig.setIsInitiator(true);
 		loginConfig.afterPropertiesSet();
 
-		KerberosLdapContextSource contextSource = new KerberosLdapContextSource(optionalKerberosProps.get().getAdServer());
+		KerberosLdapContextSource contextSource = new KerberosLdapContextSource(optionalLdapProps.get().getAdServer());
 		contextSource.setLoginConfig(loginConfig);
 		return contextSource;
 	}
@@ -388,14 +393,6 @@ public class ApplicationSecurity {
         log.info("Kerberos authentication filter was configured.");
 	}
 	
-	@Bean
-	@ConditionalOnProperty(prefix = "elza.security.kerberos", name = "ad-domain")
-	public ActiveDirectoryLdapAuthenticationProvider adLdapAuthProvider() {
-		return new ActiveDirectoryLdapAuthenticationProvider(optionalKerberosProps.get().getAdDomain(),
-				optionalKerberosProps.get().getAdServer());
-		
-	}
-
     @Bean
     @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
     public KerberosAuthenticationProvider kerberosAuthenticationProvider() {

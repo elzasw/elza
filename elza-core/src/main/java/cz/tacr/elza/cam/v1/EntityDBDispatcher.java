@@ -20,6 +20,7 @@ import jakarta.annotation.Nonnull;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
@@ -450,7 +451,7 @@ public class EntityDBDispatcher {
             }
         }
 
-        // check s AP class/subclass was cha
+        // check s AP class/subclass was changed
         ApType apType = sdp.getApTypeByCode(entity.getEnt().getValue());        
         if (!state.getApTypeId().equals(apType.getApTypeId())) {
             log.debug("Změna třídy (typu) entity: typeId={} -> newTypeId={}", state.getApTypeId(), apType.getApTypeId());
@@ -462,17 +463,8 @@ public class EntityDBDispatcher {
                 }
                 stateNew = accessPointService.copyState(state, procCtx.getApChange());
                 if (deletedEntity && syncQueue) {
-                	
-                	// If system is CAM_COMPLETE and entity is return to non deleted state -> 
-                	// -> we respect new state and entity is not further marked as deleted 
-                	if(procCtx.getApExternalSystem().getType().equals(ApExternalSystemType.CAM_COMPLETE)) {
-                		// nop
-                		log.info("Deleted entity is restored to non deleted state, ap id: {}, ext. entity id: {}", state.getAccessPointId(), 
-                				entity.getEid()!=null?entity.getEid().getValue():"");
-                	} else {
-                		// retain deleted state
-                		stateNew.setDeleteChange(procCtx.getApChange());
-                	}
+               		// retain deleted state
+               		stateNew.setDeleteChange(procCtx.getApChange());
                 }
                 stateNew.setApType(apType);
                 state = stateRepository.save(stateNew);
@@ -537,20 +529,32 @@ public class EntityDBDispatcher {
             // synchronizace stavu entit
             // pokud je entita lokalne smazana a jedna se o pozadavek z fronty
             // musi entita zustat smazana
-            if (syncQueue && state.getDeleteChangeId() != null) {
-                break;
-            } else {
-                // kontrola shody stavu
-                if (!newStateApproval.equals(state.getStateApproval())) {
-                    if (stateNew == null) {
-                        state.setDeleteChange(procCtx.getApChange());
-                        state = stateRepository.save(state);
-                        stateNew = accessPointService.copyState(state, procCtx.getApChange());
-                    }
-                    stateNew.setStateApproval(newStateApproval);
-                    state = stateRepository.save(stateNew);
-                }
+            if (syncQueue && state.getDeleteChangeId() != null) {            	
+            	// If system is NOT CAM_COMPLETE 
+            	// -> we respect previous state and entity is retained as deleted 
+            	if(!procCtx.getApExternalSystem().getType().equals(ApExternalSystemType.CAM_COMPLETE)) {
+            		break;
+            	}
             }
+
+            // check new state or if entity was deleted
+			if (!newStateApproval.equals(state.getStateApproval())||state.getDeleteChangeId() != null) {
+				// prepare new state if not already prepared
+				if (stateNew == null) {
+					state.setDeleteChange(procCtx.getApChange());
+					state = stateRepository.save(state);
+					stateNew = accessPointService.copyState(state, procCtx.getApChange());
+				}
+				if(state.getDeleteChangeId() != null) {
+	        		// entity is return to non deleted state
+	        		log.info("Deleted entity is restored to non deleted state, ap id: {}, ext. entity id: {}", state.getAccessPointId(), 
+	        				entity.getEid()!=null?entity.getEid().getValue():"");
+	        		state.setDeleteChange(null);
+				}
+
+				stateNew.setStateApproval(newStateApproval);
+				state = stateRepository.save(stateNew);
+			}
 
             break;
         }
@@ -1302,10 +1306,11 @@ public class EntityDBDispatcher {
             itemType = sdp.getItemType(itemLink.getT().getValue());
             itemSpec = itemLink.getS() == null ? null : sdp.getItemSpec(itemLink.getS().getValue());
             uuid = CamHelper.getUuid(itemLink.getUuid());
-
             ArrDataUriRef dataUriRef = new ArrDataUriRef();
             dataUriRef.setUriRefValue(itemLink.getUrl().getValue());
-            dataUriRef.setDescription(itemLink.getNm().getValue());
+            if(itemLink.getNm()!=null && StringUtils.isNotEmpty(itemLink.getNm().getValue())) {
+            	dataUriRef.setDescription(itemLink.getNm().getValue());
+            }
             String schema = ArrDataUriRef.createSchema(itemLink.getUrl().getValue());
             if (schema == null) {
                 log.info("Schema URL: {} is null, will be set {}", itemLink.getUrl().getValue(), SCHEMA_UNKNOWN);
@@ -1512,10 +1517,24 @@ public class EntityDBDispatcher {
                 } else {
                     ApItem il = bindingItem.getItem();
                     ArrDataUriRef dataUriRef = HibernateUtils.unproxy(il.getData());
+                    
+                    // Read description
+                    // Empty strings have to be compared correctly. 
+                    var currDescription = dataUriRef.getDescription();
+                    if(StringUtils.isEmpty(currDescription)) {
+                    	currDescription = null;
+                    }
+                    String otherDescription = null;
+                    if(itemLink.getNm()!=null) {
+                    	otherDescription = itemLink.getNm().getValue();
+                    	if(StringUtils.isEmpty(otherDescription)) {
+                    		otherDescription = null;
+                    	}
+                    }
                     if (!(il.getItemType().getCode().equals(itemLink.getT().getValue()) &&
                             compareItemSpec(il.getItemSpec(), itemLink.getS()) &&
                             dataUriRef.getUriRefValue().equals(itemLink.getUrl().getValue()) &&
-                            Objects.equals(dataUriRef.getDescription(), itemLink.getNm().getValue()))) {
+                            Objects.equals(currDescription, otherDescription))) {
 
                     	result.addChanged(bindingItem, itemLink);
                     } else {

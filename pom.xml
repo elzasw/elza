@@ -779,7 +779,7 @@
     <distributionManagement>
 		<repository>
 			<id>LightCompReleaseRepository</id>
-			<url>http://artifactory.lightcomp.cz:8081/artifactory/distributions</url>
+			<url>https://artifactory.lightcomp.cz/artifactory/distributions</url>
 		</repository>
     </distributionManagement>
 </project>

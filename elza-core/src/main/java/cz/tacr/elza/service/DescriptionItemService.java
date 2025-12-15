@@ -2027,7 +2027,9 @@ public class DescriptionItemService {
             Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
             ArrDataUriRef itemUriRef = new ArrDataUriRef();
             itemUriRef.setUriRefValue(text);
-            itemUriRef.setDescription(description);
+            if(StringUtils.isNotEmpty(description)) {
+            	itemUriRef.setDescription(description);
+            }
             return itemUriRef;
         case DECIMAL:
             Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
