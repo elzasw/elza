@@ -10,6 +10,8 @@ import { RevStateApproval, RevStateApprovalCaption } from "../../api/RevStateApp
 import { ApTypeVO } from 'api/ApTypeVO';
 import { RevStateChange } from 'elza-api';
 import { ApValidationErrorsVO } from 'api/ApValidationErrorsVO';
+import { UsrUserVO } from 'api/UsrUserVO';
+import UserField from 'components/admin/UserField';
 
 interface Props {
     accessPointId: number;
@@ -132,6 +134,27 @@ export const RevStateChangeFormFn = ({
                             label={i18n('ap.state.title.comment')}
                             disabled={submitting}
                         />
+                        <Field
+                            name={'assignedUser'}
+                        >{({input}) => {
+                          function handleChange(user: UsrUserVO){
+                            input.onChange(user);
+                          }
+                          //@ts-expect-error TODO wrong types on FormInputField
+                          return <FormInputField type="static" label={i18n('ap.state.title.assignedUser')}>
+                            <UserField
+                            disabled={submitting}
+                            value={input.value}
+                            onChange={handleChange}
+                              getItemName={(user: UsrUserVO) => {
+                                if(!user){
+                                  return "";
+                                }
+                                return `${user.accessPoint?.name} (${user.username})`;
+                              }}
+                            />
+                          </FormInputField>
+                        }}</Field>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" onClick={handleSubmit} variant="outline-secondary" disabled={submitting}>

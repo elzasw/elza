@@ -1144,6 +1144,8 @@ var messages = {
     "ap.state.title.scope": "Oblast",
     "ap.state.title.type": "Podtřída",
     "ap.state.title.state": "Stav",
+    "ap.state.title.assignedUser": "Přiděleno",
+    "ap.state.title.lastParticipants": "Zpracovatelé",
     "ap.state.title.comment": "Komentář",
     "ap.state.title.revComment": "Komentář revize",
     "ap.state.state.insufficient.right": "Nemáte oprávnění pro schválení AP.",
