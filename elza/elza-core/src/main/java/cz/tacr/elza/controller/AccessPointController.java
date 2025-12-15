@@ -225,6 +225,7 @@ public class AccessPointController implements AccesspointsApi {
      * @param id identifikátor archivní entity
      */
     @Override
+	@Transactional
     public ResponseEntity<List<Participant>> accessPointGetLastParticipants(Integer id) {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(id);
         ApState apState = accessPointService.getStateInternal(accessPoint);
