@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
-import React, {createElement} from 'react';
-import {Alert} from 'react-bootstrap';
-import {connect} from 'react-redux';
-import {removeToastr} from './ToastrActions.jsx';
+import React, { createElement } from 'react';
+import { Alert } from 'react-bootstrap';
+import { connect } from 'react-redux';
+import { removeToastr } from './ToastrActions.jsx';
 
 import './Toastr.scss';
 import AbstractReactComponent from '../../AbstractReactComponent';
@@ -59,7 +59,7 @@ class Toastr extends AbstractReactComponent {
             let message;
             if (toast.extended) {
                 message = (
-                    <div>
+                    <div className="extended-message">
                         {createElement(toast.messageComponent, {
                             key: 'message',
                             ...toast.messageComponentProps,
@@ -68,7 +68,7 @@ class Toastr extends AbstractReactComponent {
                     </div>
                 );
             } else {
-                message = <div>{toast.message}</div>;
+                message = <div className="message">{toast.message}</div>;
             }
 
             return (
@@ -93,4 +93,4 @@ class Toastr extends AbstractReactComponent {
     }
 }
 
-export default connect(state => ({store: state.toastr}))(Toastr);
+export default connect(state => ({ store: state.toastr }))(Toastr);

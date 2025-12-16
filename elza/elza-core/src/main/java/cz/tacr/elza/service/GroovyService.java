@@ -1,24 +1,30 @@
 package cz.tacr.elza.service;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.controller.vo.NodePlainTextRepresentation;
 import jakarta.validation.constraints.NotNull;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.compress.utils.FileNameUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -41,21 +47,34 @@ import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
 import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataDecimal;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.Item;
+import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulArrangementRule;
+import cz.tacr.elza.domain.RulArrangementRule.RuleType;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulPackage;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulStructureDefinition;
 import cz.tacr.elza.domain.RulStructureExtensionDefinition;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.groovy.GroovyAe;
+import cz.tacr.elza.groovy.GroovyFund;
+import cz.tacr.elza.groovy.GroovyGenCtx;
+import cz.tacr.elza.groovy.GroovyInstitution;
 import cz.tacr.elza.groovy.GroovyItem;
 import cz.tacr.elza.groovy.GroovyItems;
 import cz.tacr.elza.groovy.GroovyPart;
@@ -64,6 +83,7 @@ import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedPart;
 
 @Service
 public class GroovyService {
@@ -110,7 +130,65 @@ public class GroovyService {
         _self = this;
     }
 
-    public GroovyAe convertAe(@NotNull final ApState state,
+    private GroovyAe convertAe(CachedAccessPoint apCached) {
+    	ApState state = apCached.getApState();
+        StaticDataProvider sdp = staticDataService.getData();
+        ApType apType = sdp.getApTypeById(state.getApTypeId());
+        
+        List<ApPart> parts = apCached.getApParts();
+        
+        // prepare parent parts        
+		List<GroovyPart> groovyParts = new ArrayList<>(apCached.getParts().size());
+		Map<Integer, List<CachedPart> > subParts = new HashMap<>();
+		List<CachedPart> mainParts = new ArrayList<>();
+				
+		for (CachedPart part : apCached.getParts()) {
+			if(part.getParentPartId()==null) {
+				mainParts.add(part);
+				if(part.getPartId().equals(state.getAccessPoint().getPreferredPartId())) {
+					
+				}
+			} else {
+				// append as child
+				subParts.computeIfAbsent(part.getPartId(), p -> new ArrayList<>() ).add(part);
+			}			
+		}
+		
+		// convert parts
+		for(CachedPart part: mainParts) {
+			boolean preferred = part.getPartId().equals(state.getAccessPoint().getPreferredPartId());
+			
+			GroovyPart gp = convertPart(sdp, apType, preferred, part, subParts.get(part.getPartId()));
+			groovyParts.add(gp);			
+		}
+
+		return new GroovyAe(state.getAccessPointId(), state.getStateId(), apType.getCode(), groovyParts);
+	}
+    
+    private GroovyPart convertPart(StaticDataProvider sdp, ApType apType, boolean preferred, CachedPart part, List<CachedPart> subParts) {
+    	// convert subparts
+		List<GroovyPart> groovyParts;
+		if(CollectionUtils.isEmpty(subParts)) {
+			groovyParts = Collections.emptyList();
+		} else {
+			groovyParts = new ArrayList<>(subParts.size());
+			for(CachedPart subPart: subParts) {
+				groovyParts.add(convertPart(sdp, apType, false, subPart, null));
+			}
+		}
+		
+		// convert items
+		GroovyItems groovyItems = new GroovyItems();
+		for(ApItem item: part.getItems()) {
+			groovyItems.addItem(convertItem(item, sdp));
+		}
+		
+		String partTypeCode = part.getPartTypeCode();
+		RulPartType partType = sdp.getPartTypeByCode(partTypeCode);
+		return new GroovyPart(sdp, apType, partType, preferred, groovyItems, groovyParts);
+	}
+
+	public GroovyAe convertAe(@NotNull final ApState state,
                               @NotNull final List<ApPart> parts,
                               @NotNull final List<ApItem> items) {
         return convertAe(state, parts, Collections.emptyList(), items, Collections.emptyList());
@@ -126,6 +204,7 @@ public class GroovyService {
         List<GroovyPart> groovyParts = new ArrayList<>(parts.size());
         Integer preferredPartId = state.getAccessPoint().getPreferredPartId();
         List<AccessPointItem> accessPointItemList = new ArrayList<>(items);
+        Set<Integer> deletedPartIds = revParts.stream().filter(i -> i.isDeleted()).map(i -> i.getOriginalPartId()).collect(Collectors.toSet());
         for (ApPart part : parts) {
             List<AccessPointPart> childrenParts = new ArrayList<>();
             for (ApPart p : parts) {
@@ -134,8 +213,11 @@ public class GroovyService {
                 }
             }
 
-            boolean preferred = Objects.equals(preferredPartId, part.getPartId());
-            groovyParts.add(convertPart(state.getApTypeId(), part, childrenParts, accessPointItemList, revItems, preferred));
+            // pokud tento Part není v revizi vymazán
+            if (!deletedPartIds.contains(part.getPartId())) {
+                boolean preferred = Objects.equals(preferredPartId, part.getPartId());
+            	groovyParts.add(convertPart(state.getApTypeId(), part, childrenParts, accessPointItemList, revItems, preferred));
+            }
         }
         // přidat Part(s), které byly přidány v revizi
         for (ApRevPart part : revParts) {
@@ -143,7 +225,7 @@ public class GroovyService {
                 groovyParts.add(convertRevPart(state.getApTypeId(), part, revItems));
             }
         }
-        return new GroovyAe(apType.getCode(), groovyParts);
+        return new GroovyAe(state.getAccessPointId(), state.getStateId(), apType.getCode(), groovyParts);
     }
 
     /**
@@ -212,7 +294,37 @@ public class GroovyService {
         return groovyScriptService.process(groovyAe, groovyFilePath);
     }
 
-    /**
+    public List<NodePlainTextRepresentation> getNodePlainText(@NotNull final ArrFundVersion fundVersion, ParInstitution institution, List<ArrDescItem> items) {
+		List<NodePlainTextRepresentation> result = new ArrayList<>();
+
+		CachedAccessPoint apInstitution = accessPointCacheService.findCachedAccessPoint(institution.getAccessPointId());
+        GroovyAe groovyAe = convertAe(apInstitution);
+
+        GroovyFund groovyFund = new GroovyFund(fundVersion.getFund(), new GroovyInstitution(institution, groovyAe));
+
+        StaticDataProvider sdp = staticDataService.getData();
+        List<GroovyItem> groovyItems = new ArrayList<>();
+        items.forEach(i -> {
+        	GroovyItem item = convertItem(i, sdp);
+        	groovyItems.add(item);
+        });
+
+		GroovyGenCtx genCtx = new GroovyGenCtx(groovyFund, groovyAe, groovyItems);
+
+		List<RulArrangementRule> arrangementRules = arrangementRuleRepository.findByRuleSetIdAndRuleTypeOrderByPriority(fundVersion.getRuleSetId(), RuleType.PLAIN_TEXT_GENERATOR);
+
+		for (RulArrangementRule rule: arrangementRules) {
+			Path groovyFilePath = resourcePathResolver.getDroolFile(rule);
+			String fileName = FileNameUtils.getBaseName(groovyFilePath);
+			String value = groovyScriptService.process(genCtx, groovyFilePath.toString());
+
+			result.add(new NodePlainTextRepresentation().name(fileName).code(fileName).value(value));
+		}
+
+		return result;
+    }
+
+	/**
      * 
      * @param apTypeId
      * @param part
@@ -301,10 +413,7 @@ public class GroovyService {
             }
         }
 
-        return new GroovyPart(sdp, apTypeId, part.getPartTypeId(),
-                preferred,
-                groovyItems,
-                groovyParts);
+        return new GroovyPart(sdp, apTypeId, part.getPartTypeId(), preferred, groovyItems, groovyParts);
     }
 
     public GroovyPart convertRevPart(@NotNull final Integer apTypeId,
@@ -314,26 +423,25 @@ public class GroovyService {
 
         GroovyItems groovyItems = new GroovyItems();
         for (ApRevItem revItem : revItems) {
+        	if (revItem.isDeleted()) {
+        		continue;
+        	}
             groovyItems.addItem(convertItem(revItem, sdp));
         }
 
-        return new GroovyPart(sdp, apTypeId, part.getPartTypeId(),
-                              false,
-                              groovyItems,
-                              Collections.emptyList());
+        return new GroovyPart(sdp, apTypeId, part.getPartTypeId(), false, groovyItems, Collections.emptyList());
     }
 
-    public GroovyItem convertItem(AccessPointItem item, StaticDataProvider sdp) {
+    public GroovyItem convertItem(Item item, StaticDataProvider sdp) {
         ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
-        RulItemSpec itemSpec = item.getItemSpec() == null ? null : sdp.getItemSpecById(item.getItemSpecId());
-        
+        RulItemSpec itemSpec = item.getItemSpecId() == null ? null : sdp.getItemSpecById(item.getItemSpecId());
+
         ArrData data = HibernateUtils.unproxy(item.getData());
-        if(data==null) {
+        if (data == null) {
         	// probably deleted item - has no data
-        	// we have to create it without it
+        	// we have to create groovyItem without value(s)
         	return new GroovyItem(itemType, itemSpec); 
         }
-        
 
         DataType dataType = itemType.getDataType();
         GroovyItem groovyItem;
@@ -355,9 +463,6 @@ public class GroovyService {
             }
             case TEXT: {
                 ArrDataText dataTmp = (ArrDataText) data;
-                if(dataTmp==null) {
-                	System.out.println("??");
-                }
                 groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getTextValue());
                 break;
             }
@@ -396,7 +501,6 @@ public class GroovyService {
                             BaseCode.DB_INTEGRITY_PROBLEM)
                                     .set("dataId", dataTmp.getDataId());
                 }
-
                 groovyItem = new GroovyItem(itemType, itemSpec, accessPoint, value, intValue);
                 break;
             }
@@ -408,6 +512,22 @@ public class GroovyService {
                 ArrDataUriRef dataTmp = (ArrDataUriRef) data;
                 groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getFulltextValue());
                 break;
+            }
+            case STRUCTURED: {
+            	ArrDataStructureRef dataTmp = (ArrDataStructureRef) data;
+            	ArrStructuredObject structObj = dataTmp.getStructuredObject();
+            	groovyItem = new GroovyItem(itemType, itemSpec, structObj.getValue());
+            	break;
+            }
+            case UNITID: {
+            	ArrDataUnitid dataTmp = (ArrDataUnitid) data;
+            	groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getUnitId());
+            	break;
+            }
+            case DECIMAL: {
+            	ArrDataDecimal dataTmp = (ArrDataDecimal) data;
+            	groovyItem = new GroovyItem(itemType, itemSpec, dataTmp.getFulltextValue());
+            	break;
             }
             default:
                 throw new NotImplementedException("Neimplementovaný typ: " + dataType);
@@ -489,9 +609,7 @@ public class GroovyService {
             }
         }
 
-        return resourcePathResolver.getGroovyDir(rulPackage)
-                .resolve(component.getFilename())
-                .toString();
+        return resourcePathResolver.getGroovyDir(rulPackage).resolve(component.getFilename()).toString();
     }
 
     public String getGroovyFilePath(RulArrangementRule.RuleType ruleType, Integer ruleSetId) {
@@ -508,8 +626,7 @@ public class GroovyService {
                     + "' pro výpočet hodnoty", BaseCode.INVALID_STATE);
         }
 
-        return resourcePathResolver.getDroolFile(arrangementRule)
-                .toString();
+        return resourcePathResolver.getDroolFile(arrangementRule).toString();
     }
 
 }

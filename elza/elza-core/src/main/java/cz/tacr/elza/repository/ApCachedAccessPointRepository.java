@@ -5,6 +5,7 @@ import cz.tacr.elza.domain.ApCachedAccessPoint;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -17,4 +18,7 @@ public interface ApCachedAccessPointRepository extends ElzaJpaRepository<ApCache
 
     @Query("SELECT cap FROM ap_cached_access_point cap JOIN FETCH cap.accessPoint ap WHERE ap.accessPointId IN :accessPointIds")
     List<ApCachedAccessPoint> findByAccessPointIds(@Param("accessPointIds") Collection<Integer> accessPointIds);
+
+    @Modifying
+    void deleteAllByAccessPointIdIn(Collection<Integer> apIds);
 }

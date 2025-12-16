@@ -15,12 +15,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
-
+import cz.tacr.elza.service.AccessPointConnectorService;
 import cz.tacr.elza.service.AccessPointItemService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -30,9 +31,8 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.cam.ApiCamConnector;
 import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.connector.CamConnector;
-import cz.tacr.elza.connector.CamInstance;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApBindingVO;
 import cz.tacr.elza.controller.vo.ApChangeVO;
@@ -41,9 +41,9 @@ import cz.tacr.elza.controller.vo.ApPartVO;
 import cz.tacr.elza.controller.vo.ApRecordSimple;
 import cz.tacr.elza.controller.vo.ApStateHistoryVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
+import cz.tacr.elza.controller.vo.ApValidationIssues;
 import cz.tacr.elza.controller.vo.LanguageVO;
-import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
+import cz.tacr.elza.controller.vo.PartValidationIssues;
 import cz.tacr.elza.controller.vo.UserVO;
 import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.controller.vo.ap.ApViewSettings;
@@ -62,7 +62,6 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemUnitdateVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemUnitidVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemUriRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
-import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -89,8 +88,6 @@ import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ChangeType;
-import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.SysLanguage;
@@ -135,8 +132,6 @@ public class ApFactory {
 
     private final ApPartRepository partRepository;
 
-    private final CamConnector camConnector;
-
     private final ApIndexRepository indexRepository;
 
     private final ApTypeRepository apTypeRepository;
@@ -155,6 +150,8 @@ public class ApFactory {
 
     private final AccessPointCacheService accessPointCacheService;
 
+    private final AccessPointConnectorService accessPointConnectorService;
+
     private final ElzaLocale elzaLocale;
 
     @Autowired
@@ -165,7 +162,6 @@ public class ApFactory {
                      final ApPartRepository partRepository,
                      final ApBindingStateRepository bindingStateRepository,
                      final ApBindingItemRepository bindingItemRepository,
-                     final CamConnector camConnector,
                      final ApIndexRepository indexRepository,
                      final ApTypeRepository apTypeRepository,
                      final UserRepository userRepository,
@@ -175,6 +171,7 @@ public class ApFactory {
                      final RevisionItemService revisionItemService,
                      final AccessPointItemService apItemService,
                      final AccessPointCacheService accessPointCacheService,
+                     final AccessPointConnectorService apConnectorService,
                      final ElzaLocale elzaLocale) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
@@ -183,7 +180,6 @@ public class ApFactory {
         this.partRepository = partRepository;
         this.bindingStateRepository = bindingStateRepository;
         this.bindingItemRepository = bindingItemRepository;
-        this.camConnector = camConnector;
         this.indexRepository = indexRepository;
         this.apTypeRepository = apTypeRepository;
         this.userRepository = userRepository;
@@ -193,6 +189,7 @@ public class ApFactory {
         this.revisionItemService = revisionItemService;
         this.apItemService = apItemService;
         this.accessPointCacheService = accessPointCacheService;
+        this.accessPointConnectorService = apConnectorService;
         this.elzaLocale = elzaLocale;
     }
 
@@ -219,17 +216,15 @@ public class ApFactory {
     public ApState create(ApAccessPointVO apVO) {
         Integer id = apVO.getId();
         if (id != null) {
-            ApAccessPoint ap = apRepository.findById(id)
-                    .orElseThrow(ap(id));
+            ApAccessPoint ap = apRepository.findById(id).orElseThrow(ap(id));
             ApState apState = stateRepository.findLastByAccessPoint(ap);
-            return Validate.notNull(apState);
+            return Objects.requireNonNull(apState);
         }
         Validate.isTrue(!apVO.isInvalid());
         // prepare type and scope
         StaticDataProvider staticData = staticDataService.getData();
         ApType type = staticData.getApTypeById(apVO.getTypeId());
-        ApScope scope = scopeRepository.findById(apVO.getScopeId())
-                .orElseThrow(scope(apVO.getScopeId()));
+        ApScope scope = scopeRepository.findById(apVO.getScopeId()).orElseThrow(scope(apVO.getScopeId()));
         // create new AP
         ApAccessPoint accessPoint = new ApAccessPoint();
         //accessPoint.setAccessPointId(accessPointId);
@@ -238,8 +233,8 @@ public class ApFactory {
         accessPoint.setUuid(apVO.getUuid());
         ApState apState = new ApState();
         apState.setStateApproval(ApState.StateApproval.NEW);
-        apState.setApType(Validate.notNull(type));
-        apState.setScope(Validate.notNull(scope));
+        apState.setApType(Objects.requireNonNull(type));
+        apState.setScope(Objects.requireNonNull(scope));
         apState.setAccessPoint(accessPoint);
         return apState;
     }
@@ -299,9 +294,17 @@ public class ApFactory {
             if (state.getRevState() != null) {
                 result.setState("REV_" + state.getRevState().toString());
             }
+            result.setOperation(state.getType().name());
             result.setType(state.getTypeName() != null? state.getTypeName() : state.getRevTypeName() != null? state.getRevTypeName() : null);
             result.setComment(state.getComment() != null? state.getComment() : state.getRevComment() != null? state.getRevComment() : null);
-            result.setUsername(state.getUser() == null ? null : state.getUser().getUsername());
+            if (state.getUser() != null) {
+            	UsrUser user = state.getUser();
+                ApAccessPointVO apVO = new ApAccessPointVO();
+                if (user.getAccessPoint() != null) {
+                	apVO = createVO(user.getAccessPoint());
+                }
+            	result.setUsername(String.format("%s (%s)", apVO.getName(), user.getUsername()));
+            }
             result.setScope(state.getScopeName());
             results.add(result);
         }
@@ -489,16 +492,16 @@ public class ApFactory {
         if (CollectionUtils.isNotEmpty(bindings)) {
             for (ApBindingVO binding : bindings) {
                 ApExternalSystem externalSystem = sdp.getApExternalSystemById(binding.getExternalSystemId());
-                CamInstance camInstance = camConnector.get(externalSystem);
-                if (camInstance != null) {
+                ApiCamConnector connector = accessPointConnectorService.getConnector(externalSystem);
+                if (connector != null) {
                     String value = binding.getValue();
                     if (StringUtils.isNotEmpty(value)) {
-                        String url = camInstance.getEntityDetailUrl(value);
+                        String url = connector.getDetailUrl(externalSystem) + value;
                         binding.setDetailUrl(url);
                     }
                     String extReplacedBy = binding.getExtReplacedBy();
                     if (StringUtils.isNotEmpty(extReplacedBy)) {
-                        String url = camInstance.getEntityDetailUrl(extReplacedBy);
+                        String url = connector.getDetailUrl(externalSystem) + extReplacedBy;
                         binding.setDetailUrlExtReplacedBy(url);
                     }
                 }
@@ -764,8 +767,8 @@ public class ApFactory {
             case RECORD_REF:
                 item = new ApItemAccessPointRefVO(apItem, ((externalSystemId, value) -> {
                     ApExternalSystem externalSystem = sdp.getApExternalSystemById(externalSystemId);
-                    CamInstance camInstance = camConnector.get(externalSystem);
-                    return camInstance.getEntityDetailUrl(value);
+                    ApiCamConnector connector = accessPointConnectorService.getConnector(externalSystem);
+                    return connector.getDetailUrl(externalSystem) + value;
                 }));
                 break;
             case DECIMAL:
@@ -875,7 +878,7 @@ public class ApFactory {
         return result;
     }
 
-    public ApValidationErrorsVO createValidationVO(ApAccessPoint accessPoint) {
+    public ApValidationIssues createValidationVO(ApAccessPoint accessPoint) {
         List<ApPart> partList = partRepository.findValidPartByAccessPoint(accessPoint);
 
         String[] errorsArray = StringUtils.split(accessPoint.getErrorDescription(), "\n");
@@ -885,7 +888,7 @@ public class ApFactory {
             errors.addAll(Arrays.asList(errorsArray));
         }
 
-        List<PartValidationErrorsVO> partValidationErrorsVOList = new ArrayList<>();
+        List<PartValidationIssues> partValidationErrorsVOList = new ArrayList<>();
 
         if (CollectionUtils.isNotEmpty(partList)) {
             for (ApPart part : partList) {
@@ -902,17 +905,17 @@ public class ApFactory {
         return createVO(errors, partValidationErrorsVOList);
     }
 
-    private PartValidationErrorsVO createVO(final Integer id, final List<String> errors) {
-        PartValidationErrorsVO partValidationErrorsVO = new PartValidationErrorsVO(id);
-        partValidationErrorsVO.addErrors(errors);
-        return partValidationErrorsVO;
+    private PartValidationIssues createVO(final Integer id, final List<String> errors) {
+    	PartValidationIssues partValidationIssues = new PartValidationIssues().id(id);
+    	partValidationIssues.setErrors(errors);
+        return partValidationIssues;
     }
 
-    private ApValidationErrorsVO createVO(final List<String> errors, final List<PartValidationErrorsVO> partErrors) {
-        ApValidationErrorsVO apValidationErrorsVO = new ApValidationErrorsVO();
-        apValidationErrorsVO.setErrors(errors);
-        apValidationErrorsVO.setPartErrors(partErrors);
-        return apValidationErrorsVO;
+    private ApValidationIssues createVO(final List<String> errors, final List<PartValidationIssues> partErrors) {
+    	ApValidationIssues apValidationIssues = new ApValidationIssues();
+    	apValidationIssues.setErrors(errors);
+    	apValidationIssues.setPartErrors(partErrors);
+        return apValidationIssues;
     }
 
     public ApAccessPointVO createVO(ApAccessPointVO vo, ApRevision revision, ApRevState revState, ApAccessPoint accessPoint) {

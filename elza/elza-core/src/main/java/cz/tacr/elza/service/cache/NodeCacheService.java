@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
@@ -22,7 +23,11 @@ import org.hibernate.ScrollableResults;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -129,6 +134,14 @@ public class NodeCacheService {
 
     @Autowired
     private DescriptionItemService descItemService;
+
+    @Autowired
+    @Qualifier("transactionManager")
+    protected PlatformTransactionManager txManager;
+
+    @Autowired
+    @Qualifier("threadPoolTaskExecutorAR")
+    private ThreadPoolTaskExecutor executor;
 
     public NodeCacheService() {
         mapper = new ObjectMapper();
@@ -463,29 +476,136 @@ public class NodeCacheService {
     }
 
     /**
+     * Synchronizace cache pro JP.
+     *
+     * Synchronní metoda volaná z transakce.
+     */
+    @Transactional(value=TxType.NEVER)
+    public void syncCacheParallel() {
+        logger.info("Node cache synchronization started.");
+
+        AtomicInteger atomCounter = new AtomicInteger(0);
+        AtomicInteger errorCounter = new AtomicInteger(0);
+        
+        int totalQueueCapacity = this.executor.getQueueCapacity();
+
+        synchronized (this) {
+            TransactionTemplate tt = new TransactionTemplate(txManager);
+            Integer cnt = tt.execute(t -> {
+        		ScrollableResults<Integer> uncachedNodes = nodeRepository.findUncachedNodes();
+        		
+        		List<Integer> batchNodeIds = new ArrayList<>(SYNC_BATCH_NODE_SIZE);
+                int count = 0;
+        		while (uncachedNodes.next()) {
+        			Integer nodeId = uncachedNodes.get();
+
+        			batchNodeIds.add(nodeId);
+        			count++;
+        			if (count % SYNC_BATCH_NODE_SIZE == 0) {
+        				logger.debug("Adding nodes to queue: {}-{}", count - SYNC_BATCH_NODE_SIZE + 1, count);
+
+        				int numWaiting = atomCounter.incrementAndGet();
+                        // check if executor has free slots
+						while (numWaiting + 5 >= totalQueueCapacity) {
+							try {
+								logger.debug("Waiting to add nodes to queue: {}-{}", count - SYNC_BATCH_NODE_SIZE + 1, count);
+								this.wait(1000);
+								numWaiting = atomCounter.get();
+							} catch (InterruptedException e) {
+								logger.error("Cache node synchronization interrupted");
+								throw new SystemException("Cache node synchronization interrupted");
+							}							
+						}
+        				
+        				// check if executor has free slots
+                        addParallelSync(atomCounter, errorCounter, batchNodeIds, count - batchNodeIds.size());
+        				batchNodeIds.clear();
+        			}
+        		}
+        		// process remaining nodes
+                if (batchNodeIds.size() > 0) {
+                    atomCounter.incrementAndGet();
+                    addParallelSync(atomCounter, errorCounter, batchNodeIds, count - batchNodeIds.size());
+                }
+                return count;
+            });
+
+            logger.info("Number of nodes requiring synchronization: {}", cnt);
+        }
+
+        synchronized (atomCounter) {
+            while (atomCounter.get() > 0) {
+                try {
+                    atomCounter.wait(100);
+                } catch (InterruptedException e) {
+                    logger.error("JP synchronization interrupted");
+                    throw new SystemException("JP synchronization interrupted");
+                }
+            }
+        }
+
+        if (errorCounter.get() > 0) {
+            logger.error("JP synchronization failed");
+            throw new SystemException("JP synchronization failed");
+        }
+
+        logger.info("Node cache synchronization finished.");
+    }
+
+    private void addParallelSync(final AtomicInteger atomCounter, 
+    							 final AtomicInteger errorCounter, 
+    							 final List<Integer> nodeIds, 
+    							 final int offset) {
+    	// IDS to own list
+    	final List<Integer> ids = new ArrayList<>(nodeIds);
+    	this.executor.execute(() -> parallelSync(atomCounter, errorCounter, ids, offset));
+    }
+
+    private void parallelSync(AtomicInteger atomCounter, AtomicInteger errorCounter, List<Integer> nodeIds, int offset) {
+        try {
+            logger.info("Creating cache for nodes {}-{}", offset + 1, nodeIds.size() + offset);
+
+            TransactionTemplate tt = new TransactionTemplate(txManager);
+            tt.executeWithoutResult(t -> {
+            	processNewNodes(nodeIds);
+            });
+        } catch (Exception e) {
+            logger.error("Failed to create node cache, ids: {}", nodeIds, e);
+            errorCounter.incrementAndGet();
+        }
+        logger.debug("Finished cache for nodes {}-{}", offset + 1, nodeIds.size() + offset);
+        synchronized (atomCounter) {
+            int v = atomCounter.decrementAndGet();
+            if (v == 0) {
+                atomCounter.notify();
+            }
+        }
+    }
+
+    /**
      * Synchronizace záznamů v databázi.
      */
     private void syncCacheInternal() {
 		ScrollableResults<Integer> uncachedNodes = nodeRepository.findUncachedNodes();
 
-		List<Integer> partNodeIds = new ArrayList<>(SYNC_BATCH_NODE_SIZE);
+		List<Integer> batchNodeIds = new ArrayList<>(SYNC_BATCH_NODE_SIZE);
 		int count = 0;
 		while (uncachedNodes.next()) {
 			Integer nodeId = uncachedNodes.get();
 
-			partNodeIds.add(nodeId);
+			batchNodeIds.add(nodeId);
 			count++;
 			if (count % SYNC_BATCH_NODE_SIZE == 0) {
 				logger.info("Sestavuji JP " + (count - SYNC_BATCH_NODE_SIZE + 1) + "-" + count);
 
-				processNewNodes(partNodeIds);
-				partNodeIds.clear();
+				processNewNodes(batchNodeIds);
+				batchNodeIds.clear();
 			}
 		}
 		// process remaining nodes
-		if (partNodeIds.size() > 0) {
+		if (batchNodeIds.size() > 0) {
 			logger.info("Sestavuji JP " + ((count / SYNC_BATCH_NODE_SIZE) * SYNC_BATCH_NODE_SIZE + 1) + "-" + count);
-			processNewNodes(partNodeIds);
+			processNewNodes(batchNodeIds);
 		}
 
 		logger.info("Všechny JP jsou synchronizovány");

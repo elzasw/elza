@@ -15,6 +15,7 @@ import {RulDataTypeVO} from "../../../api/RulDataTypeVO";
 import {RulDataTypeCodeEnum} from "../../../api/RulDataTypeCodeEnum";
 import {FilteredResultVO} from "../../../api/FilteredResultVO";
 import {ApAccessPointVO} from "../../../api/ApAccessPointVO";
+import { Area } from 'api/Area';
 
 const FORM_NAME = "relationFilterModalForm";
 
@@ -84,26 +85,6 @@ const RelationFilterModal = ({
     return <Form onSubmit={handleSubmit}>
         <Modal.Body>
             <Row>
-                {<Col xs={12}>
-                    <ArchiveEntityRel
-                        name={'obj'}
-                        label={i18n('ap.ext-search.section.relations.obj')}
-                        onlyMainPart={onlyMainPart}
-                        area={area}
-                        api={relApi}
-                        scopeId={scopeId}
-                        itemTypeId={itemType?.id}
-                        itemSpecId={itemSpec && itemSpec.id}
-                        modifyFilterData={data => {
-                            data.relFilters = [{
-                                relTypeId: itemType?.id,
-                                relSpecId: itemSpec && itemSpec.id,
-                            }]
-                            return data;
-                        }}
-                        disabled={submitting}
-                    />
-                </Col>}
                 <Col xs={12}>
                     <Field name="itemType"
                            label={i18n('ap.ext-search.section.relations.type')}
@@ -140,16 +121,38 @@ const RelationFilterModal = ({
                     </Field>
                 </Col>
                 <Col xs={6}>
-                    <Form.Label>
-                        {i18n('ap.ext-search.section.relations.only-main-part')}
-                    </Form.Label>
-                    <Field
-                        name="onlyMainPart"
-                        component={ReduxFormFieldErrorDecorator}
-                        renderComponent={Form.Check}
-                        type='checkbox'
-                    />
+                    {area !== Area.ALLPARTS && <>
+                        <Form.Label>
+                            {i18n('ap.ext-search.section.relations.only-main-part')}
+                        </Form.Label>
+                            <Field
+                            name="onlyMainPart"
+                            component={ReduxFormFieldErrorDecorator}
+                            renderComponent={Form.Check}
+                            type='checkbox'
+                        />
+                        </>}
                 </Col>
+                {<Col xs={12}>
+                    <ArchiveEntityRel
+                        name={'obj'}
+                        label={i18n('ap.ext-search.section.relations.obj')}
+                        onlyMainPart={area !== Area.ALLPARTS && onlyMainPart}
+                        area={area}
+                        api={relApi}
+                        scopeId={scopeId}
+                        itemTypeId={itemType?.id}
+                        itemSpecId={itemSpec && itemSpec.id}
+                        modifyFilterData={data => {
+                            data.relFilters = [{
+                                relTypeId: itemType?.id,
+                                relSpecId: itemSpec && itemSpec.id,
+                            }]
+                            return data;
+                        }}
+                        disabled={submitting}
+                    />
+                </Col>}
             </Row>
         </Modal.Body>
         <Modal.Footer>

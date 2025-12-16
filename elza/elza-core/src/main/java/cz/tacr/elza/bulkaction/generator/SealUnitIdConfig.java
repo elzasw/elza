@@ -1,7 +1,7 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import cz.tacr.elza.bulkaction.BaseActionConfig;
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionDFS;
 
 /**
  * Configuration of bulk action to seal UnitId
@@ -9,8 +9,7 @@ import cz.tacr.elza.bulkaction.BulkAction;
  * Action will check format of UnitId and store
  * used values in ArrUsedValue table
  */
-public class SealUnitIdConfig
-        extends BaseActionConfig {
+public class SealUnitIdConfig extends BaseActionConfig {
 
     /**
      * Item type of UnitId
@@ -26,7 +25,7 @@ public class SealUnitIdConfig
     }
 
     @Override
-    public BulkAction createBulkAction() {
+    public BulkActionDFS createBulkAction() {
         SealUnitId action = new SealUnitId(this);
         return action;
     }

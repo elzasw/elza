@@ -2,6 +2,7 @@ package cz.tacr.elza.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -29,6 +30,7 @@ import cz.tacr.elza.packageimport.xml.SettingGridView;
 import cz.tacr.elza.packageimport.xml.SettingIndexSearch;
 import cz.tacr.elza.packageimport.xml.SettingItemTypes;
 import cz.tacr.elza.packageimport.xml.SettingMenu;
+import cz.tacr.elza.packageimport.xml.SettingNodeSearch;
 import cz.tacr.elza.packageimport.xml.SettingPartsOrder;
 import cz.tacr.elza.packageimport.xml.SettingRecord;
 import cz.tacr.elza.packageimport.xml.SettingStructTypeSettings;
@@ -191,6 +193,9 @@ public class SettingsService {
         settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.MENU,
                 SettingMenu::newInstance,
                 SettingMenu.class));
+        settingsConvertors.add(new SettingConvertorSimple<>(UISettings.SettingsType.SEARCH_NODE_FILTERS,
+                SettingNodeSearch::newInstance,
+                SettingNodeSearch.class));
         settingsConvertors.add(new StructTypeSettingsConvertor());
 
 		// default convertor
@@ -224,23 +229,23 @@ public class SettingsService {
 
         // Read UI menu settings
         List<UISettings> menuSettingsList = getGlobalSettings(UISettings.SettingsType.MENU);
+        List<UISettings> filterSettingsList = getGlobalSettings(UISettings.SettingsType.SEARCH_NODE_FILTERS);
 
         List<UISettings> userSettingsList = null;
         if (userId != null) {
             userSettingsList = settingsRepository.findByUserId(userId);
         }
 
-        // TODO: rewrite using some shared function
-        if (CollectionUtils.isEmpty(menuSettingsList)) {
-            return userSettingsList;
+        List<UISettings> result = new ArrayList<>();
+        if (!CollectionUtils.isEmpty(menuSettingsList)) {
+        	result.addAll(menuSettingsList);
         }
-        if (CollectionUtils.isEmpty(userSettingsList)) {
-            return menuSettingsList;
+        if (!CollectionUtils.isEmpty(userSettingsList)) {
+        	result.addAll(userSettingsList);
         }
-
-        List<UISettings> result = new ArrayList<>(menuSettingsList.size() + userSettingsList.size());
-        result.addAll(menuSettingsList);
-        result.addAll(userSettingsList);
+        if(!CollectionUtils.isEmpty(filterSettingsList)) {
+        	result.addAll(filterSettingsList);
+        }
         return result;
     }
 
@@ -260,10 +265,15 @@ public class SettingsService {
 
         List<UISettings> result = new ArrayList<>();
 
+        // Copy global settings
+        Map<Integer, UISettings> globalSettingsMap = new HashMap<>();
+        // TODO: run as a single query
         List<UISettings> menuSettingsList = getGlobalSettings(UISettings.SettingsType.MENU);
-        Map<Integer, UISettings> globalSettingsMap = menuSettingsList.stream()
-                .collect(Collectors.toMap(UISettings::getSettingsId, Function.identity()));
+        menuSettingsList.forEach(s -> globalSettingsMap.put(s.getSettingsId(), s));
         result.addAll(menuSettingsList);
+        List<UISettings> filterSettingsList = getGlobalSettings(UISettings.SettingsType.SEARCH_NODE_FILTERS);
+        filterSettingsList.forEach(s -> globalSettingsMap.put(s.getSettingsId(), s));
+        result.addAll(filterSettingsList);
 
         List<UISettings> settingsListDB = settingsRepository.findByUser(user);
 
@@ -392,7 +402,7 @@ public class SettingsService {
         return null;
     }
 
-    private SettingConvertor getConvertor(String settingsType, Class cls) {
+    private SettingConvertor getConvertor(String settingsType, Class<? extends Setting> cls) {
         for(SettingConvertor sc: settingsConvertors) {
             if(sc.canConvertTo(settingsType, cls)) {
                 return sc;

@@ -2,30 +2,28 @@ package cz.tacr.elza.bulkaction.generator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.bulkaction.generator.multiple.Action;
 import cz.tacr.elza.bulkaction.generator.multiple.ActionConfig;
 import cz.tacr.elza.bulkaction.generator.multiple.TypeLevel;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.LevelTreeCacheService.NodeHierarchy;
 import cz.tacr.elza.service.cache.CachedNode;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -34,7 +32,7 @@ import cz.tacr.elza.service.cache.NodeCacheService;
  *
  * @since 29.06.2016
  */
-public class MultipleBulkAction extends BulkAction {
+public class MultipleBulkAction extends BulkActionTransactional {
 
 	/**
 	 * Size of batch for fetching child nodes from DB
@@ -69,8 +67,8 @@ public class MultipleBulkAction extends BulkAction {
 	 * @param runContext
 	 */
 	@Override
-	protected void init(ArrBulkActionRun bulkActionRun) {
-		super.init(bulkActionRun);
+	protected void init(ActionRunContext runContext) {
+		super.init(runContext);
 
 		// initialize actions from configuration
 		for (ActionConfig ac : config.getActions()) {
@@ -118,7 +116,7 @@ public class MultipleBulkAction extends BulkAction {
         // prepare parent nodes
         for (ArrNode startingNode : startingNodes) {
             // read parents
-			List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(startingNode.getNodeId(), version.getLockChange(), true);
+			List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(startingNode.getNodeId(), getFondsVersion().getLockChange(), true);
 
             LevelWithItems parentLevel = null;
             for(ArrLevel level: levels) {
@@ -155,12 +153,12 @@ public class MultipleBulkAction extends BulkAction {
         for (ArrNode node : startingNodes) {
 
             LevelWithItems levelWithItems = nodeStartingLevels.get(node);
-			Validate.notNull(levelWithItems);
+			Objects.requireNonNull(levelWithItems);
 
             // read whole subtree
-            Map<Integer, TreeNode> treeNodeMap = levelTreeCacheService.createTreeNodeMap(null, node.getNodeId());
+            NodeHierarchy treeNode = levelTreeCacheService.createTreeNodeMap(null, node.getNodeId());
 
-            generate(levelWithItems, treeNodeMap);
+            generate(levelWithItems, treeNode.getNodes());
         }
 
         if (multipleItemChangeContext != null) {
@@ -208,9 +206,8 @@ public class MultipleBulkAction extends BulkAction {
      *            data předků
      */
     void generate(final LevelWithItems levelWithItems, Map<Integer, TreeNode> treeNodeMap) {
-        if (bulkActionRun.isInterrupted()) {
-            bulkActionRun.setState(ArrBulkActionRun.State.INTERRUPTED);
-            throw new BusinessException("Hromadná akce " + toString() + " byla přerušena.", ArrangementCode.BULK_ACTION_INTERRUPTED).set("code", bulkActionRun.getBulkActionCode());
+        if (interrupt) {
+			throw new BulkActionInterruptedException("The action was interrupted");
         }
 
         // apply on current node
@@ -218,9 +215,7 @@ public class MultipleBulkAction extends BulkAction {
 
         // apply on child nodes in batch
         TreeNode treeNode = treeNodeMap.get(levelWithItems.getNodeId());
-        LinkedList<TreeNode> childNodes = treeNode.getChilds();
-        //List<ArrLevel> childLevels = getChildren(level);
-
+        List<TreeNode> childNodes = treeNode.getChildren();
         BatchNodeProcessor bnp = new BatchNodeProcessor(this, BATCH_CHILD_NODE_SIZE, actions, levelWithItems,
                 nodeCacheService,
                 treeNodeMap);

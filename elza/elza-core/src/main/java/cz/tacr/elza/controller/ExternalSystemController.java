@@ -3,12 +3,10 @@ package cz.tacr.elza.controller;
 import java.util.List;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,7 +19,6 @@ import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.UserService;
-import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -63,7 +60,7 @@ public class ExternalSystemController implements ExternalsystemsApi {
 
     @Override
     @Transactional
-    public ResponseEntity<Void> externalSystemStoreProperties(@ApiParam(value = "request body", required = true) @Valid @RequestBody List<ExtSystemProperty> extSystemProperties) {
+    public ResponseEntity<Void> externalSystemStoreProperties(List<ExtSystemProperty> extSystemProperties) {
         UserDetail loggedDetail = userService.getLoggedUserDetail();
 
         if (loggedDetail == null) {
@@ -105,7 +102,7 @@ public class ExternalSystemController implements ExternalsystemsApi {
 
     @Override
     @Transactional
-    public ResponseEntity<Void> externalSystemDeleteProperties(@ApiParam(value = "external system property id", required = true) @Valid @RequestBody List<Integer> extSysPropertyIds) {
+    public ResponseEntity<Void> externalSystemDeleteProperties(List<Integer> extSysPropertyIds) {
         UserDetail loggedDetail = userService.getLoggedUserDetail();
 
         if (loggedDetail == null) {

@@ -2,11 +2,14 @@
   "name": "Elza REST API",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "compile": "tsp compile main.tsp"
+  },
   "dependencies": {
-    "@typespec/compiler": "latest",
-    "@typespec/http": "latest",
-    "@typespec/rest": "latest",
-    "@typespec/openapi3": "latest"
+    "@typespec/compiler": "^1.2.1",
+    "@typespec/http": "^1.0.1",
+    "@typespec/openapi3": "^1.0.0",
+    "@typespec/rest": "^0.70.0"
   },
   "private": true
 }

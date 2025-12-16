@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import cz.tacr.elza.service.StructObjService;
@@ -9,7 +8,6 @@ import cz.tacr.elza.service.StructObjService;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
@@ -31,13 +29,13 @@ import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
+import cz.tacr.elza.repository.FundRepository;
 
 /**
  * Test exportu archivního souboru.
  */
 public class DataExchangeControllerTest extends AbstractControllerTest {
 
-    private final static String ALL_IN_ONE_XML = "all-in-one-import.xml";
     private final static String STRUCT_OBJ_1_TYPE = "SRD_PACKET";
     private final static String STRUCT_OBJ_1_ITEM_1_TYPE = "SRD_PACKET_TYPE";
     private final static String STRUCT_OBJ_1_ITEM_1_SPEC = "SRD_PACKET_TYPE_BOX";
@@ -54,11 +52,8 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
     @Autowired
     private StructObjService structObjService;
 
-    @Autowired
-    private PlatformTransactionManager tm;
-
     @Test
-    public void importExportTest() throws IOException {
+    public void importExportTest() {
 
         // import initial data
         File file = getResourceFile(ALL_IN_ONE_XML);

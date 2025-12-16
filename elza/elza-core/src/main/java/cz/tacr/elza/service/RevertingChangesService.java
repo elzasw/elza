@@ -355,13 +355,13 @@ public class RevertingChangesService {
 
         sw.start("delete from arr_desc_item");
         {
-            List<Integer> toReindex = new ArrayList<>(1024);
+//            List<Integer> toReindex = new ArrayList<>(1024);
 
-            // preindexovat zaznamy, ktere mohou byt smazane
-            toReindex.addAll(node != null
-                    ? descItemRepository.findIdByNodeAndCreatedAfterChange(node, toChange)
-                    : descItemRepository.findIdByFundAndCreatedAfterChange(fund, toChange)
-            );
+//            // preindexovat zaznamy, ktere mohou byt smazane
+//            toReindex.addAll(node != null
+//                    ? descItemRepository.findIdByNodeAndCreatedAfterChange(node, toChange)
+//                    : descItemRepository.findIdByFundAndCreatedAfterChange(fund, toChange)
+//            );
 
             Query deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", "arr_item", toChange);
             int count = deleteEntityQuery.executeUpdate();
@@ -378,13 +378,13 @@ public class RevertingChangesService {
 
             dataRepository.deleteAll(arrDataList);
 
-            // preindexovat všechny aktualni
-            toReindex.addAll(node != null
-                    ? descItemRepository.findOpenIdByNodeAndCreatedAfterChange(node)
-                    : descItemRepository.findOpenIdByFundAndCreatedAfterChange(fund)
-            );
+//            // preindexovat všechny aktualni
+//            toReindex.addAll(node != null
+//                    ? descItemRepository.findOpenIdByNodeAndCreatedAfterChange(node)
+//                    : descItemRepository.findOpenIdByFundAndCreatedAfterChange(fund)
+//            );
 
-            descriptionItemService.reindexDescItem(toReindex);
+//            descriptionItemService.reindexDescItem(toReindex);
         }
         sw.stop();
 
@@ -1206,21 +1206,15 @@ public class RevertingChangesService {
         ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(), fundVersion.getFundId());
         
         // TODO is it still needed?
-        List<RulItemType> descItemTypes;
-        if(CollectionUtils.isEmpty(viewTitles.getTreeItem().getIds())) {
-            descItemTypes = Collections.emptyList();
+        List<Integer> itemTypeIds;
+        if(CollectionUtils.isEmpty(viewTitles.getTreeItem().getItemTypeIds())) {
+        	itemTypeIds = Collections.emptyList();
         } else {
-            StaticDataProvider dataProvider = staticDataService.getData();
-            descItemTypes = new ArrayList<>(viewTitles.getTreeItem().getIds().size());
-            for(Integer itemTypeId: viewTitles.getTreeItem().getIds()) {
-                RulItemType itemType = dataProvider.getItemType(itemTypeId);
-                Validate.notNull(itemType, "Missing item type, id: %s", itemTypeId);
-                descItemTypes.add(itemType);
-            }
+            itemTypeIds = new ArrayList<>(viewTitles.getTreeItem().getItemTypeIds());
         }
 
         // TODO předělat createNodeLabels()
-        HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap = createNodeLabels(changeIdNodeIdMap, descItemTypes,
+        HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap = createNodeLabels(changeIdNodeIdMap, itemTypeIds,
                 fundVersion.getRuleSetId(),
                 fundVersion.getFund()
                         .getFundId());
@@ -1301,7 +1295,7 @@ public class RevertingChangesService {
      *            @return mapa popisků
      */
     private HashMap<Map.Entry<Integer, Integer>, String> createNodeLabels(final HashMap<Integer, Integer> changeIdNodeIdMap,
-                                                                          final List<RulItemType> itemTypes,
+                                                                          final List<Integer> itemTypeIds,
                                                                           final Integer ruleSetId,
                                                                           final Integer fundId) {
         HashMap<Map.Entry<Integer, Integer>, String> result = new HashMap<>();
@@ -1309,12 +1303,12 @@ public class RevertingChangesService {
         for (Map.Entry<Integer, Integer> entry : changeIdNodeIdMap.entrySet()) {
             Integer nodeId = entry.getValue();
             Map<Integer, TitleItemsByType> nodeValuesMap = descriptionItemService
-                    .createNodeValuesByItemTypeCodeMap(Collections.singleton(nodeId), itemTypes, entry.getKey(), null);
+                    .createNodeValuesByItemTypeCodeMap(Collections.singleton(nodeId), itemTypeIds, entry.getKey(), null);
             TitleItemsByType items = nodeValuesMap.get(nodeId);
             if (items != null) {
                 List<String> titles = new ArrayList<>();
-                for (RulItemType itemType : itemTypes) {
-                    titles.addAll(items.getValues(itemType.getItemTypeId()));
+                for (Integer itemTypeId : itemTypeIds) {
+                    titles.addAll(items.getValues(itemTypeId));
                 }
                 result.put(entry, String.join(" ", titles));
             } else {

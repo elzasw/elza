@@ -79,10 +79,9 @@ import cz.tacr.elza.repository.ApCachedAccessPointRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
-import cz.tacr.elza.search.SearchIndexSupport;
 
 @Service
-public class AccessPointCacheService implements SearchIndexSupport<ApCachedAccessPoint> {
+public class AccessPointCacheService {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessPointCacheService.class);
 
@@ -180,7 +179,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
 
         AtomicInteger atomCounter = new AtomicInteger(0);
         AtomicInteger errorCounter = new AtomicInteger(0);
-
+        
         synchronized (this) {
 
             TransactionTemplate tt = new TransactionTemplate(txManager);
@@ -195,13 +194,11 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                     apIds.add((Integer) obj);
                     count++;
                     if (count % syncApBatchSize == 0) {
-                        atomCounter.incrementAndGet();
                         addParallelSync(atomCounter, errorCounter, apIds, count - apIds.size());
                         apIds.clear();
                     }
                 }
                 if (apIds.size() > 0) {
-                    atomCounter.incrementAndGet();
                     addParallelSync(atomCounter, errorCounter, apIds, count - apIds.size());
                 }
                 return count;
@@ -210,6 +207,7 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             logger.info("Počet AP k synchronizaci: {}", cnt);
         }
 
+        // wait to finish
         synchronized (atomCounter) {
             while (atomCounter.get() > 0) {
                 try {
@@ -234,12 +232,35 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
                                  final AtomicInteger errorCounter,
                                  final List<Integer> apIds,
                                  final int offset) {
-        // IDS to own list
+        int totalQueueCapacity = this.executor.getQueueCapacity();
+        
+        int numWaiting = atomCounter.incrementAndGet();
+        // check if executor has free slots
+		while (numWaiting + 5 >= totalQueueCapacity) {
+			try {
+				logger.debug("Waiting to add APs to queue: {}-{}", offset+1, offset+apIds.size());
+				this.wait(1000);
+				numWaiting = atomCounter.get();
+			} catch (InterruptedException e) {
+				logger.error("AP cache synchronization interrupted");
+				throw new SystemException("AP cache synchronization interrupted");
+			}							
+		}
+        logger.debug("Adding to to queue: {}-{}", offset+1, offset+apIds.size());
+    	
+        // copy IDS to own list
         final List<Integer> ids = new ArrayList<>(apIds);
-        this.executor.execute(() -> parallelSync(atomCounter, errorCounter, ids, offset));
+        this.executor.execute(() -> syncInTrans(atomCounter, errorCounter, ids, offset));
     }
 
-    private void parallelSync(AtomicInteger atomCounter, AtomicInteger errorCounter, List<Integer> apIds, int offset) {
+    /**
+     * Create cache records for multiple items
+     * @param atomCounter
+     * @param errorCounter
+     * @param apIds
+     * @param offset
+     */
+    private void syncInTrans(AtomicInteger atomCounter, AtomicInteger errorCounter, List<Integer> apIds, int offset) {
         try {
             logger.info("Sestavuji AP {}-{}", 1 + offset, apIds.size() + offset);
 
@@ -628,6 +649,10 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         cap.setErrorDescription(accessPoint.getErrorDescription());
         cap.setLastUpdate(accessPoint.getLastUpdate());
         cap.setPreferredPartId(accessPoint.getPreferredPartId());
+        // Lots of codes expect that part list is not null
+        if(cap.getParts()==null) {
+	        cap.setParts(Collections.emptyList());
+        }
 
         restoreLinks(cap);
         return cap;
@@ -779,8 +804,8 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
             	// TODO: Vymazane bindingState nemaji byt v cache
                 bs.setDeleteChange(entityManager.getReference(ApChange.class, bs.getDeleteChangeId()));
             }
-            if (bs.getSyncChangeId() != null) {
-                bs.setSyncChange(entityManager.getReference(ApChange.class, bs.getSyncChangeId()));
+            if (bs.getCreateChangeId() != null) {
+                bs.setCreateChange(entityManager.getReference(ApChange.class, bs.getCreateChangeId()));
             }
             if (bs.getApTypeId() != null) {
                 bs.setApType(sdp.getApTypeById(bs.getApTypeId()));
@@ -1037,7 +1062,6 @@ public class AccessPointCacheService implements SearchIndexSupport<ApCachedAcces
         return result;
     }
 
-    @Override
     public Map<Integer, ApCachedAccessPoint> findToIndex(Collection<Integer> ids) {
         if (CollectionUtils.isEmpty(ids)) {
             return Collections.emptyMap();

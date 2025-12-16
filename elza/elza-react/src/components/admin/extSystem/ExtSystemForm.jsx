@@ -26,8 +26,10 @@ export const EXT_SYSTEM_CLASS_LABEL = {
 
 export const AP_EXT_SYSTEM_LABEL = {
     [AP_EXT_SYSTEM_TYPE.CAM]: i18n('admin.extSystem.cam'),
+    [AP_EXT_SYSTEM_TYPE.CAM_V2]: i18n('admin.extSystem.cam-v2'),
     [AP_EXT_SYSTEM_TYPE.CAM_UUID]: i18n('admin.extSystem.cam-uuid'),
     [AP_EXT_SYSTEM_TYPE.CAM_COMPLETE]: i18n('admin.extSystem.cam-complete'),
+	[AP_EXT_SYSTEM_TYPE.CAM_COMPLETE_V2]: i18n('admin.extSystem.cam-complete-v2'),
 };
 
 export const GIS_SYSTEM_TYPE_LABEL = {

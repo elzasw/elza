@@ -20,7 +20,7 @@ public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingSta
     @Query("SELECT COUNT(bs) FROM ap_binding_state bs WHERE bs.accessPoint = ?1 and bs.deleteChangeId is null")
     int countByAccessPoint(ApAccessPoint accessPoint);
 
-    @Query("SELECT bis FROM ap_binding_state bis JOIN bis.binding WHERE bis.accessPoint = ?1 and bis.deleteChangeId is null")
+    @Query("SELECT bis FROM ap_binding_state bis WHERE bis.accessPoint = ?1 and bis.deleteChangeId is null")
     List<ApBindingState> findByAccessPoint(ApAccessPoint accessPoint);
 
     @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding b JOIN FETCH b.apExternalSystem WHERE bis.accessPoint IN :accessPoints AND bis.deleteChangeId IS NULL")
@@ -38,6 +38,9 @@ public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingSta
 
     @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding bin WHERE bis.accessPoint = :accessPoint AND bis.deleteChangeId IS NULL AND bin.apExternalSystem = :externalSystem")
     ApBindingState findByAccessPointAndExternalSystem(@Param("accessPoint") ApAccessPoint accessPoint, @Param("externalSystem") ApExternalSystem externalSystem);
+
+    @Query("SELECT bs FROM ap_binding_state bs WHERE bs.accessPointId = :accessPointId AND bs.deleteChangeId IS NULL AND bs.externalSystemId = :externalSystemId")
+    ApBindingState findByAccessPointIdAndExternalSystemId(@Param("accessPointId") Integer accessPointId, @Param("externalSystemId") Integer externalSystemId);
 
     @Query("SELECT b1" +
             " FROM ap_binding_state b1" +
@@ -70,5 +73,12 @@ public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingSta
     @Query("SELECT bis FROM ap_binding_state bis JOIN bis.accessPoint WHERE bis.deleteChangeId IS NULL AND bis.binding IN :bidings")
     List<ApBindingState> findByBindings(@Param("bidings") Collection<ApBinding> bs);
 
+    @Query("SELECT bs.bindingId FROM ap_binding_state bs WHERE bs.accessPointId IN :apIds")
+    List<Integer> findAllBindingIdByAccessPointIdIn(@Param("apIds") Collection<Integer> apIds);
+
+    @Modifying
     void deleteByBinding(ApBinding binding);
+
+    @Modifying
+	void deleteAllByBindingIdIn(Collection<Integer> bindingIds);
 }

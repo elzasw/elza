@@ -6,12 +6,12 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Lists;
 
+import cz.tacr.elza.cam.v1.export.CamExportBuilder;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.io.FilterInputStreamWithException;
 import cz.tacr.elza.controller.factory.ApFactory;
@@ -34,8 +35,6 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
-import cz.tacr.elza.dataexchange.output.writer.cam.CamExportBuilder;
-import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlNameConsts;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -46,8 +45,8 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
-import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker;
 import cz.tacr.elza.ws.core.v1.exportservice.ExportWorker.ErrorHandler;
@@ -98,10 +97,9 @@ public class ExportServiceImpl implements ExportService {
     ApChangeRepository changeRepository;
 
     @Autowired
-    AccessPointDataService apDataService;
+    DataService dataService;
 
     public ExportServiceImpl() {
-
     }
 
     // TODO: run this method in transaction
@@ -183,16 +181,13 @@ public class ExportServiceImpl implements ExportService {
         if (XmlNameConsts.SCHEMA_URI.equals(format)) {
             // native export
             exportBuilder = new XmlExportBuilder();
-        } else
-        if (CamUtils.CAM_SCHEMA.equals(format)) {
-            // format CAM
-            exportBuilder = new CamExportBuilder(staticDataService,
-                    groovyService, schemaManager,
-                    apDataService, false);
+        } else if (SchemaManager.CAM_SCHEMA_2019.equals(format)) {
+            // format CAM v1
+            exportBuilder = new CamExportBuilder(staticDataService, groovyService, schemaManager, dataService, false);
         } else {
             throw new ExportRequestException("Unrecognized schema: " + format);
         }
-        
+
         // prepare sec context
         SecurityContext secCtx = SecurityContextHolder.getContext();
         Authentication auth = secCtx.getAuthentication();
@@ -247,7 +242,7 @@ public class ExportServiceImpl implements ExportService {
         ApAccessPoint ap;
         if(StringUtils.isBlank(entityId)) {
             Items items = request.getItems();
-            Validate.notNull(items);
+            Objects.requireNonNull(items);
             List<Object> itemList = items.getStrOrLongOrEnm();
             
             List<ApAccessPoint> aps = accessPointService.findAccessPointsBySinglePartValues(itemList);

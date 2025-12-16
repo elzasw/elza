@@ -35,7 +35,7 @@ export const FormSpecification:FC<CommonFieldProps<ApItemVO> & {
             const isDeleted = updatedItem?.changeType === "DELETED";
             const prevValue = item?.specId != null ? getSpecName(item.specId) : undefined
 
-            const handleChange = (e: any) => { 
+            const handleChange = (e: any) => {
                 if(updatedItem?.changeType === "ORIGINAL"){
                     form.change(`${name}.updatedItem`, {...updatedItem, changeType: "UPDATED"})
                 }
@@ -65,14 +65,14 @@ export const FormSpecification:FC<CommonFieldProps<ApItemVO> & {
                 handleValueUpdate(form);
             }
 
-            return <RevisionFieldExample 
-                label={label} 
-                prevValue={prevValue} 
-                value={isDeleted ? undefined : getSpecName(parseInt(props.input.value))}
+            return <RevisionFieldExample
+                label={label}
+                prevValue={prevValue}
                 disableRevision={disableRevision}
                 onRevert={!isNew ? handleRevert : undefined}
                 onDelete={isDeleted ? undefined : handleDelete}
                 isDeleted={isDeleted}
+                isUpdated={updatedItem?.changeType === "UPDATED"}
             >
                 <ReduxFormFieldErrorDecorator
                     {...props as any}

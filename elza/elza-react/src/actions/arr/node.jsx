@@ -143,7 +143,7 @@ export function fundSelectSubNode(
 
         dispatch(fundSelectSubNodeInt(versionId, subNodeId, subNodeParentNode, openNewTab, newFilterCurrentIndex, ensureItemVisible, nodeIndex));
         dispatch(developerNodeScenariosDirty(subNodeId, subNodeParentNode.routingKey, state.arrRegion.funds[state.arrRegion.activeIndex].versionId));
-        redirect && dispatch(routerNavigate(urlFundNode(fund.id, getFundVersion(fund), subNodeId)));
+        redirect && dispatch(routerNavigate(urlFundNode(fund.id, getFundVersion(fund), subNodeId), "REPLACE"));
     }
 }
 

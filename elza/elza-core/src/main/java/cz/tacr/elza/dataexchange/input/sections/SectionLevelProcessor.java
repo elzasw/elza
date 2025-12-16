@@ -6,6 +6,8 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.schema.v2.DescriptionItemString;
+import cz.tacr.elza.schema.v2.InhibitedItem;
+
 import org.apache.commons.lang3.StringUtils;
 
 import cz.tacr.elza.core.data.DataType;
@@ -13,18 +15,15 @@ import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.dataexchange.common.items.ImportableItemData;
 import cz.tacr.elza.dataexchange.input.DEImportException;
-import cz.tacr.elza.dataexchange.input.aps.context.AccessPointInfo;
 import cz.tacr.elza.dataexchange.input.context.ImportContext;
 import cz.tacr.elza.dataexchange.input.reader.ItemProcessor;
 import cz.tacr.elza.dataexchange.input.sections.context.NodeContext;
 import cz.tacr.elza.dataexchange.input.sections.context.SectionContext;
-import cz.tacr.elza.schema.v2.AccessPointRefs;
 import cz.tacr.elza.schema.v2.DescriptionItem;
 import cz.tacr.elza.schema.v2.Level;
 
 /**
  * Process item(level) for given section
- *
  */
 public class SectionLevelProcessor implements ItemProcessor {
 
@@ -78,13 +77,25 @@ public class SectionLevelProcessor implements ItemProcessor {
     private void processSubEntities(Level item, NodeContext node) {
         try {
             processDescItems(item.getDdOrDoOrDp(), node);
+            processInhibitedItems(item.getInhs(), node);
         } catch (DEImportException e) {
             throw new DEImportException(
                     "Fund level cannot be processed, levelId:" + item.getId() + ", detail:" + e.getMessage(), e);
         }
     }
 
-    private void processDescItems(Collection<DescriptionItem> items, NodeContext node) {
+    private void processInhibitedItems(Collection<InhibitedItem> inhs, NodeContext node) {
+    	for (InhibitedItem item : inhs) {
+    		ArrInhibitedItem inhItem = new ArrInhibitedItem();
+    		inhItem.setCreateChange(section.getCreateChange());
+            if (item.getRefItem() == null) {
+                throw new DEImportException("Inhibited item has a null refItem");
+            }
+    		node.addInhibitedItem(inhItem, item.getRefItem());
+    	}
+	}
+
+	private void processDescItems(Collection<DescriptionItem> items, NodeContext node) {
         StaticDataProvider ruleSystem = section.getStaticData();
 
         for (DescriptionItem item : items) {
@@ -106,11 +117,10 @@ public class SectionLevelProcessor implements ItemProcessor {
             ImportableItemData itemData = item.createData(context, dataType);
             ArrData data = itemData.getData();
 
-            DescItemIndexData indexData = new DescItemIndexData(section.getFund().getFundId(), itemData.getFulltext(),
-                    data);
+            DescItemIndexData indexData = new DescItemIndexData(section.getFund().getFundId(), itemData.getFulltext(), data);
             ArrDescItem descItem = createDescItem(section, itemType, item.getS(), indexData);
 
-            node.addDescItem(descItem, data);
+            node.addDescItem(item.getId(), descItem, data);
         }
     }
 

@@ -28,10 +28,10 @@ public interface ItemRepository extends JpaRepository<ArrItem, Integer>, DeleteF
     Integer findMaxItemObjectId();
 
     @Query("SELECT i FROM arr_item i WHERE i.descItemObjectId = ?1 AND i.deleteChange IS NULL")
-    ArrItem findByItemObjectIdAndDeleteChangeIsNull(int descItemObjectId); // excluded: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType  
+    ArrItem findByItemObjectIdAndDeleteChangeIsNull(int descItemObjectId);  
 
     @Query("SELECT i FROM arr_item i WHERE i.descItemObjectId = :descItemObjectId AND i.createChange < :lockChange AND (i.deleteChange > :lockChange OR i.deleteChange IS NULL)")
-    ArrItem findByItemObjectIdAndChange(@Param("descItemObjectId") int descItemObjectId, @Param("lockChange") ArrChange lockChange); // excluded: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType 
+    ArrItem findByItemObjectIdAndChange(@Param("descItemObjectId") int descItemObjectId, @Param("lockChange") ArrChange lockChange); 
 
     @Query("SELECT COUNT(i) FROM arr_item i WHERE i.itemType = ?1")
     long countByType(RulItemType itemType);
@@ -79,4 +79,9 @@ public interface ItemRepository extends JpaRepository<ArrItem, Integer>, DeleteF
     @Modifying
     @Query("UPDATE arr_item SET createChange = :change WHERE itemId IN :itemIds")
     void updateCreateChange(@Param("itemIds") Collection<Integer> itemIds, @Param("change") ArrChange change);
+
+    @Query("SELECT DISTINCT ref.recordId FROM arr_item i "
+    	    + "JOIN arr_data_record_ref ref ON ref.dataId = i.dataId "
+            + "WHERE i.deleteChange IS NULL AND ref.recordId IN :recordIds")
+    List<Integer> findArrDataRecordRefRecordIdsByAccessPointIds(@Param("recordIds") List<Integer> recordIds);
 }

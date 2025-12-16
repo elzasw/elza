@@ -9,10 +9,10 @@ import java.util.Collections;
 import java.util.List;
 
 import jakarta.transaction.Transactional;
-
+import cz.tacr.elza.cam.v1.CamConnector;
 import cz.tacr.elza.common.FactoryUtils;
-import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.AsyncTypeEnum;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +27,7 @@ import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.SysExternalSystem;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.*;
@@ -206,7 +207,14 @@ public class AdminOldController {
         return asyncRequestService.getFundStatistics(requestType);
     }
 
+    /**
+     * Přístup k logu aplikace
+     * 
+     * @param lineCount
+     * @return
+     */
     @RequestMapping(value = "/logs", method = RequestMethod.GET)
+    @AuthMethod(permission = Permission.ADMIN)
     public LogVO getLogs(@RequestParam(name = "lineCount", required = false, defaultValue = "1000") Integer lineCount) {
         List<String> lines = new ArrayList<>(lineCount);
 

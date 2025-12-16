@@ -36,6 +36,8 @@ public enum EventType {
     ACCESS_POINT_EXPORT_NEW(EventApQueue.class),
     // zahájení zpracování archivní entity z fronty
     ACCESS_POINT_EXPORT_STARTED(EventApQueue.class),
+    // zpracování archivní entity z fronty je potřeba potvrdit
+    ACCESS_POINT_EXPORT_NEED_CONFIRM(EventApQueue.class),
     // zpracování archivní entity z fronty skončilo chybou
     ACCESS_POINT_EXPORT_FAILED(EventApQueue.class),
     // zpracování archivní entity z fronty bylo úspěšně dokončeno

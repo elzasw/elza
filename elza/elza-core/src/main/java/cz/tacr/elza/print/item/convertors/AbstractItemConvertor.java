@@ -1,6 +1,7 @@
 package cz.tacr.elza.print.item.convertors;
 
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.Item;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -35,6 +36,11 @@ public abstract class AbstractItemConvertor implements ItemConvertor {
         // update common properties
         item.setPosition(iItem.getPosition());
         item.setType(itemType);
+        if(iItem instanceof ArrDescItem) {
+        	ArrDescItem descItem = (ArrDescItem) iItem;
+        	item.setDescItemObjectId(descItem.getDescItemObjectId());
+        }
+
         if (iItem.getItemSpecId() != null) {
             ItemSpec itemSpec = context.getItemSpecById(iItem.getItemSpecId());
             item.setSpecification(itemSpec);

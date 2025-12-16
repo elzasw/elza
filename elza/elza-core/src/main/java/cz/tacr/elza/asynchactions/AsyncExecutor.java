@@ -228,16 +228,13 @@ public abstract class AsyncExecutor {
             List<ArrAsyncRequest> requests;
             List<ArrAsyncRequest> deleteRequests = new ArrayList<>();
             do {
-                requests = asyncRequestRepository.findRequestsByPriorityWithLimit(getType(), PageRequest.of(p,
-                                                                                                            READ_MAX_COUNT));
+                requests = asyncRequestRepository.findRequestsByPriorityWithLimit(getType(), PageRequest.of(p, READ_MAX_COUNT));
 
-                logger.info("Async requests fetched from DB, type: {}, count: {}, page: {}",
-                            getType(), requests.size(), p);
+                logger.info("Async requests fetched from DB, type: {}, count: {}, page: {}", getType(), requests.size(), p);
                 for (ArrAsyncRequest request : requests) {
                     if (isFailedRequest(request)) {
                         deleteRequests.add(request);
-                        logger.debug("Bude odstraněn požadavek z fronty z důvodu jeho chybového stavu. ID: {}", request
-                                .getAsyncRequestId());
+                        logger.debug("Bude odstraněn požadavek z fronty z důvodu jeho chybového stavu. ID: {}", request.getAsyncRequestId());
                     } else {
                         IAsyncRequest ar = readRequest(request);
                         results.add(ar);
@@ -250,8 +247,7 @@ public abstract class AsyncExecutor {
                 asyncRequestRepository.deleteAll(deleteRequests);
             }
 
-            logger.info("Obnovení databázové fronty {} - obnoveno: {}, odebráno: {}", getType(), results.size(),
-                        deleteRequests.size());
+            logger.info("Obnovení databázové fronty {} - obnoveno: {}, odebráno: {}", getType(), results.size(), deleteRequests.size());
             if (results.size() > 0) {
                 enqueue(results);
             }

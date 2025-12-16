@@ -1,12 +1,11 @@
 package cz.tacr.elza.repository.specification.search;
 
-import cz.tacr.cam.client.controller.vo.QueryComparator;
+import cz.tacr.cam.v1.client.controller.vo.QueryComparator;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -23,25 +22,25 @@ public class UnitdateComparator implements Comparator {
     @Override
     public Predicate toPredicate(final QueryComparator comparator, final String value) {
         CriteriaBuilder cb = ctx.cb;
-        ArrDataUnitdate data = UnitDateConvertor.convertToUnitDate(value, new ArrDataUnitdate());
+        ArrDataUnitdate data = UnitDateConverter.convertToUnitDate(value, new ArrDataUnitdate());
         Long normalizedFrom = data.getNormalizedFrom();
         Long normalizedTo = data.getNormalizedTo();
         Join<ApItem, ArrData> dataJoin = ctx.getApItemRoot().join(ApItem.FIELD_DATA, JoinType.INNER);
         switch (comparator) {
-            case EQ:
+            case CT_EQ:
                 return cb.and(
                         cb.equal(cb.treat(dataJoin, ArrDataUnitdate.class).get(ArrDataUnitdate.NORMALIZED_FROM), normalizedFrom),
                         cb.equal(cb.treat(dataJoin, ArrDataUnitdate.class).get(ArrDataUnitdate.NORMALIZED_TO), normalizedTo)
                 );
-            case GT:
+            case CT_GT:
                 return cb.greaterThan(cb.treat(dataJoin, ArrDataUnitdate.class).get(ArrDataUnitdate.NORMALIZED_FROM), normalizedTo);
-            case GTE:
+            case CT_GTE:
                 return cb.greaterThanOrEqualTo(cb.treat(dataJoin, ArrDataUnitdate.class).get(ArrDataUnitdate.NORMALIZED_FROM), normalizedTo);
-            case LT:
+            case CT_LT:
                 return cb.lessThan(cb.treat(dataJoin, ArrDataUnitdate.class).get(ArrDataUnitdate.NORMALIZED_TO), normalizedFrom);
-            case LTE:
+            case CT_LTE:
                 return cb.lessThanOrEqualTo(cb.treat(dataJoin, ArrDataUnitdate.class).get(ArrDataUnitdate.NORMALIZED_TO), normalizedFrom);
-            case CONTAIN:
+            case CT_CONTAIN:
                 return cb.or(
                         cb.and(
                                 cb.greaterThanOrEqualTo(cb.treat(dataJoin, ArrDataUnitdate.class).get(ArrDataUnitdate.NORMALIZED_FROM), normalizedFrom),

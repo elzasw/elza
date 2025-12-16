@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.HEAD;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +41,7 @@ import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.task.TaskSchedulerBuilder;
+import org.springframework.boot.task.ThreadPoolTaskSchedulerBuilder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -82,13 +84,10 @@ import cz.tacr.elza.controller.vo.CopyNodesParams;
 import cz.tacr.elza.controller.vo.CopyNodesValidate;
 import cz.tacr.elza.controller.vo.CopyNodesValidateResult;
 import cz.tacr.elza.controller.vo.CreateUserVO;
-import cz.tacr.elza.controller.vo.CreatedPartVO;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.FindFundsResult;
 import cz.tacr.elza.controller.vo.FulltextFundRequest;
-import cz.tacr.elza.controller.vo.FundDetail;
 import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
@@ -139,8 +138,7 @@ import cz.tacr.elza.controller.vo.ap.item.ApUpdateItemVO;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.NodeData;
-import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
+import cz.tacr.elza.controller.vo.nodes.NodeDataVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemBitVO;
@@ -161,9 +159,8 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.core.data.DataType;
+//import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -179,27 +176,33 @@ import cz.tacr.elza.test.controller.DaosApi;
 import cz.tacr.elza.test.controller.DescitemsApi;
 import cz.tacr.elza.test.controller.FundsApi;
 import cz.tacr.elza.test.controller.IoApi;
+import cz.tacr.elza.test.controller.NodeApi;
+import cz.tacr.elza.test.controller.ReportApi;
 import cz.tacr.elza.test.controller.SearchApi;
 import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.CreateFund;
+import cz.tacr.elza.test.controller.vo.CreatedPart;
 import cz.tacr.elza.test.controller.vo.DataBit;
 import cz.tacr.elza.test.controller.vo.DataCoordinates;
 import cz.tacr.elza.test.controller.vo.DataDate;
 import cz.tacr.elza.test.controller.vo.DataDecimal;
+import cz.tacr.elza.test.controller.vo.DataEnum;
 import cz.tacr.elza.test.controller.vo.DataFileRef;
 import cz.tacr.elza.test.controller.vo.DataFormattedText;
 import cz.tacr.elza.test.controller.vo.DataInteger;
 import cz.tacr.elza.test.controller.vo.DataJsonTable;
-import cz.tacr.elza.test.controller.vo.DataNull;
 import cz.tacr.elza.test.controller.vo.DataRecordRef;
 import cz.tacr.elza.test.controller.vo.DataString;
 import cz.tacr.elza.test.controller.vo.DataStructureRef;
 import cz.tacr.elza.test.controller.vo.ItemData;
+import cz.tacr.elza.test.controller.vo.NodeDataParam;
 import cz.tacr.elza.test.controller.vo.NodeItem;
 import cz.tacr.elza.test.controller.vo.DataText;
+import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.test.controller.vo.DataUnitdate;
 import cz.tacr.elza.test.controller.vo.DataUnitid;
 import cz.tacr.elza.test.controller.vo.DataUriRef;
+import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.websocket.WebSocketStompClientElza;
 import io.restassured.RestAssured;
@@ -211,6 +214,7 @@ import io.restassured.response.Response;
 import io.restassured.response.ResponseBody;
 import io.restassured.response.ResponseOptions;
 import io.restassured.specification.RequestSpecification;
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 public abstract class AbstractControllerTest extends AbstractTest {
@@ -306,10 +310,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String DESC_ITEM_CSV_EXPORT = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/csv/export";
 	@Deprecated
 	protected static final String CREATE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create";
-	protected static final String CREATE_DESC_ITEM_NEW = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/create";
 	@Deprecated
 	protected static final String UPDATE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}";
-	protected static final String UPDATE_DESC_ITEM_NEW = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}/new";
+	@Deprecated
 	protected static final String DELETE_DESC_ITEM = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/delete";
 	protected static final String DELETE_DESC_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}";
 	protected static final String DELETE_OUTPUT_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}";
@@ -394,8 +397,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String CREATE_ACCESS_POINT = AP_CONTROLLER_URL + "/";
 	protected static final String UPDATE_RECORD = AP_CONTROLLER_URL + "/{recordId}";
 	protected static final String USAGES_RECORD = AP_CONTROLLER_URL + "/{recordId}/usage";
-	protected static final String MERGE_AP = AP_CONTROLLER_URL + "/revision/{entityId}/merge";
-	protected static final String REPLACE_RECORD = AP_CONTROLLER_URL + "/{recordId}/replace";
+	protected static final String MERGE_AP = REST_CONTROLLER_URL + "/accesspoint/{id}/revision/merge";
+	protected static final String REPLACE_RECORD = FUND_CONTROLLER_URL + "/accesspoint/{id}";
 	protected static final String CHANGE_STATE = REST_CONTROLLER_URL + "/accesspoint/{recordId}/state";
 
 	protected static final String GET_LANGUAGES = AP_CONTROLLER_URL + "/languages";
@@ -408,11 +411,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String RECORD_TYPES_FOR_PARTY_TYPE = AP_CONTROLLER_URL + "/recordTypesForPartyType";
 
 	// PART
-	protected static final String CREATE_PART = AP_CONTROLLER_URL + "/{accessPointId}/part";
-	protected static final String UPDATE_PART = AP_CONTROLLER_URL + "/{accessPointId}/part/{partId}";
-	protected static final String DELETE_PART = REST_CONTROLLER_URL + "/accesspoint/{accessPointId}/part/{partId}";
-	protected static final String SET_PREFER_NAME = REST_CONTROLLER_URL
-			+ "/accesspoint/{accessPointId}/part/{partId}/prefer-name";
+	protected static final String CREATE_PART = REST_CONTROLLER_URL + "/accesspoint/{id}/part";
+	protected static final String UPDATE_PART = REST_CONTROLLER_URL + "/accesspoint/{id}/part/{partId}";
+	protected static final String DELETE_PART = REST_CONTROLLER_URL + "/accesspoint/{id}/part/{partId}";
+	protected static final String SET_PREFER_NAME = REST_CONTROLLER_URL + "/accesspoint/{id}/part/{partId}/prefer-name";
 
 	// RULE
 	protected static final String RULE_SETS = RULE_CONTROLLER_URL + "/getRuleSets";
@@ -510,6 +512,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 	protected final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.000ZZZZZ");
 
+	protected final static String ALL_IN_ONE_XML = "all-in-one-import.xml";
+
 	public static final String SCOPE_GLOBAL = "GLOBAL";
 	public static final String SCOPE_COPY = "COPY";
 
@@ -535,6 +539,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 	protected DescitemsApi descitemsApi;
 
+	protected ReportApi reportApi;
+
+	protected NodeApi nodeApi;
+
 	protected static Map<String, String> cookies = null;
 
 	@Override
@@ -558,13 +566,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		searchApi = new cz.tacr.elza.test.controller.SearchApi(elzaApiClient);
 		ioApi = new cz.tacr.elza.test.controller.IoApi(elzaApiClient);
 		descitemsApi = new cz.tacr.elza.test.controller.DescitemsApi(elzaApiClient);
+		reportApi = new cz.tacr.elza.test.controller.ReportApi(elzaApiClient);
+		nodeApi = new cz.tacr.elza.test.controller.NodeApi(elzaApiClient);
 
 		loginAsAdmin();
-
-		// Nastaveni autentizace
-		cookies.forEach((name, value) -> {
-			elzaApiClient.addDefaultCookie(name, value);
-		});
 
 		if (loadInstitutions) {
 			importXmlFile(null, 1, getResourceFile(XML_INSTITUTION));
@@ -593,6 +598,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
 			requestSpecification.log().all();
 		}
 		cookies = response.getCookies();
+
+		// Nastaveni autentizace
+		cookies.forEach((name, value) -> {
+			elzaApiClient.addDefaultCookie(name, value);
+		});
 	}
 
 	private Map<String, Integer> counterMap = new HashMap<>();
@@ -719,8 +729,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param url
 	 * @return
 	 */
-	protected static Response multipart(final Function<RequestSpecification, RequestSpecification> params,
-			final String url) {
+	protected static Response multipart(final Function<RequestSpecification, RequestSpecification> params, final String url) {
 		Assert.assertNotNull(params);
 		Assert.assertNotNull(url);
 
@@ -799,19 +808,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		return fundsApi.fundCreateFund(createFund);
 	}
 
-	protected FundDetail getFundV1(final Integer id) {
-		Response response = get(spec -> spec.pathParam("id", id), FUND_V1);
-		return response.getBody().as(FundDetail.class);
-	}
-
-	protected FindFundsResult findFunds(final String fulltext, final String institutionIdentifier, final Integer max,
-			final Integer from) {
-		Response response = get(
-				spec -> spec.queryParam("fulltext", fulltext).queryParam("institutionIdentifier", institutionIdentifier)
-						.queryParam("max", max).queryParam("from", from),
-				FUNDS_V1);
-		return response.getBody().as(FindFundsResult.class);
-	}
+//	protected FindFundsResult findFunds(final String fulltext, final String institutionIdentifier, final Integer max,
+//			final Integer from) {
+//		Response response = get(
+//				spec -> spec.queryParam("fulltext", fulltext).queryParam("institutionIdentifier", institutionIdentifier)
+//						.queryParam("max", max).queryParam("from", from),
+//				FUNDS_V1);
+//		return response.getBody().as(FindFundsResult.class);
+//	}
 
 	/**
 	 * Uzavření verze archivní pomůcky.
@@ -1287,6 +1291,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param node        uzel
 	 * @return smazaná hodnota atributu
 	 */
+	@Deprecated
 	protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem,
 			final ArrFundVersionVO fundVersion, final ArrNodeVO node) {
 		return deleteDescItem(descItem, fundVersion.getId(), node.getId(), node.getVersion());
@@ -1301,6 +1306,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param nodeVersion   verze uzlu
 	 * @return smazaná hodnota atributu
 	 */
+	@Deprecated
 	protected ArrangementController.DescItemResult deleteDescItem(final ArrItemVO descItem, final Integer fundVersionId,
 			final Integer nodeId, final Integer nodeVersion) {
 		Response response = post(spec -> spec.body(descItem).pathParam("fundVersionId", fundVersionId)
@@ -1452,32 +1458,37 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	/**
 	 * Vytvoření objektu pro hodnotu atributu (nová).
 	 *
-	 * @param type       typ atributu
-	 * @param node       atributový uzel
-	 * @param value      hodnota
-	 * @param itemSpecId id spec atributu
-	 * @param undefined  nezjištěný (bez hodnoty)
+	 * @param typeCode kód typu atributu
+	 * @param specCode kód speku atributu
+	 * @param dataType typ hodnoty
+	 * @param value    hodnota
+	 * @param node     atributový uzel
 	 * @return vytvořený object hodnoty atributu
 	 */
-	protected NodeItem buildDescItem(final RulDescItemTypeExtVO type,
-			                         final ArrNodeVO node,
-									 final Object value, 
-									 final Integer itemSpecId, 
-									 final Boolean undefined) {
-		Validate.notNull(type, "Musí být vyplněn typ atributu");
-		Validate.notNull(type.getDataTypeId(), "Musí být vyplněn kód typu atributu");
+	protected NodeItem buildNodeItem(@Nonnull  final String typeCode,
+			                         @Nullable final String specCode,
+			                         @Nonnull  final DataType dataType,
+			                         @Nullable final Object value,
+			                         @Nonnull  final ArrNodeVO node) {
+		Validate.notNull(typeCode, "Musí být vyplněn kód typu atributu");
+		Validate.notNull(dataType, "Musí být vyplněn typ hodnoty");
 		Validate.notNull(node, "Musí být vyplněn atributový uzel");
 
-		ItemData data = getItemDataByDataTypeId(type.getDataTypeId(), value);
-		data.setDataTypeId(type.getDataTypeId());
+        RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
+        Integer specId = null;
+        if (specCode != null) {
+        	RulDescItemSpecExtVO spec = findDescItemSpecByCode(specCode, type);
+        	specId = spec.getId();
+        }
+        ItemData itemData = createItemDataByDataTypeAndValue(dataType, value);
 
 		NodeItem nodeItem = new NodeItem();
 		nodeItem.setItemTypeId(type.getId());
-		nodeItem.setItemSpecId(itemSpecId);
+		nodeItem.setItemSpecId(specId);
 		nodeItem.setNodeId(node.getId());
 		nodeItem.setNodeVersion(node.getVersion());
-		nodeItem.setUndefined(undefined);
-		nodeItem.setData(data);
+		//nodeItem.setUndefined(null);
+		nodeItem.setData(itemData);
 
 		return nodeItem;
 	}
@@ -1485,16 +1496,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	/**
 	 * Získání odpovídající třídy s daty
 	 * 
-	 * @param dataTypeId datový typ id 
-	 * @param value		 hodnota
+	 * @param dataType datový typ 
+	 * @param value	   hodnota
 	 * @return
 	 */
-	public ItemData getItemDataByDataTypeId(final Integer dataTypeId, final Object value) {
-    	Validate.notNull(dataTypeId, "Id datového typu musí být vyplněna");
-    	Validate.notNull(value, "Hodnota musí být vyplněna");
+	public ItemData createItemDataByDataTypeAndValue(@Nonnull final DataType dataType, @Nullable final Object value) {
+    	Validate.notNull(dataType, "Id datového typu musí být vyplněna");
 
     	ItemData data = new ItemData();
-        DataType dataType = DataType.fromId(dataTypeId);
         switch (dataType) {
 	        case INT:
 	            data = new DataInteger();
@@ -1537,7 +1546,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	        	((DataStructureRef) data).setStructuredObjectId(((ArrStructureDataVO) value).getId());
 	        	break;
 	        case ENUM:
-	        	data = new DataNull();
+	        	data = new DataEnum();
 	        	break;
 	        case FILE_REF:
 	        	data = new DataFileRef();
@@ -1560,7 +1569,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	        	((DataBit) data).setBitValue(((boolean) value));
 	        	break;
 	        default:
-	            throw new NotImplementedException("Neimplementovaný datový typ atributu -> dataTypeId: " + dataTypeId);
+	            throw new NotImplementedException("Neimplementovaný datový typ atributu -> dataType: " + dataType);
         }
     	return data;
     }
@@ -1587,8 +1596,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param objectId identifikátor hodnoty atributu
 	 * @return vytvořený object hodnoty atributu
 	 */
-	protected ApItemVO buildApItem(final String typeCode, final String specCode, final Object value,
-			final Integer position, final Integer objectId) {
+	protected ApItemVO buildApItem(final String typeCode, 
+			                       final String specCode, 
+			                       final Object value,
+			                       final Integer position, 
+			                       final Integer objectId) {
 		Assert.assertNotNull("Musí být vyplněn kód typu atributu", typeCode);
 
 		RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
@@ -1601,7 +1613,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 			Assert.assertNotNull("Specifikace atributu neexistuje -> CODE: " + specCode, spec);
 		}
 
-		DataType dataType = DataType.fromId(type.getDataTypeId());
+		cz.tacr.elza.core.data.DataType dataType = cz.tacr.elza.core.data.DataType.fromId(type.getDataTypeId());
 		ApItemVO item;
 
 		switch (dataType) {
@@ -1896,8 +1908,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 *              potomky, předky, ...)
 	 * @return požadovaná data
 	 */
-	public NodeData getNodeData(final NodeDataParam param) {
-		return post(spec -> spec.body(param), NODE_DATA).getBody().as(NodeData.class);
+	@Deprecated
+	public NodeDataVO getNodeData(final NodeDataParam param) {
+		return post(spec -> spec.body(param), NODE_DATA).getBody().as(NodeDataVO.class);
 	}
 
 	/**
@@ -2193,18 +2206,18 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		return get(spec -> spec.pathParam("recordId", recordId), USAGES_RECORD).getBody().as(RecordUsageVO.class);
 	}
 
-	protected void mergeRevision(final Integer entityId, @Nullable final ApState.StateApproval state) {
-		post(spec -> spec.pathParam("entityId", entityId).param("state", state), MERGE_AP);
+	protected void mergeRevision(final Integer accesspointId, final ApStateUpdate stateUpdate) {
+		post(spec -> spec.pathParam("id", accesspointId).body(stateUpdate), MERGE_AP);
 	}
 
 	/**
 	 * Nahrazení rejstříkového hesla.
 	 *
-	 * @param replacedId    id rejstříkového hesla které nahrazujeme
-	 * @param replacementId id rejstříkového hesla kterým nahrazujeme
+	 * @param id                      id rejstříkového hesla které nahrazujeme
+	 * @param deleteAccessPointDetail objekt s id rejstříkového hesla kterým nahrazujeme
 	 */
-	protected Response replaceRecord(final Integer replacedId, final Integer replacementId) {
-		return post(spec -> spec.pathParam("recordId", replacedId).body(replacementId), REPLACE_RECORD);
+	protected Response replaceRecord(final String id, final DeleteAccessPointDetail deleteAccessPointDetail) {
+		return delete(spec -> spec.pathParam("id", id).body(deleteAccessPointDetail), REPLACE_RECORD);
 	}
 
 	protected Response changeState(final Integer apId, ApStateUpdate stateUpdate) {
@@ -2314,13 +2327,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param replaceText     text, který nahradí hledaný text v celém textu
 	 * @param replaceDataBody seznam uzlů, ve kterých hledáme
 	 */
-	protected void replaceDataValues(final Integer versionId, final Integer descItemTypeId, final String searchText,
+	protected Response replaceDataValues(final Integer versionId, final Integer descItemTypeId, final String searchText,
 			final String replaceText, final ArrangementController.ReplaceDataBody replaceDataBody) {
 
-		put(spec -> spec.pathParam("versionId", versionId).queryParam("descItemTypeId", descItemTypeId)
-				.queryParam("searchText", searchText).queryParam("replaceText", replaceText).body(replaceDataBody),
-				REPLACE_DATA_VALUES);
-
+		return put(spec -> spec.pathParam("versionId", versionId)
+							.queryParam("descItemTypeId", descItemTypeId)
+							.queryParam("searchText", searchText)
+							.queryParam("replaceText", replaceText)
+							.body(replaceDataBody),
+					REPLACE_DATA_VALUES);
 	}
 
 	/**
@@ -2492,16 +2507,35 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	/**
 	 * Vytvořené nového uživatele.
 	 *
+	 * @param username
+	 * @param valueMap
+	 * @param apId
 	 * @return vytvořený uživatel
 	 */
-	protected UsrUserVO createUser(final String username, final Map<UsrAuthentication.AuthType, String> valueMap,
-			final Integer apId) {
+	protected UsrUserVO createUser(final String username, final Map<UsrAuthentication.AuthType, String> valueMap, final Integer apId) {
 		CreateUserVO params = new CreateUserVO();
 		params.setUsername(username);
 		params.setValuesMap(valueMap);
 		params.setAccessPointId(apId);
 		return createUser(params);
 	}
+
+    /**
+	 * Vytvořené nového uživatele.
+     *
+	 * @param accessPointId
+	 * @param userName
+	 * @param password
+     * @return vytvořený uživatel
+     */
+	protected UsrUserVO createUser(final Integer accessPointId, String userName, String password) {
+        Map<UsrAuthentication.AuthType, String> valueMap = new HashMap<>();
+        valueMap.put(UsrAuthentication.AuthType.PASSWORD, password);
+        UsrUserVO user = createUser(userName, valueMap, accessPointId);
+		assertNotNull(user);
+		assertNotNull(user.getId());
+        return user;
+    }
 
 	/**
 	 * Vytvořené skupiny.
@@ -3260,8 +3294,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param fundVersionId identifikátor verze AS
 	 * @return smazaná entita
 	 */
-	protected StructureController.StructureItemResult deleteStructureItem(final ArrItemVO itemVO,
-			final Integer fundVersionId) {
+	protected StructureController.StructureItemResult deleteStructureItem(final ArrItemVO itemVO, final Integer fundVersionId) {
 		return post(spec -> spec.pathParam("fundVersionId", fundVersionId).body(itemVO), DELETE_STRUCTURE_ITEM)
 				.as(StructureController.StructureItemResult.class);
 	}
@@ -3287,8 +3320,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
 	 * @return data formuláře
 	 */
-	protected StructureController.StructureDataFormDataVO getFormStructureItems(final Integer fundVersionId,
-			final Integer structureDataId) {
+	protected StructureController.StructureDataFormDataVO getFormStructureItems(final Integer fundVersionId, final Integer structureDataId) {
 		return get(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureDataId", structureDataId),
 				GET_FORM_STRUCTURE_ITEMS).as(StructureController.StructureDataFormDataVO.class);
 	}
@@ -3329,8 +3361,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param assignable       přiřaditelný
 	 * @param structureDataIds identifikátory hodnoty strukturovaného datového typu
 	 */
-	protected void setAssignableStructureData(final Integer fundVersionId, final boolean assignable,
-			List<Integer> structureDataIds) {
+	protected void setAssignableStructureData(final Integer fundVersionId, final boolean assignable, List<Integer> structureDataIds) {
 		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("assignable", assignable)
 				.body(structureDataIds), SET_ASSIGNABLE_STRUCTURE_DATA_LIST);
 	}
@@ -3354,9 +3385,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param accessPointId identifikátor přístupového bodu (PK)
 	 * @param apPartFormVO  data pro vytvoření části
 	 */
-	protected CreatedPartVO createPart(final Integer accessPointId, final ApPartFormVO apPartFormVO) {
-		return post(spec -> spec.pathParam("accessPointId", accessPointId).body(apPartFormVO), CREATE_PART)
-				.as(CreatedPartVO.class);
+	protected CreatedPart createPart(final Integer accessPointId, final ApPartFormVO apPartFormVO) {
+		return post(spec -> spec.pathParam("id", accessPointId).body(apPartFormVO), CREATE_PART)
+				.as(CreatedPart.class);
 	}
 
 	/**
@@ -3367,8 +3398,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param apPartFormVO  data pro úpravu části
 	 */
 	protected void updatePart(final Integer accessPointId, final Integer partId, final ApPartFormVO apPartFormVO) {
-		post(spec -> spec.pathParam("accessPointId", accessPointId).pathParam("partId", partId).body(apPartFormVO),
-				UPDATE_PART);
+		post(spec -> spec.pathParam("id", accessPointId).pathParam("partId", partId).body(apPartFormVO), UPDATE_PART);
 	}
 
 	/**
@@ -3378,7 +3408,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param partId        identifikátor mazané části
 	 */
 	public void deletePart(final Integer accessPointId, final Integer partId) {
-		delete(spec -> spec.pathParam("accessPointId", accessPointId).pathParam("partId", partId), DELETE_PART);
+		delete(spec -> spec.pathParam("id", accessPointId).pathParam("partId", partId), DELETE_PART);
 	}
 
 	/**
@@ -3386,11 +3416,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * Označení.
 	 *
 	 * @param accessPointId identifikátor přístupového bodu (PK)
-	 * @param partId        identifikátor části, kterou nastavujeme jako
-	 *                      preferovanou
+	 * @param partId        identifikátor části, kterou nastavujeme jako preferovanou
 	 */
 	public void setPreferName(final Integer accessPointId, final Integer partId) {
-		put(spec -> spec.pathParam("accessPointId", accessPointId).pathParam("partId", partId), SET_PREFER_NAME);
+		put(spec -> spec.pathParam("id", accessPointId).pathParam("partId", partId), SET_PREFER_NAME);
 	}
 
 	/**
@@ -3662,6 +3691,114 @@ public abstract class AbstractControllerTest extends AbstractTest {
 				DELETE_NODE_TEMPLATE_MAP_TYPE);
 	}
 
+    /**
+     * Vytvoření levelů v archivní pomůcce.
+     * <p>
+     * Create 4 levels under root
+     *
+     * @param fundVersion verze archivní pomůcky
+     * @return vytvořené levely
+     */
+    protected List<ArrNodeVO> createLevels(final ArrFundVersionVO fundVersion) {
+
+        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
+        input.setVersionId(fundVersion.getId());
+        TreeData treeData = getFundTree(input);
+        TreeNodeVO parentNode;
+
+        // Musí existovat root node
+        assertNotNull(treeData.getNodes());
+        // Musí existovat pouze root node
+        assertTrue(treeData.getNodes().size() == 1);
+
+        TreeNodeVO rootTreeNodeVO = treeData.getNodes().iterator().next();
+        ArrNodeVO rootNode = convertTreeNode(rootTreeNodeVO);
+
+        // přidání prvního levelu pod root
+        helperTestService.waitForWorkers();
+        ArrangementController.NodeWithParent newLevel1 = addLevel(FundLevelService.AddLevelDirection.CHILD, 
+        		fundVersion, rootNode, rootNode, "Série");
+
+        // rodič nového uzlu musí být root
+        assertTrue(newLevel1.getParentNode().getId().equals(rootNode.getId()));
+        // verze root uzlu musí být povýšena
+        assertTrue(!newLevel1.getParentNode().getVersion().equals(rootNode.getVersion()));
+
+        helperTestService.waitForWorkers();
+        parentNode = newLevel1.getParentNode();
+        rootNode.setId(parentNode.getId());
+        rootNode.setVersion(parentNode.getVersion());
+
+        // přidání druhého levelu pod root
+        helperTestService.waitForWorkers();
+        ArrangementController.NodeWithParent newLevel2 = addLevel(FundLevelService.AddLevelDirection.CHILD,
+                fundVersion, rootNode, rootNode, null);
+
+        // rodič nového uzlu musí být root
+        assertTrue(newLevel2.getParentNode().getId().equals(rootNode.getId()));
+        // verze root uzlu musí být povýšena
+        assertTrue(!newLevel2.getParentNode().getVersion().equals(rootNode.getVersion()));
+
+        helperTestService.waitForWorkers();
+        parentNode = newLevel2.getParentNode();
+        rootNode.setId(parentNode.getId());
+        rootNode.setVersion(parentNode.getVersion());
+
+        // přidání třetího levelu na první pozici pod root
+        helperTestService.waitForWorkers();
+        ArrangementController.NodeWithParent newLevel3 = addLevel(FundLevelService.AddLevelDirection.BEFORE,
+                fundVersion, newLevel1.getNode(), rootNode, null);
+
+        // rodič nového uzlu musí být root
+        assertTrue(newLevel3.getParentNode().getId().equals(rootNode.getId()));
+        // verze root uzlu musí být povýšena
+        assertTrue(!newLevel3.getParentNode().getVersion().equals(rootNode.getVersion()));
+
+        helperTestService.waitForWorkers();
+        parentNode = newLevel3.getParentNode();
+        rootNode.setId(parentNode.getId());
+        rootNode.setVersion(parentNode.getVersion());
+
+        // přidání uzlu za první uzel pod root (za child3)
+        helperTestService.waitForWorkers();
+        ArrangementController.NodeWithParent newLevel4 = addLevel(FundLevelService.AddLevelDirection.AFTER,
+                fundVersion, newLevel3.getNode(), rootNode, null);
+
+        // rodič nového uzlu musí být root
+        assertTrue(newLevel4.getParentNode().getId().equals(rootNode.getId()));
+        // verze root uzlu musí být povýšena
+        assertTrue(!newLevel4.getParentNode().getVersion().equals(rootNode.getVersion()));
+
+        helperTestService.waitForWorkers();
+        parentNode = newLevel4.getParentNode();
+        rootNode.setId(parentNode.getId());
+        rootNode.setVersion(parentNode.getVersion());
+
+        input = new ArrangementController.FaTreeParam();
+        input.setVersionId(fundVersion.getId());
+        input.setNodeId(rootNode.getId());
+        treeData = getFundTree(input);
+
+        // Kontrola pořadí uzlů
+        Iterator<TreeNodeVO> nodeClientIterator = treeData.getNodes().iterator();
+        TreeNodeVO node1 = nodeClientIterator.next();
+        TreeNodeVO node2 = nodeClientIterator.next();
+        TreeNodeVO node3 = nodeClientIterator.next();
+        TreeNodeVO node4 = nodeClientIterator.next();
+        assertTrue(node1.getId().equals(newLevel3.getNode().getId()));
+        assertTrue(node2.getId().equals(newLevel4.getNode().getId()));
+        assertTrue(node3.getId().equals(newLevel1.getNode().getId()));
+        assertTrue(node4.getId().equals(newLevel2.getNode().getId()));
+
+        List<ArrNodeVO> nodes = new ArrayList<>(treeData.getNodes().size() + 1);
+        nodes.add(rootNode);
+        nodes.add(newLevel3.getNode());
+        nodes.add(newLevel4.getNode());
+        nodes.add(newLevel1.getNode());
+        nodes.add(newLevel2.getNode());
+        return nodes;
+    }
+
 	/**
 	 * Připojení Websocket
 	 * 
@@ -3678,7 +3815,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 			recepiptStore.put(rcpId, msg);
 		});
 
-		ThreadPoolTaskScheduler taskScheduler = new TaskSchedulerBuilder().poolSize(1).build();
+		ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskSchedulerBuilder().poolSize(1).build();
 		taskScheduler.initialize();
 		stompClient.setTaskScheduler(taskScheduler);
 
@@ -3708,8 +3845,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @return
 	 * @throws InterruptedException
 	 */
-	protected ReceiptStatus waitingForReceipt(Receiptable receipt, MyStompSessionHandler sessionHandler)
-			throws InterruptedException {
+	protected ReceiptStatus waitingForReceipt(Receiptable receipt, MyStompSessionHandler sessionHandler) throws InterruptedException {
 		AtomicReference<ReceiptStatus> receiptStatus = new AtomicReference<ReceiptStatus>();
 		receipt.addReceiptTask(() -> {
 			logger.debug("Receipt received");

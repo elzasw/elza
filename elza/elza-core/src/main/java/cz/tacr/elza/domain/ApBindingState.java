@@ -22,6 +22,7 @@ import cz.tacr.elza.service.cache.AccessPointCacheSerializable;
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ApBindingState implements AccessPointCacheSerializable {
 
+	public static final String SYNC_STATE = "syncOk";
     public static final String ACCESS_POINT_ID = "accessPointId";
     public static final String DELETE_CHANGE_ID = "deleteChangeId";
 
@@ -77,13 +78,6 @@ public class ApBindingState implements AccessPointCacheSerializable {
 
     @Column(length = StringLength.LENGTH_50)
     private String extReplacedBy;
-
-    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ApChange.class)
-    @JoinColumn(name = "syncChangeId")
-    private ApChange syncChange;
-
-    @Column(nullable = false, updatable = false, insertable = false)
-    private Integer syncChangeId;
 
     @Enumerated(EnumType.STRING)
     @Column(length = StringLength.LENGTH_ENUM)
@@ -229,23 +223,6 @@ public class ApBindingState implements AccessPointCacheSerializable {
 
     public void setExtReplacedBy(String extReplacedBy) {
         this.extReplacedBy = extReplacedBy;
-    }
-
-    public ApChange getSyncChange() {
-        return syncChange;
-    }
-
-    public void setSyncChange(ApChange syncChange) {
-        this.syncChange = syncChange;
-        if (syncChange == null) {
-            this.syncChangeId = null;
-        } else {
-            this.syncChangeId = syncChange.getChangeId();
-        }
-    }
-
-    public Integer getSyncChangeId() {
-        return syncChangeId;
     }
 
     public SyncState getSyncOk() {

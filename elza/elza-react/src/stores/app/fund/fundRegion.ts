@@ -1,7 +1,7 @@
 import * as types from 'actions/constants/ActionTypes';
-import {isFundTreeAction} from 'actions/arr/fundTree.jsx';
+import { isFundTreeAction } from 'actions/arr/fundTree.jsx';
 import fundDetail from './fundDetail.jsx';
-import {AnyAction} from "redux";
+import { AnyAction } from "redux";
 
 type FundRegionState = {
     fetched: boolean;
@@ -31,7 +31,7 @@ const initialState = {
     fundDetail: fundDetail(),
 };
 
-export default function fundRegion(state: FundRegionState = initialState, action: AnyAction = {type: undefined}): FundRegionState {
+export default function fundRegion(state: FundRegionState = initialState, action: AnyAction = { type: undefined }): FundRegionState {
     if (isFundTreeAction(action) && action.area === types.FUND_TREE_AREA_FUNDS_FUND_DETAIL) {
         return {
             ...state,
@@ -108,8 +108,9 @@ export default function fundRegion(state: FundRegionState = initialState, action
             return {
                 ...state,
                 filter: {
-                    from: typeof action.filter.from !== 'undefined' ? action.filter.from : '',
-                    institutionIdentifier: action.filter.institutionIdentifier,
+                    from: typeof action.filter.from !== 'undefined' ? action.filter.from : 0,
+                    // institutionIdentifier: action.filter.institutionIdentifier,
+                    ...action.filter,
                 },
                 currentDataKey: '',
             };

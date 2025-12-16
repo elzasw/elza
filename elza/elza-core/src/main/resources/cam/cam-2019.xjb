@@ -34,7 +34,7 @@
     <jaxb:bindings schemaLocation="cam-2019.xsd" node="//xs:schema">
 
         <jaxb:schemaBindings>
-            <jaxb:package name="cz.tacr.cam.schema.cam"/>
+            <jaxb:package name="cz.tacr.cam.v1.schema.cam"/>
             <jaxb:nameXmlTransform>
                 <jaxb:elementName suffix="Element"/>
                 <!-- uptavit nazvy typu, aby se negenerovaly tridy String, Boolean, Integer -->
@@ -72,7 +72,7 @@
         -->
         <jaxb:bindings node="//xs:complexType[@name='BatchUpdate']">
             <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(namespace = "http://cam.tacr.cz/2019", name = "bu")</annox:annotate>
-            <annox:annotate target="class">@io.swagger.v3.oas.annotations.media.Schema(implementation = cz.tacr.cam.schema.cam.BatchUpdateXml.class, type = "string", format = "binary")</annox:annotate>
+            <annox:annotate target="class">@io.swagger.v3.oas.annotations.media.Schema(implementation = cz.tacr.cam.v1.schema.cam.BatchUpdateXml.class, type = "string", format = "binary")</annox:annotate>
         </jaxb:bindings>
         <jaxb:bindings node="//xs:complexType[@name='BatchUpdateError']">
             <annox:annotate target="class">@jakarta.xml.bind.annotation.XmlRootElement(namespace = "http://cam.tacr.cz/2019", name = "bue")</annox:annotate>

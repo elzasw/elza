@@ -1,6 +1,5 @@
 package cz.tacr.elza.repository.specification;
 
-import static cz.tacr.elza.domain.convertor.UnitDateConvertorConsts.DEFAULT_INTERVAL_DELIMITER;
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
 import java.util.ArrayList;
@@ -23,14 +22,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.data.jpa.domain.Specification;
 
-import cz.tacr.cam.client.controller.vo.QueryComparator;
+import cz.tacr.cam.v1.client.controller.vo.QueryComparator;
 import cz.tacr.elza.controller.vo.Area;
 import cz.tacr.elza.controller.vo.ExtensionFilterVO;
 import cz.tacr.elza.controller.vo.RelationFilterVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.SyncStateVO;
 import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
@@ -44,7 +46,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.specification.search.BitComparator;
@@ -100,6 +102,9 @@ public class ApStateSpecification implements Specification<ApState> {
         Validate.isTrue(!scopeIds.isEmpty());
         condition = cb.and(condition, stateRoot.get(ApState.FIELD_SCOPE_ID).in(scopeIds));
 
+        // pouze aktuální state
+        condition = cb.and(condition, cb.isNull(stateRoot.get(ApState.FIELD_DELETE_CHANGE_ID)));
+
         // typ archivní entity
         if (CollectionUtils.isNotEmpty(apTypeIdTree)) {
             condition = cb.and(condition, stateRoot.get(ApState.FIELD_AP_TYPE_ID).in(apTypeIdTree));
@@ -110,33 +115,34 @@ public class ApStateSpecification implements Specification<ApState> {
             condition = cb.and(condition, stateRoot.get(ApState.FIELD_STATE_APPROVAL).in(state));
         }
 
-        Root<ApRevision> revisionRoot = q.from(ApRevision.class);
-        Root<ApRevState> revStateRoot = q.from(ApRevState.class);
-        if (revState != null) {
-            Join<ApRevision, ApState> revisionApStateJoin = revisionRoot.join(ApRevision.FIELD_STATE, JoinType.INNER);
-            condition = cb.and(condition,
-                    cb.equal(stateRoot.get(ApState.FIELD_STATE_ID), revisionApStateJoin.get(ApState.FIELD_STATE_ID)),
-                    cb.isNull(revisionRoot.get(ApRevision.FIELD_DELETE_CHANGE_ID)),
-                    cb.equal(revStateRoot.get(ApRevState.FIELD_REVISION), revisionRoot),
-                    cb.isNull(revStateRoot.get(ApRevState.FIELD_DELETE_CHANGE_ID)), 
-                    revStateRoot.get(ApRevState.FIELD_STATE_APPROVAL).in(revState));
-        }
+        Join<ApState, ApRevision> revisionJoin = stateRoot.join(ApState.FIELD_REVISION_LIST, JoinType.LEFT);
+        revisionJoin.on(cb.isNull(revisionJoin.get(ApRevision.FIELD_DELETE_CHANGE_ID)));
 
-        // pouze aktuální state
-        condition = cb.and(condition, cb.isNull(stateRoot.get(ApState.FIELD_DELETE_CHANGE_ID)));
+        Join<ApRevision, ApRevState> revStateJoin = revisionJoin.join(ApRevision.FIELD_REV_STATE_LIST, JoinType.LEFT);
+        revStateJoin.on(cb.isNull(revStateJoin.get(ApRevState.FIELD_DELETE_CHANGE_ID)));
+
+        if (revState != null) {
+            condition = cb.and(condition, revStateJoin.get(ApRevState.FIELD_STATE_APPROVAL).in(revState));
+        }
 
         if (searchFilterVO != null) {
             String user = searchFilterVO.getUser();
             if (StringUtils.isNotEmpty(user)) {
+            	String userLike = "%" + user.toLowerCase() + "%";
+
                 Join<ApState, ApChange> apChangeJoin = stateRoot.join(ApState.FIELD_CREATE_CHANGE, JoinType.INNER);
-            	Join<ApRevState, ApChange> revChangeJoin = revStateRoot.join(ApState.FIELD_CREATE_CHANGE, JoinType.INNER);
-            	condition = cb.or(condition,
-            			cb.and(condition,
-            					cb.like(cb.lower(apChangeJoin.get(ApChange.USER).get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%"),
-            					cb.isNull(stateRoot.get(ApState.FIELD_DELETE_CHANGE_ID))),
-            			cb.and(condition,
-            					cb.like(cb.lower(revChangeJoin.get(ApChange.USER).get(UsrUser.FIELD_USERNAME)), "%" + user.toLowerCase() + "%")),
-		                        cb.isNull(revStateRoot.get(ApRevision.FIELD_DELETE_CHANGE_ID)));
+                Join<ApChange, UsrUser> changeUserJoin = apChangeJoin.join(ApChange.USER, JoinType.LEFT);
+
+                Join<ApRevState, ApChange> revChangeJoin = revStateJoin.join(ApRevState.FIELD_CREATE_CHANGE, JoinType.LEFT);
+                Join<ApChange, UsrUser> revChangeUserJoin = revChangeJoin.join(ApChange.USER, JoinType.LEFT);
+
+                // autor poslední změny stavu, pro tento stav nejsou žádné revize
+                Predicate usrState = cb.and(cb.isNull(revStateJoin), cb.like(cb.lower(changeUserJoin.get(UsrUser.FIELD_USERNAME)), userLike));
+
+                // autor poslední změny stavu revize
+            	Predicate usrRevSt = cb.like(cb.lower(revChangeUserJoin.get(UsrUser.FIELD_USERNAME)), userLike);
+
+            	condition = cb.and(condition, cb.or(usrState, usrRevSt));
             }
 
             String code = searchFilterVO.getCode();
@@ -149,6 +155,13 @@ public class ApStateSpecification implements Specification<ApState> {
                 }
             }
 
+            SyncStateVO syncState = searchFilterVO.getSyncState();
+            if (searchFilterVO.getSyncState() != null) {
+            	Join<ApAccessPoint, ApBindingState> bindingJoin = accessPointJoin.join(ApAccessPoint.BINDING_STATE, JoinType.LEFT);
+            	bindingJoin.on(cb.isNull(bindingJoin.get(ApBindingState.DELETE_CHANGE_ID)));
+            	condition = cb.and(condition, cb.equal(bindingJoin.get(ApBindingState.SYNC_STATE), syncState));
+            }
+
             condition = cb.and(condition, process(cb.conjunction(), ctx));
         }
 
@@ -156,6 +169,8 @@ public class ApStateSpecification implements Specification<ApState> {
         indexJoin.on(cb.equal(indexJoin.get(ApIndex.INDEX_TYPE), DISPLAY_NAME_LOWER));
         Path<String> accessPointName = indexJoin.get(ApIndex.VALUE);
         q.orderBy(cb.asc(accessPointName));
+
+        q.groupBy(stateRoot.get(ApState.FIELD_STATE_ID), accessPointName);
 
         return condition;
     }
@@ -187,7 +202,7 @@ public class ApStateSpecification implements Specification<ApState> {
                             throw new NotImplementedException("Neimplementovaný stav oblasti: " + area);
                     }
                     if (searchFilterVO.getOnlyMainPart() && !area.equals(Area.ALL_PARTS)) {
-                        and = processValueCondDef(ctx, and, keyWord, partTypeCode, "NM_MAIN", null, QueryComparator.CONTAIN, prefPart);
+                        and = processValueCondDef(ctx, and, keyWord, partTypeCode, "NM_MAIN", null, QueryComparator.CT_CONTAIN, prefPart);
                     } else {
                         and = processIndexCondDef(ctx, and, keyWord, partTypeCode, prefPart);
                     }
@@ -195,10 +210,18 @@ public class ApStateSpecification implements Specification<ApState> {
             }
             if (CollectionUtils.isNotEmpty(searchFilterVO.getExtFilters())) {
                 for (ExtensionFilterVO ext : searchFilterVO.getExtFilters()) {
-                    String itemTypeCode = ext.getItemTypeId() != null ? sdp.getItemTypeById(ext.getItemTypeId()).getCode() : null;
+                    ItemType itemType = ext.getItemTypeId() != null ? sdp.getItemTypeById(ext.getItemTypeId()) : null;
+                    String itemTypeCode = itemType != null ? itemType.getCode() : null;  
                     String itemSpecCode = ext.getItemSpecId() != null ? sdp.getItemSpecById(ext.getItemSpecId()).getCode() : null;
-                    and = processValueCondDef(ctx, and, String.valueOf(ext.getValue()), ext.getPartTypeCode(), itemTypeCode,
-                            itemSpecCode, QueryComparator.CONTAIN, false);
+                    // výchozí komparátor
+                    QueryComparator comparator = QueryComparator.CT_CONTAIN;
+                    // komparátor pro celá čísla (INT) nebo booleovské hodnoty (BIT)
+                    if (itemType != null && 
+                    		(itemType.getDataType().equals(DataType.INT) || itemType.getDataType().equals(DataType.BIT))) {
+                    	comparator = QueryComparator.CT_EQ;
+                    }
+                    and = processValueCondDef(ctx, and, String.valueOf(ext.getValue()), ext.getPartTypeCode(), 
+                                              itemTypeCode, itemSpecCode, comparator, false);
                 }
             }
             if (CollectionUtils.isNotEmpty(searchFilterVO.getRelFilters())) {
@@ -207,27 +230,28 @@ public class ApStateSpecification implements Specification<ApState> {
                         // relation without item type
                         if(rel.getRelTypeId()==null) {
                             and = processValueCondDef(ctx, and, String.valueOf(rel.getCode()),
-                                                      DataType.RECORD_REF, QueryComparator.EQ);
+                                                      DataType.RECORD_REF, QueryComparator.CT_EQ);
                         } else {
                             String itemTypeCode = rel.getRelTypeId() != null ? sdp.getItemTypeById(rel.getRelTypeId()).getCode() : null;                                                
                             String itemSpecCode = rel.getRelSpecId() != null ? sdp.getItemSpecById(rel.getRelSpecId()).getCode() : null;
-                            and = processValueCondDef(ctx, and, String.valueOf(rel.getCode()), null, itemTypeCode,
-                                itemSpecCode, QueryComparator.EQ, false);
+                            and = processValueCondDef(ctx, and, String.valueOf(rel.getCode()), null, itemTypeCode, itemSpecCode, QueryComparator.CT_EQ, false);
                         }
                     }
                 }
             }
             if (StringUtils.isNotEmpty(searchFilterVO.getCreation())) {
-                ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());
-                String intervalCreation = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
-                and = processValueCondDef(ctx, and, intervalCreation, "PT_CRE", "CRE_DATE", null, QueryComparator.CONTAIN, false);
+            	// TODO: rework processValueCondDef to accept Object and such conversion will not be needed anymore
+                ArrDataUnitdate arrDataUnitdate = UnitDateConverter.convertToUnitDate(searchFilterVO.getCreation(), new ArrDataUnitdate());                
+                String intervalCreation = UnitDateConverter.convertToString(arrDataUnitdate);
+                and = processValueCondDef(ctx, and, intervalCreation, "PT_CRE", "CRE_DATE", null, QueryComparator.CT_CONTAIN, false);
             }
             if (StringUtils.isNotEmpty(searchFilterVO.getExtinction())) {
-                ArrDataUnitdate arrDataUnitdate = UnitDateConvertor.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
-                String intervalExtinction = arrDataUnitdate.getValueFrom() + DEFAULT_INTERVAL_DELIMITER + arrDataUnitdate.getValueTo();
-                and = processValueCondDef(ctx, and, intervalExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CONTAIN, false);
+            	// TODO: rework processValueCondDef to accept Object and such conversion will not be needed anymore
+                ArrDataUnitdate arrDataUnitdate = UnitDateConverter.convertToUnitDate(searchFilterVO.getExtinction(), new ArrDataUnitdate());
+                String intervalExtinction = UnitDateConverter.convertToString(arrDataUnitdate);
+                and = processValueCondDef(ctx, and, intervalExtinction, "PT_EXT", "EXT_DATE", null, QueryComparator.CT_CONTAIN, false);
             }
-            condition = cb.and(condition, and);
+            return cb.and(condition, and);
         }
 
         return condition;
@@ -286,7 +310,7 @@ public class ApStateSpecification implements Specification<ApState> {
         }
 
         if (partTypeCode != null) {
-            addPartTypeCondForItem(ctx, cb, and, prefPart, partTypeCode);
+        	and = cb.and(and, addPartTypeCondForItem(ctx, prefPart, partTypeCode));
         }
 
         return cb.and(condition,
@@ -294,16 +318,23 @@ public class ApStateSpecification implements Specification<ApState> {
                       processValueComparator(ctx, comparator, dataType, value));
     }
 
-    private void addPartTypeCondForItem(Ctx ctx, CriteriaBuilder cb, Predicate and, boolean prefPart, String partTypeCode) {
+    private Predicate addPartTypeCondForItem(final Ctx ctx, boolean prefPart, final String partTypeCode) {
+    	CriteriaBuilder cb = ctx.cb;
         Join<ApItem, ApPart> itemPartJoin = ctx.getItemPartJoin();
-        if (prefPart) {
-            itemPartJoin.on(cb.equal(itemPartJoin.get(ApPart.PART_ID), ctx.getAccessPointJoin().get(
-                                                                                                    ApAccessPoint.FIELD_PREFFERED_PART_ID)));
-            and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
+    	if (prefPart) {
+            itemPartJoin.on(cb.equal(itemPartJoin.get(ApPart.PART_ID), ctx.getAccessPointJoin().get(ApAccessPoint.FIELD_PREFFERED_PART_ID)));
+
+            return cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode);
         } else {
-            and = cb.and(and, cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode));
-            // zajimaji nas jen nesmazane part
-            and = cb.and(and, cb.isNull(itemPartJoin.get(ApPart.DELETE_CHANGE_ID)));
+           	Join<ApPart, ApPart> joinParentPart = ctx.getApPartRoot().join(ApPart.PARENT_PART, JoinType.LEFT);
+           	Join<RulPartType, ApPart> parentPartTypeJoin = joinParentPart.join(ApPart.PART_TYPE, JoinType.LEFT);
+
+           	return cb.and(cb.isNull(itemPartJoin.get(ApPart.DELETE_CHANGE_ID)),
+           				  // pokud existuje rodičovský ApPArt, bereme v úvahu pouze jeho typ
+           			      cb.or(cb.and(cb.isNotNull(itemPartJoin.get(ApPart.PARENT_PART)),
+           			                   cb.equal(parentPartTypeJoin.get(RulPartType.CODE), partTypeCode)),
+                	            cb.and(cb.isNull(itemPartJoin.get(ApPart.PARENT_PART)),
+                                       cb.equal(ctx.getPartTypeJoin().get(RulPartType.CODE), partTypeCode))));
         }
     }
 
@@ -325,20 +356,20 @@ public class ApStateSpecification implements Specification<ApState> {
         Join<ApPart, ApIndex> apIndexRoot = ctx.getApIndexRoot();
 
         return cb.and(condition, and, cb.equal(apIndexRoot.get(ApIndex.INDEX_TYPE), "DISPLAY_NAME"),
-                createPredicateIndexComp(ctx, QueryComparator.CONTAIN, value));
+                createPredicateIndexComp(ctx, QueryComparator.CT_CONTAIN, value));
     }
 
     private Predicate createPredicateIndexComp(final Ctx ctx, QueryComparator comparator, String value) {
         CriteriaBuilder cb = ctx.cb;
         Join<ApPart, ApIndex> aeIndexRoot = ctx.getApIndexRoot();
         switch (comparator) {
-            case EQ:
+            case CT_EQ:
                 return cb.equal(cb.lower(aeIndexRoot.get(ApIndex.VALUE)), value.toLowerCase());
-            case CONTAIN:
+            case CT_CONTAIN:
                 return cb.like(cb.lower(aeIndexRoot.get(ApIndex.VALUE)), "%" + value.toLowerCase() + "%");
-            case START_WITH:
+            case CT_START_WITH:
                 return cb.like(cb.lower(aeIndexRoot.get(ApIndex.VALUE)), value.toLowerCase() + "%");
-            case END_WITH:
+            case CT_END_WITH:
                 return cb.like(cb.lower(aeIndexRoot.get(ApIndex.VALUE)), "%" + value.toLowerCase());
             default:
                 throw new IllegalArgumentException("Není možné v indexu použít comparator: " + comparator);

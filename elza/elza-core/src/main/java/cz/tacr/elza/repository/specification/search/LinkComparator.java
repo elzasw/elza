@@ -1,7 +1,6 @@
 package cz.tacr.elza.repository.specification.search;
 
-
-import cz.tacr.cam.client.controller.vo.QueryComparator;
+import cz.tacr.cam.v1.client.controller.vo.QueryComparator;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
@@ -26,22 +25,22 @@ public class LinkComparator implements Comparator {
         Join<ApItem, ArrData> dataJoin = ctx.getApItemRoot().join(ApItem.FIELD_DATA, JoinType.INNER);
         String lowerValue = value.toLowerCase();
         switch (comparator) {
-            case EQ:
+            case CT_EQ:
                 return cb.or(
                         cb.equal(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.URI_REF_VALUE)), lowerValue),
                         cb.equal(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.DESCRIPTION)), lowerValue)
                 );
-            case CONTAIN:
+            case CT_CONTAIN:
                 return cb.or(
                         cb.like(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.URI_REF_VALUE)), "%" + lowerValue + "%"),
                         cb.like(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.DESCRIPTION)), "%" + lowerValue + "%")
                 );
-            case START_WITH:
+            case CT_START_WITH:
                 return cb.or(
                         cb.like(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.URI_REF_VALUE)), lowerValue + "%"),
                         cb.like(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.DESCRIPTION)), lowerValue + "%")
                 );
-            case END_WITH:
+            case CT_END_WITH:
                 return cb.or(
                         cb.like(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.URI_REF_VALUE)), "%" + lowerValue),
                         cb.like(cb.lower(cb.treat(dataJoin, ArrDataUriRef.class).get(ArrDataUriRef.DESCRIPTION)), "%" + lowerValue)

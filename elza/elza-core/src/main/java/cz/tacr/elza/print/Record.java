@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -29,14 +30,15 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.cam.v1.export.CamExportBuilder;
+import cz.tacr.elza.cam.v1.export.CamUtils;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.dataexchange.output.aps.AccessPointsReader;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.context.ExportInitHelper;
-import cz.tacr.elza.dataexchange.output.writer.cam.CamExportBuilder;
-import cz.tacr.elza.dataexchange.output.writer.cam.CamUtils;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApItem;
@@ -280,7 +282,7 @@ public class Record {
     }
 
     public List<Part> getParts(final Collection<String> partTypeCodes) {
-        Validate.notNull(partTypeCodes);
+    	Objects.requireNonNull(partTypeCodes);
         loadParts();
 
         return parts.stream().filter(part -> {
@@ -300,7 +302,7 @@ public class Record {
     }
 
     public List<Item> getItems(Collection<String> itemTypeCodes) {
-        Validate.notNull(itemTypeCodes);
+    	Objects.requireNonNull(itemTypeCodes);
 
         if (parts == null || itemTypeCodes.isEmpty()) {
             return Collections.emptyList();
@@ -338,7 +340,7 @@ public class Record {
      * @throws ParserConfigurationException
      */
     public String exportData(String format) throws Exception {
-        if (CamUtils.CAM_SCHEMA.equals(format)) {
+        if (SchemaManager.CAM_SCHEMA_2019.equals(format)) {
             return exportDataCam();
         } else {
             throw new ExportRequestException("Unrecognized schema: " + format);
@@ -376,7 +378,7 @@ public class Record {
             if (n.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
                 Element el = (Element) n;
                 String nsUri = el.getNamespaceURI();
-                if (CamUtils.CAM_SCHEMA.equals(nsUri) && el.getPrefix() == null) {
+                if (SchemaManager.CAM_SCHEMA_2019.equals(nsUri) && el.getPrefix() == null) {
                     el.setPrefix("cam");
                 }
                 // remove xmlns declaration
@@ -406,7 +408,7 @@ public class Record {
     }
 
     public org.w3c.dom.Node exportXmlData(String format) throws XMLStreamException, ParserConfigurationException {
-        if (CamUtils.CAM_SCHEMA.equals(format)) {
+        if (SchemaManager.CAM_SCHEMA_2019.equals(format)) {
             return exportXmlDataCam();
         } else {
             throw new ExportRequestException("Unrecognized schema: " + format);
@@ -423,7 +425,7 @@ public class Record {
         // format CAM
         CamExportBuilder exportBuilder = new CamExportBuilder(staticData, outputContext.getGroovyService(),
                 outputContext.getSchemaManager(),
-                outputContext.getApDataService(),
+                outputContext.getDataService(),
                 true);
 
         ExportContext expCtx = new ExportContext(exportBuilder, outputContext.getStaticData(), 1);

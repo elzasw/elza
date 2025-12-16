@@ -144,11 +144,11 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
 	 0. First idea (unions not supported by JPA)
 	 select user_control_id from usr_permission up
-	 where up.permission = 'USER_CONTROL_ENTITITY'
+	 where up.permission = 'USER_CONTROL_ENTITY'
 	 union
 	 select ugu.user_id from usr_permission up
 	 join usr_group_user ugu on ugu.group_id = up.group_control_id
-	 where up.permission = 'GROUP_CONTROL_ENTITITY'
+	 where up.permission = 'GROUP_CONTROL_ENTITY'
 
 
 	 1. Select users controlled by this user:
@@ -156,7 +156,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	 select * from usr_permission p
 	 left join usr_group g on p.group_control_id  = g.group_id
 	 left join usr_group_user gu on g.group_id = gu.group_id
-	 where  gu.user_id = 22 and p.permission in ('USER_CONTROL_ENTITITY' , 'GROUP_CONTROL_ENTITITY'  )
+	 where  gu.user_id = 22 and p.permission in ('USER_CONTROL_ENTITY' , 'GROUP_CONTROL_ENTITY'  )
 
 	 2. Select users controlled by group in which this user is member:
 
@@ -165,7 +165,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	 left join usr_group_user gu on gu.group_id = g.group_id
 	 join usr_group g3 on p.group_id = g3.group_id
 	 join usr_group_user gu3 on g3.group_id = gu3.group_id
-	 where  gu3.user_id = 22 and p.permission in ('USER_CONTROL_ENTITITY' , 'GROUP_CONTROL_ENTITITY'  )
+	 where  gu3.user_id = 22 and p.permission in ('USER_CONTROL_ENTITY' , 'GROUP_CONTROL_ENTITY'  )
 
 	 3. Final query to select users controlled by this user directly or indirectly:
 
@@ -175,7 +175,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	 -- add outer group
 	 left join usr_group g3 on p.group_id = g3.group_id
 	 left join usr_group_user gu3 on g3.group_id = gu3.group_id
-	 where  (p.user_id = 22 or gu3.user_id = 22) and p.permission in ('USER_CONTROL_ENTITITY' , 'GROUP_CONTROL_ENTITITY'  )
+	 where  (p.user_id = 22 or gu3.user_id = 22) and p.permission in ('USER_CONTROL_ENTITY' , 'GROUP_CONTROL_ENTITY'  )
 
 	 */
 
@@ -215,9 +215,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
         if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
             Join<UsrUser, ApAccessPoint> apJoin = user.join(UsrUser.FIELD_ACCESS_POINT, JoinType.INNER);
-            Predicate apFkCond = builder.equal(user.get(UsrUser.FIELD_ACCESS_POINT), apJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID));
             Join<ApAccessPoint, ApPart> nameJoin = apJoin.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.INNER);
-            Predicate nameFkCond = builder.equal(apJoin.get(ApAccessPoint.FIELD_PREFFERED_PART),
+            Predicate nameFkCond = builder.equal(apJoin.get(ApAccessPoint.FIELD_PREFFERED_PART_ID),
                     nameJoin.get(ApPart.PART_ID));
             nameJoin.on(nameFkCond);
             Join<ApIndex, ApPart> indexJoin = nameJoin.join(ApPart.INDICES, JoinType.INNER);
@@ -302,8 +301,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 		                        builder.equal(ugu3.get(UsrGroupUser.FIELD_USER_ID), userId)
 		                        ),
 		                builder.in(permissionUserSubq.get(UsrPermission.FIELD_PERMISSION))
-		                        .value(UsrPermission.Permission.USER_CONTROL_ENTITITY)
-		                        .value(UsrPermission.Permission.GROUP_CONTROL_ENTITITY)
+		                        .value(UsrPermission.Permission.USER_CONTROL_ENTITY)
+		                        .value(UsrPermission.Permission.GROUP_CONTROL_ENTITY)
 		                   )
 		        );
 

@@ -60,7 +60,7 @@ public class SettingMenu extends Setting {
     }
 
     @XmlElement(name = "menu-option", type = MenuOption.class, namespace = "menu")
-    List<MenuOption> options;
+    protected List<MenuOption> options;
 
     public SettingMenu() {
         super(UISettings.SettingsType.MENU.toString(),

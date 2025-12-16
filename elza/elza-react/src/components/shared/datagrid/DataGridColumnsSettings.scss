@@ -1,4 +1,4 @@
-$listbox-height: 300px;
+$listbox-height: 500px;
 
 .datagrid-columns-settings-container {
     .panels-container {
@@ -8,24 +8,40 @@ $listbox-height: 300px;
         .left, .right {
             flex-grow: 1;
             width: 50%;
+
+            .listbox-filter {
+                margin-bottom: 4px;
+            }
+
             .listbox-wrapper{
                 height: $listbox-height;
 
                 .listbox-item {
-                    padding: 0 5px;
+                    padding: 2px 8px;
                 }
             }
         }
         .center {
-            width: 40px;
-            height: $listbox-height;
-            display: table;
+            // width: 40px;
+            // height: $listbox-height;
+            // display: table;
 
             .action-buttons {
-                display: table-cell;
-                vertical-align: middle;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                padding: 8px;
+                height: 100%;
+
                 .btn {
-                    margin: 5px 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    margin: 4px;
+                    width: 32px;
+                    height: 32px;
+                    font-size: 1.3em;
                 }
             }
         }

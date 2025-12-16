@@ -235,13 +235,13 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
      */
     @Transactional
     public void enqueueNodes(final Integer fundVersionId,
-                             final List<Integer> nodeList,
-                        final Integer priority) {
+                             final Collection<Integer> nodeList,
+                             final Integer priority) {
         List<ArrAsyncRequest> reqList = new ArrayList<>(nodeList.size());
         int pri = (priority == null) ? 1 : priority;
         for (Integer nodeId : nodeList) {
-            ArrAsyncRequest request = ArrAsyncRequest.create(fundVersionRepository.getOne(fundVersionId),
-                                                             nodeRepository.getOne(nodeId),
+            ArrAsyncRequest request = ArrAsyncRequest.create(fundVersionRepository.getReferenceById(fundVersionId),
+                                                             nodeRepository.getReferenceById(nodeId),
                                                              pri);
             reqList.add(request);
         }
@@ -264,7 +264,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         // read access points
         List<ArrAsyncRequest> requests = new ArrayList<>(accessPointIds.size());
         for (Integer accessPointId : accessPointIds) {
-            ArrAsyncRequest request = ArrAsyncRequest.create(accessPointRepository.getOne(accessPointId),
+            ArrAsyncRequest request = ArrAsyncRequest.create(accessPointRepository.getReferenceById(accessPointId),
                                                              pri);
             requests.add(request);
         }

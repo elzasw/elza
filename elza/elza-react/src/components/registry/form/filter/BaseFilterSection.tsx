@@ -5,6 +5,7 @@ import {FormInputField} from "../../../shared";
 import {ApTypeVO} from "../../../../api/ApTypeVO";
 import { StatesField } from 'components/registry/field/StatesField';
 import {TypesField} from "../../field/TypesField";
+import { SyncState } from 'api/SyncState';
 
 type OwnProps = {
     submitting: boolean;
@@ -47,6 +48,18 @@ const BaseFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-sea
                label={i18n('ap.ext-search.user')}
                disabled={submitting}
         />
+        <Field name="syncState"
+               type="select"
+               component={FormInputField}
+               label={i18n('ap.ext-search.syncState')}
+               disabled={submitting}
+        >
+            <option value={undefined}/>
+            {[SyncState.SYNC_OK, SyncState.NOT_SYNCED].map((value) => {
+                return <option value={value}>
+                    {i18n(`ap.binding.syncState.${value}`)}
+                </option>
+            })}</Field>
     </FormSection>
 };
 

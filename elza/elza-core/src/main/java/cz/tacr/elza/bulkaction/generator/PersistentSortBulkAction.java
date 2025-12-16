@@ -4,13 +4,16 @@ import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -19,14 +22,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.exception.SystemException;
@@ -38,7 +42,7 @@ import cz.tacr.elza.service.FundLevelService;
 /**
  * Funkce řadící uzly archivního souboru podle hodnot jednotek popisu.
  */
-public class PersistentSortBulkAction extends BulkAction {
+public class PersistentSortBulkAction extends BulkActionTransactional {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -62,15 +66,19 @@ public class PersistentSortBulkAction extends BulkAction {
 
     private RulItemSpec itemSpec;
 
+    private DataType dataType;
+
+    Map<Integer, String> sortValuesMap;
+
     private Comparator<ArrDescItem> valueComparator;
 
     public PersistentSortBulkAction(PersistentSortConfig persistentSortConfig) {
-        Validate.notNull(persistentSortConfig);
+    	Objects.requireNonNull(persistentSortConfig);
     }
 
     @Override
-    protected void init(ArrBulkActionRun bulkActionRun) {
-        super.init(bulkActionRun);
+    protected void init(ActionRunContext runContext) {
+        super.init(runContext);
 
         String jsonConfig = bulkActionRun.getConfig();
 
@@ -90,7 +98,7 @@ public class PersistentSortBulkAction extends BulkAction {
                     .set("itemTypeCode", runConfig.getItemTypeCode());
         }
 
-        DataType dataType = DataType.fromId(itemType.getDataTypeId());
+        dataType = DataType.fromId(itemType.getDataTypeId());
         List<DataType> allowedDataTypes = Arrays.asList(DataType.INT, DataType.DECIMAL, DataType.STRING, DataType.TEXT,
                 DataType.FORMATTED_TEXT, DataType.UNITDATE, DataType.STRUCTURED);
         if (!allowedDataTypes.contains(dataType)) {
@@ -116,9 +124,8 @@ public class PersistentSortBulkAction extends BulkAction {
     @Override
     public void run(ActionRunContext runContext) {
         for (Integer nodeId : runContext.getInputNodeIds()) {
-            ArrNode nodeRef = nodeRepository.getOne(nodeId);
-            ArrLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(nodeRef);
-            Validate.notNull(level);
+            ArrLevel level = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
+            Objects.requireNonNull(level);
 
             queue.add(level);
         }
@@ -150,6 +157,8 @@ public class PersistentSortBulkAction extends BulkAction {
 
         Map<Integer, ArrDescItem> nodesValues = getNodeValues(nodes);
 
+        sortValuesMap = getSortValuesMap(nodesValues.values());
+
         Comparator<ArrLevel> comparator = new PersistentSortComparator(nodesValues);
 
         if (!runConfig.isAsc()) {
@@ -160,7 +169,7 @@ public class PersistentSortBulkAction extends BulkAction {
         fundLevelService.changeLevelsPosition(children, change);
     }
 
-    /**
+	/**
      * @return mapa id node -> hodnota, pokud uzel hodnotu nemá tak v mapě není
      */
     private Map<Integer, ArrDescItem> getNodeValues(List<ArrNode> nodes) {
@@ -195,6 +204,38 @@ public class PersistentSortBulkAction extends BulkAction {
     }
 
     /**
+     * @return mapa id descItem -> sortValue z ArrStructuredObject
+     */
+    private Map<Integer, String> getSortValuesMap(Collection<ArrDescItem> items) {
+    	if (!dataType.equals(DataType.STRUCTURED)) {
+    		return null;
+    	}
+
+    	// map: dataId -> descItemId
+    	Map<Integer, Integer> dataDescItemIdsMap = items.stream()
+    			.filter(i -> i.getDataId() != null)
+    			.collect(Collectors.toMap(ArrDescItem::getDataId, ArrDescItem::getItemId));
+
+    	// read from db all ArrDataStructureRef records
+    	List<ArrDataStructureRef> structureRefs = structureRefRepository.findAllById(dataDescItemIdsMap.keySet());
+    	Validate.isTrue(items.size() == structureRefs.size(), "The number of dataStructureRef objects does not match the number of items.");
+
+    	// map: dataId -> structuredObject
+    	Map<Integer, ArrStructuredObject> structuredObjectsMap = structureRefs.stream().collect(Collectors.toMap(ArrDataStructureRef::getDataId, ArrDataStructureRef::getStructuredObject));
+
+    	Map<Integer, String> sortValuesMap = new HashMap<>();
+    	for (Integer id : dataDescItemIdsMap.keySet()) {
+    		ArrStructuredObject structuredObject = structuredObjectsMap.get(id);
+    		Objects.requireNonNull(structuredObject);
+    		Objects.requireNonNull(structuredObject.getSortValue());
+
+    		sortValuesMap.put(dataDescItemIdsMap.get(id), structuredObject.getSortValue());
+    	}
+
+		return sortValuesMap;
+	}
+
+    /**
      * @return vrátí metodu pro získání hodnoty z {@link ArrDescItem}
      */
     private Comparator<ArrDescItem> getValueComparator(DataType dataType) {
@@ -227,7 +268,7 @@ public class PersistentSortBulkAction extends BulkAction {
                 o1.isValue().compareTo(o2.isValue());
         case STRUCTURED:
             return (o1, o2) ->
-                o1.getFulltextValue().compareTo(o2.getFulltextValue());
+            	sortValuesMap.get(o1.getItemId()).compareTo(sortValuesMap.get(o2.getItemId()));
         default:
             throw new SystemException("Hromadná akce " + getName() + " nepodporuje datový typ:", BaseCode.SYSTEM_ERROR)
                     .set("dataTypeCode", dataType.getCode());

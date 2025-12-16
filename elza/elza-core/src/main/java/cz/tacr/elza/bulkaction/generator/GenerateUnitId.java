@@ -7,7 +7,7 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.bulkaction.generator.result.Result;
 import cz.tacr.elza.bulkaction.generator.result.UnitIdResult;
 import cz.tacr.elza.bulkaction.generator.unitid.SealedUnitIdTree;
@@ -17,7 +17,6 @@ import cz.tacr.elza.bulkaction.generator.unitid.UnitIdGeneratorParams;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataUnitid;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -36,7 +35,7 @@ import cz.tacr.elza.repository.LockedValueRepository;
  * Hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
  *
  */
-public class GenerateUnitId extends BulkAction {
+public class GenerateUnitId extends BulkActionTransactional {
 
     /**
      * Typ atributu
@@ -77,8 +76,8 @@ public class GenerateUnitId extends BulkAction {
 	 *
 	 */
 	@Override
-	protected void init(ArrBulkActionRun bulkActionRun) {
-		super.init(bulkActionRun);
+	protected void init(ActionRunContext runContext) {
+		super.init(runContext);
 
 		// read item type for UnitId
 		String unitIdCode = config.getItemType();
@@ -117,7 +116,7 @@ public class GenerateUnitId extends BulkAction {
     }
 
     private SealedUnitIdTree buildUsedIdTree() {
-        ArrFund fund = getFundVersion().getFund();
+        ArrFund fund = getFondsVersion().getFund();
 
         List<ArrLockedValue> lockedItems = findByFundAndItemType(fund, descItemType);
 
@@ -169,7 +168,7 @@ public class GenerateUnitId extends BulkAction {
         int countChanges = 0;
 
         for (Integer nodeId : runContext.getInputNodeIds()) {
-            ArrNode nodeRef = nodeRepository.getOne(nodeId);
+            ArrNode nodeRef = nodeRepository.getReferenceById(nodeId);
             ArrLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(nodeRef);
             Objects.requireNonNull(level);
 

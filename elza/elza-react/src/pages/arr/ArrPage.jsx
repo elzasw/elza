@@ -34,7 +34,7 @@ import FundTemplateSettingsForm from '../../components/arr/FundTemplateSettingsF
 import LecturingBottom from '../../components/arr/LecturingBottom';
 import LecturingTop from '../../components/arr/LecturingTop';
 import { NodeSettingsForm } from '../../components/arr/node-settings-form';
-import SearchFundsForm from '../../components/arr/SearchFundsForm';
+import SearchFundsForm from '../../components/arr/search-funds-form/SearchFundsForm';
 import { FundFiles, FundSettingsForm, FundTreeMain, NodeTabs } from '../../components/index';
 import HorizontalSplitter from '../../components/shared/splitter/HorizontalSplitter';
 import { Button } from '../../components/ui';
@@ -466,12 +466,6 @@ class ArrPage extends ArrParentPage {
                         name: i18n('arr.fund.settings.panel.rightPanel'),
                         key: 'rightPanel',
                         checked: dataCenter && dataCenter.rightPanel !== undefined ? dataCenter.rightPanel : true,
-                    },
-                    {
-                        name: i18n('arr.fund.settings.panel.treeColorCoding'),
-                        key: 'treeColorCoding',
-                        checked:
-                            dataCenter && dataCenter.treeColorCoding !== undefined ? dataCenter.treeColorCoding : true,
                     },
                     {
                         name: i18n('arr.fund.settings.panel.acordeon'),
@@ -1132,7 +1126,6 @@ class ArrPage extends ArrParentPage {
 
         if (arrRegion.extendedView) {
             // extended view - jiné větší zobrazení stromu, renderuje se zde
-            const colorCoded = !(centerSettingsValues && centerSettingsValues.treeColorCoding === false);
 
             return (
                 <FundTreeMain
@@ -1152,7 +1145,6 @@ class ArrPage extends ArrParentPage {
                             <Icon glyph="fa-compress" />
                         </Button>
                     }
-                    colorCoded={colorCoded}
                 />
             );
         } else if (activeFund.nodes.activeIndex === null) {
@@ -1189,8 +1181,6 @@ class ArrPage extends ArrParentPage {
         const {focus, arrRegion, userDetail} = this.props;
         const activeFund = this.getActiveFund(this.props);
         const centerSettings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', activeFund.id);
-        const centerSettingsValues = centerSettings.value ? JSON.parse(centerSettings.value) : null;
-        let colorCoded = !(centerSettingsValues && centerSettingsValues.treeColorCoding === false);
 
         if (arrRegion.extendedView) {
             // extended view - jiné větší zobrazení stromu, ale renderuje se v center panelu, tento bude prázdný
@@ -1216,7 +1206,6 @@ class ArrPage extends ArrParentPage {
                             <Icon glyph="fa-arrows-alt" />
                         </Button>
                     }
-                    colorCoded={colorCoded}
                     readMode={readMode}
                 />
             );

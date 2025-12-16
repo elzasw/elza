@@ -23,7 +23,6 @@
 
   .desc-item-spec-label {
     flex-shrink: 1;
-    white-space: nowrap;
 
     padding-right: 3px;
     vertical-align: middle;
@@ -31,14 +30,12 @@
     width: auto;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: normal;
+    font-style: italic;
 
-    &:not(:last-child) {
-      white-space: normal;
-      font-style: italic;
-    }
-
-    &:not(:last-child)::after {
-      content: ":";
+    &.enum {
+        white-space: nowrap;
+        font-style: normal;
     }
   }
 }

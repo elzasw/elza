@@ -16,14 +16,14 @@ import cz.tacr.elza.service.AccessPointItemService;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApPartVO;
-import cz.tacr.elza.controller.vo.CreatedPartVO;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
+import cz.tacr.elza.controller.vo.UsrPermissionVO;
+import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -31,15 +31,25 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.WfTask;
+import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.WfTask.Status;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.WfTaskRepository;
 import cz.tacr.elza.service.PartService;
+import cz.tacr.elza.test.controller.vo.ApStateApproval;
+import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.CopyAccessPointDetail;
+import cz.tacr.elza.test.controller.vo.CreatedPart;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointsDetail;
 import cz.tacr.elza.test.controller.vo.EntityRef;
+import cz.tacr.elza.test.controller.vo.InvalidatedEntities;
 import cz.tacr.elza.test.controller.vo.ReplaceType;
+import cz.tacr.elza.test.controller.vo.RevStateChange;
+import cz.tacr.elza.test.controller.vo.RevisionState;
 
 public class AccessPointControllerTest extends AbstractControllerTest {
 
@@ -58,8 +68,8 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     @Autowired
     AccessPointItemService itemService;
 
-    @Autowired
-    private PlatformTransactionManager tm;
+	@Autowired
+	private WfTaskRepository wfTaskRepository;
 
     @Test
     public void copyAccessPointsTest() {
@@ -117,7 +127,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         List<String> uuids = Arrays.asList(ap1.getUuid(), ap2.getUuid());
         deleteAccessPointsDetail.setIds(uuids);
 
-        accesspointsApi.deleteAccessPoints(deleteAccessPointsDetail);
+        accesspointsApi.accessPointDeleteAccessPoints(deleteAccessPointsDetail);
 
         ApAccessPointVO ap1Vo = getAccessPoint(ap1.getAccessPointId().toString());
         assertTrue(ap1Vo.isInvalid());
@@ -134,12 +144,12 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         ApAccessPoint ap1 = apRepository.findAccessPointByUuid("9f783015-b9af-42fc-bff4-11ff57cdb072");
         assertNotNull(ap1);
         List<ApPart> parts = partService.findPartsByAccessPoint(ap1);
-        assertTrue(parts.size() == 3);
+        assertEquals(3, parts.size());
 
         ApAccessPoint ap2 = apRepository.findAccessPointByUuid("c4b13fa0-89a2-44a2-954f-e281934c3dcf");
         assertNotNull(ap2);
         parts = partService.findPartsByAccessPoint(ap2);
-        assertTrue(parts.size() == 3);
+        assertEquals(3, parts.size());
 
         DeleteAccessPointDetail deleteAPDetail = new DeleteAccessPointDetail();
         deleteAPDetail.setReplacedBy(ap2.getAccessPointId().toString());
@@ -150,20 +160,27 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         ApAccessPointVO apInfo = this.getAccessPoint(ap1.getAccessPointId());
         assertNotNull(apInfo);
         assertTrue(apInfo.isInvalid());
-        assertEquals(apInfo.getReplacedById(), ap2.getAccessPointId());
-
-        assertEquals(apInfo.getParts().size(), 3);
+        assertEquals(ap2.getAccessPointId(), apInfo.getReplacedById());
+        assertEquals(3, apInfo.getParts().size());
 
         parts = partService.findPartsByAccessPoint(ap2);
-        assertTrue(parts.size() == 3);
+        assertEquals(3, parts.size());
+
+        // find deleted entities
+        InvalidatedEntities invalidated = accesspointsApi.accessPointGetInvalidatedEntities(null, null);
+        assertEquals(1, invalidated.getTotalCount());
 
         // try to restore AP
-        accesspointsApi.restoreAccessPoint(ap1.getAccessPointId().toString());
+        accesspointsApi.accessPointRestoreAccessPoint(ap1.getAccessPointId().toString());
         apInfo = this.getAccessPoint(ap1.getAccessPointId());
         assertNotNull(apInfo);
         assertTrue(!apInfo.isInvalid());
         assertNull(apInfo.getReplacedById());
         assertEquals(apInfo.getStateApproval(), ApState.StateApproval.NEW);
+
+        // find deleted entities
+        invalidated = accesspointsApi.accessPointGetInvalidatedEntities(null, null);
+        assertEquals(0, invalidated.getTotalCount());
     }
 
     @Test
@@ -202,7 +219,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         ApAccessPointVO apVo = this.getAccessPoint(ap1.getAccessPointId());
 
         // create revision
-        accesspointsApi.createRevision(ap1.getAccessPointId());
+        accesspointsApi.accessPointCreateRevision(ap1.getAccessPointId());
 
         RulItemType nmMainItemType = itemTypeRepository.findOneByCode(ApControllerTest.NM_MAIN);
         RulItemType nmSupGenItemType = itemTypeRepository.findOneByCode(ApControllerTest.NM_SUP_GEN);
@@ -216,14 +233,14 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
         ApPartFormVO partFormVO = ApControllerTest.createPartFormVO(null, ptName.getCode(), null, items);
 
-        CreatedPartVO createdPart = createPart(ap1.getAccessPointId(), partFormVO);
+        CreatedPart createdPart = createPart(ap1.getAccessPointId(), partFormVO);
         Integer revPartId = createdPart.getPartId();
         assertNotNull(revPartId);
 
         accesspointsApi.accessPointSetPreferNameRevision(apVo.getId(), revPartId, null);
 
         // merge
-        mergeRevision(ap1.getAccessPointId(), null);
+        mergeRevision(ap1.getAccessPointId(), new ApStateUpdate().stateApproval(ApStateApproval.NEW));
 
         ApAccessPointVO apVo2;
         do {
@@ -259,5 +276,110 @@ public class AccessPointControllerTest extends AbstractControllerTest {
                 fail("Unexpected item");
             }
         }
+    }
+
+    @Test
+    public void changeStateTest() {
+    	final String USR_NAME1 = "usr1";
+    	final String USR_PSWD1 = "1";
+    	final String USR_NAME2 = "usr2";
+    	final String USR_PSWD2 = "2";
+    	final String USR_ADMIN = "admin";
+
+        List<ApAccessPointVO> records = findRecord(null, null, null, null, null);
+        ApAccessPointVO ap = records.get(0);
+        ApAccessPointVO apUser = records.get(1);
+
+        ApState state = stateRepository.findLastByAccessPointId(ap.getId());
+        assertNotNull(state);
+
+        // permissions
+        UsrPermissionVO permissionApRdAll = new UsrPermissionVO();
+        permissionApRdAll.setPermission(Permission.AP_SCOPE_RD_ALL);
+        UsrPermissionVO permissionApConfirmAll = new UsrPermissionVO();
+        permissionApConfirmAll.setPermission(Permission.AP_CONFIRM_ALL);
+        UsrPermissionVO permissionApEditConfirmAll = new UsrPermissionVO();
+        permissionApEditConfirmAll.setPermission(Permission.AP_EDIT_CONFIRMED_ALL);
+
+        // create 1st user to assign change state
+        UsrUserVO userVO = createUser(apUser.getId(), USR_NAME1, USR_PSWD1);
+        addUserPermission(userVO.getId(), Arrays.asList(permissionApRdAll, permissionApConfirmAll));
+
+        // no tasks assigned to the user
+        List<WfTask> tasks = wfTaskRepository.findAllByAssigneeId(userVO.getId());
+        assertTrue(tasks.isEmpty());
+
+        // prepare data
+        ApStateUpdate stateUpdate = new ApStateUpdate();
+        stateUpdate.setScopeId(state.getScopeId());
+        stateUpdate.setTypeId(state.getApTypeId());
+        stateUpdate.setStateApproval(ApStateApproval.TO_APPROVE);
+
+        Integer version = ap.getVersion();
+
+        // change state
+        Integer newVersion = accesspointsApi.accessPointChangeState(ap.getId(), stateUpdate, version, userVO.getId());
+        assertTrue(newVersion > version);
+        version = newVersion;
+
+        // one tasks assigned to the user
+        tasks = wfTaskRepository.findAllByAssigneeId(userVO.getId());
+        assertTrue(tasks.size() == 1);
+        assertTrue(tasks.get(0).getAssigneeId() == userVO.getId());
+        assertTrue(tasks.get(0).getStatus().equals(Status.NEW));
+
+        // switch to 1st user
+        login(USR_NAME1, USR_PSWD1);
+
+        // to approve
+        stateUpdate.setStateApproval(ApStateApproval.APPROVED);
+        newVersion = accesspointsApi.accessPointChangeState(ap.getId(), stateUpdate, version, null);
+        assertTrue(newVersion > version);
+        version = newVersion;
+
+        // check task status (finished)
+        tasks = wfTaskRepository.findAllByAssigneeId(userVO.getId());
+        assertTrue(tasks.size() == 1);
+        assertTrue(tasks.get(0).getClosedById() == userVO.getId());
+        assertTrue(tasks.get(0).getStatus().equals(Status.FINISHED));
+
+        // switch to admin 
+        login(USR_ADMIN, USR_ADMIN);
+
+        // create 2nd user to assign change revision state
+        userVO = createUser(apUser.getId(), USR_NAME2, USR_PSWD2);
+        addUserPermission(userVO.getId(), Arrays.asList(permissionApRdAll, permissionApConfirmAll, permissionApEditConfirmAll));
+
+        // create revision
+        accesspointsApi.accessPointCreateRevision(ap.getId());
+
+        // prepare data
+        RevStateChange revStateChange = new RevStateChange();
+        revStateChange.setTypeId(state.getApTypeId());
+        revStateChange.setState(RevisionState.TO_APPROVE);
+
+        // change revision state
+        newVersion = accesspointsApi.accessPointChangeStateRevision(ap.getId(), revStateChange, version, userVO.getId());
+        assertTrue(newVersion > version);
+        version = newVersion;
+
+        // check task status (new) by userId
+        tasks = wfTaskRepository.findAllByAssigneeId(userVO.getId());
+        assertTrue(tasks.size() == 1);
+        assertTrue(tasks.get(0).getAssigneeId() == userVO.getId());
+        assertTrue(tasks.get(0).getStatus().equals(Status.NEW));
+
+        // switch to 2st user
+        login(USR_NAME2, USR_PSWD2);
+
+        // to merge
+        newVersion = accesspointsApi.accessPointMergeRevision(ap.getId(), stateUpdate, version);
+        assertTrue(newVersion > version);
+
+        // check task status (finished) by userId
+        tasks = wfTaskRepository.findAllByAssigneeId(userVO.getId());
+        assertTrue(tasks.size() == 1);
+        assertTrue(tasks.get(0).getClosedById() == userVO.getId());
+        assertTrue(tasks.get(0).getStatus().equals(Status.FINISHED));
     }
 }

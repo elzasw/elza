@@ -1,4 +1,4 @@
-import {string} from "prop-types";
+import { string } from "prop-types";
 import { Fund } from "typings/store";
 import { DAO } from "components/arr/ArrUtils";
 
@@ -6,8 +6,10 @@ export const DEFAULT_LIST_SIZE = 200;
 
 export enum AP_EXT_SYSTEM_TYPE {
     CAM = 'CAM',
+    CAM_V2 = 'CAM_V2',
     CAM_UUID = 'CAM_UUID',
     CAM_COMPLETE = 'CAM_COMPLETE',
+	CAM_COMPLETE_V2 = 'CAM_COMPLETE_V2',
 }
 
 export enum GisSystemType {
@@ -178,8 +180,10 @@ export const URL_ADMIN_USER = `${URL_ADMIN}/user`;
 export const URL_ADMIN_GROUP = `${URL_ADMIN}/group`;
 export const URL_ADMIN_FUND = `${URL_ADMIN}/fund`;
 
+// Used to create version part of arr/fund page url
+// Returns id of locked fund version, if the version is not locked, returns undefined
 export const getFundVersion = (fund: Fund) => {
-    if(!fund?.activeVersion){
+    if (!fund?.activeVersion) {
         // console.error("No active version on fund", fund);
         // throw Error("No active version on fund")
         return undefined;
@@ -224,7 +228,7 @@ export const urlFundTree = (fundId: number, versionId?: number) => {
 }
 
 export const urlFundGrid = (fundId: number, versionId?: number, filter?: string) => {
-    return `${fundSub(fundId, versionId, GRID)}${filter ? "?filter="+filter : ""}`;
+    return `${fundSub(fundId, versionId, GRID)}${filter ? "?filter=" + filter : ""}`;
 }
 
 export const urlFundMovements = (fundId: number, versionId?: number) => {

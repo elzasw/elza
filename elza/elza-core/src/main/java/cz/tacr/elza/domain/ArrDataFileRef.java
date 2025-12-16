@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import org.apache.commons.lang3.Validate;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -11,7 +10,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
 
 /**
  * Hodnota atributu archivního popisu typu ArrFile.
@@ -28,7 +26,7 @@ public class ArrDataFileRef extends ArrData {
     @JoinColumn(name = "fileId", nullable = false)
     private ArrFile file;
 
-    @Column(name = "fileId", updatable = false, insertable = false)
+    @Column(name = "fileId", updatable = false, insertable = false, nullable = false)
     private Integer fileId;
 
 	public ArrDataFileRef() {
@@ -80,9 +78,4 @@ public class ArrDataFileRef extends ArrData {
         copyValue(src);
     }
 
-    @Override
-    protected void validateInternal() {
-        Validate.notNull(file);
-        Validate.notNull(fileId);
-    }
 }

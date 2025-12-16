@@ -22,6 +22,7 @@ import {FUND_TREE_AREA_COPY} from '../../../actions/constants/ActionTypes';
 import {nodeFormActions} from '../../../actions/arr/subNodeForm';
 import {JAVA_ATTR_CLASS} from '../../../constants';
 import RefTemplateField from '../RefTemplateField';
+import { Api } from 'api';
 
 const TEMPLATE_SCENARIOS = 'TEMPLATE_SCENARIOS';
 
@@ -214,6 +215,7 @@ class AddNodeForm extends AbstractReactComponent {
         const nodeSettings = this.props.nodeSettings;
         const node = this.props.activeFund;
         const nodeId = this.props.parentNode.id;
+      const { nodeData } = this.state;
 
         let itemsToCopy = null;
         if (nodeSettings != undefined) {
@@ -222,19 +224,24 @@ class AddNodeForm extends AbstractReactComponent {
                 let nodeSetting = nodeSettings.nodes[nodeIndex];
                 if (nodeSetting.copyAll) {
                     // najít aktivní node
-                    let activeNode = this.props.activeFund.nodes.nodes[this.props.activeFund.nodes.activeIndex];
+                    // let activeNode = this.props.activeFund.nodes.nodes[this.props.activeFund.nodes.activeIndex];
 
                     // všechny ID descItemTypes z aktivního node
                     itemsToCopy = [];
-                    for (let a = 0; a < activeNode.subNodeForm.formData.descItemGroups.length; a++) {
-                        // pro všecny DescItemGroups
-                        let descItemGroup = activeNode.subNodeForm.formData.descItemGroups[a];
-                        for (let i = 0; i < descItemGroup.descItemTypes.length; i++) {
-                            // pro všechny položky na formuláři
-                            let descItemType = descItemGroup.descItemTypes[i];
-                            itemsToCopy = [...itemsToCopy, descItemType.id];
-                        }
-                    }
+                    // for (let a = 0; a < activeNode.subNodeForm.formData.descItemGroups.length; a++) {
+                    //     // pro všecny DescItemGroups
+                    //     let descItemGroup = activeNode.subNodeForm.formData.descItemGroups[a];
+                    //     for (let i = 0; i < descItemGroup.descItemTypes.length; i++) {
+                    //         // pro všechny položky na formuláři
+                    //         let descItemType = descItemGroup.descItemTypes[i];
+                    //         itemsToCopy = [...itemsToCopy, descItemType.id];
+                    //     }
+                    // }
+                    nodeData.formData.descItems.forEach(({itemTypeId}) => {
+                      if(!itemsToCopy.includes(itemTypeId)){
+                        itemsToCopy.push(itemTypeId);
+                      }
+                    })
                 } else {
                     itemsToCopy = nodeSetting.descItemTypeCopyIds; // jen vyjmenované ID
                 }
@@ -399,10 +406,30 @@ class AddNodeForm extends AbstractReactComponent {
         }
     };
 
+    getNodeData = async () => {
+      const { node, versionId, nodeSettings, parentNode } = this.props;
+
+      const nodeSetting = nodeSettings.nodes.find(({ id }) => id === parentNode.id);
+
+      if(nodeSetting?.copyAll){
+        const { data } = await Api.node.nodeGetNodeData({
+          fundVersionId: versionId,
+          nodeId: node.id,
+          formData: true,
+          parents: false,
+          children: false,
+          siblingsMaxCount: 0,
+        });
+
+        this.setState({ nodeData: data });
+      }
+    }
+
     componentDidMount() {
         const {initDirection} = this.props;
         this.getDirectionScenarios(initDirection);
         this.fetchScopeList();
+      this.getNodeData();
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -411,6 +438,7 @@ class AddNodeForm extends AbstractReactComponent {
             this.setState({valid: true});
         }
     }
+
 
     fetchScopeList = () => {
         WebApi.getScopes(this.props.versionId).then(data => {

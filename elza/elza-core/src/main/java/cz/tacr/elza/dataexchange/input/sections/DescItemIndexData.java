@@ -2,6 +2,8 @@ package cz.tacr.elza.dataexchange.input.sections;
 
 import java.util.Date;
 
+import org.locationtech.jts.geom.Geometry;
+
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDescItemIndexData;
 
@@ -24,6 +26,8 @@ class DescItemIndexData implements ArrDescItemIndexData {
     private final Long normalizedTo;
 
     private final Date date;
+    
+    private final Geometry geometry;
 
     private final Boolean valueBoolean;
 
@@ -36,6 +40,7 @@ class DescItemIndexData implements ArrDescItemIndexData {
             this.normalizedFrom = data.getNormalizedFrom();
             this.normalizedTo = data.getNormalizedTo();
             this.date = data.getDate();
+            this.geometry = data.getValueGeometry();
             this.valueBoolean = data.getValueBoolean();
         } else {
             this.valueInt = null;
@@ -43,6 +48,7 @@ class DescItemIndexData implements ArrDescItemIndexData {
             this.normalizedFrom = null;
             this.normalizedTo = null;
             this.date = null;
+            this.geometry = null;
             this.valueBoolean = null;
         }
     }
@@ -81,6 +87,11 @@ class DescItemIndexData implements ArrDescItemIndexData {
     public Date getValueDate() {
         return date;
     }
+
+	@Override
+	public Geometry getValueGeometry() {
+		return geometry;
+	}
 
     @Override
     public Boolean isValue() {

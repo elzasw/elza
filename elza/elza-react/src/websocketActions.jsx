@@ -60,6 +60,7 @@ import * as types from 'actions/constants/ActionTypes';
 import { fundNodeSubNodeFulltextSearch } from 'actions/arr/node';
 import { PERSISTENT_SORT_CODE, ZP2015_INTRO_VYPOCET_EJ } from './constants.tsx';
 import * as issuesActions from 'actions/arr/issues';
+import { createException } from 'components/ExceptionUtils.jsx';
 
 const serverContextPath = window.serverContextPath;
 
@@ -79,44 +80,69 @@ export class websocket {
         this.stompClient = null;
         this.url = url;
         this.eventMap = eventMap;
+        this.isPageVisible = true;
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible") {
+                console.log("#ws page is visible")
+                this.isPageVisible = true;
+
+                this.reconnect();
+            } else {
+                console.log("#ws page is not visible")
+                this.isPageVisible = false;
+            }
+        })
     }
 
     connect = (heartbeatOut = 20000, heartbeatIn = 45000) => {
-        if (Client) {
-            this.stompClient = new Client({
-                brokerURL: wsUrl,
-                onConnect: this.onConnect,
-                onUnhandledReceipt: this.onReceipt,
-                onError: this.onError,
-                heartbeatOutgoing: heartbeatOut,
-                heartbeatIncoming: heartbeatIn,
-                debug: (message) => { return; },
-            });
-            // this.stompClient.debug = null;
-            // this.stompClient.heartbeat.outgoing = heartbeatOut;
-            // this.stompClient.heartbeat.incoming = heartbeatIn;
-            // this.stompClient.onreceipt = this.onReceipt;
-            // this.stompClient.onerror = this.onError; // Napodobeni chovani z vyssi verze
-            console.info('Websocket connecting to ' + wsUrl);
-            this.stompClient.activate();
-            console.log("#### activated")
-            // this.stompClient.connect({}, this.onConnect, this.onError);
+        if (!Client) {
+            throw Error("STOMP client missing.")
         }
+
+        this.forcedDisconnect = false;
+        this.stompClient = new Client({
+            brokerURL: wsUrl,
+            onConnect: this.onConnect,
+            onUnhandledReceipt: this.onReceipt,
+            onStompError: this.onStompError,
+            onWebSocketError: this.onWebsocketError,
+            onWebSocketClose: this.onWebsocketClose,
+            heartbeatOutgoing: heartbeatOut,
+            heartbeatIncoming: heartbeatIn,
+            debug: (message) => { return; },
+        });
+
+        console.info('#ws Websocket connecting to ' + wsUrl);
+        this.stompClient.activate();
+        console.log("#ws activated")
     };
 
-    disconnect = (error = false) => {
-        if (this.stompClient?.ws?.readyState < 3) {
+    disconnect = (error = false, force = false) => {
+        if (this.stompClient) {
             // When ready state is not CLOSING(2) or CLOSED(3) and stompClient exists
-            console.log('Websocket disconnected');
+            console.log('#ws Websocket disconnected');
             this.stompClient.deactivate();
             this.stompClient = null;
+            // Notify components about disconnected websocket
+            store.dispatch(webSocketDisconnect(error));
         }
-        store.dispatch(webSocketDisconnect(error));
+        if (force) { this.forcedDisconnect = true }
     };
 
     reconnect = () => {
-        this.disconnect();
-        this.connect();
+        store.dispatch(checkUserLogged((logged) => {
+            if (logged) {
+                // reconnect logged in user when stompClient is not active
+                if (!this.stompClient?.active) {
+                    console.log("#ws reconnect after disconnect", logged);
+                    this.connect();
+                }
+            } else {
+                // disconnect user when not logged in
+                this.disconnect();
+            }
+        }))
     };
 
     send = (url, data, onSuccess, onError) => {
@@ -136,7 +162,7 @@ export class websocket {
             this.pendingRequests[this.nextReceiptId] = nextRequest;
             this.nextReceiptId++;
         }
-        console.log("#### websocket send", url, headers, data)
+        console.log("#ws Websocket send", url, headers, data)
 
         // this.stompClient.publish(url, headers, data);
         this.stompClient.publish({
@@ -144,6 +170,7 @@ export class websocket {
             headers,
             body: data,
         });
+        return headers.receipt;
     };
 
     addListener = (listener) => {
@@ -156,45 +183,59 @@ export class websocket {
         this.listeners.splice(listenerIndex, 1);
     }
 
-    onConnect = frame => {
-        console.info('Websocket connected');
+    onConnect = (frame) => {
+        console.info('#ws Websocket connected');
         store.dispatch(webSocketConnect());
         this.stompClient.subscribe('/topic/api/changes', this.onMessage);
     };
 
-    onError = error => {
-        const { body, headers, command } = error;
+    // Handles websocket disconnects
+    onWebsocketClose = (error) => {
+        // Prevent reconnect after intentional disconnect
+        if (this.forcedDisconnect) {
+            // stompClient is already null
+            return;
+        }
 
-        store.dispatch(
-            checkUserLogged(logged => {
-                if (logged) {
-                    if (command === 'ERROR' && headers) {
-                        // Error message received from server
+        console.log("#ws websocket close", error);
+        if (!this.isPageVisible) {
+            console.log("#ws disconnect not visible", error);
+            this.disconnect();
+        } else {
+            this.reconnect();
+        }
+    }
 
-                        this.disconnect(true);
-                        let message = headers.message || '';
+    // Handles websocket connection errors (e.g. unintentional disconnects)
+    onWebsocketError = (error) => {
+        console.warn("#ws websocket error", error);
 
-                        if (body) {
-                            const bodyObj = JSON.parse(body);
-                            message = bodyObj.message;
-                        }
+        this.reconnect();
+    }
 
-                        store.dispatch(addToastrDanger(i18n('global.error.ws'), message));
-                    } else {
-                        // Unknown error -> probably lost connection -> try to reconnect
-                        this.disconnect();
-                        console.info('Websocket lost connection. Reconnecting...');
-                        setTimeout(this.connect, 5000);
-                    }
-                }
-            }),
-        );
+    // Handles error message received through STOMP
+    onStompError = (error) => {
+        console.error("#ws stomp error", error);
+
+        this.handleError(error);
     };
+
+    handleError = (error) => {
+        const { body, command, headers } = error;
+
+        const data = body ? JSON.parse(body) : {};
+        // display error when page is visible or exception is well structured
+        // e.g. "Session closed." will not be displayed
+        if (this.isPageVisible || data.type) {
+            store.dispatch(createException(data.type ? data : { body, command, headers }));
+        }
+        this.reconnect();
+    }
 
     onMessage = frame => {
         var body = JSON.parse(frame.body);
         const eventType = body.eventType;
-        console.info('WEBSOCKET MESSAGE:', body);
+        console.info('#ws WEBSOCKET MESSAGE:', body);
 
         this.listeners.forEach((listener) => {
             listener(body);
@@ -203,14 +244,14 @@ export class websocket {
         if (this.eventMap[eventType]) {
             this.eventMap[eventType](body);
         } else {
-            console.warn("Unknown event type '" + eventType + "'", body);
+            console.warn("#ws Unknown event type '" + eventType + "'", body);
         }
     };
 
     onReceipt = frame => {
         let { body, headers } = frame;
         const receiptId = headers['receipt-id'];
-        console.info('WEBSOCKET RECEIPT:', frame, '| Remaining requests:', this.pendingRequests);
+        console.info('#ws WEBSOCKET RECEIPT:', frame, '| Remaining requests:', this.pendingRequests);
 
         let request = receiptId && this.pendingRequests[receiptId];
 
@@ -223,7 +264,7 @@ export class websocket {
             }
             delete this.pendingRequests[receiptId];
         } else {
-            console.warn('Unknown request - id:', receiptId);
+            console.warn('#ws Unknown request - id:', receiptId);
         }
     };
 }
@@ -285,6 +326,7 @@ let eventMap = {
     ACCESS_POINT_UPDATE: accessPointUpdate,
     ACCESS_POINT_EXPORT_NEW: () => { },
     ACCESS_POINT_EXPORT_STARTED: () => { },
+    ACCESS_POINT_EXPORT_NEED_CONFIRM: () => { },
     ACCESS_POINT_EXPORT_COMPLETED: () => { },
     ACCESS_POINT_EXPORT_FAILED: () => { },
     ISSUE_LIST_UPDATE: issueListUpdate,

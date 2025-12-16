@@ -4,7 +4,7 @@ import i18n from 'components/i18n';
 import { PolygonShowInMap } from "components/PolygonShowInMap";
 import { TooltipTrigger } from 'components/shared';
 import Icon from 'components/shared/icon/Icon';
-import { addToastr } from 'components/shared/toastr/ToastrActions';
+import { addToastr, addToastrDanger, addToastrInfo } from 'components/shared/toastr/ToastrActions';
 import React from 'react';
 import { Button } from 'react-bootstrap';
 import { useThunkDispatch } from 'utils/hooks';
@@ -13,12 +13,16 @@ import './CoordinatesDisplay.scss';
 import WKT from 'ol/format/WKT';
 import { Geometry } from 'ol/geom';
 import { isGeometryCollection, isPoint, isMultiPoint, isLineString, isMultiLineString, isPolygon, isMultiPolygon } from './utils';
+import { useIntl } from 'react-intl';
+import { globalMessages } from '../lang';
 
 interface Props {
     value: string;
     id?: number;
     arrangement?: boolean;
     isUndefined?: boolean;
+  isInherited?: boolean;
+  isInhibited?: boolean;
 }
 
 const getFormatData = (geometry: Geometry) => {
@@ -81,13 +85,20 @@ export const CoordinatesDisplay: React.FC<Props> = ({
     id,
     arrangement = false,
     isUndefined = false,
+    isInherited,
+    isInhibited,
 }) => {
     const dispatch = useThunkDispatch();
+    const { formatMessage } = useIntl()
 
     const copyValueToClipboard = () => {
-        dispatch(addToastr(i18n('global.action.copyToClipboard.finished'), undefined, undefined, "md", 3000));
-        navigator.clipboard.writeText(value);
-    }
+        if(navigator.clipboard){
+            navigator.clipboard.writeText(value);
+            dispatch(addToastrInfo(formatMessage({...globalMessages.copyToClipboardFinished})));
+        } else {
+            dispatch(addToastrDanger(formatMessage({...globalMessages.copyToClipboardUnavailable})));
+        }
+    };
 
     const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
         e.currentTarget.select();
@@ -143,7 +154,10 @@ export const CoordinatesDisplay: React.FC<Props> = ({
                         >
                             <Icon glyph="fa-map" />
                             &nbsp;
-                            <span>
+                            <span style={{
+                              textDecoration: isInhibited ? "line-through" : undefined,
+                              opacity: isInherited ? 0.5 : undefined,
+                            }}>
                                 {formatLabel()}
                             </span>
                         </Button>

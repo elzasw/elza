@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import org.apache.commons.lang3.Validate;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -13,7 +12,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
 
 /**
  * Hodnota atributu archivního popisu typu ApAccessPoint.
@@ -123,12 +121,4 @@ public class ArrDataRecordRef extends ArrData {
         ArrDataRecordRef.fulltextProvider = fullTextProvider;
     }
 
-    @Override
-    protected void validateInternal() {
-        if (record == null) {
-            Validate.isTrue(recordId == null);
-        } else {
-            Validate.notNull(recordId);
-        }
-    }
 }

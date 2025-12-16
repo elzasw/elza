@@ -1,5 +1,7 @@
 package cz.tacr.elza.service;
 
+import static cz.tacr.elza.common.string.Normalizer.normalizeLineEnds;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 import cz.tacr.elza.domain.ArrFund;
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -29,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
 import com.google.common.collect.Lists;
@@ -95,8 +97,6 @@ import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
-import cz.tacr.elza.search.IndexWorkProcessor;
-import cz.tacr.elza.search.SearchIndexSupport;
 import cz.tacr.elza.service.ItemService.FundContext;
 import cz.tacr.elza.service.arrangement.BatchChangeContext;
 import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
@@ -107,10 +107,9 @@ import cz.tacr.elza.service.vo.TitleItemsByType;
 
 /**
  * Description Item management
- *
  */
 @Service
-public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
+public class DescriptionItemService {
 
     private static final Logger logger = LoggerFactory.getLogger(DescriptionItemService.class);
 
@@ -172,12 +171,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     private DescriptionItemServiceInternal serviceInternal;
 
     @Autowired
-    private IndexWorkService indexWorkService;
-
-    @Autowired
-    private IndexWorkProcessor indexWorkProcessor;
-
-    @Autowired
     private StructObjInternalService structObjInternalService;
 
     @Autowired
@@ -191,6 +184,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
     @Autowired
     private ClientFactoryDO factoryDO;
+    
+    @Autowired
+    private EntityManager entityManager;
 
     private TransactionSynchronization indexWorkNotify;
 
@@ -199,7 +195,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         this.indexWorkNotify = new TransactionSynchronization() {
             @Override
             public void afterCompletion(int status) {
-                indexWorkProcessor.notifyIndexing();
+                //indexWorkProcessor.notifyIndexing();
             }
         };
     }
@@ -266,10 +262,12 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
         ArrNode node = arrangementService.getNode(nodeId);
         ArrDescItem descItem = fetchOpenItemFromDB(descItemObjectId);
+        // pokud chceme vrátit smazanou hodnotu
+        descItem.setData(HibernateUtils.unproxy(descItem.getData()));
 
         // kontrola zákazu změn
         if (!forceUpdate) {
-            if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
+            if (descItem.getReadOnly() != null && descItem.getReadOnly()) {
                 throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
             }
         }
@@ -502,7 +500,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, createChange,
                                                                     fundContext, batchChangeCtx,
                                                                     null);
-        arrangementCacheService.createDescItem(descItemCreated, batchChangeCtx);
+        arrangementCacheService.addToCacheNode(descItemCreated, batchChangeCtx);
         return descItemCreated;
     }
 
@@ -777,7 +775,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         checkFundVersionLock(fundContext.getFundVersion());
 
         // kontrola validity typu a specifikace
-        itemService.checkValidTypeAndSpec(fundContext, descItem);
+        itemService.checkValidTypeAndSpec(fundContext, descItem, false);
 
         int maxPosition = getMaxPosition(descItem, nodeItems);
 
@@ -1083,7 +1081,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
             changeContext.addCreatedItem(savedItem);
 
-            arrangementCacheService.createDescItem(savedItem, changeContext);
+            arrangementCacheService.addToCacheNode(savedItem, changeContext);
         }
 
         return result;
@@ -1200,7 +1198,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 			descItemUpdated = updateItemValueAsNewVersion(fundVersion, change, descItemDB, descItem.getItemSpec(),
                                                           HibernateUtils.unproxy(descItem.getData()), descItem.getPosition(),
                                                           descItem.getReadOnly(),
-                                                          changeContext);
+                                                          changeContext, false);
 		} else {
             descItemUpdated = updateValue(fundVersion, descItem, changeContext);
         }
@@ -1269,7 +1267,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 			descItemUpdated = updateItemValueAsNewVersion(fundVersion, change, descItemDB, descItem.getItemSpec(),
                                                           HibernateUtils.unproxy(descItem.getData()), descItem.getPosition(),
                                                           descItem.getReadOnly(),
-                                                          changeContext);
+                                                          changeContext, false);
 		} else {
             descItemUpdated = updateValue(fundVersion, descItem, changeContext);
         }
@@ -1340,8 +1338,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
     	return dataService.findItemsWithData(descItemRepository.findOpenByFundAndTypeAndSpec(fund, type, specs));
     }
 
-    public List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange) {
-    	return dataService.findItemsWithData(descItemRepository.findByNodesAndDeleteChange(nodes, deleteChange));
+    public List<ArrDescItem> findByNodesAndDeleteChange(Collection<Integer> nodeIds, ArrChange deleteChange) {
+    	return dataService.findItemsWithData(descItemRepository.findByNodeIdsAndDeleteChange(nodeIds, deleteChange));
     }
 
     public List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node) {
@@ -1468,7 +1466,8 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      */
     public ArrDescItem updateDescriptionItem(final ArrDescItem descItem,
                                              final ArrFundVersion fundVersion,
-                                             final ArrChange change) {
+                                             final ArrChange change,
+                                             final boolean forceUpdate) {
 
         logger.debug("updateDescriptionItem, fundVersion: {}, change: {}, descItem: {}",
                           fundVersion.getFundVersionId(),
@@ -1477,7 +1476,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         SingleItemChangeContext sicc = new SingleItemChangeContext(this.ruleService, this.eventNotificationService,
                                                                    fundVersion.getFundVersionId(), descItem.getNodeId());
 
-        ArrDescItem descItemUpdated = updateValueAsNewVersion(fundVersion, change, descItem, sicc, false);
+        ArrDescItem descItemUpdated = updateValueAsNewVersion(fundVersion, change, descItem, sicc, forceUpdate);
 
         sicc.validateAndPublish();
 
@@ -1559,7 +1558,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         // kontrola validity typu a specifikace
         StaticDataProvider sdp = staticDataService.getData();
         FundContext fundContext = FundContext.newInstance(fundVersion, arrangementService, sdp);
-        itemService.checkValidTypeAndSpec(fundContext, result);
+        itemService.checkValidTypeAndSpec(fundContext, result, false);
 
         // update value in node cache
         arrangementCacheService.changeDescItem(result.getNodeId(), result, false, changeContext);
@@ -1611,7 +1610,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 		ArrData dataCurr = HibernateUtils.unproxy(descItem.getData());
 
         return updateItemValueAsNewVersion(fundVersion, change, descItemCurr, descItem.getItemSpec(), dataCurr,
-                                           descItem.getPosition(), descItem.getReadOnly(), batchChangeContext);
+                                           descItem.getPosition(), descItem.getReadOnly(), batchChangeContext, forceUpdate);
 	}
 
     /**
@@ -1619,7 +1618,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *
      * @param version
      * @param change
-     * @param descItemDB
+     * @param descItemDB current DB value
      * @param itemSpec
      * @param srcData
      * @param newPosition
@@ -1628,13 +1627,14 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @return
      */
 	private ArrDescItem updateItemValueAsNewVersion(final ArrFundVersion fundVersion,
-                                                    final ArrChange change,
-                                                    ArrDescItem descItemDB,
-                                                    RulItemSpec itemSpec,
-                                                    final ArrData srcData,
-                                                    final Integer newPosition,
-                                                    final Boolean readOnly,
-                                                    final BatchChangeContext batchChangeContext) {
+                                                   final ArrChange change,
+                                                   ArrDescItem descItemDB,
+                                                   RulItemSpec itemSpec,
+                                                   final ArrData srcData,
+                                                   final Integer newPosition,
+                                                   final Boolean readOnly,
+                                                   final BatchChangeContext batchChangeContext,
+                                                   boolean forceUpdate) {
         Integer oldPosition = descItemDB.getPosition();
         boolean move = false;
         if (!Objects.equals(oldPosition, newPosition)) {
@@ -1646,19 +1646,25 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
         ArrData dataNew = descItemFactory.saveData(descItemDB.getItemType(), srcData);
 
+        // invalidate original item and get new copy
         ArrDescItem descItemNew = prepareNewDescItem(descItemDB, dataNew, change);
 
         // create new item based on source
         descItemNew.setPosition(newPosition);
         // set data and specification
-        descItemNew.setItemSpec(itemSpec);
+        if (itemSpec != null) {
+        	// fetch entity specification from DB 
+        	// cannot send cached object to the DB
+        	RulItemSpec dbItemSpec = entityManager.getReference(RulItemSpec.class, itemSpec.getItemSpecId());
+        	descItemNew.setItemSpec(dbItemSpec);
+        }        
         descItemNew.setReadOnly(readOnly);
         ArrDescItem result = descItemRepository.save(descItemNew);
 
         // kontrola validity typu a specifikace
         StaticDataProvider sdp = staticDataService.getData();
         FundContext fundContext = FundContext.newInstance(fundVersion, arrangementService, sdp);
-        itemService.checkValidTypeAndSpec(fundContext, result);
+        itemService.checkValidTypeAndSpec(fundContext, result, forceUpdate);
 
         // update value in node cache
         arrangementCacheService.changeDescItem(result.getNodeId(), result, move, batchChangeContext);
@@ -1669,11 +1675,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 	}
 
     public Map<Integer, TitleItemsByType> createNodeValuesByItemTypeIdMap(final Collection<Integer> nodeIds,
-                                                                                   final Collection<RulItemType> descItemTypes,
+                                                                                   final Collection<Integer> descItemTypeIds,
                                                                                    final Integer changeId,
                                                                                    @Nullable final TreeNode subtreeRoot,
                                                                                    final boolean dataExport) {
-        if (nodeIds.isEmpty() || descItemTypes.isEmpty()) {
+        if (nodeIds.isEmpty() || descItemTypeIds.isEmpty()) {
             return Collections.emptyMap();
         }
 
@@ -1686,14 +1692,34 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             rootParent = rootParent.getParent();
         }
 
-        List<ArrDescItem> descItems = descItemRepository.findDescItemsByNodeIds(nodeIdSet, descItemTypes, changeId);
+        List<ArrDescItem> descItems = descItemRepository.findDescItemsByNodeIds(nodeIdSet, descItemTypeIds, changeId);
 
-        Set<ApAccessPoint> accessPoints = descItems.stream()
-                .filter(item -> item.getData() != null && DataType.fromId(item.getData().getDataTypeId()) == DataType.RECORD_REF)
-                .map(item -> ((ArrDataRecordRef) HibernateUtils.unproxy(item.getData())).getRecord())
-                .collect(Collectors.toSet());
-
-        Map<Integer, ApIndex> accessPointNames = accessPointService.findPreferredPartIndexMap(accessPoints);
+        // fetch access points
+        Set<Integer> accessPointIds = new HashSet<>();
+        Set<Integer> soiIds = new HashSet<>();
+        for(ArrDescItem item: descItems) {
+	        if(item.getData()!=null) {
+	        	DataType dataType = DataType.fromId(item.getData().getDataTypeId());
+	        	switch(dataType) {
+	        	case RECORD_REF:
+	        		accessPointIds.add( ((ArrDataRecordRef) HibernateUtils.unproxy(item.getData())).getRecordId());
+	        		break;
+	        	case STRUCTURED:
+	        		soiIds.add( ((ArrDataStructureRef) HibernateUtils.unproxy(item.getData())).getStructuredObjectId()  );
+	        		break;
+				default:
+					// other types does not need to be fetched
+					break;
+	        	}
+	        }
+        }
+        
+        if(soiIds.size()>0) {
+        	structuredObjectRepository.findAllById(soiIds);
+        }
+        // read access point names
+        Map<Integer, ApIndex> accessPointNames = (accessPointIds.size()>0) ? accessPointService.findPreferredPartIndexMapByIds(accessPointIds)
+        		: Collections.emptyMap();
 
         Map<Integer, TitleItemsByType> nodeIdMap = new HashMap<>();
         for (ArrDescItem descItem : descItems) {
@@ -1717,11 +1743,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      *         nodeId, itemTypeCode, values
      */
     public Map<Integer, TitleItemsByType> createNodeValuesByItemTypeCodeMap(final Collection<Integer> nodeIds,
-                                                                                    final Collection<RulItemType> descItemTypes,
+                                                                                    final Collection<Integer> descItemTypeIds,
                                                                                     final Integer changeId,
                                                                                     @Nullable final TreeNode subtreeRoot) {
 
-        return createNodeValuesByItemTypeIdMap(nodeIds, descItemTypes, changeId, subtreeRoot, false);
+        return createNodeValuesByItemTypeIdMap(nodeIds, descItemTypeIds, changeId, subtreeRoot, false);
     }
 
     /**
@@ -1736,7 +1762,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
      * @param forceUpdate    ignorovat příznak readOnly
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
-    public void replaceDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
+    public Integer replaceDescItemValues(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
                                       final RulItemType descItemType,
                                       final Collection<ArrNode> nodes,
                                       final Set<RulItemSpec> specifications, final String findText,
@@ -1744,7 +1770,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                                       final boolean allNodes, final boolean forceUpdate) {
         Assert.notNull(version, "Verze AS musí být vyplněna");
         Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
-        Assert.hasText(findText, "Musí být vyplněn hledaný text");
+        Assert.hasLength(findText, "Musí být vyplněn hledaný text");
 
         Map<Integer, ArrNode> nodesMap = ElzaTools.createEntityMap(nodes, ArrNode::getNodeId);
 
@@ -1784,6 +1810,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
             changeContext.flush();
         }
+        return descItemsToReplaceText.size();
     }
 
     public Class<? extends ArrData> getDescItemDataTypeClass(final RulItemType descItemType) {
@@ -1951,7 +1978,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 
             ArrDescItem savedItem = descItemFactory.saveItemVersionWithData(newDescItem, true);
             changeContext.addCreatedItem(savedItem);
-            arrangementCacheService.createDescItem(savedItem, changeContext);
+            arrangementCacheService.addToCacheNode(savedItem, changeContext);
 
             changeContext.flushIfNeeded();
         }
@@ -2000,7 +2027,9 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
             Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
             ArrDataUriRef itemUriRef = new ArrDataUriRef();
             itemUriRef.setUriRefValue(text);
-            itemUriRef.setDescription(description);
+            if(StringUtils.isNotEmpty(description)) {
+            	itemUriRef.setDescription(description);
+            }
             return itemUriRef;
         case DECIMAL:
             Validate.isTrue(StringUtils.isNotEmpty(text), "Musí být vyplněn text");
@@ -2078,7 +2107,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 			ArrDescItem updatedDescItem = updateItemValueAsNewVersion(fundVersion, change, descItem, setSpecification,
                                                                       HibernateUtils.unproxy(descItem.getData()), descItem.getPosition(),
                                                                       descItem.getReadOnly(),
-                                                                      changeContext);
+                                                                      changeContext, false);
             nodeIdsToAdd.remove(updatedDescItem.getNodeId());
         }
 
@@ -2094,7 +2123,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                 descItem.setDeleteChange(null);
                 descItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
                 ArrDescItem created = createDescriptionItemWithData(descItem, change, fundContext, changeContext, null);
-                arrangementCacheService.createDescItem(created, changeContext);
+                arrangementCacheService.addToCacheNode(created, changeContext);
             }
         }
 
@@ -2238,7 +2267,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
                     newDescItem.setPosition(1);
 
                     ArrDescItem savedItem = descItemFactory.saveItemVersionWithData(newDescItem, true);
-                    arrangementCacheService.createDescItem(savedItem, changeContext);
+                    arrangementCacheService.addToCacheNode(savedItem, changeContext);
 
                     changeContext.flushIfNeeded();
                 }
@@ -2276,7 +2305,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
 			ds.setStringValue(getReplacedDataValue(ds.getStringValue(), searchString, replaceString));
 		} else if (dataNew instanceof ArrDataText) {
 			ArrDataText dt = (ArrDataText) dataNew;
-			dt.setTextValue(getReplacedDataValue(dt.getTextValue(), searchString, replaceString));
+			dt.setTextValue(getReplacedDataValue(normalizeLineEnds(dt.getTextValue()), searchString, replaceString));
 		} else if (dataNew instanceof ArrDataUnitid) {
             ArrDataUnitid dt = (ArrDataUnitid) dataNew;
             dt.setUnitId(getReplacedDataValue(dt.getUnitId(), searchString, replaceString));
@@ -2480,7 +2509,7 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         descItem.setDescItemObjectId(descItemObjectId == null ? arrangementService.getNextDescItemObjectId() : descItemObjectId);
 
         ArrDescItem descItemCreated = createDescriptionItemWithData(descItem, change, fundContext, changeContext, null);
-        arrangementCacheService.createDescItem(descItemCreated, changeContext);
+        arrangementCacheService.addToCacheNode(descItemCreated, changeContext);
 
         // nastavujeme prázdné hodnoty
         //descItem.setItem(descItemFactory.createItemByType(descItemType.getDataType()));
@@ -2491,7 +2520,6 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         return descItemCreated;
     }
 
-    @Override
     public Map<Integer, ArrDescItem> findToIndex(Collection<Integer> ids) {
         if (CollectionUtils.isEmpty(ids)) {
             return Collections.emptyMap();
@@ -2500,27 +2528,11 @@ public class DescriptionItemService implements SearchIndexSupport<ArrDescItem> {
         return descItemRepository.findAllById(ids).stream().collect(Collectors.toMap(o -> o.getItemId(), o -> o));
     }
 
-    @Transactional
-    public void reindexDescItem(Integer itemId) {
-        try {
-            indexWorkService.createIndexWork(ArrDescItem.class, itemId);
-        } finally {
-            TransactionSynchronizationManager.registerSynchronization(indexWorkNotify);
-        }
-    }
-
-    @Transactional
-    public void reindexDescItem(Collection<Integer> itemIds) {
-        try {
-            indexWorkService.createIndexWork(ArrDescItem.class, itemIds);
-        } finally {
-            TransactionSynchronizationManager.registerSynchronization(indexWorkNotify);
-        }
-    }
-
     public MultipleItemChangeContext createChangeContext(int fundVersionId) {
-        return new MultipleItemChangeContext(fundVersionId,
-                descItemRepository, nodeCacheService, ruleService,
-                eventNotificationService);
+        return createChangeContext(fundVersionId, false);
+    }
+
+    public MultipleItemChangeContext createChangeContext(int fundVersionId, boolean nodeCacheSyncDelayed) {
+        return new MultipleItemChangeContext(fundVersionId, descItemRepository, nodeCacheService, ruleService, eventNotificationService, nodeCacheSyncDelayed);
     }
 }

@@ -330,9 +330,10 @@ class FundDataGrid extends AbstractReactComponent {
                         }
                     }
 
+                    // if enum is without data, it has no specification
                     return (
-                        <div className="cell-value-wrapper">
-                            {hasDescItemTypeValue(col.dataType) ? spec.name + ': ' + itemValue : spec.name}
+                        <div className="cell-value-wrapper">                            
+                            {hasDescItemTypeValue(col.dataType) ? spec.name + ': ' + itemValue : (spec ? spec.name : '')}
                         </div>
                     );
                 } else {
@@ -503,7 +504,7 @@ class FundDataGrid extends AbstractReactComponent {
                 if (colInfo) {
                     // je již definovaná
                     width = colInfo.width;
-                } else if (gridViews[id]?.width) {
+                } else if (gridViews && gridViews[id]?.width) {
                     // můžeme použít z pravidel
                     width = gridViews[id].width;
                 } else {
@@ -584,6 +585,7 @@ class FundDataGrid extends AbstractReactComponent {
                         visibleColumns={visibleColumns}
                         itemTypeCodes={items}
                     />,
+                    "dialog-md"
                 ),
             );
         });

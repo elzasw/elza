@@ -4,10 +4,10 @@ import { AbstractReactComponent, i18n } from 'components/shared';
 import { connect } from 'react-redux';
 import { normalizeString } from 'components/validate.jsx';
 import { decorateValue, inputValue } from './DescItemUtils.jsx';
-import {DescItemLabel} from './DescItemLabel';
+import { DescItemLabel } from './DescItemLabel';
 import Icon from '../../shared/icon/Icon';
 import { Button } from 'react-bootstrap';
-import { SelectSearchFundsForm } from 'components/arr/SelectSearchFundsForm';
+import { SelectSearchFundsForm } from 'components/arr/search-funds-form/SelectSearchFundsForm.tsx';
 import { modalDialogHide, modalDialogShow } from '../../../actions/global/modalDialog';
 import { WebApi } from '../../../actions';
 import { CLS_CALCULABLE, ELZA_SCHEME_NODE } from '../../../constants';
@@ -72,7 +72,7 @@ class DescItemLink extends AbstractReactComponent {
                             this.props.onChange({
                                 value: ELZA_SCHEME_NODE + '://' + data.uuid,
                                 description:
-                                    fund.id !== this.props.fundId ? data.fundName + ' ' + data.name : data.name,
+                                    fund.id !== this.props.fundId ? data.fundName + '; ' + data.name : data.name,
                             });
                             this.props.onBlur();
                             this.props.dispatch(modalDialogHide());
@@ -87,8 +87,7 @@ class DescItemLink extends AbstractReactComponent {
         const { descItem } = this.props;
         if (descItem.value.startsWith(ELZA_SCHEME_NODE)) {
             if (descItem.nodeId) {
-                const uuid = descItem.value.replace(ELZA_SCHEME_NODE + '://', '');
-                this.props.dispatch(routerNavigate(`/node/${uuid}`));
+                this.props.dispatch(routerNavigate(`/node/${descItem.nodeId}`));
             }
         } else {
             window.open(descItem.value, '_blank');

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -169,9 +170,8 @@ public class PartService {
     }
 
     public ApPart getPart(final Integer partId) {
-        Validate.notNull(partId);
-        return partRepository.findById(partId)
-                .orElseThrow(part(partId));
+    	Objects.requireNonNull(partId);
+        return partRepository.findById(partId).orElseThrow(part(partId));
     }
 
     /**
@@ -287,7 +287,6 @@ public class PartService {
         }
 
         ApChange apChange = apDataService.createChange(ApChange.Type.AP_DELETE);
-        ApKeyValue keyValue = apPart.getKeyValue();
         apItemService.deletePartItems(apPart, apChange);
 
         // Delete bindings
@@ -346,7 +345,7 @@ public class PartService {
                                    boolean preferredPart) {
         Integer accessPointId = state.getAccessPointId();
         ApAccessPoint accessPoint = state.getAccessPoint();
-        Validate.notNull(accessPoint);
+        Objects.requireNonNull(accessPoint);
 
         boolean success = true;
         Map<String, String> indexMap = result.getIndexes();
@@ -501,6 +500,9 @@ public class PartService {
         ApKeyValue apKeyValue = keyValueRepository.findByKeyTypeAndValueAndScope(keyType, value, scope);
 
         if (apKeyValue != null) {
+        	logger.info("ApKeyValue s tímto typem a hodnotou a scopeId už existuje, keyType: {}, value: {}, scopeId: {}.", 
+        			keyType, value, scope.getScopeId());
+        	
             if (async) {
                 return false;
             }

@@ -177,9 +177,9 @@ public class BulkActionHelperService {
         logger.debug("Result dispatched to outputs");
     }
 
+    @Transactional(Transactional.TxType.REQUIRED)
     public ArrBulkActionRun getArrBulkActionRun(Integer bulkActionRunId) {
-        return bulkActionRepository.findById(bulkActionRunId)
-                .orElseThrow(bulkAction(bulkActionRunId));
+        return bulkActionRepository.findById(bulkActionRunId).orElseThrow(bulkAction(bulkActionRunId));
     }
 
     public BulkAction prepareToRun(ArrBulkActionRun bulkActionRun) {
@@ -237,8 +237,4 @@ public class BulkActionHelperService {
                 ArrOutput.OutputState.OPEN,
                 ArrOutput.OutputState.COMPUTING);
     }
-
-
-
-
 }

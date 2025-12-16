@@ -1,7 +1,5 @@
 package cz.tacr.elza.domain;
 
-import org.apache.commons.lang3.Validate;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Basic;
@@ -17,7 +15,7 @@ public class ArrDataBit extends ArrData {
     public static final String BIT_VALUE = "bitValue";
 
     @Basic
-    @Column(name="bit_value", nullable=false)
+    @Column(name = "bit_value", nullable = false)
     private Boolean bitValue;
 
     public ArrDataBit() {
@@ -67,8 +65,4 @@ public class ArrDataBit extends ArrData {
         copyValue(src);
     }
 
-    @Override
-    protected void validateInternal() {
-        Validate.notNull(bitValue);
-    }
 }

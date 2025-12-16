@@ -20,6 +20,12 @@ import jakarta.persistence.criteria.Root;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
+import org.hibernate.search.engine.search.predicate.dsl.MatchPredicateOptionsStep;
+import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
+import org.hibernate.search.engine.search.predicate.dsl.WildcardPredicateOptionsStep;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +38,7 @@ import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-
+import cz.tacr.elza.service.DataService;
 
 /**
  * Rozšířený repozitář pro {@link DescItemRepository}.
@@ -44,7 +50,18 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
     @Autowired
     private EntityManager entityManager;
+    
+    @Autowired
+	private DataService dataService;
 
+    private SearchSession searchSession = null;
+
+    private SearchSession getSearchSession() {
+		if (searchSession == null) {
+			searchSession = Search.session(entityManager);
+    	}
+    	return searchSession;
+    }
 
     @Override
     public Map<Integer, DescItemTitleInfo> findDescItemTitleInfoByNodeId(final Set<Integer> nodeIds,
@@ -137,13 +154,12 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
         return result;
     }
 
-    //TODO: gotzy upravit vazbu na d.party
     @Override
-    public List<ArrDescItem> findDescItemsByNodeIds(final Collection<Integer> nodeIds, final Collection<RulItemType> itemTypes, final Integer changeId) {
-        String jpql = "SELECT di FROM arr_item di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis " +
-                "LEFT JOIN FETCH di.data d " +
-                "LEFT JOIN FETCH d.record drr " +
-                "LEFT JOIN FETCH d.structuredObject dso " +
+    public List<ArrDescItem> findDescItemsByNodeIds(final Collection<Integer> nodeIds, 
+    		final Collection<Integer> itemTypeIds, final Integer changeId) {
+        String jpql = "SELECT di FROM arr_desc_item di JOIN FETCH di.node n JOIN FETCH di.itemType dit LEFT JOIN FETCH di.itemSpec dis " +
+                //"LEFT JOIN FETCH di.data d " +
+                //"LEFT JOIN FETCH d.structuredObject dso " +
                 "WHERE ";
         if (changeId == null) {
             jpql += "di.deleteChange IS NULL ";
@@ -153,8 +169,8 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
 
         jpql += "AND n.nodeId IN (:nodeIds)";
 
-        if (CollectionUtils.isNotEmpty(itemTypes)) {
-            jpql += " AND di.itemType IN (:itemTypes)";
+        if (CollectionUtils.isNotEmpty(itemTypeIds)) {
+            jpql += " AND di.itemTypeId IN (:itemTypeIds)";
         }
 
         List<ArrDescItem> result = new LinkedList<>();
@@ -165,12 +181,16 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
             if (changeId != null) {
                 query.setParameter("changeId", changeId);
             }
-            if (CollectionUtils.isNotEmpty(itemTypes)) {
-                query.setParameter("itemTypes", itemTypes);
+            if (CollectionUtils.isNotEmpty(itemTypeIds)) {
+                query.setParameter("itemTypeIds", itemTypeIds);
             }
             query.setParameter("nodeIds", nodeIdsIterator.next());
+            
+            // fetch data
+            List<ArrDescItem> fetchedData = query.getResultList();
+            dataService.findItemsWithData(fetchedData);
 
-            result.addAll(query.getResultList());
+            result.addAll(fetchedData);
         }
 
         return result;
@@ -181,37 +201,53 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
                                                        final RulItemType itemType,
                                                        final Set<RulItemSpec> specifications,
                                                        final String text) {
-
-        if(StringUtils.isBlank(text)){
+        if (StringUtils.isEmpty(text)) {
             throw new IllegalArgumentException("Parametr text nesmí mít prázdnou hodnotu.");
         }
 
-        if(itemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)){
+        if (itemType.getUseSpecification() && CollectionUtils.isEmpty(specifications)){
             throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
         }
 
-        String searchText = "%" + text + "%";
+        SearchPredicateFactory factory = getSearchSession().scope(ArrDescItem.class).predicate();
+        BooleanPredicateClausesStep<?> finalPredicate = factory.bool();
 
-        String hql = "SELECT di FROM arr_item di JOIN FETCH di.data d WHERE (di.data IN (SELECT ds FROM arr_data_string ds WHERE ds.stringValue like :text)" +
-                " OR di.data IN (SELECT ds FROM arr_data_text ds WHERE ds.textValue like :text)" +
-                " OR di.data IN (SELECT ds FROM arr_data_unitid ds WHERE ds.unitId like :text))"
-                + " AND di.itemType = :itemType";
+        // by nodes
+        BooleanPredicateClausesStep<?> nodeItems = factory.bool();
+        nodes.forEach(node -> {
+        	nodeItems.should(factory.match().field(ArrDescItem.FIELD_NODE_ID).matching(node.getNodeId()));
+        });
+        finalPredicate.must(nodeItems);
 
-        if(itemType.getUseSpecification()){
-            hql+= " AND di.itemSpec IN (:specs)";
-        }
+        // deleteChange is null
+    	BooleanPredicateClausesStep<?> nullDeleteChange = factory.bool().mustNot(factory.exists().field(ArrDescItem.FIELD_DELETE_CHANGE_ID));
+    	finalPredicate.must(nullDeleteChange);
 
-        hql += " AND di.node IN (:nodes) AND di.deleteChange IS NULL";
+        // by itemType
+        MatchPredicateOptionsStep<?> itemTypeId = factory.match().field(ArrDescItem.FIELD_DESC_ITEM_TYPE_ID).matching(itemType.getItemTypeId());
+        finalPredicate.must(itemTypeId);
 
-        Query query = entityManager.createQuery(hql);
-        query.setParameter("itemType", itemType);
-        query.setParameter("nodes", nodes);
-        query.setParameter("text", searchText);
+        // by itemSpecs
         if (itemType.getUseSpecification()) {
-            query.setParameter("specs", specifications);
+            BooleanPredicateClausesStep<?> itemSpecs = factory.bool();
+        	specifications.forEach(spec -> {
+        		itemSpecs.should(factory.match().field(ArrDescItem.FIELD_ITEM_SPEC_ID).matching(spec.getItemSpecId()));
+        	});
+        	finalPredicate.must(itemSpecs);
         }
 
-        return query.getResultList();
+        // by text
+        String searchValue = '*' + text + '*';
+        WildcardPredicateOptionsStep<?> textPredicate = factory.wildcard().field(ArrDescItem.FULLTEXT_ATT).matching(searchValue);
+        finalPredicate.must(textPredicate);
+
+        List<ArrDescItem> fetchedData = getSearchSession().search(ArrDescItem.class)
+							        		.where(finalPredicate.toPredicate())
+							        		.fetchAll()
+							        		.hits();
+        dataService.findItemsWithData(fetchedData);
+
+		return fetchedData;
     }
 
     @Override
@@ -224,7 +260,7 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
             throw new IllegalArgumentException("Musí být zadána alespoň jedna filtrovaná specifikace.");
         }
 
-        String hql = "SELECT i FROM arr_item i JOIN FETCH i.data d WHERE i.itemType = :itemType"
+        String hql = "SELECT i FROM arr_desc_item i WHERE i.itemType = :itemType"
                 + " AND i.node IN (:nodes) AND i.deleteChange IS NULL";
 
         if (!CollectionUtils.isEmpty(stuctureObjectIds)) {
@@ -249,6 +285,9 @@ public class DescItemRepositoryImpl implements DescItemRepositoryCustom {
             query.setParameter("specs", specifications);
         }
 
-        return query.getResultList();
+        List<ArrDescItem> fetchedData = query.getResultList();
+        dataService.findItemsWithData(fetchedData);
+
+		return fetchedData;
     }
 }

@@ -7,6 +7,10 @@
     <!--Verze 2.x - vytvoreni schematu databaze-->
     <changeSet id="1" author="ppyt">
         <validCheckSum>ANY</validCheckSum>
+        <!-- přidání rozšíření PostGIS do databáze -->
+		<sql dbms="postgresql">CREATE EXTENSION IF NOT EXISTS postgis</sql>        
+
+		<!-- tabulka pro generování ID klíčů -->
         <createTable tableName="db_hibernate_sequences">
             <column name="sequence_name" type="nvarchar(255)">
                 <constraints primaryKey="true"/>

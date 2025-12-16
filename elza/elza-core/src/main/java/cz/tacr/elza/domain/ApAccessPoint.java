@@ -13,12 +13,10 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 
 import org.hibernate.Length;
-import org.hibernate.annotations.Type;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -34,6 +32,7 @@ import cz.tacr.elza.domain.interfaces.Versionable;
 public class ApAccessPoint extends AbstractVersionableEntity implements Versionable, IApAccessPoint {
 
     public static final String FIELD_ACCESS_POINT_ID = "accessPointId";
+    public static final String FIELD_ACCESS_POINT = "accessPoint";
     public static final String FIELD_UUID = "uuid";
     public static final String FIELD_NAMES = "names";
     public static final String FIELD_DESCRIPTIONS = "descriptions";
@@ -44,6 +43,7 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     public static final String FIELD_PREFFERED_PART_ID = "preferredPartId";
     public static final String FIELD_USER_LIST = "userList";
     public static final String PARTS = "parts";
+    public static final String BINDING_STATE = "bindingState";
 
     @Id
     @GeneratedValue
@@ -71,11 +71,14 @@ public class ApAccessPoint extends AbstractVersionableEntity implements Versiona
     private Integer preferredPartId;
 
     @OneToMany(fetch = FetchType.LAZY, targetEntity = UsrUser.class)
-    @JoinColumn(name= "accessPointId")
+    @JoinColumn(name= FIELD_ACCESS_POINT_ID)
     private List<UsrUser> userList;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "accessPoint")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = FIELD_ACCESS_POINT)
     private List<ApPart> parts;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = FIELD_ACCESS_POINT)
+    private List<ApBindingState> bindingState;
 
     /**
      * ID hesla.

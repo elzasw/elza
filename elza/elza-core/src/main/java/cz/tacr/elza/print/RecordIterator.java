@@ -9,6 +9,7 @@ import java.util.Set;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.print.item.Item;
 import cz.tacr.elza.print.item.ItemRecordRef;
+import cz.tacr.elza.print.item.ItemStructuredRef;
 
 public class RecordIterator implements Iterator<Record> {
 
@@ -52,6 +53,7 @@ public class RecordIterator implements Iterator<Record> {
             return;
         }
         for (Item item : items) {
+        	// process directly referenced records
             if (item.getType().getDataType().equals(DataType.RECORD_REF) && (item instanceof ItemRecordRef)) {
                 ItemRecordRef irr = (ItemRecordRef) item;
                 Record record = irr.getRecord();
@@ -60,6 +62,15 @@ public class RecordIterator implements Iterator<Record> {
                     prepared.add(record);
                 }
             }
+            // process structured objects
+			if (item.getType().getDataType().equals(DataType.STRUCTURED) && (item instanceof ItemStructuredRef)) {
+				ItemStructuredRef isr = (ItemStructuredRef) item;
+				Structured sobj = isr.getValue();
+				// iterate items
+				if(sobj!=null&&sobj.getItems()!=null) {
+					processItems(sobj.getItems());
+				}
+			}
         }
     }
     private void fetchNextRecords() {

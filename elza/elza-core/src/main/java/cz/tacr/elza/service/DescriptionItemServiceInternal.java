@@ -34,7 +34,7 @@ import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.domain.vo.CoordinatesTitleValue;
 import cz.tacr.elza.domain.vo.JsonTableTitleValue;
 import cz.tacr.elza.domain.vo.TitleValue;
@@ -168,7 +168,7 @@ public class DescriptionItemServiceInternal {
             String title = apIndex == null? "unknownName" : apIndex.getIndexValue();
             TitleValue value = new TitleValue(title);
             if (dataExport) {
-                value.setEntityId(apData.getRecord().getAccessPointId());
+                value.setEntityId(apData.getRecordId());
             }
             return value;
         }
@@ -182,7 +182,7 @@ public class DescriptionItemServiceInternal {
         }
         case UNITDATE:
             ArrDataUnitdate unitdateData = (ArrDataUnitdate) data;
-            return new TitleValue(UnitDateConvertor.convertToString(unitdateData));
+            return new TitleValue(UnitDateConverter.convertToString(unitdateData));
         case STRING:
             ArrDataString strData = (ArrDataString) data;
             return new TitleValue(strData.getStringValue());

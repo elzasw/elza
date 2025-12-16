@@ -1,24 +1,21 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import cz.tacr.elza.bulkaction.ActionRunContext;
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionInterruptedException;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.bulkaction.BulkActionService;
-import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.AsyncRequestService;
-import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Hromadná akce pro kontrolu validace (stavů popisu) celé archivní pomůcky.
  *
  */
-public class FundValidation extends BulkAction {
+public class FundValidation extends BulkActionTransactional {
 
     /**
      * Identifikátor hromadné akce
@@ -35,17 +32,16 @@ public class FundValidation extends BulkAction {
      * Generování hodnot - rekurzivní volání pro procházení celého stromu
      *
      * @param level uzel
+     * @throws InterruptedException 
      */
     private void generate(final ArrLevel level) {
-        if (bulkActionRun.isInterrupted()) {
-            bulkActionRun.setState(State.INTERRUPTED);
-			throw new BusinessException("Hromadná akce " + getName() + " byla přerušena.",
-			        ArrangementCode.BULK_ACTION_INTERRUPTED).set("code", bulkActionRun.getBulkActionCode());
+        if (interrupt) {
+			throw new BulkActionInterruptedException("The action was interrupted");
         }
 
         List<ArrLevel> childLevels = getChildren(level);
 
-        bulkActionService.setConformityInfoInNewTransaction(level.getLevelId(), version.getFundVersionId());
+        bulkActionService.setConformityInfoInNewTransaction(level.getLevelId(), getFondsVersionId());
 
         for (ArrLevel childLevel : childLevels) {
             generate(childLevel);
@@ -56,12 +52,11 @@ public class FundValidation extends BulkAction {
 	public void run(ActionRunContext runContext) {
 
         // v případě, že existuje nějaké přepočítávání uzlů, je nutné to ukončit
-        asyncRequestService.terminateNodeWorkersByFund(version.getFundVersionId());
+        asyncRequestService.terminateNodeWorkersByFund(getFondsVersionId());
 
 		for (Integer nodeId : runContext.getInputNodeIds()) {
-			ArrNode nodeRef = nodeRepository.getOne(nodeId);
-            ArrLevel level = levelRepository.findByNodeAndDeleteChangeIsNull(nodeRef);
-			Validate.notNull(level);
+            ArrLevel level = levelRepository.findByNodeIdAndDeleteChangeIsNull(nodeId);
+            Objects.requireNonNull(level);
 
             generate(level);
         }

@@ -1,7 +1,7 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import cz.tacr.elza.bulkaction.BaseActionConfig;
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionDFS;
 
 /**
  * Configuration for serial number generator
@@ -30,8 +30,7 @@ public class SerialNumberConfig extends BaseActionConfig {
 	}
 
 	@Override
-	public BulkAction createBulkAction() {
+	public BulkActionDFS createBulkAction() {
 		return new SerialNumberBulkAction(this);
 	}
-
 }

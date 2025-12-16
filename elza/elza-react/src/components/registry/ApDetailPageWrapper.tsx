@@ -111,6 +111,7 @@ let scrollTop: number | undefined = undefined;
 export enum ExportState {
     PENDING = "PENDING",
     STARTED = "STARTED",
+    NEED_CONFIRM = "NEED_CONFIRM",
     COMPLETED = "COMPLETED",
 }
 
@@ -145,6 +146,8 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     const [collapsed, setCollapsed] = useState<boolean>(false);
     const [exportState, setExportState] = useState<ExportState>(ExportState.COMPLETED);
+    const [exportMessage, setExportMessage] = useState<string>(null);
+    const [itemQueueId, setItemQueueId] = useState<number>(-1);
     const [revisionActive, setRevisionActive] = useState<boolean>(revisionActiveUrl);
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -163,14 +166,14 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     // pri neexistenci revize dojde k zobrazeni samotne entity
     useEffect(() => {
         // change url when revisionActive changes
-        if (revisionActive !== revisionActiveUrl && !select) {
+        if (revisionActive !== revisionActiveUrl && !select && !detail.isFetching) {
             dispatch(goToAe(history, id, false, !select, revisionActive, true))
         }
     }, [revisionActive]);
 
     useEffect(() => {
         // redirect to url without revision, when the entity is not in revision state
-        if (detail.fetched && !detail.data?.revStateApproval && revisionActiveUrl && !select) {
+        if (detail.fetched && !detail.isFetching && !detail.data?.revStateApproval && revisionActiveUrl && !select) {
             dispatch(goToAe(history, id, false, !select, false, true))
         }
     }, [detail])
@@ -186,6 +189,14 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             [WebsocketEventType.ACCESS_POINT_EXPORT_STARTED]: ({ accessPointId }) => {
                 if (accessPointId.toString() === id.toString()) {
                     setExportState(ExportState.STARTED);
+                }
+            },
+            [WebsocketEventType.ACCESS_POINT_EXPORT_NEED_CONFIRM]: ({ accessPointId, state, itemQueueId }) => {
+                if (accessPointId.toString() === id.toString()) {
+                    setExportMessage(state || i18n("ap.push-to-ext.failed.message"));
+                    setItemQueueId(itemQueueId);
+                    setExportState(ExportState.NEED_CONFIRM);
+                    refreshDetail(id, true, false, revisionActive);
                 }
             },
             [WebsocketEventType.ACCESS_POINT_EXPORT_COMPLETED]: ({ accessPointId }) => {
@@ -234,6 +245,13 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         }
     }, [id, detail]);
 
+    // processing the need to confirm accesspoint export 
+    useEffect(() => {
+        if (exportState === ExportState.NEED_CONFIRM) {
+            handleExportConfirm(exportMessage, itemQueueId);
+        }
+    }, [exportState])
+
     const isStoreLoading = (stores: Array<BaseRefTableStore<unknown> | DetailStoreState<unknown>>) =>
         stores.some((store) => !store.fetched || store.isFetching)
 
@@ -278,6 +296,11 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         }
     };
 
+    const handleExportConfirm = async (message, itemQueueId) => {
+        const confirmResult = await showConfirmDialog(message);
+        await Api.accesspoints.accessPointExportForceOrNo(itemQueueId, confirmResult);
+    };
+
     const handleDelete = async ({ part, updatedPart }: RevisionPart) => {
         const deletedPart = part ? part : updatedPart;
         const message = deletedPart?.value ? i18n("ap.detail.delete.confirm.value", deletedPart.value) : i18n("ap.detail.delete.confirm");
@@ -289,7 +312,6 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                 part ? await deletePart(id, deletedPart.id, apVersion, revisionActive) : await deleteRevisionPart(id, deletedPart.id, apVersion, revisionActive);
                 restoreScrollPosition();
             }
-
             refreshValidation(id, revisionActive);
         }
     };
@@ -599,7 +621,6 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
                 await Api.accesspoints.accessPointDeletePart(apId, part.id);
             }
         }
-
         dispatch(goToAe(history, apId, true, !select, revisionActive));
     },
     updateRevisionPart: async (apId: number, part: ApPartVO, typeCode: string, apVersion: number) => {
@@ -614,7 +635,10 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         dispatch(DetailActions.fetchIfNeeded(
             AP_VALIDATION,
             apId,
-            (id: number) => WebApi.validateAccessPoint(id, includeRevision),
+            async (id: number) => {
+                const { data } = await Api.accesspoints.accessPointValidateAccessPoint(id, includeRevision);
+                return data;
+            },
             true
         ));
     },

@@ -1,0 +1,147 @@
+@import "../../../variables.scss";
+@import "../ReferenceMark.scss";
+
+$rowHeight: 24px;
+
+.search-funds-form.modal-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+
+    .fund-search {
+        // min-height: 300px;
+        flex-grow: 1;
+        overflow: hidden;
+
+        &.no-fulltext {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        &.result {
+            margin-top: 10px;
+            // padding: 5px;
+            border: 1px solid $border-color;
+
+            .result-list {
+                height: 100%;
+                overflow-y: auto;
+
+                .exp-col,
+                .detail-col {
+                    flex-grow: 1;
+                    line-height: 20px;
+                    min-width: 26px;
+                    max-width: 26px;
+                    text-align: center;
+                    vertical-align: middle;
+                    cursor: pointer;
+                }
+
+                .detail-col {
+                    font-size: 16px;
+                }
+
+                .referenceMark {
+                    @extend .referenceMark;
+                }
+
+                .item {
+                    display: flex;
+                    align-items: center;
+                    width: 100%;
+                    height: $rowHeight;
+                    margin: 5px 0;
+                    white-space: nowrap;
+                    font-size: 0.9em;
+
+                    &-icon {
+                        height: 20px;
+                        line-height: 20px;
+                        vertical-align: middle;
+                        margin: 0 5px 0 3px;
+                        padding: 0 6px;
+                        border-radius: 20px;
+                        text-align: center;
+                    }
+
+                    &-label {
+                        // display: flex;
+                        // align-items: center;
+                        // justify-content: space-between;
+                        // height: 24px;
+                        line-height: 24px;
+                        // vertical-align: middle;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        flex-grow: 1;
+
+                        &:hover {
+                            background: $shade-2;
+                        }
+                    }
+                }
+
+                .nodes {
+                    // display: table;
+                    width: 100%;
+
+                    .node {
+                        display: flex;
+                        cursor: pointer;
+
+                        // display: table-row;
+                        &:hover {
+                            background: $tree-node-label-active-bg;
+                        }
+
+                        .levels {
+                            // vertical-align: middle;
+                            padding-left: 20px;
+                            flex-shrink: 0;
+                            // display: table-cell;
+                        }
+
+                        .svg-icon {
+                            // display: table-cell;
+                        }
+
+                        .item-label {
+                            // display: table-cell;
+                            // width: 100%;
+                            // vertical-align: middle;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            display: block;
+                        }
+
+                        .detail-col {
+                            // display: table-cell;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.horizontal-radio {
+    display: flex;
+    margin-bottom: 10px;
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        margin-right: 15px;
+
+        &:last-child {
+            margin-right: 0;
+        }
+    }
+}

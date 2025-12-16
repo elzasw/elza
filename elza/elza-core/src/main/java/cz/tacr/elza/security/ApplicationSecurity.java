@@ -19,6 +19,10 @@ import java.util.Optional;
 import com.nimbusds.jose.util.JSONObjectUtils;
 import com.nimbusds.jose.util.Resource;
 import com.nimbusds.jose.util.ResourceRetriever;
+
+import cz.tacr.elza.security.kerberos.KerberosProperties;
+import cz.tacr.elza.security.ldap.ActiveDirectoryUserDetailProvider;
+import cz.tacr.elza.security.ldap.LdapProperties;
 import cz.tacr.elza.security.oauth2.JwtUserDetailProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +35,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -45,11 +50,27 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.kerberos.authentication.KerberosAuthenticationProvider;
+import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
+import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosClient;
+import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosTicketValidator;
+import org.springframework.security.kerberos.client.config.SunJaasKrb5LoginConfig;
+import org.springframework.security.kerberos.client.ldap.KerberosLdapContextSource;
+import org.springframework.security.ldap.authentication.NullLdapAuthoritiesPopulator;
+import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
+import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
+import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
+import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import org.springframework.security.web.firewall.HttpFirewall;
+import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.Assert;
@@ -75,6 +96,13 @@ import cz.tacr.elza.service.UserService;
 public class ApplicationSecurity {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationSecurity.class);
+
+    /**
+     * These patterns need to be allowed to access without authorization
+     * to make it possible to navigate from the browser address bar for unauthorized users
+     * @see cz.tacr.elza.web.controller.ElzaWebController (elza-web)
+     */
+    public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/static/**", "/fund/**", "/node/**", "/entity/**", "/admin/**", "/h2-console/**"};
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -107,6 +135,12 @@ public class ApplicationSecurity {
     @Autowired
     private Optional<OAuth2Properties> optionalOAuth2Props;
 
+    @Autowired
+    private Optional<LdapProperties> optionalLdapProps;
+
+    @Autowired
+    private Optional<KerberosProperties> optionalKerberosProps;
+
     private SessionRegistry sessionRegistry = null;
 
     @Bean
@@ -128,15 +162,35 @@ public class ApplicationSecurity {
 
         ap.add(new PasswordAutheticationProvider(userService));
         if (optionalSsoHeaderProperties.isPresent()) {
-            ap.add(new SsoHeaderAuthenticationProvider(userService));
+            ap.add(new SsoHeaderAuthenticationProvider(userService, txManager));
         }
         if (optionalOAuth2Props.isPresent()) {
+        	log.debug("Adding JWT based provider.");
             JwtDecoder jwtDecoder = applicationContext.getBean(JwtDecoder.class);
             AccessPointService apService = applicationContext.getBean(AccessPointService.class);
 
             ap.add(new JwtUserDetailProvider(jwtDecoder, txManager, userService, apService,
                     itemTypeRepository, optionalOAuth2Props.get()));
         }
+        if(optionalLdapProps.isPresent()) {
+			if (optionalLdapProps.get().getAdDomain() != null) {
+				log.debug("Adding ActiveDirectory provider, domain: {}, server: {}.",
+						optionalLdapProps.get().getAdDomain(), optionalLdapProps.get().getAdServer());
+				// adding active directory domain
+				var adProvider = new ActiveDirectoryUserDetailProvider(optionalLdapProps.get(), txManager, userService);
+				
+				ap.add(adProvider);
+			}
+        }
+        if(optionalKerberosProps.isPresent()) {
+			// adding default Kerberos provider
+			log.debug("Adding generic Kerberos Authentication provider.");
+			ap.add(kerberosAuthenticationProvider());
+			
+			log.debug("Adding generic Kerberos Service Authentication provider.");
+			ap.add(kerberosServiceAuthenticationProvider());
+        }
+
         return new ProviderManager(ap);
     }
 
@@ -214,6 +268,46 @@ public class ApplicationSecurity {
         }
     }
 
+	@Bean
+    @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
+	public KerberosLdapContextSource kerberosLdapContextSource() throws Exception {
+		log.debug("Creating KerberosLdapContextSource for principal: {}", optionalKerberosProps.get().getServicePrincipal());
+		
+		SunJaasKrb5LoginConfig loginConfig = new SunJaasKrb5LoginConfig();
+		loginConfig.setKeyTabLocation(new FileSystemResource(optionalKerberosProps.get().getKeytabLocation()));
+		loginConfig.setServicePrincipal(optionalKerberosProps.get().getServicePrincipal());
+		loginConfig.setDebug(true);
+		loginConfig.setIsInitiator(true);
+		loginConfig.afterPropertiesSet();
+
+		KerberosLdapContextSource contextSource = new KerberosLdapContextSource(optionalLdapProps.get().getAdServer());
+		contextSource.setLoginConfig(loginConfig);
+		return contextSource;
+	}
+
+	@Bean
+	@ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
+	public LdapUserDetailsService ldapUserDetailsService() throws Exception {
+		log.debug("Creating LdapUserDetailsService.");
+		
+		FilterBasedLdapUserSearch userSearch =
+				new FilterBasedLdapUserSearch(optionalKerberosProps.get().getLdapSearchBase() , 
+						optionalKerberosProps.get().getLdapSearchFilter(), kerberosLdapContextSource());
+		LdapUserDetailsService service =
+				new LdapUserDetailsService(userSearch, new NullLdapAuthoritiesPopulator());
+		service.setUserDetailsMapper(new LdapUserDetailsMapper());
+		return service;
+	}
+	
+	@Bean
+    public HttpFirewall strictHttpFirewall() {
+    	// This allows to accept some Czech characters as header values when using SSO header
+        StrictHttpFirewall firewall = new StrictHttpFirewall();
+        // allow all header values
+        firewall.setAllowedHeaderValues(v -> true);
+        return firewall;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -221,12 +315,12 @@ public class ApplicationSecurity {
         	.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
 
     		// by https://www.baeldung.com/spring-security-migrate-5-to-6
-        	/** 
+        	/**
         	 * Dotaz na autorizaci /login je vychozi endpoint a nevyžaduje zvláštní povolení k přístupu,
         	 * tento dotaz je zpracován výchozím Spring controller.
         	 */
     		.authorizeHttpRequests(auth -> auth
-    				.requestMatchers("/", "/res/**").permitAll()
+    				.requestMatchers(PERMIT_ALL_PATTERNS).permitAll()
     				.anyRequest().authenticated())
     		.httpBasic(Customizer.withDefaults())
 
@@ -245,6 +339,7 @@ public class ApplicationSecurity {
 
         configureSsoHeaderFilter(http);
         configureOAuth2(http);
+        configureKerberos(http);
         return http.build();
     }
 
@@ -265,13 +360,92 @@ public class ApplicationSecurity {
     }
 
     private void configureSsoHeaderFilter(HttpSecurity http) throws Exception {
-        if (optionalSsoHeaderProperties.isPresent()) {
-            SsoHeaderAuthenticationFilter filter = new SsoHeaderAuthenticationFilter(optionalSsoHeaderProperties.get());
-            filter.setAuthenticationManager(authenticationManagerBean());
-            filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
-            filter.setAuthenticationFailureHandler(authenticationFailureHandler);
-            http.addFilterBefore(filter, AbstractPreAuthenticatedProcessingFilter.class);
-            log.info("SSO header authentication filter was configured");
+        if (!optionalSsoHeaderProperties.isPresent()) {
+        	return;
         }
+
+        SsoHeaderAuthenticationFilter filter = new SsoHeaderAuthenticationFilter(optionalSsoHeaderProperties.get());
+        filter.setAuthenticationManager(authenticationManagerBean());
+        filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+        filter.setAuthenticationFailureHandler(authenticationFailureHandler);
+
+        http
+        	.addFilterBefore(filter, AbstractPreAuthenticatedProcessingFilter.class);
+
+        log.info("SSO header authentication filter was configured");
+    }
+
+	private void configureKerberos(HttpSecurity http) {
+        if (!optionalKerberosProps.isPresent()) {
+            return;
+        }
+        log.debug("Configuring Kerberos filter.");
+
+        /*ProviderManager providerManager = new ProviderManager(kerberosAuthenticationProvider(), kerberosServiceAuthenticationProvider());
+        SpnegoAuthenticationProcessingFilter spnegoAuthenticationProcessingFilter = new SpnegoAuthenticationProcessingFilter();
+        spnegoAuthenticationProcessingFilter.setAuthenticationManager(providerManager);*/
+        
+        //http
+        //	.authenticationProvider(kerberosServiceAuthenticationProvider())
+        	//.addFilterBefore(spnegoAuthenticationProcessingFilter, BasicAuthenticationFilter.class)
+        //	;
+
+        log.info("Kerberos authentication filter was configured.");
+	}
+	
+    @Bean
+    @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
+    public KerberosAuthenticationProvider kerberosAuthenticationProvider() {
+        // Configure native JRE Kerberos client
+        SunJaasKerberosClient client = new SunJaasKerberosClient();
+        client.setDebug(optionalKerberosProps.get().isKerberosClientDebug());
+        
+        // Prepare authentication provider based on default Kerberos client
+        KerberosAuthenticationProvider provider = new KerberosAuthenticationProvider();
+        provider.setKerberosClient(client);
+        provider.setUserDetailsService(userDetailsService());
+        return provider;
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
+    public KerberosServiceAuthenticationProvider kerberosServiceAuthenticationProvider() {
+        KerberosServiceAuthenticationProvider provider = new KerberosServiceAuthenticationProvider();
+        provider.setTicketValidator(sunJaasKerberosTicketValidator());
+        provider.setUserDetailsService(userDetailsService());
+        return provider;
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
+    public SunJaasKerberosTicketValidator sunJaasKerberosTicketValidator() {
+    	var kerberosPros = optionalKerberosProps.get();
+    	
+    	/**
+    	 * Basic implementation of ticket validator in Kerberos
+    	 */
+        SunJaasKerberosTicketValidator ticketValidator = new SunJaasKerberosTicketValidator();
+        ticketValidator.setServicePrincipal(kerberosPros.getServicePrincipal());
+        // Should be domain set here?
+        //ticketValidator.setRealmName(kerberosPros.getRealmName());
+        
+        // 
+        ticketValidator.setKeyTabLocation(new FileSystemResource(kerberosPros.getKeytabLocation()));    
+        ticketValidator.setDebug(kerberosPros.isTicketValidatorDebug());
+        return ticketValidator;
+    }
+
+    // @Bean
+    // @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
+    public UserDetailsService userDetailsService() {
+    	return new UserDetailsService() {
+
+			@Override
+			public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+				return userService.loadUserByUsername(username);
+			}
+    		
+    	};
+    	//return userService;
     }
 }

@@ -59,7 +59,7 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
     ArrStructuredObject findActiveByUuidOneFetch(@Param("uuid") String uuid);
 
     @Query("SELECT sd FROM arr_structured_object sd JOIN FETCH sd.structuredType WHERE sd.structuredObjectId IN :structuredObjectId")
-    List<ArrStructuredObject> findByIdsFetch(@Param("structuredObjectId") List<Integer> structuredObjectId);
+    List<ArrStructuredObject> findByIdsFetch(@Param("structuredObjectId") Collection<Integer> structuredObjectId);
 
     @Query("SELECT sd.structuredObjectId FROM arr_structured_object sd WHERE sd.structuredType IN :structuredTypes AND sd.deleteChange IS NULL")
     List<Integer> findStructuredObjectIdByStructureTypes(@Param("structuredTypes") Collection<RulStructuredType> structuredTypes);
@@ -140,19 +140,15 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
         Integer getValue();
     }
 
-    @Query(nativeQuery = true, value = "select pref_ds.value AS prefix, max(di.value) as value from arr_structured_object so "
-            +
+    @Query(nativeQuery = true, value = "select pref_ds.string_value AS prefix, max(di.integer_value) as value from arr_structured_object so " +
             "join arr_structured_item si on si.structured_object_id = so.structured_object_id " +
-            "join arr_item i on i.item_id = si.item_id and i.delete_change_id is null and i.item_type_id = :numberItemTypeId "
-            +
+            "join arr_item i on i.item_id = si.item_id and i.delete_change_id is null and i.item_type_id = :numberItemTypeId " +
             "join arr_data_integer di on di.data_id = i.data_id " +
             "left join arr_structured_item pref_si on pref_si.structured_object_id = so.structured_object_id " +
-            "left join arr_item pref_i on pref_i.item_id = pref_si.item_id and pref_i.delete_change_id is null and pref_i.item_type_id = :prefixItemTypeId "
-            +
+            "left join arr_item pref_i on pref_i.item_id = pref_si.item_id and pref_i.delete_change_id is null and pref_i.item_type_id = :prefixItemTypeId " +
             "left join arr_data_string pref_ds on pref_ds.data_id  = pref_i.data_id " +
-            "where so.fund_id = :fundId and so.delete_change_id is null "
-            +
-            "group by pref_ds.value")
+            "where so.fund_id = :fundId and so.delete_change_id is null " +
+            "group by pref_ds.string_value")
     List<MaximalItemValues> countMaximalItemValues(@Param("fundId") Integer fundId,
                                                @Param("prefixItemTypeId") Integer prefixItemTypeId,
                                                @Param("numberItemTypeId") Integer numberItemTypeId);
