@@ -542,13 +542,14 @@ public class EntityDBDispatcher {
 				if (stateNew == null) {
 					state.setDeleteChange(procCtx.getApChange());
 					state = stateRepository.save(state);
+					stateRepository.flush();
 					stateNew = accessPointService.copyState(state, procCtx.getApChange());
 				}
 				if(state.getDeleteChangeId() != null) {
 	        		// entity is return to non deleted state
 	        		log.info("Deleted entity is restored to non deleted state, ap id: {}, ext. entity id: {}", state.getAccessPointId(), 
 	        				entity.getEid()!=null?entity.getEid().getValue():"");
-	        		state.setDeleteChange(null);
+	        		stateNew.setDeleteChange(null);
 				}
 
 				stateNew.setStateApproval(newStateApproval);
