@@ -340,10 +340,15 @@
             <scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>com.sun.xml.messaging.saaj</groupId>
-		    <artifactId>saaj-impl</artifactId>
+			<groupId>com.sun.xml.messaging.saaj</groupId>
+			<artifactId>saaj-impl</artifactId>
 		</dependency>
-        <dependency>
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>9.0</version>
+		</dependency>
+		<dependency>
             <groupId>com.lightcomp.ft</groupId>
             <artifactId>file-transfer</artifactId>
             <version>2.0</version>
@@ -423,7 +428,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <!--<version>3.3.0</version>-->
+				<!--<version>3.3.0</version>-->
                 <executions>
                     <execution>
                         <id>add-gen-sources</id>
@@ -590,7 +595,7 @@
                     </execution>
 				</executions>
                 <dependencies>
-                    <!--<dependency>
+					<!--<dependency>
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-xjc</artifactId>
                         <version>2.3.2</version>
@@ -694,8 +699,8 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--  TODO pasek hack - cxf-codegen-plugin moment�ln� neum� generovat t��dy s jakarta ee9, nutno ru�n� p�epsat importy -->
-            <!--
+			<!--  TODO pasek hack - cxf-codegen-plugin moment�ln� neum� generovat t��dy s jakarta ee9, nutno ru�n� p�epsat importy -->
+			<!--
             <plugin> 
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>maven-replacer-plugin</artifactId>
