@@ -2013,6 +2013,7 @@ public class AccessPointService {
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         oldState.setDeleteChange(change);
         stateRepository.save(oldState);
+        stateRepository.flush();
 
         ApState newState = copyState(oldState, change);
         newState.setApType(apType);
@@ -2541,6 +2542,14 @@ public class AccessPointService {
         return trgAccessPoint;
     }
 
+    /**
+     * Copy state.
+     * 
+     * deleteChange and replacedBy are set to null (not copied)
+     * @param oldState
+     * @param change
+     * @return
+     */
     public ApState copyState(ApState oldState, ApChange change) {
         ApState newState = new ApState();
         newState.setAccessPoint(oldState.getAccessPoint());
