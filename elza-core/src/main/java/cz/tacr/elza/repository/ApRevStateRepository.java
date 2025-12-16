@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -22,4 +23,6 @@ public interface ApRevStateRepository extends ElzaJpaRepository<ApRevState, Inte
 
     @Query("SELECT rs FROM ap_rev_state rs JOIN FETCH rs.revision rev WHERE rev.state in :states AND rs.deleteChange IS NULL")
     List<ApRevState> findByStates(@Param("states") List<ApState> state);
+
+	void deleteAllByRevisionIdIn(Collection<Integer> revisionIds);
 }

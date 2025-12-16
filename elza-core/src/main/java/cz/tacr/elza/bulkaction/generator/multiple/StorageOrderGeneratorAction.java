@@ -3,6 +3,7 @@ package cz.tacr.elza.bulkaction.generator.multiple;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -13,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.multiple.StorageOrderGeneratorConfig.WhenCondition;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
@@ -58,21 +59,20 @@ public class StorageOrderGeneratorAction extends Action {
     }
 
     @Override
-    public void init(BulkAction bulkAction, ArrBulkActionRun bulkActionRun) {
+    public void init(BulkActionTransactional bulkAction, ArrBulkActionRun bulkActionRun) {
         super.init(bulkAction, bulkActionRun);
 
-        fundVersion = bulkActionRun.getFundVersion();
-        change = bulkActionRun.getChange();
+        fundVersion = bulkAction.getFondsVersion();
+        change = bulkAction.getChange();
 
         StaticDataProvider sdp = getStaticDataProvider();
-        this.storageItemType = sdp.getItemTypeByCode(config.getStorageItemType());
-        Validate.notNull(this.storageItemType);
+        storageItemType = sdp.getItemTypeByCode(config.getStorageItemType());
+        Objects.requireNonNull(storageItemType);
         Validate.isTrue(storageItemType.getDataType() == DataType.STRUCTURED);
 
-        this.orderItemType = sdp.getItemTypeByCode(config.getOrderItemType());
-        Validate.notNull(this.orderItemType);
+        orderItemType = sdp.getItemTypeByCode(config.getOrderItemType());
+        Objects.requireNonNull(orderItemType);
         Validate.isTrue(orderItemType.getDataType() == DataType.INT);
-
     }
 
     @Override

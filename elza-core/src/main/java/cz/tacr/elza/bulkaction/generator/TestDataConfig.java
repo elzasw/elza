@@ -3,7 +3,7 @@ package cz.tacr.elza.bulkaction.generator;
 import java.util.List;
 
 import cz.tacr.elza.bulkaction.BaseActionConfig;
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 
 public class TestDataConfig extends BaseActionConfig {
 
@@ -18,7 +18,7 @@ public class TestDataConfig extends BaseActionConfig {
 	}
 
 	@Override
-	public BulkAction createBulkAction() {
+	public BulkActionTransactional createBulkAction() {
 		return new TestDataGenerator(this);
 	}
 

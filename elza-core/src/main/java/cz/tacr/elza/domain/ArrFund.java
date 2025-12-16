@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -32,6 +33,15 @@ import cz.tacr.elza.domain.interfaces.Versionable;
 @Cache(region = "fund", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrFund extends AbstractVersionableEntity implements Versionable, ArrFundGetter {
+
+    public static final String FIELD_FUND_ID = "fundId";
+    public static final String FIELD_NAME = "name";
+    public static final String FIELD_INTERNAL_CODE = "internalCode";
+    public static final String FIELD_MARK = "mark";
+    public static final String FIELD_FUND_NUMBER = "fundNumber";
+    public static final String FIELD_INSTITUTION_ID = "institutionId";
+    public static final String FIELD_INSTITUTION = "institution";
+    public static final String FIELD_UNITDATE = "unitdate";
 
 	@Id
 	@GeneratedValue
@@ -57,16 +67,19 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, A
 	private String mark;
 
 	@OneToOne(fetch = FetchType.LAZY, targetEntity = ParInstitution.class)
-	@JoinColumn(name = "institutionId", nullable = false)
+	@JoinColumn(name = FIELD_INSTITUTION_ID, nullable = false)
 	private ParInstitution institution;
 
-	@OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
+    @Column(name = FIELD_INSTITUTION_ID, updatable = false, insertable = false)
+    private Integer institutionId;
+    
+    @OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
 	private List<ArrFundVersion> versions;
 
 	@OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)
 	private List<ArrOutput> outputs;
 
-    @JoinColumn(nullable = true)
+    @Column(nullable = true)
 	private Boolean managed;
 
 	public Integer getFundId() {
@@ -125,12 +138,17 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, A
 		this.mark = mark;
 	}
 
+	public Integer getInstitutionId() {
+		return institutionId;
+	}
+
 	public ParInstitution getInstitution() {
 		return institution;
 	}
 
 	public void setInstitution(final ParInstitution institution) {
 		this.institution = institution;
+        this.institutionId = (institution != null) ? institution.getInstitutionId() : null;
 	}
 
 	public List<ArrFundVersion> getVersions() {

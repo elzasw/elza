@@ -14,6 +14,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDataText;
@@ -25,14 +26,12 @@ import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.StructObjItem;
 import cz.tacr.elza.drools.model.Structured;
 import cz.tacr.elza.repository.StructuredItemRepository;
-import cz.tacr.elza.service.vo.Language;
 import cz.tacr.elza.service.vo.SimpleItem;
 
 /**
@@ -49,9 +48,20 @@ public class ModelFactory {
      * @return vo level
      */
     static public Level createLevel(final ArrLevel level, final ArrFundVersion version) {
+        return createLevel(level.getNode().getNodeId(), version);
+    }
+
+    /**
+     * Vytvoří level.
+     *
+     * @param nodeId
+     * @param version verze levelu
+     * @return Level object for rules
+     */
+    static public Level createLevel(final Integer nodeId, final ArrFundVersion version) {
 
         Level result = new Level();
-        result.setNodeId(level.getNode().getNodeId());
+        result.setNodeId(nodeId);
 
         return result;
     }
@@ -64,7 +74,8 @@ public class ModelFactory {
      */
     static public List<DescItem> createDescItems(@Nullable final List<ArrDescItem> descItems,
 	        DescItemFactory descItemFactory,
-	        StructuredItemRepository itemRepos)
+	        StructuredItemRepository itemRepos,
+	        ApProvider apProvider)
     {
     	if(descItems==null) {
     		return new ArrayList<>();
@@ -92,6 +103,10 @@ public class ModelFactory {
                 } else if (data.getType() == DataType.UNITDATE) {
                     ArrDataUnitdate unitDate = HibernateUtils.unproxy(data);
                     voDescItem.setUnitDate(unitDate);
+                } else if (data.getType() == DataType.RECORD_REF) {
+                	// store entity id as integer value
+                    ArrDataRecordRef recordRef = HibernateUtils.unproxy(data);
+                    voDescItem.setAp(apProvider.getAp(recordRef.getRecordId()));                	
                 }
             }
         }
@@ -182,13 +197,6 @@ public class ModelFactory {
             result.add(fi);
         }
         return result;
-    }
-
-    private static Language createApLanguage(final SysLanguage language) {
-        if (language == null) {
-            return null;
-        }
-        return new Language(language.getLanguageId(), language.getName(), language.getCode());
     }
 
 }

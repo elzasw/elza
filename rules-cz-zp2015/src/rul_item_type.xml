@@ -1003,7 +1003,7 @@
     </item-type>
 
     <!-- Technika, adjustace, nosič a látka záznamu - strukturovaný popis -->
-    <item-type code="ZP2015_ITEM_MAT_TECHNIKA" data-type="TEXT">
+    <item-type code="ZP2015_ITEM_MAT_TECHNIKA" data-type="STRING">
         <name>Technika záznamu</name>
         <shortcut>Techn. záznamu</shortcut>
         <description>ZP5.2.8 Technika záznamu</description>
@@ -1011,7 +1011,7 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_ITEM_MAT_ADJUSTACE" data-type="TEXT">
+    <item-type code="ZP2015_ITEM_MAT_ADJUSTACE" data-type="STRING">
         <name>Adjustace nosiče záznamu</name>
         <shortcut>Adjustace</shortcut>
         <description>ZP5.2.8 Adjustace nosiče záznamu</description>
@@ -1019,7 +1019,7 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_ITEM_MAT_NOSIC" data-type="TEXT">
+    <item-type code="ZP2015_ITEM_MAT_NOSIC" data-type="STRING">
         <name>Nosič záznamu</name>
         <shortcut>Nosič</shortcut>
         <description>ZP5.2.8 Nosič záznamu</description>
@@ -1027,10 +1027,18 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_ITEM_MAT_LATKA_ZAZNAMU" data-type="TEXT">
+    <item-type code="ZP2015_ITEM_MAT_LATKA_ZAZNAMU" data-type="STRING">
         <name>Látka záznamu</name>
         <shortcut>Látka záznamu</shortcut>
         <description>ZP5.2.8 Látka záznamu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_ITEM_MAT_BAREVNOST" data-type="STRING">
+        <name>Barevnost</name>
+        <shortcut>Barevnost</shortcut>
+        <description>ZP5.2.8 Barevnost</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
@@ -1164,5 +1172,14 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+    </item-type>
+<!-- dříve Typ dokumentace ("ZP2015_DOCUMENTATION_TYPE"), změna na "ZP2015_AGENDA_TYPE", viz bug 9178-->
+    <item-type code="ZP2015_AGENDA_TYPE" data-type="ENUM">
+        <name>Typ agendy</name>
+        <shortcut>Typ agendy</shortcut>
+        <description>Typ agendy či dokumentace</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
     </item-type>
 </item-types>

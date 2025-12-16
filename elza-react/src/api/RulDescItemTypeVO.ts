@@ -1,5 +1,5 @@
-import {RulItemTypeType} from "./RulItemTypeType";
-import {TreeItemSpecsItem} from "./TreeItemSpecsItem";
+import { RulItemTypeType } from "./RulItemTypeType";
+import { TreeItemSpecsItem } from "./TreeItemSpecsItem";
 
 /**
  * VO typu hodnoty atributu
@@ -67,7 +67,7 @@ export interface RulDescItemTypeVO {
      */
     repeatable: boolean;
 
-    viewDefinition: object;
+    viewDefinition: object | string;
 
     /**
      * Kategorie specifikací.

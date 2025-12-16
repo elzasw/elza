@@ -2,18 +2,17 @@ package cz.tacr.elza.domain;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
-import org.apache.commons.lang3.Validate;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.google.common.base.Objects;
 
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.common.db.CharConverter;
 import cz.tacr.elza.core.data.DataType;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.CalendarConverter;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
+import cz.tacr.elza.validation.ValidUnitDate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -26,6 +25,7 @@ import jakarta.persistence.Table;
 @Entity(name = "arr_data_unitdate")
 @Table
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@ValidUnitDate
 public class ArrDataUnitdate extends ArrData implements IUnitdate {
 
     public static final String NORMALIZED_FROM = "normalizedFrom";
@@ -164,7 +164,7 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
 
     @Override
     public String getFulltextValue() {
-        String unitdateString = UnitDateConvertor.convertToString(this);
+        String unitdateString = UnitDateConverter.convertToString(this);
         return unitdateString;
     }
 
@@ -182,11 +182,11 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
     protected boolean isEqualValueInternal(ArrData srcData) {
 	    ArrDataUnitdate src = (ArrDataUnitdate)srcData;
 
-	    if(!Objects.equal(valueFrom, src.valueFrom)||
-	       !Objects.equal(valueFromEstimated, src.valueFromEstimated)||
-	       !Objects.equal(valueTo, src.valueTo)||
-	       !Objects.equal(valueToEstimated, src.valueToEstimated)||
-	       !Objects.equal(format, src.format)) {
+	    if(!Objects.equals(valueFrom, src.valueFrom)||
+	       !Objects.equals(valueFromEstimated, src.valueFromEstimated)||
+	       !Objects.equals(valueTo, src.valueTo)||
+	       !Objects.equals(valueToEstimated, src.valueToEstimated)||
+	       !Objects.equals(format, src.format)) {
 	        return false;
 	    }
         return true;
@@ -198,19 +198,10 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
         copyValue(src);
     }
 
-    @Override
-    protected void validateInternal() {
-        Validate.notNull(format);
-        Validate.notNull(normalizedFrom);
-        Validate.notNull(normalizedTo);
-        Validate.notNull(valueFromEstimated);
-        Validate.notNull(valueToEstimated);
-    }
-
     static public ArrDataUnitdate valueOf(String v) {
         ArrDataUnitdate du = new ArrDataUnitdate();
 
-        UnitDateConvertor.convertToUnitDate(v, du);
+        UnitDateConverter.convertToUnitDate(v, du);
 
         // set normalized values
         String valueFrom = du.getValueFrom();
@@ -233,4 +224,5 @@ public class ArrDataUnitdate extends ArrData implements IUnitdate {
 
         return du;
     }
+
 }

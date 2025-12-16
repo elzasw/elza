@@ -420,13 +420,15 @@ public class AccessPointItemService {
     }
 
     /**
-     * Vytvoření entity hodnoty atributu přístupového bodu.
+     * Create new access point item 
+     * 
+     * Method will check if dataType of {@code data} matches dataType of {@code itemType}.
      *
      * @param accessPoint
      *            přístupový bod pro který atribut tvoříme
-     * @param it
-     *            typ atributu
-     * @param is
+     * @param itemType
+     *            item type
+     * @param itemSpec
      *            specifikace atribututu
      * @param c
      *            změna
@@ -438,13 +440,21 @@ public class AccessPointItemService {
      */
     public ApItem createItem(final ApPart part,
                              final ArrData data,
-                             final RulItemType it,
-                             final RulItemSpec is, final ApChange c,
+                             final RulItemType itemType,
+                             final RulItemSpec itemSpec, final ApChange c,
                              final int objectId, final int position) {
+    	// check if correct dataType
+    	Integer dataTypeId = itemType.getDataTypeId();
+    	if(!dataTypeId.equals(data.getDataTypeId())) {
+    		log.error("Received data with unexpected dataTypeId, expected dataTypeId: {}, recieved dataTypeId: {}", dataTypeId, data.getDataTypeId());
+    		throw new BusinessException("Received data with unexpected dataTypeId, expected dataTypeId: " + dataTypeId, BaseCode.PROPERTY_IS_INVALID)
+    			.set("receivedDataTypeId", data.getDataTypeId()).set("expectedDataTypeId", dataTypeId);
+    	}
+    	
         ApItem item = new ApItem();
         item.setData(data);
-        item.setItemType(it);
-        item.setItemSpec(is);
+        item.setItemType(itemType);
+        item.setItemSpec(itemSpec);
         item.setCreateChange(c);
         item.setObjectId(objectId);
         item.setPosition(position);

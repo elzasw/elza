@@ -95,7 +95,8 @@
                 <type code="ZP2015_DAO_LINK" width="0"/>
                 <type code="ZP2015_EXTRA_UNITS" width="2"/>
                 <type code="ZP2015_UNIT_EXT_TYPE" width="1"/>
-                <type code="ZP2015_CONNECTED_RECORD" width="2"/>                
+                <type code="ZP2015_CONNECTED_RECORD" width="2"/>
+                <type code="ZP2015_AGENDA_TYPE" width="2"/>                
             </group>
             <group code="03_OUTPUT_ITEMS">
               <name>Prvky popisu výstupu</name>
@@ -177,7 +178,7 @@
                 <name>Podmínky a omezení přístupu</name>
                 <!-- 4.4.1 Podmínky přístupu, práva k jednotce popisu a její reprodukci -->
                 <type code="ZP2015_UNIT_ACCESS" width="0"/>
-                <type code="ZP2015_PUBLISHED"  width="2"/>
+                <type code="ZP2015_PUBLISHED"  width="1"/>
                 <type code="ZP2015_RESTRICTION_ACCESS_SHARED" width="2"/>
                 <type code="ZP2015_RESTRICTION_ACCESS_INLINE" width="2"/>                
                 <!-- 4.4.2 Možnost zveřejnění informací o jednotce popisu -->
@@ -213,6 +214,7 @@
                 <type code="ZP2015_ITEM_MAT_ADJUSTACE" width="1"/>
                 <type code="ZP2015_ITEM_MAT_NOSIC" width="1"/>
                 <type code="ZP2015_ITEM_MAT_LATKA_ZAZNAMU" width="1"/>
+                <type code="ZP2015_ITEM_MAT_BAREVNOST" width="1"/>
                 <!-- 5.2.9 Díl, část, pořadí vydání jednotky popisu -->
                 <type code="ZP2015_PART" width="1"/>
                 <!--  5.2.10 Jazyk -->

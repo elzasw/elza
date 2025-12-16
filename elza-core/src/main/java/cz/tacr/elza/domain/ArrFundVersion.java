@@ -37,6 +37,7 @@ public class ArrFundVersion extends AbstractVersionableEntity implements Version
 
     public static final String TABLE_NAME = "arr_fund_version";
 
+    public static final String FIELD_FUND = "fund";
     public static final String FIELD_CREATE_CHANGE_ID = "createChangeId";
     public static final String FIELD_LOCK_CHANGE_ID = "lockChangeId";
 

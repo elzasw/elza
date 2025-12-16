@@ -17,13 +17,14 @@ import storeFromArea from '../../../../shared/utils/storeFromArea';
 import { DetailStoreState } from '../../../../types';
 import { Loading } from '../../../shared';
 import { RevisionItem } from '../../revision';
-import { addEmptyItems, addItemsWithValues } from './actions';
+import { addEmptyItems, createAutoValueItemWithIndex } from './actions';
 import { showAutoItemsModal } from './AutoItemsModal';
 import './PartEditForm.scss';
 import { renderAddActions } from './renderAddActions';
 import { ItemsWrapper } from './renderItems';
 import { handleValueUpdate } from './valueChangeMutators';
 import { AutoValue } from 'elza-api';
+import { ApItemStringVO } from 'api/ApItemStringVO';
 
 export interface RevisionApPartForm extends Omit<ApPartFormVO, 'items'> {
     items: RevisionItem[];
@@ -72,8 +73,8 @@ export const PartEditForm = ({
         arrayInsert: (index: number, value: any) => void,
         userAction: boolean,
     ) => addEmptyItems(
-        attributes, 
-        refTables, 
+        attributes,
+        refTables,
         formItems,
         partTypeId,
         (index: number, value: any) => {
@@ -108,8 +109,8 @@ export const PartEditForm = ({
 
             const handleAutoItems = async () => {
                 if(apId == undefined) {throw Error("no 'apId'");}
-                const {data} = revision 
-                    ? await Api.accesspoints.getRevAutoitems(apId.toString()) 
+                const {data} = revision
+                    ? await Api.accesspoints.accessPointGetRevAutoitems(apId.toString())
                     : await Api.accesspoints.accessPointGetAutoitems(apId.toString());
 
                 const result = await dispatch(showAutoItemsModal({
@@ -130,11 +131,14 @@ export const PartEditForm = ({
                                 return true;
                             }
                         })
-                        const currentItem = currentValue?.item || currentValue?.updatedItem;
+                        const currentItem = currentValue?.updatedItem || currentValue?.item;
 
                         if(currentItem && !attribute?.repeatable){
+                            const isOriginalValue = currentValue?.item?.value === autoValue.value && currentValue?.item?.specId == autoValue.itemSpecId;
                             form.change(`${arrayName}[${currentIndex}].updatedItem`, {
-                                ...currentItem, 
+                                ...currentItem,
+                                // set change type in case the currentItem is set as being deleted
+                                changeType: isOriginalValue ? "ORIGINAL" : "UPDATED",
                                 value: autoValue.value,
                                 specId: autoValue.itemSpecId,
                             })
@@ -144,22 +148,35 @@ export const PartEditForm = ({
                             newItems.push(autoValue);
                         }
                     })
+                    const orderedItems:RevisionItem<ApItemVO>[] = [...fields.value]
+                    const appendedNewItems:RevisionItem<ApItemStringVO>[] = [];
 
+                    // add all new items from auto values in correct order
                     newItems.forEach((autoValue)=>{
                         const attribute = availableAttributes.find((attribute) => autoValue.itemTypeId === attribute.itemTypeId);
-                        addItemsWithValues(
-                            attribute ? [attribute] : [], 
-                            autoValue ? [autoValue] : [],
-                            refTables, 
-                            fields.value,
-                            partTypeId,
-                            (index: number, value: any) => {
-                                console.log("insert item with value", value, index)
-                                fields.insert(index, value);
-                                handleValueUpdate(form);
-                            },
+                        if(!attribute){
+                            throw Error(`attribute not found: ${autoValue.itemTypeId}`);
+                        }
+                        const {item, index} = createAutoValueItemWithIndex(
+                            attribute,
+                            autoValue,
+                            refTables,
+                            orderedItems,
+                            partTypeId
                         )
+                        appendedNewItems.push(item);
+                        orderedItems.splice(index, 0, item);
                     })
+
+                    orderedItems.forEach((item, index) => {
+                        const isNew = appendedNewItems.find((_item) => _item === item) != undefined;
+                        // add items in correct order, skip existing
+                        if(isNew){
+                            fields.insert(index, item);
+                        }
+                    })
+
+                    handleValueUpdate(form);
                 }
             };
 
@@ -177,9 +194,9 @@ export const PartEditForm = ({
                     )}
                     <Row key="actions" className="mb-3 d-flex justify-content-between">
                         <Col style={{flex: 1}}>
-                            { availableAttributes 
+                            { availableAttributes
                                 && renderAddActions({
-                                    partTypeId, 
+                                    partTypeId,
                                     attributes: availableAttributes,
                                     refTables,
                                     handleAddItems,

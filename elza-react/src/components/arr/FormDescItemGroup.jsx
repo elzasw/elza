@@ -1,4 +1,4 @@
-import PropTypes, {bool, object} from 'prop-types';
+import PropTypes, { bool, object } from 'prop-types';
 import React from 'react';
 import AbstractReactComponent from '../AbstractReactComponent';
 import classNames from 'classnames';
@@ -134,33 +134,39 @@ class FormDescItemGroup extends AbstractReactComponent {
                 const rulDataType = refType.dataType;
                 const customActionsValue = customActions && customActions(rulDataType.code, infoType);
 
-                descItemTypes.push(
-                    <FormDescItemType
-                        parentId={subNodeForm.nodeId}
-                        key={descItemType.id}
-                        descItemType={descItemType}
-                        descItemTypeIndex={descItemTypeIndex}
-                        descItemGroupIndex={descItemGroupIndex}
-                        nodeSetting={nodeSetting}
-                        fundId={fundId}
-                        strictMode={strictMode}
-                        descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
-                        conformityInfo={conformityInfo}
-                        versionId={versionId}
-                        readMode={readMode}
-                        structureTypes={structureTypes}
-                        refType={refType}
-                        infoType={infoType}
-                        typePrefix={typePrefix}
-                        singleDescItemTypeEdit={singleDescItemTypeEdit}
-                        arrPerm={arrPerm}
-                        showNodeAddons={showNodeAddons}
-                        descItemFactory={descItemFactory}
-                        customActions={customActionsValue}
-                        descItemRef={descItemRef}
-                        {...onFuncs}
-                    />,
-                );
+                const descItemsWithValue = descItemType.descItems.filter(({ id, undefined: _undefined }) => id != undefined && !_undefined);
+                const hasValue = (descItemsWithValue && descItemsWithValue.length > 0);
+
+
+                if (hasValue || !readMode) {
+                    descItemTypes.push(
+                        <FormDescItemType
+                            parentId={subNodeForm.nodeId}
+                            key={descItemType.id}
+                            descItemType={descItemType}
+                            descItemTypeIndex={descItemTypeIndex}
+                            descItemGroupIndex={descItemGroupIndex}
+                            nodeSetting={nodeSetting}
+                            fundId={fundId}
+                            strictMode={strictMode}
+                            descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
+                            conformityInfo={conformityInfo}
+                            versionId={versionId}
+                            readMode={readMode}
+                            structureTypes={structureTypes}
+                            refType={refType}
+                            infoType={infoType}
+                            typePrefix={typePrefix}
+                            singleDescItemTypeEdit={singleDescItemTypeEdit}
+                            arrPerm={arrPerm}
+                            showNodeAddons={showNodeAddons}
+                            descItemFactory={descItemFactory}
+                            customActions={customActionsValue}
+                            descItemRef={descItemRef}
+                            {...onFuncs}
+                        />,
+                    );
+                }
                 // const i = this.renderDescItemType(descItemType, descItemTypeIndex, descItemGroupIndex, nodeSetting);
                 // descItemTypes.push(i);
             }

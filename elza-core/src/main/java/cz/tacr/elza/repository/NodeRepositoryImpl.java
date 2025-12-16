@@ -40,6 +40,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import cz.tacr.elza.api.IUnitdate;
+import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.filter.SearchParamType;
@@ -53,8 +54,8 @@ import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.CalendarConverter;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.exception.InvalidQueryException;
@@ -376,7 +377,7 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         Assert.notNull(condition, "Podmínka musí být vyplněna");
 
         IUnitdate unitdate = new ArrDataUnitdate();
-        UnitDateConvertor.convertToUnitDate(value, unitdate);
+        UnitDateConverter.convertToUnitDate(value, unitdate);
 
         LocalDateTime fromDate = LocalDateTime.parse(unitdate.getValueFrom(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         long secondsFrom = CalendarConverter.toSeconds(fromDate);
@@ -387,15 +388,15 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         BooleanPredicateClausesStep<?> bool;
         switch (condition) {
             case CONTAINS:
-            	SearchPredicate fromPredicate = factory.range().field(ArrDescItem.NORMALIZED_FROM_ATT).atLeast(secondsFrom).toPredicate();
-            	SearchPredicate toPredicate = factory.range().field(ArrDescItem.NORMALIZED_TO_ATT).atMost(secondsTo).toPredicate();
+            	SearchPredicate fromPredicate = factory.range().field(ArrDescItem.NORM_FROM).atLeast(secondsFrom).toPredicate();
+            	SearchPredicate toPredicate = factory.range().field(ArrDescItem.NORM_TO).atMost(secondsTo).toPredicate();
             	bool = factory.bool().must(fromPredicate).must(toPredicate);
                 break;
             case GE:
-            	bool = factory.bool().must(factory.range().field(ArrDescItem.NORMALIZED_FROM_ATT).atLeast(secondsFrom).toPredicate());
+            	bool = factory.bool().must(factory.range().field(ArrDescItem.NORM_FROM).atLeast(secondsFrom).toPredicate());
                 break;
             case LE:
-            	bool = factory.bool().must(factory.range().field(ArrDescItem.NORMALIZED_TO_ATT).atMost(secondsTo).toPredicate());
+            	bool = factory.bool().must(factory.range().field(ArrDescItem.NORM_TO).atMost(secondsTo).toPredicate());
                 break;
             default:
                 throw new IllegalStateException("Neznámý typ podmínky " + condition);
@@ -493,8 +494,8 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
         PointsConfig intConfig = new PointsConfig(NumberFormat.getIntegerInstance(), Integer.class);
         PointsConfig longConfig = new PointsConfig(NumberFormat.getNumberInstance(), Long.class);
         stringNumericConfigHashMap.put(ArrDescItem.FIELD_ITEM_SPEC_ID, intConfig);
-        stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_FROM_ATT, longConfig);
-        stringNumericConfigHashMap.put(ArrDescItem.NORMALIZED_TO_ATT, longConfig);
+        stringNumericConfigHashMap.put(ArrDescItem.NORM_FROM, longConfig);
+        stringNumericConfigHashMap.put(ArrDescItem.NORM_TO, longConfig);
 
         parser.setPointsConfigMap(stringNumericConfigHashMap);
 
@@ -622,11 +623,15 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
 
         if (!descItemIds.isEmpty()) {
 
-        	SearchPredicate descItemIdsPredicate = createDescItemIdsQuery(descItemIds);
+        	// run in batches for a lot of descItems
+        	ObjectListIterator<Integer> oli = new ObjectListIterator<>(org.apache.lucene.search.IndexSearcher.getMaxClauseCount(), descItemIds);
+			oli.forEachRemaining(coll-> {
+	        	SearchPredicate descItemIdsPredicate = createDescItemIdsQuery(coll);
 
-            List<ArrDescItemInfo> list = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate, null, null);
+	            List<ArrDescItemInfo> list = findNodeIdsByValidDescItems(lockChangeId, descItemIdsPredicate, null, null);
 
-            nodeIds.addAll(list.stream().map(i -> i.getNodeId()).collect(Collectors.toList()));
+	            nodeIds.addAll(list.stream().map(i -> i.getNodeId()).collect(Collectors.toList()));				
+			});
 
         }
         return nodeIds;

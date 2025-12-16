@@ -4,13 +4,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import jakarta.transaction.Transactional;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.AbstractTest;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -67,8 +66,12 @@ public class UserPermissionTest extends AbstractTest {
     AccessPointService accessPointService;
 
     @Test
-    @Transactional
     public void testGetNextStates() {
+        TransactionTemplate tt = new TransactionTemplate(txManager);
+        tt.executeWithoutResult(r -> testGetNextStatesInTransaction());
+    }
+
+    private void testGetNextStatesInTransaction() {
         ApAccessPoint accessPoint = createApAccessPoint();
         ApState state = createApState(accessPoint, StateApproval.NEW);
 
@@ -149,7 +152,7 @@ public class UserPermissionTest extends AbstractTest {
         ApChange createChange = changeRepository.save(new ApChange());
 
         ApState apState = new ApState();
-        apState.setStateId(1);
+        //apState.setStateId(1);
         apState.setAccessPoint(accessPoint);
         apState.setScope(scope);
         apState.setApType(types.get(0));

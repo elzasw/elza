@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.hibernate.Hibernate;
@@ -25,6 +24,7 @@ import cz.tacr.elza.domain.ApRevItem;
 import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
 import cz.tacr.elza.domain.ArrDataCoordinates;
@@ -35,12 +35,12 @@ import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.drools.model.item.AbstractItem;
 import cz.tacr.elza.drools.model.item.BoolItem;
 import cz.tacr.elza.drools.model.item.CoordinatesItem;
 import cz.tacr.elza.drools.model.item.IntItem;
 import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.item.UnitdateItem;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
@@ -66,7 +66,9 @@ public class ApBuilder {
 
     private StaticDataProvider sdp;
 
-    private static final String IDN_VALUE = "IDN_VALUE";
+    // Default state is new (not approved)
+	private StateApproval stateApproval = StateApproval.NEW;
+
     private static final String IDN_TYPE = "IDN_TYPE";
     private static final String REL_ENTITY = "REL_ENTITY";
 
@@ -82,7 +84,7 @@ public class ApBuilder {
      * @return
      */
     public Ap build() {
-        Ap ap = new Ap(id, aeType, parts);
+        Ap ap = new Ap(id, aeType, parts, stateApproval);
         return ap;
     }
 
@@ -140,7 +142,7 @@ public class ApBuilder {
             break;
         case UNITDATE:
             ArrDataUnitdate aeDataUnitdate = (ArrDataUnitdate) data;
-            abstractItem = new Item(itemId, itemType, itemSpec, UnitDateConvertor.convertToString(aeDataUnitdate));
+            abstractItem = new UnitdateItem(itemId, itemType, itemSpec, aeDataUnitdate);
             break;
         case URI_REF:
             ArrDataUriRef arrDataUriRef = (ArrDataUriRef) data;
@@ -236,6 +238,7 @@ public class ApBuilder {
         preferredPartId = cachedAcessPoint.getPreferredPartId();
 
         setAeType(cachedAcessPoint.getApState().getApTypeId());
+        stateApproval = cachedAcessPoint.getApState().getStateApproval();
 
         for (CachedPart part : cachedAcessPoint.getParts()) {
             createPart(part);
@@ -251,6 +254,7 @@ public class ApBuilder {
         id = apState.getAccessPointId();
         preferredPartId = apState.getAccessPoint().getPreferredPartId();
         setAeType(apState.getApTypeId());
+        stateApproval = apState.getStateApproval();
 
         for (ApPart apPart : apParts) {
             createPart(apPart, itemList);

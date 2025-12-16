@@ -8,4 +8,6 @@ import cz.tacr.elza.domain.ApChange;
 public interface ApChangeRepository extends ElzaJpaRepository<ApChange, Integer> {
 
     ApChange findTop1ByOrderByChangeIdDesc();
+
+    ApChange findTop1ByOrderByChangeIdAsc();
 }

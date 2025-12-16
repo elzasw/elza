@@ -1,13 +1,10 @@
 package cz.tacr.elza.domain;
 
-import org.apache.commons.lang3.Validate;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-
 
 /**
  * Hodnota atributu archivního popisu typu Integer.
@@ -19,7 +16,7 @@ public class ArrDataInteger extends ArrData {
 
     public static final String INTEGER_VALUE = "integerValue";
 
-    @Column(name = "integerValue", nullable = false)
+    @Column(name = "integer_value", nullable = false)
     private Integer integerValue;
 
 	public ArrDataInteger() {
@@ -74,8 +71,4 @@ public class ArrDataInteger extends ArrData {
         copyValue(src);
     }
 
-    @Override
-    protected void validateInternal() {
-        Validate.notNull(integerValue);
-    }
 }

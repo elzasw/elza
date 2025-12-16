@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.Validate;
+import org.apache.commons.collections4.CollectionUtils;
 
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission;
@@ -298,5 +299,34 @@ public class UserPermission {
         }
 
         return false;
+    }
+
+    @Override
+	public String toString() {
+    	StringBuilder sb = new StringBuilder();
+		sb.append("UserPermission [permission=");
+		sb.append(permission);
+		if(CollectionUtils.isNotEmpty(fundIds)) {
+			sb.append(", fundIds=");
+			sb.append(fundIds);			
+		}
+		if(CollectionUtils.isNotEmpty(controlUserIds)) {
+			sb.append(", controlUserIds=");
+			sb.append(controlUserIds);
+		}
+		if(CollectionUtils.isNotEmpty(controlGroupIds)) {
+			sb.append(", controlGroupIds=");
+			sb.append(controlGroupIds);
+		}
+		if(CollectionUtils.isNotEmpty(scopeIds)) {
+			sb.append(", scopeIds=");
+			sb.append(scopeIds);
+		}
+		if(CollectionUtils.isNotEmpty(issueListIds)) {
+			sb.append(", issueListIds=");
+			sb.append(issueListIds);
+		}
+		sb.append("]");
+		return sb.toString();
     }
 }

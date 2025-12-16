@@ -311,7 +311,7 @@ public class LevelGenerator {
                     descItemPrev.setNode(n.getLevel().getNode());
                     descItemPrev.setData(dataPrev);
 
-                    params.getBulkAction().saveDescItem(descItemPrev);
+                    params.getBulkAction().saveNewDescItem(descItemPrev);
 
                 }
             }
@@ -328,7 +328,7 @@ public class LevelGenerator {
         descItemUnitId.setNode(n.getLevel().getNode());
         descItemUnitId.setData(dataUnitId);
 
-        params.getBulkAction().saveDescItem(descItemUnitId);
+        params.getBulkAction().saveNewDescItem(descItemUnitId);
 
         return value;
     }

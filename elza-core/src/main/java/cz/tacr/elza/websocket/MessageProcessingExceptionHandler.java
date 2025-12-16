@@ -12,6 +12,9 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.AbstractSubscribableChannel;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 
+import cz.tacr.elza.exception.ExceptionResponse;
+import cz.tacr.elza.exception.ExceptionResponseBuilder;
+
 /**
  * Exception handler for WebSocket controllers.
  *
@@ -24,15 +27,15 @@ public class MessageProcessingExceptionHandler {
 
     @Autowired
     @Qualifier("clientInboundChannelExecutor")
-    private transient WebSocketThreadPoolTaskExecutor executor;
+    private WebSocketThreadPoolTaskExecutor executor;
 
     @Autowired
     @Qualifier("clientOutboundChannel")
-    private transient AbstractSubscribableChannel clientOutboundChannel;
+    private AbstractSubscribableChannel clientOutboundChannel;
 
     @Autowired
     @Qualifier("brokerMessageConverter")
-    private transient SmartMessageConverter messageConverter;
+    private SmartMessageConverter messageConverter;
 
     /**
      * Entry point for any exception caused by business logic or WebSocket communication.
@@ -52,10 +55,13 @@ public class MessageProcessingExceptionHandler {
 
     protected void handleException(final Exception e, final StompHeaderAccessor clientAccessor) {
         executor.stopSessionExecution(clientAccessor.getSessionId());
-        sendError(clientAccessor, new ErrorDescription(e.getMessage(), e.getStackTrace()));
+        
+        ExceptionResponseBuilder erb = ExceptionResponseBuilder.createFrom(e);
+        ExceptionResponse response = erb.build();
+        sendError(clientAccessor, response); 
     }
 
-    private void sendError(final StompHeaderAccessor clientAccessor, final ErrorDescription description) {
+    private void sendError(final StompHeaderAccessor clientAccessor, final ExceptionResponse description) {
         StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.ERROR);
         accessor.setSessionId(clientAccessor.getSessionId());
         accessor.setUser(clientAccessor.getUser());

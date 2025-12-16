@@ -108,6 +108,6 @@ class SubsectionRootAdapter implements SectionRootAdapter {
 		ArrLevelWrapper levelWrapper = NodeContext.createLevelWrapper(nodeWrapper.getIdHolder(), parentNodeIdHolder,
 		        getNextLevelPosition(), createChange);
 
-		return contextSection.addNode(nodeWrapper, levelWrapper, importNodeId, 0);
+		return contextSection.addNode(null, nodeWrapper, levelWrapper, importNodeId, 0);
 	}
 }

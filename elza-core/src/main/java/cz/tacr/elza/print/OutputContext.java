@@ -15,6 +15,7 @@ import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.AccessPointDataService;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
@@ -38,6 +39,9 @@ public class OutputContext {
 
     @Autowired
     private SchemaManager schemaManager;
+
+    @Autowired
+    private DataService dataService;
 
     @Autowired
     private AccessPointDataService apDataService;
@@ -83,6 +87,10 @@ public class OutputContext {
         return schemaManager;
     }
 
+    public DataService getDataService() {
+        return dataService;
+    }
+
     public AccessPointDataService getApDataService() {
         return apDataService;
     }
@@ -96,7 +104,8 @@ public class OutputContext {
             exportInitHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService,
                     apRepository,
                     fundVersionRepository,
-                    resourcePathResolver);
+                    resourcePathResolver,
+                    dataService);
         }
         return exportInitHelper;
     }

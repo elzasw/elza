@@ -11,6 +11,15 @@
   <arrangement-extension code="ZP2015_PoradiUlozeni">
     <name>Pořadí uložení</name>
   </arrangement-extension>
+  <arrangement-extension code="ZP2015_JinaOznaceni">
+    <name>Jiná označení</name>
+  </arrangement-extension>
+  <arrangement-extension code="ZP2015_ObsahStrukturovany">
+    <name>Obsah strukturovaně</name>
+  </arrangement-extension>
+  <arrangement-extension code="ZP2015_TypAgendy">
+    <name>Typ agendy</name>
+  </arrangement-extension>
   <arrangement-extension code="ZP2015_Katalogizace">
     <name>Katalogizační záznamy</name>
   </arrangement-extension>

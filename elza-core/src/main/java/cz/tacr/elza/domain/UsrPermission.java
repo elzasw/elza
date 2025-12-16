@@ -665,12 +665,12 @@ public class UsrPermission {
         /**
          * Spravovaná entita - uživatel.
          */
-        USER_CONTROL_ENTITITY(PermissionType.USER),
+        USER_CONTROL_ENTITY(PermissionType.USER),
 
         /**
          * Spravovaná entita skupina.
          */
-        GROUP_CONTROL_ENTITITY(PermissionType.GROUP),
+        GROUP_CONTROL_ENTITY(PermissionType.GROUP),
 
         /**
          * Správa protokolů pro konkrétní AS
@@ -703,7 +703,12 @@ public class UsrPermission {
         /**
          * Pořádání na podstrom AS.
          */
-        FUND_ARR_NODE(PermissionType.NODE);
+        FUND_ARR_NODE(PermissionType.NODE),
+
+        /**
+         * Právo volat všechny přehledy.
+         */
+        REPORT_ALL;
 
         /**
          * Typ oprávnění
@@ -751,13 +756,12 @@ public class UsrPermission {
          * @return Return true if this permission is same or higher then given
          *         permission
          */
-        public boolean isEqualOrHigher(Permission permission)
-        {
-            if(this==permission) {
+        public boolean isEqualOrHigher(Permission permission) {
+            if (this == permission) {
                 return true;
             } // if permission is global
             return false;
-    }
+        }
     }
 
     /**

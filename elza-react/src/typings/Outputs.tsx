@@ -1,21 +1,25 @@
+import { ApAccessPointVO } from "api";
+
 export interface ArrOutputVO {
     id: number;
     internalCode: string;
     name: string;
     state: string;
-    error: any;
+    error: string;
     nodes: TreeNodeVO[];
     outputTypeId: number;
     templateIds: number[];
     outputResultIds: number[];
-    generatedDate: any;
+    generatedDate: string;
     version: number;
-    outputSettings: any;
+    outputSettings: string;
     createDate: string;
-    deleteDate: any;
+    deleteDate: string;
     scopes: ApScopeVO[];
-    anonymizedAp: any;
+    anonymizedAp: ApAccessPointVO;
+    outputFilterId: number;
 }
+
 export interface BaseCodeVO {
     /**
      * identifikátor

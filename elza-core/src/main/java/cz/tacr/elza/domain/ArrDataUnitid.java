@@ -1,16 +1,12 @@
 package cz.tacr.elza.domain;
 
-import org.apache.commons.lang3.Validate;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
-import cz.tacr.elza.exception.BusinessException;
-import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.validation.ValidStringNoBeginOrEndWhitespaces;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-
 
 /**
  * Hodnota atributu archivního popisu typu referenční označení.
@@ -32,6 +28,7 @@ public class ArrDataUnitid extends ArrData {
     // because operator TREAT in JPQL needs
     // unique names (tested with Hibernate 5.2)
     // see LockedValueRepository and query findByFundAndItemTypeAndValue
+    @ValidStringNoBeginOrEndWhitespaces
     @Column(name = "unit_value", length = StringLength.LENGTH_250, nullable = false)
     private String unitId;
 
@@ -78,15 +75,4 @@ public class ArrDataUnitid extends ArrData {
         copyValue(src);
     }
 
-    @Override
-    protected void validateInternal() {
-        Validate.notNull(unitId);
-        // check any leading and trailing whitespace in data
-        if (unitId.trim().length() != unitId.length()) {
-            throw new BusinessException("Value contains whitespaces at the begining or end",
-                    BaseCode.PROPERTY_IS_INVALID)
-                            .set("dataId", getDataId())
-                            .set("property", unitId);
-        }
-    }
 }

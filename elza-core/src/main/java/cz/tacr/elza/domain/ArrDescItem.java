@@ -2,11 +2,10 @@ package cz.tacr.elza.domain;
 
 import java.util.Date;
 
-import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.RoutingBinderRef;
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.TypeBinderRef;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.TypeBinding;
-
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -14,10 +13,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import cz.tacr.elza.domain.bridge.ArrDescItemBinder;
-import cz.tacr.elza.domain.bridge.ArrDescItemRoutingBinder;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.DataRepositoryImpl;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -58,12 +55,13 @@ public class ArrDescItem extends ArrItem {
 	public static final String FIELD_ITEM_SPEC = "itemSpec";
 	public static final String FIELD_ITEM_SPEC_ID = "itemSpecId";
 	public static final String FULLTEXT_ATT = "fulltextValue";
-	public static final String INTGER_ATT = "valueInt";
+	public static final String INTEGER_ATT = "valueInt";
 	public static final String DECIMAL_ATT = "valueDecimal";
 	public static final String DATE_ATT = "valueDate";
 	public static final String BOOLEAN_ATT = "valueBoolean";
-	public static final String NORMALIZED_FROM_ATT = "normalizedFrom";
-	public static final String NORMALIZED_TO_ATT = "normalizedTo";
+	public static final String NORM_FROM = "norm_from";
+	public static final String NORM_TO = "norm_to";
+	public static final String REL_AP_ID = "rel_ap_id";
 
 	@JsonIgnore
     @RestResource(exported = false)
@@ -125,8 +123,11 @@ public class ArrDescItem extends ArrItem {
 		if (data instanceof ArrDataNull) {
             return itemSpec == null ? null : itemSpec.getName();
         }
-        String fulltext = indexData.getFulltextValue();
-        return itemSpec == null ? fulltext : itemSpec.getName() + DataRepositoryImpl.SPEC_SEPARATOR + fulltext;
+		// souřadnice by neměly být indexovány v textové podobě
+		if (data instanceof ArrDataCoordinates) {
+			return null;
+		}
+		return indexData.getFulltextValue();
     }
 
 	@JsonIgnore
@@ -142,6 +143,11 @@ public class ArrDescItem extends ArrItem {
     @JsonIgnore
     public Date getValueDate() {
         return indexData.getValueDate();
+    }
+
+    @JsonIgnore
+    public Geometry getValueGeometry() {
+        return indexData.getValueGeometry();
     }
 
     @JsonIgnore
@@ -234,8 +240,15 @@ public class ArrDescItem extends ArrItem {
             return (data == null) ? null : data.getDate();
         }
 
-        @Override
-        public Boolean isValue() { return (data == null) ? null : data.getValueBoolean();}
+		@Override
+		public Geometry getValueGeometry() {
+        	return (data == null) ? null : data.getValueGeometry();
+		}
+
+		@Override
+        public Boolean isValue() { 
+        	return (data == null) ? null : data.getValueBoolean();
+        }
     }
 
     @Override

@@ -24,6 +24,8 @@ elza:
     node:
       threadCount: 4
       maxPerFund: 2
+    ap:
+      threadCount: 4
     bulk:
       threadCount: 4
       maxPerFund: 1
@@ -57,7 +59,7 @@ springdoc:
 spring:
   application:
      name: elza
-     version: ${project.parent.version}
+     #version: ${project.parent.version}
   datasource:
     url: ${elza.data.url}
     username: ${elza.data.user}
@@ -93,9 +95,11 @@ spring:
         search:
           coordination:
             strategy: outbox-polling
+            internal:
+              configurer: cz.tacr.elza.domain.bridge.OutboxPollingConfigurer
           backend:
             analysis:
-              configurer: cz.tacr.elza.domain.LuceneAnalyzerConfigurer
+              configurer: cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer
             directory:
               root: ${elza.workingDir}/lucene/indexes
             lucene_version: LATEST

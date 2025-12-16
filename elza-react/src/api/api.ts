@@ -1,9 +1,25 @@
-import { AccesspointsApi, AdminApi, DaosApi, FundsApi, DefaultApi, IoApi, ExternalsystemsApi } from 'elza-api';
+import {
+    AccesspointsApi,
+    AdminApi,
+    DaosApi,
+    FundsApi,
+    DefaultApi,
+    IoApi,
+    ExternalsystemsApi,
+    DescitemsApi,
+    ReportApi,
+    NodeApi,
+    TasksApi,
+} from 'elza-api';
 import globalAxios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import i18n from '../components/i18n';
 import { createException } from 'components/ExceptionUtils.jsx';
 import { logout } from 'actions/global/login';
 import { store } from 'stores/index.jsx';
+
+interface WindowEx extends Window {
+    serverContextPath?: string;
+}
 
 declare module "axios" {
     export interface AxiosRequestConfig {
@@ -11,12 +27,12 @@ declare module "axios" {
     }
 }
 
-// @ts-ignore
-export const serverContextPath = window.serverContextPath || "";
+export const serverContextPath = (window as WindowEx).serverContextPath || "";
+export function getServerContextPath() { return (window as WindowEx).serverContextPath || ""; }
 
 const baseApiPath = '/api';
 const v1ApiPath = '/v1';
-const basePath = `${serverContextPath}${baseApiPath}${v1ApiPath}`;
+export const basePath = `${serverContextPath}${baseApiPath}${v1ApiPath}`;
 
 export const getFullPath = (path: string) => {
     if (path.startsWith('/')) {
@@ -42,7 +58,10 @@ axios.interceptors.response.use(undefined, error => {
     if (exception.unauthorized && !error.config.noPending) {
         return createPendingPromise(error.config);
     }
-    throw exception;
+    throw {
+        ...exception,
+        processed: true // mark exception as processed
+    };
 });
 
 interface IError {
@@ -116,7 +135,10 @@ function resolveException(error: AxiosError<Error>) {
         } else {
             // other unknown errors
             result = {
+                createToaster: true,
                 type: 'unknown',
+                status: status,
+                statusText: statusText,
             };
         }
     }
@@ -181,6 +203,10 @@ export const Api: {
     default: DefaultApi;
     io: IoApi;
     externalSystems: ExternalsystemsApi;
+    descItems: DescitemsApi;
+    node: NodeApi;
+    report: ReportApi;
+    tasks: TasksApi;
 } = {
     accesspoints: new AccesspointsApi(undefined, basePath, axios),
     admin: new AdminApi(undefined, basePath, axios),
@@ -189,4 +215,8 @@ export const Api: {
     default: new DefaultApi(undefined, basePath, axios),
     io: new IoApi(undefined, basePath, axios),
     externalSystems: new ExternalsystemsApi(undefined, basePath, axios),
+    descItems: new DescitemsApi(undefined, basePath, axios),
+    node: new NodeApi(undefined, basePath, axios),
+    report: new ReportApi(undefined, basePath, axios),
+    tasks: new TasksApi(undefined, basePath, axios),
 };

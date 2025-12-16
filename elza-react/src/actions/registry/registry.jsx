@@ -46,6 +46,7 @@ const createFilter = values => {
         extinction: values.extinction,
         relFilters: relFilters,
         extFilters: extFilters,
+        syncState: values.syncState,
     };
 };
 
@@ -185,13 +186,13 @@ export function registryDelete(id) {
 
 export function registryCreateRevision(id, history, select) {
     return (dispatch, getState) => {
-        Api.accesspoints.createRevision(id).then(() => {
+        Api.accesspoints.accessPointCreateRevision(id).then(() => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
             if (detail.id == id) {
                 dispatch(registryDetailInvalidate());
-                dispatch(goToAe(history, id, true, !select));
+                dispatch(goToAe(history, id, true, !select, true));
             }
 
             if (list.filteredRows && indexById(list.filteredRows, id) !== null) {
@@ -203,7 +204,7 @@ export function registryCreateRevision(id, history, select) {
 
 export function registryDeleteRevision(id, history, select) {
     return (dispatch, getState) => {
-        Api.accesspoints.deleteRevision(id).then(() => {
+        Api.accesspoints.accessPointDeleteRevision(id).then(() => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
             const list = storeFromArea(store, AREA_REGISTRY_LIST);
@@ -219,10 +220,9 @@ export function registryDeleteRevision(id, history, select) {
     };
 }
 
-export function registryChangeStateRevision(id, apVersion, revisionState, history, select) {
+export function registryChangeStateRevision(id, apVersion, revisionState, history, select, assignTo) {
     return (dispatch, getState) => {
-
-        return Api.accesspoints.accessPointChangeStateRevision(id, revisionState, apVersion).then(() => {
+        return Api.accesspoints.accessPointChangeStateRevision(id, revisionState, apVersion, assignTo).then(() => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
             const list = storeFromArea(store, AREA_REGISTRY_LIST);

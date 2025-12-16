@@ -16,8 +16,7 @@ import cz.tacr.elza.service.NodePermissionChecker;
  *
  */
 public class UserDetail {
-
-    /**
+	/**
      * Uživatelské jméno.
      */
     private String username;
@@ -177,8 +176,6 @@ public class UserDetail {
     }
 
     public boolean hasPermission(UsrPermission usrPermission) {
-        UsrPermission.Permission permission = usrPermission.getPermission();
-        
         for (UserPermission currPerm: userPermission) {
             // check if same type
             if (currPerm.hasPermission(usrPermission)) {
@@ -187,4 +184,19 @@ public class UserDetail {
         }
         return false;
     }
+
+    @Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("UserDetail [id=");
+		sb.append(id);
+		sb.append(", username=");
+		sb.append(username);
+		sb.append(", active=");
+		sb.append(active);
+		sb.append(", userPermission=");
+		sb.append(userPermission);
+		sb.append("]");
+		return sb.toString();
+	}
 }

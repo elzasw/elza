@@ -30,9 +30,8 @@ public class DescItemReader {
 	/**
 	 * Map of levels to be set
 	 */
-	Map<Level, ArrNode> items = new HashMap<>();
-
-	private final DescItemRepository descItemRepository;
+	//Map<Level, ArrNode> items = new HashMap<>();
+	Map<Level, Integer> levelNodeMap = new HashMap<>();
 
 	private final DescItemFactory descItemFactory;
 
@@ -44,19 +43,22 @@ public class DescItemReader {
 
     private final DescriptionItemService descItemService;
 
-	public DescItemReader(ArrFundVersion version, DescItemRepository descItemRepository,
-						  DescItemFactory descItemFactory,
-						  NodeCacheService nodeCacheService,
+	private final ApProvider apProvider;
+
+	public DescItemReader(final ArrFundVersion version,
+						  final DescItemFactory descItemFactory,
+						  final NodeCacheService nodeCacheService,
 						  final StructuredItemRepository structItemRepos,
-                          DescriptionItemService descItemService
+                          final DescriptionItemService descItemService,
+                          final ApProvider apProvider
                           )
 	{
 		this.version = version;
-		this.descItemRepository = descItemRepository;
 		this.descItemFactory = descItemFactory;
 		this.nodeCacheService = nodeCacheService;
 		this.structItemRepos = structItemRepos;
         this.descItemService = descItemService;
+        this.apProvider = apProvider;
 	}
 
 	/**
@@ -64,8 +66,8 @@ public class DescItemReader {
 	 * @param level
 	 * @param node
 	 */
-	public void add(Level level, ArrNode node) {
-		items.put(level, node);
+	public void add(Level level, Integer nodeId) {
+		levelNodeMap.put(level, nodeId);
 	}
 
 	/**
@@ -74,8 +76,8 @@ public class DescItemReader {
 	 */
 	public void read() {
 
-		Collection<ArrNode> nodes = items.values();
-		Set<Level> levels = items.keySet();
+		Set<Level> levels = levelNodeMap.keySet();
+		Collection<Integer> nodeIds = levelNodeMap.values();
 
 		// handle empty key set
         if (levels.isEmpty()) {
@@ -87,26 +89,22 @@ public class DescItemReader {
 
         // Check if load from cache
         if (version.getLockChange() == null) {
-            Collection<Integer> nodeIds = new ArrayList<>(nodes.size());
-            for (ArrNode node : nodes) {
-                nodeIds.add(node.getNodeId());
-            }
             cachedNodes = nodeCacheService.getNodes(nodeIds);
 
             for (Level level : levels) {
                 List<ArrDescItem> levelDescItems = cachedNodes.get(level.getNodeId()).getDescItems();
-                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos);
+                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos, apProvider);
                 level.setDescItems(items);
             }
         } else {
             // Load from DB
-			List<ArrDescItem> descItems = descItemService.findByNodesAndDeleteChange(nodes, version.getLockChange());
+			List<ArrDescItem> descItems = descItemService.findByNodesAndDeleteChange(nodeIds, version.getLockChange());
 
-            descItemsMap = ElzaTools.createGroupMap(descItems, p -> p.getNode().getNodeId());
+            descItemsMap = ElzaTools.createGroupMap(descItems, p -> p.getNodeId());
 
             for (Level level : levels) {
                 List<ArrDescItem> levelDescItems = descItemsMap.get(level.getNodeId());
-                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos);
+                List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos, apProvider);
                 level.setDescItems(items);
             }
         }

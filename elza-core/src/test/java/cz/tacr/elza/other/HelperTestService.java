@@ -13,17 +13,20 @@ import java.util.zip.ZipOutputStream;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.search.mapper.orm.Search;
-import org.hibernate.search.mapper.orm.massindexing.MassIndexer;
+import org.hibernate.search.mapper.orm.outboxpolling.event.impl.DefaultOutboxEventFinder;
+import org.hibernate.search.mapper.orm.outboxpolling.event.impl.OutboxEvent;
+import org.hibernate.search.mapper.orm.outboxpolling.event.impl.OutboxEventOrder;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApCachedAccessPoint;
-import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.ApAccessPointRepository;
@@ -87,10 +90,15 @@ import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.SobjVrequestRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.repository.SysViewUpdateRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.WfCommentRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.repository.WfIssueRepository;
+import cz.tacr.elza.repository.WfTaskApRevStateRepository;
+import cz.tacr.elza.repository.WfTaskApStateRepository;
+import cz.tacr.elza.repository.WfTaskRepository;
+import cz.tacr.elza.service.AdminService;
 import cz.tacr.elza.service.AsyncRequestService;
 
 /**
@@ -233,6 +241,14 @@ public class HelperTestService {
     private ApKeyValueRepository keyValueRepository;
     @Autowired
     private ApCachedAccessPointRepository apCachedAccessPointRepository;
+    @Autowired
+    private SysViewUpdateRepository viewUpdateRepository;
+	@Autowired
+	private WfTaskRepository wfTaskRepository;
+	@Autowired
+	private WfTaskApStateRepository wfTaskApStateRepository;
+	@Autowired
+	private WfTaskApRevStateRepository wfTaskApRevStateRepository;
 
     @Autowired
     private PackageService packageService;
@@ -241,17 +257,16 @@ public class HelperTestService {
     private StaticDataService staticDataService;
 
     @Autowired
+    private AdminService adminService;
+
+    @Autowired
     protected EntityManager em;
 
-    @Transactional
-    public void importPackage(final File file) {
-        // stop services and prepare update
-    	packageService.preImportPackage();
+    @Autowired
+	private SessionFactory sessionFactory;
 
-        packageService.importPackageInternal(file, true);
-        // refresh static structures
-        staticDataService.refreshForCurrentThread();
-    }
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     public List<RulPackage> getPackages() {
         return packageService.getPackages();
@@ -275,9 +290,19 @@ public class HelperTestService {
         }
 
         deleteTablesInternal();
-
-        MassIndexer massIndexer = Search.session(em).massIndexer(ApCachedAccessPoint.class, ArrDescItem.class);
-        massIndexer.start().toCompletableFuture();
+        
+        // reset index
+        logger.debug("Start reindexing.");
+        var indexStatus = adminService.reindexInternal();
+        while(!indexStatus.isDone()) {
+        	logger.debug("Reindexing...");
+        	try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				break;
+			}
+        }
+        logger.debug("Reindexed.");
 
         if (stopTasks) {
             packageService.startAsyncTasks();
@@ -288,6 +313,11 @@ public class HelperTestService {
 
         logger.debug("Cleaning table contents...");
 
+        wfTaskApRevStateRepository.deleteAll();
+        wfTaskApStateRepository.deleteAll();
+        wfTaskRepository.deleteAll();
+
+        viewUpdateRepository.deleteAll();
         daoDigitizationRequestNodeRepository.deleteAll();
         digitizationRequestRepository.deleteAll();
         daoRequestDaoRepository.deleteAll();
@@ -316,7 +346,6 @@ public class HelperTestService {
         groupUserRepository.deleteAll();
         groupRepository.deleteAll();
         authenticationRepository.deleteAll();
-        userRepository.deleteAll();
         nodeConformityErrorsRepository.deleteAll();
         nodeConformityMissingRepository.deleteAll();
         nodeConformityInfoRepository.deleteAll();
@@ -350,6 +379,7 @@ public class HelperTestService {
         apRepository.deleteAll();
         apChangeRepository.deleteAll();
         externalSystemRepository.deleteAll();
+        userRepository.deleteAll();
 
         // DB has to be flushed before start
         em.flush();
@@ -370,13 +400,20 @@ public class HelperTestService {
     @Transactional(value = Transactional.TxType.REQUIRES_NEW)
     public void loadPackage(String packageCode, String packageDir) {
         RulPackage rulPackage = getPackage(packageCode);
-        if (rulPackage == null || rulPackage.getVersion() <= 0) {
+        if (rulPackage == null || rulPackage.getVersion() <= 0 || packageService.getTesting()) {
             logger.info("Loading package '" + packageCode + "' for tests...");
             File file = null;
             try {
                 file = buildPackageFileZip(packageDir);
                 Assert.assertNotNull(file);
-                importPackage(file);
+
+                //packageService.importPackage(file);
+
+                // stop services and prepare update
+            	packageService.preImportPackage();
+                packageService.importPackageInternal(file, true);
+                staticDataService.refreshForCurrentThread();
+
             } catch (Exception e) {
                 logger.info("Exception while importing package: " + e.getMessage());
                 e.printStackTrace();
@@ -391,7 +428,6 @@ public class HelperTestService {
             Assert.assertNotNull(rulPackage);
             logger.info("Package loaded.");
         }
-
     }
 
     /**
@@ -442,11 +478,77 @@ public class HelperTestService {
     }
 
     /**
+     * Starts the lucene indexing process, and then block until it's finished
+     * 
+     * @throws InterruptedException
+     */
+    @Transactional
+    public void massIndexerStartAndWait(Class<?>... classes) throws InterruptedException {
+        Search.session(em).massIndexer(classes).startAndWait();
+    }
+    
+    /**
+     * Method to wait till index update is finished
+     */
+    public void waitForIndexUpdate() {
+    	// There are several approaches how to wait for the index update to finish.
+    	// 1. Run massIndexer and wait till it is finished. This is not optimal
+    	//    because it might hide some issues with the index update.
+    	//    e.g.: massIndexerStartAndWait(ArrDescItem.class);
+    	//
+    	// 2. Try to get directly to the OutboxPollingSearchMapping
+		//    and wait till the index update is finished.
+    	//    This is the most optimal approach.
+    	//    BUT IT DOES NOT WORK!
+    	/*
+        SearchMapping searchMapping = Search.mapping(sessionFactory);
+        HibernateOrmMapping hibernateOrmMapping = (HibernateOrmMapping) searchMapping;
+        CoordinationStrategy coordStrategy = hibernateOrmMapping.coordinationStrategy();
+        CompletableFuture<?> comp = coordStrategy.completion();
+        try {
+			Object result = comp.get(10, TimeUnit.SECONDS);
+		} catch (Exception e) {
+			throw new IllegalStateException("Index update failed", e);
+		}
+		*/
+        // 3. If it is not possible to read state from OutboxPollingSearchMapping,
+		//    we can read content of table hsearch_outbox_event and check 
+        //    if there are any unfinished events.
+		OutboxEventOrder processingOrder = OutboxEventOrder.ID;
+    	
+    	Integer counter = 0;
+    	while(counter<100){
+    		
+    		Integer pendingEvents;
+    		try(Session session = this.sessionFactory.openSession()) {
+    			DefaultOutboxEventFinder.Provider prov = new DefaultOutboxEventFinder.Provider( processingOrder );
+    			DefaultOutboxEventFinder finder = prov.createWithoutStatusOrProcessAfterFilter();
+    			List<OutboxEvent> results = finder.findOutboxEvents(session, 10);
+    			pendingEvents = results.size();
+    		}
+    		if(pendingEvents==0) {
+    			// success
+    			logger.debug("Indexing finished.");
+    			return;
+    		} else {
+    			logger.debug("Waiting to finish indexing, number of pending events: {}", pendingEvents);
+    		}
+    		counter++;
+    		try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				throw new IllegalStateException(e);
+			}
+    	};
+    	throw new IllegalStateException("Timeout.");
+	}
+    
+
+    /**
      * Function will wait for all workers
      */
     // This method is not running in transaction
     public void waitForWorkers() {
         asyncRequestService.waitForFinishAll();
     }
-
 }

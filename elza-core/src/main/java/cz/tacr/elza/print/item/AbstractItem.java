@@ -10,6 +10,17 @@ public abstract class AbstractItem implements Item {
     private ItemSpec specification;
 
     private int position;
+    
+    private Integer descItemObjectId;
+        
+    @Override
+    public Integer getDescItemObjectId() {
+        return descItemObjectId;
+    }
+
+    public void setDescItemObjectId(Integer descItemObjectId) {
+        this.descItemObjectId = descItemObjectId;
+    }
 
     @Override
     public ItemType getType() {

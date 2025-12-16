@@ -1,7 +1,7 @@
 package cz.tacr.elza.print;
 
 import cz.tacr.elza.api.IUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 
 /**
  * Rozšiřuje {@link UnitDateText} o strukturovaný zápis datumu.
@@ -112,6 +112,6 @@ public class UnitDate implements IUnitdate {
     }
 
     public String getValueText() {
-        return UnitDateConvertor.convertToString(this);
+        return UnitDateConverter.convertToString(this);
     }
 }

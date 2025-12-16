@@ -60,8 +60,31 @@ public abstract class SysExternalSystem {
 
     @Column(length = StringLength.LENGTH_250)
     private String apiKeyValue;
+    
+    /**
+     * Default empty contsructor
+     */
+    public SysExternalSystem() {
+    	
+    }
 
-    public Integer getExternalSystemId() {
+    /**
+     * Copy constructor
+     * @param aes
+     */
+    public SysExternalSystem(SysExternalSystem ses) {
+    	externalSystemId = ses.getExternalSystemId();
+		code = ses.getCode();
+		name = ses.getName();
+		url = ses.getUrl();
+		username = ses.getUsername();
+		password = ses.getPassword();
+		elzaCode = ses.getElzaCode();
+		apiKeyId = ses.getApiKeyId();
+		apiKeyValue = ses.getApiKeyValue();
+	}
+
+	public Integer getExternalSystemId() {
         return externalSystemId;
     }
 

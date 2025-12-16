@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.bridge.IndexConfigReader;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.packageimport.PackageUtils;
@@ -51,12 +52,14 @@ public class IndexConfigReaderTest implements IndexConfigReader {
     private List<String> partTypeCodes;
     private List<String> itemTypeCodes;
     private Map<String, List<String>> typeSpecMap;
+    private Map<String, DataType> itemTypeDataTypeMap;
 
     @PostConstruct
     public void init() {
         partTypeCodes = new ArrayList<>();
         itemTypeCodes = new ArrayList<>();
         typeSpecMap = new HashMap<>();
+        itemTypeDataTypeMap = new HashMap<>();
 
     	logger.info("Checking folder {} for packages...", Paths.get(TARGET_TEST_CLASSES));
 
@@ -76,6 +79,9 @@ public class IndexConfigReaderTest implements IndexConfigReader {
                     ItemTypes itemTypes = PackageUtils.convertXmlFileToObject(ItemTypes.class, path.resolve(ITEM_TYPE_XML));
                     if (itemTypes != null) {
                     	itemTypeCodes.addAll(itemTypes.getItemTypes().stream().map(i -> i.getCode()).collect(Collectors.toList()));
+                    	itemTypes.getItemTypes().forEach(item -> {
+                    		itemTypeDataTypeMap.put(item.getCode(), DataType.valueOf(item.getDataType()));
+                    	});
                     }
 
                     ItemSpecs itemSpecs = PackageUtils.convertXmlFileToObject(ItemSpecs.class, path.resolve(ITEM_SPEC_XML));
@@ -109,5 +115,10 @@ public class IndexConfigReaderTest implements IndexConfigReader {
     @Override
     public List<String> getItemSpecCodesByTypeCode(String itemTypeCode) {
 		return typeSpecMap.getOrDefault(itemTypeCode, new ArrayList<>());
+	}
+
+	@Override
+	public DataType getDataTypeByItemTypeCode(String itemTypeCode) {
+		return itemTypeDataTypeMap.get(itemTypeCode);
 	}
 }

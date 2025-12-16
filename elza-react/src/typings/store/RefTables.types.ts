@@ -88,8 +88,18 @@ interface OutputFilterData {
     ruleSetId?: number;
 }
 
-interface OutputFilters {
-    data: OutputFilterData[];
+// interface OutputFilters {
+//     data: OutputFilterData[];
+//     currentDataKey?: boolean;
+//     id?: boolean;
+//     fetched?: boolean;
+//     isFetching?: boolean;
+//     getDataKey?: () => unknown;
+//     reducer?: () => unknown;
+// }
+
+export interface RefTablesDataStore<T> {
+    data: T[] | null;
     currentDataKey?: boolean;
     id?: boolean;
     fetched?: boolean;
@@ -98,21 +108,76 @@ interface OutputFilters {
     reducer?: () => unknown;
 }
 
+export interface RefTablesDataMapStore<T> {
+    data: Record<string, T> & { ids: string[] } | null;
+    currentDataKey?: boolean;
+    id?: boolean;
+    fetched?: boolean;
+    isFetching?: boolean;
+    getDataKey?: () => unknown;
+    reducer?: () => unknown;
+}
+
+enum IssueTypeEnum {
+    IMPORTANT = "IMPORTANT",
+    RECOMMENDED = "RECOMMENDED",
+    MINOR = "MINOR",
+}
+
+export interface IssueType {
+    id: number;
+    code: IssueTypeEnum;
+    name: string;
+}
+
+export interface InstitutionType {
+    id: number;
+    code: string;
+    name: string;
+}
+
+export interface Institution {
+    id: number;
+    intitutionType: InstitutionType;
+    accessPointId: number;
+    name: string;
+    code: string;
+}
+
+export enum RuleType {
+    ARRANGEMENT = "ARRANGEMENT",
+    ENTITY = "ENTITY",
+}
+
+export interface RuleSet {
+    code: string;
+    gridViews: unknown | null;
+    id: number;
+    name: string;
+    ruleType: RuleType;
+}
+
+export interface DescItemGroup {
+    code: string;
+    itemTypes: Array<{ id: number, width: number }>;
+    name: string;
+}
+
 export interface RefTablesState {
     apTypes: BaseRefTableStore<ApTypeVO>;
     descItemTypes: BaseRefTableStore<DescItemTypeRef>;
     eidTypes: unknown;
     externalSystems: unknown;
-    groups: unknown;
-    institutions: unknown;
+    groups: RefTablesDataMapStore<DescItemGroup>;
+    institutions: BaseRefTableStore<Institution>;
     issueStates: unknown;
-    issueTypes: unknown;
+    issueTypes: RefTablesDataStore<IssueType>;
     outputTypes: BaseRefTableStore<OutputType>;
-    outputFilters: OutputFilters;
+    outputFilters: RefTablesDataStore<OutputFilterData>;
     partTypes: BaseRefTableStore<RulPartTypeVO>;
     recordTypes: BaseRefTableStore<unknown>;
     rulDataTypes: BaseRefTableStore<RulDataTypeVO>;
-    ruleSet: unknown;
+    ruleSet: BaseRefTableStore<RuleSet>;
     scopesData: ScopesData;
     structureTypes: StructureTypes;
     templates: Templates;

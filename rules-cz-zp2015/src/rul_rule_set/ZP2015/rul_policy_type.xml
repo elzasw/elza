@@ -11,4 +11,10 @@
     <policy-type code="ZP2015_POL_SERIAL_NO">
         <name>Pořadové číslo</name>
     </policy-type>
+    <policy-type code="ZP2015_POL_ENTITY">
+        <name>Schválené archivní entity</name>
+    </policy-type>
+    <policy-type code="ZP2015_POL_EXTENDED">
+        <name>Rozšířená</name>
+    </policy-type>
 </policy-types>

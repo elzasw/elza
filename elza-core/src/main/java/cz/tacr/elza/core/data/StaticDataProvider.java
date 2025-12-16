@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -76,7 +77,7 @@ public class StaticDataProvider {
 
     private List<RuleSet> ruleSets;
 
-    private List<RulItemSpec> itemSpecs;
+    private List<CachedItemSpec> itemSpecs;
 
     private List<ApExternalIdType> apEidTypes;
 
@@ -108,9 +109,9 @@ public class StaticDataProvider {
 
     private Map<String, RuleSet> ruleSetCodeMap;
 
-    private Map<Integer, RulItemSpec> itemSpecIdMap;
+    private Map<Integer, CachedItemSpec> itemSpecIdMap;
 
-    private Map<String, RulItemSpec> itemSpecCodeMap;
+    private Map<String, CachedItemSpec> itemSpecCodeMap;
 
     private Map<Integer, ApExternalIdType> apEidTypeIdMap;
 
@@ -154,7 +155,7 @@ public class StaticDataProvider {
     }
 
     public RulPackage getPackageById(Integer id) {
-        Validate.notNull(id);
+    	Objects.requireNonNull(id);
         return packageIdMap.get(id);
     }
 
@@ -163,7 +164,7 @@ public class StaticDataProvider {
      * referenced entities are detached.
      */
     public ApType getApTypeById(Integer id) {
-        Validate.notNull(id, "Parameter is null");
+    	Objects.requireNonNull(id, "Parameter is null");
         return apTypeIdMap.get(id);
     }
 
@@ -173,7 +174,7 @@ public class StaticDataProvider {
     }
 
     public ApExternalIdType getApEidTypeById(Integer id) {
-        Validate.notNull(id);
+    	Objects.requireNonNull(id);
         return apEidTypeIdMap.get(id);
     }
 
@@ -183,7 +184,7 @@ public class StaticDataProvider {
     }
 
     public SysLanguage getSysLanguageById(Integer id) {
-        Validate.notNull(id);
+    	Objects.requireNonNull(id);
         return sysLanguageIdMap.get(id);
     }
 
@@ -201,7 +202,7 @@ public class StaticDataProvider {
     }
 
     public StructType getStructuredTypeById(Integer id) {
-        Validate.notNull(id);
+    	Objects.requireNonNull(id);
         return structuredTypeIdMap.get(id);
     }
 
@@ -211,7 +212,7 @@ public class StaticDataProvider {
     }
 
     public RulPartType getPartTypeById(Integer id) {
-        Validate.notNull(id);
+    	Objects.requireNonNull(id);
         return partTypeIdMap.get(id);
     }
 
@@ -222,13 +223,13 @@ public class StaticDataProvider {
 
     public RulPartType getDefaultPartType() {
         RulPartType partType = partTypeCodeMap.get(DEFAULT_PART_TYPE);
-        Validate.notNull(partType);
+        Objects.requireNonNull(partType);
         return partType;
     }
 
     public RulPartType getDefaultBodyPartType() {
         RulPartType partType = partTypeCodeMap.get(DEFAULT_BODY_PART_TYPE);
-        Validate.notNull(partType);
+        Objects.requireNonNull(partType);
         return partType;
     }
 
@@ -237,7 +238,7 @@ public class StaticDataProvider {
     }
 
     public ItemType getItemTypeById(Integer id) {
-        Validate.notNull(id);
+    	Objects.requireNonNull(id);
         return itemTypeIdMap.get(id);
     }
 
@@ -252,7 +253,7 @@ public class StaticDataProvider {
     }
 
     public RuleSet getRuleSetById(Integer id) {
-        Validate.notNull(id);
+    	Objects.requireNonNull(id);
         return ruleSetIdMap.get(id);
     }
 
@@ -261,18 +262,18 @@ public class StaticDataProvider {
         return ruleSetCodeMap.get(code);
     }
 
-    public RulItemSpec getItemSpecById(Integer id) {
-        Validate.notNull(id);
+    public CachedItemSpec getItemSpecById(Integer id) {
+        Objects.requireNonNull(id);
         return itemSpecIdMap.get(id);
     }
 
-    public RulItemSpec getItemSpecByCode(String code) {
+    public CachedItemSpec getItemSpecByCode(String code) {
         Validate.notEmpty(code);
         return itemSpecCodeMap.get(code);
     }
 
     public ApTypeRoles getApTypeRolesById(Integer id) {
-        Validate.notNull(id);
+    	Objects.requireNonNull(id);
         return apTypeRolesIdMap.get(id);
     }
 
@@ -281,12 +282,12 @@ public class StaticDataProvider {
     }
 
     public ApExternalSystem getApExternalSystemByCode(String code) {
-        Validate.notNull(code);
+    	Objects.requireNonNull(code);
         return apExternalSystemCodeMap.get(code);
     }
 
     public ApExternalSystem getApExternalSystemById(Integer id) {
-        Validate.notNull(id);
+    	Objects.requireNonNull(id);
         return apExternalSystemIdMap.get(id);
     }
 
@@ -316,8 +317,8 @@ public class StaticDataProvider {
         return type.getEntity();
     }
 
-    public RulItemSpec getItemSpec(String code) {
-        RulItemSpec spec = getItemSpecByCode(code);
+    public CachedItemSpec getItemSpec(String code) {
+    	CachedItemSpec spec = getItemSpecByCode(code);
         if (spec == null) {
             throw new ObjectNotFoundException("Nebyla dohledána specifikace atributu podle kódu: " + code, BaseCode.ID_NOT_EXIST)
                     .setId(code);
@@ -325,8 +326,8 @@ public class StaticDataProvider {
         return spec;
     }
 
-    public RulItemSpec getItemSpec(Integer id) {
-        RulItemSpec spec = getItemSpecById(id);
+    public CachedItemSpec getItemSpec(Integer id) {
+    	CachedItemSpec spec = getItemSpecById(id);
         if (spec == null) {
             throw new ObjectNotFoundException("Nebyla dohledána specifikace atributu podle id: " + id, BaseCode.ID_NOT_EXIST)
                     .setId(id);
@@ -458,11 +459,13 @@ public class StaticDataProvider {
 
         // prepare real object
         is = HibernateUtils.unproxy(is);
+        
+        CachedItemSpec cachedItemSpec = new CachedItemSpec(is);
 
-        rsit.addItemSpec(is);
+        rsit.addItemSpec(cachedItemSpec);
         // add to the lookups
-        this.itemSpecs.add(is);
-        itemSpecIdMap.put(is.getItemSpecId(), is);
+        this.itemSpecs.add(cachedItemSpec);
+        itemSpecIdMap.put(cachedItemSpec.getItemSpecId(), cachedItemSpec);
     }
 
     private void initStructuredTypes(StructuredTypeRepository structuredTypeRepository,

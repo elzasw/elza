@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -78,15 +79,13 @@ import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FulltextFundRequest;
 import cz.tacr.elza.controller.vo.FundListCountResult;
-import cz.tacr.elza.controller.vo.ItemDataResult;
-import cz.tacr.elza.controller.vo.Node;
-import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.SelectNodeResult;
 import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.TreeNodeWithFundVO;
 import cz.tacr.elza.controller.vo.UniqueValue;
@@ -95,13 +94,14 @@ import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
-import cz.tacr.elza.controller.vo.nodes.NodeData;
-import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
+import cz.tacr.elza.controller.vo.nodes.NodeDataParamVO;
+import cz.tacr.elza.controller.vo.nodes.NodeDataVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
@@ -160,6 +160,7 @@ import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FilterTreeService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.LevelTreeCacheService.NodeHierarchy;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.PolicyService;
 import cz.tacr.elza.service.RequestQueueService;
@@ -681,6 +682,7 @@ public class ArrangementController {
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
+    @Deprecated
     public DescItemResult deleteDescItem(@RequestBody final ArrItemVO descItemVO,
                                          @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "nodeId") final Integer nodeId,
@@ -1375,10 +1377,11 @@ public class ArrangementController {
      * @param param parametry dat, které chceme získat (formálář, sourozence, potomky, předky, ...)
      * @return požadovaná data
      */
+    @Deprecated
     @RequestMapping(value = "/nodeData", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Transactional
-    public NodeData getNodeData(final @RequestBody NodeDataParam param) {
-        return levelTreeCacheService.getNodeData(param, userService.getLoggedUserDetail());
+    public NodeDataVO getNodeData(final @RequestBody NodeDataParamVO param) {
+        return levelTreeCacheService.getNodeDataOld(param, userService.getLoggedUserDetail());
     }
 
     /**
@@ -1423,14 +1426,14 @@ public class ArrangementController {
      * @param versionId id verze stromu
      * @return formulář
      */
-    @RequestMapping(value = "/nodes/{nodeId}/{versionId}/form", method = RequestMethod.GET)
+	@RequestMapping(value = "/nodes/{nodeId}/{versionId}/form", method = RequestMethod.GET)
     @Transactional
     public DescFormDataNewVO getNodeFormData(@PathVariable(value = "nodeId") final Integer nodeId,
                                              @PathVariable(value = "versionId") final Integer versionId) {
         Validate.notNull(versionId, "Identifikátor verze musí být vyplněn");
         Validate.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
 
-        return formService.getNodeFormData(versionId, nodeId);
+        return formService.getNodeFormDataOld(versionId, nodeId);
     }
 
     /**
@@ -1466,29 +1469,30 @@ public class ArrangementController {
      */
     @RequestMapping(value = "/nodes/{versionId}/{nodeId}/{around}/forms", method = RequestMethod.GET)
     @Transactional
-    public NodeFormsDataVO getNodeWithAroundFormsData(@PathVariable(value = "versionId") final Integer versionId,
+    public NodeFormsDataVO getNodeWithAroundFormsData(@PathVariable(value = "versionId") @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
                                                       @PathVariable(value = "nodeId") final Integer nodeId,
                                                       @PathVariable(value = "around") final Integer around) {
-        Assert.notNull(versionId, "Identifikátor verze musí být vyplněn");
-        Assert.notNull(nodeId, "Identifikátor uzlu musí být vyplněn");
-        Assert.notNull(around, "Velikost okolí musí být vyplněno");
+        Objects.requireNonNull(versionId, "Identifikátor verze musí být vyplněn");
+        Objects.requireNonNull(nodeId, "Identifikátor uzlu musí být vyplněn");
+        Objects.requireNonNull(around, "Velikost okolí musí být vyplněno");
 
+        // get fund version and check permissions 
         ArrFundVersion fundVersion = arrangementService.getFundVersion(versionId);
         ArrNode node = nodeRepository.findById(nodeId)
-                .orElseThrow(() -> new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST).setId(nodeId));
-
-        Assert.notNull(fundVersion, "Verze AP neexistuje");
-        Assert.notNull(node, "Uzel neexistuje");
-
-        List<ArrNode> nodes = arrangementService.findSiblingsAroundOfNode(fundVersion, node, around);
+                .orElseThrow(() -> new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST).setId(nodeId));        
 
         Map<Integer, DescFormDataNewVO> forms = new HashMap<>();
-
-        for (ArrNode arrNode : nodes) {
-            DescFormDataNewVO formData = formService.getNodeFormData(fundVersion, arrNode.getNodeId());
-            forms.put(arrNode.getNodeId(), formData);
+                
+        NodeHierarchy nodeHierarchy = this.levelTreeCacheService.getNodeHierarchy(fundVersion);
+        List<TreeNode> siblings = nodeHierarchy.getSiblingsAround(node, around);
+        if(siblings!=null) {
+        	// TODO: prepre form data in batch
+        	for(TreeNode s: siblings) {
+                DescFormDataNewVO formData = formService.getNodeFormDataOld(fundVersion, s.getId());
+                forms.put(s.getId(), formData);
+        	}
         }
-
+        
         return new NodeFormsDataVO(forms);
     }
 
@@ -1708,7 +1712,7 @@ public class ArrangementController {
         ArrLevel deleteLevel = fundLevelService.deleteLevel(fundVersion, deleteNode, deleteParent, false);
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
-                .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
+                .getNodesByIds(Arrays.asList(deleteLevel.getNodeIdParent()),
                                fundVersion);
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
         return new NodeWithParent(ArrNodeVO.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
@@ -1763,14 +1767,11 @@ public class ArrangementController {
         Set<Integer> nodeIds;
         List<SearchParam> searchParams = input.getSearchParams();
         if (CollectionUtils.isNotEmpty(searchParams)) {
-            nodeIds = arrangementService.findNodeIdsBySearchParams(fundVersion, input.getNodeId(), searchParams,
-                    input.getDepth());
+            nodeIds = arrangementService.findNodeIdsBySearchParams(fundVersion, input.getNodeId(), searchParams, input.getDepth());
         } else if (input.getLuceneQuery()) {
-            nodeIds = arrangementService.findNodeIdsByLuceneQuery(fundVersion, input.getNodeId(), input.getSearchValue(),
-                    input.getDepth());
+            nodeIds = arrangementService.findNodeIdsByLuceneQuery(fundVersion, input.getNodeId(), input.getSearchValue(), input.getDepth());
         } else {
-            nodeIds = arrangementService.findNodeIdsByFulltext(fundVersion, input.getNodeId(),
-                    input.getSearchValue(), input.getDepth());
+            nodeIds = arrangementService.findNodeIdsByFulltext(fundVersion, input.getNodeId(), input.getSearchValue(), input.getDepth());
         }
 
         return arrangementService.createTreeNodeFulltextList(nodeIds, fundVersion);
@@ -2003,7 +2004,7 @@ public class ArrangementController {
      */
     @Transactional
     @RequestMapping(value = "/replaceDataValues/{versionId}", method = RequestMethod.PUT)
-    public void replaceDataValues(@PathVariable("versionId") final Integer versionId,
+    public ResponseEntity<Integer> replaceDataValues(@PathVariable("versionId") final Integer versionId,
                                   @RequestParam("descItemTypeId") final Integer descItemTypeId,
                                   @RequestParam("searchText") final String searchText,
                                   @RequestParam("replaceText") final String replaceText,
@@ -2021,7 +2022,8 @@ public class ArrangementController {
                 CollectionUtils.isEmpty(replaceDataBody.getSpecIds()) ? null :
                         new HashSet<>(itemSpecRepository.findAllById(replaceDataBody.getSpecIds()));
 
-        descriptionItemService.replaceDescItemValues(fundVersion, descItemType, nodesDO, specifications, searchText, replaceText, replaceDataBody.getSelectionType() == SelectionType.FUND, false);
+        Integer result = descriptionItemService.replaceDescItemValues(fundVersion, descItemType, nodesDO, specifications, searchText, replaceText, replaceDataBody.getSelectionType() == SelectionType.FUND, false);
+        return ResponseEntity.ok(result);
     }
 
     /**

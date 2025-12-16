@@ -27,6 +27,11 @@ public class SearchFilterVO {
 
     private List<ExtensionFilterVO> extFilters = null;
 
+    private SyncStateVO syncState = null;
+
+    // seznam ID entit, které budou z výsledku odfiltrovány
+    private List<Integer> excludeAps = null;
+
     public String getSearch() {
         return search;
     }
@@ -114,4 +119,20 @@ public class SearchFilterVO {
     public void setExtFilters(List<ExtensionFilterVO> extFilters) {
         this.extFilters = extFilters;
     }
+
+	public SyncStateVO getSyncState() {
+		return syncState;
+	}
+
+	public void setSyncState(SyncStateVO syncState) {
+		this.syncState = syncState;
+	}
+
+	public List<Integer> getExcludeAps() {
+		return excludeAps;
+	}
+
+	public void setExcludeAps(List<Integer> excludeAps) {
+		this.excludeAps = excludeAps;
+	}
 }

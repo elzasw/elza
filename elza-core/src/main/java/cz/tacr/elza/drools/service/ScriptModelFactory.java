@@ -1,15 +1,15 @@
 package cz.tacr.elza.drools.service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import cz.tacr.elza.service.DescriptionItemService;
-import cz.tacr.elza.service.StructObjValueService;
+import cz.tacr.elza.service.LevelTreeCacheService;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,7 +24,6 @@ import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
@@ -35,7 +34,7 @@ import cz.tacr.elza.drools.model.EventSource;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.NewLevel;
 import cz.tacr.elza.drools.model.NewLevelApproach;
-import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.service.cache.NodeCacheService;
@@ -47,15 +46,15 @@ import cz.tacr.elza.service.cache.NodeCacheService;
  */
 @Component
 public class ScriptModelFactory {
+	
+	@Autowired
+	private LevelTreeCacheService levelTreeCacheService;
 
     @Autowired
     private LevelRepository levelRepository;
 
     @Autowired
     private DescItemFactory descItemFactory;
-
-    @Autowired
-    private DescItemRepository descItemRepository;
 
     @Autowired
     private NodeCacheService nodeCacheService;
@@ -70,7 +69,7 @@ public class ScriptModelFactory {
     private DescriptionItemService descItemService;
 
     @Autowired
-    private StructObjValueService structObjService;
+	private ApStateRepository apStateRepository;
 
     /**
 	 * Vytvoří strukturu od výchozího levelu. Načte všechny jeho rodiče a prvky
@@ -85,21 +84,30 @@ public class ScriptModelFactory {
         Validate.notNull(level, "Level musí být vyplněn");
         Validate.notNull(version, "Verze AS musí být vyplněna");
 
-        List<ArrLevel> parents = levelRepository.findAllParentsByNodeId(level.getNodeId(), version.getLockChange(), false);
-        Set<ArrNode> nodes = new HashSet<>();
-		nodes.add(level.getNode());
+        // level is not probably in the cache - only when transaction is committed
+        // read parents of the parent node
+        List<Integer> parentNodeIds;
+        if(level.getNodeIdParent()!=null) {
+        	List<Integer> nodeIds = this.levelTreeCacheService.getParentNodes(version, level.getNodeIdParent());
+        	// append existing parentNodeId
+        	parentNodeIds = new ArrayList<>();
+        	parentNodeIds.add(level.getNodeIdParent());
+        	parentNodeIds.addAll(nodeIds);
+        } else {
+        	parentNodeIds = Collections.emptyList();
+        }        
 
         Level mainLevel = ModelFactory.createLevel(level, version);
-        descItemReader.add(mainLevel, level.getNode());
+        descItemReader.add(mainLevel, level.getNodeId());
 
         Level voParent = mainLevel;
-        for (ArrLevel parent : parents) {
-            Level newParent = ModelFactory.createLevel(parent, version);
+        for (Integer parentNodeId : parentNodeIds) {
+            Level newParent = ModelFactory.createLevel(parentNodeId, version);
             voParent.setParent(newParent);
             newParent.setHasChildren(true);
             voParent = newParent;
 
-            descItemReader.add(newParent, parent.getNode());
+            descItemReader.add(newParent, parentNodeId);
         }
 
         return mainLevel;
@@ -112,12 +120,15 @@ public class ScriptModelFactory {
 	 * @return
 	 */
 	private DescItemReader createDescItemReader(ArrFundVersion version) {
+		
+		ApProviderImpl apProvider = new ApProviderImpl(apStateRepository, staticDataService.getData());
 
-		DescItemReader descItemReader = new DescItemReader(version, descItemRepository,
+		DescItemReader descItemReader = new DescItemReader(version,
 		        descItemFactory,
 		        nodeCacheService,
 		        structItemRepos,
-                descItemService);
+                descItemService,
+                apProvider);
 		return descItemReader;
 	}
 
@@ -246,12 +257,12 @@ public class ScriptModelFactory {
             if (indexOfMainLevel > 0) {
                 siblingBefore = siblings.get(indexOfMainLevel - 1);
                 modelSiblingBefore = ModelFactory.createLevel(siblingBefore, version);
-                descItemReader.add(modelSiblingBefore, siblingBefore.getNode());
+                descItemReader.add(modelSiblingBefore, siblingBefore.getNodeId());
             }
 
             siblingAfter = level;
             modelSiblingAfter = ModelFactory.createLevel(siblingAfter, version);
-            descItemReader.add(modelSiblingAfter, siblingAfter.getNode());
+            descItemReader.add(modelSiblingAfter, siblingAfter.getNodeId());
 
             break;
         case AFTER:
@@ -263,13 +274,13 @@ public class ScriptModelFactory {
 
             siblingBefore = level;
             modelSiblingBefore = ModelFactory.createLevel(siblingBefore, version);
-            descItemReader.add(modelSiblingBefore, siblingBefore.getNode());
+            descItemReader.add(modelSiblingBefore, siblingBefore.getNodeId());
 
             indexOfMainLevel = siblings.indexOf(level);
             if (indexOfMainLevel < siblings.size() - 1) {
                 siblingAfter = siblings.get(indexOfMainLevel + 1);
                 modelSiblingAfter = ModelFactory.createLevel(siblingAfter, version);
-                descItemReader.add(modelSiblingAfter, siblingAfter.getNode());
+                descItemReader.add(modelSiblingAfter, siblingAfter.getNodeId());
             }
 
             break;
@@ -282,7 +293,7 @@ public class ScriptModelFactory {
             if (childs.size() > 0) {
                 siblingBefore = childs.get(childs.size() - 1);
                 modelSiblingBefore = ModelFactory.createLevel(siblingBefore, version);
-                descItemReader.add(modelSiblingBefore, siblingBefore.getNode());
+                descItemReader.add(modelSiblingBefore, siblingBefore.getNodeId());
             }
             break;
 
@@ -328,7 +339,7 @@ public class ScriptModelFactory {
         ActiveLevel activeLevel = new ActiveLevel(modelLevel);
 
         // read descitems for this activelevel instead of original level
-		descItemReader.add(activeLevel, level.getNode());
+		descItemReader.add(activeLevel, level.getNodeId());
 
         // Prepare children info
         Integer childsCount = levelRepository.countChildsByParent(level.getNode(), version.getLockChange());
@@ -349,12 +360,12 @@ public class ScriptModelFactory {
             if(l.getNode().getNodeId().equals(modelLevel.getNodeId())) {
                 if(siblingBefore!=null) {
                     modelSiblingBefore = ModelFactory.createLevel(siblingBefore, version);
-                    descItemReader.add(modelSiblingBefore, siblingBefore.getNode());
+                    descItemReader.add(modelSiblingBefore, siblingBefore.getNodeId());
                 }
                 if(it.hasNext()) {
                     ArrLevel siblingAfter = it.next();
                     modelSiblingAfter = ModelFactory.createLevel(siblingAfter, version);
-                    descItemReader.add(modelSiblingAfter, siblingAfter.getNode());
+                    descItemReader.add(modelSiblingAfter, siblingAfter.getNodeId());
                 }
                 break;
             }
@@ -380,7 +391,7 @@ public class ScriptModelFactory {
 	private void addEffectiveDescItems(final Level level) {
         Level tmpLevel = level.getParent();
         List<DescItem> descItemLevel = level.getDescItems();
-		Validate.notNull(descItemLevel);
+		Objects.requireNonNull(descItemLevel);
         while (tmpLevel != null) {
             // atributy procházeného rodiče
             List<DescItem> descItems = tmpLevel.getDescItems();

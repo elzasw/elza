@@ -2,8 +2,7 @@ package cz.tacr.elza.bulkaction.generator.result;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.lang3.Validate;
+import java.util.Objects;
 
 /**
  * Výsledek hromadné akce.
@@ -30,7 +29,7 @@ public class Result {
     }
 
     public void addResults(ActionResult result) {
-        Validate.notNull(result);
+    	Objects.requireNonNull(result);
         results.add(result);
     }
 }

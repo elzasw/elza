@@ -46,14 +46,17 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
                                                    @Param("specs") Collection<RulItemSpec> specs); // exclude: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType
 
 	@Query("SELECT i FROM arr_desc_item i WHERE i.node in (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
-    List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange); // exclude: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType JOIN FETCH i.node n
+    List<ArrDescItem> findByNodesAndDeleteChange(Collection<ArrNode> nodes, ArrChange deleteChange);
+
+	@Query("SELECT i FROM arr_desc_item i WHERE i.nodeId in (?1) AND i.createChange < ?2 AND (i.deleteChange > ?2 OR i.deleteChange IS NULL)")
+    List<ArrDescItem> findByNodeIdsAndDeleteChange(Collection<Integer> nodeIds, ArrChange deleteChange);
 
 	// TODO: zvážit odstranění této metody
     @Query("SELECT i FROM arr_desc_item i WHERE i.node = ?1 AND i.deleteChange IS NULL") 
-    List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node); // exclude: LEFT JOIN FETCH i.itemType it LEFT JOIN FETCH it.dataType
+    List<ArrDescItem> findByNodeAndDeleteChangeIsNull(ArrNode node);
 
     @Query("SELECT i FROM arr_desc_item i WHERE i.node IN (?1) AND i.deleteChange IS NULL")
-    List<ArrDescItem> findByNodesAndDeleteChangeIsNull(Collection<ArrNode> nodes); // exclude: LEFT JOIN FETCH i.data
+    List<ArrDescItem> findByNodesAndDeleteChangeIsNull(Collection<ArrNode> nodes);
 
     /**
      * Read descItems by list of nodeId
@@ -210,7 +213,7 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT n.fundId, i.nodeId, d.dataId FROM arr_desc_item i JOIN i.data d JOIN i.node n WHERE i.deleteChange IS NULL and i.data in (?1)")
     List<Object[]> findFundIdNodeIdDataIdByDataAndDeleteChangeIsNull(Collection<? extends ArrData> data);
 
-    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.node n JOIN FETCH i.createChange cc LEFT JOIN FETCH i.deleteChange dc JOIN arr_data_record_ref d ON i.data = d WHERE d.record = :record AND i.deleteChange IS NULL")
+    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.node n JOIN arr_data_record_ref d ON i.data = d WHERE d.record = :record AND i.deleteChange IS NULL")
     List<ArrDescItem> findArrItemByRecord(@Param("record") final ApAccessPoint record);
 
     @Query("SELECT i.id FROM arr_desc_item i WHERE i.node = :node AND i.createChange >= :change")
@@ -235,8 +238,6 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     /**
      * Dotaz vyhleda items navazane na dany uzel prostrednictvim ArrDataUriRef
      *
-     * Vraci plne nactena data ArrDataUriRef.
-     *
      * Dotaz je nyni optimalizovan na rychlost na PostgreSQL. Problemem
      * je zajistit, aby se cast "join fetch" vykonavala az po aplikaci
      * filtru dle node.
@@ -245,9 +246,19 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
      * @return
      */
     @Query("SELECT i FROM arr_desc_item i WHERE i in (SELECT i FROM arr_desc_item i JOIN arr_data_uri_ref d ON i.data = d WHERE d.arrNode = :node AND i.deleteChange IS NULL)")
-    List<ArrDescItem> findByUriDataNode(@Param("node") final ArrNode node); // exclude: JOIN FETCH i.data 
+    List<ArrDescItem> findByUriDataNode(@Param("node") final ArrNode node); 
 
-    @Query("SELECT i FROM arr_desc_item i JOIN FETCH i.data where i in (SELECT i FROM arr_desc_item i JOIN arr_data_uri_ref d on i.data = d WHERE d.arrNode IN :nodes AND i.deleteChange IS NULL)")
+    /**
+     * Dotaz vyhleda items navazane na dane uzly prostrednictvim ArrDataUriRef
+     *
+     * Dotaz je nyni optimalizovan na rychlost na PostgreSQL. Problemem
+     * je zajistit, aby se cast "join fetch" vykonavala az po aplikaci
+     * filtru dle node.
+     *
+     * @param node
+     * @return
+     */
+    @Query("SELECT i FROM arr_desc_item i WHERE i in (SELECT i FROM arr_desc_item i JOIN arr_data_uri_ref d on i.data = d WHERE d.arrNode IN :nodes AND i.deleteChange IS NULL)")
     List<ArrDescItem> findByUriDataNodes(@Param("nodes") final Collection<ArrNode> nodes);
 
     /**

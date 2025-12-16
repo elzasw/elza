@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller;
 
-import static cz.tacr.elza.repository.ExceptionThrow.ap;
 import static cz.tacr.elza.repository.ExceptionThrow.scope;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 
@@ -11,7 +10,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -37,14 +35,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import cz.tacr.cam.client.ApiException;
-import cz.tacr.cam.schema.cam.EntityXml;
-import cz.tacr.cam.schema.cam.QueryResultXml;
+import cz.tacr.elza.cam.ApiCamConnector;
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.common.db.QueryResults;
-import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.controller.factory.ApFactory;
-import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApAttributesInfoVO;
@@ -52,15 +46,12 @@ import cz.tacr.elza.controller.vo.ApBindingVO;
 import cz.tacr.elza.controller.vo.ApCreateTypeVO;
 import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
 import cz.tacr.elza.controller.vo.ApStateHistoryVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
-import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityVO;
-import cz.tacr.elza.controller.vo.CreatedPartVO;
 import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
@@ -71,7 +62,6 @@ import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SyncProgressVO;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.ap.ApViewSettings;
-import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.SearchType;
@@ -79,13 +69,11 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApBinding;
+
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
@@ -104,13 +92,12 @@ import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.projection.ApStateInfo;
 import cz.tacr.elza.drools.model.ModelAvailable;
-import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
@@ -120,18 +107,14 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.AccessPointConnectorService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.MultipleApChangeContext;
-import cz.tacr.elza.service.PartService;
-import cz.tacr.elza.service.RevisionPartService;
 import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
-import cz.tacr.elza.service.cam.CamService;
-import cz.tacr.elza.service.cam.ProcessingContext;
-import cz.tacr.elza.service.cam.SyncImpossibleException;
 import cz.tacr.elza.service.layers.LayersConfig;
 
 /**
@@ -171,22 +154,13 @@ public class ApController {
     private StaticDataService staticDataService;
 
     @Autowired
-    private PartService partService;
-
-    @Autowired
-    private SearchFilterFactory searchFilterFactory;
-
-    @Autowired
     private RuleService ruleService;
 
     @Autowired
-    private CamConnector camConnector;
+    private AccessPointConnectorService apConnectorService;
 
     @Autowired
     private SettingsService settingsService;
-
-    @Autowired
-    private CamService camService;
 
     @Autowired
     private ApCachedAccessPointRepository apCachedAccessPointRepository;
@@ -196,9 +170,6 @@ public class ApController {
 
     @Autowired
     private RevisionService revisionService;
-
-    @Autowired
-    private RevisionPartService revisionPartService;
 
     @Autowired
     private LayersConfig layersConfig;
@@ -627,8 +598,7 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/scopes/{scopeId}", method = RequestMethod.DELETE)
     public void deleteScope(@PathVariable final Integer scopeId) {
-        ApScope scope = scopeRepository.findById(scopeId)
-                .orElseThrow(scope(scopeId));
+        ApScope scope = scopeRepository.findById(scopeId).orElseThrow(scope(scopeId));
         accessPointService.deleteScope(scope);
     }
 
@@ -687,7 +657,7 @@ public class ApController {
         MultipleApChangeContext mcc = new MultipleApChangeContext();
 
         try {
-            accessPointService.replace(replacedState, replacementState, extSystem, mcc);
+            accessPointService.replace(replacedState, replacementState, extSystem, mcc, false);
         } catch (SyncImpossibleException e) {
             throw new BusinessException("Failed to replace access point", e, 
                     BaseCode.INVALID_STATE)
@@ -728,7 +698,7 @@ public class ApController {
     @RequestMapping(value = "/search/rel", method = RequestMethod.POST)
     public ArchiveEntityResultListVO findAccessPointForRel(@RequestParam(name = "from", defaultValue = "0", required = false) final Integer from,
                                                            @RequestParam(name = "max", defaultValue = "50", required = false) final Integer max,
-                                                           @RequestParam(name = "itemTypeId") final Integer itemTypeId,
+                                                           @RequestParam(name = "itemTypeId", required = false) final Integer itemTypeId,
                                                            @RequestParam(name = "itemSpecId", required = false) final Integer itemSpecId,
                                                            @RequestParam(name = "scopeId", required = false) final Integer scopeId,
                                                            @RequestBody final SearchFilterVO filter) {
@@ -758,184 +728,19 @@ public class ApController {
                     logger.error("Missing entity in AP Cache, accessPointId: {}", record.getData());
                     continue;
                 }
+                // entity, jejichž ID je v seznamu, by neměly být ve výsledku
+                if (filter.getExcludeAps() != null) {
+                	Integer recordId = record.getAccessPointId();
+                	if (filter.getExcludeAps().contains(recordId)) {
+                		continue;
+                	}
+                }
                 ArchiveEntityVO ae = ArchiveEntityVO.valueOf(entity);
                 data.add(ae);
             }
         }
         resultList.setData(data);
         return resultList;
-    }
-
-    /**
-     * Založení nové části přístupového bodu.
-     *
-     * @param accessPointId identifikátor přístupového bodu (PK)
-     * @param apPartFormVO data pro vytvoření části
-     * @param apVersion?
-     * 
-     * @return partId, apVersion
-     */
-    @Transactional
-    @RequestMapping(value = "{accessPointId}/part", method = RequestMethod.POST)
-    public CreatedPartVO createPart(@PathVariable final Integer accessPointId,
-                              @RequestBody final ApPartFormVO apPartFormVO,
-                              @RequestParam(required = false) Integer apVersion) {
-
-        ApAccessPoint apAccessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
-        ApState state = accessPointService.getStateInternal(apAccessPoint);
-        ApRevState revState = revisionService.findRevStateByState(state);
-
-        if (revState != null) {
-            // Permission check is part of revisionService
-            ApRevPart revPart = revisionService.createPart(state, revState, apPartFormVO);
-            return new CreatedPartVO(revPart.getPartId(), apAccessPoint.getVersion());
-        } else {
-            accessPointService.checkPermissionForEdit(state);
-
-            ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
-            accessPointService.generateSync(state, apPart);
-            accessPointCacheService.createApCachedAccessPoint(accessPointId);
-
-            return new CreatedPartVO(apPart.getPartId(), apAccessPoint.getVersion());
-        }
-    }
-
-    /**
-     * Úprava části přístupového bodu.
-     *
-     * V případě revize:
-     *
-     * <ul>
-     * <li>1. Zalozeni noveho itemu
-     * id = null
-     * objectId = null
-     * origObjectId = null
-     * <li>2. Zmena itemu
-     * id = itemId (z puvodniho part)
-     * objectId = objectId (z puvodniho part)
-     * origObjectId = null
-     * <li>3. Vymazani itemu
-     * item neprijde
-     * </ul>
-     *
-     * @param accessPointId identifikátor přístupového bodu (PK)
-     * @param partId        identifikátor upravované části
-     * @param apPartFormVO  data pro úpravu části
-     * @param apVersion?
-     * 
-     * @return apVersion
-     */
-    @Transactional
-    @RequestMapping(value = "{accessPointId}/part/{partId}", method = RequestMethod.POST)
-    public Integer updatePart(@PathVariable final Integer accessPointId,
-                              @PathVariable final Integer partId,
-                              @RequestBody final ApPartFormVO apPartFormVO,
-                              @RequestParam(required = false) Integer apVersion) {
-
-        ApAccessPoint apAccessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
-        ApState state = accessPointService.getStateInternal(apAccessPoint);
-        ApPart apPart = partService.getPart(partId);
-        ApRevision revision = revisionService.findRevisionByState(state);
-        if (revision != null) {
-            revisionService.updatePart(state, revision, apPart, apPartFormVO);
-        } else {
-            if (accessPointService.updatePart(apAccessPoint, state, apPart, apPartFormVO)) {
-                accessPointCacheService.createApCachedAccessPoint(accessPointId);
-            }
-        }
-        return apAccessPoint.getVersion();
-    }
-
-    /**
-     * Úprava části přístupového bodu.
-     *
-     * @param id
-     *            identifikátor přístupového bodu (PK)
-     * @param revPartId
-     *            identifikátor upravované části
-     * @param apPartFormVO
-     *            data pro úpravu části
-     * @param apVersion?
-     * 
-     * @return apVersion
-     */
-    @Transactional
-    @RequestMapping(value = "/revision/{id}/part/{revPartId}", method = RequestMethod.POST)
-    public Integer updateRevisionPart(@PathVariable final Integer id,
-                                      @PathVariable final Integer revPartId,
-                                      @RequestBody final ApPartFormVO apPartFormVO,
-                                      @RequestParam(required = false) Integer apVersion) {
-
-        ApState state = accessPointService.getStateInternal(id);
-        ApAccessPoint accessPoint = accessPointService.lockAccessPoint(state.getAccessPointId(), apVersion);
-        ApRevision revision = revisionService.findRevisionByState(state);
-        ApRevPart revPart = revisionPartService.findById(revPartId);
-        revisionService.updatePart(state, revision, revPart, apPartFormVO);
-
-        return accessPoint.getVersion();
-    }
-
-    /**
-     * Úprava části přístupového bodu.
-     *
-     * @param id identifikátor přístupového bodu (PK)
-     * @param state stav do kterého se má entita po merge uvést
-     */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/revision/{id}/merge", method = RequestMethod.POST)
-    public void mergeRevision(@PathVariable final Integer id,
-                              @RequestParam(required = false) @Nullable final ApState.StateApproval state) {
-        ApState apState = accessPointService.getStateInternal(id);
-        revisionService.mergeRevision(apState, state, null);
-    }
-
-    /**
-     * Smazání části přístupového bodu.
-     *
-     * @param accessPointId
-     *            identifikátor přístupového bodu (PK)
-     * @param partId
-     *            identifikátor mazané části
-     */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "{accessPointId}/part/{partId}", method = RequestMethod.DELETE)
-    public void deletePart(@PathVariable final Integer accessPointId,
-                           @PathVariable final Integer partId) {
-        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
-                .orElseThrow(ap(accessPointId));
-        ApState state = accessPointService.getStateInternal(apAccessPoint);
-
-        ApRevision revision = revisionService.findRevisionByState(state);
-        if (revision != null) {
-            revisionService.deletePart(state, revision, partId);
-        } else {
-            accessPointService.checkPermissionForEdit(state);
-            partService.deletePart(apAccessPoint, partId);
-            accessPointService.updateAndValidate(accessPointId);
-            accessPointCacheService.createApCachedAccessPoint(accessPointId);
-        }
-    }
-
-    /**
-     * Validace přístupového bodu
-     *
-     * @param accessPointId identifikátor přístupového bodu (PK)
-     * @return validační chyby přístupového bodu
-     */
-    @Transactional
-    @RequestMapping(value = "{accessPointId}/validate", method = RequestMethod.GET)
-    public ApValidationErrorsVO validateAccessPoint(@PathVariable final Integer accessPointId, @RequestParam(defaultValue = "false") Boolean includeRevision) {
-        ApState apState = accessPointService.getApState(accessPointId);
-
-        if (includeRevision) {
-            ApRevision revision = revisionService.findRevisionByState(apState);
-            if (revision != null) {
-                return ruleService.executeValidation(apState, true);
-            }
-        }
-        return apFactory.createValidationVO(apState.getAccessPoint());
     }
 
     /**
@@ -947,34 +752,34 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/available/items", method = RequestMethod.POST)
     public ApAttributesInfoVO getAvailableItems(@RequestBody final ApAccessPointCreateVO apAccessPointCreateVO) {
-        if (false) {
-            boolean hasHlavniCast = false;
-            for (ApItemVO item : apAccessPointCreateVO.getPartForm().getItems()) {
-                if (item.getTypeId() == 11) {
-                    hasHlavniCast = true;
-                    break;
-                }
-            }
-
-            final boolean hasHlavniCast2 = hasHlavniCast;
-            List<ApCreateTypeVO> list = staticDataService.getData().getItemTypes().stream()
-                    .map(x -> {
-                        ApCreateTypeVO vo = new ApCreateTypeVO();
-                        vo.setItemTypeId(x.getItemTypeId());
-                        vo.setRequiredType(RequiredType.POSSIBLE);
-                        vo.setRepeatable(false);
-
-                        if (hasHlavniCast2 && x.getItemTypeId() < 10) {
-                            vo.setRequiredType(RequiredType.REQUIRED);
-                        }
-                        return vo;
-                    })
-                    .collect(Collectors.toList());
-            ApAttributesInfoVO aeAttributesInfoVO = new ApAttributesInfoVO();
-            aeAttributesInfoVO.setAttributes(list);
-            aeAttributesInfoVO.setErrors(Collections.emptyList());
-            return aeAttributesInfoVO;
-        }
+//        if (false) {
+//            boolean hasHlavniCast = false;
+//            for (ApItemVO item : apAccessPointCreateVO.getPartForm().getItems()) {
+//                if (item.getTypeId() == 11) {
+//                    hasHlavniCast = true;
+//                    break;
+//                }
+//            }
+//
+//            final boolean hasHlavniCast2 = hasHlavniCast;
+//            List<ApCreateTypeVO> list = staticDataService.getData().getItemTypes().stream()
+//                    .map(x -> {
+//                        ApCreateTypeVO vo = new ApCreateTypeVO();
+//                        vo.setItemTypeId(x.getItemTypeId());
+//                        vo.setRequiredType(RequiredType.POSSIBLE);
+//                        vo.setRepeatable(false);
+//
+//                        if (hasHlavniCast2 && x.getItemTypeId() < 10) {
+//                            vo.setRequiredType(RequiredType.REQUIRED);
+//                        }
+//                        return vo;
+//                    })
+//                    .collect(Collectors.toList());
+//            ApAttributesInfoVO aeAttributesInfoVO = new ApAttributesInfoVO();
+//            aeAttributesInfoVO.setAttributes(list);
+//            aeAttributesInfoVO.setErrors(Collections.emptyList());
+//            return aeAttributesInfoVO;
+//        }
 
         ModelAvailable modelAvailable = ruleService.executeAvailable(apAccessPointCreateVO);
         // Transform to result
@@ -1024,13 +829,9 @@ public class ApController {
         int fromPage = from / max;
 
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-        QueryResultXml result;
-        try {
-            result = camConnector.search(fromPage + 1, max, searchFilterFactory.createQueryParamsDef(filter), apExternalSystem);
-        } catch (ApiException e) {
-            throw prepareSystemException(e);
-        }
-        return searchFilterFactory.createArchiveEntityVoListResult(result);
+        ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
+
+        return connector.search(fromPage + 1, max, filter, apExternalSystem);
     }
 
     /**
@@ -1071,36 +872,9 @@ public class ApController {
         ApExternalSystem apExternalSystem = sdp.getApExternalSystemByCode(externalSystemCode);
         Validate.notNull(apExternalSystem, "External system code is incorrect: {}", externalSystemCode);
 
-        EntityXml entity;
-        try {
-            entity = camConnector.getEntity(archiveEntityId, apExternalSystem);
-        } catch (ApiException e) {
-            throw prepareSystemException(e);
-        }
+        ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
 
-        ApBinding binding = externalSystemService.findByValueAndExternalSystem(archiveEntityId, apExternalSystem);
-        if (binding != null) {
-            // check state
-            Optional<ApBindingState> bindingState = externalSystemService.getBindingState(binding);
-            bindingState.ifPresent(bs -> {
-                throw new SystemException("Archival entity already imported", ExternalCode.ALREADY_IMPORTED)
-                        .set("externalSystemCode", externalSystemCode)
-                        .set("archiveEntityId", archiveEntityId)
-                        .set("bindingStateId", bs.getBindingStateId())
-                        .set("accessPointId", bs.getAccessPointId());
-
-            });
-        }
-
-        ApScope scope = accessPointService.getApScope(scopeId);
-        ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem, staticDataService);
-        List<ApState> apStates = camService.takeAccessPoints(procCtx, Collections.singletonList(entity));
-        if (apStates.size() != 1) {
-            throw new BusinessException("Failed to create accesspoint from entity", BaseCode.IMPORT_FAILED);
-        }
-
-        ApState apState = apStates.get(0);
-        return apState.getAccessPointId();
+        return connector.takeArchiveEntity(archiveEntityId, scopeId, apExternalSystem);
     }
 
     /**
@@ -1130,18 +904,11 @@ public class ApController {
                     RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
         }
 
-        ApScope scope = state.getScope();
         accessPointService.checkUniqueExtSystem(accessPoint, apExternalSystem);
 
-        ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem, staticDataService);
+        ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
 
-        EntityXml entity;
-        try {
-            entity = camConnector.getEntity(archiveEntityId, apExternalSystem);
-        } catch (ApiException e) {
-            throw prepareSystemException(e);
-        }
-        camService.connectAccessPoint(state, entity, procCtx, replace);
+        connector.connectArchiveEntity(archiveEntityId, state, apExternalSystem, replace);
     }
 
     /**
@@ -1157,7 +924,7 @@ public class ApController {
     		"/external/update/{accessPointId}"}, method = RequestMethod.POST)
     public Integer saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                 @RequestParam final String externalSystemCode) {
-        ExtSyncsQueueItem item = camService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
+        ExtSyncsQueueItem item = apConnectorService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
         return item.getExtSyncsQueueItemId();
     }
 
@@ -1192,30 +959,10 @@ public class ApController {
 
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
-        ApBinding binding = bindingState.getBinding();
 
-        EntityXml entity;
-        try {
-            entity = camConnector.getEntity(binding.getValue(), apExternalSystem);
-        } catch (ApiException e) {
-            throw prepareSystemException(e);
-        }
-        ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem, staticDataService);
-        try {
-            camService.synchronizeAccessPoint(procCtx, binding, entity, false);
-        } catch (SyncImpossibleException e) {
-            logger.error("Synchronized impossible, accessPointId: {}, bindingId: {}, {}", accessPoint.getAccessPointId(), bindingState.getBindingId(), e.getMessage());
-            throw new BusinessException("Synchronizace této entity s CAM není možná. " + e.getMessage(),
-                    e,
-                    ExternalCode.SYNC_IMPOSSIBLE);
-        }
-    }
+        ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
 
-    private AbstractException prepareSystemException(ApiException e) {
-        return new SystemException("Došlo k chybě při komunikaci s externím systémem.", e)
-                .set("responseBody", e.getResponseBody())
-                .set("responseCode", e.getCode())
-                .set("responseHeaders", e.getResponseHeaders());
+        connector.synchronizeEntity(state, bindingState, apExternalSystem);
     }
 
     /**
@@ -1230,7 +977,7 @@ public class ApController {
                                       @RequestParam final String externalSystemCode) {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
 
-        camService.disconnectAccessPoint(accessPoint, externalSystemCode);
+        apConnectorService.disconnectAccessPoint(accessPoint, externalSystemCode);
     }
 
     /**
@@ -1247,20 +994,9 @@ public class ApController {
         ApState state = accessPointService.getStateInternal(accessPoint);
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
 
-        List<String> archiveEntities = accessPointService.findRelArchiveEntities(accessPoint);
-        List<EntityXml> entities = new ArrayList<>();
-
-        try {
-            if (CollectionUtils.isNotEmpty(archiveEntities)) {
-                for (String archiveEntityId : archiveEntities) {
-                    entities.add(camConnector.getEntity(archiveEntityId, apExternalSystem));
-                }
-            }
-        } catch (ApiException e) {
-            throw prepareSystemException(e);
-        }
-        ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem, staticDataService);
-        camService.takeAccessPoints(procCtx, entities);
+        ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
+        
+        connector.takeRelArchiveEntities(state, apExternalSystem);
     }
 
     @Transactional
@@ -1303,7 +1039,7 @@ public class ApController {
     }
 
     /**
-     * Import souřadnic ve formátu KML/GML
+     * Import souřadnic ve formátu KML/GML/WKT
      *
      * @param fileType Typ souboru
      * @param body Soubor se souřadnicemi
@@ -1315,7 +1051,7 @@ public class ApController {
             method = RequestMethod.POST)
     public String importCoordinates(@RequestParam final FileType fileType,
                                     @RequestBody(required = false) Resource body) {
-        return accessPointService.importCoordinates(fileType, body);
+        return String.format("\"%s\"", accessPointService.importCoordinates(fileType, body));
     }
 
     /**

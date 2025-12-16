@@ -8,6 +8,11 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Response for exception.
+ * 
+ * Object is used to serialize exception to JSON.
+ */
 @JsonInclude(Include.NON_NULL)
 public class ExceptionResponse {
 

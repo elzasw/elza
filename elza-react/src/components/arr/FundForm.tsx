@@ -18,20 +18,20 @@ import './FundForm.scss';
 import { useThunkDispatch } from 'utils/hooks/useThunkDispatch.js';
 
 interface IFundForm extends ConnectedProps<typeof connector> {
-    onClose: any
-    onSubmitForm: any
-    create: boolean
-    update: boolean
-    approve: boolean
-    ruleSet: any
-    refTables: any
-    scopeList: FundScope[]
+    onClose?: () => void;
+    onSubmitForm: any;
+    create?: boolean;
+    update?: boolean;
+    approve?: boolean;
+    ruleSet?: any;
+    refTables: any;
+    scopeList: FundScope[];
 }
 
 /**
  * Formulář přidání nebo uzavření AS.
  */
-const FundForm: React.FC<IFundForm & InjectedFormProps<{}, IFundForm>> = memo((props) => {
+const FundForm: React.FC<IFundForm & InjectedFormProps<object, IFundForm>> = memo((props) => {
 
     const dispatch = useThunkDispatch();
     const {handleSubmit, onClose, create, update, approve, ruleSet, refTables, pristine, submitting} = props;
@@ -221,6 +221,6 @@ const mapState = (state: any) => ({
 });
 const connector = connect(mapState);
 
-export default reduxForm({
+export default connector(reduxForm<object, IFundForm>({
     form: 'fundForm',
-})(connector(FundForm));
+})(FundForm));

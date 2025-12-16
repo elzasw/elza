@@ -30,6 +30,8 @@ import {FOCUS_KEYS} from '../../constants.tsx';
 import PersistentSortDialog from './PersisetntSortDialog';
 import {WebApi} from '../../actions/WebApi';
 import {JAVA_ATTR_CLASS} from '../../constants';
+import { showQuoteModal, messages as quoteMessages } from './quote';
+import { FormattedMessage } from 'react-intl';
 
 class FundTreeMain extends React.Component {
     refTree = null;
@@ -80,6 +82,13 @@ class FundTreeMain extends React.Component {
         this.props.dispatch(fundTreeFetchIfNeeded(types.FUND_TREE_AREA_MAIN, versionId, expandedIds));
     };
 
+    handleQuote = ({id}) => () => {
+        const { fund } = this.props;
+        const { dispatch } = this.props;
+
+        dispatch(showQuoteModal(id, fund.versionId));
+    }
+
     /**
      * Zobrazení kontextového menu pro daný uzel.
      * @param node {Object} uzel
@@ -94,6 +103,9 @@ class FundTreeMain extends React.Component {
             <ul className="dropdown-menu">
                 <Dropdown.Item onClick={this.handleSelectInNewTab.bind(this, node)}>
                     {i18n('fundTree.action.openInNewTab')}
+                </Dropdown.Item>
+                <Dropdown.Item onClick={this.handleQuote(node)}>
+                    <FormattedMessage {...quoteMessages.quoteTitle}/>
                 </Dropdown.Item>
                 {!readMode && (
                     <Dropdown.Item onClick={() => this.handleOpenPersistentSortDialog(node)}>
@@ -209,7 +221,7 @@ class FundTreeMain extends React.Component {
 
         if(node){
             expandedNodes = [node, ...getNodeChildren(node, nodes)]
-        } 
+        }
 
         expandedNodes = expandedNodes.filter((node) => node.hasChildren)
 

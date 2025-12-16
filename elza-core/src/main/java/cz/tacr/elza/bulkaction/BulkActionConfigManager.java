@@ -93,11 +93,11 @@ public class BulkActionConfigManager {
 
             BaseActionConfig config = loadActionConfig(actionCode, configFile, yamlLoader);
             configs.put(config.getCode(), config);
-            }
+        }
 
         // publish configs
         this.bulkActionConfigMap = configs;
-			}
+    }
 
     @Transactional(TxType.MANDATORY)
     public void load() {

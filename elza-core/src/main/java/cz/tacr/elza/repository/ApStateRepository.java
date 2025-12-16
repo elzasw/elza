@@ -3,6 +3,8 @@ package cz.tacr.elza.repository;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,13 +20,23 @@ import cz.tacr.elza.domain.projection.ApStateInfo;
 @Repository
 public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, JpaSpecificationExecutor<ApState> {
 
-    /*
-    @Query("SELECT s FROM ap_state s WHERE s.accessPoint = :accessPoint AND s.deleteChangeId IS NULL")
-    ApState findActiveByAccessPoint(@Param("accessPoint") ApAccessPoint accessPoint);
-
-    @Query("SELECT s FROM ap_state s WHERE s.accessPoint IN :accessPoints AND s.deleteChangeId IS NULL")
-    List<ApState> findActiveByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
-    */
+    /**
+     * Search for deleted APs
+     */
+    @Query("SELECT st FROM ap_state st" +
+    		" JOIN FETCH st.accessPoint ap" +
+    		" WHERE st.deleteChange IS NOT NULL" +
+    		" AND st.createChangeId IN (SELECT max(s.createChangeId) FROM ap_state s WHERE s.accessPoint = st.accessPoint)" +
+    		" ORDER BY st.deleteChangeId DESC")
+    Page<ApState> findAccessPointsDeletedPageable(Pageable pageable);
+    
+    @Query("SELECT st FROM ap_state st" +
+    		" JOIN FETCH st.accessPoint ap" +
+    		" WHERE st.deleteChange IS NOT NULL" +
+    		" AND st.createChangeId IN (SELECT max(s.createChangeId) FROM ap_state s WHERE s.accessPoint = st.accessPoint)" +
+    		" AND st.scopeId IN :scopeIds" +
+    		" ORDER BY st.deleteChangeId DESC")
+    Page<ApState> findAccessPointsDeletedPageable(Pageable pageable, Collection<Integer> scopeIds);
 
     @Query("SELECT s1" +
             " FROM ap_state s1" +
@@ -83,6 +95,9 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
     @Modifying
     void deleteAllByScope(ApScope scope);
 
+    @Modifying
+    void deleteAllByAccessPointIdIn(Collection<Integer> apIds);
+
 //    @Query("select s" +
 //            " from ap_state s" +
 //            " join ap_external_id eid on eid.accessPoint = s.accessPoint" +
@@ -101,16 +116,17 @@ public interface ApStateRepository extends ElzaJpaRepository<ApState, Integer>, 
      */
     List<ApState> findByScope(ApScope scope);
 
-    @Query("SELECT new cz.tacr.elza.domain.projection.ApStateInfo(c.changeDate, s.stateApproval, rs.stateApproval, scope.name, tp.name, rtp.name, s.comment, rs.comment, usr)" +
+    @Query("SELECT new cz.tacr.elza.domain.projection.ApStateInfo(c.changeDate, c.type, s.stateApproval, rs.stateApproval, scope.name, tp.name, rtp.name, s.comment, rs.comment, usr)" +
             " FROM ap_change c" +
             " LEFT JOIN c.user usr" +
             " LEFT JOIN ap_state s ON s.createChangeId = c.changeId" +
+            " LEFT JOIN ap_binding_state bs ON bs.createChangeId = c.changeId" +
             " LEFT JOIN s.apType tp" +
             " LEFT JOIN s.scope scope" +
             " LEFT JOIN ap_revision r ON r.createChangeId = c.changeId" +
             " LEFT JOIN ap_rev_state rs ON rs.createChangeId = c.changeId" +
             " LEFT JOIN rs.type rtp" +
-            " WHERE s.accessPoint = :accessPoint" +
+            " WHERE s.accessPoint = :accessPoint OR bs.accessPoint = :accessPoint" +
             "   OR rs.revisionId IN" +
             "     (SELECT revisionId FROM ap_revision WHERE stateId IN (SELECT stateId FROM ap_state WHERE accessPoint = :accessPoint)" +
             "       AND ((mergeState IS NULL AND deleteChange IS NULL) OR (mergeState IS NOT NULL AND deleteChange IS NOT NULL)))" +

@@ -25,6 +25,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 
+import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.service.UserService;
 
@@ -78,7 +79,7 @@ public class IOExportWorker implements SmartLifecycle {
         RemovalListener<Integer, IOExportRequest> removalListener = new RemovalListener<Integer, IOExportRequest>() {
             @Override
             public void onRemoval(RemovalNotification<Integer, IOExportRequest> notification) {
-                Path filePath = resourcePathResolver.getExportXmlTrasnformDir().resolve(notification.getKey() + ".xml");
+                Path filePath = resourcePathResolver.getExportTrasnformDir().resolve(notification.getKey() + ".xml");
                 try {
                     Files.delete(filePath);
                 } catch (IOException e) {
@@ -97,7 +98,19 @@ public class IOExportWorker implements SmartLifecycle {
 
     public int addExportRequest(final Integer userId, final String downloadFileName, DEExportParams exportParams) {
         synchronized (lock) {
-            IOExportRequest exportRequest = new IOExportRequest(userId, ++requestCount, downloadFileName, exportParams);
+            IOExportRequest exportRequest = new IOExportFundXmlRequest(userId, ++requestCount, downloadFileName, exportParams, exportService);
+
+            // store result
+            mapExportResult.put(exportRequest.getRequestId(), exportRequest);
+            exportRequests.add(exportRequest);         
+            lock.notifyAll();
+            return exportRequest.getRequestId();
+        }        
+    }
+
+    public int addExportRequest(final Integer userId, final String downloadFileName, SearchParams searchParams) {
+        synchronized (lock) {
+            IOExportRequest exportRequest = new IOExportFundsCsv(userId, ++requestCount, downloadFileName, searchParams, exportService);
 
             // store result
             mapExportResult.put(exportRequest.getRequestId(), exportRequest);
@@ -124,12 +137,10 @@ public class IOExportWorker implements SmartLifecycle {
         SecurityContext secCtx = userService.createSecurityContext(request.getUserId());
         SecurityContextHolder.setContext(secCtx);
 
-        Path exportXmlTrasnformDir = resourcePathResolver.getExportXmlTrasnformDir();
-        Files.createDirectories(exportXmlTrasnformDir);
-
-        Path xmlFile = Files.createFile(exportXmlTrasnformDir.resolve(request.getRequestId() + ".xml"));
-
-        exportService.exportXmlDataToFile(request.getExportParams(), xmlFile);
+        Path exportTrasnformDir = resourcePathResolver.getExportTrasnformDir();
+        Files.createDirectories(exportTrasnformDir);
+        Path exportFile = Files.createFile(exportTrasnformDir.resolve(request.getRequestId() + request.getFileExt()));
+        request.exportToFile(exportFile);
     }
 
     public void run() {

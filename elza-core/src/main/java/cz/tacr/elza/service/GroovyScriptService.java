@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,7 @@ import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.groovy.GroovyAe;
+import cz.tacr.elza.groovy.GroovyGenCtx;
 import cz.tacr.elza.groovy.GroovyItem;
 import cz.tacr.elza.groovy.GroovyPart;
 import cz.tacr.elza.groovy.GroovyResult;
@@ -68,6 +70,7 @@ public class GroovyScriptService {
     private static final String ENTITA = "AE";
     private static final String PART = "PART";
     private static final String ITEMS = "ITEMS";
+    private static final String GENERATOR_CONTEXT = "GENERATOR_CONTEXT";
     // Used for StaticDataProvider
     private static final String DATA_PROVIDER = "DATA_PROVIDER";
     private static final String AP_CACHE_PROVIDER = "AP_CACHE_PROVIDER";
@@ -169,6 +172,22 @@ public class GroovyScriptService {
         return (List<GroovyItem>) groovyScriptFile.evaluate(input);
     }
 
+    /**
+     * Spuštění groovy skriptu pro zpracování dat pro citáty
+     * 
+     * @param genCtx
+     * @param groovyFilePath
+     * @return
+     */
+    public String process(GroovyGenCtx genCtx, String groovyFilePath) {
+        GroovyScriptFile groovyScriptFile = getGroovyScriptFile(groovyFilePath);
+
+        Map<String, Object> input = new HashMap<>();
+        input.put(GENERATOR_CONTEXT, genCtx);
+
+    	return (String) groovyScriptFile.evaluate(input);
+    }
+
     public List<ApItem> filterOutgoingItems(ApPart part,
                                             List<ApItem> itemList,
                                             String groovyFilePath) {
@@ -217,7 +236,7 @@ public class GroovyScriptService {
         private long lastModified = -1;
 
         public GroovyScriptFile(File scriptFile) {
-            this.scriptFile = Validate.notNull(scriptFile);
+            this.scriptFile = Objects.requireNonNull(scriptFile);
         }
 
         public Object evaluate(Map<String, Object> variables) {

@@ -223,7 +223,8 @@ class ListBox extends AbstractReactComponent {
                     activeIndex: index,
                     lastFocus: index,
                 });
-                this.props.onFocus && this.props.onFocus(items[index], index);
+                // this.props.onFocus && this.props.onFocus(items[index], index);
+                this.props.onSelect && this.props.onSelect(items[index], index);
                 if (this.state.activeIndex !== index) {
                     this.props.onChangeSelection && this.props.onChangeSelection([index]);
                 }

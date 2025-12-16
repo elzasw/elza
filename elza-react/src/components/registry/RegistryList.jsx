@@ -386,7 +386,8 @@ class RegistryList extends AbstractReactComponent {
                         items={registryList.filteredRows}
                         activeIndex={activeIndex}
                         renderItemContent={this.renderListItem}
-                        onFocus={this.handleRegistryDetail}
+                        onSelect={this.handleRegistryDetail}
+                    // onFocus={this.handleRegistryDetail}
                     />
                 );
             } else {

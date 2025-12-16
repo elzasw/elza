@@ -5,43 +5,40 @@ import "@typespec/openapi3";
 using TypeSpec.Http;
 using TypeSpec.Rest;
 
-/** Basic statistics about Elza instance */
+/**
+ * Basic statistics about Elza instance
+ */
 model AdminInfo {
     /** Number of funds */
     funds: int32;
-
     /** Number of valid levels */
     levels: int32;
-
     /** Number of valid access points */
     accessPoints: int32;
-
     /** Number of users */
     users: int32;
-
     /** Number of logged users */
     loggedUsers: int32;
 }
 
-/** Logged user */
+/**
+ * Logged user
+ */
 model LoggedUser {
-
     /** User ID */
     userId: integer;
-
     /** username */
     user: string;
-
     /** Remote address */
     remoteAddr: string;
 }
 
-/** List of logged users */
+/**
+ * List of logged users
+ */
 model LoggedUsers {
-
     /** User list */
     users: LoggedUser[];
-
     /** Total number of logged users */
     totalCount: int32;
 }
@@ -68,6 +65,28 @@ model Fund {
     unitdate?: string;
     /** Značka archivního souboru */
     mark?: string;
+}
+
+/**
+ * Archivní soubor pro výsledky vyhledávání
+ */
+model FundSearchResult extends Fund {
+    /** počet JP nalezených v AS */
+    count: integer;
+    /** identifikátor otevřené verze AS */
+    fundVersionId: integer;
+}
+
+/**
+ * Seznam archivních souborů jako výsledek vyhledávání
+ */
+model NodeSearchResult {
+    /** seznam archivních souborů */
+    fonds: FundSearchResult[];
+    /** celkový počet */
+    totalCount: int64;
+    /** znak částečného výsledku */
+    partialResult: boolean;
 }
 
 /**
@@ -129,9 +148,9 @@ model CreateFund {
  */ 
 model ImportFundData {
     /** Import type. Only 'CSV' is supported */
-    importType: string;
+    importType: HttpPart<string>;
     /** File to upload */
-    dataFile: bytes;
+    dataFile: HttpPart<bytes>;
 }
 
 /**
@@ -154,6 +173,8 @@ model UpdateFund {
     mark?: string;
     /** Seznam oblastí entit */
     scopes?: string[];
+    /** Zákaz změny vlastností */
+    managed?: boolean;
 }
 
 /**
@@ -176,13 +197,13 @@ model FsRepo {
 }
 
 model FundIdParameter {
-    /** Fund ID*/
+    /** Fund ID */
     @path
     fundId: integer;
 }
 
 model FundVersionIdParameter {
-    /** Fund ID Version*/
+    /** Fund ID Version */
     @path
     fundVersionId: integer;
 }
@@ -209,7 +230,9 @@ enum FsItemType {
     FILE,
 }
 
-/** Single file system item */
+/**
+ * Single file system item
+ */
 model FsItem {
     /** Type of item: file or folder */
     itemType: FsItemType;
@@ -236,22 +259,27 @@ model FsItems {
 model ExportParams {
     apIds?: integer[];
     fundsSections?: FundSections[];
-    exportFilterId?: integer;
+    /** kód nebo ID filtru */
+    exportFilter?: string;
     includeUUID?: boolean = true;
     includeAccessPoints?: boolean = true;
 }
 
-enum ExportRequestState {
+/**
+ * Status of async request
+ */
+enum RequestProcessState {
     PENDING,
-    PREPARING,
-    FINISHED
+    PROCESSING,
+    FINISHED,
+    ERROR
 }
 
 /**
- * Status of export
+ * Status of request
  */
 model ExportRequestStatus {
-    state: ExportRequestState;
+    state: RequestProcessState;
     progress?: integer;
 }
 
@@ -330,99 +358,137 @@ model RevStateChange {
 }
 
 /**
+ * Data types for ItemData classes
+ */
+enum DataType {
+    INT,
+    STRING,
+    TEXT,
+    UNITDATE,
+    UNITID,
+    FORMATTED_TEXT,
+    COORDINATES,
+    RECORD_REF,
+    DECIMAL,
+    STRUCTURED,
+    ENUM,
+    FILE_REF,
+    JSON_TABLE,
+    DATE,
+    URI_REF,
+    BIT
+}
+
+/**
+ * Item data parent
+ */
+@discriminator("dataType")
+model ItemData {
+    /** data id */
+    dataId?: integer;
+    /** data type */
+    dataType: DataType;
+}
+
+/**
  * ItemData classes extensions
  */
 model DataBit extends ItemData {
-    type: "DataBit";
+    @invisible(Lifecycle)
+    dataType: DataType.BIT;
     bitValue: boolean;
 }
 
 model DataCoordinates extends ItemData {
-    type: "DataCoordinates";
+    @invisible(Lifecycle)
+    dataType: DataType.COORDINATES;
     value: string;
 }
 
 model DataDate extends ItemData {
-    type: "DataDate";
+    @invisible(Lifecycle)
+    dataType: DataType.DATE;
     value: plainDate;
 }
 
 model DataDecimal extends ItemData {
-    type: "DataDecimal";
+    @invisible(Lifecycle)
+    dataType: DataType.DECIMAL;
     value: decimal;
 }
 
 model DataFileRef extends ItemData {
-    type: "DataFileRef";
+    @invisible(Lifecycle)
+    dataType: DataType.FILE_REF;
     fileId: integer;
 }
 
 model DataInteger extends ItemData {
-    type: "DataInteger";
+    @invisible(Lifecycle)
+    dataType: DataType.INT;
     integerValue: integer;
 }
 
 model DataJsonTable extends ItemData {
-    type: "DataJsonTable";
+    @invisible(Lifecycle)
+    dataType: DataType.JSON_TABLE;
     value: string;
 }
 
-model DataNull extends ItemData {
-    type: "DataNull";
+model DataEnum extends ItemData {
+    @invisible(Lifecycle)
+    dataType: DataType.ENUM;
 }
 
 model DataRecordRef extends ItemData {
-    type: "DataRecordRef";
+    @invisible(Lifecycle)
+    dataType: DataType.RECORD_REF;
     value: integer;
 }
 
 model DataString extends ItemData {
-    type: "DataString";
+    @invisible(Lifecycle)
+    dataType: DataType.STRING;
     stringValue: string;
 }
 
 model DataStructureRef extends ItemData {
-    type: "DataStructureRef";
+    @invisible(Lifecycle)
+    dataType: DataType.STRUCTURED;
     structuredObjectId: integer;
 }
 
 model DataText extends ItemData {
-    type: "DataText";
+    @invisible(Lifecycle)
+    dataType: DataType.TEXT;
     textValue: string;
 }
 
 model DataFormattedText extends ItemData {
-    type: "DataFormattedText";
+    @invisible(Lifecycle)
+    dataType: DataType.FORMATTED_TEXT;
     value: string;
 }
 
 model DataUnitdate extends ItemData {
-    type: "DataUnitdate";
+    @invisible(Lifecycle)
+    dataType: DataType.UNITDATE;
     value: string;
 }
 
 model DataUnitid extends ItemData {
-    type: "DataUnitid";
+    @invisible(Lifecycle)
+    dataType: DataType.UNITID;
     unitId: string;
 }
 
 model DataUriRef extends ItemData {
-    type: "DataUriRef";
+    @invisible(Lifecycle)
+    dataType: DataType.URI_REF;
     nodeId?: integer;
     value: string;
     description?: string;
     refTemplateId?: integer;
-}
-
-/**
- * Item data
- */
-@discriminator("type")
-model ItemData {
-    /** data id */
-    dataId?: integer;
-    /** data type id */
-    dataTypeId?: integer;
 }
 
 /**
@@ -440,15 +506,15 @@ enum ChangeType {
  */
 model ItemDataResult {
     /** parent node */
-    parent?: Node;
+    parent?: NodeBase;
     /** item */
     item?: NodeItem;
 }
 
 /**
- * Náhrada za třídu ArrNodeVO
+ * Náhrada za třídu `ArrNodeVO`
  */
-model Node {
+model NodeBase {
     /** id of node */
     id: integer;
     /** node version */
@@ -458,7 +524,7 @@ model Node {
 }
 
 /**
- * Náhrada za třídu ArrItemVO
+ * Náhrada za třídu `ArrItemVO`
  */
 model NodeItem {
     /** id of item */
@@ -598,11 +664,539 @@ model ExtSystemProperty {
     value: string;
 }
 
+/**
+ * Access point list
+ */
+model DeleteAccessPointsDetail {
+    /** list of id or uuid */
+    ids: string[];
+}
+
+/**
+ * Deleted archive entity
+ */
+model DeletedEntity {
+    /** id of access point */
+    accessPointId: integer;
+    /** name of access point */
+    name: string;
+    /** pt_body + brief_desc */
+    description?: string;
+    /** id type of acces point */
+    apTypeId: integer;
+    /** id in external system */
+    bindingValue?: string;
+    /** id external system */
+    extSystemId?: integer;
+    /** id of deleteChange */
+    deleteChangeId: integer;
+    /** date of deletion */
+    deleteDate: offsetDateTime;
+    /** id replaced access point */
+    replacedBy?: integer;
+}
+
+/**
+ * Deleted archive entities
+ */
+model InvalidatedEntities {
+   totalCount: integer;
+   page: DeletedEntity[];
+}
+
+/**
+ * Data for create/update a part (external)
+ */
+model ApPartFormVO {
+    /** this is an external class */
+}
+
+/**
+ * Skupina zapouzdrující typy hodnot atributů pro UI
+ *
+ * Náhrada `ItemTypeGroupVO`
+ */
+// TODO find a way to generate classes not used in requests
+model ItemTypeGroup {
+    code: string;
+    name: string;
+    types?: FormItemType[];
+}
+
+/**
+ * Item mandatory type
+ */
+enum MandatoryType {
+    REQUIRED, RECOMMENDED, POSSIBLE, IMPOSSIBLE
+}
+
+/**
+ * Náhrada `DescItemSpecLiteVO`
+ */
+model FormItemSpec {
+    itemSpecId: integer;
+    type: MandatoryType;
+    repeatable: boolean;
+}
+
+/**
+ * Odlehčená verze specifikace hodnoty atributu
+ *
+ * Náhrada `ItemTypeLiteVO`
+ */
+model FormItemType {
+    /** identifikator typu */
+    itemTypeId: integer;
+    /** typ */
+    type: MandatoryType;
+    /** opakovatelnost */
+    repeatable: boolean;
+    /** počítaný */
+    //?cal: integer;
+    /** stav počítanýho atributu: 0/1 vypnutý/zapnutý */
+    //?calSt: integer;
+    /** atribut se může nastavit jako nedefinovaný 0/1 - nemůže/může */
+    undefinable: boolean;
+    /** seznam specifikací atributu */
+    specs?: FormItemSpec[];
+    /** seznam identifikátorů oblíbených specifikací u typu */
+    favoriteSpecIds: integer[];
+    /** šířka atributu (0 - maximální počet sloupců, 1..N - počet sloupců) */
+    //?width: integer;
+}
+
+/**
+ * Náhrada `DescFormDataNewVO`
+ */
+model NodeFormData {
+    /** rodič */
+    parent: NodeBase;
+    /** seznam hodnot atributu */
+    descItems: NodeItem[];
+    /** typy atributů */
+    itemTypes: FormItemType[];
+    /** oprávnění pořádat v dané JP */
+    arrPerm: boolean;
+}
+
+/**
+ * Data uzlu stromu odesílané klientovi pro strom fa.
+ *
+ * Náhrada `TreeNodeVO`
+ */
+model NodeTreeData {
+    /** node id */
+    id: integer;
+    /** hloubka zanoření ve stromu */
+    depth: integer;
+    /** název uzlu */
+    name: string;
+    /** ikonka */
+    icon?: string;
+    /** true - uzel má další potomky, false - uzel nemá další potomky */
+    hasChildren: boolean;
+    /** referenční označení. Od kořene k uzlu */
+    referenceMark: string[];
+    /** verze uzlu */
+    version: integer;
+    /** oprávnění pořádat v dané JP */
+    arrPerm?: boolean;
+}
+
+/**
+ * Stav JP
+ */
+enum NodeConformityState {
+    OK, ERR
+}
+
+/**
+ * Náhrada `NodeConformityMissingVO`
+ */
+model NodeConformityMissing {
+    /** identifikátor typu */
+    descItemTypeId: integer;
+    /** identifikátor specifikace */
+    descItemSpecId: integer;
+    /** popis chybějící položky */
+    description: string;
+    /** identifikátor typu oprávnění */
+    policyTypeId: integer;
+}
+
+/**
+ * Náhrada `NodeConformityErrorVO`
+ */
+model NodeConformityError {
+    /** identifikátor hodnoty atributu */
+    descItemObjectId: integer;
+    /** popis chyby */
+    description: string;
+    /** identifikátor typu oprávnění */
+    policyTypeId: integer;
+}
+
+/**
+ * Pro validace JP
+ *
+ * Náhrada `NodeConformityVO`
+ */
+model NodeConformity {
+    state: NodeConformityState;
+    /** datum validace */
+    date: plainDate;
+    /** seznam chybějících hodnot */
+    missingList: NodeConformityMissing[];
+    /** seznam chybných hodnot */
+    errorList: NodeConformityError[];
+    /** seznam uplatnenych politik pro zobrazeni */
+    viewPolicyTypeIds: integer[];
+}
+
+/**
+ * Request state
+ */
+enum RequestState {
+    OPEN, QUEUED, SENT, PROCESSED, REJECTED
+}
+
+/**
+ * Náhrada `ArrRequestVO`
+ */
+model Request {
+    id: integer;
+    code: string;
+    state: RequestState;
+    rejectReason: string;
+    username: string;
+    create: plainDate;
+    send: plainDate;
+    responseExternalSystem: plainDate;
+    externalSystemCode: string;
+}
+
+/**
+ * Náhrada `ArrDigitizationRequestVO`
+ */
+model DigitizationRequest extends Request {
+    description: string;
+    digitizationFrontdeskId: integer;
+    nodesCount: integer;
+    nodes: NodeTreeData[];
+}
+
+/**
+ * Náhrada `WfSimpleIssueVO`
+ */
+model WfSimpleIssue {
+    /** indentifikátor připomínky */
+    id: integer;
+    /** číslo připomínky v rámci protokolu */
+    number: integer;
+    /** text připomínky */
+    description: string;
+}
+
+/**
+ * Struktura pro položky v accordionu.
+ *
+ * Náhrada `AccordionNodeVO`
+ */
+model NodeAccordionData {
+    /** nodeid uzlu */
+    id: integer;
+    /** popis levé části accordionu */
+    accordionLeft: string;
+    /** popis pravé části accordionu */
+    accordionRight: string;
+    /** označení JP */
+    referenceMark: string[];
+    /** Informace o stavu JP */
+    nodeConformity?: NodeConformity;
+    /** seznam otevřených požadavků na digitalizaci */
+    digitizationRequests?: DigitizationRequest[];
+    /** db verze JP */
+    version: integer;
+    /** seznam otevřených připomínek */
+    issues?: WfSimpleIssue[];
+}
+
+/**
+ * Received data of the unit of description
+ *
+ * Náhrada `NodeDataVO`
+ */
+model NodeData {
+    /** data formuláře požadované JP */
+    formData: NodeFormData;
+    /** node data */
+    node: NodeAccordionData;
+    /** požadovaní rodiče ke kořeni */
+    parents: NodeTreeData[];
+    /** požadovaní přímí potomci */
+    children: NodeTreeData[];
+    /** požadovaní sourozenci */
+    siblings?: NodeAccordionData[];
+    /** index požadované JP */
+    nodeIndex: integer;
+    /** celkový počet JP v úrovni požadované JP */
+    nodeCount: integer;
+}
+
+/**
+ * Parameters for get information about the description unit and its "surroundings"
+ */
+model NodeDataParam {
+    /** version fund */
+    fundVersionId: integer;
+    /** id of node */
+    nodeId: integer;
+    /** load description unit form data as well? */
+    formData: boolean;
+    /** load (if not null) siblings of the description unit? */
+    siblingsFrom?: integer;
+    /** max number of siblings returned */
+    siblingsMaxCount: integer;
+    /** full-text filtering in siblings */
+    siblingsFilter?: string;
+    /** Load parents description units to root? */
+    parents: boolean;
+    /** Load children description units? */
+    children: boolean;
+}
+
+/**
+ * Result of creating a part
+ */
+model CreatedPart {
+    partId: integer;
+    apVersion: integer;
+}
+
+/**
+ * Part validation issues/errors
+ */
+model PartValidationIssues {
+    id: integer;
+    errors: string[];
+}
+
+/**
+ * Entity validation issues/errors
+ */
+model ApValidationIssues {
+    errors: string[];
+    partErrors: PartValidationIssues[];
+}
+
+/**
+ * Operation type for FieldValueFilter
+ */
+enum OperationCompareType {
+    EQ, NEQ, GT, LT, GTE, LTE, STARTWITH, ENDWITH, CONTAINS, INTERSECT, IS_IN, IS_NULL, NOT_NULL
+}
+
+/**
+ * Operation type for LogicalFilter
+ */
+enum OperationLogicalType {
+    AND, OR 
+}
+
+/**
+ * Type of field for FieldValueFilter
+ */
+enum FieldType {
+    /** Field for archival fonds */
+    FONDS_FIELD,
+
+    /** Node specific field */
+    NODE_FIELD,
+
+    /** Description item field */
+    DESC_ITEM
+}
+
+/**
+ * Used as a parent for filter fields
+ */
+@discriminator("fieldType")
+model AbstractField {
+    fieldType: FieldType;
+}
+
+/**
+ * Funds specific field names
+ * 
+ * Fields are used for FundsFilterField.
+ */
+enum FondsFieldName {
+    fondsId, name, createDate, internalCode, fondsNumber, unitdate, mark, institutionId, institutionCode
+}
+
+/**
+ * Fund field names for filter
+ */
+model FondsField extends AbstractField {
+    @invisible(Lifecycle)
+    fieldType: FieldType.FONDS_FIELD;
+    fieldName: FondsFieldName;
+}
+
+/**
+ * Node specific field names
+ * 
+ * Node fields are used for FieldValueFilter.
+ */
+enum NodeFieldName {
+    conformityError, 
+    conformityMissing,
+    uuid
+}
+
+/**
+ * Node specifici search field
+ */
+model NodeField extends AbstractField {
+    /**
+     * Type of field
+     */
+    @invisible(Lifecycle)
+    fieldType: FieldType.NODE_FIELD;
+
+    /**
+     * Name of field (from enum NodeFieldName)
+     */
+    fieldName: NodeFieldName;
+}
+
+/**
+ * Node (descItem) field names for filter
+ */ 
+model DescItemField extends AbstractField {
+    @invisible(Lifecycle)
+    fieldType: FieldType.DESC_ITEM;
+    typeCode: string;
+    specCode?: string;
+}
+
+/**
+ * Types of filters
+ */
+enum FilterType {
+    fieldValue,
+    contains,
+    logical
+}
+
+/**
+ * Used as a parent for all other filters
+ */
+@discriminator("filterType")
+model AbstractFilter {
+    filterType: FilterType
+}
+
+/**
+ * Compares specified attribute of the entity with specified value using specified operation
+ */
+model FieldValueFilter extends AbstractFilter {
+    @invisible(Lifecycle)
+    filterType: FilterType.fieldValue;
+    /** searched field */
+    field: AbstractField;
+    /** searched value */
+    value?: string;
+    /** operation type */
+    operation: OperationCompareType;
+}
+
+/**
+ * Performs fulltext search over the whole entity
+ */
+model MultimatchContainsFilter extends AbstractFilter {
+    @invisible(Lifecycle)
+    filterType: FilterType.contains;
+    /** searched value */
+    value: string;
+}
+
+/**
+ * Join subfilters using logical operator, result may be used in other LogicalFilter as one of subfilter
+ */
+model LogicalFilter extends AbstractFilter {
+    @invisible(Lifecycle)
+    filterType: FilterType.logical;
+    /** collection of filters */
+    filters: AbstractFilter[];
+    /** operation type */
+    operation: OperationLogicalType;
+}
+
+/**
+ * Order of sorting
+ */
+enum SortingOrder {
+    asc,
+    desc
+}
+
+/**
+ * Allows to define sorting
+ */
+model Sorting {
+    /** attribute name to sort on */
+    field: string;
+    /** order of sorting */
+    order?: SortingOrder;
+}
+
+/**
+ * Search parameters
+ */
+model SearchParams {
+    /** array of conditions, joined by AND operator */
+    filters?: AbstractFilter[];
+    /** page offset */
+    offset?: integer;
+    /** page size */
+    size?: integer;
+    /** array of sort conditions */
+    sort?: Sorting[];
+}
+
+/**
+ * Search result 
+ */
+model ResultEntityRef {
+    count: int64;
+    items?: EntityRef[];
+}
+
+/**
+ * Entity processor (user)
+ */
+model Participant {
+    userId: integer;
+    name: string;
+    username: string;
+    /** if user has ability to save and modify new entity */
+    canWrite: boolean;
+    /** if user has ability to approve entity */
+    canConfirm: boolean;
+    /** if user has ability to change approved entity */
+    canEditConfirmed: boolean;
+}
+
+/**
+ * Administrativní funkce
+ */
 @tag("admin")
 @route("/admin")
 namespace ElzaAPI.Admin {
-
-    /** Creating missing items in arr_cached_node */
+    /**
+     * Creating missing items in arr_cached_node
+     */
     @route("arrangement/missing-cached-nodes")
     op syncNodeCache(): { 
         @Http.statusCode statusCode: 200;
@@ -637,6 +1231,29 @@ namespace ElzaAPI.Admin {
     op loggedUsers(): LoggedUsers;
 }
 
+@tag("daos")
+@route("/daos")
+namespace ElzaAPI.Dao {
+    /**
+     * Changing the dao connection scenario
+     */
+    @route("/{id}/change-scenario")
+    @post op changeLinkScenario(
+        /** dao id */
+        @path id: integer,
+        /** new scenario */
+        @body body: string;
+        @header contentType: "application/json";
+    ): {
+        /** The scenario has been changed */
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+}
+
 @route("/daorepository")
 namespace ElzaAPI.DaoRepository {
     op fsRepos(): FsRepo[];
@@ -664,13 +1281,13 @@ namespace ElzaAPI.ExternalSystem {
         /** request body */
         @body body: ExtSystemProperty[]
     ): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-       } | {
-          /** Id does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+        /** Pending, processing, finished */
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Delete one property of external system
@@ -680,13 +1297,13 @@ namespace ElzaAPI.ExternalSystem {
         /** external system property id */
         @body extSysPropertyId: integer[]
     ): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-       } | {
-          /** Id does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+        /** Pending, processing, finished */
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 }
 
 @tag("funds")
@@ -698,13 +1315,35 @@ namespace ElzaAPI.fund {
     @post op createFund(
         @body body: CreateFund;
     ): Fund | {
-          /** Invalid data for AS creation */
-          @Http.statusCode statusCode: 400;
+        /** Invalid data for AS creation */
+        @Http.statusCode statusCode: 400;
+    };
+
+    /**
+     * Search for funds
+     */
+    @route("/search")
+    @post op searchFunds(
+        /** search parameters */
+        @body content: SearchParams;
+    ): FindFundsResult | {
+        /** Bad Request, query with incorrect parameters */
+        @Http.statusCode statusCode: 400;
+        @body data: BaseException;
+    } | {
+        /** Unauthorized */
+        @Http.statusCode statusCode: 401;
+        @body data: BaseException;
+    } | {
+        /** Forbidden */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
     };
 
     /**
      * Search for archive files (AS)
      */
+    #deprecated "this request should replace by POST /search"
     @get op findFunds(
         /** vyhledávaný výraz */
         @query fulltext?: string;
@@ -724,7 +1363,8 @@ namespace ElzaAPI.fund {
         /** fund ID. Might be ID or fund UUID */
         @path id: string;
     ): FundDetail | {
-          @Http.statusCode statusCode: 404;
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
     };
 
     /**
@@ -736,9 +1376,9 @@ namespace ElzaAPI.fund {
         @path id: string;
         @body body: UpdateFund;
     ): FundDetail | {
-          @Http.statusCode statusCode: 400;
+        @Http.statusCode statusCode: 400;
     } | {
-          @Http.statusCode statusCode: 404;
+        @Http.statusCode statusCode: 404;
     };
 
     /**
@@ -749,12 +1389,37 @@ namespace ElzaAPI.fund {
         /** Fund ID. Might be ID or fund UUID */
         @path id: string;
         /** Doplnění způsobu importu */
-        @body body: ImportFundData;
+        @multipartBody body: ImportFundData;
         @header contentType: "multipart/form-data";
     ): void | {
-          @Http.statusCode statusCode: 400;
+        @Http.statusCode statusCode: 400;
     } | {
-          @Http.statusCode statusCode: 406;
+        @Http.statusCode statusCode: 406;
+    };
+
+    /**
+     * Export fonds
+     */
+    @route("/export")
+    @post op exportFunds(
+        /** search parameters */
+        @body content: SearchParams;
+    ): {
+         @Http.statusCode statusCode: 200;
+         @header contentType: "application/json";
+         @body data: integer;
+    } | {
+        /** Bad Request, query with incorrect parameters */
+        @Http.statusCode statusCode: 400;
+        @body data: BaseException;
+    } | {
+        /** Unauthorized */
+        @Http.statusCode statusCode: 401;
+        @body data: BaseException;
+    } | {
+        /** Forbidden */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
     };
 
     /**
@@ -774,22 +1439,35 @@ namespace ElzaAPI.fund {
     @route("{fundId}/usedItemtypes/{fundVersionId}") 
     @get op usedItemTypes(
         ...FundIdParameter,
-		...FundVersionIdParameter): UsedItemType[];
+		...FundVersionIdParameter
+    ): UsedItemType[];
 
     /**
      * Return list of filesystem repositories
      */
     @route("{fundId}/fsrepos")
-    @get op fsRepos(...FundIdParameter): FsRepo[];
+    @get op fsRepos(
+        ...FundIdParameter
+    ): FsRepo[];
 
+    /**
+     * Create DAO link
+     */
     @route("{fundId}/fsrepo/{fsrepoId}/linkitem/{nodeId}")
     @put op fsCreateDAOLink (
         ...FundIdParameter,
         ...FsRepoIdParameter,
         ...NodeIdParameter,
         @query path?: string
-    ): integer;
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer;
+    };
 
+    /**
+     * Return list of filesystem items
+     */
     @route("{fundId}/fsrepo/{fsrepoId}/items")
     op fsRepoItems(
         ...FundIdParameter,
@@ -802,6 +1480,9 @@ namespace ElzaAPI.fund {
         @query lastKey?: string
     ): FsItems;
 
+    /**
+     * Get file of data
+     */
     @route("{fundId}/fsrepo/{fsrepoId}/item-data")
     op fsRepoItemData(
         ...FundIdParameter,
@@ -811,6 +1492,24 @@ namespace ElzaAPI.fund {
     ): {
         @header contentType: "*/*";
         @body data: bytes;
+    };
+
+    /**
+     * Set mode (TREE/LIST) of ArrLevel
+     */
+    @route("{fundId}/node/{nodeId}/mode")
+    @post op setLevelMode(
+        ...FundIdParameter,
+        ...NodeIdParameter,
+        /** TREE (-> list = false), LIST (-> list = true) */
+        @query list: boolean
+    ): {
+        /** The mode has changed */
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
     };
 }
 
@@ -822,7 +1521,7 @@ namespace ElzaAPI.DescItem {
      */
     @route("/{fundVersionId}/create")
     @put op createDescItem(
-        /** id AP version */
+        /** id version AS */
         @path fundVersionId: integer,
         /** new attribute value */
         @body body: NodeItem
@@ -833,24 +1532,54 @@ namespace ElzaAPI.DescItem {
      */
     @route("/{fundVersionId}/{createNewVersion}/update")
     @put op updateDescItem(
-        /** id AP version */
+        /** id version AS */
         @path fundVersionId: integer,
         /** create a new version or not? */ 
         @path createNewVersion: boolean,
         /** new attribute value */
         @body body: NodeItem
     ): ItemDataResult | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       };
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Delete attribute value
+     */
+    @route("/{fundVersionId}")
+    @delete op deleteDescItem(
+        /** id version AS */
+        @path fundVersionId: integer,
+        /** attribute value */
+        @body body: NodeItem;
+    ): ItemDataResult | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 }
 
 @tag("accesspoints")
 @route("/accesspoint")
 namespace ElzaAPI.AccessPoint {
     /**
-     * Invalidation of ApAccessPoint (delete/replace)
+     * Invalidation of access points
+     */
+    @route("")
+    @delete op deleteAccessPoints(
+        /** seznam ID nebo UUID, které chceme smazat */
+        @body body: DeleteAccessPointsDetail
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Invalidation of access point (delete/replace)
      */
     @route("/{id}")
     @delete op deleteAccessPoint(
@@ -858,14 +1587,63 @@ namespace ElzaAPI.AccessPoint {
         @path id: string,
         /** addition for method of invalidation */
         @body body?: DeleteAccessPointDetail
+   ): {
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Restore deleted entity and return to original state
+     */
+    @route("/{id}/restore")
+    @put op restoreAccessPoint(
+        /** id of accesspoint */
+        @path id: string
     ): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-       } | {
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+     /**
+     * Get invalidated (deleted) entities
+     */
+    @route("/invalidated")
+    @get op getInvalidatedEntities(
+        /** number of the page */
+        @query page?: integer = 0,
+        /** page size */
+        @query pageSize?: integer = 10
+    ): InvalidatedEntities;
+
+   /**
+     * Validation of an archive entity
+     */
+    @route("/{id}/validate")
+    @get op validateAccessPoint(
+        /** id of accesspoint */
+        @path id: integer,
+        /** include revision */
+        @query includeRevision?: boolean = false
+    ): ApValidationIssues | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
           @body data: BaseException;
        };
+
+    /**
+     * Get a list of entity processors
+     */
+    @route("/{id}/lastParticipants")
+    @get op getLastParticipants(
+        /** id of accesspoint */
+        @path id: integer,
+    ): Participant[];
 
     /**
      * List of automatically generated elements of the description
@@ -874,11 +1652,7 @@ namespace ElzaAPI.AccessPoint {
     @get op getAutoitems(
         /** id of accesspoint */
         @path id: string
-    ): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-         @body data: ResultAutoItems;
-       } | {
+    ): ResultAutoItems | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
           @body data: BaseException;
@@ -893,15 +1667,74 @@ namespace ElzaAPI.AccessPoint {
         @path id: string,
         /** additional copy options */
         @body body: CopyAccessPointDetail
-    ): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-         @body data: EntityRef;
-       } | {
+    ): EntityRef | {
           /** ID does not exists */
           @Http.statusCode statusCode: 404;
           @body data: BaseException;
        };
+
+    /**
+     * Create new part of ApAccessPoint
+     */ 
+    @route("/{id}/part")
+    @post op createPart(
+        /** id of accesspoint */
+        @path id: integer,
+        /** data for creating a part */
+        @body body: ApPartFormVO,
+        /** accesspoint version */
+        @query apVersion?: integer
+    ): CreatedPart | {
+          /** id does not exists */
+          @Http.statusCode statusCode: 404;
+          @body data: BaseException;
+       };
+
+    /**
+     * Update a part of ApAccessPoint
+     */
+    @route("{id}/part/{partId}")
+    @post op updatePart(
+        /** id of accesspoint */
+        @path id: integer,
+        /** id of part */
+        @path partId: integer,
+        /** data for updating a part */
+        @body body: ApPartFormVO,
+        /** accesspoint version */
+        @query apVersion?: integer
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer; 
+    } | {
+        /** id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Update a revision part of ApAccessPoint
+     */
+    @route("{id}/revision/part/{revPartId}")
+    @post op updateRevisionPart(
+        /** id of accesspoint */
+        @path id: integer,
+        /** id of revision part */
+        @path revPartId: integer,
+        /** data for updating a part */
+        @body body: ApPartFormVO,
+        /** accesspoint version */
+        @query apVersion?: integer
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer; 
+    } | {
+        /** id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Delete part of ApAccessPoint
@@ -914,10 +1747,15 @@ namespace ElzaAPI.AccessPoint {
         @path partId: integer,
         /** actual version of ApAccessPoint */
         @query apVersion?: integer
-    ): integer | {
-          /** requested resource does not exists */
-          @Http.statusCode statusCode: 404;
-       };
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer; 
+    }  | {
+        /** requested resource does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Change state of ApAccessPoint
@@ -927,10 +1765,16 @@ namespace ElzaAPI.AccessPoint {
         /** id of accesspoint */
         @path id: integer,
         /** data for change ApState */
-        @body body: ApStateUpdate;
+        @body body: ApStateUpdate,
         /** actual version of ApAccessPoint */
         @query apVersion?: integer,
-    ): integer;
+        /** userId */
+        @query assignTo?: integer
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer; 
+    };
 
     /**
      * Set the preferred name of ApAccessPoint
@@ -943,7 +1787,54 @@ namespace ElzaAPI.AccessPoint {
         @path partId: integer,
         /** actual version of ApAccessPoint */
         @query apVersion?: integer
-    ): integer;
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer; 
+    };
+
+    /**
+     * Creating a new revision of access point
+     */
+    @route("/{id}/revision")
+    @post op createRevision(
+        /** id of accesspoint */
+        @path id: integer
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Deleting a revision of access point 
+     */
+    @route("/{id}/revision")
+    @delete op deleteRevision(
+        /** id of accesspoint */
+        @path id: integer
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+   /**
+     * List of automatically generated description elements for revision
+     */
+    @route("/{id}/revision/autoitems")
+    @get op getRevAutoitems(
+        /** id of accesspoint */
+        @path id: string
+    ): ResultAutoItems | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Change state of revision of ApAccessPoint
@@ -953,13 +1844,19 @@ namespace ElzaAPI.AccessPoint {
         /** id of accesspoint */
         @path id: integer,
         /** data for change state of revision of ApAccessPoint */
-        @body body: RevStateChange;
+        @body body: RevStateChange,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
-    ): integer | {
-          /** requested resource does not exists */
-          @Http.statusCode statusCode: 404;
-       };
+        @query apVersion?: integer,
+        /** userId */
+        @query assignTo?: integer
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer; 
+    } | {
+        /** requested resource does not exists */
+        @Http.statusCode statusCode: 404;
+    };
 
     /**
      * Set the preferred name of revision of ApAccessPoint
@@ -971,11 +1868,15 @@ namespace ElzaAPI.AccessPoint {
         /** partId of revision */
         @path partId: integer,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
-    ): integer | {
-          /** requested resource does not exists */
-          @Http.statusCode statusCode: 404;
-       };
+        @query apVersion?: integer
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer; 
+    } | {
+        /** requested resource does not exists */
+        @Http.statusCode statusCode: 404;
+    };
 
     /**
      * Delete part of revision of ApAccessPoint
@@ -987,16 +1888,17 @@ namespace ElzaAPI.AccessPoint {
         /** partId of revision */
         @path partId: integer,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
+        @query apVersion?: integer
     ): {
          /** actual version of ApAccessPoint */
          @Http.statusCode statusCode: 200;
+         @header contentType: "application/json";
          @body data: integer;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException; 
-       };
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException; 
+    };
 
     /**
      * Merge ApRevision & ApAccessPoint
@@ -1006,10 +1908,31 @@ namespace ElzaAPI.AccessPoint {
         /** id of accesspoint */
         @path id: integer,
         /** data for change ApState */
-        @body body: ApStateUpdate;
+        @body body: ApStateUpdate,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
-    ): integer;
+        @query apVersion?: integer
+   ): {
+         @Http.statusCode statusCode: 200;
+         @header contentType: "application/json";
+         @body data: integer;
+    };
+
+    /**
+     * Decision on forced export ELZA -> CAM
+     */
+    @route("/export/{queueItemId}") 
+    @put op exportForceOrNo(
+        /** id of queue */
+        @path queueItemId: integer,
+        /** force export: yes or no */
+        @query force: boolean
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 }
 
 @tag("io")
@@ -1022,7 +1945,11 @@ namespace ElzaAPI.Io {
     @post op exportRequest(
         /** Export request parameters */
         @body body: ExportParams
-	): integer;
+	): {
+         @Http.statusCode statusCode: 200;
+         @header contentType: "application/json";
+         @body data: integer;
+    };
 
     /**
      * Getting the export status by request id
@@ -1030,19 +1957,15 @@ namespace ElzaAPI.Io {
 	@route("/export-status/{requestId}")
 	@get op getExportStatus(
 		@path requestId: integer
-	): {
-         /** Pending, processing, finished */
-         @Http.statusCode statusCode: 200;
-         @body data: ExportRequestStatus;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException;
-       } | {
-          /** Failed to export requested data */
-          @Http.statusCode statusCode: 500;
-          @body data: BaseException;
-       };
+	): ExportRequestStatus | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Failed to export requested data */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+    };
 
     /**
      * Getting the generated file by request id
@@ -1053,21 +1976,423 @@ namespace ElzaAPI.Io {
 	): {
         @header contentType: "*/*";
         @body data: bytes;
-       } | {
-         /** Processing */ 
-         @Http.statusCode statusCode: 102;
-       } | {
-          /** ID does not exists */
-          @Http.statusCode statusCode: 404;
-          @body data: BaseException; 
-       } | { 
-          /** Failed to export requested data */
-          @Http.statusCode statusCode: 500;
-          @body data: BaseException; 
-       };
+    } | {
+        /** Processing */
+        @Http.statusCode statusCode: 102;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Failed to export requested data */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+    };
 }
 
-@service({
+@tag("report")
+@route("/report")
+namespace ElzaAPI.Report {
+    /**
+     * Types of statistics values
+     */
+    enum ValueType {
+        INT,
+        STRING,
+        BOOLEAN,
+        DATE,
+        USER_ID,
+        GROUP_ID,
+        FUND_ID,
+        AP_ID,
+        ITEM_TYPE_ID,
+        ITEM_SPEC_ID,
+        SCOPE_ID,
+        AP_TYPE_ID
+    }
+
+    /**
+     * Types of report output formats
+     */
+    enum ReportFormat {
+        JSON,
+        CSV
+    }
+
+    /**
+     * Statistics parameters
+     */
+    model ReportParameters {
+        /** param values */
+        params?: ReportParamValue[];
+    }
+
+    /**
+     * List of values ​​for the parameter
+     */
+    model ReportParamValue {
+        /** parameter code */
+        code: string;
+        /** parameter values */
+        values: Value[];
+    }
+
+    /**
+     * Statistical report parameter
+     */
+    model ReportParamDefinition {
+        /** parameter code */
+        code: string;
+        /** parameter name */
+        name: string;
+        /** parameter type */
+        paramType: ValueType;
+        /** parameter required or not */
+        required: boolean;
+        /** parameter repeatable or not */
+        repeatable: boolean;
+        /** parameter default value(s) */
+        values?: Value[];
+    }
+
+    /**
+     * Category witl report definitions
+     */
+    model ReportCategory {
+        /** Category code */
+        code: string;
+        
+        /** Category name */
+        name: string;
+
+        /**
+         * List of definitions
+         */
+        reportDefinitions: ReportDefinition[];
+    }
+
+    /**
+     * Element from the statistics list
+     */
+    model ReportDefinition {
+        /** statistics code */
+        code: string;
+        /** statistics name */
+        name: string;
+        /** description of statistics */
+        description?: string;
+        /** statistics parameters */
+        params?: ReportParamDefinition[];
+    }
+
+    /**
+     * Report INTEGER value
+     */ 
+    model ValueInteger extends Value {
+        @invisible(Lifecycle)
+        valueType: ValueType.INT;
+        intValue: integer;
+    }
+
+    /**
+     * Report STRING value
+     */ 
+    model ValueString extends Value {
+        @invisible(Lifecycle)
+        valueType: ValueType.STRING;
+        textValue: string;
+    }
+
+    /**
+     * Report DATE value
+     */ 
+    model ValueDate extends Value {
+        @invisible(Lifecycle)
+        valueType: ValueType.DATE;
+        dateValue: offsetDateTime;
+    }
+
+    /**
+     * Report ACCESSPOINT_ID value
+     */
+    model ValueAccesspointId extends Value {
+        @invisible(Lifecycle)
+        valueType: ValueType.AP_ID;
+        accesspointId: integer;
+    }
+
+    /**
+     * Report data FOND_ID value
+     */
+    model ValueFondId extends Value {
+        @invisible(Lifecycle)
+        valueType: ValueType.FUND_ID;
+        fondId: integer;
+    }
+
+    /**
+     * Report value
+     */
+    @discriminator("valueType")
+    model Value {
+        valueType: ValueType
+    }
+
+    /**
+     * Row of report in json format
+     */
+    model ReportRow {
+        cols: Value[];
+    }
+
+    /**
+     * Report in json format
+     */
+    model ReportData {
+        header: string[];
+        rows: ReportRow[];
+        sourceDataDate: offsetDateTime;
+    }
+
+    /**
+     * Getting a list of categories 
+     * and report definitions
+     */
+    @route("/definitions")
+    @get op getDefinitions(
+    ): ReportCategory[];
+
+    /**
+     * Run generating statistics
+     */
+    @route("/generate/{code}")
+    @post op generateReport(
+        /** statistický kód pro generování */
+        @path code: string;
+        /** hodnoty zadaných parametrů */
+        @body body: ReportParameters;
+    ): {
+         @Http.statusCode statusCode: 200;
+         @header contentType: "application/json";
+         @body data: integer;
+    };
+
+    /**
+     * Get the status of running statistics
+     */
+    @route("/status/{requestId}")
+    @get op getReportStatus(
+        @path requestId: integer;
+    ): RequestProcessState | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Request execution failed */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+    };
+
+    /**
+     * Download statistics results by request id
+     */
+	@route("/{requestId}")
+	@get op getReport(
+		@path requestId: integer;
+        @query format: ReportFormat;
+	): ReportData | {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "text/csv";
+        @body data: bytes;
+    } | {
+        /** Processing */ 
+        @Http.statusCode statusCode: 102;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException; 
+    } | { 
+        /** Failed to export requested data */
+        @Http.statusCode statusCode: 500;
+        @body data: BaseException; 
+    };
+}
+
+@tag("node")
+@route("/node")
+namespace ElzaAPI.Node {
+    /**
+     * Received quote
+     */
+    model PlainTextRepresentation {
+        /** název generátoru pro uživatel */
+        name: string;
+        /** interní kód generátoru */
+        code: string;
+        /** vytvořená citace */
+        value: string;
+    }
+
+    /**
+     * Get quote by fundVersionId & nodeId
+     */
+	@route("/plain-text/{fundVersionId}/{nodeId}")
+	@get op getPlainText(
+        @path fundVersionId: integer;
+        @path nodeId: integer;
+    ): PlainTextRepresentation[] | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Search for archive files (funds)
+     */
+    @route("/search")
+    @post op search(
+        /** search parameters */
+        @body body: SearchParams
+    ): NodeSearchResult | {
+        /** Bad Request, query with incorrect parameters */
+        @Http.statusCode statusCode: 400;
+        @body data: BaseException;
+    } | {
+        /** Unauthorized */
+        @Http.statusCode statusCode: 401;
+        @body data: BaseException;
+    } | {
+        /** Forbidden */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    };
+
+    /**
+     * Search for nodes in archive file (fund)
+     */
+    @route("/search/{fundId}")
+    @get op getSearchResult(
+        ...FundIdParameter;
+    ): NodeTreeData[] | {
+        /** Bad Request, query with incorrect parameters */
+        @Http.statusCode statusCode: 400;
+        @body data: BaseException;
+    } | {
+        /** Unauthorized */
+        @Http.statusCode statusCode: 401;
+        @body data: BaseException;
+    } | {
+        /** Forbidden */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    };
+
+    /**
+     * Get data for a unit of description (JP)
+     */
+    @route("/node-data")
+    @post op getNodeData(
+        @body param: NodeDataParam;
+    ): NodeData;
+}
+
+@tag("search")
+namespace ElzaAPI.Search {
+    /**
+     * Searches for entity
+     */
+	@route("/search-ap")
+	@post op entity(
+        /** search parameters */
+        @body body: SearchParams;
+    ): ResultEntityRef | {
+        /** Bad Request, query with incorrect parameters */
+        @Http.statusCode statusCode: 400;
+        @body data: BaseException;
+    } | {
+        /** Unauthorized */
+        @Http.statusCode statusCode: 401;
+        @body data: BaseException;
+    } | {
+        /** Forbidden */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    };
+
+    /**
+     * Searches for array descriptions
+     */
+	@route("/search-arr")
+	@post op archDesc(
+        /** search parameters */
+        @body body: SearchParams;
+    ): ResultEntityRef | {
+        /** Bad Request, query with incorrect parameters */
+        @Http.statusCode statusCode: 400;
+        @body data: BaseException;
+    } | {
+        /** Unauthorized */
+        @Http.statusCode statusCode: 401;
+        @body data: BaseException;
+    } | {
+        /** Forbidden */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    };
+}
+
+/**
+ * Processing tasks
+ */
+@tag("tasks")
+@route("/tasks")
+namespace ElzaAPI.Tasks {
+    /**
+     * Task status
+     */
+    enum Status {
+        NEW, CANCELLED, FINISHED
+    }
+
+    /**
+     * Entity type for task
+     */
+    enum EntityType {
+        AP, AP_REV
+    }
+
+    /**
+     * Task detail
+     */
+    model ViewDetail {
+        taskId: integer;
+        created: offsetDateTime;
+        closed?: offsetDateTime;
+        assigneeId: integer;
+        assigneeName: string;
+        creatorId?: integer;
+        creatorName?: string;
+        closedById?: integer;
+        closedByName?: string;
+        status: Status;
+        taskTypeId: integer;
+        taskTypeCode: string;
+        taskTypeName: string;
+        description: string;
+        primaryEntityId: integer;
+        primaryEntityName: string;
+        primaryEntityType: EntityType;
+    }
+
+    /**
+     * Task list for a given user
+     */
+    @route("/my")
+    @get op getMyTasks(
+    ): ViewDetail[];
+}
+
+@service(#{
     title: "ELZA API",
 })
 namespace ElzaAPI {

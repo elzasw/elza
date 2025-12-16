@@ -1,14 +1,11 @@
-import React from 'react';
 import { connect } from 'react-redux';
-import { AbstractReactComponent, i18n, Icon, RibbonGroup, RibbonSplit, Utils } from '../../components/shared';
+import { AbstractReactComponent, i18n, Utils } from '../../components/shared';
 import { DetailActions } from '../../shared/detail';
-import Ribbon from '../../components/page/Ribbon';
 import ImportForm from '../../components/form/ImportForm';
 import RegistryList from '../../components/registry/RegistryList';
-import { Button } from '../../components/ui';
 import {
     registryDelete, registryDetailFetchIfNeeded, registryListInvalidate, registryCreateRevision,
-    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, registryDetailClear, goToAe, AREA_REGISTRY_DETAIL
+    registryDeleteRevision, registryChangeStateRevision, registryDetailInvalidate, goToAe, AREA_REGISTRY_DETAIL
 } from '../../actions/registry/registry.jsx';
 import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog.jsx';
 import { refRecordTypesFetchIfNeeded } from '../../actions/refTables/recordTypes.jsx';
@@ -50,8 +47,8 @@ import { routerNavigate } from 'actions/router';
 import { isInteger, isUuid } from 'utils/regex';
 import { ApCopyModal } from 'components/registry/modal/ap-copy';
 import { AP_EXT_SYSTEM_TYPE } from '../../constants';
-import { isMenuItemHidden } from 'api/settings/utils';
-import { MenuOptions } from 'api/settings/MenuOption';
+import { EntityRibbon } from 'components/registry/EntityRibbon';
+import { EntitySelectRibbon } from 'components/registry/EntitySelectRibbon.tsx';
 
 /**
  * Stránka rejstříků.
@@ -93,7 +90,7 @@ class RegistryPage extends AbstractReactComponent {
     }
 
     canDeleteRegistry = () => {
-        // We can delete item if has id, data and if it is not part of the external 
+        // We can delete item if has id, data and if it is not part of the external
         // system with CAM_COMPLETE type
         const {
             registryDetail: { id, data },
@@ -124,11 +121,6 @@ class RegistryPage extends AbstractReactComponent {
 
         if (!select) {
             const matchId = this.props.match.params.id;
-
-            // presmerovani na entitu pokud neexistuje revize
-            if (this.props.revisionActive && registryDetail && registryDetail.data && registryDetail.id != undefined && !registryDetail.data.revStateApproval) {
-                dispatch(goToAe(history, registryDetail.id, false, !select));
-            }
 
             // pokud si pamatujeme spolední navštívenou při prvním vstupu - provedeme přesměrování
             if (registryDetail.id !== null && matchId == null) {
@@ -272,9 +264,8 @@ class RegistryPage extends AbstractReactComponent {
                 this,
                 i18n('ap.ext-syncs.title'),
                 <ExtSyncsModal
-                    onNavigateAp={accessPointId => {
+                    onNavigateAp={() => {
                         dispatch(modalDialogHide());
-                        dispatch(goToAe(history, accessPointId, true, !select));
                     }}
                     initialValues={initialValues}
                     extSystems={extSystems}
@@ -369,7 +360,7 @@ class RegistryPage extends AbstractReactComponent {
                 <ApCopyModal
                     onSubmit={async (data) => {
                         const id = detail.id;
-                        const result = await Api.accesspoints.copyAccessPoint(id, data);
+                        const result = await Api.accesspoints.accessPointCopyAccessPoint(id, data);
                         dispatch(modalDialogHide())
                         dispatch(goToAe(history, result.data.id, true, true, revisionActive));
                         return;
@@ -448,7 +439,7 @@ class RegistryPage extends AbstractReactComponent {
                         typeId: data.typeId,
                         scopeId: data.scopeId !== '' ? parseInt(data.scopeId) : null,
                     };
-                    await Api.accesspoints.accessPointChangeState(id, finalData, version);
+                    await Api.accesspoints.accessPointChangeState(id, finalData, version, data.assignedUser?.id);
 
                     dispatch(modalDialogHide());
                     dispatch(goToAe(history, id, true, !select, revisionActive));
@@ -491,7 +482,8 @@ class RegistryPage extends AbstractReactComponent {
                     typeId: newTypeId,
                 }}
                 onSubmit={async (data) => {
-                    await dispatch(registryChangeStateRevision(id, version, data, history, select))
+                  const { assignedUser, ...state } = data;
+                    await dispatch(registryChangeStateRevision(id, version, state, history, select, assignedUser.id))
 
                     dispatch(modalDialogHide());
                     dispatch(goToAe(history, id, true, !select, revisionActive));
@@ -540,264 +532,293 @@ class RegistryPage extends AbstractReactComponent {
 
     handleRestoreEntity = async () => {
         const { registryDetail: { id } } = this.props;
-        await Api.accesspoints.restoreAccessPoint(id);
+        await Api.accesspoints.accessPointRestoreAccessPoint(id);
         this.props.dispatch(registryDetailInvalidate());
     }
 
     buildRibbon = () => {
         const {
-            registryDetail: { data, id },
-            userDetail,
-            extSystems,
             module,
             customRibbon,
-            registryDetail,
             select,
             revisionActive,
         } = this.props;
 
-        const parts = module && customRibbon ? customRibbon : { altActions: [], itemActions: [], primarySection: null };
-        const hasRevision = data?.revStateApproval != null;
-
-        const completeExternalSystems = extSystems?.filter((extSystem) => extSystem.type === AP_EXT_SYSTEM_TYPE.CAM_COMPLETE);
-        const hasOnlyCompleteExternalSystems = completeExternalSystems?.length === extSystems?.length;
-
-        const altActions = [...parts.altActions];
-
-        if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
-            altActions.push(
-                <Button key="addRegistry" onClick={this.handleAddRegistry}>
-                    <Icon glyph="fa-plus-circle" />
-                    <div>
-                        <span className="btnText">{i18n('registry.addNewRegistry')}</span>
-                    </div>
-                </Button>,
-            );
-            if (!select) {
-                altActions.push(
-                    <Button key="registryImport" onClick={this.handleRegistryImport}>
-                        <Icon glyph="fa-file" />
-                        <div>
-                            <span className="btnText">{i18n('ribbon.action.registry.import')}</span>
-                        </div>
-                    </Button>,
-                );
-
-                if (extSystems && extSystems.length > 0 && !hasOnlyCompleteExternalSystems) {
-                    altActions.push(
-                        <Button key="ap-ext-search" onClick={this.handleApExtSearch}>
-                            <Icon glyph="fa-cloud-download" />
-                            <div>
-                                <span className="btnText">{i18n('ribbon.action.ap.ext-search')}</span>
-                            </div>
-                        </Button>,
-                    );
-                }
-                if (extSystems && extSystems.length > 0 && !isMenuItemHidden(userDetail.settings, MenuOptions.RIBBON_AP_EXT_SYNCS_HIDDEN)) {
-                    altActions.push(
-                        <Button key="ext-syncs" onClick={this.handleExtSyncs}>
-                            <Icon glyph="fa-gg" />
-                            <div>
-                                <span className="btnText">{i18n('ribbon.action.ap.ext-syncs')}</span>
-                            </div>
-                        </Button>,
-                    );
-                }
-            }
+        if (select) {
+            return <EntitySelectRibbon
+                module={module}
+                customRibbon={customRibbon}
+                onAddRegistry={this.handleAddRegistry}
+            />
         }
 
-        const itemActions = [...parts.itemActions];
-        const revisionActions = [];
-        const invalidItemActions = [];
+        return <EntityRibbon
+            module={module}
+            select={false}
+            revisionActive={revisionActive}
+            customRibbon={customRibbon}
+            onAddRegistry={this.handleAddRegistry}
+            onImportRegistry={this.handleRegistryImport}
+            onApExtSearch={this.handleApExtSearch}
+            onExtSyncs={this.handleExtSyncs}
+            onScopeManagement={this.handleScopeManagement}
+            onDeleteRegistry={this.handleDeleteRegistry}
+            onRegistryShowUsage={this.handleRegistryShowUsage}
+            onRemoveDuplicity={this.handleDeleteAccessPoint}
+            onShowApHistory={this.handleShowApHistory}
+            onChangeApState={this.handleChangeApState}
+            onCopyAp={this.handleApCopy}
+            onDeleteRevision={this.handleDeleteRevision}
+            onChangeRevisionState={this.handleChangeStateRevision}
+            onMergeRevision={this.handleMergeRevision}
+            onCreateRevision={this.handleCreateRevision}
+            onRestoreEntity={this.handleRestoreEntity}
+        />
 
-        if (!select) {
-            if (userDetail.hasOne(perms.ADMIN)) {
-                altActions.push(
-                    <Button key="scopeManagement" onClick={this.handleScopeManagement}>
-                        <Icon glyph="fa-wrench" />
-                        <div>
-                            <span className="btnText">{i18n('ribbon.action.registry.scope.manage')}</span>
-                        </div>
-                    </Button>,
-                );
-            }
-
-            if (
-                userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
-                    type: perms.AP_SCOPE_WR,
-                    scopeId: data ? data.scopeId : null,
-                }) && this.canDeleteRegistry()
-            ) {
-                itemActions.push(
-                    <Button disabled={data.invalid} key="registryRemove" onClick={this.handleDeleteRegistry}>
-                        <Icon glyph="fa-trash" />
-                        <div>
-                            <span className="btnText">{i18n('registry.deleteRegistry')}</span>
-                        </div>
-                    </Button>,
-                );
-            }
-
-            if (
-                userDetail.hasOne(
-                    perms.AP_SCOPE_RD_ALL,
-                    {
-                        type: perms.AP_SCOPE_RD,
-                        scopeId: data ? data.scopeId : null,
-                    }
-                ) && userDetail.hasOne(
-                    perms.FUND_RD,
-                    perms.FUND_RD_ALL,
-                )
-            ) {
-                itemActions.push(
-                    <Button key="registryShow" onClick={() => this.handleRegistryShowUsage(registryDetail)}>
-                        <Icon glyph="fa-search" />
-                        <div>
-                            <span className="btnText">{i18n('registry.registryUsage')}</span>
-                        </div>
-                    </Button>,
-                );
-            }
-
-            if (
-                userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
-                    type: perms.AP_SCOPE_WR,
-                    scopeId: data ? data.scopeId : null,
-                })
-                && this.canDeleteRegistry()
-                && !isMenuItemHidden(userDetail.settings, MenuOptions.RIBBON_AP_REMOVEDUPLICITY_HIDDEN)
-            ) {
-                itemActions.push(
-                    <Button key="deleteReplaceAccessPoint" onClick={() => this.handleDeleteAccessPoint(registryDetail)}>
-                        <Icon glyph="fa-ban" />
-                        <div>
-                            <span className="btnText">{i18n('accesspoint.removeDuplicity')}</span>
-                        </div>
-                    </Button>,
-                );
-            }
-
-            if (id && data) {
-                itemActions.push(
-                    <Button key="show-state-history" onClick={this.handleShowApHistory}>
-                        <Icon glyph="fa-clock-o" />
-                        <div>
-                            <span className="btnText">{i18n('ap.stateHistory')}</span>
-                        </div>
-                    </Button>,
-                );
-
-                if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR,
-                    perms.AP_CONFIRM_ALL, perms.AP_CONFIRM,
-                    perms.AP_EDIT_CONFIRMED_ALL, perms.AP_EDIT_CONFIRMED
-                )) {
-                    itemActions.push(
-                        <Button key="change-state" onClick={this.handleChangeApState} disabled={hasRevision}>
-                            <Icon glyph="fa-pencil" />
-                            <div>
-                                <span className="btnText">{i18n('ap.changeState')}</span>
-                            </div>
-                        </Button>,
-                    );
-                }
-
-                // Vypnuti moznosti propojeni AP s AP v CAMu
-                // TODO: remove related code
-                /*
-                if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
-                itemActions.push(
-                <Button key="connect-ap" onClick={this.handleConnectAp}>
-                <Icon glyph="fa-link" />
-                <div>
-                <span className="btnText">{i18n('ap.connect')}</span>
-                </div>
-                </Button>,
-                );
-                }
-                */
-
-                if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
-                    itemActions.push(
-                        <Button key="push-ap-to-ext" onClick={this.handleApCopy}>
-                            <Icon glyph="fa-copy" />
-                            <div>
-                                <span className="btnText">{i18n("ap.copy.title")}</span>
-                            </div>
-                        </Button>,
-                    );
-                }
-
-                if (hasRevision) {
-                    revisionActions.push(
-                        <Button disabled={data.invalid || !revisionActive} key="revisionDelete" onClick={this.handleDeleteRevision}>
-                            <Icon glyph="fa-undo" />
-                            <div>
-                                <span className="btnText">{i18n('registry.deleteRevision')}</span>
-                            </div>
-                        </Button>,
-                    );
-                    revisionActions.push(
-                        <Button disabled={data.invalid || !revisionActive} key="revisionChangeState" onClick={this.handleChangeStateRevision}>
-                            <Icon glyph="fa-pencil" />
-                            <div>
-                                <span className="btnText">{i18n('registry.changeStateRevision')}</span>
-                            </div>
-                        </Button>,
-                    );
-                    revisionActions.push(
-                        <Button disabled={data.invalid || !revisionActive} key="revisionMerge" onClick={this.handleMergeRevision}>
-                            <Icon glyph="fa-check" />
-                            <div>
-                                <span className="btnText">{i18n('registry.mergeRevision')}</span>
-                            </div>
-                        </Button>,
-                    );
-                } else if (!data.invalid) {
-                    revisionActions.push(
-                        <Button disabled={data.invalid} key="revisionCreate" onClick={this.handleCreateRevision}>
-                            <Icon glyph="fa-plus" />
-                            <div>
-                                <span className="btnText">{i18n('registry.createRevision')}</span>
-                            </div>
-                        </Button>,
-                    );
-                }
-                if (data.invalid) {
-                    invalidItemActions.push(
-                        <Button key="restoreEntity" onClick={this.handleRestoreEntity}>
-                            <Icon glyph="fa-undo" />
-                            <div>
-                                <span className="btnText">{i18n('registry.restoreEntity')}</span>
-                            </div>
-                        </Button>,
-                    );
-                }
-            }
-        }
-
-        const altSection = altActions.length > 0 ? (
-            <>
-                {altActions.length > 0 &&
-                    <RibbonGroup className="small" >
-                        {altActions}
-                    </RibbonGroup>}
-                {itemActions.length > 0 &&
-                    <RibbonGroup className="small" >
-                        {itemActions}
-                    </RibbonGroup>}
-                {revisionActions.length > 0 &&
-                    <RibbonGroup className="small" >
-                        {revisionActions}
-                    </RibbonGroup>}
-                {invalidItemActions.length > 0 &&
-                    <RibbonGroup className="small" >
-                        {invalidItemActions}
-                    </RibbonGroup>}
-            </>
-        ) : undefined;
-
-        return <Ribbon primarySection={parts.primarySection} altSection={altSection} showUser={!select} />;
+        // console.log("#rp", module, select, revisionActive);
+        //
+        // const parts = module && customRibbon ? customRibbon : { altActions: [], itemActions: [], primarySection: null };
+        // const hasRevision = data?.revStateApproval != null;
+        //
+        // const completeExternalSystems = extSystems?.filter((extSystem) => extSystem.type === AP_EXT_SYSTEM_TYPE.CAM_COMPLETE);
+        // const hasOnlyCompleteExternalSystems = completeExternalSystems?.length === extSystems?.length;
+        //
+        // const altActions = [...parts.altActions];
+        //
+        // if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
+        //     altActions.push(
+        //         <Button key="addRegistry" onClick={this.handleAddRegistry}>
+        //             <Icon glyph="fa-plus-circle" />
+        //             <div>
+        //                 <span className="btnText">{i18n('registry.addNewRegistry')}</span>
+        //             </div>
+        //         </Button>,
+        //     );
+        //     if (!select) {
+        //         altActions.push(
+        //             <Button key="registryImport" onClick={this.handleRegistryImport}>
+        //                 <Icon glyph="fa-file" />
+        //                 <div>
+        //                     <span className="btnText">{i18n('ribbon.action.registry.import')}</span>
+        //                 </div>
+        //             </Button>,
+        //         );
+        //
+        //         if (extSystems && extSystems.length > 0 && !hasOnlyCompleteExternalSystems) {
+        //             altActions.push(
+        //                 <Button key="ap-ext-search" onClick={this.handleApExtSearch}>
+        //                     <Icon glyph="fa-cloud-download" />
+        //                     <div>
+        //                         <span className="btnText">{i18n('ribbon.action.ap.ext-search')}</span>
+        //                     </div>
+        //                 </Button>,
+        //             );
+        //         }
+        //         if (extSystems && extSystems.length > 0 && !isMenuItemHidden(userDetail.settings, MenuOptions.RIBBON_AP_EXT_SYNCS_HIDDEN)) {
+        //             altActions.push(
+        //                 <Button key="ext-syncs" onClick={this.handleExtSyncs}>
+        //                     <Icon glyph="fa-gg" />
+        //                     <div>
+        //                         <span className="btnText">{i18n('ribbon.action.ap.ext-syncs')}</span>
+        //                     </div>
+        //                 </Button>,
+        //             );
+        //         }
+        //     }
+        // }
+        //
+        // const itemActions = [...parts.itemActions];
+        // const revisionActions = [];
+        // const invalidItemActions = [];
+        //
+        // if (!select) {
+        //     if (userDetail.hasOne(perms.ADMIN)) {
+        //         altActions.push(
+        //             <Button key="scopeManagement" onClick={this.handleScopeManagement}>
+        //                 <Icon glyph="fa-wrench" />
+        //                 <div>
+        //                     <span className="btnText">{i18n('ribbon.action.registry.scope.manage')}</span>
+        //                 </div>
+        //             </Button>,
+        //         );
+        //     }
+        //
+        //     if (
+        //         userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+        //             type: perms.AP_SCOPE_WR,
+        //             scopeId: data ? data.scopeId : null,
+        //         }) && this.canDeleteRegistry()
+        //     ) {
+        //         itemActions.push(
+        //             <Button disabled={data.invalid} key="registryRemove" onClick={this.handleDeleteRegistry}>
+        //                 <Icon glyph="fa-trash" />
+        //                 <div>
+        //                     <span className="btnText">{i18n('registry.deleteRegistry')}</span>
+        //                 </div>
+        //             </Button>,
+        //         );
+        //     }
+        //
+        //     if (
+        //         userDetail.hasOne(
+        //             perms.AP_SCOPE_RD_ALL,
+        //             {
+        //                 type: perms.AP_SCOPE_RD,
+        //                 scopeId: data ? data.scopeId : null,
+        //             }
+        //         ) && userDetail.hasOne(
+        //             perms.FUND_RD,
+        //             perms.FUND_RD_ALL,
+        //         )
+        //     ) {
+        //         itemActions.push(
+        //             <Button key="registryShow" onClick={() => this.handleRegistryShowUsage(registryDetail)}>
+        //                 <Icon glyph="fa-search" />
+        //                 <div>
+        //                     <span className="btnText">{i18n('registry.registryUsage')}</span>
+        //                 </div>
+        //             </Button>,
+        //         );
+        //     }
+        //
+        //     if (
+        //         userDetail.hasOne(perms.AP_SCOPE_WR_ALL, {
+        //             type: perms.AP_SCOPE_WR,
+        //             scopeId: data ? data.scopeId : null,
+        //         })
+        //         && this.canDeleteRegistry()
+        //         && !isMenuItemHidden(userDetail.settings, MenuOptions.RIBBON_AP_REMOVEDUPLICITY_HIDDEN)
+        //     ) {
+        //         itemActions.push(
+        //             <Button key="deleteReplaceAccessPoint" onClick={() => this.handleDeleteAccessPoint(registryDetail)}>
+        //                 <Icon glyph="fa-ban" />
+        //                 <div>
+        //                     <span className="btnText">{i18n('accesspoint.removeDuplicity')}</span>
+        //                 </div>
+        //             </Button>,
+        //         );
+        //     }
+        //
+        //     if (id && data) {
+        //         itemActions.push(
+        //             <Button key="show-state-history" onClick={this.handleShowApHistory}>
+        //                 <Icon glyph="fa-clock-o" />
+        //                 <div>
+        //                     <span className="btnText">{i18n('ap.stateHistory')}</span>
+        //                 </div>
+        //             </Button>,
+        //         );
+        //
+        //         if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR,
+        //             perms.AP_CONFIRM_ALL, perms.AP_CONFIRM,
+        //             perms.AP_EDIT_CONFIRMED_ALL, perms.AP_EDIT_CONFIRMED
+        //         )) {
+        //             itemActions.push(
+        //                 <Button key="change-state" onClick={this.handleChangeApState} disabled={hasRevision}>
+        //                     <Icon glyph="fa-pencil" />
+        //                     <div>
+        //                         <span className="btnText">{i18n('ap.changeState')}</span>
+        //                     </div>
+        //                 </Button>,
+        //             );
+        //         }
+        //
+        //         // Vypnuti moznosti propojeni AP s AP v CAMu
+        //         // TODO: remove related code
+        //         /*
+        //         if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
+        //         itemActions.push(
+        //         <Button key="connect-ap" onClick={this.handleConnectAp}>
+        //         <Icon glyph="fa-link" />
+        //         <div>
+        //         <span className="btnText">{i18n('ap.connect')}</span>
+        //         </div>
+        //         </Button>,
+        //         );
+        //         }
+        //         */
+        //
+        //         if (userDetail.hasOne(perms.AP_SCOPE_WR_ALL, perms.AP_SCOPE_WR)) {
+        //             itemActions.push(
+        //                 <Button key="push-ap-to-ext" onClick={this.handleApCopy}>
+        //                     <Icon glyph="fa-copy" />
+        //                     <div>
+        //                         <span className="btnText">{i18n("ap.copy.title")}</span>
+        //                     </div>
+        //                 </Button>,
+        //             );
+        //         }
+        //
+        //         if (hasRevision) {
+        //             revisionActions.push(
+        //                 <Button disabled={data.invalid || !revisionActive} key="revisionDelete" onClick={this.handleDeleteRevision}>
+        //                     <Icon glyph="fa-undo" />
+        //                     <div>
+        //                         <span className="btnText">{i18n('registry.deleteRevision')}</span>
+        //                     </div>
+        //                 </Button>,
+        //             );
+        //             revisionActions.push(
+        //                 <Button disabled={data.invalid || !revisionActive} key="revisionChangeState" onClick={this.handleChangeStateRevision}>
+        //                     <Icon glyph="fa-pencil" />
+        //                     <div>
+        //                         <span className="btnText">{i18n('registry.changeStateRevision')}</span>
+        //                     </div>
+        //                 </Button>,
+        //             );
+        //             revisionActions.push(
+        //                 <Button disabled={data.invalid || !revisionActive} key="revisionMerge" onClick={this.handleMergeRevision}>
+        //                     <Icon glyph="fa-check" />
+        //                     <div>
+        //                         <span className="btnText">{i18n('registry.mergeRevision')}</span>
+        //                     </div>
+        //                 </Button>,
+        //             );
+        //         } else if (!data.invalid) {
+        //             revisionActions.push(
+        //                 <Button disabled={data.invalid} key="revisionCreate" onClick={this.handleCreateRevision}>
+        //                     <Icon glyph="fa-plus" />
+        //                     <div>
+        //                         <span className="btnText">{i18n('registry.createRevision')}</span>
+        //                     </div>
+        //                 </Button>,
+        //             );
+        //         }
+        //         if (data.invalid) {
+        //             invalidItemActions.push(
+        //                 <Button key="restoreEntity" onClick={this.handleRestoreEntity}>
+        //                     <Icon glyph="fa-undo" />
+        //                     <div>
+        //                         <span className="btnText">{i18n('registry.restoreEntity')}</span>
+        //                     </div>
+        //                 </Button>,
+        //             );
+        //         }
+        //     }
+        // }
+        //
+        // const altSection = altActions.length > 0 ? (
+        //     <>
+        //         {altActions.length > 0 &&
+        //             <RibbonGroup className="small" >
+        //                 {altActions}
+        //             </RibbonGroup>}
+        //         {itemActions.length > 0 &&
+        //             <RibbonGroup className="small" >
+        //                 {itemActions}
+        //             </RibbonGroup>}
+        //         {revisionActions.length > 0 &&
+        //             <RibbonGroup className="small" >
+        //                 {revisionActions}
+        //             </RibbonGroup>}
+        //         {invalidItemActions.length > 0 &&
+        //             <RibbonGroup className="small" >
+        //                 {invalidItemActions}
+        //             </RibbonGroup>}
+        //     </>
+        // ) : undefined;
+        //
+        // return <Ribbon primarySection={parts.primarySection} altSection={altSection} showUser={!select} />;
     };
 
     getEditMode = () => {

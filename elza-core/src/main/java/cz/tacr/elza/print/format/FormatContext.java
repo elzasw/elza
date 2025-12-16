@@ -198,7 +198,7 @@ public class FormatContext {
     public void appendValue(String value) {
         log.debug("Append value, value: {}", value);
 
-        if (StringUtils.isBlank(value)) {
+        if (StringUtils.isEmpty(value)) {
             return;
         }
 

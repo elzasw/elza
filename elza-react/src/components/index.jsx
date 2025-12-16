@@ -62,7 +62,7 @@ export {default as FundTreeMovementsRight} from 'components/arr/FundTreeMovement
 export {default as FundTreeDaos} from 'components/arr/FundTreeDaos';
 export {default as AddNodeCross} from 'components/arr/AddNodeCross';
 
-export {default as AdminPackagesList} from 'components/admin/AdminPackagesList';
+export {AdminPackagesListFn} from 'components/admin/AdminPackagesList';
 export {default as AdminExtSystemList} from 'components/admin/extSystem/AdminExtSystemList';
 export {default as AdminExtSystemListItem} from 'components/admin/extSystem/AdminExtSystemListItem';
 export {default as AdminExtSystemDetail} from 'components/admin/extSystem/AdminExtSystemDetail';
@@ -78,3 +78,4 @@ export {default as GroupDetail} from 'components/admin/GroupDetail';
 export {default as AddUserForm} from 'components/admin/AddUserForm';
 export {default as AddGroupForm} from 'components/admin/AddGroupForm';
 export {default as PasswordForm} from 'components/admin/PasswordForm';
+export {EntityItem, FundItem, HomePageRibbon} from 'components/home';

@@ -4,7 +4,11 @@ import java.util.Objects;
 
 import org.hibernate.Length;
 import org.hibernate.search.mapper.pojo.bridge.mapping.annotation.TypeBinderRef;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.GenericField;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexingDependency;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.ObjectPath;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.PropertyValue;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.TypeBinding;
 
 import cz.tacr.elza.domain.bridge.ArrCachedNodeBinder;
@@ -19,6 +23,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 /**
  * Data jednotky popisu serializované pro rychlejší sestavení.
@@ -48,6 +53,19 @@ public class ArrCachedNode {
     @Basic
     @Column(length = Length.LONG) // hibernate long text field
     private String data;
+    
+    // This field does not trigger reindexing on nodeConformity change
+    // Reason is uknown
+    /*    @Transient
+    @GenericField
+	@IndexingDependency(derivedFrom = @ObjectPath({
+		@PropertyValue(propertyName = "node"),
+		@PropertyValue(propertyName = "nodeConformity")
+		})
+	)
+    public Integer getNodeConformity() {
+    	return null;
+    }*/
 
     public Integer getCachedNodeId() {
         return cachedNodeId;

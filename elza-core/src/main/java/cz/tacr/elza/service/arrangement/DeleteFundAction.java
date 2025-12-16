@@ -62,7 +62,7 @@ public class DeleteFundAction {
     private FundRepository fundRepository;
 
     @Autowired
-    private StructuredObjectRepository structureDataRepository;
+    private StructuredObjectRepository structureObjectRepository;
     @Autowired
     private StructuredItemRepository structureItemRepository;
     @Autowired
@@ -224,10 +224,10 @@ public class DeleteFundAction {
         }
 
         structObjValueService.deleteFundRequests(fundId);
+        em.flush();
     }
 
     public void run(Integer fundId) {
-
         logger.info("Deleting fund: {}", fundId);
 
         this.fundId = fundId;
@@ -242,14 +242,14 @@ public class DeleteFundAction {
         dropDescItems();
         dropStructObjs();
 
-        // Delete levels connected by nodes to the fund
+        // delete levels connected by nodes to the fund
         levelRepository.deleteByNodeFund(fund);
 
         // TODO: delete all change ids
         changeRepository.deleteByPrimaryNodeFund(fund);
 
-        // delete all versions
-        fundVersionRepository.deleteByFund(fund);
+        // delete all fundVersions
+        fundVersionRepository.deleteByFundId(fundId);
 
         // Remove from URI-REF
         updateUriRefs();
@@ -266,21 +266,17 @@ public class DeleteFundAction {
         arrRefTemplateMapTypeRepository.deleteByFund(fund);
         arrRefTemplateRepository.deleteByFund(fund);
 
-        em.flush();
+        faRegisterRepository.deleteByFund(fund);
 
-        //?
-        faRegisterRepository.findByFund(fund).forEach(faScope -> faRegisterRepository.delete(faScope));
-
-        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.FUND_DELETE, fundId));
-
-        fundRepository.deleteById(fundId);
+        fundRepository.delete(fund);
 
         // TODO: rewrite to better solution
         Query deleteNotUseChangesQuery = revertingChangesService.createDeleteNotUseChangesQuery();
         deleteNotUseChangesQuery.executeUpdate();
 
-        logger.info("Fund deleted: {}", fundId);
+        eventNotificationService.publishEvent(EventFactory.createIdEvent(EventType.FUND_DELETE, fundId));
 
+        logger.info("Fund deleted: {}", fundId);
     }
 
     private void updateUriRefs() {
@@ -291,17 +287,19 @@ public class DeleteFundAction {
             ObjectListIterator.forEachPage(nodeIds, dataUriRefRepository::updateByNodesIdIn);
             nodeCacheService.removeReferralNodeIds(nodeIds, referralNodeIds);
         }
+
+        em.flush();
     }
 
     /**
      * Drop all Structured Objects by Fund
      */
     private void dropStructObjs() {
-
         structureItemRepository.deleteByStructuredObjectFund(fund);
-        structureDataRepository.deleteByFund(fund);
+        structureObjectRepository.deleteByFund(fund);
 
         fundStructureExtensionRepository.deleteByFund(fund);
+
         em.flush();
     }
 
@@ -377,7 +375,6 @@ public class DeleteFundAction {
      * Delete DAOs
      */
     private void dropDaos() {
-
         requestQueueItemRepository.deleteByFund(fund);
 
         // dao objects
@@ -424,7 +421,6 @@ public class DeleteFundAction {
      * Smazání protokolů připomínek, komentáři a oprávnění uživatelů pro přístup k protokolům
      */
     private void dropIssues() {
-
         List<WfIssueList> issueLists = issueListRepository.findByFundId(fundId);
 
         for (WfIssueList issueList : issueLists) {

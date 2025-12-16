@@ -7,24 +7,24 @@ import './elza-styles.scss';
 import 'font-awesome/css/font-awesome.css';
 import './elza-iconset/ez-icons.css';
 import React from 'react';
-import {Utils} from './components/shared';
+import { Utils } from './components/shared';
 import * as es6promise from 'es6-promise';
 // Všechny locales které potřebujeme - zatím pouze EN + CS
 import 'moment/locale/cs';
 import 'moment/locale/en-gb';
 import Moment from 'moment';
 import momentLocalizer from 'react-widgets-moment';
-import {store} from 'stores/index.jsx';
+import { store } from 'stores/index.jsx';
 import AjaxUtils from 'components/AjaxUtils.jsx';
 import EventEmitter from 'events';
 // Pokud dostane focus body, chceme jej změnit na implcitiní focus pro ribbon
 
 import './websocketActions.jsx';
-import {storeRestoreFromStorage} from 'actions/store/store.jsx';
-import {storeSave} from 'actions/store/storeEx.jsx';
-import {Exception, i18n} from 'components/shared';
+import { storeRestoreFromStorage } from 'actions/store/store.jsx';
+import { storeSave } from 'actions/store/storeEx.jsx';
+import { Exception, i18n } from 'components/shared';
 
-import {addToastr} from 'components/shared/toastr/ToastrActions.jsx';
+import { addToastr } from 'components/shared/toastr/ToastrActions.jsx';
 
 import ReactDOM from 'react-dom';
 import Root from './router';
@@ -37,7 +37,7 @@ import Root from './router';
 // CustomEvent polyfill pro IE 9+
 if (typeof window.CustomEvent !== 'function') {
     function CustomEvent(event, params) {
-        params = params || {bubbles: false, cancelable: false, detail: undefined};
+        params = params || { bubbles: false, cancelable: false, detail: undefined };
         var evt = document.createEvent('CustomEvent');
         evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
         return evt;
@@ -49,7 +49,7 @@ if (typeof window.CustomEvent !== 'function') {
 
 // Workaround for 'process is not defined' error in react-shortcuts
 // TODO - change react-shortcuts to newer/different version
-if(!window.process){
+if (!window.process) {
     window.process = undefined;
 }
 
@@ -64,7 +64,7 @@ EventEmitter.defaultMaxListeners = 0;
 /** IE FIxy **/
 const IE = Utils.detectIE();
 if (IE !== false) {
-    (function() {
+    (function () {
         const html = document.getElementsByTagName('html')[0];
         if (IE < 12) {
             html.className = html.className + ' ie ie' + IE;
@@ -78,7 +78,7 @@ if (IE !== false) {
  */
 if (!String.prototype.startsWith) {
     // eslint-disable-next-line no-extend-native
-    String.prototype.startsWith = function(str) {
+    String.prototype.startsWith = function (str) {
         return this.lastIndexOf(str, 0) === 0;
     };
 }
@@ -92,13 +92,22 @@ AjaxUtils.setStore(store);
 // Web socket - až po initu store
 store.dispatch(storeRestoreFromStorage());
 
-window.onerror = function(message, url, line, column, error) {
+const ignoredMessages = [
+    "ResizeObserver loop completed with undelivered notifications."
+]
+
+function globalErrorHandler(message, url, line, column, error) {
+    if (ignoredMessages.includes(message)) {
+        return;
+    }
+
     let stackTrace = error;
     try {
         if (stackTrace.stack) {
             stackTrace = stackTrace.stack;
         }
-    } catch (e) {}
+    } catch (e) { }
+
 
     store.dispatch(
         addToastr(
@@ -123,8 +132,27 @@ window.onerror = function(message, url, line, column, error) {
             null,
         ),
     );
-};
+}
 
+window.addEventListener('unhandledrejection', ({ reason }) => {
+    console.error('Unhandled Promise rejection:', reason);
+
+    // Ignore already processed exceptions
+    if (reason.processed) {
+        return;
+    }
+
+    // Call your global error handler here
+    globalErrorHandler(
+        reason.message,
+        reason.fileName,
+        reason.lineNumber,
+        reason.columnNumber,
+        reason.stackTrace ? reason.stackTrace : JSON.stringify(reason)
+    );
+});
+
+window.onerror = globalErrorHandler;
 // Globální vypnutí focus na split buttony
 /*
 SplitToggle.defaultProps = {

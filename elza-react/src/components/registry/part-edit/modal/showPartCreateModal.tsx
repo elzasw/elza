@@ -2,16 +2,16 @@ import React from 'react';
 import { ApPartFormVO } from "../../../../api/ApPartFormVO";
 // import i18n from "../../../i18n";
 import { RulPartTypeVO } from '../../../../api/RulPartTypeVO';
-import { WebApi } from '../../../../actions/WebApi';
 import { modalDialogShow } from '../../../../actions/global/modalDialog';
 import * as PartTypeInfo from '../../../../api/old/PartTypeInfo';
 import { PartType } from '../../../../api/generated/model';
 import { ApItemBitVO } from '../../../../api/ApItemBitVO';
-import {goToAe} from '../../../../actions/registry/registry';
+import { goToAe } from '../../../../actions/registry/registry';
 import { globalFundTreeInvalidate } from '../../../../actions/arr/globalFundTree';
 import PartEditModal from './PartEditModal';
 import * as H from "history";
 import { RevisionApPartForm } from '../form';
+import { Api } from 'api';
 
 export const showPartCreateModal = (
     partType: RulPartTypeVO,
@@ -34,27 +34,27 @@ export const showPartCreateModal = (
             const handleClose = () => onClose();
 
             const handleSubmit = async (data: RevisionApPartForm) => {
-                    /*
-                const submitData = {
-                    items: data.items.filter(i => {
-                        if (i['@class'] === '.ApItemEnumVO') {
-                            return i.specId !== undefined;
-                        } else {
-                            return (i as ApItemBitVO).value !== undefined;
-                        }
-                    }),
-                    parentPartId: parentPartId,
-                    partTypeCode: partType.code,
-                } as ApPartFormVO;
-                    */
-                const updatedItems = data.items.map(({updatedItem}) => updatedItem);
+                /*
+            const submitData = {
+                items: data.items.filter(i => {
+                    if (i['@class'] === '.ApItemEnumVO') {
+                        return i.specId !== undefined;
+                    } else {
+                        return (i as ApItemBitVO).value !== undefined;
+                    }
+                }),
+                parentPartId: parentPartId,
+                partTypeCode: partType.code,
+            } as ApPartFormVO;
+                */
+                const updatedItems = data.items.map(({ updatedItem }) => updatedItem);
                 const items = updatedItems.filter(item => {
-                        if (item?.['@class'] === '.ApItemEnumVO') {
-                            return item.specId !== undefined;
-                        } else {
-                            return (item as ApItemBitVO)?.value !== undefined;
-                        }
-                    })
+                    if (item?.['@class'] === '.ApItemEnumVO') {
+                        return item.specId !== undefined;
+                    } else {
+                        return (item as ApItemBitVO)?.value !== undefined;
+                    }
+                })
 
                 const submitData = {
                     items,
@@ -65,7 +65,7 @@ export const showPartCreateModal = (
 
                 // console.log('SUBMIT ADD', apId, submitData);
 
-                await WebApi.createPart(apId, submitData, apVersion)
+                await Api.accesspoints.accessPointCreatePart(apId, submitData, apVersion)
                 onClose();
                 await dispatch(goToAe(history, apId, true, !select, revisionActive))
                 onUpdateFinish();
@@ -86,7 +86,8 @@ export const showPartCreateModal = (
                 initialValues={formData}
                 onSubmit={handleSubmit}
                 onClose={handleClose}
-                />},
+            />
+        },
         'dialog-lg',
         dispatch(globalFundTreeInvalidate()),
     ),
