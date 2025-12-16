@@ -735,6 +735,7 @@
 		   WHERE sequence_name = 'ext_syncs_queue_item|ext_syncs_queue_item_id'</sql>
 	</changeSet>
 	<changeSet id="20251212082200" author="ppy">
+	  <validCheckSum>9:56d07d505bee76012054a2a5b07e1b89</validCheckSum>
 	  <sql dbms="postgresql">
          DELETE FROM ap_cached_access_point WHERE access_point_id IN 
            (SELECT s.access_point_id FROM ap_state s 
@@ -745,18 +746,23 @@
 	  <sql dbms="postgresql">
 		UPDATE ap_state s SET delete_change_id = update_state.create_change_id 
 		FROM (
-		  SELECT st.state_id, st_last.create_change_id FROM ap_state st 
-		  JOIN (SELECT s.access_point_id, max(s.state_id) as stat_id FROM ap_state s 
-			WHERE s.delete_change_id IS NULL
-			GROUP BY s.access_point_id 
-			HAVING COUNT(s.state_id) &gt; 1) src ON src.access_point_id = st.access_point_id AND st.delete_change_id IS NULL AND st.state_id &lt;&gt; src.stat_id 
-		  JOIN ap_state st_last ON st_last.state_id = src.stat_id 
-          ) update_state 
+         WITH src as (
+             SELECT st.state_id, st.access_point_id, st.create_change_id, src.state_id last_state_id, row_number() OVER (PARTITION BY st.access_point_id ORDER BY st.state_id ) pos 
+             FROM ap_state st
+             JOIN (
+               SELECT s.access_point_id, max(s.state_id) as state_id FROM ap_state s
+	           WHERE s.delete_change_id IS NULL
+   	           GROUP BY s.access_point_id
+	           HAVING COUNT(s.state_id) > 1) src ON src.access_point_id = st.access_point_id
+         )
+         SELECT prev.state_id, next.create_change_id FROM src prev
+         JOIN src next ON next.access_point_id = prev.access_point_id AND next.pos = prev.pos + 1
+        ) update_state 
         WHERE s.state_id = update_state.state_id	  
 	  </sql>
 	  <dropIndex tableName="ap_state" indexName="ap_state_access_point_delete_change_idx"/>
 	  <!-- Speedup revision search and guarantee unique -->
-	  <sql dbms="postgresql">CREATE UNIQUE INDEX ap_state_delete_change_null_unique_idx ON ap_state(access_point_id) WHERE delete_change_id IS NULL</sql>
+	  <sql dbms="postgresql">CREATE UNIQUE INDEX IF NOT EXISTS ap_state_delete_change_null_unique_idx ON ap_state(access_point_id) WHERE delete_change_id IS NULL</sql>
 	</changeSet>
 	<changeSet id="20251212125700" author="ppy">
 	  <sql>DELETE FROM ap_cached_access_point WHERE access_point_id IN (
