@@ -25,6 +25,7 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -119,16 +120,22 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
             throw new AuthenticationServiceException(failed.getMessage(), failed);
         }
 
+        String sourceIp = null;
+	    if (authentication.getDetails() instanceof WebAuthenticationDetails) {
+	    	var details = (WebAuthenticationDetails)authentication.getDetails();
+	        sourceIp = details.getRemoteAddress();
+	    }		
+
         AbstractAuthenticationToken token = this.jwtAuthenticationConverter.convert(jwt);
 
         try {        
         	Object details = prepareDetails(jwt);
         	token.setDetails(details);
         
-        	siemAuditLogger.loginSuccess(token.getName(), token.getPrincipal().toString());
+        	siemAuditLogger.loginSuccess(token.getName(), sourceIp);
         	return token;
         } catch (Exception e) {
-			siemAuditLogger.loginFailed(token.getName(), token.getPrincipal().toString(), e.getMessage());
+			siemAuditLogger.loginFailed(token.getName(), sourceIp, e.getMessage());
 			throw new AuthenticationServiceException(e.getMessage(), e);
 		}
     }

@@ -18,19 +18,19 @@ public class SiemAuditLogger {
 		FAILURE
 	}
 		
-	public void loginSuccess(String user, String ip) {
+	public void loginSuccess(String user, String sourceIp) {
 		LOG.info("login_success", 
-				kv("eventType", EventType.AUTHENTICATION), 
-				kv("outcome", Outcome.SUCCESS), 
+				kv("eventType", EventType.AUTHENTICATION.toString()), 
+				kv("outcome", Outcome.SUCCESS.toString()), 
 				kv("user", user),
-				kv("sourceIp", ip)
+				kv("sourceIp", sourceIp)
 				);
 		}
 
 	public void loginFailed(String username, String sourceIp, String detail) {
 		LOG.info("login_success", 
-				kv("eventType", EventType.AUTHENTICATION), 
-				kv("outcome", Outcome.FAILURE), 
+				kv("eventType", EventType.AUTHENTICATION.toString()), 
+				kv("outcome", Outcome.FAILURE.toString()), 
 				kv("user", username),
 				kv("sourceIp", sourceIp),
 				kv("detail", detail)
