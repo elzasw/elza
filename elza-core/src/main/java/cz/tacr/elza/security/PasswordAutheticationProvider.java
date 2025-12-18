@@ -8,6 +8,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrUser;
@@ -18,15 +19,22 @@ public class PasswordAutheticationProvider implements AuthenticationProvider {
 	private static final Logger log = LoggerFactory.getLogger(PasswordAutheticationProvider.class);
 
 	private final UserService userService;
+	private final SiemAuditLogger siemAuditLogger;
 
-	public PasswordAutheticationProvider(UserService userService) {
+	public PasswordAutheticationProvider(UserService userService, SiemAuditLogger siemAuditLogger) {
 		this.userService = userService;
+		this.siemAuditLogger = siemAuditLogger;
 	}
 
 	@Override
 	public Authentication authenticate(final Authentication authentication) throws AuthenticationException {
 		String username = authentication.getName();
 		String password = authentication.getCredentials().toString();
+		String sourceIp = null;
+	    if (authentication.getDetails() instanceof WebAuthenticationDetails) {
+	    	var details = (WebAuthenticationDetails)authentication.getDetails();
+	        sourceIp = details.getRemoteAddress();
+	    }		
 		String encodePassword = userService.encodePassword(password);
 
 		UsrUser user = userService.findByUsername(username);
@@ -51,6 +59,8 @@ public class PasswordAutheticationProvider implements AuthenticationProvider {
 			log.warn(username + ":" + encodePassword);
 			throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
 		}
+		
+		siemAuditLogger.loginSuccess(username, sourceIp);
 
 		UserDetail userDetail = userService.createUserDetail(user);
 
