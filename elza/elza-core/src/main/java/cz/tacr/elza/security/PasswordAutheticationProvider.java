@@ -12,6 +12,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.security.SiemAuditLogger.AuthenticationType;
 import cz.tacr.elza.service.UserService;
 
 public class PasswordAutheticationProvider implements AuthenticationProvider {
@@ -61,7 +62,7 @@ public class PasswordAutheticationProvider implements AuthenticationProvider {
 			throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
 		}
 		
-		siemAuditLogger.loginSuccess(username, sourceIp);
+		siemAuditLogger.loginSuccess(username, sourceIp, AuthenticationType.PASSWORD);
 
 		UserDetail userDetail = userService.createUserDetail(user);
 
