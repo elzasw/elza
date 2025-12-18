@@ -165,7 +165,7 @@ public class ApplicationSecurity {
 
         ap.add(new PasswordAutheticationProvider(userService, siemAuditLogger));
         if (optionalSsoHeaderProperties.isPresent()) {
-            ap.add(new SsoHeaderAuthenticationProvider(userService, txManager));
+            ap.add(new SsoHeaderAuthenticationProvider(userService, txManager, siemAuditLogger));
         }
         if (optionalOAuth2Props.isPresent()) {
         	log.debug("Adding JWT based provider.");
