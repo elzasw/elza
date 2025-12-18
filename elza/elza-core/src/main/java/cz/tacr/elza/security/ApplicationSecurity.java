@@ -140,6 +140,9 @@ public class ApplicationSecurity {
 
     @Autowired
     private Optional<KerberosProperties> optionalKerberosProps;
+    
+    @Autowired
+    private SiemAuditLogger siemAuditLogger;
 
     private SessionRegistry sessionRegistry = null;
 
@@ -160,7 +163,7 @@ public class ApplicationSecurity {
     public AuthenticationManager authenticationManagerBean() throws Exception {
         List<AuthenticationProvider> ap = new ArrayList<>();
 
-        ap.add(new PasswordAutheticationProvider(userService));
+        ap.add(new PasswordAutheticationProvider(userService, siemAuditLogger));
         if (optionalSsoHeaderProperties.isPresent()) {
             ap.add(new SsoHeaderAuthenticationProvider(userService, txManager));
         }
