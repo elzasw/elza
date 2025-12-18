@@ -38,25 +38,26 @@ public class PasswordAutheticationProvider implements AuthenticationProvider {
 		String encodePassword = userService.encodePassword(password);
 
 		UsrUser user = userService.findByUsername(username);
-
 		if (user != null) {
 			UsrAuthentication usrAuthentication = userService.findAuthentication(user,
 					UsrAuthentication.AuthType.PASSWORD);
 			if (usrAuthentication == null) {
+				siemAuditLogger.loginFailed(username, sourceIp, "INVALID_AUTH_TYPE");
 				throw new UsernameNotFoundException("Pro uživatele není povolen tento typ přihlášení");
 			}
 
 			encodePassword = usrAuthentication.getAuthValue();
 			if (!userService.matchesPassword(password, encodePassword, username)) {
+				siemAuditLogger.loginFailed(username, sourceIp, "INVALID_PASSWORD");
 				throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
 			}
 
 			if (!user.getActive()) {
+				siemAuditLogger.loginFailed(username, sourceIp, "INACTIVE_USER");
 				throw new LockedException("User is not active");
 			}
 		} else {
-			// TODO: smazat po vytvoření správy uživatelů
-			log.warn(username + ":" + encodePassword);
+			siemAuditLogger.loginFailed(username, sourceIp, "INVALID_USERNAME");
 			throw new UsernameNotFoundException("Neplatné uživatelské jméno nebo heslo");
 		}
 		
