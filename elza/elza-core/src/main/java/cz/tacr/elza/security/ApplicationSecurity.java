@@ -173,7 +173,7 @@ public class ApplicationSecurity {
             AccessPointService apService = applicationContext.getBean(AccessPointService.class);
 
             ap.add(new JwtUserDetailProvider(jwtDecoder, txManager, userService, apService,
-                    itemTypeRepository, optionalOAuth2Props.get()));
+                    itemTypeRepository, optionalOAuth2Props.get(), siemAuditLogger));
         }
         if(optionalLdapProps.isPresent()) {
 			if (optionalLdapProps.get().getAdDomain() != null) {

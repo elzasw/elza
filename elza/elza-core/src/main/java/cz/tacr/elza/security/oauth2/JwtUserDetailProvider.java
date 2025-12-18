@@ -44,6 +44,7 @@ import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrPermission.PermissionType;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.security.SiemAuditLogger;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.oauth2.OAuth2Properties.PermProperties;
 import cz.tacr.elza.service.AccessPointService;
@@ -63,6 +64,7 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
     private final ItemTypeRepository itemTypeRepository;
 
     private final OAuth2Properties oAuth2Properties;
+    private final SiemAuditLogger siemAuditLogger;
 
     /**
      * Cache pro podrobnosti uživatele.
@@ -86,7 +88,7 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
                                  final UserService userService,
                                  final AccessPointService apService,
                                  final ItemTypeRepository itemTypeRepository,
-                                 final OAuth2Properties oAuth2Properties) {
+                                 final OAuth2Properties oAuth2Properties, SiemAuditLogger siemAuditLogger) {
         this.jwtDecoder = jwtDecoder;
         this.txManager = txManager;
         this.userService = userService;
@@ -101,6 +103,7 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
                         return null;
                     }
                 });
+        this.siemAuditLogger = siemAuditLogger;
     }
 
     @Override
@@ -118,13 +121,16 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
 
         AbstractAuthenticationToken token = this.jwtAuthenticationConverter.convert(jwt);
 
-        Object details = prepareDetails(jwt);
-        token.setDetails(details);
-
-        // Object details = bearer.getDetails();
-        // token.setDetails(bearer.getDetails());
-
-        return token;
+        try {        
+        	Object details = prepareDetails(jwt);
+        	token.setDetails(details);
+        
+        	siemAuditLogger.loginSuccess(token.getName(), token.getPrincipal().toString());
+        	return token;
+        } catch (Exception e) {
+			siemAuditLogger.loginFailed(token.getName(), token.getPrincipal().toString(), e.getMessage());
+			throw new AuthenticationServiceException(e.getMessage(), e);
+		}
     }
 
     synchronized private Object prepareDetails(Jwt jwt) {
