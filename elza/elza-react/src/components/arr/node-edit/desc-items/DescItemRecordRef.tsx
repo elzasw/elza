@@ -112,14 +112,22 @@ export function DescItemRecordRef({
           query,
           undefined,
           undefined,
-          undefined,
+          activeFund.versionId,
           (itemSpecId != undefined && itemTypeId) || undefined,
           itemSpecId,
         );
         setAccessPoints(accessPoints.rows);
       })();
     }
-  }, [itemTypeId, itemSpecId, query, item.undefined, item.nodeId, nodeId]);
+  }, [
+    itemTypeId,
+    itemSpecId,
+    query,
+    item.undefined,
+    item.nodeId,
+    nodeId,
+    activeFund?.versionId,
+  ]);
 
   function handleSelectModule() {
     // const {hasSpecification, descItem, registryList, fund, nodeName, itemName, specName, history, dispatch} = this.props;
