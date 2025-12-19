@@ -2,7 +2,7 @@ import { DataType } from "elza-api";
 import { useMemo } from "react";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useNodeFormData } from "../node-edit/hooks";
-import { buildGroups } from "../node-edit/utils";
+import { buildGroupsForm } from "../node-edit/utils";
 import {
   DescItemBit,
   DescItemCoordinates,
@@ -46,27 +46,26 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     ({ refTables }) => refTables.descItemTypes.itemsMap,
   );
   const groupRefs = useAppSelector(({ refTables }) => refTables.groups.data);
-  const dataTypeRefs = useAppSelector(
-    ({ refTables }) => refTables.rulDataTypes.itemsMap,
-  );
 
-  const { formData } = useNodeFormData(fondsVersionId, nodeId, nodeVersionId);
+  const { itemTypes, formItems } = useNodeFormData(
+    fondsVersionId,
+    nodeId,
+    nodeVersionId,
+    { skipForcedItems: true },
+  );
 
   // build display groups only after groups refs and form data are both loaded
   const viewDescItemGroups = useMemo(() => {
-    if (formData && groupRefs) {
-      return buildGroups(
-        formData,
+    if (formItems && groupRefs) {
+      return buildGroupsForm(
+        [...formItems],
+        itemTypes,
         groupRefs,
         itemTypeRefs,
-        dataTypeRefs,
-        nodeId,
-        nodeVersionId,
-        true,
       );
     }
     return [];
-  }, [formData, groupRefs, itemTypeRefs, dataTypeRefs, nodeId, nodeVersionId]);
+  }, [formItems, itemTypes, groupRefs, itemTypeRefs]);
 
   return (
     <div style={{ padding: "8px" /* , display: "flex", flexWrap: "wrap" */ }}>
@@ -119,7 +118,7 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                     {/* </td> */}
                     {/* <td> */}
                     <div>
-                      {descItems.map((item) => {
+                      {descItems.map(({ item }) => {
                         const { data } = item;
                         const DataTypeComponent =
                           data?.dataType && dataTypeMap[data.dataType];

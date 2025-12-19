@@ -1,8 +1,8 @@
 import { Api } from "api";
-import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
 import {
   DataType,
   FormItemType,
+  ItemDataResult,
   NodeConformityError,
   NodeItem,
 } from "elza-api";
@@ -40,7 +40,8 @@ interface Props {
   nodeVersionId: number;
   errors?: NodeConformityError[];
   onDelete?: (item: NodeItem) => Promise<void>;
-  onItemCreated?: (item: NodeItem) => void;
+  onCreate: (item: NodeItem) => Promise<ItemDataResult>;
+  onUpdate: (item: NodeItem) => Promise<void>;
 }
 
 const dataTypeComponentMap = {
@@ -67,7 +68,8 @@ export function DescItemField({
   nodeId,
   errors = [],
   onDelete,
-  onItemCreated,
+  onCreate,
+  onUpdate,
 }: Props) {
   const [specId, setSpecId] = useState<number | undefined>(item.itemSpecId);
   const [isSaving, setIsSaving] = useState(false);
@@ -80,7 +82,7 @@ export function DescItemField({
   const dataTypeCode = data?.dataType || dataTypes[typeRef.dataTypeId].code;
   const DataTypeComponent = dataTypeCode && dataTypeComponentMap[dataTypeCode];
 
-  const ws = useWebsocket();
+  // const ws = useWebsocket();
 
   async function handleChange(_item: NodeItem, _specId?: number) {
     setIsSaving(true);
@@ -112,25 +114,9 @@ export function DescItemField({
 
     try {
       if (newItem.itemObjectId === undefined) {
-        const { data } = await Api.descItems.descItemCreateDescItem(
-          fondsVersionId,
-          newItem,
-        );
-        onItemCreated(data.item);
+        await onCreate(newItem);
       } else {
-        await new Promise<void>((resolve, reject) => {
-          ws.send(
-            `/app/arrangement/descItems/${fondsVersionId}/update/true`,
-            JSON.stringify(newItem),
-            () => {
-              resolve();
-            },
-            // TODO Add type
-            (error: unknown) => {
-              reject(error);
-            },
-          );
-        });
+        await onUpdate(newItem);
       }
     } finally {
       setIsSaving(false);
@@ -139,7 +125,6 @@ export function DescItemField({
   }
 
   async function deleteDescItem(item: NodeItem) {
-    // WebApi.deleteDescItem(fondsVersionId, nodeId, nodeVersionId, item);
     setIsSaving(true);
     await onDelete(item);
     setIsSaving(false);

@@ -6,24 +6,19 @@ import {
 } from "@fluentui/react-components";
 import { AddRegular, CopyAddRegular, CopyRegular } from "@fluentui/react-icons";
 import { WebApi } from "actions";
-import { NodeItem } from "elza-api";
+import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { DescItemTypeRef } from "typings/store";
+import { FormattedMessage, defineMessages } from "react-intl";
+import { ArrDaoVO } from "typings/dao";
+import { useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { NodeToolbar } from "./NodeToolbar";
 import { DescItemField } from "./desc-items";
-import {
-  useActiveFund,
-  useActiveParent,
-  useKeyGen,
-  useNodeFormData,
-} from "./hooks";
+import { useActiveFund, useActiveParent, useNodeFormData } from "./hooks";
 import { useStyles } from "./styles";
-import { buildGroups } from "./utils";
-import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
-import { useAppThunkDispatch } from "utils/hooks";
-import { ArrDaoVO } from "typings/dao";
-import { FormattedMessage, defineMessages } from "react-intl";
+import { buildGroupsForm } from "./utils";
+
+const SHOW_DEBUG_DATA = true;
 
 interface Props {
   fondsVersionId: number;
@@ -50,23 +45,30 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
   const activeFund = useActiveFund();
 
   const [daos, setDaos] = useState<ArrDaoVO[]>();
-  const { getKey, pairKey } = useKeyGen(nodeId);
 
   const itemTypeRefs = useAppSelector(
     ({ refTables }) => refTables.descItemTypes.itemsMap,
   );
   const groupRefs = useAppSelector(({ refTables }) => refTables.groups.data);
-  const dataTypeRefs = useAppSelector(
-    ({ refTables }) => refTables.rulDataTypes.itemsMap,
-  );
   const nodeSetting = useAppSelector(({ arrRegion }) =>
     (arrRegion.nodeSettings as any).nodes.find(
       ({ id }) => id === activeParent?.id,
     ),
   ); // TODO add types
 
-  const { formData, nodeData, addEmptyDescItem, deleteDescItem } =
-    useNodeFormData(fondsVersionId, nodeId, nodeVersionId);
+  const {
+    formData,
+    formItems,
+    forcedFormItems,
+    addedFormItems,
+    itemTypes,
+    nodeData,
+    addEmptyDescItem,
+    deleteDescItem,
+    createDescItem,
+    updateDescItem,
+    parent,
+  } = useNodeFormData(fondsVersionId, nodeId, nodeVersionId);
 
   useEffect(() => {
     if (nodeData?.id) {
@@ -80,28 +82,24 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     }
   }, [nodeData?.id, activeFund.versionId]);
 
-  // build display groups only after groups refs and form data are both loaded
-  const viewDescItemGroups = useMemo(() => {
-    if (formData && groupRefs) {
-      return buildGroups(
-        formData,
+  const viewDescItemGroupsLocal = useMemo(() => {
+    if (formItems && groupRefs) {
+      return buildGroupsForm(
+        [...formItems, ...forcedFormItems, ...addedFormItems],
+        itemTypes,
         groupRefs,
         itemTypeRefs,
-        dataTypeRefs,
-        nodeId,
-        nodeVersionId,
       );
     }
     return [];
-  }, [formData, groupRefs, itemTypeRefs, dataTypeRefs, nodeId, nodeVersionId]);
-
-  async function handleDeleteDescItem(item: NodeItem) {
-    deleteDescItem(item.id);
-  }
-
-  function handleAddDescItemType(descItemType: DescItemTypeRef) {
-    addEmptyDescItem(descItemType.id);
-  }
+  }, [
+    groupRefs,
+    itemTypeRefs,
+    addedFormItems,
+    formItems,
+    forcedFormItems,
+    itemTypes,
+  ]);
 
   async function handleCopyFromPrev(descItemTypeId: number) {
     await WebApi.copyOlderSiblingAttribute(
@@ -131,7 +129,8 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
   // }
   //
 
-  const isFirstNode = activeParent.childNodes.findIndex((node:any) => node.id === nodeId) === 0; // TODO add types
+  const isFirstNode =
+    activeParent.childNodes.findIndex((node: any) => node.id === nodeId) === 0; // TODO add types
 
   return (
     <div
@@ -144,8 +143,11 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     >
       <NodeToolbar
         formData={formData}
+        formItems={formItems}
+        itemTypes={itemTypes}
+        parent={parent}
         nodeData={nodeData}
-        onAddDescItem={handleAddDescItemType}
+        onAddDescItem={addEmptyDescItem}
         daos={daos}
       />
       {/* <div
@@ -173,12 +175,12 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
         })}
       </div> */}
       <div style={{ padding: "8px" }}>
-        {viewDescItemGroups.length === 0 && (
+        {viewDescItemGroupsLocal.length === 0 && (
           <div style={{ padding: "50px" }}>
             <Spinner />
           </div>
         )}
-        {viewDescItemGroups.map(({ group, descItemTypes }) => {
+        {viewDescItemGroupsLocal.map(({ group, descItemTypes }) => {
           return (
             <div style={{ margin: "4px" }} key={group.code}>
               <div
@@ -297,28 +299,19 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                           {descItems
                             .sort(
                               (
-                                { position: positionA },
-                                { position: positionB },
+                                { item: { position: positionA } },
+                                { item: { position: positionB } },
                               ) => positionA - positionB,
                             )
-                            .map((item) => {
+                            .map(({ item, localId }) => {
                               const itemErrors =
                                 nodeData?.nodeConformity.errorList.filter(
                                   ({ descItemObjectId }) =>
                                     descItemObjectId === item.itemObjectId,
                                 );
 
-                              const key = getKey(
-                                item.itemObjectId ||
-                                  `${item.itemTypeId}_${item.itemSpecId}_new`,
-                              );
-
-                              function handleItemCreated(item: NodeItem) {
-                                pairKey(item.itemObjectId, key);
-                              }
-
                               return (
-                                <div key={key}>
+                                <div key={localId}>
                                   <div>
                                     <DescItemField
                                       typeRef={typeRef}
@@ -329,11 +322,16 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                                       nodeVersionId={nodeVersionId}
                                       typeWidth={typeWidth}
                                       errors={itemErrors}
-                                      onDelete={handleDeleteDescItem}
-                                      onItemCreated={handleItemCreated}
+                                      onDelete={(item) =>
+                                        deleteDescItem(item, localId)
+                                      }
+                                      onCreate={(item) =>
+                                        createDescItem(item, localId)
+                                      }
+                                      onUpdate={updateDescItem}
                                     />
                                   </div>
-                                  {false && (
+                                  {SHOW_DEBUG_DATA && (
                                     <div
                                       style={{
                                         background: "var(--shade-3)",
@@ -346,16 +344,17 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                                     >
                                       objId: {item.itemObjectId}, specId:{" "}
                                       {item.itemSpecId}, pos: {item.position},
-                                      genKey: {key}
+                                      genKey: {localId}
                                     </div>
                                   )}
                                 </div>
                               );
                             })}
                           {typeForm.repeatable &&
-                            ((descItems[descItems.length - 1].data?.dataId !=
-                              undefined && // last item has data
-                              !descItems[descItems.length - 1].undefined) || // last item is not undefined
+                            ((formItems[formItems.length - 1].item.data
+                              ?.dataId != undefined && // last item has data
+                              !formItems[formItems.length - 1].item
+                                .undefined) || // last item is not undefined
                               typeRef.useSpecification) && ( // show when item uses specification
                               <Button
                                 style={{ borderStyle: "dashed", color: "#666" }}
@@ -363,8 +362,8 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                                 onClick={() =>
                                   addEmptyDescItem(
                                     typeRef.id,
-                                    descItems[descItems.length - 1].position +
-                                      1,
+                                    formItems[formItems.length - 1].item
+                                      .position + 1,
                                   )
                                 }
                                 tabIndex={-1}
