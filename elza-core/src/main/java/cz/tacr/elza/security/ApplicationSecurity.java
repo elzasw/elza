@@ -180,7 +180,7 @@ public class ApplicationSecurity {
 				log.debug("Adding ActiveDirectory provider, domain: {}, server: {}.",
 						optionalLdapProps.get().getAdDomain(), optionalLdapProps.get().getAdServer());
 				// adding active directory domain
-				var adProvider = new ActiveDirectoryUserDetailProvider(optionalLdapProps.get(), txManager, userService);
+				var adProvider = new ActiveDirectoryUserDetailProvider(optionalLdapProps.get(), txManager, userService, siemAuditLogger);
 				
 				ap.add(adProvider);
 			}

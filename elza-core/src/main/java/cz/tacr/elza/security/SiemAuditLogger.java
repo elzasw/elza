@@ -27,7 +27,9 @@ public class SiemAuditLogger {
     public enum AuthenticationType {
 		PASSWORD,
 		JWT, 
-		SSO_HEADER
+		SSO_HEADER,
+		// MS Active Directory
+		ACTIVE_DIRECTORY
 	}
 	
 	public enum Outcome {
