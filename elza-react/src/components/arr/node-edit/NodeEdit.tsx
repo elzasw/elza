@@ -18,7 +18,7 @@ import { useActiveFund, useActiveParent, useNodeFormData } from "./hooks";
 import { useStyles } from "./styles";
 import { buildGroupsForm } from "./utils";
 
-const SHOW_DEBUG_DATA = true;
+const SHOW_DEBUG_DATA = false;
 
 interface Props {
   fondsVersionId: number;
