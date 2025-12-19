@@ -1,92 +1,21 @@
-import { RulDataTypeVO } from "api/RulDataTypeVO";
-import { NodeFormData, MandatoryType, DataType, NodeItem } from "elza-api";
+import { FormItemType } from "elza-api";
 import { DescItemGroup, DescItemTypeRef } from "typings/store";
-import { createEmptyDescItem } from "./desc-items/utils";
-import { ViewDescItemGroups } from "./types";
+import { FormItem } from "./hooks";
+import { ViewDescItemGroupsLocal } from "./types";
 
-export function buildGroups(
-  { descItems, itemTypes }: NodeFormData,
+export function buildGroupsForm(
+  descItems: FormItem[],
+  itemTypes: FormItemType[],
   groupRefs: Record<number, DescItemGroup> & { ids: string[] },
   itemTypeRefs: Record<number, DescItemTypeRef>,
-  dataTypeRefs: Record<number, RulDataTypeVO>,
-  nodeId: number,
-  nodeVersionId: number,
-  skipForcedItems?: boolean,
 ) {
   if (!groupRefs) {
     return [];
   }
+  const _descItems: FormItem[] = [...descItems];
+  const descItemGroups: Array<ViewDescItemGroupsLocal> = [];
 
-  const _descItems: NodeItem[] = [...descItems];
-
-  const forcedItemTypes = skipForcedItems
-    ? []
-    : itemTypes.filter(
-        ({ type }) =>
-          type === MandatoryType.Required || type === MandatoryType.Recommended,
-      );
-
-  forcedItemTypes.forEach(({ itemTypeId, specs, repeatable }) => {
-    const itemTypeRef = itemTypeRefs[itemTypeId];
-    const dataType = dataTypeRefs[itemTypeRef.dataTypeId];
-
-    const forcedSpecs = specs.filter(
-      ({ type }) =>
-        type === MandatoryType.Required || type === MandatoryType.Recommended,
-    );
-
-    const _descItem = descItems.find(
-      ({ itemTypeId: _itemTypeId }) => itemTypeId === _itemTypeId,
-    );
-    const addSpec =
-      _descItem &&
-      (itemTypeRef.useSpecification || repeatable) &&
-      dataType.code !== DataType.Enum;
-
-    const descItemTypeCount = descItems.filter(
-      ({ itemTypeId: _itemTypeId }) => _itemTypeId === itemTypeId,
-    );
-
-    if (forcedSpecs.length > 0 && addSpec) {
-      forcedSpecs.forEach(({ itemSpecId }) => {
-        const descItem = descItems.find(
-          ({ itemTypeId: _itemTypeId, itemSpecId: _itemSpecId }) =>
-            _itemTypeId === itemTypeId && _itemSpecId === itemSpecId,
-        );
-        if (!descItem) {
-          _descItems.push({
-            ...createEmptyDescItem(
-              itemTypeId,
-              nodeId,
-              nodeVersionId,
-              descItemTypeCount.length,
-              dataType.code,
-            ),
-            itemSpecId,
-          });
-        }
-      });
-    } else {
-      const descItem = descItems.find(
-        ({ itemTypeId: _itemTypeId }) => _itemTypeId === itemTypeId,
-      );
-      if (!descItem) {
-        _descItems.push(
-          createEmptyDescItem(
-            itemTypeId,
-            nodeId,
-            nodeVersionId,
-            descItemTypeCount.length,
-            dataType.code,
-          ),
-        );
-      }
-    }
-  });
-
-  const descItemGroups: Array<ViewDescItemGroups> = [];
-
-  _descItems.forEach((item) => {
+  _descItems.forEach((localItem) => {
     let groupRef: DescItemGroup = undefined;
     let typeWidth: number = undefined;
 
@@ -94,7 +23,7 @@ export function buildGroups(
     for (const id of groupRefs.ids) {
       const _group = groupRefs[id];
       for (const itemType of _group.itemTypes) {
-        if (itemType.id === item.itemTypeId) {
+        if (itemType.id === localItem.item.itemTypeId) {
           typeWidth = itemType.width;
           groupRef = _group;
           break;
@@ -105,9 +34,9 @@ export function buildGroups(
       }
     }
 
-    const typeRef = itemTypeRefs[item.itemTypeId];
+    const typeRef = itemTypeRefs[localItem.item.itemTypeId];
     const typeForm = itemTypes.find(
-      ({ itemTypeId }) => itemTypeId === item.itemTypeId,
+      ({ itemTypeId }) => itemTypeId === localItem.item.itemTypeId,
     );
 
     const existingGroup = descItemGroups.find(
@@ -121,23 +50,23 @@ export function buildGroups(
             typeRef,
             typeForm,
             typeWidth,
-            descItems: [item],
+            descItems: [localItem],
           },
         ],
       });
     } else {
       const existingType = existingGroup.descItemTypes.find(
-        (typeDef) => typeDef.typeRef.id === item.itemTypeId,
+        (typeDef) => typeDef.typeRef.id === localItem.item.itemTypeId,
       );
       if (!existingType) {
         existingGroup.descItemTypes.push({
           typeRef,
           typeForm,
           typeWidth,
-          descItems: [item],
+          descItems: [localItem],
         });
       } else {
-        existingType.descItems.push(item);
+        existingType.descItems.push(localItem);
       }
     }
   });

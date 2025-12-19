@@ -1,5 +1,4 @@
 import {
-  Badge,
   Menu,
   MenuButton,
   MenuItem,
@@ -19,8 +18,6 @@ import {
   LinkMultipleRegular,
   SettingsCogMultipleRegular,
   TextQuoteRegular,
-  CameraAddRegular,
-  CameraRegular,
 } from "@fluentui/react-icons";
 import { WebApi } from "actions";
 import * as issuesActions from "actions/arr/issues";
@@ -32,7 +29,13 @@ import { routerNavigate } from "actions/router";
 import IssueForm from "components/form/IssueForm";
 import i18n from "components/i18n";
 import { showConfirmDialog } from "components/shared/dialog";
-import { NodeAccordionData, NodeFormData } from "elza-api";
+import ConfirmForm from "components/shared/form/ConfirmForm";
+import {
+  FormItemType,
+  NodeAccordionData,
+  NodeBase,
+  NodeFormData,
+} from "elza-api";
 import { useState } from "react";
 import { FormattedMessage, defineMessages, useIntl } from "react-intl";
 import { IssueVO } from "types";
@@ -42,7 +45,9 @@ import { useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { urlFundNode } from "../../../constants";
 import ArrHistoryForm from "../ArrHistoryForm";
+import ArrRequestForm from "../ArrRequestForm";
 import { isFundRootId } from "../ArrUtils";
+import SyncNodes from "../SyncNodes";
 import { NodeSettingsModal } from "../node-settings-form";
 import { QuoteModal, messages as quoteMessages } from "../quote";
 import { TextFragmentsWindow } from "../text-fragments";
@@ -53,19 +58,8 @@ import {
   ToolbarOverflowButton,
   ToolbarOverflowDivider,
 } from "./ToolbarOverflow";
-import { useActiveFund, useActiveParent } from "./hooks";
+import { FormItem, useActiveFund, useActiveParent } from "./hooks";
 import { useTemplates } from "./templates/templates";
-import ArrRequestForm from "../ArrRequestForm";
-import ConfirmForm from "components/shared/form/ConfirmForm";
-import SyncNodes from "../SyncNodes";
-import { objectById } from "shared/utils";
-
-export interface Props {
-  formData?: NodeFormData;
-  nodeData?: NodeAccordionData;
-  onAddDescItem: (descItemType: DescItemTypeRef) => void;
-  daos?: ArrDaoVO[];
-}
 
 export const messages = defineMessages({
   addDescItem: {
@@ -126,15 +120,25 @@ export const messages = defineMessages({
   },
 });
 
+export interface Props {
+  formData?: NodeFormData;
+  itemTypes?: FormItemType[];
+  formItems?: FormItem[];
+  parent?: NodeBase;
+  nodeData?: NodeAccordionData;
+  onAddDescItem: (descItemTypeId: number) => void;
+  daos?: ArrDaoVO[];
+}
+
 export const NodeToolbar = ({
-  formData,
+  formItems,
+  itemTypes,
+  parent,
   nodeData,
   onAddDescItem,
   daos = [],
 }: Props) => {
-  const itemTypes = formData?.itemTypes;
-  const descItems = formData?.descItems;
-  const parent = formData?.parent;
+  const descItems = formItems.map(({ item }) => item);
 
   const [showSpecialCharactersWindow, setShowSpecialCharactersWindow] =
     useState<boolean>(false);
@@ -159,7 +163,7 @@ export const NodeToolbar = ({
     dispatch(
       modalDialogShow(this, undefined, ({ onClose }) => {
         function handleSubmit(item: DescItemTypeRef) {
-          onAddDescItem(item);
+          onAddDescItem(item.id);
           onClose();
         }
         return (
