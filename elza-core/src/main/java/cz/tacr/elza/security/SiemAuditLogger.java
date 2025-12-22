@@ -28,8 +28,10 @@ public class SiemAuditLogger {
 		PASSWORD,
 		JWT, 
 		SSO_HEADER,
-		// MS Active Directory
-		ACTIVE_DIRECTORY
+		// MS Active Directory - direct password authentication
+		ACTIVE_DIRECTORY, 
+		// Kerberos based authentication - suitable for SSO
+		KERBEROS
 	}
 	
 	public enum Outcome {

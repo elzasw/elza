@@ -28,10 +28,25 @@ public class KerberosProperties {
 	private boolean kerberosClientDebug = false;
 
 	private boolean ticketValidatorDebug = false;
+	
+	/**
+	 * Flag to allow authentication with password over Kerberos
+	 */
+	private boolean authenticateWithPassword = true;
 
 	private String ldapSearchBase;
 
 	private String ldapSearchFilter;
+
+	
+	
+	public boolean isAuthenticateWithPassword() {
+		return authenticateWithPassword;
+	}
+
+	public void setAuthenticateWithPassword(boolean authenticateWithPassword) {
+		this.authenticateWithPassword = authenticateWithPassword;
+	}
 
 	public String getServicePrincipal() {
 		return servicePrincipal;
