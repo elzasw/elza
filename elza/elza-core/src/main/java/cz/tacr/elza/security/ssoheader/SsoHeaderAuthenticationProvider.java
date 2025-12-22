@@ -2,7 +2,6 @@ package cz.tacr.elza.security.ssoheader;
 
 import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
@@ -24,7 +23,7 @@ public class SsoHeaderAuthenticationProvider implements AuthenticationProvider {
 	private PlatformTransactionManager txManager;
 	private SiemAuditLogger siemAuditLogger;
 
-	public SsoHeaderAuthenticationProvider(UserService userService, final PlatformTransactionManager txManager,
+	public SsoHeaderAuthenticationProvider(final UserService userService, final PlatformTransactionManager txManager,
 			final SiemAuditLogger siemAuditLogger) {
 		this.userService = userService;
 		this.txManager = txManager;
