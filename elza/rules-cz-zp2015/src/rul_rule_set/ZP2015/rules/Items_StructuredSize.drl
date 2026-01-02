@@ -63,10 +63,10 @@ no-loop
 when
   $itemTypeOld : RulItemTypeExt(code == "ZP2015_SIZE" && type==RulItemType.Type.REQUIRED)
   $itemType: RulItemTypeExt(code in ("ZP2015_SIZE_WIDTH", "ZP2015_SIZE_HEIGHT", "ZP2015_SIZE_DEPTH",
-                                      "ZP2015_SIZE_UNITS", "ZP2015_WEIGHT", "ZP2015_AMOUNT", "ZP2015_SIZE_OTHER") )
+                                      "ZP2015_WEIGHT", "ZP2015_AMOUNT", "ZP2015_SIZE_OTHER") )
   $activeLevel: ActiveLevel( )
   not (DescItem(type in ("ZP2015_SIZE", "ZP2015_SIZE_WIDTH", "ZP2015_SIZE_HEIGHT", "ZP2015_SIZE_DEPTH",
-                                      "ZP2015_SIZE_UNITS", "ZP2015_WEIGHT", "ZP2015_AMOUNT", "ZP2015_SIZE_OTHER")                                      
+                                      "ZP2015_WEIGHT", "ZP2015_AMOUNT", "ZP2015_SIZE_OTHER")                                      
                                       ) from $activeLevel.descItems
                                       )
 then
@@ -86,6 +86,18 @@ when
                                       )
 then
   $itemType.setMinType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "povinny ZP2015_SIZE_UNITS, pokud vyplnen prvek s rozmerem bez jednotky"
+no-loop
+when
+  $itemType: RulItemTypeExt(code in ("ZP2015_SIZE_UNITS") )
+  $activeLevel: ActiveLevel( )
+  exists (DescItem(type in ("ZP2015_SIZE_WIDTH", "ZP2015_SIZE_HEIGHT", "ZP2015_SIZE_DEPTH", "ZP2015_SIZE_OTHER")                                      
+                                      ) from $activeLevel.descItems
+                                      )
+then
+  $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
 rule "Jine rozmery - průměr - pečetidla, razítka, pečeti, odlitky, otisky typáře, kopie otisku, mapy (glóby), štočky, předměty numizmatické povahy, předměty faleristické povahy, jiné - možné"
