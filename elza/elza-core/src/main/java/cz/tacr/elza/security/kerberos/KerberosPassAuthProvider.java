@@ -1,19 +1,15 @@
 package cz.tacr.elza.security.kerberos;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.kerberos.authentication.JaasSubjectHolder;
 import org.springframework.security.kerberos.authentication.KerberosClient;
-import org.springframework.security.kerberos.authentication.KerberosServiceRequestToken;
-import org.springframework.security.kerberos.authentication.KerberosTicketValidation;
-import org.springframework.security.kerberos.authentication.KerberosTicketValidator;
 import org.springframework.security.kerberos.authentication.KerberosUsernamePasswordAuthenticationToken;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -33,7 +29,7 @@ import cz.tacr.elza.service.UserService;
  */
 public class KerberosPassAuthProvider implements AuthenticationProvider {
 	
-	private static final Log LOG = LogFactory.getLog(KerberosPassAuthProvider.class);
+	private static final Logger LOG = LoggerFactory.getLogger(KerberosPassAuthProvider.class);
 
 	private final UserService userService;
 	private final PlatformTransactionManager txManager;
@@ -65,7 +61,7 @@ public class KerberosPassAuthProvider implements AuthenticationProvider {
 			subjectHolder = kerberosClient.login(auth.getName(), auth.getCredentials().toString());
 			LOG.debug("Successfully validated " + auth.getName());
 		} catch (Exception e) {
-			LOG.error("Failed to validate Kerberos Token", e);
+			LOG.error("Failed to validate Kerberos Token, name: {}", auth.getName(), e);
 			// try another method
 			return null;
 		}

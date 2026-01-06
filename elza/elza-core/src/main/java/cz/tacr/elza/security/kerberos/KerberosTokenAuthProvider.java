@@ -1,7 +1,7 @@
 package cz.tacr.elza.security.kerberos;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -22,7 +22,7 @@ import cz.tacr.elza.service.UserService;
  * Kerberos authentication provider based on token
  */
 public class KerberosTokenAuthProvider implements AuthenticationProvider {
-	private static final Log LOG = LogFactory.getLog(KerberosTokenAuthProvider.class);
+	private static final Logger LOG = LoggerFactory.getLogger(KerberosTokenAuthProvider.class);
 
 	private final UserService userService;
 	private final PlatformTransactionManager txManager;
