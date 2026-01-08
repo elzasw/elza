@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!--  Allow to debug log configuration -->
-    <!--  <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/> -->
-    
-     <!-- Allow Spring properties -->
-    <springProperty scope="context" name="LOG_FILE"
-                    source="elza.logFile"/>
-    <springProperty scope="context" name="SIEM_LOG_FILE"
-                    source="elza.siemLogFile"
-                    />
-                    <!-- It is possible to append defaul value like: -->
-                    <!-- defaultValue="/var/log/elza/siem-audit.log" -->
+	<!-- Allow to debug log configuration -->
+	<!-- <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/> -->
+
+	<!-- Allow Spring properties -->
+	<springProperty scope="context" name="LOG_FILE"
+		source="elza.logFile" />
+	<springProperty scope="context" name="SIEM_LOG_FILE"
+		source="elza.siemLogFile" />
+	<!-- It is possible to append default value like (add attribute): 
+	     defaultValue="/var/log/elza/siem-audit.log" -->
 
     <!-- ========================= -->
     <!-- Application log appender -->

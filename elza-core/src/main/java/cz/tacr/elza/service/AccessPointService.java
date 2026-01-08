@@ -865,7 +865,7 @@ public class AccessPointService {
 
         List<ApState> apStates = stateRepository.findByScope(scope);
         if (!deleteWithEntities) {
-        	ExceptionUtils.isEmptyElseBusiness(apStates, "Nelze smazat třídu rejstříku, která je nastavena na rejstříku.", RegistryCode.USING_SCOPE_CANT_DELETE);
+        	ExceptionUtils.isEmptyElseBusiness(apStates, "Nelze smazat oblast rejstříku, neboť obsahuje záznamy entit (i zneplatněných).", RegistryCode.USING_SCOPE_CANT_DELETE);
         } else {
         	deleteUnassignedByScope(scope);
         }

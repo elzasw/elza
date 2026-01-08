@@ -151,8 +151,6 @@ public class ApFactory {
 
     private final AccessPointItemService apItemService;
 
-    private final AccessPointCacheService accessPointCacheService;
-
     private final ElzaLocale elzaLocale;
 
     @Autowired
@@ -172,7 +170,6 @@ public class ApFactory {
                      final ApRevIndexRepository revIndexRepository,
                      final RevisionItemService revisionItemService,
                      final AccessPointItemService apItemService,
-                     final AccessPointCacheService accessPointCacheService,
                      final ElzaLocale elzaLocale) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
@@ -190,7 +187,6 @@ public class ApFactory {
         this.revIndexRepository = revIndexRepository;
         this.revisionItemService = revisionItemService;
         this.apItemService = apItemService;
-        this.accessPointCacheService = accessPointCacheService;
         this.elzaLocale = elzaLocale;
     }
 
@@ -397,8 +393,8 @@ public class ApFactory {
         ApAccessPointVO apVO = createVO(cachedAccessPoint.getApState(), cachedAccessPoint, name, description);
 
         // prepare last change - include deleted items
-        Integer lastChangeId = accessPointCacheService.getLastChange(cachedAccessPoint);
-        ApChange lastChange = changeRepository.findById(lastChangeId).get();
+        Integer lastChangeId = AccessPointCacheService.getLastChange(cachedAccessPoint);
+        ApChange lastChange = lastChangeId!=null ? changeRepository.findById(lastChangeId).get(): null;
 
         // prepare bindings
         List<ApBindingVO> bindingsVO;

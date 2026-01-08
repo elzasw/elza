@@ -1070,18 +1070,30 @@ public class AccessPointCacheService {
         return cachedAccessPointRepository.findAllById(ids).stream().collect(Collectors.toMap(o -> o.getAccessPointId(), o -> o));
     }
 
-	public Integer getLastChange(CachedAccessPoint cachedAccessPoint) {
-		List<Integer> changeIds = new ArrayList<>();
+    /**
+     * Return last change id
+     * @param cachedAccessPoint
+     * @return
+     */
+	static public Integer getLastChange(CachedAccessPoint cachedAccessPoint) {		
+		var apState = cachedAccessPoint.getApState();
+		Integer lastChangeId = apState.getCreateChangeId();
+		if(apState.getDeleteChangeId()!=null) {
+			lastChangeId = Math.max(lastChangeId, apState.getDeleteChangeId());
+		}
+		
 		for (CachedPart part : cachedAccessPoint.getParts()) {
-			changeIds.addAll(Arrays.asList(part.getCreateChangeId(), part.getDeleteChangeId()));
+			lastChangeId = Math.max(lastChangeId, part.getCreateChangeId());
+			if(part.getDeleteChangeId()!=null) {
+				lastChangeId = Math.max(lastChangeId, part.getDeleteChangeId());
+			}			
 			for (ApItem item : part.getItems()) {
-				changeIds.addAll(Arrays.asList(item.getCreateChangeId(), item.getDeleteChangeId()));
+				lastChangeId = Math.max(lastChangeId, item.getCreateChangeId());
+				if(item.getDeleteChangeId()!=null) {
+					lastChangeId = Math.max(lastChangeId, item.getDeleteChangeId());
+				}				
 			}
 		}
-		return changeIds.stream()
-				.filter(Objects::nonNull)
-				.sorted((a, b) -> b.compareTo(a))
-				.findFirst()
-				.get();
+		return lastChangeId;
 	}
 }
