@@ -16,6 +16,8 @@ import org.springframework.security.web.authentication.preauth.AbstractPreAuthen
 public class SsoHeaderAuthenticationFilter extends AbstractPreAuthenticatedProcessingFilter {
 
 	private static final FilterChain DUMMY_FILTER_CHAIN = (request, response) -> {};
+	
+	public static final String SSO_CREDENTIALS = "SSO_CREDENTIALS";
 
 	private final String userHeader;
 
@@ -51,6 +53,6 @@ public class SsoHeaderAuthenticationFilter extends AbstractPreAuthenticatedProce
 
 	@Override
 	protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
-		return StringUtils.EMPTY;
+		return SSO_CREDENTIALS;
 	}
 }

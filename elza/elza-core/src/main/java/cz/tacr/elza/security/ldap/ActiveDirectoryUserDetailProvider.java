@@ -7,10 +7,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.security.SiemAuditLogger;
+import cz.tacr.elza.security.SiemAuditLogger.AuthenticationType;
 import cz.tacr.elza.service.UserService;
 
 public class ActiveDirectoryUserDetailProvider implements AuthenticationProvider  {
@@ -19,18 +22,21 @@ public class ActiveDirectoryUserDetailProvider implements AuthenticationProvider
 	private final PlatformTransactionManager txManager;
 	private final UserService userService;
 	private final ActiveDirectoryLdapAuthenticationProvider adProvider;
+	private SiemAuditLogger siemAuditLogger;
 	
 	public ActiveDirectoryUserDetailProvider(
 			final LdapProperties ldapProperties,
 			final PlatformTransactionManager txManager,
-            final UserService userService) {
+            final UserService userService,
+            final SiemAuditLogger siemAuditLogger) {
 		// adding active directory domain
 		this.adProvider = new ActiveDirectoryLdapAuthenticationProvider(ldapProperties.getAdDomain(), ldapProperties.getAdServer());
 		// better exceptions
 		adProvider.setConvertSubErrorCodesToExceptions(true);
 		
 		this.txManager = txManager;
-		this.userService = userService;
+		this.userService = userService;		
+		this.siemAuditLogger = siemAuditLogger;
 	} 
 
 	/*
@@ -66,6 +72,12 @@ public class ActiveDirectoryUserDetailProvider implements AuthenticationProvider
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 		logger.debug("ActiveDirectory - authenticate: {}", authentication.getName());
 		
+		String sourceIp = null;
+	    if (authentication.getDetails() instanceof WebAuthenticationDetails) {
+	    	var details = (WebAuthenticationDetails)authentication.getDetails();
+	        sourceIp = details.getRemoteAddress();
+	    }
+		
 		Authentication adResponse = null;
 		try {
 			adResponse = this.adProvider.authenticate(authentication);
@@ -75,12 +87,19 @@ public class ActiveDirectoryUserDetailProvider implements AuthenticationProvider
 		}
 		if (adResponse == null || !adResponse.isAuthenticated()) {
             return null; // AD failed
-		} 
-	     
-	    logger.debug("ActiveDirectory - authenticated: {}", adResponse);
+		}
 	     	    
 		// prepare user detatil from DB
-		return prepareDetails(authentication, adResponse);
+	    try {
+	    	logger.debug("ActiveDirectory - authenticated: {}", adResponse);
+	    	
+		    var response = prepareDetails(authentication, adResponse);
+		    siemAuditLogger.loginSuccess(authentication.getName(), sourceIp, AuthenticationType.ACTIVE_DIRECTORY);
+			return response;
+	    } catch (AuthenticationException e) {
+	    	siemAuditLogger.loginFailed(authentication.getName(), sourceIp, e.getMessage());
+		    throw e;
+	    }
 	}
 	
 	private Authentication prepareDetails(Authentication authentication, Authentication response) {

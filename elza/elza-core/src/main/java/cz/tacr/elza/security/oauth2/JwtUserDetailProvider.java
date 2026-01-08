@@ -46,6 +46,7 @@ import cz.tacr.elza.domain.UsrPermission.PermissionType;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.security.SiemAuditLogger;
+import cz.tacr.elza.security.SiemAuditLogger.AuthenticationType;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.oauth2.OAuth2Properties.PermProperties;
 import cz.tacr.elza.service.AccessPointService;
@@ -89,7 +90,8 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
                                  final UserService userService,
                                  final AccessPointService apService,
                                  final ItemTypeRepository itemTypeRepository,
-                                 final OAuth2Properties oAuth2Properties, SiemAuditLogger siemAuditLogger) {
+                                 final OAuth2Properties oAuth2Properties, 
+                                 final SiemAuditLogger siemAuditLogger) {
         this.jwtDecoder = jwtDecoder;
         this.txManager = txManager;
         this.userService = userService;
@@ -132,7 +134,7 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
         	Object details = prepareDetails(jwt);
         	token.setDetails(details);
         
-        	siemAuditLogger.loginSuccess(token.getName(), sourceIp);
+        	siemAuditLogger.loginSuccess(token.getName(), sourceIp, AuthenticationType.JWT);
         	return token;
         } catch (Exception e) {
 			siemAuditLogger.loginFailed(token.getName(), sourceIp, e.getMessage());
