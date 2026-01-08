@@ -71,7 +71,7 @@ public class ImportNodesFromSource {
         }
 
         // zjištění existujících názvů souborů v cílovém archivním souboru
-        List<ArrFile> fundFiles = fundFileRepository.findByFund(targetFundVersion.getFund());
+        List<ArrFile> fundFiles = fundFileRepository.findActiveByFund(targetFundVersion.getFund());
 		Set<String> fundfileNames = fundFiles.stream().map(ArrFile::getName)
 		        .collect(Collectors.toCollection(() -> new HashSet<>()));
         // zjištění používaných souborů v podstromech vybraných JP
