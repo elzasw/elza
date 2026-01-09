@@ -162,7 +162,7 @@ export const formMessages = defineMessages({
     },
     sysExtSystemCount: {
         id: "admin_reports_form_report_SYS_EXT_SYSTEM_COUNT",
-        defaultMessage: "Zápis do externích systémů",
+        defaultMessage: "Dostupnost v externím systému",
     },
     sysOutputCount: {
         id: "admin_reports_form_report_SYS_OUTPUT_COUNT",
