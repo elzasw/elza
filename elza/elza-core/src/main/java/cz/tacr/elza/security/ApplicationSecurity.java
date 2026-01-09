@@ -113,8 +113,7 @@ public class ApplicationSecurity {
      * @see cz.tacr.elza.web.controller.ElzaWebController (elza-web)
      */
     public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/static/**", 
-    		"/fund/**", "/node/**", "/entity/**", "/admin/**", "/h2-console/**",
-    		AUTHENTICATE_SSO };
+    		"/fund/**", "/node/**", "/entity/**", "/admin/**", "/h2-console/**" };
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -314,6 +313,8 @@ public class ApplicationSecurity {
         	 */
     		.authorizeHttpRequests(auth -> auth
     				.requestMatchers(PERMIT_ALL_PATTERNS).permitAll()
+    				// Explicitly require auth for SSO
+    				.requestMatchers(AUTHENTICATE_SSO).authenticated() 
     				.anyRequest().authenticated())
     		.httpBasic(Customizer.withDefaults())
 
@@ -399,40 +400,7 @@ public class ApplicationSecurity {
 
         log.info("Kerberos authentication filter was configured.");
 	}
-	
-	/*
-	@Bean
-    @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
-	public KerberosLdapContextSource kerberosLdapContextSource() throws Exception {
-		log.debug("Creating KerberosLdapContextSource for principal: {}", optionalKerberosProps.get().getServicePrincipal());
 		
-		SunJaasKrb5LoginConfig loginConfig = new SunJaasKrb5LoginConfig();
-		loginConfig.setKeyTabLocation(new FileSystemResource(optionalKerberosProps.get().getKeytabLocation()));
-		loginConfig.setServicePrincipal(optionalKerberosProps.get().getServicePrincipal());
-		loginConfig.setDebug(true);
-		loginConfig.setIsInitiator(true);
-		loginConfig.afterPropertiesSet();
-
-		KerberosLdapContextSource contextSource = new KerberosLdapContextSource(optionalLdapProps.get().getAdServer());
-		contextSource.setLoginConfig(loginConfig);
-		return contextSource;
-	}*/
-
-	/*
-	@Bean
-	@ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
-	public LdapUserDetailsService ldapUserDetailsService() throws Exception {
-		log.debug("Creating LdapUserDetailsService.");
-		
-		FilterBasedLdapUserSearch userSearch =
-				new FilterBasedLdapUserSearch(optionalKerberosProps.get().getLdapSearchBase() , 
-						optionalKerberosProps.get().getLdapSearchFilter(), kerberosLdapContextSource());
-		LdapUserDetailsService service =
-				new LdapUserDetailsService(userSearch, new NullLdapAuthoritiesPopulator());
-		service.setUserDetailsMapper(new LdapUserDetailsMapper());
-		return service;
-	}*/
-	
 	// Kerberos authentication
 	// Requires three beans
 	// - KerberosAuthenticationProvider
@@ -467,6 +435,6 @@ public class ApplicationSecurity {
 		
 		log.debug("Creating SpnegoEntryPoint for principal: {}, keytab: {}.",
 				kerberosPros.getServicePrincipal(), kerberosPros.getKeytabLocation());
-    	return new SpnegoEntryPoint("/");
+    	return new SpnegoEntryPoint();
     }    
 }
