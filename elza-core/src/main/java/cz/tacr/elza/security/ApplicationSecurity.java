@@ -64,6 +64,7 @@ import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosT
 import org.springframework.security.kerberos.client.config.SunJaasKrb5LoginConfig;
 import org.springframework.security.kerberos.client.ldap.KerberosLdapContextSource;
 import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
+import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
 import org.springframework.security.ldap.authentication.NullLdapAuthoritiesPopulator;
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
 import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
@@ -78,6 +79,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestOperations;
@@ -102,13 +104,17 @@ import cz.tacr.elza.service.UserService;
 public class ApplicationSecurity {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationSecurity.class);
+    
+    public static final String AUTHENTICATE_SSO = "/authenticate/sso";
 
     /**
      * These patterns need to be allowed to access without authorization
      * to make it possible to navigate from the browser address bar for unauthorized users
      * @see cz.tacr.elza.web.controller.ElzaWebController (elza-web)
      */
-    public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/static/**", "/fund/**", "/node/**", "/entity/**", "/admin/**", "/h2-console/**"};
+    public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/static/**", 
+    		"/fund/**", "/node/**", "/entity/**", "/admin/**", "/h2-console/**",
+    		AUTHENTICATE_SSO };
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -316,7 +322,18 @@ public class ApplicationSecurity {
                 .maxSessionsPreventsLogin(false)
                 .sessionRegistry(sessionRegistry()))
 
-        	.exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
+        	.exceptionHandling(ex -> {
+        		if(optionalKerberosProps!=null && optionalKerberosProps.isPresent()
+        				&& optionalKerberosProps.get().getServicePrincipal() != null) {
+        			// add authentication entry point for SSO header
+        			ex.defaultAuthenticationEntryPointFor(
+		                spnegoEntryPoint(), 
+		                new AntPathRequestMatcher(AUTHENTICATE_SSO)
+		            );
+        		}
+        		ex.authenticationEntryPoint(authenticationEntryPoint);
+        	}
+        		)
 
             .formLogin(formLogin -> formLogin
            		.successHandler(authenticationSuccessHandler)
@@ -370,7 +387,7 @@ public class ApplicationSecurity {
 
         /*ProviderManager providerManager = new ProviderManager(kerberosAuthenticationProvider(), kerberosServiceAuthenticationProvider());*/
         SpnegoAuthenticationProcessingFilter filter = new SpnegoAuthenticationProcessingFilter();
-        
+                
         filter.setAuthenticationManager(authenticationManagerBean());
         filter.setSuccessHandler(authenticationSuccessHandler);
         filter.setFailureHandler(authenticationFailureHandler);
@@ -442,4 +459,14 @@ public class ApplicationSecurity {
         ticketValidator.setDebug(kerberosPros.isTicketValidatorDebug());
         return ticketValidator;
     }
+    
+    @Bean
+    @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
+    SpnegoEntryPoint spnegoEntryPoint() {
+    	var kerberosPros = optionalKerberosProps.get();
+		
+		log.debug("Creating SpnegoEntryPoint for principal: {}, keytab: {}.",
+				kerberosPros.getServicePrincipal(), kerberosPros.getKeytabLocation());
+    	return new SpnegoEntryPoint("/");
+    }    
 }
