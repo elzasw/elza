@@ -12,6 +12,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -50,34 +51,29 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.kerberos.authentication.KerberosAuthenticationProvider;
-import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
-import org.springframework.security.kerberos.authentication.KerberosServiceRequestToken;
 import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosClient;
 import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosTicketValidator;
-import org.springframework.security.kerberos.client.config.SunJaasKrb5LoginConfig;
-import org.springframework.security.kerberos.client.ldap.KerberosLdapContextSource;
 import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
-import org.springframework.security.ldap.authentication.NullLdapAuthoritiesPopulator;
-import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
-import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
-import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
-import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
+import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.DelegatingAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestOperations;
@@ -90,6 +86,9 @@ import cz.tacr.elza.security.ssoheader.SsoHeaderAuthenticationProvider;
 import cz.tacr.elza.security.ssoheader.SsoHeaderProperties;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.UserService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Authentization configuration for API
@@ -102,13 +101,16 @@ import cz.tacr.elza.service.UserService;
 public class ApplicationSecurity {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationSecurity.class);
+    
+    public static final String AUTHENTICATE_SSO = "/authenticate/sso";
 
     /**
      * These patterns need to be allowed to access without authorization
      * to make it possible to navigate from the browser address bar for unauthorized users
      * @see cz.tacr.elza.web.controller.ElzaWebController (elza-web)
      */
-    public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/static/**", "/fund/**", "/node/**", "/entity/**", "/admin/**", "/h2-console/**"};
+    public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/static/**", 
+    		"/fund/**", "/node/**", "/entity/**", "/admin/**", "/h2-console/**" };
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -308,15 +310,18 @@ public class ApplicationSecurity {
         	 */
     		.authorizeHttpRequests(auth -> auth
     				.requestMatchers(PERMIT_ALL_PATTERNS).permitAll()
+    				// Explicitly require auth for SSO
+    			    .requestMatchers(AntPathRequestMatcher.antMatcher(AUTHENTICATE_SSO)).authenticated() 
     				.anyRequest().authenticated())
     		.httpBasic(Customizer.withDefaults())
+    		// .requestCache(cache -> cache.requestCache(requestCache()))
 
         	.sessionManagement(session -> session
                 .maximumSessions(10)
                 .maxSessionsPreventsLogin(false)
                 .sessionRegistry(sessionRegistry()))
 
-        	.exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
+        	.exceptionHandling(ex -> ex.authenticationEntryPoint(getAuthenticationEntryPoint()) ) 
 
             .formLogin(formLogin -> formLogin
            		.successHandler(authenticationSuccessHandler)
@@ -328,6 +333,36 @@ public class ApplicationSecurity {
         configureOAuth2(http);
         configureKerberos(http);
         return http.build();
+    }
+    
+    /**
+     * Method will return the authentication entry point
+     * @return
+     */
+    private AuthenticationEntryPoint getAuthenticationEntryPoint() {
+    	if (!isKerberosEnabled()) {
+    		// We do not any extra logic is SSO is not configured
+    		return authenticationEntryPoint;
+    	}
+    	
+    	// Create a map of specific matchers to specific entry points
+    	LinkedHashMap<RequestMatcher, AuthenticationEntryPoint> entryPoints = new LinkedHashMap<>();
+        
+        // Add SPNEGO for the SSO endpoint
+        if (isKerberosEnabled()) {
+            log.debug("Mapping SpnegoEntryPoint to {}", AUTHENTICATE_SSO);
+            entryPoints.put(new AntPathRequestMatcher(AUTHENTICATE_SSO), spnegoEntryPoint());
+        }
+
+        // Create the delegator. The second argument is the DEFAULT entry point 
+        // if no matchers above are hit.
+        DelegatingAuthenticationEntryPoint delegator = 
+                new DelegatingAuthenticationEntryPoint(entryPoints);
+        
+        // This is default entry point
+        delegator.setDefaultEntryPoint(authenticationEntryPoint); 
+        
+        return delegator;
     }
 
 	private void configureOAuth2(HttpSecurity http) throws Exception {
@@ -370,9 +405,9 @@ public class ApplicationSecurity {
 
         /*ProviderManager providerManager = new ProviderManager(kerberosAuthenticationProvider(), kerberosServiceAuthenticationProvider());*/
         SpnegoAuthenticationProcessingFilter filter = new SpnegoAuthenticationProcessingFilter();
-        
+                
         filter.setAuthenticationManager(authenticationManagerBean());
-        filter.setSuccessHandler(authenticationSuccessHandler);
+        filter.setSuccessHandler( kerberosSuccessHandler() );
         filter.setFailureHandler(authenticationFailureHandler);
         
         http
@@ -382,40 +417,31 @@ public class ApplicationSecurity {
 
         log.info("Kerberos authentication filter was configured.");
 	}
-	
-	/*
-	@Bean
-    @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
-	public KerberosLdapContextSource kerberosLdapContextSource() throws Exception {
-		log.debug("Creating KerberosLdapContextSource for principal: {}", optionalKerberosProps.get().getServicePrincipal());
 		
-		SunJaasKrb5LoginConfig loginConfig = new SunJaasKrb5LoginConfig();
-		loginConfig.setKeyTabLocation(new FileSystemResource(optionalKerberosProps.get().getKeytabLocation()));
-		loginConfig.setServicePrincipal(optionalKerberosProps.get().getServicePrincipal());
-		loginConfig.setDebug(true);
-		loginConfig.setIsInitiator(true);
-		loginConfig.afterPropertiesSet();
+	/**
+	 * Success handler specifically for Kerberos browser-based SSO.
+	 */
+	private AuthenticationSuccessHandler kerberosSuccessHandler() {
+	    SavedRequestAwareAuthenticationSuccessHandler handler = new SavedRequestAwareAuthenticationSuccessHandler() {
+	        @Override
+	        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, 
+	                                            Authentication authentication) throws IOException, ServletException {
+	            
+	            SavedRequest savedRequest = (SavedRequest) request.getSession()
+	                    .getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 
-		KerberosLdapContextSource contextSource = new KerberosLdapContextSource(optionalLdapProps.get().getAdServer());
-		contextSource.setLoginConfig(loginConfig);
-		return contextSource;
-	}*/
-
-	/*
-	@Bean
-	@ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
-	public LdapUserDetailsService ldapUserDetailsService() throws Exception {
-		log.debug("Creating LdapUserDetailsService.");
-		
-		FilterBasedLdapUserSearch userSearch =
-				new FilterBasedLdapUserSearch(optionalKerberosProps.get().getLdapSearchBase() , 
-						optionalKerberosProps.get().getLdapSearchFilter(), kerberosLdapContextSource());
-		LdapUserDetailsService service =
-				new LdapUserDetailsService(userSearch, new NullLdapAuthoritiesPopulator());
-		service.setUserDetailsMapper(new LdapUserDetailsMapper());
-		return service;
-	}*/
-	
+	            // If the user was trying to go to the SSO URL itself, ignore it and go to root
+	            if (savedRequest != null && savedRequest.getRedirectUrl().contains(AUTHENTICATE_SSO)) {
+	                log.debug("Detected redirect loop to SSO URL, clearing saved request.");
+	                request.getSession().removeAttribute("SPRING_SECURITY_SAVED_REQUEST");
+	            }
+	            
+	            super.onAuthenticationSuccess(request, response, authentication);
+	        }
+	    };
+	    handler.setDefaultTargetUrl("/"); // This is where they go if no saved request exists
+	    return handler;
+	}	
 	// Kerberos authentication
 	// Requires three beans
 	// - KerberosAuthenticationProvider
@@ -442,4 +468,34 @@ public class ApplicationSecurity {
         ticketValidator.setDebug(kerberosPros.isTicketValidatorDebug());
         return ticketValidator;
     }
+    
+    @Bean
+    @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
+    SpnegoEntryPoint spnegoEntryPoint() {
+    	var kerberosPros = optionalKerberosProps.get();
+		
+		log.debug("Creating SpnegoEntryPoint for principal: {}, keytab: {}.",
+				kerberosPros.getServicePrincipal(), kerberosPros.getKeytabLocation());
+    	return new SpnegoEntryPoint();
+    }
+    
+    /**
+     * Return true if Kerberos is enabled
+     * @return
+     */
+    public boolean isKerberosEnabled() { 
+    	return optionalKerberosProps.isPresent() && optionalKerberosProps.get().getServicePrincipal() != null; 
+    }
+    
+    /*
+    private RequestCache requestCache() {
+        HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
+        if (optionalKerberosProps.isPresent() && optionalKerberosProps.get().getServicePrincipal() != null) {
+        	// Prevent saving the SSO trigger URL so we don't redirect back to it
+        	requestCache.setRequestMatcher(new NegatedRequestMatcher(
+                new AntPathRequestMatcher(AUTHENTICATE_SSO)
+        			));
+        }
+        return requestCache;
+    }*/   
 }
