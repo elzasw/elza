@@ -39,6 +39,18 @@
 	</appender>
 	
     <!-- ========================= -->
+    <!-- Loggers -->
+    <!-- ========================= -->
+
+    <!-- Application logs -->
+    <root level="INFO">
+        <appender-ref ref="APP_FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+<if condition='isDefined("SIEM_LOG_FILE") &amp;&amp; !property("SIEM_LOG_FILE").isEmpty()'>
+    <then>
+    <!-- ========================= -->
     <!-- SIEM log appender (JSON) -->
     <!-- ========================= -->
     <appender name="SIEM_FILE"
@@ -60,20 +72,12 @@
         </encoder>
     </appender>
 
-    <!-- ========================= -->
-    <!-- Loggers -->
-    <!-- ========================= -->
-
-    <!-- Application logs -->
-    <root level="INFO">
-        <appender-ref ref="APP_FILE"/>
-        <appender-ref ref="CONSOLE"/>
-    </root>
-
     <!-- SIEM logger -->
     <logger name="siem.audit"
             level="INFO"
             additivity="false">
         <appender-ref ref="SIEM_FILE"/>
     </logger>
+    </then>
+</if>
 </configuration>
