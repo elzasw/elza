@@ -75,11 +75,25 @@ class Login extends AbstractReactComponent {
         // Login dialog is shown only when user is not logged in and data about user have been fetched
         // to prevent flicker on page reload
         const displayLoginDialog = !login.logged && userDetail.fetched;
+        const displaySsoKerberos = typeof window.ssoKerberosUrl !== 'undefined' && window.ssoKerberosUrl;
 
         return (
             <div className="login-container">
                 {displayLoginDialog && (
                     <ModalDialogWrapper className="login" title={i18n('login.form.title')}>
+                    {displaySsoKerberos && (
+                            <div className="sso-kerberos-login">
+                                <Button
+                                    variant="outline-secondary"
+                                    label={i18n('login.action.ssoKerberos')}
+                                    onClick={() => {
+                                        window.location.href = window.serverContextPath +window.ssoKerberosUrl;
+                                    }}
+                                >
+                                    {i18n('login.action.ssoKerberos')}
+                                </Button>
+                            </div>
+                    )}
                         <Form onSubmit={this.handleLogin}>
                             <Modal.Body>
                                 {defaultEnabled && <div className="error">{i18n('login.defaultUserEnabled')}</div>}
