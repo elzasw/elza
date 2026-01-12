@@ -348,6 +348,11 @@
 			<artifactId>logstash-logback-encoder</artifactId>
 			<version>9.0</version>
 		</dependency>
+		<!-- Required for conditional logging (logback-spring.xml) -->
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
+		</dependency>
 		<dependency>
             <groupId>com.lightcomp.ft</groupId>
             <artifactId>file-transfer</artifactId>
