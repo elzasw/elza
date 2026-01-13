@@ -474,7 +474,7 @@ public class ImportProcess {
      */
     private Map<String, ArrFile> resolveFileConflict() {
         List<ArrFile> sourceFiles = source.getFiles();
-        Map<String, ArrFile> fundFilesMapName = fundFileRepository.findByFund(targetFundVersion.getFund()).stream().collect(Collectors.toMap(ArrFile::getName, Function.identity()));
+        Map<String, ArrFile> fundFilesMapName = fundFileRepository.findActiveByFund(targetFundVersion.getFund()).stream().collect(Collectors.toMap(ArrFile::getName, Function.identity()));
         Map<String, ArrFile> result = new HashMap<>();
 
         for (ArrFile sourceFile : sourceFiles) {

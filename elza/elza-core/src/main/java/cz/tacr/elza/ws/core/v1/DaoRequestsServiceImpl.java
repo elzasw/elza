@@ -8,8 +8,8 @@ package cz.tacr.elza.ws.core.v1;
 
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +38,7 @@ import jakarta.persistence.PersistenceContext;
                       endpointInterface = "cz.tacr.elza.ws.core.v1.DaoRequestsService")
 public class DaoRequestsServiceImpl implements DaoRequestsService {
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private static Logger logger = LoggerFactory.getLogger(DaoRequestsServiceImpl.class);
 
     @PersistenceContext
     private EntityManager entityManager;
