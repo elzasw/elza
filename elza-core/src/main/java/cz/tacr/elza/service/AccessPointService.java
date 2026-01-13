@@ -872,7 +872,7 @@ public class AccessPointService {
 
         List<ApState> apStates = stateRepository.findByScope(scope);
         if (!deleteWithEntities) {
-        	ExceptionUtils.isEmptyElseBusiness(apStates, "Nelze smazat třídu rejstříku, která je nastavena na rejstříku.", RegistryCode.USING_SCOPE_CANT_DELETE);
+        	ExceptionUtils.isEmptyElseBusiness(apStates, "Nelze smazat oblast rejstříku, neboť obsahuje záznamy entit (i zneplatněných).", RegistryCode.USING_SCOPE_CANT_DELETE);
         } else {
         	deleteUnassignedByScope(scope);
         }
@@ -2020,6 +2020,7 @@ public class AccessPointService {
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         oldState.setDeleteChange(change);
         stateRepository.save(oldState);
+        stateRepository.flush();
 
         ApState newState = copyState(oldState, change);
         newState.setApType(apType);
@@ -2548,6 +2549,14 @@ public class AccessPointService {
         return trgAccessPoint;
     }
 
+    /**
+     * Copy state.
+     * 
+     * deleteChange and replacedBy are set to null (not copied)
+     * @param oldState
+     * @param change
+     * @return
+     */
     public ApState copyState(ApState oldState, ApChange change) {
         ApState newState = new ApState();
         newState.setAccessPoint(oldState.getAccessPoint());

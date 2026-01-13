@@ -158,7 +158,8 @@
 	.beginBlock().addValue("ZP2015_ITEM_MAT_TECHNIKA").endBlock()
 	.beginBlock().addValue("ZP2015_ITEM_MAT_ADJUSTACE").endBlock()
 	.beginBlock().addValue("ZP2015_ITEM_MAT_NOSIC").endBlock()
-	.beginBlock().addValue("ZP2015_ITEM_MAT_LATKA_ZAZNAMU").endBlock()]]></defaultValueExpression>
+	.beginBlock().addValue("ZP2015_ITEM_MAT_LATKA_ZAZNAMU").endBlock()
+	.beginBlock().addValue("ZP2015_ITEM_MAT_BAREVNOST").endBlock()]]></defaultValueExpression>
 	</parameter>
 	<parameter name="detailFormatter" forPrompting="false" class="cz.tacr.elza.print.format.HtmlFormatter">
 		<description><![CDATA[]]></description>

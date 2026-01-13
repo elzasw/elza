@@ -27,14 +27,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
@@ -2189,12 +2186,19 @@ public class UserService {
     }
 
     /**
-     * Create user detail for security context
+     * Create user detail for security context. 
+     * 
+     * Method will check if user is active and throw exception if not.
      *
      * @param user
      * @return
      */
+    @Transactional(value = Transactional.TxType.MANDATORY)
     public UserDetail createUserDetail(UsrUser user) {
+		if (!user.getActive()) {				
+			throw new LockedException("User is not active");
+		}		
+    	
         Collection<UserPermission> perms = calcUserPermission(user);
 
         List<UsrAuthentication.AuthType> authTypes = new ArrayList<>();
@@ -2357,67 +2361,20 @@ public class UserService {
         changeUserEvent(trgUser);
     }
 
-	//@Override
-	@Transactional
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		logger.debug("loadUserByUsername: {}", username);
-		UsrUser user = findByUsername(username);
-		if (user == null) {
-			throw new UsernameNotFoundException(username);
-		}
-		var userDetail = createUserDetail(user);
-		
-		return new UserDetails() {
-
-			@Override
-			public Collection<? extends GrantedAuthority> getAuthorities() {
-				// TODO: add proper authorities
-				GrantedAuthority ga = new SimpleGrantedAuthority("USER");
-				return Collections.singletonList(ga);
-			}
-
-			@Override
-			public String getPassword() {
-				return "{noop}";
-			}
-
-			@Override
-			public String getUsername() {
-				return username;
-			}
-
-			@Override
-			public boolean isAccountNonExpired() {
-				// TODO Auto-generated method stub
-				return true;
-			}
-
-			@Override
-			public boolean isAccountNonLocked() {
-				return true;
-			}
-
-			@Override
-			public boolean isCredentialsNonExpired() {
-				return true;
-			}
-
-			@Override
-			public boolean isEnabled() {
-				return true;
-			}
-			
-		};
-	}
-
 	/**
-	 * Create authentication object with details for user
-	 * @param user
+	 * Create authentication object with details for user.
+	 * 
+	 * This object is used by Spring Security and returns user details.
+	 * It is returned by method AuthenticationManager.authenticate.
+	 * 
+	 * Method will check if user is active and throw exception if not.
+	 * 
+	 * @param user Active database user
 	 * @return
 	 */
 	@Transactional(value = Transactional.TxType.MANDATORY)
-	public Authentication createAuthentication(UsrUser user) {
-
+	public UsernamePasswordAuthenticationToken createAuthentication(UsrUser user) throws LockedException {
+		
 		UserDetail userDetail = createUserDetail(user);
 
 		UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(user.getUsername(),

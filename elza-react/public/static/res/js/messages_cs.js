@@ -1709,6 +1709,7 @@ var messages = {
     "login.field.username": "Uživatelské jméno",
     "login.field.password": "Heslo",
     "login.action.login": "Přihlásit",
+    "login.action.ssoKerberos": "Přihlásit se pomocí Windows autentizace (Kerberos)",
     "login.defaultUserEnabled":
         "Je povolen výchozí uživatel. Vytvořte si vlastního uživatele s oprávněním administrátora a výchozího uživatele vypněte.",
     "login.or-message": "nebo se přihlásit pomocí",
