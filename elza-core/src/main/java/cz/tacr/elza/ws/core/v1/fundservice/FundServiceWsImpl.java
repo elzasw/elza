@@ -161,6 +161,11 @@ public class FundServiceWsImpl {
         arrangementService.updateFund(fund, ruleSet.getEntity(), scopes, userIds, groupIds);
     }
 
+    /**
+     * Prepare fund info
+     * @param fund
+     * @return
+     */
     private FundIdentifiers getFundInfo(Fund fund) {
         FundIdentifiers fundInfo = new FundIdentifiers();
         fundInfo.setId(fund.getId());
