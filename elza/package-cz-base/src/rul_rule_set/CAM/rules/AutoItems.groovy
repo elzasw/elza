@@ -294,12 +294,9 @@ GroovyItem generateChronolDoplnek(final GroovyAe ae) {
                 }                
             }
             // pokud objekt nezanikl a není znám vznik -> doplněk není
-            if (from==null) {
+            if(from==null) {
                 return null;
             }
-            // všechny ostatní případy
-            // TO DO: upravit pro kraje a okresy v ČR (viz bug 9651) 
-            return null;        
         }
     }
 
