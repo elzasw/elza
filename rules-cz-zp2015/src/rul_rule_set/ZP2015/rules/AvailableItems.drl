@@ -772,8 +772,6 @@ when
       "ZP2015_UNIT_HIST", 
       // 4.3.3 Způsob uspořádání jednotky popisu
       "ZP2015_UNIT_ARR",
-      // 4.3.4 Tematický popis jednotky popisu
-      "ZP2015_UNIT_CONTENT",
       // 4.3.5 Přímý zdroj akvizice
       "ZP2015_UNIT_SOURCE", 
       // ZP4.3.6 Budoucí přírůstky 
