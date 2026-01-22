@@ -19,6 +19,7 @@ no-loop
 when
   $itemType : RulItemTypeExt(code in ( // nastaveni pro ulozeni
         "ZP2015_ARCHDESC_LANG", 
+        "ZP2015_NAME",
         "ZP2015_TITLE",
 		"ZP2015_FORMAL_TITLE",
         "ZP2015_UNIT_DATE_TEXT",
@@ -68,6 +69,7 @@ rule "Vždy možné prvky popisu"
 no-loop
 when
     $itemType : RulItemTypeExt(code in (
+        "ZP2015_NAME",
 		"ZP2015_FORMAL_TITLE",
         "ZP2015_UNIT_DATE_TEXT",
         "ZP2015_UNIT_HIST",
