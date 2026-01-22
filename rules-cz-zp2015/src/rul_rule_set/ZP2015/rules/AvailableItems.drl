@@ -110,7 +110,7 @@ no-loop
 when
     $itemType : RulItemTypeExt(code in ("ZP2015_ARRANGEMENT_TYPE", "ZP2015_LEVEL_TYPE", "ZP2015_FOLDER_TYPE",
         "ZP2015_UNIT_TYPE", "ZP2015_UNIT_SUBTYPE", "ZP2015_UNIT_COUNT", "ZP2015_UNIT_ID", 
-        "ZP2015_SERIAL_NUMBER", "ZP2015_TITLE", "ZP2015_TITLE_PUBLIC", "ZP2015_STORAGE_ID", "ZP2015_AIP_ID",
+        "ZP2015_SERIAL_NUMBER", "ZP2015_NAME", "ZP2015_NAME_PUBLIC", "ZP2015_TITLE", "ZP2015_TITLE_PUBLIC", "ZP2015_STORAGE_ID", "ZP2015_AIP_ID",
         "ZP2015_UNIT_DATE", "ZP2015_UNIT_DATE_BULK",
         "ZP2015_UNIT_DATE_TEXT", "ZP2015_UNIT_HIST", "ZP2015_UNIT_ARR", "ZP2015_UNIT_CONTENT",
         "ZP2015_UNIT_SOURCE", "ZP2015_FUTURE_UNITS", "ZP2015_UNIT_ACCESS", "ZP2015_UNIT_INFO_RIGHTS",
@@ -763,6 +763,9 @@ no-loop
 when
     $itemType : RulItemTypeExt(code in
     ( "ZP2015_OTHER_ID",
+      "ZP2015_NAME",
+      "ZP2015_NAME_PUBLIC",
+      "ZP2015_TITLE_PUBLIC",
       // 4.3.1 Odkaz na původce 
       "ZP2015_ORIGINATOR", 
       // 4.3.2 Dějiny jednotky popisu
@@ -812,7 +815,6 @@ when
       "ZP2015_ATTACHMENT",
       // Role entit jsou možné vždy
       "ZP2015_ENTITY_ROLE",
-      "ZP2015_TITLE_PUBLIC",
       "ZP2015_ALTERNATIVE_DESCRIPTION_INLINE"
       ) )
 then
@@ -917,9 +919,6 @@ when $activeLevel: ActiveLevel( )
 then
     $itemType.setMinType(RulItemType.Type.RECOMMENDED);
 end
-
-
-
 
 //
 // RE_001 Související entita u jednotky popisu
@@ -6883,3 +6882,14 @@ then
 end
 */
 
+rule "PP_011 Tematický popis - možný, pokud není uveden prvek Název"
+no-loop
+when $activeLevel: ActiveLevel( )
+    not DescItem(type=="ZP2015_NAME") from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code in
+    ( // 4.3.4 Tematický popis jednotky popisu
+      "ZP2015_UNIT_CONTENT"
+      ) )
+then
+    $itemType.setMinType(RulItemType.Type.POSSIBLE);
+end
