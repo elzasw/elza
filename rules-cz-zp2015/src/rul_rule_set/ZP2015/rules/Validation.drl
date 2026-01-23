@@ -249,6 +249,15 @@ then
     dvResults.createError($di.getDescItemId(), "Prvek " + $di.getTypeName() + " odkazuje na neschválenou entitu (id: "+$ap.getId()+").", "ZP2015_POL_ENTITY");
 end
 
+rule "Kontrola délky prvku Název"
+when
+    $activeLevel : ActiveLevel( $ownDescItems: ownDescItems)
+    // check if string in DescItem is longer then 250 characters
+    $di: DescItem( type=="ZP2015_NAME" && $label: string ) from $ownDescItems
+    eval( $label.length()> 250)
+then
+    dvResults.createError($di.getDescItemId(), "Prvek Název přesahuje délku 250 znaků, délka: "+$di.getString().length()+".", "ZP2015_POL_BASIC");
+end
 
 rule "Kontrola délky nadpisu na sérii"
 when
