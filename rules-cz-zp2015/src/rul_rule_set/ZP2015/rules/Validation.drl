@@ -253,10 +253,10 @@ rule "Kontrola délky prvku Název"
 when
     $activeLevel : ActiveLevel( $ownDescItems: ownDescItems)
     // check if string in DescItem is longer then 250 characters
-    $di: DescItem( type=="ZP2015_NAME" && $label: string ) from $ownDescItems
+    $di: DescItem( type in ("ZP2015_NAME", "ZP2015_NAME_PUBLIC") && $label: string ) from $ownDescItems
     eval( $label.length()> 250)
 then
-    dvResults.createError($di.getDescItemId(), "Prvek Název přesahuje délku 250 znaků, délka: "+$di.getString().length()+".", "ZP2015_POL_BASIC");
+    dvResults.createError($di.getDescItemId(), "Prvek " + $di.getTypeName() + " přesahuje délku 250 znaků, délka: "+$di.getString().length()+".", "ZP2015_POL_BASIC");    
 end
 
 rule "Kontrola délky nadpisu na sérii"
@@ -264,7 +264,7 @@ when
     $activeLevel : ActiveLevel( $ownDescItems: ownDescItems)
     $l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES")) from $ownDescItems
     // check if string in DescItem is longer then 250 characters
-    $di: DescItem( type=="ZP2015_TITLE" && $label: string ) from $ownDescItems
+    $di: DescItem( type in ("ZP2015_TITLE", "ZP2015_TITLE_PUBLIC") && $label: string ) from $ownDescItems
     eval( $label.length()> 250)
 then
     dvResults.createError($di.getDescItemId(), "Obsah (budoucí Název) na úrovni série přesahuje délku 250 znaků, délka: "+$di.getString().length()+".", "ZP2015_POL_BASIC");
@@ -275,7 +275,7 @@ rule "Kontrola přípustných znaků v nadpisu na sérii"
 when
     $activeLevel : ActiveLevel( $ownDescItems: ownDescItems)
     $l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES")) from $ownDescItems
-    $di: DescItem( type=="ZP2015_TITLE" && $label: string ) from $ownDescItems
+    $di: DescItem( type in ("ZP2015_TITLE", "ZP2015_TITLE_PUBLIC") && $label: string ) from $ownDescItems
     eval( $label.contains("\n"))
     // $di: DescItem( type=="ZP2015_TITLE" && string matches ".*\\n.*") from $ownDescItems
 then
@@ -333,5 +333,32 @@ when
 //    $di: DescItem( type=="ZP2015_TITLE" && string matches ".*\\n.*") from $ownDescItems
 then
     dvResults.createError($di.getDescItemId(), "Obsah (budoucí Název) je na více samostatných řádcích"
+				+ ", způsob pořádání: "+$arrType.getSpecName()+".", "ZP2015_POL_EXTENDED");
+end
+
+
+rule "Kontrola délky nadpisu (Obsah s omezením přístupnosti) na složce a níže (rozšířená)"
+when
+    $activeLevel : ActiveLevel( $items: descItems, $ownDescItems: ownDescItems)
+	$arrType: DescItem(type=="ZP2015_ARRANGEMENT_TYPE" ) from $items    
+	$l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART")) from $ownDescItems
+    // check if string in DescItem is longer then 250 characters
+	$di: DescItem( type=="ZP2015_TITLE_PUBLIC" && $label: string ) from $ownDescItems
+    eval( $label.length()> 250)    
+then
+    dvResults.createError($di.getDescItemId(), "Obsah s omezením přístupnosti (budoucí Název) přesahuje doporučenou délku 250 znaků, délka: "+$di.getString().length()
+	            + ", způsob pořádání: "+$arrType.getSpecName()+".", "ZP2015_POL_EXTENDED");
+end
+
+rule "Kontrola přípustných znaků (Obsah s omezením přístupnosti) na složce a níže (rozšířená)"
+when
+    $activeLevel : ActiveLevel( $items: descItems, $ownDescItems: ownDescItems)
+	$arrType: DescItem(type=="ZP2015_ARRANGEMENT_TYPE" ) from $items
+	$l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART")) from $ownDescItems
+    $di: DescItem( type=="ZP2015_TITLE_PUBLIC" && $label: string ) from $ownDescItems
+    eval( $label.contains("\n"))
+//    $di: DescItem( type=="ZP2015_TITLE" && string matches ".*\\n.*") from $ownDescItems
+then
+    dvResults.createError($di.getDescItemId(), "Obsah s omezením přístupnosti (budoucí Název) je na více samostatných řádcích"
 				+ ", způsob pořádání: "+$arrType.getSpecName()+".", "ZP2015_POL_EXTENDED");
 end
