@@ -7,13 +7,24 @@ interface Props extends DescItemProps {
   onChange: (item: NodeItem, specId: number) => Promise<void>;
 }
 
-export function DescItemEnum({ item, onChange, typeForm, nodeId }: Props) {
+export function DescItemEnum({
+  item,
+  onChange,
+  typeForm,
+  nodeId,
+  isDisabled: _isDisabled,
+}: Props) {
   if (item.data && item.data?.dataType !== DataType.Enum && !item.undefined) {
     throw "Incorrect data type";
   }
 
   const isInherited = item.nodeId !== nodeId;
-  const isDisabled = item.undefined || isInherited || item.inhibited;
+  const isDisabled =
+    item.undefined ||
+    isInherited ||
+    item.inhibited ||
+    item.readOnly ||
+    _isDisabled;
 
   const typeRef = useAppSelector(
     ({ refTables }) => refTables.descItemTypes.itemsMap[item.itemTypeId],

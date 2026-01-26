@@ -37,7 +37,11 @@ export function DescItemUnitdate({
 
   const isInherited = item.nodeId !== nodeId;
   const isDisabled =
-    item.undefined || isInherited || item.inhibited || _isDisabled;
+    item.undefined ||
+    isInherited ||
+    item.inhibited ||
+    item.readOnly ||
+    _isDisabled;
 
   const data = item.data as DataUnitdate;
 
@@ -51,9 +55,9 @@ export function DescItemUnitdate({
     finishChange,
   } = useValueManager<string>(data?.value, item);
 
-  const {valid: isValid, message: validationMessage} = useMemo(() => {
+  const { valid: isValid, message: validationMessage } = useMemo(() => {
     return validateUnitDate(value);
-  }, [value])
+  }, [value]);
 
   async function handleChange(force?: boolean) {
     if (
