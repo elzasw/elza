@@ -27,7 +27,11 @@ export function DescItemString({
 
   const isInherited = item.nodeId !== nodeId;
   const isDisabled =
-    item.undefined || isInherited || item.inhibited || _isDisabled;
+    item.undefined ||
+    isInherited ||
+    item.inhibited ||
+    item.readOnly ||
+    _isDisabled;
   const data = item.data as DataString;
 
   const {
