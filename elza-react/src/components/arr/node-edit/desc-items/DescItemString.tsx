@@ -4,6 +4,7 @@ import { ConflictValue } from "./ConflictValue";
 import { EditStateDisplay } from "./EditStateDisplay";
 import { useValueManager } from "./utils";
 import { DescItemProps } from "./types";
+import { TextareaAutosize } from "./inputs/TextareaAutosize";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemString) => Promise<void>;
@@ -18,6 +19,7 @@ export function DescItemString({
   onChange,
   nodeId,
   isDisabled: _isDisabled,
+  typeWidth,
 }: Props) {
   if (item.data && item.data?.dataType !== DataType.String && !item.undefined) {
     throw "Incorrect data type";
@@ -61,8 +63,11 @@ export function DescItemString({
 
   function handleInputChange({
     currentTarget,
-  }: React.ChangeEvent<HTMLInputElement>) {
-    setValue(currentTarget.value);
+  }: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) {
+    const _value = currentTarget.value.replace(/\n/g, "");
+    if (_value != value && (value || _value?.length > 0)) {
+      setValue(_value);
+    }
   }
 
   return (
@@ -74,17 +79,32 @@ export function DescItemString({
         flexDirection: "column",
       }}
     >
-      <Input
-        disabled={isDisabled}
-        value={item.undefined ? "Výjimka" : value?.toString()}
-        onChange={handleInputChange}
-        onBlur={() => handleChange()}
-        style={{
-          flex: 1,
-          minWidth: "60px",
-          textDecoration: item.inhibited ? "line-through" : undefined,
-        }}
-      />
+      {typeWidth === 0 ? (
+        <TextareaAutosize
+          resize="none"
+          disabled={isDisabled}
+          value={item.undefined ? "Výjimka" : value?.toString() || ""}
+          onChange={handleInputChange}
+          onBlur={() => handleChange()}
+          style={{
+            flex: 1,
+            minWidth: "60px",
+            textDecoration: item.inhibited ? "line-through" : undefined,
+          }}
+        />
+      ) : (
+        <Input
+          disabled={isDisabled}
+          value={item.undefined ? "Výjimka" : value?.toString()}
+          onChange={handleInputChange}
+          onBlur={() => handleChange()}
+          style={{
+            flex: 1,
+            minWidth: "60px",
+            textDecoration: item.inhibited ? "line-through" : undefined,
+          }}
+        />
+      )}
       <ConflictValue
         value={value?.toString()}
         conflictValue={conflictValue?.toString()}

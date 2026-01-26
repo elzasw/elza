@@ -70,6 +70,7 @@ export function DescItemField({
   onDelete,
   onCreate,
   onUpdate,
+  typeWidth,
 }: Props) {
   const [specId, setSpecId] = useState<number | undefined>(item.itemSpecId);
   const [isSaving, setIsSaving] = useState(false);
@@ -195,6 +196,7 @@ export function DescItemField({
               specId == undefined
             }
             selectedSpecId={specId}
+            typeWidth={typeWidth}
           />
         ) : (
           "Not implemented"
