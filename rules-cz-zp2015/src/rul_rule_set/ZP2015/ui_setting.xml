@@ -10,6 +10,7 @@
             <title>&lt;Není nastaveno&gt;</title>
             <strict-mode>true</strict-mode>
             <tree separator="; ">
+                <item type="ZP2015_NAME" />
                 <item type="ZP2015_TITLE" />
                 <item type="ZP2015_UNIT_DATE" />
                 <item type="ZP2015_OTHER_ID" max-count="2">
@@ -22,6 +23,7 @@
                 </item>
             </tree>
             <accordion-left separator="; ">
+                <item type="ZP2015_NAME" />
                 <item type="ZP2015_TITLE" />
                 <item type="ZP2015_UNIT_DATE" />
                 <item type="ZP2015_OTHER_ID" max-count="2">
