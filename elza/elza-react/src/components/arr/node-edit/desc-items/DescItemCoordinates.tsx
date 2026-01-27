@@ -48,7 +48,12 @@ const messages = defineMessages({
   },
 });
 
-export function DescItemCoordinates({ item, nodeId, onChange }: Props) {
+export function DescItemCoordinates({
+  item,
+  nodeId,
+  onChange,
+  isDisabled: _isDisabled,
+}: Props) {
   if (
     item.data &&
     item.data.dataType !== DataType.Coordinates &&
@@ -74,7 +79,12 @@ export function DescItemCoordinates({ item, nodeId, onChange }: Props) {
   } = useValueManager<string>(data?.value, item);
 
   const isInherited = item.nodeId !== nodeId;
-  const isDisabled = item.undefined || isInherited || item.inhibited;
+  const isDisabled =
+    item.undefined ||
+    isInherited ||
+    item.inhibited ||
+    item.readOnly ||
+    _isDisabled;
 
   async function handleSave(_value: string) {
     await onChange({

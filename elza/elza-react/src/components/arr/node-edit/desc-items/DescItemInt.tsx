@@ -13,13 +13,23 @@ interface NodeItemInt extends NodeItem {
   data: DataInteger;
 }
 
-export function DescItemInt({ item, onChange, nodeId }: Props) {
+export function DescItemInt({
+  item,
+  onChange,
+  nodeId,
+  isDisabled: _isDisabled,
+}: Props) {
   if (item.data?.dataType !== DataType.Int) {
     throw "Incorrect data type";
   }
 
   const isInherited = item.nodeId !== nodeId;
-  const isDisabled = item.undefined || isInherited || item.inhibited;
+  const isDisabled =
+    item.undefined ||
+    isInherited ||
+    item.inhibited ||
+    item.readOnly ||
+    _isDisabled;
   const data = item.data as DataInteger;
 
   const {
