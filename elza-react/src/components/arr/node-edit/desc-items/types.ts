@@ -9,4 +9,5 @@ export interface DescItemProps {
   typeForm: FormItemType;
   typeRef: DescItemTypeRef;
   selectedSpecId?: number;
+  typeWidth?: number;
 }

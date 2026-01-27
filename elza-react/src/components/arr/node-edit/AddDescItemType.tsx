@@ -20,6 +20,7 @@ import {
 // import { Combobox, makeStyles, Option } from "@fluentui/react-components";
 import { getOneSettings } from "../ArrUtils";
 import { useInitialFocus } from "../search-funds-form/filters/utils";
+import { defineMessages, useIntl } from "react-intl";
 
 /**
  * Formulář přidání nové desc item type.
@@ -45,6 +46,13 @@ interface Props {
 //   }
 // });
 
+export const messages = defineMessages({
+  addDescItemFormTitle: {
+    id: "add_desc_item_form_title",
+    defaultMessage: "Přidat prvek popisu",
+  },
+});
+
 export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }: Props) {
   const [selectedItemType, setSelectedItem] = useState<DescItemTypeRef>();
   const descItemTypes = useAppSelector(({ refTables }) => refTables.descItemTypes.items);
@@ -55,12 +63,14 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
     const strictModeSetting = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', activeFund.id);
     return strictModeSetting ? JSON.parse(strictModeSetting.value) : true;
   })
-  
+
+  const { formatMessage } = useIntl();
+
   const inputRef = useRef(null);
   useInitialFocus(inputRef);
-  
+
   // const styles = useStyles();
-  
+
   function getPossibleItemTypes() {
     const possibleTypes = descItemTypes.filter(({ id }) => {
       const isAdded = !!descItems.find(({ itemTypeId }) => itemTypeId === id);
@@ -93,7 +103,7 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
     onSubmit(itemType);
     // onSubmit();
   }
-  
+
   const modifiedItemTypes: Array<DescItemTypeRef & {className: string}> = descItemTypes.filter((item) => {
     const itemType = itemTypes.find(({itemTypeId}) => itemTypeId === item.id);
     const descItem = descItems.find(({itemTypeId}) => itemTypeId === item.id);
@@ -103,12 +113,12 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
   }).map((item) => {
     const itemType = itemTypes.find(({itemTypeId}) => itemTypeId === item.id);
     return {
-    ...item, 
+    ...item,
     className: `type-${itemType.type.toLowerCase()}`
   }});
 
   return (
-    <ModalDialogWrapper className="dialog-lg" title={"Pridat prvek popisu"} onHide={onClose}>
+    <ModalDialogWrapper className="dialog-lg" title={formatMessage(messages.addDescItemFormTitle)} onHide={onClose}>
       <Form onSubmit={(e) => {
         e.preventDefault();
         handleSubmit(selectedItemType);
@@ -133,7 +143,7 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
           {/* <Combobox>
               {modifiedItemTypes.map(({className, ...item}) => {
                 const itemType = itemTypes.find(({ itemTypeId }) => itemTypeId === item.id);
-                return <Option 
+                return <Option
                   value={item.id.toString()}
                   className={styles[itemType.type]}
                 >
