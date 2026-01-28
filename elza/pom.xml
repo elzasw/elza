@@ -27,7 +27,7 @@
 
         <cxf.version>4.0.8</cxf.version>
         <hibernate.version>6.6.18.Final</hibernate.version>
-        <hibernate.search.version>7.2.4.Final</hibernate.search.version>
+        <hibernate.search.version>7.2.5.Final</hibernate.search.version>
 		<jboss-logging-version>3.6.0.Final</jboss-logging-version>
 		<apache.lucene.version>9.11.1</apache.lucene.version>
         <!-- 
