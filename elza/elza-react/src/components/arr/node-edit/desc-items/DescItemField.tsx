@@ -191,6 +191,7 @@ export function DescItemField({
             typeRef={typeRef}
             nodeId={nodeId}
             isDisabled={
+              !isEnum &&
               typeRef.useSpecification &&
               item.itemSpecId == undefined &&
               specId == undefined
