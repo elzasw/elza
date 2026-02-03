@@ -101,11 +101,6 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     private ApChangeVO lastChange;
 
     /**
-     * Vlastník přístupového bodu
-     */
-    private UserVO ownerUser;
-
-    /**
      * Počet komentářů
      */
     private Integer comments;
@@ -278,14 +273,6 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
 
     public void setLastChange(ApChangeVO lastChange) {
         this.lastChange = lastChange;
-    }
-
-    public UserVO getOwnerUser() {
-        return ownerUser;
-    }
-
-    public void setOwnerUser(UserVO ownerUser) {
-        this.ownerUser = ownerUser;
     }
 
     public Integer getComments() {

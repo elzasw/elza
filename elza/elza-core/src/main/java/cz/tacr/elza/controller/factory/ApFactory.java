@@ -341,9 +341,6 @@ public class ApFactory {
             //comments
             Integer comments = stateRepository.countCommentsByAccessPoint(ap);
 
-            // vlastník entity
-            UsrUser ownerUser = userRepository.findAccessPointOwner(ap);
-
             // prepare bindings
             List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoint(ap);
             Map<ApBinding, ApBindingState> bindings = getBindingMap(bindingStates);
@@ -382,7 +379,6 @@ public class ApFactory {
             apVO.setComments(comments);
             apVO.setPreferredPart(preferredPart.getPartId());
             apVO.setLastChange(createVO(lastChange));
-            apVO.setOwnerUser(createVO(ownerUser));
         }
         return apVO;
     }
