@@ -97,11 +97,6 @@ export interface ApAccessPointVO {
     lastChange: ApChangeVO;
 
     /**
-     * Vlastník přístupového bodu
-     */
-    ownerUser: UserVO;
-
-    /**
      * Počet komentářů
      */
     comments: number;
