@@ -48,6 +48,7 @@ import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.WfTask.Status;
+import cz.tacr.elza.domain.WfTaskApRevState;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -267,7 +268,7 @@ public class RevisionService {
         // TODO: nutne oddelit do samostatne tabulky revizi a zmenu stavu revize
         // ApRevision revision = createRevision(prevRevision, change);
         // Dočasné řešení: aktuální uživatel se nastaví jako tvůrce revize
-        //      slouoží pro kontrolu toho, kdo naposledy entitu měnil (schvalování)
+        //      slouží pro kontrolu toho, kdo naposledy entitu měnil (schvalování)
 
         // nemůžeme změnit třídu revize, pokud je entita v CAM
         ApType nextType = revState.getType();
@@ -290,11 +291,16 @@ public class RevisionService {
         if (revNextState == null) {
             revNextState = revState.getStateApproval();
         }
+        
+        // read prevTask
+		WfTaskApRevState prevTask = taskService.getTask(revState);
+		Integer prevAssignTo = prevTask != null ? prevTask.getTask().getAssigneeId() : null;
 
-        // pokud se změní alespoň jeden ze tří parametrů, vytvoříme nový revState.
+        // new revState is create when type, stateApproval, comment or assignTo is changed
         if (!Objects.equals(revState.getType(), nextType) 
                 || !Objects.equals(revState.getStateApproval(), revNextState)
-                || !Objects.equals(revState.getComment(), nextComment)) {
+                || !Objects.equals(revState.getComment(), nextComment)
+                || !Objects.equals(prevAssignTo, assignTo)) {
             ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
 
             revState.setDeleteChange(change);

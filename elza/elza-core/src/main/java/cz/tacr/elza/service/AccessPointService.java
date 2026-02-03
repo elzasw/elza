@@ -120,6 +120,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.WfTask.Status;
+import cz.tacr.elza.domain.WfTaskApState;
 import cz.tacr.elza.domain.projection.ApStateInfo;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
@@ -2741,6 +2742,20 @@ public class AccessPointService {
                 .set("scopeId", newApScope.getScopeId())
                 .set("oldState", oldStateApproval)
                 .set("newState", newStateApproval);
+        }
+        
+        // Check if assignTo changed
+        WfTaskApState prevTask = taskService.getTask(oldApState);
+        if(prevTask!=null) {
+        	// check assigned user - if changed
+        	if(!Objects.equals(prevTask.getTask().getAssigneeId(), assignTo)) {
+        		update = true;
+        	}
+        } else {
+        	// check if some value in assignTo
+        	if(assignTo!=null) {
+        		update = true;        		
+        	}
         }
 
         if (!update) {
