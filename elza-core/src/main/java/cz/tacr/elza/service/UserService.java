@@ -1612,13 +1612,18 @@ public class UserService {
      * @return výsledky hledání
      */
 	public FilteredResult<UsrUser> findUser(final String search, final boolean active, final boolean disabled,
+			final boolean allUsers,
 	        final int firstResult, final int maxResults, final Integer excludedGroupId, final SearchType searchTypeName, final SearchType searchTypeUsername ) {
+		UserDetail userDetail = getLoggedUserDetail();
+		if(userDetail==null) {
+			throw new AccessDeniedException("User is not logged.", new ArrayList<>());
+		}
+		
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
         }
-
-		UserDetail userDetail = getLoggedUserDetail();
-		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM)) {
+		
+		if (userDetail.hasPermission(UsrPermission.Permission.USR_PERM) || allUsers) {
 			// return all users
 			return userRepository.findUserByText(search, active, disabled, firstResult, maxResults, excludedGroupId, searchTypeName, searchTypeUsername);
 		} else {
@@ -1648,7 +1653,7 @@ public class UserService {
 				.or(UsrPermission.Permission.USR_PERM);
 		if (authRequest.matches(userDetail)) {
 			// find in all users
-			return this.findUser(search, true, false, firstResult, maxResults, null, searchTypeName, searchTypeUsername);
+			return this.findUser(search, true, false, false, firstResult, maxResults, null, searchTypeName, searchTypeUsername);
 		}
 
 		// only create permission -> have to return himself + or any controlled user
