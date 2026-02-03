@@ -260,7 +260,7 @@ public class UserController {
     public FilteredResultVO<UsrUserVO> findUser(@Nullable @RequestParam(value = "search", required = false) final String search,
                                                 @RequestParam("active") final Boolean active,
                                                 @RequestParam("disabled") final Boolean disabled,
-                                                @RequestParam("all") final Boolean allUsers,
+                                                @RequestParam(value = "all", required = false) final Boolean allUsers,
                                                 @RequestParam("from") final Integer from,
                                                 @RequestParam("count") final Integer count,
                                                 @RequestParam(value = "excludedGroupId", required = false) final Integer excludedGroupId,
