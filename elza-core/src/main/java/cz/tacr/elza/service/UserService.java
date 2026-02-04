@@ -1708,7 +1708,7 @@ public class UserService {
      * @param userId id
      * @return objekt
      */
-    @AuthMethod(permission = {UsrPermission.Permission.USR_PERM, UsrPermission.Permission.USER_CONTROL_ENTITY})
+    @AuthMethod(permission = { })
 	public UsrUser getUser(@AuthParam(type = AuthParam.Type.USER) final Integer userId) {
 		Validate.notNull(userId, "Identifikátor uživatele musí být vyplněno");
         return userRepository.getOneCheckExist(userId);

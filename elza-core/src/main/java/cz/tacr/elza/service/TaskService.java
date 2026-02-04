@@ -7,6 +7,7 @@ import static cz.tacr.elza.domain.WfTaskType.AP_UPDATE;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,6 +31,9 @@ import cz.tacr.elza.domain.WfTaskApRevState;
 import cz.tacr.elza.domain.WfTask.Status;
 import cz.tacr.elza.domain.WfTaskApState;
 import cz.tacr.elza.domain.WfTaskType;
+import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.repository.ApStateRepository;
@@ -184,10 +188,17 @@ public class TaskService {
 	 * @return seznam úkolů
 	 */
 	@Transactional()
-	public List<TasksViewDetail> getMyTasks() {		
-        UsrUser loggedUser = userService.getLoggedUser();
+	public List<TasksViewDetail> getMyTasks() {
+		var userDetail = userService.getLoggedUserDetail();
+		if(userDetail==null) {
+			throw new AccessDeniedException("User is not logged in", Collections.emptyList());
+		}
+		// check if user has ID
+		if(userDetail.getId() == null) {
+			return Collections.emptyList();
+		}
 
-        List<WfTask> wfTasks = wfTaskRepository.findAllByAssigneeId(loggedUser.getUserId());
+        List<WfTask> wfTasks = wfTaskRepository.findAllByAssigneeId(userDetail.getId());
         List<WfTaskApState> wfTaskApStates = wfTaskApStateRepository.findAllByTaskIn(wfTasks);
         List<WfTaskApRevState> wfTaskApRevStates = wfTaskApRevStateRepository.findAllByTaskIn(wfTasks);
 
@@ -225,14 +236,20 @@ public class TaskService {
 	@Transactional()
 	private WfTask createWfTask(String taskTypeCode, Integer assignTo) {
     	UsrUser assignToUser = userService.getUser(assignTo);
-        UsrUser leggedUser = userService.getLoggedUser();
+        UsrUser loggedUser = userService.getLoggedUser();
+        if (loggedUser == null) {
+			throw new AccessDeniedException("User is not logged in", Collections.emptyList());
+		}
 
         WfTaskType taskType = wfTaskTypeRepository.findByCode(taskTypeCode);
+        if(taskType==null) {
+        	throw new SystemException("Task type not found", BaseCode.DB_INTEGRITY_PROBLEM).set("code", taskTypeCode);
+        }
 
     	WfTask wfTask = new WfTask();
     	wfTask.setTimeCreated(OffsetDateTime.now());
     	wfTask.setAssignee(assignToUser);
-    	wfTask.setCreator(leggedUser);
+    	wfTask.setCreator(loggedUser);
     	wfTask.setTaskType(taskType);
     	wfTask.setStatus(Status.NEW);
     	return wfTaskRepository.save(wfTask);

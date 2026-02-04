@@ -10,7 +10,6 @@ import cz.tacr.elza.domain.UsrPermission;
 /**
  * Anotace pro oprávnění přístupu k metodě.
  *
- * @author Martin Šlapa
  * @since 27.04.2016
  */
 @Retention(RetentionPolicy.RUNTIME)
