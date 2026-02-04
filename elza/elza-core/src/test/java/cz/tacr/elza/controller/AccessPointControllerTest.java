@@ -284,7 +284,9 @@ public class AccessPointControllerTest extends AbstractControllerTest {
     	final String USR_PSWD1 = "1";
     	final String USR_NAME2 = "usr2";
     	final String USR_PSWD2 = "2";
-    	final String USR_ADMIN = "admin";
+    	//final String USR_ADMIN = "admin";
+    	final String USR_ELZAADMIN = "elzaadmin";
+    	final String USR_ELZAADMIN_PSWD = "elzaadmin";
 
         List<ApAccessPointVO> records = findRecord(null, null, null, null, null);
         ApAccessPointVO ap = records.get(0);
@@ -292,6 +294,14 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
         ApState state = stateRepository.findLastByAccessPointId(ap.getId());
         assertNotNull(state);
+        
+        // Create admin
+        UsrUserVO userAdminVO = createUser(apUser.getId(), USR_ELZAADMIN, USR_ELZAADMIN_PSWD);
+        UsrPermissionVO permissionSuper = new UsrPermissionVO();
+        permissionSuper.setPermission(Permission.ADMIN);
+        addUserPermission(userAdminVO.getId(), Arrays.asList(permissionSuper));
+        
+        login(USR_ELZAADMIN, USR_ELZAADMIN_PSWD);
 
         // permissions
         UsrPermissionVO permissionApRdAll = new UsrPermissionVO();
@@ -344,7 +354,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         assertTrue(tasks.get(0).getStatus().equals(Status.FINISHED));
 
         // switch to admin 
-        login(USR_ADMIN, USR_ADMIN);
+        login(USR_ELZAADMIN, USR_ELZAADMIN_PSWD);
 
         // create 2nd user to assign change revision state
         userVO = createUser(apUser.getId(), USR_NAME2, USR_PSWD2);
