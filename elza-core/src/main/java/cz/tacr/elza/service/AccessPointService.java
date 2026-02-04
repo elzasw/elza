@@ -2150,7 +2150,7 @@ public class AccessPointService {
 			CachedAccessPoint entity = accessPointCacheService.deserialize(cachedAccessPoint.getData(), cachedAccessPoint.getAccessPoint());
 			String name = apFactory.findAeCachedEntityName(entity);
 			String description = apFactory.getDescription(entity);
-			accessPointVOList.add(apFactory.createVO(entity.getApState(), entity, name, description));
+			accessPointVOList.add(apFactory.createVO(entity, name, description));
 		}
 
 		return new FilteredResultVO<>(accessPointVOList, cachedAccessPointResult.getRecordCount());
