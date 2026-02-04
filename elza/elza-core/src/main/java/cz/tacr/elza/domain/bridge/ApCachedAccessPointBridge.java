@@ -61,6 +61,7 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
     public static final String SCOPE_ID = "scope_id";
     public static final String STATE = "state";
     public static final String REV_STATE = "rev_state";
+    public static final String ASSIGNED_TO = "assigned_to";
 
     public static final String PREFIX_PREF = "pref";
     public static final String SEPARATOR = "_";
@@ -116,6 +117,9 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
         }
         if (cachedAccessPoint.getCreateUsername() != null) {
         	addStringField(USERNAME, cachedAccessPoint.getCreateUsername().toLowerCase(), document);
+        }
+        if (cachedAccessPoint.getAssignedTo() != null) {
+        	document.addValue(ASSIGNED_TO, cachedAccessPoint.getAssignedTo());
         }
 
         if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {
