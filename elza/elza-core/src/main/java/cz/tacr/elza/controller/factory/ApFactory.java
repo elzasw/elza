@@ -107,7 +107,6 @@ import cz.tacr.elza.repository.ApRevPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.vo.TypeRuleSet;
 import cz.tacr.elza.service.RevisionItemService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
@@ -136,8 +135,6 @@ public class ApFactory {
 
     private final ApTypeRepository apTypeRepository;
 
-    private final UserRepository userRepository;
-
     private final ApChangeRepository changeRepository;
 
     private final ApRevPartRepository revPartRepository;
@@ -162,7 +159,6 @@ public class ApFactory {
                      final ApBindingItemRepository bindingItemRepository,
                      final ApIndexRepository indexRepository,
                      final ApTypeRepository apTypeRepository,
-                     final UserRepository userRepository,
                      final ApChangeRepository changeRepository,
                      final ApRevPartRepository revPartRepository,
                      final ApRevIndexRepository revIndexRepository,
@@ -179,7 +175,6 @@ public class ApFactory {
         this.bindingItemRepository = bindingItemRepository;
         this.indexRepository = indexRepository;
         this.apTypeRepository = apTypeRepository;
-        this.userRepository = userRepository;
         this.changeRepository = changeRepository;
         this.revPartRepository = revPartRepository;
         this.revIndexRepository = revIndexRepository;
@@ -386,11 +381,11 @@ public class ApFactory {
     public ApAccessPointVO createVO(CachedAccessPoint cachedAccessPoint) {
         String name = findAeCachedEntityName(cachedAccessPoint);
         String description = getDescription(cachedAccessPoint);
-        ApAccessPointVO apVO = createVO(cachedAccessPoint.getApState(), cachedAccessPoint, name, description);
+        ApAccessPointVO apVO = createVO(cachedAccessPoint, name, description);
 
         // prepare last change - include deleted items
         Integer lastChangeId = AccessPointCacheService.getLastChange(cachedAccessPoint);
-        ApChange lastChange = lastChangeId!=null ? changeRepository.findById(lastChangeId).get(): null;
+        ApChange lastChange = lastChangeId != null ? changeRepository.findById(lastChangeId).get() : null;
 
         // prepare bindings
         List<ApBindingVO> bindingsVO;
@@ -409,6 +404,7 @@ public class ApFactory {
         apVO.setParts(createPartsVO(cachedAccessPoint.getParts()));
         apVO.setPreferredPart(cachedAccessPoint.getPreferredPartId());
         apVO.setLastChange(createVO(lastChange));
+        apVO.setAssignedTo(cachedAccessPoint.getAssignedTo());
 
         return apVO;
     }
@@ -439,11 +435,10 @@ public class ApFactory {
         return vo;
     }
 
-    public ApAccessPointVO createVO(final ApState apState,
-                                    final CachedAccessPoint ap,
+    public ApAccessPointVO createVO(final CachedAccessPoint ap,
                                     final String name,
                                     final String description) {
-        return createVO(apState, ap.getAccessPointId(), ap.getReplacedAPIds(), ap.getUuid(), ap.getAccessPointVersion(), ap.getErrorDescription(), ap.getState(), name, description);
+        return createVO(ap.getApState(), ap.getAccessPointId(), ap.getReplacedAPIds(), ap.getUuid(), ap.getAccessPointVersion(), ap.getErrorDescription(), ap.getState(), name, description);
     }
 
     public ApAccessPointVO createVO(final ApState apState,

@@ -10,7 +10,6 @@ import cz.tacr.elza.controller.vo.ap.ApStateVO;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.RevStateApproval;
 
-
 /**
  * VO rejstříkového záznamu.
  */
@@ -145,6 +144,11 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
      */
     private String revComment;
 
+    /**
+     * ID přiřazeného uživatele
+     */
+    private Integer assignedTo;
+    
     public Integer getId() {
         return id;
     }
@@ -355,4 +359,11 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         this.revComment = revComment;
     }
 
+	public Integer getAssignedTo() {
+		return assignedTo;
+	}
+
+	public void setAssignedTo(Integer assignedTo) {
+		this.assignedTo = assignedTo;
+	}
 }
