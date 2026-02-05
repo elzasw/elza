@@ -1528,6 +1528,7 @@ export class WebApiCls {
         groupId: number | null = null,
         searchTypeName?: ApSearchType,
         searchTypeUsername?: ApSearchType,
+        all?: boolean,
     ): Promise<RowsResponse<UsrUserVO>> {
         return AjaxUtils.ajaxGet(WebApiCls.userUrl + '', {
             search: fulltext,
@@ -1538,6 +1539,7 @@ export class WebApiCls {
             excludedGroupId: groupId,
             searchTypeName,
             searchTypeUsername,
+            all,
         }).then(json => ({ data: json.rows, count: json.count }));
     }
 
