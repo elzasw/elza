@@ -1,27 +1,32 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form as FinalForm, Field } from 'react-final-form';
-import { i18n } from 'components/shared';
+import { Icon, i18n } from 'components/shared';
 import { Form, Modal } from 'react-bootstrap';
 import { Button } from '../ui';
 import FormInputField from '../../components/shared/form/FormInputField';
-import { useSelector } from 'react-redux';
-import { AppState } from "typings/store";
 import { RevStateApproval, RevStateApprovalCaption } from "../../api/RevStateApproval";
 import { ApTypeVO } from 'api/ApTypeVO';
-import { RevStateChange } from 'elza-api';
+import { Participant, RevStateChange } from 'elza-api';
 import { ApValidationErrorsVO } from 'api/ApValidationErrorsVO';
 import { UsrUserVO } from 'api/UsrUserVO';
 import UserField from 'components/admin/UserField';
+import { useAppSelector } from 'utils/hooks/useAppSelector';
+import { Api } from 'api';
+import { WebApi } from 'actions';
 
-interface Props {
+export interface RevStateFormFields extends RevStateChange {
+  assignedUser?: Partial<Participant>;
+}
+
+export interface Props {
     accessPointId: number;
     versionId?: number;
     hideType?: boolean;
-    onClose?: Function;
-    onSubmit: (data: any) => void;
+    onClose?: () => void;
+    onSubmit: (data: RevStateFormFields) => void;
     states: string[];
-    initialValues?: Partial<RevStateChange>;
-};
+    initialValues?: Omit<Partial<RevStateFormFields>, 'assignedUser'> & {assignedTo: number};
+}
 
 type FormErrors<T> = Partial<Record<keyof T, string>>;
 
@@ -30,14 +35,37 @@ export const RevStateChangeFormFn = ({
     hideType = false,
     onSubmit,
     initialValues,
+    accessPointId,
 }: Props) => {
 
-    const apTypes = useSelector((appState: AppState) => appState.refTables.apTypes)
-    const { data: validationData } = useSelector((appState: AppState) => appState.app.apValidation);
+    const apTypes = useAppSelector(({refTables}) => refTables.apTypes)
+    const { data: validationData } = useAppSelector(({app}) => app.apValidation);
+    const {id: currentUserId} = useAppSelector(({ userDetail }) => userDetail);
+
     const isValid = (!validationData?.errors || validationData.errors?.length <= 0) && (!validationData?.partErrors || validationData.partErrors?.length <= 0);
 
-    const getStateOptions = () => {
+    const [lastParticipants, setLastParticipants] = useState<Participant[]>([]);
+    const [assignedUser, setAssignedUser] = useState<Partial<Participant>>(undefined);
 
+    useEffect(() => {
+        (async () => {
+            const [{ data: _lastParticipants }, user] = await Promise.all([
+                Api.accesspoints.accessPointGetLastParticipants(accessPointId),
+                initialValues?.assignedTo != undefined ? await WebApi.getUser(initialValues?.assignedTo) : Promise.resolve(undefined)
+            ]);
+
+            if (user) {
+                setAssignedUser({
+                    userId: user.id,
+                    username: user.username,
+                    name: user.accessPoint.name,
+                });
+            }
+            setLastParticipants(_lastParticipants)
+        })()
+    }, [accessPointId])
+
+    const getStateOptions = () => {
         const options = [
             RevStateApproval.ACTIVE,
             RevStateApproval.TO_AMEND,
@@ -56,9 +84,11 @@ export const RevStateChangeFormFn = ({
     }
 
     const stateOptions = getStateOptions();
+    const uniqueParticipantsMap = new Map(lastParticipants.map((lastParticipant) => [lastParticipant.userId, lastParticipant]));
+    const uniqueParticipants = Array.from(uniqueParticipantsMap.values()).filter(({userId}) => userId !== currentUserId);
 
-    const validate = (values: RevStateChange) => {
-        const errors: FormErrors<RevStateChange> = {};
+    const validate = (values: RevStateFormFields) => {
+        const errors: FormErrors<RevStateFormFields> = {};
 
         if (!values.state) {
             errors.state = i18n('global.validation.required');
@@ -89,12 +119,12 @@ export const RevStateChangeFormFn = ({
     };
 
     return (
-        <FinalForm<RevStateChange>
-            initialValues={initialValues}
+        <FinalForm<RevStateFormFields>
+            initialValues={{ ...initialValues, assignedUser}}
             onSubmit={onSubmit}
             validate={validate}
         >
-            {({ submitting, handleSubmit }) => {
+            {({ submitting, handleSubmit, form }) => {
                 return <Form>
                     <Modal.Body>
                         {!isValid && validationData &&
@@ -134,27 +164,63 @@ export const RevStateChangeFormFn = ({
                             label={i18n('ap.state.title.comment')}
                             disabled={submitting}
                         />
-                        <Field
+                        <Field<Participant>
                             name={'assignedUser'}
                         >{({input}) => {
-                          function handleChange(user: UsrUserVO){
-                            input.onChange(user);
-                          }
-                          //@ts-expect-error TODO wrong types on FormInputField
-                          return <FormInputField type="static" label={i18n('ap.state.title.assignedUser')}>
-                            <UserField
-                            disabled={submitting}
-                            value={input.value}
-                            onChange={handleChange}
-                              getItemName={(user: UsrUserVO) => {
-                                if(!user){
-                                  return "";
-                                }
-                                return `${user.accessPoint?.name} (${user.username})`;
-                              }}
-                            />
-                          </FormInputField>
+                            function handleChange(user?: UsrUserVO){
+                                input.onChange(user ? {
+                                    name: user.accessPoint.name,
+                                    username: user.username,
+                                    userId: user.id,
+                                } : undefined);
+                            }
+                            //@ts-expect-error TODO wrong types on FormInputField
+                            return <FormInputField type="static" label={i18n('ap.state.title.assignedUser')}>
+                                <div style={{display: 'flex'}}>
+                                    <UserField
+                                    disabled={submitting}
+                                    value={input.value ? {
+                                        accessPoint: {
+                                            name: input.value.name
+                                        },
+                                        username: input.value.username,
+                                        id: input.value.userId,
+                                    } : undefined}
+                                    onChange={handleChange}
+                                    getItemName={(user: UsrUserVO) => {
+                                        if(!user?.id){
+                                            return "";
+                                        }
+                                        return `${user.accessPoint?.name} (${user.username})`;
+                                    }}
+                                    all={true}
+                                    />
+                                    {input.value && <div style={{ position: 'absolute', right: '16px' }}>
+                                        <Button type="button" variant="subtle" onClick={() => handleChange()}>
+                                            <Icon glyph="fa-times" />
+                                        </Button>
+                                    </div>}
+                                </div>
+                            </FormInputField>
                         }}</Field>
+                        {(uniqueParticipants || []).length > 0 && <Field name="lastParticipants">
+                            {() => {
+                                //@ts-expect-error TODO wrong types on FormInputField
+                                return <FormInputField type="static" label={i18n('ap.state.title.lastParticipants')}>
+                                    {uniqueParticipants.map((participant) => {
+                                        function handleClick() {
+                                            form.change('assignedUser', participant)
+                                        }
+
+                                        return <div style={{margin: '4px 0'}}>
+                                            <Button type="button" variant="outline-secondary" onClick={handleClick}>
+                                                {participant.name} ({participant.username})
+                                            </Button>
+                                        </div>
+                                    })}
+                                </FormInputField>
+                            }}
+                        </Field>}
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" onClick={handleSubmit} variant="outline-secondary" disabled={submitting}>
