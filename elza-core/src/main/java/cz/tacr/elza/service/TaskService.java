@@ -82,12 +82,11 @@ public class TaskService {
 		List<Participant> result = new ArrayList<>();
 		List<UsrUser> users = new ArrayList<>();
 
-		List<WfTaskApState> wfTaskApStates = wfTaskApStateRepository.findAllByState(apState);
-		wfTaskApStates.forEach(i -> {
-			WfTask wfTask = i.getTask();
-			UsrUser creator = wfTask.getCreator();
-			UsrUser assignee = wfTask.getAssignee();
-			UsrUser closedBy = wfTask.getClosedBy();
+		List<WfTask> wfTasks = wfTaskRepository.findAllByApState(apState);
+		wfTasks.forEach(t -> {
+			UsrUser creator = t.getCreator();
+			UsrUser assignee = t.getAssignee();
+			UsrUser closedBy = t.getClosedBy();
 			if (creator != null) {
 				users.add(creator);
 			}
