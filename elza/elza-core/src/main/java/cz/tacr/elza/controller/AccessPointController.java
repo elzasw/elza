@@ -230,7 +230,7 @@ public class AccessPointController implements AccesspointsApi {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(id);
         ApState apState = accessPointService.getStateInternal(accessPoint);
 
-    	return ResponseEntity.ok(taskService.GetLastParticipants(apState));
+    	return ResponseEntity.ok(taskService.getLastParticipants(apState));
     }
 
     /**

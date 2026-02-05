@@ -78,7 +78,7 @@ public class TaskService {
 	 * @return
 	 */
 	@Transactional(Transactional.TxType.MANDATORY)
-	public List<Participant> GetLastParticipants(ApState apState) {
+	public List<Participant> getLastParticipants(ApState apState) {
 		List<Participant> result = new ArrayList<>();
 		List<UsrUser> users = new ArrayList<>();
 
