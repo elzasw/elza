@@ -19,7 +19,7 @@ public interface WfTaskRepository extends ElzaJpaRepository<WfTask, Integer> {
 		select t from wf_task t 
 		join wf_task_ap_state s on s.task = t
 		join wf_task_ap_rev_state rs on rs.task = t
-		where s.state = :state or rs.state.revision.state = :apState
+		where s.state = :state or rs.state.revision.state = :state
 	""")
 	List<WfTask> findAllByApState(ApState state);
 }
