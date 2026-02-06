@@ -20,6 +20,7 @@ import cz.tacr.elza.controller.vo.Participant;
 import cz.tacr.elza.controller.vo.TasksEntityType;
 import cz.tacr.elza.controller.vo.TasksStatus;
 import cz.tacr.elza.controller.vo.TasksViewDetail;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApRevState;
@@ -83,11 +84,11 @@ public class TaskService {
 	 * @return
 	 */
 	@Transactional(Transactional.TxType.MANDATORY)
-	public List<Participant> getLastParticipants(ApState state) {
+	public List<Participant> getLastParticipants(ApAccessPoint accessPoint) {
 		List<Participant> result = new ArrayList<>();
 		List<UsrUser> users = new ArrayList<>();
 
-		List<ApChange> changes = changeRepository.findByApState(state);
+		List<ApChange> changes = changeRepository.findByApState(accessPoint);
 		changes.forEach(c -> {
 			UsrUser user = c.getUser();
 			if (user != null && user.getActive()) {
