@@ -20,6 +20,7 @@ import cz.tacr.elza.controller.vo.Participant;
 import cz.tacr.elza.controller.vo.TasksEntityType;
 import cz.tacr.elza.controller.vo.TasksStatus;
 import cz.tacr.elza.controller.vo.TasksViewDetail;
+import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApState;
@@ -36,6 +37,7 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.WfTaskApRevStateRepository;
@@ -69,39 +71,34 @@ public class TaskService {
 	private AccessPointService accessPointService;
 
 	@Autowired
-	private ApStateRepository apStateRepository;
+	private ApStateRepository stateRepository;
+
+	@Autowired
+	private ApChangeRepository changeRepository;
 
 	/**
 	 * Získání seznamu zpracovatelů entity 
 	 * 
-	 * @param apState
+	 * @param state
 	 * @return
 	 */
 	@Transactional(Transactional.TxType.MANDATORY)
-	public List<Participant> getLastParticipants(ApState apState) {
+	public List<Participant> getLastParticipants(ApState state) {
 		List<Participant> result = new ArrayList<>();
 		List<UsrUser> users = new ArrayList<>();
 
-		List<WfTask> wfTasks = wfTaskRepository.findAllByApState(apState);
-		wfTasks.forEach(t -> {
-			UsrUser creator = t.getCreator();
-			UsrUser assignee = t.getAssignee();
-			UsrUser closedBy = t.getClosedBy();
-			if (creator != null) {
-				users.add(creator);
-			}
-			if (assignee != null) {
-				users.add(assignee);
-			}
-			if (closedBy != null) {
-				users.add(closedBy);
+		List<ApChange> changes = changeRepository.findByApState(state);
+		changes.forEach(c -> {
+			UsrUser user = c.getUser();
+			if (user != null && user.getActive()) {
+				users.add(user);
 			}
 		});
 
 		List<Integer> apIds = users.stream().map(u -> u.getAccessPointId()).toList();
         Map<Integer, ApIndex> apIndexMap = accessPointService.findPreferredPartIndexMapByIds(apIds); 
 
-        List<ApState> apStates = apStateRepository.findLastByAccessPointIds(apIds);
+        List<ApState> apStates = stateRepository.findLastByAccessPointIds(apIds);
         Map<Integer, Integer> apIdScopeIdMap = apStates.stream().collect(Collectors.toMap(s -> s.getStateId(), s -> s.getScopeId()));
 
         // Permissions by user
