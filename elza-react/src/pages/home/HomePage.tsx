@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from 'typings/store';
 import { useThunkDispatch } from 'utils/hooks';
-import { FundDetail, TasksStatus, TasksViewDetail } from 'elza-api';
+import { FundDetail, TasksEntityType, TasksStatus, TasksViewDetail } from 'elza-api';
 import { urlEntity, urlEntityRevision } from '../../constants';
 import { Link } from 'react-router-dom';
 
@@ -134,13 +134,15 @@ export default function HomePage() {
         </div>
     }
 
-    function getEntityLink(entityId: number, taskType: string){
-      if(taskType === "AP_UPDATE"){
-        return urlEntity(entityId)
-      } else if(taskType === "AP_REV_UPDATE"){
-        return urlEntityRevision(entityId)
-      }
-      return undefined;
+    function getEntityLink(entityId: number, entityType: TasksEntityType) {
+        switch (entityType) {
+            case TasksEntityType.Ap:
+                return urlEntity(entityId);
+            case TasksEntityType.ApRev:
+                return urlEntityRevision(entityId);
+            default:
+                return undefined;
+        }
     }
 
     const centerPanel = (
@@ -151,7 +153,7 @@ export default function HomePage() {
             <h4>Úkoly</h4>
             <div style={{padding: "10px"}}>
               {activeTasks.map((task) => {
-                const link = getEntityLink(task.primaryEntityId, task.taskTypeCode);
+                const link = getEntityLink(task.primaryEntityId, task.primaryEntityType);
                 return <div>
                   {task.taskTypeName} -
                   &nbsp;
