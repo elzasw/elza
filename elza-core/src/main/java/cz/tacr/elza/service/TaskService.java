@@ -260,7 +260,7 @@ public class TaskService {
 	@Transactional(Transactional.TxType.MANDATORY)
 	public void createTaskApState(ApState apState, Integer assignTo) {
         // create new WfTask
-        String taskTypeCode = apState.getStateApproval() == StateApproval.APPROVED ? AP_CONFIRM : AP_UPDATE;
+        String taskTypeCode = apState.getStateApproval() == StateApproval.TO_APPROVE ? AP_CONFIRM : AP_UPDATE;
     	WfTask wfTask = createWfTask(taskTypeCode, assignTo);
 
     	// create new WfTaskApState
