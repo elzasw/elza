@@ -16,10 +16,12 @@ public interface WfTaskRepository extends ElzaJpaRepository<WfTask, Integer> {
 	List<WfTask> findAllByAssigneeId(@Param("assigneeId") Integer assigneeId);
 
 	@Query("""
-		select t from wf_task t 
-		join wf_task_ap_state s on s.task = t
-		join wf_task_ap_rev_state rs on rs.task = t
-		where s.state = :state or rs.state.revision.state = :state
+		select wt from wf_task wt
+		left join wf_task_ap_state wts on wts.task = wt
+		left join wf_task_ap_rev_state wtrs on wtrs.task = wt
+		left join wtrs.state rs
+		left join rs.revision rv
+		where wts.state = :state or rv.state = :state
 	""")
 	List<WfTask> findAllByApState(ApState state);
 }

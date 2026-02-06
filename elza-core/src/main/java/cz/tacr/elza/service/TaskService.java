@@ -241,7 +241,7 @@ public class TaskService {
 		}
 
         WfTaskType taskType = wfTaskTypeRepository.findByCode(taskTypeCode);
-        if(taskType==null) {
+        if (taskType == null) {
         	throw new SystemException("Task type not found", BaseCode.DB_INTEGRITY_PROBLEM).set("code", taskTypeCode);
         }
 
