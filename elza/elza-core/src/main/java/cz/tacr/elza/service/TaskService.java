@@ -34,8 +34,10 @@ import cz.tacr.elza.domain.WfTask.Status;
 import cz.tacr.elza.domain.WfTaskApState;
 import cz.tacr.elza.domain.WfTaskType;
 import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.repository.ApChangeRepository;
@@ -260,6 +262,11 @@ public class TaskService {
 	 */
 	@Transactional(Transactional.TxType.MANDATORY)
 	public void createTaskApState(ApState apState, Integer assignTo) {
+		// Vytvoření úkolu APPROVED není dostupné
+		if (apState.getStateApproval() == StateApproval.APPROVED) {
+            throw new BusinessException("Vytvoření úkolu [Approve/Schválit] není dostupné", BaseCode.INVALID_STATE);
+		} 
+
         // create new WfTask
         String taskTypeCode = apState.getStateApproval() == StateApproval.TO_APPROVE ? AP_CONFIRM : AP_UPDATE;
     	WfTask wfTask = createWfTask(taskTypeCode, assignTo);
