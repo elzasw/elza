@@ -4,6 +4,7 @@ restrictions:
   - ZP2015_RESTRICTION_ACCESS_SHARED
   - ZP2015_INVALID_RECORD
   - ZP2015_INTERNAL_NOTE
+  - ZP2015_ENTITY_ROLE
 
 defs:
   - when:
@@ -15,6 +16,27 @@ defs:
     result:
       hiddenItems:
         - itemType: ZP2015_INTERNAL_NOTE
+  # Access restrictions for living persons
+  - when:
+      - itemType: ZP2015_ENTITY_ROLE
+        # Multipe and conditions
+        entityCondition:
+          - !EntityClass
+            classType: PERSON_INDIVIDUAL
+          - !Not
+            not:
+              !Part
+              partType: PT_EXT
+          - !Part
+            partType: PT_CRE
+            itemType: CRE_DATE
+            yuongerThenYears: 100
+    result:
+      addItems:
+        - itemType: ZP2015_ENTITY_ROLE_TEXT
+          itemSpecFromSourceItem: true
+          valueFromSourceItem: true
+          hideSourceItem: true
 
 # spouštěcí událost: Datace vzniku jednotky popisu 
 # osobní a citlivé údaje

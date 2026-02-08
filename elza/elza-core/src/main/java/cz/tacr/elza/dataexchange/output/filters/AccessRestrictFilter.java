@@ -28,11 +28,13 @@ import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.service.DataService;
+import cz.tacr.elza.service.cache.AccessPointCacheProvider;
 
 public class AccessRestrictFilter implements ExportFilter {
 
     final Set<Integer> restrictedNodeIds = new HashSet<>();
     final private StaticDataProvider sdp;
+    final private AccessPointCacheProvider apcProvider;
     final private ElzaLocale elzaLocale;
 
     /**
@@ -58,8 +60,11 @@ public class AccessRestrictFilter implements ExportFilter {
 
     public AccessRestrictFilter(final EntityManager em, final StaticDataProvider sdp, final AccessRestrictConfig efc,
                                 final ElzaLocale elzaLocale,
-                                final DataService dataService) {
+                                final DataService dataService,
+								final AccessPointCacheProvider apCacheProvider
+                                ) {
         this.sdp = sdp;
+        this.apcProvider = apCacheProvider;
         this.efc = efc;
         this.soiLoader = new StructObjectInfoLoader(em, 1, sdp, dataService);
         this.filterRules = new FilterRules(efc, sdp);
@@ -122,7 +127,7 @@ public class AccessRestrictFilter implements ExportFilter {
                     restrItems = levelInfo.getItems();
                 }
 
-                FilterRuleContext frCtx = new FilterRuleContext(restrItems);
+                FilterRuleContext frCtx = new FilterRuleContext(restrItems, apcProvider, sdp);
                 for (FilterRule rule : filterRules.getFilterRules()) {
                     FilterRuleResultType result = processRule(rule, frCtx, levelInfo, itemsByType, restrStructId,
                                                               filter);

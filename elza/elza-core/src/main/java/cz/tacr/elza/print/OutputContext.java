@@ -105,7 +105,8 @@ public class OutputContext {
                     apRepository,
                     fundVersionRepository,
                     resourcePathResolver,
-                    dataService);
+                    dataService,
+					accessPointCacheService);
         }
         return exportInitHelper;
     }
