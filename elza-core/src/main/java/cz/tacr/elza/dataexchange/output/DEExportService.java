@@ -52,6 +52,10 @@ import cz.tacr.elza.dataexchange.output.context.ExportReader;
 import cz.tacr.elza.dataexchange.output.filters.AccessRestrictConfig;
 import cz.tacr.elza.dataexchange.output.filters.ExportFilter;
 import cz.tacr.elza.dataexchange.output.filters.ExportFilterConfig;
+import cz.tacr.elza.dataexchange.output.filters.conditions.And;
+import cz.tacr.elza.dataexchange.output.filters.conditions.EntityClass;
+import cz.tacr.elza.dataexchange.output.filters.conditions.Not;
+import cz.tacr.elza.dataexchange.output.filters.conditions.PartCondition;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 import cz.tacr.elza.domain.ApAccessPoint;
@@ -84,6 +88,8 @@ import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.ArrangementService.FindFundVersionsResult;
+import cz.tacr.elza.service.cache.AccessPointCacheProvider;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import jakarta.persistence.EntityManager;
 
@@ -138,11 +144,12 @@ public class DEExportService {
                            final InstitutionRepository institutionRepository,
                            final ScopeRepository scopeRepository,
                            final RuleService ruleService,
-                           final ElzaLocale elzaLocale) {
+                           final ElzaLocale elzaLocale,
+                           final AccessPointCacheService apcService) {
         this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, apRepository,
                 fundVersionRepository,
                 resourcePathResolver,
-                dataService);
+                dataService, apcService);
         this.institutionRepository = institutionRepository;
         this.apItemRepository = apItemRepository;
         this.stateRepository = stateRepository;
@@ -201,7 +208,8 @@ public class DEExportService {
             RulExportFilter expFilterDB = ruleService.getExportFilter(params.getExportFilter());
             // create bean for export filter
             ExportFilterConfig efc = loadConfig(expFilterDB);
-            ExportFilter expFilter = efc.createFilter(initHelper.getEm(), staticDataService.getData(), elzaLocale, initHelper.getDataService());
+            ExportFilter expFilter = efc.createFilter(initHelper.getEm(), staticDataService.getData(), elzaLocale, initHelper.getDataService(),
+            		new AccessPointCacheProvider(initHelper.getApCacheService()));
             context.setExportFilter(expFilter);
         }
 
@@ -453,6 +461,10 @@ public class DEExportService {
         // register type descriptors
         Constructor yamlCtor = new Constructor(new LoaderOptions());
         yamlCtor.addTypeDescription(new TypeDescription(AccessRestrictConfig.class, "!ExportFilterConfig"));
+        yamlCtor.addTypeDescription(new TypeDescription(EntityClass.class, "!EntityClass"));
+        yamlCtor.addTypeDescription(new TypeDescription(And.class, "!And"));
+        yamlCtor.addTypeDescription(new TypeDescription(Not.class, "!Not"));
+        yamlCtor.addTypeDescription(new TypeDescription(PartCondition.class, "!Part"));
         Yaml yamlLoader = new Yaml(yamlCtor);
 
         ExportFilterConfig efc;

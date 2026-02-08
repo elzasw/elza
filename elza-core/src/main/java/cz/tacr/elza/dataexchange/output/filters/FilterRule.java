@@ -11,9 +11,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.springframework.util.CollectionUtils;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
@@ -23,10 +23,13 @@ import cz.tacr.elza.dataexchange.output.filters.FilterConfig.CondDef;
 import cz.tacr.elza.dataexchange.output.filters.FilterConfig.Def;
 import cz.tacr.elza.dataexchange.output.filters.FilterConfig.Result;
 import cz.tacr.elza.dataexchange.output.filters.FilterRule.AddItem.AddItemType;
+import cz.tacr.elza.dataexchange.output.filters.conditions.And;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataDate;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
@@ -43,6 +46,12 @@ public class FilterRule {
         public boolean isTrue(FilterRuleContext filterRuleContext, ArrData data);
     }
 
+    /**
+     * Condition to execute rule
+     * 
+     *  Side effects:
+     *  - select items which match condition 
+     */
     public static class Cond {
         ItemType itemType;
 
@@ -82,6 +91,21 @@ public class FilterRule {
                     throw new BusinessException("Unsupported value comparison", BaseCode.INVALID_STATE);
                 }
             }
+            
+            if(CollectionUtils.isNotEmpty(condDef.getEntityCondition())) {
+				And and = new And(condDef.getEntityCondition());				
+				valueComparator = (frCtx, data) -> {
+	            	// Data has to refer to entity
+	            	if(data!=null&& data instanceof ArrDataRecordRef) {
+	            		ArrDataRecordRef adr = (ArrDataRecordRef) data;
+	            		
+	            		var ap = frCtx.getApCacheProvider().get(adr.getRecordId());
+	            		return and.isTrue(frCtx, ap);
+	            	}
+	            	return false;						            
+				};
+            	
+			}
 
             if (condDef.getNoneOf() != null) {
                 noneOf = condDef.getNoneOf().stream().map(cd -> new Cond(cd, sdp))
@@ -105,16 +129,30 @@ public class FilterRule {
         public boolean isTrue(FilterRuleContext filterRuleContext) {
 
             if (itemType != null) {
-                ArrData data = filterRuleContext.getFirstData(itemType, itemSpec);
-                if (data != null) {
-                    if (valueComparator != null) {
-                        return valueComparator.isTrue(filterRuleContext, data);
-                            } else {
-                                return true;
-                            }
-                        }
-                return false;
-                    }
+            	List<ArrItem> matchingItems = filterRuleContext.getItems(itemType, itemSpec);
+            	if(CollectionUtils.isEmpty(matchingItems)) {
+            		return false;
+            	}
+            	List<ArrItem> matchedItems = matchingItems.stream().filter(item -> {
+            		var data = item.getData();
+            		if(data!=null) {
+                    	if (valueComparator != null) {
+                    		return valueComparator.isTrue(filterRuleContext, data);
+                    	} else {
+                    		return true;
+                    	}            			
+            		}
+            		return false;
+            	}).collect(Collectors.toList());
+            	
+            	if(CollectionUtils.isEmpty(matchedItems)) {
+            		return false;
+            	}
+            	// store matched items in context
+            	filterRuleContext.setMatchedItems(matchedItems);
+            	return true;
+            }
+            
 
             if (noneOf != null) {
                 //
@@ -168,6 +206,9 @@ public class FilterRule {
         private Integer valueAddYearDefault;
         private ItemType valueAddYearFrom;
         private final AddItemType addItemType;
+		private boolean itemSpecFromSourceItem;
+		private boolean valueFromSourceItem;
+		private boolean hideSourceItem;		
 
         public AddItem(final AddItemType addItemType) {
             this.addItemType = addItemType;
@@ -260,6 +301,30 @@ public class FilterRule {
         public void setValueAddYearFrom(ItemType valueAddYearFrom) {
             this.valueAddYearFrom = valueAddYearFrom;
         }
+
+		public boolean isHideSourceItem() {
+			return hideSourceItem;
+		}
+
+		public void setHideSourceItem(boolean hideSourceItem) {
+			this.hideSourceItem = hideSourceItem;
+		}
+
+		public boolean isItemSpecFromSourceItem() {
+			return itemSpecFromSourceItem;
+		}
+
+		public void setItemSpecFromSourceItem(boolean itemSpecFromSourceItem) {
+			this.itemSpecFromSourceItem = itemSpecFromSourceItem;
+		}
+
+		public boolean isValueFromSourceItem() {
+			return valueFromSourceItem;
+		}
+
+		public void setValueFromSourceItem(boolean b) {
+			this.valueFromSourceItem = b;			
+		}
     };
 
     List<Cond> when = new ArrayList<>();
@@ -344,6 +409,13 @@ public class FilterRule {
             result.setTrgItemSpec(trgItemSpec);
         }
         
+        result.setItemSpecFromSourceItem(srcAddItem.isItemSpecFromSourceItem());
+        if(srcAddItem.isValueFromSourceItem()) {
+        	// TODO: add data types checks if conversion if supported
+        	result.setValueFromSourceItem(true);
+        }
+        result.setHideSourceItem(srcAddItem.isHideSourceItem());
+        
         result.setAppendAsNewLine(srcAddItem.isAppendAsNewLine());
         result.setUpdateWithLower(srcAddItem.isUpdateWithLower());
         result.setPrefix(srcAddItem.getPrefix());
@@ -418,6 +490,17 @@ public class FilterRule {
 
         return createDescItem(itemType, itemSpec, data);
     }
+    
+    private ArrDescItem createDescItemString(ItemType itemType, RulItemSpec itemSpec, String value) {
+        Validate.isTrue(itemType.getDataType() == DataType.STRING, "Only STRINGs are supported");
+
+        ArrDataString data = new ArrDataString();
+        data.setDataType(DataType.STRING.getEntity());
+        data.setDataId(-1);
+        data.setStringValue(value);
+
+        return createDescItem(itemType, itemSpec, data);
+    }
 
     private ArrDescItem createDescItemText(ItemType itemType, RulItemSpec itemSpec, String value) {
         Validate.isTrue(itemType.getDataType() == DataType.TEXT, "Only TEXTs are supported");
@@ -446,6 +529,7 @@ public class FilterRule {
 
     public boolean canApply(FilterRuleContext filterRuleContext) {
         if (when != null) {
+        	filterRuleContext.resetMatchedItems();
             for (Cond cond : when) {
                 if (!cond.isTrue(filterRuleContext)) {
                     return false;
@@ -491,23 +575,45 @@ public class FilterRule {
      */
     private void addItem(AddItem action, Map<ItemType, List<ArrItem>> itemsByType,
                          ApplyFilter filter,
-                         FilterRuleContext filterRuleContext, Locale locale) {
+                         FilterRuleContext filterRuleContext, Locale locale) {    	    	
         // get source value
-        ArrData srcValue = filterRuleContext.getFirstData(action.getValueFrom(), null);
+    	List<? extends ArrItem> sourceValueItems = filterRuleContext.getItems(action.getValueFrom(), null);
 
         // get item value
         if(action.getValueFromItem()!=null) {
-            List<ArrItem> items = itemsByType.get(action.getValueFromItem());
-            if (items != null && items.size() > 0) {
-                ArrItem item = items.get(0);
-                if (item != null) {
-                    srcValue = item.getData();
-                }
-            }
+        	if(CollectionUtils.isNotEmpty(sourceValueItems) ) {
+        		throw new BusinessException("Some items already selected", BaseCode.INVALID_STATE);
+        	}
+        	
+        	sourceValueItems = itemsByType.get(action.getValueFromItem());
         }
-        // unproxy value - will be used by instanceof
-		srcValue = HibernateUtils.unproxy(srcValue);
+        if(action.isValueFromSourceItem()) {
+        	if(CollectionUtils.isNotEmpty(sourceValueItems) ) {
+        		throw new BusinessException("Some items already selected", BaseCode.INVALID_STATE);
+        	}
+        	sourceValueItems = filterRuleContext.getMatchingItems();
+        }
+        
+        if(CollectionUtils.isEmpty(sourceValueItems)) {
+        	return;
+        }
+        
+        for(var sourceValueItem: sourceValueItems) {
+    		addItem(sourceValueItem, action, filter, filterRuleContext, locale);
+        }
+                
+    }
 
+    private void addItem(ArrItem sourceValueItem, AddItem action, ApplyFilter filter, FilterRuleContext filterRuleContext,
+			Locale locale) {
+    	ArrData srcValue = sourceValueItem.getData();
+    	if(srcValue==null) {
+    		return;
+    	}
+		
+    	// unproxy value - will be used by instanceof
+		srcValue = HibernateUtils.unproxy(srcValue);
+		
         ArrDescItem descItem = null;
         ArrItem existingItem = filter.getAddedItem(action.getTrgItemType().getEntity(), action.getTrgItemSpec());
         if (action.getTrgItemType().getDataType() == DataType.ENUM) {
@@ -592,7 +698,13 @@ public class FilterRule {
             } else {
                 descItem = createDescItemText(action.getTrgItemType(), action.getTrgItemSpec(), newText);
             }
-        } else {
+        } else if(action.getTrgItemType().getDataType() == DataType.STRING) {
+        	descItem = addStringItem(action, sourceValueItem, srcValue, filterRuleContext, existingItem, locale);
+            if(action.isHideSourceItem()) {
+            	filter.addHideItem(sourceValueItem);
+    		}
+        } else
+        {
             throw new IllegalStateException("Unsupported type: " + action.getTrgItemType().getDataType());
         }
 
@@ -604,11 +716,60 @@ public class FilterRule {
             case VIRTUAL_RESTR_ITEM:
                 filterRuleContext.addRestrItem(descItem);
                 break;
+            }
         }
-    }
-    }
+	}
 
-    /**
+	private ArrDescItem addStringItem(AddItem action, ArrItem sourceValueItem, ArrData srcValue,
+			FilterRuleContext filterRuleContext,
+			ArrItem existingItem, Locale locale) {
+
+		StringBuilder sb = new StringBuilder();
+        // append static value
+        if (StringUtils.isNotEmpty(action.getValue())) {
+            sb.append(action.getValue());
+        }
+        // append value from other item
+        if (srcValue != null) {
+            // add prefix
+            if (StringUtils.isNotEmpty(action.getPrefix())) {
+                sb.append(action.getPrefix());
+            }
+            // add value
+            if (srcValue instanceof ArrDataRecordRef) {
+                ArrDataRecordRef srcDataRecordRef = (ArrDataRecordRef) srcValue;
+                Integer recordId = srcDataRecordRef.getRecordId();
+                
+                var apc = filterRuleContext.getApCacheProvider().get(recordId);
+                var prefPart = apc.getPart(apc.getPreferredPartId());
+                boolean indexFound = false;
+                for(var index :prefPart.getIndices()) {
+                	if(index.getIndexType().equals("SHORT_NAME")) {
+                		sb.append(index.getIndexValue());
+                		indexFound = true;
+                		break;
+                	}
+				}
+                if(!indexFound) {
+					// fallback to record id
+					sb.append(recordId);
+				}
+            } else {
+            	throw new IllegalStateException("Unsupported source type to for conversion to STRING: " + srcValue);
+            }
+        }
+        
+        RulItemSpec trgSpec = null;
+        if(action.isItemSpecFromSourceItem()) {
+        	if(sourceValueItem!=null) {
+        		String sourceCode = sourceValueItem.getItemSpec().getCode();
+        		trgSpec = action.getTrgItemType().getItemSpecByCode(sourceCode);
+        	}
+        }
+		return createDescItemString(action.getTrgItemType(), trgSpec, sb.toString());		
+	}
+
+	/**
      * Prepare localdate as specified in action
      * 
      * @param action
@@ -619,11 +780,14 @@ public class FilterRule {
                                        FilterRuleContext filterRuleContext,
                                        LocalDate localDate) {
         Integer addYear = null;
-        ArrData srcAddYear = filterRuleContext.getFirstData(action.getValueAddYearFrom(), null);
-        if (srcAddYear != null) {
-        	srcAddYear = HibernateUtils.unproxy(srcAddYear);
-            ArrDataInteger di = (ArrDataInteger) srcAddYear;
-            addYear = di.getIntegerValue();
+        List<ArrItem> srcItems = filterRuleContext.getItems(action.getValueAddYearFrom(), null);       
+        if (srcItems.size()>0) {
+        	ArrData srcAddYear = srcItems.get(0).getData();
+        	if(srcAddYear!=null) {
+        		srcAddYear = HibernateUtils.unproxy(srcAddYear);
+        		ArrDataInteger di = (ArrDataInteger) srcAddYear;
+        		addYear = di.getIntegerValue();
+        	}
         }
         if (addYear == null) {
             addYear = action.getValueAddYearDefault();

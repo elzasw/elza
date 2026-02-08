@@ -177,10 +177,10 @@ public class OutputModelTest extends AbstractServiceTest {
 
         OutputModel outputModel = new OutputModel(outputContext, staticDataService, elzaLocale,
                 fundRepository, fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
-                bindingRepository, null, structObjRepos, structItemRepos, itemRepository,
+                bindingRepository, null, structObjRepos, itemRepository,
                 bindingStateRepository, indexRepository,
                 daoLinkRepository, exportConfig, structObjService, em,
-                dataService);
+                dataService, accessPointCacheService);
 
         ArrOutput output = new ArrOutput();
         output.setFund(fi.getFund());
