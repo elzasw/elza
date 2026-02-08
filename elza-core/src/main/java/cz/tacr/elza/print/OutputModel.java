@@ -48,6 +48,10 @@ import cz.tacr.elza.dataexchange.output.filters.FilterRuleResultType;
 import cz.tacr.elza.dataexchange.output.filters.FilterRules;
 import cz.tacr.elza.dataexchange.output.filters.ReplaceItem;
 import cz.tacr.elza.dataexchange.output.filters.SoiLoadDispatcher;
+import cz.tacr.elza.dataexchange.output.filters.conditions.And;
+import cz.tacr.elza.dataexchange.output.filters.conditions.EntityProperties;
+import cz.tacr.elza.dataexchange.output.filters.conditions.Not;
+import cz.tacr.elza.dataexchange.output.filters.conditions.PartCondition;
 import cz.tacr.elza.dataexchange.output.sections.StructObjectInfoLoader;
 import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 import cz.tacr.elza.domain.ApState;
@@ -783,6 +787,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         // register type descriptors
         Constructor yamlCtor = new Constructor(new LoaderOptions());
         yamlCtor.addTypeDescription(new TypeDescription(OutputFilterConfig.class, "!OutputFilterConfig"));
+        yamlCtor.addTypeDescription(new TypeDescription(EntityProperties.class, "!EntityProperties"));
+        yamlCtor.addTypeDescription(new TypeDescription(And.class, "!And"));
+        yamlCtor.addTypeDescription(new TypeDescription(Not.class, "!Not"));
+        yamlCtor.addTypeDescription(new TypeDescription(PartCondition.class, "!Part"));        
         Yaml yamlLoader = new Yaml(yamlCtor);
 
         OutputFilterConfig ofc;

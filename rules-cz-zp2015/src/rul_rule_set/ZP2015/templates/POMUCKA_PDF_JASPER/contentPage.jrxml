@@ -200,6 +200,7 @@
 	.addValueWithTitle("ZP2015_PART")
 	.setGroupFormat("; ")
 	.addValue("ZP2015_ENTITY_ROLE")
+	.addValue("ZP2015_ENTITY_ROLE_TEXT")
 	.addValueWithTitle("ZP2015_UNIT_HIST")
 	.addValueWithTitle("ZP2015_UNIT_SOURCE")
 	.addValueWithTitle("ZP2015_UNIT_ARR")
