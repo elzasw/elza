@@ -13,5 +13,4 @@ public interface WfTaskRepository extends ElzaJpaRepository<WfTask, Integer> {
 
 	@Query("select t from wf_task t join fetch t.taskType where t.assigneeId = :assigneeId")
 	List<WfTask> findAllByAssigneeId(@Param("assigneeId") Integer assigneeId);
-
 }

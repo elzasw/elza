@@ -20,6 +20,8 @@ import cz.tacr.elza.controller.vo.Participant;
 import cz.tacr.elza.controller.vo.TasksEntityType;
 import cz.tacr.elza.controller.vo.TasksStatus;
 import cz.tacr.elza.controller.vo.TasksViewDetail;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApState;
@@ -32,10 +34,13 @@ import cz.tacr.elza.domain.WfTask.Status;
 import cz.tacr.elza.domain.WfTaskApState;
 import cz.tacr.elza.domain.WfTaskType;
 import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.WfTaskApRevStateRepository;
@@ -69,40 +74,34 @@ public class TaskService {
 	private AccessPointService accessPointService;
 
 	@Autowired
-	private ApStateRepository apStateRepository;
+	private ApStateRepository stateRepository;
+
+	@Autowired
+	private ApChangeRepository changeRepository;
 
 	/**
 	 * Získání seznamu zpracovatelů entity 
 	 * 
-	 * @param apState
+	 * @param state
 	 * @return
 	 */
 	@Transactional(Transactional.TxType.MANDATORY)
-	public List<Participant> getLastParticipants(ApState apState) {
+	public List<Participant> getLastParticipants(ApAccessPoint accessPoint) {
 		List<Participant> result = new ArrayList<>();
 		List<UsrUser> users = new ArrayList<>();
 
-		List<WfTaskApState> wfTaskApStates = wfTaskApStateRepository.findAllByState(apState);
-		wfTaskApStates.forEach(i -> {
-			WfTask wfTask = i.getTask();
-			UsrUser creator = wfTask.getCreator();
-			UsrUser assignee = wfTask.getAssignee();
-			UsrUser closedBy = wfTask.getClosedBy();
-			if (creator != null) {
-				users.add(creator);
-			}
-			if (assignee != null) {
-				users.add(assignee);
-			}
-			if (closedBy != null) {
-				users.add(closedBy);
+		List<ApChange> changes = changeRepository.findByApState(accessPoint);
+		changes.forEach(c -> {
+			UsrUser user = c.getUser();
+			if (user != null && user.getActive()) {
+				users.add(user);
 			}
 		});
 
 		List<Integer> apIds = users.stream().map(u -> u.getAccessPointId()).toList();
         Map<Integer, ApIndex> apIndexMap = accessPointService.findPreferredPartIndexMapByIds(apIds); 
 
-        List<ApState> apStates = apStateRepository.findLastByAccessPointIds(apIds);
+        List<ApState> apStates = stateRepository.findLastByAccessPointIds(apIds);
         Map<Integer, Integer> apIdScopeIdMap = apStates.stream().collect(Collectors.toMap(s -> s.getStateId(), s -> s.getScopeId()));
 
         // Permissions by user
@@ -242,7 +241,7 @@ public class TaskService {
 		}
 
         WfTaskType taskType = wfTaskTypeRepository.findByCode(taskTypeCode);
-        if(taskType==null) {
+        if (taskType == null) {
         	throw new SystemException("Task type not found", BaseCode.DB_INTEGRITY_PROBLEM).set("code", taskTypeCode);
         }
 
@@ -263,8 +262,13 @@ public class TaskService {
 	 */
 	@Transactional(Transactional.TxType.MANDATORY)
 	public void createTaskApState(ApState apState, Integer assignTo) {
+		// Vytvoření úkolu APPROVED není dostupné
+		if (apState.getStateApproval() == StateApproval.APPROVED) {
+            throw new BusinessException("Vytvoření úkolu [Approve/Schválit] není dostupné", BaseCode.INVALID_STATE);
+		} 
+
         // create new WfTask
-        String taskTypeCode = apState.getStateApproval() == StateApproval.APPROVED ? AP_CONFIRM : AP_UPDATE;
+        String taskTypeCode = apState.getStateApproval() == StateApproval.TO_APPROVE ? AP_CONFIRM : AP_UPDATE;
     	WfTask wfTask = createWfTask(taskTypeCode, assignTo);
 
     	// create new WfTaskApState
