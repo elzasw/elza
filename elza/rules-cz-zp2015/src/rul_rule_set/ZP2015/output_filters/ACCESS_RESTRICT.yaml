@@ -21,8 +21,12 @@ defs:
       - itemType: ZP2015_ENTITY_ROLE
         # Multipe and conditions
         entityCondition:
-          - !EntityClass
+          - !EntityProperties
             classType: PERSON_INDIVIDUAL
+          - !Not
+            not:
+              !EntityProperties
+              externalEntity: true
           - !Not
             not:
               !Part
