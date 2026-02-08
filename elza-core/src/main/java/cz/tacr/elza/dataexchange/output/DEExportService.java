@@ -53,7 +53,7 @@ import cz.tacr.elza.dataexchange.output.filters.AccessRestrictConfig;
 import cz.tacr.elza.dataexchange.output.filters.ExportFilter;
 import cz.tacr.elza.dataexchange.output.filters.ExportFilterConfig;
 import cz.tacr.elza.dataexchange.output.filters.conditions.And;
-import cz.tacr.elza.dataexchange.output.filters.conditions.EntityClass;
+import cz.tacr.elza.dataexchange.output.filters.conditions.EntityProperties;
 import cz.tacr.elza.dataexchange.output.filters.conditions.Not;
 import cz.tacr.elza.dataexchange.output.filters.conditions.PartCondition;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
@@ -461,7 +461,7 @@ public class DEExportService {
         // register type descriptors
         Constructor yamlCtor = new Constructor(new LoaderOptions());
         yamlCtor.addTypeDescription(new TypeDescription(AccessRestrictConfig.class, "!ExportFilterConfig"));
-        yamlCtor.addTypeDescription(new TypeDescription(EntityClass.class, "!EntityClass"));
+        yamlCtor.addTypeDescription(new TypeDescription(EntityProperties.class, "!EntityProperties"));
         yamlCtor.addTypeDescription(new TypeDescription(And.class, "!And"));
         yamlCtor.addTypeDescription(new TypeDescription(Not.class, "!Not"));
         yamlCtor.addTypeDescription(new TypeDescription(PartCondition.class, "!Part"));
