@@ -18,6 +18,7 @@ class UserField extends AbstractReactComponent {
         error: PropTypes.string,
         tags: PropTypes.bool,
         excludedGroupId: PropTypes.number,
+        all: PropTypes.bool,
     };
 
     refAutocomplete = null;
@@ -36,8 +37,9 @@ class UserField extends AbstractReactComponent {
 
     handleSearchChange = text => {
         text = text === '' ? null : text;
+        const { excludedGroupId, all } = this.props;
 
-        WebApi.findUser(text, true, false, 200, this.props.excludedGroupId).then(json => {
+        WebApi.findUser(text, true, false, 200, excludedGroupId, undefined, undefined, all).then(json => {
             this.setState({
                 dataList: json.data,
             });

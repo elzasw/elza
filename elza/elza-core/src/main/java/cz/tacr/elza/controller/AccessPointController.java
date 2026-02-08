@@ -228,9 +228,8 @@ public class AccessPointController implements AccesspointsApi {
 	@Transactional
     public ResponseEntity<List<Participant>> accessPointGetLastParticipants(Integer id) {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(id);
-        ApState apState = accessPointService.getStateInternal(accessPoint);
 
-    	return ResponseEntity.ok(taskService.getLastParticipants(apState));
+    	return ResponseEntity.ok(taskService.getLastParticipants(accessPoint));
     }
 
     /**

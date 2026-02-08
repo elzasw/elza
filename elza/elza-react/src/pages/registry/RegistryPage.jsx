@@ -419,7 +419,7 @@ class RegistryPage extends AbstractReactComponent {
             dispatch,
             history,
             registryDetail: {
-                data: { id, typeId, scopeId, stateApproval, version },
+                data: { id, typeId, scopeId, stateApproval, version, assignedTo },
             },
             select = false,
             revisionActive,
@@ -429,8 +429,9 @@ class RegistryPage extends AbstractReactComponent {
                 accessPointId={id}
                 initialValues={{
                     state: stateApproval,
-                    typeId: typeId,
-                    scopeId: scopeId,
+                    typeId,
+                    scopeId,
+                    assignedTo,
                 }}
                 onSubmit={async (data) => {
                     const finalData = {
@@ -439,7 +440,7 @@ class RegistryPage extends AbstractReactComponent {
                         typeId: data.typeId,
                         scopeId: data.scopeId !== '' ? parseInt(data.scopeId) : null,
                     };
-                    await Api.accesspoints.accessPointChangeState(id, finalData, version, data.assignedUser?.id);
+                    await Api.accesspoints.accessPointChangeState(id, finalData, version, data.assignedUser?.userId);
 
                     dispatch(modalDialogHide());
                     dispatch(goToAe(history, id, true, !select, revisionActive));
@@ -470,20 +471,22 @@ class RegistryPage extends AbstractReactComponent {
             dispatch,
             history,
             registryDetail: {
-                data: { id, newTypeId, revStateApproval, version },
+                data: { id, newTypeId, revStateApproval, version, assignedTo },
             },
             select = false,
             revisionActive,
         } = this.props;
         const form = (
             <RevStateChangeForm
+                accessPointId={id}
                 initialValues={{
                     state: revStateApproval,
                     typeId: newTypeId,
+                    assignedTo,
                 }}
                 onSubmit={async (data) => {
                   const { assignedUser, ...state } = data;
-                    await dispatch(registryChangeStateRevision(id, version, state, history, select, assignedUser.id))
+                    await dispatch(registryChangeStateRevision(id, version, state, history, select, assignedUser?.userId))
 
                     dispatch(modalDialogHide());
                     dispatch(goToAe(history, id, true, !select, revisionActive));
