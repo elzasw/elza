@@ -37,7 +37,6 @@ import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.repository.ApChangeRepository;
