@@ -46,6 +46,9 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.domain.WfTask;
+import cz.tacr.elza.domain.WfTaskApRevState;
+import cz.tacr.elza.domain.WfTaskApState;
 import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -145,6 +148,21 @@ public class ApStateSpecification implements Specification<ApState> {
             	condition = cb.and(condition, cb.or(usrState, usrRevSt));
             }
 
+            Integer assignTo = searchFilterVO.getAssignedTo();
+            if (assignTo != null) {
+                Join<ApState, WfTaskApState> taskStateJoin = stateRoot.join(ApState.FIELD_TASK_STATE_LIST, JoinType.LEFT);
+                Join<WfTaskApState, WfTask> taskJoin = taskStateJoin.join(WfTaskApState.FIELD_TASK, JoinType.LEFT);
+                taskJoin.on(cb.isNull(taskJoin.get(WfTask.FIELD_TIME_CLOSED)));
+
+                Join<ApRevState, WfTaskApRevState> taskRevStateJoin = revStateJoin.join(ApRevState.FIELD_TASK_REV_STATE_LIST, JoinType.LEFT);
+                Join<WfTaskApState, WfTask> taskRevJoin = taskRevStateJoin.join(WfTaskApRevState.FIELD_TASK, JoinType.LEFT);
+                taskRevJoin.on(cb.isNull(taskRevJoin.get(WfTask.FIELD_TIME_CLOSED)));
+
+				condition = cb.and(condition, cb.or(
+						cb.equal(taskJoin.get(WfTask.FIELD_ASSIGNEE_ID), assignTo), 
+						cb.equal(taskRevJoin.get(WfTask.FIELD_ASSIGNEE_ID), assignTo)));
+            }
+
             String code = searchFilterVO.getCode();
             if (StringUtils.isNotEmpty(code)) {
             	try {
@@ -161,7 +179,7 @@ public class ApStateSpecification implements Specification<ApState> {
             	bindingJoin.on(cb.isNull(bindingJoin.get(ApBindingState.DELETE_CHANGE_ID)));
             	condition = cb.and(condition, cb.equal(bindingJoin.get(ApBindingState.SYNC_STATE), syncState));
             }
-
+            
             condition = cb.and(condition, process(cb.conjunction(), ctx));
         }
 
