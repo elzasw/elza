@@ -6,6 +6,8 @@ import {ApTypeVO} from "../../../../api/ApTypeVO";
 import { StatesField } from 'components/registry/field/StatesField';
 import {TypesField} from "../../field/TypesField";
 import { SyncState } from 'api/SyncState';
+import UserField from 'components/admin/UserField';
+import { UsrUserVO } from 'api/UsrUserVO';
 
 type OwnProps = {
     submitting: boolean;
@@ -47,6 +49,37 @@ const BaseFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-sea
                component={FormInputField}
                label={i18n('ap.ext-search.user')}
                disabled={submitting}
+        />
+        <Field name="assignedTo"
+            type="text"
+            component={FormInputField}
+            // component={({input}) => {
+            //     function handleChange(user: UsrUserVO){
+            //         console.log("#uf - on change", user.id);
+            //         input.onChange(user.id);
+            //     }
+            //     //@ts-expect-error Wrong typing on form input field
+            //     return <FormInputField
+            //         type="static"
+            //         label={i18n('ap.ext-search.assignedTo')}
+            //     >
+            //         <UserField
+            //             {...input}
+            //             onChange={handleChange}
+            //             disabled={submitting}
+            //             getItemName={(user: UsrUserVO) => {
+            //                 console.log("#uf - get item name", user);
+            //                 if(!user?.id){
+            //                     return "";
+            //                 }
+            //                 return `${user.accessPoint?.name} (${user.username})`;
+            //             }}
+            //             all={true}
+            //         />
+            //     </FormInputField>
+            // }}
+            label={i18n('ap.ext-search.assignedTo')}
+            disabled={submitting}
         />
         <Field name="syncState"
                type="select"
