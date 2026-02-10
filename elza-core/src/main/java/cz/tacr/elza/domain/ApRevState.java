@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.util.List;
+
 import cz.tacr.elza.domain.enumeration.StringLength;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
@@ -12,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 
 @Entity(name = "ap_rev_state")
 public class ApRevState {
@@ -20,6 +23,8 @@ public class ApRevState {
     public static final String FIELD_CREATE_CHANGE = "createChange";
     public static final String FIELD_DELETE_CHANGE_ID = "deleteChangeId";
     public static final String FIELD_STATE_APPROVAL = "stateApproval";
+    public static final String FIELD_STATE = "state";
+    public static final String FIELD_TASK_REV_STATE_LIST = "taskRevStateList";
 
     @Id
     @GeneratedValue
@@ -71,6 +76,9 @@ public class ApRevState {
     @Enumerated(EnumType.STRING)
     @Column(name = "state_approval", length = StringLength.LENGTH_ENUM, nullable = false)
     private RevStateApproval stateApproval;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = WfTaskApRevState.FIELD_STATE)
+    private List<WfTaskApRevState> taskRevStateList;
 
     private String comment;
 

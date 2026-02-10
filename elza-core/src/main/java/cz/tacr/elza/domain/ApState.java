@@ -37,6 +37,7 @@ public class ApState implements IApScope, AccessPointCacheSerializable {
     public static final String FIELD_CREATE_CHANGE = "createChange";
     public static final String FIELD_STATE_ID = "stateId";
     public static final String FIELD_REVISION_LIST = "revisionList";
+    public static final String FIELD_TASK_STATE_LIST = "taskStateList";
 
     @Id
     @GeneratedValue
@@ -94,6 +95,9 @@ public class ApState implements IApScope, AccessPointCacheSerializable {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = ApRevision.FIELD_STATE)
     private List<ApRevision> revisionList;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = WfTaskApState.FIELD_STATE)
+    private List<WfTaskApState> taskStateList;
 
     /**
      * Typ rejstříku.
