@@ -92,7 +92,7 @@ public class TaskService {
 		List<ApChange> changes = changeRepository.findByApState(accessPoint);
 		changes.forEach(c -> {
 			UsrUser user = c.getUser();
-			if (user != null && user.getActive()) {
+			if (user != null && user.getActive() && !users.contains(user)) {
 				users.add(user);
 			}
 		});
