@@ -187,12 +187,6 @@ export const RevStateChangeFormFn = ({
                                         id: input.value.userId,
                                     } : undefined}
                                     onChange={handleChange}
-                                    getItemName={(user: UsrUserVO) => {
-                                        if(!user?.id){
-                                            return "";
-                                        }
-                                        return `${user.accessPoint?.name} (${user.username})`;
-                                    }}
                                     all={true}
                                     />
                                     {input.value && <div style={{ position: 'absolute', right: '16px' }}>
