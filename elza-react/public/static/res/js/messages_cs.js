@@ -1288,6 +1288,7 @@ var messages = {
     "ap.ext-filter.title": "Rozšířený filtr",
     "ap.ext-filter.use": "Použít rozšířený filtr",
     "ap.ext-filter.used": "Je použitý rozšířený filtr",
+    "ap.ext-filter.assignedTo.currentUser": "Moje úkoly",
 
     "ap.coordinate.import.title": "Importovat souřadnice",
     "ap.coordinate.import.select": "Vyberte soubor",
