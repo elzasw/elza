@@ -20,6 +20,7 @@ export interface Props {
     excludedGroupId?: number;
     all?: boolean;
     disabled?: boolean;
+    excludeUserIds?: number[];
 }
 
 function isMinimalUser(value?: UsrUserVO | number | MinimalUser): value is MinimalUser{
@@ -36,6 +37,7 @@ export const UserField = forwardRef<Autocomplete, Props>(({
     excludedGroupId,
     all,
     disabled,
+    excludeUserIds = [],
     ...otherProps
 }:Props, ref) => {
     const [items, setItems] = useState<UsrUserVO[]>([]);
@@ -66,7 +68,8 @@ export const UserField = forwardRef<Autocomplete, Props>(({
         query = query === '' ? null : query;
 
         WebApi.findUser(query, true, false, 200, excludedGroupId, undefined, undefined, all).then(json => {
-            setItems(json.data);
+            const _items = json.data?.filter(({id}) => excludeUserIds.indexOf(id) < 0)
+            setItems(_items);
         });
     }
 
