@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApChange;
+import cz.tacr.elza.domain.ApState;
 
 @Repository
 public interface ApChangeRepository extends ElzaJpaRepository<ApChange, Integer> {
@@ -23,5 +24,5 @@ public interface ApChangeRepository extends ElzaJpaRepository<ApChange, Integer>
 		left join rv.state rvs
 		where rvs.accessPoint = :ap or s.accessPoint = :ap
     """)
-    List<ApChange> findByAccessPoint(ApAccessPoint ap);
+    List<ApChange> findByApState(ApAccessPoint ap);
 }

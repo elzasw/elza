@@ -14,7 +14,6 @@ import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.projection.ApAccessPointInfo;
-import cz.tacr.elza.repository.vo.AccessPointIdAssignToVO;
 
 /**
  * Repository záznamy v rejstříku.
@@ -112,22 +111,4 @@ public interface ApAccessPointRepository extends ElzaJpaRepository<ApAccessPoint
     		" WHERE p.access_point_id = ?1 AND i.delete_change_id IS NULL AND p.delete_change_id IS NOT NULL" +
     		") src", nativeQuery = true)
     Integer getLastChange(Integer accessPointId);
-
-    @Query("""
-	    SELECT DISTINCT new cz.tacr.elza.repository.vo.AccessPointIdAssignToVO(
-	        ap.accessPointId, COALESCE(t1.assigneeId, t2.assigneeId))
-	    FROM ap_state s
-	    JOIN s.accessPoint ap
-	    LEFT JOIN s.taskStateList ts1
-	        LEFT JOIN ts1.task t1
-	    LEFT JOIN s.revisionList r
-	        LEFT JOIN r.revStateList rs
-    			LEFT JOIN rs.taskRevStateList trs
-    		         LEFT JOIN trs.task t2
-	    WHERE s.deleteChange IS NULL
-	      AND s.accessPoint IN :accessPoints
-	      AND (t1.timeClosed IS NULL OR t2.timeClosed IS NULL)
-	      AND (t1.assigneeId IS NOT NULL OR t2.assigneeId IS NOT NULL)
-   	""")	
-    List<AccessPointIdAssignToVO> findAssignToByAccessPoints(List<ApAccessPoint> accessPoints);
 }
