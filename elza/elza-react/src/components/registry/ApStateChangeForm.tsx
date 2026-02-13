@@ -15,6 +15,7 @@ import { Api } from 'api';
 import { Participant } from 'elza-api';
 import { UsrUserVO } from 'api/UsrUserVO';
 import { useAppSelector } from 'utils/hooks/useAppSelector';
+import { ApState } from 'api/generated/model';
 
 const stateToOption = (item: StateApproval) => ({
     id: item,
@@ -29,7 +30,7 @@ type Props = {
     onSubmit: (data: ApStateChangeVO) => void;
     states: string[];
     scopeId?: number;
-    initialValues?: Omit<Partial<ApStateChangeVO>, 'assignedUser'> & { assignedTo: number };
+    initialValues?: Partial<ApStateChangeVO>;
 };
 
 type ApStateChangeVO = {
@@ -37,7 +38,7 @@ type ApStateChangeVO = {
     comment: string;
     typeId: number;
     scopeId: number;
-    assignedUser?: Participant;
+    assignedTo?: number;
 };
 
 export const ApStateChangeForm = ({
@@ -54,7 +55,6 @@ export const ApStateChangeForm = ({
 
     const [states, setStates] = useState<string[]>([]);
     const [lastParticipants, setLastParticipants] = useState<Participant[]>([]);
-    const [assignedUser, setAssignedUser] = useState<Partial<Participant>>(undefined);
 
     let preselectedScopeId: number | null | undefined = initialValues?.scopeId;
 
@@ -67,20 +67,12 @@ export const ApStateChangeForm = ({
 
     useEffect(() => {
         (async () => {
-            const [states, { data: _lastParticipants }, user] = await Promise.all([
+            const [states, { data: _lastParticipants }] = await Promise.all([
                 WebApi.getStateApproval(accessPointId),
                 Api.accesspoints.accessPointGetLastParticipants(accessPointId),
-                initialValues?.assignedTo != undefined ? await WebApi.getUser(initialValues?.assignedTo) : Promise.resolve(undefined)
             ]);
 
             setLastParticipants(_lastParticipants);
-            if (user) {
-                setAssignedUser({
-                    userId: user.id,
-                    username: user.username,
-                    name: user.accessPoint.name,
-                });
-            }
 
             if (states.indexOf(initialValues.state) < 0) {
                 states.push(initialValues.state);
@@ -93,9 +85,31 @@ export const ApStateChangeForm = ({
     const uniqueParticipantsMap = new Map(lastParticipants.map((lastParticipant) => [lastParticipant.userId, lastParticipant]));
     const uniqueParticipants = Array.from(uniqueParticipantsMap.values()).filter(({userId}) => userId !== currentUserId);
 
+    function handleSubmit(data: ApStateChangeVO) {
+        // Remove assigned user, when changing state to 'Approved'
+        if (data.state === StateApproval.APPROVED) {
+            delete data.comment;
+        }
+
+        onSubmit(data)
+    }
+
+    function validate(values: ApStateChangeVO){
+        const errors:Partial<Record<keyof ApStateChangeVO, string>> = {};
+        const isToApproveSameUser =
+            values.state === StateApproval.TO_APPROVE
+            && values.assignedTo === currentUserId;
+        if (isToApproveSameUser) {
+            errors.assignedTo = i18n("ap.state.title.assignedUser.error.toApproveSameUser")
+        }
+        return errors;
+    }
+
     return (
-        <FinalForm onSubmit={onSubmit} initialValues={{ ...initialValues, scopeId: preselectedScopeId, assignedUser }}>
-            {({ submitting, handleSubmit, form }) => {
+        <FinalForm validate={validate} onSubmit={handleSubmit} initialValues={{ ...initialValues, scopeId: preselectedScopeId }}>
+            {({ submitting, handleSubmit, form, values, valid }) => {
+                const isApproved = values.state === StateApproval.APPROVED;
+
                 return <Form>
                     <Modal.Body>
                         <Field name={'scopeId'} >
@@ -139,37 +153,36 @@ export const ApStateChangeForm = ({
                             label={i18n('ap.state.title.comment')}
                             name={'comment'}
                         />
-                        <Field<Participant>
-                            name={'assignedUser'}
-                        >{({input}) => {
+                        <Field<number>
+                            name={'assignedTo'}
+                        >{({input, meta}) => {
                             function handleChange(user?: UsrUserVO){
-                                input.onChange(user ? {
-                                    name: user.accessPoint.name,
-                                    username: user.username,
-                                    userId: user.id,
-                                } : undefined);
+                                input.onChange(user?.id);
                             }
                             //@ts-expect-error TODO wrong types on FormInputField
-                            return <FormInputField type="static" label={i18n('ap.state.title.assignedUser')}>
+                            return <FormInputField {...meta} type="static" label={i18n('ap.state.title.assignedUser')}>
                                 <div style={{display: 'flex'}}>
                                     <UserField
-                                    disabled={submitting}
-                                    value={input.value ? {
-                                        accessPoint: {
-                                            name: input.value.name
-                                        },
-                                        username: input.value.username,
-                                        id: input.value.userId,
-                                    } : undefined}
+                                    disabled={submitting || isApproved}
+                                    value={input.value || undefined} //workaround for empty string in value
                                     onChange={handleChange}
-                                    all={true}
+                                        excludeUserIds={
+                                            values.state === StateApproval.TO_APPROVE
+                                                ? [currentUserId]
+                                                : undefined
+                                        }
+                                        all={true}
                                     />
-                                    {input.value && <div style={{ position: 'absolute', right: '16px' }}>
+                                    {input.value && !isApproved && <div style={{ position: 'absolute', right: '16px' }}>
                                         <Button type="button" variant="subtle" onClick={() => handleChange()}>
                                             <Icon glyph="fa-times" />
                                         </Button>
                                     </div>}
                                 </div>
+                                {(meta.error || isApproved) && <div style={{ color: 'var(--color-red)' }}>
+                                    {meta.error}
+                                    {isApproved ? i18n("ap.state.title.assignedUser.error.approved") : <></>}
+                                </div>}
                             </FormInputField>
                         }}</Field>
                         {(uniqueParticipants || []).length > 0 && <Field name="lastParticipants">
@@ -178,11 +191,11 @@ export const ApStateChangeForm = ({
                                 return <FormInputField type="static" label={i18n('ap.state.title.lastParticipants')}>
                                     {uniqueParticipants.map((participant) => {
                                         function handleClick() {
-                                            form.change('assignedUser', participant)
+                                            form.change('assignedTo', participant.userId);
                                         }
 
                                         return <div style={{margin: '4px 0'}}>
-                                            <Button type="button" variant="outline-secondary" onClick={handleClick}>
+                                            <Button disabled={submitting || isApproved} type="button" variant="outline-secondary" onClick={handleClick}>
                                                 {participant.name} ({participant.username})
                                             </Button>
                                         </div>
@@ -192,7 +205,7 @@ export const ApStateChangeForm = ({
                         </Field>}
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit" variant="outline-secondary" disabled={submitting} onClick={handleSubmit}>
+                        <Button type="submit" variant="outline-secondary" disabled={submitting || !valid} onClick={handleSubmit}>
                             {i18n('global.action.store')}
                         </Button>
                         <Button variant="link" onClick={onClose}>
