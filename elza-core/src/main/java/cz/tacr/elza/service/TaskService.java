@@ -89,7 +89,7 @@ public class TaskService {
 		List<Participant> result = new ArrayList<>();
 		List<UsrUser> users = new ArrayList<>();
 
-		List<ApChange> changes = changeRepository.findByApState(accessPoint);
+		List<ApChange> changes = changeRepository.findByAccessPoint(accessPoint);
 		changes.forEach(c -> {
 			UsrUser user = c.getUser();
 			if (user != null && user.getActive() && !users.contains(user)) {
@@ -188,11 +188,11 @@ public class TaskService {
 	@Transactional()
 	public List<TasksViewDetail> getMyTasks() {
 		var userDetail = userService.getLoggedUserDetail();
-		if(userDetail==null) {
+		if (userDetail == null) {
 			throw new AccessDeniedException("User is not logged in", Collections.emptyList());
 		}
 		// check if user has ID
-		if(userDetail.getId() == null) {
+		if (userDetail.getId() == null) {
 			return Collections.emptyList();
 		}
 

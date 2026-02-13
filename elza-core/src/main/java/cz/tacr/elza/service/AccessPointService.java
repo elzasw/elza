@@ -163,6 +163,7 @@ import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
 import cz.tacr.elza.repository.specification.ApStateSpecification;
+import cz.tacr.elza.repository.vo.AccessPointIdAssignToVO;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
@@ -2197,14 +2198,19 @@ public class AccessPointService {
         final Map<Integer, ApIndex> nameMap = findPreferredPartIndexMap(accessPoints);
         final Map<Integer, ApIndex> descriptionMap = findPartIndexMap(accessPoints, sdp.getDefaultBodyPartType());
 
+        List<AccessPointIdAssignToVO> apIdAssignIdList = accessPointRepository.findAssignToByAccessPoints(accessPoints);
+        final Map<Integer, Integer> assignToMap = apIdAssignIdList.stream()
+        		.collect(Collectors.toMap(i -> i.getAccessPointId(), i -> i.getAssignTo()));
+
         return new FilteredResultVO<>(foundRecords, apState ->
                 apFactory.createVO(apState,
                     apState.getAccessPoint(),
                     nameMap.get(apState.getAccessPointId()) != null ? nameMap.get(apState.getAccessPointId()).getIndexValue() : null,
-                    descriptionMap.get(apState.getAccessPointId()) != null ? descriptionMap.get(apState.getAccessPointId()).getIndexValue() : null),
-                foundRecordsCount);
+                    descriptionMap.get(apState.getAccessPointId()) != null ? descriptionMap.get(apState.getAccessPointId()).getIndexValue() : null,
+                    assignToMap.get(apState.getAccessPointId())),
+                	foundRecordsCount);
 	}
-	
+
     /**
      * Zvýšení čísla verze archivní entity
      * 
