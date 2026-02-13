@@ -54,7 +54,7 @@ const BaseFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-sea
             type="text"
             component={({input, meta}) => {
                 function handleChange(user: UsrUserVO){
-                    input.onChange(user.id);
+                    input.onChange(user?.id);
                 }
 
                 //@ts-expect-error Wrong types on FormInputField
