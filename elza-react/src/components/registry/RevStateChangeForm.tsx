@@ -15,7 +15,7 @@ import { Api } from 'api';
 import { WebApi } from 'actions';
 
 export interface RevStateFormFields extends RevStateChange {
-  assignedUser?: Partial<Participant>;
+  assignedTo?: number;
 }
 
 export interface Props {
@@ -25,7 +25,7 @@ export interface Props {
     onClose?: () => void;
     onSubmit: (data: RevStateFormFields) => void;
     states: string[];
-    initialValues?: Omit<Partial<RevStateFormFields>, 'assignedUser'> & {assignedTo: number};
+    initialValues?: Partial<RevStateFormFields>;
 }
 
 type FormErrors<T> = Partial<Record<keyof T, string>>;
@@ -45,22 +45,13 @@ export const RevStateChangeFormFn = ({
     const isValid = (!validationData?.errors || validationData.errors?.length <= 0) && (!validationData?.partErrors || validationData.partErrors?.length <= 0);
 
     const [lastParticipants, setLastParticipants] = useState<Participant[]>([]);
-    const [assignedUser, setAssignedUser] = useState<Partial<Participant>>(undefined);
 
     useEffect(() => {
         (async () => {
-            const [{ data: _lastParticipants }, user] = await Promise.all([
+            const [{ data: _lastParticipants }] = await Promise.all([
                 Api.accesspoints.accessPointGetLastParticipants(accessPointId),
-                initialValues?.assignedTo != undefined ? await WebApi.getUser(initialValues?.assignedTo) : Promise.resolve(undefined)
             ]);
 
-            if (user) {
-                setAssignedUser({
-                    userId: user.id,
-                    username: user.username,
-                    name: user.accessPoint.name,
-                });
-            }
             setLastParticipants(_lastParticipants)
         })()
     }, [accessPointId])
@@ -94,6 +85,13 @@ export const RevStateChangeFormFn = ({
             errors.state = i18n('global.validation.required');
         }
 
+        const isToApproveSameUser =
+            values.state === RevStateApproval.TO_APPROVE
+            && values.assignedTo === currentUserId;
+        if (isToApproveSameUser) {
+            errors.assignedTo = i18n("ap.state.title.assignedUser.error.toApproveSameUser")
+        }
+
         return errors;
     }
 
@@ -120,11 +118,11 @@ export const RevStateChangeFormFn = ({
 
     return (
         <FinalForm<RevStateFormFields>
-            initialValues={{ ...initialValues, assignedUser}}
+            initialValues={{ ...initialValues}}
             onSubmit={onSubmit}
             validate={validate}
         >
-            {({ submitting, handleSubmit, form }) => {
+            {({ submitting, handleSubmit, form, values, valid }) => {
                 return <Form>
                     <Modal.Body>
                         {!isValid && validationData &&
@@ -164,30 +162,25 @@ export const RevStateChangeFormFn = ({
                             label={i18n('ap.state.title.comment')}
                             disabled={submitting}
                         />
-                        <Field<Participant>
-                            name={'assignedUser'}
-                        >{({input}) => {
+                        <Field<number>
+                            name={'assignedTo'}
+                        >{({input, meta}) => {
                             function handleChange(user?: UsrUserVO){
-                                input.onChange(user ? {
-                                    name: user.accessPoint.name,
-                                    username: user.username,
-                                    userId: user.id,
-                                } : undefined);
+                                input.onChange(user?.id);
                             }
                             //@ts-expect-error TODO wrong types on FormInputField
                             return <FormInputField type="static" label={i18n('ap.state.title.assignedUser')}>
                                 <div style={{display: 'flex'}}>
                                     <UserField
                                     disabled={submitting}
-                                    value={input.value ? {
-                                        accessPoint: {
-                                            name: input.value.name
-                                        },
-                                        username: input.value.username,
-                                        id: input.value.userId,
-                                    } : undefined}
+                                    value={input.value || undefined}
                                     onChange={handleChange}
                                     all={true}
+                                    excludeUserIds={
+                                        values.state === RevStateApproval.TO_APPROVE
+                                        ? [currentUserId]
+                                        : undefined
+                                    }
                                     />
                                     {input.value && <div style={{ position: 'absolute', right: '16px' }}>
                                         <Button type="button" variant="subtle" onClick={() => handleChange()}>
@@ -195,6 +188,9 @@ export const RevStateChangeFormFn = ({
                                         </Button>
                                     </div>}
                                 </div>
+                                {meta.error && <div style={{ color: 'var(--color-red)' }}>
+                                    {meta.error}
+                                </div>}
                             </FormInputField>
                         }}</Field>
                         {(uniqueParticipants || []).length > 0 && <Field name="lastParticipants">
@@ -203,7 +199,7 @@ export const RevStateChangeFormFn = ({
                                 return <FormInputField type="static" label={i18n('ap.state.title.lastParticipants')}>
                                     {uniqueParticipants.map((participant) => {
                                         function handleClick() {
-                                            form.change('assignedUser', participant)
+                                            form.change('assignedTo', participant.userId)
                                         }
 
                                         return <div style={{margin: '4px 0'}}>
@@ -217,7 +213,7 @@ export const RevStateChangeFormFn = ({
                         </Field>}
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit" onClick={handleSubmit} variant="outline-secondary" disabled={submitting}>
+                        <Button type="submit" onClick={handleSubmit} variant="outline-secondary" disabled={submitting || !valid}>
                             {i18n('global.action.store')}
                         </Button>
                         <Button variant="link" onClick={onClose}>
