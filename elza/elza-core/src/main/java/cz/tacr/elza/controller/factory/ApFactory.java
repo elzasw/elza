@@ -245,8 +245,9 @@ public class ApFactory {
                                                                     sdp.getDefaultBodyPartType(), DISPLAY_NAME);
         ApIndex bodyPartDisplayName = bodyPartDisplayNames.isEmpty()? null : bodyPartDisplayNames.get(0);
         String description = bodyPartDisplayName != null ? bodyPartDisplayName.getIndexValue() : null;
+        Integer assignedTo = null; // TODO
 
-        return createVO(apState, accessPoint, name, description);
+        return createVO(apState, accessPoint, name, description, assignedTo);
     }
 
     // TODO: odstranit
@@ -317,8 +318,9 @@ public class ApFactory {
 
         List<ApState> states = stateRepository.findLastByReplacedByIds(Arrays.asList(state.getAccessPointId()));
         List<Integer> replacedIds = states.stream().map(s -> s.getAccessPointId()).collect(Collectors.toList());
+        Integer assignedTo = null; // TODO
 
-        ApAccessPointVO apVO = createVO(state, ap, name, description);
+        ApAccessPointVO apVO = createVO(state, ap, name, description, assignedTo);
         if (!replacedIds.isEmpty()) {
             apVO.setReplacedIds(replacedIds);
         }
@@ -411,7 +413,9 @@ public class ApFactory {
 
     public ApAccessPointVO createVO(final ApState apState,
                                     final ApAccessPoint ap,
-                                    final String name, final String description) {
+                                    final String name, 
+                                    final String description, 
+                                    final Integer assignTo) {
         // create VO
         ApAccessPointVO vo = new ApAccessPointVO();
         vo.setId(ap.getAccessPointId());
@@ -432,13 +436,16 @@ public class ApFactory {
         vo.setState(ap.getState() == null ? null : ApStateVO.valueOf(ap.getState().name()));
         vo.setName(name);
         vo.setDescription(description);
+        vo.setAssignedTo(assignTo);
         return vo;
     }
 
     public ApAccessPointVO createVO(final CachedAccessPoint ap,
                                     final String name,
                                     final String description) {
-        return createVO(ap.getApState(), ap.getAccessPointId(), ap.getReplacedAPIds(), ap.getUuid(), ap.getAccessPointVersion(), ap.getErrorDescription(), ap.getState(), name, description);
+        return createVO(ap.getApState(), ap.getAccessPointId(), ap.getReplacedAPIds(), 
+        		        ap.getUuid(), ap.getAccessPointVersion(), ap.getErrorDescription(), ap.getState(), 
+        		        name, description, ap.getAssignedTo());
     }
 
     public ApAccessPointVO createVO(final ApState apState,
@@ -449,7 +456,8 @@ public class ApFactory {
                                     final String errorDescription,
                                     final ApStateEnum state,
                                     final String name,
-                                    final String description) {
+                                    final String description,
+                                    final Integer assignedTo) {
         // create VO
         ApAccessPointVO vo = new ApAccessPointVO();
         vo.setId(accessPointId);
@@ -471,6 +479,7 @@ public class ApFactory {
         vo.setState(state == null ? null : ApStateVO.valueOf(state.name()));
         vo.setName(name);
         vo.setDescription(description);
+        vo.setAssignedTo(assignedTo);
         return vo;
     }
 
@@ -682,7 +691,8 @@ public class ApFactory {
             String name = indexName != null ? indexName.getIndexValue() : null;
             indexName = descriptionMap.get(accessPointId);
             String description = indexName != null ? indexName.getIndexValue() : null;
-            result.add(createVO(apState, accessPoint, name, description));
+            Integer assignTo = null; // TODO
+            result.add(createVO(apState, accessPoint, name, description, assignTo));
         }
 
         return result;
