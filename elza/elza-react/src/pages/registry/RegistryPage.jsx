@@ -485,8 +485,8 @@ class RegistryPage extends AbstractReactComponent {
                     assignedTo,
                 }}
                 onSubmit={async (data) => {
-                  const { assignedUser, ...state } = data;
-                    await dispatch(registryChangeStateRevision(id, version, state, history, select, assignedUser?.userId))
+                  const { assignedTo, ...state } = data;
+                    await dispatch(registryChangeStateRevision(id, version, state, history, select, assignedTo))
 
                     dispatch(modalDialogHide());
                     dispatch(goToAe(history, id, true, !select, revisionActive));
