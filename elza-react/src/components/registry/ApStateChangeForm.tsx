@@ -15,7 +15,6 @@ import { Api } from 'api';
 import { Participant } from 'elza-api';
 import { UsrUserVO } from 'api/UsrUserVO';
 import { useAppSelector } from 'utils/hooks/useAppSelector';
-import { ApState } from 'api/generated/model';
 
 const stateToOption = (item: StateApproval) => ({
     id: item,
@@ -88,7 +87,7 @@ export const ApStateChangeForm = ({
     function handleSubmit(data: ApStateChangeVO) {
         // Remove assigned user, when changing state to 'Approved'
         if (data.state === StateApproval.APPROVED) {
-            delete data.comment;
+            delete data.assignedTo;
         }
 
         onSubmit(data)
@@ -153,56 +152,57 @@ export const ApStateChangeForm = ({
                             label={i18n('ap.state.title.comment')}
                             name={'comment'}
                         />
-                        <Field<number>
-                            name={'assignedTo'}
-                        >{({input, meta}) => {
-                            function handleChange(user?: UsrUserVO){
-                                input.onChange(user?.id);
-                            }
-                            //@ts-expect-error TODO wrong types on FormInputField
-                            return <FormInputField {...meta} type="static" label={i18n('ap.state.title.assignedUser')}>
-                                <div style={{display: 'flex'}}>
-                                    <UserField
-                                    disabled={submitting || isApproved}
-                                    value={input.value || undefined} //workaround for empty string in value
-                                    onChange={handleChange}
+                        {!isApproved && <>
+                            <Field<number>
+                                name={'assignedTo'}
+                            >{({input, meta}) => {
+                                function handleChange(user?: UsrUserVO){
+                                    input.onChange(user?.id);
+                                }
+                                //@ts-expect-error TODO wrong types on FormInputField
+                                return <FormInputField {...meta} type="static" label={i18n('ap.state.title.assignedUser')}>
+                                    <div style={{display: 'flex'}}>
+                                        <UserField
+                                        disabled={submitting}
+                                        value={input.value || undefined} //workaround for empty string in value
+                                        onChange={handleChange}
                                         excludeUserIds={
                                             values.state === StateApproval.TO_APPROVE
-                                                ? [currentUserId]
-                                                : undefined
+                                            ? [currentUserId]
+                                            : undefined
                                         }
                                         all={true}
-                                    />
-                                    {input.value && !isApproved && <div style={{ position: 'absolute', right: '16px' }}>
-                                        <Button type="button" variant="subtle" onClick={() => handleChange()}>
-                                            <Icon glyph="fa-times" />
-                                        </Button>
-                                    </div>}
-                                </div>
-                                {(meta.error || isApproved) && <div style={{ color: 'var(--color-red)' }}>
-                                    {meta.error}
-                                    {isApproved ? i18n("ap.state.title.assignedUser.error.approved") : <></>}
-                                </div>}
-                            </FormInputField>
-                        }}</Field>
-                        {(uniqueParticipants || []).length > 0 && <Field name="lastParticipants">
-                            {() => {
-                                //@ts-expect-error TODO wrong types on FormInputField
-                                return <FormInputField type="static" label={i18n('ap.state.title.lastParticipants')}>
-                                    {uniqueParticipants.map((participant) => {
-                                        function handleClick() {
-                                            form.change('assignedTo', participant.userId);
-                                        }
-
-                                        return <div style={{margin: '4px 0'}}>
-                                            <Button disabled={submitting || isApproved} type="button" variant="outline-secondary" onClick={handleClick}>
-                                                {participant.name} ({participant.username})
+                                        />
+                                        {input.value && <div style={{ position: 'absolute', right: '16px' }}>
+                                            <Button type="button" variant="subtle" onClick={() => handleChange()}>
+                                                <Icon glyph="fa-times" />
                                             </Button>
-                                        </div>
-                                    })}
+                                        </div>}
+                                    </div>
+                                    {(meta.error) && <div style={{ color: 'var(--color-red)' }}>
+                                        {meta.error}
+                                    </div>}
                                 </FormInputField>
-                            }}
-                        </Field>}
+                            }}</Field>
+                            {(uniqueParticipants || []).length > 0 && <Field name="lastParticipants">
+                                {() => {
+                                    //@ts-expect-error TODO wrong types on FormInputField
+                                    return <FormInputField type="static" label={i18n('ap.state.title.lastParticipants')}>
+                                        {uniqueParticipants.map((participant) => {
+                                            function handleClick() {
+                                                form.change('assignedTo', participant.userId);
+                                            }
+
+                                            return <div style={{margin: '4px 0'}}>
+                                                <Button disabled={submitting} type="button" variant="outline-secondary" onClick={handleClick}>
+                                                    {participant.name} ({participant.username})
+                                                </Button>
+                                            </div>
+                                        })}
+                                    </FormInputField>
+                                }}
+                            </Field>}
+                        </>}
                     </Modal.Body>
                     <Modal.Footer>
                         <Button type="submit" variant="outline-secondary" disabled={submitting || !valid} onClick={handleSubmit}>
