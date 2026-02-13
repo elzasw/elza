@@ -1145,6 +1145,8 @@ var messages = {
     "ap.state.title.type": "Podtřída",
     "ap.state.title.state": "Stav",
     "ap.state.title.assignedUser": "Přiděleno",
+    "ap.state.title.assignedUser.error.toApproveSameUser": "Záznam může schválit pouze jiný uživatel",
+    "ap.state.title.assignedUser.error.approved": "Přidělení uživateli bude při schválení automaticky odstraněno",
     "ap.state.title.lastParticipants": "Zpracovatelé",
     "ap.state.title.comment": "Komentář",
     "ap.state.title.revComment": "Komentář revize",
