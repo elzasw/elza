@@ -21,7 +21,6 @@ import cz.tacr.elza.controller.vo.TasksEntityType;
 import cz.tacr.elza.controller.vo.TasksStatus;
 import cz.tacr.elza.controller.vo.TasksViewDetail;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApState;
@@ -51,6 +50,8 @@ import jakarta.transaction.Transactional;
 @Service
 public class TaskService {
 
+	public static final String ENTITY_DEFAULT_PARTICIPANTS = "ENTITY_DEFAULT_PARTICIPANTS";
+
 	@Autowired
 	private UserService userService;
 
@@ -79,7 +80,7 @@ public class TaskService {
 	private ApChangeRepository changeRepository;
 
 	/**
-	 * Získání seznamu zpracovatelů entity 
+	 * Získání seznamu zpracovatelů entity + users from ENTITY_DEFAULT_PARTICIPANTS
 	 * 
 	 * @param state
 	 * @return
@@ -87,12 +88,13 @@ public class TaskService {
 	@Transactional(Transactional.TxType.MANDATORY)
 	public List<Participant> getLastParticipants(ApAccessPoint accessPoint) {
 		List<Participant> result = new ArrayList<>();
-		List<UsrUser> users = new ArrayList<>();
 
-		List<ApChange> changes = changeRepository.findByApState(accessPoint);
-		changes.forEach(c -> {
-			UsrUser user = c.getUser();
-			if (user != null && user.getActive() && !users.contains(user)) {
+		List<UsrUser> users = changeRepository.findUsersByAccessPoint(accessPoint);
+
+		// přidáváme uživatele ze skupiny ENTITY_DEFAULT_PARTICIPANTS
+		List<UsrUser> groupUsers = userService.findUsersByGroupCode(ENTITY_DEFAULT_PARTICIPANTS);
+		groupUsers.forEach(user -> {
+			if (!users.contains(user)) {
 				users.add(user);
 			}
 		});
