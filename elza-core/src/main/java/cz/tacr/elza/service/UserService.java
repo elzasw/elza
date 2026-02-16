@@ -1789,7 +1789,7 @@ public class UserService {
     }
 
     /**
-     * Vyhledá list uživatelů podle osoby.
+     * Vyhledá seznam uživatelů podle osoby.
      *
      * @param accessPoint osoba
      * @return list uživatelů
@@ -1799,7 +1799,17 @@ public class UserService {
     }
 
     /**
-     * Vyhledá list uživatelů podle AS.
+     * Vyhledá seznam uživatelů podle kódu skupiny.
+     * 
+     * @param groupCode
+     * @return
+     */
+    public List<UsrUser> findUsersByGroupCode(final String groupCode) {
+		return userRepository.findByGroupCode(groupCode);
+    }
+
+    /**
+     * Vyhledá seznam uživatelů podle AS.
      * @param fund AS
      * @return list uživatelů
      */
@@ -1811,7 +1821,7 @@ public class UserService {
 	}
 
 	/**
-     * Vyhledá list uživatelů podle oprávnění typu všechny AS.
+     * Vyhledá seznam uživatelů podle oprávnění typu všechny AS.
 	 */
 	public List<UsrUser> findUsersByFundAll() {
 		List<UsrUser> users = userRepository.findByPermissions(UsrPermission.Permission.getFundAllPerms());
