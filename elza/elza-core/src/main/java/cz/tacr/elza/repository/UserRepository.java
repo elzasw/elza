@@ -29,6 +29,9 @@ public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, Use
     @Query("select ugu.user from usr_group_user ugu where ugu.group = :group")
     List<UsrUser> findByGroup(@Param("group") UsrGroup group);
 
+    @Query("select ugu.user from usr_group_user ugu join ugu.group g on g.code = :groupCode")
+    List<UsrUser> findByGroupCode(@Param("groupCode") String groupCode);
+
     @Query("select distinct p.user from usr_permission p where p.fund = :fund")
     List<UsrUser> findByFund(@Param("fund") ArrFund fund);
 
@@ -74,19 +77,6 @@ public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, Use
 	        "       and p.permission in ('GROUP_CONTROL_ENTITY') " +
 	        "       and (p.groupControlId = :checkedGroupId)")
 	List<Integer> findPermissionAllowingGroupAccess(@Param("userId") int userId, @Param("checkedGroupId") int checkedGroupId);
-
-	/**
-	 * Return owner of ap_access_point
-	 * 
-	 * @return
-	 */
-	@Query("SELECT user" +
-			" FROM ap_state s1" +
-			" JOIN s1.createChange cc" +
-			" JOIN cc.user user" +
-			" WHERE s1.accessPoint = :accessPoint" +
-			" AND s1.createChangeId = (SELECT min(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
-	UsrUser findAccessPointOwner(@Param("accessPoint") ApAccessPoint accessPoint);
 
     /**
      * Return number of valid levels

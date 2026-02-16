@@ -13,13 +13,23 @@ interface NodeItemDecimal extends NodeItem {
   data: DataDecimal;
 }
 
-export function DescItemDecimal({ item, onChange, nodeId }: Props) {
+export function DescItemDecimal({
+  item,
+  onChange,
+  nodeId,
+  isDisabled: _isDisabled,
+}: Props) {
   if (item.data?.dataType !== DataType.Decimal) {
     throw "Incorrect data type";
   }
 
   const isInherited = item.nodeId !== nodeId;
-  const isDisabled = item.undefined || isInherited || item.inhibited;
+  const isDisabled =
+    item.undefined ||
+    isInherited ||
+    item.inhibited ||
+    item.readOnly ||
+    _isDisabled;
   const data = item.data as DataDecimal;
 
   const {

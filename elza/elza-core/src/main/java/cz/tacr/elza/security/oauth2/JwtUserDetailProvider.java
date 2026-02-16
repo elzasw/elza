@@ -25,6 +25,7 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -44,6 +45,8 @@ import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrPermission.PermissionType;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.ItemTypeRepository;
+import cz.tacr.elza.security.SiemAuditLogger;
+import cz.tacr.elza.security.SiemAuditLogger.AuthenticationType;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.security.oauth2.OAuth2Properties.PermProperties;
 import cz.tacr.elza.service.AccessPointService;
@@ -63,6 +66,7 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
     private final ItemTypeRepository itemTypeRepository;
 
     private final OAuth2Properties oAuth2Properties;
+    private final SiemAuditLogger siemAuditLogger;
 
     /**
      * Cache pro podrobnosti uživatele.
@@ -86,7 +90,8 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
                                  final UserService userService,
                                  final AccessPointService apService,
                                  final ItemTypeRepository itemTypeRepository,
-                                 final OAuth2Properties oAuth2Properties) {
+                                 final OAuth2Properties oAuth2Properties, 
+                                 final SiemAuditLogger siemAuditLogger) {
         this.jwtDecoder = jwtDecoder;
         this.txManager = txManager;
         this.userService = userService;
@@ -101,6 +106,7 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
                         return null;
                     }
                 });
+        this.siemAuditLogger = siemAuditLogger;
     }
 
     @Override
@@ -116,15 +122,24 @@ public class JwtUserDetailProvider implements AuthenticationProvider {
             throw new AuthenticationServiceException(failed.getMessage(), failed);
         }
 
+        String sourceIp = null;
+	    if (authentication.getDetails() instanceof WebAuthenticationDetails) {
+	    	var details = (WebAuthenticationDetails)authentication.getDetails();
+	        sourceIp = details.getRemoteAddress();
+	    }		
+
         AbstractAuthenticationToken token = this.jwtAuthenticationConverter.convert(jwt);
 
-        Object details = prepareDetails(jwt);
-        token.setDetails(details);
-
-        // Object details = bearer.getDetails();
-        // token.setDetails(bearer.getDetails());
-
-        return token;
+        try {        
+        	Object details = prepareDetails(jwt);
+        	token.setDetails(details);
+        
+        	siemAuditLogger.loginSuccess(token.getName(), sourceIp, AuthenticationType.JWT);
+        	return token;
+        } catch (Exception e) {
+			siemAuditLogger.loginFailed(token.getName(), sourceIp, e.getMessage());
+			throw new AuthenticationServiceException(e.getMessage(), e);
+		}
     }
 
     synchronized private Object prepareDetails(Jwt jwt) {

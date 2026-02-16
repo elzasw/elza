@@ -2,8 +2,8 @@ package cz.tacr.elza.repository;
 
 import cz.tacr.elza.domain.ArrDaoRequest;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +18,7 @@ import java.util.Map;
 @Component
 public class DaoRequestDaoRepositoryImpl implements DaoRequestDaoRepositoryCustom {
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private static Logger logger = LoggerFactory.getLogger(DaoRequestDaoRepositoryImpl.class);
 
     @Autowired
     private EntityManager entityManager;

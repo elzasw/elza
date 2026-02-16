@@ -140,14 +140,12 @@ import cz.tacr.elza.repository.ChangeRepository;
 import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoPackageRepository;
 import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputItemRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrangementFormService;
@@ -216,12 +214,6 @@ public class ArrangementController {
 
     @Autowired
     private ArrangementInternalService arrangementInternalService;
-
-    @Autowired
-    private DescItemRepository descItemRepository;
-
-    @Autowired
-    private OutputItemRepository outputItemRepository;
 
     @Autowired
     private RuleService ruleService;

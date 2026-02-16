@@ -2,6 +2,9 @@ package cz.tacr.elza.dataexchange.output.filters;
 
 import java.util.List;
 
+import cz.tacr.elza.dataexchange.output.filters.conditions.And;
+import cz.tacr.elza.dataexchange.output.filters.conditions.EntityCondition;
+
 public class FilterConfig {
 
     protected List<String> restrictions;
@@ -60,8 +63,18 @@ public class FilterConfig {
 
         protected List<CondDef> noneOf;
         protected List<CondDef> someOf;
+        
+        protected List<EntityCondition> entityCondition;
 
-        public String getItemType() {
+        public List<EntityCondition> getEntityCondition() {
+            return entityCondition;
+        }
+
+        public void setEntityCondition(List<EntityCondition> entityCondition) {
+            this.entityCondition = entityCondition;
+        }
+        
+		public String getItemType() {
             return itemType;
         }
 
@@ -201,6 +214,34 @@ public class FilterConfig {
         private String itemType;
 
         private String itemSpec;
+        
+        /**
+         * Flag to use itemSpec from source item
+         */
+        private boolean itemSpecFromSourceItem = false;
+        
+        public boolean isItemSpecFromSourceItem() {
+			return itemSpecFromSourceItem;
+		}
+
+		public void setItemSpecFromSourceItem(boolean itemSpecFromSourceItem) {
+			this.itemSpecFromSourceItem = itemSpecFromSourceItem;
+		}
+
+		public boolean isValueFromSourceItem() {
+			return valueFromSourceItem;
+		}
+
+		public void setValueFromSourceItem(boolean valueFromSourceItem) {
+			this.valueFromSourceItem = valueFromSourceItem;
+		}
+		
+		private boolean hideSourceItem = false;
+
+		/**
+         * Flag to use value from source item
+         */
+        private boolean valueFromSourceItem = false; 
 
         /**
          * Flag to append value to existing item.
@@ -343,6 +384,14 @@ public class FilterConfig {
         public void setRestrictionItem(boolean restrictionItem) {
             this.restrictionItem = restrictionItem;
         }
+
+		public boolean isHideSourceItem() {
+			return hideSourceItem;
+		}
+
+		public void setHideSourceItem(boolean hideSourceItem) {
+			this.hideSourceItem = hideSourceItem;
+		}
 
     }
 

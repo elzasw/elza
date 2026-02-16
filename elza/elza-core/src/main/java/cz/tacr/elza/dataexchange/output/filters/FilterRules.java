@@ -32,7 +32,8 @@ public class FilterRules {
         return restrictionTypes;
     }
 
-    private List<FilterRule> initFilterRules(final FilterConfig filterConfig, final StaticDataProvider sdp) {
+    private List<FilterRule> initFilterRules(final FilterConfig filterConfig, 
+    		final StaticDataProvider sdp) {
         List<FilterRule> rules = new ArrayList<>(filterConfig.getDefs().size());
         for (Def def : filterConfig.getDefs()) {
             FilterRule rule = new FilterRule(def, sdp);

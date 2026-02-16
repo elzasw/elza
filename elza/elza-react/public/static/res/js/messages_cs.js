@@ -1145,6 +1145,7 @@ var messages = {
     "ap.state.title.type": "Podtřída",
     "ap.state.title.state": "Stav",
     "ap.state.title.assignedUser": "Přiděleno",
+    "ap.state.title.assignedUser.error.toApproveSameUser": "Záznam může schválit pouze jiný uživatel",
     "ap.state.title.lastParticipants": "Zpracovatelé",
     "ap.state.title.comment": "Komentář",
     "ap.state.title.revComment": "Komentář revize",
@@ -1253,6 +1254,7 @@ var messages = {
     "ap.ext-search.area": "Oblast hledání",
     "ap.ext-search.only-main-part": "Pouze hlavní část",
     "ap.ext-search.user": "Autor poslední změny",
+    "ap.ext-search.assignedTo": "Přiděleno",
     "ap.ext-search.syncState": "Stav synchronizace",
     "ap.ext-search.id": "ID",
     "ap.ext-search.state": "Stav",
@@ -1287,6 +1289,7 @@ var messages = {
     "ap.ext-filter.title": "Rozšířený filtr",
     "ap.ext-filter.use": "Použít rozšířený filtr",
     "ap.ext-filter.used": "Je použitý rozšířený filtr",
+    "ap.ext-filter.assignedTo.currentUser": "Moje úkoly",
 
     "ap.coordinate.import.title": "Importovat souřadnice",
     "ap.coordinate.import.select": "Vyberte soubor",
@@ -1709,6 +1712,7 @@ var messages = {
     "login.field.username": "Uživatelské jméno",
     "login.field.password": "Heslo",
     "login.action.login": "Přihlásit",
+    "login.action.ssoKerberos": "Přihlásit se pomocí Windows autentizace (Kerberos)",
     "login.defaultUserEnabled":
         "Je povolen výchozí uživatel. Vytvořte si vlastního uživatele s oprávněním administrátora a výchozího uživatele vypněte.",
     "login.or-message": "nebo se přihlásit pomocí",

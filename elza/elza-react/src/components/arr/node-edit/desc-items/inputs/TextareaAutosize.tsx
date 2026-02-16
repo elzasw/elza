@@ -12,7 +12,7 @@ export function TextareaAutosize({ value, ...otherProps }: Props) {
 
   useLayoutEffect(() => {
     // console.log("#dit", "vf height", virtualFieldRef.current?.offsetHeight, value.length);
-    setTextAreaHeight(`${virtualFieldRef.current?.offsetHeight + 4}px`);
+    setTextAreaHeight(`${virtualFieldRef.current?.offsetHeight + 0}px`);
     // setTextAreaWidth(`${virtualFieldRef.current?.offsetWidth + 4}px`);
   }, [value]);
 
@@ -31,7 +31,7 @@ export function TextareaAutosize({ value, ...otherProps }: Props) {
           display: "inline-block",
           // width: fieldRef.current?.offsetWidth,
           wordBreak: "break-word",
-          padding: "6px 12px 6px 12px",
+          padding: "4px 12px 4px 12px",
           // zIndex: 1000,
           background: "red",
           maxWidth: "100%",
@@ -51,6 +51,8 @@ export function TextareaAutosize({ value, ...otherProps }: Props) {
             // width: textAreaWidth,
             minWidth: "50px",
             maxWidth: "100%",
+            paddingTop: "4px",
+            paddingBottom: "4px",
             flex: 1,
           },
           ref: fieldRef,

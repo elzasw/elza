@@ -237,8 +237,9 @@ public class CamService {
         ApType type = sdp.getApTypeByCode(entity.getEnt().getValue());
 
         state.setDeleteChange(apChange);
-        stateRepository.save(state);
-        ApState stateNew = accessPointService.copyState(state, apChange);
+        var stateSaved = stateRepository.save(state);
+        stateRepository.flush();
+        ApState stateNew = accessPointService.copyState(stateSaved, apChange);
         stateNew.setApType(type);
         stateNew.setStateApproval(ApState.StateApproval.NEW);
         stateNew = stateRepository.save(stateNew);

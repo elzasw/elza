@@ -120,6 +120,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.WfTask.Status;
+import cz.tacr.elza.domain.WfTaskApState;
 import cz.tacr.elza.domain.projection.ApStateInfo;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
@@ -872,7 +873,7 @@ public class AccessPointService {
 
         List<ApState> apStates = stateRepository.findByScope(scope);
         if (!deleteWithEntities) {
-        	ExceptionUtils.isEmptyElseBusiness(apStates, "Nelze smazat třídu rejstříku, která je nastavena na rejstříku.", RegistryCode.USING_SCOPE_CANT_DELETE);
+        	ExceptionUtils.isEmptyElseBusiness(apStates, "Nelze smazat oblast rejstříku, neboť obsahuje záznamy entit (i zneplatněných).", RegistryCode.USING_SCOPE_CANT_DELETE);
         } else {
         	deleteUnassignedByScope(scope);
         }
@@ -2020,6 +2021,7 @@ public class AccessPointService {
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         oldState.setDeleteChange(change);
         stateRepository.save(oldState);
+        stateRepository.flush();
 
         ApState newState = copyState(oldState, change);
         newState.setApType(apType);
@@ -2148,7 +2150,7 @@ public class AccessPointService {
 			CachedAccessPoint entity = accessPointCacheService.deserialize(cachedAccessPoint.getData(), cachedAccessPoint.getAccessPoint());
 			String name = apFactory.findAeCachedEntityName(entity);
 			String description = apFactory.getDescription(entity);
-			accessPointVOList.add(apFactory.createVO(entity.getApState(), entity, name, description));
+			accessPointVOList.add(apFactory.createVO(entity, name, description));
 		}
 
 		return new FilteredResultVO<>(accessPointVOList, cachedAccessPointResult.getRecordCount());
@@ -2548,6 +2550,14 @@ public class AccessPointService {
         return trgAccessPoint;
     }
 
+    /**
+     * Copy state.
+     * 
+     * deleteChange and replacedBy are set to null (not copied)
+     * @param oldState
+     * @param change
+     * @return
+     */
     public ApState copyState(ApState oldState, ApChange change) {
         ApState newState = new ApState();
         newState.setAccessPoint(oldState.getAccessPoint());
@@ -2732,6 +2742,20 @@ public class AccessPointService {
                 .set("scopeId", newApScope.getScopeId())
                 .set("oldState", oldStateApproval)
                 .set("newState", newStateApproval);
+        }
+        
+        // Check if assignTo changed
+        WfTaskApState prevTask = taskService.getTask(oldApState);
+        if(prevTask!=null) {
+        	// check assigned user - if changed
+        	if(!Objects.equals(prevTask.getTask().getAssigneeId(), assignTo)) {
+        		update = true;
+        	}
+        } else {
+        	// check if some value in assignTo
+        	if(assignTo!=null) {
+        		update = true;        		
+        	}
         }
 
         if (!update) {

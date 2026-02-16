@@ -144,6 +144,12 @@ public class Authorization {
             logger.error("User is not logged, no security context");
             throw createAccessDeniedException(declaredAnnotation.permission());
         }
+        
+        // Check if some permissions are required
+        if(declaredAnnotation.permission()==null||declaredAnnotation.permission().length==0){
+        	// No permission required we can log-in user
+        	return pjp.proceed();
+		}
 
 		for (UsrPermission.Permission permission : declaredAnnotation.permission()) {
 

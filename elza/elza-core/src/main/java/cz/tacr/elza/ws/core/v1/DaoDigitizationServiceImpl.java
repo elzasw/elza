@@ -8,8 +8,8 @@ package cz.tacr.elza.ws.core.v1;
 
 import java.util.stream.Collectors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +33,7 @@ import cz.tacr.elza.ws.types.v1.RequestRevoked;
 
 public class DaoDigitizationServiceImpl implements DaoDigitizationService {
 
-    private Log logger = LogFactory.getLog(this.getClass());
+    private static Logger logger = LoggerFactory.getLogger(DaoDigitizationServiceImpl.class);
 
     @Autowired
     private RequestService requestService;
