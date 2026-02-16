@@ -30,4 +30,6 @@ public interface GroupRepository extends ElzaJpaRepository<UsrGroup, Integer>, G
 
     @Query("select distinct p.group from usr_permission p where p.permission in :permissions")
     List<UsrGroup> findByPermissions(@Param("permissions") Set<UsrPermission.Permission> permissions);
+
+	UsrGroup findGroupByCode(String groupCode);
 }
