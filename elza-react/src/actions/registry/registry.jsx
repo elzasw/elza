@@ -47,6 +47,7 @@ const createFilter = values => {
         relFilters: relFilters,
         extFilters: extFilters,
         syncState: values.syncState,
+        assignedTo: parseInt(values.assignedTo),
     };
 };
 

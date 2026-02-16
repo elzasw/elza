@@ -13,7 +13,10 @@ import jakarta.persistence.ManyToOne;
 @Entity(name = "wf_task_ap_state")
 public class WfTaskApState {
 
-	@Id
+    public static final String FIELD_STATE = "state";
+    public static final String FIELD_TASK = "task";
+
+    @Id
     @GeneratedValue
     @Access(AccessType.PROPERTY)
     private Integer taskApStateId;

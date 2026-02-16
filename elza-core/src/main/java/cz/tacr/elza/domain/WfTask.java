@@ -20,6 +20,9 @@ import jakarta.persistence.ManyToOne;
 @Entity(name = "wf_task")
 public class WfTask {
 
+    public static final String FIELD_TIME_CLOSED = "timeClosed";
+	public static final String FIELD_ASSIGNEE_ID = "assigneeId";
+
     public enum Status {
     	NEW, CANCELLED, FINISHED
     }

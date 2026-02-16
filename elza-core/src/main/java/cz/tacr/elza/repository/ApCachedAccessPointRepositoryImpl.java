@@ -15,6 +15,7 @@ import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SEPARATOR;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.REV_STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.USERNAME;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.ASSIGNED_TO;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.ANALYZED;
 
 import java.util.ArrayList;
@@ -126,6 +127,10 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 			// vyhledávání podle uživatelského jména, které provedl poslední změnu stavu
 			if (StringUtils.isNotEmpty(searchFilter.getUser())) {
 				bool.must(factory.wildcard().field(USERNAME).matching(wildcardValue(searchFilter.getUser())));
+			}
+			// vyhledávání podle ID přiřazeného uživatele
+			if (searchFilter.getAssignedTo() != null) {
+				bool.must(factory.match().field(ASSIGNED_TO).matching(searchFilter.getAssignedTo()));
 			}
 			if (searchFilter.getArea() != Area.ENTITY_CODE) {
 				SearchPredicate sp = process(factory, searchFilter);

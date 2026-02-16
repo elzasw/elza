@@ -48,6 +48,10 @@ import cz.tacr.elza.dataexchange.output.filters.FilterRuleResultType;
 import cz.tacr.elza.dataexchange.output.filters.FilterRules;
 import cz.tacr.elza.dataexchange.output.filters.ReplaceItem;
 import cz.tacr.elza.dataexchange.output.filters.SoiLoadDispatcher;
+import cz.tacr.elza.dataexchange.output.filters.conditions.And;
+import cz.tacr.elza.dataexchange.output.filters.conditions.EntityProperties;
+import cz.tacr.elza.dataexchange.output.filters.conditions.Not;
+import cz.tacr.elza.dataexchange.output.filters.conditions.PartCondition;
 import cz.tacr.elza.dataexchange.output.sections.StructObjectInfoLoader;
 import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 import cz.tacr.elza.domain.ApState;
@@ -84,10 +88,11 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.ExceptionThrow;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.service.cache.AccessPointCacheProvider;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.output.OutputParams;
@@ -195,8 +200,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
      */
     private List<Integer> startNodes = new ArrayList<>();
 
-    private StructuredItemRepository structItemRepos;
-
     private OffsetDateTime changeDateTime;
 
     private OutputItemConvertor itemConvertor = new OutputItemConvertor(this);
@@ -215,6 +218,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     private StructObjService structObjService;
 
+	private AccessPointCacheService apCacheService;
+
     public OutputModel(final OutputContext outputContext,
                        final StaticDataService staticDataService,
                        final ElzaLocale elzaLocale,
@@ -226,7 +231,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final ApBindingRepository bindingRepository,
                        final AttPageProvider attPageProvider,
                        final StructuredObjectRepository structObjRepos,
-                       final StructuredItemRepository structItemRepos,
                        final ApItemRepository itemRepository,
                        final ApBindingStateRepository bindingStateRepository,
                        final ApIndexRepository indexRepository,
@@ -234,7 +238,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final ExportConfig exportConfig,
                        final StructObjService structObjService,
                        final EntityManager em, 
-                       final DataService dataService) {
+                       final DataService dataService,
+                       final AccessPointCacheService apCacheService) {
         this.outputContext = outputContext;
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
@@ -246,7 +251,6 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.bindingRepository = bindingRepository;
         this.attPageProvider = attPageProvider;
         this.structObjRepos = structObjRepos;
-        this.structItemRepos = structItemRepos;
         this.itemRepository = itemRepository;
         this.bindingStateRepository = bindingStateRepository;
         this.indexRepository = indexRepository;
@@ -254,6 +258,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.exportConfig = exportConfig;
         this.structObjService = structObjService;
         this.soiLoader = new StructObjectInfoLoader(em, 1, staticDataService.getData(), dataService);
+        this.apCacheService = apCacheService;
     }
 
     public boolean isInitialized() {
@@ -311,7 +316,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public List<cz.tacr.elza.print.item.Item> getItems(Collection<String> typeCodes) {
-        Validate.notNull(typeCodes);
+    	Objects.requireNonNull(typeCodes);
 
         return outputItems.stream().filter(item -> {
             String tc = item.getType().getCode();
@@ -321,7 +326,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public List<cz.tacr.elza.print.item.Item> getItemsWithout(Collection<String> typeCodes) {
-        Validate.notNull(typeCodes);
+    	Objects.requireNonNull(typeCodes);
 
         return outputItems.stream().filter(item -> {
             String tc = item.getType().getCode();
@@ -331,7 +336,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public List<Record> getParties(Collection<String> typeCodes) {
-        Validate.notNull(typeCodes);
+    	Objects.requireNonNull(typeCodes);
 
         Set<Integer> distinctPartyIds = new HashSet<>();
         List<Record> parties = new ArrayList<>();
@@ -352,7 +357,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
     @Override
     public List<Structured> getStructured(Collection<String> typeCodes) {
-        Validate.notNull(typeCodes);
+    	Objects.requireNonNull(typeCodes);
 
         Set<Integer> distinctIds = new HashSet<>();
         List<Structured> objs = new ArrayList<>();
@@ -606,7 +611,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                 soiItems = node.getDescItems();
             }
 
-            FilterRuleContext filterRuleContext = new FilterRuleContext(soiItems);
+            AccessPointCacheProvider apcProvider = new AccessPointCacheProvider(this.apCacheService);
+            FilterRuleContext filterRuleContext = new FilterRuleContext(soiItems, apcProvider, sdp);
             for (FilterRule rule : filterRules.getFilterRules()) {
                 FilterRuleResultType result = processRule(nodeId, rule, filterRuleContext, itemsByType, filter);
                 if (result == FilterRuleResultType.RESULT_BREAK) {
@@ -698,14 +704,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         SoiLoadDispatcher soiLoadDisp = new SoiLoadDispatcher();
         soiLoader.addRequest(structuredObjectId, soiLoadDisp);
         soi = soiLoadDisp.getResult();
-        Validate.notNull(soi);
+        Objects.requireNonNull(soi);
 
         structRestrDefsMap.put(structuredObjectId, soi);
         return soi;
     }
 
     private Node createNode(NodeId nodeId, RestoredNode cachedNode) {
-        Validate.notNull(cachedNode);
+    	Objects.requireNonNull(cachedNode);
         Integer fundId = cachedNode.getNode().getFundId();
         Fund fund = this.fundIdMap.computeIfAbsent(fundId, id -> {
             ArrFund arrFund = this.fundRepository.findById(id)
@@ -727,8 +733,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     public void init(OutputParams params) {
         Validate.isTrue(TransactionSynchronizationManager.isActualTransactionActive());
         Validate.isTrue(!isInitialized());
-        Validate.notNull(params);
-        Validate.notNull(params.getChange());
+        Objects.requireNonNull(params);
+        Objects.requireNonNull(params.getChange());
 
         logger.info("Output model initialization started, outputId:{}", params.getOutputId());
 
@@ -781,6 +787,10 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         // register type descriptors
         Constructor yamlCtor = new Constructor(new LoaderOptions());
         yamlCtor.addTypeDescription(new TypeDescription(OutputFilterConfig.class, "!OutputFilterConfig"));
+        yamlCtor.addTypeDescription(new TypeDescription(EntityProperties.class, "!EntityProperties"));
+        yamlCtor.addTypeDescription(new TypeDescription(And.class, "!And"));
+        yamlCtor.addTypeDescription(new TypeDescription(Not.class, "!Not"));
+        yamlCtor.addTypeDescription(new TypeDescription(PartCondition.class, "!Part"));        
         Yaml yamlLoader = new Yaml(yamlCtor);
 
         OutputFilterConfig ofc;
@@ -863,7 +873,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
      * @param parentNodeId not-null
      */
     private void initNodeIdSubtree(TreeNode treeNode, NodeId parentNodeId, Map<Integer, NodeId> nodeIdMap) {
-        Integer arrNodeId = new Integer(treeNode.getNodeId());
+        Integer arrNodeId = Integer.valueOf(treeNode.getNodeId());
 
         // method is called from published node
         NodeId nodeId = new NodeId(treeNode.getNodeId(), parentNodeId, treeNode.getPosition(), true);
@@ -915,7 +925,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
 
         RestoredNode cachedNode = nodeCacheService.getNode(id);
-        Validate.notNull(cachedNode);
+        Objects.requireNonNull(cachedNode);
 
         NodeId nodeId = new RefNodeId(id);
         node = createNode(nodeId, cachedNode);
@@ -925,7 +935,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
     }
 
     private RecordType getAPType(Integer apTypeId) {
-        Validate.notNull(apTypeId);
+        Objects.requireNonNull(apTypeId);
 
         RecordType type = apTypeIdMap.get(apTypeId);
         if (type != null) {

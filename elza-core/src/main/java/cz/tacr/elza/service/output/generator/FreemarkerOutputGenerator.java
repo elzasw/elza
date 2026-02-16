@@ -32,6 +32,7 @@ import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.output.OutputParams;
 import freemarker.cache.FileTemplateLoader;
@@ -62,21 +63,21 @@ public class FreemarkerOutputGenerator extends DmsOutputGenerator {
                               DaoLinkRepository daoLinkRepository,
                               ExportConfig exportConfig,
                               StructObjService structObjService,
-                              final DataService dataService) {
+                              final DataService dataService,
+                              final AccessPointCacheService apCacheService) {
         super(em, dmsService);
 
         StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
-        StructuredItemRepository structItemRepos = applicationContext.getBean(StructuredItemRepository.class);
 
         OutputContext outputContext = applicationContext.getBean(OutputContext.class);
 
         outputModel = new OutputModel(outputContext, staticDataService, elzaLocale,
                 fundRepository, fundTreeProvider,
                 nodeCacheService, institutionRepository, apStateRepository,
-                bindingRepository, null, structObjRepos, structItemRepos, itemRepository,
+                bindingRepository, null, structObjRepos, itemRepository,
                 bindingStateRepository, indexRepository,
                 daoLinkRepository, exportConfig, structObjService, em,
-                dataService);
+                dataService, apCacheService);
     }
 
     @Override

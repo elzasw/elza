@@ -7,6 +7,7 @@ import static cz.tacr.elza.domain.WfTaskType.AP_UPDATE;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -19,6 +20,7 @@ import cz.tacr.elza.controller.vo.Participant;
 import cz.tacr.elza.controller.vo.TasksEntityType;
 import cz.tacr.elza.controller.vo.TasksStatus;
 import cz.tacr.elza.controller.vo.TasksViewDetail;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApState;
@@ -30,17 +32,25 @@ import cz.tacr.elza.domain.WfTaskApRevState;
 import cz.tacr.elza.domain.WfTask.Status;
 import cz.tacr.elza.domain.WfTaskApState;
 import cz.tacr.elza.domain.WfTaskType;
+import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.repository.ApChangeRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.WfTaskApRevStateRepository;
 import cz.tacr.elza.repository.WfTaskApStateRepository;
 import cz.tacr.elza.repository.WfTaskRepository;
 import cz.tacr.elza.repository.WfTaskTypeRepository;
+import jakarta.transaction.Transactional;
 
 @Service
 public class TaskService {
+
+	public static final String ENTITY_DEFAULT_PARTICIPANTS = "ENTITY_DEFAULT_PARTICIPANTS";
 
 	@Autowired
 	private UserService userService;
@@ -64,39 +74,35 @@ public class TaskService {
 	private AccessPointService accessPointService;
 
 	@Autowired
-	private ApStateRepository apStateRepository;
+	private ApStateRepository stateRepository;
+
+	@Autowired
+	private ApChangeRepository changeRepository;
 
 	/**
-	 * Získání seznamu zpracovatelů entity 
+	 * Získání seznamu zpracovatelů entity + users from ENTITY_DEFAULT_PARTICIPANTS
 	 * 
-	 * @param apState
+	 * @param state
 	 * @return
 	 */
-	public List<Participant> GetLastParticipants(ApState apState) {
+	@Transactional(Transactional.TxType.MANDATORY)
+	public List<Participant> getLastParticipants(ApAccessPoint accessPoint) {
 		List<Participant> result = new ArrayList<>();
-		List<UsrUser> users = new ArrayList<>();
 
-		List<WfTaskApState> wfTaskApStates = wfTaskApStateRepository.findAllByState(apState);
-		wfTaskApStates.forEach(i -> {
-			WfTask wfTask = i.getTask();
-			UsrUser creator = wfTask.getCreator();
-			UsrUser assignee = wfTask.getAssignee();
-			UsrUser closedBy = wfTask.getClosedBy();
-			if (creator != null) {
-				users.add(creator);
-			}
-			if (assignee != null) {
-				users.add(assignee);
-			}
-			if (closedBy != null) {
-				users.add(closedBy);
+		List<UsrUser> users = changeRepository.findUsersByAccessPoint(accessPoint);
+
+		// přidáváme uživatele ze skupiny ENTITY_DEFAULT_PARTICIPANTS
+		List<UsrUser> groupUsers = userService.findUsersByGroupCode(ENTITY_DEFAULT_PARTICIPANTS);
+		groupUsers.forEach(user -> {
+			if (!users.contains(user)) {
+				users.add(user);
 			}
 		});
 
 		List<Integer> apIds = users.stream().map(u -> u.getAccessPointId()).toList();
         Map<Integer, ApIndex> apIndexMap = accessPointService.findPreferredPartIndexMapByIds(apIds); 
 
-        List<ApState> apStates = apStateRepository.findLastByAccessPointIds(apIds);
+        List<ApState> apStates = stateRepository.findLastByAccessPointIds(apIds);
         Map<Integer, Integer> apIdScopeIdMap = apStates.stream().collect(Collectors.toMap(s -> s.getStateId(), s -> s.getScopeId()));
 
         // Permissions by user
@@ -136,17 +142,63 @@ public class TaskService {
 		}
 		return false;
 	}
+	
+	/**
+	 * Create view detail for task
+	 * @param task
+	 * @param apState
+	 * @param entityType
+	 * @param apName
+	 * @return
+	 */
+	static private TasksViewDetail createTaskViewDetail(WfTask task, ApState apState, TasksEntityType entityType, String apName) {
+    	UsrUser creator = task.getCreator();
+    	UsrUser closedBy = task.getClosedBy();
+    	Objects.requireNonNull(apState);
+    	
+    	TasksViewDetail tvd = new TasksViewDetail();
+    	tvd.setAssigneeId(task.getAssignee().getUserId());
+    	tvd.setAssigneeName(task.getAssignee().getUsername());
+    	tvd.setClosed(task.getTimeClosed());
+    	if (closedBy != null) {
+    		tvd.setClosedById(closedBy.getUserId());
+    		tvd.setClosedByName(closedBy.getUsername());
+    	}
+    	tvd.setCreated(tvd.getCreated());
+    	if (creator != null) {
+    		tvd.setCreatorId(creator.getUserId());
+    		tvd.setCreatorName(creator.getUsername());
+    	}
+    	tvd.setDescription(task.getDescription());
+    	tvd.setPrimaryEntityId(apState.getAccessPointId());
+    	tvd.setPrimaryEntityName(apName);
+    	tvd.setPrimaryEntityType(entityType);
+    	tvd.setStatus(TasksStatus.fromValue(task.getStatus().name()));
+    	tvd.setTaskId(task.getTaskId());
+    	tvd.setTaskTypeCode(task.getTaskType().getCode());
+    	tvd.setTaskTypeId(task.getTaskType().getTaskTypeId());
+    	tvd.setTaskTypeName(task.getTaskType().getName());
+    	
+    	return tvd;
+	}
 
 	/**
 	 * Získání seznamu úkolů pro daného uživatele
 	 * 
 	 * @return seznam úkolů
 	 */
+	@Transactional()
 	public List<TasksViewDetail> getMyTasks() {
-		List<TasksViewDetail> result = new ArrayList<>();
-        UsrUser loggedUser = userService.getLoggedUser();
+		var userDetail = userService.getLoggedUserDetail();
+		if(userDetail==null) {
+			throw new AccessDeniedException("User is not logged in", Collections.emptyList());
+		}
+		// check if user has ID
+		if(userDetail.getId() == null) {
+			return Collections.emptyList();
+		}
 
-        List<WfTask> wfTasks = wfTaskRepository.findAllByAssigneeId(loggedUser.getUserId());
+        List<WfTask> wfTasks = wfTaskRepository.findAllByAssigneeId(userDetail.getId());
         List<WfTaskApState> wfTaskApStates = wfTaskApStateRepository.findAllByTaskIn(wfTasks);
         List<WfTaskApRevState> wfTaskApRevStates = wfTaskApRevStateRepository.findAllByTaskIn(wfTasks);
 
@@ -164,40 +216,14 @@ public class TaskService {
         List<Integer> apIds = taskIdApStateMap.values().stream().map(s -> s.getAccessPointId()).toList();
         Map<Integer, ApIndex> indexMap = accessPointService.findPreferredPartIndexMapByIds(apIds); 
 
-        wfTasks.forEach(t -> {
-        	UsrUser creator = t.getCreator();
-        	UsrUser closedBy = t.getClosedBy();
-        	ApState apState = Objects.requireNonNull(taskIdApStateMap.get(t.getTaskId()));
+        return wfTasks.stream().map(t -> {
+        	TasksEntityType entityType = taskApStateIds.contains(t.getTaskId()) ? TasksEntityType.AP : TasksEntityType.AP_REV;
+        	ApState apState = taskIdApStateMap.get(t.getTaskId());
         	ApIndex apIndex = indexMap.get(apState.getAccessPointId());
         	String apName = apIndex != null ? apIndex.getIndexValue() : null;
-        	TasksEntityType entityType = taskApStateIds.contains(t.getTaskId()) ? TasksEntityType.AP : TasksEntityType.AP_REV; 
-        	
-        	TasksViewDetail tvd = new TasksViewDetail();
-        	tvd.setAssigneeId(t.getAssignee().getUserId());
-        	tvd.setAssigneeName(t.getAssignee().getUsername());
-        	tvd.setClosed(t.getTimeClosed());
-        	if (closedBy != null) {
-        		tvd.setClosedById(closedBy.getUserId());
-        		tvd.setClosedByName(closedBy.getUsername());
-        	}
-        	tvd.setCreated(tvd.getCreated());
-        	if (creator != null) {
-        		tvd.setCreatorId(creator.getUserId());
-        		tvd.setCreatorName(creator.getUsername());
-        	}
-        	tvd.setDescription(t.getDescription());
-        	tvd.setPrimaryEntityId(apState.getAccessPointId());
-        	tvd.setPrimaryEntityName(apName);
-        	tvd.setPrimaryEntityType(entityType);
-        	tvd.setStatus(TasksStatus.fromValue(t.getStatus().name()));
-        	tvd.setTaskId(t.getTaskId());
-        	tvd.setTaskTypeCode(t.getTaskType().getCode());
-        	tvd.setTaskTypeId(t.getTaskType().getTaskTypeId());
-        	tvd.setTaskTypeName(t.getTaskType().getName());
-        	result.add(tvd);
-        });
-
-		return result;
+        	return createTaskViewDetail(t, apState, entityType, apName); 
+        }
+        ).collect(Collectors.toList());        
 	}
 
 	/**
@@ -207,16 +233,23 @@ public class TaskService {
 	 * @param assignTo
 	 * @return
 	 */
+	@Transactional()
 	private WfTask createWfTask(String taskTypeCode, Integer assignTo) {
     	UsrUser assignToUser = userService.getUser(assignTo);
-        UsrUser leggedUser = userService.getLoggedUser();
+        UsrUser loggedUser = userService.getLoggedUser();
+        if (loggedUser == null) {
+			throw new AccessDeniedException("User is not logged in", Collections.emptyList());
+		}
 
         WfTaskType taskType = wfTaskTypeRepository.findByCode(taskTypeCode);
+        if (taskType == null) {
+        	throw new SystemException("Task type not found", BaseCode.DB_INTEGRITY_PROBLEM).set("code", taskTypeCode);
+        }
 
     	WfTask wfTask = new WfTask();
     	wfTask.setTimeCreated(OffsetDateTime.now());
     	wfTask.setAssignee(assignToUser);
-    	wfTask.setCreator(leggedUser);
+    	wfTask.setCreator(loggedUser);
     	wfTask.setTaskType(taskType);
     	wfTask.setStatus(Status.NEW);
     	return wfTaskRepository.save(wfTask);
@@ -228,9 +261,15 @@ public class TaskService {
 	 * @param apState
 	 * @param assignTo
 	 */
+	@Transactional(Transactional.TxType.MANDATORY)
 	public void createTaskApState(ApState apState, Integer assignTo) {
+		// Vytvoření úkolu APPROVED není dostupné
+		if (apState.getStateApproval() == StateApproval.APPROVED) {
+            throw new BusinessException("Vytvoření úkolu [Approve/Schválit] není dostupné", BaseCode.INVALID_STATE);
+		} 
+
         // create new WfTask
-        String taskTypeCode = apState.getStateApproval() == StateApproval.APPROVED ? AP_CONFIRM : AP_UPDATE;
+        String taskTypeCode = apState.getStateApproval() == StateApproval.TO_APPROVE ? AP_CONFIRM : AP_UPDATE;
     	WfTask wfTask = createWfTask(taskTypeCode, assignTo);
 
     	// create new WfTaskApState
@@ -246,6 +285,7 @@ public class TaskService {
 	 * @param revState
 	 * @param assignTo
 	 */
+	@Transactional(Transactional.TxType.MANDATORY)
 	public void createTaskApRevState(ApRevState revState, Integer assignTo) {
         // create new WfTask
         String taskTypeCode = revState.getStateApproval() == RevStateApproval.TO_APPROVE ? AP_REV_CONFIRM : AP_REV_UPDATE;
@@ -264,6 +304,7 @@ public class TaskService {
      * @param apState
      * @param status
      */
+	@Transactional(Transactional.TxType.MANDATORY)
     public void closeWfTask(ApState apState, Status status) {
     	WfTaskApState wfTaskApState = wfTaskApStateRepository.findByStateAndTimeClosedIsNull(apState);
     	if (wfTaskApState != null) {
@@ -282,6 +323,7 @@ public class TaskService {
      * @param revState
      * @param status
      */
+	@Transactional(Transactional.TxType.MANDATORY)
     public void closeWfTask(ApRevState revState, Status status) {
     	WfTaskApRevState wfTaskApRevState = wfTaskApRevStateRepository.findByStateAndTimeClosedIsNull(revState);
     	if (wfTaskApRevState != null) {
@@ -293,4 +335,24 @@ public class TaskService {
     		wfTaskRepository.save(wfTask);
     	}
     }
+	
+	/**
+	 * Return task by apState
+	 * @param apState
+	 * @return
+	 */
+	@Transactional(Transactional.TxType.MANDATORY)
+	public WfTaskApState getTask(ApState apState) {
+    	return wfTaskApStateRepository.findByStateAndTimeClosedIsNull(apState);
+	}
+
+	/**
+	 * Return task by revState
+	 * @param revState
+	 * @return
+	 */
+	@Transactional(Transactional.TxType.MANDATORY)
+	public WfTaskApRevState getTask(ApRevState revState) {
+		return wfTaskApRevStateRepository.findByStateAndTimeClosedIsNull(revState);
+	}
 }

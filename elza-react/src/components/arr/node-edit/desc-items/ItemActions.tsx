@@ -72,7 +72,7 @@ export function ItemActions({
   return (
     <div style={{ display: "flex", alignItems: "flex-start" }}>
       {!isInherited &&
-        (hasValue || isOptional || (typeForm.repeatable && isSpecOptional)) && (
+        (hasValue || isOptional || (typeForm.repeatable && isSpecOptional)) && !item.readOnly && (
           <Tooltip
             relationship="label"
             appearance="inverted"

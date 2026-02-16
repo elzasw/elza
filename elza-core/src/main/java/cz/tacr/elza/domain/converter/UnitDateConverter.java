@@ -861,7 +861,7 @@ public class UnitDateConverter {
      * @return LocalDateTime
      */
     public static LocalDateTime getLocalDateTimeFromUnitDate(final IUnitdate unitdate, final boolean from) {
-    	// Value from and to maight contain additional spaces from db 
+    	// Value from and to might contain additional spaces from db 
     	// and have to be trimmed.
         if (from) {
             if (unitdate.getValueFrom() != null) {

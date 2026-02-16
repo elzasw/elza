@@ -19,6 +19,9 @@ public class SearchFilterVO {
 
     private String user;
 
+    // ID přiřazeného uživatele
+    private Integer assignedTo;
+
     private String creation;
 
     private String extinction;
@@ -88,7 +91,15 @@ public class SearchFilterVO {
         this.user = user;
     }
 
-    public String getCreation() {
+    public Integer getAssignedTo() {
+		return assignedTo;
+	}
+
+	public void setAssignedTo(Integer assignedTo) {
+		this.assignedTo = assignedTo;
+	}
+
+	public String getCreation() {
         return creation;
     }
 
