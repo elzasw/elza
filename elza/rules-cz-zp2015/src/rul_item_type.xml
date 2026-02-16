@@ -641,7 +641,7 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_LEGEND" data-type="FORMATTED_TEXT">
+    <item-type code="ZP2015_LEGEND" data-type="TEXT">
         <name>Legenda</name>
         <shortcut>Legenda</shortcut>
         <description>ZP5.11.1 Legenda</description>
