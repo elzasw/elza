@@ -151,8 +151,8 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                             </>
                         )}
                     </div>
-                    {extSystem.type === AP_EXT_SYSTEM_TYPE.CAM_COMPLETE
-                        || extSystem.type === AP_EXT_SYSTEM_TYPE.CAM_COMPLETE_V2
+                    {(extSystem.type === AP_EXT_SYSTEM_TYPE.CAM_COMPLETE
+                        || extSystem.type === AP_EXT_SYSTEM_TYPE.CAM_COMPLETE_V2)
                         && <div style={{margin: "8px 0"}}>
                         <Button onClick={this.handleResyncExtSystem}>{i18n('admin.extSystem.synchronize')}</Button>
                     </div>}
