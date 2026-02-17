@@ -57,6 +57,7 @@ import jakarta.persistence.EntityManager;
 import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JRPropertiesUtil;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -183,22 +184,28 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 	}
 
     private Path generatePdfFile(JasperReport report, Map<String, Object> parameters) {
-        DefaultJasperReportsContext jasperContext = DefaultJasperReportsContext.getInstance();
-        JasperFillManager fillManager = JasperFillManager.getInstance(jasperContext);
-    
+        DefaultJasperReportsContext ctx = DefaultJasperReportsContext.getInstance();
+        JRPropertiesUtil.getInstance(ctx).setProperty(
+        	    "net.sf.jasperreports.compiler.class",
+        	    "net.sf.jasperreports.engine.design.JRJdtCompiler"
+        );
+        Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+
+        JasperFillManager fillManager = JasperFillManager.getInstance(ctx);
+
         JasperPrint jasperPrint;
         try {
             jasperPrint = fillManager.fill(report, parameters, new JREmptyDataSource());
         } catch (JRException e) {
             throw new ProcessException(params.getOutputId(), "Failed to create Jasper document", e);
         }
-    
+
         Path pdfFile = tempFileProvider.createTempFile();
 
         try (OutputStream os = Files.newOutputStream(pdfFile, StandardOpenOption.WRITE)) {
 
             // Generate output to PDF
-            JRPdfExporter exporter = new JRPdfExporter(jasperContext);
+            JRPdfExporter exporter = new JRPdfExporter(ctx);
 
             exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
             exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(os));
