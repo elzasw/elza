@@ -934,7 +934,7 @@ public class DescriptionItemService {
         checkFundVersionLock(version);
 
         descItem.setDeleteChange(change);
-        ArrDescItem retDescItem = descItemRepository.save(descItem);
+        ArrDescItem deletedDescItem = descItemRepository.save(descItem);
 
         // pokud existují záznamy, které potlačují dědičnost, pak je smažeme
         ArrInhibitedItem inhibitedItem = inhibitedItemRepository.findByNodeIdAndDescItemObjectId(descItem.getNodeId(), descItem.getDescItemObjectId()).orElse(null);
@@ -953,15 +953,13 @@ public class DescriptionItemService {
             copyDescItemsWithData(change, descItems, -1, version, changeContext);
         }
 
-        changeContext.addRemovedItem(descItem);
+        deleteAnonymousStructObject(deletedDescItem, change);
+        changeContext.addRemovedItem(deletedDescItem);
 
         arrangementCacheService.deleteDescItem(descItem.getNodeId(), descItem.getDescItemObjectId(), changeContext);
 
-        deleteAnonymousStructObject(retDescItem, change);
 
-        changeContext.addRemovedItem(descItem);
-
-        return retDescItem;
+        return deletedDescItem;
     }
 
     /**
