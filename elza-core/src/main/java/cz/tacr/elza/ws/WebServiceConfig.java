@@ -75,6 +75,11 @@ public class WebServiceConfig {
     private void init() {
         final FaultInterceptor faultInterceptor = new FaultInterceptor();
         bus.getOutFaultInterceptors().add(faultInterceptor);
+        // add logging
+        bus.getInInterceptors().add(new org.apache.cxf.interceptor.LoggingInInterceptor());
+        bus.getOutInterceptors().add(new org.apache.cxf.interceptor.LoggingOutInterceptor());
+        bus.getInFaultInterceptors().add(new org.apache.cxf.interceptor.LoggingInInterceptor());
+        bus.getOutFaultInterceptors().add(new org.apache.cxf.interceptor.LoggingOutInterceptor());
     }
 
     @Bean
