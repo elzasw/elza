@@ -168,8 +168,7 @@ public class StructObjInternalService {
             if (CollectionUtils.isNotEmpty(structuredObjectsDup)) {
                 // get reference to structObjService - prevent circular dependency
                 StructObjValueService structObjService = appCtx.getBean(StructObjValueService.class);
-
-            structuredObjectsDup.forEach(structObj -> structObjService.addToValidate(structObj));
+                structuredObjectsDup.forEach(structObj -> structObjService.addToValidate(structObj));
             }
 
             logger.debug("Processed {} duplicates objects", structuredObjectsDup.size());
