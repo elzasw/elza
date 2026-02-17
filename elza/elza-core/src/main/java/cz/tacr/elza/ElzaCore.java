@@ -83,7 +83,7 @@ public class ElzaCore {
         System.setProperty("spring.config.name", "elza");
         System.setProperty("spring.liquibase.database-change-log-table", "DB_DATABASECHANGELOG");
         System.setProperty("spring.liquibase.database-change-log-lock-table", "DB_DATABASECHANGELOGLOCK");
-        System.setProperty("net.sf.jasperreports.compiler.classpath", System.getProperty("java.class.path"));
+        //System.setProperty("net.sf.jasperreports.compiler.classpath", System.getProperty("java.class.path"));
     }
 
     @Bean
