@@ -1475,6 +1475,7 @@ var messages = {
     "admin.extSystem.gis-edit": "Editace",
     "admin.extSystem.apiKeyId": "ApiKey - ID",
     "admin.extSystem.apiKeyValue": "ApiKey - hodnota",
+    "admin.extSystem.synchronize": "Synchronizovat",
 
     "admin.bulk.detail.queue.empty": "Ve frontě nejsou žádné požadavky",
     "admin.bulk.header.title.NODE": "Validace JP",
