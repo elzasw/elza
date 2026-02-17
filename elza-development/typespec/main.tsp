@@ -1245,6 +1245,22 @@ namespace ElzaAPI.DaoRepository {
 @route("/extsystem")
 namespace ElzaAPI.ExternalSystem {
     /**
+     * External system resync
+     */
+    @route("/resync/{id}")
+    @post op externalSystemResync(
+        /** external system ID or CODE */
+        @path id: string;
+    ): {
+        /** Pending, processing, finished */
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
      * Return list of all properties of external system
      */
     @route("property")
