@@ -1,5 +1,7 @@
 package cz.tacr.elza.service.cam;
 
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -1345,12 +1347,30 @@ public class EntityDBDispatcher {
             case STRING:
                 ArrDataString dataString = new ArrDataString();
                 dataString.setStringValue(itemString.getValue().getValue());
+                if(StringUtils.isEmpty(dataString.getStringValue())) {
+	                log.error("ItemString is empty, uuid: {}, itemType: {}, itemSpec: {}", itemString.getUuid().getValue(), 
+	                		itemString.getT().getValue(),
+	                		itemString.getS()!=null?itemString.getS().getValue():null);
+	                // throw new IllegalStateException("ItemString is empty, uuid:" + uuid + ", itemType:" + itemString.getT().getValue());
+	                
+	                // Set some default value
+	                dataString.setStringValue("N/A");
+                }                
                 dataString.setDataType(DataType.STRING.getEntity());
                 data = dataString;
                 break;
             case TEXT:
                 ArrDataText dataText = new ArrDataText();
                 dataText.setTextValue(itemString.getValue().getValue());
+                if(StringUtils.isEmpty(dataText.getTextValue())) {
+	                log.error("ItemText is empty, uuid: {}, itemType: {}, itemSpec: {}", itemString.getUuid().getValue(), 
+	                		itemString.getT().getValue(),
+	                		itemString.getS()!=null?itemString.getS().getValue():null);
+	                // throw new IllegalStateException("ItemText is empty, uuid:" + uuid + ", itemType:" + itemString.getT().getValue());
+	                
+	                // Set some default value
+	                dataText.setTextValue("N/A");
+                }                
                 dataText.setDataType(DataType.TEXT.getEntity());
                 data = dataText;
                 break;

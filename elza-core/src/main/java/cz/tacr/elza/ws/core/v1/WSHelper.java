@@ -3,6 +3,7 @@ package cz.tacr.elza.ws.core.v1;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -55,7 +56,7 @@ public class WSHelper {
     StructObjService structObjService;
 
     public Integer getFundId(FundIdentifiers fundInfo) {
-        Validate.notNull(fundInfo);
+        Objects.requireNonNull(fundInfo);
         if (fundInfo.getId() != null) {
             return Integer.valueOf(fundInfo.getId());
         } else {
