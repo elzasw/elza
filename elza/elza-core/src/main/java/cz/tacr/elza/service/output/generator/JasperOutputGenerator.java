@@ -176,6 +176,10 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 
 	private JasperReport loadTemplate(Path templateFile) {
 		try (InputStream is = Files.newInputStream(templateFile, StandardOpenOption.READ)) {
+			System.setProperty(
+					"net.sf.jasperreports.compiler.classpath",
+					System.getProperty("java.class.path")
+			);
 			return JasperCompileManager.compileReport(is);
 		} catch (IOException | JRException e) {
 			throw new ProcessException(params.getOutputId(), "Failed to parse Jasper template: " + templateFile, e)
@@ -185,12 +189,6 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 
     private Path generatePdfFile(JasperReport report, Map<String, Object> parameters) {
         DefaultJasperReportsContext ctx = DefaultJasperReportsContext.getInstance();
-        JRPropertiesUtil.getInstance(ctx).setProperty(
-        	    "net.sf.jasperreports.compiler.class",
-        	    "net.sf.jasperreports.engine.design.JRJdtCompiler"
-        );
-        Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-
         JasperFillManager fillManager = JasperFillManager.getInstance(ctx);
 
         JasperPrint jasperPrint;
