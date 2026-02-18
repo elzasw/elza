@@ -12,7 +12,6 @@ import { UsrUserVO } from 'api/UsrUserVO';
 import UserField from 'components/admin/UserField';
 import { useAppSelector } from 'utils/hooks/useAppSelector';
 import { Api } from 'api';
-import { WebApi } from 'actions';
 
 export interface RevStateFormFields extends RevStateChange {
   assignedTo?: number;
@@ -195,8 +194,7 @@ export const RevStateChangeFormFn = ({
                         }}</Field>
                         {(uniqueParticipants || []).length > 0 && <Field name="lastParticipants">
                             {() => {
-                                //@ts-expect-error TODO wrong types on FormInputField
-                                return <FormInputField type="static" label={i18n('ap.state.title.lastParticipants')}>
+                                return <div style={{marginTop: "16px"}}>
                                     {uniqueParticipants.map((participant) => {
                                         function handleClick() {
                                             form.change('assignedTo', participant.userId)
@@ -208,7 +206,7 @@ export const RevStateChangeFormFn = ({
                                             </Button>
                                         </div>
                                     })}
-                                </FormInputField>
+                                </div>
                             }}
                         </Field>}
                     </Modal.Body>
