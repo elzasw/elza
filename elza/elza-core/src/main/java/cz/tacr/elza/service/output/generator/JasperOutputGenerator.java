@@ -57,7 +57,6 @@ import jakarta.persistence.EntityManager;
 import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JREmptyDataSource;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRPropertiesUtil;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -176,10 +175,10 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 
 	private JasperReport loadTemplate(Path templateFile) {
 		try (InputStream is = Files.newInputStream(templateFile, StandardOpenOption.READ)) {
-			System.setProperty(
-					"net.sf.jasperreports.compiler.classpath",
-					System.getProperty("java.class.path")
-			);
+//			System.setProperty(
+//					"net.sf.jasperreports.compiler.classpath",
+//					System.getProperty("java.class.path")
+//			);
 			return JasperCompileManager.compileReport(is);
 		} catch (IOException | JRException e) {
 			throw new ProcessException(params.getOutputId(), "Failed to parse Jasper template: " + templateFile, e)
