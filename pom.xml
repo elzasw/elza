@@ -338,6 +338,11 @@
 				</exclusions>
 			</dependency>
 			<dependency>
+			    <groupId>net.sf.jasperreports</groupId>
+			    <artifactId>jasperreports-jdt</artifactId>
+				<version>${jasperreport.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>net.sf.jasperreports</groupId>
 				<artifactId>jasperreports-pdf</artifactId>
 				<version>${jasperreport.version}</version>
