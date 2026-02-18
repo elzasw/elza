@@ -13,6 +13,7 @@ import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.PREFIX_PREF;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SCOPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SEPARATOR;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.STATE;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.VALIDATION_RESULT;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.REV_STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.USERNAME;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.ASSIGNED_TO;
@@ -131,6 +132,10 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 			// vyhledávání podle ID přiřazeného uživatele
 			if (searchFilter.getAssignedTo() != null) {
 				bool.must(factory.match().field(ASSIGNED_TO).matching(searchFilter.getAssignedTo()));
+			}
+			// vyhledávání podle výsledků validace: ok | error
+			if (searchFilter.getValidationResult() != null) {
+				bool.must(factory.match().field(VALIDATION_RESULT).matching(searchFilter.getValidationResult()));
 			}
 			if (searchFilter.getArea() != Area.ENTITY_CODE) {
 				SearchPredicate sp = process(factory, searchFilter);

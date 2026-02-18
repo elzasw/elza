@@ -163,6 +163,11 @@ public class ApStateSpecification implements Specification<ApState> {
 						cb.equal(taskRevJoin.get(WfTask.FIELD_ASSIGNEE_ID), assignTo)));
             }
 
+            String validationResult = searchFilterVO.getValidationResult();
+            if (validationResult != null) {
+            	condition = cb.and(condition, cb.equal(cb.lower(accessPointJoin.get(ApAccessPoint.STATE)), validationResult));
+            }
+
             String code = searchFilterVO.getCode();
             if (StringUtils.isNotEmpty(code)) {
             	try {
