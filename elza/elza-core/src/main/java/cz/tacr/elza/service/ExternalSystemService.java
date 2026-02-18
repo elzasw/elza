@@ -223,6 +223,22 @@ public class ExternalSystemService {
     }
 
     /**
+     * Vyhledání externího systému podle kódu nebo id.
+     * 
+     * @param code 
+     *            kód externího systému, který hledáme nebo id
+     * @return nalezený externí systém nebo null
+     */
+    public ApExternalSystem findExternalSystemByCodeOrId(final String code) {
+    	ApExternalSystem extSystem = apExternalSystemRepository.findByCode(code);
+    	if (extSystem == null) {
+			Integer id = Integer.parseInt(code);
+    		return apExternalSystemRepository.findById(id).orElse(null);
+    	}
+    	return extSystem;
+    }
+
+    /**
      * Vyhledání externího systému podle kódu.
      *
      * @param code
@@ -337,6 +353,11 @@ public class ExternalSystemService {
                 extSyncsQueueItemRepository.deleteById(extSyncItemId);
             }
         }
+    }
+
+    @AuthMethod(permission = UsrPermission.Permission.ADMIN)
+    public void deleteBindingSync(final ApExternalSystem externalSystem) {
+        bindingSyncRepository.deleteByApExternalSystem(externalSystem);
     }
 
     /**
