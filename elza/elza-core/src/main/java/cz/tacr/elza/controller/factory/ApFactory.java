@@ -405,7 +405,6 @@ public class ApFactory {
         apVO.setPreferredPart(cachedAccessPoint.getPreferredPartId());
         apVO.setLastChange(createVO(lastChange));
         apVO.setAssignedTo(cachedAccessPoint.getAssignedTo());
-
         return apVO;
     }
 
@@ -438,7 +437,14 @@ public class ApFactory {
     public ApAccessPointVO createVO(final CachedAccessPoint ap,
                                     final String name,
                                     final String description) {
-        return createVO(ap.getApState(), ap.getAccessPointId(), ap.getReplacedAPIds(), ap.getUuid(), ap.getAccessPointVersion(), ap.getErrorDescription(), ap.getState(), name, description);
+        return createVO(ap.getApState(), 
+        		        ap.getAccessPointId(), 
+        		        ap.getReplacedAPIds(), 
+        		        ap.getUuid(), 
+        		        ap.getAccessPointVersion(), 
+        		        ap.getErrorDescription(), 
+        		        ap.getState(), name, description,
+        		        ap.getAssignedTo());
     }
 
     public ApAccessPointVO createVO(final ApState apState,
@@ -449,7 +455,8 @@ public class ApFactory {
                                     final String errorDescription,
                                     final ApStateEnum state,
                                     final String name,
-                                    final String description) {
+                                    final String description,
+                                    final Integer assignedTo) {
         // create VO
         ApAccessPointVO vo = new ApAccessPointVO();
         vo.setId(accessPointId);
@@ -471,6 +478,7 @@ public class ApFactory {
         vo.setState(state == null ? null : ApStateVO.valueOf(state.name()));
         vo.setName(name);
         vo.setDescription(description);
+        vo.setAssignedTo(assignedTo);
         return vo;
     }
 
