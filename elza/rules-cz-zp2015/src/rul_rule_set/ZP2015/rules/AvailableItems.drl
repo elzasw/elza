@@ -152,7 +152,17 @@ then
     $itemType.setInheritance(true);
 end
 
-rule "Povoleni dedicnosti pro puvodce"
+rule "Povoleni dedicnosti pro puvodce (na serii)"
+no-loop
+when
+    $activeLevel : ActiveLevel( )
+    $l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES")) from $activeLevel.ownDescItems
+    $itemType : RulItemTypeExt(code in ("ZP2015_ORIGINATOR"))
+then
+    $itemType.setInheritance(true);
+end
+
+rule "Povoleni dedicnosti pro puvodce (pokud je zadan)"
 no-loop
 when
     $activeLevel : ActiveLevel( )
