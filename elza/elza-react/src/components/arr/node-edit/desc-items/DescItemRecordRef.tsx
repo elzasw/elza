@@ -57,7 +57,7 @@ export function DescItemRecordRef({
   }
 
   const itemTypeId = item.itemTypeId;
-  const itemSpecId = item.itemSpecId;
+  const itemSpecId = item.itemSpecId != undefined ? item.itemSpecId : selectedSpecId;
   const dispatch = useAppThunkDispatch();
   const registryList: any = useAppSelector(({ app }) => app.registryList); // TODO add types
   const registryDetail = useAppSelector(({ app }) => app.registryDetail); // TODO add types
