@@ -144,10 +144,10 @@ then
     $itemType.setMinType(RulItemType.Type.POSSIBLE);
 end
 
-rule "Povoleni dedicnosti pro jazyk, role entit, autorske dilo"
+rule "Povoleni dedicnosti pro jazyk, role entit, autorske dilo a ukladaci jednotku"
 no-loop
 when
-    $itemType : RulItemTypeExt(code in ("ZP2015_LANGUAGE", "ZP2015_ENTITY_ROLE", "ZP2015_ITEM_TITLE_REF"))
+    $itemType : RulItemTypeExt(code in ("ZP2015_LANGUAGE", "ZP2015_ENTITY_ROLE", "ZP2015_ITEM_TITLE_REF", "ZP2015_STORAGE_ID"))
 then
     $itemType.setInheritance(true);
 end
