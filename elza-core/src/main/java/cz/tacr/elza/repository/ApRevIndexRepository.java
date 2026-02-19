@@ -19,7 +19,7 @@ public interface ApRevIndexRepository extends JpaRepository<ApRevIndex, Integer>
     @Query("SELECT i FROM ap_rev_index i WHERE i.part IN :parts")
     List<ApRevIndex> findByParts(@Param("parts") List<ApRevPart> parts);
 
-    @Query("SELECT i FROM ap_rev_index i WHERE i.part.revision=:revision")
+    @Query("SELECT i FROM ap_rev_index i WHERE i.part.revision = :revision AND i.part.deleted = false")
     List<ApRevIndex> findByRevision(@Param("revision") ApRevision rev);
 
     @Query("SELECT i FROM ap_rev_index i WHERE i.part = :part")
