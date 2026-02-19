@@ -130,4 +130,8 @@ export interface ApAccessPointVO {
      * Poslední číslo verze entity
      */
     version: number;
+    /**
+     * Id uzivatele kteremu byla entita pridelena
+     */
+    assignedTo?: number;
 }
