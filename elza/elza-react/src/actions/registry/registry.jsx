@@ -48,6 +48,7 @@ const createFilter = values => {
         extFilters: extFilters,
         syncState: values.syncState,
         assignedTo: parseInt(values.assignedTo),
+        validationResult: values.validationResult != "" ? values.validationResult : undefined,
     };
 };
 

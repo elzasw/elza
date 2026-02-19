@@ -1256,6 +1256,7 @@ var messages = {
     "ap.ext-search.user": "Autor poslední změny",
     "ap.ext-search.assignedTo": "Přiděleno",
     "ap.ext-search.syncState": "Stav synchronizace",
+    "ap.ext-search.hasErrors": "Obsahuje chyby",
     "ap.ext-search.id": "ID",
     "ap.ext-search.state": "Stav",
     "ap.ext-search.type": "Třída",
