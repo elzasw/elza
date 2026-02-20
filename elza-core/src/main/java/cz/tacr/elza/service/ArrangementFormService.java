@@ -263,7 +263,7 @@ public class ArrangementFormService {
 			inhibitedDescItemIds = getInhibitedDescItemIds(parentRestoredNodes);
 			// sbíráme všechny descItems s povolenou dědičností z nadřazených uzlů
 			parentsDescItems = parentRestoredNodes.stream()
-					.flatMap(i -> i.getDescItems().stream())
+					.flatMap(i -> i.getDescItems()!=null?i.getDescItems().stream():null)
 					.filter(i -> itemTypeIdsWithInheritance.contains(i.getDescItemTypeId()))
 					.toList();
 			// seznam descItemId s potlačenou dědičností pro aktuální uzel
