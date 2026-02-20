@@ -89,13 +89,13 @@ const BaseFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-sea
         <Field name="validationResult"
                type="select"
                component={FormInputField}
-               label={i18n('ap.ext-search.hasErrors')}
+               label={i18n('ap.ext-search.validationResult')}
                disabled={submitting}
         >
             <option value={undefined}/>
             {["ok", "error"].map((value) => {
                 return <option value={value}>
-                    {value === "error" ? i18n('global.title.yes') : i18n('global.title.no')}
+                    {i18n(`ap.ext-search.validationResult.${value}`)}
                 </option>
             })}</Field>
     </FormSection>
