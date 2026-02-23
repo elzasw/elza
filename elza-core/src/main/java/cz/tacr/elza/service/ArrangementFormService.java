@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
@@ -149,43 +150,62 @@ public class ArrangementFormService {
 		Set<Integer> inhibitedDescItemIds;
 		Set<Integer> inhibitedDescItemObjectIds;
 		List<ArrDescItem> parentsDescItems;
-		RestoredNode restoredNode = null;
-		Collection<RestoredNode> parentRestoredNodes = new ArrayList<>();
+		RestoredNode restoredNode = null;		
 		if (lockChange == null) {
 			// read node from cache
 			restoredNode = nodeCacheService.getNode(nodeId);
-			node = restoredNode.getNode();
-			parentRestoredNodes = nodeCacheService.getNodes(parentNodeIds).values();
+			node = restoredNode.getNode();			
 		} else {
 			// read node from db
 			node = nodeRepository.findById(nodeId).orElseThrow(node(nodeId));
-			// TODO: add support for inheritence for nodes from DB
 		}
 
 		List<RulItemTypeExt> itemTypes;
+		Set<Integer> itemTypeIdsWithInheritance = new HashSet<>();
 		try {
 			itemTypes = ruleService.getDescriptionItemTypes(version, node);
+			// Add itemTypeId with inheritance to set (from rules)
+			for(RulItemTypeExt itemType : itemTypes) {
+				if(itemType.isInheritance()) {
+					itemTypeIdsWithInheritance.add(itemType.getItemTypeId());
+				}
+			}
 		} catch (Exception e) {
 			logger.error("Chyba v pravidlech", e);
 			throw new BusinessException("Chyba v pravidlech", e, BaseCode.SYSTEM_ERROR);
 		}
 
-		Set<Integer> itemTypeIdsWithInheritance = itemTypes.stream()
-				.filter(i -> i.isInheritance())
-				.map(i -> i.getItemTypeId())
-				.collect(Collectors.toSet());
 		if (lockChange == null) {
+			// get descItems from cache
 			descItems = restoredNode.getDescItems();
+			// read parent nodes
+			Collection<RestoredNode> parentRestoredNodes = nodeCacheService.getNodes(parentNodeIds).values();
+			// map descItemObjectId -> ArrDescItem pro rychlé hledání záznamů s potlačenou dědičností
+		    Map<Integer, ArrDescItem> descItemObjectIdMap = parentRestoredNodes.stream().flatMap(i -> i.getDescItems()!=null?i.getDescItems().stream():null)
+		    		.collect(Collectors.toMap(i -> i.getDescItemObjectId(), Function.identity()));
+		    		
+			// Add any inhibited item from node to set
+			inhibitedDescItemObjectIds = new HashSet<>();
+			for(var inhItem: restoredNode.getInhibitedItems()) {
+				var srcItem = descItemObjectIdMap.get(inhItem.getDescItemObjectId());
+				if(srcItem == null) {
+					throw new SystemException("Inhibited item not found in parent nodes", BaseCode.DB_INTEGRITY_PROBLEM)
+						.set("descItemObjectId", inhItem.getDescItemObjectId())
+						.set("nodeId", restoredNode.getNode().getNodeId());
+				}
+				itemTypeIdsWithInheritance.add(srcItem.getItemTypeId());
+				
+				// seznam descItemObjectId s potlačenou dědičností pro aktuální uzel
+				inhibitedDescItemObjectIds.add(inhItem.getDescItemObjectId());
+			}			
 			// v uzlu, kde je dědičnost potlačena, stále zobrazujeme zděděné záznamy
 			// sbíráme id záznamy (descItemId) s potlačenou dědičností od nadřazených uzlů
 			inhibitedDescItemIds = getInhibitedDescItemIds(parentRestoredNodes);
 			// sbíráme všechny descItems s povolenou dědičností z nadřazených uzlů
 			parentsDescItems = parentRestoredNodes.stream()
-					.flatMap(i -> i.getDescItems().stream())
-					.filter(i -> itemTypeIdsWithInheritance.contains(i.getDescItemTypeId()))
+					.flatMap(i -> i.getDescItems()!=null?i.getDescItems().stream():null)
+					.filter(i -> itemTypeIdsWithInheritance.contains(i.getItemTypeId()))
 					.toList();
-			// seznam descItemId s potlačenou dědičností pro aktuální uzel
-			inhibitedDescItemObjectIds = restoredNode.getInhibitedItems().stream().map(i -> i.getDescItemObjectId()).collect(Collectors.toSet());
 		} else {
 			descItems = arrangementInternal.getDescItems(lockChange, node);
 			inhibitedDescItemIds = arrangementInternal.getInhibitedDescItemIds(lockChange, parentNodeIds);
@@ -258,13 +278,14 @@ public class ArrangementFormService {
 				.collect(Collectors.toSet());
 		if (lockChange == null) {
 			descItems = restoredNode.getDescItems();
+			
 			// v uzlu, kde je dědičnost potlačena, stále zobrazujeme zděděné záznamy
 			// sbíráme id záznamy (descItemId) s potlačenou dědičností od nadřazených uzlů
 			inhibitedDescItemIds = getInhibitedDescItemIds(parentRestoredNodes);
 			// sbíráme všechny descItems s povolenou dědičností z nadřazených uzlů
 			parentsDescItems = parentRestoredNodes.stream()
 					.flatMap(i -> i.getDescItems()!=null?i.getDescItems().stream():null)
-					.filter(i -> itemTypeIdsWithInheritance.contains(i.getDescItemTypeId()))
+					.filter(i -> itemTypeIdsWithInheritance.contains(i.getItemTypeId()))
 					.toList();
 			// seznam descItemId s potlačenou dědičností pro aktuální uzel
 			inhibitedDescItemObjectIds = restoredNode.getInhibitedItems().stream().map(i -> i.getDescItemObjectId()).collect(Collectors.toSet());
@@ -298,19 +319,22 @@ public class ArrangementFormService {
 		}
 		return new DescFormDataNewVO(nodeVO, descItemsVOs, itemTypeLites, arrPerm);
 	}
-
+	
 	/**
 	 * Získání seznamu ID (itemId) s potlačenou dědičností ze seznamu uzlů
 	 * 
 	 * @param restoredNodes
+	 * @param descItemObjectIdMap mapa descItemObjectId -> ArrDescItem pro rychlé hledání záznamů s potlačenou dědičností
 	 * @return
 	 */
 	private Set<Integer> getInhibitedDescItemIds(Collection<RestoredNode> restoredNodes) {
-		Set<Integer> inhibitedDescItemIds = new HashSet<Integer>();
+		// list of descItemObjectId s potlačenou dědičností pro nadrazene uzly
 		Set<Integer> descItemObjectIds = restoredNodes.stream()
-				.flatMap(i -> i.getInhibitedItems().stream())
+				.flatMap(i -> i.getInhibitedItems()!=null? i.getInhibitedItems().stream() : null)
 				.map(i -> i.getDescItemObjectId())
 				.collect(Collectors.toSet());
+		
+		Set<Integer> inhibitedDescItemIds = new HashSet<Integer>();
 		for (RestoredNode node : restoredNodes) {
 			if(node.getDescItems()!=null) {
 				for (ArrDescItem descItem : node.getDescItems()) {
@@ -321,7 +345,7 @@ public class ArrangementFormService {
 			}
 		}
 		return inhibitedDescItemIds;
-	}
+	}	
 
 	/**
      * Update description item and return data (nová).
