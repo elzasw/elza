@@ -490,6 +490,7 @@ export const NodeToolbar = ({
           appearance: "subtle",
           id: "create-template",
           action: handleCreateTemplate,
+          isVisible: false,
         },
         {
           label: formatMessage(messages.applyTemplate),
@@ -497,6 +498,7 @@ export const NodeToolbar = ({
           appearance: "subtle",
           id: "apply-template",
           action: handleApplyTemplate,
+          isVisible: false,
         },
         {
           label: formatMessage(messages.copyUUID),
