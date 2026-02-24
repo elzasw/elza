@@ -1256,6 +1256,9 @@ var messages = {
     "ap.ext-search.user": "Autor poslední změny",
     "ap.ext-search.assignedTo": "Přiděleno",
     "ap.ext-search.syncState": "Stav synchronizace",
+    "ap.ext-search.validationResult": "Stav validace",
+    "ap.ext-search.validationResult.ok": "OK",
+    "ap.ext-search.validationResult.error": "Chyba",
     "ap.ext-search.id": "ID",
     "ap.ext-search.state": "Stav",
     "ap.ext-search.type": "Třída",
@@ -1475,6 +1478,7 @@ var messages = {
     "admin.extSystem.gis-edit": "Editace",
     "admin.extSystem.apiKeyId": "ApiKey - ID",
     "admin.extSystem.apiKeyValue": "ApiKey - hodnota",
+    "admin.extSystem.synchronize": "Synchronizovat",
 
     "admin.bulk.detail.queue.empty": "Ve frontě nejsou žádné požadavky",
     "admin.bulk.header.title.NODE": "Validace JP",

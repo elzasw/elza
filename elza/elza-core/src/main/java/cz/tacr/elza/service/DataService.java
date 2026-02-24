@@ -53,23 +53,23 @@ public class DataService {
     }
 
     private <ENTITY extends Item> void findAllDataByDataResults(DataType dataType, List<ENTITY> items) {
-    	List<Integer> dataIds = items.stream().filter(i -> i.getDataId() != null).map(i -> i.getDataId()).toList();
-    	List<? extends ArrData> result = dataType.getRepository().findAllById(dataIds);        
+    	Set<Integer> uniqueDataIds = items.stream().filter(i -> i.getDataId() != null).map(i -> i.getDataId()).collect(Collectors.toSet());
+    	List<? extends ArrData> result = dataType.getRepository().findAllById(uniqueDataIds);        
 
         // kontrola neporušenosti dat
-        if (result.size() != dataIds.size()) {
+        if (result.size() != uniqueDataIds.size()) {
         	// Loaded IDS
         	Set<Integer> dbDataIds = result.stream().map(i -> i.getDataId()).collect(Collectors.toSet());
-        	List<Integer> missingIds = dataIds.stream().filter(i -> !dbDataIds.contains(i)).collect(Collectors.toList());
+        	List<Integer> missingIds = uniqueDataIds.stream().filter(i -> !dbDataIds.contains(i)).collect(Collectors.toList());
         	
         	log.error("Failed to load items (dataType: {}), dataIds({}): {}, missing items in DB({}): {}",
         			dataType,
-        			dataIds.size(), dataIds, 
+        			uniqueDataIds.size(), uniqueDataIds, 
         			missingIds.size(), missingIds);;
         	throw new SystemException("Failed to load items.", BaseCode.DB_INTEGRITY_PROBLEM)
         		.set("dataType", dataType)
-        		.set("dataIds.size", dataIds.size())
-        		.set("dataIds", dataIds)
+        		.set("dataIds.size", uniqueDataIds.size())
+        		.set("dataIds", uniqueDataIds)
         		.set("missingIds.size", missingIds.size())
         		.set("missingIds", missingIds);
         }

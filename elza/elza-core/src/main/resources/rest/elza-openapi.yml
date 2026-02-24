@@ -1025,6 +1025,28 @@ paths:
               items:
                 type: integer
         description: external system property id
+  /extsystem/resync/{id}:
+    post:
+      operationId: ExternalSystem_externalSystemResync
+      description: External system resync
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: external system ID or CODE
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - externalsystems
   /fund:
     post:
       operationId: fund_createFund

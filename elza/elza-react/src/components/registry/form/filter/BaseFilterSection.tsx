@@ -86,6 +86,18 @@ const BaseFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-sea
                     {i18n(`ap.binding.syncState.${value}`)}
                 </option>
             })}</Field>
+        <Field name="validationResult"
+               type="select"
+               component={FormInputField}
+               label={i18n('ap.ext-search.validationResult')}
+               disabled={submitting}
+        >
+            <option value={undefined}/>
+            {["ok", "error"].map((value) => {
+                return <option value={value}>
+                    {i18n(`ap.ext-search.validationResult.${value}`)}
+                </option>
+            })}</Field>
     </FormSection>
 };
 

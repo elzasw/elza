@@ -175,6 +175,10 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 
 	private JasperReport loadTemplate(Path templateFile) {
 		try (InputStream is = Files.newInputStream(templateFile, StandardOpenOption.READ)) {
+//			System.setProperty(
+//					"net.sf.jasperreports.compiler.classpath",
+//					System.getProperty("java.class.path")
+//			);
 			return JasperCompileManager.compileReport(is);
 		} catch (IOException | JRException e) {
 			throw new ProcessException(params.getOutputId(), "Failed to parse Jasper template: " + templateFile, e)
@@ -183,22 +187,22 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 	}
 
     private Path generatePdfFile(JasperReport report, Map<String, Object> parameters) {
-        DefaultJasperReportsContext jasperContext = DefaultJasperReportsContext.getInstance();
-        JasperFillManager fillManager = JasperFillManager.getInstance(jasperContext);
-    
+        DefaultJasperReportsContext ctx = DefaultJasperReportsContext.getInstance();
+        JasperFillManager fillManager = JasperFillManager.getInstance(ctx);
+
         JasperPrint jasperPrint;
         try {
             jasperPrint = fillManager.fill(report, parameters, new JREmptyDataSource());
         } catch (JRException e) {
             throw new ProcessException(params.getOutputId(), "Failed to create Jasper document", e);
         }
-    
+
         Path pdfFile = tempFileProvider.createTempFile();
 
         try (OutputStream os = Files.newOutputStream(pdfFile, StandardOpenOption.WRITE)) {
 
             // Generate output to PDF
-            JRPdfExporter exporter = new JRPdfExporter(jasperContext);
+            JRPdfExporter exporter = new JRPdfExporter(ctx);
 
             exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
             exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(os));

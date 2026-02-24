@@ -5,7 +5,7 @@ import {
   SelectionEvents,
 } from "@fluentui/react-components";
 import { FormItemSpec, FormItemType, MandatoryType } from "elza-api";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DescItemTypeRef } from "typings/store";
 import { useStrictMode } from "../hooks";
 import { findInSources } from "./utils";
@@ -61,7 +61,9 @@ export function DescItemSpec({
   // const [selectedSpec, setSelectedSpec] = useState(value);
   const [query, setQuery] = useState(getLabel(spec));
   const [filteredSpecs, setFilteredSpecs] = useState(specs);
+  const [listboxMinWidth, setListboxMinWidth] = useState(undefined);
   const fieldRef = useRef<HTMLInputElement>(null);
+  const comboboxRef = useRef<HTMLInputElement>(null);
 
   function handleOptionSelect(_e: SelectionEvents, data: OptionOnSelectData) {
     if (!data.optionValue) {
@@ -89,6 +91,10 @@ export function DescItemSpec({
     setQuery(_query);
   }
 
+  useEffect(() => {
+      setListboxMinWidth(comboboxRef.current?.offsetWidth);
+  }, [comboboxRef.current?.offsetWidth])
+
   return (
     <div
       style={{
@@ -100,6 +106,7 @@ export function DescItemSpec({
       }}
     >
       <Combobox
+        root={{ ref: comboboxRef }}
         selectedOptions={spec ? [spec.rule.code] : []}
         value={isUndefined ? "výjimka" : query}
         disabled={isDisabled}
@@ -128,7 +135,18 @@ export function DescItemSpec({
             textDecoration: isInhibited ? "line-through" : undefined,
           },
         }}
-        listbox={{ style: { maxHeight: "400px" } }}
+        positioning={{
+            matchTargetSize: undefined,
+            // position: "above",
+            align: "start"
+        }}
+        listbox={{
+            style: {
+                minWidth: `${listboxMinWidth || 100}px`,
+                maxHeight: "400px",
+                maxWidth: "300px",
+            },
+        }}
       >
         {filteredSpecs.map(({ rule, form }) => {
           const isImpossible = !form;

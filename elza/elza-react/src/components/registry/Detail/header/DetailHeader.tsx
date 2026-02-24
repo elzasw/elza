@@ -1,7 +1,7 @@
 import { StateApprovalEx } from 'api/StateApproval';
 import i18n from "components/i18n";
 import { TooltipTrigger } from 'components/shared';
-import React, { FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState, Scope, ApExternalSystemSimpleVO } from 'typings/store';
 import { ApAccessPointVO } from '../../../../api/ApAccessPointVO';
@@ -22,6 +22,8 @@ import { ReplacedEntities } from './ReplacedEntities';
 import { PartValidationErrorsVO } from 'api/PartValidationErrorsVO';
 import { Api } from 'api';
 import * as permissions from 'actions/user/Permission';
+import { UsrUserVO } from 'api/UsrUserVO';
+import { WebApi } from 'actions';
 
 interface Props {
     item: ApAccessPointVO;
@@ -62,11 +64,22 @@ const DetailHeader: FC<Props> = ({
     const apTypesMap = useSelector(({ refTables }: AppState) => refTables.recordTypes.itemsMap);
     const userDetail = useSelector(({ userDetail }: AppState) => userDetail);
 
+    const [assignedUser, setAssignedUser] = useState<UsrUserVO>();
+
     const apType = apTypesMap[item.typeId] as any;
     const apTypeNew = apTypesMap[item.newTypeId] as any;
     const itemState = getItemState(item);
     const errorsFetched = validationErrors && validationPartErrors;
     const hasErrors = (validationErrors && validationErrors.length > 0) || (validationPartErrors && validationPartErrors.length > 0);
+
+    useEffect(() => {
+        if (item.assignedTo) {
+            (async function () {
+                const user:UsrUserVO = await WebApi.getUser(item.assignedTo)
+                setAssignedUser(user);
+            })()
+        }
+    }, [item.assignedTo])
 
     const renderValidationIcon = () => {
         if (!validationErrors || !validationPartErrors) {
@@ -151,12 +164,17 @@ const DetailHeader: FC<Props> = ({
                             {itemState && (
                                 <TooltipTrigger
                                     style={{ width: "auto" }}
-                                    content={item.lastChange ?
+                                    content={
                                         <>
-                                            <div>{i18n("ap.detail.lastChange")}: {formatDateTime(item.lastChange.change)}</div>
-                                            <div>{i18n("ap.detail.modifiedBy")}: {item.lastChange.user?.displayName || i18n("ap.detail.lastChange.user.notAvailable")}</div>
+                                            {item.lastChange ?
+                                                <>
+                                                    <div>{i18n("ap.detail.lastChange")}: {formatDateTime(item.lastChange.change)}</div>
+                                                    <div>{i18n("ap.detail.modifiedBy")}: {item.lastChange.user?.displayName || i18n("ap.detail.lastChange.user.notAvailable")}</div>
+                                                </>
+                                                : <div>{i18n("ap.detail.lastChange.notAvailable")}</div>
+                                            }
+                                            {assignedUser && <div>{i18n("ap.ext-search.assignedTo")}: {assignedUser.username}</div>}
                                         </>
-                                        : <div>{i18n("ap.detail.lastChange.notAvailable")}</div>
                                     }
                                 >
                                     <DetailDescriptionsItem className={itemState.toLowerCase()}>
