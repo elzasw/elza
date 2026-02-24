@@ -186,8 +186,7 @@ export const ApStateChangeForm = ({
                             }}</Field>
                             {(uniqueParticipants || []).length > 0 && <Field name="lastParticipants">
                                 {() => {
-                                    //@ts-expect-error TODO wrong types on FormInputField
-                                    return <FormInputField type="static" label={i18n('ap.state.title.lastParticipants')}>
+                                    return <div style={{marginTop: "16px"}}>
                                         {uniqueParticipants.map((participant) => {
                                             function handleClick() {
                                                 form.change('assignedTo', participant.userId);
@@ -199,7 +198,7 @@ export const ApStateChangeForm = ({
                                                 </Button>
                                             </div>
                                         })}
-                                    </FormInputField>
+                                    </div>
                                 }}
                             </Field>}
                         </>}

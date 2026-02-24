@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.integer.DisplayType;
 import cz.tacr.elza.domain.table.ElzaColumn;
+import cz.tacr.elza.domain.viewDefinition.StringViewDefinition;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -51,6 +52,8 @@ public class RulItemType {
     public static final TypeReference<List<ElzaColumn>> ELZA_COLUMNS = new TypeReference<List<ElzaColumn>>(){};
 
     public static final TypeReference<DisplayType> DISPLAY_TYPE = new TypeReference<DisplayType>(){};
+    
+    public static final TypeReference<StringViewDefinition> STRING_VIEW_DEFINITION = new TypeReference<StringViewDefinition>(){};
 
     public static final String FIELD_VIEW_ORDER = "viewOrder";
     public static final String CODE = "code";
@@ -511,6 +514,9 @@ public class RulItemType {
             } else if (dataType == DataType.INT) {
                 Object result = objectMapper.readValue(viewDefinition, DISPLAY_TYPE);
                 return result == null ? DisplayType.NUMBER : result;
+            } else if (dataType == DataType.STRING) {
+            	Object result = objectMapper.readValue(viewDefinition, STRING_VIEW_DEFINITION);
+				return result == null ? null : result;
             } else {
                 return null;
             }

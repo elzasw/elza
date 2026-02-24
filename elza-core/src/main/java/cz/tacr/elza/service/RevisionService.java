@@ -46,6 +46,7 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ChangeType;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.WfTask.Status;
 import cz.tacr.elza.domain.WfTaskApRevState;
@@ -165,6 +166,12 @@ public class RevisionService {
         revState.setPreferredPart(state.getAccessPoint().getPreferredPart());
         revState.setCreateChange(change);
         revState = revStateRepository.save(revState);
+
+        UsrUser user = userService.getLoggedUser();
+        if (user != null) {
+        	// create new WfTask
+        	taskService.createTaskApRevState(revState, user.getUserId());
+        }
 
         // Permission check - includes new revision state
         accessPointService.checkPermissionForEdit(state, revState);
