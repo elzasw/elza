@@ -106,14 +106,18 @@ export function DescItemRecordRef({
   }, [data?.value, item.undefined]);
 
   useEffect(() => {
-    if (!item.undefined && item.nodeId === nodeId) {
+    if (
+      !item.undefined
+      && item.nodeId === nodeId
+      && (!typeRef.useSpecification || itemSpecId != undefined) // spec id is required for types that use specification
+    ) {
       (async () => {
         const accessPoints = await WebApi.findAccessPoint(
           query,
           undefined,
           undefined,
           activeFund.versionId,
-          (itemSpecId != undefined && itemTypeId) || undefined,
+          itemTypeId,
           itemSpecId,
         );
         setAccessPoints(accessPoints.rows);
@@ -127,6 +131,7 @@ export function DescItemRecordRef({
     item.nodeId,
     nodeId,
     activeFund?.versionId,
+    typeRef.useSpecification,
   ]);
 
   function handleSelectModule() {
