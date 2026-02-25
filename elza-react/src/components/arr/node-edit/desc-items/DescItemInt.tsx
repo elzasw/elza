@@ -4,6 +4,7 @@ import { ConflictValue } from "./ConflictValue";
 import { EditStateDisplay } from "./EditStateDisplay";
 import { DescItemProps } from "./types";
 import { useValueManager } from "./utils";
+import { fromDuration, isNormalizeDurationLength, normalizeDuration, normalizeDurationLength, toDuration } from "components/validate";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemInt) => Promise<void>;
@@ -18,6 +19,7 @@ export function DescItemInt({
   onChange,
   nodeId,
   isDisabled: _isDisabled,
+  typeRef,
 }: Props) {
   if (item.data?.dataType !== DataType.Int) {
     throw "Incorrect data type";
@@ -32,6 +34,9 @@ export function DescItemInt({
     _isDisabled;
   const data = item.data as DataInteger;
 
+  const isDuration = typeRef.viewDefinition === "DURATION";
+    const _initialValue = isDuration && data?.integerValue != undefined ? toDuration(data?.integerValue) : data?.integerValue;
+
   const {
     value,
     setValue,
@@ -40,15 +45,21 @@ export function DescItemInt({
     initialValue,
     resetConflict,
     finishChange,
-  } = useValueManager<number>(data?.integerValue, item);
+  } = useValueManager<number | string>(_initialValue, item);
 
   async function handleChange(force?: boolean) {
     if (value && initialValue !== value && (!conflictValue || force)) {
-      await onChange({
-        ...item,
-        data: { ...item.data, integerValue: value },
-      });
-      finishChange();
+        let integerValue = value;
+        if(isDuration){
+            integerValue = parseInt(fromDuration(normalizeDurationLength(value)));
+        }
+        if (typeof integerValue === 'number') {
+            await onChange({
+                ...item,
+                data: { ...item.data, integerValue },
+            });
+        }
+        finishChange();
     }
   }
 
@@ -62,13 +73,19 @@ export function DescItemInt({
   function handleInputChange({
     currentTarget,
   }: React.ChangeEvent<HTMLInputElement>) {
-    const int = parseInt(currentTarget.value);
-    if (isNaN(int) && currentTarget.value !== "") {
-      return;
-    }
+      if(isDuration){
+          const _value = normalizeDuration(currentTarget.value);
+          setValue(_value);
+      }
+      else {
+          const int = parseInt(currentTarget.value);
+          if (isNaN(int) && currentTarget.value !== "") {
+            return;
+          }
 
-    const _int = isNaN(int) ? null : int;
-    setValue(_int);
+          const _int = isNaN(int) ? null : int;
+          setValue(_int);
+      }
   }
 
   return (
