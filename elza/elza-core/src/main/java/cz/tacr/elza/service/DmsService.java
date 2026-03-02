@@ -98,7 +98,7 @@ public class DmsService {
      * @param fileStream stream pro uložení souboru, po použití jej uzavře
      * @throws IOException
      */
-    public void createFile(final DmsFile dmsFile, final InputStream fileStream) throws IOException {
+    public DmsFile createFile(final DmsFile dmsFile, final InputStream fileStream) throws IOException {
         Validate.notNull(dmsFile, "Soubor musí být vyplněn");
         Validate.notNull(fileStream, "Stream souboru musí být vyplněn");
 
@@ -110,8 +110,9 @@ public class DmsService {
         }
         saveFile(dmsFile, fileStream, outputFile);
 
-        fileRepository.save(dmsFile);
-        publishFileChange(dmsFile);
+        var result = fileRepository.save(dmsFile);
+        publishFileChange(result);
+        return result;
     }
 
     /**
@@ -230,8 +231,9 @@ public class DmsService {
      * @param dmsFile
      *            dms Soubor ke stažení
      * @return stream
+     * 		  Caller is responsible for closing the stream after use.
      */
-    static public InputStream downloadFile(final ResourcePathResolver resourcePathResolver, final DmsFile dmsFile) {
+    static public InputStream newInputStream(final ResourcePathResolver resourcePathResolver, final DmsFile dmsFile) {
         Validate.notNull(dmsFile, "Soubor musí být vyplněn");
 
         Path dmsFilePath = resourcePathResolver.getDmsDir().resolve(dmsFile.getFileId().toString());
@@ -251,14 +253,15 @@ public class DmsService {
     }
 
     /**
-     * Vrátí stream pro stažení souboru
+     * Returns stream for downloading file
      *
      * @param dmsFile
-     *            dms Soubor ke stažení
+     *            dms file to download
      * @return stream
+     * 		    Caller is responsible for closing the stream after use.
      */
-    public InputStream downloadFile(final DmsFile dmsFile) {
-        return downloadFile(this.resourcePathResolver, dmsFile);
+    public InputStream newInputStream(final DmsFile dmsFile) {
+        return newInputStream(this.resourcePathResolver, dmsFile);
     }
 
     /**

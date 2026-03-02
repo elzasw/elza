@@ -181,7 +181,7 @@ public class DmsController {
         FileDownload.addContentDispositionAsAttachment(response, file.getFileName());
 
         try (ServletOutputStream out = response.getOutputStream();
-                InputStream in = dmsService.downloadFile(file);) {
+                InputStream in = dmsService.newInputStream(file);) {
             IOUtils.copy(in, out);
         }
     }
@@ -243,7 +243,7 @@ public class DmsController {
             if (outputFiles.size() == 1) {
                 // single file download directly
                 ArrOutputFile singleFile = outputFiles.get(0);
-                in = dmsService.downloadFile(singleFile);
+                in = dmsService.newInputStream(singleFile);
                 fileName = singleFile.getFileName();
 
             } else {
@@ -292,7 +292,7 @@ public class DmsController {
             if (outputFiles.size() == 1) {
                 // single file download directly
                 ArrOutputFile singleFile = outputFiles.get(0);
-                in = dmsService.downloadFile(singleFile);
+                in = dmsService.newInputStream(singleFile);
                 fileName = singleFile.getFileName();
 
             } else {
@@ -354,7 +354,7 @@ public class DmsController {
 
         ArrFileVO result = ArrFileVO.newInstance(file, attachmentService);
 
-        try (InputStream is = dmsService.downloadFile(file)) {
+        try (InputStream is = dmsService.newInputStream(file)) {
             String text = IOUtils.toString(is, "utf-8");
             result.setContent(text);
         }
