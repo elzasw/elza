@@ -24,6 +24,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.cam.v2.schema.cam.BatchInfoXml;
 import cz.tacr.cam.v2.schema.cam.LongStringXml;
@@ -181,6 +183,9 @@ public class CamService {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    private PlatformTransactionManager txManager;
 
     private final String TRANSACTION_UUID = "91812cb8-3519-4f78-b0ec-df6e951e2c7c";
 
@@ -687,18 +692,20 @@ public class CamService {
         BindingSyncInfo bindingSync = externalSystemService.getBindingSync(extSysCode, TRANSACTION_UUID);
         try {
             String lastTransaction = bindingSync.getLastTransaction();
-            UpdatesFromXml updatesFromXml = null;
             String toTransaction = null;
             Integer count = null;
             Integer page = 0;
             if (bindingSync.getToTransaction() == null || bindingSync.getPage() == null || bindingSync.getCount() == null) {
                 // get next updates and count of changes
-                updatesFromXml = camConnector.getUpdatesFrom(bindingSync.getLastTransaction(), bindingSync.getExternalSystemId());
+            	UpdatesFromXml updatesFromXml = camConnector.getUpdatesFrom(bindingSync.getLastTransaction(), bindingSync.getExternalSystemId());
 
                 if (updatesFromXml.getUpdates() != null && CollectionUtils.isNotEmpty(updatesFromXml.getUpdates().getRevInfo())) {
                     // We received all updated items
                     List<EntityRecordRevInfoXml> entityRecordRevInfoXmls = updatesFromXml.getUpdates().getRevInfo();
-                    prepareApsForSync(bindingSync.getId(), entityRecordRevInfoXmls, updatesFromXml.getInfo().getTo().getValue(), null, null, null);
+                    
+                    new TransactionTemplate(txManager).executeWithoutResult(status ->
+                    	prepareApsForSync(bindingSync.getId(), entityRecordRevInfoXmls, updatesFromXml.getInfo().getTo().getValue(), null, null, null)
+                    	);
                 } else {
                     // Musí být uloženo po přečtení plné dávky dat.
                     toTransaction = updatesFromXml.getInfo().getTo().getValue();
@@ -730,7 +737,14 @@ public class CamService {
                     count = null;
                 }
 
-                prepareApsForSync(bindingSync.getId(), updatesXml.getRevInfo(), lastTransaction, toTransaction, page, count);
+                var paramLastTransaction = lastTransaction;
+                var paramToTransaction = toTransaction;
+                var paramPage = page;
+                var paramCount = count;
+                
+                new TransactionTemplate(txManager).executeWithoutResult(status ->
+                	prepareApsForSync(bindingSync.getId(), updatesXml.getRevInfo(), paramLastTransaction, paramToTransaction, paramPage, paramCount)
+                	);
             }
         } catch (ApiException e) {
             if (e.getCode() == 404) {
@@ -754,7 +768,6 @@ public class CamService {
      * @param page
      * @param count
      */
-    @Transactional
     public void prepareApsForSync(Integer bindingSyncId, List<EntityRecordRevInfoXml> entityRecordRevInfoXmls,
                                   String lastTransaction, String toTransaction,
                                   Integer page, Integer count) {
