@@ -182,9 +182,6 @@ public class CamService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Value("${elza.ap.checkDb:false}")
-    private boolean checkDb;
-
     private final String TRANSACTION_UUID = "91812cb8-3519-4f78-b0ec-df6e951e2c7c";
 
     private final Integer PAGE_SIZE = 1000;
@@ -744,12 +741,6 @@ public class CamService {
                 log.error("Failed to send data to external system, responseCode: {}, responseBode: {}", e.getCode(), e.getResponseBody(), e);
                 throw prepareExtSystemException(e);
             }
-        }
-
-        // kontrola datové struktury
-        if (checkDb) {
-            entityManager.flush();
-            accessPointService.checkConsistency();
         }
     }
 

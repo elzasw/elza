@@ -27,7 +27,6 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -186,9 +185,6 @@ public class CamService {
 
     @PersistenceContext
     private EntityManager entityManager;
-
-    @Value("${elza.ap.checkDb:false}")
-    private boolean checkDb;
 
     private final String TRANSACTION_UUID = "91812cb8-3519-4f78-b0ec-df6e951e2c7c";
 
@@ -579,12 +575,6 @@ public class CamService {
                 log.error("Failed to send data to external system, responseCode: {}, responseBode: {}", e.getCode(), e.getResponseBody(), e);
                 throw prepareExtSystemException(e);
             }
-        }
-
-        // kontrola datové struktury
-        if (checkDb) {
-            entityManager.flush();
-            accessPointService.checkConsistency();
         }
     }
 
