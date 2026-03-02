@@ -24,6 +24,6 @@ public class DmsFileLoader
         return new DmsFileInfoImpl(dmsFile.getFileId(), dmsFile.getName(),
                 dmsFile.getFileName(),
                 dmsFile.getMimeType(),
-                () -> DmsService.downloadFile(resourcePathResolver, dmsFile));
+                () -> DmsService.newInputStream(resourcePathResolver, dmsFile));
     }
 }
