@@ -351,20 +351,23 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                               );
                             })}
                           {typeForm.repeatable &&
-                            ((formItems[formItems.length - 1].item.data
+                            ((descItems[descItems.length - 1]?.item.data
                               ?.dataId != undefined && // last item has data
-                              !formItems[formItems.length - 1].item
+                              !descItems[descItems.length - 1]?.item
                                 .undefined) || // last item is not undefined
                               typeRef.useSpecification) && ( // show when item uses specification
                               <Button
                                 style={{ borderStyle: "dashed", color: "#666" }}
                                 icon={<AddRegular />}
-                                onClick={() =>
-                                  addEmptyDescItem(
-                                    typeRef.id,
-                                    formItems[formItems.length - 1].item
-                                      .position + 1,
-                                  )
+                                onClick={() =>{
+                                    const lastItem = descItems[descItems.length - 1].item;
+                                    const nextPosition = lastItem.position > 0 ? lastItem.position + 1 : 1;
+                                    addEmptyDescItem(
+                                        typeRef.id,
+                                        undefined,
+                                        nextPosition,
+                                    )
+                                }
                                 }
                                 tabIndex={-1}
                               >
