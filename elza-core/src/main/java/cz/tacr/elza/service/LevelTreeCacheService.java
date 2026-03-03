@@ -1939,29 +1939,32 @@ private void processEvent(AbstractEventSimple event) {
 
             // set NodeConformity
             NodeConformityVO ncVO = node.getNodeConformity();
-            List<NodeConformityError> errorList = ncVO.getErrorList().stream()
-            		.map(e -> new NodeConformityError(e.getDescItemObjectId(), e.getDescription(), e.getPolicyTypeId()))
-            		.toList();
+            if(ncVO != null) {
+				List<NodeConformityError> errorList = ncVO.getErrorList().stream().map(
+						e -> new NodeConformityError(e.getDescItemObjectId(), e.getDescription(), e.getPolicyTypeId()))
+						.toList();
 
-            List<NodeConformityMissing> missingList = ncVO.getMissingList().stream()
-            		.map(m -> new NodeConformityMissing(m.getDescItemTypeId(), m.getDescItemSpecId(), m.getDescription(), m.getPolicyTypeId()))
-            		.toList();
+				List<NodeConformityMissing> missingList = ncVO.getMissingList().stream()
+						.map(m -> new NodeConformityMissing(m.getDescItemTypeId(), m.getDescItemSpecId(),
+								m.getDescription(), m.getPolicyTypeId()))
+						.toList();
 
-            List<Integer> viewPolicyTypeIds = new ArrayList<>(); 
-            ncVO.getPolicyTypeIdsVisible().entrySet().forEach(e -> {
-            	Boolean value = e.getValue();
-            	if (value) {
-            		viewPolicyTypeIds.add(e.getKey());
-            	}
-            });
+				List<Integer> viewPolicyTypeIds = new ArrayList<>();
+				ncVO.getPolicyTypeIdsVisible().entrySet().forEach(e -> {
+					Boolean value = e.getValue();
+					if (value) {
+						viewPolicyTypeIds.add(e.getKey());
+					}
+				});
 
-            NodeConformity nodeConformity = new NodeConformity();
-            nodeConformity.setDate(DateTimeConvertor.toLocalDate(ncVO.getDate()));
-            nodeConformity.setState(NodeConformityState.valueOf(ncVO.getState().name()));
-            nodeConformity.setErrorList(errorList);
-            nodeConformity.setMissingList(missingList);
-            nodeConformity.setViewPolicyTypeIds(viewPolicyTypeIds);
-            accordionNode.setNodeConformity(nodeConformity);
+				NodeConformity nodeConformity = new NodeConformity();
+				nodeConformity.setDate(DateTimeConvertor.toLocalDate(ncVO.getDate()));
+				nodeConformity.setState(NodeConformityState.valueOf(ncVO.getState().name()));
+				nodeConformity.setErrorList(errorList);
+				nodeConformity.setMissingList(missingList);
+				nodeConformity.setViewPolicyTypeIds(viewPolicyTypeIds);
+				accordionNode.setNodeConformity(nodeConformity);
+            }            
 
             // set list of WfSimpleIssue
             List<WfIssue> wfIssues = nodeToIssueMap.getOrDefault(node.getId(), Collections.emptyList());
