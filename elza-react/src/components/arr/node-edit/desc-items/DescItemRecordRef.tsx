@@ -275,7 +275,7 @@ export function DescItemRecordRef({
             style={{ height: "29px" }}
             appearance="subtle"
             disabled={
-              (item.itemSpecId == undefined && selectedSpecId == undefined) ||
+              (typeRef.useSpecification && item.itemSpecId == undefined && selectedSpecId == undefined) ||
               isDisabled
             }
             icon={<DatabasePersonRegular />}
