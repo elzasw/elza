@@ -5,6 +5,7 @@ import { EditStateDisplay } from "./EditStateDisplay";
 import { useValueManager } from "./utils";
 import { DescItemProps } from "./types";
 import { TextareaAutosize } from "./inputs/TextareaAutosize";
+import { isMaskViewDefinition, maskString, unmaskString } from "./maskUtils";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemString) => Promise<void>;
@@ -20,6 +21,7 @@ export function DescItemString({
   nodeId,
   isDisabled: _isDisabled,
   typeWidth,
+  typeRef,
 }: Props) {
   if (item.data && item.data?.dataType !== DataType.String && !item.undefined) {
     throw "Incorrect data type";
@@ -34,6 +36,9 @@ export function DescItemString({
     _isDisabled;
   const data = item.data as DataString;
 
+  const mask = isMaskViewDefinition(typeRef.viewDefinition) ? typeRef.viewDefinition.mask : undefined;
+    const _initialValue = mask ? maskString(data?.stringValue, mask) : data?.stringValue;
+
   const {
     value,
     setValue,
@@ -42,15 +47,17 @@ export function DescItemString({
     initialValue,
     resetConflict,
     finishChange,
-  } = useValueManager<string>(data?.stringValue, item);
+  } = useValueManager<string>(_initialValue, item);
+
 
   async function handleChange(force?: boolean) {
     if (value && initialValue !== value && (!conflictValue || force)) {
+        const stringValue = mask ? unmaskString(value, mask) : value;
       await onChange({
         ...item,
         data: {
           ...item.data,
-          stringValue: value,
+          stringValue,
         },
       });
 
@@ -68,7 +75,11 @@ export function DescItemString({
   function handleInputChange({
     currentTarget,
   }: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) {
-    const _value = currentTarget.value.replace(/\n/g, "");
+    let _value = currentTarget.value.replace(/\n/g, "");
+    if (mask) {
+        _value = maskString(unmaskString(_value, mask), mask);
+    }
+
     if (_value != value && (value || _value?.length > 0)) {
       setValue(_value);
     }
