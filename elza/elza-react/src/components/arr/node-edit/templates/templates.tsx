@@ -1,229 +1,264 @@
-import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
-import { userDetailsSaveSettings } from "actions/user/userDetail";
-import i18n from "components/i18n";
-import { NodeItem } from "elza-api";
-import { indexById } from "shared/utils";
-import { getOneSettings, setSettings } from "../../ArrUtils";
-import TemplateForm, {
-  EXISTS_TEMPLATE as exists_template,
-  NEW_TEMPLATE as new_template,
-} from "../../TemplateForm";
-import { useAppThunkDispatch } from "utils/hooks";
-import { useAppSelector } from "utils/hooks/useAppSelector";
-import { useActiveFund } from "../hooks";
+import { WebApi } from 'actions';
+import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
+import { userDetailsSaveSettings } from 'actions/user/userDetail';
+import TemplateUseForm from 'components/arr/TemplateUseForm';
+import i18n from 'components/i18n';
+import { NodeItem } from 'elza-api';
+import { indexById } from 'shared/utils';
+import { useAppThunkDispatch } from 'utils/hooks';
+import { useAppSelector } from 'utils/hooks/useAppSelector';
+import { ItemClass } from '../../../../constants';
+import { getOneSettings, setSettings } from '../../ArrUtils';
+import TemplateForm, { EXISTS_TEMPLATE as exists_template, NEW_TEMPLATE as new_template } from '../../TemplateForm';
+import { useActiveFund } from '../hooks';
+import { convertToNewTemplate, convertToOldDescItem } from './conversionUtils';
+import { hasValue, isValueEqual } from './utils';
 
 enum TemplateAddType {
-  NEW_TEMPLATE = new_template,
-  EXISTS_TEMPLATE = exists_template,
+    NEW_TEMPLATE = new_template,
+    EXISTS_TEMPLATE = exists_template,
 }
 
 interface TemplateFormData {
-  type: TemplateAddType;
-  withValues: boolean;
-  name: string;
+    type: TemplateAddType;
+    withValues: boolean;
+    name: string;
 }
 
 interface UseTemplatesProps {
-  descItems: NodeItem[];
+    descItems: NodeItem[];
+    nodeId: number;
+    nodeVersion: number;
+    fondsVersionId: number;
+    onAddDescItem: (itemTypeId: number, itemSpecId?: number) => void;
 }
 
-export function useTemplates({ descItems }: UseTemplatesProps) {
-  const userSettings = useAppSelector(({ userDetail }) => userDetail.settings);
-  const activeFund = useActiveFund();
-  const dispatch = useAppThunkDispatch();
+export interface DeprecatedNodeTemplateItem {
+    '@class': ItemClass;
+    descItemSpecId?: number;
+    value?: number | string | null;
+    strValue?: string | null;
+    description?: string | null;
+    refTemplateId?: number | null;
+    nodeId?: number | null;
+    undefined?: boolean;
+    position?: number;
+}
 
-  const fundTemplates = getOneSettings(
-    userSettings,
-    "FUND_TEMPLATES",
-    "FUND",
-    activeFund.id,
-  );
-  const templates = fundTemplates?.value
-    ? JSON.parse(fundTemplates.value).map((template) => template.name)
-    : [];
+export interface NodeTemplate {
+    name: string;
+    withValues: boolean;
+    formData: NodeTemplateItem[];
+}
 
-  function createTemplate() {
-    const initialValues = {
-      type: TemplateAddType.NEW_TEMPLATE,
-      withValues: true,
-    };
+export interface DeprecatedNodeTemplate {
+    name: string;
+    withValues: boolean;
+    formData: Record<number, DeprecatedNodeTemplateItem[]>;
+}
 
-    const templates = fundTemplates?.value
-      ? JSON.parse(fundTemplates.value).map((template) => template.name)
-      : [];
+export type NodeTemplateItem = Omit<
+    NodeItem,
+    'id' | 'itemObjectId' | 'readOnly' | 'nodeId' | 'nodeVersion' | 'inhibited' | 'undefined'
+>;
 
-    dispatch(
-      modalDialogShow(
-        this,
-        i18n("arr.fund.addTemplate.create"),
-        <TemplateForm
-          initialValues={initialValues}
-          //@ts-expect-error TODO add templates to props/convert to final form and tsx
-          templates={templates}
-          onSubmitForm={({ withValues, name, type }: TemplateFormData) => {
-            const formData: NodeItem[] = withValues
-              ? descItems
-              : descItems.map((descItem) => ({
-                  ...descItem,
-                  data: {
-                    dataType: descItem.data.dataType,
-                  },
-                }));
-            const template = { name, withValues, formData };
+function isNodeTemplate(template: NodeTemplate | DeprecatedNodeTemplate): template is NodeTemplate {
+    return Array.isArray(template.formData);
+}
 
-            switch (type) {
-              case TemplateAddType.NEW_TEMPLATE: {
-                const value = fundTemplates.value
-                  ? [...JSON.parse(fundTemplates.value), template]
-                  : [template];
-                value.sort((a, b) => {
-                  return a.name.localeCompare(b.name);
-                });
+export function useTemplates({ descItems, nodeId, nodeVersion, fondsVersionId, onAddDescItem }: UseTemplatesProps) {
+    const userSettings = useAppSelector(({ userDetail }) => userDetail.settings);
+    const activeFund = useActiveFund();
+    const dispatch = useAppThunkDispatch();
 
-                fundTemplates.value = JSON.stringify(value);
-                const settings = setSettings(
-                  userSettings,
-                  fundTemplates.id,
-                  fundTemplates,
-                );
-                dispatch(userDetailsSaveSettings(settings));
-                break;
-              }
-              case TemplateAddType.EXISTS_TEMPLATE: {
-                const value = JSON.parse(fundTemplates.value);
-                const index = indexById(value, name, "name");
+    const fundTemplates = getOneSettings(userSettings, 'FUND_TEMPLATES', 'FUND', activeFund.id);
 
-                if (index == null) {
-                  console.error("Nebyla nalezena šablona s názvem: " + name);
-                } else {
-                  value[index] = template;
-                  fundTemplates.value = JSON.stringify(value);
-                  const settings = setSettings(
-                    userSettings,
-                    fundTemplates.id,
-                    fundTemplates,
-                  );
-                  dispatch(userDetailsSaveSettings(settings));
-                }
-                break;
-              }
-              default:
-                break;
-            }
-            return dispatch(modalDialogHide());
-          }}
-        />,
-      ),
-    );
-  }
+    const _fundTemplates: (NodeTemplate | DeprecatedNodeTemplate)[] = fundTemplates?.value
+        ? JSON.parse(fundTemplates.value)
+        : [];
+    const templates = _fundTemplates.map((template) => template.name);
 
-  function applyTemplate() {
-    console.warn("Template application not implemented yet");
+    function createTemplate() {
+        const initialValues = {
+            type: TemplateAddType.NEW_TEMPLATE,
+            withValues: true,
+        };
 
-    // const initialValues = {
-    //   replaceValues: false,
-    //   name:
-    //     templates.indexOf(activeFund.lastUseTemplateName) >= 0
-    //       ? activeFund.lastUseTemplateName
-    //       : null,
-    // };
+        dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.fund.addTemplate.create'),
+                <TemplateForm
+                    initialValues={initialValues}
+                    //@ts-expect-error TODO add templates to props/convert to final form and tsx
+                    templates={templates}
+                    onSubmitForm={({ withValues, name, type }: TemplateFormData) => {
+                        const formData: NodeTemplateItem[] = descItems
+                            .filter(({ nodeId: _nodeId }) => _nodeId === nodeId) // remove inherited
+                            .map((descItem) => ({
+                                // convert to TemplateItem
+                                itemSpecId: descItem.itemSpecId,
+                                itemTypeId: descItem.itemTypeId,
+                                position: descItem.position,
+                                data: withValues
+                                    ? descItem.data
+                                    : {
+                                          dataType: descItem.data.dataType,
+                                      },
+                            }));
+                        const template = { name, withValues, formData };
 
-    // dispatch(
-    //   modalDialogShow(
-    //     this,
-    //     i18n("arr.fund.useTemplate.title"),
-    //     <TemplateUseForm
-    //       initialValues={initialValues}
-    //       //@ts-expect-error TODO add templates to props/convert to final form and tsx
-    //       templates={templates}
-    //       onSubmitForm={(data) => {
-    //         const value = JSON.parse(fundTemplates.value);
-    //         const index = indexById(value, data.name, "name");
+                        switch (type) {
+                            case TemplateAddType.NEW_TEMPLATE: {
+                                const value = fundTemplates.value
+                                    ? [...JSON.parse(fundTemplates.value), template]
+                                    : [template];
+                                value.sort((a, b) => {
+                                    return a.name.localeCompare(b.name);
+                                });
 
-    //         if (index == null) {
-    //           console.error("Nebyla nalezena šablona s názvem: " + data.name);
-    //         } else {
-    //           const template = value[index];
-    //           console.debug("Apply template", template);
+                                fundTemplates.value = JSON.stringify(value);
+                                const settings = setSettings(userSettings, fundTemplates.id, fundTemplates);
+                                dispatch(userDetailsSaveSettings(settings));
+                                break;
+                            }
+                            case TemplateAddType.EXISTS_TEMPLATE: {
+                                const value = JSON.parse(fundTemplates.value);
+                                const index = indexById(value, name, 'name');
 
-    //           const formData = template.formData;
-    //           const createItems = [];
-    //           const updateItems = [];
-    //           const deleteItems = [];
-    //           const deleteItemsAdded = {};
+                                if (index == null) {
+                                    console.error('Nebyla nalezena šablona s názvem: ' + name);
+                                } else {
+                                    value[index] = template;
+                                    fundTemplates.value = JSON.stringify(value);
+                                    const settings = setSettings(userSettings, fundTemplates.id, fundTemplates);
+                                    dispatch(userDetailsSaveSettings(settings));
+                                }
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                        return dispatch(modalDialogHide());
+                    }}
+                />
+            )
+        );
+    }
 
-    //           const actualFormData = this.createFormData(subNodeForm);
+    function applyTemplate() {
+        const initialValues = {
+            replaceValues: false,
+            name:
+                templates.indexOf(activeFund.lastUseTemplateName as string) >= 0
+                    ? activeFund.lastUseTemplateName
+                    : null,
+        };
 
-    //           Object.keys(formData).forEach((itemTypeId) => {
-    //             this.processItemType(
-    //               formData,
-    //               itemTypeId,
-    //               actualFormData,
-    //               data,
-    //               deleteItemsAdded,
-    //               deleteItems,
-    //               updateItems,
-    //               createItems,
-    //             );
-    //           });
+        dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.fund.useTemplate.title'),
+                <TemplateUseForm
+                    initialValues={initialValues}
+                    // @ts-expect-error TODO add templates to props/convert to final form and tsx
+                    templates={templates}
+                    onSubmitForm={async (data: { name: string; replaceValues?: boolean }) => {
+                        let template = _fundTemplates.find(({ name }) => data.name === name);
 
-    //           Object.keys(deleteItemsAdded).forEach((itemObjectId) => {
-    //             let updateItemsTemp = [];
-    //             updateItems.forEach((updateItem) => {
-    //               if (itemObjectId === updateItem.descItemObjectId) {
-    //                 createItems.push({
-    //                   ...updateItem,
-    //                   descItemObjectId: null,
-    //                 });
-    //               } else {
-    //                 updateItemsTemp.push(updateItem);
-    //               }
-    //             });
-    //             updateItems = updateItemsTemp;
-    //           });
+                        if (!template) {
+                            throw `Nebyla nalezena šablona s názvem: ${data.name}`;
+                        }
 
-    //           if (
-    //             createItems.length > 0 ||
-    //             updateItems.length > 0 ||
-    //             deleteItems.length > 0
-    //           ) {
-    //             return WebApi.updateDescItems(
-    //               fund.versionId,
-    //               selectedSubNode.id,
-    //               selectedSubNode.version,
-    //               createItems,
-    //               updateItems,
-    //               deleteItems,
-    //             ).then(() => {
-    //               this.props.dispatch(
-    //                 nodeFormActions.fundSubNodeFormTemplateUse(
-    //                   fund.versionId,
-    //                   routingKey,
-    //                   template,
-    //                   data.replaceValues,
-    //                   true,
-    //                 ),
-    //               );
-    //               return this.props.dispatch(modalDialogHide());
-    //             });
-    //           } else {
-    //             this.props.dispatch(
-    //               nodeFormActions.fundSubNodeFormTemplateUse(
-    //                 fund.versionId,
-    //                 routingKey,
-    //                 template,
-    //                 data.replaceValues,
-    //                 false,
-    //               ),
-    //             );
-    //             return this.props.dispatch(modalDialogHide());
-    //           }
-    //         }
-    //       }}
-    //     />,
-    //   ),
-    // );
-  }
+                        if (!isNodeTemplate(template)) {
+                            template = convertToNewTemplate(template);
+                        }
 
-  return { templates, createTemplate, applyTemplate };
+                        const descItemsWithoutValue = template.formData.filter((item) => !hasValue(item));
+                        const descItemsWithValue = template.formData.filter((item) => hasValue(item));
+
+                        const createItems: NodeItem[] = [];
+                        const deleteItems: NodeItem[] = [];
+
+                        const itemTypePositions: Record<number, number> = {};
+                        const processedItemObjectIds: number[] = [];
+
+                        descItemsWithValue
+                            .sort((a, b) => a.itemTypeId - b.itemTypeId || a.position - b.position) // sort by itemTypeId and position
+                            .forEach((descItem) => {
+                                const pendingDescItems = descItems.filter(
+                                    ({ itemObjectId }) => !processedItemObjectIds.includes(itemObjectId)
+                                ); // remove items already processed
+
+                                // skip items that already have the same value
+                                const itemWithSameValue = pendingDescItems.find((_descItem) =>
+                                    isValueEqual(_descItem, descItem)
+                                );
+                                if (itemWithSameValue) {
+                                    processedItemObjectIds.push(itemWithSameValue.itemObjectId);
+                                    return;
+                                }
+
+                                const existingDescItem = pendingDescItems.find(
+                                    (_descItem) => descItem.itemTypeId == _descItem.itemTypeId
+                                );
+
+                                if (existingDescItem && data.replaceValues) {
+                                    deleteItems.push({
+                                        ...descItem,
+                                        id: existingDescItem.id,
+                                        itemObjectId: existingDescItem.itemObjectId,
+                                    });
+                                    processedItemObjectIds.push(existingDescItem.itemObjectId);
+                                }
+
+                                const highestPositionDescItem = descItems
+                                    .filter(({ itemTypeId }) => itemTypeId === descItem.itemTypeId)
+                                    .sort((a, b) => a.position - b.position)
+                                    .pop();
+
+                                const lastPosition =
+                                    itemTypePositions[descItem.itemTypeId] || // incremented position
+                                    (highestPositionDescItem?.position > 0 && highestPositionDescItem?.position) || // previous item position, if it is not inherited (negative position)
+                                    0;
+                                const nextPosition = lastPosition + 1;
+                                itemTypePositions[descItem.itemTypeId] = nextPosition;
+
+                                createItems.push({
+                                    ...descItem,
+                                    position: nextPosition,
+                                });
+                            });
+
+                        // add local empty desc items
+                        descItemsWithoutValue
+                            .filter(
+                                ({ itemTypeId }) => !descItems.find((_descItem) => _descItem.itemTypeId === itemTypeId)
+                            )
+                            .forEach((item) => {
+                                onAddDescItem(item.itemTypeId, item.itemSpecId);
+                            });
+
+                        const _createItems = createItems.map((descItem) => convertToOldDescItem(descItem));
+                        const _deleteItems = deleteItems.map((descItem) => convertToOldDescItem(descItem));
+
+                        if (createItems.length > 0 || deleteItems.length > 0) {
+                            await WebApi.updateDescItems(
+                                fondsVersionId,
+                                nodeId,
+                                nodeVersion,
+                                _createItems,
+                                [],
+                                _deleteItems
+                            );
+                        }
+
+                        return dispatch(modalDialogHide());
+                    }}
+                />
+            )
+        );
+    }
+
+    return { templates, createTemplate, applyTemplate };
 }

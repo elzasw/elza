@@ -126,7 +126,7 @@ export interface Props {
   formItems?: FormItem[];
   parent?: NodeBase;
   nodeData?: NodeAccordionData;
-  onAddDescItem: (descItemTypeId: number) => void;
+  onAddDescItem: (itemTypeId: number, itemSpecId?: number) => void;
   daos?: ArrDaoVO[];
 }
 
@@ -145,8 +145,13 @@ export const NodeToolbar = ({
   const dispatch = useAppThunkDispatch();
   const activeFund = useActiveFund();
   const activeParent = useActiveParent(); // TODO use different way of getting active parent node
-  const { createTemplate, applyTemplate } = useTemplates({ descItems });
-
+    const { createTemplate, applyTemplate } = useTemplates({
+        descItems,
+        nodeId: activeParent.selectedSubNodeId,
+        nodeVersion: activeParent.version,
+        fondsVersionId: activeFund.versionId,
+        onAddDescItem,
+    });
   const { formatMessage } = useIntl();
 
   const issueProtocol = useAppSelector(({ app }) => app.issueProtocol as any); // TODO add types
@@ -490,7 +495,7 @@ export const NodeToolbar = ({
           appearance: "subtle",
           id: "create-template",
           action: handleCreateTemplate,
-          isVisible: false,
+          isVisible: true,
         },
         {
           label: formatMessage(messages.applyTemplate),
@@ -498,7 +503,7 @@ export const NodeToolbar = ({
           appearance: "subtle",
           id: "apply-template",
           action: handleApplyTemplate,
-          isVisible: false,
+          isVisible: true,
         },
         {
           label: formatMessage(messages.copyUUID),

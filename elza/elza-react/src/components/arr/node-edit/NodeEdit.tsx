@@ -143,7 +143,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     >
       <NodeToolbar
         formData={formData}
-        formItems={formItems}
+        formItems={[...formItems, ...forcedFormItems, ...addedFormItems]}
         itemTypes={itemTypes}
         parent={parent}
         nodeData={nodeData}

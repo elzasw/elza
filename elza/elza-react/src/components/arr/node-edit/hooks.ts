@@ -321,7 +321,7 @@ export function useNodeFormData(
     setAddedFormItems([...addedFormItems, { localId: getKey(), item }]);
   }
 
-  function addEmptyDescItem(typeId: number, position: number = 1) {
+  function addEmptyDescItem(typeId: number, specId?: number, position: number = 1) {
     const typeRef = itemTypeRefs[typeId];
     if (!typeRef) {
       throw `Could not find type ref for id: ${typeId}`;
@@ -334,13 +334,16 @@ export function useNodeFormData(
       throw "'NodeVersionId' missing";
     }
     addDescItem(
-      createEmptyDescItem(
-        typeRef.id,
-        nodeId,
-        nodeVersionId,
-        position,
-        dataType.code,
-      ),
+        {
+            ...createEmptyDescItem(
+                typeRef.id,
+                nodeId,
+                nodeVersionId,
+                position,
+                dataType.code,
+            ),
+            itemSpecId: specId,
+        }
     );
   }
 
