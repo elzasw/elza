@@ -4,7 +4,7 @@ import { ConflictValue } from "./ConflictValue";
 import { EditStateDisplay } from "./EditStateDisplay";
 import { DescItemProps } from "./types";
 import { useValueManager } from "./utils";
-import { fromDuration, isNormalizeDurationLength, normalizeDuration, normalizeDurationLength, toDuration } from "components/validate";
+import { fromDuration, normalizeDuration, normalizeDurationLength, toDuration } from "components/validate";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemInt) => Promise<void>;
