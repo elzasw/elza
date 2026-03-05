@@ -37,7 +37,7 @@ export function DescItemString({
   const data = item.data as DataString;
 
   const mask = isMaskViewDefinition(typeRef.viewDefinition) ? typeRef.viewDefinition.mask : undefined;
-    const _initialValue = mask ? maskString(data?.stringValue, mask) : data?.stringValue;
+    const _initialValue = mask ? maskString(data?.stringValue || "", mask) : data?.stringValue;
 
   const {
     value,
@@ -98,7 +98,7 @@ export function DescItemString({
         <TextareaAutosize
           resize="none"
           disabled={isDisabled}
-          value={item.undefined ? "Výjimka" : value?.toString() || ""}
+          value={item.undefined ? "Výjimka" : value || ""}
           onChange={handleInputChange}
           onBlur={() => handleChange()}
           style={{
@@ -110,7 +110,7 @@ export function DescItemString({
       ) : (
         <Input
           disabled={isDisabled}
-          value={item.undefined ? "Výjimka" : value?.toString()}
+          value={item.undefined ? "Výjimka" : value || ""}
           onChange={handleInputChange}
           onBlur={() => handleChange()}
           style={{
