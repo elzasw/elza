@@ -372,7 +372,6 @@ public class FundControllerTest extends AbstractControllerTest {
         ParInstitutionVO institution = getInstitutions().get(0);
 
         CreateFund cf = new CreateFund();
-        cf = new CreateFund();
         cf.setName(name);
         cf.setInternalCode(internalCode);
         cf.setInstitutionIdentifier(institution.getCode());
