@@ -207,21 +207,27 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 
     private void readTypeAndSpecDataFromZipFilePackage(Map<String, ByteArrayInputStream> streamMap, List<String> itemSpecCodes) {
         ItemTypes itemTypes = PackageUtils.convertXmlStreamToObject(ItemTypes.class, streamMap.get(ITEM_TYPE_XML));
-        for (ItemType itemType : itemTypes.getItemTypes()) {
-            if (!itemTypeCodes.contains(itemType.getCode())) {
-                itemTypeCodes.add(itemType.getCode());
-                itemTypeDataTypeMap.put(itemType.getCode(), DataType.valueOf(itemType.getDataType()));
-            }
+        if(itemTypes != null) {
+			for (ItemType itemType : itemTypes.getItemTypes()) {
+				if (!itemTypeCodes.contains(itemType.getCode())) {
+					itemTypeCodes.add(itemType.getCode());
+					itemTypeDataTypeMap.put(itemType.getCode(), DataType.valueOf(itemType.getDataType()));
+				}
+			}
         }
+        
         ItemSpecs itemSpecs = PackageUtils.convertXmlStreamToObject(ItemSpecs.class, streamMap.get(ITEM_SPEC_XML));
-        for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
-        	if (!itemSpecCodes.contains(itemSpec.getCode())) {
-        		itemSpecCodes.add(itemSpec.getCode());
-        		for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
-        			List<String> listItemSpecCodes = typeSpecMap.computeIfAbsent(itemTypeAssign.getCode(), i -> new ArrayList<>());
-        			listItemSpecCodes.add(itemSpec.getCode());
-        		}
-        	}
+        if(itemSpecs!= null) {
+			for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
+				if (!itemSpecCodes.contains(itemSpec.getCode())) {
+					itemSpecCodes.add(itemSpec.getCode());
+					for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
+						List<String> listItemSpecCodes = typeSpecMap.computeIfAbsent(itemTypeAssign.getCode(),
+								i -> new ArrayList<>());
+						listItemSpecCodes.add(itemSpec.getCode());
+					}
+				}
+			}
         }
         PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class, streamMap.get(PART_TYPE_XML));
         if (partTypes != null) {
