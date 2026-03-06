@@ -252,7 +252,16 @@ public class FundControllerTest extends AbstractControllerTest {
         valueFilter.setOperation(OperationCompareType.CONTAINS);
 
         // try to search otherId using FieldValueFilter
-        fundResult = nodeApi.nodeSearch(params);
+        counter = 0;
+        try {
+            do {
+                Thread.sleep(100);
+                fundResult = nodeApi.nodeSearch(params);
+                counter++;
+            } while (fundResult.getTotalCount() == 0 && counter < 1000);
+        } catch (Exception e) {
+            fail("Exception while waiting on result: " + e);
+        }        
         assertEquals(1, fundResult.getFonds().size());
 
         // change filter by SRD_LANGUAGE
