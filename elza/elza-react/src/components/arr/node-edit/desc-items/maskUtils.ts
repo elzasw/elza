@@ -24,12 +24,12 @@ export function maskString(raw: string, mask: string) {
   return result;
 }
 
-export function matchesMask(value: string, mask: string): boolean {
+export function matchesMask(value: string, mask: string, partial = false): boolean {
   let fi = 0;
   for (let mi = 0; mi < mask.length; mi++) {
     const mc = mask[mi];
     if (mc === "#") {
-      if (fi >= value.length) return false;
+      if (fi >= value.length) return partial;
       fi++;
     } else if (mc === "*") {
       const literalsAfter = mask.slice(mi + 1).replace(/#|\*/g, "").length;
@@ -37,7 +37,8 @@ export function matchesMask(value: string, mask: string): boolean {
       const take = Math.max(0, value.length - fi - literalsAfter - hashesAfter);
       fi += take;
     } else {
-      if (fi >= value.length || value[fi] !== mc) return false;
+      if (fi >= value.length) return partial;
+      if (value[fi] !== mc) return false;
       fi++;
     }
   }

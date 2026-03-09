@@ -37,7 +37,7 @@ function unmaskFilterValue(filter) {
         filter.data?.itemType
     ) {
         const viewDefinition = filter.data.itemType.viewDefinition;
-        if (isMaskViewDefinition(viewDefinition) && matchesMask(filterValue.value, viewDefinition.mask)) {
+        if (isMaskViewDefinition(viewDefinition) && matchesMask(filterValue.value, viewDefinition.mask, true)) {
             return { ...filterValue, value: unmaskString(filterValue.value, viewDefinition.mask) };
         }
     }
