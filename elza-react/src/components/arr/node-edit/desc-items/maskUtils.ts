@@ -24,6 +24,26 @@ export function maskString(raw: string, mask: string) {
   return result;
 }
 
+export function matchesMask(value: string, mask: string): boolean {
+  let fi = 0;
+  for (let mi = 0; mi < mask.length; mi++) {
+    const mc = mask[mi];
+    if (mc === "#") {
+      if (fi >= value.length) return false;
+      fi++;
+    } else if (mc === "*") {
+      const literalsAfter = mask.slice(mi + 1).replace(/#|\*/g, "").length;
+      const hashesAfter = (mask.slice(mi + 1).match(/#/g) || []).length;
+      const take = Math.max(0, value.length - fi - literalsAfter - hashesAfter);
+      fi += take;
+    } else {
+      if (fi >= value.length || value[fi] !== mc) return false;
+      fi++;
+    }
+  }
+  return fi === value.length;
+}
+
 export function unmaskString(masked: string, mask: string) {
   let raw = "";
   let fi = 0;

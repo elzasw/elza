@@ -3,6 +3,8 @@
  */
 import * as types from './../../actions/constants/ActionTypes';
 import { Api } from 'api';
+import { FilterType, FieldType } from 'elza-api';
+import { isMaskViewDefinition, matchesMask, unmaskString } from '../../components/arr/node-edit/desc-items/maskUtils';
 
 export const getDataKey = (fulltext, isIdSearch) => {
     return isIdSearch ? `${fulltext}-id` : fulltext;
@@ -26,6 +28,22 @@ export function isFundSearchAction(action) {
     }
 }
 
+function unmaskFilterValue(filter) {
+    const filterValue = filter.getFilterValue(filter);
+    if (
+        filterValue.filterType === FilterType.FieldValue &&
+        filterValue.field?.fieldType === FieldType.DescItem &&
+        filterValue.value &&
+        filter.data?.itemType
+    ) {
+        const viewDefinition = filter.data.itemType.viewDefinition;
+        if (isMaskViewDefinition(viewDefinition) && matchesMask(filterValue.value, viewDefinition.mask)) {
+            return { ...filterValue, value: unmaskString(filterValue.value, viewDefinition.mask) };
+        }
+    }
+    return filterValue;
+}
+
 export function fundSearchFetchIfNeeded(force = false) {
     return async (dispatch, getState) => {
         const {
@@ -38,7 +56,10 @@ export function fundSearchFetchIfNeeded(force = false) {
         if (newDataKey !== currentDataKey || force) {
             dispatch(fundSearchFulltextRequest());
             const { data } = await Api.node.nodeSearch({
-                filters: filters?.map((filter) => filter.getFilterValue(filter)),
+                filters: filters?.map((filter) => {
+                    const result = unmaskFilterValue(filter);
+                    return result;
+                }),
                 // size,
                 // offset: filters.from
             })
