@@ -44,7 +44,7 @@ public interface StructuredObjectRepository extends JpaRepository<ArrStructuredO
                                                               @Param("sortValues") Collection<String> sortValues);
 
     @Query("SELECT sd FROM arr_structured_object sd WHERE sd.fund = :fund AND sd.deleteChange IS NULL "
-            + "AND sd.structuredObjectId = :structuredObjectId")
+            + "AND sd.state <> 'TEMP' AND sd.structuredObjectId = :structuredObjectId")
     List<ArrStructuredObject> findByIdAndFund(@Param("fund") ArrFund fund, @Param("structuredObjectId") Integer structuredObjectId);
 
     @Query("SELECT sd.structuredObjectId FROM arr_structured_object sd WHERE sd.structuredType = :structuredType "
