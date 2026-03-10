@@ -22,6 +22,7 @@ export const useStyles = makeStyles({
     display: "flex",
     flexWrap: "wrap",
     margin: "8px",
+    marginTop: "0",
     flexDirection: "column",
   },
   gridItem_0: {
