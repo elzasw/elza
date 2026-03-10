@@ -21,9 +21,11 @@ export function ErrorDisplay({ errors }: Props) {
           padding: "4px",
           color: "var(--color-orange)",
           fontSize: "1.5em",
+          display: "flex",
+          alignItems: "center",
         }}
       >
-        <WarningFilled />
+              <WarningFilled style={{marginTop: "1px"}} />
       </div>
     </Tooltip>
   ) : (

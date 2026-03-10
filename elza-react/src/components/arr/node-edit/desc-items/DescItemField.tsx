@@ -29,6 +29,35 @@ import { ErrorDisplay } from "./ErrorDisplay";
 import { ItemActions } from "./ItemActions";
 import { SavingDisplay } from "./SavingDisplay";
 import { createEmptyDescItem } from "./utils";
+import { makeStyles } from "@fluentui/react-components";
+
+const useStyles = makeStyles({
+  descItem: {
+    display: "flex",
+    // flexDirection: "column",
+
+    // "@container form-container (width > 600px)": {
+      flexDirection: "row",
+    // },
+  },
+  descItemInner: {
+      display: "block",
+      flex: 1,
+      "& > *": {
+          margin: 0,
+          marginBottom: "4px",
+      },
+
+      "@container form-container (width > 500px)": {
+          display: "flex",
+          flexDirection: "row",
+          "& > *": {
+              margin: 0,
+              marginRight: "4px",
+          },
+      },
+  },
+})
 
 interface Props {
   item: NodeItem;
@@ -74,6 +103,8 @@ export function DescItemField({
 }: Props) {
   const [specId, setSpecId] = useState<number | undefined>(item.itemSpecId);
   const [isSaving, setIsSaving] = useState(false);
+
+  const styles = useStyles();
 
   const { data } = item;
 
@@ -155,16 +186,15 @@ export function DescItemField({
 
   return (
     <div
+      className={styles.descItem}
       style={{
-        display: "flex",
-        margin: "4px 0",
+        margin: "2px 0",
         position: "relative",
         flex: 1,
         // alignItems: "center",
         alignItems: "flex-start",
       }}
     >
-      <ErrorDisplay errors={errors} />
       {(item.itemSpecId || typeRef.useSpecification) && !isEnum && (
         <DescItemSpec
           isDisabled={item.undefined || item.nodeId != nodeId || item.inhibited}
@@ -203,6 +233,7 @@ export function DescItemField({
           "Not implemented"
         )}
       </div>
+      <ErrorDisplay errors={errors} />
       <ItemActions
         item={item}
         nodeId={nodeId}
