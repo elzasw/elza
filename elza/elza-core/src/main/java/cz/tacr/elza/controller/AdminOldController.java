@@ -222,35 +222,38 @@ public class AdminOldController {
             if (StringUtils.isBlank(logFilePath)) {
                 lines.add("Chyba konfigurace, není nastavena cesta k souboru logu.");
             } else {
-                FileInputStream fileInputStream = new FileInputStream(new File(logFilePath));
-                FileChannel channel = fileInputStream.getChannel();
-                ByteBuffer mappedBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-                // Java 8 - compatibility
-                // - position cannot be address using ByteBuffer
-                // Causing exception:
-                //   java.lang.NoSuchMethodError: java.nio.ByteBuffer.position(I)Ljava/nio/ByteBuffer;
-                Buffer buffer = mappedBuffer;
-                buffer.position((int) channel.size());
+                try (FileInputStream fileInputStream = new FileInputStream(new File(logFilePath))) {
+                    FileChannel channel = fileInputStream.getChannel();
+                    ByteBuffer mappedBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+                    // Java 8 - compatibility
+                    // - position cannot be address using ByteBuffer
+                    // Causing exception:
+                    // java.lang.NoSuchMethodError:
+                    // java.nio.ByteBuffer.position(I)Ljava/nio/ByteBuffer;
+                    Buffer buffer = mappedBuffer;
+                    buffer.position((int) channel.size());
 
-                int count = 0;
-                byte[] lineArray = new byte[0];
-                for (long i = channel.size() - 1; i >= 0; i--) {
-                    byte c = mappedBuffer.get((int) i);
-                    if (c == '\n') {
+                    int count = 0;
+                    byte[] lineArray = new byte[0];
+                    for (long i = channel.size() - 1; i >= 0; i--) {
+                        byte c = mappedBuffer.get((int) i);
+                        if (c == '\n') {
+                            ArrayUtils.reverse(lineArray);
+                            lines.add(new String(lineArray, "UTF8"));
+                            lineArray = new byte[0];
+                            if (count == lineCount)
+                                break;
+                            count++;
+                        } else {
+                            lineArray = ArrayUtils.add(lineArray, c);
+                        }
+                    }
+                    if (lineArray.length > 0) {
                         ArrayUtils.reverse(lineArray);
                         lines.add(new String(lineArray, "UTF8"));
-                        lineArray = new byte[0];
-                        if (count == lineCount) break;
-                        count++;
-                    } else {
-                        lineArray = ArrayUtils.add(lineArray, c);
                     }
+                    channel.close();
                 }
-                if (lineArray.length > 0) {
-                    ArrayUtils.reverse(lineArray);
-                    lines.add(new String(lineArray, "UTF8"));
-                }
-                channel.close();
             }
         } catch (FileNotFoundException e) {
             lines.add("Soubor logu " + logFilePath + " nebyl nalezen.");

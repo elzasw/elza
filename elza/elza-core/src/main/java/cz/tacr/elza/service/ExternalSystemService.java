@@ -340,7 +340,7 @@ public class ExternalSystemService {
                 }
             }
 
-            if (queueItem.get().getState() != ExtAsyncQueueState.EXPORT_START) {
+            if (item.getState() != ExtAsyncQueueState.EXPORT_START) {
                 extSyncsQueueItemRepository.deleteById(extSyncItemId);
             }
         }
