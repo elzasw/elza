@@ -222,7 +222,7 @@ export function DescItemUriRef({
           <Input
             disabled={isDisabled}
             value={
-              item.undefined ? formatMessage(commonMessages.undefined) : value
+              item.undefined ? formatMessage(commonMessages.undefined) : (value || "")
             }
             onChange={handleValueInputChange}
             onBlur={() => handleChange()}

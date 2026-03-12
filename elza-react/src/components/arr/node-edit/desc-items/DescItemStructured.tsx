@@ -44,7 +44,7 @@ export function DescItemStructured({
   nodeId,
   isDisabled: _isDisabled,
 }: Props) {
-  if (item.data?.dataType !== DataType.Structured) {
+  if (item.data && item.data?.dataType !== DataType.Structured && !item.undefined) {
     throw "Incorrect data type";
   }
 

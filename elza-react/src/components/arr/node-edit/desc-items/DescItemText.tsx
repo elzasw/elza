@@ -5,6 +5,8 @@ import { EditStateDisplay } from "./EditStateDisplay";
 import { TextareaAutosize } from "./inputs/TextareaAutosize";
 import { DescItemProps } from "./types";
 import { useValueManager } from "./utils";
+import { useIntl } from "react-intl";
+import { messages as commonMessages } from "./commonMessages";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemText) => Promise<void>;
@@ -24,6 +26,7 @@ export function DescItemText({
     throw "Incorrect data type";
   }
 
+  const { formatMessage } = useIntl();
   const isInherited = item.nodeId !== nodeId;
   const isDisabled =
     item.undefined ||
@@ -81,7 +84,7 @@ export function DescItemText({
     >
       <TextareaAutosize
         disabled={isDisabled}
-        value={item.undefined ? "Výjimka" : value?.toString()}
+        value={item.undefined ? formatMessage(commonMessages.undefined) : (value || "").toString()}
         onChange={handleInputChange}
         onBlur={() => handleChange()}
         resize="vertical"

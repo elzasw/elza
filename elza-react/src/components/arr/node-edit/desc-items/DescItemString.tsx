@@ -6,6 +6,8 @@ import { useValueManager } from "./utils";
 import { DescItemProps } from "./types";
 import { TextareaAutosize } from "./inputs/TextareaAutosize";
 import { isMaskViewDefinition, maskString, unmaskString } from "./maskUtils";
+import { useIntl } from "react-intl";
+import { messages as commonMessages } from "./commonMessages";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemString) => Promise<void>;
@@ -27,6 +29,7 @@ export function DescItemString({
     throw "Incorrect data type";
   }
 
+  const { formatMessage } = useIntl();
   const isInherited = item.nodeId !== nodeId;
   const isDisabled =
     item.undefined ||
@@ -98,7 +101,7 @@ export function DescItemString({
         <TextareaAutosize
           resize="none"
           disabled={isDisabled}
-          value={item.undefined ? "Výjimka" : value || ""}
+          value={item.undefined ? formatMessage(commonMessages.undefined) : value || ""}
           onChange={handleInputChange}
           onBlur={() => handleChange()}
           style={{
@@ -110,7 +113,7 @@ export function DescItemString({
       ) : (
         <Input
           disabled={isDisabled}
-          value={item.undefined ? "Výjimka" : value || ""}
+          value={item.undefined ? formatMessage(commonMessages.undefined) : value || ""}
           onChange={handleInputChange}
           onBlur={() => handleChange()}
           style={{
