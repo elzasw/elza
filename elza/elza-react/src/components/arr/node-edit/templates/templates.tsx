@@ -13,6 +13,7 @@ import TemplateForm, { EXISTS_TEMPLATE as exists_template, NEW_TEMPLATE as new_t
 import { useActiveFund } from '../hooks';
 import { convertToNewTemplate, convertToOldDescItem } from './conversionUtils';
 import { hasValue, isValueEqual } from './utils';
+import { ActionTypes } from 'actions/constants/ActionTypes';
 
 enum TemplateAddType {
     NEW_TEMPLATE = new_template,
@@ -252,6 +253,13 @@ export function useTemplates({ descItems, nodeId, nodeVersion, fondsVersionId, o
                                 _deleteItems
                             );
                         }
+
+                        // store last used template
+                        dispatch({
+                            type: ActionTypes.FUND_TEMPLATE_USE,
+                            versionId: fondsVersionId,
+                            template: {name: template.name},
+                        });
 
                         return dispatch(modalDialogHide());
                     }}
