@@ -198,7 +198,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                     >
                           <DraggableList
                               canPlaceBeforeItem={(index) => descItems[index].item.position > 0}
-                              isItemDraggable={(index) => descItems[index].item.position > 0 && descItems[index].item.data.dataId != undefined}
+                              isItemDraggable={(index) => descItems[index].item.position > 0 && (descItems[index].item.data?.dataId != undefined || descItems[index].item.undefined)}
                               onChangeOrder={handleChangeOrder}
                           >
                               {descItems
