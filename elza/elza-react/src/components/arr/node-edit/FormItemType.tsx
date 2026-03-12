@@ -1,11 +1,18 @@
 import { Button, Tooltip, mergeClasses } from "@fluentui/react-components";
 import { CopyAddRegular, CopyRegular } from "@fluentui/react-icons";
 import { FormItemType } from "elza-api";
-import { PropsWithChildren, useState } from "react";
+import { PropsWithChildren, ReactNode, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { DescItemTypeRef, NodeSettings } from "typings/store";
-import { messages } from "./messages";
+import { useAppSelector } from "utils/hooks/useAppSelector";
+import { dataTypeFormatMessages, messages } from "./messages";
 import { useStyles } from "./styles";
+
+const richTextValues = {
+  b: (chunks: ReactNode) => <b>{chunks}</b>,
+  i: (chunks: ReactNode) => <i>{chunks}</i>,
+  p: (chunks: ReactNode) => <p style={{ margin: "2px 0" }}>{chunks}</p>,
+};
 
 export interface Props extends PropsWithChildren {
   typeRef: DescItemTypeRef;
@@ -29,6 +36,17 @@ export function FormItemTypeComp({
   const styles = useStyles();
   const [isHovered, setIsHovered] = useState(false);
   const isCopied = nodeSettings?.descItemTypeCopyIds.includes(typeRef.id);
+
+  const dataType = useAppSelector(({ refTables }) => refTables.rulDataTypes.itemsMap[typeRef.dataTypeId]);
+  const formatDescriptor = dataType ? dataTypeFormatMessages[dataType.code] : undefined;
+  const tooltipContent = typeRef.description || formatDescriptor ? (
+    <>
+      {typeRef.description && <div>{typeRef.description}</div>}
+          {formatDescriptor && <div style={{ marginTop: "8px" }}>
+              <FormattedMessage {...formatDescriptor} values={richTextValues} />
+          </div>}
+    </>
+  ) : undefined;
 
   return (
     <div
@@ -68,7 +86,7 @@ export function FormItemTypeComp({
         <Tooltip
           relationship="label"
           appearance="inverted"
-          content={typeRef.description}
+          content={tooltipContent}
         >
           <div>{typeRef.shortcut}</div>
         </Tooltip>
