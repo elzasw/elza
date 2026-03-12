@@ -4,6 +4,8 @@ import { ConflictValue } from "./ConflictValue";
 import { EditStateDisplay } from "./EditStateDisplay";
 import { DescItemProps } from "./types";
 import { useValueManager } from "./utils";
+import { useIntl } from "react-intl";
+import { messages as commonMessages } from "./commonMessages";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemDecimal) => Promise<void>;
@@ -19,10 +21,11 @@ export function DescItemDecimal({
   nodeId,
   isDisabled: _isDisabled,
 }: Props) {
-  if (item.data?.dataType !== DataType.Decimal) {
+  if (item.data && item.data.dataType !== DataType.Decimal && !item.undefined) {
     throw "Incorrect data type";
   }
 
+  const { formatMessage } = useIntl();
   const isInherited = item.nodeId !== nodeId;
   const isDisabled =
     item.undefined ||
@@ -95,7 +98,7 @@ export function DescItemDecimal({
     >
       <Input
         disabled={isDisabled}
-        value={item.undefined ? "Výjimka" : value?.toString()}
+        value={item.undefined ? formatMessage(commonMessages.undefined) : (value || "").toString()}
         style={{
           flex: 1,
           minWidth: "60px",

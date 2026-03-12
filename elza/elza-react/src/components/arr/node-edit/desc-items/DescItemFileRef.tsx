@@ -7,6 +7,8 @@ import {
 import { WebApi } from "actions";
 import { DataFileRef, DataType, NodeItem } from "elza-api";
 import { useEffect, useRef, useState } from "react";
+import { useIntl } from "react-intl";
+import { messages as commonMessages } from "./commonMessages";
 import { useActiveFund } from "../hooks";
 import { DescItemProps } from "./types";
 
@@ -39,14 +41,15 @@ export function DescItemFileRef({
   nodeId,
   isDisabled: _isDisabled,
 }: Props) {
-  if (item.data && item.data?.dataType !== DataType.FileRef) {
+  if (item.data && item.data?.dataType !== DataType.FileRef && !item.undefined) {
     throw "Incorrect data type";
   }
 
+  const { formatMessage } = useIntl();
   const activeFund = useActiveFund();
 
   const [query, setQuery] = useState<string>(
-    item.undefined ? "výjimka" : undefined,
+    item.undefined ? formatMessage(commonMessages.undefined) : "",
   );
   const [files, setFiles] = useState<ArrFileVO[]>([]);
   const [file, setFile] = useState<ArrFileVO>();
@@ -81,7 +84,7 @@ export function DescItemFileRef({
         setFile(file);
       })();
     } else if (item.undefined) {
-      setQuery("výjimka");
+      setQuery(formatMessage(commonMessages.undefined));
     } else {
       setQuery("");
     }

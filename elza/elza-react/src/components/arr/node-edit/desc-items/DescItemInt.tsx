@@ -5,6 +5,8 @@ import { EditStateDisplay } from "./EditStateDisplay";
 import { DescItemProps } from "./types";
 import { useValueManager } from "./utils";
 import { fromDuration, normalizeDuration, normalizeDurationLength, toDuration } from "components/validate";
+import { useIntl } from "react-intl";
+import { messages as commonMessages } from "./commonMessages";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemInt) => Promise<void>;
@@ -21,10 +23,11 @@ export function DescItemInt({
   isDisabled: _isDisabled,
   typeRef,
 }: Props) {
-  if (item.data?.dataType !== DataType.Int) {
+  if (item.data && item.data?.dataType !== DataType.Int && !item.undefined) {
     throw "Incorrect data type";
   }
 
+  const { formatMessage } = useIntl();
   const isInherited = item.nodeId !== nodeId;
   const isDisabled =
     item.undefined ||
@@ -99,7 +102,7 @@ export function DescItemInt({
     >
       <Input
         disabled={isDisabled}
-        value={item.undefined ? "Výjimka" : value?.toString()}
+        value={item.undefined ? formatMessage(commonMessages.undefined) : (value || "").toString()}
         style={{
           flex: 1,
           minWidth: "60px",

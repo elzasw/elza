@@ -25,7 +25,8 @@ import { useActiveFund } from "../hooks";
 import { RegistrySelectPage } from "pages";
 import classNames from "classnames";
 import { MODAL_DIALOG_VARIANT } from "../../../../constants";
-import { FormattedMessage, defineMessages } from "react-intl";
+import { FormattedMessage, defineMessages, useIntl } from "react-intl";
+import { messages as commonMessages } from "./commonMessages";
 // import { Link } from "react-router-dom";
 // import { Input } from "@fluentui/react-components";
 
@@ -52,10 +53,11 @@ export function DescItemRecordRef({
   typeRef,
   selectedSpecId,
 }: Props) {
-  if (item.data && item.data?.dataType !== DataType.RecordRef) {
+  if (item.data && item.data?.dataType !== DataType.RecordRef && !item.undefined) {
     throw "Incorrect data type";
   }
 
+  const { formatMessage } = useIntl();
   const itemTypeId = item.itemTypeId;
   const itemSpecId = item.itemSpecId != undefined ? item.itemSpecId : selectedSpecId;
   const dispatch = useAppThunkDispatch();
@@ -64,7 +66,7 @@ export function DescItemRecordRef({
   const activeFund = useActiveFund();
 
   const [query, setQuery] = useState<string>(
-    item.undefined ? "výjimka" : undefined,
+    item.undefined ? formatMessage(commonMessages.undefined) : "",
   );
   const [accessPoints, setAccessPoints] = useState<ApAccessPointVO[]>([]);
   const [accessPoint, setAccessPoint] = useState<ApAccessPointVO>();
@@ -99,7 +101,7 @@ export function DescItemRecordRef({
         setQuery(_accessPoint.name);
       })();
     } else if (item.undefined) {
-      setQuery("výjimka");
+      setQuery(formatMessage(commonMessages.undefined));
     } else {
       setQuery("");
     }
