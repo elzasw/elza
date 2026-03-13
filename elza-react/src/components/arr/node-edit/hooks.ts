@@ -2,6 +2,7 @@ import { Api } from "api";
 import { RulDataTypeVO } from "api/RulDataTypeVO";
 import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
 import {
+    DataType,
   FormItemType,
   ItemDataResult,
   MandatoryType,
@@ -113,7 +114,9 @@ export function getForcedItemTypes(
       ({ itemTypeId: _itemTypeId }) => _itemTypeId === itemTypeId,
     ).length;
 
-    if (forcedSpecs.length > 0) {
+    // TODO Hotfix - prevent prefilling value for enum, it looks like the value
+    // is saved, but it isn't
+    if (forcedSpecs.length > 0 && dataType.code !== DataType.Enum) {
       forcedSpecs.forEach(({ itemSpecId }) => {
         const descItem = descItems.find(
           ({ itemTypeId: _itemTypeId, itemSpecId: _itemSpecId }) =>
