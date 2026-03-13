@@ -84,7 +84,7 @@ function useWSNodeChanges(nodeId: number, callback: (version: number) => void) {
 }
 
 export function getForcedItemTypes(
-  descItems: NodeItem[],
+  descItems: NodeItem[] = [],
   itemTypes: FormItemType[],
   itemTypeRefs: Record<number, DescItemTypeRef>,
   dataTypeRefs: Record<number, RulDataTypeVO>,
@@ -217,7 +217,10 @@ export function useNodeFormData(
       const _forcedDescItems = options?.skipForcedItems
         ? []
         : getForcedItemTypes(
-            data.formData.descItems,
+            [
+                ...(data.formData.descItems || []),
+                ...addedFormItems.map(({ item }) => item)  // prevent forcing user added descItems
+            ],
             data.formData.itemTypes,
             itemTypeRefs,
             dataTypeRefs,
@@ -266,6 +269,7 @@ export function useNodeFormData(
       });
     },
     [
+      addedFormItems,
       dataTypeRefs,
       itemTypeRefs,
       markedForClean,
