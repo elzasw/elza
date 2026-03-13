@@ -204,7 +204,7 @@ public class DmsController {
             contentType = "application/binary";
             FileDownload.addContentDispositionAsAttachment(response, fp.getFileName().toString());
         }
-        response.setContentType(filePath);
+        response.setContentType(contentType);
         
         try (ServletOutputStream out = response.getOutputStream();
                 InputStream in = fileSystemRepoService.getInputStream(digiRep, filePath);) {
