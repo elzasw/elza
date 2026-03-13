@@ -509,7 +509,7 @@ public class NodeCacheService {
 						while (numWaiting + 5 >= totalQueueCapacity) {
 							try {
 								logger.debug("Waiting to add nodes to queue: {}-{}", count - SYNC_BATCH_NODE_SIZE + 1, count);
-								this.wait(1000);
+								atomCounter.wait(1000);
 								numWaiting = atomCounter.get();
 							} catch (InterruptedException e) {
 								logger.error("Cache node synchronization interrupted");
@@ -668,6 +668,12 @@ public class NodeCacheService {
 
         Set<Integer> nodeIds = nodeCachedNodes.keySet();
         List<ArrNode> nodes = nodeRepository.findAllById(nodeIds);
+        if(nodeIds.size() != nodes.size()) {
+            logger.error("Number of nodes for update does not match the number of found nodes in DB! nodeIds: {}, found nodes: {}", nodeIds.size(), nodes.size());
+            throw new SystemException("Number of nodes for update does not match the number of found nodes in DB!")
+                    .set("nodeIdsSize", nodeIds.size())
+                    .set("foundNodesSize", nodes.size());
+        }
         Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
         Map<Integer, List<ArrInhibitedItem>> nodeIdInhibitedItems = createNodeInhibitedItemMap(nodeIds);
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);

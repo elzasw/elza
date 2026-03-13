@@ -11,10 +11,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
@@ -184,7 +184,7 @@ public class ArrangementFormService {
 			// read parent nodes
 			Collection<RestoredNode> parentRestoredNodes = nodeCacheService.getNodes(parentNodeIds).values();
 			// map descItemObjectId -> ArrDescItem pro rychlé hledání záznamů s potlačenou dědičností
-		    Map<Integer, ArrDescItem> descItemObjectIdMap = parentRestoredNodes.stream().flatMap(i -> i.getDescItems()!=null?i.getDescItems().stream():null)
+		    Map<Integer, ArrDescItem> descItemObjectIdMap = parentRestoredNodes.stream().flatMap(i -> i.getDescItems()!=null?i.getDescItems().stream():Stream.empty())
 		    		.collect(Collectors.toMap(i -> i.getDescItemObjectId(), Function.identity()));
 		    		
 			// Add any inhibited item from node to set
@@ -291,7 +291,7 @@ public class ArrangementFormService {
 			inhibitedDescItemIds = getInhibitedDescItemIds(parentRestoredNodes);
 			// sbíráme všechny descItems s povolenou dědičností z nadřazených uzlů
 			parentsDescItems = parentRestoredNodes.stream()
-					.flatMap(i -> i.getDescItems()!=null?i.getDescItems().stream():null)
+					.flatMap(i -> i.getDescItems()!=null?i.getDescItems().stream():Stream.empty())
 					.filter(i -> itemTypeIdsWithInheritance.contains(i.getItemTypeId()))
 					.toList();
 			// seznam descItemId s potlačenou dědičností pro aktuální uzel
@@ -337,7 +337,7 @@ public class ArrangementFormService {
 	private Set<Integer> getInhibitedDescItemIds(Collection<RestoredNode> restoredNodes) {
 		// list of descItemObjectId s potlačenou dědičností pro nadrazene uzly
 		Set<Integer> descItemObjectIds = restoredNodes.stream()
-				.flatMap(i -> i.getInhibitedItems()!=null? i.getInhibitedItems().stream() : null)
+				.flatMap(i -> i.getInhibitedItems()!=null? i.getInhibitedItems().stream() : Stream.empty())
 				.map(i -> i.getDescItemObjectId())
 				.collect(Collectors.toSet());
 		

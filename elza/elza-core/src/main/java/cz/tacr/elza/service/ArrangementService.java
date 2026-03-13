@@ -7,7 +7,6 @@ import static cz.tacr.elza.repository.ExceptionThrow.refTemplate;
 import static cz.tacr.elza.repository.ExceptionThrow.refTemplateMapType;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 import static java.util.stream.Collectors.toSet;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -356,7 +355,7 @@ public class ArrangementService {
     public List<ArrNode> getNodesWithSameOrder(List<Integer> nodeIds) {
         List<ArrNode> dbNodes = nodeRepository.findAllByNodeIdIn(nodeIds);
         Validate.isTrue(nodeIds.size() == dbNodes.size(), "Ne všechny ArrNode byly nalezeny");
-        Map<Integer, ArrNode> nodesMap = nodeRepository.findAllByNodeIdIn(nodeIds).stream()
+        Map<Integer, ArrNode> nodesMap = dbNodes.stream()
                 .collect(Collectors.toMap(n -> n.getNodeId(), n -> n));
         // řazení podle původního seznamu id
         List<ArrNode> nodes = new ArrayList<>(nodeIds.size());
