@@ -210,7 +210,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                         )
                         .map(({ item, localId }) => {
                           const itemErrors =
-                            nodeData?.nodeConformity.errorList.filter(
+                            nodeData?.nodeConformity?.errorList.filter(
                               ({ descItemObjectId }) =>
                               descItemObjectId === item.itemObjectId,
                             );
