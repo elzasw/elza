@@ -1423,9 +1423,7 @@ public class ArrangementService {
     public ArrNode lockNode(final ArrNode dbNode, final ArrNode lockNode, final ArrChange change) {
         Validate.notNull(dbNode, "Musí být vyplněno");
         Validate.notNull(lockNode, "Musí být vyplněno");
-        if (change == null) {
-            Validate.notNull(change, "Musí být vyplněno");
-        }
+        Validate.notNull(change, "Musí být vyplněno");
 
         // Whys is this here?
         lockNode.setUuid(dbNode.getUuid());
@@ -2285,6 +2283,7 @@ public class ArrangementService {
                                @Valid String importType, InputStream is) {
         if ("CSV".equals(importType)) {
             importFundDataCsv(fund, is);
+            return;
         }
 
         logger.error("Required importType is not supported: {}", importType);

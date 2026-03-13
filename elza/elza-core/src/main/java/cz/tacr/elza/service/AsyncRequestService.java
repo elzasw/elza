@@ -353,8 +353,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         bulkActionRun = bulkActionRepository.findById(bulkActionId).orElseThrow(bulkAction(bulkActionId));
         State nextState = bulkActionRun.getState();
         if (nextState.equals(ArrBulkActionRun.State.WAITING) ||
-                !nextState.equals(ArrBulkActionRun.State.PLANNED) ||
-                !nextState.equals(ArrBulkActionRun.State.RUNNING)) {
+                nextState.equals(ArrBulkActionRun.State.PLANNED) ||
+                nextState.equals(ArrBulkActionRun.State.RUNNING)) {
             // if action is not still terminated
             // reset it manually
             bulkActionRun.setState(ArrBulkActionRun.State.INTERRUPTED);

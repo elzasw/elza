@@ -534,7 +534,7 @@ public class ImportProcess {
                     break;
                 case USE_TARGET:
                 default:
-                    throw new SystemException("Neplatné vyřešení konfliktu: " + params.getFileConflictResolve(),
+                    throw new SystemException("Neplatné vyřešení konfliktu: " + params.getStructuredConflictResolve(),
                             BaseCode.INVALID_STATE);
             }
             // store result
