@@ -837,6 +837,10 @@ public class DescriptionItemService {
             if (structuredType.getAnonymous()) {
                 ArrDataStructureRef data = HibernateUtils.unproxy(retDescItem.getData());
                 structObjInternalService.deleteStructObj(Collections.singletonList(data.getStructuredObject()), change);
+                // Detach ArrDataStructureRef from persistence context to prevent
+                // TransientObjectException during auto-flush — the referenced
+                // ArrStructuredObject was just removed (TEMP) or soft-deleted
+                entityManager.detach(data);
             }
         }
     }
