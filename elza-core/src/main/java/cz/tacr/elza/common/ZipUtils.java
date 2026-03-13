@@ -29,12 +29,12 @@ public class ZipUtils {
     }
 
     /**
-     * Unzipping file (https://www.baeldung.com/java-compress-and-uncompress)
+     * Unzipping first file (https://www.baeldung.com/java-compress-and-uncompress)
      * 
      * @param srcFile as MultipartFile
      * @return File
      */
-    public static File unzipFile(final MultipartFile srcFile) {
+    public static File unzipFirstFile(final MultipartFile srcFile) {
         if (!isZipFile(srcFile)) {
             return null;
         }
@@ -48,7 +48,7 @@ public class ZipUtils {
             byte[] buffer = new byte[1024];
             try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) {
                 ZipEntry zipEntry = zis.getNextEntry();
-                while (zipEntry != null) {
+                while (zipEntry != null && unzipFile == null) {
                     unzipFile = File.createTempFile(zipEntry.getName(), "");
                     try (FileOutputStream fos = new FileOutputStream(unzipFile)) {
                         int len;

@@ -820,7 +820,7 @@ public class DescriptionItemService {
 
         changeContext.addCreatedItem(result);
 
-        return descItem;
+        return result;
     }
 
 

@@ -30,7 +30,7 @@ public class ReportSysInstitutionCount extends ReportBase {
 		OffsetDateTime lastRefresh = reportService.checkAndUpdateViews(reportCode);
 
 		Query query = (parameters != null && !CollectionUtils.isEmpty(parameters.getParams())) ? 
-				query = createQuery(parameters) 
+				createQuery(parameters) 
 				: em.createNativeQuery(ReportServiceQuery.SYS_INSTITUTION_COUNT_QUERY, Tuple.class);
 
 		List<Tuple> result = query.getResultList();
