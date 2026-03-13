@@ -146,7 +146,7 @@ public class ArrangementFormService {
 		
 		ArrChange lockChange = version.getLockChange();
 		ArrNode node;
-		List<ArrDescItem> descItems;
+		List<ArrDescItem> descItems = new ArrayList<>(); 
 		Set<Integer> inhibitedDescItemIds;
 		Set<Integer> inhibitedDescItemObjectIds;
 		List<ArrDescItem> parentsDescItems;
@@ -177,7 +177,10 @@ public class ArrangementFormService {
 
 		if (lockChange == null) {
 			// get descItems from cache
-			descItems = restoredNode.getDescItems();
+			var restoredDescItems = restoredNode.getDescItems();
+			if(restoredDescItems!=null) {
+				descItems.addAll(restoredDescItems);
+			}
 			// read parent nodes
 			Collection<RestoredNode> parentRestoredNodes = nodeCacheService.getNodes(parentNodeIds).values();
 			// map descItemObjectId -> ArrDescItem pro rychlé hledání záznamů s potlačenou dědičností
@@ -207,7 +210,11 @@ public class ArrangementFormService {
 					.filter(i -> itemTypeIdsWithInheritance.contains(i.getItemTypeId()))
 					.toList();
 		} else {
-			descItems = arrangementInternal.getDescItems(lockChange, node);
+			var restoredDescItems = arrangementInternal.getDescItems(lockChange, node);
+			if(restoredDescItems!=null) {
+				descItems.addAll(restoredDescItems);
+			}
+			
 			inhibitedDescItemIds = arrangementInternal.getInhibitedDescItemIds(lockChange, parentNodeIds);
 			parentsDescItems = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(parentNodeIds, itemTypeIdsWithInheritance);
 			inhibitedDescItemObjectIds = arrangementInternal.getInhibitedDescItemObjectIds(lockChange, List.of(nodeId));
