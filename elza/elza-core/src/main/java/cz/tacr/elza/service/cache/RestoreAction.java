@@ -329,8 +329,8 @@ public class RestoreAction {
         if (restoreStructData == null) {
             return;
         }
-        List<ArrStructuredObject> structureDataList = structureDataRepository.findAllById(restoreStructData.keySet());
-        for (ArrStructuredObject structObj : structureDataList) {
+        List<ArrStructuredObject> structObjList = structureDataRepository.findAllById(restoreStructData.keySet());
+        for (ArrStructuredObject structObj : structObjList) {
             List<ArrDataStructureRef> dataList = restoreStructData.remove(structObj.getStructuredObjectId());
             for (ArrDataStructureRef data : dataList) {
                 data.setStructuredObject(structObj);
