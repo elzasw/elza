@@ -827,25 +827,23 @@ public class DescriptionItemService {
     /**
      * Jedná-li se o odkaz na strukturovaný typ, který je zároveň anonymní, odstraní se i ten.
      *
-     * @param retDescItem hodnota atributu
+     * @param deletedDescItem hodnota atributu
      * @param change      změna, která se má použít pro vymazání
      */
-    private void deleteAnonymousStructObject(final ArrDescItem retDescItem, final ArrChange change) {
-        ItemType itemType = staticDataService.getData().getItemTypeById(retDescItem.getItemTypeId());
+    private void deleteAnonymousStructObject(final ArrDescItem deletedDescItem, final ArrChange change) {
+        ItemType itemType = staticDataService.getData().getItemTypeById(deletedDescItem.getItemTypeId());
         RulStructuredType structuredType = itemType.getEntity().getStructuredType();
         if (structuredType != null) {
             if (structuredType.getAnonymous()) {
-                ArrDataStructureRef data = HibernateUtils.unproxy(retDescItem.getData());
-                ArrStructuredObject structObj = data.getStructuredObject();
+            	// ? Should we try to delete temporary structured object?
+            	// It might be problematic, because such object is referenced 
+            	// from related data object, which is not deleted.
+            	// It will be better to move such functionality to the cleanup process.
+                // ArrDataStructureRef data = HibernateUtils.unproxy(deletedDescItem.getData());
+                // ArrStructuredObject structObj = data.getStructuredObject();
 
-                // Break FK chain before deleting struct object:
-                // arr_item.data_id -> arr_data_structure_ref -> arr_structured_object
-                retDescItem.setData(null);
-                descItemRepository.save(retDescItem);
-                dataRepository.delete(data);
-                entityManager.flush();
-
-                structObjInternalService.deleteStructObj(Collections.singletonList(structObj), change);
+                // Cannot be used directly, see comment above.
+                // structObjInternalService.deleteStructObj(Collections.singletonList(structObj), change);
             }
         }
     }
@@ -965,7 +963,7 @@ public class DescriptionItemService {
         deleteAnonymousStructObject(deletedDescItem, change);
         changeContext.addRemovedItem(deletedDescItem);
 
-        arrangementCacheService.deleteDescItem(descItem.getNodeId(), descItem.getDescItemObjectId(), changeContext);
+        arrangementCacheService.deleteDescItem(deletedDescItem.getNodeId(), deletedDescItem.getDescItemObjectId(), changeContext);
 
 
         return deletedDescItem;
