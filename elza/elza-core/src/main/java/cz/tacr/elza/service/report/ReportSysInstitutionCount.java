@@ -3,7 +3,7 @@ package cz.tacr.elza.service.report;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 
 import cz.tacr.elza.controller.vo.ReportReportData;
 import cz.tacr.elza.controller.vo.ReportReportParameters;
