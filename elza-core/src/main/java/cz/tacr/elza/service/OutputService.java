@@ -856,8 +856,6 @@ public class OutputService {
         ArrChange change = createChange == null ? arrangementInternalService.createChange(null) : createChange;
 
         outputItem.setOutput(output);
-
-        outputItem.setOutput(output);
         outputItem.setCreateChange(change);
         outputItem.setDeleteChange(null);
         outputItem.setDescItemObjectId(arrangementService.getNextDescItemObjectId());
@@ -1525,13 +1523,12 @@ public class OutputService {
         outputItem.setDeleteChange(null);
         outputItem.setDescItemObjectId(outputItemObjectId == null ? arrangementService.getNextDescItemObjectId() : outputItemObjectId);
 
-        ArrOutputItem outputItemCreated = createOutputItem(outputItem, fundVersion, change);
-
         List<OutputState> allowedState = Collections.singletonList(OutputState.OPEN);
         if (!allowedState.contains(output.getState())) {
             throw new BusinessException("Nelze upravit výstupu, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
         }
 
+        ArrOutputItem outputItemCreated = createOutputItem(outputItem, fundVersion, change);
         checkCalculatingAttribute(output, outputItem.getItemType());
         //outputItemCreated.setItem(descItemFactory.createItemByType(outputItemType.getDataType()));
 

@@ -2970,7 +2970,7 @@ private void processEvent(AbstractEventSimple event) {
                 nodeIdList.add(nodeId);
 
                 TreeNode parent = treeNode;
-                while (parent != null && subTreeMap.get(parent) == null) {
+                while (parent != null && subTreeMap.get(parent.getId()) == null) {
                     subTreeMap.put(parent.getId(), parent);
                     parent = parent.getParent();
                 }

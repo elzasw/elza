@@ -327,7 +327,7 @@ public class UserService {
         if (setControlGroupRelation(permissionDB, permission.getGroupControlId())) {
             modified = true;
         }
-        if (setIssueListRelation(permission, permission.getIssueListId())) {
+        if (setIssueListRelation(permissionDB, permission.getIssueListId())) {
             modified = true;
         }
 
