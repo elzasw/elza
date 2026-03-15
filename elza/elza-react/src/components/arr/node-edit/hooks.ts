@@ -73,6 +73,12 @@ function useWSNodeChanges(nodeId: number, callback: (version: number) => void) {
     ) {
       callback(message.versionId);
     }
+    if (
+        message.eventType === EventType.VISIBLE_POLICY_CHANGE
+        && message.nodeIds.includes(nodeId)
+    ) {
+        callback(message.versionId);
+    }
   };
 
   useEffect(() => {
