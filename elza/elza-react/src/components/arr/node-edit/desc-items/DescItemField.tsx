@@ -3,7 +3,6 @@ import {
   DataType,
   FormItemType,
   ItemDataResult,
-  NodeConformityError,
   NodeItem,
 } from "elza-api";
 import { useState } from "react";
@@ -67,7 +66,6 @@ interface Props {
   fondsVersionId: number;
   nodeId: number;
   nodeVersionId: number;
-  errors?: NodeConformityError[];
   onDelete?: (item: NodeItem) => Promise<void>;
   onCreate: (item: NodeItem) => Promise<ItemDataResult>;
   onUpdate: (item: NodeItem) => Promise<void>;
@@ -95,7 +93,6 @@ export function DescItemField({
   typeForm,
   fondsVersionId,
   nodeId,
-  errors = [],
   onDelete,
   onCreate,
   onUpdate,
@@ -233,7 +230,7 @@ export function DescItemField({
           "Not implemented"
         )}
       </div>
-      <ErrorDisplay errors={errors} />
+      <ErrorDisplay itemObjectId={item.itemObjectId} />
       <ItemActions
         item={item}
         nodeId={nodeId}

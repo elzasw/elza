@@ -1,16 +1,25 @@
 import { Tooltip } from "@fluentui/react-components";
 import { WarningFilled } from "@fluentui/react-icons";
-import { NodeConformityError } from "elza-api";
+import { useNodeFormContext } from "../NodeFormContext";
 
 interface Props {
-  errors: NodeConformityError[];
+  itemObjectId?: number;
 }
 
-export function ErrorDisplay({ errors }: Props) {
-  return errors.length > 0 ? (
+export function ErrorDisplay({ itemObjectId }: Props) {
+  const { nodeData } = useNodeFormContext();
+  const nodeConformity = nodeData?.nodeConformity;
+
+  const visibleErrors = (nodeConformity?.errorList ?? []).filter(
+    ({ descItemObjectId, policyTypeId }) =>
+      descItemObjectId === itemObjectId &&
+      (policyTypeId == null || nodeConformity.viewPolicyTypeIds.includes(policyTypeId)),
+  );
+
+  return visibleErrors.length > 0 ? (
     <Tooltip
       appearance="inverted"
-      content={errors.map(({ description }) => (
+      content={visibleErrors.map(({ description }) => (
         <div style={{ margin: "4px" }}>{description}</div>
       ))}
       relationship="description"

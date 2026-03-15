@@ -15,6 +15,7 @@ import { FormItemTypeComp } from "./FormItemType";
 import { NodeToolbar } from "./NodeToolbar";
 import { DescItemField } from "./desc-items";
 import { useActiveFund, useActiveParent, useNodeFormData } from "./hooks";
+import { NodeFormContext } from "./NodeFormContext";
 import { buildGroupsForm } from "./utils";
 
 const SHOW_DEBUG_DATA = false;
@@ -40,6 +41,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     arrRegion.nodeSettings.nodes.find(({ id }) => id === activeParent?.id),
   );
 
+  const nodeFormData = useNodeFormData(fondsVersionId, nodeId, nodeVersionId);
   const {
     formData,
     formItems,
@@ -52,7 +54,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     createDescItem,
     updateDescItem,
     parent,
-  } = useNodeFormData(fondsVersionId, nodeId, nodeVersionId);
+  } = nodeFormData;
 
   useEffect(() => {
     if (nodeData?.id) {
@@ -117,6 +119,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     activeParent.childNodes.findIndex((node: any) => node.id === nodeId) === 0; // TODO add types
 
   return (
+    <NodeFormContext.Provider value={nodeFormData}>
     <div
       style={{
         background: "var(--shade-1)",
@@ -209,12 +212,6 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                           ) => positionA - positionB,
                         )
                         .map(({ item, localId }) => {
-                          const itemErrors =
-                            nodeData?.nodeConformity?.errorList.filter(
-                              ({ descItemObjectId }) =>
-                              descItemObjectId === item.itemObjectId,
-                            );
-
                           return (
                             <div key={localId} style={{container: "desc-item-container"}}>
                               <div>
@@ -226,7 +223,6 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                                 nodeId={nodeId}
                                 nodeVersionId={nodeVersionId}
                                 typeWidth={typeWidth}
-                                errors={itemErrors}
                                 onDelete={(item) =>
                                   deleteDescItem(item, localId)
                                 }
@@ -289,5 +285,6 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
         })}
       </div>
     </div>
+    </NodeFormContext.Provider>
   );
 }
