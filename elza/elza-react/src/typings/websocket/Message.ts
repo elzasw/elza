@@ -11,10 +11,18 @@ export interface ChangeMessage extends Message {
   versionId: number;
   entityIds: number[];
 }
+export interface PolicyChangeMessage extends Message {
+  eventType: EventType.VISIBLE_POLICY_CHANGE;
+  invalidateNodes?: string;
+  versionId: number;
+  nodeIds: number[];
+  code?: unknown;
+  state?: unknown;
+}
 
 interface TestMessage extends Message {
   eventType: EventType.DELETE_NODES;
   test?: boolean;
 }
 
-export type AnyMessage = ChangeMessage | TestMessage;
+export type AnyMessage = ChangeMessage | TestMessage | PolicyChangeMessage;
