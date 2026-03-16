@@ -99,7 +99,7 @@ export function useTemplates({ descItems, nodeId, nodeVersion, fondsVersionId, o
                             .filter(({ nodeId: _nodeId }) => _nodeId === nodeId) // remove inherited
                             .map((descItem) => ({
                                 // convert to TemplateItem
-                                itemSpecId: descItem.itemSpecId,
+                                itemSpecId: !isDataEnum(descItem.data) || withValues ? descItem.itemSpecId : undefined,
                                 itemTypeId: descItem.itemTypeId,
                                 position: descItem.position,
                                 data: withValues
@@ -179,6 +179,9 @@ export function useTemplates({ descItems, nodeId, nodeVersion, fondsVersionId, o
                         const descItemsWithoutValue = template.formData.filter((item) => !hasValue(item));
                         const descItemsWithValue = template.formData.filter((item) => hasValue(item));
 
+                        // exclude inherited items
+                        const ownDescItems = descItems.filter(({ nodeId: _nodeId }) => _nodeId === nodeId);
+
                         const createItems: NodeItem[] = [];
                         const deleteItems: NodeItem[] = [];
 
@@ -188,11 +191,10 @@ export function useTemplates({ descItems, nodeId, nodeVersion, fondsVersionId, o
                         descItemsWithValue
                             .sort((a, b) => a.itemTypeId - b.itemTypeId || a.position - b.position) // sort by itemTypeId and position
                             .forEach((descItem) => {
-                                // remove items already processed, exclue items without values
-                                const pendingDescItems = descItems.filter(
-                                    ({ itemObjectId, position }) => itemObjectId != undefined
+                                // remove items already processed, exclude items without values
+                                const pendingDescItems = ownDescItems.filter(
+                                    ({ itemObjectId }) => itemObjectId != undefined
                                         && !skippedItemObjectIds.includes(itemObjectId)
-                                        && position >= 0
                                 );
 
                                 // skip items that already have the same value
@@ -206,14 +208,14 @@ export function useTemplates({ descItems, nodeId, nodeVersion, fondsVersionId, o
                                 }
 
                                 // get next position for created item
-                                const highestPositionDescItem = descItems
+                                const highestPositionDescItem = ownDescItems
                                     .filter(({ itemTypeId }) => itemTypeId === descItem.itemTypeId)
                                     .sort((a, b) => a.position - b.position)
                                     .pop();
 
                                 const lastPosition =
                                     itemTypePositions[descItem.itemTypeId] || // incremented position
-                                    (highestPositionDescItem?.position > 0 && highestPositionDescItem?.position) || // previous item position, if it is not inherited (negative position)
+                                    (!data.replaceValues && highestPositionDescItem?.position) || // previous item position
                                     0;
                                 const nextPosition = lastPosition + 1;
                                 itemTypePositions[descItem.itemTypeId] = nextPosition;
@@ -227,10 +229,9 @@ export function useTemplates({ descItems, nodeId, nodeVersion, fondsVersionId, o
                         // Get remaining unprocessed descItems with value and add them to be deleted
                         // if they are of item type, that has been changed
                         if (data.replaceValues) {
-                            const remainingDescItems = descItems.filter(
-                                ({ itemObjectId, position }) => !skippedItemObjectIds.includes(itemObjectId)
+                            const remainingDescItems = ownDescItems.filter(
+                                ({ itemObjectId }) => !skippedItemObjectIds.includes(itemObjectId)
                                     && itemObjectId != undefined
-                                    && position >= 0
                             );
                             const processedItemTypes = descItemsWithValue.map(({ itemTypeId }) => itemTypeId);
                             remainingDescItems.forEach((descItem) => {
@@ -243,12 +244,15 @@ export function useTemplates({ descItems, nodeId, nodeVersion, fondsVersionId, o
                         // add local empty desc items
                         descItemsWithoutValue
                             .filter(
-                                ({ itemTypeId }) => !descItems.find((_descItem) => _descItem.itemTypeId === itemTypeId)
+                                ({ itemTypeId, itemSpecId }) =>
+                                    !ownDescItems.find((_descItem) =>(
+                                        _descItem.itemTypeId === itemTypeId
+                                        && _descItem.itemSpecId === itemSpecId
+                                    ))
                             )
                             .forEach((item) => {
                                 onAddDescItem(item.itemTypeId, item.itemSpecId);
                             });
-
                         const _createItems = createItems.map((descItem) => convertToOldDescItem(descItem));
                         const _deleteItems = deleteItems.map((descItem) => convertToOldDescItem(descItem));
 

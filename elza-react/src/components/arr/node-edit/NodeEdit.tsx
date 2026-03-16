@@ -229,7 +229,9 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                                 onCreate={(item) =>
                                   createDescItem(item, localId)
                                 }
-                                onUpdate={updateDescItem}
+                                onUpdate={(item) =>
+                                  updateDescItem(item, localId)
+                                }
                                 />
                               </div>
                               {SHOW_DEBUG_DATA && (

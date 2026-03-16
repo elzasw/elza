@@ -161,13 +161,12 @@ export function DescItemField({
 
   const isEnum = dataTypeCode === DataType.Enum;
 
-  // update desc item with saved data when spec is changed
-  function handleSpecChange(specId: number) {
-    if (item?.data?.dataId && specId != item.itemSpecId) {
-      setSpecId(specId);
-      handleChange(item, specId);
+  function handleSpecChange(newSpecId: number) {
+    setSpecId(newSpecId);
+    if (isEnum) {
+      handleChange(item, newSpecId);
     } else {
-      setSpecId(specId);
+      onUpdate({ ...item, itemSpecId: newSpecId });
     }
   }
   // useEffect(() => {
