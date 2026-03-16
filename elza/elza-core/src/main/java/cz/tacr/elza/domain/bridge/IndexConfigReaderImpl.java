@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,7 +113,12 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 
         // create map itemCode -> dataType
         itemTypeItems.forEach(item -> {
-        	itemTypeDataTypeMap.put(item.getCode(), DataType.valueOf(dataTypeMap.get(item.getDataTypeId())));	
+        	var dataType = dataTypeMap.get(item.getDataTypeId());
+        	if(dataType == null) {
+        		logger.error("Data type with id {} not found for item type {}", item.getDataTypeId(), item.getCode());
+				throw new IllegalStateException("Data type with id " + item.getDataTypeId() + " not found for item type " + item.getCode());
+			}
+        	itemTypeDataTypeMap.put(item.getCode(), DataType.valueOf(dataType));	
         });
 
         // get item spec codes from DB
@@ -125,7 +131,12 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 
         // create map item type code -> item spec codes
         for (Assign item : typeSpecAssign) {
-        	List<String> itemSpecs = typeSpecMap.computeIfAbsent(itemTypeMap.get(item.typeId), i -> new ArrayList<>());
+        	var itemType = itemTypeMap.get(item.typeId);
+        	if(itemType == null) {
+				logger.error("Item type with id {} not found for item spec assign", item.typeId);
+				throw new IllegalStateException("Item type with id " + item.typeId + " not found for item spec assign");
+        	}
+        	List<String> itemSpecs = typeSpecMap.computeIfAbsent(itemType, i -> new ArrayList<>());
         	itemSpecs.add(itemSpecMap.get(item.specId));
         }
 
@@ -202,26 +213,35 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 	            logger.error("Error processing a package zip file.", e);
 	            throw new SystemException("Error processing a package zip file.", e);
 	        }
+        } else {
+        	// Fallback initialization if dpkg directory does not exist, e.g. for tests or first run without packages
+        	allPackages = Collections.emptyList();
         }
     }
 
     private void readTypeAndSpecDataFromZipFilePackage(Map<String, ByteArrayInputStream> streamMap, List<String> itemSpecCodes) {
         ItemTypes itemTypes = PackageUtils.convertXmlStreamToObject(ItemTypes.class, streamMap.get(ITEM_TYPE_XML));
-        for (ItemType itemType : itemTypes.getItemTypes()) {
-            if (!itemTypeCodes.contains(itemType.getCode())) {
-                itemTypeCodes.add(itemType.getCode());
-                itemTypeDataTypeMap.put(itemType.getCode(), DataType.valueOf(itemType.getDataType()));
-            }
+        if(itemTypes != null) {
+			for (ItemType itemType : itemTypes.getItemTypes()) {
+				if (!itemTypeCodes.contains(itemType.getCode())) {
+					itemTypeCodes.add(itemType.getCode());
+					itemTypeDataTypeMap.put(itemType.getCode(), DataType.valueOf(itemType.getDataType()));
+				}
+			}
         }
+        
         ItemSpecs itemSpecs = PackageUtils.convertXmlStreamToObject(ItemSpecs.class, streamMap.get(ITEM_SPEC_XML));
-        for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
-        	if (!itemSpecCodes.contains(itemSpec.getCode())) {
-        		itemSpecCodes.add(itemSpec.getCode());
-        		for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
-        			List<String> listItemSpecCodes = typeSpecMap.computeIfAbsent(itemTypeAssign.getCode(), i -> new ArrayList<>());
-        			listItemSpecCodes.add(itemSpec.getCode());
-        		}
-        	}
+        if(itemSpecs!= null) {
+			for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
+				if (!itemSpecCodes.contains(itemSpec.getCode())) {
+					itemSpecCodes.add(itemSpec.getCode());
+					for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
+						List<String> listItemSpecCodes = typeSpecMap.computeIfAbsent(itemTypeAssign.getCode(),
+								i -> new ArrayList<>());
+						listItemSpecCodes.add(itemSpec.getCode());
+					}
+				}
+			}
         }
         PartTypes partTypes = PackageUtils.convertXmlStreamToObject(PartTypes.class, streamMap.get(PART_TYPE_XML));
         if (partTypes != null) {

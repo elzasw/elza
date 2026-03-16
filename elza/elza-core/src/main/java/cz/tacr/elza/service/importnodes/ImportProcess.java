@@ -632,19 +632,21 @@ public class ImportProcess {
 	 */
 	private ArrFile copyFileFromSource(ArrFile sourceFile,
 	        Map<String, ArrFile> currentFiles) {
-        ArrFile file = new ArrFile();
+        ArrFile file = new ArrFile();        
         file.setFileName(sourceFile.getFileName());
         file.setFileSize(sourceFile.getFileSize());
         file.setMimeType(sourceFile.getMimeType());
         file.setPagesCount(sourceFile.getPagesCount());
         file.setName(renameConflictName(sourceFile.getName(), currentFiles));
+        
+        file.setCreateChange(change);
         file.setFund(targetFundVersion.getFund());
-        try {
-            dmsService.createFile(file, dmsService.downloadFile(sourceFile));
+        try (var inputStream = dmsService.newInputStream(sourceFile)){        	        	
+            return (ArrFile) dmsService.createFile(file, inputStream);
         } catch (IOException e) {
-            throw new IllegalStateException(e);
+        	logger.error("Error while copying from source file: " + sourceFile.getName(), e);
+            throw new SystemException(e);
         }
-        return file;
     }
 
     public static final String REG_NAME = "(.*\\()([0-9]+)(\\))";
