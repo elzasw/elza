@@ -331,7 +331,7 @@ export function useNodeFormData(
   const ws = useWebsocket();
 
   function addDescItem(item: NodeItem) {
-    setAddedFormItems([...addedFormItems, { localId: getKey(), item }]);
+    setAddedFormItems((prev) => [...prev, { localId: getKey(), item }]);
   }
 
   function addEmptyDescItem(typeId: number, specId?: number, position: number = 1) {
@@ -429,7 +429,15 @@ export function useNodeFormData(
     }
   }
 
-  function updateDescItem(item: NodeItem) {
+  function updateDescItem(item: NodeItem, localId?: string) {
+    if (!item.data?.dataId && localId) {
+      const updateList = (prev: FormItem[]) =>
+        prev.map(formItem => formItem.localId === localId ? { ...formItem, item } : formItem);
+      setFormItems(updateList);
+      setForcedFormItems(updateList);
+      setAddedFormItems(updateList);
+      return Promise.resolve();
+    }
     return new Promise<void>((resolve, reject) => {
       ws.send(
         `/app/arrangement/descItems/${fondsVersionId}/update/true`,
