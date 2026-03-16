@@ -20,7 +20,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
@@ -93,8 +93,8 @@ public class ArrangementWebsocketController {
 		Objects.requireNonNull(nodeVersion);
 		Objects.requireNonNull(descItemVO);
 
-        // authorize request as logged used
-		UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) requestHeaders
+        // authorize request as logged user
+		Authentication token = (Authentication) requestHeaders
 		        .getHeader("simpUser");
 		SecurityContext sc = new SecurityContextImpl();
 		sc.setAuthentication(token);

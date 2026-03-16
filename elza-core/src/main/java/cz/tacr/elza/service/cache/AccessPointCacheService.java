@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,7 +59,6 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApKeyValue;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevState;
-import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApStateEnum;
@@ -391,6 +389,13 @@ public class AccessPointCacheService {
         for (ApRevState revState : revStates) {
         	revState = HibernateUtils.unproxy(revState);
         	CachedAccessPoint cap = apMap.get(revState.getRevision().getState().getAccessPointId());
+        	if(cap==null) {
+				logger.error("AP for revState not found, accessPointId: {}, revisionId: {}",
+						revState.getRevision().getState().getAccessPointId(), revState.getRevisionId());
+				throw new SystemException("AP for revState not found.", BaseCode.DB_INTEGRITY_PROBLEM)
+					.set("accessPointId", revState.getRevision().getState().getAccessPointId())
+					.set("revisionId", revState.getRevisionId());
+			}
         	cap.setRevState(revState.getStateApproval());
             if (revState.getCreateChange().getUser() != null) {
             	cap.setCreateUsername(revState.getCreateChange().getUser().getUsername());
