@@ -21,6 +21,7 @@ import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
@@ -28,6 +29,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.InhibitedItem;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.drools.model.StructObjItem;
 import cz.tacr.elza.drools.model.Structured;
@@ -198,5 +200,22 @@ public class ModelFactory {
         }
         return result;
     }
+
+	public static List<InhibitedItem> createInhibitedItems(List<ArrInhibitedItem> srcItems) {
+	    if (CollectionUtils.isEmpty(srcItems)) {
+	        return Collections.emptyList();
+        }
+        List<InhibitedItem> result = new ArrayList<>(srcItems.size());
+        for (var srcItem : srcItems) {
+            result.add(createInhibitedItem(srcItem));
+        }
+        return result;
+	}
+
+	private static InhibitedItem createInhibitedItem(ArrInhibitedItem srcItem) {
+		InhibitedItem inhItem = new InhibitedItem();
+		inhItem.setItemObjectId(srcItem.getDescItemObjectId());
+		return inhItem;
+	}
 
 }
