@@ -8,6 +8,7 @@ import { TextareaAutosize } from "./inputs/TextareaAutosize";
 import { isMaskViewDefinition, maskString, unmaskString } from "./maskUtils";
 import { useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
+import { useTextFragmentsContext } from "components/arr/text-fragments";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemString) => Promise<void>;
@@ -30,6 +31,7 @@ export function DescItemString({
   }
 
   const { formatMessage } = useIntl();
+  const textFragments = useTextFragmentsContext();
   const isInherited = item.nodeId !== nodeId;
   const isDisabled =
     item.undefined ||
@@ -75,6 +77,26 @@ export function DescItemString({
     resetConflict();
   }
 
+  function handleFocus(event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    if (mask) { return; }
+    const field = event.currentTarget;
+    textFragments?.registerField(field, (text: string) => {
+      const start = field.selectionStart;
+      const end = field.selectionEnd;
+      const newPos = start + text.length;
+      setValue(`${field.value.slice(0, start)}${text}${field.value.slice(end)}`);
+      requestAnimationFrame(() => {
+        field.selectionStart = newPos;
+        field.selectionEnd = newPos;
+      });
+    });
+  }
+
+  function handleBlur() {
+    textFragments?.unregisterField();
+    handleChange();
+  }
+
   function handleInputChange({
     currentTarget,
   }: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) {
@@ -103,7 +125,8 @@ export function DescItemString({
           disabled={isDisabled}
           value={item.undefined ? formatMessage(commonMessages.undefined) : value || ""}
           onChange={handleInputChange}
-          onBlur={() => handleChange()}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           style={{
             flex: 1,
             minWidth: "60px",
@@ -115,7 +138,8 @@ export function DescItemString({
           disabled={isDisabled}
           value={item.undefined ? formatMessage(commonMessages.undefined) : value || ""}
           onChange={handleInputChange}
-          onBlur={() => handleChange()}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           style={{
             flex: 1,
             minWidth: "60px",
