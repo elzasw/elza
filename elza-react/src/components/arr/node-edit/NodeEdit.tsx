@@ -16,6 +16,7 @@ import { NodeToolbar } from "./NodeToolbar";
 import { DescItemField } from "./desc-items";
 import { useActiveFund, useActiveParent, useNodeFormData } from "./hooks";
 import { NodeFormContext } from "./NodeFormContext";
+import { TextFragmentsProvider } from "../text-fragments";
 import { buildGroupsForm } from "./utils";
 
 const SHOW_DEBUG_DATA = false;
@@ -119,6 +120,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     activeParent.childNodes.findIndex((node: any) => node.id === nodeId) === 0; // TODO add types
 
   return (
+    <TextFragmentsProvider>
     <NodeFormContext.Provider value={nodeFormData}>
     <div
       style={{
@@ -288,5 +290,6 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
       </div>
     </div>
     </NodeFormContext.Provider>
+    </TextFragmentsProvider>
   );
 }

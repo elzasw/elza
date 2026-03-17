@@ -455,7 +455,7 @@ export const NodeToolbar = ({
           appearance: "subtle",
           id: "symbols",
           action: handleShowSpecialCharacters,
-          isVisible: false,
+          isVisible: true,
         },
       ],
     },

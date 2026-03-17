@@ -1,12 +1,13 @@
 import { userDetailsSaveSettings } from 'actions/user/userDetail.jsx';
 import { getOneSettings, setSettings } from 'components/arr/ArrUtils.jsx';
 import { Icon, NoFocusButton } from 'components/shared';
-import { ChangeEvent, FC, useEffect, useState } from 'react';
-import { useSelector } from "react-redux";
+import { ChangeEvent, useState } from 'react';
 import { i18n } from '../../../components/shared';
 import { DraggableWindow } from "components/shared";
 import "./TextFragments.scss";
-import { useThunkDispatch } from 'utils/hooks';
+import { useAppThunkDispatch } from 'utils/hooks';
+import { useTextFragmentsContext } from './TextFragmentsContext';
+import { useAppSelector } from 'utils/hooks/useAppSelector';
 
 let _textFragmentsWindowPosition = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 
@@ -22,10 +23,6 @@ export const unregisterField = () => {
     registeredField = null;
 }
 
-const handleClick = (e: any) => {
-    callback && callback(e.currentTarget.textContent, registeredField);
-}
-
 const settingCode = "TEXT_FRAGMENTS"
 
 const _fragments = "+\n$\n&\nU+03A3\nTest\nTrochu delsi text pro otestovani vkladani dlouheho textu.";
@@ -36,65 +33,53 @@ interface ITextFragmentsSettings {
     fragments: string[];
 }
 
-export const TextFragmentsWindow: FC<{
-    onClose: () => void
-}> = ({
-    onClose
-}) => {
-        const userDetail = useSelector((state: any) => state.userDetail);
-        const dispatch = useThunkDispatch();
-        const fragmentsSettings = getOneSettings(userDetail.settings, settingCode);
-        let initFragments: string[] = [];
+export function TextFragmentsWindow({ onClose }: { onClose: () => void }) {
+    const settings = useAppSelector((state) => state.userDetail.settings);
+    const dispatch = useAppThunkDispatch();
+    const fragmentsSettings = getOneSettings(settings, settingCode);
+    let initFragments: string[] = [];
 
-        try {
-            const settings: ITextFragmentsSettings = JSON.parse(fragmentsSettings.value);
-            if (!settings.fragments) {
-                throw new Error("Settings value is not object.")
-            }
-            initFragments = settings.fragments;
-        } catch {
-            initFragments = _fragments.split(delimiter);
+    try {
+        const settings: ITextFragmentsSettings = JSON.parse(fragmentsSettings.value);
+        if (!settings.fragments) {
+            throw new Error("Settings value is not object.")
         }
+        initFragments = settings.fragments;
+    } catch {
+        initFragments = _fragments.split(delimiter);
+    }
 
-        const [disabled, setDisabled] = useState(true);
-        const [editMode, setEditMode] = useState(false);
-        const [fragments, setFragments] = useState<string[]>(initFragments);
+    const textFragments = useTextFragmentsContext();
+    const disabled = !textFragments?.hasActiveField;
 
-        useEffect(() => {
-            if (registeredField) {
-                setDisabled(false);
-            } else {
-                setDisabled(true);
-            }
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-        }, [registeredField])
+    const [editMode, setEditMode] = useState(false);
+    const [fragments, setFragments] = useState<string[]>(initFragments);
 
-        const handleToggleEdit = () => setEditMode(!editMode);
+    const handleToggleEdit = () => setEditMode(!editMode);
 
-        const handleChangeFragmentsString = (e: ChangeEvent<HTMLTextAreaElement>) => {
-            setFragments((e.currentTarget.value || "").split(delimiter))
-        }
+    const handleChangeFragmentsString = (e: ChangeEvent<HTMLTextAreaElement>) => {
+        setFragments((e.currentTarget.value || "").split(delimiter))
+    }
 
-        const handleResetFragmentsString = () => {
-            setFragments(JSON.parse(fragmentsSettings.value).fragments);
-        }
+    const handleResetFragmentsString = () => {
+        setFragments(JSON.parse(fragmentsSettings.value).fragments);
+    }
 
-        const handleSaveFragmentsString = () => {
-            fragmentsSettings.value = JSON.stringify({ fragments });
-            const settings = setSettings(userDetail.settings, fragmentsSettings.id, fragmentsSettings);
+    const handleSaveFragmentsString = () => {
+        fragmentsSettings.value = JSON.stringify({ fragments });
+        const _settings = setSettings(settings, fragmentsSettings.id, fragmentsSettings);
+        dispatch(userDetailsSaveSettings(_settings))
+    }
 
-            dispatch(userDetailsSaveSettings(settings))
-        }
+    const handleRemoveFragment = (fragment: string) => () => {
+        const index = fragments.indexOf(fragment);
+        const newFragments = [...fragments];
+        newFragments.splice(index, 1)
+        setFragments(newFragments);
+    }
 
-        const handleRemoveFragment = (fragment: string) => () => {
-            const index = fragments.indexOf(fragment);
-            const newFragments = [...fragments];
-            newFragments.splice(index, 1)
-
-            setFragments(newFragments);
-        }
-
-        return <DraggableWindow
+    return <div onMouseDown={(e) => e.preventDefault()}>
+        <DraggableWindow
             className="text-fragments-window"
             initialPosition={_textFragmentsWindowPosition}
             onDragStop={(position) => { _textFragmentsWindowPosition = position }}
@@ -103,7 +88,7 @@ export const TextFragmentsWindow: FC<{
             <div className="actions-container" >
                 <div className="title">{i18n("textFragments.title")}</div>
                 <div className="spacer" />
-                <div onMouseDown={(e) => { e.stopPropagation() }}>
+                <div onMouseDown={(e) => { e.stopPropagation(); e.preventDefault() }}>
                     <NoFocusButton active={editMode} onClick={handleToggleEdit}>
                         <Icon glyph="fa-pencil" />
                     </NoFocusButton>
@@ -122,7 +107,7 @@ export const TextFragmentsWindow: FC<{
                                 title={char}
                                 disabled={disabled && !editMode}
                                 key={key}
-                                onClick={editMode ? handleRemoveFragment(item) : handleClick}
+                                onClick={editMode ? handleRemoveFragment(item) : () => textFragments?.insertText(char)}
                                 onMouseDown={(event) => {
                                     event.preventDefault()
                                 }}
@@ -136,8 +121,8 @@ export const TextFragmentsWindow: FC<{
                 {editMode &&
                     <div className="edit-form">
                         <textarea
-                            onChange={handleChangeFragmentsString}
-                            value={fragments.join(delimiter)}
+                        onChange={handleChangeFragmentsString}
+                        value={fragments.join(delimiter)}
                         />
                         <div className="actions-container">
                             <button onClick={handleSaveFragmentsString}>
@@ -150,4 +135,5 @@ export const TextFragmentsWindow: FC<{
                     </div>}
             </div>
         </DraggableWindow>
-    }
+    </div>
+}
