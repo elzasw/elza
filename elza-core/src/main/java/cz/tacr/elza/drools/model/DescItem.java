@@ -79,6 +79,13 @@ public class DescItem {
 
     private ArrDataUnitdate unitDate;
 
+    /**
+     * Object item id
+     * 
+     * It might be used to pair with inhibited items
+     */
+	private Integer itemObjectId;
+
     public DescItem(final RulItemType itemType, final RulItemSpec specType) {
         this.itemType = itemType;
         this.itemSpec = specType;
@@ -102,16 +109,21 @@ public class DescItem {
     }
 
     private DescItem(ArrDescItem descItem) {
-        readOnly = descItem.getReadOnly() == null ? false : descItem.getReadOnly();
-        undefined = descItem.isUndefined();
-        descItemId = descItem.getItemId();
-        itemType = descItem.getItemType();
-        itemSpec = descItem.getItemSpec();
-        dataType = DataType.fromId(descItem.getItemType().getDataTypeId()).getCode();
+    	this.readOnly = descItem.getReadOnly() == null ? false : descItem.getReadOnly();
+        this.undefined = descItem.isUndefined();
+        this.descItemId = descItem.getItemId();
+        this.itemType = descItem.getItemType();
+        this.itemSpec = descItem.getItemSpec();
+        this.itemObjectId = descItem.getDescItemObjectId();
+        this.dataType = DataType.fromId(descItem.getItemType().getDataTypeId()).getCode();
     }
 
     public Integer getDescItemId() {
         return descItemId;
+    }
+    
+    public Integer getItemObjectId() {
+    	return itemObjectId;
     }
 
     public String getType() {
