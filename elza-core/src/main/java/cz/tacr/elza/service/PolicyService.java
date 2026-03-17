@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -336,17 +337,19 @@ public class PolicyService {
         
         TreeNode treeNode = levelTreeCacheService.getTreeNode(fundVersion, node);
 
+        Set<Integer> nodeIds;
         if (includeSubtree) {
-            LinkedHashSet<Integer> versionIdsTable = levelTreeCacheWalker.walkThroughDFS(treeNode);
+            nodeIds = levelTreeCacheWalker.walkThroughDFS(treeNode);
             List<UIVisiblePolicy> visiblePolicies = visiblePolicyRepository.findByFund(fundVersion.getFund());
 
             List<UIVisiblePolicy> deleteVisiblePolicies = visiblePolicies.stream()
-                    .filter(visiblePolicy -> versionIdsTable.contains(visiblePolicy.getNode().getNodeId())).
+                    .filter(visiblePolicy -> nodeIds.contains(visiblePolicy.getNode().getNodeId())).
                             collect(Collectors.toCollection(LinkedList::new));
 
             // smazání všech včetně podstromu
             visiblePolicyRepository.deleteAll(deleteVisiblePolicies);
         } else {
+        	nodeIds = Collections.singleton(node.getNodeId());
             // smazání všech aktuálně přidaných k node
             visiblePolicyRepository.deleteByNode(node);
         }
@@ -363,23 +366,16 @@ public class PolicyService {
 
         visiblePolicyRepository.saveAll(visiblePolicies);
 
-        List<Integer> parentNodeIds = new ArrayList<>();
-        if (treeNode.getParent() != null) {
-            parentNodeIds.add(treeNode.getParent().getId());
-            addParentNodeIds(treeNode, parentNodeIds);
-        }
-
-        if (parentNodeIds.size() > MAX_SEND_NODE || treeNode.getParent() == null) {
+        if (nodeIds.size() > MAX_SEND_NODE || treeNode.getParent() == null) {
             eventNotificationService.publishEvent(new EventVisiblePolicy(EventType.VISIBLE_POLICY_CHANGE,
                     fundVersion.getFundVersionId(),
                     EventVisiblePolicy.InvalidateNodes.ALL));
         } else {
-            Integer[] nodeIds = new Integer[parentNodeIds.size()];
-            parentNodeIds.toArray(nodeIds);
+            Integer[] arrNodeIds = nodeIds.toArray(new Integer[nodeIds.size()]);
             eventNotificationService.publishEvent(new EventVisiblePolicy(EventType.VISIBLE_POLICY_CHANGE,
                     fundVersion.getFundVersionId(),
                     EventVisiblePolicy.InvalidateNodes.LIST,
-                    nodeIds));
+                    arrNodeIds));
         }
     }
 

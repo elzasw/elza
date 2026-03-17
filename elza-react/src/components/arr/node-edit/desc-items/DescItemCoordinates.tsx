@@ -18,6 +18,7 @@ import {
   addToastrInfo,
 } from "components/shared/toastr/ToastrActions";
 import { FormattedMessage, defineMessages, useIntl } from "react-intl";
+import { messages as commonMessages } from "./commonMessages";
 import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
 import { i18n } from "components";
 import { ExportCoordinateModal } from "components/shared/coordinates";
@@ -187,7 +188,7 @@ export function DescItemCoordinates({
         ref={inputRef}
         disabled={isDisabled}
         style={{ flex: 1, minWidth: "60px" }}
-        value={item.undefined ? "Výjimka" : value || ""}
+        value={item.undefined ? formatMessage(commonMessages.undefined) : value || ""}
         onChange={handleInputChange}
         onBlur={() => handleChange()}
         contentAfter={

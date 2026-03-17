@@ -34,6 +34,7 @@ public class Level {
      * Number of child nodes
      */
     private Integer childCount;
+	private List<InhibitedItem> inhibitedItems;
     
     /**
      * Default constructor
@@ -100,5 +101,13 @@ public class Level {
         	this.hasChildren = (childCount.intValue() > 0);
         }
     }
+
+	public void setInhibitedItems(List<InhibitedItem> inhibitedItems) {
+		this.inhibitedItems = inhibitedItems;
+	}
+	
+	public List<InhibitedItem> getInhibitedItems() {
+		return inhibitedItems;
+	}
 
 }

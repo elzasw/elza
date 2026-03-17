@@ -2,6 +2,7 @@ import { Api } from "api";
 import { RulDataTypeVO } from "api/RulDataTypeVO";
 import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
 import {
+    DataType,
   FormItemType,
   ItemDataResult,
   MandatoryType,
@@ -72,6 +73,12 @@ function useWSNodeChanges(nodeId: number, callback: (version: number) => void) {
     ) {
       callback(message.versionId);
     }
+    if (
+        message.eventType === EventType.VISIBLE_POLICY_CHANGE
+        && message.nodeIds.includes(nodeId)
+    ) {
+        callback(message.versionId);
+    }
   };
 
   useEffect(() => {
@@ -84,7 +91,7 @@ function useWSNodeChanges(nodeId: number, callback: (version: number) => void) {
 }
 
 export function getForcedItemTypes(
-  descItems: NodeItem[],
+  descItems: NodeItem[] = [],
   itemTypes: FormItemType[],
   itemTypeRefs: Record<number, DescItemTypeRef>,
   dataTypeRefs: Record<number, RulDataTypeVO>,
@@ -113,7 +120,9 @@ export function getForcedItemTypes(
       ({ itemTypeId: _itemTypeId }) => _itemTypeId === itemTypeId,
     ).length;
 
-    if (forcedSpecs.length > 0) {
+    // TODO Hotfix - prevent prefilling value for enum, it looks like the value
+    // is saved, but it isn't
+    if (forcedSpecs.length > 0 && dataType.code !== DataType.Enum) {
       forcedSpecs.forEach(({ itemSpecId }) => {
         const descItem = descItems.find(
           ({ itemTypeId: _itemTypeId, itemSpecId: _itemSpecId }) =>
@@ -217,7 +226,10 @@ export function useNodeFormData(
       const _forcedDescItems = options?.skipForcedItems
         ? []
         : getForcedItemTypes(
-            data.formData.descItems,
+            [
+                ...(data.formData.descItems || []),
+                ...addedFormItems.map(({ item }) => item)  // prevent forcing user added descItems
+            ],
             data.formData.itemTypes,
             itemTypeRefs,
             dataTypeRefs,
@@ -266,6 +278,7 @@ export function useNodeFormData(
       });
     },
     [
+      addedFormItems,
       dataTypeRefs,
       itemTypeRefs,
       markedForClean,
@@ -318,10 +331,10 @@ export function useNodeFormData(
   const ws = useWebsocket();
 
   function addDescItem(item: NodeItem) {
-    setAddedFormItems([...addedFormItems, { localId: getKey(), item }]);
+    setAddedFormItems((prev) => [...prev, { localId: getKey(), item }]);
   }
 
-  function addEmptyDescItem(typeId: number, position: number = 1) {
+  function addEmptyDescItem(typeId: number, specId?: number, position: number = 1) {
     const typeRef = itemTypeRefs[typeId];
     if (!typeRef) {
       throw `Could not find type ref for id: ${typeId}`;
@@ -334,13 +347,16 @@ export function useNodeFormData(
       throw "'NodeVersionId' missing";
     }
     addDescItem(
-      createEmptyDescItem(
-        typeRef.id,
-        nodeId,
-        nodeVersionId,
-        position,
-        dataType.code,
-      ),
+        {
+            ...createEmptyDescItem(
+                typeRef.id,
+                nodeId,
+                nodeVersionId,
+                position,
+                dataType.code,
+            ),
+            itemSpecId: specId,
+        }
     );
   }
 
@@ -413,7 +429,15 @@ export function useNodeFormData(
     }
   }
 
-  function updateDescItem(item: NodeItem) {
+  function updateDescItem(item: NodeItem, localId?: string) {
+    if (!item.data?.dataId && localId) {
+      const updateList = (prev: FormItem[]) =>
+        prev.map(formItem => formItem.localId === localId ? { ...formItem, item } : formItem);
+      setFormItems(updateList);
+      setForcedFormItems(updateList);
+      setAddedFormItems(updateList);
+      return Promise.resolve();
+    }
     return new Promise<void>((resolve, reject) => {
       ws.send(
         `/app/arrangement/descItems/${fondsVersionId}/update/true`,

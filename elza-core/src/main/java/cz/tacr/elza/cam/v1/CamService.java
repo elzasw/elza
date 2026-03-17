@@ -27,10 +27,11 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.cam.v1.client.ApiException;
 import cz.tacr.cam.v1.schema.cam.BatchEntityRecordRevXml;
@@ -186,9 +187,9 @@ public class CamService {
 
     @PersistenceContext
     private EntityManager entityManager;
-
-    @Value("${elza.ap.checkDb:false}")
-    private boolean checkDb;
+    
+    @Autowired
+    private PlatformTransactionManager txManager;
 
     private final String TRANSACTION_UUID = "91812cb8-3519-4f78-b0ec-df6e951e2c7c";
 
@@ -525,18 +526,20 @@ public class CamService {
         BindingSyncInfo bindingSync = externalSystemService.getBindingSync(extSysCode, TRANSACTION_UUID);
         try {
             String lastTransaction = bindingSync.getLastTransaction();
-            UpdatesFromXml updatesFromXml = null;
             String toTransaction = null;
             Integer count = null;
             Integer page = 0;
             if (bindingSync.getToTransaction() == null || bindingSync.getPage() == null || bindingSync.getCount() == null) {
                 // get next updates and count of changes
-                updatesFromXml = camConnector.getUpdatesFrom(bindingSync.getLastTransaction(), bindingSync.getExternalSystemId());
+            	UpdatesFromXml updatesFromXml = camConnector.getUpdatesFrom(bindingSync.getLastTransaction(), bindingSync.getExternalSystemId());
 
                 if (updatesFromXml.getUps() != null && CollectionUtils.isNotEmpty(updatesFromXml.getUps().getRevisions())) {
                     // We received all updated items
                     List<EntityRecordRevInfoXml> entityRecordRevInfoXmls = updatesFromXml.getUps().getRevisions();
-                    prepareApsForSync(bindingSync.getId(), entityRecordRevInfoXmls, updatesFromXml.getInf().getTo().getValue(), null, null, null);
+                    
+                    new TransactionTemplate(txManager).executeWithoutResult(status -> 
+                    	prepareApsForSync(bindingSync.getId(), entityRecordRevInfoXmls, updatesFromXml.getInf().getTo().getValue(), null, null, null)
+                    );
                 } else {
                     // Musí být uloženo po přečtení plné dávky dat.
                     toTransaction = updatesFromXml.getInf().getTo().getValue();
@@ -567,8 +570,15 @@ public class CamService {
                     page = null;
                     count = null;
                 }
+                
+                var paramLastTransaction = lastTransaction;
+                var paramToTransaction = toTransaction;
+                var paramPage = page;
+                var paramCount = count;
 
-                prepareApsForSync(bindingSync.getId(), updatesXml.getRevisions(), lastTransaction, toTransaction, page, count);
+                new TransactionTemplate(txManager).executeWithoutResult(status ->
+                	prepareApsForSync(bindingSync.getId(), updatesXml.getRevisions(), paramLastTransaction, paramToTransaction, paramPage, paramCount)
+                	);
             }
         } catch (ApiException e) {
             if (e.getCode() == 404) {
@@ -579,12 +589,6 @@ public class CamService {
                 log.error("Failed to send data to external system, responseCode: {}, responseBode: {}", e.getCode(), e.getResponseBody(), e);
                 throw prepareExtSystemException(e);
             }
-        }
-
-        // kontrola datové struktury
-        if (checkDb) {
-            entityManager.flush();
-            accessPointService.checkConsistency();
         }
     }
 

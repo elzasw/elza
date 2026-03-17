@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.catalina.connector.Connector;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -40,7 +39,7 @@ import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
+
 
 @Service
 public class AccessPointConnectorService {
@@ -102,6 +101,7 @@ public class AccessPointConnectorService {
      * @param extSysCode
      * @return
      */
+	@Transactional
 	public ApiCamConnector getConnector(String extSysCode) {
 		ApExternalSystem extSystem = staticDataService.getData().getApExternalSystemByCode(extSysCode);
 		return getCamVersion(extSystem) == 2 ? camConnectorV2 : camConnectorV1;
@@ -123,6 +123,7 @@ public class AccessPointConnectorService {
 	 * @param queueItemId
 	 * @param body
 	 */
+	@Transactional
 	public void exportForceOrNo(Integer queueItemId, boolean force) {
 		ExtSyncsQueueItem queueItem = extSyncsQueueItemRepository.findById(queueItemId).orElse(null);
 		if (queueItem == null) {

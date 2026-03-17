@@ -110,7 +110,6 @@ public class AdminController implements AdminApi {
     @Transactional
     public ResponseEntity<LoggedUsers> adminLoggedUsers() {
     	
-    	// @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
     	// Check permissions - only Admins are allowed or users managing another user or group
     	boolean isAdmin = false;
     	boolean userControl = false, groupControl = false;

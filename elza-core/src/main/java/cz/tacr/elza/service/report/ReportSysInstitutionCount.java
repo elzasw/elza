@@ -3,7 +3,7 @@ package cz.tacr.elza.service.report;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 
 import cz.tacr.elza.controller.vo.ReportReportData;
 import cz.tacr.elza.controller.vo.ReportReportParameters;
@@ -30,7 +30,7 @@ public class ReportSysInstitutionCount extends ReportBase {
 		OffsetDateTime lastRefresh = reportService.checkAndUpdateViews(reportCode);
 
 		Query query = (parameters != null && !CollectionUtils.isEmpty(parameters.getParams())) ? 
-				query = createQuery(parameters) 
+				createQuery(parameters) 
 				: em.createNativeQuery(ReportServiceQuery.SYS_INSTITUTION_COUNT_QUERY, Tuple.class);
 
 		List<Tuple> result = query.getResultList();

@@ -10,6 +10,8 @@ import { ConflictValue } from "./ConflictValue";
 import { EditStateDisplay } from "./EditStateDisplay";
 import { DescItemProps } from "./types";
 import { useValueManager } from "./utils";
+import { useIntl } from "react-intl";
+import { messages as commonMessages } from "./commonMessages";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemUnitdate) => Promise<void>;
@@ -33,6 +35,7 @@ export function DescItemUnitdate({
     throw "Incorrect data type";
   }
 
+  const { formatMessage } = useIntl();
   const dispatch = useAppThunkDispatch();
 
   const isInherited = item.nodeId !== nodeId;
@@ -103,7 +106,7 @@ export function DescItemUnitdate({
     >
       <Input
         disabled={isDisabled}
-        value={item.undefined ? "Výjimka" : value?.toString()}
+        value={item.undefined ? formatMessage(commonMessages.undefined) : (value || "").toString()}
         onChange={handleInputChange}
         onBlur={() => handleChange()}
         style={{
