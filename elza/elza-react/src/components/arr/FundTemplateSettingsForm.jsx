@@ -14,6 +14,8 @@ import FormInput from '../shared/form/FormInput';
 import './FundTemplateSettingsForm.scss';
 import {JAVA_ATTR_CLASS} from '../../constants';
 import FormInputField from "../shared/form/FormInputField";
+import { convertToOldDescItem, convertToOldTemplate } from './node-edit/templates/conversionUtils';
+import { getValue } from './node-edit/templates/utils';
 
 class FundTemplateSettingsForm extends AbstractReactComponent {
     /**
@@ -48,11 +50,23 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
 
         const results = [];
         let i = 0;
-        Object.keys(formData).forEach(itemTypeId => {
+        Object.keys(formData).forEach(key => {
+            let items = formData[key];
+            if (items.length === 0) {
+                return;
+            }
+
+            if(!Array.isArray(items)) { // new template is loaded as object
+                items = [convertToOldDescItem(items)];
+            }
+
+            // old templates use key from their definition as itemTypeId
+            // new templates have it saved in every descItem
+            const itemTypeId = items[0]?.itemTypeId || key;
             const itemType = descItemTypes.items[indexById(descItemTypes.items, parseInt(itemTypeId))];
-            const items = formData[itemTypeId];
-            items.forEach(item => {
-                results.push(this.renderItem(i++, itemType, item));
+
+            items?.forEach(item => {
+                results.push(this.renderItem(`${itemTypeId}_${i++}`, itemType, item));
             });
         });
 
@@ -80,7 +94,7 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
                 break;
             case '.ArrItemRecordRefVO':
             case '.ArrItemFileRefVO':
-                val = item.strValue;
+                val = item.strValue || item.value;
                 break;
             default:
                 val = item.value;
@@ -143,12 +157,13 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
                                 );
                                 return (
                                     <Accordion
-                                        activeKey={open[index]}
+                                        activeKey={index}
                                         onClick={() => {
                                             open[index] = !open[index];
                                             this.setState({open});
                                         }}
                                         accordion
+                                        style={{margin: '2px'}}
                                     >
                                         <Card>
                                             <Card.Header>
@@ -179,14 +194,15 @@ class FundTemplateSettingsForm extends AbstractReactComponent {
                                                     </div>
                                                 </div>
                                             </Card.Header>
-                                            <div
+                                            {open[index] && <div
+                                                style={{padding: '16px'}}
                                                 onClick={e => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                 }}
                                             >
                                                 {this.renderItems(fields.get(index).formData)}
-                                            </div>
+                                            </div>}
                                         </Card>
                                     </Accordion>
                                 );

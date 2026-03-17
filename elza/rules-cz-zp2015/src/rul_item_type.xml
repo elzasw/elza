@@ -83,6 +83,7 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
+        <mask>### ### *</mask>
     </item-type>
     <item-type code="ZP2015_DAO_LINK" data-type="URI_REF">
         <name>Odkaz na digitalizát</name>

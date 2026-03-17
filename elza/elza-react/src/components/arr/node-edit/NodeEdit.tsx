@@ -1,21 +1,21 @@
 import {
-  Button,
-  Spinner,
-  Tooltip,
-  mergeClasses,
+    Button,
+    Spinner
 } from "@fluentui/react-components";
-import { AddRegular, CopyAddRegular, CopyRegular } from "@fluentui/react-icons";
+import { AddRegular } from "@fluentui/react-icons";
 import { WebApi } from "actions";
 import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { FormattedMessage, defineMessages } from "react-intl";
+import { useEffect, useMemo, useState } from "react";
 import { ArrDaoVO } from "typings/dao";
 import { useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
+import { DraggableList } from "./DraggableList";
+import { FormItemGroup } from "./FormItemGroup";
+import { FormItemTypeComp } from "./FormItemType";
 import { NodeToolbar } from "./NodeToolbar";
 import { DescItemField } from "./desc-items";
 import { useActiveFund, useActiveParent, useNodeFormData } from "./hooks";
-import { useStyles } from "./styles";
+import { NodeFormContext } from "./NodeFormContext";
 import { buildGroupsForm } from "./utils";
 
 const SHOW_DEBUG_DATA = false;
@@ -26,22 +26,9 @@ interface Props {
   nodeVersionId: number;
 }
 
-const messages = defineMessages({
-  copyFromPrev: {
-    id: "desc_item_action_copyFromPrev",
-    defaultMessage: "Kopírovat hodnoty PP z předchozí JP",
-  },
-  copyToggle: {
-    id: "desc_item_action_copyToggle",
-    defaultMessage: "Nastavení opakovaného kopírování hodnot PP",
-  },
-});
-
 export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
   const dispatch = useAppThunkDispatch();
   const activeParent = useActiveParent(); // TODO use different way of getting active parent node
-  const styles = useStyles();
-  const refs = useRef({});
   const activeFund = useActiveFund();
 
   const [daos, setDaos] = useState<ArrDaoVO[]>();
@@ -51,11 +38,10 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
   );
   const groupRefs = useAppSelector(({ refTables }) => refTables.groups.data);
   const nodeSetting = useAppSelector(({ arrRegion }) =>
-    (arrRegion.nodeSettings as any).nodes.find(
-      ({ id }) => id === activeParent?.id,
-    ),
-  ); // TODO add types
+    arrRegion.nodeSettings.nodes.find(({ id }) => id === activeParent?.id),
+  );
 
+  const nodeFormData = useNodeFormData(fondsVersionId, nodeId, nodeVersionId);
   const {
     formData,
     formItems,
@@ -68,7 +54,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     createDescItem,
     updateDescItem,
     parent,
-  } = useNodeFormData(fondsVersionId, nodeId, nodeVersionId);
+  } = nodeFormData;
 
   useEffect(() => {
     if (nodeData?.id) {
@@ -133,6 +119,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     activeParent.childNodes.findIndex((node: any) => node.id === nodeId) === 0; // TODO add types
 
   return (
+    <NodeFormContext.Provider value={nodeFormData}>
     <div
       style={{
         background: "var(--shade-1)",
@@ -143,7 +130,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     >
       <NodeToolbar
         formData={formData}
-        formItems={formItems}
+        formItems={[...formItems, ...forcedFormItems, ...addedFormItems]}
         itemTypes={itemTypes}
         parent={parent}
         nodeData={nodeData}
@@ -182,205 +169,124 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
         )}
         {viewDescItemGroupsLocal.map(({ group, descItemTypes }) => {
           return (
-            <div style={{ margin: "4px" }} key={group.code}>
-              <div
-                style={{
-                  opacity: 0.5,
-                  fontWeight: "bold",
-                  fontSize: "0.6rem",
-                  padding: "0 4px",
-                }}
-              >
-                {group.name}
-              </div>
-              <div
-                className={styles.gridContainer}
-                style={{
-                  padding: "8px",
-                  background: "var(--shade-0)",
-                  borderRadius: "8px",
-                  boxShadow: "0 1px 5px #0003, 0px 5px 5px #0001",
-                  display: "grid",
-                  // gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                  // gridTemplateColumns: "repeat(4, 1fr)",
-                  // flexWrap: "wrap",
-                }}
-              >
-                {descItemTypes.map(
-                  ({ typeRef, typeForm, typeWidth, descItems }) => {
-                    return (
-                      <div
-                        key={typeRef.id}
-                        style={{
-                          outlineColor: "transparent",
-                          outlineOffset: "4px",
-                          borderRadius: "1px",
-                          transition: "outline-color 300ms ease-out",
-                        }}
-                        className={mergeClasses(
-                          styles.gridItem,
-                          styles[`gridItem_${typeWidth}`],
-                          styles.descItemTypeTitle,
-                        )}
-                        onMouseEnter={({ currentTarget }) =>
-                          (currentTarget.style.outline = "none")
-                        }
-                        ref={(el) => {
-                          if (refs) refs.current[typeRef.id] = el;
-                        }}
-                      >
-                        <div
-                          style={{
-                            flexShrink: 1,
-                            fontWeight: "bold",
-                            marginRight: "4px",
-                            display: "flex",
-                            alignItems: "flex-end",
-                            // opacity: typeWidth ? 1 - (4 - typeWidth) / 6 : 1,
-                            // fontSize: `${1 + (typeWidth ? typeWidth * 0.1 : 0.4)}em`,
-                          }}
-                        >
-                          <Tooltip
-                            relationship="label"
-                            appearance="inverted"
-                            content={typeRef.description}
-                          >
-                            <div>{typeRef.shortcut}</div>
-                          </Tooltip>
-                          <div className="actions">
-                            <Tooltip
-                              relationship="label"
-                              appearance="inverted"
-                              content={
-                                <FormattedMessage {...messages.copyFromPrev} />
-                              }
-                            >
-                              <Button
-                                className="hidable-button"
-                                size="small"
-                                appearance="subtle"
-                                icon={<CopyAddRegular />}
-                                onClick={() => handleCopyFromPrev(typeRef.id)}
-                                disabled={isFirstNode}
-                                tabIndex={-1}
-                              />
-                            </Tooltip>
-                            <Tooltip
-                              relationship="label"
-                              appearance="inverted"
-                              content={
-                                <FormattedMessage {...messages.copyToggle} />
-                              }
-                            >
-                              <Button
-                                className={
-                                  nodeSetting?.descItemTypeCopyIds.includes(
-                                    typeRef.id,
-                                  )
-                                    ? undefined
-                                    : "hidable-button"
-                                }
-                                size="small"
-                                appearance={
-                                  nodeSetting?.descItemTypeCopyIds.includes(
-                                    typeRef.id,
-                                  )
-                                    ? "primary"
-                                    : "subtle"
-                                }
-                                icon={<CopyRegular />}
-                                onClick={() => handleCopyToggle(typeRef.id)}
-                                tabIndex={-1}
-                              />
-                            </Tooltip>
-                          </div>
-                        </div>
-                        <div>
-                          {descItems
-                            .sort(
-                              (
-                                { item: { position: positionA } },
-                                { item: { position: positionB } },
-                              ) => positionA - positionB,
-                            )
-                            .map(({ item, localId }) => {
-                              const itemErrors =
-                                nodeData?.nodeConformity.errorList.filter(
-                                  ({ descItemObjectId }) =>
-                                    descItemObjectId === item.itemObjectId,
-                                );
+            <FormItemGroup group={group}>
+              {descItemTypes.map(
+                ({ typeRef, typeForm, typeWidth, descItems }) => {
+                    function handleChangeOrder(index: number, newIndex: number) {
+                        const item = descItems[index].item;
+                        let newPosition = descItems[newIndex]?.item.position;
 
-                              return (
-                                <div key={localId}>
-                                  <div>
-                                    <DescItemField
-                                      typeRef={typeRef}
-                                      typeForm={typeForm}
-                                      item={item}
-                                      fondsVersionId={fondsVersionId}
-                                      nodeId={nodeId}
-                                      nodeVersionId={nodeVersionId}
-                                      typeWidth={typeWidth}
-                                      errors={itemErrors}
-                                      onDelete={(item) =>
-                                        deleteDescItem(item, localId)
-                                      }
-                                      onCreate={(item) =>
-                                        createDescItem(item, localId)
-                                      }
-                                      onUpdate={updateDescItem}
-                                    />
-                                  </div>
-                                  {SHOW_DEBUG_DATA && (
-                                    <div
-                                      style={{
-                                        background: "var(--shade-3)",
-                                        display: "inline-block",
-                                        padding: "4px",
-                                        lineHeight: "1em",
-                                        borderRadius: "4px",
-                                        border: "var(--primary-border)",
-                                      }}
-                                    >
-                                      objId: {item.itemObjectId}, specId:{" "}
-                                      {item.itemSpecId}, pos: {item.position},
-                                      genKey: {localId}
-                                    </div>
-                                  )}
+                        // if new position is empty add to end
+                        // (newIndex is higher than number of descItems)
+                        if (!newPosition) {
+                            newPosition = descItems[descItems.length - 1].item.position + 1;
+                        }
+
+                        // subtract self from final position number, when moving down
+                        if (newPosition > item.position) {
+                            newPosition = newPosition - 1;
+                        }
+                        updateDescItem({ ...item, position: newPosition });
+                    }
+
+                  return (
+                    <FormItemTypeComp
+                      typeForm={typeForm}
+                      typeRef={typeRef}
+                      typeWidth={typeWidth}
+                      nodeSettings={nodeSetting}
+                      handleCopyFromPrev={handleCopyFromPrev}
+                      handleCopyToggle={handleCopyToggle}
+                      canCopyFromPrev={isFirstNode}
+                    >
+                          <DraggableList
+                              canPlaceBeforeItem={(index) => descItems[index].item.position > 0}
+                              isItemDraggable={(index) => descItems[index].item.position > 0 && (descItems[index].item.data?.dataId != undefined || descItems[index].item.undefined)}
+                              onChangeOrder={handleChangeOrder}
+                          >
+                              {descItems
+                        .sort(
+                          (
+                            { item: { position: positionA } },
+                            { item: { position: positionB } },
+                          ) => positionA - positionB,
+                        )
+                        .map(({ item, localId }) => {
+                          return (
+                            <div key={localId} style={{container: "desc-item-container"}}>
+                              <div>
+                                <DescItemField
+                                typeRef={typeRef}
+                                typeForm={typeForm}
+                                item={item}
+                                fondsVersionId={fondsVersionId}
+                                nodeId={nodeId}
+                                nodeVersionId={nodeVersionId}
+                                typeWidth={typeWidth}
+                                onDelete={(item) =>
+                                  deleteDescItem(item, localId)
+                                }
+                                onCreate={(item) =>
+                                  createDescItem(item, localId)
+                                }
+                                onUpdate={(item) =>
+                                  updateDescItem(item, localId)
+                                }
+                                />
+                              </div>
+                              {SHOW_DEBUG_DATA && (
+                                <div
+                                  style={{
+                                    background: "var(--shade-3)",
+                                    display: "inline-block",
+                                    padding: "4px",
+                                    lineHeight: "1em",
+                                    borderRadius: "4px",
+                                    border: "var(--primary-border)",
+                                  }}
+                                >
+                                    typeId: {item.itemTypeId}, objId: {item.itemObjectId}, specId:{" "}
+                                  {item.itemSpecId}, pos: {item.position},
+                                  genKey: {localId}
                                 </div>
-                              );
-                            })}
+                              )}
+                            </div>
+                          );
+                        })}
+                        </DraggableList>
                           {typeForm.repeatable &&
-                            ((formItems[formItems.length - 1].item.data
+                            ((descItems[descItems.length - 1]?.item.data
                               ?.dataId != undefined && // last item has data
-                              !formItems[formItems.length - 1].item
+                              !descItems[descItems.length - 1]?.item
                                 .undefined) || // last item is not undefined
                               typeRef.useSpecification) && ( // show when item uses specification
                               <Button
-                                style={{ borderStyle: "dashed", color: "#666" }}
+                                style={{ borderStyle: "dashed", color: "#666", margin: "2px 0" }}
                                 icon={<AddRegular />}
-                                onClick={() =>
-                                  addEmptyDescItem(
-                                    typeRef.id,
-                                    formItems[formItems.length - 1].item
-                                      .position + 1,
-                                  )
+                                onClick={() =>{
+                                    const lastItem = descItems[descItems.length - 1].item;
+                                    const nextPosition = lastItem.position > 0 ? lastItem.position + 1 : 1;
+                                    addEmptyDescItem(
+                                        typeRef.id,
+                                        undefined,
+                                        nextPosition,
+                                    )
+                                }
                                 }
                                 tabIndex={-1}
                               >
                                 {typeRef.shortcut}
                               </Button>
                             )}
-                        </div>
-                      </div>
-                    );
-                  },
-                )}
-              </div>
-            </div>
+                    </FormItemTypeComp>
+                  );
+                },
+              )}
+            </FormItemGroup>
           );
         })}
       </div>
     </div>
+    </NodeFormContext.Provider>
   );
 }

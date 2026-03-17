@@ -963,6 +963,7 @@ public class ItemTypeUpdater {
         if(itemType.getMask() != null) {
         	StringViewDefinition stringViewDefinition = new StringViewDefinition();
         	stringViewDefinition.setMask(itemType.getMask());
+        	viewDefinition = stringViewDefinition;
 		}
         // compare previous and new view definition
         if (!Objects.equals(viewDefinition, dbItemType.getViewDefinition())) {

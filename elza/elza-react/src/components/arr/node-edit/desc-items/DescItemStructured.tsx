@@ -44,7 +44,7 @@ export function DescItemStructured({
   nodeId,
   isDisabled: _isDisabled,
 }: Props) {
-  if (item.data?.dataType !== DataType.Structured) {
+  if (item.data && item.data?.dataType !== DataType.Structured && !item.undefined) {
     throw "Incorrect data type";
   }
 
@@ -74,14 +74,14 @@ export function DescItemStructured({
     if (data.structuredObjectId) {
       (async () => {
         const _structure = await WebApi.getStructureData(
-          fundId,
+          fundVersionId,
           data.structuredObjectId,
         );
         setStructure(_structure);
         setQuery(_structure.value);
       })();
     }
-  }, [fundId, data.structuredObjectId]);
+  }, [fundVersionId, data.structuredObjectId]);
 
   const loadStructures = useCallback(
     async (_query: string) => {

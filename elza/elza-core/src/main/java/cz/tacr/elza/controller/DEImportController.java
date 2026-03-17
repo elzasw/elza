@@ -74,7 +74,7 @@ public class DEImportController {
         MultipartFile srcFile = xmlFile;
 
         // unzipped if zip file
-        File unzipFile = ZipUtils.unzipFile(xmlFile);
+        File unzipFile = ZipUtils.unzipFirstFile(xmlFile);
         if (unzipFile != null) {
             // convert File -> MultipartFile (https://stackoverflow.com/questions/16648549/converting-file-to-multipartfile)
             try {

@@ -3,7 +3,6 @@ import {
   DataType,
   FormItemType,
   ItemDataResult,
-  NodeConformityError,
   NodeItem,
 } from "elza-api";
 import { useState } from "react";
@@ -29,6 +28,35 @@ import { ErrorDisplay } from "./ErrorDisplay";
 import { ItemActions } from "./ItemActions";
 import { SavingDisplay } from "./SavingDisplay";
 import { createEmptyDescItem } from "./utils";
+import { makeStyles } from "@fluentui/react-components";
+
+const useStyles = makeStyles({
+  descItem: {
+    display: "flex",
+    // flexDirection: "column",
+
+    // "@container form-container (width > 600px)": {
+      flexDirection: "row",
+    // },
+  },
+  descItemInner: {
+      display: "block",
+      flex: 1,
+      "& > *": {
+          margin: 0,
+          marginBottom: "4px",
+      },
+
+      "@container form-container (width > 500px)": {
+          display: "flex",
+          flexDirection: "row",
+          "& > *": {
+              margin: 0,
+              marginRight: "4px",
+          },
+      },
+  },
+})
 
 interface Props {
   item: NodeItem;
@@ -38,7 +66,6 @@ interface Props {
   fondsVersionId: number;
   nodeId: number;
   nodeVersionId: number;
-  errors?: NodeConformityError[];
   onDelete?: (item: NodeItem) => Promise<void>;
   onCreate: (item: NodeItem) => Promise<ItemDataResult>;
   onUpdate: (item: NodeItem) => Promise<void>;
@@ -66,7 +93,6 @@ export function DescItemField({
   typeForm,
   fondsVersionId,
   nodeId,
-  errors = [],
   onDelete,
   onCreate,
   onUpdate,
@@ -74,6 +100,8 @@ export function DescItemField({
 }: Props) {
   const [specId, setSpecId] = useState<number | undefined>(item.itemSpecId);
   const [isSaving, setIsSaving] = useState(false);
+
+  const styles = useStyles();
 
   const { data } = item;
 
@@ -133,13 +161,12 @@ export function DescItemField({
 
   const isEnum = dataTypeCode === DataType.Enum;
 
-  // update desc item with saved data when spec is changed
-  function handleSpecChange(specId: number) {
-    if (item?.data?.dataId && specId != item.itemSpecId) {
-      setSpecId(specId);
-      handleChange(item, specId);
+  function handleSpecChange(newSpecId: number) {
+    setSpecId(newSpecId);
+    if (isEnum) {
+      handleChange(item, newSpecId);
     } else {
-      setSpecId(specId);
+      onUpdate({ ...item, itemSpecId: newSpecId });
     }
   }
   // useEffect(() => {
@@ -155,16 +182,15 @@ export function DescItemField({
 
   return (
     <div
+      className={styles.descItem}
       style={{
-        display: "flex",
-        margin: "4px 0",
+        margin: "2px 0",
         position: "relative",
         flex: 1,
         // alignItems: "center",
         alignItems: "flex-start",
       }}
     >
-      <ErrorDisplay errors={errors} />
       {(item.itemSpecId || typeRef.useSpecification) && !isEnum && (
         <DescItemSpec
           isDisabled={item.undefined || item.nodeId != nodeId || item.inhibited}
@@ -203,6 +229,7 @@ export function DescItemField({
           "Not implemented"
         )}
       </div>
+      <ErrorDisplay itemObjectId={item.itemObjectId} />
       <ItemActions
         item={item}
         nodeId={nodeId}

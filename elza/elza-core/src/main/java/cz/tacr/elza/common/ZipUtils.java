@@ -29,12 +29,12 @@ public class ZipUtils {
     }
 
     /**
-     * Unzipping file (https://www.baeldung.com/java-compress-and-uncompress)
+     * Unzipping first file (https://www.baeldung.com/java-compress-and-uncompress)
      * 
      * @param srcFile as MultipartFile
      * @return File
      */
-    public static File unzipFile(final MultipartFile srcFile) {
+    public static File unzipFirstFile(final MultipartFile srcFile) {
         if (!isZipFile(srcFile)) {
             return null;
         }
@@ -46,20 +46,20 @@ public class ZipUtils {
                 IOUtils.copy(srcFile.getInputStream(), outputStream);
             }
             byte[] buffer = new byte[1024];
-            ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
-            ZipEntry zipEntry = zis.getNextEntry();
-            while (zipEntry != null) {
-                unzipFile = File.createTempFile(zipEntry.getName(), "");
-                FileOutputStream fos = new FileOutputStream(unzipFile);
-                int len;
-                while ((len = zis.read(buffer)) > 0) {
-                    fos.write(buffer, 0, len);
+            try (ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) {
+                ZipEntry zipEntry = zis.getNextEntry();
+                while (zipEntry != null && unzipFile == null) {
+                    unzipFile = File.createTempFile(zipEntry.getName(), "");
+                    try (FileOutputStream fos = new FileOutputStream(unzipFile)) {
+                        int len;
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len);
+                        }
+                    }
+                    zipEntry = zis.getNextEntry();
                 }
-                fos.close();
-                zipEntry = zis.getNextEntry();
-             }
-             zis.closeEntry();
-             zis.close();
+                zis.closeEntry();
+            }
         } catch (IOException e) {
             throw new SystemException("Failed to create a temporary file to unzip", e);
         } finally {

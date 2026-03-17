@@ -1,7 +1,8 @@
 import { DataInteger, DataType } from "elza-api";
 import { DescItemProps } from "./types";
+import { toDuration } from "components/validate";
 
-export function DescItemInt({ item, nodeId }: DescItemProps) {
+export function DescItemInt({ item, nodeId, typeRef }: DescItemProps) {
   if (item.data?.dataType !== DataType.Int) {
     throw "Incorrect data type";
   }
@@ -10,6 +11,9 @@ export function DescItemInt({ item, nodeId }: DescItemProps) {
 
   const data = item.data as DataInteger;
 
+  const isDuration = typeRef.viewDefinition === "DURATION";
+  const value = isDuration && data?.integerValue != undefined ? toDuration(data?.integerValue) : data?.integerValue;
+
   return (
     <div
       style={{
@@ -17,7 +21,7 @@ export function DescItemInt({ item, nodeId }: DescItemProps) {
         opacity: isInherited ? 0.5 : undefined,
       }}
     >
-      {item.undefined ? "Výjimka" : data.integerValue}
+      {item.undefined ? "Výjimka" : value}
     </div>
   );
 }

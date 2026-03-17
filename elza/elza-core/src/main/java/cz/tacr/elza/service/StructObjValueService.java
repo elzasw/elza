@@ -301,11 +301,7 @@ public class StructObjValueService {
                         lock.wait(QUEUE_CHECK_TIME_INTERVAL);
                     } catch (InterruptedException e) {
                         // request to stop thread -> nothing to do
-                        stopGenerator = false;
-                        generatorThread = null;
-                        lock.notifyAll();
-
-                        Thread.currentThread().interrupt();
+                        break;
                     }
                 }
             }
