@@ -77,8 +77,8 @@ export function FormItemTypeComp({
           alignItems: "flex-end",
           // opacity: typeWidth ? 1 - (4 - typeWidth) / 6 : 1,
           // fontSize: `${1 + (typeWidth ? typeWidth * 0.1 : 0.4)}em`,
-          fontSize: '0.8em',
-          lineHeight: '1.2em',
+          // fontSize: '0.8em',
+          lineHeight: '1.3em',
           // opacity: 0.6,
           // textTransform: 'uppercase',
         }}
