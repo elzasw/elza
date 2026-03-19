@@ -604,6 +604,7 @@ public class ArrangementController {
      * @param nodeVersion    verze JP
      * @param descItemTypeId identfikátor typu hodnoty atributu
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}",
             method = RequestMethod.DELETE,
@@ -669,12 +670,12 @@ public class ArrangementController {
      * @param fundVersionId identfikátor verze AP
      * @param nodeVersion   verze JP
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/delete",
             method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @Deprecated
     public DescItemResult deleteDescItem(@RequestBody final ArrItemVO descItemVO,
                                          @PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                          @PathVariable(value = "nodeId") final Integer nodeId,
@@ -770,6 +771,7 @@ public class ArrangementController {
      * @param importFile     soubor soubor pro import
      * @throws IOException chyba
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/csv/import",
             method = RequestMethod.POST,
@@ -868,6 +870,7 @@ public class ArrangementController {
      * @param descItemObjectId identifikátor existující hodnoty atributu
      * @return upravená hodnota atributu nastavená na nezjištěno
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/set",
             method = RequestMethod.PUT,
@@ -900,6 +903,7 @@ public class ArrangementController {
      * @param descItemObjectId identifikátor existující hodnoty atributu
      * @return odstraněný atribut
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/unset",
             method = RequestMethod.PUT,
