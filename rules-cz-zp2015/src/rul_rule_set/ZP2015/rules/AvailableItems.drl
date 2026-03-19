@@ -6730,6 +6730,18 @@ then
     $itemType.setMaxType(RulItemType.Type.RECOMMENDED);
 end
 
+rule "PP_007_005 Změna povinnosti prvku Jazyk v důsledku existence na vyšší úrovni (dědičnost)"
+no-loop
+salience -300
+when  $activeLevel: ActiveLevel( )
+    $level : Level( this!=$activeLevel && $ownItems: ownDescItems )
+    // ZP5.2.10 Jazyk
+    DescItem(type=="ZP2015_LANGUAGE" ) from $ownItems
+    $itemType: RulItemTypeExt( code=="ZP2015_ITEM_MAT" )
+then
+    $itemType.setMaxType(RulItemType.Type.RECOMMENDED);
+end
+
 rule "PP_008 Charakter poškození - specifikace"
 no-loop
 when $itemType: RulItemTypeExt( code in (
