@@ -34,6 +34,7 @@ import cz.tacr.elza.controller.vo.DataString;
 import cz.tacr.elza.controller.vo.DataText;
 import cz.tacr.elza.controller.vo.ItemData;
 import cz.tacr.elza.controller.vo.NodeItem;
+import cz.tacr.elza.controller.vo.NodeUpdateItem;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
@@ -149,6 +150,20 @@ public class ArrangementWebSocketController {
 				                              BooleanUtils.isNotFalse(createNewVersion), requestHeaders);
 	}
 
+    @MessageMapping("/arrangement/descItems/{fundVersionId}/update/bulk")
+    public void updateDescItems(@Payload final NodeUpdateItem[] nodeItems,
+            @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
+            final StompHeaderAccessor requestHeaders) {
+        Validate.notEmpty(nodeItems);
+        Objects.requireNonNull(fundVersionId);
+
+        Integer nodeId = Objects.requireNonNull(nodeItems[0].getItem().getNodeId(), "NodeId musí být vyplněn");
+        Integer nodeVersion = Objects.requireNonNull(nodeItems[0].getItem().getNodeVersion(), "NodeVersion musí být vyplněna");
+
+        arrangementFormService.updateDescItems(fundVersionId, nodeId, nodeVersion, nodeItems, requestHeaders);
+	}
+
+    @Deprecated
     @MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk")
     public void updateDescItems(@Payload final ArrUpdateItemVO[] changeItems,
                                 @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,

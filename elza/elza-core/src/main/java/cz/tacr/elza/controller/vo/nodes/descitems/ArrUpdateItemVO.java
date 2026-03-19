@@ -5,6 +5,7 @@ package cz.tacr.elza.controller.vo.nodes.descitems;
  *
  * @since 04.04.2018
  */
+@Deprecated
 public class ArrUpdateItemVO {
 
     private UpdateOp updateOp;

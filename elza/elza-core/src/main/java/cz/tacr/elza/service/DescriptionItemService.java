@@ -1258,8 +1258,7 @@ public class DescriptionItemService {
 
         ArrChange change = null;
 		ArrDescItem descItemUpdated;
-        SingleItemChangeContext changeContext = new SingleItemChangeContext(ruleService, eventNotificationService,
-                fundVersionId, nodeId);
+        SingleItemChangeContext changeContext = new SingleItemChangeContext(ruleService, eventNotificationService, fundVersionId, nodeId);
         if (createNewVersion) {
             node.setVersion(nodeVersion);
 
