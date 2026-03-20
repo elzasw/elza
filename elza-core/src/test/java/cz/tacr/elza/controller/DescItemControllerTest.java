@@ -27,7 +27,7 @@ public class DescItemControllerTest extends AbstractControllerTest {
         ArrNodeVO rootNode = nodes.get(0);
 
         // vytvoření hodnoty
-        NodeItem nodeItem = buildNodeItem("SRD_SCALE", null, DataType.TEXT, "value", rootNode);
+        NodeItem nodeItem = buildNodeItem("SRD_SCALE", null, DataType.TEXT, "value", rootNode, null);
         ItemDataResult itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
         NodeItem nodeItemCreated = itemDataResult.getItem();
 

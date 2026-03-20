@@ -45,11 +45,13 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSession.Receiptable;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.client.HttpServerErrorException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.ArrangementController.CopySiblingResult;
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
+import cz.tacr.elza.controller.ArrangementController.DescItemResult;
 import cz.tacr.elza.controller.ArrangementWebsocketControllerTest.ReceiptStatus;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
@@ -80,8 +82,6 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.NodeDataVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemBitVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrDataText;
@@ -93,12 +93,17 @@ import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.table.ElzaRow;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.drools.DirectionLevel;
-import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
+import cz.tacr.elza.test.controller.vo.DataBit;
+import cz.tacr.elza.test.controller.vo.DataString;
+import cz.tacr.elza.test.controller.vo.DataText;
+import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.test.controller.vo.Fund;
+import cz.tacr.elza.test.controller.vo.ItemDataResult;
 import cz.tacr.elza.test.controller.vo.NodeDataParam;
+import cz.tacr.elza.test.controller.vo.NodeItem;
 import cz.tacr.elza.utils.CsvUtils;
 import io.restassured.response.Response;
 
@@ -223,8 +228,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         List<ArrNodeVO> nodes = createLevels(fundVersion);
 
         for (int j = 0; j < count; j++) {
-            ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, value, null, null, null);
-            createDescItem(descItem, fundVersion, nodes.get(j), typeVo);
+            NodeItem nodeItem = buildNodeItem(typeVo.getCode(), null, DataType.STRING, value, nodes.get(j), null);
+            descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
         }
 
         return fund;
@@ -617,35 +622,35 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // vytvoření hodnoty
         helperTestService.waitForWorkers();
         RulDescItemTypeExtVO type = findDescItemTypeByCode("SRD_SCALE");
-        ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null, null);
-        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, rootNode, type);
-        rootNode = descItemResult.getParent();
-        ArrItemVO descItemCreated = descItemResult.getItem();
+        NodeItem nodeItem = buildNodeItem(type.getCode(), null, DataType.TEXT, "value", rootNode, null);
+        ItemDataResult itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        rootNode = getUpdatedNode(itemDataResult);
+        NodeItem nodeItemCreated = itemDataResult.getItem();
 
-        assertNotNull(((ArrItemTextVO) descItem).getValue().equals(((ArrItemTextVO) descItemCreated).getValue()));
-        assertNotNull(descItemCreated.getPosition());
-        assertNotNull(descItemCreated.getDescItemObjectId());
+        assertNotNull(((DataText) nodeItem.getData()).getTextValue().equals(((DataText) nodeItemCreated.getData()).getTextValue()));
+        assertNotNull(nodeItemCreated.getPosition());
+        assertNotNull(nodeItemCreated.getItemObjectId());
 
         // aktualizace hodnoty
         helperTestService.waitForWorkers();
-        ((ArrItemTextVO) descItemCreated).setValue("update value");
-        descItemResult = updateDescItem(descItemCreated, fundVersion, rootNode, true);
-        rootNode = descItemResult.getParent();
-        ArrItemVO descItemUpdated = descItemResult.getItem();
+        ((DataText) nodeItemCreated.getData()).setTextValue("update value");
+        itemDataResult = descitemsApi.descItemUpdateDescItem(fundVersion.getId(), true, nodeItemCreated);
+        rootNode = getUpdatedNode(itemDataResult);
+        NodeItem nodeItemUpdated = itemDataResult.getItem();
 
-        assertTrue(descItemUpdated.getDescItemObjectId().equals(descItemCreated.getDescItemObjectId()));
-        assertTrue(descItemUpdated.getPosition().equals(descItemCreated.getPosition()));
-        assertTrue(!descItemUpdated.getId().equals(descItemCreated.getId()));
-        assertTrue(((ArrItemTextVO) descItemUpdated).getValue().equals(((ArrItemTextVO) descItemCreated).getValue()));
+        assertTrue(nodeItemUpdated.getItemObjectId().equals(nodeItemCreated.getItemObjectId()));
+        assertTrue(nodeItemUpdated.getPosition().equals(nodeItemCreated.getPosition()));
+        assertTrue(!nodeItemUpdated.getId().equals(nodeItemCreated.getId()));
+        assertTrue(((DataText) nodeItemUpdated.getData()).getTextValue().equals(((DataText) nodeItemCreated.getData()).getTextValue()));
 
         // odstranění hodnoty
         helperTestService.waitForWorkers();
-        descItemResult = deleteDescItem(descItemUpdated, fundVersion, rootNode);
-        rootNode = descItemResult.getParent();
+        itemDataResult = descitemsApi.descItemDeleteDescItem(fundVersion.getId(), nodeItemUpdated);
+        rootNode = getUpdatedNode(itemDataResult);
 
         helperTestService.waitForWorkers();
         // nastavené nemožné hodnoty
-        descItemResult = setNotIdentifiedDescItem(fundVersion.getId(), rootNode.getId(), rootNode.getVersion(), type.getId(), null, null);
+        DescItemResult descItemResult = setNotIdentifiedDescItem(fundVersion.getId(), rootNode.getId(), rootNode.getVersion(), type.getId(), null, null);
         rootNode = descItemResult.getParent();
 
         // Návratová struktura nesmí být prázdná
@@ -672,10 +677,9 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // vytvoření další hodnoty
         helperTestService.waitForWorkers();
         type = findDescItemTypeByCode("SRD_SCALE");
-        descItem = buildDescItem(type.getCode(), null, "value", null, null, null);
-        descItemResult = createDescItem(descItem, fundVersion, rootNode, type);
-        rootNode = descItemResult.getParent();
-        descItemCreated = descItemResult.getItem();
+        nodeItem = buildNodeItem(type.getCode(), null, DataType.TEXT, "value", rootNode, null);
+        itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        rootNode = getUpdatedNode(itemDataResult);
 
         // fulltext
         fulltextTest(fundVersion);
@@ -696,65 +700,64 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
         type = findDescItemTypeByCode(SRD_OTHER_ID);
         spec = findDescItemSpecByCode(SRD_OTHERID_CJ, type);
-        descItem = buildDescItem(type.getCode(), spec.getCode(), "1", 1, null, null);
-        descItemResult = createDescItem(descItem, fundVersion, node, type);
-        node = descItemResult.getParent();
+        nodeItem = buildNodeItem(type.getCode(), spec.getCode(), DataType.STRING, "1", node, null);
+        itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        node = getUpdatedNode(itemDataResult);
 
-        descItem = buildDescItem(type.getCode(), spec.getCode(), "2", 1, null, null);
-        descItemResult = createDescItem(descItem, fundVersion, node, type);
-        node = descItemResult.getParent();
+        nodeItem = buildNodeItem(type.getCode(), spec.getCode(), DataType.STRING, "2", node, null);
+        itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        node = getUpdatedNode(itemDataResult);
 
-        descItem = buildDescItem(type.getCode(), spec.getCode(), "3", 1, null, null);
-        descItemResult = createDescItem(descItem, fundVersion, node, type);
-        node = descItemResult.getParent();
-        descItemCreated = descItemResult.getItem();
+        nodeItem = buildNodeItem(type.getCode(), spec.getCode(), DataType.STRING, "3", node, null);
+        itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        node = getUpdatedNode(itemDataResult);
+        NodeItem nodeItemCreated3 = itemDataResult.getItem();
 
-        ((ArrItemStringVO) descItemCreated).setValue("3x");
-        descItemCreated.setPosition(5);
-        descItemResult = updateDescItem(descItemCreated, fundVersion, node, true);
-        node = descItemResult.getParent();
+        ((DataString) nodeItemCreated3.getData()).setStringValue("3x");
+        nodeItemCreated3.setPosition(5);
+        itemDataResult = descitemsApi.descItemUpdateDescItem(fundVersion.getId(), true, nodeItemCreated3);
+        node = getUpdatedNode(itemDataResult);
 
         ArrangementController.CopySiblingResult copySiblingResult =
                 copyOlderSiblingAttribute(fundVersion.getId(), type.getId(), nodes.get(2));
 
         type = findDescItemTypeByCode(SRD_UNIT_DATE);
-        descItem = buildDescItem(type.getCode(), null, "1920", 1, null, null);
-        descItemResult = createDescItem(descItem, fundVersion, node, type);
-        node = descItemResult.getParent();
+        nodeItem = buildNodeItem(type.getCode(), null, DataType.UNITDATE, "1920", node, null);
+        itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        node = getUpdatedNode(itemDataResult);
 
         LocalDate dateNow = LocalDate.now();
         type = findDescItemTypeByCode("SRD_SIMPLE_DATE");
-        descItem = buildDescItem(type.getCode(), null, dateNow, 1, null, null);
-        descItemResult = createDescItem(descItem, fundVersion, node, type);
-        node = descItemResult.getParent();
+        nodeItem = buildNodeItem(type.getCode(), null, DataType.DATE, dateNow, node, null);
+        itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        node = getUpdatedNode(itemDataResult);
 
         type = findDescItemTypeByCode("SRD_LEGEND");
-        descItem = buildDescItem(type.getCode(), null, "legenda", 1, null, null);
-        descItemResult = createDescItem(descItem, fundVersion, node, type);
-        node = descItemResult.getParent();
+        nodeItem = buildNodeItem(type.getCode(), null, DataType.TEXT, "legenda", node, null);
+        itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        node = getUpdatedNode(itemDataResult);
 
         helperTestService.waitForWorkers();
-        type = findDescItemTypeByCode("SRD_POSITION"); //TODO : co to je
-        descItem = buildDescItem(type.getCode(), null, "POINT (14 49)", 1, null, null);
-        descItemResult = createDescItem(descItem, fundVersion, node, type);
-        node = descItemResult.getParent();
+        type = findDescItemTypeByCode("SRD_POSITION");
+        nodeItem = buildNodeItem(type.getCode(), null, DataType.COORDINATES, "POINT (14 49)", node, null);
+        itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        node = getUpdatedNode(itemDataResult);
 
         helperTestService.waitForWorkers();
         type = findDescItemTypeByCode("SRD_COLL_EXTENT_LENGTH");
-        descItem = buildDescItem(type.getCode(), null, BigDecimal.valueOf(20.5), 1, null, null);
+        nodeItem = buildNodeItem(type.getCode(), null, DataType.DECIMAL, BigDecimal.valueOf(20.5), node, null);
         Thread.sleep(1000);
-        descItemResult = createDescItem(descItem, fundVersion, node, type);
-        node = descItemResult.getParent();
+        itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        node = getUpdatedNode(itemDataResult);
 
         type = findDescItemTypeByCode("SRD_UNIT_COUNT_TABLE");
         assertNotNull(type);
         ElzaTable table = new ElzaTable();
         table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("NAME", "Test 1"), new AbstractMap.SimpleEntry<>("COUNT", "195")));
         table.addRow(new ElzaRow(new AbstractMap.SimpleEntry<>("NAME", "Test 2"), new AbstractMap.SimpleEntry<>("COUNT", "200")));
-
-        descItem = buildDescItem(type.getCode(), null, table, 1, null, null);
-        descItemResult = createDescItem(descItem, fundVersion, node, type);
-        node = descItemResult.getParent();
+        nodeItem = buildNodeItem(type.getCode(), null, DataType.JSON_TABLE, table, node, null);
+        itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        node = getUpdatedNode(itemDataResult);
 
         // Import a export CSV pro atribut JSON_TABLE
         {
@@ -793,8 +796,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
         type = findDescItemTypeByCode(SRD_ENTITY_ROLE);
         spec = findDescItemSpecByCode(SRD_ENTITY_ROLE_1, type);
-        descItem = buildDescItem(type.getCode(), spec.getCode(), accessPoint, null, null, null);
-        descItemResult = createDescItem(descItem, fundVersion, rootNode, type);
+        nodeItem = buildNodeItem(type.getCode(), spec.getCode(), DataType.RECORD_REF, accessPoint, rootNode, null);
+        descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
     }
 
 	/**
@@ -1056,8 +1059,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         RulDescItemTypeExtVO typeVo = findDescItemTypeByCode(SRD_TITLE);
         int index = 0;
         for (ArrNodeVO node : nodes) {
-            ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, index + "value" + index, null, null, null);
-            createDescItem(descItem, fundVersion, node, typeVo);
+            NodeItem nodeItem = buildNodeItem(typeVo.getCode(), null, DataType.TEXT, index + "value" + index, node, null);
+            descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);        	
             index++;
         }
 
@@ -1134,8 +1137,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         int index = 1;
         String value = "value";
         for (ArrNodeVO node : nodes) {
-            ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, value + index, null, null, null);
-            createDescItem(descItem, fundVersion, node, typeVo);
+            NodeItem nodeItem = buildNodeItem(typeVo.getCode(), null, DataType.STRING, value + index, node, null);
+            descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
             index = -index;
         }
 
@@ -1170,14 +1173,13 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // vytvoření hodnoty
         RulDescItemTypeExtVO type = findDescItemTypeByCode(SRD_TITLE);
-        ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null, null);
-        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node1, type);
-        ArrItemVO descItemCreated = descItemResult.getItem();
+        NodeItem nodeItem = buildNodeItem(type.getCode(), null, DataType.TEXT, "value", node1, null);
+        ItemDataResult itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        NodeItem nodeItemCreated = itemDataResult.getItem();
 
-        assertNotNull(((ArrItemTextVO) descItem).getValue()
-                .equals(((ArrItemTextVO) descItemCreated).getValue()));
-        assertNotNull(descItemCreated.getPosition());
-        assertNotNull(descItemCreated.getDescItemObjectId());
+        assertNotNull(((DataText) nodeItem.getData()).getTextValue().equals(((DataText) nodeItemCreated.getData()).getTextValue()));
+        assertNotNull(nodeItemCreated.getPosition());
+        assertNotNull(nodeItemCreated.getItemObjectId());
 
         // copy value
         CopySiblingResult copyResult = copyOlderSiblingAttribute(fundVersion.getId(), type.getId(), node2);
@@ -1286,13 +1288,13 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // vytvoření itemu typu bit
         RulDescItemTypeExtVO type = findDescItemTypeByCode("ZVEREJNENO");
-        ArrItemVO descItem = buildDescItem(type.getCode(), null, true, null, null, null);
-        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node1, type);
-        ArrItemVO descItemCreated = descItemResult.getItem();
+        NodeItem nodeItem = buildNodeItem(type.getCode(), null, DataType.BIT, true, node1, null);
+        ItemDataResult itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        NodeItem nodeItemCreated = itemDataResult.getItem();
 
-        assertEquals(((ArrItemBitVO) descItem).isValue(), ((ArrItemBitVO) descItemCreated).isValue());
-        assertNotNull(descItemCreated.getPosition());
-        assertNotNull(descItemCreated.getDescItemObjectId());
+        assertEquals(((DataBit) nodeItem.getData()).getBitValue(), ((DataBit) nodeItemCreated.getData()).getBitValue());
+        assertNotNull(nodeItemCreated.getPosition());
+        assertNotNull(nodeItemCreated.getItemObjectId());
     }
 
     @Test
@@ -1305,23 +1307,24 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // vytvoření itemu typu enum empty value
         RulDescItemTypeExtVO type = findDescItemTypeByCode("ZP2015_ARCHDESC_LANG");
-        ArrItemVO descItem = buildDescItem(type.getCode(), null, null, null, null, true);
-        ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node, type);
-        ArrItemVO descItemCreated = descItemResult.getItem();
+        NodeItem nodeItem = buildNodeItem(type.getCode(), null, DataType.ENUM, null, node, true);
+        ItemDataResult itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        NodeItem nodeItemCreated = itemDataResult.getItem();
 
-        assertEquals(type.getId(), descItemCreated.getItemTypeId());
-        assertNotNull(descItemCreated.getPosition());
-        assertNotNull(descItemCreated.getDescItemObjectId());
+        assertEquals(type.getId(), nodeItemCreated.getItemTypeId());
+        assertNotNull(nodeItemCreated.getPosition());
+        assertNotNull(nodeItemCreated.getItemObjectId());
 
         // pokus o opakované přidání by měl způsobit chybu
-        node.setVersion(descItemResult.getParent().getVersion());
+        node.setVersion(itemDataResult.getParent().getVersion());
         try {
-            descItemResult = createDescItem(descItem, fundVersion, node, type);
-        } catch (BusinessException e) {
-            descItemResult = null;
-            assertEquals(ArrangementCode.ALREADY_INDEFINABLE, e.getErrorCode());
+            itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        } catch (HttpServerErrorException e) {
+        	String body = e.getResponseBodyAsString();
+        	assertTrue(body.contains(ArrangementCode.ALREADY_INDEFINABLE.name()));
+            itemDataResult = null;
         }
-        assertNull(descItemResult);
+        assertNull(itemDataResult);        
     }
 
     @Test
