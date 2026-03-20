@@ -2433,7 +2433,7 @@ namespace ElzaAPI {
     // add models not used in operations
     union __Types {
         a: NodeUpdateItem,
-        //b: ItemTypeGroup
+        b: ItemTypeGroup
     }
     @route("/__types") @get
     op __typeRegistry(): __Types;

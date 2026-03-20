@@ -2819,6 +2819,24 @@ components:
             - $ref: '#/components/schemas/NodeItem'
           description: item
       description: Výsledek vytvoření nebo aktualizace ArrDescItem
+    ItemTypeGroup:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        types:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormItemType'
+      description: |-
+        Skupina zapouzdrující typy hodnot atributů pro UI
+
+        Náhrada `ItemTypeGroupVO`
     LoggedUser:
       type: object
       required:

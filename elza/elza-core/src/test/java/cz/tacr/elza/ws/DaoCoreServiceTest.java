@@ -37,7 +37,10 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.service.DaoSyncService;
+import cz.tacr.elza.test.controller.vo.DataText;
 import cz.tacr.elza.test.controller.vo.Fund;
+import cz.tacr.elza.test.controller.vo.ItemDataResult;
+import cz.tacr.elza.test.controller.vo.NodeItem;
 import cz.tacr.elza.ws.core.v1.DaoService;
 import cz.tacr.elza.ws.core.v1.FundService;
 import cz.tacr.elza.ws.types.v1.Dao;
@@ -316,9 +319,11 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
 
         // aktualizace hodnoty
         helperTestService.waitForWorkers();
-        descItemTextVO.setValue("update value");
+        ArrItemTextVO itemToUpdate = (ArrItemTextVO) findItemByObjectId(formData, descItemTextVO.getDescItemObjectId());
+        itemToUpdate.setValue("update value");
         ArrNodeVO nodeVO = convertTreeNode(levelNode);
-        DescItemResult descItemResult = updateDescItem(descItemTextVO, fundVersion, nodeVO, true);
+        NodeItem nodeItemToUpdate = convertToNodeItem(itemToUpdate, nodeVO);
+        ItemDataResult updateResult = descitemsApi.descItemUpdateDescItem(fundVersion.getId(), true, nodeItemToUpdate);
         helperTestService.waitForWorkers();
 
         daosApi.daoChangeLinkScenario(daoVo.getId(), "sc2");
