@@ -397,7 +397,7 @@ no-loop
 when
     $activeLevel : ActiveLevel( )
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
-    // neexistje nadrizeny level typu slozka
+    // neexistuje nadrizeny level typu slozka
     not ( $level : Level( this!=$activeLevel ) and
          DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE", 
          		"ZP2015_FOLDER_DAO") ) from $level.descItems )
@@ -416,7 +416,7 @@ no-loop
 when
     $activeLevel : ActiveLevel( )
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
-    // neexistje nadrizeny level typu slozka
+    // neexistuje nadrizeny level typu slozka
     not ( $level : Level( this!=$activeLevel ) and
          DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE", 
          		"ZP2015_FOLDER_DAO") ) from $level.descItems )
@@ -433,7 +433,7 @@ when
     // tyka se manip. seznamu, inventare a starsich pomucek
     DescItem(type=="ZP2015_ARRANGEMENT_TYPE" && specCode in ("ZP2015_ARRANGEMENT_OTHER", "ZP2015_ARRANGEMENT_MAN", "ZP2015_ARRANGEMENT_INV") ) from $activeLevel.descItems
     DescItem(type=="ZP2015_LEVEL_TYPE" && specCode=="ZP2015_LEVEL_FOLDER" ) from $activeLevel.descItems
-    // neexistje nadrizeny level typu slozka
+    // neexistuje nadrizeny level typu slozka
     not ( $level : Level( this!=$activeLevel ) and
          DescItem(type=="ZP2015_FOLDER_TYPE" && specCode in ("ZP2015_FOLDER_UNITS", "ZP2015_FOLDER_SINGLE_TYPE", 
          		"ZP2015_FOLDER_DAO") ) from $level.descItems )
@@ -4506,7 +4506,7 @@ then
     $itemSpec.setType(RulItemSpec.Type.POSSIBLE);
 end
 
-rule "Doporučenné prvky pro Zvukové záznamy v inv, kat"
+rule "Doporučené prvky pro Zvukové záznamy v inv, kat"
 no-loop
 salience -100
 when $activeLevel: ActiveLevel( $ownItems: ownDescItems )
@@ -6662,8 +6662,7 @@ rule "RE_004 Změna povinnosti role entit v důsledku existence na vyšší úro
 no-loop
 salience -200
 when $activeLevel: ActiveLevel( )
-    $level : Level( this!=$activeLevel && $ownItems: ownDescItems )
-    $roleEntity: DescItem(type=="ZP2015_ENTITY_ROLE" ) from $ownItems
+    $roleEntity: DescItem(type=="ZP2015_ENTITY_ROLE" ) from $activeLevel.inheritedDescItems
     $itemType: RulItemTypeExt( code in ( "ZP2015_ENTITY_ROLE" ) )
     $itemSpec: RulItemSpecExt( code==$roleEntity.specCode ) from $itemType.rulItemSpecList    
 then
@@ -6686,9 +6685,8 @@ rule "PP_007_001 Změna povinnosti prvku Dochování v důsledku existence na vy
 no-loop
 salience -300
 when  $activeLevel: ActiveLevel( )
-    $level : Level( this!=$activeLevel && $ownItems: ownDescItems )
     // ZP5.2.3 Způsob a forma dochování
-    DescItem(type=="ZP2015_STORAGE_COND" ) from $ownItems
+    DescItem(type=="ZP2015_STORAGE_COND" ) from $activeLevel.inheritedDescItems
     $itemType: RulItemTypeExt( code=="ZP2015_STORAGE_COND" )
 then
     $itemType.setMaxType(RulItemType.Type.RECOMMENDED);
@@ -6698,9 +6696,8 @@ rule "PP_007_002 Změna povinnosti prvku Kvantita v důsledku existence na vyš�
 no-loop
 salience -300
 when  $activeLevel: ActiveLevel( )
-    $level : Level( this!=$activeLevel && $ownItems: ownDescItems )
     // ZP5.2.4 Rozměry, hmotnost, velikost, množství
-    DescItem(type=="ZP2015_SIZE" ) from $ownItems
+    DescItem(type=="ZP2015_SIZE" ) from $activeLevel.inheritedDescItems
     $itemType: RulItemTypeExt( code=="ZP2015_SIZE" )
 then
     $itemType.setMaxType(RulItemType.Type.RECOMMENDED);
@@ -6710,9 +6707,8 @@ rule "PP_007_003 Změna povinnosti prvku Měřítko v důsledku existence na vy�
 no-loop
 salience -300
 when  $activeLevel: ActiveLevel( )
-    $level : Level( this!=$activeLevel && $ownItems: ownDescItems )
     // ZP5.2.5 Měřítko
-    DescItem(type in ("ZP2015_SCALE", "ZP2015_SCALE_NUMERICAL") ) from $ownItems
+    DescItem(type in ("ZP2015_SCALE", "ZP2015_SCALE_NUMERICAL") ) from $activeLevel.inheritedDescItems
     $itemType: RulItemTypeExt( code in ("ZP2015_SCALE", "ZP2015_SCALE_NUMERICAL") )
 then
     $itemType.setMaxType(RulItemType.Type.RECOMMENDED);
@@ -6722,9 +6718,8 @@ rule "PP_007_004 Změna povinnosti prvku Technika záznamu v důsledku existence
 no-loop
 salience -300
 when  $activeLevel: ActiveLevel( )
-    $level : Level( this!=$activeLevel && $ownItems: ownDescItems )
     // ZP5.2.8 Technika, adjustace, nosič a látka záznamu
-    DescItem(type=="ZP2015_ITEM_MAT" ) from $ownItems
+    DescItem(type=="ZP2015_ITEM_MAT" ) from $activeLevel.inheritedDescItems
     $itemType: RulItemTypeExt( code=="ZP2015_ITEM_MAT" )
 then
     $itemType.setMaxType(RulItemType.Type.RECOMMENDED);
@@ -6734,9 +6729,8 @@ rule "PP_007_005 Změna povinnosti prvku Jazyk v důsledku existence na vyšší
 no-loop
 salience -300
 when  $activeLevel: ActiveLevel( )
-    $level : Level( this!=$activeLevel && $ownItems: ownDescItems )
     // ZP5.2.10 Jazyk
-    DescItem(type=="ZP2015_LANGUAGE" ) from $ownItems
+    DescItem(type=="ZP2015_LANGUAGE" ) from $activeLevel.inheritedDescItems
     $itemType: RulItemTypeExt( code=="ZP2015_LANGUAGE" )
 then
     $itemType.setMaxType(RulItemType.Type.RECOMMENDED);
