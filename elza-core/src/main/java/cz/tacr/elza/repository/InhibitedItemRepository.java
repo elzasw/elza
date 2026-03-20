@@ -22,6 +22,9 @@ public interface InhibitedItemRepository extends JpaRepository<ArrInhibitedItem,
     @Query("SELECT i FROM arr_inhibited_item i WHERE i.nodeId = ?1 AND i.descItemObjectId = ?2 AND i.deleteChange IS NULL")
     Optional<ArrInhibitedItem> findByNodeIdAndDescItemObjectId(Integer nodeId, Integer descItemObjectId);
 
+    @Query("SELECT i FROM arr_inhibited_item i WHERE i.descItemObjectId = ?1 AND i.deleteChange IS NULL")
+    List<ArrInhibitedItem> findByDescItemObjectIdAndDeleteChangeIsNull(Integer descItemObjectId);
+
     @Query("SELECT i FROM arr_inhibited_item i WHERE i.nodeId IN (?1) AND i.deleteChange IS NULL")
 	List<ArrInhibitedItem> findByNodeIdsAndDeleteChangeIsNull(Collection<Integer> nodeIds);
 
