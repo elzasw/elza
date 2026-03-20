@@ -1455,21 +1455,32 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		return descItem;
 	}
 
+	// temporarily
+	protected NodeItem buildNodeItem(@Nonnull  final String typeCode,
+            			             @Nullable final String specCode,
+            			             @Nonnull  final DataType dataType,
+            			             @Nullable final Object value,
+            			             @Nonnull  final ArrNodeVO node) {
+		return buildNodeItem(typeCode, specCode, dataType, value, node, null);
+	}
+
 	/**
 	 * Vytvoření objektu pro hodnotu atributu (nová).
 	 *
-	 * @param typeCode kód typu atributu
-	 * @param specCode kód speku atributu
-	 * @param dataType typ hodnoty
-	 * @param value    hodnota
-	 * @param node     atributový uzel
+	 * @param typeCode  kód typu atributu
+	 * @param specCode  kód speku atributu
+	 * @param dataType  typ hodnoty
+	 * @param value     hodnota
+	 * @param node      atributový uzel
+	 * @param undefined nezjištěný (bez hodnoty)
 	 * @return vytvořený object hodnoty atributu
 	 */
 	protected NodeItem buildNodeItem(@Nonnull  final String typeCode,
 			                         @Nullable final String specCode,
 			                         @Nonnull  final DataType dataType,
 			                         @Nullable final Object value,
-			                         @Nonnull  final ArrNodeVO node) {
+			                         @Nonnull  final ArrNodeVO node,
+			                         @Nullable final Boolean undefined) {
 		Validate.notNull(typeCode, "Musí být vyplněn kód typu atributu");
 		Validate.notNull(dataType, "Musí být vyplněn typ hodnoty");
 		Validate.notNull(node, "Musí být vyplněn atributový uzel");
@@ -1487,7 +1498,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		nodeItem.setItemSpecId(specId);
 		nodeItem.setNodeId(node.getId());
 		nodeItem.setNodeVersion(node.getVersion());
-		//nodeItem.setUndefined(null);
+		nodeItem.setUndefined(undefined);
 		nodeItem.setData(itemData);
 
 		return nodeItem;

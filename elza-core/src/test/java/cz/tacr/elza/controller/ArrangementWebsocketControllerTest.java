@@ -50,7 +50,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
 	private final String UPDATE_DESC_ITEM_MSG_MAPPING = "/app/arrangement/descItems/{fundVersionId}/update/{createNewVersion}";
 
-    private final String UPDATE_DESC_ITEMS_MSG_MAPPING = "/app/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk";
+    private final String UPDATE_DESC_ITEMS_MSG_MAPPING = "/app/deprecated/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk";
 
     private final String ADD_LEVEL_MSG_MAPPING = "/app/arrangement/levels/add";
 
@@ -84,7 +84,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         ArrNodeVO rootNode = nodes.get(0);
 
         // vytvoření descItem
-        NodeItem nodeItem = buildNodeItem("SRD_SCALE", null, DataType.TEXT, "value", rootNode);
+        NodeItem nodeItem = buildNodeItem("SRD_SCALE", null, DataType.TEXT, "value", rootNode, null);
         ItemDataResult itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
         NodeItem nodeItemCreated = itemDataResult.getItem();
 
