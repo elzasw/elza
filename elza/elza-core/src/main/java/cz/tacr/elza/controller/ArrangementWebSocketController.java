@@ -150,17 +150,18 @@ public class ArrangementWebSocketController {
 				                              BooleanUtils.isNotFalse(createNewVersion), requestHeaders);
 	}
 
-    @MessageMapping("/arrangement/descItems/{fundVersionId}/update/bulk")
-    public void updateDescItems(@Payload final NodeUpdateItem[] nodeItems,
+    @MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk")
+    public void updateDescItems(@Payload final NodeUpdateItem[] changeItems,
             @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
+            @DestinationVariable(value = "nodeId") final Integer nodeId,
+            @DestinationVariable(value = "nodeVersion") final Integer nodeVersion,
             final StompHeaderAccessor requestHeaders) {
-        Validate.notEmpty(nodeItems);
+        Validate.notEmpty(changeItems);
+        Objects.requireNonNull(nodeId);
+        Objects.requireNonNull(nodeVersion);
         Objects.requireNonNull(fundVersionId);
 
-        Integer nodeId = Objects.requireNonNull(nodeItems[0].getItem().getNodeId(), "NodeId musí být vyplněn");
-        Integer nodeVersion = Objects.requireNonNull(nodeItems[0].getItem().getNodeVersion(), "NodeVersion musí být vyplněna");
-
-        arrangementFormService.updateDescItems(fundVersionId, nodeId, nodeVersion, nodeItems, requestHeaders);
+        arrangementFormService.updateDescItems(fundVersionId, nodeId, nodeVersion, changeItems, requestHeaders);
 	}
 
     @Deprecated
