@@ -104,7 +104,7 @@ export function FormItemTypeComp({
                 appearance="subtle"
                 icon={<ClipboardPasteRegular />}
                 onClick={() => handleCopyFromPrev(typeRef.id)}
-                disabled={canCopyFromPrev}
+                disabled={!canCopyFromPrev}
                 tabIndex={-1}
               />
             </Tooltip>

@@ -199,7 +199,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                       nodeSettings={nodeSetting}
                       handleCopyFromPrev={handleCopyFromPrev}
                       handleCopyToggle={handleCopyToggle}
-                      canCopyFromPrev={isFirstNode}
+                      canCopyFromPrev={!isFirstNode}
                     >
                           <DraggableList
                               canPlaceBeforeItem={(index) => descItems[index].item.position > 0}
