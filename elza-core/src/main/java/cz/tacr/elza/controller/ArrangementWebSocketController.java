@@ -165,7 +165,7 @@ public class ArrangementWebSocketController {
 	}
 
     @Deprecated
-    @MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk")
+    @MessageMapping("/deprecated/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk")
     public void updateDescItems(@Payload final ArrUpdateItemVO[] changeItems,
                                 @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
                                 @DestinationVariable(value = "nodeId") final Integer nodeId,
