@@ -1,5 +1,5 @@
 import { Button, Tooltip, mergeClasses } from "@fluentui/react-components";
-import { CopyAddRegular, CopyRegular } from "@fluentui/react-icons";
+import { ClipboardPasteRegular, CopyRegular } from "@fluentui/react-icons";
 import { FormItemType } from "elza-api";
 import { PropsWithChildren, ReactNode, useState } from "react";
 import { FormattedMessage } from "react-intl";
@@ -102,7 +102,7 @@ export function FormItemTypeComp({
                 style={{visibility: isHovered ? "visible" : "hidden"}}
                 size="small"
                 appearance="subtle"
-                icon={<CopyAddRegular />}
+                icon={<ClipboardPasteRegular />}
                 onClick={() => handleCopyFromPrev(typeRef.id)}
                 disabled={canCopyFromPrev}
                 tabIndex={-1}
