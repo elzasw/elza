@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import cz.tacr.elza.controller.arrangement.UpdateItemResult;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrInhibitedItemVO;
@@ -33,24 +32,25 @@ import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrUpdateItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.service.FundLevelService;
+import cz.tacr.elza.test.controller.vo.DataInteger;
 import cz.tacr.elza.test.controller.vo.DataText;
 import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.ItemDataResult;
 import cz.tacr.elza.test.controller.vo.NodeItem;
+import cz.tacr.elza.test.controller.vo.NodeUpdateItem;
+import cz.tacr.elza.test.controller.vo.UpdateOp;
 
 public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
 	private final String UPDATE_DESC_ITEM_MSG_MAPPING = "/app/arrangement/descItems/{fundVersionId}/update/{createNewVersion}";
 
-    private final String UPDATE_DESC_ITEMS_MSG_MAPPING = "/app/deprecated/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk";
+    private final String UPDATE_DESC_ITEMS_MSG_MAPPING = "/app/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk";
 
     private final String ADD_LEVEL_MSG_MAPPING = "/app/arrangement/levels/add";
 
@@ -70,7 +70,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
     private ArrFundVersionVO fundVersion;
 
     private TreeData treeData;
-
+    
     @Test
     public void updateDescItemTest() throws InterruptedException, ExecutionException, IllegalAccessException, StreamReadException, DatabindException, IOException {
         StompSession session = getSession();
@@ -121,62 +121,64 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
         // Příprava objektu s daty pro odeslání
         Integer fundVersionId = fundVersion.getId();
+        TreeNodeVO rootNode = treeData.getNodes().iterator().next();
         Integer nodeId = treeData.getNodes().iterator().next().getId();
         Integer nodeVersion = treeData.getNodes().iterator().next().getVersion();
 
-        // vytvoření nové ArrItem
-        ArrItemIntVO newItem = new ArrItemIntVO();
-        newItem.setItemTypeId(findItemTypeId("SRD_NAD"));
-        newItem.setValue(1);
-        ArrUpdateItemVO[] createItems = { new ArrUpdateItemVO(UpdateOp.CREATE, newItem) };
+        // CREATE vytvoření seznamu NodeUpdateItem[]
+        RulDescItemTypeExtVO itemType = getDescItemTypes().stream()
+                .filter(t -> t.getCode().equals("SRD_NAD"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Item type SRD_NAD not found"));
+        NodeItem newItem = buildNodeItem(itemType.getCode(), null, DataType.INT, 1, convertTreeNode(rootNode), null);
+        NodeUpdateItem[] createItems = { new NodeUpdateItem().updateOp(UpdateOp.CREATE).item(newItem) };        
 
-        Receiptable receiptCreate = session
-                .send(createDestination(UPDATE_DESC_ITEMS_MSG_MAPPING, fundVersionId, nodeId, nodeVersion), createItems);
+        Receiptable receiptCreate = session.send(createDestination(UPDATE_DESC_ITEMS_MSG_MAPPING, fundVersionId, nodeId, nodeVersion), createItems);
         ReceiptStatus status = waitingForReceipt(receiptCreate, sessionHandler);
-        assertEquals(ReceiptStatus.RCP_RECEIVED, status);
+        assertEquals(ReceiptStatus.RCP_RECEIVED, status);        
 
         Message<byte[]> recepipt = receiptStore.get(receiptCreate.getReceiptId());
         assertNotNull(recepipt);
 
-        List<UpdateItemResult> addResults = mapper.readValue(recepipt.getPayload(), new TypeReference<List<UpdateItemResult>>(){});
+        List<ItemDataResult> addResults = mapper.readValue(recepipt.getPayload(), new TypeReference<List<ItemDataResult>>(){});
         assertTrue(addResults.size() == 1);
         assertNotNull(addResults.get(0).getItem());
-        assertTrue(addResults.get(0).getNode().getVersion() == 1);
+        assertTrue(addResults.get(0).getItem().getNodeVersion() == 1);
 
-        // změna existujícího ArrItem
-        ArrItemIntVO updateItem = (ArrItemIntVO) addResults.get(0).getItem();
-        updateItem.setValue(2);
-        ArrUpdateItemVO[] updateItems = { new ArrUpdateItemVO(UpdateOp.UPDATE, updateItem) };
+        // UPDATE změna existujícího ArrItem
+        NodeItem createdItem = addResults.get(0).getItem();
+        ((DataInteger) createdItem.getData()).setIntegerValue(2);
+        nodeVersion = addResults.get(0).getItem().getNodeVersion();
+        NodeUpdateItem[] updateItems = { new NodeUpdateItem().updateOp(UpdateOp.UPDATE).item(createdItem) };
 
-        Receiptable receiptUpdate = session
-                .send(createDestination(UPDATE_DESC_ITEMS_MSG_MAPPING, fundVersionId, nodeId, ++nodeVersion), updateItems);
+        Receiptable receiptUpdate = session.send(createDestination(UPDATE_DESC_ITEMS_MSG_MAPPING, fundVersionId, nodeId, nodeVersion), updateItems);
         status = waitingForReceipt(receiptUpdate, sessionHandler);
         assertEquals(ReceiptStatus.RCP_RECEIVED, status);
 
         recepipt = receiptStore.get(receiptUpdate.getReceiptId());
         assertNotNull(recepipt);
 
-        List<UpdateItemResult> updResults = mapper.readValue(recepipt.getPayload(), new TypeReference<List<UpdateItemResult>>(){});
+        List<ItemDataResult> updResults = mapper.readValue(recepipt.getPayload(), new TypeReference<List<ItemDataResult>>(){});
         assertTrue(updResults.size() == 1);
         assertNotNull(updResults.get(0).getItem());
-        assertTrue(updResults.get(0).getNode().getVersion() == 2);
+        assertTrue(updResults.get(0).getItem().getNodeVersion() == 2);
 
-        // mazání existujícího ArrItem
-        ArrItemIntVO deleleItem = (ArrItemIntVO) updResults.get(0).getItem();
-        ArrUpdateItemVO[] deleteItems = { new ArrUpdateItemVO(UpdateOp.DELETE, deleleItem) };
+        // DELETE mazání existujícího ArrItem
+        NodeItem updatedItem = updResults.get(0).getItem();
+        nodeVersion = updResults.get(0).getItem().getNodeVersion();
+        NodeUpdateItem[] deleteItems = { new NodeUpdateItem().updateOp(UpdateOp.DELETE).item(updatedItem) };
 
-        Receiptable receiptDelete = session
-                .send(createDestination(UPDATE_DESC_ITEMS_MSG_MAPPING, fundVersionId, nodeId, ++nodeVersion), deleteItems);
+        Receiptable receiptDelete = session.send(createDestination(UPDATE_DESC_ITEMS_MSG_MAPPING, fundVersionId, nodeId, nodeVersion), deleteItems);
         status = waitingForReceipt(receiptDelete, sessionHandler);
         assertEquals(ReceiptStatus.RCP_RECEIVED, status);
 
         recepipt = receiptStore.get(receiptDelete.getReceiptId());
         assertNotNull(recepipt);
 
-        List<UpdateItemResult> delResults = mapper.readValue(recepipt.getPayload(), new TypeReference<List<UpdateItemResult>>(){});
+        List<ItemDataResult> delResults = mapper.readValue(recepipt.getPayload(), new TypeReference<List<ItemDataResult>>(){});
         assertTrue(delResults.size() == 1);
         assertNotNull(delResults.get(0).getItem());
-        assertTrue(delResults.get(0).getNode().getVersion() == 3);
+        assertTrue(delResults.get(0).getItem().getNodeVersion() == 3);
 
         session.disconnect();
     }

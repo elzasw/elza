@@ -67,6 +67,22 @@ import jakarta.transaction.Transactional;
 @WebSocketAwareController
 public class ArrangementWebSocketController {
 
+	public static final String UPDATE_DESC_ITEM_MSG_MAPPING = "/arrangement/descItems/{fundVersionId}/update/{createNewVersion}";
+
+	public static final String UPDATE_DESC_ITEMS_MSG_MAPPING = "/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk";
+
+	public static final String DEPRECATED_UPDATE_DESC_ITEM_MSG_MAPPING = "/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}";
+
+	public static final String DEPRECATED_UPDATE_DESC_ITEMS_MSG_MAPPING = "/deprecated/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk";
+
+	public static final String ADD_LEVEL_MSG_MAPPING = "/arrangement/levels/add";
+	
+	public static final String DELETE_LEVEL_MSG_MAPPING = "/arrangement/levels/delete";
+	
+	public static final String INHIBIT_INHERITANCE_MSG_MAPPING = "/arrangement/descItems/inhibit";
+	
+	public static final String ALLOW_INHERITANCE_MSG_MAPPING = "/arrangement/descItems/allow";
+	
 	@Autowired
 	private ArrangementFormService arrangementFormService;
 
@@ -91,7 +107,7 @@ public class ArrangementWebSocketController {
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
 
-    @MessageMapping("/arrangement/descItems/{fundVersionId}/update/{createNewVersion}")
+    @MessageMapping(UPDATE_DESC_ITEM_MSG_MAPPING)
 	public void updateDescItem(@Payload final NodeItem nodeItem,
 	        	               @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
 	                           @DestinationVariable(value = "createNewVersion") final Boolean createNewVersion,
@@ -117,7 +133,7 @@ public class ArrangementWebSocketController {
     }
 
     @Deprecated
-	@MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}")
+	@MessageMapping(DEPRECATED_UPDATE_DESC_ITEM_MSG_MAPPING)
 	public void updateDescItem(
 	        @Payload final ArrItemVO descItemVO,
 	        @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -150,12 +166,12 @@ public class ArrangementWebSocketController {
 				                              BooleanUtils.isNotFalse(createNewVersion), requestHeaders);
 	}
 
-    @MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk")
+    @MessageMapping(UPDATE_DESC_ITEMS_MSG_MAPPING)
     public void updateDescItems(@Payload final NodeUpdateItem[] changeItems,
-            @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
-            @DestinationVariable(value = "nodeId") final Integer nodeId,
-            @DestinationVariable(value = "nodeVersion") final Integer nodeVersion,
-            final StompHeaderAccessor requestHeaders) {
+                                @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
+                                @DestinationVariable(value = "nodeId") final Integer nodeId,
+                                @DestinationVariable(value = "nodeVersion") final Integer nodeVersion,
+                                final StompHeaderAccessor requestHeaders) {
         Validate.notEmpty(changeItems);
         Objects.requireNonNull(nodeId);
         Objects.requireNonNull(nodeVersion);
@@ -165,7 +181,7 @@ public class ArrangementWebSocketController {
 	}
 
     @Deprecated
-    @MessageMapping("/deprecated/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk")
+    @MessageMapping(DEPRECATED_UPDATE_DESC_ITEMS_MSG_MAPPING)
     public void updateDescItems(@Payload final ArrUpdateItemVO[] changeItems,
                                 @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
                                 @DestinationVariable(value = "nodeId") final Integer nodeId,
@@ -211,7 +227,7 @@ public class ArrangementWebSocketController {
      * @return nový přidaný uzel
      */
     @Transactional
-    @MessageMapping("/arrangement/levels/add")
+    @MessageMapping(ADD_LEVEL_MSG_MAPPING)
     public void addLevel(@Payload final AddLevelParam addLevelParam,
                          final StompHeaderAccessor requestHeaders) {
 
@@ -266,7 +282,7 @@ public class ArrangementWebSocketController {
      * @param nodeParam vstupní parametry pro smazání
      */
     @Transactional
-    @MessageMapping("/arrangement/levels/delete")
+    @MessageMapping(DELETE_LEVEL_MSG_MAPPING)
     public void deleteLevel(@Payload final ArrangementController.NodeParam nodeParam,
                             final StompHeaderAccessor requestHeaders) {
         Validate.notNull(nodeParam, "Parametry JP musí být vyplněny");
@@ -299,7 +315,7 @@ public class ArrangementWebSocketController {
      * @param requestHeaders
      */
     @Transactional
-    @MessageMapping("/arrangement/descItems/inhibit")
+    @MessageMapping(INHIBIT_INHERITANCE_MSG_MAPPING)
     public void inhibitItem(@Payload final ArrInhibitedItemVO arrInhibitedItem, final StompHeaderAccessor requestHeaders) {
         Objects.requireNonNull(arrInhibitedItem);
         Objects.requireNonNull(arrInhibitedItem.getNodeId());
@@ -319,7 +335,7 @@ public class ArrangementWebSocketController {
      * @param requestHeaders
      */
     @Transactional
-    @MessageMapping("/arrangement/descItems/allow")
+    @MessageMapping(ALLOW_INHERITANCE_MSG_MAPPING)
     public void allowItem(@Payload final ArrInhibitedItemVO arrInhibitedItem, final StompHeaderAccessor requestHeaders) {
         Objects.requireNonNull(arrInhibitedItem);
         Objects.requireNonNull(arrInhibitedItem.getNodeId());

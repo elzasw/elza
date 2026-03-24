@@ -382,6 +382,9 @@ public class ClientFactoryVO {
      * @return
      */
     private static ItemData convertText(ArrData arrData) {
+    	if (arrData instanceof ArrDataString) {
+    		return convertString(arrData);
+    	}
     	DataText data = new DataText(((ArrDataText) arrData).getTextValue(), DataType.TEXT);
         data.setDataId(arrData.getDataId());
         return data;
@@ -856,7 +859,7 @@ public class ClientFactoryVO {
         nodeItem.setPosition(item.getPosition());
         nodeItem.setReadOnly(item.getReadOnly());
 
-        ArrData arrData = item.getData();
+        ArrData arrData = HibernateUtils.unproxy(item.getData());
         if (arrData == null) {
         	nodeItem.setUndefined(true);
         } else {
