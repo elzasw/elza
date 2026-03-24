@@ -28,6 +28,21 @@ import jakarta.persistence.Transient;
 /**
  * Data jednotky popisu serializované pro rychlejší sestavení.
  *
+ * <p>
+ * Cache consistency: The Hibernate Search index for this entity depends solely
+ * on the serialized {@link #data} column (see {@link ArrCachedNodeBinder}).
+ * Changes to underlying entities (ArrDescItem, ArrData, ArrNodeConformity, etc.)
+ * do NOT automatically trigger reindexing. The following code paths are responsible
+ * for keeping the {@code data} column in sync with the actual DB state:
+ * <ul>
+ *   <li>{@link cz.tacr.elza.service.cache.NodeCacheService#syncCache()} — creates cache for new (uncached) nodes</li>
+ *   <li>{@link cz.tacr.elza.service.cache.NodeCacheService#syncNodes(java.util.Collection)} — updates cache for existing nodes</li>
+ *   <li>{@link cz.tacr.elza.service.cache.NodeCacheService#saveNodes(java.util.Collection)} — persists in-memory changes</li>
+ *   <li>{@link cz.tacr.elza.service.cache.NodeCacheService#restoreReferralNodeIds} — updates cache when URI refs are resolved</li>
+ * </ul>
+ * If desc items or other node data are modified outside these paths without
+ * updating this cache, the Hibernate Search index will become stale.
+ * </p>
  */
 @Table
 @Indexed
