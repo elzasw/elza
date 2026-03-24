@@ -7,6 +7,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import static org.awaitility.Awaitility.await;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -271,20 +275,33 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(changesByDate);
         assertNotNull(changesByDate.getChanges());
 
-        // TODO: test
-        try {
-            logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
-            Thread.sleep(5000);
-            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
-            logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
-            Thread.sleep(5000);
-            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
-            logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        // TODO: test
+//        try {
+//            logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
+//            Thread.sleep(5000);
+//            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
+//            logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
+//            Thread.sleep(5000);
+//            changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
+//            logger.info(changesByDate.getTotalCount() + ", " + changesByDate.getChanges().size() + ", xxxxxxxxxxxxxxxxxxxx");
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+//
+//        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 33);
+//        assertTrue(!changesByDate.getOutdated());
 
-        assertTrue(changesByDate.getTotalCount().equals(changesByDate.getChanges().size()) && changesByDate.getChanges().size() == 33);
+        final Integer lastChangeIdFinal = lastChangeId; // effectively final
+        await()
+            .atMost(20, SECONDS)
+            .pollInterval(500, MILLISECONDS)
+            .untilAsserted(() -> {
+                ChangesResult result = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeIdFinal, null);
+                logger.info("Changes count: {}, total: {}", result.getChanges().size(), result.getTotalCount());
+                assertTrue(result.getTotalCount().equals(result.getChanges().size()) && result.getChanges().size() == 33);
+            });
+
+        changesByDate = findChangesByDate(fundVersion.getId(), MAX_SIZE, OffsetDateTime.now(), lastChangeId, null);
         assertTrue(!changesByDate.getOutdated());
 
         // obdoba revertChanges s fail očekáváním
@@ -1366,16 +1383,18 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     	filters.setFilters(filterMap);
 
         // filtering with SELECTED filter -> get 1 item (beta)
-    	// this cycle is needed to wait for full indexing
-    	int counter = 100;
-    	do {
-    		counter--;
-    		Thread.sleep(100);
-    		filterNodes(fundVersion.getFundVersionId(), filters);
-    		filteredNodes = getFilteredNodes(fundVersion.getFundVersionId(), 0, 10, descItemTypeIds);
-    	} while (filteredNodes.size() != 1 && counter > 0);
-        assertTrue(filteredNodes.size() == 1);
+        await()
+            .atMost(10, SECONDS)
+            .pollInterval(100, MILLISECONDS)
+            .untilAsserted(() -> {
+                filterNodes(fundVersion.getFundVersionId(), filters);
+                List<FilterNode> nodes = getFilteredNodes(fundVersion.getFundVersionId(), 0, 10, descItemTypeIds);
+                assertTrue("Expected 1 filtered node, got: " + nodes.size(), nodes.size() == 1);
+            });
 
+        filteredNodes = getFilteredNodes(fundVersion.getFundVersionId(), 0, 10, descItemTypeIds);
+        assertTrue(filteredNodes.size() == 1);        
+        
         // change filter to UNSELECT type
     	filter.setValues(Arrays.asList(null, "beta", "gamma"));
     	filter.setValuesType(ValuesTypes.UNSELECTED);
