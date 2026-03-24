@@ -14,7 +14,6 @@ import java.util.Map;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +50,6 @@ import io.restassured.response.Response;
 
 /**
  * Test method na APController
- * 
  */
 public class ApControllerTest extends AbstractControllerTest {
 
@@ -142,17 +140,6 @@ public class ApControllerTest extends AbstractControllerTest {
         deleteScopeTest(scopeVO2.getId());
     }
 
-    @Test
-    public void testExternalIdTypes() {
-        //TODO definovat externi typy, bylo jenom INTERPI
-       /* Map<String, ApEidTypeVO> types = getAllExternalIdTypes();
-        ApEidTypeVO eidType = types.get("DEFAULT");
-        Assert.assertNotNull(eidType);
-        Assert.assertNotNull(eidType.getId());
-        Assert.assertNotNull(eidType.getCode());
-        Assert.assertNotNull(eidType.getName());*/
-    }
-
     @Test//(timeout = 60000)
     public void testAccessPoint() throws InterruptedException {
         ApTypeVO type = getApType(STRUCT_AP_TYPE);
@@ -204,15 +191,7 @@ public class ApControllerTest extends AbstractControllerTest {
         updatePart(accessPoint.getId(), preferredPart.getId(), partFormVO);
 
         // check modified preferred part
-        do {
-            accessPoint = getAccessPoint(accessPoint.getId());
-            Assert.assertNotNull(accessPoint);
-            if (StringUtils.equals("Karel (X)", accessPoint.getName())) {
-                break;
-            }
-            counter("Čekání na validaci ap kvůli změně položek hlavního jména");
-            Thread.sleep(100);
-        } while (true);
+        accessPoint = waitForAccessPointName(accessPoint.getId(), "Karel (X)");
 
         // get non preferred part and set as preferred
         Integer nextPredPartId = null, oldPrefName = accessPoint.getPreferredPart();
@@ -224,15 +203,7 @@ public class ApControllerTest extends AbstractControllerTest {
         }
         setPreferName(accessPoint.getId(), nextPredPartId);
 
-        do {
-            accessPoint = getAccessPoint(accessPoint.getId());
-            Assert.assertNotNull(accessPoint);
-            if (StringUtils.equals("Karel (IV)", accessPoint.getName())) {
-                break;
-            }
-            counter("Čekání na validaci ap kvůli změně položek hlavního jména");
-            Thread.sleep(100);
-        } while (true);
+        accessPoint = waitForAccessPointName(accessPoint.getId(), "Karel (IV)");
 
         deletePart(accessPoint.getId(), oldPrefName);
         accessPoint = getAccessPoint(accessPoint.getId());

@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpMethod.DELETE;
@@ -10,6 +11,10 @@ import static org.springframework.http.HttpMethod.OPTIONS;
 import static org.springframework.http.HttpMethod.PATCH;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
+
+import static org.awaitility.Awaitility.await;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.File;
 import java.io.InputStream;
@@ -3847,4 +3852,24 @@ public abstract class AbstractControllerTest extends AbstractTest {
 			return errorCount > 0;
 		}
 	}
+    /**
+    * Waits until the access point name matches the expected value
+    */
+   protected ApAccessPointVO waitForAccessPointName(Integer accessPointId, String expectedName) {
+       AtomicReference<ApAccessPointVO> result = new AtomicReference<>();
+       await()
+           .atMost(10, SECONDS)
+           .pollInterval(100, MILLISECONDS)
+           .untilAsserted(() -> {
+               ApAccessPointVO ap = getAccessPoint(accessPointId);
+               assertNotNull(ap);
+               assertEquals(
+                   "Expected AP name '" + expectedName + "' but was '" + ap.getName() + "'",
+                   expectedName,
+                   ap.getName()
+               );
+               result.set(ap);
+           });
+       return result.get();
+   }
 }
