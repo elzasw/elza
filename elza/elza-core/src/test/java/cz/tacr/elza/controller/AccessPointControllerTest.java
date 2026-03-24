@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.service.AccessPointItemService;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -242,16 +241,8 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         // merge
         mergeRevision(ap1.getAccessPointId(), new ApStateUpdate().stateApproval(ApStateApproval.NEW));
 
-        ApAccessPointVO apVo2;
-        do {
-            apVo2 = getAccessPoint(ap1.getAccessPointId());
-            assertNotNull(apVo2);
-            if (StringUtils.equals("Karel (IV)", apVo2.getName())) {
-                break;
-            }
-            counter("Čekání na validaci ap kvůli změně položek hlavního jména");
-            Thread.sleep(100);
-        } while (true);
+        // check modified preferred part
+        ApAccessPointVO apVo2 = waitForAccessPointName(ap1.getAccessPointId(), "Karel (IV)");
 
         // check preferred part
         ApPartVO prefPart = null;
