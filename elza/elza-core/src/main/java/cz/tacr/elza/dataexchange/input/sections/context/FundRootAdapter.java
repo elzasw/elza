@@ -47,6 +47,11 @@ class FundRootAdapter implements SectionRootAdapter {
     }
 
     @Override
+    public Integer getFundVersionId() {
+        return fundVersion != null ? fundVersion.getFundVersionId() : null;
+    }
+
+    @Override
     public void onSectionClose() {
         if (fundVersion == null) {
             throw new DEImportException("Root level not found, fund name:" + fund.getName());

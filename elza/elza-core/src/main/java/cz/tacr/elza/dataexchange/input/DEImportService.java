@@ -101,6 +101,8 @@ public class DEImportService {
 
     private final NodeRepository nodeRepository;
 
+    private final AsyncRequestService asyncRequestService;
+
     @Autowired
     public DEImportService(EntityManager em,
                            ApAccessPointRepository apRepository,
@@ -131,7 +133,8 @@ public class DEImportService {
                            ApBindingStateRepository bindingStateRepository,
                            DataUriRefRepository dataUriRefRepository,
                            NodeRepository nodeRepository,
-                           ApCachedAccessPointRepository cachedAccessPointRepository) {
+                           ApCachedAccessPointRepository cachedAccessPointRepository,
+                           AsyncRequestService asyncRequestService) {
         this.initHelper = new ImportInitHelper(groovyScriptService, institutionRepository, institutionTypeRepository,
                 arrangementService, arrangementInternalService, levelRepository, apRepository, bindingRepository,
                 structObjService, accessPointService,
@@ -150,6 +153,7 @@ public class DEImportService {
         this.apItemService = apItemService;
         this.dataUriRefRepository = dataUriRefRepository;
         this.nodeRepository = nodeRepository;
+        this.asyncRequestService = asyncRequestService;
     }
 
     public List<String> getTransformationNames() throws IOException {
@@ -192,6 +196,18 @@ public class DEImportService {
         ImportContext context = initContext(params, session);
         XmlElementReader reader = prepareReader(is, context, params.isIgnoreRootNodes());
         FlushMode origFlushMode = configureBatchSession(session, params.getBatchSize());
+
+        // collect imported nodes per fund version for conformity validation
+        Map<Integer, List<Integer>> importedNodesByFundVersion = new HashMap<>();
+        context.getSections().registerSectionProcessedListener(section -> {
+            Integer sectionFundVersionId = section.getFundVersionId();
+            if (sectionFundVersionId != null) {
+                importedNodesByFundVersion
+                        .computeIfAbsent(sectionFundVersionId, k -> new ArrayList<>())
+                        .addAll(section.getImportedNodeIds());
+            }
+        });
+
         try {
             // read XML
             reader.readDocument();
@@ -212,6 +228,9 @@ public class DEImportService {
             // sync node cache with all new nodes
             nodeCacheService.syncCache();
 
+            // enqueue imported nodes for conformity validation
+            enqueueNodesForValidation(importedNodesByFundVersion);
+
             // clear level tree cache if imported to existing fund
             ImportPosition importPosition = context.getSections().getImportPostition();
             if (importPosition != null) {
@@ -231,6 +250,17 @@ public class DEImportService {
      * Je třeba dohledávat všechny napříč celou DB, protože může nastat případ, kdy se importují po sobě dvě AS,
      * které mají navzájem provazbené JP.
      */
+    /**
+     * Enqueue collected imported nodes for async conformity validation.
+     */
+    private void enqueueNodesForValidation(Map<Integer, List<Integer>> importedNodesByFundVersion) {
+        importedNodesByFundVersion.forEach((fundVersionId, nodeIds) -> {
+            if (!nodeIds.isEmpty()) {
+                asyncRequestService.enqueueNodes(fundVersionId, nodeIds);
+            }
+        });
+    }
+
     private void restoreNodeUriRefs() {
         int page = 0;
         Page<ArrDataUriRef> dataPage;

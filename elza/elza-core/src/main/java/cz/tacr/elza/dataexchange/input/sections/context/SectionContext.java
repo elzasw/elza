@@ -108,6 +108,25 @@ public class SectionContext {
         return importIdNodeCtxMap.get(importId);
     }
 
+    /**
+     * Return fund version ID for this section.
+     */
+    public Integer getFundVersionId() {
+        return rootAdapter != null ? rootAdapter.getFundVersionId() : null;
+    }
+
+    /**
+     * Return list of DB node IDs for all imported nodes in this section.
+     * Must be called after nodes are persisted.
+     */
+    public List<Integer> getImportedNodeIds() {
+        List<Integer> nodeIds = new ArrayList<>(importIdNodeCtxMap.size());
+        for (NodeContext nodeCtx : importIdNodeCtxMap.values()) {
+            nodeIds.add(nodeCtx.getIdHolder().getEntityId());
+        }
+        return nodeIds;
+    }
+
     public StructObjContext getStructObject(String importId) {
         return importIdStructObjCtxMap.get(importId);
     }
