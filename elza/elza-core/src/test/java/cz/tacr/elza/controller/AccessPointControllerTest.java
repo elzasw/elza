@@ -316,7 +316,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         addUserPermission(userVO.getId(), Arrays.asList(permissionApRdAll, permissionApConfirmAll));
 
         // no tasks assigned to the user
-        List<WfTask> tasks = wfTaskRepository.findAllByAssigneeId(userVO.getId());
+        List<WfTask> tasks = wfTaskRepository.findNewByAssigneeId(userVO.getId());
         assertTrue(tasks.isEmpty());
 
         // prepare data
@@ -333,7 +333,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         version = newVersion;
 
         // one tasks assigned to the user
-        tasks = wfTaskRepository.findAllByAssigneeId(userVO.getId());
+        tasks = wfTaskRepository.findNewByAssigneeId(userVO.getId());
         assertTrue(tasks.size() == 1);
         assertTrue(tasks.get(0).getAssigneeId() == userVO.getId());
         assertTrue(tasks.get(0).getStatus().equals(Status.NEW));

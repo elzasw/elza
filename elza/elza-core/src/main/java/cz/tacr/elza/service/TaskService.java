@@ -199,7 +199,7 @@ public class TaskService {
 			return Collections.emptyList();
 		}
 
-        List<WfTask> wfTasks = wfTaskRepository.findAllByAssigneeId(userDetail.getId());
+        List<WfTask> wfTasks = wfTaskRepository.findNewByAssigneeId(userDetail.getId());
         List<WfTaskApState> wfTaskApStates = wfTaskApStateRepository.findAllByTaskIn(wfTasks);
         List<WfTaskApRevState> wfTaskApRevStates = wfTaskApRevStateRepository.findAllByTaskIn(wfTasks);
 
