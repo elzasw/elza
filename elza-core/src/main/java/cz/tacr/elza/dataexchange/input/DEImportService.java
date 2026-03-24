@@ -130,11 +130,13 @@ public class DEImportService {
                            ApItemRepository apItemRepository,
                            ApBindingStateRepository bindingStateRepository,
                            DataUriRefRepository dataUriRefRepository,
-                           NodeRepository nodeRepository) {
+                           NodeRepository nodeRepository,
+                           ApCachedAccessPointRepository cachedAccessPointRepository) {
         this.initHelper = new ImportInitHelper(groovyScriptService, institutionRepository, institutionTypeRepository,
                 arrangementService, arrangementInternalService, levelRepository, apRepository, bindingRepository,
                 structObjService, accessPointService,
-                dmsService, apStateRepository, apPartRepository, apItemRepository, apItemService, bindingStateRepository);
+                dmsService, apStateRepository, apPartRepository, apItemRepository, apItemService, bindingStateRepository,
+                cachedAccessPointRepository);
         this.em = em;
         this.userService = userService;
         this.staticDataService = staticDataService;
@@ -201,6 +203,11 @@ public class DEImportService {
 
             // restore all uri refs
             restoreNodeUriRefs();
+
+            // Explicit flush required: restoreNodeUriRefs() modifies ArrDataUriRef entities
+            // which are pending in the persistence context. With FlushMode.COMMIT, these changes
+            // would not be auto-flushed before queries in nodeCacheService.syncCache().
+            session.flush();
 
             // sync node cache with all new nodes
             nodeCacheService.syncCache();
