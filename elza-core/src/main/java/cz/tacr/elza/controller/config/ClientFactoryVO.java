@@ -1716,8 +1716,8 @@ public class ClientFactoryVO {
         result.setAuthTypes(authenticationRepository.findByUser(user).stream().map(UsrAuthentication::getAuthType).collect(Collectors.toList()));
         // Načtení oprávnění
         if (initPermissions) {
-            List<UsrPermission> permissions = new ArrayList<>(permissionRepository.findByUserWithFetch(user));
-            permissions.addAll(permissionRepository.findByUserGroupsWithFetch(user));
+            List<UsrPermission> permissions = new ArrayList<>(permissionRepository.findByUser(user));
+            permissions.addAll(permissionRepository.findByUserGroups(user));
 
             StaticDataProvider staticData = staticDataService.getData();
             List<UsrPermissionVO> permissionsVOs = permissions.stream().map(
