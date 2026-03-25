@@ -28,6 +28,7 @@ import { addToastr } from 'components/shared/toastr/ToastrActions.jsx';
 
 import ReactDOM from 'react-dom';
 import Root from './router';
+import { createRoot } from 'react-dom/client';
 // Přidání custom style variant action
 //import {Button,} from 'react-bootstrap';
 //import {bootstrapUtils} from 'react-bootstrap';
@@ -190,11 +191,14 @@ scheduleStoreSave();
 const theme = localStorage.getItem("theme") || "light";
 document.getElementsByTagName('body')[0].className = theme;
 // Aplikace
+//
+
+const MOUNT_POINT = document.getElementById('content');
+const root = createRoot(MOUNT_POINT);
 
 const render = () => {
-    const MOUNT_POINT = document.getElementById('content');
 
-    ReactDOM.render(<Root store={store} />, MOUNT_POINT);
+    root.render(<Root store={store} />);
 };
 
 render();
