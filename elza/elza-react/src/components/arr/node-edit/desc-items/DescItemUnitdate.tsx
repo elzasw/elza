@@ -26,6 +26,7 @@ export function DescItemUnitdate({
   onChange,
   nodeId,
   isDisabled: _isDisabled,
+  compact,
 }: Props) {
   if (
     item.data &&
@@ -105,6 +106,7 @@ export function DescItemUnitdate({
       }}
     >
       <Input
+        size={compact ? "small" : "medium"}
         disabled={isDisabled}
         value={item.undefined ? formatMessage(commonMessages.undefined) : (value || "").toString()}
         onChange={handleInputChange}
@@ -126,6 +128,7 @@ export function DescItemUnitdate({
       >
         {(conflictValue) => (
           <Input
+            size={compact ? "small" : "medium"}
             style={{ borderColor: "var(--color-red)" }}
             value={conflictValue}
             readOnly={true}

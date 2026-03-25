@@ -64,6 +64,7 @@ interface Props {
   autoSize?: boolean;
   isSpec?: boolean;
   labelSource?: "shortcut" | "name";
+  compact?: boolean;
 }
 
 export function DescItemSpec({
@@ -77,6 +78,7 @@ export function DescItemSpec({
   autoSize = true,
   isSpec = true,
   labelSource = "shortcut",
+  compact,
 }: Props) {
   const { formatMessage } = useIntl();
   const strictMode = useStrictMode();
@@ -164,6 +166,7 @@ export function DescItemSpec({
       }}
     >
       <Combobox
+        size={compact ? "small" : "medium"}
         root={{ ref: comboboxRef }}
         selectedOptions={spec ? [spec.rule.code] : []}
         value={isUndefined ? "výjimka" : query}

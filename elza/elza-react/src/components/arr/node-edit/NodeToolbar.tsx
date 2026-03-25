@@ -7,16 +7,26 @@ import {
   MenuTrigger,
   Overflow,
   Toolbar,
+  ToolbarButton,
+  ToolbarDivider,
+  Tooltip,
 } from "@fluentui/react-components";
 import {
   AddRegular,
   ArrowSyncRegular,
+  ColumnRegular,
   CommentRegular,
   CopyRegular,
   DeleteRegular,
   HistoryRegular,
+  LayoutColumnTwoRegular,
+  LayoutColumnThreeRegular,
+  LayoutColumnFourRegular,
   LinkMultipleRegular,
+  PaddingDownRegular,
+  PaddingTopRegular,
   SettingsCogMultipleRegular,
+  SubtractRegular,
   TextQuoteRegular,
 } from "@fluentui/react-icons";
 import { WebApi } from "actions";
@@ -56,10 +66,11 @@ import {
   OverflowMenu,
   ToolbarButtonGroupDef,
   ToolbarOverflowButton,
-  ToolbarOverflowDivider,
+  // ToolbarOverflowDivider,
 } from "./ToolbarOverflow";
 import { FormItem, useActiveFund, useActiveParent } from "./hooks";
 import { useTemplates } from "./templates/templates";
+import { useUserSettings } from "contexts/user";
 
 export const messages = defineMessages({
   addDescItem: {
@@ -118,6 +129,18 @@ export const messages = defineMessages({
     id: "node_action_digitizationSync",
     defaultMessage: "Synchronizovat DAO",
   },
+  toggleCompact: {
+    id: "node_action_toggleCompact",
+    defaultMessage: "Kompaktní zobrazení",
+  },
+  addColumn: {
+    id: "node_action_addColumn",
+    defaultMessage: "Přidat sloupec skupin",
+  },
+  removeColumn: {
+    id: "node_action_removeColumn",
+    defaultMessage: "Odebrat sloupec skupin",
+  },
 });
 
 export interface Props {
@@ -152,6 +175,7 @@ export const NodeToolbar = ({
         fondsVersionId: activeFund.versionId,
         onAddDescItem,
     });
+  const { settings, update: updateSettings } = useUserSettings();
   const { formatMessage } = useIntl();
 
   const issueProtocol = useAppSelector(({ app }) => app.issueProtocol as any); // TODO add types
@@ -377,6 +401,23 @@ export const NodeToolbar = ({
     await navigator.clipboard.writeText(parent.uuid);
   }
 
+  function handleToggleCompact() {
+    updateSettings({ compact: !settings.compact });
+  }
+
+  function handleAddColumn() {
+    const current = settings.groupColumns || 1;
+    const next = current < 4 ? current + 1 : 0;
+    updateSettings({ groupColumns: next });
+  }
+
+  // function handleRemoveColumn() {
+  //   const current = settings.groupColumns || 1;
+  //   if (current > 1) {
+  //     updateSettings({ groupColumns: current - 1 });
+  //   }
+  // }
+
   function handleVisiblePolicy() {
     dispatch(
       modalDialogShow(
@@ -496,6 +537,7 @@ export const NodeToolbar = ({
           id: "create-template",
           action: handleCreateTemplate,
           isVisible: true,
+          overflowOnly: true,
         },
         {
           label: formatMessage(messages.applyTemplate),
@@ -504,6 +546,7 @@ export const NodeToolbar = ({
           id: "apply-template",
           action: handleApplyTemplate,
           isVisible: true,
+          overflowOnly: true,
         },
         {
           label: formatMessage(messages.copyUUID),
@@ -512,6 +555,7 @@ export const NodeToolbar = ({
           appearance: "subtle",
           id: "copy-uuid",
           action: handleCopyUuid,
+          overflowOnly: true,
         },
       ],
     },
@@ -548,6 +592,7 @@ export const NodeToolbar = ({
           appearance: "subtle",
           id: "sync-node",
           action: handleRefSync,
+          overflowOnly: true,
         },
       ],
     },
@@ -592,17 +637,20 @@ export const NodeToolbar = ({
           top: 0,
           zIndex: 100,
           padding: "8px",
-          paddingRight: "60px",
           background: "var(--shade-1)",
+          display: "flex",
+          alignItems: "center",
         }}
       >
-        <Overflow padding={200}>
+        <div style={{ flex: 1, minWidth: 0, overflow: "hidden", paddingRight: "8px" }}>
+        <Overflow padding={20}>
           <Toolbar aria-label="Overflow" size="small">
             {/*<Button>test</Button>*/}
             {daoWithScenario?.scenarios && (
               <Menu>
                 <MenuTrigger disableButtonEnhancement={true}>
                   <MenuButton
+                    size="small"
                     title={i18n("subNodeDao.dao.action.changeScenario")}
                     style={{
                       whiteSpace: "nowrap",
@@ -632,11 +680,11 @@ export const NodeToolbar = ({
               </Menu>
             )}
             {filteredButtonDefs.map(({ groupId, items }, index) => {
-              const isLast = index === buttonDefs.length - 1;
+              // const isLast = index === filteredButtonDefs.length - 1;
               return (
                 <>
-                  {items.map(
-                    ({ label, icon, appearance, id, action, showLabel }) => {
+                  {items.filter(({ overflowOnly }) => !overflowOnly).map(
+                    ({ label, icon, appearance, id, action, showLabel }, itemIndex) => {
                       return (
                         <ToolbarOverflowButton
                           overflowId={id}
@@ -645,13 +693,14 @@ export const NodeToolbar = ({
                           onClick={action}
                           icon={icon}
                           tooltip={!showLabel && label}
+                          showDivider={itemIndex === 0 && index > 0}
                         >
                           {showLabel ? label : undefined}
                         </ToolbarOverflowButton>
                       );
                     },
                   )}
-                  {!isLast && <ToolbarOverflowDivider groupId={groupId} />}
+                  {/*{!isLast && <ToolbarOverflowDivider groupId={groupId} />}*/}
                 </>
               );
             })}
@@ -659,6 +708,32 @@ export const NodeToolbar = ({
             <OverflowMenu items={filteredButtonDefs} />
           </Toolbar>
         </Overflow>
+        </div>
+        {settings.showExperimentalFeatures && <Toolbar aria-label="View settings" size="small" style={{ flexShrink: 0 }}>
+          <Tooltip appearance="inverted" relationship="label" content={formatMessage(messages.toggleCompact)}>
+            <ToolbarButton
+              appearance={"subtle"}
+              icon={settings.compact ? <PaddingTopRegular /> : <PaddingDownRegular />}
+              onClick={handleToggleCompact}
+            />
+          </Tooltip>
+          <ToolbarDivider />
+          <Tooltip appearance="inverted" relationship="label" content={`${formatMessage(messages.addColumn)} (${settings.groupColumns || 1})`}>
+            <ToolbarButton
+              appearance="subtle"
+              icon={<span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                {(() => {
+                  const cols = settings.groupColumns || 1;
+                  if (cols >= 4) return <LayoutColumnFourRegular />;
+                  if (cols === 3) return <LayoutColumnThreeRegular />;
+                  if (cols === 2) return <LayoutColumnTwoRegular />;
+                  return <ColumnRegular />;
+                })()}
+              </span>}
+              onClick={handleAddColumn}
+            />
+          </Tooltip>
+        </Toolbar>}
       </div>
       {showSpecialCharactersWindow && (
         <TextFragmentsWindow

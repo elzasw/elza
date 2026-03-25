@@ -1,16 +1,19 @@
 import { DescItemGroup } from "typings/store";
 import { useStyles } from "./styles";
 import { PropsWithChildren } from "react";
+import { useUserSettings } from "contexts/user";
 
 export interface Props extends PropsWithChildren {
   group: DescItemGroup;
 }
 export function FormItemGroup({ group, children }:Props){
   const styles = useStyles();
+  const { settings } = useUserSettings();
+  const compact = settings.compact;
 
   return (
-    <div style={{ margin: "4px" }} key={group.code}>
-      <div
+    <div className={styles.groupWrapper} style={{ padding: compact ? "4px 4px" : "4px", containerName: "group-container", containerType: "inline-size" }} key={group.code}>
+      {!compact && <div
         style={{
           opacity: 0.5,
           fontWeight: "bold",
@@ -19,18 +22,15 @@ export function FormItemGroup({ group, children }:Props){
         }}
       >
         {group.name}
-      </div>
+      </div>}
       <div
-        className={styles.gridContainer}
+        className={compact ? styles.gridContainerCompact : styles.gridContainer}
         style={{
-          padding: "8px",
+          padding: compact ? "4px 8px" : "8px",
           background: "var(--shade-0)",
-          borderRadius: "8px",
+          borderRadius: compact ? "4px" : "8px",
           boxShadow: "0 1px 5px #0003, 0px 5px 5px #0001",
           display: "grid",
-          // gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-          // gridTemplateColumns: "repeat(4, 1fr)",
-          // flexWrap: "wrap",
         }}
       >
         {children}
