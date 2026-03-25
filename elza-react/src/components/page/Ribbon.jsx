@@ -69,10 +69,6 @@ class Ribbon extends AbstractReactComponent {
     state = {};
 
     componentDidMount() {
-        const theme = localStorage.getItem("theme") || "light";
-        document.getElementsByTagName('body')[0].className = theme;
-        this.setState({ theme })
-
         this.trySetFocus();
     }
 
@@ -121,19 +117,6 @@ class Ribbon extends AbstractReactComponent {
     handlePasswordChange = data => {
         return this.props.dispatch(userPasswordChange(data.oldPassword, data.password));
     };
-
-    handleChangeTheme = () => {
-        const body = document.getElementsByTagName('body')[0];
-        if (body.className.indexOf("light") >= 0) {
-            this.setState({ theme: "dark" })
-            body.className = body.className.replace("light", "dark");
-            localStorage.setItem("theme", "dark")
-        } else {
-            this.setState({ theme: "light" })
-            body.className = body.className.replace("dark", "light");
-            localStorage.setItem("theme", "light")
-        }
-    }
 
     handleUserSettings = () => {
         const { dispatch } = this.props;
@@ -423,9 +406,6 @@ class Ribbon extends AbstractReactComponent {
                                 ]}
                                 {
                                     <>
-                                        <Dropdown.Item eventKey="3" onClick={this.handleChangeTheme}>
-                                            {this.state.theme === "dark" ? <Icon glyph="fa-check-square" /> : <Icon glyph="fa-square-o" />} {i18n("ribbon.action.darkTheme")}
-                                        </Dropdown.Item>
                                         <Dropdown.Item eventKey="4" onClick={this.handleUserSettings}>
                                             {i18n("userSettings.button.title")}
                                         </Dropdown.Item>
