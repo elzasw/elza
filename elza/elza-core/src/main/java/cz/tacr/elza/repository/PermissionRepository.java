@@ -31,35 +31,14 @@ public interface PermissionRepository extends JpaRepository<UsrPermission, Integ
     List<UsrPermission> findByUser(@Param("user") UsrUser user);
 
     /**
-     * Načtení oprávnění přiřazených přes skupiny.
-     */
-    @Query("SELECT p FROM usr_permission p WHERE p.group.groupId IN (SELECT gu.group.groupId FROM usr_group_user gu WHERE gu.user = :user)")
-    List<UsrPermission> findByUserGroups(@Param("user") UsrUser user);
-
-    List<UsrPermission> findAllByUserIn(@Param("users") Collection<UsrUser> user);
-
-    /**
-     * Načtení oprávnění přímo přiřazených uživateli s donačtením vazeb.
-     */
-    @Query("SELECT p FROM usr_permission p" +
-            " LEFT JOIN FETCH p.scope s" +
-            " LEFT JOIN FETCH p.fund f" +
-            " LEFT JOIN FETCH p.node n" +
-            " LEFT JOIN FETCH p.issueList il" +
-            " WHERE p.user = :user")
-    List<UsrPermission> findByUserWithFetch(@Param("user") UsrUser user);
-
-    /**
-     * Načtení oprávnění přiřazených přes skupiny s donačtením vazeb.
+     * Načtení oprávnění přiřazených přes skupiny s donačtením skupiny.
      */
     @Query("SELECT p FROM usr_permission p" +
             " JOIN FETCH p.group g" +
-            " LEFT JOIN FETCH p.scope s" +
-            " LEFT JOIN FETCH p.fund f" +
-            " LEFT JOIN FETCH p.node n" +
-            " LEFT JOIN FETCH p.issueList il" +
             " WHERE g.groupId IN (SELECT gu.group.groupId FROM usr_group_user gu WHERE gu.user = :user)")
-    List<UsrPermission> findByUserGroupsWithFetch(@Param("user") UsrUser user);
+    List<UsrPermission> findByUserGroups(@Param("user") UsrUser user);
+
+    List<UsrPermission> findAllByUserIn(@Param("users") Collection<UsrUser> user);
 
     List<UsrPermission> findByUserOrderByPermissionIdAsc(UsrUser user);
 
