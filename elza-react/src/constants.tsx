@@ -4,6 +4,16 @@ import { DAO } from "components/arr/ArrUtils";
 
 export const DEFAULT_LIST_SIZE = 200;
 
+/**
+ * Fluent UI field heights matching Input component sizes.
+ * @see @fluentui/react-input useInputStyles.styles.js fieldHeights
+ */
+export const FIELD_HEIGHT = {
+    small: '24px',
+    medium: '32px',
+    large: '40px',
+} as const;
+
 export enum AP_EXT_SYSTEM_TYPE {
     CAM = 'CAM',
     CAM_V2 = 'CAM_V2',
