@@ -15,8 +15,8 @@ import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.test.controller.vo.Fund;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
@@ -77,18 +77,18 @@ public class RuleControllerTest extends AbstractControllerTest {
         ArrNodeVO rootNode = convertTreeNode(rootTreeNodeClient);
 
         List<RulPolicyTypeVO> policyAllTypes = getAllPolicyTypes();
-        Assert.assertNotNull(policyAllTypes);
-        Assert.assertTrue(policyAllTypes.size()==4);
+        Assertions.assertNotNull(policyAllTypes);
+        Assertions.assertTrue(policyAllTypes.size()==4);
 
         List<RulPolicyTypeVO> policyTypes = getPolicyTypes(fundVersion.getId());
-        Assert.assertNotNull(policyTypes);
+        Assertions.assertNotNull(policyTypes);
 
         // check that none is set to node
         RuleController.VisiblePolicyTypes visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId());
-        Assert.assertNotNull(visiblePolicy);
+        Assertions.assertNotNull(visiblePolicy);
         Map<Integer, Boolean> policyTypeIdsMap = visiblePolicy.getNodePolicyTypeIdsMap();
-        Assert.assertNotNull(policyTypeIdsMap);
-        Assert.assertTrue(policyTypeIdsMap.size() == 0);
+        Assertions.assertNotNull(policyTypeIdsMap);
+        Assertions.assertTrue(policyTypeIdsMap.size() == 0);
 
         // set new policies
         RuleController.VisiblePolicyParams params = new RuleController.VisiblePolicyParams();
@@ -101,16 +101,16 @@ public class RuleControllerTest extends AbstractControllerTest {
 
         // check map again
         visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId());
-        Assert.assertNotNull(visiblePolicy);
+        Assertions.assertNotNull(visiblePolicy);
         policyTypeIdsMap = visiblePolicy.getNodePolicyTypeIdsMap();
-        Assert.assertNotNull(policyTypeIdsMap);
-        Assert.assertTrue(policyTypeIdsMap.size() == 4);
+        Assertions.assertNotNull(policyTypeIdsMap);
+        Assertions.assertTrue(policyTypeIdsMap.size() == 4);
 
         // check that all are false
         for (RulPolicyTypeVO policyType : policyTypes) {
             Boolean state = policyTypeIdsMap.get(policyType.getId());
-            Assert.assertNotNull(state);
-            Assert.assertTrue(!state);
+            Assertions.assertNotNull(state);
+            Assertions.assertTrue(!state);
         }
 
         // drop old settings
@@ -122,10 +122,10 @@ public class RuleControllerTest extends AbstractControllerTest {
         setVisiblePolicy(rootNode.getId(), fundVersion.getId(), params);
 
         visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId());
-        Assert.assertNotNull(visiblePolicy);
+        Assertions.assertNotNull(visiblePolicy);
         policyTypeIdsMap = visiblePolicy.getNodePolicyTypeIdsMap();
-        Assert.assertNotNull(policyTypeIdsMap);
-        Assert.assertTrue(policyTypeIdsMap.size() == 0);
+        Assertions.assertNotNull(policyTypeIdsMap);
+        Assertions.assertTrue(policyTypeIdsMap.size() == 0);
 
         final RulArrangementExtension ext1 = getExtension("01", fundVersion);
         final RulArrangementExtension ext2 = getExtension("02", fundVersion);
@@ -142,7 +142,7 @@ public class RuleControllerTest extends AbstractControllerTest {
         setVisiblePolicy(rootNode.getId(), fundVersion.getId(), params);
 
         visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId());
-        Assert.assertTrue(visiblePolicy.getNodeExtensions().size() == 2);
+        Assertions.assertTrue(visiblePolicy.getNodeExtensions().size() == 2);
 
 
         params = new RuleController.VisiblePolicyParams();
@@ -153,8 +153,8 @@ public class RuleControllerTest extends AbstractControllerTest {
         setVisiblePolicy(rootNode.getId(), fundVersion.getId(), params);
 
         visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId());
-        Assert.assertTrue(visiblePolicy.getNodeExtensions().size() == 1);
-        Assert.assertTrue(visiblePolicy.getNodeExtensions().get(0).getId().equals(ext2.getArrangementExtensionId()));
+        Assertions.assertTrue(visiblePolicy.getNodeExtensions().size() == 1);
+        Assertions.assertTrue(visiblePolicy.getNodeExtensions().get(0).getId().equals(ext2.getArrangementExtensionId()));
 
         params = new RuleController.VisiblePolicyParams();
         params.setIncludeSubtree(false);
@@ -163,9 +163,9 @@ public class RuleControllerTest extends AbstractControllerTest {
         setVisiblePolicy(rootNode.getId(), fundVersion.getId(), params);
 
         visiblePolicy = getVisiblePolicy(rootNode.getId(), fundVersion.getId());
-        Assert.assertTrue(visiblePolicy.getNodeExtensions().size() == 0);
+        Assertions.assertTrue(visiblePolicy.getNodeExtensions().size() == 0);
 
-        Assert.assertTrue(nodeExtensionRepository.count() == 2);
+        Assertions.assertTrue(nodeExtensionRepository.count() == 2);
         nodeExtensionRepository.deleteAll();
         arrExtsRepo.delete(ext1);
         arrExtsRepo.delete(ext2);
@@ -189,20 +189,20 @@ public class RuleControllerTest extends AbstractControllerTest {
     public void getOutputFiltersTest() {
         List<RulOutputFilterVO> rulOutputFilterVOS = getOutputFilters();
 
-        Assert.assertEquals(1, rulOutputFilterVOS.size());
+        Assertions.assertEquals(1, rulOutputFilterVOS.size());
 
-        Assert.assertEquals("SRD_TEST_OUTPUT_FILTER", rulOutputFilterVOS.get(0).getCode());
-        Assert.assertEquals("SRD_TEST_OUTPUT_FILTER.yaml", rulOutputFilterVOS.get(0).getFilename());
+        Assertions.assertEquals("SRD_TEST_OUTPUT_FILTER", rulOutputFilterVOS.get(0).getCode());
+        Assertions.assertEquals("SRD_TEST_OUTPUT_FILTER.yaml", rulOutputFilterVOS.get(0).getFilename());
     }
 
     @Test
     public void getExportFiltersTest() {
         List<RulExportFilterVO> rulExportFilterVOS = getExportFilters();
 
-        Assert.assertEquals(1, rulExportFilterVOS.size());
+        Assertions.assertEquals(1, rulExportFilterVOS.size());
 
-        Assert.assertEquals("SRD_TEST_EXPORT_FILTER", rulExportFilterVOS.get(0).getCode());
-        Assert.assertEquals("SRD_TEST_EXPORT_FILTER.yaml", rulExportFilterVOS.get(0).getFilename());
+        Assertions.assertEquals("SRD_TEST_EXPORT_FILTER", rulExportFilterVOS.get(0).getCode());
+        Assertions.assertEquals("SRD_TEST_EXPORT_FILTER.yaml", rulExportFilterVOS.get(0).getFilename());
     }
 
     @Test
@@ -216,9 +216,9 @@ public class RuleControllerTest extends AbstractControllerTest {
                 break;
             }
         }
-        Assert.assertNotNull(ruleSetVO);
+        Assertions.assertNotNull(ruleSetVO);
 
         List<String> itemTypeCodes = getItemTypeCodesByRuleSet(ruleSetVO);
-        Assert.assertEquals(5, itemTypeCodes.size());
+        Assertions.assertEquals(5, itemTypeCodes.size());
     }
 }

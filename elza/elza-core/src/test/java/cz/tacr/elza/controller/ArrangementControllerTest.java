@@ -1,11 +1,11 @@
 package cz.tacr.elza.controller;
 
 import static cz.tacr.elza.repository.ExceptionThrow.output;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import static org.awaitility.Awaitility.await;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -38,8 +38,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
@@ -197,17 +197,17 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             List<ArrFundFulltextResult> resultList = fundFulltext(new FulltextFundRequest(value));
 
             for (ArrFundFulltextResult result : resultList) {
-                assertTrue("Invalid fund [" + result.getName() + "]", names.remove(result.getName()));
-                assertEquals("Invalid count [" + result.getName() + "]", count, result.getCount());
+                assertTrue(names.remove(result.getName()), "Invalid fund [" + result.getName() + "]");
+                assertEquals(count, result.getCount(), "Invalid count [" + result.getName() + "]");
             }
 
-            assertTrue("Fund not found [" + StringUtils.join(names, ", ") + "]", names.isEmpty());
+            assertTrue(names.isEmpty(), "Fund not found [" + StringUtils.join(names, ", ") + "]");
 
             for (ArrFundFulltextResult result : resultList) {
                 List<TreeNodeVO> nodeList = fundFulltextNodeList(result.getId());
-                assertEquals("Invalid count [" + result.getName() + "]", count, nodeList.size());
+                assertEquals(count, nodeList.size(), "Invalid count [" + result.getName() + "]");
                 for (TreeNodeVO node : nodeList) {
-                    assertEquals("Invalid node value [" + result.getName() + "]", value, node.getName());
+                    assertEquals(value, node.getName(), "Invalid node value [" + result.getName() + "]");
                 }
             }
 
@@ -441,7 +441,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrOutputVO parent = outputItem.getParent();
 
         ArrItemVO itemDeleted = outputItem.getItem();
-        Assert.assertNull(itemDeleted);
+        Assertions.assertNull(itemDeleted);
 
         item = new ArrItemTextVO();
         item.setValue("test1");
@@ -465,14 +465,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // Identifikátor nesmí být prázdný
         assertNotNull(textVO.getDescItemObjectId());
         // Hodnota musí být prázdná
-        Assert.assertNull(textVO.getValue());
+        Assertions.assertNull(textVO.getValue());
 
         outputItemResult = unsetNotIdentifiedOutputItem(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId(), null, textVO.getDescItemObjectId());
         parent = outputItemResult.getParent();
         // Návratová struktura nesmí být prázdná
         assertNotNull(outputItemResult);
         // Hodnota atributu musí být prázdná
-        Assert.assertNull(outputItemResult.getItem());*/
+        Assertions.assertNull(outputItemResult.getItem());*/
         OutputSettingsVO outputSettings = new OutputSettingsVO();
         outputSettings.setEvenPageOffsetX(42);
         outputSettings.setEvenPageOffsetY(42);
@@ -680,7 +680,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // Identifikátor nesmí být prázdný
         assertNotNull(item.getDescItemObjectId());
         // Hodnota musí být prázdná
-        Assert.assertNull(item.getValue());
+        Assertions.assertNull(item.getValue());
 
         helperTestService.waitForWorkers();
         descItemResult = unsetNotIdentifiedDescItem(fundVersion.getId(), rootNode.getId(), rootNode.getVersion(), type.getId(), null, item.getDescItemObjectId());
@@ -689,7 +689,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // Návratová struktura nesmí být prázdná
         assertNotNull(descItemResult);
         // Hodnota atributu musí být prázdná
-        Assert.assertNull(descItemResult.getItem());
+        Assertions.assertNull(descItemResult.getItem());
 
         // vytvoření další hodnoty
         helperTestService.waitForWorkers();
@@ -1389,7 +1389,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             .untilAsserted(() -> {
                 filterNodes(fundVersion.getFundVersionId(), filters);
                 List<FilterNode> nodes = getFilteredNodes(fundVersion.getFundVersionId(), 0, 10, descItemTypeIds);
-                assertTrue("Expected 1 filtered node, got: " + nodes.size(), nodes.size() == 1);
+                assertTrue(nodes.size() == 1, "Expected 1 filtered node, got: " + nodes.size());
             });
 
         filteredNodes = getFilteredNodes(fundVersion.getFundVersionId(), 0, 10, descItemTypeIds);

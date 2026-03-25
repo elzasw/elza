@@ -1,13 +1,13 @@
 package cz.tacr.elza.core;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 
 import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.query.NativeQuery;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -65,17 +65,17 @@ public class RecursiveQueryBuilderTest extends AbstractTest {
         em.remove(entity);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testH2UknownSQLParamValue() {
         Object notEntity = new Object();
-        createQuery(DatabaseType.H2, notEntity);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> createQuery(DatabaseType.H2, notEntity));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testH2DetachedEntity() {
         UISettings detachedEntity = new UISettings();
         detachedEntity.setSettingsId(999);
-        createQuery(DatabaseType.H2, detachedEntity);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> createQuery(DatabaseType.H2, detachedEntity));
     }
 
     private Object createEntity() {

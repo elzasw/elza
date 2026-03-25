@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -82,25 +82,25 @@ public class UserPermissionTest extends AbstractTest {
 
         // NEW -> TO_APPROVE, TO_AMEND
         List<StateApproval> states = accessPointService.getNextStates(state);
-        Assert.assertTrue(states.size() == 3);
-        Assert.assertTrue(states.contains(StateApproval.NEW));
-        Assert.assertTrue(states.contains(StateApproval.TO_APPROVE));
-        Assert.assertTrue(states.contains(StateApproval.TO_AMEND));
+        Assertions.assertTrue(states.size() == 3);
+        Assertions.assertTrue(states.contains(StateApproval.NEW));
+        Assertions.assertTrue(states.contains(StateApproval.TO_APPROVE));
+        Assertions.assertTrue(states.contains(StateApproval.TO_AMEND));
 
         // TO_APPROVE -> NEW, TO_AMEND
         state.setStateApproval(StateApproval.TO_APPROVE);
         states = accessPointService.getNextStates(state);
-        Assert.assertTrue(states.size() == 2);
-        Assert.assertTrue(states.contains(StateApproval.NEW));
-        Assert.assertTrue(states.contains(StateApproval.TO_AMEND));
+        Assertions.assertTrue(states.size() == 2);
+        Assertions.assertTrue(states.contains(StateApproval.NEW));
+        Assertions.assertTrue(states.contains(StateApproval.TO_AMEND));
 
         // TO_AMEND -> NEW, TO_APPROVE
         state.setStateApproval(StateApproval.TO_AMEND);
         states = accessPointService.getNextStates(state);
-        Assert.assertTrue(states.size() == 3);
-        Assert.assertTrue(states.contains(StateApproval.TO_AMEND));
-        Assert.assertTrue(states.contains(StateApproval.NEW));
-        Assert.assertTrue(states.contains(StateApproval.TO_APPROVE));
+        Assertions.assertTrue(states.size() == 3);
+        Assertions.assertTrue(states.contains(StateApproval.TO_AMEND));
+        Assertions.assertTrue(states.contains(StateApproval.NEW));
+        Assertions.assertTrue(states.contains(StateApproval.TO_APPROVE));
 
         // 2. schvalování
         UsrUser user2 = createUser("u2", accessPoint);
@@ -110,8 +110,8 @@ public class UserPermissionTest extends AbstractTest {
         // TO_APPROVE -> APPROVED
         state.setStateApproval(StateApproval.TO_APPROVE);
         states = accessPointService.getNextStates(state);
-        Assert.assertTrue(states.size() == 1);
-        Assert.assertTrue(states.contains(StateApproval.APPROVED));
+        Assertions.assertTrue(states.size() == 1);
+        Assertions.assertTrue(states.contains(StateApproval.APPROVED));
 
         // 3. změna schválených
         UsrUser user3 = createUser("u3", accessPoint);
@@ -121,8 +121,8 @@ public class UserPermissionTest extends AbstractTest {
         // APPROVED -> APPROVED
         state.setStateApproval(StateApproval.APPROVED);
         states = accessPointService.getNextStates(state);
-        Assert.assertTrue(states.size() == 1);
-        Assert.assertTrue(states.contains(StateApproval.APPROVED));
+        Assertions.assertTrue(states.size() == 1);
+        Assertions.assertTrue(states.contains(StateApproval.APPROVED));
     }
 
     private void addPermission(UsrUser user, UsrPermission.Permission permission) {

@@ -1,8 +1,9 @@
 package cz.tacr.elza.dataexchange;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import cz.tacr.elza.dataexchange.common.timeinterval.TimeInterval;
 
@@ -62,39 +63,47 @@ public class TimeIntervalConvertorTest {
         assertEquals("YM", result.getFormat());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testFormatFalselyClaimsEquality() {
+    	Assertions.assertThrows(IllegalArgumentException.class, () -> {
         cz.tacr.elza.schema.v2.TimeInterval interval = new cz.tacr.elza.schema.v2.TimeInterval();
         interval.setF("1846-10-03T15:00:00");
         interval.setTo("1846-10-03T15:01:00");
         interval.setFmt("DT");
         TimeInterval.create(interval);
+    	} );
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testLowerBoundAfterUpperBound() {
+    	Assertions.assertThrows(IllegalArgumentException.class, () -> {
         cz.tacr.elza.schema.v2.TimeInterval interval = new cz.tacr.elza.schema.v2.TimeInterval();
         interval.setF("1846-10-03T15:01:00");
         interval.setTo("1846-10-03T15:00:00");
         TimeInterval.create(interval);
+    	});
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testFormatHidePrecision() {
+    	Assertions.assertThrows(IllegalArgumentException.class, () -> {
         cz.tacr.elza.schema.v2.TimeInterval interval = new cz.tacr.elza.schema.v2.TimeInterval();
         interval.setF("1846-10-03T15:12:00");
         interval.setTo("1846-10-03T15:12:00");
         interval.setFmt("D");
         TimeInterval.create(interval);
+    	});
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testInvalidCustomFormat() {
+    	Assertions.assertThrows(IllegalArgumentException.class, () -> {
         cz.tacr.elza.schema.v2.TimeInterval interval = new cz.tacr.elza.schema.v2.TimeInterval();
         interval.setF("1990");
         interval.setTo("1995-06-16");
         interval.setFmt("");
         TimeInterval.create(interval);
+    	});
     }
 
     @Test
@@ -145,20 +154,24 @@ public class TimeIntervalConvertorTest {
         assertEquals("D-D", result.getFormat());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testInvalidDate() {
+    	Assertions.assertThrows(IllegalArgumentException.class, () -> {
         cz.tacr.elza.schema.v2.TimeInterval interval = new cz.tacr.elza.schema.v2.TimeInterval();
         interval.setF("1990-1-1"); // 1990-01-01
         interval.setTo("1995-06-16");
         TimeInterval.create(interval);
+    	});
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testNullDate() {
+    	Assertions.assertThrows(IllegalArgumentException.class, () -> {
         cz.tacr.elza.schema.v2.TimeInterval interval = new cz.tacr.elza.schema.v2.TimeInterval();
         interval.setF(null);
         interval.setTo("1995-06-16");
         TimeInterval.create(interval);
+    	});
     }
 
     @Test
@@ -183,22 +196,26 @@ public class TimeIntervalConvertorTest {
         assertEquals("D-DT", result.getFormat());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCenturyInvalidFormat() {
+    	Assertions.assertThrows(IllegalArgumentException.class, () -> {
         cz.tacr.elza.schema.v2.TimeInterval interval = new cz.tacr.elza.schema.v2.TimeInterval();
         interval.setF("1701");
         interval.setTo("1900");
         interval.setFmt("C");
         TimeInterval.create(interval);
+    	});
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCenturyInvalidValue() {
+    	Assertions.assertThrows(IllegalArgumentException.class, () -> {
         cz.tacr.elza.schema.v2.TimeInterval interval = new cz.tacr.elza.schema.v2.TimeInterval();
         interval.setF("1811");
         interval.setTo("1900");
         interval.setFmt("C");
         TimeInterval.create(interval);
+    	});
     }
 
     @Test
