@@ -42,6 +42,7 @@ export function DescItemStructured({
   onChange,
   nodeId,
   isDisabled: _isDisabled,
+  compact,
 }: Props) {
   if (item.data && item.data?.dataType !== DataType.Structured && !item.undefined) {
     throw "Incorrect data type";
@@ -194,6 +195,7 @@ export function DescItemStructured({
         // />
         <>
           <Combobox
+            size={compact ? "small" : "medium"}
             title={query}
             value={`${query}`}
             onChange={handleQueryChange}
@@ -262,6 +264,7 @@ export function DescItemStructured({
               content={<FormattedMessage {...messages.addNewStructure} />}
             >
               <Button
+                size={compact ? "small" : "medium"}
                 style={{ height: "29px" }}
                 appearance="subtle"
                 icon={<DocumentAddRegular />}

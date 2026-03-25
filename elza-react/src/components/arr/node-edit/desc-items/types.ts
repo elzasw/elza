@@ -10,4 +10,5 @@ export interface DescItemProps {
   typeRef: DescItemTypeRef;
   selectedSpecId?: number;
   typeWidth?: number;
+  compact?: boolean;
 }

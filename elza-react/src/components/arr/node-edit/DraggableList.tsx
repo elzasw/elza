@@ -1,8 +1,10 @@
-import { makeStyles, shorthands, mergeClasses } from '@fluentui/react-components';
+import { makeStyles, shorthands, mergeClasses, tokens } from '@fluentui/react-components';
 import { Children, useState } from 'react';
 import { PropsWithChildren } from 'react';
 import { ReOrderDotsVerticalRegular } from "@fluentui/react-icons";
 import { getNodeChildren } from '../ArrUtils';
+import { useUserSettings } from 'contexts/user';
+import { FIELD_HEIGHT } from '../../../constants';
 
 const useStyles = makeStyles({
     dropTargetContainer: {
@@ -50,7 +52,6 @@ const useStyles = makeStyles({
     draggerContainer: {
         width: "5px",
         position: 'relative',
-        height: '32px',
         margin: '2px 0',
     },
     draggerArea: {
@@ -146,12 +147,14 @@ interface DraggerProps {
     index: number;
     isVisible: boolean;
     isActive: boolean;
+    compact?: boolean;
     onDragIndexChange: (index: number | undefined) => void;
 }
 
-function Dragger({ index, isVisible, isActive, onDragIndexChange }: DraggerProps) {
+function Dragger({ index, isVisible, isActive, compact, onDragIndexChange }: DraggerProps) {
     const [isHovered, setIsHovered] = useState(false);
     const styles = useStyles();
+    const height = compact ? FIELD_HEIGHT.small : FIELD_HEIGHT.medium;
 
     if (!isVisible) {
         return <></>
@@ -181,7 +184,7 @@ function Dragger({ index, isVisible, isActive, onDragIndexChange }: DraggerProps
         setIsHovered(false);
     }
 
-    return <div className={styles.draggerContainer} style={{opacity: isActive ? 0.3 : undefined}}>
+    return <div className={styles.draggerContainer} style={{opacity: isActive ? 0.3 : undefined, height}}>
         <div
             className={mergeClasses(
                 styles.draggerArea,
@@ -223,7 +226,8 @@ export function DraggableList({
     const childrenCount = Children.count(children);
     const [draggedIndex, setDraggedIndex] = useState<number>();
     const [lastIndex, setLastIndex] = useState<number>();
-    // const styles = useStyles();
+    const { settings } = useUserSettings();
+    const compact = settings.compact;
 
     function handleDrop(index: number) {
         onChangeOrder(lastIndex, index);
@@ -254,6 +258,7 @@ export function DraggableList({
                             <Dragger
                             isVisible={childrenCount > 1 && isItemDraggable(index)}
                             isActive={draggedIndex === index}
+                            compact={compact}
                             index={index}
                             onDragIndexChange={handleDragIndexChange}
                             />

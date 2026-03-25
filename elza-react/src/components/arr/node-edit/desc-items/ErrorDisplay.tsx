@@ -1,6 +1,22 @@
-import { Tooltip } from "@fluentui/react-components";
+import { makeStyles, Tooltip } from "@fluentui/react-components";
 import { WarningFilled } from "@fluentui/react-icons";
 import { useNodeFormContext } from "../NodeFormContext";
+import { useUserSettings } from "contexts/user";
+import { FIELD_HEIGHT } from "../../../../constants";
+
+const useStyles = makeStyles({
+  root: {
+    color: "var(--color-orange)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "1.3em",
+    padding: "0 4px",
+  },
+  tooltipItem: {
+    margin: "4px",
+  },
+});
 
 interface Props {
   itemObjectId?: number;
@@ -8,7 +24,10 @@ interface Props {
 
 export function ErrorDisplay({ itemObjectId }: Props) {
   const { nodeData } = useNodeFormContext();
+  const { settings } = useUserSettings();
+  const size = settings.compact ? FIELD_HEIGHT.small : FIELD_HEIGHT.medium;
   const nodeConformity = nodeData?.nodeConformity;
+  const styles = useStyles();
 
   const visibleErrors = (nodeConformity?.errorList ?? []).filter(
     ({ descItemObjectId, policyTypeId }) =>
@@ -20,21 +39,16 @@ export function ErrorDisplay({ itemObjectId }: Props) {
     <Tooltip
       appearance="inverted"
       content={visibleErrors.map(({ description }) => (
-        <div style={{ margin: "4px" }}>{description}</div>
+        <div className={styles.tooltipItem}>{description}</div>
       ))}
       relationship="description"
       withArrow={true}
     >
       <div
-        style={{
-          padding: "4px",
-          color: "var(--color-orange)",
-          fontSize: "1.5em",
-          display: "flex",
-          alignItems: "center",
-        }}
+        className={styles.root}
+        style={{ height: size }}
       >
-              <WarningFilled style={{marginTop: "1px"}} />
+        <WarningFilled />
       </div>
     </Tooltip>
   ) : (

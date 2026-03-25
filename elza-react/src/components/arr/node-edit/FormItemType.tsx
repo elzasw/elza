@@ -5,7 +5,9 @@ import { PropsWithChildren, ReactNode, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { DescItemTypeRef, NodeSettings } from "typings/store";
 import { useAppSelector } from "utils/hooks/useAppSelector";
+import { useUserSettings } from "contexts/user";
 import { dataTypeFormatMessages, messages } from "./messages";
+import { DescItemTypeDebugInfo } from "./NodeDebugInfo";
 import { useStyles } from "./styles";
 
 const richTextValues = {
@@ -27,6 +29,7 @@ export interface Props extends PropsWithChildren {
 export function FormItemTypeComp({
   children,
   typeRef,
+  typeForm,
   typeWidth,
   nodeSettings,
   handleCopyFromPrev,
@@ -36,6 +39,8 @@ export function FormItemTypeComp({
   const styles = useStyles();
   const [isHovered, setIsHovered] = useState(false);
   const isCopied = nodeSettings?.descItemTypeCopyIds.includes(typeRef.id);
+  const { settings } = useUserSettings();
+  const compact = settings.compact;
 
   const dataType = useAppSelector(({ refTables }) => refTables.rulDataTypes.itemsMap[typeRef.dataTypeId]);
   const formatDescriptor = dataType ? dataTypeFormatMessages[dataType.code] : undefined;
@@ -58,7 +63,7 @@ export function FormItemTypeComp({
         transition: "outline-color 300ms ease-out",
       }}
       className={mergeClasses(
-        styles.gridItem,
+        compact ? styles.gridItemCompact : styles.gridItem,
         styles[`gridItem_${typeWidth}`],
         styles.descItemTypeTitle,
       )}
@@ -90,6 +95,7 @@ export function FormItemTypeComp({
         >
           <div>{typeRef.shortcut}</div>
         </Tooltip>
+        <DescItemTypeDebugInfo typeForm={typeForm} />
         {(
           <div className="actions" >
             <Tooltip

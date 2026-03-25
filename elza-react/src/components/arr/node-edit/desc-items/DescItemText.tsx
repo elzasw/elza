@@ -22,6 +22,7 @@ export function DescItemText({
   onChange,
   nodeId,
   isDisabled: _isDisabled,
+  compact,
 }: Props) {
   if (item.data && item.data?.dataType !== DataType.Text && !item.undefined) {
     throw "Incorrect data type";
@@ -104,6 +105,7 @@ export function DescItemText({
       }}
     >
       <TextareaAutosize
+        size={compact ? "small" : "medium"}
         disabled={isDisabled}
         value={item.undefined ? formatMessage(commonMessages.undefined) : (value || "").toString()}
         onChange={handleInputChange}
@@ -122,6 +124,7 @@ export function DescItemText({
       >
         {(conflictValue) => (
           <Textarea
+            size={compact ? "small" : "medium"}
             style={{ borderColor: "var(--color-red)" }}
             value={conflictValue}
             readOnly={true}

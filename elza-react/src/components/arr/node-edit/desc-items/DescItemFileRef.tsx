@@ -40,6 +40,7 @@ export function DescItemFileRef({
   onChange,
   nodeId,
   isDisabled: _isDisabled,
+  compact,
 }: Props) {
   if (item.data && item.data?.dataType !== DataType.FileRef && !item.undefined) {
     throw "Incorrect data type";
@@ -112,6 +113,7 @@ export function DescItemFileRef({
 
   return (
     <Combobox
+      size={compact ? "small" : "medium"}
       title={query}
       value={query}
       onChange={(e) => setQuery(e.target.value)}

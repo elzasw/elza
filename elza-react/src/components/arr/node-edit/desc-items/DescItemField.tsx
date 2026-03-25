@@ -29,6 +29,7 @@ import { ItemActions } from "./ItemActions";
 import { SavingDisplay } from "./SavingDisplay";
 import { createEmptyDescItem } from "./utils";
 import { makeStyles } from "@fluentui/react-components";
+import { useUserSettings } from "contexts/user";
 
 const useStyles = makeStyles({
   descItem: {
@@ -100,6 +101,8 @@ export function DescItemField({
 }: Props) {
   const [specId, setSpecId] = useState<number | undefined>(item.itemSpecId);
   const [isSaving, setIsSaving] = useState(false);
+  const { settings } = useUserSettings();
+  const compact = settings.compact;
 
   const styles = useStyles();
 
@@ -200,6 +203,7 @@ export function DescItemField({
           value={specId}
           onChange={handleSpecChange}
           labelSource="name"
+          compact={compact}
         />
       )}
       <div
@@ -224,6 +228,7 @@ export function DescItemField({
             }
             selectedSpecId={specId}
             typeWidth={typeWidth}
+            compact={compact}
           />
         ) : (
           "Not implemented"

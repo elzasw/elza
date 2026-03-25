@@ -25,6 +25,7 @@ export function DescItemString({
   isDisabled: _isDisabled,
   typeWidth,
   typeRef,
+  compact,
 }: Props) {
   if (item.data && item.data?.dataType !== DataType.String && !item.undefined) {
     throw "Incorrect data type";
@@ -122,6 +123,7 @@ export function DescItemString({
       {typeWidth === 0 ? (
         <TextareaAutosize
           resize="none"
+          size={compact ? "small" : "medium"}
           disabled={isDisabled}
           value={item.undefined ? formatMessage(commonMessages.undefined) : value || ""}
           onChange={handleInputChange}
@@ -135,6 +137,7 @@ export function DescItemString({
         />
       ) : (
         <Input
+          size={compact ? "small" : "medium"}
           disabled={isDisabled}
           value={item.undefined ? formatMessage(commonMessages.undefined) : value || ""}
           onChange={handleInputChange}
@@ -153,7 +156,7 @@ export function DescItemString({
         isDirty={isDirty}
         onResolve={resolveConflict}
       >
-        {(conflictValue) => <Input value={conflictValue} readOnly={true} />}
+        {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} />}
       </ConflictValue>
       {isDirty && <EditStateDisplay />}
     </div>

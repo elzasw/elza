@@ -1,14 +1,17 @@
 import {
     Button,
-    Spinner
+    Spinner,
 } from "@fluentui/react-components";
-import { AddRegular } from "@fluentui/react-icons";
+import {
+    AddRegular,
+} from "@fluentui/react-icons";
 import { WebApi } from "actions";
 import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
 import { useEffect, useMemo, useState } from "react";
 import { ArrDaoVO } from "typings/dao";
 import { useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
+import { DescItemInfo } from "./NodeDebugInfo";
 import { DraggableList } from "./DraggableList";
 import { FormItemGroup } from "./FormItemGroup";
 import { FormItemTypeComp } from "./FormItemType";
@@ -17,9 +20,9 @@ import { DescItemField } from "./desc-items";
 import { useActiveFund, useActiveParent, useNodeFormData } from "./hooks";
 import { NodeFormContext } from "./NodeFormContext";
 import { TextFragmentsProvider } from "../text-fragments";
+import { useUserSettings } from "contexts/user";
 import { buildGroupsForm } from "./utils";
-
-const SHOW_DEBUG_DATA = false;
+import { useStyles } from "./styles";
 
 interface Props {
   fondsVersionId: number;
@@ -31,6 +34,9 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
   const dispatch = useAppThunkDispatch();
   const activeParent = useActiveParent(); // TODO use different way of getting active parent node
   const activeFund = useActiveFund();
+  const { settings } = useUserSettings();
+  const compact = settings.compact;
+  const styles = useStyles();
 
   const [daos, setDaos] = useState<ArrDaoVO[]>();
 
@@ -163,7 +169,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
           });
         })}
       </div> */}
-      <div style={{ padding: "8px" }}>
+      <div style={{ padding: compact ? "4px 8px" : "8px", columns: `350px ${settings.groupColumns || 1}` }}>
         {viewDescItemGroupsLocal.length === 0 && (
           <div style={{ padding: "50px" }}>
             <Spinner />
@@ -203,7 +209,14 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                     >
                           <DraggableList
                               canPlaceBeforeItem={(index) => descItems[index].item.position > 0}
-                              isItemDraggable={(index) => descItems[index].item.position > 0 && (descItems[index].item.data?.dataId != undefined || descItems[index].item.undefined)}
+                              isItemDraggable={(index) => {
+                                  const isDraggable = descItems[index].item.position > 0
+                                      && (descItems[index].item.data?.dataId != undefined
+                                          || descItems[index].item.undefined
+                                      )
+
+                                  return isDraggable;
+                              }}
                               onChangeOrder={handleChangeOrder}
                           >
                               {descItems
@@ -236,22 +249,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                                 }
                                 />
                               </div>
-                              {SHOW_DEBUG_DATA && (
-                                <div
-                                  style={{
-                                    background: "var(--shade-3)",
-                                    display: "inline-block",
-                                    padding: "4px",
-                                    lineHeight: "1em",
-                                    borderRadius: "4px",
-                                    border: "var(--primary-border)",
-                                  }}
-                                >
-                                    typeId: {item.itemTypeId}, objId: {item.itemObjectId}, specId:{" "}
-                                  {item.itemSpecId}, pos: {item.position},
-                                  genKey: {localId}
-                                </div>
-                              )}
+                              <DescItemInfo item={item} typeForm={typeForm} localId={localId} nodeId={nodeId} />
                             </div>
                           );
                         })}
@@ -264,6 +262,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                               typeRef.useSpecification) && ( // show when item uses specification
                               <Button
                                 style={{ borderStyle: "dashed", color: "#666", margin: "2px 0" }}
+                                size={compact ? "small" : "medium"}
                                 icon={<AddRegular />}
                                 onClick={() =>{
                                     const lastItem = descItems[descItems.length - 1].item;

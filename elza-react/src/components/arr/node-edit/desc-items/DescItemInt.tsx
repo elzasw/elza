@@ -22,6 +22,7 @@ export function DescItemInt({
   nodeId,
   isDisabled: _isDisabled,
   typeRef,
+  compact,
 }: Props) {
   if (item.data && item.data?.dataType !== DataType.Int && !item.undefined) {
     throw "Incorrect data type";
@@ -101,6 +102,7 @@ export function DescItemInt({
       }}
     >
       <Input
+        size={compact ? "small" : "medium"}
         disabled={isDisabled}
         value={item.undefined ? formatMessage(commonMessages.undefined) : (value || "").toString()}
         style={{
@@ -117,7 +119,7 @@ export function DescItemInt({
         isDirty={isDirty}
         onResolve={resolveConflict}
       >
-        {(conflictValue) => <Input value={conflictValue} readOnly={true} />}
+        {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} />}
       </ConflictValue>
       {isDirty && <EditStateDisplay />}
     </div>

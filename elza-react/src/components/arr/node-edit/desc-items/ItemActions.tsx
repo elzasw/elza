@@ -8,6 +8,7 @@ import { WebApi } from "actions";
 import { FormItemType, MandatoryType, NodeItem } from "elza-api";
 import { FormattedMessage, defineMessages } from "react-intl";
 import { DescItemTypeRef } from "typings/store";
+import { useUserSettings } from "contexts/user";
 
 interface Props {
   item: NodeItem;
@@ -48,6 +49,8 @@ export function ItemActions({
   typeForm,
   typeRef,
 }: Props) {
+  const { settings } = useUserSettings();
+  const compact = settings.compact;
   const isInherited = item.nodeId != nodeId;
   const hasValue = item.data?.dataId != undefined || item.undefined;
   const canSetUndefined = typeForm.undefinable;
@@ -79,6 +82,7 @@ export function ItemActions({
             content={<FormattedMessage {...messages.delete} />}
           >
             <Button
+              size={compact ? "small" : "medium"}
               appearance="subtle"
               icon={<DismissRegular />}
               onClick={() => onDelete()}
@@ -100,6 +104,7 @@ export function ItemActions({
         >
           <Button
             appearance="subtle"
+            size={compact ? "small" : "medium"}
             icon={item.inhibited ? <ArrowUndoRegular /> : <DismissRegular />}
             onClick={() => handleToggleInhibited()}
             tabIndex={-1}
@@ -117,6 +122,7 @@ export function ItemActions({
             content={<FormattedMessage {...messages.setUndefined} />}
           >
             <Button
+              size={compact ? "small" : "medium"}
               appearance="subtle"
               icon={<EyeOffFilled />}
               onClick={() => onSetUndefined()}
