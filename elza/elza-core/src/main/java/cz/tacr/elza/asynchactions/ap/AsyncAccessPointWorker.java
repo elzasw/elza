@@ -63,27 +63,31 @@ public class AsyncAccessPointWorker implements IAsyncWorker {
     public void run() {
         Integer accessPointId = request.getAccessPointId();
         beginTime = System.currentTimeMillis();
-        logger.debug("Spusteno AsyncAccessPointWorker ,  accessPointId : " + accessPointId);
+        logger.debug("Spusteno AsyncAccessPointWorker, accessPointId: {}", accessPointId);
+        boolean success = false;
+        Throwable failure = null;
         try {
             new TransactionTemplate(transactionManager).execute((status) -> {
                 accessPointGeneratorService.processRequest(accessPointId);
-                eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
                 return null;
             });
+            success = true;
         } catch (Throwable t) {
             logger.error("Failed to process access point, id: {}, request: {}", accessPointId, request, t);
-
-            new TransactionTemplate(transactionManager).execute(status -> {
-                handleException(t);
-                return null;
-            });
+            failure = t;
         } finally {
+            // Always notify executor so worker is removed from processing
+            try {
+                if (success) {
+                    eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
+                } else {
+                    eventPublisher.publishEvent(AsyncRequestEvent.fail(request, this, failure));
+                }
+            } catch (Exception e) {
+                logger.error("Failed to publish async request event", e);
+            }
             running.set(false);
         }
-    }
-
-    private void handleException(final Throwable t) {
-        eventPublisher.publishEvent(AsyncRequestEvent.fail(request, this, t));
     }
 
     @Override

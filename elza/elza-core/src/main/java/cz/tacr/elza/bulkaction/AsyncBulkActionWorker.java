@@ -85,6 +85,9 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
 
     @Override
     public void run() {
+        boolean success = false;
+        Throwable failure = null;
+
         // Prepare action
         try {
             new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
@@ -101,14 +104,21 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
             });
         } catch (Throwable e) {
             logger.error("Failed to start action: {}", this, e);
+            failure = e;
             try {
                 new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
-                    handleException(e);
+                    handleBulkActionError(e);
                 });
-            } catch (Throwable eI) {
-                logger.error("Failed to handle exception: ", eI);
-                throw eI;
+            } catch (Exception ex) {
+                logger.error("Failed to persist bulk action error state", ex);
             }
+            // Notify executor and return — action was never started
+            try {
+                eventPublisher.publishEvent(AsyncRequestEvent.fail(request, this, failure));
+            } catch (Exception ex) {
+                logger.error("Failed to publish async request event", ex);
+            }
+            return;
         }
 
         // prepare sec context
@@ -116,15 +126,16 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
         // Run action
         try {
         	executeAction();
+        	success = true;
         } catch (Throwable e) {
             logger.error("Bulk action failed, action: " + this + ", error: ", e);
+            failure = e;
             try {
                 new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
-                    handleException(e);
+                    handleBulkActionError(e);
                 });
-            } catch (Throwable eI) {
-                logger.error("Failed to handle exception: ", eI);
-                throw eI;
+            } catch (Exception ex) {
+                logger.error("Failed to persist bulk action error state", ex);
             }
         } finally {
             SecurityContext emptyContext = SecurityContextHolder.createEmptyContext();
@@ -132,6 +143,16 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
                 SecurityContextHolder.clearContext();
             } else {
                 SecurityContextHolder.setContext(originalSecCtx);
+            }
+            // Always notify executor so worker is removed from processing
+            try {
+                if (success) {
+                    eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
+                } else {
+                    eventPublisher.publishEvent(AsyncRequestEvent.fail(request, this, failure));
+                }
+            } catch (Exception e) {
+                logger.error("Failed to publish async request event", e);
             }
         }
     }
@@ -159,7 +180,7 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
             });
 
         } finally {
-            eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
+            // success/fail event is published by run() in its finally block
         }
         logger.info("Bulk action succesfully finished: {}", this);
     }
@@ -178,7 +199,10 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
         }
     }
 
-    private void handleException(Throwable e) {
+    /**
+     * Persist error state on the bulk action entity. Must be called in transaction.
+     */
+    private void handleBulkActionError(Throwable e) {
     	State actionState = ArrBulkActionRun.State.ERROR;
     	if (e instanceof InterruptedException || e instanceof BulkActionInterruptedException) {
     		actionState = ArrBulkActionRun.State.INTERRUPTED;
@@ -196,14 +220,13 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
         bulkActionRun.setState(actionState);
 
         // protože hromadná akce skončila chybou vrátíme výstup do původního stavu
-        List<Integer> nodeIds = bulkActionHelperService.getBulkActionNodeIds(bulkActionRun);        
+        List<Integer> nodeIds = bulkActionHelperService.getBulkActionNodeIds(bulkActionRun);
         outputServiceInternal.changeOutputsStateByNodes(bulkActionRun.getFundVersion(),
                                                         nodeIds,
                                                         ArrOutput.OutputState.OPEN,
                                                         ArrOutput.OutputState.COMPUTING);
 
         bulkActionHelperService.updateAction(bulkActionRun);
-        eventPublisher.publishEvent(AsyncRequestEvent.fail(request, this, e));
     }
 
     /**
