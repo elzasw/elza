@@ -547,6 +547,18 @@ public class EntityDBDispatcher {
             accessPointCacheService.createApCachedAccessPoint(apId);
         }
 
+        // enqueue dependent APs for async revalidation (index regeneration)
+        // Groovy scripts may include data from referenced APs (e.g. names)
+        // so when this AP changes, dependent APs' indexes may become stale
+        List<Integer> refDataIds = dataRecordRefRepository.findIdsByRecord(accessPoint);
+        if (!refDataIds.isEmpty()) {
+            List<Integer> dependentApIds = accessPointRepository.findAccessPointIdsByRefDataId(refDataIds);
+            dependentApIds.removeAll(mcc.getModifiedApIds());
+            if (!dependentApIds.isEmpty()) {
+                asyncRequestService.enqueueAp(dependentApIds);
+            }
+        }
+
         this.procCtx = null;
 
         return state;
