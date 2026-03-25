@@ -15,8 +15,13 @@ import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.test.controller.vo.Fund;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
@@ -27,9 +32,38 @@ import java.util.Map;
 import static cz.tacr.elza.repository.ExceptionThrow.ruleSet;
 
 /**
- * Test for rule controller
+ * Test for rule controller.
+ *
+ * Uses per-class lifecycle: setUp/tearDown run once for all test methods
+ * instead of before/after each method. This avoids repeated database
+ * cleanup, reindexing, startup, and package loading for each test.
+ *
+ * All tests in this class are either read-only or clean up after themselves.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class RuleControllerTest extends AbstractControllerTest {
+
+    @BeforeAll
+    public void initOnce() throws Exception {
+        super.setUp();
+    }
+
+    @AfterAll
+    public void cleanupOnce() {
+        super.tearDown();
+    }
+
+    @Override
+    @BeforeEach
+    public void setUp() throws Exception {
+        // no-op: setup is done once in @BeforeAll initOnce()
+    }
+
+    @Override
+    @AfterEach
+    public void tearDown() {
+        // no-op: cleanup is done once in @AfterAll cleanupOnce()
+    }
 
     @Autowired
     private ArrangementExtensionRepository arrExtsRepo;
