@@ -144,7 +144,7 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                                   :
                                 </div>
                               )}
-                            <div style={{ whiteSpace: "pre-wrap" }}>
+                            <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
                               {DataTypeComponent ? (
                                 <DataTypeComponent
                                   item={item}
