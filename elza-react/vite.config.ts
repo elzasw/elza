@@ -25,6 +25,7 @@ export default ({ mode }) => {
         "api": path.resolve(__dirname, "./src/api/"),
         "utils": path.resolve(__dirname, "./src/utils/"),
         "typings": path.resolve(__dirname, "./src/typings/"),
+        "contexts": path.resolve(__dirname, "./src/contexts/"),
         "shared": path.resolve(__dirname, "./src/shared/"),
         '~bootstrap': path.resolve(__dirname, 'node_modules/bootstrap'),
       }
