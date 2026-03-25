@@ -1,6 +1,6 @@
 package cz.tacr.elza;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,9 +8,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -179,7 +179,7 @@ public abstract class AbstractServiceTest extends AbstractTest {
         return descItemResult;
     }
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
     	authorizeAsAdmin();
@@ -195,7 +195,7 @@ public abstract class AbstractServiceTest extends AbstractTest {
         packageService.setTesting(false);
     }
 
-    @After
+    @AfterEach
     @Override
     public void tearDown() {
         super.tearDown();
@@ -222,7 +222,7 @@ public abstract class AbstractServiceTest extends AbstractTest {
             DEImportParams params = new DEImportParams(scope.getScopeId(), 1000, 10000, null, null);
             deImportService.importData(fis, params);
         } catch (IOException e) {
-            Assert.fail(e.fillInStackTrace().toString());
+            Assertions.fail(e.fillInStackTrace().toString());
         }
         return institutionRepository.findAll();
     }

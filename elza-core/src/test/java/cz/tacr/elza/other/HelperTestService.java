@@ -19,7 +19,7 @@ import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.outboxpolling.event.impl.DefaultOutboxEventFinder;
 import org.hibernate.search.mapper.orm.outboxpolling.event.impl.OutboxEvent;
 import org.hibernate.search.mapper.orm.outboxpolling.event.impl.OutboxEventOrder;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -405,7 +405,7 @@ public class HelperTestService {
             File file = null;
             try {
                 file = buildPackageFileZip(packageDir);
-                Assert.assertNotNull(file);
+                Assertions.assertNotNull(file);
 
                 //packageService.importPackage(file);
 
@@ -425,7 +425,7 @@ public class HelperTestService {
             }
 
             rulPackage = getPackage(packageCode);
-            Assert.assertNotNull(rulPackage);
+            Assertions.assertNotNull(rulPackage);
             logger.info("Package loaded.");
         }
     }

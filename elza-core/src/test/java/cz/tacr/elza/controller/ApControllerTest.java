@@ -1,8 +1,8 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -14,9 +14,9 @@ import java.util.Map;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 
@@ -67,7 +67,7 @@ public class ApControllerTest extends AbstractControllerTest {
     private RulPartTypeVO ptRel;
     private RulPartTypeVO ptBody;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         preparePartType();
@@ -177,7 +177,7 @@ public class ApControllerTest extends AbstractControllerTest {
 
         // check existence of two parts
         accessPoint = getAccessPoint(accessPoint.getId());
-        Assert.assertEquals(2, accessPoint.getParts().size());
+        Assertions.assertEquals(2, accessPoint.getParts().size());
 
         // modify preferred part to Karel X
         items = new ArrayList<>(preferredPart.getItems());
@@ -207,7 +207,7 @@ public class ApControllerTest extends AbstractControllerTest {
 
         deletePart(accessPoint.getId(), oldPrefName);
         accessPoint = getAccessPoint(accessPoint.getId());
-        Assert.assertEquals(1, accessPoint.getParts().size());
+        Assertions.assertEquals(1, accessPoint.getParts().size());
     }
 
     @Test//(timeout = 60000)
@@ -382,7 +382,7 @@ public class ApControllerTest extends AbstractControllerTest {
         ap.setPartForm(createPartFormVO(null, ptName.getCode(), null, apItems));
         ap.setScopeId(scopeId);
         ApAccessPointVO accessPoint = createAccessPoint(ap);
-        Assert.assertNotNull(accessPoint.getId());
+        Assertions.assertNotNull(accessPoint.getId());
 
         List<ApItemVO> items = new ArrayList<>();
         RulDescItemTypeExtVO vztahTypType = findDescItemTypeByCode("VZTAH_TYP");
@@ -394,7 +394,7 @@ public class ApControllerTest extends AbstractControllerTest {
 
         createPart(accessPoint.getId(), createPartFormVO(null, ptRel.getCode(), null, items));
         accessPoint = getAccessPoint(accessPoint.getId());
-        Assert.assertEquals(2, accessPoint.getParts().size());
+        Assertions.assertEquals(2, accessPoint.getParts().size());
 
         ApPartVO partVO = accessPoint.getParts().get(1);
         items = new ArrayList<>(partVO.getItems());
@@ -408,7 +408,7 @@ public class ApControllerTest extends AbstractControllerTest {
         updatePart(accessPoint.getId(), partVO.getId(), createPartFormVO(partVO.getId(), ptRel.getCode(), null, items));
         accessPoint = getAccessPoint(accessPoint.getId());
         partVO = accessPoint.getParts().get(1);
-        Assert.assertEquals(7, partVO.getItems().size());
+        Assertions.assertEquals(7, partVO.getItems().size());
     }
 
     /**
@@ -511,7 +511,7 @@ public class ApControllerTest extends AbstractControllerTest {
         replacementRecord.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemReplacement));
 
         ApAccessPointVO replacementRecordCreated = createAccessPoint(replacementRecord);
-        Assert.assertNotNull(replacementRecordCreated.getId());
+        Assertions.assertNotNull(replacementRecordCreated.getId());
 
         List<ApItemVO> bodyItemsB = new ArrayList<>();
         bodyItemsB.add(buildApItem(BRIEF_DESC, null, "ApRecordB desc", null, null));
@@ -555,7 +555,7 @@ public class ApControllerTest extends AbstractControllerTest {
         recordD.setPartForm(createPartFormVO(null, ptName.getCode(), null, itemsD));
 
         ApAccessPointVO recordDCreated = createAccessPoint(recordD);
-        Assert.assertNotNull(recordDCreated.getId());
+        Assertions.assertNotNull(recordDCreated.getId());
 
         List<ApItemVO> bodyItemsD = new ArrayList<>();
         bodyItemsD.add(buildApItem(BRIEF_DESC, null, "ApRecordD desc", null, null));
@@ -584,7 +584,7 @@ public class ApControllerTest extends AbstractControllerTest {
         DeleteAccessPointDetail replaceAccessPoint = new DeleteAccessPointDetail().replacedBy(replacementRecordCreated.getId().toString());
         replaceRecord(replacedRecordCreated.getId().toString(), replaceAccessPoint);
         RecordUsageVO usageAfterReplace = usagesRecord(replacedRecordCreated.getId());
-        Assert.assertTrue(usageAfterReplace.getFunds() == null || usageAfterReplace.getFunds().isEmpty());
+        Assertions.assertTrue(usageAfterReplace.getFunds() == null || usageAfterReplace.getFunds().isEmpty());
 
         // ověření změny v AP - C
         recordCCreated = getAccessPoint(recordCCreated.getId());

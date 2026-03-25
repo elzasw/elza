@@ -1,9 +1,9 @@
 package cz.tacr.elza.controller;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.HEAD;
@@ -41,8 +41,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -543,7 +543,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static Map<String, String> cookies = null;
 
 	@Override
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		RestAssured.port = port; // nastavi default port pro REST-assured
@@ -652,9 +652,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 	public static Response httpMethod(final Function<RequestSpecification, RequestSpecification> params,
 			final String url, final HttpMethod method, final HttpStatus expectedStatus, final Header header) {
-		Assert.assertNotNull(params);
-		Assert.assertNotNull(url);
-		Assert.assertNotNull(method);
+		Assertions.assertNotNull(params);
+		Assertions.assertNotNull(url);
+		Assertions.assertNotNull(method);
 
 		RequestSpecification requestSpecification = params.apply(given());
 
@@ -694,7 +694,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 				StringBuilder msgBuilder = new StringBuilder();
 				msgBuilder.append("Received unexpected status code: ").append(response.statusCode())
 						.append(", expected: ").append(expectedStatus.value()).append(", detail: ").append(msg);
-				Assert.fail(msgBuilder.toString());
+				Assertions.fail(msgBuilder.toString());
 			}
 		}
 
@@ -727,8 +727,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @return
 	 */
 	protected static Response multipart(final Function<RequestSpecification, RequestSpecification> params, final String url) {
-		Assert.assertNotNull(params);
-		Assert.assertNotNull(url);
+		Assertions.assertNotNull(params);
+		Assertions.assertNotNull(url);
 
 		RequestSpecification requestSpecification = params.apply(given());
 
@@ -743,7 +743,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 			String msg = formatResponse(response);
 			logger.error(msg);
-			Assert.fail("Received error, code: " + response.statusCode() + ", detail: " + msg);
+			Assertions.fail("Received error, code: " + response.statusCode() + ", detail: " + msg);
 		}
 
 		return response;
@@ -911,8 +911,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		addLevelParam.setScenarioName(scenarioName);
 		ArrangementController.NodeWithParent newLevel = addLevel(addLevelParam);
 
-		Assert.assertNotNull(newLevel.getNode());
-		Assert.assertNotNull(newLevel.getParentNode());
+		Assertions.assertNotNull(newLevel.getNode());
+		Assertions.assertNotNull(newLevel.getParentNode());
 
 		return newLevel;
 	}
@@ -1549,16 +1549,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
 			                       final Object value,
 			                       final Integer position, 
 			                       final Integer objectId) {
-		Assert.assertNotNull("Musí být vyplněn kód typu atributu", typeCode);
+		Assertions.assertNotNull(typeCode, "Musí být vyplněn kód typu atributu");
 
 		RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
-		Assert.assertNotNull("Typ atributu neexistuje -> CODE: " + typeCode, type);
+		Assertions.assertNotNull(type, "Typ atributu neexistuje -> CODE: " + typeCode);
 
 		RulDescItemSpecVO spec = null;
 
 		if (specCode != null) {
 			spec = findDescItemSpecByCode(specCode, type);
-			Assert.assertNotNull("Specifikace atributu neexistuje -> CODE: " + specCode, spec);
+			Assertions.assertNotNull(spec, "Specifikace atributu neexistuje -> CODE: " + specCode);
 		}
 
 		cz.tacr.elza.core.data.DataType dataType = cz.tacr.elza.core.data.DataType.fromId(type.getDataTypeId());
@@ -1760,7 +1760,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @return otevřená verze AP
 	 */
 	protected ArrFundVersionVO getOpenVersion(final Fund fund) {
-		Assert.assertNotNull(fund);
+		Assertions.assertNotNull(fund);
 
 		return getOpenVersion(fund.getId());
 	}
@@ -1772,7 +1772,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @return otevřená verze AP
 	 */
 	protected ArrFundVersionVO getOpenVersion(final Integer fundId) {
-		Assert.assertNotNull(fundId);
+		Assertions.assertNotNull(fundId);
 
 		List<ArrFundVO> funds = getFunds();
 
@@ -2902,7 +2902,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 */
 	public static File getFile(final String resourcePath) {
 		URL url = Thread.currentThread().getContextClassLoader().getResource(resourcePath);
-		Assert.assertNotNull(url);
+		Assertions.assertNotNull(url);
 		return new File(url.getPath());
 	}
 
@@ -3864,9 +3864,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
                ApAccessPointVO ap = getAccessPoint(accessPointId);
                assertNotNull(ap);
                assertEquals(
-                   "Expected AP name '" + expectedName + "' but was '" + ap.getName() + "'",
-                   expectedName,
-                   ap.getName()
+                       expectedName,
+                       ap.getName(),
+                       "Expected AP name '" + expectedName + "' but was '" + ap.getName() + "'"
                );
                result.set(ap);
            });

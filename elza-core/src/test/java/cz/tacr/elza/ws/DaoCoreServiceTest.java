@@ -1,10 +1,10 @@
 package cz.tacr.elza.ws;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,10 +14,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.base.Objects;
 
@@ -88,7 +88,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         return WebServiceClientFactory.createDaoService(address, "admin", "admin");
     }
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -97,7 +97,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         daoServiceClient = createDaoServiceClient();
     }
 
-    @After
+    @AfterEach
     @Override
     public void tearDown() {
         daoServiceClient = null;
@@ -120,7 +120,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         daoServiceClient._import(daoImport);
 
         List<ArrDaoVO> daos = this.findDaos(fundVersion.getId());
-        Assert.assertEquals(1, daos.size());
+        Assertions.assertEquals(1, daos.size());
         ArrDaoVO daoVo = daos.get(0);
         assertNull(daoVo.getDaoLink());
 
@@ -178,7 +178,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
 
         // Check not free DAOS exists
         List<ArrDaoVO> daos = this.findDaos(fundVersion.getId());
-        Assert.assertEquals(0, daos.size());
+        Assertions.assertEquals(0, daos.size());
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
@@ -267,7 +267,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
 
         // Check not free DAOS exists
         List<ArrDaoVO> daos = this.findDaos(fundVersion.getId());
-        Assert.assertEquals(0, daos.size());
+        Assertions.assertEquals(0, daos.size());
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
         input.setVersionId(fundVersion.getId());
@@ -385,9 +385,9 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
 
         FundIdentifiers fundCreated = fundServiceClient.createFund(fundCreate);
 
-        Assert.assertNotNull(fundCreated);
+        Assertions.assertNotNull(fundCreated);
         assertTrue(Integer.valueOf(fundCreated.getId()) >= 1);
-        Assert.assertNotNull(UUID.fromString(fundCreated.getUuid()));
+        Assertions.assertNotNull(UUID.fromString(fundCreated.getUuid()));
 
         // import DAO
         Items daoItems = createDaoScenarios(TEXT_VALUE_XY);
@@ -427,7 +427,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
 
     private ArrItemTextVO checkExistsTextVO(List<ArrItemVO> descItems, String itemTypeCode, String textValue) {
         RulDescItemTypeExtVO itemType = findDescItemTypeByCode(itemTypeCode);
-        assertNotNull("ItemType not found: " + itemTypeCode, itemType);
+        assertNotNull(itemType, "ItemType not found: " + itemTypeCode);
 
         for (ArrItemVO descItem : descItems) {
             Integer itemTypeId = descItem.getItemTypeId();
