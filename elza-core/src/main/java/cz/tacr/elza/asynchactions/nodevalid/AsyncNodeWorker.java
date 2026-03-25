@@ -1,10 +1,9 @@
 package cz.tacr.elza.asynchactions.nodevalid;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -73,6 +72,12 @@ public class AsyncNodeWorker implements IAsyncWorker {
 
     private final List<IAsyncRequest> requests;
 
+    /**
+     * Requests that were attempted (successfully processed or failed).
+     * Unprocessed requests remain in DB for later pickup.
+     */
+    private final List<IAsyncRequest> processedRequests = new ArrayList<>();
+
     private final AtomicBoolean running = new AtomicBoolean(false);
 
     public AsyncNodeWorker(final List<IAsyncRequest> requests) {
@@ -90,6 +95,7 @@ public class AsyncNodeWorker implements IAsyncWorker {
         beginTime = System.currentTimeMillis();
         logger.debug("Start worker, threadId: {},  beginAt: {}",
                      Thread.currentThread().getId(), beginTime);
+        Throwable failure = null;
         try {
             if (CollectionUtils.isNotEmpty(requests)) {
                 for (IAsyncRequest request : requests) {
@@ -103,27 +109,32 @@ public class AsyncNodeWorker implements IAsyncWorker {
                             Thread.currentThread().getId(), nodeBeginTime,
                             fundVersionId, nodeId);
 
+                    processedRequests.add(request);
                     new TransactionTemplate(transactionManager).execute((status) -> {
-                        Set<Integer> processedRequestIds = new LinkedHashSet<>();
                         ArrFundVersion version = getFundVersion(request);
 
                         processRequest(requestId, nodeId, version);
-                        processedRequestIds.add(nodeId);
 
-                        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(EventType.CONFORMITY_INFO, version, processedRequestIds.toArray(new Integer[0])));
+                        eventNotificationService.publishEvent(EventFactory.createIdsInVersionEvent(
+                                EventType.CONFORMITY_INFO, version, nodeId));
                         return null;
                     });
                 }
-                eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
             }
         } catch (Throwable t) {
-            logger.error("Validation failed", t);
-
-            new TransactionTemplate(transactionManager).execute(status -> {
-                handleException(t);
-                return null;
-            });
+            logger.error("Validation failed for nodeId: {}", request.getCurrentId(), t);
+            failure = t;
         } finally {
+            // Always notify executor so worker is removed from processing
+            try {
+                if (failure != null) {
+                    eventPublisher.publishEvent(AsyncRequestEvent.fail(request, this, failure));
+                } else {
+                    eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
+                }
+            } catch (Exception e) {
+                logger.error("Failed to publish async request event", e);
+            }
             long endTime = System.currentTimeMillis();
             logger.debug("End worker, threadId: {}, finished in {}ms",
                          Thread.currentThread().getId(),
@@ -132,18 +143,18 @@ public class AsyncNodeWorker implements IAsyncWorker {
         }
     }
 
-    private void handleException(final Throwable t) {
-        eventPublisher.publishEvent(AsyncRequestEvent.fail(request, this, t));
-    }
-
     @Override
     public IAsyncRequest getRequest() {
         return request;
     }
 
+    /**
+     * Returns only processed requests (successfully completed or failed).
+     * Unprocessed requests remain in DB for later pickup by queue restore.
+     */
     @Override
     public List<IAsyncRequest> getRequests() {
-        return requests;
+        return processedRequests;
     }
 
     public Integer getFundVersionId() {
