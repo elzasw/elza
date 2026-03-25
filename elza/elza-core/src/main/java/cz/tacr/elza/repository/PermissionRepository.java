@@ -25,33 +25,41 @@ import cz.tacr.elza.domain.WfIssueList;
 public interface PermissionRepository extends JpaRepository<UsrPermission, Integer> {
 
     /**
-     * Načtení všech oprávnění uživatele - přímo přiřazených a přiřazených přes skupiny.
-     *
-     * @param user uživatel
-     * @return seznam všech jeho oprávnění
+     * Načtení oprávnění přímo přiřazených uživateli.
      */
-    @Query("SELECT p" +
-            " FROM usr_permission p" +
-            " WHERE p.user = :user OR p.group.groupId IN (SELECT gu.group.groupId FROM usr_group_user gu WHERE gu.user = :user)")
-    List<UsrPermission> getAllPermissions(@Param("user") UsrUser user);
+    @Query("SELECT p FROM usr_permission p WHERE p.user = :user")
+    List<UsrPermission> findByUser(@Param("user") UsrUser user);
+
+    /**
+     * Načtení oprávnění přiřazených přes skupiny.
+     */
+    @Query("SELECT p FROM usr_permission p WHERE p.group.groupId IN (SELECT gu.group.groupId FROM usr_group_user gu WHERE gu.user = :user)")
+    List<UsrPermission> findByUserGroups(@Param("user") UsrUser user);
 
     List<UsrPermission> findAllByUserIn(@Param("users") Collection<UsrUser> user);
 
     /**
-     * Načtení všech oprávnění uživatele - přímo přiřazených a přiřazených přes skupiny.
-     * Donačítává se vazba na fond a scope kvůli jejímu využizí a dále vazba na skupiny.
-     *
-     * @param user uživatel
-     * @return seznam všech jeho oprávnění
+     * Načtení oprávnění přímo přiřazených uživateli s donačtením vazeb.
      */
     @Query("SELECT p FROM usr_permission p" +
-            " LEFT JOIN FETCH p.group g" +
             " LEFT JOIN FETCH p.scope s" +
             " LEFT JOIN FETCH p.fund f" +
             " LEFT JOIN FETCH p.node n" +
             " LEFT JOIN FETCH p.issueList il" +
-            " WHERE p.user = :user OR g.groupId IN (SELECT gu.group.groupId FROM usr_group_user gu WHERE gu.user = :user)")
-    List<UsrPermission> getAllPermissionsWithGroups(@Param("user") UsrUser user);
+            " WHERE p.user = :user")
+    List<UsrPermission> findByUserWithFetch(@Param("user") UsrUser user);
+
+    /**
+     * Načtení oprávnění přiřazených přes skupiny s donačtením vazeb.
+     */
+    @Query("SELECT p FROM usr_permission p" +
+            " JOIN FETCH p.group g" +
+            " LEFT JOIN FETCH p.scope s" +
+            " LEFT JOIN FETCH p.fund f" +
+            " LEFT JOIN FETCH p.node n" +
+            " LEFT JOIN FETCH p.issueList il" +
+            " WHERE g.groupId IN (SELECT gu.group.groupId FROM usr_group_user gu WHERE gu.user = :user)")
+    List<UsrPermission> findByUserGroupsWithFetch(@Param("user") UsrUser user);
 
     List<UsrPermission> findByUserOrderByPermissionIdAsc(UsrUser user);
 
