@@ -252,15 +252,15 @@ class DescItemType extends AbstractReactComponent {
             // konkrétní hodnota
             descItem =
                 descItemType.descItems[indexById(descItemType.descItems, item.descItemObjectId, 'descItemObjectId')];
-            ref = this.refObjects[refPrefix + descItem.formKey];
+            ref = this.refObjects[refPrefix + (descItem?.formKey || "")];
         } else if (typeof item.descItemIndex !== 'undefined' && item.descItemIndex !== null) {
             // konkrétní index
             descItem = descItemType.descItems[item.descItemIndex];
-            ref = this.refObjects[refPrefix + descItem.formKey];
+            ref = this.refObjects[refPrefix + (descItem?.formKey || "")];
         } else {
             // obecně atribut - dáme na první hodnotu
             descItem = descItemType.descItems[0];
-            ref = this.refObjects[refPrefix + descItem.formKey];
+            ref = this.refObjects[refPrefix + (descItem?.formKey || "")];
         }
 
         if (ref) {
@@ -431,7 +431,7 @@ class DescItemType extends AbstractReactComponent {
                     if(newValue){
                         value.value = newValue;
                     } else {
-                        const refObject = this.refObjects[descItem.formKey]
+                        const refObject = this.refObjects[descItem?.formKey]
                         if(refObject){
                             refObject.focus();
                         }

@@ -114,6 +114,7 @@ import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -2295,7 +2296,7 @@ public class ArrangementService {
         ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(fund);
 
         CSVFormat csvf = CSVFormat.EXCEL;
-        try (InputStreamReader isr = new InputStreamReader(new BOMInputStream(is), "UTF-8");
+        try (InputStreamReader isr = new InputStreamReader(BOMInputStream.builder().setInputStream(is).get(), "UTF-8");
                 CSVParser parser = csvf.parse(isr)) {
 
             MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion
@@ -2395,8 +2396,13 @@ public class ArrangementService {
                     ArrDataRecordRef dataRr = new ArrDataRecordRef();
                     String str = dataIter.next();
                     dataRr.setRecord(em.getReference(ApAccessPoint.class, Integer.parseInt(str)));
-                    data = dataRr;
-                	
+                    data = dataRr;                	
+                }
+                break;
+                case UNITDATE: {
+                	String str = dataIter.next();
+                	ArrDataUnitdate dataUd = ArrDataUnitdate.valueOf(str);
+                	data = dataUd;
                 }
                 break;
                 default:

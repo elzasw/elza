@@ -1,9 +1,9 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
@@ -13,8 +13,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.service.AccessPointItemService;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -242,16 +241,8 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         // merge
         mergeRevision(ap1.getAccessPointId(), new ApStateUpdate().stateApproval(ApStateApproval.NEW));
 
-        ApAccessPointVO apVo2;
-        do {
-            apVo2 = getAccessPoint(ap1.getAccessPointId());
-            assertNotNull(apVo2);
-            if (StringUtils.equals("Karel (IV)", apVo2.getName())) {
-                break;
-            }
-            counter("Čekání na validaci ap kvůli změně položek hlavního jména");
-            Thread.sleep(100);
-        } while (true);
+        // check modified preferred part
+        ApAccessPointVO apVo2 = waitForAccessPointName(ap1.getAccessPointId(), "Karel (IV)");
 
         // check preferred part
         ApPartVO prefPart = null;
@@ -316,7 +307,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         addUserPermission(userVO.getId(), Arrays.asList(permissionApRdAll, permissionApConfirmAll));
 
         // no tasks assigned to the user
-        List<WfTask> tasks = wfTaskRepository.findAllByAssigneeId(userVO.getId());
+        List<WfTask> tasks = wfTaskRepository.findNewByAssigneeId(userVO.getId());
         assertTrue(tasks.isEmpty());
 
         // prepare data
@@ -333,7 +324,7 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         version = newVersion;
 
         // one tasks assigned to the user
-        tasks = wfTaskRepository.findAllByAssigneeId(userVO.getId());
+        tasks = wfTaskRepository.findNewByAssigneeId(userVO.getId());
         assertTrue(tasks.size() == 1);
         assertTrue(tasks.get(0).getAssigneeId() == userVO.getId());
         assertTrue(tasks.get(0).getStatus().equals(Status.NEW));
@@ -353,8 +344,46 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         assertTrue(tasks.get(0).getClosedById() == userVO.getId());
         assertTrue(tasks.get(0).getStatus().equals(Status.FINISHED));
 
-        // switch to admin 
+        // switch to admin
         login(USR_ELZAADMIN, USR_ELZAADMIN_PSWD);
+
+        // --- Test: creating revision cancels existing ApState task and reassigns to same user ---
+
+        // change state to TO_AMEND and assign to usr1 (creates a task on ApState)
+        // TO_AMEND is used because it allows both task creation and revision creation
+        stateUpdate.setStateApproval(ApStateApproval.TO_AMEND);
+        newVersion = accesspointsApi.accessPointChangeState(ap.getId(), stateUpdate, version, userVO.getId());
+        assertTrue(newVersion > version);
+        version = newVersion;
+
+        // verify task exists for usr1 on ApState
+        tasks = wfTaskRepository.findNewByAssigneeId(userVO.getId());
+        assertTrue(tasks.size() == 1);
+        assertTrue(tasks.get(0).getStatus().equals(Status.NEW));
+        int apStateTaskId = tasks.get(0).getTaskId();
+
+        // create revision - should cancel the ApState task and create a new revision task for the same user
+        accesspointsApi.accessPointCreateRevision(ap.getId());
+
+        // verify the old ApState task is now CANCELLED
+        WfTask cancelledTask = wfTaskRepository.findById(apStateTaskId).orElse(null);
+        assertNotNull(cancelledTask);
+        assertTrue(cancelledTask.getStatus().equals(Status.CANCELLED));
+
+        // verify a new revision task exists for usr1 (same assignee as cancelled task)
+        tasks = wfTaskRepository.findNewByAssigneeId(userVO.getId());
+        assertTrue(tasks.size() == 1);
+        assertTrue(tasks.get(0).getAssigneeId() == userVO.getId());
+        assertTrue(tasks.get(0).getStatus().equals(Status.NEW));
+        assertTrue(tasks.get(0).getTaskId() != apStateTaskId); // different task
+
+        // cleanup: delete the revision so we can continue with the rest of the test
+        accesspointsApi.accessPointDeleteRevision(ap.getId());
+        // to approve
+        stateUpdate.setStateApproval(ApStateApproval.APPROVED);
+        newVersion = accesspointsApi.accessPointChangeState(ap.getId(), stateUpdate, version, null);
+        assertTrue(newVersion > version);
+        version = newVersion;
 
         // create 2nd user to assign change revision state
         userVO = createUser(apUser.getId(), USR_NAME2, USR_PSWD2);

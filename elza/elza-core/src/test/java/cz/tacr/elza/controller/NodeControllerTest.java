@@ -1,13 +1,13 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
@@ -41,30 +41,30 @@ public class NodeControllerTest extends AbstractControllerTest {
         ArrNodeVO node = nodes.get(0);
 
         // create item by SRD_TITLE
-        NodeItem nodeItem = buildNodeItem(SRD_TITLE, null, DataType.TEXT, "value", node);
+        NodeItem nodeItem = buildNodeItem(SRD_TITLE, null, DataType.TEXT, "value", node, null);
         descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
 
         // create item by SRD_SERIAL_NUMBER
-        nodeItem = buildNodeItem(SRD_SERIAL_NUMBER, null, DataType.INT, 1, node);
+        nodeItem = buildNodeItem(SRD_SERIAL_NUMBER, null, DataType.INT, 1, node, null);
         descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
 
         // create item by SRD_UNIT_DATE
-        nodeItem = buildNodeItem(SRD_UNIT_DATE, null, DataType.UNITDATE, "15.5.2025", node);
+        nodeItem = buildNodeItem(SRD_UNIT_DATE, null, DataType.UNITDATE, "15.5.2025", node, null);
         descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
 
         // create item by SRD_OTHER_ID
-        nodeItem = buildNodeItem(SRD_OTHER_ID, SRD_OTHERID_CJ, DataType.STRING, "13", node);
+        nodeItem = buildNodeItem(SRD_OTHER_ID, SRD_OTHERID_CJ, DataType.STRING, "13", node, null);
         descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
 
         // create item by SRD_LANGUAGE
-        nodeItem = buildNodeItem(SRD_LANGUAGE, SRD_LANGUAGE_1, DataType.ENUM, null, node);
+        nodeItem = buildNodeItem(SRD_LANGUAGE, SRD_LANGUAGE_1, DataType.ENUM, null, node, null);
         descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
 
         // prepare to create item by SRD_ENTITY_ROLE
         List<ApAccessPointVO> accessPoints = findRecord(null, null, null, null, null);
         ApAccessPointVO accessPoint = accessPoints.get(0);
         // create item by SRD_ENTITY_ROLE
-        nodeItem = buildNodeItem(SRD_ENTITY_ROLE, SRD_ENTITY_ROLE_1, DataType.RECORD_REF, accessPoint, node);
+        nodeItem = buildNodeItem(SRD_ENTITY_ROLE, SRD_ENTITY_ROLE_1, DataType.RECORD_REF, accessPoint, node, null);
         descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
 
         // create MultimatchContainsFilter filter
@@ -187,7 +187,7 @@ public class NodeControllerTest extends AbstractControllerTest {
         ArrNodeVO node = nodes.get(0);
 
         // create item by SRD_TITLE
-        NodeItem nodeItem = buildNodeItem(SRD_TITLE, null, DataType.TEXT, "value", node);
+        NodeItem nodeItem = buildNodeItem(SRD_TITLE, null, DataType.TEXT, "value", node, null);
         descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
 
         // create NodeDataParam

@@ -61,6 +61,7 @@ export function DescItemUriRef({
   onChange,
   nodeId,
   isDisabled: _isDisabled,
+  compact,
 }: Props) {
   if (item.data && item.data?.dataType !== DataType.UriRef && !item.undefined) {
     throw "Incorrect data type";
@@ -220,6 +221,7 @@ export function DescItemUriRef({
           }}
         >
           <Input
+            size={compact ? "small" : "medium"}
             disabled={isDisabled}
             value={
               item.undefined ? formatMessage(commonMessages.undefined) : (value || "")
@@ -240,6 +242,7 @@ export function DescItemUriRef({
                   content={<FormattedMessage {...messages.fundSearch} />}
                 >
                   <Button
+                    size={compact ? "small" : "medium"}
                     appearance="subtle"
                     icon={<SearchRegular />}
                     onClick={handleSearch}
@@ -252,6 +255,7 @@ export function DescItemUriRef({
                   content={<FormattedMessage {...messages.goToUri} />}
                 >
                   <Button
+                    size={compact ? "small" : "medium"}
                     appearance="subtle"
                     icon={<ArrowEnterRegular />}
                     onClick={handleNavigate}
@@ -270,6 +274,7 @@ export function DescItemUriRef({
           >
             {(conflictValue) => (
               <Textarea
+                size={compact ? "small" : "medium"}
                 style={{ borderColor: "var(--color-red)", minWidth: "100px" }}
                 value={conflictValue}
                 readOnly={true}
@@ -286,6 +291,7 @@ export function DescItemUriRef({
             }}
           >
             <Input
+              size={compact ? "small" : "medium"}
               disabled={isDisabled || !data?.value}
               value={description}
               onChange={handleDescInputChange}
@@ -306,6 +312,7 @@ export function DescItemUriRef({
             >
               {(conflictValue) => (
                 <Textarea
+                  size={compact ? "small" : "medium"}
                   style={{ borderColor: "var(--color-red)", minWidth: "100px" }}
                   value={conflictValue}
                   readOnly={true}
@@ -316,6 +323,7 @@ export function DescItemUriRef({
         )}
         {templates.length > 0 && !item.undefined && (
           <Combobox
+            size={compact ? "small" : "medium"}
             title={query}
             value={query}
             placeholder={formatMessage(messages.refTemplate)}

@@ -524,6 +524,25 @@ model NodeBase {
 }
 
 /**
+ * Type of update Item
+ */
+enum UpdateOp {
+    CREATE,
+    UPDATE,
+    DELETE
+}
+
+/**
+ * Náhrada za třídu `ArrUpdateItemVO`
+ */
+model NodeUpdateItem {
+    /** operation */
+    updateOp: UpdateOp;
+    /** item to update */
+    item: NodeItem;
+}
+
+/**
  * Náhrada za třídu `ArrItemVO`
  */
 model NodeItem {
@@ -716,7 +735,6 @@ model ApPartFormVO {
  *
  * Náhrada `ItemTypeGroupVO`
  */
-// TODO find a way to generate classes not used in requests
 model ItemTypeGroup {
     code: string;
     name: string;
@@ -2412,5 +2430,11 @@ namespace ElzaAPI.Tasks {
     title: "ELZA API",
 })
 namespace ElzaAPI {
-
+    // add models not used in operations
+    union __Types {
+        a: NodeUpdateItem,
+        b: ItemTypeGroup
+    }
+    @route("/__types") @get
+    op __typeRegistry(): __Types;
 }

@@ -71,6 +71,10 @@ public class Level {
         return descItems.stream().filter(a -> !a.isInherited()).collect(Collectors.toList());
     }
 
+    public List<DescItem> getInheritedDescItems() {
+        return descItems.stream().filter(a -> a.isInherited()).collect(Collectors.toList());
+    }
+
     public void setDescItems(final List<DescItem> descItems) {
         this.descItems = descItems;
     }

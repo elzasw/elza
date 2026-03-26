@@ -944,10 +944,15 @@ public class DescriptionItemService {
         ArrDescItem deletedDescItem = descItemRepository.save(descItem);
 
         // pokud existují záznamy, které potlačují dědičnost, pak je smažeme
-        ArrInhibitedItem inhibitedItem = inhibitedItemRepository.findByNodeIdAndDescItemObjectId(descItem.getNodeId(), descItem.getDescItemObjectId()).orElse(null);
-        if (inhibitedItem != null) {
-        	inhibitedItem.setDeleteChange(change);
-        	inhibitedItemRepository.save(inhibitedItem);
+        List<ArrInhibitedItem> inhibitedItems = inhibitedItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(descItem.getDescItemObjectId());
+        if (CollectionUtils.isNotEmpty(inhibitedItems)) {
+        	List<Integer> affectedNodeIds = new ArrayList<>();
+        	for (ArrInhibitedItem inhibitedItem : inhibitedItems) {
+        		inhibitedItem.setDeleteChange(change);
+        		inhibitedItemRepository.save(inhibitedItem);
+        		affectedNodeIds.add(inhibitedItem.getNodeId());
+        	}
+        	nodeCacheService.syncNodes(affectedNodeIds);
         }
 
         if (moveAfter) {
@@ -1258,8 +1263,7 @@ public class DescriptionItemService {
 
         ArrChange change = null;
 		ArrDescItem descItemUpdated;
-        SingleItemChangeContext changeContext = new SingleItemChangeContext(ruleService, eventNotificationService,
-                fundVersionId, nodeId);
+        SingleItemChangeContext changeContext = new SingleItemChangeContext(ruleService, eventNotificationService, fundVersionId, nodeId);
         if (createNewVersion) {
             node.setVersion(nodeVersion);
 

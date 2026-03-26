@@ -1485,7 +1485,8 @@ public class UserService {
             return Collections.singletonList(new UserPermission(UsrPermission.Permission.ADMIN));
         }
 
-        List<UsrPermission> permissions = permissionRepository.getAllPermissions(user);
+        List<UsrPermission> permissions = new ArrayList<>(permissionRepository.findByUser(user));
+        permissions.addAll(permissionRepository.findByUserGroups(user));
         Map<Integer, UserPermission> issueListMap = null;
 
         for (UsrPermission permission : permissions) {

@@ -16,9 +16,8 @@ import { AnonymousStructure } from "./AnonymousStructure";
 import { DescItemProps } from "./types";
 import { i18n } from "components";
 import AddStructureDataForm from "components/arr/structure/AddStructureDataForm";
-import { modalDialogHide, modalDialogShow } from "actions/global/modalDialog";
+import { modalDialogShow } from "actions/global/modalDialog";
 import { useAppThunkDispatch } from "utils/hooks";
-import { structureTypeInvalidate } from "actions/arr/structureType";
 import DescItemFactory from "components/arr/nodeForm/DescItemFactory";
 import { FormattedMessage, defineMessages } from "react-intl";
 
@@ -43,6 +42,7 @@ export function DescItemStructured({
   onChange,
   nodeId,
   isDisabled: _isDisabled,
+  compact,
 }: Props) {
   if (item.data && item.data?.dataType !== DataType.Structured && !item.undefined) {
     throw "Incorrect data type";
@@ -131,39 +131,19 @@ export function DescItemStructured({
   }
 
   function addNewStructure() {
-    WebApi.createStructureData(fundVersionId, structureType.code, query).then(
-      (structureData) => {
-        dispatch(
-          modalDialogShow(
-            this,
-            i18n("arr.structure.modal.add.title", structureType.code),
-            <AddStructureDataForm
-              //@ts-expect-error TODO fix wrong types (missing fundId)
-              fundId={fundId}
-              fundVersionId={fundVersionId}
-              structureData={structureData}
-              descItemFactory={DescItemFactory}
-              onSubmit={() => {
-                WebApi.confirmStructureData(
-                  fundVersionId,
-                  structureData.id,
-                ).then((structure) => {
-                  // TODO add types
-                  handleChange(structure.id);
-                });
-              }}
-              onSubmitSuccess={() => {
-                dispatch(modalDialogHide());
-                dispatch(structureTypeInvalidate());
-              }}
-            />,
-            "",
-            () => {
-              WebApi.deleteStructureData(fundVersionId, structureData.id);
-            },
-          ),
-        );
-      },
+    dispatch(
+      modalDialogShow(
+        this,
+        i18n("arr.structure.modal.add.title", structureType.name),
+        <AddStructureDataForm
+          fundId={fundId}
+          fundVersionId={fundVersionId}
+          structureTypeCode={structureType.code}
+          initialQuery={query}
+          descItemFactory={DescItemFactory}
+          onConfirm={(structureId) => handleChange(structureId)}
+        />,
+      ),
     );
   }
 
@@ -215,6 +195,7 @@ export function DescItemStructured({
         // />
         <>
           <Combobox
+            size={compact ? "small" : "medium"}
             title={query}
             value={`${query}`}
             onChange={handleQueryChange}
@@ -283,6 +264,7 @@ export function DescItemStructured({
               content={<FormattedMessage {...messages.addNewStructure} />}
             >
               <Button
+                size={compact ? "small" : "medium"}
                 style={{ height: "29px" }}
                 appearance="subtle"
                 icon={<DocumentAddRegular />}

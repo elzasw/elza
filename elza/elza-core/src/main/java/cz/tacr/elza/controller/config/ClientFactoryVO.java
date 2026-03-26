@@ -90,6 +90,7 @@ import cz.tacr.elza.controller.vo.GisExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.GisExternalSystemVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ItemData;
+import cz.tacr.elza.controller.vo.ItemTypeGroup;
 import cz.tacr.elza.controller.vo.MandatoryType;
 import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
@@ -133,7 +134,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroup;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -382,6 +382,9 @@ public class ClientFactoryVO {
      * @return
      */
     private static ItemData convertText(ArrData arrData) {
+    	if (arrData instanceof ArrDataString) {
+    		return convertString(arrData);
+    	}
     	DataText data = new DataText(((ArrDataText) arrData).getTextValue(), DataType.TEXT);
         data.setDataId(arrData.getDataId());
         return data;
@@ -856,7 +859,7 @@ public class ClientFactoryVO {
         nodeItem.setPosition(item.getPosition());
         nodeItem.setReadOnly(item.getReadOnly());
 
-        ArrData arrData = item.getData();
+        ArrData arrData = HibernateUtils.unproxy(item.getData());
         if (arrData == null) {
         	nodeItem.setUndefined(true);
         } else {
@@ -1713,8 +1716,8 @@ public class ClientFactoryVO {
         result.setAuthTypes(authenticationRepository.findByUser(user).stream().map(UsrAuthentication::getAuthType).collect(Collectors.toList()));
         // Načtení oprávnění
         if (initPermissions) {
-        	//List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
-            List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
+            List<UsrPermission> permissions = new ArrayList<>(permissionRepository.findByUser(user));
+            permissions.addAll(permissionRepository.findByUserGroups(user));
 
             StaticDataProvider staticData = staticDataService.getData();
             List<UsrPermissionVO> permissionsVOs = permissions.stream().map(

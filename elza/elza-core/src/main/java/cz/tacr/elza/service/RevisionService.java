@@ -48,8 +48,9 @@ import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.UsrPermission.Permission;
-import cz.tacr.elza.domain.WfTask.Status;
+import cz.tacr.elza.domain.WfTask;
 import cz.tacr.elza.domain.WfTaskApRevState;
+import cz.tacr.elza.domain.WfTaskApState;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -167,10 +168,19 @@ public class RevisionService {
         revState.setCreateChange(change);
         revState = revStateRepository.save(revState);
 
-        UsrUser user = userService.getLoggedUser();
-        if (user != null) {
-        	// create new WfTask
-        	taskService.createTaskApRevState(revState, user.getUserId());
+        // Check if entity has an active task on ApState
+        // If so, cancel it and create new revision task for the same assignee
+        WfTaskApState existingTask = taskService.getTask(state);
+        if (existingTask != null) {
+            Integer assigneeId = existingTask.getTask().getAssigneeId();
+            taskService.closeWfTask(state, WfTask.Status.CANCELLED);
+            taskService.createTaskApRevState(revState, assigneeId);
+        } else {
+            UsrUser user = userService.getLoggedUser();
+            if (user != null) {
+                // create new WfTask
+                taskService.createTaskApRevState(revState, user.getUserId());
+            }
         }
 
         // Permission check - includes new revision state
@@ -205,7 +215,7 @@ public class RevisionService {
         ApRevState revState = findLastRevState(revision);
 
         // close if exists WfTask
-        taskService.closeWfTask(revState, Status.CANCELLED);
+        taskService.closeWfTask(revState, WfTask.Status.CANCELLED);
 
         List<ApRevPart> parts = revisionPartService.findPartsByRevision(revision);
         List<ApRevItem> items = revisionItemService.findByParts(parts);
@@ -327,7 +337,7 @@ public class RevisionService {
         }
 
         // close if exists WfTask
-        taskService.closeWfTask(oldRevState, Status.FINISHED);
+        taskService.closeWfTask(oldRevState, WfTask.Status.FINISHED);
 
         if (assignTo != null) {
         	// create new WfTask
@@ -1115,8 +1125,8 @@ public class RevisionService {
         }
 
         // uzavření úkolů, které se váží k dané revizi a typu: AP_REV_UPDATE nebo AP_REV_CONFIRM
-        taskService.closeWfTask(revState, Status.FINISHED);
-        taskService.closeWfTask(apState, Status.FINISHED);
+        taskService.closeWfTask(revState, WfTask.Status.FINISHED);
+        taskService.closeWfTask(apState, WfTask.Status.FINISHED);
 
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }

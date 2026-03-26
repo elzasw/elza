@@ -2819,6 +2819,24 @@ components:
             - $ref: '#/components/schemas/NodeItem'
           description: item
       description: Výsledek vytvoření nebo aktualizace ArrDescItem
+    ItemTypeGroup:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        types:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormItemType'
+      description: |-
+        Skupina zapouzdrující typy hodnot atributů pro UI
+
+        Náhrada `ItemTypeGroupVO`
     LoggedUser:
       type: object
       required:
@@ -3269,6 +3287,21 @@ components:
         Data uzlu stromu odesílané klientovi pro strom fa.
 
         Náhrada `TreeNodeVO`
+    NodeUpdateItem:
+      type: object
+      required:
+        - updateOp
+        - item
+      properties:
+        updateOp:
+          allOf:
+            - $ref: '#/components/schemas/UpdateOp'
+          description: operation
+        item:
+          allOf:
+            - $ref: '#/components/schemas/NodeItem'
+          description: item to update
+      description: Náhrada za třídu `ArrUpdateItemVO`
     OperationCompareType:
       type: string
       enum:
@@ -3784,6 +3817,13 @@ components:
           type: boolean
           description: Zákaz změny vlastností
       description: Změny archivního souboru
+    UpdateOp:
+      type: string
+      enum:
+        - CREATE
+        - UPDATE
+        - DELETE
+      description: Type of update Item
     UsedItemType:
       type: object
       required:

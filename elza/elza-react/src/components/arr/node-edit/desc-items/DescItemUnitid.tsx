@@ -20,6 +20,7 @@ export function DescItemUnitid({
   onChange,
   nodeId,
   isDisabled: _isDisabled,
+  compact,
 }: Props) {
   if (item.data && item.data?.dataType !== DataType.Unitid && !item.undefined) {
     throw "Incorrect data type";
@@ -82,6 +83,7 @@ export function DescItemUnitid({
       }}
     >
       <Input
+        size={compact ? "small" : "medium"}
         disabled={isDisabled}
         value={item.undefined ? formatMessage(commonMessages.undefined) : (value || "").toString()}
         onChange={handleInputChange}
@@ -100,7 +102,7 @@ export function DescItemUnitid({
         isDirty={isDirty}
         onResolve={resolveConflict}
       >
-        {(conflictValue) => <Input value={conflictValue} readOnly={true} />}
+        {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} />}
       </ConflictValue>
       {isDirty && <EditStateDisplay />}
     </div>

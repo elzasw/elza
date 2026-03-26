@@ -2,8 +2,8 @@ package cz.tacr.elza.controller;
 
 import java.util.Collection;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -32,12 +32,12 @@ public class ClientEventTest extends AbstractControllerTest {
 
         Collection<AbstractEventSimple> firedEvents = testDispatcher.getFiredEvents();
 
-        Assert.assertTrue(firedEvents.size() > 0);
+        Assertions.assertTrue(firedEvents.size() > 0);
 
         AbstractEventSimple event = firedEvents.iterator().next();
 
-        Assert.assertTrue(event.getEventType().equals(EventType.FUND_CREATE));
-        Assert.assertTrue(event instanceof EventId);
-        Assert.assertTrue(((EventId) event).getIds().contains(test_publish.getId()));
+        Assertions.assertTrue(event.getEventType().equals(EventType.FUND_CREATE));
+        Assertions.assertTrue(event instanceof EventId);
+        Assertions.assertTrue(((EventId) event).getIds().contains(test_publish.getId()));
     }
 }
