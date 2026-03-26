@@ -80,6 +80,7 @@ import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FulltextFundRequest;
 import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.NodeUpdateItem;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
@@ -89,6 +90,7 @@ import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.TreeNodeWithFundVO;
 import cz.tacr.elza.controller.vo.UniqueValue;
+import cz.tacr.elza.controller.vo.UpdateOp;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
@@ -1545,7 +1547,6 @@ public class ArrangementController {
         return levelTreeCacheService.getNodesByIds(nodeIds, idsParam.getVersionId());
     }
 
-
     /**
      * Přidání uzlu do stromu.
      *
@@ -1571,17 +1572,19 @@ public class ArrangementController {
             descItemCopyTypes.addAll(itemTypeRepository.findAllById(addLevelParam.getDescItemCopyTypes()));
         }
 
-
         List<ArrLevel> newLevels = fundLevelService.addNewLevel(fundVersion, staticNode, staticParentNode,
                 addLevelParam.getDirection(), addLevelParam.getScenarioName(), descItemCopyTypes, null, null, null);
         ArrLevel newLevel = newLevels.get(0);
 
         if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
-            UpdateDescItemsParam params = new UpdateDescItemsParam(
-                    addLevelParam.getCreateItems(),
-                    Collections.emptyList(),
-                    Collections.emptyList());
-            formService.updateDescItems(fundVersion.getFundVersionId(), newLevel.getNodeId(), newLevel.getNode().getVersion(), params, null);
+            NodeUpdateItem[] changeItems = addLevelParam.getCreateItems().stream()
+            		.map(nodeItem -> new NodeUpdateItem().updateOp(UpdateOp.CREATE).item(nodeItem))
+            		.toList()
+            		.toArray(new NodeUpdateItem[0]);
+            Integer fundVersionId = fundVersion.getFundVersionId();
+            Integer nodeId = newLevel.getNodeId();
+            Integer nodeVersion = newLevel.getNode().getVersion();
+            formService.updateDescItems(fundVersionId, nodeId, nodeVersion, changeItems, null);
         }
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
@@ -1625,6 +1628,7 @@ public class ArrangementController {
      * @param nodeVO         uzel, na který nastavíme hodnoty ze staršího bratra
      * @return vytvořené hodnoty
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/copyOlderSiblingAttribute", method = RequestMethod.PUT)
     public CopySiblingResult copyOlderSiblingAttribute(
@@ -1648,7 +1652,6 @@ public class ArrangementController {
 
         return new CopySiblingResult(resultNode, descItemTypeVO);
     }
-
 
     /**
      * Provede načtení stromu uzlů. Uzly mohou být rozbaleny.

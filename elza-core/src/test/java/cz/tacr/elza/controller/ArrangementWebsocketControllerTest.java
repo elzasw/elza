@@ -31,7 +31,6 @@ import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrLevel;
@@ -242,9 +241,18 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         ArrNodeVO rootNode = convertTreeNode(treeNodeVO);
 
         // Přidání JP na úroveň
-        ArrItemIntVO itemInt = new ArrItemIntVO();
-        itemInt.setItemTypeId(findItemTypeId("SRD_NAD"));
-        itemInt.setValue(12);
+        RulDescItemTypeExtVO itemType = getDescItemTypes().stream()
+                .filter(t -> t.getCode().equals("SRD_NAD"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Item type SRD_NAD not found"));
+        // dočasné řešení
+        cz.tacr.elza.controller.vo.DataInteger dataInt = new cz.tacr.elza.controller.vo.DataInteger();
+        dataInt.setIntegerValue(12);
+        cz.tacr.elza.controller.vo.NodeItem itemInt = new cz.tacr.elza.controller.vo.NodeItem();
+        itemInt.setItemTypeId(itemType.getId());
+        itemInt.setNodeId(rootNode.getId());
+        itemInt.setNodeVersion(rootNode.getVersion());
+        itemInt.setData(dataInt);
 
         AddLevelParam addLevelParam = new AddLevelParam();
         addLevelParam.setVersionId(fundVersion.getId());

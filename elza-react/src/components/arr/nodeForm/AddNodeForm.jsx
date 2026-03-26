@@ -315,7 +315,7 @@ class AddNodeForm extends AbstractReactComponent {
                             }
                         })
                         if (createItems.length > 0) {
-                            submitData.createItems = createItems.map((item) => convertToOldDescItem(item));
+                            submitData.createItems = createItems;
                         }
 
                         this.props.dispatch(
