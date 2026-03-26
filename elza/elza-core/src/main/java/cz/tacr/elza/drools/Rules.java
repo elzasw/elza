@@ -6,10 +6,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.AbstractMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.kie.api.KieBase;
 import org.kie.api.KieBaseConfiguration;
@@ -42,7 +42,6 @@ import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.repository.PackageDependencyRepository;
 import cz.tacr.elza.repository.PackageRepository;
 
-
 /**
  * Abstraktní třída pro Drools pravidla.
  *
@@ -55,7 +54,7 @@ public abstract class Rules {
     /**
      * uchování informace o načtených drools souborech
      */
-    private Map<Path, Map.Entry<FileTime, KieBase>> rulesByPathMap = new HashMap<>();
+    private static final Map<Path, Map.Entry<FileTime, KieBase>> rulesByPathMap = new ConcurrentHashMap<>();
 
     @Autowired
     protected ArrangementRuleRepository arrangementRuleRepository;
@@ -70,7 +69,7 @@ public abstract class Rules {
     protected StaticDataService staticDataService;
 
     // KIE configuration
-    private KieBaseConfiguration kieBaseConf;
+    private static KieBaseConfiguration kieBaseConf;
 
     public Rules() {
         KieServices ks = KieServices.Factory.get();
@@ -85,14 +84,10 @@ public abstract class Rules {
      * @throws IOException
      */
     protected Map.Entry<FileTime, KieBase> testChangeFile(final Path path,
-                                                          final Map.Entry<FileTime, KieBase> entry)
-            throws IOException {
+                                                          final Map.Entry<FileTime, KieBase> entry) throws IOException {
         FileTime ft = Files.getLastModifiedTime(path);
         if (entry.getKey() == null || ft.compareTo(entry.getKey()) > 0) {
-            Map.Entry<FileTime, KieBase> entryNew = reloadRules(path);
-            rulesByPathMap.remove(path);
-            rulesByPathMap.put(path, entryNew);
-            return entryNew;
+            return reloadRules(path);
         } else {
             return entry;
         }
@@ -103,13 +98,24 @@ public abstract class Rules {
      * 
      * @throws IOException
      */
-    private Map.Entry<FileTime, KieBase> reloadRules(final Path path) throws IOException {
+    private static synchronized Map.Entry<FileTime, KieBase> reloadRules(final Path path) throws IOException {
+        Map.Entry<FileTime, KieBase> existing = rulesByPathMap.get(path);
+        if (existing != null) {
+            FileTime ft = Files.getLastModifiedTime(path);
+            if (existing.getKey() != null && ft.compareTo(existing.getKey()) <= 0) {
+                return existing;
+            }
+        }
+
         logger.debug("Loading rules: {}", path);
 
         KieServices ks = KieServices.Factory.get();
         KieFileSystem kfs = ks.newKieFileSystem();
 
-        kfs.write(ResourceFactory.newInputStreamResource(new FileInputStream(path.toFile()), "UTF-8").setResourceType(ResourceType.DRL).setTargetPath(UUID.randomUUID().toString()));
+        kfs.write(ResourceFactory.newInputStreamResource(
+        		new FileInputStream(path.toFile()), "UTF-8")
+        		.setResourceType(ResourceType.DRL)
+        		.setTargetPath(UUID.randomUUID().toString()));
         KieBuilder kBuilder = ks.newKieBuilder(kfs);
         kBuilder.buildAll();
         if (kBuilder.getResults().hasMessages(Message.Level.ERROR)) {
@@ -120,21 +126,18 @@ public abstract class Rules {
         // set kieBase configuration
         KieBase kbc = kc.newKieBase(kieBaseConf);
         FileTime ft = Files.getLastModifiedTime(path);
-        return new AbstractMap.SimpleEntry<>(ft, kbc);
+        Map.Entry<FileTime, KieBase> entry = new AbstractMap.SimpleEntry<>(ft, kbc);
+        rulesByPathMap.put(path, entry);
+        return entry;
     }
 
     private KieBase getKieBase(Path path) throws IOException {
         Map.Entry<FileTime, KieBase> entry = rulesByPathMap.get(path);
-
         if (entry == null) {
-            entry = reloadRules(path);
-            rulesByPathMap.put(path, entry);
+            return reloadRules(path).getValue();
         } else {
-            entry = testChangeFile(path, entry);
+            return testChangeFile(path, entry).getValue();
         }
-
-        KieBase kb = entry.getValue();
-        return kb;
     }
 
     /**
