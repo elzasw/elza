@@ -175,7 +175,7 @@ public class ArrangementWebSocketController {
                 Integer fundVersionId = version.getFundVersionId();
                 Integer nodeId = newLevel.getNodeId();
                 Integer nodeVersion = newLevel.getNode().getVersion();
-                arrangementFormService.updateDescItems(fundVersionId, nodeId, nodeVersion, changeItems, requestHeaders);
+                arrangementFormService.updateDescItems(fundVersionId, nodeId, nodeVersion, changeItems, null);
             }
 
             nodes.add(ArrNodeVO.newInstance(newLevel.getNode()));
