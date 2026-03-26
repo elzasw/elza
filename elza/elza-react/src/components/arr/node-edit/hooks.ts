@@ -11,13 +11,14 @@ import {
   NodeFormData,
   NodeItem,
 } from "elza-api";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DescItemTypeRef } from "typings/store";
 import { EventType } from "typings/websocket";
 import { AnyMessage } from "typings/websocket/Message";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { getOneSettings } from "../ArrUtils";
 import { createEmptyDescItem } from "./desc-items/utils";
+import { consumePendingTemplateCallback } from "./pendingTemplateItems";
 
 export function useStrictMode() {
   const strictMode: boolean = useAppSelector(({ userDetail, arrRegion }) => {
@@ -253,6 +254,7 @@ export function useNodeFormData(
   );
 
   const { getKey } = useKeyGen(nodeId);
+  const pendingConsumedRef = useRef(false);
 
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [formData, setFormData] = useState<NodeFormData>();
@@ -284,6 +286,24 @@ export function useNodeFormData(
             nodeVersionId,
             { skipForcedItems: false },
           );
+
+      // add desc items from template used to create the node
+      if (!pendingConsumedRef.current) {
+          pendingConsumedRef.current = true;
+          const pendingCallback = consumePendingTemplateCallback(nodeId);
+          if (pendingCallback) {
+              // prevent adding empty items for already existing/forced
+              const existingTypeIds = [
+                  ...(data.formData.descItems || []),
+                  ...(_forcedDescItems || [])
+              ]?.map(({ itemTypeId }) => itemTypeId);
+              pendingCallback((typeId, specId) => {
+                  if (!existingTypeIds.includes(typeId)) {
+                      addEmptyDescItem(typeId, specId);
+                  }
+              });
+          }
+      }
 
       // setStoredData(undefined);
       setFormData(data.formData);
@@ -350,6 +370,10 @@ export function useNodeFormData(
     },
     [fondsVersionId, nodeId],
   );
+
+  useEffect(() => {
+    pendingConsumedRef.current = false;
+  }, [nodeId]);
 
   useEffect(() => {
     if (reloadData) {
