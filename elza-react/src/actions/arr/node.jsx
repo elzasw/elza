@@ -389,7 +389,7 @@ export function addNode(
             WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems, count),
         ).then(json => {
             dispatch(fundNodeChangeAdd(versionId, json.nodes, indexNode, json.parentNode, direction));
-            afterCreateCallback && afterCreateCallback(versionId, json.nodes, json.parentNode);
+            afterCreateCallback && afterCreateCallback(versionId, json.nodes, json.parentNode, emptyItemTypeIds);
 
             const state = getState();
             const activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
