@@ -115,6 +115,7 @@ public class StructObjValueService {
 
     private Thread generatorThread = null;
     private boolean stopGenerator = false;
+    private boolean wakeupRequested = false;
 
     private Map<File, GroovyScriptService.GroovyScriptFile> groovyScriptMap = new HashMap<>();
 
@@ -240,6 +241,7 @@ public class StructObjValueService {
 
     private void notifyGenerator() {
         synchronized (lock) {
+            wakeupRequested = true;
             lock.notifyAll();
         }
     }
@@ -285,6 +287,7 @@ public class StructObjValueService {
                 if (stopGenerator) {
                     break;
                 }
+                wakeupRequested = false;
             }
             boolean moreData = false;
             try {
@@ -295,8 +298,11 @@ public class StructObjValueService {
                 logger.error("Failed to run generator", e);
             }
             if (!moreData) {
-                // no more items -> sleep
+                // no more items -> sleep unless wakeup was requested during processing
                 synchronized (lock) {
+                    if (wakeupRequested) {
+                        continue;
+                    }
                     try {
                         lock.wait(QUEUE_CHECK_TIME_INTERVAL);
                     } catch (InterruptedException e) {

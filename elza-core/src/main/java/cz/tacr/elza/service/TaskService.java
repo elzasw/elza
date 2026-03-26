@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -198,7 +199,7 @@ public class TaskService {
 			return Collections.emptyList();
 		}
 
-        List<WfTask> wfTasks = wfTaskRepository.findAllByAssigneeId(userDetail.getId());
+        List<WfTask> wfTasks = wfTaskRepository.findNewByAssigneeId(userDetail.getId());
         List<WfTaskApState> wfTaskApStates = wfTaskApStateRepository.findAllByTaskIn(wfTasks);
         List<WfTaskApRevState> wfTaskApRevStates = wfTaskApRevStateRepository.findAllByTaskIn(wfTasks);
 
@@ -209,8 +210,8 @@ public class TaskService {
         	taskIdApStateMap.put(t.getTaskId(), t.getState().getRevision().getState());
         });
 
-        // list of taskId from WfTaskApState(s)
-        List<Integer> taskApStateIds = wfTaskApStates.stream().map(t -> t.getTaskApStateId()).toList();
+        // set of taskId from WfTaskApState(s)
+        Set<Integer> taskApStateIds = wfTaskApStates.stream().map(t -> t.getTaskId()).collect(Collectors.toSet());
 
         // create Map<accessPointId, ApIndex> 
         List<Integer> apIds = taskIdApStateMap.values().stream().map(s -> s.getAccessPointId()).toList();

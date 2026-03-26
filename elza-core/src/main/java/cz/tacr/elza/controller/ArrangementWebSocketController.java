@@ -12,7 +12,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +19,6 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
 
@@ -34,25 +29,21 @@ import cz.tacr.elza.controller.vo.DataString;
 import cz.tacr.elza.controller.vo.DataText;
 import cz.tacr.elza.controller.vo.ItemData;
 import cz.tacr.elza.controller.vo.NodeItem;
+import cz.tacr.elza.controller.vo.NodeUpdateItem;
+import cz.tacr.elza.controller.vo.UpdateOp;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemStringVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrUpdateItemVO;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemType;
-import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.service.ArrangementFormService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.LevelTreeCacheService;
-import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 import cz.tacr.elza.websocket.WebSocketAwareController;
 import cz.tacr.elza.websocket.service.WebSoсketStompService;
 import jakarta.transaction.Transactional;
@@ -66,6 +57,18 @@ import jakarta.transaction.Transactional;
 @WebSocketAwareController
 public class ArrangementWebSocketController {
 
+	public static final String UPDATE_DESC_ITEM_MSG_MAPPING = "/arrangement/descItems/{fundVersionId}/update/{createNewVersion}";
+
+	public static final String UPDATE_DESC_ITEMS_MSG_MAPPING = "/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk";
+
+	public static final String ADD_LEVEL_MSG_MAPPING = "/arrangement/levels/add";
+	
+	public static final String DELETE_LEVEL_MSG_MAPPING = "/arrangement/levels/delete";
+	
+	public static final String INHIBIT_INHERITANCE_MSG_MAPPING = "/arrangement/descItems/inhibit";
+	
+	public static final String ALLOW_INHERITANCE_MSG_MAPPING = "/arrangement/descItems/allow";
+	
 	@Autowired
 	private ArrangementFormService arrangementFormService;
 
@@ -90,7 +93,7 @@ public class ArrangementWebSocketController {
     @Autowired
     private LevelTreeCacheService levelTreeCacheService;
 
-    @MessageMapping("/arrangement/descItems/{fundVersionId}/update/{createNewVersion}")
+    @MessageMapping(UPDATE_DESC_ITEM_MSG_MAPPING)
 	public void updateDescItem(@Payload final NodeItem nodeItem,
 	        	               @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
 	                           @DestinationVariable(value = "createNewVersion") final Boolean createNewVersion,
@@ -115,42 +118,8 @@ public class ArrangementWebSocketController {
 		arrangementFormService.updateDescItem(fundVersionId, nodeId, nodeVersion, nodeItem, createNewVersion, requestHeaders);
     }
 
-    @Deprecated
-	@MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}")
-	public void updateDescItem(
-	        @Payload final ArrItemVO descItemVO,
-	        @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
-	        @DestinationVariable(value = "nodeId") final Integer nodeId,
-	        @DestinationVariable(value = "nodeVersion") final Integer nodeVersion,
-	        @DestinationVariable(value = "createNewVersion") final Boolean createNewVersion,
-	        final StompHeaderAccessor requestHeaders) {
-
-		Objects.requireNonNull(fundVersionId);
-		Objects.requireNonNull(nodeId);
-		Objects.requireNonNull(nodeVersion);
-		Objects.requireNonNull(descItemVO);
-
-        // authorize request as logged user
-		Authentication token = (Authentication) requestHeaders
-		        .getHeader("simpUser");
-		SecurityContext sc = new SecurityContextImpl();
-		sc.setAuthentication(token);
-		SecurityContextHolder.setContext(sc);
-
-        // nepovolujeme prázdné řádky pro ArrItemTextVO i ArrItemStringVO
-    	if (descItemVO instanceof ArrItemTextVO) {
-    		Validate.isTrue(StringUtils.isNotBlank(((ArrItemTextVO) descItemVO).getValue()), "Textové pole nesmí být prázdné");
-    	}
-    	if (descItemVO instanceof ArrItemStringVO) {
-    		Validate.isTrue(StringUtils.isNotBlank(((ArrItemStringVO) descItemVO).getValue()), "Stringové pole nesmí být prázdné");
-    	}
-
-		arrangementFormService.updateDescItem(fundVersionId, nodeId, nodeVersion, descItemVO, 
-				                              BooleanUtils.isNotFalse(createNewVersion), requestHeaders);
-	}
-
-    @MessageMapping("/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk")
-    public void updateDescItems(@Payload final ArrUpdateItemVO[] changeItems,
+    @MessageMapping(UPDATE_DESC_ITEMS_MSG_MAPPING)
+    public void updateDescItems(@Payload final NodeUpdateItem[] changeItems,
                                 @DestinationVariable(value = "fundVersionId") final Integer fundVersionId,
                                 @DestinationVariable(value = "nodeId") final Integer nodeId,
                                 @DestinationVariable(value = "nodeVersion") final Integer nodeVersion,
@@ -160,32 +129,8 @@ public class ArrangementWebSocketController {
         Objects.requireNonNull(nodeVersion);
         Objects.requireNonNull(fundVersionId);
 
-        List<ArrItemVO> createItems = new ArrayList<>();
-        List<ArrItemVO> updateItems = new ArrayList<>();
-        List<ArrItemVO> deleteItems = new ArrayList<>();
-        for (ArrUpdateItemVO changeItem : changeItems) {
-            ArrItemVO item = changeItem.getItem();
-            switch (changeItem.getUpdateOp()) {
-                case CREATE:
-                    createItems.add(item);
-                    break;
-                case DELETE:
-                    deleteItems.add(item);
-                    break;
-                case UPDATE:
-                    updateItems.add(item);
-                    break;
-                default:
-                    throw new SystemException("Neimplementovaný typ operace: " + changeItem.getUpdateOp());
-            }
-        }
-
-        UpdateDescItemsParam params = new UpdateDescItemsParam(
-                createItems,
-                updateItems,
-                deleteItems);
-        arrangementFormService.updateDescItems(fundVersionId, nodeId, nodeVersion, params, requestHeaders);
-    }
+        arrangementFormService.updateDescItems(fundVersionId, nodeId, nodeVersion, changeItems, requestHeaders);
+	}
 
     /**
      * Přidání uzlu do stromu.
@@ -195,7 +140,7 @@ public class ArrangementWebSocketController {
      * @return nový přidaný uzel
      */
     @Transactional
-    @MessageMapping("/arrangement/levels/add")
+    @MessageMapping(ADD_LEVEL_MSG_MAPPING)
     public void addLevel(@Payload final AddLevelParam addLevelParam,
                          final StompHeaderAccessor requestHeaders) {
 
@@ -223,11 +168,14 @@ public class ArrangementWebSocketController {
 
         for (ArrLevel newLevel : newLevels) {
             if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
-                UpdateDescItemsParam params = new UpdateDescItemsParam(
-                        addLevelParam.getCreateItems(),
-                        Collections.emptyList(),
-                        Collections.emptyList());
-                arrangementFormService.updateDescItems(version.getFundVersionId(), newLevel.getNodeId(), newLevel.getNode().getVersion(), params, null);
+                NodeUpdateItem[] changeItems = addLevelParam.getCreateItems().stream()
+                		.map(nodeItem -> new NodeUpdateItem().updateOp(UpdateOp.CREATE).item(nodeItem))
+                		.toList()
+                		.toArray(new NodeUpdateItem[0]);
+                Integer fundVersionId = version.getFundVersionId();
+                Integer nodeId = newLevel.getNodeId();
+                Integer nodeVersion = newLevel.getNode().getVersion();
+                arrangementFormService.updateDescItems(fundVersionId, nodeId, nodeVersion, changeItems, null);
             }
 
             nodes.add(ArrNodeVO.newInstance(newLevel.getNode()));
@@ -250,7 +198,7 @@ public class ArrangementWebSocketController {
      * @param nodeParam vstupní parametry pro smazání
      */
     @Transactional
-    @MessageMapping("/arrangement/levels/delete")
+    @MessageMapping(DELETE_LEVEL_MSG_MAPPING)
     public void deleteLevel(@Payload final ArrangementController.NodeParam nodeParam,
                             final StompHeaderAccessor requestHeaders) {
         Validate.notNull(nodeParam, "Parametry JP musí být vyplněny");
@@ -283,7 +231,7 @@ public class ArrangementWebSocketController {
      * @param requestHeaders
      */
     @Transactional
-    @MessageMapping("/arrangement/descItems/inhibit")
+    @MessageMapping(INHIBIT_INHERITANCE_MSG_MAPPING)
     public void inhibitItem(@Payload final ArrInhibitedItemVO arrInhibitedItem, final StompHeaderAccessor requestHeaders) {
         Objects.requireNonNull(arrInhibitedItem);
         Objects.requireNonNull(arrInhibitedItem.getNodeId());
@@ -303,7 +251,7 @@ public class ArrangementWebSocketController {
      * @param requestHeaders
      */
     @Transactional
-    @MessageMapping("/arrangement/descItems/allow")
+    @MessageMapping(ALLOW_INHERITANCE_MSG_MAPPING)
     public void allowItem(@Payload final ArrInhibitedItemVO arrInhibitedItem, final StompHeaderAccessor requestHeaders) {
         Objects.requireNonNull(arrInhibitedItem);
         Objects.requireNonNull(arrInhibitedItem.getNodeId());

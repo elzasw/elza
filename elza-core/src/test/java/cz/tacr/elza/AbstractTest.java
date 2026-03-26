@@ -6,17 +6,15 @@ import java.net.URL;
 import cz.tacr.elza.service.DescriptionItemService;
 import jakarta.persistence.EntityManager;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
@@ -38,7 +36,6 @@ import cz.tacr.elza.service.StartupService;
 /**
  * Base test class
  */
-@RunWith(SpringRunner.class)
 @ContextConfiguration(classes=ElzaCoreMain.class)
 @SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)
 public abstract class AbstractTest {
@@ -123,10 +120,10 @@ public abstract class AbstractTest {
     @Qualifier("transactionManager")
     protected PlatformTransactionManager txManager;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         // startup service have to be initialized
-        Assert.assertTrue(!startupService.isRunning());
+        Assertions.assertFalse(startupService.isRunning());
         helperTestService.deleteTables(false);
 
         startupService.startNow();
@@ -136,14 +133,14 @@ public abstract class AbstractTest {
         helperTestService.loadPackage("SIMPLE-DEV", "rules-simple-dev");
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         startupService.stop();
     }
 
     public static File getResourceFile(String resourcePath) {
         URL url = Thread.currentThread().getContextClassLoader().getResource(resourcePath);
-        Assert.assertNotNull(url);
+        Assertions.assertNotNull(url);
         return new File(url.getPath());
     }
 }

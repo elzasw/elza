@@ -405,6 +405,21 @@ export interface StateRegion {
     registryRegionFront: RegistryRegionFrontEntity[];
 }
 
+export interface StructureNodeFormState {
+    id: number | null;
+    fetched: boolean;
+    fetching: boolean;
+    currentDataKey: unknown;
+    subNodeForm: unknown;
+    version?: number;
+}
+
+export interface StructuresState {
+    stores: {
+        [key: string]: StructureNodeFormState;
+    };
+}
+
 export interface AppState {
     splitter: SplitterState;
     adminRegion: AdminRegionState;
@@ -421,7 +436,7 @@ export interface AppState {
     router: unknown;
     stateRegion: StateRegion;
     status: unknown;
-    structures: unknown;
+    structures: StructuresState;
     tab: unknown;
     toastr: unknown;
     userDetail: UserDetail;

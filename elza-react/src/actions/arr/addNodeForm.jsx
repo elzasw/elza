@@ -15,6 +15,7 @@ import CopyConflictForm from '../../components/arr/nodeForm/CopyConflictForm';
 import {importForm} from 'actions/global/global.jsx';
 import {WebApi} from '../WebApi';
 import {globalFundTreeInvalidate} from './globalFundTree';
+import {setPendingTemplateCallback} from 'components/arr/node-edit/pendingTemplateItems';
 
 /**
  * Vyvolá dialog pro přidání uzlu. Toto vyvolání dialogu slouží pro volání POUZE z pořádání! Po úspěšném volání je vybrán v pořádání přidaný node.
@@ -25,9 +26,14 @@ import {globalFundTreeInvalidate} from './globalFundTree';
  */
 export function addNodeFormArr(direction, node, selectedSubNodeIndex, versionId) {
     return dispatch => {
-        const afterCreateCallback = (versionId, nodes, parentNode) => {
+        const afterCreateCallback = (versionId, nodes, parentNode, emptyItemTypeIds) => {
             const node = nodes && nodes[0];
             if(node){
+                if (emptyItemTypeIds?.length > 0) {
+                    setPendingTemplateCallback(node.id, (addEmptyDescItem) => {
+                        emptyItemTypeIds.forEach(id => addEmptyDescItem(id));
+                    });
+                }
                 dispatch(fundSelectSubNode(versionId, node.id, parentNode));
             } else {
                 throw new Error("No node found in addNode response");

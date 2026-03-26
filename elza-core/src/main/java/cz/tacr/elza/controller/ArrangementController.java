@@ -80,6 +80,7 @@ import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FulltextFundRequest;
 import cz.tacr.elza.controller.vo.FundListCountResult;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.NodeUpdateItem;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
@@ -89,6 +90,7 @@ import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.TreeNodeWithFundVO;
 import cz.tacr.elza.controller.vo.UniqueValue;
+import cz.tacr.elza.controller.vo.UpdateOp;
 import cz.tacr.elza.controller.vo.filter.Filters;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
@@ -604,6 +606,7 @@ public class ArrangementController {
      * @param nodeVersion    verze JP
      * @param descItemTypeId identfikátor typu hodnoty atributu
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}",
             method = RequestMethod.DELETE,
@@ -660,37 +663,6 @@ public class ArrangementController {
         outputItemResult.setParent(factoryVo.createOutput(output));
 
         return outputItemResult;
-    }
-
-    /**
-     * Smazání hodnoty atributu.
-     *
-     * @param descItemVO    hodnota atributu
-     * @param fundVersionId identfikátor verze AP
-     * @param nodeVersion   verze JP
-     */
-    @Transactional
-    @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/delete",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    @Deprecated
-    public DescItemResult deleteDescItem(@RequestBody final ArrItemVO descItemVO,
-                                         @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                         @PathVariable(value = "nodeId") final Integer nodeId,
-                                         @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
-        Assert.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
-        Assert.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
-        Assert.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-
-        ArrDescItem descItemDeleted = descriptionItemService
-                .deleteDescriptionItem(descItemVO.getDescItemObjectId(), nodeVersion, nodeId, fundVersionId, false);
-
-        DescItemResult descItemResult = new DescItemResult();
-        descItemResult.setItem(null);
-        descItemResult.setParent(ArrNodeVO.valueOf(descItemDeleted.getNode()));
-
-        return descItemResult;
     }
 
     /**
@@ -770,6 +742,7 @@ public class ArrangementController {
      * @param importFile     soubor soubor pro import
      * @throws IOException chyba
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/csv/import",
             method = RequestMethod.POST,
@@ -829,35 +802,6 @@ public class ArrangementController {
     }
 
     /**
-     * Aktualizace hodnoty atributu.
-     *
-     * @param descItemVO       hodnota atributu
-     * @param fundVersionId    identfikátor verze AP
-     * @param nodeId           id cílového nodu
-     * @param nodeVersion      verze JP
-     * @param createNewVersion vytvořit novou verzi?
-     */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/{createNewVersion}",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public DescItemResult updateDescItem(@RequestBody final ArrItemVO descItemVO,
-                                         @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                         @PathVariable(value = "nodeId") final Integer nodeId,
-                                         @PathVariable(value = "nodeVersion") final Integer nodeVersion,
-                                         @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
-        Validate.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
-        Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
-        Validate.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
-        Validate.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-        Validate.notNull(createNewVersion, "Vytvořit novou verzi musí být vyplněno");
-
-        return formService.updateDescItem(fundVersionId, nodeId, nodeVersion, descItemVO, createNewVersion.booleanValue());
-    }
-
-    /**
      * Nastavení atributu na "Nezjištěno".
      *
      * @param fundVersionId    id archivního souboru
@@ -868,6 +812,7 @@ public class ArrangementController {
      * @param descItemObjectId identifikátor existující hodnoty atributu
      * @return upravená hodnota atributu nastavená na nezjištěno
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/set",
             method = RequestMethod.PUT,
@@ -900,6 +845,7 @@ public class ArrangementController {
      * @param descItemObjectId identifikátor existující hodnoty atributu
      * @return odstraněný atribut
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/unset",
             method = RequestMethod.PUT,
@@ -978,43 +924,6 @@ public class ArrangementController {
         outputItemResult.setItem(null);
         outputItemResult.setParent(factoryVo.createOutput(descItemDeleted.getOutput()));
         return outputItemResult;
-    }
-
-    /**
-     * Vytvoření hodnoty atributu.
-     *
-     * @param descItemVO     hodnota atributu
-     * @param fundVersionId  identfikátor verze AP
-     * @param descItemTypeId identfikátor typu hodnoty atributu
-     * @param nodeId         identfikátor JP
-     * @param nodeVersion    verze JP
-     * @return hodnota atributu
-     */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}/create",
-            method = RequestMethod.PUT,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public DescItemResult createDescItem(@RequestBody final ArrItemVO descItemVO,
-                                         @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                         @PathVariable(value = "descItemTypeId") final Integer descItemTypeId,
-                                         @PathVariable(value = "nodeId") final Integer nodeId,
-                                         @PathVariable(value = "nodeVersion") final Integer nodeVersion) {
-        Validate.notNull(descItemVO, "Hodnota atributu musí být vyplněna");
-        Validate.notNull(fundVersionId, "Nebyl vyplněn identifikátor verze AS");
-        Validate.notNull(descItemTypeId, "Nebyl vyplněn identifikátor typu atributu");
-        Validate.notNull(nodeId, "Nebyl vyplněn identifikátor JP");
-        Validate.notNull(nodeVersion, "Nebyla vyplněna verze JP");
-        ArrDescItem descItem = factoryDO.createDescItem(descItemVO, descItemTypeId);
-
-        ArrDescItem descItemCreated = descriptionItemService.createDescriptionItem(descItem, nodeId, nodeVersion, fundVersionId);
-
-        DescItemResult descItemResult = new DescItemResult();
-        descItemResult.setItem(factoryVo.createItem(descItemCreated));
-        descItemResult.setParent(ArrNodeVO.valueOf(descItemCreated.getNode()));
-
-        return descItemResult;
     }
 
     @Transactional
@@ -1638,7 +1547,6 @@ public class ArrangementController {
         return levelTreeCacheService.getNodesByIds(nodeIds, idsParam.getVersionId());
     }
 
-
     /**
      * Přidání uzlu do stromu.
      *
@@ -1664,17 +1572,19 @@ public class ArrangementController {
             descItemCopyTypes.addAll(itemTypeRepository.findAllById(addLevelParam.getDescItemCopyTypes()));
         }
 
-
         List<ArrLevel> newLevels = fundLevelService.addNewLevel(fundVersion, staticNode, staticParentNode,
                 addLevelParam.getDirection(), addLevelParam.getScenarioName(), descItemCopyTypes, null, null, null);
         ArrLevel newLevel = newLevels.get(0);
 
         if (CollectionUtils.isNotEmpty(addLevelParam.getCreateItems())) {
-            UpdateDescItemsParam params = new UpdateDescItemsParam(
-                    addLevelParam.getCreateItems(),
-                    Collections.emptyList(),
-                    Collections.emptyList());
-            formService.updateDescItems(fundVersion.getFundVersionId(), newLevel.getNodeId(), newLevel.getNode().getVersion(), params, null);
+            NodeUpdateItem[] changeItems = addLevelParam.getCreateItems().stream()
+            		.map(nodeItem -> new NodeUpdateItem().updateOp(UpdateOp.CREATE).item(nodeItem))
+            		.toList()
+            		.toArray(new NodeUpdateItem[0]);
+            Integer fundVersionId = fundVersion.getFundVersionId();
+            Integer nodeId = newLevel.getNodeId();
+            Integer nodeVersion = newLevel.getNode().getVersion();
+            formService.updateDescItems(fundVersionId, nodeId, nodeVersion, changeItems, null);
         }
 
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
@@ -1718,6 +1628,7 @@ public class ArrangementController {
      * @param nodeVO         uzel, na který nastavíme hodnoty ze staršího bratra
      * @return vytvořené hodnoty
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/copyOlderSiblingAttribute", method = RequestMethod.PUT)
     public CopySiblingResult copyOlderSiblingAttribute(
@@ -1741,7 +1652,6 @@ public class ArrangementController {
 
         return new CopySiblingResult(resultNode, descItemTypeVO);
     }
-
 
     /**
      * Provede načtení stromu uzlů. Uzly mohou být rozbaleny.

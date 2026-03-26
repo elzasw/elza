@@ -2,7 +2,7 @@ package cz.tacr.elza.controller;
 
 import io.restassured.response.Response;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;

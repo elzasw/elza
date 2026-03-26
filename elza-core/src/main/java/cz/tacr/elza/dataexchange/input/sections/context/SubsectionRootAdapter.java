@@ -41,6 +41,11 @@ class SubsectionRootAdapter implements SectionRootAdapter {
     }
 
     @Override
+    public Integer getFundVersionId() {
+        return importPosition.getFundVersion().getFundVersionId();
+    }
+
+    @Override
     public void onSectionClose() {
         // NOP
     }

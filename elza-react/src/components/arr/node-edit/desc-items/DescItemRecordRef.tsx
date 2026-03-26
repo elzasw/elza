@@ -52,6 +52,7 @@ export function DescItemRecordRef({
   isDisabled: _isDisabled,
   typeRef,
   selectedSpecId,
+  compact,
 }: Props) {
   if (item.data && item.data?.dataType !== DataType.RecordRef && !item.undefined) {
     throw "Incorrect data type";
@@ -221,6 +222,7 @@ export function DescItemRecordRef({
       }}
     >
       <Combobox
+        size={compact ? "small" : "medium"}
         title={query}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -274,6 +276,7 @@ export function DescItemRecordRef({
           content={<FormattedMessage {...messages.openInAccessPoints} />}
         >
           <Button
+            size={compact ? "small" : "medium"}
             style={{ height: "29px" }}
             appearance="subtle"
             disabled={

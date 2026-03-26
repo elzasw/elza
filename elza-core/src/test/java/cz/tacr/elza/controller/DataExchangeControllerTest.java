@@ -5,8 +5,8 @@ import java.util.List;
 
 import cz.tacr.elza.service.StructObjService;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -87,7 +87,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
 
         // check fund exists
         List<ArrFundVO> funds = getFunds();
-        Assert.assertTrue(funds.size() == 1);
+        Assertions.assertTrue(funds.size() == 1);
 
         // get last fund version and rule system
         ArrFundVO fund = funds.iterator().next();
@@ -98,18 +98,18 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
         treeParam.setVersionId(fVersion.getId());
         TreeData treeData = getFundTree(treeParam);
         List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
-        Assert.assertTrue(nodes.size() == 4);
+        Assertions.assertTrue(nodes.size() == 4);
 
         // check structured object count
         FilteredResultVO<ArrStructureDataVO> structObjResult = findStructureData(STRUCT_OBJ_1_TYPE, fVersion.getId(), null, null, null, null);
-        Assert.assertTrue(structObjResult.getCount() == 1);
+        Assertions.assertTrue(structObjResult.getCount() == 1);
 
         // check structured object item count
         Integer structObjId = structObjResult.getRows().iterator().next().getId();
         List<ArrStructuredItem> structItems = new TransactionTemplate(tm).execute(a -> {
         	return structObjService.findByStructObjIdAndDeleteChangeIsNullFetchData(structObjId);
         });
-        Assert.assertTrue(structItems.size() == 2);
+        Assertions.assertTrue(structItems.size() == 2);
 
         // check structured object item data
         RulItemSpec so1Item1Spec = staticData.getItemTypeByCode(STRUCT_OBJ_1_ITEM_1_TYPE).getItemSpecByCode(STRUCT_OBJ_1_ITEM_1_SPEC);
@@ -128,23 +128,23 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
                 foundStructData++;
             }
         }
-        Assert.assertTrue(foundStructData == 2);
+        Assertions.assertTrue(foundStructData == 2);
 
         // coordinate control
         int foundCoordinates = 0;
         DescFormDataNewVO descFormData = getNodeFormData(nodes.get(0).getId(), fVersion.getId());
         for (ArrItemVO item : descFormData.getDescItems()) {
             if (item instanceof ArrItemCoordinatesVO) {
-                Assert.assertEquals(((ArrItemCoordinatesVO) item).getValue(), POINT_WKT);
+                Assertions.assertEquals(((ArrItemCoordinatesVO) item).getValue(), POINT_WKT);
                 foundCoordinates++;
             }
         }
-        Assert.assertTrue(foundCoordinates == 2);
+        Assertions.assertTrue(foundCoordinates == 2);
     }
 
     private void checkNoData() {
         List<ArrFundVO> funds = getFunds();
 
-        Assert.assertTrue(funds.size() == 0);
+        Assertions.assertTrue(funds.size() == 0);
     }
 }
