@@ -46,7 +46,7 @@ export function ErrorDisplay({ itemObjectId }: Props) {
     >
       <div
         className={styles.root}
-        style={{ height: size }}
+        style={{ height: size + 'px' }}
       >
         <WarningFilled />
       </div>
