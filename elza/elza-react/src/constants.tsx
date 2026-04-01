@@ -9,9 +9,9 @@ export const DEFAULT_LIST_SIZE = 200;
  * @see @fluentui/react-input useInputStyles.styles.js fieldHeights
  */
 export const FIELD_HEIGHT = {
-    small: '24px',
-    medium: '32px',
-    large: '40px',
+    small: 24,
+    medium: 32,
+    large: 40,
 } as const;
 
 export enum AP_EXT_SYSTEM_TYPE {
