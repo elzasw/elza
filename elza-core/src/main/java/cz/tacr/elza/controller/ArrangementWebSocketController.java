@@ -22,17 +22,17 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
 
-import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.vo.AddLevelParam;
 import cz.tacr.elza.controller.vo.ArrInhibitedItemVO;
 import cz.tacr.elza.controller.vo.DataString;
 import cz.tacr.elza.controller.vo.DataText;
 import cz.tacr.elza.controller.vo.ItemData;
+import cz.tacr.elza.controller.vo.NodeBase;
 import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.NodeUpdateItem;
 import cz.tacr.elza.controller.vo.UpdateOp;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.NodeBaseMapper;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrLevel;
@@ -62,13 +62,13 @@ public class ArrangementWebSocketController {
 	public static final String UPDATE_DESC_ITEMS_MSG_MAPPING = "/arrangement/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/update/bulk";
 
 	public static final String ADD_LEVEL_MSG_MAPPING = "/arrangement/levels/add";
-	
+
 	public static final String DELETE_LEVEL_MSG_MAPPING = "/arrangement/levels/delete";
-	
+
 	public static final String INHIBIT_INHERITANCE_MSG_MAPPING = "/arrangement/descItems/inhibit";
-	
+
 	public static final String ALLOW_INHERITANCE_MSG_MAPPING = "/arrangement/descItems/allow";
-	
+
 	@Autowired
 	private ArrangementFormService arrangementFormService;
 
@@ -76,17 +76,14 @@ public class ArrangementWebSocketController {
 	private ArrangementService arrangementService;
 
     @Autowired
-    private ClientFactoryDO factoryDO;
-    
-    @Autowired
     private WebSoсketStompService webSoсketStompService;
-    
+
     @Autowired
     private FundVersionRepository fundVersionRepository;
-    
+
     @Autowired
     private ItemTypeRepository itemTypeRepository;
-    
+
     @Autowired
     private FundLevelService fundLevelService;
 
@@ -151,9 +148,8 @@ public class ArrangementWebSocketController {
 
         ArrFundVersion version = fundVersionRepository.findById(versionId).orElseThrow(version(versionId));
 
-        ArrNode staticNode = factoryDO.createNode(addLevelParam.getStaticNode());
-        ArrNode staticParentNode = addLevelParam.getStaticNodeParent() == null ?
-                null : factoryDO.createNode(addLevelParam.getStaticNodeParent());
+        ArrNode staticNode = NodeBaseMapper.createEntity(addLevelParam.getStaticNode());
+        ArrNode staticParentNode = addLevelParam.getStaticNodeParent() == null ? null : NodeBaseMapper.createEntity(addLevelParam.getStaticNodeParent());
 
         Set<RulItemType> descItemCopyTypes = new HashSet<>();
         if (CollectionUtils.isNotEmpty(addLevelParam.getDescItemCopyTypes())) {
@@ -163,7 +159,7 @@ public class ArrangementWebSocketController {
         List<ArrLevel> newLevels = fundLevelService.addNewLevel(version, staticNode, staticParentNode,
                                                          addLevelParam.getDirection(), addLevelParam.getScenarioName(),
                                                          descItemCopyTypes, null, addLevelParam.getCount(), null);
-        List<ArrNodeVO> nodes = new ArrayList<>(newLevels.size());
+        List<NodeBase> nodes = new ArrayList<>(newLevels.size());
         Collection<TreeNodeVO> nodeClients = null;
 
         for (ArrLevel newLevel : newLevels) {
@@ -178,7 +174,7 @@ public class ArrangementWebSocketController {
                 arrangementFormService.updateDescItems(fundVersionId, nodeId, nodeVersion, changeItems, null);
             }
 
-            nodes.add(ArrNodeVO.newInstance(newLevel.getNode()));
+            nodes.add(NodeBaseMapper.valueOf(newLevel.getNode()));
 
             if (nodeClients == null) {
                 nodeClients = levelTreeCacheService.getNodesByIds(Collections.singletonList(newLevel.getNodeParent().getNodeId()), version);
@@ -205,9 +201,8 @@ public class ArrangementWebSocketController {
         Validate.notNull(nodeParam.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
         Validate.notNull(nodeParam.getStaticNode(), "Nebyla zvolena referenční JP");
 
-        ArrNode deleteNode = factoryDO.createNode(nodeParam.getStaticNode());
-        ArrNode deleteParent = nodeParam.getStaticNodeParent() == null ? null : factoryDO
-                .createNode(nodeParam.getStaticNodeParent());
+        ArrNode deleteNode = NodeBaseMapper.createEntity(nodeParam.getStaticNode());
+        ArrNode deleteParent = nodeParam.getStaticNodeParent() == null ? null : NodeBaseMapper.createEntity(nodeParam.getStaticNodeParent());
 
         ArrFundVersion version = fundVersionRepository.findById(nodeParam.getVersionId())
                 .orElseThrow(version(nodeParam.getVersionId()));
@@ -218,7 +213,7 @@ public class ArrangementWebSocketController {
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeParent().getNodeId()),
                                version);
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
-        final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(ArrNodeVO.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
+        final ArrangementController.NodeWithParent result = new ArrangementController.NodeWithParent(NodeBaseMapper.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
 
         // odeslání dat zpět
 		webSoсketStompService.sendReceiptAfterCommit(result, requestHeaders);
