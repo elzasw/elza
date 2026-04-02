@@ -184,7 +184,7 @@ function Dragger({ index, isVisible, isActive, compact, onDragIndexChange }: Dra
         setIsHovered(false);
     }
 
-    return <div className={styles.draggerContainer} style={{opacity: isActive ? 0.3 : undefined, height}}>
+    return <div className={styles.draggerContainer} style={{opacity: isActive ? 0.3 : undefined, height: height + 'px'}}>
         <div
             className={mergeClasses(
                 styles.draggerArea,

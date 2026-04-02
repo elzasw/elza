@@ -5,6 +5,7 @@ import {
   OptionOnSelectData,
   SelectionEvents,
   Tooltip,
+  tokens,
 } from "@fluentui/react-components";
 import { DocumentAddRegular } from "@fluentui/react-icons";
 import { WebApi } from "actions";
@@ -12,6 +13,7 @@ import { DataStructureRef, DataType, NodeItem } from "elza-api";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useActiveFund } from "../hooks";
+import { FIELD_HEIGHT } from "../../../../constants";
 import { AnonymousStructure } from "./AnonymousStructure";
 import { DescItemProps } from "./types";
 import { i18n } from "components";
@@ -196,7 +198,7 @@ export function DescItemStructured({
         <>
           <Combobox
             size={compact ? "small" : "medium"}
-            title={query}
+            title={`${query}${structure ? " " + structure?.complement : ""}`}
             value={`${query}`}
             onChange={handleQueryChange}
             onOptionSelect={handleSelect}
@@ -211,7 +213,7 @@ export function DescItemStructured({
               flex: 1,
               flexGrow: 5,
               // paddingLeft: "80px",
-              paddingRight: "37px",
+              paddingRight: compact ? FIELD_HEIGHT.small + 2 : FIELD_HEIGHT.medium + 4,
             }}
             input={{
               style: {
@@ -240,7 +242,10 @@ export function DescItemStructured({
           <div
             style={{
               position: "absolute",
-              right: "70px",
+              // right: "70px",
+              // left: "15px",
+              paddingLeft: `calc(${compact ? tokens.spacingHorizontalSNudge : tokens.spacingHorizontalMNudge} + ${tokens.spacingHorizontalXXS})`,
+              maxWidth: `calc(100% - ${(compact ? FIELD_HEIGHT.small : FIELD_HEIGHT.medium) * 2}px)`,
               height: "90%",
               display: "flex",
               alignItems: "center",
@@ -248,9 +253,21 @@ export function DescItemStructured({
               background: "var(--shade-0)",
               pointerEvents: "none",
               zIndex: 0,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              fontSize: compact ? tokens.fontSizeBase200 : tokens.fontSizeBase300,
             }}
           >
-            {structure?.complement}
+              <div style={{
+                  visibility: "hidden",
+                  background: "red",
+                  marginRight: "8px",
+                  flex: 0,
+              }}>{query}</div>
+              <div style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }} >
+                  {structure?.complement}
+              </div>
           </div>
           <div
             style={{
@@ -265,7 +282,7 @@ export function DescItemStructured({
             >
               <Button
                 size={compact ? "small" : "medium"}
-                style={{ height: "29px" }}
+                style={{ height: (compact ? FIELD_HEIGHT.small : FIELD_HEIGHT.medium) - 2 }}
                 appearance="subtle"
                 icon={<DocumentAddRegular />}
                 onClick={addNewStructure}
