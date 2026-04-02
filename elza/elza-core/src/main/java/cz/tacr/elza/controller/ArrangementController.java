@@ -79,6 +79,7 @@ import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.FulltextFundRequest;
 import cz.tacr.elza.controller.vo.FundListCountResult;
+import cz.tacr.elza.controller.vo.NodeBase;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.NodeUpdateItem;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
@@ -96,6 +97,7 @@ import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
+import cz.tacr.elza.controller.vo.nodes.NodeBaseMapper;
 import cz.tacr.elza.controller.vo.nodes.NodeDataParamVO;
 import cz.tacr.elza.controller.vo.nodes.NodeDataVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
@@ -377,7 +379,7 @@ public class ArrangementController {
             parentNode = parentNodes.iterator().next();
         }
 
-        NodeWithParent nodeWithParent = new NodeWithParent(ArrNodeVO.valueOf(node), parentNode);
+        NodeWithParent nodeWithParent = new NodeWithParent(NodeBaseMapper.valueOf(node), parentNode);
 
         SelectNodeResult result = new SelectNodeResult();
         result.setFund(fund);
@@ -1410,8 +1412,8 @@ public class ArrangementController {
         Integer fundVersionId = moveParam.getVersionId();
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 
-        ArrNodeVO staticNodeVO = moveParam.getStaticNode();
-        ArrNodeVO staticNodeParentVO = moveParam.getStaticNodeParent();
+        ArrNodeVO staticNodeVO = NodeBaseMapper.toArrNodeVO(moveParam.getStaticNode());
+        ArrNodeVO staticNodeParentVO = NodeBaseMapper.toArrNodeVO(moveParam.getStaticNodeParent());
         ArrNodeVO transportNodeParentVO = moveParam.getTransportNodeParent();
 
         ArrNode staticNode = arrangementService.getNodeVersion(staticNodeVO.getId(), staticNodeVO.getVersion());
@@ -1444,8 +1446,8 @@ public class ArrangementController {
         Integer fundVersionId = moveParam.getVersionId();
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 
-        ArrNodeVO staticNodeVO = moveParam.getStaticNode();
-        ArrNodeVO staticNodeParentVO = moveParam.getStaticNodeParent();
+        ArrNodeVO staticNodeVO = NodeBaseMapper.toArrNodeVO(moveParam.getStaticNode());
+        ArrNodeVO staticNodeParentVO = NodeBaseMapper.toArrNodeVO(moveParam.getStaticNodeParent());
         ArrNodeVO transportNodeParentVO = moveParam.getTransportNodeParent();
 
         ArrNode staticNode = arrangementService.getNodeVersion(staticNodeVO.getId(), staticNodeVO.getVersion());
@@ -1483,7 +1485,7 @@ public class ArrangementController {
         Integer fundVersionId = moveParam.getVersionId();
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
 
-        ArrNodeVO staticNodeVO = moveParam.getStaticNode();
+        ArrNodeVO staticNodeVO = NodeBaseMapper.toArrNodeVO(moveParam.getStaticNode());
         ArrNodeVO transportNodeParentVO = moveParam.getTransportNodeParent();
 
         ArrNode staticNode = arrangementService.getNodeVersion(staticNodeVO.getId(), staticNodeVO.getVersion());
@@ -1563,9 +1565,8 @@ public class ArrangementController {
 
         ArrFundVersion fundVersion = arrangementService.getFundVersion(addLevelParam.getVersionId());
 
-        ArrNode staticNode = factoryDO.createNode(addLevelParam.getStaticNode());
-        ArrNode staticParentNode = addLevelParam.getStaticNodeParent() == null ? null : factoryDO
-                .createNode(addLevelParam.getStaticNodeParent());
+        ArrNode staticNode = NodeBaseMapper.createEntity(addLevelParam.getStaticNode());
+        ArrNode staticParentNode = addLevelParam.getStaticNodeParent() == null ? null : NodeBaseMapper.createEntity(addLevelParam.getStaticNodeParent());
 
         Set<RulItemType> descItemCopyTypes = new HashSet<>();
         if (CollectionUtils.isNotEmpty(addLevelParam.getDescItemCopyTypes())) {
@@ -1590,7 +1591,7 @@ public class ArrangementController {
         Collection<TreeNodeVO> nodeClients = levelTreeCacheService
                 .getNodesByIds(Arrays.asList(newLevel.getNodeParent().getNodeId()), fundVersion);
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
-        return new NodeWithParent(ArrNodeVO.valueOf(newLevel.getNode()), nodeClients.iterator().next());
+        return new NodeWithParent(NodeBaseMapper.valueOf(newLevel.getNode()), nodeClients.iterator().next());
     }
 
     /**
@@ -1605,9 +1606,8 @@ public class ArrangementController {
         Assert.notNull(nodeParam.getVersionId(), "Nebyl vyplněn identifikátor verze AS");
         Assert.notNull(nodeParam.getStaticNode(), "Nebyla zvolena referenční JP");
 
-        ArrNode deleteNode = factoryDO.createNode(nodeParam.getStaticNode());
-        ArrNode deleteParent = nodeParam.getStaticNodeParent() == null ? null : factoryDO
-                .createNode(nodeParam.getStaticNodeParent());
+        ArrNode deleteNode = NodeBaseMapper.createEntity(nodeParam.getStaticNode());
+        ArrNode deleteParent = nodeParam.getStaticNodeParent() == null ? null : NodeBaseMapper.createEntity(nodeParam.getStaticNodeParent());
 
         ArrFundVersion fundVersion = arrangementService.getFundVersion(nodeParam.getVersionId());
 
@@ -1617,7 +1617,7 @@ public class ArrangementController {
                 .getNodesByIds(Arrays.asList(deleteLevel.getNodeIdParent()),
                                fundVersion);
         Assert.notEmpty(nodeClients, "Kolekce JP nesmí být prázdná");
-        return new NodeWithParent(ArrNodeVO.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
+        return new NodeWithParent(NodeBaseMapper.valueOf(deleteLevel.getNode()), nodeClients.iterator().next());
     }
 
     /**
@@ -3209,11 +3209,11 @@ public class ArrangementController {
         /**
          * Statický uzel (za/před/pod který přidáváme)
          */
-        private ArrNodeVO staticNode;
+        private NodeBase staticNode;
         /**
          * Rodič statického uzlu (za/před/pod který přidáváme)
          */
-        private ArrNodeVO staticNodeParent;
+        private NodeBase staticNodeParent;
 
         public Integer getVersionId() {
             return versionId;
@@ -3223,19 +3223,19 @@ public class ArrangementController {
             this.versionId = versionId;
         }
 
-        public ArrNodeVO getStaticNode() {
+        public NodeBase getStaticNode() {
             return staticNode;
         }
 
-        public void setStaticNode(final ArrNodeVO staticNode) {
+        public void setStaticNode(final NodeBase staticNode) {
             this.staticNode = staticNode;
         }
 
-        public ArrNodeVO getStaticNodeParent() {
+        public NodeBase getStaticNodeParent() {
             return staticNodeParent;
         }
 
-        public void setStaticNodeParent(final ArrNodeVO staticNodeParent) {
+        public void setStaticNodeParent(final NodeBase staticNodeParent) {
             this.staticNodeParent = staticNodeParent;
         }
     }
@@ -3514,18 +3514,18 @@ public class ArrangementController {
         /**
          * Jednotka popisu.
          */
-        private ArrNodeVO node;
+        private NodeBase node;
 
         /**
          * Rodič jednotky popisu.
          */
         private TreeNodeVO parentNode;
 
-        public ArrNodeVO getNode() {
+        public NodeBase getNode() {
             return node;
         }
 
-        public void setNode(final ArrNodeVO node) {
+        public void setNode(final NodeBase node) {
             this.node = node;
         }
 
@@ -3540,7 +3540,7 @@ public class ArrangementController {
         public NodeWithParent() {
         }
 
-        public NodeWithParent(final ArrNodeVO node, final TreeNodeVO parentNode) {
+        public NodeWithParent(final NodeBase node, final TreeNodeVO parentNode) {
             this.node = node;
             this.parentNode = parentNode;
         }
@@ -3554,18 +3554,18 @@ public class ArrangementController {
         /**
          * Jednotky popisu.
          */
-        private List<ArrNodeVO> nodes;
+        private List<NodeBase> nodes;
 
         /**
          * Rodič jednotky popisu.
          */
         private TreeNodeVO parentNode;
 
-        public List<ArrNodeVO> getNodes() {
+        public List<NodeBase> getNodes() {
             return nodes;
         }
 
-        public void setNodes(final List<ArrNodeVO> nodes) {
+        public void setNodes(final List<NodeBase> nodes) {
             this.nodes = nodes;
         }
 
@@ -3580,7 +3580,7 @@ public class ArrangementController {
         public NodesWithParent() {
         }
 
-        public NodesWithParent(final List<ArrNodeVO> nodes, final TreeNodeVO parentNode) {
+        public NodesWithParent(final List<NodeBase> nodes, final TreeNodeVO parentNode) {
             this.nodes = nodes;
             this.parentNode = parentNode;
         }

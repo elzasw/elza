@@ -8,6 +8,7 @@ import cz.tacr.elza.domain.ArrNode;
  *
  * Object is used to transfer nodeId and its version
  */
+@Deprecated
 public class ArrNodeVO {
 
     /**
