@@ -877,7 +877,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // 4. přidání uzlu ve druhé úrovni
         helperTestService.waitForWorkers();
         ArrangementController.NodeWithParent newLevel4 = addLevel(FundLevelService.AddLevelDirection.CHILD,
-                                                                  fundVersion, newNodes3.get(0), newNodes3.get(0), null);
+                                                                  fundVersion, convertArrNode(newNodes3.get(0)), convertArrNode(newNodes3.get(0)), null);
 
         helperTestService.waitForWorkers();
         parentNode = newLevel4.getParentNode();
@@ -894,7 +894,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // 5. přidání uzlu na konec seznamu
         helperTestService.waitForWorkers();
         ArrangementController.NodeWithParent newLevel5 = addLevel(FundLevelService.AddLevelDirection.CHILD,
-                                                                  fundVersion, rootNode, rootNode, null);
+                                                                  fundVersion, convertArrNode(rootNode), convertArrNode(rootNode), null);
 
         helperTestService.waitForWorkers();
         parentNode = newLevel5.getParentNode();
@@ -904,7 +904,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // 6. přidání uzlu  na konec seznamu
         helperTestService.waitForWorkers();
         ArrangementController.NodeWithParent newLevel6 = addLevel(FundLevelService.AddLevelDirection.CHILD,
-                                                                  fundVersion, rootNode, rootNode, null);
+                                                                  fundVersion, convertArrNode(rootNode), convertArrNode(rootNode), null);
 
         helperTestService.waitForWorkers();
         parentNode = newLevel6.getParentNode();
