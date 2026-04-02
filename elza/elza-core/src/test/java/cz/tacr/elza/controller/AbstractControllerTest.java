@@ -901,13 +901,15 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @return vytvořený uzel
 	 */
 	protected ArrangementController.NodeWithParent addLevel(final FundLevelService.AddLevelDirection direction,
-			final ArrFundVersionVO fundVersion, final ArrNodeVO staticNode, final ArrNodeVO parentStaticNode,
-			final String scenarioName) {
+															final ArrFundVersionVO fundVersion, 
+															final NodeBase staticNode, 
+															final NodeBase parentStaticNode,
+															final String scenarioName) {
 		AddLevelParam addLevelParam = new AddLevelParam();
 		addLevelParam.setVersionId(fundVersion.getId());
 		addLevelParam.setDirection(direction);
-		addLevelParam.setStaticNode(staticNode);
-		addLevelParam.setStaticNodeParent(parentStaticNode);
+		addLevelParam.setStaticNode(convertFromNodeBaseTest(staticNode));
+		addLevelParam.setStaticNodeParent(convertFromNodeBaseTest(parentStaticNode));
 		addLevelParam.setScenarioName(scenarioName);
 		ArrangementController.NodeWithParent newLevel = addLevel(addLevelParam);
 
@@ -935,9 +937,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param transportNodes      přesouvaný uzly
 	 * @param transportNodeParent rodič přesouvaných uzlů
 	 */
-	protected void moveLevelBefore(final ArrFundVersionVO fundVersion, final ArrNodeVO staticNode,
-			final ArrNodeVO staticNodeParent, final List<ArrNodeVO> transportNodes,
-			final ArrNodeVO transportNodeParent) {
+	protected void moveLevelBefore(final ArrFundVersionVO fundVersion, 
+							       final ArrNodeVO staticNode,
+							       final ArrNodeVO staticNodeParent,
+							       final List<ArrNodeVO> transportNodes,
+							       final ArrNodeVO transportNodeParent) {
 		ArrangementController.LevelMoveParam moveParam = createMoveParam(fundVersion, staticNode, staticNodeParent,
 				transportNodes, transportNodeParent);
 		moveLevelBefore(moveParam);
@@ -987,11 +991,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param transportNodes      přesouvaný uzly
 	 * @param transportNodeParent rodič přesouvaných uzlů
 	 */
-	protected void moveLevelUnder(final ArrFundVersionVO fundVersion, final ArrNodeVO staticNode,
-			final ArrNodeVO staticNodeParent, final List<ArrNodeVO> transportNodes,
-			final ArrNodeVO transportNodeParent) {
-		ArrangementController.LevelMoveParam moveParam = createMoveParam(fundVersion, staticNode, staticNodeParent,
-				transportNodes, transportNodeParent);
+	protected void moveLevelUnder(final ArrFundVersionVO fundVersion, 
+			                      final ArrNodeVO staticNode,
+			                      final ArrNodeVO staticNodeParent,
+			                      final List<ArrNodeVO> transportNodes,
+			                      final ArrNodeVO transportNodeParent) {
+		ArrangementController.LevelMoveParam moveParam = createMoveParam(fundVersion, staticNode, staticNodeParent, transportNodes, transportNodeParent);
 		moveLevelUnder(moveParam);
 	}
 
@@ -1006,12 +1011,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @return parametry přesunu
 	 */
 	private ArrangementController.LevelMoveParam createMoveParam(final ArrFundVersionVO fundVersion,
-			final ArrNodeVO staticNode, final ArrNodeVO staticNodeParent, final List<ArrNodeVO> transportNodes,
-			final ArrNodeVO transportNodeParent) {
+			                                                     final ArrNodeVO staticNode, 
+			                                                     final ArrNodeVO staticNodeParent, 
+			                                                     final List<ArrNodeVO> transportNodes,
+			                                                     final ArrNodeVO transportNodeParent) {
 		ArrangementController.LevelMoveParam moveParam = new ArrangementController.LevelMoveParam();
 		moveParam.setVersionId(fundVersion.getId());
-		moveParam.setStaticNode(staticNode);
-		moveParam.setStaticNodeParent(staticNodeParent);
+		moveParam.setStaticNode(convertFromNodeBaseTest(convertArrNode(staticNode)));
+		moveParam.setStaticNodeParent(convertFromNodeBaseTest(convertArrNode(staticNodeParent)));
 		moveParam.setTransportNodes(transportNodes);
 		moveParam.setTransportNodeParent(transportNodeParent);
 		return moveParam;
@@ -1034,12 +1041,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param staticNodeParent rodič uzlu který mažu
 	 * @return smazaný uzel s rodičem
 	 */
-	protected ArrangementController.NodeWithParent deleteLevel(final ArrFundVersionVO fundVersion,
-			final ArrNodeVO staticNode, final ArrNodeVO staticNodeParent) {
+	protected ArrangementController.NodeWithParent deleteLevel(final ArrFundVersionVO fundVersion, 
+			                                                   final ArrNodeVO staticNode, 
+			                                                   final ArrNodeVO staticNodeParent) {
 		ArrangementController.NodeParam nodeParam = new ArrangementController.NodeParam();
 		nodeParam.setVersionId(fundVersion.getId());
-		nodeParam.setStaticNode(staticNode);
-		nodeParam.setStaticNodeParent(staticNodeParent);
+		nodeParam.setStaticNode(convertFromNodeBaseTest(convertArrNode(staticNode)));
+		nodeParam.setStaticNodeParent(convertFromNodeBaseTest(convertArrNode(staticNodeParent)));
 		return deleteLevel(nodeParam);
 	}
 
@@ -1813,6 +1821,75 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		ArrNodeVO node = new ArrNodeVO();
 		node.setId(treeNodeClient.getId());
 		node.setVersion(treeNodeClient.getVersion());
+		return node;
+	}
+
+	/**
+	 * Převod ArrNodeVO na NodeBase.
+	 *
+	 * @param arrNode uzel stromu
+	 * @return převedený uzel stromu
+	 */
+	protected NodeBase convertArrNode(final ArrNodeVO arrNode) {
+		NodeBase node = new NodeBase();
+		node.setId(arrNode.getId());
+		node.setUuid(arrNode.getUuid());
+		node.setVersion(arrNode.getVersion());
+		return node;
+	}
+
+	/**
+	 * Převod NodeBase na ArrNodeVO.
+	 *
+	 * @param nodeBase uzel stromu
+	 * @return převedený uzel stromu
+	 */
+	protected ArrNodeVO convertToArrNode(final NodeBase nodeBase) {
+		ArrNodeVO node = new ArrNodeVO();
+		node.setId(nodeBase.getId());
+		node.setUuid(nodeBase.getUuid());
+		node.setVersion(nodeBase.getVersion());
+		return node;
+	}
+
+	/**
+	 * Převod TreeNodeClient na NodeBase.
+	 *
+	 * @param treeNodeClient uzel stromu
+	 * @return převedený uzel stromu
+	 */
+	protected NodeBase convertTreeNodeToNodeBase(final TreeNodeVO treeNodeClient) {
+		NodeBase node = new NodeBase();
+		node.setId(treeNodeClient.getId());
+		node.setVersion(treeNodeClient.getVersion());
+		return node;
+	}
+
+	/**
+	 * Převod cz.tacr.elza.test.controller.vo.NodeBase -> cz.tacr.elza.controller.vo.NodeBase.
+	 *
+	 * @param nodeBase uzel stromu
+	 * @return převedený uzel stromu
+	 */
+	protected cz.tacr.elza.controller.vo.NodeBase convertFromNodeBaseTest(final NodeBase nodeBase) {
+		cz.tacr.elza.controller.vo.NodeBase node = new cz.tacr.elza.controller.vo.NodeBase();
+		node.setId(nodeBase.getId());
+		node.setUuid(nodeBase.getUuid());;
+		node.setVersion(nodeBase.getVersion());
+		return node;
+	}
+
+	/**
+	 * Převod cz.tacr.elza.controller.vo.NodeBase -> cz.tacr.elza.test.controller.vo.NodeBase.
+	 *
+	 * @param nodeBase uzel stromu
+	 * @return převedený uzel stromu
+	 */
+	protected NodeBase convertToNodeBaseTest(final cz.tacr.elza.controller.vo.NodeBase nodeBase) {
+		NodeBase node = new NodeBase();
+		node.setId(nodeBase.getId());
+		node.setUuid(nodeBase.getUuid());
+		node.setVersion(nodeBase.getVersion());
 		return node;
 	}
 
@@ -3660,7 +3737,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         assertTrue(treeData.getNodes().size() == 1);
 
         TreeNodeVO rootTreeNodeVO = treeData.getNodes().iterator().next();
-        ArrNodeVO rootNode = convertTreeNode(rootTreeNodeVO);
+        NodeBase rootNode = convertTreeNodeToNodeBase(rootTreeNodeVO);
 
         // přidání prvního levelu pod root
         helperTestService.waitForWorkers();
@@ -3695,7 +3772,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         // přidání třetího levelu na první pozici pod root
         helperTestService.waitForWorkers();
         ArrangementController.NodeWithParent newLevel3 = addLevel(FundLevelService.AddLevelDirection.BEFORE,
-                fundVersion, newLevel1.getNode(), rootNode, null);
+                fundVersion, convertToNodeBaseTest(newLevel1.getNode()), rootNode, null);
 
         // rodič nového uzlu musí být root
         assertTrue(newLevel3.getParentNode().getId().equals(rootNode.getId()));
@@ -3710,7 +3787,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
         // přidání uzlu za první uzel pod root (za child3)
         helperTestService.waitForWorkers();
         ArrangementController.NodeWithParent newLevel4 = addLevel(FundLevelService.AddLevelDirection.AFTER,
-                fundVersion, newLevel3.getNode(), rootNode, null);
+                fundVersion, convertToNodeBaseTest(newLevel3.getNode()), rootNode, null);
 
         // rodič nového uzlu musí být root
         assertTrue(newLevel4.getParentNode().getId().equals(rootNode.getId()));
@@ -3739,11 +3816,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
         assertTrue(node4.getId().equals(newLevel2.getNode().getId()));
 
         List<ArrNodeVO> nodes = new ArrayList<>(treeData.getNodes().size() + 1);
-        nodes.add(rootNode);
-        nodes.add(newLevel3.getNode());
-        nodes.add(newLevel4.getNode());
-        nodes.add(newLevel1.getNode());
-        nodes.add(newLevel2.getNode());
+        nodes.add(convertToArrNode(rootNode));
+        nodes.add(convertToArrNode(convertToNodeBaseTest(newLevel3.getNode())));
+        nodes.add(convertToArrNode(convertToNodeBaseTest(newLevel4.getNode())));
+        nodes.add(convertToArrNode(convertToNodeBaseTest(newLevel1.getNode())));
+        nodes.add(convertToArrNode(convertToNodeBaseTest(newLevel2.getNode())));
         return nodes;
     }
 
