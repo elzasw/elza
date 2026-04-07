@@ -41,6 +41,7 @@ import cz.tacr.elza.test.controller.vo.DataText;
 import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.ItemDataResult;
+import cz.tacr.elza.test.controller.vo.NodeBase;
 import cz.tacr.elza.test.controller.vo.NodeItem;
 import cz.tacr.elza.test.controller.vo.NodeUpdateItem;
 import cz.tacr.elza.test.controller.vo.UpdateOp;
@@ -197,13 +198,13 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
         assertTrue(treeData.getNodes().size() == 1);
 
         TreeNodeVO rootTreeNodeClient = treeData.getNodes().iterator().next();
-        ArrNodeVO rootNode = convertTreeNode(rootTreeNodeClient);
+        NodeBase rootNode = convertTreeNodeToNodeBase(rootTreeNodeClient);
 
         // Příprava objektu s daty pro odeslání
         AddLevelParam addLevelParam = new AddLevelParam();
         addLevelParam.setVersionId(fundVersion.getId());
-        addLevelParam.setStaticNode(rootNode);
-        addLevelParam.setStaticNodeParent(rootNode);
+        addLevelParam.setStaticNode(convertFromNodeBaseTest(rootNode));
+        addLevelParam.setStaticNodeParent(convertFromNodeBaseTest(rootNode));
         addLevelParam.setDirection(FundLevelService.AddLevelDirection.CHILD);
         addLevelParam.setCount(2); // přidat více než 1 úroveň
 
@@ -238,7 +239,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
         // Přidání nové úrovně
         TreeNodeVO treeNodeVO = treeData.getNodes().iterator().next();
-        ArrNodeVO rootNode = convertTreeNode(treeNodeVO);
+        NodeBase rootNode = convertTreeNodeToNodeBase(treeNodeVO);
 
         // Přidání JP na úroveň
         RulDescItemTypeExtVO itemType = getDescItemTypes().stream()
@@ -246,6 +247,8 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Item type SRD_NAD not found"));
         // dočasné řešení
+        // cz.tacr.elza.controller.vo.NodeItem pro AddLevelParam
+        // TODO prevést AddLevelParam do OpenAPI
         cz.tacr.elza.controller.vo.DataInteger dataInt = new cz.tacr.elza.controller.vo.DataInteger();
         dataInt.setIntegerValue(12);
         cz.tacr.elza.controller.vo.NodeItem itemInt = new cz.tacr.elza.controller.vo.NodeItem();
@@ -256,8 +259,8 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
 
         AddLevelParam addLevelParam = new AddLevelParam();
         addLevelParam.setVersionId(fundVersion.getId());
-        addLevelParam.setStaticNode(rootNode);
-        addLevelParam.setStaticNodeParent(rootNode);
+        addLevelParam.setStaticNode(convertFromNodeBaseTest(rootNode));
+        addLevelParam.setStaticNodeParent(convertFromNodeBaseTest(rootNode));
         addLevelParam.setDirection(FundLevelService.AddLevelDirection.CHILD);
         addLevelParam.setCreateItems(List.of(itemInt));
         addLevelParam.setCount(1); // přidat jen 1 úroveň

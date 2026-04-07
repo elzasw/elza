@@ -4,6 +4,7 @@ import {
   Option,
   OptionOnSelectData,
   SelectionEvents,
+  Spinner,
   Tooltip,
   tokens,
 } from "@fluentui/react-components";
@@ -64,6 +65,7 @@ export function DescItemStructured({
   const [structure, setStructure] = useState<any>();
   const [structures, setStructures] = useState<any[]>([]);
   const [query, setQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const structureType = useMemo(() => {
     if (typeRef?.structureTypeId != undefined) {
@@ -73,17 +75,31 @@ export function DescItemStructured({
   }, [typeRef?.structureTypeId, structureTypes]);
 
   useEffect(() => {
-    if (data.structuredObjectId) {
-      (async () => {
-        const _structure = await WebApi.getStructureData(
-          fundVersionId,
-          data.structuredObjectId,
-        );
-        setStructure(_structure);
-        setQuery(_structure.value);
-      })();
-    }
-  }, [fundVersionId, data.structuredObjectId]);
+    if (!data.structuredObjectId || structureType?.anonymous) return;
+
+    let cancelled = false;
+
+    // Poll until structure value is available (may be null while server is processing)
+    (async () => {
+      while (!cancelled) {
+        setIsLoading(true);
+
+        const result = await WebApi.getStructureData(fundVersionId, data.structuredObjectId);
+        if (cancelled) return;
+
+        if (result.value != null) {
+          setStructure(result);
+          setQuery(result.value);
+          setIsLoading(false);
+          return;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+    })();
+
+    return () => { cancelled = true; setIsLoading(false); };
+  }, [fundVersionId, data.structuredObjectId, structureType?.anonymous]);
 
   const loadStructures = useCallback(
     async (_query: string) => {
@@ -225,7 +241,7 @@ export function DescItemStructured({
               },
             }}
             listbox={{ style: { maxHeight: "400px", minWidth: "400px" } }}
-            disabled={isDisabled}
+            disabled={isDisabled || isLoading}
           >
             {structures.map(({ value, complement, id }) => {
               return (
@@ -239,6 +255,16 @@ export function DescItemStructured({
               );
             })}
           </Combobox>
+          {isLoading && (
+            <Spinner
+              size="tiny"
+              style={{
+                position: "absolute",
+                left: tokens.spacingHorizontalMNudge,
+                zIndex: 2,
+              }}
+            />
+          )}
           <div
             style={{
               position: "absolute",
