@@ -858,5 +858,14 @@
       <sql dbms="postgresql">UPDATE rul_item_type set data_type_id = ( SELECT data_type_id from rul_data_type where CODE = 'TEXT' ) 
        WHERE code = 'ZP2015_LEGEND' and data_type_id = ( SELECT data_type_id FROM rul_data_type WHERE CODE = 'FORMATTED_TEXT')</sql>
     </changeSet>
+	<changeSet id="20260402112900" author="ppy">
+      <sql dbms="postgresql">UPDATE arr_data SET data_type_id = ( SELECT data_type_id from rul_data_type where CODE = 'TEXT' ) 
+       WHERE data_type_id = ( SELECT data_type_id FROM rul_data_type WHERE CODE = 'FORMATTED_TEXT')</sql>
+      <sql dbms="postgresql">DELETE FROM arr_cached_node WHERE node_id IN (
+        SELECT di.node_id FROM arr_desc_item di  
+        JOIN arr_item itm ON di.item_id = itm.item_id and itm.delete_change_id IS NULL 
+        JOIN rul_item_type rit ON rit.item_type_id = itm.item_type_id  
+        WHERE rit.code = 'ZP2015_LEGEND')</sql>
+    </changeSet>
 
 </databaseChangeLog>
