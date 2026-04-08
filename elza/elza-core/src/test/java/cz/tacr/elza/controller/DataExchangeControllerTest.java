@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.test.controller.vo.NodeBase;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,6 @@ import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.TreeData;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.core.data.DataType;
@@ -97,7 +97,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
         FaTreeParam treeParam = new FaTreeParam();
         treeParam.setVersionId(fVersion.getId());
         TreeData treeData = getFundTree(treeParam);
-        List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
+        List<NodeBase> nodes = convertTreeNodes(treeData.getNodes());
         Assertions.assertTrue(nodes.size() == 4);
 
         // check structured object count
