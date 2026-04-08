@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.cam.BindingSyncInfo;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -317,6 +318,55 @@ public class ExternalSystemService {
 
         staticDataService.reloadOnCommit();
     }
+
+    /**
+     * Změna verze API externího systému
+     * 
+     * @param extSys
+     * @param version
+     */
+    @AuthMethod(permission = UsrPermission.Permission.ADMIN)
+	public ApExternalSystem changeApiVersion(String extSystemId, Integer version) {
+    	ApExternalSystem extSys = findExternalSystemByCodeOrId(extSystemId);
+    	if (extSys == null) {
+    		return null;
+    	}
+
+    	ApExternalSystemType type = extSys.getType();
+    	if ((List.of(ApExternalSystemType.CAM, ApExternalSystemType.CAM_UUID, ApExternalSystemType.CAM_COMPLETE)
+    			.contains(type) && version == 1)
+	    	|| (List.of(ApExternalSystemType.CAM_V2, ApExternalSystemType.CAM_UUID_V2, ApExternalSystemType.CAM_COMPLETE_V2)
+				.contains(type) && version == 2)) {
+            throw new SystemException("Změna verze API není možná", BaseCode.INVALID_STATE)
+            	.set("extSystemId", extSystemId)
+            	.set("version", version);				
+    	}
+
+    	ApExternalSystemType newType = null;
+    	switch (type) {
+    	case CAM:
+    		newType = ApExternalSystemType.CAM_V2;
+    		break;
+    	case CAM_UUID:
+			newType = ApExternalSystemType.CAM_UUID_V2;
+			break;
+		case CAM_COMPLETE:
+			newType = ApExternalSystemType.CAM_COMPLETE_V2;
+			break;
+		case CAM_V2:
+			newType = ApExternalSystemType.CAM;
+			break;
+		case CAM_UUID_V2:
+			newType = ApExternalSystemType.CAM_UUID;
+			break;
+		case CAM_COMPLETE_V2:
+			newType = ApExternalSystemType.CAM_COMPLETE;
+			break;
+    	}
+
+		extSys.setType(newType);
+    	return apExternalSystemRepository.save(extSys);
+	}    
 
     /**
      * Smazání záznamu z tabulky ExtSyncsQueueItem
@@ -779,7 +829,7 @@ public class ExternalSystemService {
              properties = sysExtSysPropertyRepository.findByUserId(userId);
          } else {
              properties = sysExtSysPropertyRepository.findByExternalSystemIdAndUserId(extSystemId, userId);
- }
+         }
          List<ExtSystemProperty> result = new ArrayList<>(properties.size());
          properties.forEach(i -> {
              ExtSystemProperty p = new ExtSystemProperty();
@@ -851,4 +901,4 @@ public class ExternalSystemService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "SysExternalSystemProperty not found, id: " + extSysPropertyId));
     }
- }
+}

@@ -947,6 +947,34 @@ paths:
             schema:
               $ref: '#/components/schemas/NodeItem'
         description: new attribute value
+  /extsystem/changeVersion/{id}/{version}:
+    put:
+      operationId: ExternalSystem_changeVersionApi
+      description: Change API version
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: external system ID
+          schema:
+            type: string
+        - name: version
+          in: path
+          required: true
+          description: new version api
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - externalsystems
   /extsystem/property:
     get:
       operationId: ExternalSystem_allProperties
