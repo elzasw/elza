@@ -86,7 +86,10 @@ import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.SobjVrequestRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -179,6 +182,12 @@ public class HelperTestService {
     protected ExternalSystemRepository externalSystemRepository;
     @Autowired
     private NodeOutputRepository nodeOutputRepository;
+    @Autowired
+    private OutputFileRepository outputFileRepository;
+    @Autowired
+    private OutputResultRepository outputResultRepository;
+    @Autowired
+    private OutputTemplateRepository outputTemplateRepository;
     @Autowired
     private NodeExtensionRepository nodeExtensionRepository;
     @Autowired
@@ -368,6 +377,9 @@ public class HelperTestService {
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();
         nodeOutputRepository.deleteAll();
+        outputFileRepository.deleteAll();
+        outputResultRepository.deleteAll();
+        outputTemplateRepository.deleteAll();
         outputRepository.deleteAll();
         nodeExtensionRepository.deleteAll();
         changeRepository.deleteAll();
