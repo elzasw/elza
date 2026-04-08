@@ -1367,10 +1367,19 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @return vytvořený object hodnoty atributu
 	 */
 	protected NodeItem buildNodeItem(@Nonnull  final String typeCode,
+            	                     @Nullable final String specCode,
+                                     @Nonnull  final DataType dataType,
+                                     @Nullable final Object value,
+                                     @Nonnull  final NodeBase node, // type from OpenAPI
+                                     @Nullable final Boolean undefined) {
+		return buildNodeItem(typeCode, specCode, dataType, value, convertToArrNode(node), undefined);
+	}
+	//
+	protected NodeItem buildNodeItem(@Nonnull  final String typeCode,
 			                         @Nullable final String specCode,
 			                         @Nonnull  final DataType dataType,
 			                         @Nullable final Object value,
-			                         @Nonnull  final ArrNodeVO node,
+			                         @Nonnull  final ArrNodeVO node, // type to replace
 			                         @Nullable final Boolean undefined) {
 		Validate.notNull(typeCode, "Musí být vyplněn kód typu atributu");
 		Validate.notNull(dataType, "Musí být vyplněn typ hodnoty");
@@ -1431,10 +1440,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * Převod ArrItemTextVO -> в NodeItem
 	 * 
 	 * @param item
-	 * @param nodeVO
+	 * @param node
 	 * @return
 	 */
-	protected NodeItem convertToNodeItem(ArrItemTextVO item, ArrNodeVO nodeVO) {
+	protected NodeItem convertToNodeItem(ArrItemTextVO item, NodeBase node) {
 	    DataText data = new DataText();
 	    data.setTextValue(item.getValue());
 	    NodeItem nodeItem = new NodeItem();
@@ -1444,8 +1453,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	    nodeItem.setItemSpecId(item.getDescItemSpecId());
 	    nodeItem.setPosition(item.getPosition());
 	    nodeItem.setData(data);
-	    nodeItem.setNodeId(nodeVO.getId());
-	    nodeItem.setNodeVersion(nodeVO.getVersion());
+	    nodeItem.setNodeId(node.getId());
+	    nodeItem.setNodeVersion(node.getVersion());
 	    return nodeItem;
 	}
 
@@ -1798,13 +1807,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	}
 
 	/**
-	 * Převod TreeNodeClient na ArrNodeVO.
+	 * Převod TreeNodeClient na NodeBase.
 	 *
 	 * @param treeNodeClients seznam uzlů stromu
 	 * @return převedený seznam uzlů stromu
 	 */
-	protected List<ArrNodeVO> convertTreeNodes(final Collection<TreeNodeVO> treeNodeClients) {
-		List<ArrNodeVO> nodes = new ArrayList<>(treeNodeClients.size());
+	protected List<NodeBase> convertTreeNodes(final Collection<TreeNodeVO> treeNodeClients) {
+		List<NodeBase> nodes = new ArrayList<>(treeNodeClients.size());
 		for (TreeNodeVO treeNodeClient : treeNodeClients) {
 			nodes.add(convertTreeNode(treeNodeClient));
 		}
@@ -1812,13 +1821,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	}
 
 	/**
-	 * Převod TreeNodeClient na ArrNodeVO.
+	 * Převod TreeNodeClient na NodeBase.
 	 *
 	 * @param treeNodeClient uzel stromu
 	 * @return převedený uzel stromu
 	 */
-	protected ArrNodeVO convertTreeNode(final TreeNodeVO treeNodeClient) {
-		ArrNodeVO node = new ArrNodeVO();
+	protected NodeBase convertTreeNode(final TreeNodeVO treeNodeClient) {
+		NodeBase node = new NodeBase();
 		node.setId(treeNodeClient.getId());
 		node.setVersion(treeNodeClient.getVersion());
 		return node;
