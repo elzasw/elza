@@ -38,7 +38,6 @@ import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
@@ -50,6 +49,7 @@ import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.CreatedPart;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.Fund;
+import cz.tacr.elza.test.controller.vo.NodeBase;
 import io.restassured.response.Response;
 
 /**
@@ -519,8 +519,8 @@ public class ApControllerTest extends AbstractControllerTest {
         input.setVersionId(fundVersion.getId());
         TreeData treeData = getFundTree(input);
 
-        List<ArrNodeVO> nodes = convertTreeNodes(treeData.getNodes());
-        ArrNodeVO rootNode = nodes.get(0);
+        List<NodeBase> nodes = convertTreeNodes(treeData.getNodes());
+        NodeBase rootNode = nodes.get(0);
 
         List<ApTypeVO> types = getRecordTypes();
         List<ApScopeVO> scopes = getAllScopes();

@@ -18,6 +18,7 @@ import {
   DescItemUnitid,
   DescItemUriRef,
 } from "./desc-items";
+import { Tooltip } from "@fluentui/react-components";
 
 interface Props {
   fondsVersionId: number;
@@ -105,15 +106,21 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                     }}
                   >
                     {/* <td> */}
-                    <div
-                      style={{
-                        flexShrink: 1,
-                        fontWeight: "bold",
-                        marginRight: "4px",
-                      }}
+                    <Tooltip
+                        relationship="label"
+                        content={typeRef.description}
+                        appearance="inverted"
                     >
-                      {typeRef.shortcut}:
-                    </div>
+                        <div
+                            style={{
+                                flexShrink: 1,
+                                fontWeight: "bold",
+                                marginRight: "4px",
+                            }}
+                        >
+                            {typeRef.shortcut}:
+                        </div>
+                    </Tooltip>
 
                     {/* </td> */}
                     {/* <td> */}
