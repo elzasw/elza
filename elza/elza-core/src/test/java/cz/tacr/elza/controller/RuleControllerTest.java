@@ -7,13 +7,13 @@ import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.test.controller.vo.Fund;
+import cz.tacr.elza.test.controller.vo.NodeBase;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -108,7 +108,7 @@ public class RuleControllerTest extends AbstractControllerTest {
         TreeData treeData = getFundTree(input);
 
         TreeNodeVO rootTreeNodeClient = treeData.getNodes().iterator().next();
-        ArrNodeVO rootNode = convertTreeNode(rootTreeNodeClient);
+        NodeBase rootNode = convertTreeNode(rootTreeNodeClient);
 
         List<RulPolicyTypeVO> policyAllTypes = getAllPolicyTypes();
         Assertions.assertNotNull(policyAllTypes);

@@ -1,6 +1,6 @@
-${output.fund.institution.partyGroup.preferredName.formatWithAllDetails()}
-${output.fund.name}
-${output.fund.internalCode}
+<#if (output.fund.institution.record)??>${output.fund.institution.record.preferredPart.value!""}<#else>Neuvedeno</#if>
+${output.fund.name!""}
+${output.fund.internalCode!""}
 
 <#assign node = output.fund.rootNode>
 
@@ -8,23 +8,18 @@ ${output.fund.internalCode}
 1. Dějiny původce archivního souboru
 ************************************
 <#list node.getItems(["SRD_ORIGINATOR"]) as originatorObj>
-<#assign originator = originatorObj.party>
-<#if originator.preferredName.formatWithAllDetails()??>
-<#assign prefName = originator.preferredName >
+<#if (originatorObj.record)??>
+<#assign originator = originatorObj.record>
+<#if (originator.preferredPart)??>
+<#assign prefName = originator.preferredPart>
 
-Preferovaná forma jména: ${prefName.formatWithAllDetails()}
+Preferovaná forma jména: ${prefName.value!""}
 
-Datace použití jména od-do: <#if prefName.validFrom.valueText??>${prefName.validFrom.valueText}<#else>Neuvedeno</#if> - <#if (prefName.validTo.valueText)??>${prefName.validTo.valueText}<#else>Neuvedeno</#if>
 </#if>
 
-Variantní/Paralelní formy jména a jejich typy: <#list originator.names as name>${name.formatWithAllDetails()}<#sep>, </#list>
+Variantní/Paralelní formy jména a jejich typy: <#list originator.parts as part>${part.value!""}<#sep>, </#list>
 
-Dějiny původce:
-    <#if (originator.history)??>${originator.history}</#if>
-
-Zdroje informací:
-    <#if (originator.sourceInformation)??>${originator.sourceInformation}</#if>
-
+</#if>
 </#list>
 
 ****************************
@@ -35,7 +30,7 @@ Zdroje informací:
 Dějiny jednotek popisu:
 
 <#items as item>
-${item.serializedValue}
+${item.serializedValue!""}
 </#items>
 </#list>
 
@@ -44,7 +39,7 @@ ${item.serializedValue}
 Přímý zdroj akvizice:
 
 <#items as item>
-${item.serializedValue}
+${item.serializedValue!""}
 </#items>
 </#list>
 
@@ -54,8 +49,8 @@ ${item.serializedValue}
 
 <#list output.createFlatNodeIterator() as node>
 <#assign depth=node.depth-1>
-<#if node.getSingleItemValue("SRD_LEVEL_TYPE") == "Série">
-<#list 1..depth as x><#sep>   </#list>${depth} ${node.getSingleItemValue("SRD_TITLE")}
+<#if (node.getSingleItemValue("SRD_LEVEL_TYPE")!"") == "Série">
+<#list 1..depth as x><#sep>   </#list>${depth} ${node.getSingleItemValue("SRD_TITLE")!""}
 </#if>
 </#list>
 
@@ -70,7 +65,7 @@ ${item.serializedValue}
 <#list output.createFlatNodeIterator() as node>
 
 <#if node.depth == 1>========================================================<#elseif node.depth == 2>--------------------------------------------------------</#if>
-<#if (node.getSingleItemValue("SRD_TITLE"))??>${node.getSingleItemValue("SRD_TITLE")} -- </#if><#if (node.getSingleItemValue("SRD_UNIT_DATE"))??>${node.getSingleItemValue("SRD_UNIT_DATE")} -- </#if>${node.getSingleItemValue("SRD_LEVEL_TYPE")}<#if (node.getSingleItemValue("SRD_UNIT_TYPE"))??>/${node.getSingleItemValue("SRD_UNIT_TYPE")}</#if>
+<#if (node.getSingleItemValue("SRD_TITLE"))??>${node.getSingleItemValue("SRD_TITLE")} -- </#if><#if (node.getSingleItemValue("SRD_UNIT_DATE"))??>${node.getSingleItemValue("SRD_UNIT_DATE")} -- </#if>${node.getSingleItemValue("SRD_LEVEL_TYPE")!""}<#if (node.getSingleItemValue("SRD_UNIT_TYPE"))??>/${node.getSingleItemValue("SRD_UNIT_TYPE")}</#if>
 <#if node.depth == 1>========================================================<#elseif node.depth == 4>""""""""""""""""""""""""""""""""""""""""""""""""""""""""<#else>--------------------------------------------------------</#if>
     <#list node.items>
     <#items as item>
@@ -85,4 +80,3 @@ ${item.serializedValue}
     </#list>
     </#if>
 </#list>
-
