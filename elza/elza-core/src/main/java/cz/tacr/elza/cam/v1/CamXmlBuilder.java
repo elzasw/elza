@@ -252,6 +252,12 @@ abstract public class CamXmlBuilder {
                 continue;
             }
 
+            // skip part if any RECORD_REF item points to entity not in target external system
+            if (hasUnsendableEntityRef(partItems)) {
+                log.debug("Ignoring part, contains entity reference not available in external system, partId={}", part.getPartId());
+                continue;
+            }
+
             Collection<ApIndex> partIndexes = (indexMap != null) ? indexMap.get(part.getPartId()) : null;
 
             PartXml partXml = createPart(part, partItems, partIndexes);
@@ -528,6 +534,33 @@ abstract public class CamXmlBuilder {
                                                                        scope.getRuleSetId());
 
         return filteredItems;
+    }
+
+    /**
+     * Check if any RECORD_REF item in the list points to an entity
+     * not available in the target external system.
+     *
+     * @param itemList items to check
+     * @return true if at least one entity reference cannot be sent
+     */
+    protected boolean hasUnsendableEntityRef(List<ApItem> itemList) {
+        for (ApItem item : itemList) {
+            ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
+            DataType dataType = DataType.fromId(itemType.getDataTypeId());
+            if (dataType == DataType.RECORD_REF) {
+                ArrData data = HibernateUtils.unproxy(item.getData());
+                if (data instanceof ArrDataRecordRef) {
+                    ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
+                    EntityRecordRefXml entityRef = createEntityRef(recordRef);
+                    if (entityRef == null) {
+                        log.debug("Unsendable entity reference found, itemId={}, dataId={}",
+                                  item.getItemId(), data.getDataId());
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
 	protected Object createItem(ApItem item, String uuid) {
