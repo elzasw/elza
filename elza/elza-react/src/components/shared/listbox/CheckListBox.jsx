@@ -196,7 +196,7 @@ class ListBox extends AbstractReactComponent {
     UNSAFE_componentWillReceiveProps(nextProps) {
         const {multiselect, filter, items} = this.props;
 
-        if (multiselect !== nextProps.multiselect || filter !== nextProps.filter) {
+        if (multiselect !== nextProps.multiselect || filter !== nextProps.filter || items !== nextProps.items) {
             this.handleClear();
         }
 
