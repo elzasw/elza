@@ -665,6 +665,7 @@ var messages = {
     "arr.fund.filterSettings.condition.notInterval": "Není mezi",
     "arr.fund.filterSettings.condition.string.contain": "Obsahuje",
     "arr.fund.filterSettings.condition.string.notContain": "Neobsahuje",
+    "arr.fund.filterSettings.condition.containEntity": "Obsahuje entitu",
     "arr.fund.filterSettings.condition.begin": "Začíná na",
     "arr.fund.filterSettings.condition.end": "Končí na",
     "arr.fund.filterSettings.condition.unitdate.lt": "Je před",
