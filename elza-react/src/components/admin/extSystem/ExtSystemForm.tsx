@@ -99,9 +99,18 @@ function validate(values: ExtSystemFormValues) {
     }, {});
 }
 
+const INTERCHANGEABLE_TYPES: AP_EXT_SYSTEM_TYPE[][] = [
+    [AP_EXT_SYSTEM_TYPE.CAM, AP_EXT_SYSTEM_TYPE.CAM_V2],
+    [AP_EXT_SYSTEM_TYPE.CAM_COMPLETE, AP_EXT_SYSTEM_TYPE.CAM_COMPLETE_V2],
+];
+
 const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; defaultScopes: Scope[] }) => {
     const { values, submitting } = useFormState<ExtSystemFormValues>();
     const classJ = values[JAVA_ATTR_CLASS];
+    const allowedApTypes = isUpdate
+        ? INTERCHANGEABLE_TYPES.find((group) => group.includes(values.type as AP_EXT_SYSTEM_TYPE)) ?? [values.type]
+        : Object.values(AP_EXT_SYSTEM_TYPE);
+    const isTypeDisabled = isUpdate && allowedApTypes.length <= 1;
 
     return (
         <Modal.Body>
@@ -127,10 +136,10 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                         type="select"
                         component={FormInputField}
                         label={i18n('admin.extSystem.type')}
-                        disabled={isUpdate}
+                        disabled={isTypeDisabled}
                     >
                         <option key={null} />
-                        {Object.values(AP_EXT_SYSTEM_TYPE).map((i, index) => (
+                        {allowedApTypes.map((i, index) => (
                             <option key={index} value={i}>
                                 {AP_EXT_SYSTEM_LABEL[i]}
                             </option>
