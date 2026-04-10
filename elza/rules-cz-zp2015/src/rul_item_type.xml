@@ -83,6 +83,7 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
+        <!-- <mask>### ### *</mask>-->
     </item-type>
     <item-type code="ZP2015_DAO_LINK" data-type="URI_REF">
         <name>Odkaz na digitalizát</name>
@@ -129,6 +130,22 @@
         <shortcut>Poř. č.</shortcut>
         <description>ZP4.2.2 Jiná označení - Pořadové číslo</description>
         <is-value-unique>true</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_NAME" data-type="STRING">
+        <name>Název jednotky popisu</name>
+        <shortcut>Název</shortcut>
+        <description>ZP4.2.3 Název jednotky popisu</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>true</can-be-ordered>
+        <use-specification>false</use-specification>
+    </item-type>
+    <item-type code="ZP2015_NAME_PUBLIC" data-type="STRING">
+        <name>Název s omezením přístupnosti</name>
+        <shortcut>Název s omezením</shortcut>
+        <description>ZP4.2.3 Název jednotky popisu s omezením přístupnosti (určený pro publikaci namísto prvku Název)</description>
+        <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
@@ -625,7 +642,7 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_LEGEND" data-type="FORMATTED_TEXT">
+    <item-type code="ZP2015_LEGEND" data-type="TEXT">
         <name>Legenda</name>
         <shortcut>Legenda</shortcut>
         <description>ZP5.11.1 Legenda</description>
@@ -1172,5 +1189,14 @@
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
+    </item-type>
+<!-- dříve Typ dokumentace ("ZP2015_DOCUMENTATION_TYPE"), změna na "ZP2015_AGENDA_TYPE", viz bug 9178-->
+    <item-type code="ZP2015_AGENDA_TYPE" data-type="ENUM">
+        <name>Typ agendy</name>
+        <shortcut>Typ agendy</shortcut>
+        <description>Typ agendy či dokumentace</description>
+        <is-value-unique>false</is-value-unique>
+        <can-be-ordered>false</can-be-ordered>
+        <use-specification>true</use-specification>
     </item-type>
 </item-types>

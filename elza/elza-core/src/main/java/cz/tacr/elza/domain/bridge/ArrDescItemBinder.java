@@ -14,6 +14,7 @@ import static cz.tacr.elza.domain.ArrDescItem.INTEGER_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.DECIMAL_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORM_FROM;
 import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
+import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
 import static cz.tacr.elza.domain.ArrItem.FIELD_DATA;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.KEYWORD_TOKENIZER_CZ;
 
@@ -55,6 +56,8 @@ public class ArrDescItemBinder implements TypeBinder {
         createDoubleField(DECIMAL_ATT);
         createLongField(NORM_FROM);
         createLongField(NORM_TO);
+
+        createIntegerField(REL_AP_ID);
 
         context.bridge(ArrDescItem.class, new ArrDescItemBridge());
     }

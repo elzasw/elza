@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -251,6 +252,7 @@ public class UserController {
      * @param count    počet vrácených záznamů
      * @param active   mají se vracet aktivní osoby?
      * @param disabled mají se vracet zakázané osoby?
+     * @param allUsers má probíhat vyhledání ve všech uživatelech?
      * @return seznam s celkovým počtem
      */
     @RequestMapping(method = RequestMethod.GET)
@@ -258,14 +260,15 @@ public class UserController {
     public FilteredResultVO<UsrUserVO> findUser(@Nullable @RequestParam(value = "search", required = false) final String search,
                                                 @RequestParam("active") final Boolean active,
                                                 @RequestParam("disabled") final Boolean disabled,
+                                                @RequestParam(value = "all", required = false) final Boolean allUsers,
                                                 @RequestParam("from") final Integer from,
                                                 @RequestParam("count") final Integer count,
                                                 @RequestParam(value = "excludedGroupId", required = false) final Integer excludedGroupId,
                                                 @RequestParam(value = "searchTypeName", required = false) @Nullable final SearchType searchTypeName,
                                                 @RequestParam(value = "searchTypeUsername",required = false) @Nullable final SearchType searchTypeUsername
     ) {
-        Validate.notNull(active);
-        Validate.notNull(disabled);
+        Objects.requireNonNull(active);
+        Objects.requireNonNull(disabled);
         SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
         SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.FULLTEXT;
 
@@ -273,7 +276,7 @@ public class UserController {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
         }
 
-        FilteredResult<UsrUser> users = userService.findUser(search, active, disabled, from, count, excludedGroupId, searchTypeNameFinal, searchTypeUsernameFinal);
+        FilteredResult<UsrUser> users = userService.findUser(search, active, disabled, (allUsers!=null && allUsers) ,from, count, excludedGroupId, searchTypeNameFinal, searchTypeUsernameFinal);
         return new FilteredResultVO<>(users.getList(),
                 (entity) -> factoryVO.createUser(entity, false, false),
                 users.getTotalCount());

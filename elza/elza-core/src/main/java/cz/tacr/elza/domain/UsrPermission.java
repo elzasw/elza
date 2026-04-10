@@ -665,12 +665,12 @@ public class UsrPermission {
         /**
          * Spravovaná entita - uživatel.
          */
-        USER_CONTROL_ENTITITY(PermissionType.USER),
+        USER_CONTROL_ENTITY(PermissionType.USER),
 
         /**
          * Spravovaná entita skupina.
          */
-        GROUP_CONTROL_ENTITITY(PermissionType.GROUP),
+        GROUP_CONTROL_ENTITY(PermissionType.GROUP),
 
         /**
          * Správa protokolů pro konkrétní AS

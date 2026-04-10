@@ -51,22 +51,22 @@ public class UsrPermissionVO {
     public UsrPermissionVO(UsrPermission srcPerm, boolean inheritedPermission, StaticDataProvider staticData) {
         id = srcPerm.getPermissionId();
         permission = srcPerm.getPermission();
-        if (srcPerm.getFund() != null) {
+        if (srcPerm.getFundId() != null) {
             fund = ArrFundBaseVO.newInstance(srcPerm.getFund());
         }
-        if (srcPerm.getScope() != null) {
+        if (srcPerm.getScopeId() != null) {
             scope = ApScopeVO.newInstance(srcPerm.getScope(), staticData);
         }
-        if (srcPerm.getGroupControl() != null) {
+        if (srcPerm.getGroupControlId() != null) {
             groupControl = UsrGroupVO.newInstance(srcPerm.getGroupControl());
         }
-        if (srcPerm.getUserControl() != null) {
+        if (srcPerm.getUserControlId() != null) {
             userControl = UsrUserVO.newInstance(srcPerm.getUserControl());
         }
-        if (srcPerm.getIssueList() != null) {
+        if (srcPerm.getIssueListId() != null) {
             issueList = WfIssueListBaseVO.newInstance(srcPerm.getIssueList());
         }
-        if (srcPerm.getNode() != null) {
+        if (srcPerm.getNodeId() != null) {
             node = ArrNodeVO.newInstance(srcPerm.getNode());
         }
 

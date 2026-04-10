@@ -1,7 +1,6 @@
 package cz.tacr.elza.repository.specification.search;
 
-
-import cz.tacr.cam.client.controller.vo.QueryComparator;
+import cz.tacr.cam.v1.client.controller.vo.QueryComparator;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApItem;
@@ -26,7 +25,7 @@ public class RecordRefComparator implements Comparator {
         Join<ApItem, ArrDataRecordRef> dataJoin = cb.treat(ctx.getApItemRoot().join(ApItem.FIELD_DATA, JoinType.INNER), ArrDataRecordRef.class);
         Join<ArrDataRecordRef, ApAccessPoint> recordJoin = dataJoin.join(ArrDataRecordRef.FIELD_RECORD, JoinType.INNER);
         Integer code = Integer.parseInt(value);
-        if (comparator == QueryComparator.EQ || comparator == QueryComparator.CONTAIN) {
+        if (comparator == QueryComparator.CT_EQ || comparator == QueryComparator.CT_CONTAIN) {
             return cb.equal(recordJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID), code);
         }
         throw new IllegalArgumentException(unimplementedMessage(comparator, DataType.RECORD_REF));

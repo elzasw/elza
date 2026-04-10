@@ -1,13 +1,13 @@
 package cz.tacr.elza.ws;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.controller.AbstractControllerTest;
@@ -56,7 +56,7 @@ public class ImportServiceTest extends AbstractControllerTest {
         DataSource ds = new ByteArrayDataSource(Files.newInputStream(file.toPath()), "application/octet-stream");
         DataHandler dh = new DataHandler(ds);
 
-        ImportRequest importReq = WSRequestFactory.createImportRequest(SYSTEM_CODE, SchemaManager.CAM_SCHEMA_URL);
+        ImportRequest importReq = WSRequestFactory.createImportRequest(SYSTEM_CODE, SchemaManager.CAM_SCHEMA_2019);
         importReq.setDisposition(WSRequestFactory.createDisposition(SCOPE_GLOBAL));
         importReq.setBinData(dh);
         impService.importData(importReq);
@@ -71,7 +71,7 @@ public class ImportServiceTest extends AbstractControllerTest {
         }
         
         // run reimport
-        importReq = WSRequestFactory.createImportRequest(SYSTEM_CODE, SchemaManager.CAM_SCHEMA_URL);
+        importReq = WSRequestFactory.createImportRequest(SYSTEM_CODE, SchemaManager.CAM_SCHEMA_2019);
         importReq.setDisposition(WSRequestFactory.createDisposition(SCOPE_GLOBAL));
         importReq.setBinData(dh);
         impService.importData(importReq);
@@ -86,7 +86,7 @@ public class ImportServiceTest extends AbstractControllerTest {
         accesspointsApi.accessPointDeleteAccessPoint(apvo.getId().toString(), deleteAPDetail);
 
         // run reimport
-        importReq = WSRequestFactory.createImportRequest(SYSTEM_CODE, SchemaManager.CAM_SCHEMA_URL);
+        importReq = WSRequestFactory.createImportRequest(SYSTEM_CODE, SchemaManager.CAM_SCHEMA_2019);
         importReq.setDisposition(WSRequestFactory.createDisposition(SCOPE_GLOBAL));
         importReq.setBinData(dh);
         impService.importData(importReq);

@@ -323,6 +323,17 @@ class RegistryList extends AbstractReactComponent {
         );
     };
 
+    handleFilterAssignedToCurrentUser = () => {
+        const { dispatch, userDetail, registryList } = this.props;
+        dispatch(registryListFilter({
+            ...registryList.filter,
+            searchFilter: {
+                ...registryList.filter?.searchFilter,
+                assignedTo: userDetail.id,
+            }
+        }))
+    }
+
     getRuleSetsIds = () => {
         const { scopes, ruleSet } = this.props;
         const rulSetsIds = [];
@@ -459,11 +470,15 @@ class RegistryList extends AbstractReactComponent {
                         itemsCount={registryList.filteredRows ? registryList.filteredRows.length : 0}
                         allItemsCount={registryList.count}
                     />
-                    <Row noGutters className={filterCls}>
+                    <div style={{display: "flex"}} className={filterCls}>
                         {!registryList.filter.searchFilter && (
-                            <Col>
+                            <Col style={{display: 'flex'}}>
                                 <Button variant="link" onClick={this.handleExtFilter}>
                                     {i18n('ap.ext-filter.use')}
+                                </Button>
+                                <div style={{flexGrow: 1}}></div>
+                                <Button variant="link" onClick={this.handleFilterAssignedToCurrentUser}>
+                                    {i18n('ap.ext-filter.assignedTo.currentUser')}
                                 </Button>
                             </Col>
                         )}
@@ -482,7 +497,7 @@ class RegistryList extends AbstractReactComponent {
                                 </Col>
                             </>
                         )}
-                    </Row>
+                    </div>
                 </div>
                 <StoreHorizontalLoader store={registryList} />
                 {list}

@@ -65,6 +65,8 @@ public class OutputGeneratorFactory {
     private ExportConfig exportConfig;
 
     private StructObjService structObjService;
+    
+    private final AccessPointCacheService apCacheService;
 
     @Autowired
     public OutputGeneratorFactory(final ApplicationContext applicationContext,
@@ -85,7 +87,8 @@ public class OutputGeneratorFactory {
                                   final DaoLinkRepository daoLinkRepository,
                                   final ExportConfig exportConfig,
                                   final StructObjService structObjService,
-                                  final DataService dataService) {
+                                  final DataService dataService,
+                                  final AccessPointCacheService apCacheService) {
         this.applicationContext = applicationContext;
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
@@ -105,6 +108,7 @@ public class OutputGeneratorFactory {
         this.exportConfig = exportConfig;
         this.structObjService = structObjService;
         this.dataService = dataService;
+        this.apCacheService = apCacheService;
     }
 
     public OutputGenerator createOutputGenerator(Engine engine) {
@@ -127,7 +131,7 @@ public class OutputGeneratorFactory {
                 institutionRepository, apStateRepository, bindingRepository, itemRepository,
                 bindingStateRepository, indexRepository, em, dmsService,
                 daoLinkRepository, exportConfig, structObjService,
-                dataService);
+                dataService, apCacheService);
     }
 
     public JasperOutputGenerator createJasperOutputGenerator() {
@@ -137,7 +141,7 @@ public class OutputGeneratorFactory {
                 institutionRepository, apStateRepository,
                 bindingRepository, itemRepository, bindingStateRepository,
                 indexRepository, em, dmsService, daoLinkRepository, exportConfig, structObjService,
-                dataService);
+                dataService, apCacheService);
     }
 
     public DEXmlOutputGenerator createDEXmlOutputGenerator() {

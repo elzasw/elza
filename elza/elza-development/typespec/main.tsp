@@ -333,7 +333,8 @@ model ExplorerTreeNodeFile {
 model ExportParams {
     apIds?: integer[];
     fundsSections?: FundSections[];
-    exportFilterId?: integer;
+    /** kód nebo ID filtru */
+    exportFilter?: string;
     includeUUID?: boolean = true;
     includeAccessPoints?: boolean = true;
 }
@@ -594,6 +595,25 @@ model NodeBase {
     version: integer;
     /** node uuid */
     uuid: string;
+}
+
+/**
+ * Type of update Item
+ */
+enum UpdateOp {
+    CREATE,
+    UPDATE,
+    DELETE
+}
+
+/**
+ * Náhrada za třídu `ArrUpdateItemVO`
+ */
+model NodeUpdateItem {
+    /** operation */
+    updateOp: UpdateOp;
+    /** item to update */
+    item: NodeItem;
 }
 
 /**
@@ -1308,7 +1328,6 @@ model ApPartFormVO {
  *
  * Náhrada `ItemTypeGroupVO`
  */
-// TODO find a way to generate classes not used in requests
 model ItemTypeGroup {
     code: string;
     name: string;
@@ -1521,12 +1540,14 @@ model NodeAccordionData {
 model NodeData {
     /** data formuláře požadované JP */
     formData: NodeFormData;
+    /** node data */
+    node: NodeAccordionData;
     /** požadovaní rodiče ke kořeni */
     parents: NodeTreeData[];
     /** požadovaní přímí potomci */
     children: NodeTreeData[];
     /** požadovaní sourozenci */
-    siblings: NodeAccordionData[];
+    siblings?: NodeAccordionData[];
     /** index požadované JP */
     nodeIndex: integer;
     /** celkový počet JP v úrovni požadované JP */
@@ -1761,6 +1782,21 @@ model SearchParams {
 model ResultEntityRef {
     count: int64;
     items?: EntityRef[];
+}
+
+/**
+ * Entity processor (user)
+ */
+model Participant {
+    userId: integer;
+    name: string;
+    username: string;
+    /** if user has ability to save and modify new entity */
+    canWrite: boolean;
+    /** if user has ability to approve entity */
+    canConfirm: boolean;
+    /** if user has ability to change approved entity */
+    canEditConfirmed: boolean;
 }
 
 /**
@@ -2112,7 +2148,7 @@ namespace ElzaAPI.DescItem {
      */
     @route("/{fundVersionId}/create")
     @put op createDescItem(
-        /** id AP version */
+        /** id version AS */
         @path fundVersionId: integer,
         /** new attribute value */
         @body body: NodeItem
@@ -2123,12 +2159,27 @@ namespace ElzaAPI.DescItem {
      */
     @route("/{fundVersionId}/{createNewVersion}/update")
     @put op updateDescItem(
-        /** id AP version */
+        /** id version AS */
         @path fundVersionId: integer,
         /** create a new version or not? */
         @path createNewVersion: boolean,
         /** new attribute value */
         @body body: NodeItem
+    ): ItemDataResult | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Delete attribute value
+     */
+    @route("/{fundVersionId}")
+    @delete op deleteDescItem(
+        /** id version AS */
+        @path fundVersionId: integer,
+        /** attribute value */
+        @body body: NodeItem;
     ): ItemDataResult | {
         /** ID does not exists */
         @Http.statusCode statusCode: 404;
@@ -2144,6 +2195,7 @@ namespace ElzaAPI.AccessPoint {
      */
     @route("")
     @delete op deleteAccessPoints(
+        /** seznam ID nebo UUID, které chceme smazat */
         @body body: DeleteAccessPointsDetail
     ): {
         @Http.statusCode statusCode: 200;
@@ -2162,7 +2214,7 @@ namespace ElzaAPI.AccessPoint {
         @path id: string,
         /** addition for method of invalidation */
         @body body?: DeleteAccessPointDetail
-    ): {
+   ): {
         @Http.statusCode statusCode: 200;
     } | {
         /** ID does not exists */
@@ -2176,7 +2228,7 @@ namespace ElzaAPI.AccessPoint {
     @route("/{id}/restore")
     @put op restoreAccessPoint(
         /** id of accesspoint */
-        @path id: string,
+        @path id: string
     ): {
         @Http.statusCode statusCode: 200;
     } | {
@@ -2210,6 +2262,15 @@ namespace ElzaAPI.AccessPoint {
           @Http.statusCode statusCode: 404;
           @body data: BaseException;
        };
+
+    /**
+     * Get a list of entity processors
+     */
+    @route("/{id}/lastParticipants")
+    @get op getLastParticipants(
+        /** id of accesspoint */
+        @path id: integer,
+    ): Participant[];
 
     /**
      * List of automatically generated elements of the description
@@ -2331,9 +2392,11 @@ namespace ElzaAPI.AccessPoint {
         /** id of accesspoint */
         @path id: integer,
         /** data for change ApState */
-        @body body: ApStateUpdate;
+        @body body: ApStateUpdate,
         /** actual version of ApAccessPoint */
         @query apVersion?: integer,
+        /** userId */
+        @query assignTo?: integer
     ): {
         @Http.statusCode statusCode: 200;
         @header contentType: "application/json";
@@ -2408,9 +2471,11 @@ namespace ElzaAPI.AccessPoint {
         /** id of accesspoint */
         @path id: integer,
         /** data for change state of revision of ApAccessPoint */
-        @body body: RevStateChange;
+        @body body: RevStateChange,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
+        @query apVersion?: integer,
+        /** userId */
+        @query assignTo?: integer
     ): {
         @Http.statusCode statusCode: 200;
         @header contentType: "application/json";
@@ -2430,7 +2495,7 @@ namespace ElzaAPI.AccessPoint {
         /** partId of revision */
         @path partId: integer,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
+        @query apVersion?: integer
     ): {
         @Http.statusCode statusCode: 200;
         @header contentType: "application/json";
@@ -2450,7 +2515,7 @@ namespace ElzaAPI.AccessPoint {
         /** partId of revision */
         @path partId: integer,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
+        @query apVersion?: integer
     ): {
          /** actual version of ApAccessPoint */
          @Http.statusCode statusCode: 200;
@@ -2470,13 +2535,30 @@ namespace ElzaAPI.AccessPoint {
         /** id of accesspoint */
         @path id: integer,
         /** data for change ApState */
-        @body body: ApStateUpdate;
+        @body body: ApStateUpdate,
         /** actual version of ApAccessPoint */
-        @query apVersion?: integer;
-    ): {
+        @query apVersion?: integer
+   ): {
          @Http.statusCode statusCode: 200;
          @header contentType: "application/json";
          @body data: integer;
+    };
+
+    /**
+     * Decision on forced export ELZA -> CAM
+     */
+    @route("/export/{queueItemId}") 
+    @put op exportForceOrNo(
+        /** id of queue */
+        @path queueItemId: integer,
+        /** force export: yes or no */
+        @query force: boolean
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
     };
 }
 
@@ -3367,9 +3449,66 @@ namespace ElzaAPI.Search {
     };
 }
 
+/**
+ * Processing tasks
+ */
+@tag("tasks")
+@route("/tasks")
+namespace ElzaAPI.Tasks {
+    /**
+     * Task status
+     */
+    enum Status {
+        NEW, CANCELLED, FINISHED
+    }
+
+    /**
+     * Entity type for task
+     */
+    enum EntityType {
+        AP, AP_REV
+    }
+
+    /**
+     * Task detail
+     */
+    model ViewDetail {
+        taskId: integer;
+        created: offsetDateTime;
+        closed?: offsetDateTime;
+        assigneeId: integer;
+        assigneeName: string;
+        creatorId?: integer;
+        creatorName?: string;
+        closedById?: integer;
+        closedByName?: string;
+        status: Status;
+        taskTypeId: integer;
+        taskTypeCode: string;
+        taskTypeName: string;
+        description: string;
+        primaryEntityId: integer;
+        primaryEntityName: string;
+        primaryEntityType: EntityType;
+    }
+
+    /**
+     * Task list for a given user
+     */
+    @route("/my")
+    @get op getMyTasks(
+    ): ViewDetail[];
+}
+
 @service(#{
     title: "ELZA API",
 })
 namespace ElzaAPI {
-
+    // add models not used in operations
+    union __Types {
+        a: NodeUpdateItem,
+        b: ItemTypeGroup
+    }
+    @route("/__types") @get
+    op __typeRegistry(): __Types;
 }

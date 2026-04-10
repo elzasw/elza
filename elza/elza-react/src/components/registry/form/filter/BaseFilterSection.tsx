@@ -6,6 +6,8 @@ import {ApTypeVO} from "../../../../api/ApTypeVO";
 import { StatesField } from 'components/registry/field/StatesField';
 import {TypesField} from "../../field/TypesField";
 import { SyncState } from 'api/SyncState';
+import UserField from 'components/admin/UserField';
+import { UsrUserVO } from 'api/UsrUserVO';
 
 type OwnProps = {
     submitting: boolean;
@@ -48,6 +50,30 @@ const BaseFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-sea
                label={i18n('ap.ext-search.user')}
                disabled={submitting}
         />
+        <Field name="assignedTo"
+            type="text"
+            component={({input, meta}) => {
+                function handleChange(user: UsrUserVO){
+                    input.onChange(user?.id);
+                }
+
+                //@ts-expect-error Wrong types on FormInputField
+                return <FormInputField
+                    type="static"
+                    label={i18n('ap.ext-search.assignedTo')}
+                >
+                    <UserField
+                        {...input}
+                        {...meta}
+                        onChange={handleChange}
+                        disabled={submitting}
+                        all={true}
+                    />
+                </FormInputField>
+            }}
+            label={i18n('ap.ext-search.assignedTo')}
+            disabled={submitting}
+        />
         <Field name="syncState"
                type="select"
                component={FormInputField}
@@ -58,6 +84,18 @@ const BaseFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-sea
             {[SyncState.SYNC_OK, SyncState.NOT_SYNCED].map((value) => {
                 return <option value={value}>
                     {i18n(`ap.binding.syncState.${value}`)}
+                </option>
+            })}</Field>
+        <Field name="validationResult"
+               type="select"
+               component={FormInputField}
+               label={i18n('ap.ext-search.validationResult')}
+               disabled={submitting}
+        >
+            <option value={undefined}/>
+            {["ok", "error"].map((value) => {
+                return <option value={value}>
+                    {i18n(`ap.ext-search.validationResult.${value}`)}
                 </option>
             })}</Field>
     </FormSection>

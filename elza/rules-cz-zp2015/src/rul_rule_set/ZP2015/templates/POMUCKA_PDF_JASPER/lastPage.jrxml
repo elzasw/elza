@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.16.0.final using JasperReports Library version 6.16.0-48579d909b7943b64690c65c71e07e0b80981928  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="lastPage" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="dd0267be-517a-4d78-bc37-65bd954e2a10">
+<!-- Created with Jaspersoft Studio version 7.0.3.final using JasperReports Library version 7.0.3-41034ca841d452f3305ba55b9042260aaa1ab5dd  -->
+<jasperReport name="lastPage" language="java" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="70" bottomMargin="70" uuid="dd0267be-517a-4d78-bc37-65bd954e2a10">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -11,29 +10,19 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
-	<import value="org.apache.commons.lang3.StringUtils"/>
-	<style name="Text" isDefault="true" hTextAlign="Justified" fontName="DejaVu Sans" fontSize="10"/>
+	<import>org.apache.commons.lang3.StringUtils</import>
+	<style name="Text" default="true" hTextAlign="Justified" fontName="DejaVu Sans" fontSize="10.0"/>
 	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
 	<parameter name="output" class="cz.tacr.elza.print.Output"/>
-	<queryString>
-		<![CDATA[]]>
-	</queryString>
+	<query language="sql"><![CDATA[]]></query>
 	<variable name="znackaFondu" class="java.lang.String">
-		<variableExpression><![CDATA[$P{fund}.getMark()]]></variableExpression>
+		<expression><![CDATA[$P{fund}.getMark()]]></expression>
 	</variable>
 	<detail>
 		<band height="634">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<property name="com.jaspersoft.studio.layout"/>
-			<textField textAdjust="StretchHeight" evaluationTime="Master" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="0" y="150" width="455" height="480" isRemoveLineWhenBlank="true" uuid="e0778e82-e190-4d85-8ff8-3d44f5eaeea5">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Left" verticalAlignment="Bottom" markup="html">
-					<font pdfEncoding="Cp1250"/>
-					<paragraph lineSpacing="Double" lineSpacingSize="2.0"/>
-				</textElement>
-				<textFieldExpression><![CDATA["<b>Název archivní pomůcky:</b> "+$P{output}.getName() 
+			<element kind="textField" uuid="e0778e82-e190-4d85-8ff8-3d44f5eaeea5" positionType="Float" x="0" y="150" width="455" height="480" markup="html" pdfEncoding="Cp1250" textAdjust="StretchHeight" evaluationTime="Master" blankWhenNull="true" removeLineWhenBlank="true" hTextAlign="Left" vTextAlign="Bottom">
+				<paragraph lineSpacing="Double" lineSpacingSize="2.0"/>
+				<expression><![CDATA["<b>Název archivní pomůcky:</b> "+$P{output}.getName() 
  + (StringUtils.isBlank($V{znackaFondu})?"":"<br><b>Značka archivního souboru:</b> "+$V{znackaFondu})
  + "<br><b>Časové rozmezí archivní pomůcky:</b> "+$P{output}.getSingleItemValue( "ZP2015_DATE_RANGE" )
  +"<br><b>Počet evidenčních jednotek zpřístupněných archivní pomůckou:</b> "+$P{output}.getSingleItem( "ZP2015_UNIT_COUNT_TABLE" ).getValue(cz.tacr.elza.domain.table.ElzaTable.class).sum("COUNT")+" ("+$P{output}.getSingleItemValue( "ZP2015_UNIT_COUNT_TABLE" )+")"
@@ -43,8 +32,11 @@
  +"<br><b>Zpracovatel archivního souboru:</b> "+$P{output}.getSingleItemValue( "ZP2015_ARRANGER_TEXT" )
  +"<br><b>Archivní pomůcku sestavil:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_EDITOR" )
  +"<br><b>Počet stran archivní pomůcky:</b> "+$V{MASTER_TOTAL_PAGES}
- +"<br><b>Archivní pomůcku schválil:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_APPROVED_BY" )]]></textFieldExpression>
-			</textField>
+ +"<br><b>Archivní pomůcku schválil:</b> "+$P{output}.getSingleItemValue( "ZP2015_FINDING_AID_APPROVED_BY" )]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			</element>
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<property name="com.jaspersoft.studio.layout"/>
 		</band>
 	</detail>
 </jasperReport>

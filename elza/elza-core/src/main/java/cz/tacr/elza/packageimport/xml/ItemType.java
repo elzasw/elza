@@ -68,6 +68,9 @@ public class ItemType {
 
     @XmlElement(name = "display-type")
     private DisplayType displayType;
+    
+    @XmlElement(name = "mask")
+    private String mask;
 
     @XmlElement(name = "item-aptype")
     @XmlElementWrapper(name = "item-aptypes")
@@ -163,7 +166,15 @@ public class ItemType {
         this.displayType = displayType;
     }
 
-    public List<ItemAptype> getItemAptypes() {
+    public String getMask() {
+		return mask;
+	}
+
+	public void setMask(String mask) {
+		this.mask = mask;
+	}
+
+	public List<ItemAptype> getItemAptypes() {
         return itemAptypes;
     }
 

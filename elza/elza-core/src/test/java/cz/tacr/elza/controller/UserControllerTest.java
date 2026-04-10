@@ -1,19 +1,17 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApScopeVO;
@@ -23,7 +21,6 @@ import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.test.controller.vo.AdminCopyPermissionParams;
 import cz.tacr.elza.test.controller.vo.Fund;
@@ -60,7 +57,7 @@ public class UserControllerTest extends AbstractControllerTest {
         ApAccessPointVO ap = records.get(0);
 
         // vytvoření uživatele
-        UsrUserVO user = createUser(ap, USER, PASS);
+        UsrUserVO user = createUser(ap.getId(), USER, PASS);
 
         // vyhledání uživatele
         FilteredResultVO<UsrUserVO> dataUser = findUser(null, true, true, 0, 10, null);
@@ -232,7 +229,7 @@ public class UserControllerTest extends AbstractControllerTest {
         ApAccessPointVO ap = records.get(0);
 
         // vytvoření uživatele
-        UsrUserVO user = createUser(ap, USER, PASS);
+        UsrUserVO user = createUser(ap.getId(), USER, PASS);
 
         List<UsrPermissionVO> permissionVOs = new ArrayList<>();
         UsrPermissionVO permissionVO = new UsrPermissionVO();
@@ -247,7 +244,7 @@ public class UserControllerTest extends AbstractControllerTest {
         joinGroup(Collections.singleton(group.getId()), Collections.singleton(user.getId()));
 
         // vytvoreni druheho uzivatele
-        UsrUserVO user2 = createUser(ap, USER2, PASS);
+        UsrUserVO user2 = createUser(ap.getId(), USER2, PASS);
         // copy
         AdminCopyPermissionParams cpp = new AdminCopyPermissionParams();
         cpp.setFromUserId(user.getId());

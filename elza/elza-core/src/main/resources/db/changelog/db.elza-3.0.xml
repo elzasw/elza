@@ -705,9 +705,85 @@
 			WHERE sequence_name = 'arr_async_request|async_request_id'</sql>
 	</changeSet>
 
-	<changeSet id="20250828160400" author="sergey.iryupin">
-		<!-- reindexace pro Elza 3.2 -->
-        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20230315100801"/>
+	<changeSet id="20250715131500" author="sergey.iryupin">
+		<sql>UPDATE usr_permission SET permission = 'USER_CONTROL_ENTITY' WHERE permission = 'USER_CONTROL_ENTITITY'</sql>
+		<sql>UPDATE usr_permission SET permission = 'GROUP_CONTROL_ENTITY' WHERE permission = 'GROUP_CONTROL_ENTITITY'</sql>
+	</changeSet>
+
+	<changeSet id="20250623133000" author="sergey.iryupin">
+		<!-- typ úkolu -->
+        <createTable tableName="wf_task_type">
+            <column name="task_type_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="nvarchar(250)"/>
+            <column name="package_id" type="integer">
+                <constraints nullable="false" foreignKeyName="fk_task_type_package_id" references="rul_package(package_id)"/>
+            </column>
+		</createTable>
+		<!-- tabulka popisující úkol -->
+        <createTable tableName="wf_task">
+            <column name="task_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="time_created" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="time_closed" type="timestamp with time zone"/>
+            <column name="assignee_id" type="int">
+				<constraints nullable="false" foreignKeyName="fk_wf_task_assignee_id" references="usr_user(user_id)"/>
+			</column>
+            <column name="creator_id" type="int">
+				<constraints nullable="true" foreignKeyName="fk_wf_task_creator_id" references="usr_user(user_id)"/>
+			</column>
+            <column name="closed_by_id" type="int">
+				<constraints nullable="true" foreignKeyName="fk_wf_task_closed_by_id" references="usr_user(user_id)"/>
+			</column>
+            <column name="status" type="nvarchar(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="task_type_id" type="int">
+				<constraints nullable="false" foreignKeyName="fk_wf_task_task_type" references="wf_task_type(task_type_id)"/>
+            </column>
+            <column name="description" type="${type.text}"/>
+		</createTable>
+		<!-- Úkol vázaný na revizi entity -->
+        <createTable tableName="wf_task_ap_rev_state">
+            <column name="task_ap_rev_state_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="task_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_wf_task_ap_rev_state_task_id" references="wf_task(task_id)"/>
+            </column>
+            <column name="state_id" type="int">
+				<constraints nullable="false" foreignKeyName="fk_wf_task_ap_rev_state_state_id" references="ap_rev_state(state_id)"/>
+			</column>
+		</createTable>
+		<!-- Úkol vázaný na stav entity -->
+        <createTable tableName="wf_task_ap_state">
+            <column name="task_ap_state_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="task_id" type="int">
+                <constraints nullable="false" foreignKeyName="fk_wf_task_ap_state_task_id" references="wf_task(task_id)"/>
+            </column>
+            <column name="state_id" type="int">
+				<constraints nullable="false" foreignKeyName="fk_wf_task_ap_state_state_id" references="ap_state(state_id)"/>
+			</column>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="20251002140200" author="sergey.iryupin">
+        <addColumn tableName="ext_syncs_queue_item">
+            <column name="data" type="text"/>
+            <column name="force_key" type="nvarchar(50)"/>
+        </addColumn>
 	</changeSet>
 
 	<changeSet id="20251105110500" author="sergey.iryupin">
@@ -777,5 +853,19 @@
         WHERE adur.description = '')</sql>
       <sql>UPDATE arr_data_uri_ref SET description = null WHERE description=''</sql>	  
 	</changeSet>
+	
+	<changeSet id="20260216155400" author="ppy">
+      <sql dbms="postgresql">UPDATE rul_item_type set data_type_id = ( SELECT data_type_id from rul_data_type where CODE = 'TEXT' ) 
+       WHERE code = 'ZP2015_LEGEND' and data_type_id = ( SELECT data_type_id FROM rul_data_type WHERE CODE = 'FORMATTED_TEXT')</sql>
+    </changeSet>
+	<changeSet id="20260402112900" author="ppy">
+      <sql dbms="postgresql">UPDATE arr_data SET data_type_id = ( SELECT data_type_id from rul_data_type where CODE = 'TEXT' ) 
+       WHERE data_type_id = ( SELECT data_type_id FROM rul_data_type WHERE CODE = 'FORMATTED_TEXT')</sql>
+      <sql dbms="postgresql">DELETE FROM arr_cached_node WHERE node_id IN (
+        SELECT di.node_id FROM arr_desc_item di  
+        JOIN arr_item itm ON di.item_id = itm.item_id and itm.delete_change_id IS NULL 
+        JOIN rul_item_type rit ON rit.item_type_id = itm.item_type_id  
+        WHERE rit.code = 'ZP2015_LEGEND')</sql>
+    </changeSet>
 
 </databaseChangeLog>

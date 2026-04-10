@@ -2,6 +2,8 @@ package cz.tacr.elza.domain;
 
 import java.time.OffsetDateTime;
 
+import org.hibernate.Length;
+
 import cz.tacr.elza.domain.enumeration.StringLength;
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
@@ -69,6 +71,12 @@ public class ExtSyncsQueueItem {
     @Column(length = StringLength.LENGTH_50, nullable = true)
     private String batchId;
 
+    @Column(length = StringLength.LENGTH_50, nullable = true)
+    private String forceKey;
+
+    @Column(length = Length.LONG32, nullable = true)
+    private String data;
+
     public Integer getExtSyncsQueueItemId() {
         return extSyncsQueueItemId;
     }
@@ -124,14 +132,6 @@ public class ExtSyncsQueueItem {
         this.stateMessage = stateMessage;
     }
 
-    public String getBatchId() {
-        return batchId;
-    }
-
-    public void setBatchId(String batchId) {
-        this.batchId = batchId;
-    }
-
     public ExtAsyncQueueState getState() {
         return state;
     }
@@ -161,7 +161,31 @@ public class ExtSyncsQueueItem {
         return userId;
     }
 
-    public enum ExtAsyncQueueState {
+    public String getBatchId() {
+        return batchId;
+    }
+
+    public void setBatchId(String batchId) {
+        this.batchId = batchId;
+    }
+
+    public String getForceKey() {
+		return forceKey;
+	}
+
+	public void setForceKey(String forceKey) {
+		this.forceKey = forceKey;
+	}
+
+	public String getData() {
+		return data;
+	}
+
+	public void setData(String data) {
+		this.data = data;
+	}
+
+	public enum ExtAsyncQueueState {
 
         UPDATE("K aktualizaci"),
 
@@ -172,6 +196,10 @@ public class ExtSyncsQueueItem {
         EXPORT_NEW("K odeslání"),
 
         EXPORT_START("Odesílání"),
+
+        EXPORT_PROCESSING("Ukládání"),
+
+        EXPORT_NEED_CONFIRM("Potřeba potvrzení"),
 
         EXPORT_OK("Odesláno"),
 

@@ -19,7 +19,7 @@ import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.outboxpolling.event.impl.DefaultOutboxEventFinder;
 import org.hibernate.search.mapper.orm.outboxpolling.event.impl.OutboxEvent;
 import org.hibernate.search.mapper.orm.outboxpolling.event.impl.OutboxEventOrder;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +95,9 @@ import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.WfCommentRepository;
 import cz.tacr.elza.repository.WfIssueListRepository;
 import cz.tacr.elza.repository.WfIssueRepository;
+import cz.tacr.elza.repository.WfTaskApRevStateRepository;
+import cz.tacr.elza.repository.WfTaskApStateRepository;
+import cz.tacr.elza.repository.WfTaskRepository;
 import cz.tacr.elza.service.AdminService;
 import cz.tacr.elza.service.AsyncRequestService;
 
@@ -240,6 +243,12 @@ public class HelperTestService {
     private ApCachedAccessPointRepository apCachedAccessPointRepository;
     @Autowired
     private SysViewUpdateRepository viewUpdateRepository;
+	@Autowired
+	private WfTaskRepository wfTaskRepository;
+	@Autowired
+	private WfTaskApStateRepository wfTaskApStateRepository;
+	@Autowired
+	private WfTaskApRevStateRepository wfTaskApRevStateRepository;
 
     @Autowired
     private PackageService packageService;
@@ -303,6 +312,10 @@ public class HelperTestService {
     private void deleteTablesInternal() {
 
         logger.debug("Cleaning table contents...");
+
+        wfTaskApRevStateRepository.deleteAll();
+        wfTaskApStateRepository.deleteAll();
+        wfTaskRepository.deleteAll();
 
         viewUpdateRepository.deleteAll();
         daoDigitizationRequestNodeRepository.deleteAll();
@@ -392,7 +405,7 @@ public class HelperTestService {
             File file = null;
             try {
                 file = buildPackageFileZip(packageDir);
-                Assert.assertNotNull(file);
+                Assertions.assertNotNull(file);
 
                 //packageService.importPackage(file);
 
@@ -412,7 +425,7 @@ public class HelperTestService {
             }
 
             rulPackage = getPackage(packageCode);
-            Assert.assertNotNull(rulPackage);
+            Assertions.assertNotNull(rulPackage);
             logger.info("Package loaded.");
         }
     }

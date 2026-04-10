@@ -1,9 +1,9 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -230,7 +230,7 @@ public class IssueControllerTest extends AbstractControllerTest {
 
                     assertNotNull(commentVO2);
                     assertNotNull(commentVO2.getId());
-                    assertNotNull(comment, commentVO2.getComment());
+                    assertNotNull(commentVO2.getComment(), comment);
                     assertNotNull(commentVO2.getTimeCreated());
 
                     commentId = commentVO2.getId();
@@ -243,7 +243,7 @@ public class IssueControllerTest extends AbstractControllerTest {
 
                     assertNotNull(commentVO3);
                     assertNotNull(commentVO3.getId());
-                    assertNotNull(comment, commentVO3.getComment());
+                    assertNotNull(commentVO3.getComment(), comment);
                     assertNotNull(commentVO3.getTimeCreated());
                 }
 

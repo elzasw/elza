@@ -9,6 +9,8 @@ import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.AP_TYPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.SCOPE_ID;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.REV_STATE;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.VALIDATION_RESULT;
+import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.ASSIGNED_TO;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.USERNAME;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.ANALYZED;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.NOT_ANALYZED;
@@ -65,7 +67,7 @@ public class ApCachedAccessPointBinder implements TypeBinder {
         context.dependencies().use(DATA);
 
         // přidání dodatečných polí
-        for (String name : Arrays.asList(AP_TYPE_ID, SCOPE_ID, STATE, REV_STATE, FIELD_ACCESSPOINT_ID, USERNAME)) {
+        for (String name : Arrays.asList(AP_TYPE_ID, SCOPE_ID, STATE, REV_STATE, VALIDATION_RESULT, FIELD_ACCESSPOINT_ID, USERNAME)) {
             fields.put(name + NOT_ANALYZED, createNotAnalyzedField(name));
         }
 
@@ -78,6 +80,9 @@ public class ApCachedAccessPointBinder implements TypeBinder {
 
         // pole obsahující odkaz na jinou entitu
         createIntField(REL_AP_ID);
+
+        // ID přiřazeného uživatele
+        createIntField(ASSIGNED_TO);
 
         // part type codes
         for (String partCode : configurationReader.getPartTypeCodes()) {

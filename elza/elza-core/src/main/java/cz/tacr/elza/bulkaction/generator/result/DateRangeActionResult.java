@@ -1,5 +1,7 @@
 package cz.tacr.elza.bulkaction.generator.result;
 
+import org.apache.commons.lang3.StringUtils;
+
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.service.OutputItemConnector;
 
@@ -30,7 +32,8 @@ public class DateRangeActionResult extends ActionResult {
 
     @Override
     public void createOutputItems(OutputItemConnector connector) {
-        if (text == null) {
+    	// Do not store empty values
+        if (StringUtils.isBlank(text)) {
             return;
         }
         ItemType rsit = connector.getItemTypeByCode(itemType);

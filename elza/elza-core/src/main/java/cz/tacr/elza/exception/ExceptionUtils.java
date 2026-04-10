@@ -4,10 +4,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 
-import cz.tacr.cam.client.ApiException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.ErrorCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
@@ -77,16 +74,6 @@ public class ExceptionUtils {
         if (CollectionUtils.isNotEmpty(object)) {
             throw new BusinessException(message, code);
         }
-    }
-
-    public static String getApiExceptionInfo(ApiException e) {
-        StringBuilder sb = new StringBuilder(e.getMessage());
-        sb.append(", code: ").append(e.getCode());
-        String body = e.getResponseBody();
-        if (StringUtils.isNotEmpty(body)) {
-            sb.append(", response: ").append(body);
-        }
-        return sb.toString();
     }
 
     public static ErrorCode getErrorCodeEnum(String type, String code) {

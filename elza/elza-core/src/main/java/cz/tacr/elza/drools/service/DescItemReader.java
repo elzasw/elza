@@ -13,6 +13,7 @@ import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.drools.model.DescItem;
+import cz.tacr.elza.drools.model.InhibitedItem;
 import cz.tacr.elza.drools.model.Level;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
@@ -92,9 +93,15 @@ public class DescItemReader {
             cachedNodes = nodeCacheService.getNodes(nodeIds);
 
             for (Level level : levels) {
-                List<ArrDescItem> levelDescItems = cachedNodes.get(level.getNodeId()).getDescItems();
+            	var cachedNode = cachedNodes.get(level.getNodeId());
+            	
+                List<ArrDescItem> levelDescItems = cachedNode.getDescItems();
                 List<DescItem> items = ModelFactory.createDescItems(levelDescItems, descItemFactory, structItemRepos, apProvider);
                 level.setDescItems(items);
+                
+                var inhItems = cachedNode.getInhibitedItems();
+                List<InhibitedItem> inhibitedItems = ModelFactory.createInhibitedItems(inhItems);
+                level.setInhibitedItems(inhibitedItems);
             }
         } else {
             // Load from DB

@@ -1,15 +1,15 @@
 package cz.tacr.elza.domain.bridge;
 
-import static cz.tacr.elza.domain.ArrDescItem.FIELD_FUND_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FULLTEXT_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORM_FROM;
 import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
 import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
+import static cz.tacr.elza.domain.ArrFund.FIELD_FUND_ID;
+import static cz.tacr.elza.domain.ArrFund.FIELD_INSTITUTION_ID;
 
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.search.engine.backend.document.DocumentElement;
@@ -62,16 +62,17 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 
     	RestoredNode cachedNode = nodeCacheService.deserialize(arrCachedNode);
     	nodeCacheService.reloadCachedNodes(Collections.singletonList(cachedNode));
-    	
+
     	ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(cachedNode.getFundId());
 
     	// read node_conformity for last opened version
     	Map<Integer, ArrNodeConformityExt> errors = ruleService.getNodeConformityInfoForNodes(Collections.singletonList(cachedNode.getNodeId()), fundVersion);
     	ArrNodeConformityExt conformityErrors = errors.get(cachedNode.getNodeId());
-    	
+
     	// TODO: do not index deleted levels
 
     	document.addValue(FIELD_FUND_ID, cachedNode.getFundId());
+    	document.addValue(FIELD_INSTITUTION_ID, fundVersion.getFund().getInstitutionId());
     	document.addValue(ArrCachedNodeBinder.UUID, cachedNode.getUuid());
     	if (cachedNode.getDescItems() != null) {
             for (ArrDescItem item : cachedNode.getDescItems()) {

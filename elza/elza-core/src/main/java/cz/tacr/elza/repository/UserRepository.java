@@ -29,6 +29,9 @@ public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, Use
     @Query("select ugu.user from usr_group_user ugu where ugu.group = :group")
     List<UsrUser> findByGroup(@Param("group") UsrGroup group);
 
+    @Query("select ugu.user from usr_group_user ugu join ugu.group g on g.code = :groupCode")
+    List<UsrUser> findByGroupCode(@Param("groupCode") String groupCode);
+
     @Query("select distinct p.user from usr_permission p where p.fund = :fund")
     List<UsrUser> findByFund(@Param("fund") ArrFund fund);
 
@@ -40,8 +43,7 @@ public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, Use
 	/**
 	 * Return user with fetched party and record
 	 *
-	 * @param userId
-	 *            User to be fetched from DB
+	 * @param userId	User to be fetched from DB
 	 * @return
 	 */
 	@Query("select u from usr_user u join fetch u.accessPoint r where u.userId = :userId")
@@ -59,10 +61,9 @@ public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, Use
 	        "left join p.group g3 " +
 	        "left join g3.users gu3 " +
 	        "where  (p.userId = :userId or gu3.userId = :userId) " +
-	        "       and p.permission in ('USER_CONTROL_ENTITITY' , 'GROUP_CONTROL_ENTITITY') " +
+	        "       and p.permission in ('USER_CONTROL_ENTITY' , 'GROUP_CONTROL_ENTITY') " +
 	        "       and (p.userControlId = :checkedUserId OR gu.userId = :checkedUserId)")
-	List<Integer> findPermissionAllowingUserAccess(@Param("userId") int userId,
-	        @Param("checkedUserId") int checkedUserId);
+	List<Integer> findPermissionAllowingUserAccess(@Param("userId") int userId, @Param("checkedUserId") int checkedUserId);
 
 	/**
 	 * Return list of usr_permission which grant user rights to manage (anyhow) the group
@@ -73,19 +74,9 @@ public interface UserRepository extends ElzaJpaRepository<UsrUser, Integer>, Use
 	        "left join p.group g3 " +
 	        "left join g3.users gu3 " +
 	        "where  (p.userId = :userId or gu3.userId = :userId) " +
-	        "       and p.permission in ('GROUP_CONTROL_ENTITITY') " +
+	        "       and p.permission in ('GROUP_CONTROL_ENTITY') " +
 	        "       and (p.groupControlId = :checkedGroupId)")
-	List<Integer> findPermissionAllowingGroupAccess(@Param("userId") int userId,
-	        @Param("checkedGroupId") int checkedGroupId);
-
-
-	@Query("SELECT user" +
-			" FROM ap_state s1" +
-			" JOIN s1.createChange cc" +
-			" JOIN cc.user user" +
-			" WHERE s1.accessPoint = :accessPoint" +
-			" AND s1.createChangeId = (SELECT min(s2.createChangeId) FROM ap_state s2 WHERE s2.accessPoint = s1.accessPoint)")
-	UsrUser findAccessPointOwner(@Param("accessPoint") ApAccessPoint accessPoint);
+	List<Integer> findPermissionAllowingGroupAccess(@Param("userId") int userId, @Param("checkedGroupId") int checkedGroupId);
 
     /**
      * Return number of valid levels

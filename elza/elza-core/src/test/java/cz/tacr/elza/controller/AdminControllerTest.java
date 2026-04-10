@@ -1,12 +1,14 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
 import cz.tacr.elza.api.DigitalRepositoryType;
+
 import org.junit.Test;
+
 
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;

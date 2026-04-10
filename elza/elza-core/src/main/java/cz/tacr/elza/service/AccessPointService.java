@@ -45,12 +45,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import cz.tacr.elza.cam.v1.SearchFilterFactory;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.UuidUtils;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.factory.ApFactory;
-import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
@@ -104,6 +104,8 @@ import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.WfTask.Status;
+import cz.tacr.elza.domain.WfTaskApState;
 import cz.tacr.elza.domain.projection.ApStateInfo;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
@@ -316,6 +318,9 @@ public class AccessPointService {
 
     @Autowired
     private ApFactory apFactory;
+
+    @Autowired
+    private TaskService taskService;
 
     @Autowired
     private EntityManager em;
@@ -601,8 +606,7 @@ public class AccessPointService {
      */
     public void deleteAccessPoint(final ApState apState,
                                   final ApAccessPoint replacedBy,
-                                  final boolean mergeAp)
-            throws SyncImpossibleException {
+                                  final boolean mergeAp) throws SyncImpossibleException {
 
         logger.info("Deleting accessPoint, id: {}, replacedBy: {}, mergeAp: {}", apState.getAccessPointId(),
                     replacedBy != null ? replacedBy.getAccessPointId() : null, mergeAp);
@@ -679,6 +683,7 @@ public class AccessPointService {
                 accessPointCacheService.createApCachedAccessPoint(apId);
             }
         }
+
         invalidateAccessPointPublishAndReindex(apState, accessPoint, change);
         logger.info("Deleted accessPoint, id: {}, replacedBy: {}", apState.getAccessPointId(),
                     replacedBy != null ? replacedBy.getAccessPointId() : null);
@@ -813,6 +818,9 @@ public class AccessPointService {
             // aktualizace náhradní entity v cache
             accessPointCacheService.createApCachedAccessPoint(apState.getReplacedById());
         }
+
+        // close if exists WfTask
+        taskService.closeWfTask(apState, Status.CANCELLED);
 
         return apState;
     }
@@ -2135,7 +2143,7 @@ public class AccessPointService {
 			CachedAccessPoint entity = accessPointCacheService.deserialize(cachedAccessPoint.getData(), cachedAccessPoint.getAccessPoint());
 			String name = apFactory.findAeCachedEntityName(entity);
 			String description = apFactory.getDescription(entity);
-			accessPointVOList.add(apFactory.createVO(entity.getApState(), entity, name, description));
+			accessPointVOList.add(apFactory.createVO(entity, name, description));
 		}
 
 		return new FilteredResultVO<>(accessPointVOList, cachedAccessPointResult.getRecordCount());
@@ -2582,7 +2590,11 @@ public class AccessPointService {
         publishQueueEvent(item, EventType.ACCESS_POINT_EXPORT_STARTED);
     }
 
-    public void publishExtQueueProcessCompletedEvent(final ExtSyncsQueueItem item) {
+	public void publishExtQueueProcessNeedConfirmEvent(ExtSyncsQueueItem item) {
+        publishQueueEvent(item, EventType.ACCESS_POINT_EXPORT_NEED_CONFIRM);
+	}
+
+	public void publishExtQueueProcessCompletedEvent(final ExtSyncsQueueItem item) {
         publishQueueEvent(item, EventType.ACCESS_POINT_EXPORT_COMPLETED);
     }
 
@@ -2618,11 +2630,12 @@ public class AccessPointService {
     /**
      * Změna stavu přístupového bodu
      *
-     * @param accessPoint přístupový bod
+     * @param accessPoint      přístupový bod
      * @param newStateApproval nový stav schvalování
-     * @param newComment komentář k stavu (nepovinně)
-     * @param newTypeId ID typu - <b>pokud je {@code null}, typ se nemění</b>
-     * @param newScopeId ID oblasti entit - <b>pokud je {@code null}, oblast se nemění</b>
+     * @param newComment       komentář k stavu (nepovinně)
+     * @param newTypeId        ID typu - <b>pokud je {@code null}, typ se nemění</b>
+     * @param newScopeId       ID oblasti entit - <b>pokud je {@code null}, oblast se nemění</b>
+     * @param assignTo         ID uživatele
      * @return nový stav přístupového bodu (nebo starý, pokud nedošlo k žádné změně)
      */
     @Transactional
@@ -2630,7 +2643,8 @@ public class AccessPointService {
                                  @NotNull StateApproval newStateApproval,
                                  @Nullable String newComment,
                                  @Nullable Integer newTypeId,
-                                 @Nullable Integer newScopeId) {
+                                 @Nullable Integer newScopeId,
+                                 @Nullable Integer assignTo) {
 
         Validate.notNull(newStateApproval, "AP State is null");
 
@@ -2722,7 +2736,20 @@ public class AccessPointService {
                 .set("oldState", oldStateApproval)
                 .set("newState", newStateApproval);
         }
-
+        
+        // Check if assignTo changed
+        WfTaskApState prevTask = taskService.getTask(oldApState);
+        if(prevTask!=null) {
+        	// check assigned user - if changed
+        	if(!Objects.equals(prevTask.getTask().getAssigneeId(), assignTo)) {
+        		update = true;
+        	}
+        } else {
+        	// check if some value in assignTo
+        	if(assignTo!=null) {
+        		update = true;        		
+        	}
+        }
 
         if (!update) {
             // nothing to update
@@ -2760,6 +2787,14 @@ public class AccessPointService {
 
         if (newApType != null) {
             saveWithLock(accessPoint);
+        }
+
+        // close if exists WfTask
+        taskService.closeWfTask(oldApState, Status.FINISHED);
+
+        if (assignTo != null) {
+        	// create new WfTask
+            taskService.createTaskApState(newApState, assignTo);
         }
 
         publishAccessPointUpdateEvent(accessPoint);

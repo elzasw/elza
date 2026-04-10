@@ -170,6 +170,7 @@ export class websocket {
             headers,
             body: data,
         });
+        return headers.receipt;
     };
 
     addListener = (listener) => {
@@ -325,6 +326,7 @@ let eventMap = {
     ACCESS_POINT_UPDATE: accessPointUpdate,
     ACCESS_POINT_EXPORT_NEW: () => { },
     ACCESS_POINT_EXPORT_STARTED: () => { },
+    ACCESS_POINT_EXPORT_NEED_CONFIRM: () => { },
     ACCESS_POINT_EXPORT_COMPLETED: () => { },
     ACCESS_POINT_EXPORT_FAILED: () => { },
     ISSUE_LIST_UPDATE: issueListUpdate,

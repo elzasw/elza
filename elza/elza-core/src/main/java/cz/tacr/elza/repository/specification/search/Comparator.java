@@ -1,8 +1,6 @@
 package cz.tacr.elza.repository.specification.search;
 
-
-
-import cz.tacr.cam.client.controller.vo.QueryComparator;
+import cz.tacr.cam.v1.client.controller.vo.QueryComparator;
 import cz.tacr.elza.core.data.DataType;
 
 import jakarta.persistence.criteria.Predicate;
@@ -14,5 +12,4 @@ public interface Comparator {
     }
 
     Predicate toPredicate(QueryComparator comparator, String value);
-
 }

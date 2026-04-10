@@ -33,6 +33,8 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
 
     private final ApStateRepository apStateRepository;
 
+    private final ApCachedAccessPointRepository cachedAccessPointRepository;
+
     public ApAccessPointStorage(Session session, StoredEntityCallback persistEntityListener,
             ApChangeHolder changeHolder,
             ImportInitHelper initHelper) {
@@ -41,6 +43,7 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
         this.bindingRepository = initHelper.getBindingRepository();
         this.bindingStateRepository = initHelper.getBindingStateRepository();
         this.apStateRepository = initHelper.getApStateRepository();
+        this.cachedAccessPointRepository = initHelper.getCachedAccessPointRepository();
         this.changeHolder = changeHolder;
     }
 
@@ -75,6 +78,8 @@ public class ApAccessPointStorage extends EntityStorage<AccessPointWrapper> {
             // this is probably incorrect
             // why we need to invalidate binding?
             bindingStateRepository.invalidateByAccessPointIdIn(apIds, change);
+            // delete cached AP records so syncCache() will re-create them with updated data
+            cachedAccessPointRepository.deleteAllByAccessPointIdIn(apIds);
         }
     }
 

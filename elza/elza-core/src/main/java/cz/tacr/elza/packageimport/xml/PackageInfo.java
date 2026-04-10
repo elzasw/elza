@@ -7,7 +7,6 @@ import jakarta.xml.bind.annotation.XmlElementWrapper;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
-
 /**
  * VO PackageInfo - informace o importovaném package.
  *
@@ -17,6 +16,8 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "package")
 public class PackageInfo {
+
+    private Integer id;
 
     @XmlElement(name = "code", required = true)
     private String code;
@@ -34,7 +35,15 @@ public class PackageInfo {
     @XmlElementWrapper(name = "dependencies")
     private List<PackageDependency> dependencies;
 
-    public String getCode() {
+    public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getCode() {
         return code;
     }
 

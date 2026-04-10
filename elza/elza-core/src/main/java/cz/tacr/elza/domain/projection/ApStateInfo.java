@@ -2,9 +2,8 @@ package cz.tacr.elza.domain.projection;
 
 import java.time.OffsetDateTime;
 
-import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApState.StateApproval;
-import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.UsrUser;
 
@@ -15,6 +14,7 @@ public class ApStateInfo {
     private final OffsetDateTime changeDate;
     private final StateApproval state;
     private final RevStateApproval revState;
+    private final ApChange.Type type;
     private final String scopeName;
     private final String typeName;
     private final String revTypeName;
@@ -28,6 +28,10 @@ public class ApStateInfo {
         return changeDate;
     }
 
+    public ApChange.Type getType() {
+		return type;
+	}
+
     public StateApproval getState() {
         return state;
     }
@@ -36,7 +40,7 @@ public class ApStateInfo {
         return revState;
     }
 
-    public String getScopeName() {
+	public String getScopeName() {
         return scopeName;
     }
 
@@ -62,9 +66,18 @@ public class ApStateInfo {
 
     // --- constructor ---
 
-    public ApStateInfo(OffsetDateTime changeDate, StateApproval state, RevStateApproval revState, String scopeName, 
-                       String typeName, String revTypeName, String comment, String revComment, UsrUser user) {
+    public ApStateInfo(OffsetDateTime changeDate, 
+    		           ApChange.Type type,
+    		           StateApproval state, 
+    		           RevStateApproval revState,
+    		           String scopeName, 
+                       String typeName, 
+                       String revTypeName, 
+                       String comment, 
+                       String revComment, 
+                       UsrUser user) {
         this.changeDate = changeDate;
+        this.type = type;
         this.state = state;
         this.revState = revState;
         this.scopeName = scopeName;

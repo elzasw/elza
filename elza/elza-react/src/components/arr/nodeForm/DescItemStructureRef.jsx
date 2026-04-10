@@ -1,6 +1,5 @@
 import {WebApi} from 'actions';
-import {structureTypeInvalidate} from 'actions/arr/structureType';
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog';
+import {modalDialogShow} from 'actions/global/modalDialog';
 import classNames from 'classnames';
 import AddStructureDataForm from 'components/arr/structure/AddStructureDataForm';
 import {Autocomplete, i18n, Icon} from 'components/shared';
@@ -108,41 +107,23 @@ class DescItemStructureRef extends React.Component {
 
     addNewStructure = () => {
         const {structureTypeCode, versionId, fundId, structureTypeName, onChange, descItemFactory} = this.props;
-        WebApi.createStructureData(versionId, structureTypeCode, this.findValue()).then(structureData => {
-            this.props.dispatch(
-                modalDialogShow(
-                    this,
-                    i18n('arr.structure.modal.add.title', structureTypeName),
-                    <AddStructureDataForm
-                        fundId={fundId}
-                        fundVersionId={versionId}
-                        structureData={structureData}
-                        descItemFactory={descItemFactory}
-                        onSubmit={() => {
-                            WebApi.confirmStructureData(versionId, structureData.id).then(structure => {
-                                onChange && onChange(structure);
-                                this.blur(); // blur to save
-                                //this.input.focus();
-                                //setTimeout(()=>{this.input.focus()}, 3000) // regain focus
-                            });
-                        }}
-                        onSubmitSuccess={() => {
-                            this.props.dispatch(modalDialogHide());
-                            this.props.dispatch(structureTypeInvalidate());
-                            //this.focus();
-                            //setTimeout(this.focus, 3000) // regain focus
-                        }}
-                    />,
-                    '',
-                    prop => {
-                        WebApi.deleteStructureData(versionId, structureData.id);
-                        //this.blur(); // blur to save
-                        //this.focus();
-                        //setTimeout(this.focus, 3000) // regain focus
-                    },
-                ),
-            );
-        });
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.structure.modal.add.title', structureTypeName),
+                <AddStructureDataForm
+                    fundId={fundId}
+                    fundVersionId={versionId}
+                    structureTypeCode={structureTypeCode}
+                    initialQuery={this.findValue()}
+                    descItemFactory={descItemFactory}
+                    onConfirm={(structureId) => {
+                        onChange && onChange({id: structureId});
+                        this.blur(); // blur to save
+                    }}
+                />,
+            ),
+        );
     };
 
     focus = () => {

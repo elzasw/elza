@@ -9,7 +9,7 @@ import { messages } from "./messages";
 import { useFilterModal } from "./hooks";
 import { FilterObject } from "./types";
 import { useSelector } from "react-redux";
-import { AppState } from "typings/store";
+import { AppState, DescItemTypeRef } from "typings/store";
 import { useThunkDispatch } from "utils/hooks";
 import { descItemTypesFetchIfNeeded } from "actions/refTables/descItemTypes";
 import { SettingsType } from "api/settings/SettingsType";
@@ -139,7 +139,7 @@ export function NodeSearchFilters({
     operation
   }: {
     value: string,
-    itemType: string,
+    itemType: DescItemTypeRef,
     itemSpec: string,
     name: string,
     operation: OperationCompareType,
@@ -161,7 +161,7 @@ export function NodeSearchFilters({
           filterType: FilterType.FieldValue,
           field: {
             fieldType: FieldType.DescItem,
-            typeCode: itemType,
+            typeCode: itemType.code,
             specCode: itemSpec,
           },
           operation,
@@ -253,7 +253,8 @@ export function NodeSearchFilters({
       </Form>
     </div>
     {presetFixedFilters.length > 0 && presetFixedFilters.map(({ name, itemType, itemSpec, operation }) => {
-      const initialValues = { value: "", itemType, itemSpec, name, operation }
+      const _itemType = descItemTypes.find(({ code }) => itemType === code);
+      const initialValues = { value: "", itemType: _itemType, itemSpec, name, operation }
       return <div style={{ display: "flex", alignItems: "center", margin: "5px" }}>
         <Form initialValues={initialValues} onSubmit={handleFixedFilter}>
           {({ handleSubmit, values, form }) => {

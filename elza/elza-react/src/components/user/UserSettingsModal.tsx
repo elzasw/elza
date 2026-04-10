@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Col, Form, Modal, Nav, Row } from 'react-bootstrap';
-import { i18n, Autocomplete, FormInput, FormInputField, Icon } from 'components/shared';
+import { FormInputField, Icon } from 'components/shared';
+import { globalMessages } from 'components/shared/lang';
+import { defineMessages, FormattedMessage, useIntl } from 'react-intl';
 import { Button } from 'components/ui';
 import { Form as FinalForm, Field } from 'react-final-form';
 import { Api } from 'api';
@@ -10,9 +12,11 @@ import { useThunkDispatch } from 'utils/hooks';
 import { apExtSystemListFetchIfNeeded } from 'actions/registry/apExtSystemList';
 import { ExtSystemProperty } from 'elza-api';
 import { showConfirmDialog } from 'components/shared/dialog';
+import { useUserSettings } from 'contexts/user';
 // import { AP_EXT_SYSTEM_TYPE } from '../../constants';
 
 enum UserSettingCategory {
+    Display = 'Display',
     ApiKeys = 'ApiKeys',
 }
 
@@ -31,6 +35,101 @@ interface ApiKeyValue {
     apiKeyValue?: ExtSystemProperty;
 }
 
+const messages = defineMessages({
+    darkMode: {
+        id: 'userSettings.display.darkMode',
+        defaultMessage: 'Tmavý režim',
+    },
+    showDebugInfo: {
+        id: 'userSettings.display.showDebugInfo',
+        defaultMessage: 'Zobrazit ladící informace',
+    },
+    showExperimentalFeatures: {
+        id: 'userSettings.display.showExperimentalFeatures',
+        defaultMessage: 'Zobrazit experimentální funkce',
+    },
+    categoryDisplay: {
+        id: 'userSettings.category.Display',
+        defaultMessage: 'Zobrazení',
+    },
+    categoryApiKeys: {
+        id: 'userSettings.category.ApiKeys',
+        defaultMessage: 'API Klíče',
+    },
+    apiKeysNoItems: {
+        id: 'userSettings.apiKeys.noItems',
+        defaultMessage: 'Žádné uložené osobní API klíče',
+    },
+    apiKeysItemId: {
+        id: 'userSettings.apiKeys.item.id',
+        defaultMessage: 'id',
+    },
+    apiKeysItemValue: {
+        id: 'userSettings.apiKeys.item.value',
+        defaultMessage: 'hodnota',
+    },
+    apiKeysSave: {
+        id: 'userSettings.apiKeys.save',
+        defaultMessage: 'Uložit',
+    },
+    apiKeysDeleteConfirm: {
+        id: 'userSettings.apiKeys.delete.confirm.message',
+        defaultMessage: 'Přejete si smazat nastavený API klíč pro externí systém {name}?',
+    },
+    extSystem: {
+        id: 'ap.ext-syncs.ext-system',
+        defaultMessage: 'Externí systém',
+    },
+    apiKeyId: {
+        id: 'admin.extSystem.apiKeyId',
+        defaultMessage: 'ApiKey - ID',
+    },
+    apiKeyValue: {
+        id: 'admin.extSystem.apiKeyValue',
+        defaultMessage: 'ApiKey - hodnota',
+    },
+});
+
+const categoryMessages: Record<UserSettingCategory, typeof messages.categoryDisplay> = {
+    [UserSettingCategory.Display]: messages.categoryDisplay,
+    [UserSettingCategory.ApiKeys]: messages.categoryApiKeys,
+};
+
+function DisplaySettings() {
+    const { settings, update } = useUserSettings();
+    const { formatMessage } = useIntl();
+
+    return (
+        <Row>
+            <Col xs={12}>
+                <div style={{ padding: "10px 0" }}>
+                    <Form.Check
+                        type="checkbox"
+                        id="darkMode"
+                        label={formatMessage(messages.darkMode)}
+                        checked={!!settings.darkMode}
+                        onChange={(e) => update({ darkMode: e.target.checked })}
+                    />
+                    <Form.Check
+                        type="checkbox"
+                        id="showExperimentalFeatures"
+                        label={formatMessage(messages.showExperimentalFeatures)}
+                        checked={!!settings.showExperimentalFeatures}
+                        onChange={(e) => update({ showExperimentalFeatures: e.target.checked })}
+                    />
+                    <Form.Check
+                        type="checkbox"
+                        id="showDebugInfo"
+                        label={formatMessage(messages.showDebugInfo)}
+                        checked={!!settings.showDebugInfo}
+                        onChange={(e) => update({ showDebugInfo: e.target.checked })}
+                    />
+                </div>
+            </Col>
+        </Row>
+    );
+}
+
 interface Props {
     onClose: () => void;
 }
@@ -39,10 +138,11 @@ export default function UserSettingsModal({ onClose }: Props) {
     // const externalSystems = useSelector((appState: AppState) => appState.app.apExtSystemList.rows.filter(({type}) => type === AP_EXT_SYSTEM_TYPE.CAM_COMPLETE));
     const externalSystems = useSelector((appState: AppState) => appState.app.apExtSystemList.rows);
     const userId = useSelector((appState: AppState) => appState.userDetail.id);
-    const [activeView, setActiveView] = useState<string | null>(UserSettingCategory.ApiKeys);
+    const [activeView, setActiveView] = useState<string | null>(UserSettingCategory.Display);
     const [apiKeys, setApiKeys] = useState<ApiKeyValue[]>([]);
     const [availableExternalSystems, setAvailableExternalSystems] = useState<ApExternalSystemSimpleVO[]>([]);
     const dispatch = useThunkDispatch();
+    const { formatMessage } = useIntl();
 
     const loadApiKeys = useCallback(() => {
         (async () => {
@@ -63,7 +163,7 @@ export default function UserSettingsModal({ onClose }: Props) {
                     } else {
                         keyValueObj.apiKeyId = prop;
                     }
-                } else 
+                } else
                 if(prop.name===APIKEY_VALUE) {
                     if(keyValueObj === undefined) {
                         keyValueObj = { id: prop.extSystemId, apiKeyValue: prop };
@@ -111,7 +211,7 @@ export default function UserSettingsModal({ onClose }: Props) {
     const handleDelete = (extSystemId?: string | number) => {
         return async () => {
             const extSystem = externalSystems.find(({ id }) => extSystemId === id);
-            const result = await dispatch(showConfirmDialog(i18n("userSettings.apiKeys.delete.confirm.message", extSystem?.name)))
+            const result = await dispatch(showConfirmDialog(formatMessage(messages.apiKeysDeleteConfirm, { name: extSystem?.name })))
             if (!result) { return; }
 
             const apiKey = apiKeys.find(({ id }) => id === extSystemId)
@@ -136,25 +236,28 @@ export default function UserSettingsModal({ onClose }: Props) {
                 <Row>
                     <Col sm={3} className="menu">
                         <Nav variant="pills" activeKey={activeView} onSelect={view => setActiveView(view)}>
-                            {Object.entries(UserSettingCategory).map(([_key, value]) => {
+                            {Object.values(UserSettingCategory).map((value) => {
                                 return (
-                                    <Nav.Item>
-                                        <Nav.Link eventKey={value}>{i18n(`userSettings.category.${value}`)}</Nav.Link>
+                                    <Nav.Item key={value}>
+                                        <Nav.Link eventKey={value}>{formatMessage(categoryMessages[value])}</Nav.Link>
                                     </Nav.Item>
                                 );
                             })}
                         </Nav>
                     </Col>
                     <Col sm={9} className="view">
+                        {activeView === UserSettingCategory.Display && (
+                            <DisplaySettings />
+                        )}
                         {activeView === UserSettingCategory.ApiKeys && (
                             <Row key={UserSettingCategory.ApiKeys}>
                                 <Col xs={12}>
                                     <div style={{ padding: "10px 0" }}>
                                         <div>
-                                            {apiKeys.length === 0 && i18n("userSettings.apiKeys.noItems")}
+                                            {apiKeys.length === 0 && <FormattedMessage {...messages.apiKeysNoItems} />}
                                             {apiKeys.map(({ apiKeyValue, apiKeyId, id }) => {
                                                 const externalSystem = externalSystems.find(({ id: _id }) => _id === id)
-                                                return <div style={{
+                                                return <div key={String(id)} style={{
                                                     border: "var(--primary-border)",
                                                     padding: "10px",
                                                     borderRadius: "10px",
@@ -165,8 +268,8 @@ export default function UserSettingsModal({ onClose }: Props) {
                                                     <div style={{ flexGrow: 1 }}>
                                                         <div><b>{externalSystem?.name}</b></div>
                                                         <div style={{ display: "flex", flexWrap: "wrap" }}>
-                                                            <div style={{ marginRight: "10px" }}><b>{i18n("userSettings.apiKeys.item.id")}:</b> {apiKeyId?.value}</div>
-                                                            <div><b>{i18n("userSettings.apiKeys.item.value")}:</b> {apiKeyValue?.value}</div>
+                                                            <div style={{ marginRight: "10px" }}><b><FormattedMessage {...messages.apiKeysItemId} />:</b> {apiKeyId?.value}</div>
+                                                            <div><b><FormattedMessage {...messages.apiKeysItemValue} />:</b> {apiKeyValue?.value}</div>
                                                         </div>
                                                     </div>
                                                     <div style={{ padding: "5px" }}>
@@ -187,28 +290,28 @@ export default function UserSettingsModal({ onClose }: Props) {
                                                             name="externalSystemId"
                                                             type={'select'}
                                                             component={FormInputField}
-                                                            label={i18n("ap.ext-syncs.ext-system")}
+                                                            label={formatMessage(messages.extSystem)}
                                                             disabled={submitting}
                                                         >
                                                             <option />
                                                             {availableExternalSystems.map(({ id, name }) => {
-                                                                return <option value={id}>{name}</option>
+                                                                return <option value={id} key={id}>{name}</option>
                                                             })}
                                                         </Field>
                                                         <Field
                                                             key={'apiKeyId'}
                                                             name="apiKeyId"
                                                             component={FormInputField}
-                                                            label={i18n("admin.extSystem.apiKeyId")}
+                                                            label={formatMessage(messages.apiKeyId)}
                                                         />
                                                         <Field
                                                             key={'apiKeyValue'}
                                                             name="apiKeyValue"
                                                             component={FormInputField}
-                                                            label={i18n("admin.extSystem.apiKeyValue")}
+                                                            label={formatMessage(messages.apiKeyValue)}
                                                         />
                                                         <div style={{ display: "flex", justifyContent: "flex-end", padding: "10px 0" }}>
-                                                            <Button variant="outline-secondary" onClick={handleSubmit}>{i18n("userSettings.apiKeys.save")}</Button>
+                                                            <Button variant="outline-secondary" onClick={handleSubmit}><FormattedMessage {...messages.apiKeysSave} /></Button>
                                                         </div>
                                                     </>
                                                 );
@@ -222,11 +325,8 @@ export default function UserSettingsModal({ onClose }: Props) {
                 </Row>
             </Modal.Body>
             <Modal.Footer>
-                {/* <Button type="submit" variant="outline-secondary" > */}
-                {/*     {i18n('visiblePolicy.action.save')} */}
-                {/* </Button> */}
                 <Button variant="link" onClick={onClose}>
-                    {i18n('global.action.close')}
+                    <FormattedMessage {...globalMessages.close} />
                 </Button>
             </Modal.Footer>
         </Form>

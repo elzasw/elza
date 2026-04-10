@@ -128,6 +128,9 @@ class Boundary implements Comparable<Boundary> {
      * Creates interval boundary from XML dateTime.
      */
     public static Boundary create(String xmlDateTime, boolean lowerBoundary) {
+    	if(xmlDateTime==null) {
+    		throw new IllegalArgumentException("Date/time is not set, has null value.");
+    	}
         XMLGregorianCalendar xmlgc = XmlUtils.DATATYPE_FACTORY.newXMLGregorianCalendar(xmlDateTime);
         Boundary boundary = create(xmlgc, lowerBoundary);
         return boundary;

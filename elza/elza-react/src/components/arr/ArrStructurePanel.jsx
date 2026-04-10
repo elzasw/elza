@@ -104,53 +104,35 @@ class ArrStructurePanel extends AbstractReactComponent {
 
     handleCreate = () => {
         const {code, fundVersionId, fundId, name} = this.props;
-        WebApi.createStructureData(fundVersionId, code).then(structureData => {
-            this.props.dispatch(
-                modalDialogShow(
-                    this,
-                    i18n('arr.structure.modal.add.title', name),
-                    <AddStructureDataForm
-                        fundId={fundId}
-                        fundVersionId={fundVersionId}
-                        structureData={structureData}
-                        descItemFactory={DescItemFactory}
-                        onSubmit={() => WebApi.confirmStructureData(fundVersionId, structureData.id)}
-                        onSubmitSuccess={() => {
-                            this.props.dispatch(modalDialogHide());
-                            this.props.dispatch(structureTypeInvalidate());
-                        }}
-                    />,
-                    '',
-                    () => WebApi.deleteStructureData(fundVersionId, structureData.id),
-                ),
-            );
-        });
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.structure.modal.add.title', name),
+                <AddStructureDataForm
+                    fundId={fundId}
+                    fundVersionId={fundVersionId}
+                    structureTypeCode={code}
+                    descItemFactory={DescItemFactory}
+                />,
+            ),
+        );
     };
 
     handleCreateMulti = () => {
         const {code, fundVersionId, fundId, name} = this.props;
-        WebApi.createStructureData(fundVersionId, code).then(structureData => {
-            this.props.dispatch(
-                modalDialogShow(
-                    this,
-                    i18n('arr.structure.modal.addMultiple.title', name),
-                    <AddStructureDataForm
-                        multiple
-                        fundId={fundId}
-                        fundVersionId={fundVersionId}
-                        structureData={structureData}
-                        descItemFactory={DescItemFactory}
-                        onSubmit={data => WebApi.duplicateStructureDataBatch(fundVersionId, structureData.id, data)}
-                        onSubmitSuccess={() => {
-                            this.props.dispatch(modalDialogHide());
-                            this.props.dispatch(structureTypeInvalidate());
-                        }}
-                    />,
-                    '',
-                    () => WebApi.deleteStructureData(fundVersionId, structureData.id),
-                ),
-            );
-        });
+        this.props.dispatch(
+            modalDialogShow(
+                this,
+                i18n('arr.structure.modal.addMultiple.title', name),
+                <AddStructureDataForm
+                    multiple
+                    fundId={fundId}
+                    fundVersionId={fundVersionId}
+                    structureTypeCode={code}
+                    descItemFactory={DescItemFactory}
+                />,
+            ),
+        );
     };
 
     /**

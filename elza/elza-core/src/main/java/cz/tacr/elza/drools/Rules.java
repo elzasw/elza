@@ -5,12 +5,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
-import java.util.AbstractMap;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.drools.core.event.DefaultAgendaEventListener;
 import org.kie.api.KieBase;
 import org.kie.api.KieBaseConfiguration;
 import org.kie.api.KieServices;
@@ -18,14 +19,6 @@ import org.kie.api.builder.KieBuilder;
 import org.kie.api.builder.KieFileSystem;
 import org.kie.api.builder.Message;
 import org.kie.api.event.rule.AfterMatchFiredEvent;
-import org.kie.api.event.rule.AgendaEventListener;
-import org.kie.api.event.rule.AgendaGroupPoppedEvent;
-import org.kie.api.event.rule.AgendaGroupPushedEvent;
-import org.kie.api.event.rule.BeforeMatchFiredEvent;
-import org.kie.api.event.rule.MatchCancelledEvent;
-import org.kie.api.event.rule.MatchCreatedEvent;
-import org.kie.api.event.rule.RuleFlowGroupActivatedEvent;
-import org.kie.api.event.rule.RuleFlowGroupDeactivatedEvent;
 import org.kie.api.io.ResourceType;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
@@ -42,7 +35,6 @@ import cz.tacr.elza.repository.ArrangementRuleRepository;
 import cz.tacr.elza.repository.PackageDependencyRepository;
 import cz.tacr.elza.repository.PackageRepository;
 
-
 /**
  * Abstraktní třída pro Drools pravidla.
  *
@@ -50,12 +42,21 @@ import cz.tacr.elza.repository.PackageRepository;
  */
 public abstract class Rules {
 
-    static private final Logger logger = LoggerFactory.getLogger(Rules.class);
+    private static final Logger logger = LoggerFactory.getLogger(Rules.class);
+
+    private record CachedKieBase(FileTime lastModified, KieBase kieBase) {}
 
     /**
      * uchování informace o načtených drools souborech
      */
-    private Map<Path, Map.Entry<FileTime, KieBase>> rulesByPathMap = new HashMap<>();
+    private static final Map<Path, CachedKieBase> rulesByPathMap = new ConcurrentHashMap<>();
+
+    private static final KieBaseConfiguration kieBaseConf;
+
+    static {
+        KieServices ks = KieServices.Factory.get();
+        kieBaseConf = ks.newKieBaseConfiguration();
+    }
 
     @Autowired
     protected ArrangementRuleRepository arrangementRuleRepository;
@@ -69,72 +70,54 @@ public abstract class Rules {
     @Autowired
     protected StaticDataService staticDataService;
 
-    // KIE configuration
-    private KieBaseConfiguration kieBaseConf;
-
-    public Rules() {
-        KieServices ks = KieServices.Factory.get();
-        kieBaseConf = ks.newKieBaseConfiguration();
-        //kieBaseConf.setOption(SequentialOption.YES);
-    }
-
-
-    /**
-     * Metoda pro kontrolu aktuálnosti souboru s pravidly.
-     * 
-     * @throws IOException
-     */
-    protected Map.Entry<FileTime, KieBase> testChangeFile(final Path path,
-                                                          final Map.Entry<FileTime, KieBase> entry)
-            throws IOException {
-        FileTime ft = Files.getLastModifiedTime(path);
-        if (entry.getKey() == null || ft.compareTo(entry.getKey()) > 0) {
-            Map.Entry<FileTime, KieBase> entryNew = reloadRules(path);
-            rulesByPathMap.remove(path);
-            rulesByPathMap.put(path, entryNew);
-            return entryNew;
-        } else {
-            return entry;
-        }
-    }
-
     /**
      * Přenačtení souboru s pravidly.
-     * 
+     *
      * @throws IOException
      */
-    private Map.Entry<FileTime, KieBase> reloadRules(final Path path) throws IOException {
+    private static synchronized CachedKieBase reloadRules(final Path path) throws IOException {
+        CachedKieBase existing = rulesByPathMap.get(path);
+        if (existing != null) {
+            FileTime ft = Files.getLastModifiedTime(path);
+            if (existing.lastModified() != null && ft.compareTo(existing.lastModified()) <= 0) {
+                return existing;
+            }
+        }
+
         logger.debug("Loading rules: {}", path);
 
         KieServices ks = KieServices.Factory.get();
         KieFileSystem kfs = ks.newKieFileSystem();
 
-        kfs.write(ResourceFactory.newInputStreamResource(new FileInputStream(path.toFile()), "UTF-8").setResourceType(ResourceType.DRL).setTargetPath(UUID.randomUUID().toString()));
-        KieBuilder kBuilder = ks.newKieBuilder(kfs);
-        kBuilder.buildAll();
-        if (kBuilder.getResults().hasMessages(Message.Level.ERROR)) {
-            throw new SystemException("Drl pravidlo není validní, file: " + path.toString())
-                    .set("detail", kBuilder.getResults().getMessages());
+        try (FileInputStream fis = new FileInputStream(path.toFile())) {
+            kfs.write(ResourceFactory.newInputStreamResource(fis, "UTF-8")
+                    .setResourceType(ResourceType.DRL)
+                    .setTargetPath(UUID.randomUUID().toString()));
+            KieBuilder kBuilder = ks.newKieBuilder(kfs);
+            kBuilder.buildAll();
+            if (kBuilder.getResults().hasMessages(Message.Level.ERROR)) {
+                throw new SystemException("Drl pravidlo není validní, file: " + path)
+                        .set("detail", kBuilder.getResults().getMessages());
+            }
         }
+
         KieContainer kc = ks.newKieContainer(ks.getRepository().getDefaultReleaseId());
-        // set kieBase configuration
         KieBase kbc = kc.newKieBase(kieBaseConf);
         FileTime ft = Files.getLastModifiedTime(path);
-        return new AbstractMap.SimpleEntry<>(ft, kbc);
+        CachedKieBase cached = new CachedKieBase(ft, kbc);
+        rulesByPathMap.put(path, cached);
+        return cached;
     }
 
     private KieBase getKieBase(Path path) throws IOException {
-        Map.Entry<FileTime, KieBase> entry = rulesByPathMap.get(path);
-
-        if (entry == null) {
-            entry = reloadRules(path);
-            rulesByPathMap.put(path, entry);
-        } else {
-            entry = testChangeFile(path, entry);
+        CachedKieBase cached = rulesByPathMap.get(path);
+        if (cached != null) {
+            FileTime ft = Files.getLastModifiedTime(path);
+            if (cached.lastModified() != null && ft.compareTo(cached.lastModified()) <= 0) {
+                return cached.kieBase();
+            }
         }
-
-        KieBase kb = entry.getValue();
-        return kb;
+        return reloadRules(path).kieBase();
     }
 
     /**
@@ -144,62 +127,17 @@ public abstract class Rules {
      * @return nová session
      * @throws IOException
      */
-    public synchronized KieSession createKieSession(final Path path) throws IOException {
-
+    public KieSession createKieSession(final Path path) throws IOException {
         logger.debug("Creating KieSession for rules: {}", path);
-
-        KieBase kb = getKieBase(path);
-
-        KieSession ksession = kb.newKieSession();
-        return ksession;
+        return getKieBase(path).newKieSession();
     }
 
-    public synchronized StatelessKieSession createKieStatelessSession(final Path path) throws IOException {
-
+    public StatelessKieSession createKieStatelessSession(final Path path) throws IOException {
         logger.debug("Creating StatelessKieSession for rules: {}", path);
 
-        KieBase kb = getKieBase(path);
-
-        StatelessKieSession ksession = kb.newStatelessKieSession();
+        StatelessKieSession ksession = getKieBase(path).newStatelessKieSession();
         if (logger.isTraceEnabled()) {
-            ksession.addEventListener(new AgendaEventListener() {
-
-                @Override
-                public void matchCreated(MatchCreatedEvent event) {
-                }
-
-                @Override
-                public void matchCancelled(MatchCancelledEvent event) {
-                }
-
-                @Override
-                public void beforeRuleFlowGroupDeactivated(RuleFlowGroupDeactivatedEvent event) {
-                }
-
-                @Override
-                public void beforeRuleFlowGroupActivated(RuleFlowGroupActivatedEvent event) {
-                }
-
-                @Override
-                public void beforeMatchFired(BeforeMatchFiredEvent event) {
-                }
-
-                @Override
-                public void agendaGroupPushed(AgendaGroupPushedEvent event) {
-                }
-
-                @Override
-                public void agendaGroupPopped(AgendaGroupPoppedEvent event) {
-                }
-
-                @Override
-                public void afterRuleFlowGroupDeactivated(RuleFlowGroupDeactivatedEvent event) {
-                }
-
-                @Override
-                public void afterRuleFlowGroupActivated(RuleFlowGroupActivatedEvent event) {
-                }
-
+            ksession.addEventListener(new DefaultAgendaEventListener() {
                 @Override
                 public void afterMatchFired(AfterMatchFiredEvent event) {
                     logger.trace("Rule matched: {}", event.getMatch().getRule().getName());
@@ -217,7 +155,6 @@ public abstract class Rules {
     }
 
     public void executeSession(KieSession ksession, List<Object> facts) {
-
         for (Object fact : facts) {
             ksession.insert(fact);
         }
@@ -226,20 +163,8 @@ public abstract class Rules {
     }
 
     protected void sortDefinitionByPackages(final List<RulStructureExtensionDefinition> rulStructureExtensionDefinitions) {
-        rulStructureExtensionDefinitions.sort((o1, o2) -> {
-
-            // 1. seřadit podle priority
-            Integer pr1 = o1.getPriority();
-            Integer pr2 = o1.getPriority();
-
-            int prComp = pr1.compareTo(pr2);
-            if (prComp != 0) {
-                return prComp;
-            } else {
-
-                // 2. seřadit podle id
-                return o1.getStructureExtensionDefinitionId().compareTo(o2.getStructureExtensionDefinitionId());
-            }
-        });
+        rulStructureExtensionDefinitions.sort(
+                Comparator.comparing(RulStructureExtensionDefinition::getPriority)
+                          .thenComparing(RulStructureExtensionDefinition::getStructureExtensionDefinitionId));
     }
 }

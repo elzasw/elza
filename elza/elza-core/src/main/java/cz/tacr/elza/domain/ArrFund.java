@@ -38,6 +38,7 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, A
     public static final String FIELD_INTERNAL_CODE = "internalCode";
     public static final String FIELD_MARK = "mark";
     public static final String FIELD_FUND_NUMBER = "fundNumber";
+    public static final String FIELD_INSTITUTION_ID = "institutionId";
     public static final String FIELD_INSTITUTION = "institution";
     public static final String FIELD_UNITDATE = "unitdate";
 
@@ -65,10 +66,10 @@ public class ArrFund extends AbstractVersionableEntity implements Versionable, A
 	private String mark;
 
 	@OneToOne(fetch = FetchType.LAZY, targetEntity = ParInstitution.class)
-	@JoinColumn(name = "institutionId", nullable = false)
+	@JoinColumn(name = FIELD_INSTITUTION_ID, nullable = false)
 	private ParInstitution institution;
 
-    @Column(name = "institutionId", updatable = false, insertable = false)
+    @Column(name = FIELD_INSTITUTION_ID, updatable = false, insertable = false)
     private Integer institutionId;
     
     @OneToMany(mappedBy = "fund", fetch = FetchType.LAZY)

@@ -51,6 +51,8 @@ public enum Condition {
     CONTAIN(DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT, DataType.UNITID,
     		DataType.RECORD_REF),
 
+    CONTAIN_ENTITY(DataType.RECORD_REF),
+
     NOT_CONTAIN(DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT, DataType.UNITID),
 
     BEGIN(DataType.TEXT, DataType.STRING, DataType.FORMATTED_TEXT, DataType.UNITID),

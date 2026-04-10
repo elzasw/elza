@@ -54,7 +54,6 @@ import cz.tacr.elza.config.rules.TypeInfo;
 import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.factory.ApFactory;
-import cz.tacr.elza.controller.factory.RuleFactory;
 import cz.tacr.elza.controller.factory.WfFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
@@ -104,8 +103,8 @@ import cz.tacr.elza.controller.vo.GisExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.GisExternalSystemVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ItemData;
+import cz.tacr.elza.controller.vo.ItemTypeGroup;
 import cz.tacr.elza.controller.vo.MandatoryType;
-import cz.tacr.elza.controller.vo.NodeBase;
 import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulDataTypeVO;
@@ -126,7 +125,6 @@ import cz.tacr.elza.controller.vo.UsrGroupVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.DescItemSpecLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeDescItemsVO;
@@ -149,7 +147,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroup;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -236,7 +233,6 @@ import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.attachment.AttachmentService;
 import cz.tacr.elza.ws.types.v1.Items;
-import jakarta.validation.Valid;
 
 /**
  * Tovární třída pro vytváření VO objektů a jejich seznamů.
@@ -391,6 +387,9 @@ public class ClientFactoryVO {
      * @return
      */
     private static ItemData convertText(ArrData arrData) {
+    	if (arrData instanceof ArrDataString) {
+    		return convertString(arrData);
+    	}
     	DataText data = new DataText(((ArrDataText) arrData).getTextValue(), DataType.TEXT);
         data.setDataId(arrData.getDataId());
         return data;
@@ -535,8 +534,12 @@ public class ClientFactoryVO {
      * @return
      */
     private static ItemData convertUriRef(ArrData arrData) {
-    	DataUriRef data = new DataUriRef(((ArrDataUriRef) arrData).getUriRefValue(), DataType.URI_REF);
+    	ArrDataUriRef adur = (ArrDataUriRef) arrData;
+    	DataUriRef data = new DataUriRef(adur.getUriRefValue(), DataType.URI_REF);
         data.setDataId(arrData.getDataId());
+        data.setDescription(adur.getDescription());
+        data.setRefTemplateId(adur.getRefTemplateId());
+        data.setNodeId(adur.getNodeId());
         return data;
     }
 
@@ -892,7 +895,7 @@ public class ClientFactoryVO {
         nodeItem.setPosition(item.getPosition());
         nodeItem.setReadOnly(item.getReadOnly());
 
-        ArrData arrData = item.getData();
+        ArrData arrData = HibernateUtils.unproxy(item.getData());
         if (arrData == null) {
         	nodeItem.setUndefined(true);
         } else {
@@ -1749,8 +1752,8 @@ public class ClientFactoryVO {
         result.setAuthTypes(authenticationRepository.findByUser(user).stream().map(UsrAuthentication::getAuthType).collect(Collectors.toList()));
         // Načtení oprávnění
         if (initPermissions) {
-        	//List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
-            List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
+            List<UsrPermission> permissions = new ArrayList<>(permissionRepository.findByUser(user));
+            permissions.addAll(permissionRepository.findByUserGroups(user));
 
             StaticDataProvider staticData = staticDataService.getData();
             List<UsrPermissionVO> permissionsVOs = permissions.stream().map(

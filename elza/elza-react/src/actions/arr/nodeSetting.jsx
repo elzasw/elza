@@ -36,7 +36,7 @@ export function lockDescItemType(nodeId, descItemTypeId) {
  * @param {int} nodeId id uzlu
  * @param {int} descItemTypeId id atributu
  */
-export function toggleCopyAllDescItemType(nodeId, descItemTypeId) {
+export function toggleCopyAllDescItemType(nodeId) {
     return {
         type: types.NODE_DESC_ITEM_TYPE_COPY_ALL,
         nodeId: nodeId,

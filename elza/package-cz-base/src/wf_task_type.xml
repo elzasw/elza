@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<task-types>
+    <task-type code="AP_UPDATE">
+        <name>Úprava entity</name>
+        <description>Požadavek na úpravu entity</description>
+    </task-type>
+    <task-type code="AP_CONFIRM">
+        <name>Schválení entity</name>
+        <description>Požadavek na schválení entity</description>
+    </task-type>
+    <task-type code="AP_REV_UPDATE">
+        <name>Úprava revize</name>
+        <description>Požadavek na úpravu revize entity</description>
+    </task-type>
+    <task-type code="AP_REV_CONFIRM">
+        <name>Schválení revize entity</name>
+        <description>Požadavek na schválení revize entity</description>
+    </task-type>
+</task-types>

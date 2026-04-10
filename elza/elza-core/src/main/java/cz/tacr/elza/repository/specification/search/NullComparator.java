@@ -1,7 +1,6 @@
 package cz.tacr.elza.repository.specification.search;
 
-
-import cz.tacr.cam.client.controller.vo.QueryComparator;
+import cz.tacr.cam.v1.client.controller.vo.QueryComparator;
 
 import jakarta.persistence.criteria.Predicate;
 

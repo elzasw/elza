@@ -8,6 +8,7 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
 public class ExportInitHelper {
@@ -27,6 +28,8 @@ public class ExportInitHelper {
     private final ResourcePathResolver resourcePathResolver;
     
     private final DataService dataService;
+    
+    private final AccessPointCacheService apcService;
 
     public ExportInitHelper(final EntityManager em,
                             final UserService userService,
@@ -35,7 +38,8 @@ public class ExportInitHelper {
                             final ApAccessPointRepository apRepository,
                             final FundVersionRepository fundVersionRepository,
                             final ResourcePathResolver resourcePathResolver,
-                            final DataService dataService) {
+                            final DataService dataService,
+                            final AccessPointCacheService apcService) {
         this.em = em;
         this.userService = userService;
         this.levelRepository = levelRepository;
@@ -44,11 +48,16 @@ public class ExportInitHelper {
         this.fundVersionRepository = fundVersionRepository;
         this.resourcePathResolver = resourcePathResolver;
         this.dataService = dataService;
+        this.apcService = apcService;
     }
 
 	public EntityManager getEm() {
         return em;
     }
+	
+	public AccessPointCacheService getApCacheService() {
+		return apcService;
+	}
 
     public UserService getUserService() {
         return userService;

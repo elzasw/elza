@@ -7,7 +7,6 @@ import static cz.tacr.elza.repository.ExceptionThrow.refTemplate;
 import static cz.tacr.elza.repository.ExceptionThrow.refTemplateMapType;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 import static java.util.stream.Collectors.toSet;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -116,6 +115,7 @@ import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -357,7 +357,7 @@ public class ArrangementService {
     public List<ArrNode> getNodesWithSameOrder(List<Integer> nodeIds) {
         List<ArrNode> dbNodes = nodeRepository.findAllByNodeIdIn(nodeIds);
         Validate.isTrue(nodeIds.size() == dbNodes.size(), "Ne všechny ArrNode byly nalezeny");
-        Map<Integer, ArrNode> nodesMap = nodeRepository.findAllByNodeIdIn(nodeIds).stream()
+        Map<Integer, ArrNode> nodesMap = dbNodes.stream()
                 .collect(Collectors.toMap(n -> n.getNodeId(), n -> n));
         // řazení podle původního seznamu id
         List<ArrNode> nodes = new ArrayList<>(nodeIds.size());
@@ -1425,9 +1425,7 @@ public class ArrangementService {
     public ArrNode lockNode(final ArrNode dbNode, final ArrNode lockNode, final ArrChange change) {
         Validate.notNull(dbNode, "Musí být vyplněno");
         Validate.notNull(lockNode, "Musí být vyplněno");
-        if (change == null) {
-            Validate.notNull(change, "Musí být vyplněno");
-        }
+        Validate.notNull(change, "Musí být vyplněno");
 
         // Whys is this here?
         lockNode.setUuid(dbNode.getUuid());
@@ -2287,6 +2285,7 @@ public class ArrangementService {
                                @Valid String importType, InputStream is) {
         if ("CSV".equals(importType)) {
             importFundDataCsv(fund, is);
+            return;
         }
 
         logger.error("Required importType is not supported: {}", importType);
@@ -2298,7 +2297,7 @@ public class ArrangementService {
         ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(fund);
 
         CSVFormat csvf = CSVFormat.EXCEL;
-        try (InputStreamReader isr = new InputStreamReader(new BOMInputStream(is), "UTF-8");
+        try (InputStreamReader isr = new InputStreamReader(BOMInputStream.builder().setInputStream(is).get(), "UTF-8");
                 CSVParser parser = csvf.parse(isr)) {
 
             MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion
@@ -2398,8 +2397,13 @@ public class ArrangementService {
                     ArrDataRecordRef dataRr = new ArrDataRecordRef();
                     String str = dataIter.next();
                     dataRr.setRecord(em.getReference(ApAccessPoint.class, Integer.parseInt(str)));
-                    data = dataRr;
-                	
+                    data = dataRr;                	
+                }
+                break;
+                case UNITDATE: {
+                	String str = dataIter.next();
+                	ArrDataUnitdate dataUd = ArrDataUnitdate.valueOf(str);
+                	data = dataUd;
                 }
                 break;
                 default:

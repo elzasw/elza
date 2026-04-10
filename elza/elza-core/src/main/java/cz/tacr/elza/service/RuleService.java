@@ -1227,10 +1227,9 @@ public class RuleService {
         Integer apTypeId = form.getTypeId();
         Integer accessPointId = form.getAccessPointId();
         ApScope scope = accessPointService.getApScope(form.getScopeId());
-        RuleSet ruleSet = sdp.getRuleSetById(scope.getRuleSetId());
+        RuleSet ruleSet = sdp.getRuleSetById(scope.getRuleSetId());        
 
         Integer preferredPartId = null;
-
         ApBuilder apBuilder = new ApBuilder(staticDataService.getData());
         if (accessPointId != null) {
             // ApState
@@ -1247,6 +1246,12 @@ public class RuleService {
 
                 // apply revision data
                 apBuilder.setRevision(revState, revParts, revItems);
+            }
+
+            if(form.getPartForm() != null) {
+                if(Objects.equals(cachedAcessPoint.getPreferredPartId(), form.getPartForm().getPartId())) {
+                    preferredPartId = form.getPartForm().getPartId();
+                }
             }
         } else {
             apBuilder.setAeType(apTypeId);
@@ -2013,11 +2018,16 @@ public class RuleService {
     /**
      * Return export filter
      *
-     * @param exportFilterId
+     * @param exportFilter kód nebo ID filtru
      * @return
      */
     @Transactional(TxType.MANDATORY)
-    public RulExportFilter getExportFilter(Integer exportFilterId) {
-        return exportFilterRepository.getOneCheckExist(exportFilterId);
+    public RulExportFilter getExportFilter(String exportFilter) {
+        try {
+        	Integer exportFilterId = Integer.valueOf(exportFilter);
+        	return exportFilterRepository.findById(exportFilterId).orElse(null);
+        } catch (NumberFormatException e) {
+        	return exportFilterRepository.findByCode(exportFilter);
+        }
     }
 }

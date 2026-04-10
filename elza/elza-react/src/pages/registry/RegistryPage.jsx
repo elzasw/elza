@@ -419,7 +419,7 @@ class RegistryPage extends AbstractReactComponent {
             dispatch,
             history,
             registryDetail: {
-                data: { id, typeId, scopeId, stateApproval, version },
+                data: { id, typeId, scopeId, stateApproval, version, assignedTo },
             },
             select = false,
             revisionActive,
@@ -429,8 +429,9 @@ class RegistryPage extends AbstractReactComponent {
                 accessPointId={id}
                 initialValues={{
                     state: stateApproval,
-                    typeId: typeId,
-                    scopeId: scopeId,
+                    typeId,
+                    scopeId,
+                    assignedTo,
                 }}
                 onSubmit={async (data) => {
                     const finalData = {
@@ -439,7 +440,7 @@ class RegistryPage extends AbstractReactComponent {
                         typeId: data.typeId,
                         scopeId: data.scopeId !== '' ? parseInt(data.scopeId) : null,
                     };
-                    await Api.accesspoints.accessPointChangeState(id, finalData, version);
+                    await Api.accesspoints.accessPointChangeState(id, finalData, version, data?.assignedTo);
 
                     dispatch(modalDialogHide());
                     dispatch(goToAe(history, id, true, !select, revisionActive));
@@ -470,19 +471,22 @@ class RegistryPage extends AbstractReactComponent {
             dispatch,
             history,
             registryDetail: {
-                data: { id, newTypeId, revStateApproval, version },
+                data: { id, newTypeId, revStateApproval, version, assignedTo },
             },
             select = false,
             revisionActive,
         } = this.props;
         const form = (
             <RevStateChangeForm
+                accessPointId={id}
                 initialValues={{
                     state: revStateApproval,
                     typeId: newTypeId,
+                    assignedTo,
                 }}
                 onSubmit={async (data) => {
-                    await dispatch(registryChangeStateRevision(id, version, data, history, select))
+                  const { assignedTo, ...state } = data;
+                    await dispatch(registryChangeStateRevision(id, version, state, history, select, assignedTo))
 
                     dispatch(modalDialogHide());
                     dispatch(goToAe(history, id, true, !select, revisionActive));
@@ -855,9 +859,13 @@ class RegistryPage extends AbstractReactComponent {
     render() {
         const { splitter, status, registryDetail, select = false } = this.props;
 
+        const matchId = this.props.match?.params?.id;
+        // Don't render detail wrapper until loaded entity matches the URL.
+        const isMatchingEntity = !matchId || registryDetail.id == matchId;
+
         const centerPanel = (
             <div className="registry-page">
-                {(registryDetail.fetched || (select && registryDetail.id && registryDetail.fetched)) &&
+                {isMatchingEntity && (registryDetail.fetched || (select && registryDetail.id && registryDetail.fetched)) &&
                     <ApDetailPageWrapper
                         apVersion={registryDetail?.data?.version}
                         select={select}
