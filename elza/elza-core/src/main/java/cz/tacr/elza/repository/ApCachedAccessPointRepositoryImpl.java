@@ -18,6 +18,7 @@ import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.REV_STATE;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.USERNAME;
 import static cz.tacr.elza.domain.bridge.ApCachedAccessPointBridge.ASSIGNED_TO;
 import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.ANALYZED;
+import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.SORTABLE;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -97,11 +98,10 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
 		SearchResult<ApCachedAccessPoint> result = session.search(ApCachedAccessPoint.class)
 				.where(predicate)
-                //.sort(scope.sort().field(sortField.getField()).desc().toSort())
-                //.sort(SearchSortFactory::score)
-                //.sort(f -> f.composite(b -> {
-                //    b.add(f.field(sortField.getField()));
-                //}))
+                .sort(f -> f.composite(b -> {
+                    b.add(f.score());
+                    b.add(f.field(DATA + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX + SORTABLE).asc());
+                }))
                 .fetch(from, count);
 
 		// počet všech záznamů dle podmínky
