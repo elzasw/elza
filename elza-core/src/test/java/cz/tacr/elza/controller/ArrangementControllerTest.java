@@ -549,12 +549,12 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // kontrola zděděných descItem v nodes.get(1)
         ArrItemVO inheritedItem = findInheritedItem(nodeFormsData.getForms().get(firstNodeId));
         assertNotNull(inheritedItem);
-        assertTrue(inheritedItem.getFromNodeId() == rootNode.getId());
+        assertEquals(rootNode.getId(), inheritedItem.getFromNodeId());
 
         // kontrola zděděných descItem v nodes.get(2)
         inheritedItem = findInheritedItem(nodeFormsData.getForms().get(secondNodeId));
         assertNotNull(inheritedItem);
-        assertTrue(inheritedItem.getFromNodeId() == rootNode.getId());
+        assertEquals(rootNode.getId(), inheritedItem.getFromNodeId());
 
         // zákaz dědictví na úrovni #2 nodes.get(2)
         ArrInhibitedItemVO arrInhibitedItem = new ArrInhibitedItemVO(); 
