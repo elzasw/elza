@@ -523,7 +523,7 @@ public class HelperTestService {
 		OutboxEventOrder processingOrder = OutboxEventOrder.ID;
     	
     	Integer counter = 0;
-    	while(counter<100){
+    	while(counter<300){
     		
     		Integer pendingEvents;
     		try(Session session = this.sessionFactory.openSession()) {
