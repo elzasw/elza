@@ -36,6 +36,8 @@ import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 import org.hibernate.search.engine.search.query.SearchResult;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.common.db.QueryResults;
@@ -66,6 +68,8 @@ import jakarta.persistence.PersistenceContext;
 
 public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRepositoryCustom {
 
+    private static final Logger log = LoggerFactory.getLogger(ApCachedAccessPointRepositoryImpl.class);
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -92,9 +96,14 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                                                                               StaticDataProvider sdp) {
     	SearchSession session = Search.session(entityManager);
         SearchPredicateFactory factory = session.scope(ApCachedAccessPoint.class).predicate();
+
+        if (log.isTraceEnabled()) {
+            log.trace("Search query params: search='{}', apTypeIdTree={}, scopeIds={}, state={}, revState={}, from={}, count={}",
+                      search, apTypeIdTree, scopeIds, state, revState, from, count);
+            logSearchConfig();
+        }
+
         SearchPredicate predicate = buildQueryFromParams(factory, search, searchFilter, apTypeIdTree, scopeIds, state, revState);
-        //SearchScope<ApCachedAccessPoint> scope = session.scope(ApCachedAccessPoint.class);
-        //SortField sortField = new SortField(DATA + PREFIX_PREF + INDEX + SORTABLE, SortField.Type.STRING);
 
 		SearchResult<ApCachedAccessPoint> result = session.search(ApCachedAccessPoint.class)
 				.where(predicate)
@@ -107,6 +116,34 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 		// počet všech záznamů dle podmínky
 		// pozor: pokud to nefunguje správně, musíme znovu vygenerovat indexové soubory /lucene/indexes
 		Long hitCount = result.total().hitCount();
+
+		if (log.isTraceEnabled()) {
+		    log.trace("Search results: totalHitCount={}, returnedHits={}", hitCount, result.hits().size());
+		    // Fetch scores for up to first 100 results using score projection
+		    try {
+		        int scoreLimit = Math.min(100, hitCount.intValue());
+		        if (scoreLimit > 0) {
+		            SearchResult<List<?>> scoreResult = session.search(ApCachedAccessPoint.class)
+		                .select(f -> f.composite().from(f.score(), f.id()).asList())
+		                .where(predicate)
+		                .sort(f -> f.composite(b -> {
+		                    b.add(f.score());
+		                    b.add(f.field(DATA + SEPARATOR + PREFIX_PREF + SEPARATOR + INDEX + SORTABLE).asc());
+		                }))
+		                .fetch(0, scoreLimit);
+		            StringBuilder sb = new StringBuilder("Score details (rank: entityId=score):\n");
+		            int rank = 1;
+		            for (List<?> hit : scoreResult.hits()) {
+		                Float score = (Float) hit.get(0);
+		                Object entityId = hit.get(1);
+		                sb.append(String.format("  %3d: id=%-10s score=%.6f%n", rank++, entityId, score));
+		            }
+		            log.trace(sb.toString());
+		        }
+		    } catch (Exception e) {
+		        log.trace("Failed to fetch score details for debugging", e);
+		    }
+		}
 
 		return new QueryResults<ApCachedAccessPoint>(hitCount.intValue(), result.hits());
     }
@@ -336,9 +373,12 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         return bool.toPredicate();
 	}
 
-    private SearchPredicate processIndexCondDef(SearchPredicateFactory factory, 
-    											String value, 
+    private SearchPredicate processIndexCondDef(SearchPredicateFactory factory,
+    											String value,
     											String partTypeCode) {
+        if (log.isTraceEnabled()) {
+            log.trace("processIndexCondDef: value='{}', partTypeCode='{}'", value, partTypeCode);
+        }
         BooleanPredicateClausesStep<?> bool = factory.bool();
 
         String fieldName = "";
@@ -373,9 +413,9 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         return bool.toPredicate();
     }
 
-    private void boostWildcardQuery(SearchPredicateFactory factory, 
-    								BooleanPredicateClausesStep<?> step, 
-    								String fieldName, 
+    private void boostWildcardQuery(SearchPredicateFactory factory,
+    								BooleanPredicateClausesStep<?> step,
+    								String fieldName,
     								String value, boolean trans, boolean exact) {
     	float boost = 1.0f;
     	Float boostExact = null;
@@ -387,6 +427,11 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     		boostTransExact = sisField.getBoostTransExact();
     	}
 
+    	if (log.isTraceEnabled()) {
+    	    log.trace("boostWildcardQuery: field='{}' (resolved='{}'), value='{}', boost={}, boostExact={}, boostTransExact={}, trans={}, exact={}, configFound={}",
+    	              fieldName, addDataPrefix(fieldName), value, boost, boostExact, boostTransExact, trans, exact, sisField != null);
+    	}
+
     	step.should(factory.wildcard().field(addDataPrefix(fieldName)).matching(wildcardValue(value)).boost(boost));
     	if (trans) {
     		step.should(factory.wildcard().field(addDataPrefix(fieldName) + ANALYZED).matching(wildcardValue(value)).boost(boost));
@@ -396,10 +441,14 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     	}
     }
 
-    private void boostExactQuery(SearchPredicateFactory factory, 
-    							 BooleanPredicateClausesStep<?> step, String fieldName, 
-    		                     String value, 
+    private void boostExactQuery(SearchPredicateFactory factory,
+    							 BooleanPredicateClausesStep<?> step, String fieldName,
+    		                     String value,
     		                     Float boostExact, Float boostTransExact) {
+    	if (log.isTraceEnabled()) {
+    	    log.trace("boostExactQuery: field='{}', value='{}', boostExact={}, boostTransExact={}",
+    	              fieldName, value, boostExact, boostTransExact);
+    	}
     	if (boostExact != null) {
     		step.should(factory.wildcard().field(addDataPrefix(fieldName)).matching(value).boost(boostExact));
     	}
@@ -408,12 +457,18 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     	}
     }
 
-    private void boostExactQuery(SearchPredicateFactory factory, 
-    		                     BooleanPredicateClausesStep<?> step, 
-    		                     String fieldName, 
+    private void boostExactQuery(SearchPredicateFactory factory,
+    		                     BooleanPredicateClausesStep<?> step,
+    		                     String fieldName,
     		                     String value, boolean prefix) {
     	SettingIndexSearch.Field sisField = getFieldSearchConfigByName(fieldName);
-    	if (sisField != null) { 
+    	if (log.isTraceEnabled()) {
+    	    log.trace("boostExactQuery(prefix={}): field='{}' (resolved='{}'), value='{}', configFound={}, boostExact={}, boostTransExact={}",
+    	              prefix, fieldName, addDataPrefix(fieldName, prefix), value, sisField != null,
+    	              sisField != null ? sisField.getBoostExact() : null,
+    	              sisField != null ? sisField.getBoostTransExact() : null);
+    	}
+    	if (sisField != null) {
     		Float boostExact = sisField.getBoostExact();
     		if (boostExact != null) {
     			step.should(factory.wildcard().field(addDataPrefix(fieldName, prefix)).matching(value).boost(boostExact));
@@ -469,6 +524,21 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
             return SettingIndexSearch.newInstance(uiSettings.get(0));
         }
         return null;
+    }
+
+    private void logSearchConfig() {
+        SettingIndexSearch sis = getElzaSearchConfig();
+        if (sis == null || CollectionUtils.isEmpty(sis.getFields())) {
+            log.trace("Search config (INDEX_SEARCH): not configured or no fields defined");
+            return;
+        }
+        StringBuilder sb = new StringBuilder("Search config (INDEX_SEARCH) fields:\n");
+        for (SettingIndexSearch.Field field : sis.getFields()) {
+            sb.append(String.format("  field='%s', boost=%s, boostExact=%s, boostTransExact=%s, transliterate=%s%n",
+                                    field.getName(), field.getBoost(), field.getBoostExact(),
+                                    field.getBoostTransExact(), field.getTransliterate()));
+        }
+        log.trace(sb.toString());
     }
 
     private List<String> getKeyWordsFromSearch(String search) {
