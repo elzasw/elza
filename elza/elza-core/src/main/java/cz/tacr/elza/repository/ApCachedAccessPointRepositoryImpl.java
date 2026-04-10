@@ -186,6 +186,12 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 	        	for (String keyWord : keyWords) {
 	        		bool.must(processIndexCondDef(factory, keyWord, null));
 	        	}
+	        	// BM25 boost for full search string on analyzed fields
+	        	// Unlike wildcard queries (constant score), match() uses BM25 with field-length
+	        	// normalization - shorter preferred names containing all search terms score higher.
+	        	// This ensures entities whose name closely matches the search rank above
+	        	// sub-entities with longer names.
+	        	addFullTextBoost(factory, bool, search, null);
 	        }
 		}
 
@@ -240,8 +246,8 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     		boolean onlyMainPart = (searchFilterVO.getOnlyMainPart() != null && searchFilterVO.getOnlyMainPart());
     		RulPartType defaultPartType = sdp.getDefaultPartType();
     		List<String> keyWords = getKeyWordsFromSearch(search);
+    		String partTypeCode = null;
     		for (String keyWord : keyWords) {
-    			String partTypeCode;
     			switch (area) {
                   case PREFER_NAMES:
                       partTypeCode = PREFIX_PREF;
@@ -262,6 +268,10 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     			} else {
     				bool.must(processIndexCondDef(factory, keyWord, partTypeCode));
     			}
+    		}
+    		// BM25 boost for full search string - see addFullTextBoost
+    		if (!onlyMainPart) {
+    		    addFullTextBoost(factory, bool, search, partTypeCode);
     		}
     	}
     	if (CollectionUtils.isNotEmpty(searchFilterVO.getExtFilters())) {
@@ -372,6 +382,39 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
         return bool.toPredicate();
 	}
+
+    /**
+     * Přidání BM25 skórování pro celý vyhledávací řetězec na analyzovaných polích.
+     * Na rozdíl od wildcard dotazů (konstantní skóre), match() používá BM25 s normalizací
+     * délky pole - kratší preferovaná jména obsahující hledané výrazy získají vyšší skóre.
+     * Řeší problém, kdy entity bez vedlejší části jména (nm_minor) byly řazeny níže
+     * než podřízené entity s nm_minor odpovídajícím hledaným výrazům.
+     */
+    private void addFullTextBoost(SearchPredicateFactory factory,
+                                   BooleanPredicateClausesStep<?> bool,
+                                   String search,
+                                   String partTypeCode) {
+        String searchLower = search.toLowerCase();
+
+        // Boost on pref_index_analyzed - BM25 field-length normalization favors shorter preferred names
+        String prefIndexField = addDataPrefix(PREFIX_PREF + SEPARATOR + INDEX) + ANALYZED;
+        bool.should(factory.match().field(prefIndexField).matching(searchLower).boost(200f));
+
+        // Boost on pref_nm_main_analyzed - BM25 scores higher when more search terms match
+        String prefNmMainField = addDataPrefix(PREFIX_PREF + SEPARATOR + NM_MAIN) + ANALYZED;
+        bool.should(factory.match().field(prefNmMainField).matching(searchLower).boost(500f));
+
+        if (StringUtils.isEmpty(partTypeCode) || !partTypeCode.equals(PREFIX_PREF)) {
+            // Also boost general index field
+            String indexField = addDataPrefix(INDEX) + ANALYZED;
+            bool.should(factory.match().field(indexField).matching(searchLower).boost(50f));
+        }
+
+        if (log.isTraceEnabled()) {
+            log.trace("addFullTextBoost: search='{}', prefIndexField='{}', prefNmMainField='{}'",
+                      searchLower, prefIndexField, prefNmMainField);
+        }
+    }
 
     private SearchPredicate processIndexCondDef(SearchPredicateFactory factory,
     											String value,
