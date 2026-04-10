@@ -21,7 +21,7 @@ interface ArrHistoryFormProps {
     versionId: number;
     locked: boolean;
     onDeleteChanges: (nodeId: number | null, changeId: number, selectedChangeId: number) => Promise<void>;
-    onClose: () => void;
+    onClose?: () => void;
     node?: NodeBase;
 }
 
@@ -122,8 +122,8 @@ export const ArrHistoryFormFn = ({
 
     // Returns id of the selected node. Returns null when id doesnt exist or when reverting global history
     const getNodeId = () => {
-        return showHistoryForNode && currentNode?.id !== undefined 
-            ? currentNode.id 
+        return showHistoryForNode && currentNode?.id !== undefined
+            ? currentNode.id
             : null;
     };
 
@@ -132,8 +132,8 @@ export const ArrHistoryFormFn = ({
 
         try {
             const {
-                totalCount, 
-                changes, 
+                totalCount,
+                changes,
                 outdated
             } = await WebApi.findChanges(versionId, getNodeId(), fromIndex, toIndex - fromIndex, changeId)
 
@@ -243,8 +243,8 @@ export const ArrHistoryFormFn = ({
     };
 
     const handleDeleteChanges = async () => {
-        if(changeId == null 
-            || selectedItem?.changeId == null 
+        if(changeId == null
+            || selectedItem?.changeId == null
             || selectedIndex == null
         ){return;}
         const response = await dispatch(showConfirmDialog(i18n('arr.history.deleteQuestion', selectedIndex + 1)))
@@ -335,9 +335,9 @@ export const ArrHistoryFormFn = ({
                                 label={i18n('arr.history.title.nodeChanges')}
                                 className="radio"
                                 />
-                            {currentNode && <FormInput 
-                                className="selected-node-info-container" 
-                                type="static" 
+                            {currentNode && <FormInput
+                                className="selected-node-info-container"
+                                type="static"
                             >
                                 <span title={`${currentNode.name}`} className="node-info">
                                     {`${currentNode.name}`}

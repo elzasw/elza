@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.core.data.DataType;
@@ -40,7 +40,7 @@ public abstract class Action {
     /**
      * Parent bulk action
      */
-    protected BulkAction bulkAction;
+    protected BulkActionTransactional bulkAction;
 
     /**
      * Inicializace akce.
@@ -49,7 +49,7 @@ public abstract class Action {
      *            Master bulk action
      * @param bulkActionRun
      */
-    public void init(BulkAction bulkAction, ArrBulkActionRun bulkActionRun) {
+    public void init(BulkActionTransactional bulkAction, ArrBulkActionRun bulkActionRun) {
         this.bulkAction = bulkAction;
     }
 

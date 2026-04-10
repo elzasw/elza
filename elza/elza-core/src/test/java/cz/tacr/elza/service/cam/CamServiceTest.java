@@ -47,6 +47,7 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;

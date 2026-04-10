@@ -27,6 +27,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.AccessPointPart;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
@@ -248,12 +249,12 @@ public class RevisionService {
             // dostáváme nový ApType
             nextType = sdp.getApTypeById(nextApTypeId);
         	// nelze změnit třídu pokud existuje platná ApBindingState
-            int countBinding = bindingStateRepository.countByAccessPoint(state.getAccessPoint());
-            if (countBinding > 0) {
+            List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoint(state.getAccessPoint());
+            if (CollectionUtils.isNotEmpty(bindingStates)) {
             	// nový ApType nesmí být v jiné třídě, pouze v té aktuální
             	Integer parentApTypeId = revState.getType().getParentApTypeId();
             	if (!nextType.getParentApTypeId().equals(parentApTypeId)) {
-                    throw new SystemException("Třídu revize entity z CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+                    throw new SystemException("Třídu revize entity z " + bindingStates.get(0).getApExternalSystem().getName() + " nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                         .set("accessPointId", state.getAccessPointId())
                         .set("revisionId", revState.getRevisionId());
             	}
@@ -818,7 +819,7 @@ public class RevisionService {
                     // Orig item is somehow transformed
                     notDeletedApItems.add(origItem);
                 }
-                if(revItem!=null) {
+                if (revItem != null) {
                     // return to original item
                     if (Objects.equals(itemVO.getChangeType(), ChangeType.ORIGINAL)) {
                         if (origItem == null) {
@@ -830,7 +831,7 @@ public class RevisionService {
                         // simply skip item -> revItem will be deleted
                         continue;
                     }
-                    if(itemVO.getId()!=null) {
+                    if (itemVO.getId()!=null) {
                         // pokud je nastaveno ID, musi byt spravne
                         if (!itemVO.getId().equals(revItem.getItemId())) {
                             // source item not found
@@ -1039,6 +1040,8 @@ public class RevisionService {
         // změna stavu entity
         apState.setDeleteChange(change);
         apState = stateRepository.save(apState);
+        // Flush to DB before creating new state
+        stateRepository.flush();
 
         ApState newState = accessPointService.copyState(apState, change);
         newState.setStateApproval(newStateApproval);
@@ -1049,6 +1052,9 @@ public class RevisionService {
 
         // smazání revize
         deleteRevision(revision, newState, revState, change, revParts, revItems);
+        
+        // flush to DB after creating new state and deleting revision
+		stateRepository.flush();
 
         // valiudace
         accessPoint = accessPointService.updateAndValidate(accessPoint.getAccessPointId());

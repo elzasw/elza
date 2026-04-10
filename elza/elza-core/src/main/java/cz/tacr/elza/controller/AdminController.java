@@ -2,7 +2,9 @@ package cz.tacr.elza.controller;
 
 import java.net.InetSocketAddress;
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -72,7 +74,7 @@ public class AdminController implements AdminApi {
     public ResponseEntity<AdminInfo> adminInfo() {
         UserDetail userDetail = userService.getLoggedUserDetail();
         if(userDetail==null) {
-            throw new AccessDeniedException("User not authorized.", null);
+            throw new AccessDeniedException("User not authorized.", Collections.emptyList());
         }
         
         AdminInfo ai = new AdminInfo();
@@ -105,27 +107,58 @@ public class AdminController implements AdminApi {
     }
 
     @Override
-    @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
+    @Transactional
     public ResponseEntity<LoggedUsers> adminLoggedUsers() {
+    	
+    	// @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
+    	// Check permissions - only Admins are allowed or users managing another user or group
+    	boolean isAdmin = false;
+    	boolean userControl = false, groupControl = false;
+    	if (!userService.hasPermission(Permission.ADMIN)) {
+    		if(userService.hasPermission(Permission.USER_CONTROL_ENTITITY)) {
+    			userControl = true;
+    		}
+    		if(userService.hasPermission(Permission.GROUP_CONTROL_ENTITITY)) {
+    			groupControl = true;
+    		}
+    	} else {
+    		isAdmin = true;
+    	}
+    	if(!isAdmin && !userControl && !groupControl) {
+			Permission[] perms = { UsrPermission.Permission.ADMIN, 
+			        UsrPermission.Permission.USER_CONTROL_ENTITITY,
+			        UsrPermission.Permission.GROUP_CONTROL_ENTITITY };    		
+    		throw new AccessDeniedException("Missing permissions: " + Arrays.toString(perms), perms);
+    	}
 
         LoggedUsers lus = new LoggedUsers();
         Collection<WebSocketSession> sessions = clientOutboundChannelExecutor.getSessions();
         for (WebSocketSession session : sessions) {
             InetSocketAddress remoteAddr = session.getRemoteAddress();
 
+            Principal principal = session.getPrincipal();
+            if(principal==null) {
+            	continue;
+            }
+            
+            Authentication auth = (Authentication) principal;
+	        UserDetail userDetail = (UserDetail) auth.getDetails();
+
+	        // if not admin - add only managed users
+            if(!isAdmin) {
+            	if(!userService.hasPermission(UsrPermission.Permission.USER_CONTROL_ENTITITY, userDetail.getId())) {
+            		continue;
+            	}
+            }
+            
             LoggedUser lu = new LoggedUser();
             if (remoteAddr != null) {
                 lu.setRemoteAddr(remoteAddr.toString());
             }
-            Principal principal = session.getPrincipal();
-            if (principal != null) {
-	            Authentication auth = (Authentication) principal;
-	            UserDetail userDetail = (UserDetail) auth.getDetails();
 	
-	            lu.setUserId(userDetail.getId());
-	            lu.setUser(userDetail.getUsername());
-	            lus.addUsersItem(lu);
-            }
+	        lu.setUserId(userDetail.getId());
+	        lu.setUser(userDetail.getUsername());
+	        lus.addUsersItem(lu);
         }        
 
         lus.setTotalCount(sessions.size());

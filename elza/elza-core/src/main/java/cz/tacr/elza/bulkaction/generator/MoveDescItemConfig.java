@@ -1,7 +1,7 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import cz.tacr.elza.bulkaction.BaseActionConfig;
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionDFS;
 
 public class MoveDescItemConfig extends BaseActionConfig {
 
@@ -59,7 +59,7 @@ public class MoveDescItemConfig extends BaseActionConfig {
 	}
 
 	@Override
-	public BulkAction createBulkAction() {
+	public BulkActionDFS createBulkAction() {
 		MoveDescItem moveDescItem = new MoveDescItem(this);
 		return moveDescItem;
 	}

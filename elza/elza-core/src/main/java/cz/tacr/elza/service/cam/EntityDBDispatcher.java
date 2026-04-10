@@ -1,5 +1,7 @@
 package cz.tacr.elza.service.cam;
 
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ import jakarta.annotation.Nonnull;
 
 import cz.tacr.elza.common.db.HibernateUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
@@ -55,6 +58,7 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
+import cz.tacr.elza.domain.converter.CalendarConverter;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
@@ -71,8 +75,8 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SyncState;
-import cz.tacr.elza.domain.convertor.CalendarConverter;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
@@ -210,6 +214,7 @@ public class EntityDBDispatcher {
      * @throws SyncImpossibleException 
      */
     public void takeEntities(ProcessingContext procCtx, List<EntityXml> entities) {
+    	log.debug("Take entities, count: {}", entities.size());
 
         ApExternalSystem apExternalSystem = procCtx.getApExternalSystem();
         if (procCtx.getApChange() == null) {
@@ -345,6 +350,10 @@ public class EntityDBDispatcher {
      * @param async
      */
     public void connectEntity(ProcessingContext procCtx, ApState state, EntityXml entity, boolean replace, boolean async) {
+    	log.debug("Connect entity, accessPointId: {}, entityId: {}",
+    			state.getAccessPointId(),
+    			entity.getEid().getValue());
+    	
     	Objects.requireNonNull(procCtx.getApChange());
 
     	this.procCtx = procCtx;
@@ -431,10 +440,8 @@ public class EntityDBDispatcher {
                 this.bindingState = externalSystemService.createBindingState(prevBindingState,
                                                                              procCtx.getApChange(),
                                                                              entity.getEns().value(),
-                                                                             entity.getRevi().getRid()
-                                                                                     .getValue(),
-                                                                             entity.getRevi().getUsr()
-                                                                                     .getValue(),
+                                                                             entity.getRevi().getRid().getValue(),
+                                                                             entity.getRevi().getUsr().getValue(),
                                                                              null,
                                                                              SyncState.NOT_SYNCED,
                                                                              accessPoint.getPreferredPart(),
@@ -445,8 +452,7 @@ public class EntityDBDispatcher {
             }
         }
 
-
-        // check s AP class/subclass was cha
+        // check s AP class/subclass was changed
         ApType apType = sdp.getApTypeByCode(entity.getEnt().getValue());        
         if (!state.getApTypeId().equals(apType.getApTypeId())) {
             log.debug("Změna třídy (typu) entity: typeId={} -> newTypeId={}", state.getApTypeId(), apType.getApTypeId());
@@ -455,11 +461,12 @@ public class EntityDBDispatcher {
                 if (!deletedEntity) {
                     state.setDeleteChange(procCtx.getApChange());
                     state = stateRepository.save(state);
+                    stateRepository.flush();
                 }
                 stateNew = accessPointService.copyState(state, procCtx.getApChange());
                 if (deletedEntity && syncQueue) {
-                    // retain deleted state
-                    stateNew.setDeleteChange(procCtx.getApChange());
+               		// retain deleted state
+               		stateNew.setDeleteChange(procCtx.getApChange());
                 }
                 stateNew.setApType(apType);
                 state = stateRepository.save(stateNew);
@@ -484,7 +491,6 @@ public class EntityDBDispatcher {
                                                                      SyncState.SYNC_OK,
                                                                      accessPoint.getPreferredPart(),
                                                                      state.getApType());
-
         StateApproval oldStateApproval = null;
         StateApproval newStateApproval = null;
         switch (entity.getEns()) {
@@ -497,13 +503,13 @@ public class EntityDBDispatcher {
                     ApAccessPoint replacedBy = replacedBindingState.get().getAccessPoint();
                     ApState replacementState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
                     try {
-						accessPointService.replace(state, replacementState, bindingState.getApExternalSystem(), mcc);
+						accessPointService.replace(state, replacementState, bindingState.getApExternalSystem(), mcc, syncQueue);
 					} catch (SyncImpossibleException e) {
 			            log.error("Replacement error, accessPointId: {}, replacedAccessPointId: {}",
 			            		  state.getAccessPointId(),
 			            		  replacementState.getAccessPointId());
 			            throw new BusinessException("Replacement error, accessPointId: " + state.getAccessPointId()
-			                      + "replacedAccessPointId: " + replacementState.getAccessPointId(),
+			                      + ", replacedAccessPointId: " + replacementState.getAccessPointId(), e,
 			                      BaseCode.INVALID_STATE)
 			                      .set("accessPointId", state.getAccessPointId())
 			                      .set("replacedAccessPointId", replacementState.getAccessPointId());
@@ -511,12 +517,12 @@ public class EntityDBDispatcher {
                     state.setReplacedBy(replacedBy);
                 }
             }
-            state = accessPointService.deleteAccessPoint(state, accessPoint, procCtx.getApChange());
+            state = accessPointService.invalidateAccessPoint(state, accessPoint, procCtx.getApChange());
             break;
 
         case ERS_INVALID:
             // odstranění entity, která v CAM označena jako neplatná
-            state = accessPointService.deleteAccessPoint(state, accessPoint, procCtx.getApChange());
+            state = accessPointService.invalidateAccessPoint(state, accessPoint, procCtx.getApChange());
             break;
 
         default:
@@ -525,25 +531,38 @@ public class EntityDBDispatcher {
             // synchronizace stavu entit
             // pokud je entita lokalne smazana a jedna se o pozadavek z fronty
             // musi entita zustat smazana
-            if (syncQueue && state.getDeleteChangeId() != null) {
-                break;
-            } else {
-                // kontrola shody stavu
-                if (!newStateApproval.equals(state.getStateApproval())) {
-                    if (stateNew == null) {
-                        state.setDeleteChange(procCtx.getApChange());
-                        state = stateRepository.save(state);
-                        stateNew = accessPointService.copyState(state, procCtx.getApChange());
-                    }
-                    stateNew.setStateApproval(newStateApproval);
-                    state = stateRepository.save(stateNew);
-                }
+            if (syncQueue && state.getDeleteChangeId() != null) {            	
+            	// If system is NOT CAM_COMPLETE 
+            	// -> we respect previous state and entity is retained as deleted 
+            	if(!procCtx.getApExternalSystem().getType().equals(ApExternalSystemType.CAM_COMPLETE)) {
+            		break;
+            	}
             }
+
+            // check new state or if entity was deleted
+			if (!newStateApproval.equals(state.getStateApproval())||state.getDeleteChangeId() != null) {
+				// prepare new state if not already prepared
+				if (stateNew == null) {
+					state.setDeleteChange(procCtx.getApChange());
+					state = stateRepository.save(state);
+					stateRepository.flush();
+					stateNew = accessPointService.copyState(state, procCtx.getApChange());
+				}
+				if(state.getDeleteChangeId() != null) {
+	        		// entity is return to non deleted state
+	        		log.info("Deleted entity is restored to non deleted state, ap id: {}, ext. entity id: {}", state.getAccessPointId(), 
+	        				entity.getEid()!=null?entity.getEid().getValue():"");
+	        		stateNew.setDeleteChange(null);
+				}
+
+				stateNew.setStateApproval(newStateApproval);
+				state = stateRepository.save(stateNew);
+			}
 
             break;
         }
 
-        accessPointService.updateAndValidate(accessPoint, state, syncRes.getParts(), syncRes.getItemMap(), syncQueue);
+        accessPointService.updatePartsIndexesAndValidate(accessPoint, state, syncRes.getParts(), syncRes.getItemMap(), syncQueue);
         if (accessPointService.isRevalidaceRequired(oldStateApproval, newStateApproval)) {
             ruleService.revalidateNodesWithApRef(accessPoint.getAccessPointId());
         }
@@ -624,7 +643,7 @@ public class EntityDBDispatcher {
                                                  prefPart,
                                                  apState.getApType());
 
-        accessPointService.updateAndValidate(accessPoint, apState, partList, itemMap, async);
+        accessPointService.updatePartsIndexesAndValidate(accessPoint, apState, partList, itemMap, async);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }
 
@@ -726,7 +745,7 @@ public class EntityDBDispatcher {
                 dataRef.setRecord(accessPoint);
                 dataRecordRefRepository.save(dataRef);
                 ApPart part = item.getPart();
-                accessPointService.updatePartValue(apState, part);
+                accessPointService.updatePartIndexes(apState, part);
                 updatedApIds.add(part.getAccessPointId());                
             }
         }
@@ -1297,10 +1316,11 @@ public class EntityDBDispatcher {
             itemType = sdp.getItemType(itemLink.getT().getValue());
             itemSpec = itemLink.getS() == null ? null : sdp.getItemSpec(itemLink.getS().getValue());
             uuid = CamHelper.getUuid(itemLink.getUuid());
-
             ArrDataUriRef dataUriRef = new ArrDataUriRef();
             dataUriRef.setUriRefValue(itemLink.getUrl().getValue());
-            dataUriRef.setDescription(itemLink.getNm().getValue());
+            if(itemLink.getNm()!=null && StringUtils.isNotEmpty(itemLink.getNm().getValue())) {
+            	dataUriRef.setDescription(itemLink.getNm().getValue());
+            }
             String schema = ArrDataUriRef.createSchema(itemLink.getUrl().getValue());
             if (schema == null) {
                 log.info("Schema URL: {} is null, will be set {}", itemLink.getUrl().getValue(), SCHEMA_UNKNOWN);
@@ -1327,12 +1347,30 @@ public class EntityDBDispatcher {
             case STRING:
                 ArrDataString dataString = new ArrDataString();
                 dataString.setStringValue(itemString.getValue().getValue());
+                if(StringUtils.isEmpty(dataString.getStringValue())) {
+	                log.error("ItemString is empty, uuid: {}, itemType: {}, itemSpec: {}", itemString.getUuid().getValue(), 
+	                		itemString.getT().getValue(),
+	                		itemString.getS()!=null?itemString.getS().getValue():null);
+	                // throw new IllegalStateException("ItemString is empty, uuid:" + uuid + ", itemType:" + itemString.getT().getValue());
+	                
+	                // Set some default value
+	                dataString.setStringValue("N/A");
+                }                
                 dataString.setDataType(DataType.STRING.getEntity());
                 data = dataString;
                 break;
             case TEXT:
                 ArrDataText dataText = new ArrDataText();
                 dataText.setTextValue(itemString.getValue().getValue());
+                if(StringUtils.isEmpty(dataText.getTextValue())) {
+	                log.error("ItemText is empty, uuid: {}, itemType: {}, itemSpec: {}", itemString.getUuid().getValue(), 
+	                		itemString.getT().getValue(),
+	                		itemString.getS()!=null?itemString.getS().getValue():null);
+	                // throw new IllegalStateException("ItemText is empty, uuid:" + uuid + ", itemType:" + itemString.getT().getValue());
+	                
+	                // Set some default value
+	                dataText.setTextValue("N/A");
+                }                
                 dataText.setDataType(DataType.TEXT.getEntity());
                 data = dataText;
                 break;
@@ -1508,10 +1546,24 @@ public class EntityDBDispatcher {
                 } else {
                     ApItem il = bindingItem.getItem();
                     ArrDataUriRef dataUriRef = HibernateUtils.unproxy(il.getData());
+                    
+                    // Read description
+                    // Empty strings have to be compared correctly. 
+                    var currDescription = dataUriRef.getDescription();
+                    if(StringUtils.isEmpty(currDescription)) {
+                    	currDescription = null;
+                    }
+                    String otherDescription = null;
+                    if(itemLink.getNm()!=null) {
+                    	otherDescription = itemLink.getNm().getValue();
+                    	if(StringUtils.isEmpty(otherDescription)) {
+                    		otherDescription = null;
+                    	}
+                    }
                     if (!(il.getItemType().getCode().equals(itemLink.getT().getValue()) &&
                             compareItemSpec(il.getItemSpec(), itemLink.getS()) &&
                             dataUriRef.getUriRefValue().equals(itemLink.getUrl().getValue()) &&
-                            Objects.equals(dataUriRef.getDescription(), itemLink.getNm().getValue()))) {
+                            Objects.equals(currDescription, otherDescription))) {
 
                     	result.addChanged(bindingItem, itemLink);
                     } else {

@@ -30,12 +30,25 @@ public class ArrDigitalRepository extends SysExternalSystem {
 
     @Column(nullable = false)
     private Boolean sendNotification;
+    
+    public ArrDigitalRepository() {
+    	
+    }
 
     @Enumerated(EnumType.STRING)
     @Column(length = StringLength.LENGTH_ENUM, nullable = false)
     private DigitalRepositoryType digitalRepositoryType;
 
-    /**
+    public ArrDigitalRepository(ArrDigitalRepository ardr) {
+		super(ardr);
+		this.viewDaoUrl = ardr.getViewDaoUrl();
+		this.viewFileUrl = ardr.getViewFileUrl();
+		this.viewThumbnailUrl = ardr.getViewThumbnailUrl();
+		this.sendNotification = ardr.getSendNotification();
+		this.digitalRepositoryType = ardr.getDigitalRepositoryType();
+	}
+
+	/**
      * @return url k dao
      */
     public String getViewDaoUrl() {

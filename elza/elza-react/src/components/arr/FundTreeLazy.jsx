@@ -40,6 +40,7 @@ class FundTreeLazy extends AbstractReactComponent {
         onLinkClick: null,
         colorCoded: true,
         scrollDelay: 0,
+        itemHeight: 24,
     };
 
     UNSAFE_componentWillMount() {
@@ -217,7 +218,7 @@ class FundTreeLazy extends AbstractReactComponent {
      * @return {Object} view
      */
     renderNode = node => {
-        const {onNodeDoubleClick, onOpenCloseNode, onContextMenu, showEditPermissions} = this.props;
+        const {onNodeDoubleClick, onOpenCloseNode, onContextMenu, showEditPermissions, itemHeight} = this.props;
         const { highestNodeLevelCount } = this.state;
 
         const expanded = node.hasChildren && this.props.expandedIds[node.id];
@@ -306,7 +307,7 @@ class FundTreeLazy extends AbstractReactComponent {
                 }
                 className={cls}
                 placement={"horizontal"}
-                style={{minWidth: `${highestNodeLevelsWidth + 100}px`}}
+                style={{minWidth: `${highestNodeLevelsWidth + 100}px`, height: itemHeight}}
                 {...clickProps}
             >
                 <span
@@ -363,6 +364,7 @@ class FundTreeLazy extends AbstractReactComponent {
             nodes,
             selectedId,
             onExpand,
+
             scrollDelay,
         } = this.props;
 

@@ -8,11 +8,10 @@ import java.util.Collections;
 import java.util.List;
 
 import cz.tacr.elza.service.StructObjService;
-import jakarta.transaction.Transactional;
-import jakarta.transaction.Transactional.TxType;
 
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.AbstractServiceTest;
 import cz.tacr.elza.config.export.ExportConfig;
@@ -42,6 +41,7 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.OutputTypeRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.FundLevelService.AddLevelDirection;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
@@ -101,11 +101,17 @@ public class OutputModelTest extends AbstractServiceTest {
 
     @Autowired
     StructObjService structObjService;
+    
+    @Autowired
+    DataService dataService;
 
-    // test output with structObjs
     @Test
-    @Transactional(TxType.REQUIRES_NEW)
     public void outputStructObjs() {
+        TransactionTemplate tt = new TransactionTemplate(txManager);
+        tt.executeWithoutResult(r -> outputStructObjsInTransaction());
+    }
+
+    public void outputStructObjsInTransaction() {
         authorizeAsAdmin();
 
         StaticDataProvider sdp = staticDataService.createProvider();
@@ -119,8 +125,7 @@ public class OutputModelTest extends AbstractServiceTest {
         // Create struct objs
         StructType structureType = sdp.getStructuredTypeByCode("SRD_PACKET");
         assertNotNull(structureType);
-        ArrStructuredObject structObj1 = structObjService.createStructObj(fi.getFund(), structureType
-                .getStructuredType(), State.OK);
+        ArrStructuredObject structObj1 = structObjService.createStructObj(fi.getFund(), structureType.getStructuredType(), State.OK);
         assertNotNull(structObj1);
         // add item
         helperTestService.waitForWorkers();
@@ -174,7 +179,8 @@ public class OutputModelTest extends AbstractServiceTest {
                 fundRepository, fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
                 bindingRepository, null, structObjRepos, structItemRepos, itemRepository,
                 bindingStateRepository, indexRepository,
-                daoLinkRepository, exportConfig, structObjService, em);
+                daoLinkRepository, exportConfig, structObjService, em,
+                dataService);
 
         ArrOutput output = new ArrOutput();
         output.setFund(fi.getFund());
@@ -200,6 +206,5 @@ public class OutputModelTest extends AbstractServiceTest {
         // Flush any pending operations
         helperTestService.waitForWorkers();
         em.flush();
-
     }
 }

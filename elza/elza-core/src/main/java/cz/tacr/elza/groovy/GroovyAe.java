@@ -28,10 +28,30 @@ public class GroovyAe {
      */
     private List<GroovyPart> parts;
 
-    public GroovyAe(final String aeType, final List<GroovyPart> parts) {
+    /**
+     * Access point id
+     */
+	private Integer accessPointId;
+
+	/**
+	 * State id
+	 */
+	private Integer stateId;
+
+    public GroovyAe(Integer accessPointId, Integer stateId, final String aeType, final List<GroovyPart> parts) {
+    	this.accessPointId = accessPointId;
+    	this.stateId = stateId;
         this.parts = parts;
         this.aeType = aeType;
     }
+    
+    public Integer getAccessPointId() {
+    	return accessPointId;
+    }
+    
+    public Integer getStateId() {
+		return stateId;
+	}
 
     public String getAeType() {
         return aeType;

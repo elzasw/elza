@@ -149,6 +149,7 @@ class DescItemType extends AbstractReactComponent {
     }
 
     async UNSAFE_componentWillReceiveProps(nextProps) {
+        console.log("UNSAFE_componentWillReceiveProps: {}", nextProps);
         const newDescItemType = {...nextProps.descItemType};
         const {formKey, value, currentEditDescItemIndex, descItemType} = this.state;
         const { dispatch } = nextProps;
@@ -182,6 +183,7 @@ class DescItemType extends AbstractReactComponent {
             }
         }
 
+        console.log("UNSAFE_componentWillReceiveProps - setting new state: {}", newDescItemType);
         this.setState({
             descItemType: newDescItemType,
         });
@@ -294,8 +296,9 @@ class DescItemType extends AbstractReactComponent {
      */
     renderDescItemSpec(key, descItem, descItemIndex, locked) {
         const {infoType, refType, readMode, strictMode} = this.props;
+        const isEnum = refType.dataType?.code === "ENUM";
 
-        if(refType.dataType?.code === "ENUM" && descItem.undefined){
+        if(isEnum && descItem.undefined){
             return <input className="form-control" disabled={true} value={i18n('subNodeForm.descItemType.undefinedValue')}/>
         }
         return (
@@ -303,6 +306,7 @@ class DescItemType extends AbstractReactComponent {
                 key={key}
                 ref={ref => (this.refObjects[key] = ref)}
                 descItem={descItem}
+                isEnum={isEnum}
                 locked={locked || descItem.undefined}
                 infoType={infoType}
                 refType={refType}
@@ -669,7 +673,7 @@ class DescItemType extends AbstractReactComponent {
         let realTarget = e.target;
         let found = false;
         while (realTarget !== null) {
-            if (typeof realTarget.dataset.id !== 'undefined') {
+            if (typeof realTarget.dataset?.id !== 'undefined') {
                 found = true;
                 break;
             }
@@ -813,6 +817,7 @@ class DescItemType extends AbstractReactComponent {
         let descItemProps = {
             hasSpecification: refType.useSpecification,
             descItem: descItem,
+            infoType: infoType,
             onChange: this.handleChange.bind(this, descItemIndex),
             onBlur: this.handleBlur.bind(this, descItemIndex),
             onFocus: this.handleFocus.bind(this, descItemIndex),
@@ -1117,7 +1122,7 @@ class DescItemType extends AbstractReactComponent {
         // Zprávy o chybějících položkách
         const missings = conformityInfoMissings;
         if (missings && missings.length > 0) {
-            const messages = missings.map(missing => missing.description);
+            const messages = missings.map(missing => <div>{missing.description}</div>);
             const tooltip = <div>{messages}</div>;
             actions.push(
                 <TooltipTrigger key="state" content={tooltip} holdOnHover placement="auto">
@@ -1357,7 +1362,11 @@ class DescItemType extends AbstractReactComponent {
         const label = this.renderLabel();
         const showDeleteDescItemType = this.getShowDeleteDescItemType();
         const descItems = descItemType.descItems
-            .filter(i => i.hasOwnProperty('formKey'))
+            .filter(item => {
+                const hasValue = item.id != undefined && !item.undefined;
+                return item.hasOwnProperty('formKey')
+                    && (hasValue || !readMode) // hide items without value in read mode
+            })
             .map((descItem, descItemIndex) => {
                 const actions = [];
 
@@ -1432,7 +1441,7 @@ class DescItemType extends AbstractReactComponent {
                 }
                 const errors = conformityInfo.errors[descItem.descItemObjectId];
                 if (errors && errors.length > 0) {
-                    const messages = errors.map(error => error.description);
+                    const messages = errors.map(error => <div>{error.description}</div>);
                     const tooltip = <div>{messages}</div>;
                     actions.push(
                         <TooltipTrigger key="info" content={tooltip} holdOnHover placement="auto" showDelay={1}>

@@ -2,8 +2,6 @@ package cz.tacr.elza.domain;
 
 import java.math.BigDecimal;
 
-import org.apache.commons.lang3.Validate;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
@@ -68,8 +66,4 @@ public class ArrDataDecimal extends ArrData {
         copyValue(src);
     }
 
-    @Override
-    protected void validateInternal() {
-        Validate.notNull(value);
-    }
 }

@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -50,6 +51,23 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApExternalSystemVO;
+import cz.tacr.elza.controller.vo.ApPartFormVO;
+import cz.tacr.elza.controller.vo.ApValidationIssues;
+import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
+import cz.tacr.elza.controller.vo.DeletedEntity;
+import cz.tacr.elza.controller.vo.ExtAsyncQueueState;
+import cz.tacr.elza.controller.vo.ExtSyncsQueueItemVO;
+import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
+import cz.tacr.elza.controller.vo.FileType;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.InvalidatedEntities;
+import cz.tacr.elza.controller.vo.PartValidationIssues;
+import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.SyncsFilterVO;
+import cz.tacr.elza.controller.vo.SysExternalSystemVO;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.usage.FundVO;
 import cz.tacr.elza.controller.vo.usage.NodeVO;
@@ -66,18 +84,66 @@ import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
 import cz.tacr.elza.domain.ApChange.Type;
 import cz.tacr.elza.domain.ApState.StateApproval;
+import cz.tacr.elza.domain.ApStateEnum;
+import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ExtSyncsQueueItem;
+import cz.tacr.elza.domain.RevStateApproval;
+import cz.tacr.elza.domain.RulItemAptype;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.SysLanguage;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.projection.ApStateInfo;
+import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ExceptionUtils;
 import cz.tacr.elza.exception.Level;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.ApAccessPointRepositoryCustom.OrderBy;
+import cz.tacr.elza.repository.ApBindingItemRepository;
+import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApCachedAccessPointRepository;
+import cz.tacr.elza.repository.ApIndexRepository;
+import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApKeyValueRepository;
+import cz.tacr.elza.repository.ApPartRepository;
+import cz.tacr.elza.repository.ApRevIndexRepository;
+import cz.tacr.elza.repository.ApRevItemRepository;
+import cz.tacr.elza.repository.ApRevPartRepository;
+import cz.tacr.elza.repository.ApRevStateRepository;
+import cz.tacr.elza.repository.ApRevisionRepository;
+import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.DataRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
+import cz.tacr.elza.repository.FundRegisterScopeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.ItemAptypeRepository;
+import cz.tacr.elza.repository.ItemRepository;
+import cz.tacr.elza.repository.ScopeRelationRepository;
+import cz.tacr.elza.repository.ScopeRepository;
+import cz.tacr.elza.repository.SysLanguageRepository;
 import cz.tacr.elza.repository.specification.ApStateSpecification;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
@@ -85,7 +151,6 @@ import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
-import cz.tacr.elza.service.cam.SyncImpossibleException;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventApQueue;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -109,16 +174,19 @@ public class AccessPointService {
     private static final String OBJECT_ID_SEQUENCE_NAME = "ap_name|object_id";
 
     @Autowired
-    private ApAccessPointRepository apAccessPointRepository;
+    private ApAccessPointRepository accessPointRepository;
 
     @Autowired
-    private ApCachedAccessPointRepository apCachedAccessPointRepository;
+    private ApCachedAccessPointRepository cachedAccessPointRepository;
 
     @Autowired
-    private ApTypeRepository apTypeRepository;
+    private ApTypeRepository typeRepository;
 
     @Autowired
-    private ApStateRepository apStateRepository;
+    private ApStateRepository stateRepository;
+
+    @Autowired
+    private ApRevStateRepository revStateRepository;
 
     @Autowired
     private DataRecordRefRepository dataRecordRefRepository;
@@ -160,6 +228,9 @@ public class AccessPointService {
     private ApBindingItemRepository bindingItemRepository;
 
     @Autowired
+    private ApBindingRepository bindingRepository;
+
+    @Autowired
     private StaticDataService staticDataService;
 
     @Autowired
@@ -169,16 +240,19 @@ public class AccessPointService {
     private DataService dataService;
 
     @Autowired
-    private ApItemRepository itemRepository;
+    private ApItemRepository apItemRepository;
 
     @Autowired
-    private AccessPointItemService apItemService;
+    private ItemRepository itemRepository;
+
+    @Autowired
+    private ApRevItemRepository revItemRepository;
+
+    @Autowired
+    private AccessPointItemService itemService;
 
     @Autowired
     private SequenceService sequenceService;
-
-    @Autowired
-    private ApStateRepository stateRepository;
 
     @Autowired
     private ScopeRelationRepository scopeRelationRepository;
@@ -205,7 +279,13 @@ public class AccessPointService {
     private ApIndexRepository indexRepository;
 
     @Autowired
+    private ApRevIndexRepository revIndexRepository;
+
+    @Autowired
     private ApPartRepository partRepository;
+
+    @Autowired
+    private ApRevPartRepository revPartRepository;
 
     @Autowired
     private RuleService ruleService;
@@ -240,6 +320,9 @@ public class AccessPointService {
     @Autowired
     private EntityManager em;
 
+    @Autowired
+    private ApKeyValueRepository keyValueRepository;
+
     @Value("${elza.scope.deleteWithEntities:false}")
     private boolean deleteWithEntities;
 
@@ -268,7 +351,7 @@ public class AccessPointService {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId, false);
 
-        return apAccessPointRepository.findApAccessPointByTextAndType(searchRecord, apTypeIds, firstResult, maxResults,
+        return accessPointRepository.findApAccessPointByTextAndType(searchRecord, apTypeIds, firstResult, maxResults,
                                                                       orderBy,
                                                                       scopeIdsForSearch, approvalStates, searchTypeName,
                                                                       searchTypeUsername);
@@ -294,28 +377,160 @@ public class AccessPointService {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId, false);
 
-        return apAccessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds, scopeIdsForSearch,
+        return accessPointRepository.findApAccessPointByTextAndTypeCount(searchRecord, apTypeIds, scopeIdsForSearch,
                                                                            approvalStates, searchTypeName,
                                                                            searchTypeUsername);
     }
 
     /**
-     * Získání objektu pomocí id nebo uuid
+     * Získání seznamu smazaných (neplatných) entit
+     * 
+     * @param page
+     * @param pageSize
+     * @return InvalidatedEntities
+     */
+    public InvalidatedEntities findInvalidatedEntities(final Integer page, final Integer pageSize) {
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        if(userDetail==null) {
+            throw new AccessDeniedException("User not authorized.", Collections.emptyList());
+        }
+        AuthorizationRequest adminPermission = AuthorizationRequest.hasPermission(Permission.ADMIN)
+        		.or(Permission.AP_SCOPE_RD_ALL);
+        Page<ApState> invalidated;
+        if(adminPermission.matches(userDetail)) {
+        	invalidated = stateRepository.findAccessPointsDeletedPageable(PageRequest.of(page, pageSize));
+        } else {
+        	// get scopes with read permission
+        	var allowedScopeIds = userService.getUserScopeIds();
+        	if(CollectionUtils.isEmpty(allowedScopeIds)) {
+        		return new InvalidatedEntities(0, Collections.emptyList());
+        	}
+        	invalidated = stateRepository.findAccessPointsDeletedPageable(PageRequest.of(page, pageSize), allowedScopeIds);
+        }
+            	
+    	if (invalidated.getTotalElements() == 0) {
+    		return new InvalidatedEntities(0, Collections.emptyList());
+    	}
+
+    	Long totalCount = invalidated.getTotalElements();
+    	List<ApState> states = invalidated.getContent();
+
+    	List<DeletedEntity> deletedEntity = new ArrayList<>(invalidated.getSize());
+    	List<ApAccessPoint> accessPoints = states.stream().map(i -> i.getAccessPoint()).toList();
+
+    	// reading all data to prepare the result
+    	List<ApBindingState> bindingStateAll = bindingStateRepository.findByAccessPoints(accessPoints);
+    	Map<ApAccessPoint, List<ApBindingState>> bindingMap = bindingStateAll.stream().collect(Collectors.groupingBy(ApBindingState::getAccessPoint));
+
+    	List<ApIndex> indexDisplayAll = indexRepository.findByAccessPointsAndIndexType(accessPoints, DISPLAY_NAME);
+    	Map<ApAccessPoint, List<ApIndex>> indexMap = indexDisplayAll.stream().collect(Collectors.groupingBy(i -> i.getPart().getAccessPoint()));
+
+    	// creating a list of returned objects DeletedEntity
+    	states.forEach(state -> {
+    		List<ApBindingState> bindingStates = bindingMap.get(state.getAccessPoint());
+    		List<ApIndex> indexes = indexMap.get(state.getAccessPoint());
+    		deletedEntity.add(createDeletedEntity(state, bindingStates, indexes));
+    	});
+
+    	return new InvalidatedEntities(totalCount.intValue(), deletedEntity);
+    }
+
+    /**
+     * Vytvoření objektu třídy DeletedEntity
+     * 
+     * @param state
+     * @param bindingStates
+     * @param indexes
+     * @return DeletedEntity
+     */
+    private DeletedEntity createDeletedEntity(ApState state, List<ApBindingState> bindingStates, List<ApIndex> indexes) {
+
+    	// define name and description of ap
+    	String name = null;
+    	String description = null;
+    	if (indexes != null) {
+    		Optional<ApIndex> preferredPartIndex = indexes.stream().filter(i -> { 
+    			return i.getPartId().equals(state.getAccessPoint().getPreferredPartId());
+    		}).findFirst();
+    		name = preferredPartIndex.isPresent() ? preferredPartIndex.get().getIndexValue() : null;
+    		Optional<ApIndex> bodyPartIndex = indexes.stream().filter(i -> {
+				ApPart part = i.getPart();
+				if (part != null && part.getPartType() != null) {
+					return part.getPartType().getCode().equals(StaticDataProvider.DEFAULT_BODY_PART_TYPE);
+				}
+				return false;
+			}).findFirst();
+    		description = bodyPartIndex.isPresent() ? bodyPartIndex.get().getIndexValue() : null;
+    	}
+
+        String bindingValue = null;
+        Integer externalSystemId = null;
+		if (bindingStates != null && !bindingStates.isEmpty()) {
+			// each ap should have only one bindingState
+			ApBinding binding = bindingStates.iterator().next().getBinding();
+			if (binding != null) {
+				bindingValue = binding.getValue();
+				externalSystemId = binding.getExternalSystemId();
+			}
+        }
+
+        DeletedEntity de = new DeletedEntity();
+		de.setAccessPointId(state.getAccessPointId());
+		de.setName(name);
+		de.setDescription(description);
+		de.setBindingValue(bindingValue);
+		de.setExtSystemId(externalSystemId);
+		de.setApTypeId(state.getApTypeId());
+		de.setDeleteChangeId(state.getDeleteChangeId());
+		de.setDeleteDate(state.getDeleteChange().getChangeDate());
+		de.setReplacedBy(state.getReplacedById());
+
+		return de;
+    }
+
+    /**
+     * Získání objektu pomocí id nebo uuid.
+     * 
+     * Je možné také získat ID objektu na základě externího ID předaného 
+     * ve formě EXT_SYSTEM_CODE-ID.
      *
      * @param id řetězec znaků, id nebo uuid
      * @return ApAccessPoint
      */
+    @Transactional
     public ApAccessPoint getAccessPointByIdOrUuid(String id) {
         ApAccessPoint accessPoint;
-        if (UuidUtils.isUUID(id)) {
-            accessPoint = apAccessPointRepository.findAccessPointByUuid(id);
-        } else {
-            accessPoint = apAccessPointRepository.findById(Integer.valueOf(id)).orElse(null);
+        // Check if number
+        try {
+        	Integer idInt = Integer.valueOf(id);
+        	accessPoint = accessPointRepository.findById(idInt).orElse(null);
+        } catch (NumberFormatException e) {
+            // Not a number
+            if (UuidUtils.isUUID(id)) {
+                accessPoint = accessPointRepository.findAccessPointByUuid(id);
+            } else {
+            	logger.debug("Looking for external id={}", id);
+            	accessPoint = null;
+            	// Split by - into external system code and id
+            	String[] parts = id.split("-");
+            	if (parts.length == 2) {
+            		ApBinding binding = externalSystemService.findByValueAndExternalSystemCode(parts[1], parts[0]);
+            		if (binding != null) {
+            			Optional<ApBindingState> bindingState = externalSystemService.getBindingState(binding);
+            			if (bindingState.isPresent()) {
+            				accessPoint = bindingState.get().getAccessPoint();
+            			}
+            		} else {
+            			logger.debug("Binding not found for external system code: {}, value: {}", parts[1], parts[0]);
+            		}
+            	}
+            }
         }
         if (accessPoint == null) {
             logger.error("Přístupový bod neexistuje id={}", id);
             throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).set("id", id);
         }
+        // check permissions?
         return accessPoint;
     }
 
@@ -331,10 +546,10 @@ public class AccessPointService {
             return Collections.emptyList();
         }
         if (UuidUtils.isUUID(ids.get(0))) {
-            accessPoints = apAccessPointRepository.findApAccessPointsByUuids(ids);
+            accessPoints = accessPointRepository.findApAccessPointsByUuids(ids);
         } else {
             List<Integer> integerIds = ids.stream().map(p -> Integer.valueOf(p)).collect(Collectors.toList());
-            accessPoints = apAccessPointRepository.findAllById(integerIds);
+            accessPoints = accessPointRepository.findAllById(integerIds);
         }
         return accessPoints;
     }
@@ -345,7 +560,7 @@ public class AccessPointService {
      * @return LFilteredResult<AccessPoint>
      */
     public FilteredResult<ApAccessPoint> findAccessPointsByText(String text, Integer from, Integer count) {
-        return apAccessPointRepository.findAccessPointsByText(text, from, count);
+        return accessPointRepository.findAccessPointsByText(text, from, count);
     }
 
     /**
@@ -432,7 +647,7 @@ public class AccessPointService {
 
             MultipleApChangeContext macc = new MultipleApChangeContext();
 
-            replace(apState, replacedByState, extSystem, macc);
+            replace(apState, replacedByState, extSystem, macc, false);
             apState.setReplacedBy(replacedBy);
 
             // kopírování všechny Part z accessPoint->replacedBy
@@ -449,7 +664,13 @@ public class AccessPointService {
                     mergeParts(accessPoint, replacedBy, change);
                 }
                 // vygenerování indexů
-                updateAndValidate(replacedBy.getAccessPointId());
+                if(revState==null) {
+                	updateAndValidate(replacedBy.getAccessPointId());
+                } else {
+                	// should we also update indexes for revision?
+                	// currently indexes are updated inside edit operations
+                }
+                
                 // je třeba aktualizovat ap cache
                 macc.add(replacedBy.getAccessPointId());
             }
@@ -458,7 +679,7 @@ public class AccessPointService {
                 accessPointCacheService.createApCachedAccessPoint(apId);
             }
         }
-        deleteAccessPointPublishAndReindex(apState, accessPoint, change);
+        invalidateAccessPointPublishAndReindex(apState, accessPoint, change);
         logger.info("Deleted accessPoint, id: {}, replacedBy: {}", apState.getAccessPointId(),
                     replacedBy != null ? replacedBy.getAccessPointId() : null);
     }
@@ -493,7 +714,7 @@ public class AccessPointService {
         // update access point, publish and reindex
         ApAccessPoint accessPoint = saveWithLock(restoreState.getAccessPoint());
         publishAccessPointRestoreEvent(accessPoint);
-        reindexDescItem(accessPoint);
+        //reindexDescItem(accessPoint);
 
         // if exists replacedById - regeneration cached AP by id
         if (apState.getReplacedById() != null) {
@@ -530,28 +751,28 @@ public class AccessPointService {
     }
 
     /**
-     * Mazání seznamů objektů ApAccessPoint
+     * Zneplatnění seznamů objektů ApAccessPoint
      *
      * @param apStates seznam
      */
-    public void deleteAccessPoints(final List<ApState> apStates) {
+    public void invalidateAccessPoints(final List<ApState> apStates) {
         ApChange change = apDataService.createChange(ApChange.Type.AP_DELETE);
         for (ApState apState : apStates) {
             validationNotDeleted(apState);
             ApAccessPoint accessPoint = apState.getAccessPoint();
-            deleteAccessPointPublishAndReindex(apState, accessPoint, change);
+            invalidateAccessPointPublishAndReindex(apState, accessPoint, change);
         }
     }
 
     /**
-     * Mazání ApAccessPoint
+     * Zneplatnění ApAccessPoint
      *
      * @param apState
      * @param accessPoint
      * @param change
      * @return vrací aktualizovaný stav
      */
-    public ApState deleteAccessPoint(ApState apState, ApAccessPoint accessPoint, final ApChange change) {
+    public ApState invalidateAccessPoint(ApState apState, ApAccessPoint accessPoint, final ApChange change) {
         // check if not already deleted
         if (apState.getDeleteChange() != null) {
             return apState;
@@ -567,7 +788,10 @@ public class AccessPointService {
         //
         partService.deleteConstraintsForParts(accessPoint);
         apState.setDeleteChange(change);
-        apState = apStateRepository.save(apState);
+        apState = stateRepository.save(apState);
+        
+        // flush state to the DB - prevent conflict of multiple states for the same access point
+        stateRepository.flush();
 
         //
         // Connection to external items should be preserved for later
@@ -594,19 +818,18 @@ public class AccessPointService {
     }
 
     /**
-     * Mazání ApAccessPoint, zveřejnění a reindexování
+     * Zneplatnění ApAccessPoint, zveřejnění a reindexování
      *
      * @param apState
      * @param accessPoint
      * @param change
      */
-    private void deleteAccessPointPublishAndReindex(final ApState apState, ApAccessPoint accessPoint,
-                                                    final ApChange change) {
-        deleteAccessPoint(apState, accessPoint, change);
+    private void invalidateAccessPointPublishAndReindex(final ApState apState, ApAccessPoint accessPoint, final ApChange change) {
+        invalidateAccessPoint(apState, accessPoint, change);
 
         accessPoint = saveWithLock(accessPoint);
         publishAccessPointDeleteEvent(accessPoint);
-        reindexDescItem(accessPoint);
+        //reindexDescItem(accessPoint);
     }
 
     /**
@@ -623,7 +846,7 @@ public class AccessPointService {
     }
 
     /**
-     * Smazání třídy rejstříku.
+     * Mazání třídy rejstříku.
      *
      * @param scope třída rejstříku
      */
@@ -631,12 +854,13 @@ public class AccessPointService {
     public void deleteScope(final ApScope scope) {
         Validate.notNull(scope, "Scope musí být vyplněn");
         Validate.notNull(scope.getScopeId(), "Identifikátor scope musí být vyplněn");
+        logger.info("Deleting APs in scope, scopeId: {}", scope.getScopeId());
 
-        List<ApState> apStates = apStateRepository.findByScope(scope);
+        List<ApState> apStates = stateRepository.findByScope(scope);
         if (!deleteWithEntities) {
-        	ExceptionUtils.isEmptyElseBusiness(apStates, "Nelze smazat třídu rejstříku, která je nastavena na rejstříku.", RegistryCode.USING_SCOPE_CANT_DELETE);
+        	ExceptionUtils.isEmptyElseBusiness(apStates, "Nelze smazat oblast rejstříku, neboť obsahuje záznamy entit (i zneplatněných).", RegistryCode.USING_SCOPE_CANT_DELETE);
         } else {
-            apStateRepository.deleteAllByScope(scope);
+        	deleteUnassignedByScope(scope);
         }
         final List<ApScope> apScopes = scopeRepository.findConnectedByScope(scope);
         ExceptionUtils.isEmptyElseBusiness(apScopes, "Nelze smazat oblast obsahující návazné oblasti.", RegistryCode.CANT_DELETE_SCOPE_WITH_CONNECTED);
@@ -645,6 +869,131 @@ public class AccessPointService {
 
         fundRegisterScopeRepository.deleteAll(fundRegisterScopeRepository.findByScope(scope));
         scopeRepository.delete(scope);
+
+        logger.info("APs in scope successfully deleted, scopeId: {}", scope.getScopeId());
+    }
+
+    /**
+     * Mazání APs podle scope
+     * 
+     * @param scope
+     */
+    private void deleteUnassignedByScope(final ApScope scope) {
+    	List<Integer> ids = accessPointRepository.findAccessPointIdsByApScope(scope);
+
+    	// if arr_data_record_ref.recordId in (apIds) exists in arr_item (AS)
+		List<Integer> records = itemRepository.findArrDataRecordRefRecordIdsByAccessPointIds(ids);
+		if (!records.isEmpty()) {
+			logger.error("Not possible to delete access points that have links in funds. apIds: {}", records);
+            throw new BusinessException(
+                    "Nelze smazat/zneplatnit přístupový bod(y), který je připojen k jednotce popisu.",
+                    RegistryCode.EXIST_FOREIGN_DATA)
+                            .set("apIds", records);
+		}
+
+    	// if arr_data_record_ref.recordId in (apIds) exists in ap_item (AP) in other scope
+		records = apItemRepository.findArrDataRecordRefRecordIdsByAccessPointIdsInOtherScope(ids, scope);
+		if (!records.isEmpty()) {
+			logger.error("Not possible to delete access points that have links in other scope. apIds: {}", records);
+            throw new BusinessException(
+                    "Nelze smazat/zneplatnit přístupový bod(y), který je připojen v jiné oblasti.",
+                    RegistryCode.EXIST_FOREIGN_DATA)
+                            .set("apIds", records);
+		}
+
+		deleteAccessPoints(ids);
+        logger.info("APs successfully deleted, ids.size: {}", ids.size());
+    }
+
+    /**
+     * Mazání APs podle ids
+     * 
+     * @param apids
+     */
+    private void deleteAccessPoints(final List<Integer> apIds) {
+   	// určujeme revize, pokud existují
+    	List<Integer> revisionIds = new ArrayList<>();
+    	ObjectListIterator.forEachPage(apIds, p -> {
+    		List<Integer> revisionIdsNext = revisionRepository.findAllRevisionIdsByAccessPointIdIn(p);
+    		revisionIds.addAll(revisionIdsNext);
+    	});
+        logger.debug("Defined revisions to delete, size: {}", revisionIds.size());
+
+    	// určujeme bindings, pokud existují
+    	List<Integer> bindingIds = new ArrayList<>();
+    	ObjectListIterator.forEachPage(apIds, p -> {
+        	List<Integer> idsNext = bindingStateRepository.findAllBindingIdByAccessPointIdIn(p);
+        	bindingIds.addAll(idsNext);
+    	});
+        logger.debug("Defined bindings to delete, size: {}", bindingIds.size());
+
+    	// určujeme ap_key_value(s) ke mazání
+    	List<Integer> keyValueIds = new ArrayList<>();
+    	ObjectListIterator.forEachPage(apIds, p -> {
+    		List<Integer> keyIdsNext = keyValueRepository.findAllIdByAccessPointIdIn(p);
+    		keyValueIds.addAll(keyIdsNext);
+    	});
+        logger.debug("Defined key values to delete, size: {}", keyValueIds.size());
+
+        // odpojení bindingId od arr_data_record_ref
+        ObjectListIterator.forEachPage(bindingIds, p -> dataRecordRefRepository.disconnectBindings(p));
+        logger.debug("Disconnected bindings, size: {}", bindingIds.size());
+
+        // mazání bindings
+    	ObjectListIterator.forEachPage(bindingIds, p -> {
+    		bindingItemRepository.deleteAllByBindingIdIn(p);
+	    	bindingStateRepository.deleteAllByBindingIdIn(p);
+	    	bindingRepository.deleteAllById(p);
+    	});
+    	// pro úspěšné mazání ap_item(s)
+    	bindingItemRepository.flush();
+        logger.debug("Deleted bindings, size: {}", bindingIds.size());
+
+    	// mazání index i revIndex
+    	ObjectListIterator.forEachPage(apIds, p -> {
+    		indexRepository.deleteAllByAccessPointIdIn(p);
+            logger.debug("Deleting index, idx size: {}", p.size());
+        });
+    	ObjectListIterator.forEachPage(revisionIds, p -> {
+    		revIndexRepository.deleteAllByRevisionIdIn(p);
+            logger.debug("Deleting revIndex, revIdx size: {}", p.size());
+    	});
+        logger.debug("Deleted index & revIndex, idx size: {}, revIdx size: {}", apIds.size(), revisionIds.size());
+
+    	// mazání items & odpojení recordId od arr_data_record_ref
+    	ObjectListIterator.forEachPage(apIds, p -> {
+        	List<Integer> dataIds = apItemRepository.findAllDataIdByAccessPointIdIn(p);
+        	dataRecordRefRepository.disconnectRecords(dataIds); // odpojení recordId
+        	apItemRepository.deleteAllByAccessPointIdIn(p);
+    	});
+    	dataRecordRefRepository.flush();
+        logger.debug("Deleted items & data by APs, size: {}", apIds.size());
+
+    	// mazání revision items
+    	ObjectListIterator.forEachPage(revisionIds, p -> revItemRepository.deleteAllByRevisionIdIn(p));
+        logger.debug("Deleted revItems & data by APs, size: {}", revisionIds.size());
+
+    	// mazání revision
+    	ObjectListIterator.forEachPage(revisionIds, p -> {
+	    	revPartRepository.deleteAllByRevisionIdIn(p);
+	    	revStateRepository.deleteAllByRevisionIdIn(p);
+	    	revisionRepository.deleteAllById(p);
+    	});
+        logger.debug("Deleted revisions, size: {}", revisionIds.size());
+
+    	// mazání parts, states, cached APs i APs
+    	ObjectListIterator.forEachPage(apIds, p -> {
+    		partRepository.deleteAllByAccessPointIdIn(p);
+    		stateRepository.deleteAllByAccessPointIdIn(p);
+    		cachedAccessPointRepository.deleteAllByAccessPointIdIn(p);
+    		accessPointRepository.deleteAllById(p);
+            logger.debug("Deleting parts, states, cached & APs, size: {}", p.size());
+    	});
+        logger.debug("Deleted parts, states, cached & APs, size: {}", apIds.size());
+
+    	// mazání keyValues
+    	ObjectListIterator.forEachPage(keyValueIds, p -> keyValueRepository.deleteAllById(p));
+        logger.debug("Deleted keyValues, size: {}", keyValueIds.size());
     }
 
     /**
@@ -944,20 +1293,19 @@ public class AccessPointService {
     public void replace(final ApState replacedState,
                         final ApState replacementState,
                         @Nullable final ApExternalSystem apExternalSystem,
-                        MultipleApChangeContext macc)
+                        MultipleApChangeContext macc,
+                        boolean syncQueue)
             throws SyncImpossibleException {
 
         // replace in access points (items)
         replaceInAps(replacedState, replacementState, apExternalSystem, macc);
 
         // replace in arrangement
-        replaceInArrItems(replacedState, replacementState);
+        replaceInArrItems(replacedState, replacementState, syncQueue);
 
     }
 
-    private void replaceInArrItems(ApState replacedState,
-                                   ApState replacementState)
-            throws SyncImpossibleException {
+    private void replaceInArrItems(ApState replacedState, ApState replacementState, boolean syncQueue) throws SyncImpossibleException {
         logger.debug("AccessPoint replacement in ArrItems started ({}->{})", replacedState.getAccessPointId(),
                      replacementState.getAccessPointId());
 
@@ -967,16 +1315,19 @@ public class AccessPointService {
         // replace in Arrangement
         final List<ArrDescItem> arrItems = descItemRepository.findArrItemByRecord(replaced);
 
+        if(arrItems.isEmpty()) {
+        	logger.debug("No ArrItems which needs replacement.");
+	        return;
+        }
         logger.debug("Number of ArrItems which needs replacement: {}", arrItems.size());
 
         // ArrItems
-        final Map<Integer, List<ArrDescItem>> itemsByFundId = arrItems.stream()
-                .collect(Collectors.groupingBy(item -> item.getNode().getFundId()));
+        final Map<Integer, List<ArrDescItem>> itemsByFundId = arrItems.stream().collect(Collectors.groupingBy(item -> item.getNode().getFundId()));
 
         Set<Integer> fundIds = itemsByFundId.keySet();
+        
         // fund to scopes
-        Map<Integer, Set<Integer>> fundIdsToScopes = fundIds.stream()
-                .collect(toMap(Function.identity(), scopeRepository::findIdsByFundId));
+        Map<Integer, Set<Integer>> fundIdsToScopes = fundIds.stream().collect(toMap(Function.identity(), scopeRepository::findIdsByFundId));
 
         // Oprávnění
         boolean isFundAdmin = userService.hasPermission(UsrPermission.Permission.FUND_ARR_ALL);
@@ -1016,23 +1367,22 @@ public class AccessPointService {
                 im.setItemType(i.getItemType());
                 im.setPosition(i.getPosition());
 
-                Set<Integer> fundScopes = fundIdsToScopes.get(fundId);
-                if (fundScopes == null) {
-                    throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE)
-                            .set("fundId", fundId);
-                } else {
-                    if (!fundScopes.contains(replacementState.getScopeId())) {
-                        throw new SyncImpossibleException(
-                                "Nelze nahradit entitu, protože oblast nahrazující entity není napojena na všechny AS s místem použití nahrazované entity. entitaId: "
-                                        + replacedState.getAccessPointId() + ", fondId: " + fundId);
-                    }
+                if (!syncQueue) {
+	                Set<Integer> fundScopes = fundIdsToScopes.get(fundId);
+	                if (fundScopes == null) {
+	                    throw new SystemException("Pro AS neexistují žádné scope.", BaseCode.INVALID_STATE).set("fundId", fundId);
+	                } else {
+	                    if (!fundScopes.contains(replacementState.getScopeId())) {
+	                        throw new SyncImpossibleException(
+	                                "Nelze nahradit entitu, protože oblast nahrazující entity není napojena na všechny AS s místem použití nahrazované entity. entitaId: "
+	                                        + replacedState.getAccessPointId() + ", fondId: " + fundId);
+	                    }
+	                }
                 }
-                descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change);
+                descriptionItemService.updateDescriptionItem(im, fundVersions.get(fundId), change, syncQueue);
+            }
+            logger.debug("AccessPoint replacement in ArrItems finished ({}->{})", replacedState.getAccessPointId(), replacementState.getAccessPointId());
         }
-
-        logger.debug("AccessPoint replacement in ArrItems finished ({}->{})", replacedState.getAccessPointId(),
-                     replacementState.getAccessPointId());
-    }
     }
 
     private void replaceInAps(ApState replacedState,
@@ -1045,7 +1395,7 @@ public class AccessPointService {
         final ApAccessPoint replacement = replacementState.getAccessPoint();
 
         // replace in APs
-        final List<ApItem> apItems = this.apItemService.findItemByEntity(replaced);
+        final List<ApItem> apItems = this.itemService.findItemByEntity(replaced);
         if (CollectionUtils.isNotEmpty(apItems)) {
             ObjectListIterator.forEachPage(apItems,
                                            apItemPage -> replaceInItems(apItemPage, replaced, replacement,
@@ -1092,7 +1442,7 @@ public class AccessPointService {
         Set<Integer> apIds = apItems.stream().map(i -> i.getPart().getAccessPointId()).collect(Collectors.toSet());
 
         // get states for changing access points
-        List<ApState> apStates = apStateRepository.findLastByAccessPointIds(apIds);
+        List<ApState> apStates = stateRepository.findLastByAccessPointIds(apIds);
         Map<Integer, ApState> stateByApId = apStates.stream()
                 .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity()));
 
@@ -1150,7 +1500,7 @@ public class AccessPointService {
             }
         }
 
-        List<ApBindingItem> modifiedBindings = apItemService.changeBindingItemsItems(itemUpdateMapping,
+        List<ApBindingItem> modifiedBindings = itemService.changeBindingItemsItems(itemUpdateMapping,
                                                                                      bindingItemsByItemId.values());
         // prepare to refresh AP cache
         for (ApBindingItem modBinding : modifiedBindings) {
@@ -1179,9 +1529,9 @@ public class AccessPointService {
 
         ApChange change = apDataService.createChange(Type.AP_REPLACE);
 
-        ApItem updatedItem = apItemService.updateItem(change, apItem, drr);
+        ApItem updatedItem = itemService.updateItem(change, apItem, drr);
 
-        generateSync(apState, apItem.getPart());
+        updateAndValidate(apState.getAccessPointId());
 
         return updatedItem;
     }
@@ -1296,8 +1646,8 @@ public class AccessPointService {
         ApPart apPart = partService.createPart(partType, accessPoint, apChange, null);
         accessPoint.setPreferredPart(apPart);
 
-        apItemService.createItems(apPart, apPartFormVO.getItems(), apChange, null, null);
-        generateSync(apState, apPart);
+        itemService.createItems(apPart, apPartFormVO.getItems(), apChange, null, null);
+        accessPoint = updateAndValidate(accessPoint);
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
         publishAccessPointCreateEvent(accessPoint);
@@ -1327,7 +1677,7 @@ public class AccessPointService {
                               final ApPartFormVO apPartFormVO) {
         checkPermissionForEdit(state);
 
-        List<ApItem> deleteItems = apItemService.findValidItemsByPart(apPart);
+        List<ApItem> deleteItems = itemService.findValidItemsByPart(apPart);
         List<ApBindingItem> bindingItemList = bindingItemRepository.findByItems(deleteItems);
 
         Map<Integer, ApItem> itemMap = deleteItems.stream().collect(Collectors.toMap(ApItem::getItemId, i -> i));
@@ -1361,12 +1711,12 @@ public class AccessPointService {
         apPart.setLastChange(change);
 
         List<ReferencedEntities> dataRefList = new ArrayList<>();
-        apItemService.createItems(apPart, createItems, change, bindingItemList, dataRefList);
+        itemService.createItems(apPart, createItems, change, bindingItemList, dataRefList);
         bindingItemRepository.flush();
 
-        apItemService.deleteItems(deleteItems, change);
+        itemService.deleteItems(deleteItems, change);
 
-        generateSync(state, apPart);
+        //updatePartValueAndValidate(state, apPart);
 
         // při změně hodnot v preferované části musíme reindexovat
         if (apAccessPoint.getPreferredPartId().equals(apPart.getPartId())) {
@@ -1434,11 +1784,11 @@ public class AccessPointService {
      * @param async
      * @return true nebo false
      */
-    public boolean updatePartValues(final ApState state,
-                                    final Integer prefPartId,
-                                    final List<ApPart> partList,
-                                    final Map<Integer, List<ApItem>> itemMap,
-                                    final boolean async) {
+    public boolean updatePartsIndexes(final ApState state,
+                                      final Integer prefPartId,
+                                      final List<ApPart> partList,
+                                      final Map<Integer, List<ApItem>> itemMap,
+                                      final boolean async) {
         boolean success = true;
         for (ApPart part : partList) {
             List<ApPart> childrenParts = findChildrenParts(part, partList);
@@ -1565,7 +1915,7 @@ public class AccessPointService {
         return items;
     }
 
-    public boolean updatePartValue(final ApState state, final ApPart apPart) {
+    public boolean updatePartIndexes(final ApState state, final ApPart apPart) {
         ApPart preferredNamePart = state.getAccessPoint().getPreferredPart();
         List<ApPart> childrenParts = partService.findPartsByParentPart(apPart);
 
@@ -1573,7 +1923,7 @@ public class AccessPointService {
         parts.add(apPart);
         parts.addAll(childrenParts);
 
-        List<ApItem> items = apItemService.findItemsByParts(parts);
+        List<ApItem> items = itemService.findItemsByParts(parts);
 
         boolean preferred = preferredNamePart == null || Objects.equals(preferredNamePart.getPartId(), apPart.getPartId());
         List<AccessPointPart> childParts = new ArrayList<>(childrenParts);
@@ -1585,7 +1935,7 @@ public class AccessPointService {
             // update parent part indexes
             ApPart parentPart = apPart.getParentPart();
             if (parentPart != null) {
-                success = updatePartValue(state, parentPart);
+                success = updatePartIndexes(state, parentPart);
             }
         }
 
@@ -1655,11 +2005,12 @@ public class AccessPointService {
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         oldState.setDeleteChange(change);
-        apStateRepository.save(oldState);
+        stateRepository.save(oldState);
+        stateRepository.flush();
 
         ApState newState = copyState(oldState, change);
         newState.setApType(apType);
-        apStateRepository.save(newState);
+        stateRepository.save(newState);
 
        // accessPoint.setRuleSystem(apType.getRuleSystem());
         ApAccessPoint result = saveWithLock(accessPoint);
@@ -1669,7 +2020,7 @@ public class AccessPointService {
         }*/
 
         publishAccessPointUpdateEvent(result);
-        reindexDescItem(result);
+        //reindexDescItem(result);
 
         return newState;
     }
@@ -1710,7 +2061,7 @@ public class AccessPointService {
      * @return přístupový bod
      */
     public ApAccessPoint getAccessPointByUuid(final String uuid) {
-        ApAccessPoint accessPoint = apAccessPointRepository.findAccessPointByUuid(uuid);
+        ApAccessPoint accessPoint = accessPointRepository.findAccessPointByUuid(uuid);
         if (accessPoint == null) {
             throw new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(uuid);
         }
@@ -1725,7 +2076,7 @@ public class AccessPointService {
      * @return přístupový bod nebo null pokud není nalezen
      */
     public ApAccessPoint findAccessPointByUuid(final String uuid) {
-        return apAccessPointRepository.findAccessPointByUuid(uuid);
+        return accessPointRepository.findAccessPointByUuid(uuid);
     }
 
     /**
@@ -1736,7 +2087,7 @@ public class AccessPointService {
      * @return přístupový bod
      */
     public ApAccessPoint getAccessPointInternal(final Integer accessPointId) {
-        return apAccessPointRepository.findById(accessPointId)
+        return accessPointRepository.findById(accessPointId)
                 .orElseThrow(() -> new ObjectNotFoundException("Přístupový bod neexistuje", BaseCode.ID_NOT_EXIST).setId(accessPointId));
     }
 
@@ -1747,7 +2098,7 @@ public class AccessPointService {
      * @return ids
      */
     public List<Integer> getAccessPointIdsByState(ApStateEnum state) {
-        return apAccessPointRepository.findAccessPointIdByState(state);
+        return accessPointRepository.findAccessPointIdByState(state);
     }
 
     /**
@@ -1776,7 +2127,7 @@ public class AccessPointService {
 																  StaticDataProvider sdp) {
 		Set<Integer> scopeIds = getScopeIdsForSearch(fund, scopeId, false);
 
-		QueryResults<ApCachedAccessPoint> cachedAccessPointResult = apCachedAccessPointRepository
+		QueryResults<ApCachedAccessPoint> cachedAccessPointResult = cachedAccessPointRepository
 				.findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds, state, revState, from, count, sdp);
 
 		List<ApAccessPointVO> accessPointVOList = new ArrayList<>();
@@ -1868,7 +2219,7 @@ public class AccessPointService {
      */
     public ApAccessPoint saveWithLock(final ApAccessPoint accessPoint) {
         accessPoint.setLastUpdate(LocalDateTime.now());
-        return apAccessPointRepository.saveAndFlush(accessPoint);
+        return accessPointRepository.saveAndFlush(accessPoint);
     }
 
     /**
@@ -1906,9 +2257,7 @@ public class AccessPointService {
      * @return ApScope nebo null
      */
     public ApScope getApScope(final Integer scopeId) {
-        if (scopeId == null) {
-            return null;
-        }
+        Objects.requireNonNull(scopeId);
         return scopeRepository.findById(scopeId)
                 .orElseThrow(() -> new ObjectNotFoundException("ApScope neexistuje", BaseCode.ID_NOT_EXIST).setId(scopeId));
     }
@@ -1933,7 +2282,7 @@ public class AccessPointService {
      * @return typ
      */
     public ApType getType(final Integer typeId) {
-        return apTypeRepository.findById(typeId)
+        return typeRepository.findById(typeId)
                 .orElseThrow(() -> new ObjectNotFoundException("Typ neexistuje", BaseCode.ID_NOT_EXIST).setId(typeId));
     }
 
@@ -1945,14 +2294,14 @@ public class AccessPointService {
      * @return typ
      */
     public ApType getType(final String code) {
-        return apTypeRepository.findApTypeByCode(code);
+        return typeRepository.findApTypeByCode(code);
     }
 
     /**
      * Získání typů.
      */
     public List<ApType> findTypes() {
-        return apTypeRepository.findAll();
+        return typeRepository.findAll();
     }
 
     /**
@@ -2021,7 +2370,7 @@ public class AccessPointService {
         if (accessPointIds.isEmpty()) {
             return Collections.emptyMap();
         }
-        List<ApAccessPoint> accessPoints = apAccessPointRepository.findAllById(accessPointIds); // nahrat vsechny potrebne AP do Hibernate session
+        List<ApAccessPoint> accessPoints = accessPointRepository.findAllById(accessPointIds); // nahrat vsechny potrebne AP do Hibernate session
         Map<Integer, ApState> result = stateRepository.findLastByAccessPoints(accessPoints).stream()
                 .collect(toMap(o -> o.getAccessPointId(), o -> o));
         for (ApAccessPoint accessPoint : accessPoints) {
@@ -2079,9 +2428,7 @@ public class AccessPointService {
      * @return ApAccessPoint
      * @throws SyncImpossibleException
      */
-    public ApAccessPoint copyAccessPoint(ApAccessPoint srcAccessPoint, ApScope scope, boolean replace,
-                                         List<Integer> skipItems)
-            throws SyncImpossibleException {
+    public ApAccessPoint copyAccessPoint(ApAccessPoint srcAccessPoint, ApScope scope, boolean replace, List<Integer> skipItems) throws SyncImpossibleException {
         ApState state = getStateInternal(srcAccessPoint);
 
         if (!hasPermissionToCopy(state, scope, replace)) {
@@ -2097,7 +2444,7 @@ public class AccessPointService {
         ApState trgState = createAccessPoint(scope, state.getApType(), StateApproval.NEW, change, null);
 
         List<ApPart> partsFrom = partService.findPartsByAccessPoint(srcAccessPoint);
-        List<ApItem> sourceItems = apItemService.findValidItemsByAccessPoint(srcAccessPoint);
+        List<ApItem> sourceItems = itemService.findValidItemsByAccessPoint(srcAccessPoint);
         List<ApPart> newParts = new ArrayList<>();
 
         // filter skipped items
@@ -2148,27 +2495,32 @@ public class AccessPointService {
                 copyItem(item, toPart, change, item.getPosition());
             }
         }
-
+        
         // set preferred part
         trgState.getAccessPoint().setPreferredPart(fromIdToPartMap.get(srcAccessPoint.getPreferredPartId()));
-
+        // try to flush to db to detect any inconsistency
+		em.flush();
+        
         logger.debug("Copied parts({}) and items.", fromIdToPartMap.size());
 
         // prepare to update cache
         MultipleApChangeContext macc = new MultipleApChangeContext();
 
         if (replace) {
-            replace(state, trgState, null, macc);
+            replace(state, trgState, null, macc, false);
             state.setReplacedBy(trgState.getAccessPoint());
-            deleteAccessPoint(state, srcAccessPoint, change);
+            invalidateAccessPoint(state, srcAccessPoint, change);
         }
+        
+        // TODO: replace next calls with updatePartsIndexesAndValidate
 
         // create indexes
         for (ApPart part : partsFrom) {
-            updatePartValue(trgState, fromIdToPartMap.get(part.getPartId()));
+            updatePartIndexes(trgState, fromIdToPartMap.get(part.getPartId()));
         }
 
-        ApAccessPoint trgAccessPoint = validate(trgState.getAccessPoint(), trgState, true);
+        ApValidationIssues apValidationIssues = validate(trgState.getAccessPoint(), trgState, true, false);
+        ApAccessPoint trgAccessPoint = updateValidationErrors(trgState.getAccessPoint(), apValidationIssues, true);
         macc.add(trgAccessPoint.getAccessPointId());
 
         logger.debug("Copy accessPoint, creating items in cache: {}.", macc.getModifiedApIds().size());
@@ -2183,6 +2535,14 @@ public class AccessPointService {
         return trgAccessPoint;
     }
 
+    /**
+     * Copy state.
+     * 
+     * deleteChange and replacedBy are set to null (not copied)
+     * @param oldState
+     * @param change
+     * @return
+     */
     public ApState copyState(ApState oldState, ApChange change) {
         ApState newState = new ApState();
         newState.setAccessPoint(oldState.getAccessPoint());
@@ -2250,16 +2610,9 @@ public class AccessPointService {
         return sequenceService.getNext(OBJECT_ID_SEQUENCE_NAME);
     }
 
-    @Transactional
-    public void reindexDescItem(ApAccessPoint accessPoint) {
-        Collection<Integer> itemIds = new HashSet<>(256);
-        itemIds.addAll(apAccessPointRepository.findItemIdByAccessPointIdOverDataRecordRef(accessPoint.getAccessPointId()));
-        descriptionItemService.reindexDescItem(itemIds);
-    }
-
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
     public List<ApStateInfo> findApStates(@AuthParam(type = AuthParam.Type.AP) final ApAccessPoint apAccessPoint) {
-        return apStateRepository.findInfoByAccessPoint(apAccessPoint);
+        return stateRepository.findInfoByAccessPoint(apAccessPoint);
     }
 
     /**
@@ -2313,12 +2666,12 @@ public class AccessPointService {
             Validate.notNull(newApType, "AP Type not found, id={}", newTypeId);
 
         	// nelze změnit třídu pokud existuje platná ApBindingState
-            int countBinding = bindingStateRepository.countByAccessPoint(accessPoint);
-            if (countBinding > 0) {
+            List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoint(accessPoint);
+            if (CollectionUtils.isNotEmpty(bindingStates)) {
             	// nový ApType nesmí být v jiné třídě, pouze v té aktuální
             	Integer parentApTypeId = oldApState.getApType().getParentApTypeId();
             	if (!newApType.getParentApTypeId().equals(parentApTypeId)) {
-            		throw new SystemException("Třídu entity zapsané v CAM nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
+            		throw new SystemException("Třídu entity zapsané v " + bindingStates.get(0).getApExternalSystem().getName() + " nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                     	.set("accessPointId", accessPoint.getAccessPointId())
                     	.set("typeId", oldApState.getApTypeId());
             	}
@@ -2390,7 +2743,9 @@ public class AccessPointService {
 
         ApChange change = apDataService.createChange(ApChange.Type.AP_UPDATE);
         oldApState.setDeleteChange(change);
-        oldApState = apStateRepository.save(oldApState);
+        oldApState = stateRepository.save(oldApState);
+        // flush to DB
+        stateRepository.flush();
 
         ApState newApState = copyState(oldApState, change);
         if (newApScope != null) {
@@ -2401,14 +2756,14 @@ public class AccessPointService {
         }
         newApState.setStateApproval(newStateApproval);
         newApState.setComment(newComment);
-        newApState = apStateRepository.save(newApState);
+        newApState = stateRepository.save(newApState);
 
         if (newApType != null) {
             saveWithLock(accessPoint);
         }
 
         publishAccessPointUpdateEvent(accessPoint);
-        reindexDescItem(accessPoint);
+        //reindexDescItem(accessPoint);
 
         return newApState;
     }
@@ -2764,6 +3119,18 @@ public class AccessPointService {
         }
     }
 
+    public void checkPermissionForRead(final ApState state) {
+        if (userService.hasPermission(Permission.AP_SCOPE_RD_ALL)
+                || userService.hasPermission(Permission.AP_SCOPE_RD, state.getScopeId())) {
+            return;
+        }
+
+        throw new SystemException("Nedostatečné oprávnění pro čtení přístupového bodu",
+                BaseCode.INSUFFICIENT_PERMISSIONS)
+                        .set("accessPointId", state.getAccessPointId())
+                        .set("scopeId", state.getScopeId());
+    }
+
     public void checkPermissionForEdit(final ApState state) {
         checkPermissionForEdit(state, (RevStateApproval) null);
     }
@@ -2872,7 +3239,7 @@ public class AccessPointService {
 
     public List<String> findRelArchiveEntities(ApAccessPoint accessPoint) {
         List<String> archiveEntityIds = new ArrayList<>();
-        List<ApItem> itemList = apItemService.findValidItemsByAccessPoint(accessPoint);
+        List<ApItem> itemList = itemService.findValidItemsByAccessPoint(accessPoint);
 
         for (ApItem item : itemList) {
             ArrData data = HibernateUtils.unproxy(item.getData());
@@ -2921,7 +3288,7 @@ public class AccessPointService {
         scopeList.addAll(scopeRelationRepository.findConnectedScopeIdsByScopeIds(Collections.singleton(scopeId)));
         // TODO: add query for number of results
 
-        List<ApState> apStates = apAccessPointRepository
+        List<ApState> apStates = accessPointRepository
                 .findApAccessPointByTextAndType(filter.getSearch(), filter.getAeTypeIds(), from, max,
                                                 // TODO: sort only for smaller number of records
                                                 OrderBy.PREF_NAME,
@@ -2935,7 +3302,7 @@ public class AccessPointService {
     }
 
     public Resource exportCoordinates(FileType fileType, Integer itemId) {
-        ApItem item = itemRepository.findById(itemId).orElseThrow(() ->
+        ApItem item = apItemRepository.findById(itemId).orElseThrow(() ->
                 		new ObjectNotFoundException("ApItem nenalezen", BaseCode.ID_NOT_EXIST));
         String coordinates = dataService.convertCoordinates(fileType, item.getData());
 
@@ -2986,14 +3353,6 @@ public class AccessPointService {
         return headers;
     }
 
-    @Transactional(TxType.MANDATORY)
-    public void generateSync(final ApState apState, final ApPart apPart) {
-        boolean successfulGeneration = updatePartValue(apState, apPart);
-
-        logger.debug("Validate accessPointId={}, partId={}, successfulGeneration={}", apState.getAccessPointId(), apPart.getPartId(), successfulGeneration);
-        validate(apState.getAccessPoint(), apState, successfulGeneration);
-    }
-
     public boolean isRevalidaceRequired(ApState.StateApproval state, ApState.StateApproval newState) {
         return state != null
                 && newState != null
@@ -3007,17 +3366,16 @@ public class AccessPointService {
      * @param accessPoint - protože může mít modifikace
      * @param apState
      * @param successfulGeneration
-     * @return Upraveny AP.
-     *         Dochazi k zapisu aktualniho stavu validace.
-     *
+     * @param includeRevision
+     * 
+     * @return ApValidationIssues
      */
-    public ApAccessPoint validate(ApAccessPoint accessPoint, ApState apState, boolean successfulGeneration) {
+    public ApValidationIssues validate(ApAccessPoint accessPoint, ApState apState, boolean successfulGeneration, boolean includeRevision) {
         logger.debug("Validate stateId={}, accessPointId={}, scopeId={}, version={}", apState.getStateId(), accessPoint.getAccessPointId(), apState.getScopeId(), accessPoint.getVersion());
-        ApValidationErrorsVO apValidationErrorsVO = ruleService.executeValidation(apState, false);
-        accessPoint = updateValidationErrors(accessPoint, apValidationErrorsVO, successfulGeneration);
+        ApValidationIssues apValidationIssues = ruleService.executeValidation(apState, includeRevision);
 
         logger.debug("Validate accessPointId={}, version={}", accessPoint.getAccessPointId(), accessPoint.getVersion());
-        return accessPoint;
+        return apValidationIssues;
     }
 
     public ApAccessPoint updateAndValidate(final Integer accessPointId) {
@@ -3025,18 +3383,27 @@ public class AccessPointService {
         return updateAndValidate(accessPoint);
     }
 
+    /**
+     * Update and validate accessPoint
+     * 
+     * Method will not validate revision
+     * @param accessPoint
+     * @return
+     */
     public ApAccessPoint updateAndValidate(ApAccessPoint accessPoint) {
         ApState apState = getStateInternal(accessPoint);
         List<ApPart> partList = partService.findPartsByAccessPoint(accessPoint);
-        Map<Integer, List<ApItem>> itemMap = apItemService.findValidItemsByAccessPoint(accessPoint).stream()
+        Map<Integer, List<ApItem>> itemMap = itemService.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
-        return updateAndValidate(accessPoint, apState, partList, itemMap, false);
-    }
+        return updatePartsIndexesAndValidate(accessPoint, apState, partList, itemMap, false);        
+    }    
 
     /**
-     * Updates parts and validate AccessPoint
+     * Updates parts indexes and validate AccessPoint
      *
+     * Method will validate only accesspoint itself and not its revision
+     * 
      * @param accessPoint
      * @param apState
      * @param partList
@@ -3045,17 +3412,17 @@ public class AccessPointService {
      * @return
      */
     @Transactional(TxType.MANDATORY)
-    public ApAccessPoint updateAndValidate(final ApAccessPoint accessPoint,
-                             final ApState apState,
-                             final List<ApPart> partList,
-                             final Map<Integer, List<ApItem>> itemMap,
-                             boolean async) {
-
+    public ApAccessPoint updatePartsIndexesAndValidate(final ApAccessPoint accessPoint,
+                                                       final ApState apState,
+                                                       final List<ApPart> partList,
+                                                       final Map<Integer, List<ApItem>> itemMap,
+                                                       boolean async) {
         Integer prefPartId = accessPoint.getPreferredPartId();
-        boolean successfulGeneration = updatePartValues(apState, prefPartId, partList, itemMap, async);
+        boolean successfulGeneration = updatePartsIndexes(apState, prefPartId, partList, itemMap, async);
 
         logger.debug("Validate accessPointid={}, version={}, partListSize={}, successfulGeneration={}", accessPoint.getAccessPointId(), accessPoint.getVersion(), partList.size(), successfulGeneration);
-        return validate(accessPoint, apState, successfulGeneration);
+        ApValidationIssues apValidationIssues = validate(accessPoint, apState, successfulGeneration, false);
+        return updateValidationErrors(accessPoint, apValidationIssues, successfulGeneration);
     }
 
     /**
@@ -3069,12 +3436,12 @@ public class AccessPointService {
      * @return
      */
     private ApAccessPoint updateValidationErrors(final ApAccessPoint accessPoint,
-                                       final ApValidationErrorsVO apValidationErrorsVO,
+                                       final ApValidationIssues apValidationIssues,
                                        final boolean successfulGeneration) {
 
         StringBuilder accessPointErrors = new StringBuilder();
-        if (CollectionUtils.isNotEmpty(apValidationErrorsVO.getErrors())) {
-            for (String error : apValidationErrorsVO.getErrors()) {
+        if (CollectionUtils.isNotEmpty(apValidationIssues.getErrors())) {
+            for (String error : apValidationIssues.getErrors()) {
                 accessPointErrors.append(error).append("\n");
             }
         }
@@ -3083,10 +3450,11 @@ public class AccessPointService {
         }
 
         // Prepare map of errors
+        // partId -> error builder
         Map<Integer, StringBuilder> partErrors;
-        if (CollectionUtils.isNotEmpty(apValidationErrorsVO.getPartErrors())) {
+        if (CollectionUtils.isNotEmpty(apValidationIssues.getPartErrors())) {
             partErrors = new HashMap<>();
-            for (PartValidationErrorsVO pE : apValidationErrorsVO.getPartErrors()) {
+            for (PartValidationIssues pE : apValidationIssues.getPartErrors()) {
                 StringBuilder builder = partErrors.computeIfAbsent(pE.getId(), p -> new StringBuilder());
                 List<String> srcErrors = pE.getErrors();
                 if (CollectionUtils.isNotEmpty(srcErrors)) {
@@ -3103,6 +3471,7 @@ public class AccessPointService {
         }
 
         List<ApPart> partList = partService.findPartsByAccessPoint(accessPoint);
+        // flag if exists part error
         boolean partError = false;
         if (CollectionUtils.isNotEmpty(partList)) {
             for (ApPart part : partList) {
@@ -3123,7 +3492,14 @@ public class AccessPointService {
 
         // Validate that all part errors were processed
         if (partErrors.size() > 0) {
-            Validate.isTrue(false, "Unprocessed part errors, count: %s", partErrors.size());
+        	logger.error("Unprocessed part errors, count: {}, part ids: {}, errors: {}", partErrors.size(),
+        			partErrors.keySet(),
+        			partErrors.values());
+        	throw new BusinessException("Unprocessed part errors, count: " + partErrors.size(),
+        			BaseCode.INVALID_STATE)
+        		.set("count", partErrors.size())
+        		.set("partIds", partErrors.keySet())
+        		.set("errors", partErrors.values());
         }
 
         if (StringUtils.isNotEmpty(accessPointErrors.toString()) || partError) {
@@ -3135,11 +3511,16 @@ public class AccessPointService {
         }
 
         logger.debug("Save accessPoint id={} version={}", accessPoint.getAccessPointId(), accessPoint.getVersion());
-        return apAccessPointRepository.saveAndFlush(accessPoint);
+        return accessPointRepository.saveAndFlush(accessPoint);
     }
 
     public Map<Integer, ApIndex> findPreferredPartIndexMap(Collection<ApAccessPoint> accessPoints) {
         return indexRepository.findPreferredPartIndexByAccessPointsAndIndexType(accessPoints, DISPLAY_NAME).stream()
+                .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
+    }
+
+    public Map<Integer, ApIndex> findPreferredPartIndexMapByIds(Collection<Integer> accessPoints) {
+        return indexRepository.findPreferredPartIndexByAccessPointIdsAndIndexType(accessPoints, DISPLAY_NAME).stream()
                 .collect(Collectors.toMap(i -> i.getPart().getAccessPointId(), Function.identity()));
     }
 
@@ -3207,7 +3588,7 @@ public class AccessPointService {
                 .map(ExtSyncsQueueItem::getAccessPoint)
                 .collect(Collectors.toList());
         final Map<Integer, ApIndex> nameMap = findPreferredPartIndexMap(accessPoints);
-        final Map<Integer, ApState> stateMap = apStateRepository.findLastByAccessPoints(accessPoints).stream()
+        final Map<Integer, ApState> stateMap = stateRepository.findLastByAccessPoints(accessPoints).stream()
                 .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity()));
 
         for (ExtSyncsQueueItem extSyncsQueueItem : items) {
@@ -3256,7 +3637,7 @@ public class AccessPointService {
      */
     public List<ApAccessPoint> findAccessPointsBySinglePartValues(List<Object> criterias) {
 
-        return apAccessPointRepository.findAccessPointsBySinglePartValues(criterias);
+        return accessPointRepository.findAccessPointsBySinglePartValues(criterias);
     }
 
     /**
@@ -3337,7 +3718,7 @@ public class AccessPointService {
             logger.error("Existují {} vymazané Parts s nevymazanými Item", partsWithItem);
             throw new IllegalStateException("There are deleted Part(s) with non-deleted Item(s)");
         }
-        int itemsWithBindingItem = itemRepository.countDeletedItemsWithUndeletedBindingItem();
+        int itemsWithBindingItem = apItemRepository.countDeletedItemsWithUndeletedBindingItem();
         if (itemsWithBindingItem > 0) {
             logger.error("Existují {} vymazané Items s nevymazanými BindingItem", itemsWithBindingItem);
             throw new IllegalStateException("There are deleted Items(s) with non-deleted BindingItem(s)");
@@ -3353,11 +3734,11 @@ public class AccessPointService {
      */
     private void mergeParts(ApAccessPoint accessPoint, ApAccessPoint targetAccessPoint, ApChange change) {
         List<ApPart> partsFrom = partService.findPartsByAccessPoint(accessPoint);
-        Map<Integer, List<ApItem>> itemMapFrom = apItemService.findValidItemsByAccessPoint(accessPoint).stream()
+        Map<Integer, List<ApItem>> itemMapFrom = itemService.findValidItemsByAccessPoint(accessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
         List<ApPart> partsTo = partService.findPartsByAccessPoint(targetAccessPoint);
-        Map<Integer, List<ApItem>> itemMapTo = apItemService.findValidItemsByAccessPoint(targetAccessPoint).stream()
+        Map<Integer, List<ApItem>> itemMapTo = itemService.findValidItemsByAccessPoint(targetAccessPoint).stream()
                 .collect(Collectors.groupingBy(ApItem::getPartId));
 
         // příprava seznamu objektů ke sloučení
@@ -3416,12 +3797,12 @@ public class AccessPointService {
      */
     private void mergeParts(ApAccessPoint accessPoint, ApAccessPoint targetAccessPoint, ApChange change, ApRevState revState) {
         List<ApPart> fromParts = partService.findPartsByAccessPoint(accessPoint);
-        Map<Integer, List<ApItem>> fromItemMap = itemRepository.findValidItemsByAccessPoint(accessPoint).stream()
-                .collect(Collectors.groupingBy(ApItem::getPartId));
+        List<ApItem> srcItems = dataService.findItemsWithData(apItemRepository.findValidItemsByAccessPoint(accessPoint));
+        Map<Integer, List<ApItem>> fromItemMap = srcItems.stream().collect(Collectors.groupingBy(ApItem::getPartId));
 
         List<ApPart> toParts = partService.findPartsByAccessPoint(targetAccessPoint);
-        Map<Integer, List<ApItem>> toItemMap = itemRepository.findValidItemsByAccessPoint(targetAccessPoint).stream()
-                .collect(Collectors.groupingBy(ApItem::getPartId));
+        List<ApItem> trgItems = dataService.findItemsWithData(apItemRepository.findValidItemsByAccessPoint(targetAccessPoint));
+        Map<Integer, List<ApItem>> toItemMap = trgItems.stream().collect(Collectors.groupingBy(ApItem::getPartId));
 
         // příprava seznamu objektů ke sloučení
         List<PartWithSubParts> fromWSParts = prepareListPartWithSubParts(fromParts);
@@ -3582,7 +3963,7 @@ public class AccessPointService {
             return false;
         }
         for (ApItem itemOne : itemsOne) {
-            if (!apItemService.isApItemInList(itemOne, itemsTwo)) {
+            if (!itemService.isApItemInList(itemOne, itemsTwo)) {
                 return false;
             }
         }
@@ -3655,17 +4036,31 @@ public class AccessPointService {
                     drr.setRecord(apState.getAccessPoint());
                 }
             }
+        } else 
+        if(newData instanceof ArrDataText) {
+        	ArrDataText dt = (ArrDataText) newData;
+			if(StringUtils.isEmpty(dt.getTextValue())) {
+				logger.warn("Cannot copy empty text value, skipping, dataId: {}", oldData.getDataId());
+				return null;
+			}
+        } else 
+        if(newData instanceof ArrDataString) {
+			ArrDataString ds = (ArrDataString) newData;
+			if(StringUtils.isEmpty(ds.getStringValue())) {
+				logger.warn("Cannot copy empty string value, skipping, dataId: {}", oldData.getDataId());
+				return null;
+			}	        
         }
 
-        ApItem newItem = apItemService.createItem(partTo, newData,
+        ApItem newItem = itemService.createItem(partTo, newData,
                                                   item.getItemType(),
                                                   item.getItemSpec(),
                                                   change,
-                                                  apItemService.nextItemObjectId(),
+                                                  itemService.nextItemObjectId(),
                                                   position);
 
         dataRepository.save(newData);
-        return itemRepository.save(newItem);
+        return apItemRepository.save(newItem);
     }
 
     /**
@@ -3732,17 +4127,17 @@ public class AccessPointService {
     }
 
     public void validateEntityAndFailOnError(ApState apState) {
-        ApValidationErrorsVO validationErrors = ruleService.executeValidation(apState, false);
-        if (CollectionUtils.isEmpty(validationErrors.getErrors()) &&
-                CollectionUtils.isEmpty(validationErrors.getPartErrors())) {
+    	ApValidationIssues validationIssues = ruleService.executeValidation(apState, false);
+        if (CollectionUtils.isEmpty(validationIssues.getErrors()) &&
+                CollectionUtils.isEmpty(validationIssues.getPartErrors())) {
             return;
         }
         final StringBuilder sb = new StringBuilder();
-        if (validationErrors.getErrors() != null) {
-            validationErrors.getErrors().forEach(e -> sb.append(e).append("\n"));
+        if (validationIssues.getErrors() != null) {
+        	validationIssues.getErrors().forEach(e -> sb.append(e).append("\n"));
         }
-        if (validationErrors.getPartErrors() != null) {
-            validationErrors.getPartErrors().forEach(e -> {
+        if (validationIssues.getPartErrors() != null) {
+        	validationIssues.getPartErrors().forEach(e -> {
                 sb.append("Část ID: ").append(e.getId()).append("\n");
                 if (e.getErrors() != null) {
                     e.getErrors().forEach(e2 -> sb.append(e2).append("\n"));
@@ -3771,7 +4166,7 @@ public class AccessPointService {
 
     public AccessPointStats getStats() {
 
-        Integer validAps = this.apStateRepository.countValid();
+        Integer validAps = this.stateRepository.countValid();
 
         return new AccessPointStats() {
 
@@ -3785,6 +4180,6 @@ public class AccessPointService {
 
     @Transactional
     public List<Integer> findByState(ApStateEnum init) {
-        return apAccessPointRepository.findAccessPointIdByState(ApStateEnum.INIT);
+        return accessPointRepository.findAccessPointIdByState(ApStateEnum.INIT);
     }
 }

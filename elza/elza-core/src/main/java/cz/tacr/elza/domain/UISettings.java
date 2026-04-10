@@ -261,7 +261,12 @@ public class UISettings {
         /**
          * Nastavení pro menu
          */
-        MENU(true, null);
+        MENU(true, null),
+        
+        /**
+         * List of pinned search node filters
+         */
+        SEARCH_NODE_FILTERS(true, null);
 
         /**
          * If settings can be global or has to be defined on some entity.

@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.ResponseEntity.BodyBuilder;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,9 +19,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.common.ResponseFactory;
 import cz.tacr.elza.controller.vo.ExportParams;
-import cz.tacr.elza.controller.vo.ExportRequestState;
+import cz.tacr.elza.controller.vo.RequestProcessState;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
@@ -62,7 +62,7 @@ public class IOController implements IoApi {
     public ResponseEntity<Integer> ioExportRequest(@RequestBody ExportParams exportParams) {
         UsrUser user = userService.getLoggedUser();
 
-        // convert ExportParams to IOExportRequest
+        // convert ExportParams -> IOExportRequest
         DEExportParams deExportParams = new DEExportParams();
         if (exportParams.getExportFilterId() != null) {
             deExportParams.setExportFilterId(exportParams.getExportFilterId());
@@ -129,7 +129,7 @@ public class IOController implements IoApi {
     }
 
     @Override
-    public ResponseEntity ioGetExportStatus(@PathVariable("requestId") Integer requestId) {
+    public ResponseEntity ioGetExportStatus(@PathVariable Integer requestId) {
 
         logger.debug("Get export status: {}", requestId);
 
@@ -143,13 +143,13 @@ public class IOController implements IoApi {
         Object body = null;
         switch (result.getState()) {
         case PENDING:
-            body = ResponseFactory.createExportRequestStatus(ExportRequestState.PENDING);
+            body = ResponseFactory.createExportRequestStatus(RequestProcessState.PENDING);
             break;
         case PROCESSING:
-            body = ResponseFactory.createExportRequestStatus(ExportRequestState.PREPARING);
+            body = ResponseFactory.createExportRequestStatus(RequestProcessState.PROCESSING);
             break;
         case FINISHED:
-            body = ResponseFactory.createExportRequestStatus(ExportRequestState.FINISHED);
+            body = ResponseFactory.createExportRequestStatus(RequestProcessState.FINISHED);
             break;
         case ERROR:
             status = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -171,17 +171,17 @@ public class IOController implements IoApi {
     @Override
     public ResponseEntity<Resource> ioGetExportFile(@PathVariable Integer requestId) {
 
-        IOExportRequest result = ioExportWorker.getExportState(requestId);
-        if (result == null) {
+        IOExportRequest request = ioExportWorker.getExportState(requestId);
+        if (request == null) {
             return ResponseEntity.notFound().build();
         }
 
-        switch (result.getState()) {
+        switch (request.getState()) {
         case FINISHED:
-            Path filePath = resourcePathResolver.getExportXmlTrasnformDir().resolve(requestId + ".xml");
+            Path filePath = resourcePathResolver.getExportTrasnformDir().resolve(request.getRequestId() + request.getFileExt());
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_ENCODING, StandardCharsets.UTF_8.name());
-            headers.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE);
+            headers.add(HttpHeaders.CONTENT_TYPE, request.getMediaType());
             try {
                 long fileSize = Files.size(filePath);
                 headers.add(HttpHeaders.CONTENT_LENGTH, Long.toString(fileSize));
@@ -190,11 +190,11 @@ public class IOController implements IoApi {
             }
 
             // Content-Disposition: attachment; filename="filename.jpg"
-            String fileName = result.getDownloadFileName();
+            String fileName = request.getDownloadFileName();
             if (StringUtils.isBlank(fileName)) {
-                fileName = "elzaData.xml";
+                fileName = "elzaData"  + request.getFileExt();
             }
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
+            FileDownload.addContentDispositionAsAttachment(headers, fileName);
 
             // cache headers
             headers.add(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate");
@@ -205,7 +205,7 @@ public class IOController implements IoApi {
         case PROCESSING:
             return ResponseEntity.status(102).build();
         case ERROR:
-            return ResponseFactory.responseException(500, result.getException());
+            return ResponseFactory.responseException(500, request.getException());
         default:
             throw new IllegalStateException();
         }

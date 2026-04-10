@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +45,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSession.Receiptable;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -71,11 +72,13 @@ import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.filter.Condition;
+import cz.tacr.elza.controller.vo.filter.Filter;
 import cz.tacr.elza.controller.vo.filter.Filters;
+import cz.tacr.elza.controller.vo.filter.ValuesTypes;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeExtendVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.NodeData;
-import cz.tacr.elza.controller.vo.nodes.NodeDataParam;
+import cz.tacr.elza.controller.vo.nodes.NodeDataVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemBitVO;
@@ -84,6 +87,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
@@ -94,14 +98,14 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
-//import cz.tacr.elza.test.ApiException;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.ItemDataResult;
+import cz.tacr.elza.test.controller.vo.NodeDataParam;
 import cz.tacr.elza.test.controller.vo.NodeItem;
-import cz.tacr.elza.test.controller.vo.DataString;
 import cz.tacr.elza.test.controller.vo.DataText;
 import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.utils.CsvUtils;
+import io.restassured.response.Response;
 
 public class ArrangementControllerTest extends AbstractControllerTest {
 
@@ -119,7 +123,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
     // maximální počet položek pro načtení
     public static final int MAX_SIZE = 999;
-
+    
     @Test
     public void arrangementTest() throws IOException, InterruptedException, ExecutionException, IllegalAccessException {
 
@@ -218,7 +222,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         Fund fund = createFund("Test fulltext " + i, "TST" + 1);
 
-        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
+        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode(SRD_TITLE);
 
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
         List<ArrNodeVO> nodes = createLevels(fundVersion);
@@ -514,7 +518,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ndp.setFundVersionId(fundVersion.getId());
         ndp.setParents(true);
 
-        NodeData nodeData = getNodeData(ndp);
+        NodeDataVO nodeData = getNodeData(ndp);
         Collection<TreeNodeVO> nodeParents = nodeData.getParents();
         assertNotNull(nodeParents);
 
@@ -714,8 +718,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // vytvoření další hodnoty - vícenásobné
         helperTestService.waitForWorkers();
-        type = findDescItemTypeByCode("SRD_OTHER_ID");
-        spec = findDescItemSpecByCode("SRD_OTHERID_CJ", type);
+        type = findDescItemTypeByCode(SRD_OTHER_ID);
+        spec = findDescItemSpecByCode(SRD_OTHERID_CJ, type);
         descItem = buildDescItem(type.getCode(), spec.getCode(), "1", 1, null, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
@@ -737,7 +741,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrangementController.CopySiblingResult copySiblingResult =
                 copyOlderSiblingAttribute(fundVersion.getId(), type.getId(), nodes.get(2));
 
-        type = findDescItemTypeByCode("SRD_UNIT_DATE");
+        type = findDescItemTypeByCode(SRD_UNIT_DATE);
         descItem = buildDescItem(type.getCode(), null, "1920", 1, null, null);
         descItemResult = createDescItem(descItem, fundVersion, node, type);
         node = descItemResult.getParent();
@@ -811,8 +815,8 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // vytváření hodnoty pro dědictví
         helperTestService.waitForWorkers();
-        type = findDescItemTypeByCode("SRD_ENTITY_ROLE");
-        spec = findDescItemSpecByCode("SRD_ENTITY_ROLE_1", type);
+        type = findDescItemTypeByCode(SRD_ENTITY_ROLE);
+        spec = findDescItemSpecByCode(SRD_ENTITY_ROLE_1, type);
         descItem = buildDescItem(type.getCode(), spec.getCode(), accessPoint, null, null, null);
         descItemResult = createDescItem(descItem, fundVersion, rootNode, type);
     }
@@ -1001,114 +1005,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     }
 
     /**
-     * Vytvoření levelů v archivní pomůcce.
-     * <p>
-     * Create 4 levels under root
-     *
-     * @param fundVersion verze archivní pomůcky
-     * @return vytvořené levely
-     */
-    private List<ArrNodeVO> createLevels(final ArrFundVersionVO fundVersion) {
-
-        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
-        input.setVersionId(fundVersion.getId());
-        TreeData treeData = getFundTree(input);
-        TreeNodeVO parentNode;
-
-        // Musí existovat root node
-        assertNotNull(treeData.getNodes());
-        // Musí existovat pouze root node
-        assertTrue(treeData.getNodes().size() == 1);
-
-        TreeNodeVO rootTreeNodeVO = treeData.getNodes().iterator().next();
-        ArrNodeVO rootNode = convertTreeNode(rootTreeNodeVO);
-
-        // přidání prvního levelu pod root
-        helperTestService.waitForWorkers();
-        ArrangementController.NodeWithParent newLevel1 = addLevel(FundLevelService.AddLevelDirection.CHILD, 
-        		fundVersion, rootNode, rootNode, "Série");
-
-        // rodič nového uzlu musí být root
-        assertTrue(newLevel1.getParentNode().getId().equals(rootNode.getId()));
-        // verze root uzlu musí být povýšena
-        assertTrue(!newLevel1.getParentNode().getVersion().equals(rootNode.getVersion()));
-
-        helperTestService.waitForWorkers();
-        parentNode = newLevel1.getParentNode();
-        rootNode.setId(parentNode.getId());
-        rootNode.setVersion(parentNode.getVersion());
-
-        // přidání druhého levelu pod root
-        helperTestService.waitForWorkers();
-        ArrangementController.NodeWithParent newLevel2 = addLevel(FundLevelService.AddLevelDirection.CHILD,
-                fundVersion, rootNode, rootNode, null);
-
-        // rodič nového uzlu musí být root
-        assertTrue(newLevel2.getParentNode().getId().equals(rootNode.getId()));
-        // verze root uzlu musí být povýšena
-        assertTrue(!newLevel2.getParentNode().getVersion().equals(rootNode.getVersion()));
-
-        helperTestService.waitForWorkers();
-        parentNode = newLevel2.getParentNode();
-        rootNode.setId(parentNode.getId());
-        rootNode.setVersion(parentNode.getVersion());
-
-        // přidání třetího levelu na první pozici pod root
-        helperTestService.waitForWorkers();
-        ArrangementController.NodeWithParent newLevel3 = addLevel(FundLevelService.AddLevelDirection.BEFORE,
-                fundVersion, newLevel1.getNode(), rootNode, null);
-
-        // rodič nového uzlu musí být root
-        assertTrue(newLevel3.getParentNode().getId().equals(rootNode.getId()));
-        // verze root uzlu musí být povýšena
-        assertTrue(!newLevel3.getParentNode().getVersion().equals(rootNode.getVersion()));
-
-        helperTestService.waitForWorkers();
-        parentNode = newLevel3.getParentNode();
-        rootNode.setId(parentNode.getId());
-        rootNode.setVersion(parentNode.getVersion());
-
-        // přidání uzlu za první uzel pod root (za child3)
-        helperTestService.waitForWorkers();
-        ArrangementController.NodeWithParent newLevel4 = addLevel(FundLevelService.AddLevelDirection.AFTER,
-                fundVersion, newLevel3.getNode(), rootNode, null);
-
-        // rodič nového uzlu musí být root
-        assertTrue(newLevel4.getParentNode().getId().equals(rootNode.getId()));
-        // verze root uzlu musí být povýšena
-        assertTrue(!newLevel4.getParentNode().getVersion().equals(rootNode.getVersion()));
-
-        helperTestService.waitForWorkers();
-        parentNode = newLevel4.getParentNode();
-        rootNode.setId(parentNode.getId());
-        rootNode.setVersion(parentNode.getVersion());
-
-        input = new ArrangementController.FaTreeParam();
-        input.setVersionId(fundVersion.getId());
-        input.setNodeId(rootNode.getId());
-        treeData = getFundTree(input);
-
-        // Kontrola pořadí uzlů
-        Iterator<TreeNodeVO> nodeClientIterator = treeData.getNodes().iterator();
-        TreeNodeVO node1 = nodeClientIterator.next();
-        TreeNodeVO node2 = nodeClientIterator.next();
-        TreeNodeVO node3 = nodeClientIterator.next();
-        TreeNodeVO node4 = nodeClientIterator.next();
-        assertTrue(node1.getId().equals(newLevel3.getNode().getId()));
-        assertTrue(node2.getId().equals(newLevel4.getNode().getId()));
-        assertTrue(node3.getId().equals(newLevel1.getNode().getId()));
-        assertTrue(node4.getId().equals(newLevel2.getNode().getId()));
-
-        List<ArrNodeVO> nodes = new ArrayList<>(treeData.getNodes().size() + 1);
-        nodes.add(rootNode);
-        nodes.add(newLevel3.getNode());
-        nodes.add(newLevel4.getNode());
-        nodes.add(newLevel1.getNode());
-        nodes.add(newLevel2.getNode());
-        return nodes;
-    }
-
-    /**
      * Uzavření verze archivní pomůcky.
      *
      * @param fundVersion verze archivní pomůcky
@@ -1181,7 +1077,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         }
 
         // vytvoření hodnoty
-        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_TITLE");
+        RulDescItemTypeExtVO typeVo = findDescItemTypeByCode(SRD_TITLE);
         int index = 0;
         for (ArrNodeVO node : nodes) {
             ArrItemVO descItem = buildDescItem(typeVo.getCode(), null, index + "value" + index, null, null, null);
@@ -1189,29 +1085,37 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             index++;
         }
 
-        //nahrazení hodnoty value za hodnotu valXYZ
+        // update lucene ArrDescItem index
+        helperTestService.waitForIndexUpdate();
+
+        // nahrazení hodnoty value za hodnotu valXYZ
         List<ArrNodeVO> allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAllById(nodeIds));
         ArrangementController.ReplaceDataBody body = new ArrangementController.ReplaceDataBody();
         body.setNodes(new HashSet<>(allNodes));
         body.setSelectionType(ArrangementController.SelectionType.NODES);
-        Thread.sleep(1000);
-        helperTestService.waitForWorkers();
-        replaceDataValues(fundVersion.getId(), typeVo.getId(), "value", "valXYZ", body);
+        Response result = replaceDataValues(fundVersion.getId(), typeVo.getId(), "value", "valXYZ", body);
+        Integer resultCount = result.getBody().as(Integer.class);
 
-        //nalezení hodnot podle změněné hodnoty
-        RulItemType type = itemTypeRepository.findOneByCode("SRD_TITLE");
-        type.setDataType(dataTypeRepository.findByCode("TEXT"));  //kvůli transakci (no session)
-        List<ArrDescItem> nodesContainingText = descItemRepository.findByNodesContainingText(nodeRepository.findAllById(nodeIds),
-                type, null, "valXYZ");
+        assertTrue(resultCount == nodeIds.size());
 
-        assertTrue(nodesContainingText.size() == nodeIds.size());
-        for (ArrDescItem descItem : nodesContainingText) {
+        // update lucene ArrDescItem index
+        helperTestService.waitForIndexUpdate();
+
+        // nalezení hodnot podle změněné hodnoty
+        RulItemType type = itemTypeRepository.findOneByCode(SRD_TITLE);
+        type.setDataType(dataTypeRepository.findByCode("TEXT"));  // kvůli transakci (no session)
+        List<ArrDescItem> itemsContainingText = new TransactionTemplate(tm).execute(a -> {
+        	return descItemRepository.findByNodesContainingText(nodeRepository.findAllById(nodeIds), type, null, "valXYZ");
+		});
+
+        assertTrue(itemsContainingText.size() == nodeIds.size());
+        for (ArrDescItem descItem : itemsContainingText) {
             ArrDataText data = HibernateUtils.unproxy(descItem.getData());
             assertTrue(Pattern.compile("^(\\d+valXYZ\\d+)$").matcher(data.getTextValue()).matches());
             assertTrue(nodeIds.contains(descItem.getNodeId()));
         }
 
-        //test nahrazení všech hodnot na konkrétní hodnotu
+        // test nahrazení všech hodnot na konkrétní hodnotu
         allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAllById(nodeIds));
         body.setNodes(new HashSet<>(allNodes));
         body.setSelectionType(ArrangementController.SelectionType.NODES);
@@ -1226,7 +1130,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             }
         }
 
-        //smazání hodnot atributů
+        // smazání hodnot atributů
         helperTestService.waitForWorkers();
         allNodes = clientFactoryVO.createArrNodes(nodeRepository.findAllById(nodeIds));
         body.setNodes(new HashSet<>(allNodes));
@@ -1237,7 +1141,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(nodeDescItems.isEmpty());
     }
 
-    @Test
+	@Test
     public void filterUniqueValuesTest() throws InterruptedException {
         // vytvoření
         ArrFundVersionVO fundVersion = getOpenVersion(createdFund());
@@ -1289,7 +1193,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrNodeVO node2 = nodesSource.get(2);
 
         // vytvoření hodnoty
-        RulDescItemTypeExtVO type = findDescItemTypeByCode("SRD_TITLE");
+        RulDescItemTypeExtVO type = findDescItemTypeByCode(SRD_TITLE);
         ArrItemVO descItem = buildDescItem(type.getCode(), null, "value", null, null, null);
         ArrangementController.DescItemResult descItemResult = createDescItem(descItem, fundVersion, node1, type);
         ArrItemVO descItemCreated = descItemResult.getItem();
@@ -1442,5 +1346,64 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             assertEquals(ArrangementCode.ALREADY_INDEFINABLE, e.getErrorCode());
         }
         assertNull(descItemResult);
+    }
+
+    @Test
+    public void testFilterNodes() throws InterruptedException {
+    	// import fund from xml
+    	importXmlFile(null, 1, getResourceFile(XML_FUND));
+
+    	List<ArrFundVersion> fundVersions = fundVersionRepository.findAll();
+        assertTrue(fundVersions.size() == 1);
+
+        // prepare: fundVersion and list of ids of rulDescItem and itemTypeId by code
+        ArrFundVersion fundVersion = fundVersions.iterator().next();
+        List<RulDescItemTypeExtVO> itemTypes = getDescItemTypes();
+        Set<Integer> descItemTypeIds = new HashSet<>();
+        Integer itemTypeId = null;
+        for (RulDescItemTypeExtVO item : itemTypes) {
+        	descItemTypeIds.add(item.getId());
+        	if (item.getCode().equals("SRD_STORAGE_ID")) {
+        		itemTypeId = item.getId();
+        	}
+        }
+        assertTrue(descItemTypeIds.size() > 0);
+        assertNotNull(itemTypeId);
+
+        // filtering without filters -> get all nodes
+        filterNodes(fundVersion.getFundVersionId(), new Filters());
+        List<FilterNode> filteredNodes = getFilteredNodes(fundVersion.getFundVersionId(), 0, 10, descItemTypeIds);
+        assertTrue(filteredNodes.size() == 5);
+
+    	// create filter SELECT type
+    	Filter filter = new Filter();
+    	filter.setConditionType(Condition.NONE);
+    	filter.setValues(Arrays.asList("beta"));
+    	filter.setValuesType(ValuesTypes.SELECTED);
+
+        Filters filters = new Filters();
+    	Map<Integer, Filter> filterMap = new HashMap<>();
+    	filterMap.put(itemTypeId, filter);
+    	filters.setFilters(filterMap);
+
+        // filtering with SELECTED filter -> get 1 item (beta)
+    	// this cycle is needed to wait for full indexing
+    	int counter = 100;
+    	do {
+    		counter--;
+    		Thread.sleep(100);
+    		filterNodes(fundVersion.getFundVersionId(), filters);
+    		filteredNodes = getFilteredNodes(fundVersion.getFundVersionId(), 0, 10, descItemTypeIds);
+    	} while (filteredNodes.size() != 1 && counter > 0);
+        assertTrue(filteredNodes.size() == 1);
+
+        // change filter to UNSELECT type
+    	filter.setValues(Arrays.asList(null, "beta", "gamma"));
+    	filter.setValuesType(ValuesTypes.UNSELECTED);
+
+        // filtering with UNSELECTED filter -> get 1 item (alfa)
+        filterNodes(fundVersion.getFundVersionId(), filters);
+        filteredNodes = getFilteredNodes(fundVersion.getFundVersionId(), 0, 10, descItemTypeIds);
+        assertTrue(filteredNodes.size() == 1);
     }
 }

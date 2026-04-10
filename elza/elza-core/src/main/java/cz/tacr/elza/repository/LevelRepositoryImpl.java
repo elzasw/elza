@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -19,7 +20,6 @@ import org.hibernate.query.NativeQuery;
 import org.hibernate.type.StandardBasicTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.DatabaseType;
@@ -39,7 +39,6 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-
 
 /**
  * @author Tomáš Kubový [<a href="mailto:tomas.kubovy@marbes.cz">tomas.kubovy@marbes.cz</a>]
@@ -94,7 +93,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     public List<ArrLevel> findAllParentsByNodeId(final Integer nodeId,
                                                  @Nullable final ArrChange lockChange,
                                                  boolean orderFromRoot) {
-        Validate.notNull(nodeId);
+    	Objects.requireNonNull(nodeId);
 
         RecursiveQueryBuilder<ArrLevel> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrLevel.class);
 
@@ -102,7 +101,8 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         String currentVerCond = "l.delete_change_id IS NULL";
         String verCond = lockChange != null ? specifiedVerCond : currentVerCond;
 
-        rqBuilder.addSqlPart("WITH RECURSIVE parentPath(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, path) AS (")
+        // It is important to control that the list of fields parentPath() includes ALL fiels of ArrLevel
+        rqBuilder.addSqlPart("WITH RECURSIVE parentPath(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, list, path) AS (")
                 .addSqlPart("SELECT l.*, 1 FROM arr_level l WHERE l.node_id = :nodeId AND ")
                 .addSqlPart(verCond)
                 .addSqlPart(" UNION ALL ")
@@ -116,7 +116,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         rqBuilder.setParameter("nodeId", nodeId);
         if (lockChange != null) {
             Integer lockChangeId = lockChange.getChangeId();
-            rqBuilder.setParameter("lockChangeId", Validate.notNull(lockChangeId));
+            rqBuilder.setParameter("lockChangeId", Objects.requireNonNull(lockChangeId));
         }
 
         return rqBuilder.getQuery().getResultList();
@@ -186,9 +186,9 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     public List<ArrLevel> findLevelsByDirection(final ArrLevel level,
                                                 final ArrFundVersion version,
                                                 final RelatedNodeDirection direction) {
-        Assert.notNull(level, "Level musí být vyplněn");
-        Assert.notNull(version, "Verze AS musí být vyplněna");
-        Assert.notNull(direction, "Směr musí být vyplněn");
+        Objects.requireNonNull(level, "Level musí být vyplněn");
+        Objects.requireNonNull(version, "Verze AS musí být vyplněna");
+        Objects.requireNonNull(direction, "Směr musí být vyplněn");
 
         switch (direction) {
             case NODE:
@@ -223,11 +223,6 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
                 return result;
             }
-            case ALL_SIBLINGS: {
-                ArrayList<ArrLevel> siblings = new ArrayList<>(levelRepository
-                        .findByParentNode(level.getNodeParent(), version.getLockChange()));
-                return siblings;
-            }
             case ALL:
                 return levelRepository.findAllChildrenByNode(version.getRootNode(), version.getLockChange());
             default:
@@ -248,7 +243,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
             List<Object[]> resultList = subTree(change, leaves);
             leaves.clear();
 
-            for (Object[] row : (List<Object[]>) (List<?>) resultList) {
+            for (Object[] row : resultList) {
                 allIds.add((Integer) row[0]);
                 allIds.add((Integer) row[1]);
                 allIds.add((Integer) row[2]);
@@ -303,7 +298,6 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
                 builder.append("LEFT JOIN arr_level a3 ON a3.node_id_parent = a2.node_id AND a3.create_change_id < :closeDate AND (a3.delete_change_id IS NULL OR a3.delete_change_id > :closeDate) ");
                 builder.append("LEFT JOIN arr_level a4 ON a4.node_id_parent = a3.node_id AND a4.create_change_id < :closeDate AND (a4.delete_change_id IS NULL OR a4.delete_change_id > :closeDate) ");
 
-
                 builder.append("WHERE a1.create_change_id < :closeDate AND (a1.delete_change_id IS NULL OR a1.delete_change_id > :closeDate) AND ");
             }
 
@@ -323,7 +317,6 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         return result;
     }
 
-
     /**
      * Najde uzly podle jejich primárního id.
      *
@@ -338,7 +331,6 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
         List<LevelInfo> result = new ArrayList<>(ids.size());
 
         String hql = "SELECT l.node_id, l.position, l.node_id_parent FROM arr_level l WHERE l.level_id IN (:ids)";
-
 
         ObjectListIterator<Integer> iterator = new ObjectListIterator<>(ids);
         while (iterator.hasNext()) {
@@ -400,15 +392,14 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     public List<ArrLevel> findLevelsSubtree(final Integer nodeId, final int skip, final int max, final boolean ignoreRootNodes) {
         RecursiveQueryBuilder<ArrLevel> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrLevel.class);
 
-        rqBuilder.addSqlPart("WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, path) AS (")
-        .addSqlPart("SELECT t.*, '000001' AS path FROM arr_level t WHERE t.node_id = :nodeId AND t.delete_change_id IS NULL ")
-        .addSqlPart("UNION ALL ")
-        .addSqlPart("SELECT t.*, CONCAT(td.path, '.', RIGHT(CONCAT('000000', t.position), 6)) AS deep ")
-        .addSqlPart("FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent ")
-        .addSqlPart("WHERE t.delete_change_id IS NULL) ")
-
-        .addSqlPart("SELECT t.* FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
-        .addSqlPart("WHERE t.delete_change_id IS NULL ");
+        rqBuilder.addSqlPart("WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, list, path) AS (")
+        	.addSqlPart("SELECT t.*, '000001' AS path FROM arr_level t WHERE t.node_id = :nodeId AND t.delete_change_id IS NULL ")
+        	.addSqlPart("UNION ALL ")
+        	.addSqlPart("SELECT t.*, CONCAT(td.path, '.', RIGHT(CONCAT('000000', t.position), 6)) AS deep ")
+        	.addSqlPart("FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent ")
+        	.addSqlPart("WHERE t.delete_change_id IS NULL) ")
+        	.addSqlPart("SELECT t.* FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
+        	.addSqlPart("WHERE t.delete_change_id IS NULL ");
         if (ignoreRootNodes) {
             rqBuilder.addSqlPart("AND n.node_id <> :nodeId ");
         }
@@ -427,18 +418,46 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     }
 
     @Override
+    public List<Integer> findLevelIdsSubtree(final Integer nodeId, final int skip, final int max, final boolean ignoreRootNodes) {
+        RecursiveQueryBuilder<Integer> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(Integer.class);
+
+        rqBuilder.addSqlPart("WITH RECURSIVE treeData(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, list, path) AS (")
+        	.addSqlPart("SELECT t.*, '000001' AS path FROM arr_level t WHERE t.node_id = :nodeId AND t.delete_change_id IS NULL ")
+        	.addSqlPart("UNION ALL ")
+        	.addSqlPart("SELECT t.*, CONCAT(td.path, '.', RIGHT(CONCAT('000000', t.position), 6)) AS deep ")
+        	.addSqlPart("FROM arr_level t JOIN treeData td ON td.node_id = t.node_id_parent ")
+        	.addSqlPart("WHERE t.delete_change_id IS NULL) ")
+        	.addSqlPart("SELECT t.level_id FROM treeData t JOIN arr_node n ON n.node_id = t.node_id ")
+        	.addSqlPart("WHERE t.delete_change_id IS NULL ");
+        if (ignoreRootNodes) {
+            rqBuilder.addSqlPart("AND n.node_id <> :nodeId ");
+        }
+
+        rqBuilder.addSqlPart("ORDER BY t.path");
+
+        rqBuilder.prepareQuery(entityManager);
+        rqBuilder.setParameter("nodeId", nodeId);
+        NativeQuery<Integer> query = rqBuilder.getQuery();
+        query.setFirstResult(skip);
+        if (max > 0) {
+            query.setMaxResults(max);
+        }
+
+        return query.getResultList();
+    }
+
+    @Override
     public long readLevelTree(Integer nodeId, ArrChange change, boolean excludeRoot, TreeLevelConsumer treeLevelConsumer) {
-        Validate.notNull(nodeId);
+    	Objects.requireNonNull(nodeId);
         Validate.isTrue(change == null, "Not implemented"); // TODO: implement condition for closed versions
 
         RecursiveQueryBuilder<ArrLevel> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrLevel.class);
 
-        rqBuilder.addSqlPart("WITH RECURSIVE fundTree(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, depth) AS (")
-        .addSqlPart("SELECT l.*, 0 FROM arr_level l WHERE l.node_id = :nodeId AND l.delete_change_id IS NULL ")
-        .addSqlPart("UNION ALL ")
-        .addSqlPart("SELECT l.*, ft.depth + 1 FROM arr_level l JOIN fundTree ft ON ft.node_id=l.node_id_parent WHERE l.delete_change_id IS NULL) ")
-
-        .addSqlPart("SELECT * FROM fundTree ft ");
+        rqBuilder.addSqlPart("WITH RECURSIVE fundTree(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, list, depth) AS (")
+        	.addSqlPart("SELECT l.*, 0 FROM arr_level l WHERE l.node_id = :nodeId AND l.delete_change_id IS NULL ")
+        	.addSqlPart("UNION ALL ")
+        	.addSqlPart("SELECT l.*, ft.depth + 1 FROM arr_level l JOIN fundTree ft ON ft.node_id=l.node_id_parent WHERE l.delete_change_id IS NULL) ")
+        	.addSqlPart("SELECT * FROM fundTree ft ");
         if (excludeRoot) {
             rqBuilder.addSqlPart("WHERE node_id <> :nodeId ");
         }
@@ -449,15 +468,16 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
         NativeQuery<ArrLevel> query = rqBuilder.getQuery();
 
-        // probably false positive due to SQLQuery -> NativeQuery migration (should be fixed in HB 6.0)
+        // je třeba přidat pole pro výsledek: ArrLevel, depth
+        query.addEntity(ArrLevel.class);
         query.addScalar("depth", StandardBasicTypes.INTEGER);
         query.setCacheMode(CacheMode.IGNORE);
 
         long count = 0;
-        try (ScrollableResults scrollableResults = query.scroll(ScrollMode.FORWARD_ONLY)) {
+        try (ScrollableResults<?> scrollableResults = query.scroll(ScrollMode.FORWARD_ONLY)) {
             while (scrollableResults.next()) {
             	Object[] obj = (Object[]) scrollableResults.get();
-        		ArrLevel level = (ArrLevel) obj[0];
+            	ArrLevel level = (ArrLevel) obj[0];
         		int depth = (int) obj[1];
         		treeLevelConsumer.accept(level, depth);
         		count++;

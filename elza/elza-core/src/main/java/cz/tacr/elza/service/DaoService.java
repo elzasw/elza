@@ -20,6 +20,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.util.Strings;
+import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -262,8 +263,9 @@ public class DaoService {
         // poslat i websockety o připojení
         publishEvent(EventType.DAO_LINK_CREATE, fundVersion, dao, node);
 
-        // poslat notifikaci pouze pokud je zapnutá u digitálního uložiště
-        if (dao.getDaoPackage().getDigitalRepository().getSendNotification()) {
+        // poslat notifikaci pouze pokud je zapnutá u digitálního uložiště a nejedná se o souborové úložiště
+        ArrDigitalRepository repos = dao.getDaoPackage().getDigitalRepository();
+        if (repos.getSendNotification() && !fileSystemRepoService.isFileSystemRepository(repos) ) {
             // vytvořit požadavek pro externí systém na připojení
             final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(fundVersion, dao, createChange, Type.LINK, node);
             requestQueueService.sendRequest(request, fundVersion);
@@ -342,7 +344,8 @@ public class DaoService {
         publishEvent(EventType.DAO_LINK_DELETE, fundVersion, daoLink.getDao(), daoLink.getNode());
 
         // poslat notifikaci pouze pokud je zapnutá u digitálního uložiště
-        if (notify && daoLink.getDao().getDaoPackage().getDigitalRepository().getSendNotification()) {
+        ArrDigitalRepository repos = daoLink.getDao().getDaoPackage().getDigitalRepository();
+        if (notify && repos.getSendNotification() && !fileSystemRepoService.isFileSystemRepository(repos) ) {
         	// vytvořit požadavek pro externí systém na odpojení
             final ArrDaoLinkRequest request = requestService.createDaoLinkRequest(fundVersion, daoLink.getDao(), deleteChange, Type.UNLINK, daoLink.getNode());
             requestQueueService.sendRequest(request, fundVersion);
@@ -430,6 +433,7 @@ public class DaoService {
         ArrChange change = null;
 
         for (ArrDao arrDao : arrDaos) {
+        	logger.debug("Deleting dao {}", arrDao.getDaoId());
             // smazat arr_dao_link
             List<ArrDaoLink> arrDaoLinkList = daoLinkRepository.findByDao(arrDao);
 
@@ -440,6 +444,8 @@ public class DaoService {
                 }
             }
             daoLinkRepository.deleteAll(arrDaoLinkList);
+            
+            logger.debug("Deleting dao {} - daoLinksDeleted", arrDao.getDaoId());
 
             // smazat arr_dao_file
             final List<ArrDaoFile> daoFileList = daoServiceInternal.getFilesByDao(arrDao);
@@ -463,6 +469,8 @@ public class DaoService {
 
             // smazat dao
             daoRepository.delete(arrDao);
+            
+            logger.debug("Deleted dao: {}", arrDao.getDaoId());
         }
 
         // smazat package

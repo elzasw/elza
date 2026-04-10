@@ -5,7 +5,6 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.Validate;
 import org.hibernate.search.engine.search.predicate.SearchPredicate;
-import org.hibernate.search.engine.search.predicate.dsl.BooleanPredicateClausesStep;
 import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
 
 /**
@@ -14,7 +13,7 @@ import org.hibernate.search.engine.search.predicate.dsl.SearchPredicateFactory;
  * @author Jiří Vaněk [jiri.vanek@marbes.cz]
  * @since 14. 4. 2016
  * @update Sergey Iryupin
- * @since 22. 5. 2024
+ * @since 21. 3. 2025
  */
 public class SelectedValuesDescItemEnumCondition implements LuceneDescItemCondition {
 
@@ -37,10 +36,8 @@ public class SelectedValuesDescItemEnumCondition implements LuceneDescItemCondit
 
 	@Override
 	public SearchPredicate createSearchPredicate(final SearchPredicateFactory factory) {
-		BooleanPredicateClausesStep<?> bool = factory.bool();
-
-		values.forEach(v -> bool.should(factory.match().field(attributeName).matching(v.toLowerCase())));
-
-		return bool.toPredicate();
+		return factory
+				.terms().field(attributeName).matchingAny(values)
+				.toPredicate();
 	}
 }

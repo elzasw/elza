@@ -90,6 +90,7 @@ export class WebApiCls {
     static arrangementUrl = WebApiCls.baseUrl + '/arrangement';
     static issueUrl = WebApiCls.baseUrl + '/issue';
     static registryUrl = WebApiCls.baseUrl + '/registry';
+    static accesspointUrl = WebApiCls.v1 + '/accesspoint';
     static apUrl = WebApiCls.registryUrl;
     static daoUrl = WebApiCls.baseUrl + "/dao";
     static partyUrl = WebApiCls.baseUrl + '/party';
@@ -975,7 +976,7 @@ export class WebApiCls {
      * @return poartId,apVersion
      */
     createPart(accessPointId: number, apPartFormVO: ApPartFormVO, apVersion?: number): Promise<void> {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part', { apVersion }, apPartFormVO);
+        return AjaxUtils.ajaxPost(WebApiCls.accesspointUrl + '/' + accessPointId + '/part', { apVersion }, apPartFormVO);
     }
 
     /**
@@ -988,7 +989,7 @@ export class WebApiCls {
      * @return apVersion
      */
     updatePart(accessPointId: number, partId: number, apPartFormVO: ApPartFormVO, apVersion?: number): Promise<void> {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId, { apVersion }, apPartFormVO);
+        return AjaxUtils.ajaxPost(WebApiCls.accesspointUrl + '/' + accessPointId + '/part/' + partId, { apVersion }, apPartFormVO);
     }
 
     /**
@@ -1001,7 +1002,7 @@ export class WebApiCls {
      * @return apVersion
      */
     updateRevisionPart(accessPointId: number, partId: number, apPartFormVO: ApPartFormVO, apVersion?: number): Promise<void> {
-        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/revision/' + accessPointId + '/part/' + partId, { apVersion }, apPartFormVO);
+        return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/' + accessPointId + '/revision/part/' + partId, { apVersion }, apPartFormVO);
     }
 
     /**
@@ -1013,16 +1014,6 @@ export class WebApiCls {
      */
     deletePart(accessPointId: number, partId: number): Promise<void> {
         return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/' + accessPointId + '/part/' + partId, null, null);
-    }
-
-    /**
-     * Validace přístupového bodu
-     *
-     * @param accessPointId identifikátor přístupového bodu (PK)
-     * @return validační chyby přístupového bodu
-     */
-    validateAccessPoint(accessPointId: number, includeRevision?: boolean): Promise<ApValidationErrorsVO> {
-        return AjaxUtils.ajaxGet(`${WebApiCls.registryUrl}/${accessPointId}/validate${includeRevision ? '?includeRevision=true' : ''}`);
     }
 
     /**

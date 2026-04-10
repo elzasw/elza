@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,6 +36,9 @@ import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.SyncState;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SyncImpossibleException;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApStateRepository;
@@ -47,7 +51,6 @@ import cz.tacr.elza.service.cam.CamHelper;
 import cz.tacr.elza.service.cam.CamService;
 import cz.tacr.elza.service.cam.ProcessingContext;
 import cz.tacr.elza.service.cam.SyncEntityRequest;
-import cz.tacr.elza.service.cam.SyncImpossibleException;
 import cz.tacr.elza.ws.types.v1.ImportRequest;
 import cz.tacr.elza.ws.types.v1.RequestStatus;
 import cz.tacr.elza.ws.types.v1.RequestStatusInfo;
@@ -218,8 +221,13 @@ public class ImportServiceImpl implements ImportService {
 
             List<ApRevision> revState = revisionService.findAllRevisionByStateIn(apStates);
             if (revState.size() > 0) {
-                throw new IllegalStateException("Entity with revision, cannot synchronize. first revisionId: "
-                        + revState.get(0).getRevisionId());
+            	// prepare list of APs with revisions
+				List<Integer> revAccessPointIds = revState.stream().map(r -> r.getState().getAccessPointId()).collect(Collectors.toList());
+				// cannot synchronize            	
+				logger.error("Entities with revisions cannot be synchronized, {}", revAccessPointIds);
+                throw new BusinessException("Entity with revision, cannot synchronize. entities: "
+                        + revAccessPointIds, BaseCode.INVALID_STATE)
+                	.set("apIds", revAccessPointIds);
             }
 
             for (ApState state : apStates) {
@@ -284,10 +292,11 @@ public class ImportServiceImpl implements ImportService {
 
         if (updateEntities != null && updateEntities.size() > 0) {
             for (SyncEntityRequest syncReq : updateEntities) {
-                Validate.notNull(syncReq.getBinding());
+                Objects.requireNonNull(syncReq.getBinding());
 
                 try {
-                    camService.synchronizeAccessPoint(procCtx, syncReq.getBinding(), syncReq.getEntityXml(), false);
+                	// May be we could reflect some parameters from request to set proper strategy
+                    camService.synchronizeAccessPoint(procCtx, syncReq.getBinding(), syncReq.getEntityXml(), true);
                 } catch (SyncImpossibleException e) {
                     logger.error("Synchronized impossible, accessPointId: {}, bindingId: {}, {}", syncReq.getAccessPoint().getAccessPointId(), syncReq.getBinding().getBindingId(), e.getMessage());
                     throw new RuntimeException("Synchronizace této entity s CAM není možná. " + e.getMessage(), e);

@@ -7,10 +7,12 @@ import static cz.tacr.elza.repository.ExceptionThrow.refTemplate;
 import static cz.tacr.elza.repository.ExceptionThrow.refTemplateMapType;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 import static java.util.stream.Collectors.toSet;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -36,6 +38,14 @@ import cz.tacr.elza.controller.vo.*;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
 import jakarta.validation.Valid;
@@ -68,6 +78,24 @@ import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.ArrangementController.Depth;
 import cz.tacr.elza.controller.ArrangementController.TreeNodeFulltext;
 import cz.tacr.elza.controller.ArrangementController.VersionValidationItem;
+import cz.tacr.elza.controller.vo.AbstractFilter;
+import cz.tacr.elza.controller.vo.ArrFundFulltextResult;
+import cz.tacr.elza.controller.vo.ArrRefTemplateEditVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateMapSpecVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateMapTypeVO;
+import cz.tacr.elza.controller.vo.ArrRefTemplateVO;
+import cz.tacr.elza.controller.vo.FieldValueFilter;
+import cz.tacr.elza.controller.vo.FondsField;
+import cz.tacr.elza.controller.vo.FileType;
+import cz.tacr.elza.controller.vo.LogicalFilter;
+import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
+import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.NodePlainTextRepresentation;
+import cz.tacr.elza.controller.vo.OperationCompareType;
+import cz.tacr.elza.controller.vo.SearchParams;
+import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.controller.vo.UsedItemType;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.DataType;
@@ -78,11 +106,16 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.AuthParam.Type;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataDecimal;
+import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -94,6 +127,7 @@ import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformity;
 import cz.tacr.elza.domain.ArrNodeConformity.State;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.ArrNodeConformityError;
 import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrRefTemplate;
@@ -106,10 +140,10 @@ import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.domain.UsrPermissionView;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
-import cz.tacr.elza.domain.vo.RelatedNodeDirection;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
@@ -137,6 +171,7 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.VisiblePolicyRepository;
 import cz.tacr.elza.repository.vo.UsedItemTypeVO;
+import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.arrangement.DeleteFundAction;
 import cz.tacr.elza.service.arrangement.DeleteFundHistoryAction;
@@ -234,6 +269,9 @@ public class ArrangementService {
     @Autowired
     private InhibitedItemRepository inhibitedItemRepository;
 
+    @Autowired
+    private GroovyService groovyService;
+
     //TODO: add translation or refactor
     public static final String UNDEFINED = "výjimka";
 
@@ -328,6 +366,22 @@ public class ArrangementService {
         }
         return nodes;
     }
+
+    /**
+     * Získat citaci podle fundVersionId & nodeId
+     * 
+     * @param fundVersionId
+     * @param nodeId
+     * @return
+     */
+    public List<NodePlainTextRepresentation> getNodePlainText(@NotNull Integer fundVersionId, @NotNull Integer nodeId) {
+    	ArrFundVersion fundVersion = getFundVersion(fundVersionId);
+    	ArrFund fund = fundVersion.getFund();
+    	ParInstitution institution = fund.getInstitution();
+    	List<ArrDescItem> items = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(List.of(nodeId));
+
+    	return groovyService.getNodePlainText(fundVersion, institution, items);
+	}
 
     /**
      * Vytvoření archivního souboru.
@@ -687,7 +741,6 @@ public class ArrangementService {
         return levelRepository.saveAndFlush(level);
     }
 
-
     /**
      * Vytvoření jednoznačného identifikátoru požadavku.
      *
@@ -822,7 +875,7 @@ public class ArrangementService {
      * @param fundId id archivní pomůcky
      * @return verze
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.ADMIN, UsrPermission.Permission.FUND_ADMIN})
     public ArrFundVersion getOpenVersionByFundId(@AuthParam(type = AuthParam.Type.FUND) final Integer fundId) {
         Validate.notNull(fundId, "Nebyl vyplněn identifikátor AS");
         return fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
@@ -834,7 +887,7 @@ public class ArrangementService {
      * @param fundId id archivní pomůcky
      * @return verze
      */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.ADMIN})
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_RD, UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.ADMIN, UsrPermission.Permission.FUND_ADMIN})
     public ArrFundVersion getOpenVersionByFund(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund) {
         Validate.notNull(fund, "Nebyl vyplněn AS");
         Validate.notNull(fund.getFundId(), "Nebyl vyplněn identifikator AS");
@@ -902,9 +955,7 @@ public class ArrangementService {
             }
         }
 
-        final List<ArrDescItem> newDescItems = descriptionItemService
-                .copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version,
-                        changeContext);
+        final List<ArrDescItem> newDescItems = descriptionItemService.copyDescItemWithDataToNode(level.getNode(), siblingDescItems, change, version, changeContext);
 
         changeContext.flush();
 
@@ -945,6 +996,230 @@ public class ArrangementService {
     }
 
     /**
+     * Třída pro získání seznamu ArrFundVersion
+     */
+    public static class FindFundVersionsResult {
+    	final List<ArrFundVersion> fundVersionList;
+    	final int totalCount;
+
+    	public FindFundVersionsResult(List<ArrFundVersion> fundVersionList, int totalCount) {
+			this.fundVersionList = fundVersionList;
+			this.totalCount = totalCount;
+		}
+
+		public List<ArrFundVersion> getFundVersionList() {
+			return fundVersionList;
+		}
+
+		public int getTotalCount() {
+			return totalCount;
+		}
+    }
+
+    /**
+     * Vyhledávání v seznamu fondů podle parametrů
+     * 
+     * @param searchParams
+     * @return FindFundVersionsResult
+     */
+    public FindFundVersionsResult findFundsBySearchParams(SearchParams searchParams) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<ArrFundVersion> cq = cb.createQuery(ArrFundVersion.class);
+        Root<ArrFundVersion> fundVersionRoot = cq.from(ArrFundVersion.class);
+        Join<ArrFundVersion, ArrFund> fundJoin = fundVersionRoot.join(ArrFundVersion.FIELD_FUND);
+        fundVersionRoot.fetch(ArrFundVersion.FIELD_FUND);
+
+        List<Predicate> predicates = buildPredicateFromParams(cb, cq, fundVersionRoot, fundJoin, searchParams);
+        if (!predicates.isEmpty()) {            
+        	cq.where(predicates.toArray(new Predicate[predicates.size()]));
+        }
+
+        // case insensitive sorting
+        cq.orderBy(cb.asc(cb.lower(fundJoin.get(ArrFund.FIELD_NAME))));
+
+        // offset by default = 0
+        if (searchParams.getOffset() == null) {
+        	searchParams.setOffset(0);
+        }
+
+        TypedQuery<ArrFundVersion> query = em.createQuery(cq).setFirstResult(searchParams.getOffset());
+        if (searchParams.getSize() != null) {
+        	query.setMaxResults(searchParams.getSize());
+        }
+        List<ArrFundVersion> fundVersionList = query.getResultList();
+        int totalCount = fundVersionList.size();
+
+		// get total number of records if needed
+        if (searchParams.getOffset() > 0 || (searchParams.getSize() != null && searchParams.getSize() == totalCount)) {
+            CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+            Root<ArrFundVersion> countRoot = countQuery.from(ArrFundVersion.class);
+            Join<ArrFundVersion, ArrFund> countFundJoin = countRoot.join(ArrFundVersion.FIELD_FUND);            
+            countQuery.select(cb.count(countRoot));
+
+            List<Predicate> countPredicates = buildPredicateFromParams(cb, countQuery, countRoot, countFundJoin, searchParams);
+            if (!countPredicates.isEmpty()) {
+            	countQuery.where(countPredicates.toArray(new Predicate[countPredicates.size()]));
+            }
+
+            totalCount = em.createQuery(countQuery).getSingleResult().intValue();
+        }
+
+        return new FindFundVersionsResult(fundVersionList, totalCount);
+    }
+
+    /**
+     * Sestavení predikátu na základě parametrů
+     * 
+     * @param cb
+     * @param cq
+     * @param fundVersion 
+     * @param root
+     * @param searchParams
+     * @return seznam Predicate
+     */
+    private List<Predicate> buildPredicateFromParams(final CriteriaBuilder cb, 
+    												 final CriteriaQuery<?> cq,
+    												 final Root<ArrFundVersion> fundVersionRoot, 
+    												 final Join<ArrFundVersion, ArrFund> fund,
+    												 final SearchParams searchParams) {
+    	List<Predicate> predicates = new ArrayList<>();
+    	
+        // search only in opened versions        
+        predicates.add(cb.isNull(fundVersionRoot.get(ArrFundVersion.FIELD_LOCK_CHANGE_ID)));    	
+
+        // zpracování filtru
+    	for (AbstractFilter filter : searchParams.getFilters()) {
+    		if (filter instanceof MultimatchContainsFilter) {
+    			predicates.add(createPredicate(cb, fund, (MultimatchContainsFilter) filter));
+
+    		} else if (filter instanceof FieldValueFilter) {
+    			predicates.add(createPredicate(cb, fund, (FieldValueFilter) filter));
+
+    		} else if (filter instanceof LogicalFilter) {
+    			// TODO implement this type of filter as needed
+    			throw new BusinessException("Filter type LogicalFilter is not yet implemented", ArrangementCode.REQUEST_INVALID);
+
+    		} else {
+    			throw new BusinessException("Not specified filter in search request", ArrangementCode.REQUEST_INVALID);
+    		}
+    	}
+
+    	// filtrování podle práv uživatele
+    	UserDetail userDetail = userService.getLoggedUserDetail();
+        AuthorizationRequest arFundReadAll = AuthorizationRequest.hasPermission(Permission.ADMIN)
+                .or(Permission.FUND_ADMIN)
+                .or(Permission.FUND_ARR_ALL)
+                .or(Permission.FUND_RD_ALL);    	
+        if (!arFundReadAll.matches(userDetail)) {
+        	Integer userId = userDetail.getId();
+        	Subquery<Integer> usrPermissionSubquery = cq.subquery(Integer.class);
+        	Root<UsrPermissionView> usrPermissionRoot = usrPermissionSubquery.from(UsrPermissionView.class);
+        	usrPermissionSubquery.select(usrPermissionRoot.get(UsrPermissionView.FIELD_FUND_ID));
+        	usrPermissionSubquery.where(cb.equal(usrPermissionRoot.get(UsrPermissionView.FIELD_USER_ID), userId));
+
+        	predicates.add(cb.in(fund.get(ArrFund.FIELD_FUND_ID)).value(usrPermissionSubquery));
+        }
+
+        return predicates;
+    }
+
+    /**
+     * Vytvoření predikátu na základě třídy MultimatchContainsFilter
+     * 
+     * @param cb
+     * @param fund
+     * @param filter
+     * @return
+     */
+    private Predicate createPredicate(final CriteriaBuilder cb, final Join<ArrFundVersion, ArrFund> fund, MultimatchContainsFilter filter) {
+    	String value = filter.getValue().toLowerCase();
+    	Predicate predicate = cb.or(
+				cb.like(cb.lower(fund.get(ArrFund.FIELD_NAME)), "%" + value + "%"),
+				cb.like(cb.lower(fund.get(ArrFund.FIELD_INTERNAL_CODE)), "%" + value + "%"),
+				cb.like(cb.lower(fund.get(ArrFund.FIELD_MARK)), "%" + value + "%")
+				);
+    	try {
+    		Integer intValue = Integer.parseInt(value); 
+    		predicate = cb.or(
+    				predicate, 
+    				cb.equal(fund.get(ArrFund.FIELD_FUND_NUMBER), intValue)
+    				);
+    	} catch (NumberFormatException e) { }
+
+    	return predicate;
+    }
+
+	public static final String FIELD_INSTITUTION_CODE = "institutionCode";
+
+    /**
+     * Vytvoření predikátu na základě třídy FieldValueFilter
+     * 
+     * @param cb
+     * @param fund
+     * @param filter
+     * @return
+     */
+    private Predicate createPredicate(final CriteriaBuilder cb, Join<ArrFundVersion, ArrFund> fund, FieldValueFilter filter) {
+    	String fieldName = ((FondsField) filter.getField()).getFieldName().getValue();
+		Class<?> fieldType = String.class;				
+	    OperationCompareType op = filter.getOperation();
+	    String value = filter.getValue();
+
+		// if looking for 'institutionCode' - join ParInstitution by FIELD_INSTITUTION
+	    // TODO: fundNumber is number - cannot be compared as string 
+		Expression<String> expression;
+		if (fieldName.equals(FIELD_INSTITUTION_CODE)) {
+			Join<ArrFund, ParInstitution> joinInstitution = fund.join(ArrFund.FIELD_INSTITUTION);
+			expression = joinInstitution.get(ParInstitution.FIELD_INTERNAL_CODE);
+		} else {
+			switch (fieldName) {
+			// fondsNumber -> fundNumber
+			case "fondsNumber":
+				fieldName = ArrFund.FIELD_FUND_NUMBER;
+				fieldType = Integer.class;
+				break;
+			case ArrFund.FIELD_NAME:
+			case ArrFund.FIELD_MARK:
+			case ArrFund.FIELD_UNITDATE:
+			case ArrFund.FIELD_INTERNAL_CODE:		
+				break;
+			default:
+	    		throw new BusinessException("Invalid field name for class ArrFund", BaseCode.PROPERTY_IS_INVALID)
+    				.set("fieldName", fieldName);
+			}
+
+			expression = fund.get(fieldName);
+		}
+
+		switch (op) {
+		case EQ:
+			return cb.equal(expression, value);
+		case NEQ:
+			return cb.notEqual(expression, value);
+		case GT:
+			return cb.greaterThan(expression, value);
+		case LT:
+			return cb.lessThan(expression, value);
+		case GTE:
+			return cb.greaterThanOrEqualTo(expression, value);
+		case LTE:
+			return cb.lessThanOrEqualTo(expression, value);
+		case STARTWITH:
+			return cb.like(expression, value + "%");
+		case ENDWITH:
+			return cb.like(expression, "%" + value);
+		case CONTAINS:
+			return cb.like(expression, "%" + value + "%");
+		case IS_NULL:
+			return cb.isNull(expression);
+		case NOT_NULL:
+			return cb.isNotNull(expression);
+		default:
+			throw new IllegalArgumentException("Unsupported comparison operation: " + op);
+		}
+    }
+
+    /**
      * Vyhledání id nodů podle hodnoty atributu.
      *
      * @param searchValue
@@ -973,6 +1248,7 @@ public class ArrangementService {
         List<ArrFundFulltextResult> resultList = new ArrayList<>();
 
         if (!fundToNodeList.isEmpty()) {
+        	// prepare results and sort per fund
             List<Integer> fundIds = fundToNodeList.stream().map(i -> i.getFundId()).collect(Collectors.toList());
             List<ArrFundVersion> fundVersions = arrangementInternalService.getOpenVersionsByFundIds(fundIds);
             Map<Integer, ArrFundVersion> fundIdVersionsMap = fundVersions.stream().collect(Collectors.toMap(ArrFundVersion::getFundId, Function.identity()));
@@ -1153,6 +1429,7 @@ public class ArrangementService {
             Validate.notNull(change, "Musí být vyplněno");
         }
 
+        // Whys is this here?
         lockNode.setUuid(dbNode.getUuid());
         lockNode.setLastUpdate(change.getChangeDate().toLocalDateTime());
         lockNode.setFund(dbNode.getFund());
@@ -1319,38 +1596,6 @@ public class ArrangementService {
     }
 
     /**
-     * Vyhledání sousedních uzlů kolem určitého uzlu.
-     *
-     * @param version verze AP
-     * @param node    uzel
-     * @param around  velikost okolí
-     * @return okolní uzly (včetně původního)
-     */
-    public List<ArrNode> findSiblingsAroundOfNode(final ArrFundVersion version, final ArrNode node, final Integer around) {
-        List<ArrNode> siblings = nodeRepository.findNodesByDirection(node, version, RelatedNodeDirection.ALL_SIBLINGS);
-
-        if (around <= 0) {
-            throw new SystemException("Velikost okolí musí být minimálně 1");
-        }
-
-        //požadujeme pouze nejbližšího sourozence před a za objektem
-        int nodeIndex = siblings.indexOf(node);
-        List<ArrNode> result = new ArrayList<>();
-
-        int min = nodeIndex - around;
-        int max = nodeIndex + around;
-
-        min = min < 0 ? 0 : min;
-        max = max > siblings.size() - 1 ? siblings.size() - 1 : max;
-
-        for (int i = min; i <= max; i++) {
-            result.add(siblings.get(i));
-        }
-
-        return result;
-    }
-
-    /**
      * Vrací výsek chybných JP podle indexů.
      *
      * @param fundVersion verze archivní pomůcky
@@ -1384,17 +1629,10 @@ public class ArrangementService {
 
     public TreeNode getRootTreeNode(@NotNull ArrFundVersion fundVersion) {
 
-        Integer rootNodeId = fundVersion.getRootNode().getNodeId();
+        Integer rootNodeId = fundVersion.getRootNodeId();
         Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(fundVersion);
 
-        TreeNode rootTreeNode = null;
-        for (TreeNode treeNode : versionTreeCache.values()) {
-            if (treeNode.getId().equals(rootNodeId)) {
-                rootTreeNode = treeNode;
-                break;
-            }
-        }
-
+        TreeNode rootTreeNode = versionTreeCache.get(rootNodeId);
         if (rootTreeNode == null) {
             throw new ObjectNotFoundException("Nenalezen kořen stromu ve verzi " + fundVersion.getFundVersionId(),
                     ArrangementCode.NODE_NOT_FOUND).setId(rootNodeId);
@@ -1581,8 +1819,8 @@ public class ArrangementService {
         }
 
         // rekurzivní procházení potomků
-        if (treeNode.getChilds() != null) {
-            for (TreeNode node : treeNode.getChilds()) {
+        if (treeNode.getChildren() != null) {
+            for (TreeNode node : treeNode.getChildren()) {
                 recursiveAddNodes(nodeIds, node, nodePolicyTypes, policiesMap, nodeProblemsMap, foundNode);
             }
         }
@@ -1876,15 +2114,16 @@ public class ArrangementService {
         refTemplateMapTypeRepository.delete(refTemplateMapType);
     }
 
+    // TODO refactoring this recursive method
     public void synchronizeNodes(final Integer nodeId,
                                  final Integer nodeVersion,
                                  final Boolean childrenNodes,
                                  final ArrChange change) {
         ArrNode node = getNode(nodeId);
         if (node != null) {
-            List<ArrDescItem> nodeItems = descriptionItemService.findByNodeAndDeleteChangeIsNull(node);
-            if (CollectionUtils.isNotEmpty(nodeItems)) {
-                for (ArrDescItem descItem : nodeItems) {
+            List<ArrDescItem> descItems = descriptionItemService.findByNodeAndDeleteChangeIsNull(node);
+            if (CollectionUtils.isNotEmpty(descItems)) {
+                for (ArrDescItem descItem : descItems) {
                     synchronizeNodes(descItem, nodeId, nodeVersion, change);
                 }
             }
@@ -1900,7 +2139,10 @@ public class ArrangementService {
         }
     }
 
-    public void synchronizeNodes(final ArrDescItem descItem, final Integer nodeId, final Integer nodeVersion, ArrChange change) {
+    public void synchronizeNodes(final ArrDescItem descItem, 
+    						     final Integer nodeId, 
+    						     final Integer nodeVersion, 
+    						     ArrChange change) {
         if (descItem.getData().getDataType().getCode().equals(DataType.URI_REF.getCode())) {
             ArrDataUriRef dataUriRef = HibernateUtils.unproxy(descItem.getData());
 
@@ -1966,7 +2208,7 @@ public class ArrangementService {
                         ArrDescItem targetItem = nodeItems.get(0);
                         descriptionItemService.setSpecification(sourceItem, targetItem, refTemplateMapType, refTemplateMapSpecs);
                         descriptionItemService.updateDescriptionItemData(sourceItem, targetItem, refTemplate.getRefTemplateId());
-                        descriptionItemService.updateDescriptionItem(targetItem, fundVersion, change);
+                        descriptionItemService.updateDescriptionItem(targetItem, fundVersion, change, false);
                     }
                 }
             }
@@ -2075,7 +2317,7 @@ public class ArrangementService {
 
     }
 
-    // Future improvment: use batch updates
+    // Future improvement: use batch updates
     private void importFundBatch(ArrFundVersion fundVersion, ArrChange change, Collection<CSVRecord> recs,
                                  MultipleItemChangeContext changeContext) {
         StaticDataProvider sdp = this.staticDataService.getData();
@@ -2117,7 +2359,9 @@ public class ArrangementService {
                     String descr = dataIter.next();
                     dataUriRef.setSchema(ArrDataUriRef.createSchema(url));
                     dataUriRef.setUriRefValue(url);
-                    dataUriRef.setDescription(descr);
+                    if(StringUtils.isNotEmpty(descr)) {
+                    	dataUriRef.setDescription(descr);
+                    }
                     data = dataUriRef;
                 }
                     break;
@@ -2128,6 +2372,36 @@ public class ArrangementService {
                     data = dataStr;
                 }
                     break;
+                case TEXT: {
+                    ArrDataText dataText = new ArrDataText();
+                    String str = dataIter.next();
+                    dataText.setTextValue(str);
+                    data = dataText;
+                }
+                    break;
+                case INT: {
+                    ArrDataInteger dataInt = new ArrDataInteger();
+                    String str = dataIter.next();
+                    dataInt.setIntegerValue(Integer.parseInt(str));
+                    data = dataInt;
+                	
+                }
+                	break;
+                case DECIMAL: {
+                    ArrDataDecimal dataDecimal = new ArrDataDecimal();
+                    String str = dataIter.next();
+                    dataDecimal.setValue(new BigDecimal(str));
+                    data = dataDecimal;	                
+                }
+                	break;
+                case RECORD_REF: {
+                    ArrDataRecordRef dataRr = new ArrDataRecordRef();
+                    String str = dataIter.next();
+                    dataRr.setRecord(em.getReference(ApAccessPoint.class, Integer.parseInt(str)));
+                    data = dataRr;
+                	
+                }
+                break;
                 default:
                     throw new BusinessException("Import of data type '" + itemType.getDataType().getCode()
                             + "' for itemType: " + itemTypeCode + " is not implemented.",
@@ -2254,11 +2528,12 @@ public class ArrangementService {
     @Transactional(TxType.MANDATORY)
     @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
             			       UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR })
-	public Integer inhibitItem(final @AuthParam(type = AuthParam.Type.FUND) ArrNode node, final Integer descItemObjectId) {
-    	ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);
-
-		List<ArrLevel> levels = levelRepository.findAllParentsByNodeId(node.getNodeId(), null, true);
-		List<Integer> nodeIds = levels.stream().map(i -> i.getNodeId()).collect(Collectors.toList());
+	public Integer inhibitItem(final @AuthParam(type = AuthParam.Type.FUND) ArrNode node, final Integer descItemObjectId) {    	
+    	ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(node.getFundId());
+    	
+    	// get parent nodes
+    	List<Integer> nodeIds = levelTreeCacheService.getParentNodes(fundVersion, node.getNodeId());	
+    	ArrDescItem descItem = descItemRepository.findOpenDescItem(descItemObjectId);		
 		if (!nodeIds.contains(descItem.getNodeId())) {
             throw new SystemException("Element JP nebyl nalezen na nadřazených úrovních", BaseCode.INVALID_STATE)
                     .set("nodeId", node.getNodeId())
@@ -2277,8 +2552,7 @@ public class ArrangementService {
 		logger.debug("Syncronize nodeId: {}", node.getNodeId());
 		nodeCacheService.syncNodes(List.of(node.getNodeId()));
 		logger.debug("Syncronized nodeId: {}", node.getNodeId());
-
-		ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(node.getFundId());
+		
 		eventNotificationService.publishEvent(new EventIdsInVersion(EventType.NODES_CHANGE, fundVersion.getFundVersionId(), node.getNodeId()));
 
 		return inhibitedItem.getInhibitedItemId();

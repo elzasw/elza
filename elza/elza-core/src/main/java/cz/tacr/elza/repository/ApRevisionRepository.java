@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,5 +18,8 @@ public interface ApRevisionRepository extends JpaRepository<ApRevision, Integer>
     ApRevision findByState(@Param("state") ApState state);
 
     @Query("SELECT r FROM ap_revision r WHERE r.state IN :state AND r.deleteChange IS NULL")
-    List<ApRevision> findAllByStateIn(@Param("state") List<ApState> apStates);
+    List<ApRevision> findAllByStateIn(@Param("state") Collection<ApState> apStates);
+
+    @Query("SELECT r.revisionId FROM ap_revision r JOIN r.state s WHERE s.accessPointId IN :apIds")
+	List<Integer> findAllRevisionIdsByAccessPointIdIn(@Param("apIds") Collection<Integer> apIds);
 }

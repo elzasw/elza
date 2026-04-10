@@ -3,17 +3,13 @@ package cz.tacr.elza.groovy;
 import java.util.ArrayList;
 import java.util.List;
 
-
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 
 import jakarta.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
-import cz.tacr.elza.domain.convertor.UnitDateConvertorConsts;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
+import cz.tacr.elza.domain.converter.UnitDateConverterConsts;
 
 /**
  * Build string value for future Item
@@ -221,9 +217,9 @@ public class GroovyAppender {
         @Override
         public void buildItem(StringBuilder sb, GroovyItem item) {
             ArrDataUnitdate dataUnitdate = ArrDataUnitdate
-                    .valueOf(UnitDateConvertor.convertToString(item.getUnitdateValue()));
+                    .valueOf(UnitDateConverter.convertToString(item.getUnitdateValue()));
             long normalizedDataFrom = dataUnitdate.getNormalizedFrom()
-                    + UnitDateConvertorConsts.MAX_NEGATIVE_DATE;
+                    + UnitDateConverterConsts.MAX_NEGATIVE_DATE;
             sb.append(String.format("%019d", normalizedDataFrom));
         }
 
@@ -249,7 +245,9 @@ public class GroovyAppender {
 
         @Override
         public void build(StringBuilder sb) {
-            if (CollectionUtils.isNotEmpty(items)) {
+            if (CollectionUtils.isEmpty(items)) {
+                sb.append(String.format("%010d", 0));
+            } else {
                 StringBuilder sbi = new StringBuilder();
                 for (GroovyItem groovyItem : items) {
                     Integer viewOrder = groovyItem.getSpecOrder();
@@ -259,8 +257,6 @@ public class GroovyAppender {
                     sbi.append(String.format("%010d", viewOrder));
                 }
                 sb.append(sbi.toString());
-            } else {
-                sb.append(String.format("%010d", 0));
             }
         }
 

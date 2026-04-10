@@ -7,11 +7,14 @@ import java.util.List;
 
 import cz.tacr.elza.dataexchange.output.writer.LevelInfo;
 import cz.tacr.elza.domain.ArrDao;
+import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrItem;
 
 public class LevelInfoImpl implements LevelInfo {
 
     private final List<ArrItem> items = new ArrayList<>();
+
+    private final List<ArrInhibitedItem> inhibitedItems = new ArrayList<>(); 
 
     private final int nodeId;
 
@@ -28,6 +31,7 @@ public class LevelInfoImpl implements LevelInfo {
 
     public LevelInfoImpl(LevelInfoImpl source) {
         items.addAll(source.getItems());
+        inhibitedItems.addAll(source.getInhibitedItems());
         nodeId = source.getNodeId();
         parentNodeId = source.getParentNodeId();
         nodeUuid = source.getNodeUuid();
@@ -79,6 +83,15 @@ public class LevelInfoImpl implements LevelInfo {
     }
 
     @Override
+    public List<ArrInhibitedItem> getInhibitedItems() {
+		return Collections.unmodifiableList(inhibitedItems);
+	}
+
+    public void addInhibitedItems(Collection<ArrInhibitedItem> items) {
+        this.inhibitedItems.addAll(items);
+    }
+
+	@Override
     public Collection<ArrDao> getDaos() {
         return daos != null ? daos : Collections.emptyList();
     }
@@ -93,5 +106,4 @@ public class LevelInfoImpl implements LevelInfo {
     public void removeDao() {
         daos = null;
     }
-    
 }

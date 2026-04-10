@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<!-- Allow to debug log configuration -->
+	<!-- <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/> -->
+
+	<!-- Allow Spring properties -->
+	<springProperty scope="context" name="LOG_FILE"
+		source="elza.logFile" />
+	<springProperty scope="context" name="SIEM_LOG_FILE"
+		source="elza.siemLogFile" />
+	<!-- It is possible to append default value like (add attribute): 
+	     defaultValue="/var/log/elza/siem-audit.log" -->
+
+    <!-- ========================= -->
+    <!-- Application log appender -->
+    <!-- ========================= -->
+    <appender name="APP_FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE}</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+	<appender name="CONSOLE"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>
+				%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n
+			</pattern>
+		</encoder>
+	</appender>
+	
+    <!-- ========================= -->
+    <!-- Loggers -->
+    <!-- ========================= -->
+
+    <!-- Application logs -->
+    <root level="INFO">
+        <appender-ref ref="APP_FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+<if condition='isDefined("SIEM_LOG_FILE") &amp;&amp; !property("SIEM_LOG_FILE").isEmpty()'>
+    <then>
+    <!-- ========================= -->
+    <!-- SIEM log appender (JSON) -->
+    <!-- ========================= -->
+    <appender name="SIEM_FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${SIEM_LOG_FILE}</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${SIEM_LOG_FILE}.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>90</maxHistory>
+        </rollingPolicy>
+
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>
+                {
+                  "application": "elza",
+                  "log_type": "siem"
+                }
+            </customFields>
+        </encoder>
+    </appender>
+
+    <!-- SIEM logger -->
+    <logger name="siem.audit"
+            level="INFO"
+            additivity="false">
+        <appender-ref ref="SIEM_FILE"/>
+    </logger>
+    </then>
+</if>
+</configuration>

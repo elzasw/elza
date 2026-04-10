@@ -16,10 +16,7 @@ import cz.tacr.elza.repository.DataCoordinatesRepository;
 import org.geotools.kml.v22.KMLConfiguration;
 import org.geotools.xsd.PullParser;
 import org.opengis.feature.GeometryAttribute;
-import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.type.GeometryType;
-import org.opengis.geometry.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +36,7 @@ import javax.xml.stream.XMLStreamException;
 @Service
 public class DataService {
 	
-	private static Logger log = LoggerFactory.getLogger(DataService.class);
+	private final static Logger log = LoggerFactory.getLogger(DataService.class);
 
     @Autowired
     private StaticDataService staticDataService;
@@ -50,46 +47,29 @@ public class DataService {
     @Autowired
     DataCoordinatesRepository dataCoordinatesRepository;
 
-    public <ENTITY extends Item> List<ENTITY> findItemsWithData(List<ENTITY> items) {
-    	StaticDataProvider sdp = staticDataService.getData();
-    	Map<DataType, List<ENTITY>> entityMap = new HashMap<>();
-    	for (ENTITY item : items) {
-    		ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
-    		DataType dataType = itemType.getDataType();
-    		List<ENTITY> entities = entityMap.computeIfAbsent(dataType, k -> new ArrayList<>());
-    		entities.add(item);
-    		if (entities.size() == hibernateConfiguration.getBatchSize()) {
-    			findAllDataByDataResults(dataType, entities);
-    			entityMap.remove(dataType);
-    		}
-    	}
-    	entityMap.keySet().forEach(d -> findAllDataByDataResults(d, entityMap.get(d)));
-    	return items;
-    }
-
     public <ENTITY extends Item> ENTITY findItemWithData(ENTITY item) {
     	List<ENTITY> items = findItemsWithData(List.of(item));
     	return items.get(0);
     }
 
     private <ENTITY extends Item> void findAllDataByDataResults(DataType dataType, List<ENTITY> items) {
-    	List<Integer> dataIds = items.stream().filter(i -> i.getDataId() != null).map(i -> i.getDataId()).toList();
-    	List<? extends ArrData> result = dataType.getRepository().findAllById(dataIds);        
+    	Set<Integer> uniqueDataIds = items.stream().filter(i -> i.getDataId() != null).map(i -> i.getDataId()).collect(Collectors.toSet());
+    	List<? extends ArrData> result = dataType.getRepository().findAllById(uniqueDataIds);        
 
         // kontrola neporušenosti dat
-        if (result.size() != dataIds.size()) {
+        if (result.size() != uniqueDataIds.size()) {
         	// Loaded IDS
         	Set<Integer> dbDataIds = result.stream().map(i -> i.getDataId()).collect(Collectors.toSet());
-        	List<Integer> missingIds = dataIds.stream().filter(i -> !dbDataIds.contains(i)).collect(Collectors.toList());
+        	List<Integer> missingIds = uniqueDataIds.stream().filter(i -> !dbDataIds.contains(i)).collect(Collectors.toList());
         	
         	log.error("Failed to load items (dataType: {}), dataIds({}): {}, missing items in DB({}): {}",
         			dataType,
-        			dataIds.size(), dataIds, 
+        			uniqueDataIds.size(), uniqueDataIds, 
         			missingIds.size(), missingIds);;
         	throw new SystemException("Failed to load items.", BaseCode.DB_INTEGRITY_PROBLEM)
         		.set("dataType", dataType)
-        		.set("dataIds.size", dataIds.size())
-        		.set("dataIds", dataIds)
+        		.set("dataIds.size", uniqueDataIds.size())
+        		.set("dataIds", uniqueDataIds)
         		.set("missingIds.size", missingIds.size())
         		.set("missingIds", missingIds);
         }
@@ -159,4 +139,21 @@ public class DataService {
     public byte[] convertGeometryToWKB(org.locationtech.jts.geom.Geometry geometry) {
         return dataCoordinatesRepository.convertGeometryToWKB(geometry);
     }
+
+	public <ENTITY extends Item> List<ENTITY> findItemsWithData(List<ENTITY> items) {
+		StaticDataProvider sdp = staticDataService.getData();
+		Map<DataType, List<ENTITY>> entityMap = new HashMap<>();
+		for (ENTITY item : items) {
+			ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
+			DataType dataType = itemType.getDataType();
+			List<ENTITY> entities = entityMap.computeIfAbsent(dataType, k -> new ArrayList<>());
+			entities.add(item);
+			if (entities.size() == hibernateConfiguration.getBatchSize()) {
+				findAllDataByDataResults(dataType, entities);
+				entityMap.remove(dataType);
+			}
+		}
+		entityMap.keySet().forEach(d -> findAllDataByDataResults(d, entityMap.get(d)));
+		return items;
+	}
 }

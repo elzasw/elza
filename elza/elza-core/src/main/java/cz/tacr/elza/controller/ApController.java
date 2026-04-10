@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller;
 
-import static cz.tacr.elza.repository.ExceptionThrow.ap;
 import static cz.tacr.elza.repository.ExceptionThrow.scope;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 
@@ -46,8 +45,29 @@ import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.factory.SearchFilterFactory;
+import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
+import cz.tacr.elza.controller.vo.ApAttributesInfoVO;
+import cz.tacr.elza.controller.vo.ApBindingVO;
+import cz.tacr.elza.controller.vo.ApCreateTypeVO;
+import cz.tacr.elza.controller.vo.ApEidTypeVO;
+import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
+import cz.tacr.elza.controller.vo.ApStateHistoryVO;
+import cz.tacr.elza.controller.vo.ApTypeVO;
+import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
+import cz.tacr.elza.controller.vo.ArchiveEntityVO;
+import cz.tacr.elza.controller.vo.ExtSyncsQueueResultListVO;
+import cz.tacr.elza.controller.vo.FileType;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
+import cz.tacr.elza.controller.vo.LanguageVO;
+import cz.tacr.elza.controller.vo.MapLayerVO;
+import cz.tacr.elza.controller.vo.RequiredType;
+import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.SyncProgressVO;
+import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.ap.ApViewSettings;
-import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.SearchType;
@@ -60,8 +80,6 @@ import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApExternalIdType;
 import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.domain.ApRevPart;
 import cz.tacr.elza.domain.ApRevState;
 import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
@@ -83,6 +101,7 @@ import cz.tacr.elza.drools.model.ModelAvailable;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -98,8 +117,6 @@ import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.MultipleApChangeContext;
-import cz.tacr.elza.service.PartService;
-import cz.tacr.elza.service.RevisionPartService;
 import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
@@ -107,7 +124,6 @@ import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cam.CamService;
 import cz.tacr.elza.service.cam.ProcessingContext;
-import cz.tacr.elza.service.cam.SyncImpossibleException;
 import cz.tacr.elza.service.layers.LayersConfig;
 
 /**
@@ -147,9 +163,6 @@ public class ApController {
     private StaticDataService staticDataService;
 
     @Autowired
-    private PartService partService;
-
-    @Autowired
     private SearchFilterFactory searchFilterFactory;
 
     @Autowired
@@ -172,9 +185,6 @@ public class ApController {
 
     @Autowired
     private RevisionService revisionService;
-
-    @Autowired
-    private RevisionPartService revisionPartService;
 
     @Autowired
     private LayersConfig layersConfig;
@@ -603,8 +613,7 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/scopes/{scopeId}", method = RequestMethod.DELETE)
     public void deleteScope(@PathVariable final Integer scopeId) {
-        ApScope scope = scopeRepository.findById(scopeId)
-                .orElseThrow(scope(scopeId));
+        ApScope scope = scopeRepository.findById(scopeId).orElseThrow(scope(scopeId));
         accessPointService.deleteScope(scope);
     }
 
@@ -663,7 +672,7 @@ public class ApController {
         MultipleApChangeContext mcc = new MultipleApChangeContext();
 
         try {
-            accessPointService.replace(replacedState, replacementState, extSystem, mcc);
+            accessPointService.replace(replacedState, replacementState, extSystem, mcc, false);
         } catch (SyncImpossibleException e) {
             throw new BusinessException("Failed to replace access point", e,
                     BaseCode.INVALID_STATE)
@@ -734,184 +743,19 @@ public class ApController {
                     logger.error("Missing entity in AP Cache, accessPointId: {}", record.getData());
                     continue;
                 }
+                // entity, jejichž ID je v seznamu, by neměly být ve výsledku
+                if (filter.getExcludeAps() != null) {
+                	Integer recordId = record.getAccessPointId();
+                	if (filter.getExcludeAps().contains(recordId)) {
+                		continue;
+                	}
+                }
                 ArchiveEntityVO ae = ArchiveEntityVO.valueOf(entity);
                 data.add(ae);
             }
         }
         resultList.setData(data);
         return resultList;
-    }
-
-    /**
-     * Založení nové části přístupového bodu.
-     *
-     * @param accessPointId identifikátor přístupového bodu (PK)
-     * @param apPartFormVO data pro vytvoření části
-     * @param apVersion?
-     *
-     * @return partId, apVersion
-     */
-    @Transactional
-    @RequestMapping(value = "{accessPointId}/part", method = RequestMethod.POST)
-    public CreatedPartVO createPart(@PathVariable final Integer accessPointId,
-                              @RequestBody final ApPartFormVO apPartFormVO,
-                              @RequestParam(required = false) Integer apVersion) {
-
-        ApAccessPoint apAccessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
-        ApState state = accessPointService.getStateInternal(apAccessPoint);
-        ApRevState revState = revisionService.findRevStateByState(state);
-
-        if (revState != null) {
-            // Permission check is part of revisionService
-            ApRevPart revPart = revisionService.createPart(state, revState, apPartFormVO);
-            return new CreatedPartVO(revPart.getPartId(), apAccessPoint.getVersion());
-        } else {
-            accessPointService.checkPermissionForEdit(state);
-
-            ApPart apPart = partService.createPart(apAccessPoint, apPartFormVO);
-            accessPointService.generateSync(state, apPart);
-            accessPointCacheService.createApCachedAccessPoint(accessPointId);
-
-            return new CreatedPartVO(apPart.getPartId(), apAccessPoint.getVersion());
-        }
-    }
-
-    /**
-     * Úprava části přístupového bodu.
-     *
-     * V případě revize:
-     *
-     * <ul>
-     * <li>1. Zalozeni noveho itemu
-     * id = null
-     * objectId = null
-     * origObjectId = null
-     * <li>2. Zmena itemu
-     * id = itemId (z puvodniho part)
-     * objectId = objectId (z puvodniho part)
-     * origObjectId = null
-     * <li>3. Vymazani itemu
-     * item neprijde
-     * </ul>
-     *
-     * @param accessPointId identifikátor přístupového bodu (PK)
-     * @param partId        identifikátor upravované části
-     * @param apPartFormVO  data pro úpravu části
-     * @param apVersion?
-     *
-     * @return apVersion
-     */
-    @Transactional
-    @RequestMapping(value = "{accessPointId}/part/{partId}", method = RequestMethod.POST)
-    public Integer updatePart(@PathVariable final Integer accessPointId,
-                              @PathVariable final Integer partId,
-                              @RequestBody final ApPartFormVO apPartFormVO,
-                              @RequestParam(required = false) Integer apVersion) {
-
-        ApAccessPoint apAccessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
-        ApState state = accessPointService.getStateInternal(apAccessPoint);
-        ApPart apPart = partService.getPart(partId);
-        ApRevision revision = revisionService.findRevisionByState(state);
-        if (revision != null) {
-            revisionService.updatePart(state, revision, apPart, apPartFormVO);
-        } else {
-            if (accessPointService.updatePart(apAccessPoint, state, apPart, apPartFormVO)) {
-                accessPointCacheService.createApCachedAccessPoint(accessPointId);
-            }
-        }
-        return apAccessPoint.getVersion();
-    }
-
-    /**
-     * Úprava části přístupového bodu.
-     *
-     * @param id
-     *            identifikátor přístupového bodu (PK)
-     * @param revPartId
-     *            identifikátor upravované části
-     * @param apPartFormVO
-     *            data pro úpravu části
-     * @param apVersion?
-     *
-     * @return apVersion
-     */
-    @Transactional
-    @RequestMapping(value = "/revision/{id}/part/{revPartId}", method = RequestMethod.POST)
-    public Integer updateRevisionPart(@PathVariable final Integer id,
-                                      @PathVariable final Integer revPartId,
-                                      @RequestBody final ApPartFormVO apPartFormVO,
-                                      @RequestParam(required = false) Integer apVersion) {
-
-        ApState state = accessPointService.getStateInternal(id);
-        ApAccessPoint accessPoint = accessPointService.lockAccessPoint(state.getAccessPointId(), apVersion);
-        ApRevision revision = revisionService.findRevisionByState(state);
-        ApRevPart revPart = revisionPartService.findById(revPartId);
-        revisionService.updatePart(state, revision, revPart, apPartFormVO);
-
-        return accessPoint.getVersion();
-    }
-
-    /**
-     * Úprava části přístupového bodu.
-     *
-     * @param id identifikátor přístupového bodu (PK)
-     * @param state stav do kterého se má entita po merge uvést
-     */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/revision/{id}/merge", method = RequestMethod.POST)
-    public void mergeRevision(@PathVariable final Integer id,
-                              @RequestParam(required = false) @Nullable final ApState.StateApproval state) {
-        ApState apState = accessPointService.getStateInternal(id);
-        revisionService.mergeRevision(apState, state, null);
-    }
-
-    /**
-     * Smazání části přístupového bodu.
-     *
-     * @param accessPointId
-     *            identifikátor přístupového bodu (PK)
-     * @param partId
-     *            identifikátor mazané části
-     */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "{accessPointId}/part/{partId}", method = RequestMethod.DELETE)
-    public void deletePart(@PathVariable final Integer accessPointId,
-                           @PathVariable final Integer partId) {
-        ApAccessPoint apAccessPoint = accessPointRepository.findById(accessPointId)
-                .orElseThrow(ap(accessPointId));
-        ApState state = accessPointService.getStateInternal(apAccessPoint);
-
-        ApRevision revision = revisionService.findRevisionByState(state);
-        if (revision != null) {
-            revisionService.deletePart(state, revision, partId);
-        } else {
-            accessPointService.checkPermissionForEdit(state);
-            partService.deletePart(apAccessPoint, partId);
-            accessPointService.updateAndValidate(accessPointId);
-            accessPointCacheService.createApCachedAccessPoint(accessPointId);
-        }
-    }
-
-    /**
-     * Validace přístupového bodu
-     *
-     * @param accessPointId identifikátor přístupového bodu (PK)
-     * @return validační chyby přístupového bodu
-     */
-    @Transactional
-    @RequestMapping(value = "{accessPointId}/validate", method = RequestMethod.GET)
-    public ApValidationErrorsVO validateAccessPoint(@PathVariable final Integer accessPointId, @RequestParam(defaultValue = "false") Boolean includeRevision) {
-        ApState apState = accessPointService.getApState(accessPointId);
-
-        if (includeRevision) {
-            ApRevision revision = revisionService.findRevisionByState(apState);
-            if (revision != null) {
-                return ruleService.executeValidation(apState, true);
-            }
-        }
-        return apFactory.createValidationVO(apState.getAccessPoint());
     }
 
     /**
@@ -923,34 +767,34 @@ public class ApController {
     @Transactional
     @RequestMapping(value = "/available/items", method = RequestMethod.POST)
     public ApAttributesInfoVO getAvailableItems(@RequestBody final ApAccessPointCreateVO apAccessPointCreateVO) {
-        if (false) {
-            boolean hasHlavniCast = false;
-            for (ApItemVO item : apAccessPointCreateVO.getPartForm().getItems()) {
-                if (item.getTypeId() == 11) {
-                    hasHlavniCast = true;
-                    break;
-                }
-            }
-
-            final boolean hasHlavniCast2 = hasHlavniCast;
-            List<ApCreateTypeVO> list = staticDataService.getData().getItemTypes().stream()
-                    .map(x -> {
-                        ApCreateTypeVO vo = new ApCreateTypeVO();
-                        vo.setItemTypeId(x.getItemTypeId());
-                        vo.setRequiredType(RequiredType.POSSIBLE);
-                        vo.setRepeatable(false);
-
-                        if (hasHlavniCast2 && x.getItemTypeId() < 10) {
-                            vo.setRequiredType(RequiredType.REQUIRED);
-                        }
-                        return vo;
-                    })
-                    .collect(Collectors.toList());
-            ApAttributesInfoVO aeAttributesInfoVO = new ApAttributesInfoVO();
-            aeAttributesInfoVO.setAttributes(list);
-            aeAttributesInfoVO.setErrors(Collections.emptyList());
-            return aeAttributesInfoVO;
-        }
+//        if (false) {
+//            boolean hasHlavniCast = false;
+//            for (ApItemVO item : apAccessPointCreateVO.getPartForm().getItems()) {
+//                if (item.getTypeId() == 11) {
+//                    hasHlavniCast = true;
+//                    break;
+//                }
+//            }
+//
+//            final boolean hasHlavniCast2 = hasHlavniCast;
+//            List<ApCreateTypeVO> list = staticDataService.getData().getItemTypes().stream()
+//                    .map(x -> {
+//                        ApCreateTypeVO vo = new ApCreateTypeVO();
+//                        vo.setItemTypeId(x.getItemTypeId());
+//                        vo.setRequiredType(RequiredType.POSSIBLE);
+//                        vo.setRepeatable(false);
+//
+//                        if (hasHlavniCast2 && x.getItemTypeId() < 10) {
+//                            vo.setRequiredType(RequiredType.REQUIRED);
+//                        }
+//                        return vo;
+//                    })
+//                    .collect(Collectors.toList());
+//            ApAttributesInfoVO aeAttributesInfoVO = new ApAttributesInfoVO();
+//            aeAttributesInfoVO.setAttributes(list);
+//            aeAttributesInfoVO.setErrors(Collections.emptyList());
+//            return aeAttributesInfoVO;
+//        }
 
         ModelAvailable modelAvailable = ruleService.executeAvailable(apAccessPointCreateVO);
         // Transform to result

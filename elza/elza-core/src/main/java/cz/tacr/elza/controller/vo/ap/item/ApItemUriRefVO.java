@@ -14,6 +14,8 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import jakarta.persistence.EntityManager;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class ApItemUriRefVO extends ApItemVO {
 
     /**
@@ -64,7 +66,10 @@ public class ApItemUriRefVO extends ApItemVO {
        }
        data.setSchema(schema);
        data.setUriRefValue(value.trim());
-       data.setDescription(description == null? null : description.trim());
+       String descr = description == null? null : description.trim();
+       if(StringUtils.isNotBlank(descr)) {
+    	   data.setDescription(descr);
+       }
 
        if(node != null) {
            if(!Objects.equals(node.getId(), nodeId)) {

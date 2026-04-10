@@ -15,4 +15,8 @@
         <rule-type>ATTRIBUTE_TYPES</rule-type>
         <priority>100</priority>
     </arrangement-rule>
+    <arrangement-rule filename="Citace archiválie dle ZP.groovy">
+        <rule-type>PLAIN_TEXT_GENERATOR</rule-type>
+        <priority>100</priority>
+    </arrangement-rule>
 </arrangement-rules>

@@ -1,0 +1,285 @@
+package cz.tacr.elza.bulkaction;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+import org.apache.commons.lang3.Validate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.exception.AbstractException;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.BulkActionCode;
+import cz.tacr.elza.repository.DataStructureRefRepository;
+import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.LevelRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.service.ArrangementInternalService;
+import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.arrangement.MultipleItemChangeContext;
+
+/**
+ * Abstraktní třída pro tvorbu hromadných akcí v v jedné transakci.
+ */
+public abstract class BulkActionTransactional implements BulkAction {
+
+    @Autowired
+    protected ArrangementInternalService arrInternalService;
+
+    @Autowired
+    protected LevelRepository levelRepository;
+
+    @Autowired
+    protected NodeRepository nodeRepository;
+
+    @Autowired
+    protected DescriptionItemService descriptionItemService;
+
+    @Autowired
+    protected DescItemRepository descItemRepository;
+
+    @Autowired
+    protected DataStructureRefRepository structureRefRepository;
+    
+    @Autowired
+    protected ApplicationContext appCtx;
+
+	@Autowired
+	protected StaticDataService staticDataService;
+
+    @Autowired
+    protected PlatformTransactionManager tm;
+
+    /**
+	 * Static data provider is set in init method
+	 */
+	protected StaticDataProvider staticDataProvider;
+
+	/**
+	 * Stav hromadné akce
+	 */
+	protected ArrBulkActionRun bulkActionRun;
+
+    /**
+     * Optional context for changing multiple items at once
+     *
+     * This can speed up processing of operation.
+     */
+    protected MultipleItemChangeContext multipleItemChangeContext = null;
+
+    /**
+     * Return or create multipleChangeContext
+     *
+     * @return
+     */
+    public MultipleItemChangeContext getMultipleItemChangeContext() {
+        if (multipleItemChangeContext == null) {
+            multipleItemChangeContext = descriptionItemService.createChangeContext(bulkActionRun.getFundVersionId());
+        }
+        return multipleItemChangeContext;
+    }
+
+    /**
+     * Změna
+     */
+    public ArrChange getChange() {
+		return bulkActionRun.getChange();
+	}
+
+    public Integer getFondsVersionId() {
+        return bulkActionRun.getFundVersionId();
+    }
+
+    public StaticDataProvider getStaticDataProvider() {
+        return staticDataProvider;
+    }
+
+	/**
+	 * Flag of the interrupted action.
+	 */
+	protected boolean interrupt = false;
+
+	/**
+	 * Active fonds version
+	 * 
+	 * Valid only in execute method
+	 */
+	private ArrFundVersion fondsVersion;
+
+	@Override
+	public void terminate() {
+		interrupt = true;
+	}
+
+	@Override
+	public void execute(ActionRunContext runContext) {
+
+        new TransactionTemplate(tm).executeWithoutResult(status -> {
+			// Initialize bulk action
+			init(runContext);
+	
+			// Run action
+			run(runContext);
+			
+			cleanup(runContext);
+        });
+	}
+
+	protected void cleanup(ActionRunContext runContext) {
+		this.fondsVersion = null;
+	}
+
+	protected abstract void run(ActionRunContext runContext);
+
+	/**
+	 * Init method, this method prepare ruleSystem and other fields.
+	 *
+	 * Method can be specialized in each implementation.
+	 */
+	protected void init(ActionRunContext runContext) {
+		this.bulkActionRun = runContext.getBulkActionRun();
+
+		this.fondsVersion = arrInternalService.getFundVersionById(runContext.getFundVersionId());
+		checkVersion(fondsVersion);
+
+		staticDataProvider = staticDataService.getData();
+	}
+
+	public ArrFundVersion getFondsVersion() {
+		Objects.requireNonNull(fondsVersion);
+		return fondsVersion;
+	}	
+
+    /**
+     * Prepare exception for incorrect configuration
+     *
+     * @param message
+     * @return
+     */
+    protected AbstractException createConfigException(String message) {
+        return new SystemException(message, BulkActionCode.INCORRECT_CONFIG)
+                .set("name", this.getName());
+    }
+
+    /**
+     * Uložení nového atributu.
+     *
+     * @param version fonds version
+     * @param descItem ukládaný atribut
+     * @return finální atribut
+     */
+    public ArrDescItem saveNewDescItem(final ArrDescItem descItem) {
+        ArrDescItem result;
+    	Validate.isTrue(descItem.getDescItemObjectId() == null);
+        if (multipleItemChangeContext == null) {            
+        	result = descriptionItemService.createDescriptionItem(descItem, descItem.getNode(), getFondsVersion(), getChange());
+        } else {
+        	result = descriptionItemService.createDescriptionItemInBatch(descItem, descItem.getNode(), getFondsVersion(), getChange(), multipleItemChangeContext);
+            multipleItemChangeContext.flushIfNeeded();
+        }
+        return result;
+    }
+
+    /**
+     * Uložení existující atributu.
+     * 
+     * @param descItem
+     * @param arrData
+     * @return finální atribut
+     */
+    public ArrDescItem updateDescItem(final ArrDescItem descItem, final ArrData arrData, boolean forceUpdate) {
+        ArrDescItem result;
+    	Validate.isTrue(descItem.getDescItemObjectId() != null);
+        if (multipleItemChangeContext == null) {
+        	//result = descriptionItemService.updateDescriptionItem(descItem, version, getChange(), false);
+        	throw new SystemException("The functionality is not implemented.");
+        } else {
+        	result = descriptionItemService.updateValueAsNewVersion(getFondsVersion(), getChange(), descItem, multipleItemChangeContext, forceUpdate); 
+            multipleItemChangeContext.flushIfNeeded();
+        }
+        return result;
+    }
+
+    /**
+     * Vyhledá potomky uzlu.
+     *
+     * @param level rodičovský uzel
+     * @return nalezený potomci
+     */
+    public List<ArrLevel> getChildren(final ArrLevel level) {
+        return levelRepository.findByParentNodeAndDeleteChangeIsNullOrderByPositionAsc(level.getNode());
+    }
+
+    /**
+     * Kontrola verze.
+     *
+     * @param version verze archivní pomůcky
+     */
+    protected void checkVersion(ArrFundVersion version) {
+    	Objects.requireNonNull(version);
+        if (version.getLockChange() != null) {
+            throw new BusinessException("Nelze aplikovat na uzavřenou verzi archivní pomůcky", ArrangementCode.VERSION_ALREADY_CLOSED);
+        }
+    }
+
+    /**
+     * Načtení požadovaného atributu.
+     *
+     * @param node uzel
+     * @return nalezený atribut
+     */
+    public ArrDescItem loadSingleDescItem(final ArrNode node, RulItemType descItemType) {
+        List<ArrDescItem> descItems = descriptionItemService.findByNodeAndDeleteChangeIsNullAndItemTypeId(node, descItemType.getItemTypeId());
+        if (descItems.size() == 0) {
+            return null;
+        }
+        if (descItems.size() > 1) {
+            throw new SystemException(
+                    descItemType.getCode() + " nemuže být více než jeden (" + descItems.size() + ")",
+                    BaseCode.DB_INTEGRITY_PROBLEM)
+                            .set("nodeId", node.getNodeId());
+        }
+        return descItems.get(0);
+    }
+
+    /**
+     * Smazání prvků.
+     * 
+     * @param items
+     * @param moveAfter
+     */
+    public void deleteDescItems(List<ArrDescItem> items, final boolean moveAfter) {
+        if (multipleItemChangeContext == null) {
+            descriptionItemService.deleteDescriptionItems(items, getFondsVersion(), getChange(), moveAfter, false);
+        } else {
+            descriptionItemService.deleteDescriptionItems(items, getFondsVersion(), getChange(), moveAfter, false, multipleItemChangeContext);
+            multipleItemChangeContext.flushIfNeeded();
+        }
+    }
+
+    /**
+     * Smazání prvku.
+     * 
+     * @param oldDescItem
+     */
+    public void deleteDescItem(ArrDescItem oldDescItem) {
+        List<ArrDescItem> items = Collections.singletonList(oldDescItem);
+        deleteDescItems(items, true);
+    }
+}

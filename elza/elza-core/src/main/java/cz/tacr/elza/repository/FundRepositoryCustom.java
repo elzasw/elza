@@ -4,7 +4,6 @@ import java.util.List;
 
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.vo.ArrFundOpenVersion;
 
 
@@ -29,7 +28,6 @@ public interface FundRepositoryCustom {
 	 * @return archivní fond s otevřenou verzí
 	 */
 	List<ArrFundOpenVersion> findByFulltext(String fulltext, int max, final Integer userId);
-
 
     /**
 	 * Najde počet všech archivních fondů podle fulltextu.
@@ -56,6 +54,7 @@ public interface FundRepositoryCustom {
 
 	FilteredResult<ArrFund> findFunds(String search, int firstResult, int maxResults);
 
+	@Deprecated
 	FilteredResult<ArrFund> findFunds(String search, Integer institutionId, int firstResult, int maxResults);
 
 	/**
@@ -71,8 +70,7 @@ public interface FundRepositoryCustom {
 	 *            identifikátor uživatele, podle kterého filtrujeme
 	 * @return výsledek
 	 */
-	FilteredResult<ArrFund> findFundsWithPermissions(String search, int firstResult, int maxResults,
-	        final int userId);
+	FilteredResult<ArrFund> findFundsWithPermissions(String search, int firstResult, int maxResults, final int userId);
 
     /**
      * Vyhledá AS na které jsou vázaná nějaká oprávnění.
@@ -87,8 +85,8 @@ public interface FundRepositoryCustom {
      *            identifikátor uživatele, podle kterého filtrujeme
      * @return výsledek
      */
-    FilteredResult<ArrFund> findFundsWithPermissions(String search, Integer institutionId, int firstResult, int maxResults,
-                                                     final int userId);
+	@Deprecated
+    FilteredResult<ArrFund> findFundsWithPermissions(String search, Integer institutionId, int firstResult, int maxResults, final int userId);
 
 	List<ArrFund> findFundsByInstitutionId(Integer institutionId);
 }

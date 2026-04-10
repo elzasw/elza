@@ -12,6 +12,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,6 +20,12 @@ import java.util.Optional;
 import com.nimbusds.jose.util.JSONObjectUtils;
 import com.nimbusds.jose.util.Resource;
 import com.nimbusds.jose.util.ResourceRetriever;
+
+import cz.tacr.elza.security.kerberos.KerberosPassAuthProvider;
+import cz.tacr.elza.security.kerberos.KerberosProperties;
+import cz.tacr.elza.security.kerberos.KerberosTokenAuthProvider;
+import cz.tacr.elza.security.ldap.ActiveDirectoryUserDetailProvider;
+import cz.tacr.elza.security.ldap.LdapProperties;
 import cz.tacr.elza.security.oauth2.JwtUserDetailProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +38,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -43,16 +51,29 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosClient;
+import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosTicketValidator;
+import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
+import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.DelegatingAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestOperations;
@@ -65,6 +86,9 @@ import cz.tacr.elza.security.ssoheader.SsoHeaderAuthenticationProvider;
 import cz.tacr.elza.security.ssoheader.SsoHeaderProperties;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.UserService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Authentization configuration for API
@@ -77,13 +101,16 @@ import cz.tacr.elza.service.UserService;
 public class ApplicationSecurity {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationSecurity.class);
+    
+    public static final String AUTHENTICATE_SSO = "/authenticate/sso";
 
     /**
-     * These patterns need to be allowed to access without authorization 
+     * These patterns need to be allowed to access without authorization
      * to make it possible to navigate from the browser address bar for unauthorized users
      * @see cz.tacr.elza.web.controller.ElzaWebController (elza-web)
      */
-    public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/fund/**", "/node/**", "/entity/**", "/admin/**"};
+    public static final String[] PERMIT_ALL_PATTERNS = {"/", "/res/**", "/static/**", 
+    		"/fund/**", "/node/**", "/entity/**", "/admin/**", "/h2-console/**" };
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -116,6 +143,15 @@ public class ApplicationSecurity {
     @Autowired
     private Optional<OAuth2Properties> optionalOAuth2Props;
 
+    @Autowired
+    private Optional<LdapProperties> optionalLdapProps;
+
+    @Autowired
+    private Optional<KerberosProperties> optionalKerberosProps;
+    
+    @Autowired
+    private SiemAuditLogger siemAuditLogger;
+
     private SessionRegistry sessionRegistry = null;
 
     @Bean
@@ -133,22 +169,51 @@ public class ApplicationSecurity {
 
     @Bean("applicationAuthenticationManager")
     public AuthenticationManager authenticationManagerBean() throws Exception {
+    	log.debug("Configuring authentication manager.");
+    	
         List<AuthenticationProvider> ap = new ArrayList<>();
 
-        ap.add(new PasswordAutheticationProvider(userService));
         if (optionalSsoHeaderProperties.isPresent()) {
-            ap.add(new SsoHeaderAuthenticationProvider(userService));
+            ap.add(new SsoHeaderAuthenticationProvider(userService, txManager, siemAuditLogger));
         }
         if (optionalOAuth2Props.isPresent()) {
+        	log.debug("Adding JWT based provider.");
             JwtDecoder jwtDecoder = applicationContext.getBean(JwtDecoder.class);
             AccessPointService apService = applicationContext.getBean(AccessPointService.class);
 
             ap.add(new JwtUserDetailProvider(jwtDecoder, txManager, userService, apService,
-                    itemTypeRepository, optionalOAuth2Props.get()));
+                    itemTypeRepository, optionalOAuth2Props.get(), siemAuditLogger));
         }
+        if(optionalLdapProps.isPresent()) {
+			if (optionalLdapProps.get().getAdDomain() != null) {
+				log.debug("Adding ActiveDirectory provider, domain: {}, server: {}.",
+						optionalLdapProps.get().getAdDomain(), optionalLdapProps.get().getAdServer());
+				// adding active directory domain
+				var adProvider = new ActiveDirectoryUserDetailProvider(optionalLdapProps.get(), txManager, userService, siemAuditLogger);
+				
+				ap.add(adProvider);
+			}
+        }
+        if(optionalKerberosProps.isPresent()) {
+        	var kerberosProps = optionalKerberosProps.get();
+			// adding default Kerberos provider
+			log.debug("Adding Kerberos token authentication provider (SSO).");			
+			ap.add(new KerberosTokenAuthProvider(sunJaasKerberosTicketValidator(), userService, txManager, siemAuditLogger));
+						
+			if(kerberosProps.isAuthenticateWithPassword()) {
+				log.debug("Adding Kerberos password authentication provider.");
+		        // Configure native JRE Kerberos client
+		        SunJaasKerberosClient client = new SunJaasKerberosClient();
+		        client.setDebug(optionalKerberosProps.get().isKerberosClientDebug());
+		        ap.add(new KerberosPassAuthProvider(client, userService, txManager, siemAuditLogger));				
+			}
+        }
+        ap.add(new PasswordAutheticationProvider(userService, txManager, siemAuditLogger));
+
         return new ProviderManager(ap);
     }
 
+    // ?
     private static class RestOperationsResourceRetriever implements ResourceRetriever {
         private static final MediaType APPLICATION_JWK_SET_JSON = new MediaType("application", "json");
         private final RestOperations restOperations;
@@ -222,15 +287,15 @@ public class ApplicationSecurity {
             throw new IllegalStateException("Failed to read token", e);
         }
     }
-    
-    @Bean
+	
+	@Bean
     public HttpFirewall strictHttpFirewall() {
     	// This allows to accept some Czech characters as header values when using SSO header
         StrictHttpFirewall firewall = new StrictHttpFirewall();
         // allow all header values
-        firewall.setAllowedHeaderValues(v -> true); 
+        firewall.setAllowedHeaderValues(v -> true);
         return firewall;
-    }    
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -239,21 +304,24 @@ public class ApplicationSecurity {
         	.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
 
     		// by https://www.baeldung.com/spring-security-migrate-5-to-6
-        	/** 
+        	/**
         	 * Dotaz na autorizaci /login je vychozi endpoint a nevyžaduje zvláštní povolení k přístupu,
         	 * tento dotaz je zpracován výchozím Spring controller.
         	 */
     		.authorizeHttpRequests(auth -> auth
     				.requestMatchers(PERMIT_ALL_PATTERNS).permitAll()
+    				// Explicitly require auth for SSO
+    			    .requestMatchers(AntPathRequestMatcher.antMatcher(AUTHENTICATE_SSO)).authenticated() 
     				.anyRequest().authenticated())
     		.httpBasic(Customizer.withDefaults())
+    		// .requestCache(cache -> cache.requestCache(requestCache()))
 
         	.sessionManagement(session -> session
                 .maximumSessions(10)
                 .maxSessionsPreventsLogin(false)
                 .sessionRegistry(sessionRegistry()))
 
-        	.exceptionHandling(ex -> ex.authenticationEntryPoint(authenticationEntryPoint))
+        	.exceptionHandling(ex -> ex.authenticationEntryPoint(getAuthenticationEntryPoint()) ) 
 
             .formLogin(formLogin -> formLogin
            		.successHandler(authenticationSuccessHandler)
@@ -263,7 +331,38 @@ public class ApplicationSecurity {
 
         configureSsoHeaderFilter(http);
         configureOAuth2(http);
+        configureKerberos(http);
         return http.build();
+    }
+    
+    /**
+     * Method will return the authentication entry point
+     * @return
+     */
+    private AuthenticationEntryPoint getAuthenticationEntryPoint() {
+    	if (!isKerberosEnabled()) {
+    		// We do not any extra logic is SSO is not configured
+    		return authenticationEntryPoint;
+    	}
+    	
+    	// Create a map of specific matchers to specific entry points
+    	LinkedHashMap<RequestMatcher, AuthenticationEntryPoint> entryPoints = new LinkedHashMap<>();
+        
+        // Add SPNEGO for the SSO endpoint
+        if (isKerberosEnabled()) {
+            log.debug("Mapping SpnegoEntryPoint to {}", AUTHENTICATE_SSO);
+            entryPoints.put(new AntPathRequestMatcher(AUTHENTICATE_SSO), spnegoEntryPoint());
+        }
+
+        // Create the delegator. The second argument is the DEFAULT entry point 
+        // if no matchers above are hit.
+        DelegatingAuthenticationEntryPoint delegator = 
+                new DelegatingAuthenticationEntryPoint(entryPoints);
+        
+        // This is default entry point
+        delegator.setDefaultEntryPoint(authenticationEntryPoint); 
+        
+        return delegator;
     }
 
 	private void configureOAuth2(HttpSecurity http) throws Exception {
@@ -283,13 +382,120 @@ public class ApplicationSecurity {
     }
 
     private void configureSsoHeaderFilter(HttpSecurity http) throws Exception {
-        if (optionalSsoHeaderProperties.isPresent()) {
-            SsoHeaderAuthenticationFilter filter = new SsoHeaderAuthenticationFilter(optionalSsoHeaderProperties.get());
-            filter.setAuthenticationManager(authenticationManagerBean());
-            filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
-            filter.setAuthenticationFailureHandler(authenticationFailureHandler);
-            http.addFilterBefore(filter, AbstractPreAuthenticatedProcessingFilter.class);
-            log.info("SSO header authentication filter was configured");
+        if (!optionalSsoHeaderProperties.isPresent()) {
+        	return;
         }
+
+        SsoHeaderAuthenticationFilter filter = new SsoHeaderAuthenticationFilter(optionalSsoHeaderProperties.get());
+        filter.setAuthenticationManager(authenticationManagerBean());
+        filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+        filter.setAuthenticationFailureHandler(authenticationFailureHandler);
+
+        http
+        	.addFilterBefore(filter, AbstractPreAuthenticatedProcessingFilter.class);
+
+        log.info("SSO header authentication filter was configured");
     }
+
+	private void configureKerberos(HttpSecurity http) throws Exception {
+        if (!optionalKerberosProps.isPresent()) {
+            return;
+        }
+        log.debug("Configuring Kerberos filter.");
+
+        /*ProviderManager providerManager = new ProviderManager(kerberosAuthenticationProvider(), kerberosServiceAuthenticationProvider());*/
+        SpnegoAuthenticationProcessingFilter filter = new SpnegoAuthenticationProcessingFilter();
+                
+        filter.setAuthenticationManager(authenticationManagerBean());
+        filter.setSuccessHandler( kerberosSuccessHandler() );
+        filter.setFailureHandler(authenticationFailureHandler);
+        
+        http
+           //	.authenticationProvider(kerberosServiceAuthenticationProvider())
+        	.addFilterBefore(filter, BasicAuthenticationFilter.class)
+        ;
+
+        log.info("Kerberos authentication filter was configured.");
+	}
+		
+	/**
+	 * Success handler specifically for Kerberos browser-based SSO.
+	 */
+	private AuthenticationSuccessHandler kerberosSuccessHandler() {
+	    SavedRequestAwareAuthenticationSuccessHandler handler = new SavedRequestAwareAuthenticationSuccessHandler() {
+	        @Override
+	        public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, 
+	                                            Authentication authentication) throws IOException, ServletException {
+	            
+	            SavedRequest savedRequest = (SavedRequest) request.getSession()
+	                    .getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+
+	            // If the user was trying to go to the SSO URL itself, ignore it and go to root
+	            if (savedRequest != null && savedRequest.getRedirectUrl().contains(AUTHENTICATE_SSO)) {
+	                log.debug("Detected redirect loop to SSO URL, clearing saved request.");
+	                request.getSession().removeAttribute("SPRING_SECURITY_SAVED_REQUEST");
+	            }
+	            
+	            super.onAuthenticationSuccess(request, response, authentication);
+	        }
+	    };
+	    handler.setDefaultTargetUrl("/"); // This is where they go if no saved request exists
+	    return handler;
+	}	
+	// Kerberos authentication
+	// Requires three beans
+	// - KerberosAuthenticationProvider
+	// - SunJaasKerberosTicketValidator
+	
+    @Bean
+    @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
+    public SunJaasKerberosTicketValidator sunJaasKerberosTicketValidator() {
+    	var kerberosPros = optionalKerberosProps.get();
+    	
+    	log.debug("Creating SunJaasKerberosTicketValidator for principal: {}, keytab: {}.",
+    			kerberosPros.getServicePrincipal(), kerberosPros.getKeytabLocation());
+    	
+    	/**
+    	 * Basic implementation of ticket validator in Kerberos
+    	 */
+        SunJaasKerberosTicketValidator ticketValidator = new SunJaasKerberosTicketValidator();
+        ticketValidator.setServicePrincipal(kerberosPros.getServicePrincipal());
+        // Should be domain set here?
+        //ticketValidator.setRealmName(kerberosPros.getRealmName());
+        
+        // 
+        ticketValidator.setKeyTabLocation(new FileSystemResource(kerberosPros.getKeytabLocation()));    
+        ticketValidator.setDebug(kerberosPros.isTicketValidatorDebug());
+        return ticketValidator;
+    }
+    
+    @Bean
+    @ConditionalOnProperty(prefix = "elza.security.kerberos", name = "service-principal")
+    SpnegoEntryPoint spnegoEntryPoint() {
+    	var kerberosPros = optionalKerberosProps.get();
+		
+		log.debug("Creating SpnegoEntryPoint for principal: {}, keytab: {}.",
+				kerberosPros.getServicePrincipal(), kerberosPros.getKeytabLocation());
+    	return new SpnegoEntryPoint();
+    }
+    
+    /**
+     * Return true if Kerberos is enabled
+     * @return
+     */
+    public boolean isKerberosEnabled() { 
+    	return optionalKerberosProps.isPresent() && optionalKerberosProps.get().getServicePrincipal() != null; 
+    }
+    
+    /*
+    private RequestCache requestCache() {
+        HttpSessionRequestCache requestCache = new HttpSessionRequestCache();
+        if (optionalKerberosProps.isPresent() && optionalKerberosProps.get().getServicePrincipal() != null) {
+        	// Prevent saving the SSO trigger URL so we don't redirect back to it
+        	requestCache.setRequestMatcher(new NegatedRequestMatcher(
+                new AntPathRequestMatcher(AUTHENTICATE_SSO)
+        			));
+        }
+        return requestCache;
+    }*/   
 }

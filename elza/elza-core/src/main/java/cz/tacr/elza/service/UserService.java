@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -1442,7 +1443,17 @@ public class UserService {
 		if (auth == null) {
 			return null;
 		}
-		UserDetail details = (UserDetail) auth.getDetails();
+		var authDetail = auth.getDetails();
+		if (authDetail == null) {
+			logger.error("Auth detail is null");
+			throw new SystemException("Auth detail is null");
+		}
+		if(!(authDetail instanceof UserDetail)) {
+			logger.error("Auth detail has unexpected type: {}", authDetail.getClass().getName());
+			throw new SystemException("Auth detail has unexpected type: " + authDetail.getClass().getName(),
+					BaseCode.INVALID_STATE);
+		}
+		UserDetail details = (UserDetail) authDetail; 
 
 		Integer userId = details.getId();
 		// admin has no userId but has detail
@@ -2176,12 +2187,19 @@ public class UserService {
     }
 
     /**
-     * Create user detail for security context
+     * Create user detail for security context. 
+     * 
+     * Method will check if user is active and throw exception if not.
      *
      * @param user
      * @return
      */
+    @Transactional(value = Transactional.TxType.MANDATORY)
     public UserDetail createUserDetail(UsrUser user) {
+		if (!user.getActive()) {				
+			throw new LockedException("User is not active");
+		}		
+    	
         Collection<UserPermission> perms = calcUserPermission(user);
 
         List<UsrAuthentication.AuthType> authTypes = new ArrayList<>();
@@ -2343,4 +2361,26 @@ public class UserService {
         invalidateCache(trgUser);
         changeUserEvent(trgUser);
     }
+
+	/**
+	 * Create authentication object with details for user.
+	 * 
+	 * This object is used by Spring Security and returns user details.
+	 * It is returned by method AuthenticationManager.authenticate.
+	 * 
+	 * Method will check if user is active and throw exception if not.
+	 * 
+	 * @param user Active database user
+	 * @return
+	 */
+	@Transactional(value = Transactional.TxType.MANDATORY)
+	public UsernamePasswordAuthenticationToken createAuthentication(UsrUser user) throws LockedException {
+		
+		UserDetail userDetail = createUserDetail(user);
+
+		UsernamePasswordAuthenticationToken result = new UsernamePasswordAuthenticationToken(user.getUsername(),
+				StringUtils.EMPTY, null);
+		result.setDetails(userDetail);
+		return result;
+	}
 }

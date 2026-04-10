@@ -3,5 +3,6 @@
         <name>Základní pravidla pro zpracování archiválií ver. 3.1</name>
         <rule-type>ARRANGEMENT</rule-type>
         <rule-item-type-filter>ItemTypeFilter.drl</rule-item-type-filter>
+        <compatibility-rul-package>323</compatibility-rul-package>
     </rule-set>
 </rule-sets>

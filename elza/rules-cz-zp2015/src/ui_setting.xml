@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <settings xmlns:ns2="fund-views" xmlns:ns3="type-groups" xmlns:ns4="allow-structure-types" 
           xmlns:ns5="fund-issues" xmlns:ns6="grid-view" xmlns:ns7="structure-type-settings"
-          xmlns:ns8="parts-order" xmlns:ns9="item-types" xmlns:ns10="dao-import-level">
+          xmlns:ns8="parts-order" xmlns:ns9="item-types" xmlns:ns10="dao-import-level"
+          xmlns:ns11="node-search-settings">
     <favorite-item-specs code="ZP2015_LANGUAGE">
         <!-- čeština -->
         <favorite-item>LNG_cze</favorite-item>
@@ -44,4 +45,10 @@
         <desc-item-type>ZP2015_TITLE</desc-item-type>
       </ns10:default>
     </dao-import-level-settings>
+    
+    <node-search-settings>
+      <ns11:pinned-filter item-type="ZP2015_TITLE" operation="CONTAINS" name="Obsah" fixed-field="true" />    
+      <ns11:pinned-filter item-type="ZP2015_UNIT_DATE" operation="GT" name="Je později než" />
+      <ns11:pinned-filter item-type="ZP2015_UNIT_DATE" operation="LT" name="Je dříve než" />
+    </node-search-settings>
 </settings>

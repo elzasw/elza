@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>elza</artifactId>
@@ -64,6 +66,7 @@
                             <configOptions>
                                 <npmName>elza-api</npmName>
                                 <supportsES6>true</supportsES6>
+                                <axiosVersion>1.7.7</axiosVersion>
                             </configOptions>
                             <addCompileSourceRoot>false</addCompileSourceRoot>
                         </configuration>
@@ -75,6 +78,20 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <id>install-elza-react-dependencies</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>ci</argument>
+                                <argument>--legacy-peer-deps</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>install-api-dependencies</id>
                         <phase>generate-sources</phase>
@@ -105,16 +122,30 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>install-elza-react-dependencies</id>
-                        <phase>process-sources</phase>
+                        <id>npm-locale-extract</id>
+                        <phase>generate-sources</phase>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                         <configuration>
                             <executable>npm</executable>
                             <arguments>
-                                <argument>ci</argument>
-                                <argument>--legacy-peer-deps</argument>
+                                <argument>run</argument>
+                                <argument>extract</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm-locale-compile</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>run</argument>
+                                <argument>compile-extracted</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -187,6 +218,7 @@
                                             <includes>
                                                 <include>js/*.*</include>
                                                 <include>assets/*.*</include>
+                                                <include>locale/*.*</include>
                                             </includes>
                                         </resource>
                                     </resources>

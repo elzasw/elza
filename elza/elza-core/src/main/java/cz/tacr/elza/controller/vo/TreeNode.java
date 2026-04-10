@@ -1,8 +1,10 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -16,7 +18,7 @@ public class TreeNode implements Comparable<TreeNode> {
     /**
      * Nodeid uzlu.
      */
-    private Integer id;
+    final private int id;
     /**
      * Hloubka uzlu ve stromu.
      */
@@ -24,30 +26,26 @@ public class TreeNode implements Comparable<TreeNode> {
     /**
      * Pozice uzlu v dětech.
      */
-    private Integer position;
+    private int position;
     /**
      * Rodič uzlu
      */
     private TreeNode parent;
 
-    private LinkedList<TreeNode> childs = new LinkedList<>();
+    private List<TreeNode> children = new ArrayList<>();
 
     /**
      * Referenční označení. Od kořene k uzlu.
      */
     private Integer[] referenceMark;
 
-    public TreeNode(final Integer nodeId, final Integer position) {
+    public TreeNode(final int nodeId, final int position) {
         this.id = nodeId;
         this.position = position;
     }
 
     public Integer getId() {
         return id;
-    }
-
-    public void setId(final Integer id) {
-        this.id = id;
     }
 
     public Integer getDepth() {
@@ -58,11 +56,11 @@ public class TreeNode implements Comparable<TreeNode> {
         this.depth = depth;
     }
 
-    public Integer getPosition() {
+    public int getPosition() {
         return position;
     }
 
-    public void setPosition(final Integer position) {
+    public void setPosition(final int position) {
         this.position = position;
     }
 
@@ -74,16 +72,16 @@ public class TreeNode implements Comparable<TreeNode> {
         this.parent = parent;
     }
 
-    public LinkedList<TreeNode> getChilds() {
-        return childs;
+    public List<TreeNode> getChildren() {
+        return children;
     }
 
-    public void setChilds(final LinkedList<TreeNode> childs) {
-        this.childs = childs;
+    public void setChildren(final List<TreeNode> childs) {
+        this.children = childs;
     }
 
     public void addChild(final TreeNode child) {
-        childs.add(child);
+        children.add(child);
     }
 
     public Integer[] getReferenceMark() {
@@ -123,12 +121,13 @@ public class TreeNode implements Comparable<TreeNode> {
         return "TreeNode{" +
                 "position=" + position +
                 ", id=" + id +
-                ", childs=" + childs.size() +
+                ", childs=" + children.size() +
                 '}';
     }
 
     @Override
     public int compareTo(final TreeNode o) {
+    	// TODO: throw exception if comparing with different parents 
 
         if (this.getParent() == null) {
             return -1;
@@ -138,7 +137,7 @@ public class TreeNode implements Comparable<TreeNode> {
             return 1;
         }
 
-        if (o.getId().equals(getId())) {
+        if (o.id==id) {
             return 0;
         }
 
@@ -162,7 +161,7 @@ public class TreeNode implements Comparable<TreeNode> {
         TreeNode level1 = parents1.removeFirst();
         TreeNode level2 = parents2.removeFirst();
 
-        while (ObjectUtils.equals(level1, level2)) {
+        while (Objects.equals(level1, level2)) {
             level1 = parents1.isEmpty() ? null : parents1.removeFirst();
             level2 = parents2.isEmpty() ? null : parents2.removeFirst();
 
@@ -176,7 +175,6 @@ public class TreeNode implements Comparable<TreeNode> {
             }
         }
 
-
-        return level1.getPosition().compareTo(level2.getPosition());
+        return Integer.compare(level1.getPosition(), level2.getPosition());
     }
 }

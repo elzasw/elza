@@ -1,11 +1,14 @@
 package cz.tacr.elza.bulkaction.generator;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+
+import java.util.Objects;
+
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import cz.tacr.elza.bulkaction.BulkActionDFS;
 import cz.tacr.elza.bulkaction.generator.result.SerialNumberResult;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -20,7 +23,6 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
-
 /**
  * Hromadná akce prochází strom otevřené verze archivní pomůcky a doplňuje u položek požadované atributy.
  *
@@ -30,15 +32,20 @@ import cz.tacr.elza.exception.codes.BaseCode;
 public class SerialNumberBulkAction extends BulkActionDFS {
 
     /**
-	 * Number generator
+	 * Number generator.
 	 */
 	private Generator generator;
 
     /**
-     * Typ atributu
+     * Typ atributu.
      */
     private RulItemType descItemType;
 
+    /**
+     * Node úrovně
+     */
+    private ArrNode levelNode;
+    
     /**
      * Počet změněných položek.
      */
@@ -46,8 +53,8 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 
 	protected final SerialNumberConfig config;
 
-	SerialNumberBulkAction(SerialNumberConfig config) {
-		Validate.notNull(config);
+	public SerialNumberBulkAction(SerialNumberConfig config) {
+		Objects.requireNonNull(config);
         this.config = config;
 	}
 
@@ -60,18 +67,17 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 	protected void init(ArrBulkActionRun bulkActionRun) {
 		super.init(bulkActionRun);
 
-        this.multipleItemChangeContext = descriptionItemService.createChangeContext(this.version.getFundVersionId());
+        multipleItemChangeContext = descriptionItemService.createChangeContext(bulkActionRun.getFundVersionId(), true);
 
 		// prepare item type
 		ItemType itemType = staticDataProvider.getItemTypeByCode(config.getItemType());
-		Validate.notNull(itemType);
+		Objects.requireNonNull(itemType);
 
 		// check if supported type
 		switch (itemType.getDataType()) {
 		case INT:
 			if (config.getUseCurrentNumbering()) {
-				throw new SystemException("Unsupported item type: " + itemType.getDataType().getCode(),
-				        BaseCode.SYSTEM_ERROR);
+				throw new SystemException("Unsupported item type: " + itemType.getDataType().getCode(), BaseCode.SYSTEM_ERROR);
 			}
 			generator = new IntegerGenerator();
 			break;
@@ -79,8 +85,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 			generator = new StringGenerator(config.getUseCurrentNumbering());
 			break;
 		default:
-			throw new SystemException("Unsupported item type: " + itemType.getDataType().getCode(),
-			        BaseCode.SYSTEM_ERROR);
+			throw new SystemException("Unsupported item type: " + itemType.getDataType().getCode(), BaseCode.SYSTEM_ERROR);
 		}
 
 		descItemType = itemType.getEntity();
@@ -92,24 +97,18 @@ public class SerialNumberBulkAction extends BulkActionDFS {
      */
 	@Override
 	protected void update(final ArrLevel level) {
-        ArrNode currNode = level.getNode();
+        levelNode = level.getNode();
 
-		ArrDescItem descItem = loadSingleDescItem(currNode, descItemType);
-        if (descItem == null) {
-            descItem = new ArrDescItem();
-            descItem.setItemType(descItemType);
-            descItem.setNode(currNode);
-        }
+		ArrDescItem descItem = loadSingleDescItem(levelNode, descItemType);
 
-		this.generator.generate(descItem);
+		generator.generate(descItem);
     }
 
 	@Override
     protected void done() {
 		SerialNumberResult snr = new SerialNumberResult();
 		snr.setCountChanges(countChanges);
-
-		this.result.getResults().add(snr);
+		result.getResults().add(snr);
 	}
 
 	private interface Generator {
@@ -119,8 +118,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
     /**
      * Generátor pořadových čísel.
      */
-	private class IntegerGenerator
-	        implements Generator {
+	private class IntegerGenerator implements Generator {
 
         private int counter;
 
@@ -131,39 +129,50 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 		@Override
 		public void generate(ArrDescItem descItem) {
 
-			ArrDataInteger item;
-			ArrData data = HibernateUtils.unproxy(descItem.getData());
+			counter++;
+
 			// vytvoření nového atributu
-			if (data == null) {
-				item = new ArrDataInteger();
-				descItem.setData(item);
+			if (descItem == null) {
+	            descItem = new ArrDescItem();
+	            descItem.setItemType(descItemType);
+	            descItem.setNode(levelNode);
+				
+	            ArrDataInteger dataInteger = new ArrDataInteger();
+				dataInteger.setIntegerValue(counter);
+				descItem.setData(dataInteger);
+                saveNewDescItem(getFondsVersion(), descItem);
+				countChanges++;
 			} else {
+				ArrData data = HibernateUtils.unproxy(descItem.getData());
 				if (!(data instanceof ArrDataInteger)) {
-					throw new BusinessException(descItemType.getCode() + " není typu ArrDescItemInt",
+					throw new BusinessException(descItemType.getCode() + " není typu ArrDataInteger",
 					        BaseCode.PROPERTY_HAS_INVALID_TYPE)
 					                .set("property", descItemType.getCode())
 					                .set("expected", "ArrItemInt")
 					                .set("actual", descItem.getData().getClass().getSimpleName());
 				}
-				item = (ArrDataInteger) data;
-			}
+				
+				ArrDataInteger srcDataInt = (ArrDataInteger)data;
 
-			Integer currValue = item.getIntegerValue();
-
-			counter++;
-			// uložit pouze při rozdílu
-			if (currValue == null || counter != currValue) {
-				item.setIntegerValue(counter);
-                ArrDescItem ret = saveDescItem(descItem);
-				//level.setNode(ret.getNode());
-				countChanges++;
+				// uložit pouze při rozdílu
+				if (counter != srcDataInt.getIntegerValue().intValue()) {
+					ArrDataInteger dataInteger = (ArrDataInteger) ArrData.makeCopyWithoutId(data);
+					dataInteger.setIntegerValue(counter);
+					
+					var newDescItem = new ArrDescItem(descItem);
+					newDescItem.setData(dataInteger);					
+	                updateDescItem(getFondsVersion(), newDescItem, false);
+					countChanges++;
+				}
 			}
 		}
-
     }
 
-	private class StringGenerator
-	        implements Generator {
+	/**
+     * Generátor inventárních čísel.
+	 */
+	private class StringGenerator implements Generator {
+
 		private int counter = 0;
 
 		private String prefix = "";
@@ -171,6 +180,7 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 		private int minLength;
 
 		private boolean useCurrentNumbering;
+
 		public StringGenerator(boolean useCurrentNumbering) {
 			this.useCurrentNumbering = useCurrentNumbering;
 		}
@@ -211,13 +221,22 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 
 		@Override
 		public void generate(ArrDescItem descItem) {
-			ArrDataString item;
-			ArrData data = HibernateUtils.unproxy(descItem.getData());
+
+			counter++;
+
 			// vytvoření nového atributu
-			if (data == null) {
-				item = new ArrDataString();
-				descItem.setData(item);
+			if (descItem == null) {
+	            descItem = new ArrDescItem();
+	            descItem.setItemType(descItemType);
+	            descItem.setNode(levelNode);
+
+	            ArrDataString dataString = new ArrDataString();
+				descItem.setData(dataString);
+				dataString.setStringValue(prepareValue());
+                saveNewDescItem(getFondsVersion(), descItem);
+				countChanges++;
 			} else {
+				ArrData data = HibernateUtils.unproxy(descItem.getData());
 				if (!(data instanceof ArrDataString)) {
 					throw new BusinessException(descItemType.getCode() + " není typu ArrDataString",
 					        BaseCode.PROPERTY_HAS_INVALID_TYPE)
@@ -225,25 +244,23 @@ public class SerialNumberBulkAction extends BulkActionDFS {
 					                .set("expected", "ArrDataString")
 					                .set("actual", descItem.getData().getClass().getSimpleName());
 				}
-				item = (ArrDataString) data;
-			}
+				ArrDataString srcDataString = (ArrDataString)data;
+				if (useCurrentNumbering && StringUtils.isNotBlank(srcDataString.getStringValue())) {
+					// read current value
+					setLastNumber(srcDataString.getStringValue());
+				} else {
+					String nextValue = prepareValue();
+					// uložit pouze při rozdílu
+					if (!nextValue.equals(srcDataString.getStringValue())) {
+						ArrDataString dataString = (ArrDataString) ArrData.makeCopyWithoutId(data);
+						dataString.setStringValue(nextValue);
+												
+						var newDescItem = new ArrDescItem(descItem);
+						newDescItem.setData(dataString);					
+		                updateDescItem(getFondsVersion(), newDescItem, false);
 
-			String currValue = item.getStringValue();
-
-			counter++;
-
-			if (useCurrentNumbering && StringUtils.isNotBlank(currValue)) {
-				// read current value
-				setLastNumber(currValue);
-			} else {
-				String nextValue = prepareValue();
-
-				// uložit pouze při rozdílu
-				if (currValue == null || !nextValue.equals(currValue)) {
-					item.setStringValue(nextValue);
-                    ArrDescItem ret = saveDescItem(descItem);
-					//level.setNode(ret.getNode());
-					countChanges++;
+						countChanges++;
+					}
 				}
 			}
 		}

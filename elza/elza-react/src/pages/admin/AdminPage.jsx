@@ -95,48 +95,50 @@ class AdminPage extends AbstractReactComponent {
             );
         }
 
-        altActions.push(
-            <Button
-                key="reindex"
-                onClick={this.startReindexing}
-                disabled={indexing}
-                title={i18n('ribbon.action.admin.reindex.title')}
-                variant={'default'}
-            >
-                <Icon glyph="fa-search" />
-                <div>
-                    <span className="btnText">
-                        {indexing ? i18n('admin.fulltext.message.reindexing') : i18n('ribbon.action.admin.reindex')}
-                    </span>
-                </div>
-            </Button>,
-        );
-        altActions.push(
-            <Button
-                key="resetLocalStorage"
-                onClick={this.handleResetLocalStorage}
-                title={i18n('ribbon.action.admin.resetLocalStorage.title')}
-                variant={'default'}
-            >
-                <Icon glyph="fa-times" />
-                <div>
-                    <span className="btnText">{i18n('ribbon.action.admin.resetLocalStorage')}</span>
-                </div>
-            </Button>,
-        );
-        altActions.push(
-            <Button
-                key="resetServerCache"
-                onClick={this.handleResetServerCache}
-                title={i18n('ribbon.action.admin.resetServerCache.title')}
-                variant={'default'}
-            >
-                <Icon glyph="fa-times" />
-                <div>
-                    <span className="btnText">{i18n('ribbon.action.admin.resetServerCache')}</span>
-                </div>
-            </Button>,
-        );
+        if (userDetail.hasOne(perms.ADMIN)) {
+            altActions.push(
+                <Button
+                    key="reindex"
+                    onClick={this.startReindexing}
+                    disabled={indexing}
+                    title={i18n('ribbon.action.admin.reindex.title')}
+                    variant={'default'}
+                >
+                    <Icon glyph="fa-search" />
+                    <div>
+                        <span className="btnText">
+                            {indexing ? i18n('admin.fulltext.message.reindexing') : i18n('ribbon.action.admin.reindex')}
+                        </span>
+                    </div>
+                </Button>,
+            );
+            altActions.push(
+                <Button
+                    key="resetLocalStorage"
+                    onClick={this.handleResetLocalStorage}
+                    title={i18n('ribbon.action.admin.resetLocalStorage.title')}
+                    variant={'default'}
+                >
+                    <Icon glyph="fa-times" />
+                    <div>
+                        <span className="btnText">{i18n('ribbon.action.admin.resetLocalStorage')}</span>
+                    </div>
+                </Button>,
+            );
+            altActions.push(
+                <Button
+                    key="resetServerCache"
+                    onClick={this.handleResetServerCache}
+                    title={i18n('ribbon.action.admin.resetServerCache.title')}
+                    variant={'default'}
+                >
+                    <Icon glyph="fa-times" />
+                    <div>
+                        <span className="btnText">{i18n('ribbon.action.admin.resetServerCache')}</span>
+                    </div>
+                </Button>,
+            );
+        }
 
         let altSection;
         if (altActions.length > 0) {

@@ -33,6 +33,7 @@ import org.springframework.util.ObjectUtils;
 import cz.tacr.cam.schema.cam.EntityRecordRevInfoXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.ExtSystemProperty;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -58,6 +59,7 @@ import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.enumeration.StringLength;
+import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
@@ -74,6 +76,8 @@ import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.GisExternalSystemRepository;
 import cz.tacr.elza.repository.SysExternalSystemPropertyRepository;
+import cz.tacr.elza.security.AuthorizationRequest;
+import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.cam.BindingSyncInfo;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
@@ -135,12 +139,57 @@ public class ExternalSystemService {
 
     /**
      * Vyhledá všechny externí systémy.
+     * 
+     * Pokud uživatel nemá oprávnění správce, je vrácena jen kopie
+     * entit bez hesel a jiných důvěrných informací.
      *
      * @return seznam externích systémů
      */
-    @AuthMethod(permission = UsrPermission.Permission.ADMIN)
     public List<SysExternalSystem> findAll() {
-        return externalSystemRepository.findAll();
+        UserDetail userDetail = userService.getLoggedUserDetail();
+        if(userDetail==null) {
+            throw new AccessDeniedException("User not authorized.", Collections.emptyList());
+        }
+        var extSystems = externalSystemRepository.findAll();
+        
+        AuthorizationRequest adminPermission = AuthorizationRequest.hasPermission(Permission.ADMIN);
+        if(adminPermission.matches(userDetail)) {
+	        return extSystems;
+        }
+    	// authorized user but not admin -> we have to return a copy
+        // with minimum information        
+        return extSystems.stream().map(es -> {
+        	SysExternalSystem ses = HibernateUtils.unproxy(es);
+        	SysExternalSystem copy;
+        	if(ses instanceof ApExternalSystem) {
+        		ApExternalSystem aes = (ApExternalSystem)ses;
+        		var aesCopy = new ApExternalSystem(aes);
+        		copy = aesCopy;
+        	} else 
+        	if(ses instanceof ArrDigitalRepository) {
+        		ArrDigitalRepository ardr = (ArrDigitalRepository)ses;
+				var ardCopy = new ArrDigitalRepository(ardr);
+				copy = ardCopy;
+        	} else 
+        	if(ses instanceof ArrDigitizationFrontdesk) {
+        		ArrDigitizationFrontdesk adf = (ArrDigitizationFrontdesk)ses;
+				var adfCopy = new ArrDigitizationFrontdesk(adf);
+				copy = adfCopy;
+        	} else 
+			if(ses instanceof GisExternalSystem) {
+				GisExternalSystem ges = (GisExternalSystem)ses;
+				var gesCopy = new GisExternalSystem(ges);
+				copy = gesCopy;
+			} else {
+				throw new SystemException("Unknown external system type: "+es.getClass().getName());
+			}
+        	// anonymize
+			copy.setPassword(null);
+			copy.setUsername(null);
+			copy.setApiKeyId(null);
+			copy.setApiKeyValue(null);
+			return copy;
+        }).collect(Collectors.toList());
     }
 
     /**
@@ -173,6 +222,22 @@ public class ExternalSystemService {
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
     public SysExternalSystem findByCode(final String code) {
         return externalSystemRepository.findByCode(code);
+    }
+
+    /**
+     * Vyhledání externího systému podle kódu nebo id.
+     * 
+     * @param code 
+     *            kód externího systému, který hledáme nebo id
+     * @return nalezený externí systém nebo null
+     */
+    public ApExternalSystem findExternalSystemByCodeOrId(final String code) {
+    	ApExternalSystem extSystem = apExternalSystemRepository.findByCode(code);
+    	if (extSystem == null) {
+			Integer id = Integer.parseInt(code);
+    		return apExternalSystemRepository.findById(id).orElse(null);
+    	}
+    	return extSystem;
     }
 
     /**
@@ -290,6 +355,11 @@ public class ExternalSystemService {
                 extSyncsQueueItemRepository.deleteById(extSyncItemId);
             }
         }
+    }
+
+    @AuthMethod(permission = UsrPermission.Permission.ADMIN)
+    public void deleteBindingSync(final ApExternalSystem externalSystem) {
+        bindingSyncRepository.deleteByApExternalSystem(externalSystem);
     }
 
     /**
@@ -421,6 +491,8 @@ public class ExternalSystemService {
      */
     public ApBinding createBinding(final String value,
                                    final String externalSystemCode) {
+    	log.debug("creating binding, externalSystemCode: {}, value: {}",externalSystemCode, value);
+    	
         ApExternalSystem apExternalSystem = apExternalSystemRepository.findByCode(externalSystemCode);
         if (apExternalSystem == null) {
             throw new BusinessException("External system not exists, code: " + externalSystemCode,
@@ -448,6 +520,8 @@ public class ExternalSystemService {
     public ApBinding createApBinding(final String value,
                                      final ApExternalSystem apExternalSystem,
                                      final boolean flush) {
+    	log.debug("Creating binding, extSystem: {}, value: {}, flush: {}", apExternalSystem.getName(), value, flush);
+    	
     	Objects.requireNonNull(value);
     	Objects.requireNonNull(apExternalSystem);
 
@@ -495,7 +569,6 @@ public class ExternalSystemService {
         Validate.isTrue(userName == null || userName.length() <= StringLength.LENGTH_250, "UserName length exceeds the limit");
         apBindingState.setExtUser(userName);
         apBindingState.setExtReplacedBy(replacedById == null ? null : String.valueOf(replacedById));
-        apBindingState.setSyncChange(apChange);
         apBindingState.setCreateChange(apChange);
         apBindingState.setSyncOk(syncState);
         apBindingState.setPreferredPart(preferredPart);

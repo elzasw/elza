@@ -10,26 +10,32 @@ import static cz.tacr.elza.domain.ArrDescItem.FIELD_CREATE_CHANGE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_DELETE_CHANGE_ID;
 import static cz.tacr.elza.domain.ArrDescItem.FIELD_DELETE_CHANGE;
 import static cz.tacr.elza.domain.ArrDescItem.FULLTEXT_ATT;
-import static cz.tacr.elza.domain.ArrDescItem.INTGER_ATT;
+import static cz.tacr.elza.domain.ArrDescItem.INTEGER_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.DECIMAL_ATT;
-import static cz.tacr.elza.domain.ArrDescItem.NORMALIZED_FROM_ATT;
-import static cz.tacr.elza.domain.ArrDescItem.NORMALIZED_TO_ATT;
+import static cz.tacr.elza.domain.ArrDescItem.NORM_FROM;
+import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
 import static cz.tacr.elza.domain.ArrItem.FIELD_DATA;
-import static cz.tacr.elza.domain.LuceneAnalyzerConfigurer.KEYWORD_TOKENIZER_CZ;
+import static cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer.KEYWORD_TOKENIZER_CZ;
 
 import org.hibernate.search.engine.backend.document.IndexFieldReference;
 import org.hibernate.search.mapper.pojo.bridge.binding.TypeBindingContext;
 import org.hibernate.search.mapper.pojo.bridge.mapping.programmatic.TypeBinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.domain.ArrDescItem;
 
 public class ArrDescItemBinder implements TypeBinder {
 
+    private final static Logger log = LoggerFactory.getLogger(ArrDescItemBinder.class);
+
     private TypeBindingContext context;
 
     @Override
     public void bind(TypeBindingContext context) {
-    	this.context = context;
+		log.debug("Bind ArrDescItemBinder");
+
+		this.context = context;
 
     	// při změně pole data, itemSpec nebo deleteChange přepočti index
         context.dependencies().use(FIELD_DATA).use(FIELD_ITEM_SPEC).use(FIELD_DELETE_CHANGE);
@@ -45,10 +51,10 @@ public class ArrDescItemBinder implements TypeBinder {
 
         createAnalyzedField(FULLTEXT_ATT);
 
-        createIntegerField(INTGER_ATT);
+        createIntegerField(INTEGER_ATT);
         createDoubleField(DECIMAL_ATT);
-        createLongField(NORMALIZED_FROM_ATT);
-        createLongField(NORMALIZED_TO_ATT);
+        createLongField(NORM_FROM);
+        createLongField(NORM_TO);
 
         context.bridge(ArrDescItem.class, new ArrDescItemBridge());
     }

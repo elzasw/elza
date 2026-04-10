@@ -391,13 +391,14 @@ public class ImportProcess {
             ((ArrDataRecordRef) data).setRecord(apAccessPointRepository.getOne(((ItemRecordRef) item).getRecordId()));
         } else if (item instanceof ItemUriRef) {
             ItemUriRef itemUriRef = (ItemUriRef) item;
-            data = new ArrDataUriRef();
-            ((ArrDataUriRef) data).setSchema(itemUriRef.getSchema());
-            ((ArrDataUriRef) data).setUriRefValue(itemUriRef.getValue());
-            ((ArrDataUriRef) data).setDescription(itemUriRef.getDescription());
+            var dataUriRef = new ArrDataUriRef();            
+            dataUriRef.setSchema(itemUriRef.getSchema());
+            dataUriRef.setUriRefValue(itemUriRef.getValue());
+            dataUriRef.setDescription(itemUriRef.getDescription());
             if (itemUriRef.getNodeId() != null) {
-                ((ArrDataUriRef) data).setArrNode(nodeRepository.getOne(itemUriRef.getNodeId()));
+            	dataUriRef.setArrNode(nodeRepository.getOne(itemUriRef.getNodeId()));
             }
+            data = dataUriRef;
         } else if (item instanceof ItemBit) {
             data = new ArrDataBit();
             ((ArrDataBit) data).setBitValue(((ItemBit) item).getValue());
@@ -473,7 +474,7 @@ public class ImportProcess {
      */
     private Map<String, ArrFile> resolveFileConflict() {
         List<ArrFile> sourceFiles = source.getFiles();
-        Map<String, ArrFile> fundFilesMapName = fundFileRepository.findByFund(targetFundVersion.getFund()).stream().collect(Collectors.toMap(ArrFile::getName, Function.identity()));
+        Map<String, ArrFile> fundFilesMapName = fundFileRepository.findActiveByFund(targetFundVersion.getFund()).stream().collect(Collectors.toMap(ArrFile::getName, Function.identity()));
         Map<String, ArrFile> result = new HashMap<>();
 
         for (ArrFile sourceFile : sourceFiles) {

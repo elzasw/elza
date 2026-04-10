@@ -1,10 +1,15 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
+import cz.tacr.elza.controller.vo.ap.item.ApItemTextVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 
 import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
 public class ApPartFormVO {
 
@@ -75,5 +80,21 @@ public class ApPartFormVO {
 
     public void setRevParentPartId(@Nullable Integer revParentPartId) {
         this.revParentPartId = revParentPartId;
+    }
+
+    /**
+	 * Nepovolujeme prázdné řádky pro: 
+	 * - ApItemTextVO
+	 * - ApItemStringVO
+	 */
+    public void validateItems() {
+		for (ApItemVO item : items) {
+	    	if (item instanceof ApItemTextVO) {
+	    		Validate.isTrue(StringUtils.isNotBlank(((ApItemTextVO) item).getValue()), "Textové pole nesmí být prázdné");
+	    	}
+	    	if (item instanceof ApItemStringVO) {
+	    		Validate.isTrue(StringUtils.isNotBlank(((ApItemStringVO) item).getValue()), "Stringové pole nesmí být prázdné");
+	    	}
+		}
     }
 }

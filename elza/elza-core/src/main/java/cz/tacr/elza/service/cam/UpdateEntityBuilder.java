@@ -48,6 +48,7 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApBindingItemRepository;
@@ -232,7 +233,7 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         if (CollectionUtils.isNotEmpty(activeItems)) {
             // filter binded items
             List<ApBindingItem> filteredList = activeItems.stream().filter(i -> i.getItem()
-                    .getCreateChangeId() > bindingState.getSyncChangeId())
+                    .getCreateChangeId() > bindingState.getCreateChangeId())
                     .collect(Collectors.toList());
             if (filteredList.size() > 0) {
                 UpdateItemsXml updateItems = createUpdateItems(changedPart, filteredList);
@@ -318,13 +319,13 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
 
         // read current bindings
         bindingParts = bindingItemRepository.findPartsForSync(bindingState.getBinding(),
-                                                              bindingState.getSyncChangeId());
+                                                              bindingState.getCreateChangeId());
         for (ApBindingItem bindingPart : bindingParts) {
             BindingPartInfo bi = new BindingPartInfo(bindingPart);
             bindingMap.put(bindingPart.getPartId(), bi);
         }
         bindingItems = externalSystemService.findItemsForSync(bindingState.getBinding(),
-                                                              bindingState.getSyncChangeId());
+                                                              bindingState.getCreateChangeId());
         for (ApBindingItem bindingItem : bindingItems) {
             ApItem item = bindingItem.getItem();
             BindingPartInfo bi = bindingMap.get(item.getPartId());
@@ -369,14 +370,24 @@ public class UpdateEntityBuilder extends BatchUpdateBuilder {
         } else {
             // preferred part is new
             prefPartUuid = getPartUuids().get(accessPoint.getPreferredPartId());
-            Validate.notNull(prefPartUuid);
+            Objects.requireNonNull(prefPartUuid);
         }
         if (!Objects.equals(prefPartUuid, prefNameXml.getPid().getValue())) {
             setPrefName(new UuidXml(prefPartUuid));
         }
+        
+        // změna podtřídy entity
+        ApType apType = sdp.getApTypeById(apState.getApTypeId());
+		if (!apType.getCode().equals(externalEntityXml.getEnt().getValue())) {
+			setEntityType(apType.getCode());
+		}
 
         createDeletePartList();
 
         return trgList;
     }
+
+	private void setEntityType(String code) {		
+		setApType(new CodeXml(code));
+	}
 }

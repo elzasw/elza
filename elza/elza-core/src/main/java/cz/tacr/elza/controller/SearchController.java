@@ -2,13 +2,13 @@ package cz.tacr.elza.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import jakarta.transaction.Transactional;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +23,7 @@ import cz.tacr.elza.controller.vo.EntityRef;
 import cz.tacr.elza.controller.vo.FieldValueFilter;
 import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
+import cz.tacr.elza.controller.vo.OperationLogicalType;
 import cz.tacr.elza.controller.vo.ResultEntityRef;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
 import cz.tacr.elza.controller.vo.SearchParams;
@@ -94,16 +95,16 @@ public class SearchController implements SearchApi {
 		public boolean prepare(SearchParams searchParams) {
 			// read offset
 			Integer offset = searchParams.getOffset();
-			if(offset!=null) {
-				if(offset<0) {
+			if (offset != null) {
+				if (offset < 0) {
 					log.warn("Offset is out of range, received value: {}", offset);
 					return false;
 				}
 				firstResult = offset;
 			}
 			Integer size = searchParams.getSize();
-			if(size!=null) {
-				if(size>0&&size<MAX_RESPONSE_COUNT) {
+			if (size != null) {
+				if(size > 0 && size<MAX_RESPONSE_COUNT) {
 					maxResults = size;
 				} else {
 					log.warn("Size is out of range, received value: {}", size);
@@ -121,8 +122,8 @@ public class SearchController implements SearchApi {
 		}
 
         private boolean processAndFilters(List<AbstractFilter> filters) {
-			for(AbstractFilter filter: filters) {
-				if(filter instanceof MultimatchContainsFilter) {
+			for (AbstractFilter filter: filters) {
+				if (filter instanceof MultimatchContainsFilter) {
 					MultimatchContainsFilter mcf = (MultimatchContainsFilter)filter;
                     if (StringUtils.isNotBlank(searchFilterVO.getSearch())) {
 						// multiple fulltext values
@@ -133,9 +134,9 @@ public class SearchController implements SearchApi {
 					continue;
 				}
 
-				if(filter instanceof FieldValueFilter) {
+				if (filter instanceof FieldValueFilter) {
 					FieldValueFilter fvf = (FieldValueFilter)filter;
-					if(FIELD_APTYPE.equals(fvf.getField())) {
+					if (FIELD_APTYPE.equals(fvf.getField())) {
 						if(!addApType(fvf.getValue())) {
 							return false;
 						}
@@ -147,15 +148,15 @@ public class SearchController implements SearchApi {
 					continue;
 				}
 
-				if(filter instanceof LogicalFilter) {
+				if (filter instanceof LogicalFilter) {
 					LogicalFilter lf = (LogicalFilter) filter;
 					// and filters can be processed recursively
-					if(LogicalFilter.OperationEnum.AND==lf.getOperation()) {
+					if (OperationLogicalType.AND == lf.getOperation()) {
 						if(!processAndFilters(lf.getFilters())) {
 							return false;
 						}
 					} else
-					if(LogicalFilter.OperationEnum.OR==lf.getOperation()) {
+					if (OperationLogicalType.OR == lf.getOperation()) {
 						if(!processOrFilters(lf.getFilters())) {
 							return false;
 						}
@@ -167,15 +168,16 @@ public class SearchController implements SearchApi {
 			}
 			return true;
 		}
-		private boolean addApType(String value) {
+
+        private boolean addApType(String value) {
 			ApType apType = sdp.getApTypeByCode(value);
-			if(apType==null) {
+			if (apType == null) {
 				// unrecognized ap type
 				log.warn("Unknown aptype: {}", value);
 				return false;
 
 			}
-			if(apTypeIds!=null) {
+			if (apTypeIds != null) {
 				log.warn("AP has only one type and cannot has multiple types, unexpected value: {}", value);
 				return false;
 			}
@@ -184,16 +186,16 @@ public class SearchController implements SearchApi {
 		}
 
 		private boolean processOrFilters(List<AbstractFilter> filters) {
-			for(AbstractFilter filter: filters) {
-				if(filter instanceof MultimatchContainsFilter) {
+			for (AbstractFilter filter: filters) {
+				if (filter instanceof MultimatchContainsFilter) {
 					// unrecognized field type
 					log.warn("Fulltext cannot have multiple or values");
 					return false;
 				}
-				if(filter instanceof FieldValueFilter) {
+				if (filter instanceof FieldValueFilter) {
 					FieldValueFilter fvf = (FieldValueFilter)filter;
-					if(FIELD_APTYPE.equals(fvf.getField())) {
-						if(!addApType(fvf.getValue())) {
+					if (FIELD_APTYPE.equals(fvf.getField())) {
+						if (!addApType(fvf.getValue())) {
 							return false;
 						}
 					} else {
@@ -203,29 +205,27 @@ public class SearchController implements SearchApi {
 					}
 					continue;
 				}
-				if(filter instanceof LogicalFilter) {
+				if (filter instanceof LogicalFilter) {
 					LogicalFilter lf = (LogicalFilter) filter;
-					if(LogicalFilter.OperationEnum.OR==lf.getOperation()) {
+					if (OperationLogicalType.OR == lf.getOperation()) {
 						if(!processOrFilters(lf.getFilters())) {
 							return false;
 						}
 					} else
-					if(LogicalFilter.OperationEnum.AND==lf.getOperation()) {
+					if (OperationLogicalType.AND == lf.getOperation()) {
 						log.warn("Cannot user AND under OR");
 						return false;
 					} else {
 						log.warn("Unsupported logical operation: {}", lf.getOperation());
 						return false;
 					}
-
 				}
-
 			}
 			return true;
 		}
 
 		private void addApType(ApType apType) {
-			if(apTypeIds==null) {
+			if (apTypeIds == null) {
 				apTypeIds = new ArrayList<>();
 			}
 			apTypeIds.add(apType.getApTypeId());
@@ -248,7 +248,6 @@ public class SearchController implements SearchApi {
         public SearchFilterVO getSearchFilter() {
             return searchFilterVO;
         }
-
 	};
 
 	/**
@@ -272,7 +271,7 @@ public class SearchController implements SearchApi {
 
 		StaticDataProvider sdp = staticDataService.createProvider();
 		final RulPartType bodyType = sdp.getPartTypeByCode(StaticDataProvider.DEFAULT_BODY_PART_TYPE);
-		Validate.notNull(bodyType);
+		Objects.requireNonNull(bodyType);
 		final RulPartType nameType = sdp.getPartTypeByCode(StaticDataProvider.DEFAULT_PART_TYPE);
 
 		ApSearchParams apsp = new ApSearchParams(sdp);
@@ -343,7 +342,7 @@ public class SearchController implements SearchApi {
         List<AbstractFilter> filters = searchParams.getFilters();
         String searchedText = null;
         if (filters != null && filters.size() > 0) {
-            if(filters.size() == 1) {
+            if (filters.size() == 1) {
                 if (filters.get(0) instanceof MultimatchContainsFilter) {
                     MultimatchContainsFilter mcf = (MultimatchContainsFilter) filters.get(0);
                     searchedText = mcf.getValue();
@@ -359,19 +358,11 @@ public class SearchController implements SearchApi {
         } else {
             // filter not specified
         }
-        return searchEntityFulltext(fundList, searchParams.getOffset(), searchParams.getSize(), searchedText);
-    }
+        QueryResults<ArrDescItemInfo> results = nodeRepository.findFundIdsByFulltext(searchedText, fundList, searchParams.getSize(), searchParams.getOffset());
 
-    private ResponseEntity<ResultEntityRef> searchEntityFulltext(List<ArrFund> fundList,
-                                                                 Integer offset, Integer size,
-                                                                 String value) {
-        QueryResults<ArrDescItemInfo> results = nodeRepository.findFundIdsByFulltext(value, fundList, size, offset);
-
-        ResponseBuilder rb = new ResponseBuilder(fundVersionRepository,
-                levelTreeCacheService, nodeRepository);
+        ResponseBuilder rb = new ResponseBuilder(fundVersionRepository, levelTreeCacheService, nodeRepository);
         ResultEntityRef rer = rb.build(results);
 
         return ResponseEntity.ok(rer);
     }
-
 }

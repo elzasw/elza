@@ -3,9 +3,10 @@ package cz.tacr.elza.bulkaction.generator;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
+import cz.tacr.elza.bulkaction.BulkActionDFS;
 import cz.tacr.elza.common.db.HibernateUtils;
-import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -56,7 +57,7 @@ public class MoveDescItem extends BulkActionDFS {
 
 		// prepare item type
 		ItemType srcItemType = staticDataProvider.getItemTypeByCode(config.getSource().getItemType());
-		Validate.notNull(srcItemType);
+		Objects.requireNonNull(srcItemType);
 
 		// check if supported source data type
 		if (srcItemType.getDataType() != DataType.STRING) {
@@ -68,7 +69,7 @@ public class MoveDescItem extends BulkActionDFS {
 
 		// prepare target type
 		ItemType trgItemType = staticDataProvider.getItemTypeByCode(config.getTarget().getItemType());
-		Validate.notNull(trgItemType);
+		Objects.requireNonNull(trgItemType);
 		if (trgItemType.getDataType() != DataType.STRING) {
             throw createConfigException("Target item type has unsupported data type.")
                     .set(ITEM_TYPE_CODE, this.trgItemType.getCode());
@@ -114,13 +115,14 @@ public class MoveDescItem extends BulkActionDFS {
 			descItem.setData(trgData);
 
 			/*ArrDescItem trgItem = */
-			descriptionItemService.createDescriptionItem(descItem, currNode, version, getChange());
+			var fondsVersion = getFondsVersion();
+			descriptionItemService.createDescriptionItem(descItem, currNode, fondsVersion, getChange());
 			// delete old one
             List<ArrDescItem> items = Collections.singletonList(srcDescItem);
-            descriptionItemService.deleteDescriptionItems(items, version, getChange(), true, false);
+            descriptionItemService.deleteDescriptionItems(items, fondsVersion, getChange(), true, false);
 
 			// validace uzlu
-			ruleService.conformityInfo(version.getFundVersionId(), Arrays.asList(descItem.getNode().getNodeId()),
+			ruleService.conformityInfo(fondsVersion.getFundVersionId(), Arrays.asList(descItem.getNode().getNodeId()),
 			        NodeTypeOperation.SAVE_DESC_ITEM, null, null, Arrays.asList(descItem));
 		}
 	}
@@ -128,7 +130,5 @@ public class MoveDescItem extends BulkActionDFS {
 	@Override
 	protected void done() {
 		// No final action
-
 	}
-
 }

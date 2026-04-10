@@ -3,6 +3,7 @@ package cz.tacr.elza.dataexchange.input.reader;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -10,16 +11,17 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.dataexchange.input.DEImportException;
 
 /**
  * SAX based XML element reader
- * 
- * 
  */
 public class XmlElementReader {
+
+	private static final Logger logger = LoggerFactory.getLogger(XmlElementReader.class);
 
 	/**
 	 * Map of registered element handlers
@@ -40,7 +42,7 @@ public class XmlElementReader {
 	 * @param elementHandler
 	 */
     public void addElementHandler(String localPath, XmlElementHandler elementHandler) {
-		Validate.notNull(localPath);
+    	Objects.requireNonNull(localPath);
 
 		XmlElementHandler currentHandler = elementHandlerMap.put(localPath, elementHandler);
 		if (currentHandler != null) {
@@ -55,7 +57,8 @@ public class XmlElementReader {
 	 *            Path to which is handler attached
 	 */
 	public void removeElementHandler(String localPath) {
-		Validate.notNull(localPath);
+		Objects.requireNonNull(localPath);
+
 		XmlElementHandler currentHandler = elementHandlerMap.remove(localPath);
 		if (currentHandler == null) {
 			throw new IllegalStateException("No element handler, path:" + localPath);
@@ -101,6 +104,7 @@ public class XmlElementReader {
 			try {
                 handler.handleStartElement(eventReader, startElement);
 			} catch (Throwable t) {
+				logger.error("", t);
 				int lineNumber = peekEvent.getLocation().getLineNumber();
 				throw new DEImportException("Reading of XML element failed, path:" + path + ", line:" + lineNumber, t);
 			}
