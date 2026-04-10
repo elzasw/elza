@@ -11,9 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.cam.ApiCamConnector;
 import cz.tacr.elza.cam.ItemSyncProcessor;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -38,8 +38,8 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.event.ApExternalSystemEvent;
 import jakarta.transaction.Transactional;
-
 
 @Service
 public class AccessPointConnectorService {
@@ -85,14 +85,24 @@ public class AccessPointConnectorService {
     @Autowired
     private cz.tacr.elza.cam.v2.CamConnector camConnectorV2;
 
-	/**
+    @EventListener
+    public void onExternalSystemChanged(ApExternalSystemEvent event) {
+        ApExternalSystem extSys = event.getExternalSystem();
+        if (extSys.getType().getVersionApi() == 1) {
+            camConnectorV1.invalidate(extSys);
+        } else {
+            camConnectorV2.invalidate(extSys);
+        }
+    }
+
+    /**
      * Výběr verze konektoru API CAM 
      * 
      * @param extSystem
      * @return
      */
 	public ApiCamConnector getConnector(ApExternalSystem extSystem) {
-		return getCamVersion(extSystem) == 2 ? camConnectorV2 : camConnectorV1;
+		return extSystem.getType().getVersionApi() == 2 ? camConnectorV2 : camConnectorV1;
 	}
 
 	/**
@@ -104,17 +114,7 @@ public class AccessPointConnectorService {
 	@Transactional
 	public ApiCamConnector getConnector(String extSysCode) {
 		ApExternalSystem extSystem = staticDataService.getData().getApExternalSystemByCode(extSysCode);
-		return getCamVersion(extSystem) == 2 ? camConnectorV2 : camConnectorV1;
-	}
-
-	/**
-	 * Detekce verze CAM -> 1 | 2
-	 * 
-	 * @param extSystem
-	 * @return
-	 */
-	private int getCamVersion(ApExternalSystem extSystem) {
-		return extSystem.getType() == ApExternalSystemType.CAM_V2 || extSystem.getType() == ApExternalSystemType.CAM_COMPLETE_V2 ? 2 : 1;
+		return getConnector(extSystem);
 	}
 
 	/**
@@ -225,7 +225,7 @@ public class AccessPointConnectorService {
             ExtSyncsQueueItem queueItem = itemPage.iterator().next();
             StaticDataProvider sdp = staticDataService.getData();
             ApExternalSystem extSystem = sdp.getApExternalSystemById(queueItem.getExternalSystemId());
-            if (getCamVersion(extSystem) == 1) {
+            if (extSystem.getType().getVersionApi()	 == 1) {
             	return appCtx.getBean(cz.tacr.elza.cam.v1.ItemSyncExportProcessor.class, queueItem);
             }
             return appCtx.getBean(cz.tacr.elza.cam.v2.ItemSyncExportProcessor.class, queueItem);

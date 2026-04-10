@@ -1281,24 +1281,6 @@ namespace ElzaAPI.DaoRepository {
 @route("/extsystem")
 namespace ElzaAPI.ExternalSystem {
     /**
-     * Change API version
-     */
-    @route("/changeVersion/{id}/{version}")
-    @put op changeVersionApi(
-        /** external system ID */
-        @path id: string;
-        /** new version api */
-        @path version: integer;
-    ): {
-        /** Pending, processing, finished */
-        @Http.statusCode statusCode: 200;
-    } | {
-        /** Id does not exists */
-        @Http.statusCode statusCode: 404;
-        @body data: BaseException;
-    };
-
-    /**
      * External system resync
      */
     @route("/resync/{id}")
