@@ -97,11 +97,6 @@ export interface ApAccessPointVO {
     lastChange: ApChangeVO;
 
     /**
-     * Vlastník přístupového bodu
-     */
-    ownerUser: UserVO;
-
-    /**
      * Počet komentářů
      */
     comments: number;
@@ -135,4 +130,8 @@ export interface ApAccessPointVO {
      * Poslední číslo verze entity
      */
     version: number;
+    /**
+     * Id uzivatele kteremu byla entita pridelena
+     */
+    assignedTo?: number;
 }

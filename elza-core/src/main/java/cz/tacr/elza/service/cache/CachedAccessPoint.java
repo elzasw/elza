@@ -64,6 +64,11 @@ public class CachedAccessPoint {
 
     private String createUsername;
 
+    /**
+     * ID přiřazeného uživatele
+     */
+    private Integer assignedTo;
+
     public Integer getAccessPointId() {
         return accessPointId;
     }
@@ -181,6 +186,14 @@ public class CachedAccessPoint {
 
 	public void setCreateUsername(String createUsername) {
 		this.createUsername = createUsername;
+	}
+
+	public Integer getAssignedTo() {
+		return assignedTo;
+	}
+
+	public void setAssignedTo(Integer assignedTo) {
+		this.assignedTo = assignedTo;
 	}
 
 	public void addReplacedId(Integer id) {

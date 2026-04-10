@@ -5,7 +5,7 @@
 Předpokládané softwarové vybavení:
 
 * [Git 1.9+](https://git-scm.com/download/win)
-* [Oracla JDK 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+* [JDK 17+](https://adoptium.net/temurin/releases/?version=17)
 * [Apache Maven 3.2.+](https://maven.apache.org/download.cgi)
 * [Node.js 20.11.0+](https://nodejs.org/)
 
@@ -143,27 +143,15 @@ elza:
 ```
 
 ### Databázový server
-Od MT14 je nutné mít připravený databázový server pro datový typ Geometry.
-
-#### PostgreSQL
-Pro tento DB server je vyžadována verze 9.1 a vyšší a rozšíření [PostGis](http://postgis.net/).
+Je vyžadován PostgreSQL s rozšířením [PostGIS](http://postgis.net/).
 Po instalaci je nutné rozšíření zprovoznit přes ```psql``` nebo PgAdmin.
 Následující příkaz zprovozní rozšíření nad vybranou databází.
 ```
 CREATE EXTENSION postgis;
 ```
-#### MySQL
-Je vyžadována verze 5.0.1 - není potřeba žádná speciální instalace.
-
-#### Oracle
-Tento DB server je vyžadována verze Enterprise. Pouze verze Enterprise umí pracovat s datovým typem Geometry.
-
-#### MSSQL
-Je vyžadována verze MSSQL 2008 - není potřeba žádná speciální instalace.
 
 ### Databázové připojení
 Do konfigurace vložte nastavení datového zdroje. Při prvním připojení se datové struktury vytvoří automaticky.
-Nutno také vybrat dialekt dle použité databáze.
 
 ```
 elza:
@@ -171,21 +159,6 @@ elza:
         url: jdbc:postgresql://server/databaze
         username: uzivatel
         password: heslo
-
-spring:
-  jpa:
-      properties:
-          hibernate:
-              # PostgreSQL
-              dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
-              # H2
-              #dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
-              # MySQL
-              #dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
-              # Oracle
-              #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
-              # MSSQL
-              #dialect: org.hibernate.spatial.dialect.sqlserver.SqlServer2008SpatialDialect
 ```
 
 ### Logování událostí

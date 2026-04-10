@@ -44,6 +44,7 @@ import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulPackageDependency;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.table.ElzaColumn;
+import cz.tacr.elza.domain.viewDefinition.StringViewDefinition;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.xml.Category;
@@ -956,8 +957,15 @@ public class ItemTypeUpdater {
 
         DisplayType displayType = itemType.getDisplayType();
         if (displayType != null) {
+        	// TODO:: consider moving to package domain.viewDefinition
             viewDefinition = cz.tacr.elza.domain.integer.DisplayType.valueOf(displayType.name());
-        }
+        } else 
+        if(itemType.getMask() != null) {
+        	StringViewDefinition stringViewDefinition = new StringViewDefinition();
+        	stringViewDefinition.setMask(itemType.getMask());
+        	viewDefinition = stringViewDefinition;
+		}
+        // compare previous and new view definition
         if (!Objects.equals(viewDefinition, dbItemType.getViewDefinition())) {
             dbItemType.setViewDefinition(viewDefinition);
             modified = true;

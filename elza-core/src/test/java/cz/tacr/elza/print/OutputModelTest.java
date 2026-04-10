@@ -1,15 +1,15 @@
 package cz.tacr.elza.print;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
 import java.util.List;
 
 import cz.tacr.elza.service.StructObjService;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -177,10 +177,10 @@ public class OutputModelTest extends AbstractServiceTest {
 
         OutputModel outputModel = new OutputModel(outputContext, staticDataService, elzaLocale,
                 fundRepository, fundTreeProvider, nodeCacheService, institutionRepository, apStateRepository,
-                bindingRepository, null, structObjRepos, structItemRepos, itemRepository,
+                bindingRepository, null, structObjRepos, itemRepository,
                 bindingStateRepository, indexRepository,
                 daoLinkRepository, exportConfig, structObjService, em,
-                dataService);
+                dataService, accessPointCacheService);
 
         ArrOutput output = new ArrOutput();
         output.setFund(fi.getFund());

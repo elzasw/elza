@@ -144,14 +144,20 @@ public class Authorization {
             logger.error("User is not logged, no security context");
             throw createAccessDeniedException(declaredAnnotation.permission());
         }
+        
+        // Check if some permissions are required
+        if(declaredAnnotation.permission()==null||declaredAnnotation.permission().length==0){
+        	// No permission required we can log-in user
+        	return pjp.proceed();
+		}
 
 		for (UsrPermission.Permission permission : declaredAnnotation.permission()) {
 
 			boolean hasPermission = false;
 
-			if(permission==UsrPermission.Permission.USER_CONTROL_ENTITITY) {
+			if (permission == UsrPermission.Permission.USER_CONTROL_ENTITY) {
 				hasPermission = checkControlEntityPermission(methodInfo, userDetail);
-			} else if (permission == UsrPermission.Permission.GROUP_CONTROL_ENTITITY) {
+			} else if (permission == UsrPermission.Permission.GROUP_CONTROL_ENTITY) {
 				hasPermission = checkControlGroupPermission(methodInfo, userDetail);
 			} else {
 				// type based permission checker
@@ -237,7 +243,7 @@ public class Authorization {
 
 		return hasPermission(methodInfo, (authParam, parameterValue) -> {
 			Integer groupId = loadGroupId(parameterValue, authParam.type());
-			if (userDetail.hasPermission(UsrPermission.Permission.GROUP_CONTROL_ENTITITY, groupId)) {
+			if (userDetail.hasPermission(UsrPermission.Permission.GROUP_CONTROL_ENTITY, groupId)) {
 				return PermissionResult.GRANT_ACCESS;
 			}
 			List<Integer> perms = userRepository.findPermissionAllowingGroupAccess(userId, groupId);
@@ -276,7 +282,7 @@ public class Authorization {
 		}
 		return hasPermission(methodInfo, (authParam, parameterValue) -> {
 			Integer entityId = loadUserId(parameterValue, authParam.type());
-			if (userDetail.hasPermission(UsrPermission.Permission.USER_CONTROL_ENTITITY, entityId)) {
+			if (userDetail.hasPermission(UsrPermission.Permission.USER_CONTROL_ENTITY, entityId)) {
 				return PermissionResult.GRANT_ACCESS;
 			}
 			List<Integer> perms = userRepository.findPermissionAllowingUserAccess(userId, entityId);

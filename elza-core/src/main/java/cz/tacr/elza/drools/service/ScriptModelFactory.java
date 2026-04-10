@@ -2,18 +2,23 @@ package cz.tacr.elza.drools.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
@@ -46,6 +51,8 @@ import cz.tacr.elza.service.cache.NodeCacheService;
  */
 @Component
 public class ScriptModelFactory {
+	
+	private static Logger logger = LoggerFactory.getLogger(ScriptModelFactory.class); 
 	
 	@Autowired
 	private LevelTreeCacheService levelTreeCacheService;
@@ -388,13 +395,29 @@ public class ScriptModelFactory {
      *
      * @param level požadovaný level, ke kterému se budou efektivní atributu vytvářet
      */
-	private void addEffectiveDescItems(final Level level) {
-        Level tmpLevel = level.getParent();
+	private void addEffectiveDescItems(final Level level) {        
         List<DescItem> descItemLevel = level.getDescItems();
 		Objects.requireNonNull(descItemLevel);
-        while (tmpLevel != null) {
+		
+		// Create set of inhibited items (from all parents)
+		Level higherLevel = level;
+		Set<Integer> inhItems = new HashSet<>();
+		while(higherLevel!=null) {
+			if(CollectionUtils.isEmpty(higherLevel.getInhibitedItems())) {
+				higherLevel = higherLevel.getParent();
+				continue;
+			}		
+			for(var inhItem: higherLevel.getInhibitedItems()) {
+				inhItems.add(inhItem.getItemObjectId());
+			}
+			higherLevel = higherLevel.getParent();
+		}
+		
+		// iterate to add items from parents
+		higherLevel = level.getParent();
+        while (higherLevel != null) {
             // atributy procházeného rodiče
-            List<DescItem> descItems = tmpLevel.getDescItems();
+            List<DescItem> descItems = higherLevel.getDescItems();
 
             // atributy, které v cyklu jsou označeny jako effektivní
             List<DescItem> effectiveDescItemsAdd = new ArrayList<>();
@@ -414,19 +437,37 @@ public class ScriptModelFactory {
 
                     // pokud ještě neexistuje, přidá se do seznamu pro přidání
                     if (addAsEffective) {
-                        addDescItemToEffective(tmpLevel, effectiveDescItemsAdd, descItem);
+                        addDescItemToEffective(higherLevel, effectiveDescItemsAdd, descItem);
                     }
                 }
             } else {
                 // pokud neexistuje žádný atribut, přidají se všechny z procházeného předka
                 for (DescItem descItem : descItems) {
-                    addDescItemToEffective(tmpLevel, effectiveDescItemsAdd, descItem);
+                    addDescItemToEffective(higherLevel, effectiveDescItemsAdd, descItem);
                 }
             }
 
             // přidání nových efektivních atributů z procházeného předka
-            descItemLevel.addAll(effectiveDescItemsAdd);
-            tmpLevel = tmpLevel.getParent();
+			// skip inhibited items
+			if(inhItems.isEmpty()) {
+				descItemLevel.addAll(effectiveDescItemsAdd);
+			} else {
+				for (var effectiveDescItemAdd : effectiveDescItemsAdd) {
+					if (!inhItems.contains(effectiveDescItemAdd.getItemObjectId())) {
+						descItemLevel.add(effectiveDescItemAdd);
+						logger.trace("Adding effective item (nodeId: {}), itemObjectId: {}, type: {}, spec: {}",
+								level.getNodeId(),
+								effectiveDescItemAdd.getItemObjectId(),
+								effectiveDescItemAdd.getType(), effectiveDescItemAdd.getSpecCode());
+					} else {
+						logger.trace("Item was inhibited (nodeId: {}), itemObjectId: {}, type: {}, spec: {}",
+								level.getNodeId(),
+								effectiveDescItemAdd.getItemObjectId(),
+								effectiveDescItemAdd.getType(), effectiveDescItemAdd.getSpecCode());
+					}
+				}
+			}
+            higherLevel = higherLevel.getParent();
         }
     }
 

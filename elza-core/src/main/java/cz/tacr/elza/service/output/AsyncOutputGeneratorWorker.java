@@ -118,17 +118,35 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
     public void run() {
         running.set(true);
         beginTime = System.currentTimeMillis();
+        boolean success = false;
+        Throwable failure = null;
         try {
             new TransactionTemplate(transactionManager).execute(status -> {
                 generateOutput(request.getOutputId(), request.getUserId());
                 return null;
             });
+            success = true;
         } catch (Throwable t) {
-            new TransactionTemplate(transactionManager).execute(status -> {
-                handleException(t);
-                return null;
-            });
+            failure = t;
+            try {
+                new TransactionTemplate(transactionManager).execute(status -> {
+                    handleOutputError(t);
+                    return null;
+                });
+            } catch (Exception ex) {
+                logger.error("Failed to persist output error state", ex);
+            }
         } finally {
+            // Always notify executor so worker is removed from processing
+            try {
+                if (success) {
+                    eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
+                } else {
+                    eventPublisher.publishEvent(AsyncRequestEvent.fail(request, this, failure));
+                }
+            } catch (Exception e) {
+                logger.error("Failed to publish async request event", e);
+            }
             running.set(false);
         }
     }
@@ -198,7 +216,6 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
         output.setState(state); // saved by commit
 
         outputServiceInternal.publishOutputStateChanged(output, request.getFundVersionId());
-        eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
     }
 
     private void validate(String validationSchema, ArrOutputResult result) {
@@ -255,9 +272,9 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
     }
 
     /**
-     * Handle exception raised during output processing. Must be called in transaction.
+     * Persist error state on the output entity. Must be called in transaction.
      */
-    private void handleException(Throwable t) {
+    private void handleOutputError(Throwable t) {
         ExceptionResponseBuilder builder = ExceptionResponseBuilder.createFrom(t);
         builder.logError(logger);
 
@@ -268,7 +285,6 @@ public class AsyncOutputGeneratorWorker implements IAsyncWorker {
             output.setState(OutputState.OPEN); // saved by commit
             outputServiceInternal.publishOutputFailed(output, request.getFundVersionId());
         }
-        eventPublisher.publishEvent(AsyncRequestEvent.fail(request, this, t));
     }
 
     @Override

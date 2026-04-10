@@ -5,8 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.service.cam.CamService;
-import cz.tacr.elza.service.cam.ItemSyncProcessor;
+import cz.tacr.elza.cam.ItemSyncProcessor;
 
 @Component
 public class ExtSyncsProcessor implements Runnable {
@@ -14,7 +13,7 @@ public class ExtSyncsProcessor implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(ExtSyncsProcessor.class);
 
     @Autowired
-    private CamService camService;
+    private AccessPointConnectorService apConnectorService;
 
     private volatile Thread asyncThread = null;
 
@@ -52,7 +51,7 @@ public class ExtSyncsProcessor implements Runnable {
                     // pokud true - pauza po ukončení práce procesoru
                     boolean wait = true;
                     try {
-                        ItemSyncProcessor itemProcessor = camService.nextItemSyncProcessor(importListSize);
+                        ItemSyncProcessor itemProcessor = apConnectorService.nextItemSyncProcessor(importListSize);
                         if (itemProcessor != null) {
                         	logger.trace("ExtSyncsProcessor - processing item: {}.", itemProcessor.toString());
                             if(itemProcessor.process()) {

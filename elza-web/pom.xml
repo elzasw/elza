@@ -28,6 +28,10 @@
             <artifactId>spring-messaging</artifactId>
         </dependency>
         <!-- END - Spring boot dependencies -->
+		<dependency>
+		    <groupId>jakarta.servlet</groupId>
+		    <artifactId>jakarta.servlet-api</artifactId>
+		</dependency>
     </dependencies>
 
     <profiles>

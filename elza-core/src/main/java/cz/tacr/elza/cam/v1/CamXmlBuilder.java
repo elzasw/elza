@@ -1,0 +1,800 @@
+package cz.tacr.elza.cam.v1;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import cz.tacr.cam.v1.schema.cam.BinaryStreamXml;
+import cz.tacr.cam.v1.schema.cam.BooleanXml;
+import cz.tacr.cam.v1.schema.cam.CodeXml;
+import cz.tacr.cam.v1.schema.cam.EntityRecordRefXml;
+import cz.tacr.cam.v1.schema.cam.IntegerXml;
+import cz.tacr.cam.v1.schema.cam.ItemBinaryXml;
+import cz.tacr.cam.v1.schema.cam.ItemBooleanXml;
+import cz.tacr.cam.v1.schema.cam.ItemEntityRefXml;
+import cz.tacr.cam.v1.schema.cam.ItemEnumXml;
+import cz.tacr.cam.v1.schema.cam.ItemIntegerXml;
+import cz.tacr.cam.v1.schema.cam.ItemLinkXml;
+import cz.tacr.cam.v1.schema.cam.ItemStringXml;
+import cz.tacr.cam.v1.schema.cam.ItemUnitDateXml;
+import cz.tacr.cam.v1.schema.cam.ItemsXml;
+import cz.tacr.cam.v1.schema.cam.NewItemsXml;
+import cz.tacr.cam.v1.schema.cam.ObjectFactory;
+import cz.tacr.cam.v1.schema.cam.PartTypeXml;
+import cz.tacr.cam.v1.schema.cam.PartXml;
+import cz.tacr.cam.v1.schema.cam.PartsXml;
+import cz.tacr.cam.v1.schema.cam.StringXml;
+import cz.tacr.cam.v1.schema.cam.UuidXml;
+import cz.tacr.elza.cam.v1.export.CamUtils;
+import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBindingItem;
+import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataBit;
+import cz.tacr.elza.domain.ArrDataCoordinates;
+import cz.tacr.elza.domain.ArrDataInteger;
+import cz.tacr.elza.domain.ArrDataNull;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataString;
+import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
+import cz.tacr.elza.domain.ArrDataUriRef;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.service.DataService;
+import cz.tacr.elza.service.GroovyService;
+import jakarta.annotation.Nullable;
+
+/**
+ * Builder for CAM XML
+ *
+ * This builder will create XML for one binding
+ */
+abstract public class CamXmlBuilder {
+
+    private static final Logger log = LoggerFactory.getLogger(CamXmlBuilder.class);
+
+    final protected static ObjectFactory objectFactory = CamUtils.getObjectFactory();
+
+    protected final StaticDataProvider sdp;
+    protected final ApAccessPoint accessPoint;
+    protected final Collection<ApBindingState> bindingStates;
+    protected final ApScope scope;
+
+    protected final GroovyService groovyService;
+    protected final DataService dataService;
+
+    /**
+     * Collection of all part UUIDS
+     */
+    protected final Map<Integer, String> partUuidMap = new HashMap<>();
+
+    /**
+     * Map of new UUIDS for items
+     */
+    private Map<Integer, String> itemUuids = new HashMap<>();
+
+    /**
+     * Map of new UUIDS for parts
+     */
+    private Map<Integer, String> partUuids = new HashMap<>();
+
+    /**
+     * Entity filter
+     */
+    protected boolean applyFilter = true;
+
+    public Map<Integer, String> getItemUuids() {
+        return itemUuids;
+    }
+
+    public Map<Integer, String> getPartUuids() {
+        return partUuids;
+    }
+
+	CamXmlBuilder(final StaticDataProvider sdp,
+                  final ApAccessPoint accessPoint,
+                  final Collection<ApBindingState> bindingStates,
+                  final GroovyService groovyService,
+                  final DataService dataService,
+                  final ApScope scope) {
+        this.sdp = sdp;
+        this.accessPoint = accessPoint;
+        this.bindingStates = bindingStates;
+        this.groovyService = groovyService;
+        this.dataService = dataService;
+        this.scope = scope;
+    }
+
+    protected NewItemsXml createNewItems(ApBindingItem changedPart, Collection<ApItem> itemList) {
+        NewItemsXml newItems = new NewItemsXml();
+        newItems.setPid(new UuidXml(changedPart.getValue()));
+        newItems.setT(PartTypeXml.fromValue(changedPart.getPart().getPartType().getCode()));
+
+        createXmlItems(itemList, newItems.getItems());
+        if (newItems.getItems().size() == 0) {
+            return null;
+        }
+
+        return newItems;
+    }
+
+    protected PartsXml createParts(Collection<ApPart> srcPartList,
+                                   Map<Integer, List<ApItem>> itemMap,
+                                   Map<Integer, Collection<ApIndex>> indexMap) {
+        // if no parts available -> return null
+        if (CollectionUtils.isEmpty(srcPartList)) {
+            // schema allows empty element prts
+            return null;
+        }
+
+        // Sort part list in following order
+        // - preferred part
+        // - parent parts
+        // - subparts
+        List<ApPart> adjustedPartList = new ArrayList<>(srcPartList.size());
+        ApPart preferedPart = accessPoint.getPreferredPart();
+        if (preferedPart != null) {
+            adjustedPartList.add(preferedPart);
+        }
+
+            ArrayList<ApPart> subparts = new ArrayList<>();
+        for (ApPart part : srcPartList) {
+                    // check if subpart
+                    if (part.getParentPartId() != null) {
+                        subparts.add(part);
+                    } else {
+                // add non preferred part
+                if (preferedPart == null || !part.getPartId().equals(preferedPart.getPartId())) {
+                        adjustedPartList.add(part);
+                    }
+                }
+            }
+            // sub parts will be added at the end
+            adjustedPartList.addAll(subparts);
+
+        // if no parts available -> create item without parts
+        List<PartXml> partxmlList = createNewParts(null, adjustedPartList, itemMap, indexMap);
+        // if no parts available -> return null
+        if (CollectionUtils.isEmpty(partxmlList)) {
+            // schema allows empty element prts
+            return null;
+        }
+
+        PartsXml parts = new PartsXml();
+        for (PartXml part : partxmlList) {
+            parts.getList().add(part);
+        }
+        return parts;
+    }
+
+    /**
+     * Create list of new parts
+     *
+     * @param existingParts
+     *            List of current parts
+     * @param srcPartList
+     * @param itemMap
+     * @param indexMap
+     * @return
+     */
+    protected List<PartXml> createNewParts(Collection<String> existingParts,
+                                           Collection<ApPart> srcPartList,
+                                           Map<Integer, List<ApItem>> itemMap,
+                                           @Nullable Map<Integer, Collection<ApIndex>> indexMap) {
+        if (CollectionUtils.isEmpty(srcPartList)) {
+            return Collections.emptyList();
+        }
+
+        // Reorder parts - parent parts have to be first
+        List<ApPart> partList = new ArrayList<>(srcPartList.size());
+        // copy parts without parents
+        for (ApPart srcPart : srcPartList) {
+            if (srcPart.getParentPart() == null) {
+                partList.add(srcPart);
+            }
+        }
+        // copy parts with parents
+        for (ApPart srcPart : srcPartList) {
+            if (srcPart.getParentPart() != null) {
+                partList.add(srcPart);
+            }
+        }
+
+        // collection of available parts for export
+        // note: if parent part is deleted, subparts may still be
+        //       included in partList, these parts without parent
+        //       parts have to be filtered out.
+        Set<String> availableParts = new HashSet<>();
+        if(CollectionUtils.isNotEmpty(existingParts)) {
+            availableParts.addAll(existingParts);
+        }
+        Map<String, Integer> subpartCounter = new HashMap<>();
+
+        List<PartXml> partXmlList = new ArrayList<>();
+        for (ApPart part : partList) {
+            List<ApItem> srcPartItems = itemMap.get(part.getPartId());
+            List<ApItem> partItems = new ArrayList<>(srcPartItems);
+
+            // filter parts without mapping
+            if (applyFilter) {
+                partItems = filterOutItemsWithoutExtSysMapping(part, srcPartItems);
+            }
+            if (CollectionUtils.isNotEmpty(srcPartItems) && CollectionUtils.isEmpty(partItems)) {
+                log.debug("Ignoring part, missing mapping to external system, partId={}", part.getPartId());
+                continue;
+            }
+
+            // skip part if any RECORD_REF item points to entity not in target external system
+            if (hasUnsendableEntityRef(partItems)) {
+                log.debug("Ignoring part, contains entity reference not available in external system, partId={}", part.getPartId());
+                continue;
+            }
+
+            Collection<ApIndex> partIndexes = (indexMap != null) ? indexMap.get(part.getPartId()) : null;
+
+            PartXml partXml = createPart(part, partItems, partIndexes);
+            partXmlList.add(partXml);
+            availableParts.add(partXml.getPid().getValue());
+
+            log.debug("Exporting part, partId={}, partUuid={}, parentPartId={}", part.getPartId(),
+                      partXml.getPid().getValue(),
+                      (part.getParentPart() != null) ? part.getParentPart().getPartId() : null);
+
+            if (partXml.getPrnt() != null) {
+                int cnt = subpartCounter.getOrDefault(partXml.getPrnt().getValue(), 0);
+                cnt++;
+                subpartCounter.put(partXml.getPrnt().getValue(), cnt);
+            }
+        }
+
+        // získání hodnoty pro CAM_REAL_ID
+        String bindingValue = null;
+        if (!bindingStates.isEmpty()) {
+            ApExternalSystem externalSystem = sdp.getApExternalSystemByCode("CAM");
+            if (externalSystem != null) {
+                Optional<ApBindingState> bindingState = bindingStates.stream()
+                        .filter(p -> p.getExternalSystemId().equals(externalSystem.getExternalSystemId()))
+                        .findFirst();
+                if (bindingState.isPresent()) {
+                    bindingValue = bindingState.get().getBinding().getValue();
+                }
+            }
+        }
+
+        // přidání externího ID CAM
+        if (bindingValue != null) {
+
+            List<Object> items = new ArrayList<>();
+            items.add(new ItemEnumXml(new CodeXml("CAM_REAL_ID"), new CodeXml("IDN_TYPE"), new UuidXml(UUID.randomUUID().toString())));
+            items.add(new ItemStringXml(new StringXml(bindingValue), null, new CodeXml("IDN_VALUE"), new UuidXml(UUID.randomUUID().toString())));
+            ItemsXml itemsXml = new ItemsXml(items);
+
+            PartXml partXml = new PartXml();
+            partXml.setT(PartTypeXml.PT_IDENT);
+            partXml.setPid(new UuidXml(UUID.randomUUID().toString()));
+            partXml.setItms(itemsXml);
+
+            partXmlList.add(partXml);
+        }
+
+        // do filtering
+        boolean modified;
+        do {
+            int size = partXmlList.size();
+            partXmlList = partXmlList.stream()
+                    .filter(p -> {
+                        // filter ignored subparts (parent part is already ignored)
+                        if (p.getPrnt() != null && !availableParts.contains(p.getPrnt().getValue())) {
+                            log.debug("Ignoring part, due to ignored parent part, parentPartUuid={}, partUuid={}",
+                                      p.getPrnt().getValue(),
+                                      p.getPid().getValue());
+
+                            availableParts.remove(p.getPid().getValue());
+                            removePart(p);
+                            return false;
+                        }
+                        // filter empty parts without subparts
+                        if (p.getItms() == null || p.getItms().getItems().size() == 0 ||
+                        // special case when PT_EVENT without data are not allowed, 
+                        // PT_EVENT might have defined type but it is not enough, such part
+                        // has to be excluded
+                                (p.getT() == PartTypeXml.PT_EVENT && p.getItms().getItems().size() == 1)) {
+                            // no items, we have to check if has subpart
+                            Integer cnt = subpartCounter.getOrDefault(p.getPid().getValue(), 0);
+                            if (cnt == 0) {
+                                log.debug("Ignoring part, due missing items, partUuid={}",
+                                          p.getPid().getValue());
+                                availableParts.remove(p.getPid().getValue());
+                                // decrement parent counter
+                                if (p.getPrnt() != null) {
+                                    cnt = subpartCounter.getOrDefault(p.getPrnt().getValue(), 0);
+                                    if (cnt > 0) {
+                                        cnt--;
+                                        subpartCounter.put(p.getPrnt().getValue(), cnt);
+                                    }
+                                }
+                                removePart(p);
+                                return false;
+                            }
+                        }
+                        return true;
+                    })
+                    .collect(Collectors.toList());
+            modified = (size > partXmlList.size());
+        } while (modified);
+
+        return partXmlList;
+    }
+
+    /**
+     * Remove previously prepared XML part
+     * @param partXml
+     */
+    private void removePart(PartXml partXml) {
+    	String uuid = partXml.getPid().getValue();
+		for(Entry<Integer, String> ep: partUuids.entrySet()) {
+			if(Objects.equals(uuid, ep.getValue())) {
+				partUuids.remove(ep.getKey());
+				break;
+			}
+		}
+		// remove items
+		ItemsXml items = partXml.getItms();
+		if(items!=null) {
+			for(Object item: items.getItems()) {
+				removeItem(item);
+			}
+		}
+	}
+
+	private void removeItem(Object item) {
+		if(item instanceof ItemStringXml ) {
+			ItemStringXml its = (ItemStringXml)item;
+			removeItemByUuid(its.getUuid().getValue());
+		} else
+		if(item instanceof ItemIntegerXml) {
+			ItemIntegerXml ix = (ItemIntegerXml)item;
+			removeItemByUuid(ix.getUuid().getValue());
+		} else
+		if(item instanceof ItemBooleanXml) {
+			ItemBooleanXml ix = (ItemBooleanXml)item;
+			removeItemByUuid(ix.getUuid().getValue());
+		} else
+		if(item instanceof ItemBinaryXml) {
+			ItemBinaryXml ix = (ItemBinaryXml)item;
+			removeItemByUuid(ix.getUuid().getValue());
+		} else
+		if(item instanceof ItemEntityRefXml) {
+			ItemEntityRefXml ix = (ItemEntityRefXml)item;
+			removeItemByUuid(ix.getUuid().getValue());
+		} else
+		if(item instanceof ItemEnumXml) {
+			ItemEnumXml ix = (ItemEnumXml)item;
+			removeItemByUuid(ix.getUuid().getValue());
+		} else
+		if(item instanceof ItemUnitDateXml) {
+			ItemUnitDateXml ix = (ItemUnitDateXml)item;
+			removeItemByUuid(ix.getUuid().getValue());
+		} else
+		if(item instanceof ItemLinkXml) {
+			ItemLinkXml ix = (ItemLinkXml)item;
+			removeItemByUuid(ix.getUuid().getValue());
+		} else {
+			throw new IllegalStateException("Unrecognized item type: "+ item.getClass().toString()
+					+", item: "+item);
+		}
+	}
+
+	/**
+	 * Remove previously prepared XML item
+	 * @param uuid
+	 */
+	private void removeItemByUuid(String uuid) {
+		for(Entry<Integer, String> ep: itemUuids.entrySet()) {
+			if(Objects.equals(uuid, ep.getValue())) {
+				itemUuids.remove(ep.getKey());
+				break;
+			}
+	}
+	}
+
+	/**
+     * Create part
+     *
+     * @param apPart
+     * @param partItems
+     * @param partIndexes
+     * @param externalSystemTypeCode
+     * @return
+     */
+    private PartXml createPart(ApPart dbPart, List<ApItem> partItems,
+                               @Nullable Collection<ApIndex> partIndexes) {
+        Validate.isTrue(partItems.size() > 0, "Empty part list, entityId: ", dbPart.getAccessPointId());
+
+        String uuid = getUuidForPart(dbPart);
+
+        log.debug("Creating part, partId: {}, partUuid: {}", dbPart.getPartId(), uuid);
+
+        String parentUuid;
+        if (dbPart.getParentPart() != null) {
+            parentUuid = getUuidForPart(dbPart.getParentPart());
+            Validate.notNull(parentUuid, "Missing UUID for parent part");
+        } else {
+            parentUuid = null;
+        }
+
+        PartXml partXml = createPart(dbPart, parentUuid, uuid);
+
+        ItemsXml itemsXml = createItems(dbPart, partItems);
+        partXml.setItms(itemsXml);
+
+        // Append indexes
+        if (CollectionUtils.isNotEmpty(partIndexes)) {
+            ItemsXml eitems = new ItemsXml();
+            List<Object> eresult = eitems.getItems();
+            for (ApIndex partIndex : partIndexes) {
+                ItemStringXml isx = new ItemStringXml();
+                isx.setT(new CodeXml(partIndex.getIndexType()));
+                isx.setValue(new StringXml(partIndex.getIndexValue()));
+                eresult.add(isx);
+            }
+            partXml.setEits(eitems);
+        }
+
+        return partXml;
+    }
+
+    private ItemsXml createItems(ApPart apPart, Collection<ApItem> itemList) {
+        ItemsXml items = new ItemsXml();
+        if (CollectionUtils.isNotEmpty(itemList)) {
+            createXmlItems(itemList, items.getItems());
+        }
+        return items;
+    }
+
+    /**
+     * Fill list of XML items
+     *
+     * @param itemList
+     * @param binding
+     * @param sdp
+     * @param trgList
+     */
+    public void createXmlItems(Collection<ApItem> itemList, List<Object> trgList) {
+        for (ApItem item : itemList) {
+            String uuid = UUID.randomUUID().toString();
+            Object i = createItem(item, uuid);
+            if (i != null) {
+                itemUuids.put(item.getItemId(), uuid);
+                trgList.add(i);
+            }
+        }
+    }
+
+    /**
+     * Return Uuid for given part
+     *
+     * @param apPart
+     *
+     * @return
+     */
+    protected String getUuidForPart(ApPart apPart) {
+        String uuid = partUuidMap.get(apPart.getPartId());
+        if (uuid == null) {
+            uuid = UUID.randomUUID().toString();
+            partUuidMap.put(apPart.getPartId(), uuid);
+            // Collection of UUIDs for new parts
+            partUuids.put(apPart.getPartId(), uuid);
+        }
+        return uuid;
+    }
+
+    /**
+     * Metoda odfiltruje itemy, které nemají mapování v externím systému
+     *
+     * @param part
+     *
+     * @param itemList
+     *            itemy k filtrování
+     * @param externalSystemTypeCode
+     *            kód typu externího systému
+     * @return kolekce itemů k poslání do externího systému
+     */
+    protected List<ApItem> filterOutItemsWithoutExtSysMapping(ApPart part, List<ApItem> itemList) {
+        List<ApItem> filteredItems = groovyService.filterOutgoingItems(part,
+                                                                       itemList,
+                                                                       scope.getRuleSetId());
+
+        return filteredItems;
+    }
+
+    /**
+     * Check if any RECORD_REF item in the list points to an entity
+     * not available in the target external system.
+     *
+     * @param itemList items to check
+     * @return true if at least one entity reference cannot be sent
+     */
+    protected boolean hasUnsendableEntityRef(List<ApItem> itemList) {
+        for (ApItem item : itemList) {
+            ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
+            DataType dataType = DataType.fromId(itemType.getDataTypeId());
+            if (dataType == DataType.RECORD_REF) {
+                ArrData data = HibernateUtils.unproxy(item.getData());
+                if (data instanceof ArrDataRecordRef) {
+                    ArrDataRecordRef recordRef = (ArrDataRecordRef) data;
+                    EntityRecordRefXml entityRef = createEntityRef(recordRef);
+                    if (entityRef == null) {
+                        log.debug("Unsendable entity reference found, itemId={}, dataId={}",
+                                  item.getItemId(), data.getDataId());
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+	protected Object createItem(ApItem item, String uuid) {
+		ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
+
+		CodeXml itemTypeCode = new CodeXml(itemType.getCode());
+		CodeXml itemSpecCode;
+		if (item.getItemSpecId() != null) {
+			RulItemSpec itemSpec = itemType.getItemSpecById(item.getItemSpecId());
+			itemSpecCode = new CodeXml(itemSpec.getCode());
+		} else {
+			itemSpecCode = null;
+		}
+		UuidXml uuidXml = new UuidXml(uuid);
+
+		ArrData data = HibernateUtils.unproxy(item.getData());
+		DataType dataType = DataType.fromId(itemType.getDataTypeId());
+		switch (dataType) {
+		case BIT:
+			return convertBoolean(data, itemTypeCode, itemSpecCode, uuidXml);
+		case URI_REF:
+			return convertUriRef(data, itemTypeCode, itemSpecCode, uuidXml);
+		case TEXT:
+			return convertText(data, itemTypeCode, itemSpecCode, uuidXml);
+		case STRING:
+			return convertString(data, itemTypeCode, itemSpecCode, uuidXml);
+		case INT:
+			return convertInteger(data, itemTypeCode, itemSpecCode, uuidXml);
+		case UNITDATE:
+			return convertUnitdate(data, itemTypeCode, itemSpecCode, uuidXml);
+		case ENUM:
+			return convertEnum(data, itemTypeCode, itemSpecCode, uuidXml);
+		case RECORD_REF:
+			return convertEntityRef(data, itemTypeCode, itemSpecCode, uuidXml);
+		case COORDINATES:
+			return convertCoordinates(data, itemTypeCode, itemSpecCode, uuidXml, dataService);
+		default:
+			throw new BusinessException("Failed to export item, unsupported data type: " + dataType + ", itemId:"
+					+ item.getItemId() + ", class: " + data.getClass(), BaseCode.EXPORT_FAILED);
+		}
+	}
+
+
+    private static ItemBinaryXml convertCoordinates(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
+                                                    UuidXml uuidXml,
+                                                    DataService dataService) {
+        if (!(data instanceof ArrDataCoordinates)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+        ArrDataCoordinates dataCoordinates = (ArrDataCoordinates) data;
+        ItemBinaryXml itemCoordinates = new ItemBinaryXml();
+        itemCoordinates.setValue(new BinaryStreamXml(dataService.convertGeometryToWKB(dataCoordinates.getValue())));
+        itemCoordinates.setT(itemTypeCode);
+        itemCoordinates.setS(itemSpecCode);
+        itemCoordinates.setUuid(uuidXml);
+        return itemCoordinates;
+    }
+
+    /*
+    protected EntityRecordRefXml createEntityRef(ArrDataRecordRef dataRecordRef) {
+        // create record ref only for records with same binding
+        if (dataRecordRef.getBinding() == null || !dataRecordRef.getBinding().getApExternalSystem()
+                .getExternalSystemId().equals(binding.getApExternalSystem().getExternalSystemId())) {
+            return null;
+        }
+        EntityRecordRefXml entityRecordRef = new EntityRecordRefXml();
+        entityRecordRef.setEid(new EntityIdXml(Long.parseLong(dataRecordRef.getBinding().getValue())));
+        return entityRecordRef;
+    }
+    */
+
+    abstract protected EntityRecordRefXml createEntityRef(ArrDataRecordRef recordRef);
+
+    /**
+     * Create entity ref for given system
+     * 
+     * @param data
+     * @param itemTypeCode
+     * @param itemSpecCode
+     * @param uuidXml
+     * @return
+     */
+    private ItemEntityRefXml convertEntityRef(ArrData data,
+                                              CodeXml itemTypeCode,
+                                              CodeXml itemSpecCode,
+                                              UuidXml uuidXml) {
+        if (!(data instanceof ArrDataRecordRef)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+        ArrDataRecordRef dataRecordRef = (ArrDataRecordRef) data;
+
+        EntityRecordRefXml entityRecordRef = createEntityRef(dataRecordRef);
+        // check if we have link to external entity
+        if (entityRecordRef == null) {
+        	log.info("Failed to create entity reference for external system, dataId={}", dataRecordRef.getDataId());
+            return null;
+        }
+
+        ItemEntityRefXml itemEntityRef = new ItemEntityRefXml();
+        itemEntityRef.setRef(entityRecordRef);
+        itemEntityRef.setT(itemTypeCode);
+        itemEntityRef.setS(itemSpecCode);
+        itemEntityRef.setUuid(uuidXml);
+        return itemEntityRef;
+    }
+
+    private static ItemEnumXml convertEnum(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode, UuidXml uuidXml) {
+        if (!(data instanceof ArrDataNull)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+
+        ItemEnumXml itemEnum = new ItemEnumXml();
+        itemEnum.setT(itemTypeCode);
+        itemEnum.setS(itemSpecCode);
+        itemEnum.setUuid(uuidXml);
+        return itemEnum;
+    }
+
+    private static ItemUnitDateXml convertUnitdate(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
+                                                   UuidXml uuidXml) {
+        if (!(data instanceof ArrDataUnitdate)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+
+        ArrDataUnitdate dataUnitdate = (ArrDataUnitdate) data;
+        ItemUnitDateXml itemUnitDate = new ItemUnitDateXml();
+        itemUnitDate.setF(dataUnitdate.getValueFrom());
+        itemUnitDate.setFe(dataUnitdate.getValueFromEstimated());
+        itemUnitDate.setFmt(dataUnitdate.getFormat());
+        itemUnitDate.setTo(dataUnitdate.getValueTo());
+        itemUnitDate.setToe(dataUnitdate.getValueToEstimated());
+        itemUnitDate.setT(itemTypeCode);
+        itemUnitDate.setS(itemSpecCode);
+        itemUnitDate.setUuid(uuidXml);
+        return itemUnitDate;
+    }
+
+    private static ItemIntegerXml convertInteger(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
+                                                 UuidXml uuidXml) {
+        if (!(data instanceof ArrDataInteger)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+
+        ArrDataInteger dataInteger = (ArrDataInteger) data;
+        ItemIntegerXml itemInteger = new ItemIntegerXml();
+        itemInteger.setValue(new IntegerXml(dataInteger.getValueInt().longValue()));
+        itemInteger.setT(itemTypeCode);
+        itemInteger.setS(itemSpecCode);
+        itemInteger.setUuid(uuidXml);
+        return itemInteger;
+    }
+
+    private static ItemStringXml convertString(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
+                                               UuidXml uuidXml) {
+        if (!(data instanceof ArrDataString)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+        ArrDataString dataString = (ArrDataString) data;
+        ItemStringXml itemString = new ItemStringXml();
+        itemString.setValue(new StringXml(dataString.getStringValue()));
+        itemString.setT(itemTypeCode);
+        itemString.setS(itemSpecCode);
+        itemString.setUuid(uuidXml);
+        return itemString;
+    }
+
+    private static ItemStringXml convertText(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
+                                             UuidXml uuidXml) {
+        if (!(data instanceof ArrDataText)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+        ArrDataText dataText = (ArrDataText) data;
+        ItemStringXml itemText = new ItemStringXml();
+        itemText.setValue(new StringXml(dataText.getTextValue()));
+        itemText.setT(itemTypeCode);
+        itemText.setS(itemSpecCode);
+        itemText.setUuid(uuidXml);
+        return itemText;
+    }
+
+    private static ItemLinkXml convertUriRef(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
+                                             UuidXml uuidXml) {
+        if (!(data instanceof ArrDataUriRef)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+        ArrDataUriRef dataUriRef = (ArrDataUriRef) data;
+        ItemLinkXml itemLink = new ItemLinkXml();
+        itemLink.setUrl(new StringXml(dataUriRef.getUriRefValue()));
+        if(StringUtils.isNotEmpty(dataUriRef.getDescription())) {
+        	itemLink.setNm(new StringXml(dataUriRef.getDescription()));
+        }
+        itemLink.setT(itemTypeCode);
+        itemLink.setS(itemSpecCode);
+        itemLink.setUuid(uuidXml);
+        return itemLink;
+    }
+
+    private static ItemBooleanXml convertBoolean(ArrData data, CodeXml itemTypeCode, CodeXml itemSpecCode,
+                                                 UuidXml uuidXml) {
+        if (!(data instanceof ArrDataBit)) {
+            throw new BusinessException("Failed to convert data: " + data.getDataId(),
+                    BaseCode.EXPORT_FAILED);
+        }
+        ArrDataBit dataBit = (ArrDataBit) data;
+        ItemBooleanXml itemBoolean = new ItemBooleanXml();
+        itemBoolean.setValue(new BooleanXml(dataBit.isBitValue()));
+        itemBoolean.setT(itemTypeCode);
+        itemBoolean.setS(itemSpecCode);
+        itemBoolean.setUuid(uuidXml);
+        return itemBoolean;
+    }
+
+
+    public PartXml createPart(ApPart apPart,
+                                     final String parentUuid, String uuid) {
+        PartXml part = new PartXml();
+
+        RulPartType partType = sdp.getPartTypeById(apPart.getPartTypeId());
+        part.setT(PartTypeXml.fromValue(partType.getCode()));
+        part.setPid(new UuidXml(uuid));
+        if (parentUuid != null) {
+            UuidXml parentUuidXml = objectFactory.createUuidXml();
+            parentUuidXml.setValue(parentUuid);
+            part.setPrnt(parentUuidXml);
+        }
+
+        return part;
+    }
+}

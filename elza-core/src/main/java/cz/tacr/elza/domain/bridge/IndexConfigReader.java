@@ -1,16 +1,16 @@
 package cz.tacr.elza.domain.bridge;
 
-import java.util.List;
+import java.util.Collection;
 
 import cz.tacr.elza.core.data.DataType;
 
 public interface IndexConfigReader {
 
-	List<String> getPartTypeCodes();
+	Collection<String> getPartTypeCodes();
 
-	List<String> getItemTypeCodes();
+	Collection<String> getItemTypeCodes();
 
-	List<String> getItemSpecCodesByTypeCode(String itemTypeCode);
+	Collection<String> getItemSpecCodesByTypeCode(String itemTypeCode);
 
 	DataType getDataTypeByItemTypeCode(String itemTypeCode);
 }

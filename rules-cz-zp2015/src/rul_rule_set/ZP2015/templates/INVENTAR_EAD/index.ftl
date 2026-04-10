@@ -337,7 +337,7 @@
     </#switch>
   <!-- Druh archivní pomůcky -->
   <ead:localcontrol localtype="FINDING_AID_TYPE">
-    <ead:term identifier="${identifier}">${item.specification.name}</ead:term>
+    <ead:term identifier="${identifier}">${item.specification.name?lower_case}</ead:term>
   </ead:localcontrol>
   </#list>
 

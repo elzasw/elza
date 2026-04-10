@@ -11,5 +11,7 @@ public interface ExportFilterRepository extends ElzaJpaRepository<RulExportFilte
 
     List<RulExportFilter> findByRulPackage(RulPackage rulPackage);
 
-    void deleteByRulPackage(RulPackage rulPackage);
+	RulExportFilter findByCode(String code);
+
+	void deleteByRulPackage(RulPackage rulPackage);
 }

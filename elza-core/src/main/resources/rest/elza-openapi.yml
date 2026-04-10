@@ -24,6 +24,8 @@ tags:
     description: Práce s úrovněmi a uzly
   - name: search
     description: Vyhledávání
+  - name: tasks
+    description: Úkoly
 servers:
   - url: http://localhost
     description: Výchozí server
@@ -52,6 +54,36 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DeleteAccessPointsDetail'
+        description: seznam ID nebo UUID, které chceme smazat
+  /accesspoint/export/{queueItemId}:
+    put:
+      operationId: AccessPoint_exportForceOrNo
+      description: Decision on forced export ELZA -> CAM
+      parameters:
+        - name: queueItemId
+          in: path
+          required: true
+          description: id of queue
+          schema:
+            type: integer
+        - name: force
+          in: query
+          required: true
+          description: 'force export: yes or no'
+          schema:
+            type: boolean
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - accesspoints
   /accesspoint/invalidated:
     get:
       operationId: AccessPoint_getInvalidatedEntities
@@ -170,6 +202,28 @@ paths:
             schema:
               $ref: '#/components/schemas/CopyAccessPointDetail'
         description: additional copy options
+  /accesspoint/{id}/lastParticipants:
+    get:
+      operationId: AccessPoint_getLastParticipants
+      description: Get a list of entity processors
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of accesspoint
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Participant'
+      tags:
+        - accesspoints
   /accesspoint/{id}/part:
     post:
       operationId: AccessPoint_createPart
@@ -590,6 +644,13 @@ paths:
           schema:
             type: integer
           explode: false
+        - name: assignTo
+          in: query
+          required: false
+          description: userId
+          schema:
+            type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -623,6 +684,13 @@ paths:
           in: query
           required: false
           description: actual version of ApAccessPoint
+          schema:
+            type: integer
+          explode: false
+        - name: assignTo
+          in: query
+          required: false
+          description: userId
           schema:
             type: integer
           explode: false
@@ -1663,6 +1731,39 @@ paths:
             schema:
               type: string
         description: new scenario
+  /descItems/{fundVersionId}:
+    delete:
+      operationId: DescItem_deleteDescItem
+      description: Delete attribute value
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: id version AS
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDataResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - descitems
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodeItem'
+        description: attribute value
   /descItems/{fundVersionId}/create:
     put:
       operationId: DescItem_createDescItem
@@ -1671,7 +1772,7 @@ paths:
         - name: fundVersionId
           in: path
           required: true
-          description: id AP version
+          description: id version AS
           schema:
             type: integer
       responses:
@@ -1698,7 +1799,7 @@ paths:
         - name: fundVersionId
           in: path
           required: true
-          description: id AP version
+          description: id version AS
           schema:
             type: integer
         - name: createNewVersion
@@ -2639,6 +2740,22 @@ paths:
             schema:
               $ref: '#/components/schemas/SearchParams'
         description: search parameters
+  /tasks/my:
+    get:
+      operationId: Tasks_getMyTasks
+      description: Task list for a given user
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tasks.ViewDetail'
+      tags:
+        - tasks
 components:
   parameters:
     AipIdParameter:
@@ -3627,8 +3744,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FundSections'
-        exportFilterId:
-          type: integer
+        exportFilter:
+          type: string
+          description: kód nebo ID filtru
         includeUUID:
           type: boolean
           default: true
@@ -4033,6 +4151,24 @@ components:
             - $ref: '#/components/schemas/NodeItem'
           description: item
       description: Výsledek vytvoření nebo aktualizace ArrDescItem
+    ItemTypeGroup:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        types:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormItemType'
+      description: |-
+        Skupina zapouzdrující typy hodnot atributů pro UI
+
+        Náhrada `ItemTypeGroupVO`
     LinkType:
       type: string
       enum:
@@ -4286,9 +4422,9 @@ components:
       type: object
       required:
         - formData
+        - node
         - parents
         - children
-        - siblings
         - nodeIndex
         - nodeCount
       properties:
@@ -4296,6 +4432,10 @@ components:
           allOf:
             - $ref: '#/components/schemas/NodeFormData'
           description: data formuláře požadované JP
+        node:
+          allOf:
+            - $ref: '#/components/schemas/NodeAccordionData'
+          description: node data
         parents:
           type: array
           items:
@@ -4502,6 +4642,21 @@ components:
         Data uzlu stromu odesílané klientovi pro strom fa.
 
         Náhrada `TreeNodeVO`
+    NodeUpdateItem:
+      type: object
+      required:
+        - updateOp
+        - item
+      properties:
+        updateOp:
+          allOf:
+            - $ref: '#/components/schemas/UpdateOp'
+          description: operation
+        item:
+          allOf:
+            - $ref: '#/components/schemas/NodeItem'
+          description: item to update
+      description: Náhrada za třídu `ArrUpdateItemVO`
     OperationCompareType:
       type: string
       enum:
@@ -4564,6 +4719,32 @@ components:
           items:
             type: string
       description: Part validation issues/errors
+    Participant:
+      type: object
+      required:
+        - userId
+        - name
+        - username
+        - canWrite
+        - canConfirm
+        - canEditConfirmed
+      properties:
+        userId:
+          type: integer
+        name:
+          type: string
+        username:
+          type: string
+        canWrite:
+          type: boolean
+          description: if user has ability to save and modify new entity
+        canConfirm:
+          type: boolean
+          description: if user has ability to approve entity
+        canEditConfirmed:
+          type: boolean
+          description: if user has ability to change approved entity
+      description: Entity processor (user)
     QueueItemState:
       type: string
       enum:
@@ -4929,6 +5110,72 @@ components:
         - asc
         - desc
       description: Order of sorting
+    Tasks.EntityType:
+      type: string
+      enum:
+        - AP
+        - AP_REV
+      description: Entity type for task
+    Tasks.Status:
+      type: string
+      enum:
+        - NEW
+        - CANCELLED
+        - FINISHED
+      description: Task status
+    Tasks.ViewDetail:
+      type: object
+      required:
+        - taskId
+        - created
+        - assigneeId
+        - assigneeName
+        - status
+        - taskTypeId
+        - taskTypeCode
+        - taskTypeName
+        - description
+        - primaryEntityId
+        - primaryEntityName
+        - primaryEntityType
+      properties:
+        taskId:
+          type: integer
+        created:
+          type: string
+          format: date-time
+        closed:
+          type: string
+          format: date-time
+        assigneeId:
+          type: integer
+        assigneeName:
+          type: string
+        creatorId:
+          type: integer
+        creatorName:
+          type: string
+        closedById:
+          type: integer
+        closedByName:
+          type: string
+        status:
+          $ref: '#/components/schemas/Tasks.Status'
+        taskTypeId:
+          type: integer
+        taskTypeCode:
+          type: string
+        taskTypeName:
+          type: string
+        description:
+          type: string
+        primaryEntityId:
+          type: integer
+        primaryEntityName:
+          type: string
+        primaryEntityType:
+          $ref: '#/components/schemas/Tasks.EntityType'
+      description: Task detail
     UpdateFund:
       type: object
       properties:
@@ -5025,6 +5272,13 @@ components:
           type: string
           description: Unikátení identifikátor rodičovského uzlu
       description: Custom uzel stromu
+    UpdateOp:
+      type: string
+      enum:
+        - CREATE
+        - UPDATE
+        - DELETE
+      description: Type of update Item
     UsedItemType:
       type: object
       required:

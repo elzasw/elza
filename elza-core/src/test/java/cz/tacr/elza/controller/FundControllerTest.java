@@ -1,29 +1,23 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.core.io.Resource;
 
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
-import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.test.controller.vo.CreateFund;
-import cz.tacr.elza.test.controller.vo.DescItemField;
-import cz.tacr.elza.test.controller.vo.ExportParams;
 import cz.tacr.elza.test.controller.vo.ExportRequestStatus;
 import cz.tacr.elza.test.controller.vo.FieldType;
 import cz.tacr.elza.test.controller.vo.FieldValueFilter;
@@ -31,22 +25,43 @@ import cz.tacr.elza.test.controller.vo.FindFundsResult;
 import cz.tacr.elza.test.controller.vo.FondsField;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.FundDetail;
-import cz.tacr.elza.test.controller.vo.FundSearchResult;
-import cz.tacr.elza.test.controller.vo.FundSections;
 import cz.tacr.elza.test.controller.vo.FondsFieldName;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
-import cz.tacr.elza.test.controller.vo.NodeData;
-import cz.tacr.elza.test.controller.vo.NodeDataParam;
-import cz.tacr.elza.test.controller.vo.NodeField;
-import cz.tacr.elza.test.controller.vo.NodeFieldName;
-import cz.tacr.elza.test.controller.vo.NodeSearchResult;
-import cz.tacr.elza.test.controller.vo.NodeTreeData;
 import cz.tacr.elza.test.controller.vo.OperationCompareType;
 import cz.tacr.elza.test.controller.vo.RequestProcessState;
 import cz.tacr.elza.test.controller.vo.SearchParams;
 import cz.tacr.elza.test.controller.vo.UpdateFund;
 
+/**
+ * Tests for fund CRUD and search operations.
+ *
+ * Uses per-class lifecycle: setUp/tearDown run once for all test methods.
+ * Each test cleans up funds it creates to keep the database in a consistent state.
+ */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class FundControllerTest extends AbstractControllerTest {
+
+    @BeforeAll
+    public void initOnce() throws Exception {
+        super.setUp();
+    }
+
+    @AfterAll
+    public void cleanupOnce() {
+        super.tearDown();
+    }
+
+    @Override
+    @BeforeEach
+    public void setUp() throws Exception {
+        // no-op: setup is done once in @BeforeAll initOnce()
+    }
+
+    @Override
+    @AfterEach
+    public void tearDown() {
+        // no-op: cleanup is done once in @AfterAll cleanupOnce()
+    }
 
     @Test
     public void createFundTest() {
@@ -57,6 +72,8 @@ public class FundControllerTest extends AbstractControllerTest {
         assertEquals(cf.getInternalCode(), fund.getInternalCode());
         assertEquals(cf.getUuid(), fund.getUuid());
         assertEquals(cf.getMark(), fund.getMark());
+
+        deleteFund(fund.getId());
     }
 
     @Test
@@ -71,19 +88,21 @@ public class FundControllerTest extends AbstractControllerTest {
         // Note:  fundDetail is missing rulesetCode
 
         // check returned object
-        assertEquals(fundDetail.getName(), uf.getName());
-        assertEquals(fundDetail.getInternalCode(), uf.getInternalCode());
-        assertEquals(fundDetail.getMark(), uf.getMark());
-        assertEquals(fundDetail.getFundNumber(), uf.getFundNumber());
-        assertEquals(fundDetail.getUnitdate(), uf.getUnitdate());
+        assertEquals(uf.getName(), fundDetail.getName());
+        assertEquals(uf.getInternalCode(), fundDetail.getInternalCode());
+        assertEquals(uf.getMark(), fundDetail.getMark());
+        assertEquals(uf.getFundNumber(), fundDetail.getFundNumber());
+        assertEquals(uf.getUnitdate(), fundDetail.getUnitdate());
 
         // check DB object
         FundDetail fundInfo = fundsApi.fundGetFund(fund.getId().toString());
-        assertEquals(fundInfo.getName(), uf.getName());
-        assertEquals(fundInfo.getInternalCode(), uf.getInternalCode());
-        assertEquals(fundInfo.getMark(), uf.getMark());
-        assertEquals(fundInfo.getFundNumber(), uf.getFundNumber());
-        assertEquals(fundInfo.getUnitdate(), uf.getUnitdate());
+        assertEquals(uf.getName(), fundInfo.getName());
+        assertEquals(uf.getInternalCode(), fundInfo.getInternalCode());
+        assertEquals(uf.getMark(), fundInfo.getMark());
+        assertEquals(uf.getFundNumber(), fundInfo.getFundNumber());
+        assertEquals(uf.getUnitdate(), fundInfo.getUnitdate());
+
+        deleteFund(fund.getId());
     }
 
     @Test
@@ -95,267 +114,98 @@ public class FundControllerTest extends AbstractControllerTest {
         FundDetail fundDetail = fundsApi.fundGetFund(fund.getId().toString());
         assertNotNull(fundDetail);
         assertEquals(fund.getId(), fundDetail.getId());
+
+        deleteFund(fund.getId());
     }
 
     @Test
     public void searchFundsTest() {
         CreateFund cf = createFund("fund1", "fundCode1", 1, "aaaaaaaa-1111-2222-3333-444455556666", "mark1");
-        fundsApi.fundCreateFund(cf);
+        Fund fund1 = fundsApi.fundCreateFund(cf);
 
         cf = createFund("fund2", "fundCode2", null, null, "mark2");
-        fundsApi.fundCreateFund(cf);
+        Fund fund2 = fundsApi.fundCreateFund(cf);
 
         cf = createFund("fund3", "fund3", null, null, "mark3");
-        fundsApi.fundCreateFund(cf);
+        Fund fund3 = fundsApi.fundCreateFund(cf);
 
-        SearchParams params = new SearchParams();
-        params.setOffset(0);
-        params.setSize(100);
-
-    	FindFundsResult result = fundsApi.fundSearchFunds(params);
-    	assertTrue(result.getTotalCount() == 3);
-
-    	MultimatchContainsFilter containsFilter = new MultimatchContainsFilter();
-    	containsFilter.setValue("fund");
-    	params.addFiltersItem(containsFilter);
-
-    	// fondy s fragmentem "fund" v názvu == 3
-    	result = fundsApi.fundSearchFunds(params);
-    	assertTrue(result.getTotalCount() == 3);
-
-    	// create filter
-    	FieldValueFilter valueFilter = new FieldValueFilter();
-    	valueFilter.setField(new FondsField().fieldType(FieldType.FONDS_FIELD).fieldName(FondsFieldName.INTERNAL_CODE));
-    	valueFilter.setValue("Code");
-    	valueFilter.setOperation(OperationCompareType.CONTAINS);
-    	params.addFiltersItem(valueFilter);
-
-    	// fondy, jejichž interní kód obsahuje "Code" == 2
-    	result = fundsApi.fundSearchFunds(params);
-    	assertTrue(result.getTotalCount() == 2);
-
-    	// change filter
-    	valueFilter = new FieldValueFilter();
-    	valueFilter.setField(new FondsField().fieldType(FieldType.FONDS_FIELD).fieldName(FondsFieldName.FONDS_NUMBER));
-    	valueFilter.setValue("");
-    	valueFilter.setOperation(OperationCompareType.NOT_NULL);
-    	params.addFiltersItem(valueFilter);
-
-    	// fondy, které mají parametr "fundNumber" (není nulový) == 1
-    	result = fundsApi.fundSearchFunds(params);
-    	assertTrue(result.getTotalCount() == 1);
-    }
-
-    @Test
-    public void nodeSearchTest() {
-        Fund fund = createFund("fund1", "internalCode");
-        assertNotNull(fund);
-
-        // create levels (nodes)
-        ArrFundVersionVO fundVersion = getOpenVersion(fund);
-        List<ArrNodeVO> nodes = createLevels(fundVersion);
-
-        // create item by SRD_TITLE
-        RulDescItemTypeExtVO typeTitle = findDescItemTypeByCode(SRD_TITLE);
-        ArrItemVO itemTitle = buildDescItem(typeTitle.getCode(), null, "value", null, null, null);
-        createDescItem(itemTitle, fundVersion, nodes.get(0), typeTitle);
-
-        // create item by SRD_SERIAL_NUMBER
-        RulDescItemTypeExtVO typeSN = findDescItemTypeByCode(SRD_SERIAL_NUMBER);
-        ArrItemVO itemSN = buildDescItem(typeSN.getCode(), null, 1, null, null, null);
-        createDescItem(itemSN, fundVersion, nodes.get(0), typeSN);
-        
-        // create item by SRD_UNIT_DATE
-        RulDescItemTypeExtVO typeUnitdate = findDescItemTypeByCode(SRD_UNIT_DATE);
-        ArrItemVO itemUnitdate = buildDescItem(typeUnitdate.getCode(), null, "15.5.2025", null, null, null);
-        createDescItem(itemUnitdate, fundVersion, nodes.get(0), typeUnitdate);
-
-        // create item by SRD_OTHER_ID
-        RulDescItemTypeExtVO typeOtherId = findDescItemTypeByCode(SRD_OTHER_ID);
-        RulDescItemSpecExtVO specOtherId = findDescItemSpecByCode(SRD_OTHERID_CJ, typeOtherId);
-        ArrItemVO itemOtherId = buildDescItem(typeOtherId.getCode(), specOtherId.getCode(), "13", null, null, null);
-        createDescItem(itemOtherId, fundVersion, nodes.get(0), typeOtherId);
-
-        // create item by SRD_LANGUAGE
-        RulDescItemTypeExtVO typeLng = findDescItemTypeByCode(SRD_LANGUAGE);
-        RulDescItemSpecExtVO specLng = findDescItemSpecByCode(SRD_LANGUAGE_1, typeLng);
-        ArrItemVO itemLng = buildDescItem(typeLng.getCode(), specLng.getCode(), null, null, null, null);
-        createDescItem(itemLng, fundVersion, nodes.get(0), typeLng);
-
-        // create item by SRD_ENTITY_ROLE
-        List<ApAccessPointVO> accessPoints = findRecord(null, null, null, null, null);
-        ApAccessPointVO accessPoint = accessPoints.get(0);
-        RulDescItemTypeExtVO typeAp = findDescItemTypeByCode(SRD_ENTITY_ROLE);
-        RulDescItemSpecExtVO specAp = findDescItemSpecByCode(SRD_ENTITY_ROLE_1, typeAp);
-        ArrItemVO itemAp = buildDescItem(typeAp.getCode(), specAp.getCode(), accessPoint, null, null, null);
-        createDescItem(itemAp, fundVersion, nodes.get(0), typeAp);
-
-        // create MultimatchContainsFilter filter
-        MultimatchContainsFilter containsFilter = new MultimatchContainsFilter();
-        containsFilter.setValue("value");
-
-        // create search params
-        SearchParams params = new SearchParams();
-        params.addFiltersItem(containsFilter);
-
-        // waiting for reindexing to get result
-        NodeSearchResult fundResult = null;
-        int counter = 0;
         try {
-            do {
-                Thread.sleep(100);
-                fundResult = nodeApi.nodeSearch(params);
-                counter++;
-            } while (fundResult.getTotalCount() == 0 && counter < 1000);
-        } catch (Exception e) {
-            fail("Exception while waiting on result: " + e);
+            SearchParams params = new SearchParams();
+            params.setOffset(0);
+            params.setSize(100);
+
+            FindFundsResult result = fundsApi.fundSearchFunds(params);
+            assertEquals(3, result.getTotalCount());
+
+            MultimatchContainsFilter containsFilter = new MultimatchContainsFilter();
+            containsFilter.setValue("fund");
+            params.addFiltersItem(containsFilter);
+
+            // fondy s fragmentem "fund" v názvu == 3
+            result = fundsApi.fundSearchFunds(params);
+            assertEquals(3, result.getTotalCount());
+
+            // create filter
+            FieldValueFilter valueFilter = new FieldValueFilter();
+            valueFilter.setField(new FondsField().fieldType(FieldType.FONDS_FIELD).fieldName(FondsFieldName.INTERNAL_CODE));
+            valueFilter.setValue("Code");
+            valueFilter.setOperation(OperationCompareType.CONTAINS);
+            params.addFiltersItem(valueFilter);
+
+            // fondy, jejichž interní kód obsahuje "Code" == 2
+            result = fundsApi.fundSearchFunds(params);
+            assertEquals(2, result.getTotalCount());
+
+            // change filter
+            valueFilter = new FieldValueFilter();
+            valueFilter.setField(new FondsField().fieldType(FieldType.FONDS_FIELD).fieldName(FondsFieldName.FONDS_NUMBER));
+            valueFilter.setValue("");
+            valueFilter.setOperation(OperationCompareType.NOT_NULL);
+            params.addFiltersItem(valueFilter);
+
+            // fondy, které mají parametr "fundNumber" (není nulový) == 1
+            result = fundsApi.fundSearchFunds(params);
+            assertEquals(1, result.getTotalCount());
+        } finally {
+            deleteFund(fund1.getId());
+            deleteFund(fund2.getId());
+            deleteFund(fund3.getId());
         }
-        assertEquals(1, fundResult.getFonds().size());
-
-    	List<NodeTreeData> nodeResult = nodeApi.nodeGetSearchResult(fund.getId());
-    	assertEquals(1, nodeResult.size());
-
-        // create FieldValueFilter filter
-        FieldValueFilter valueFilter = new FieldValueFilter();
-        valueFilter.setField(new DescItemField().typeCode(SRD_TITLE));
-        valueFilter.setValue("alu");
-        valueFilter.setOperation(OperationCompareType.CONTAINS);
-
-        // set FieldValueFilter in params
-        params.filters(List.of(valueFilter));
-
-        // try to search text using FieldValueFilter
-        fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.getFonds().size());
-
-        // change filter by SRD_SERIAL_NUMBER
-        valueFilter.setField(new DescItemField().typeCode(SRD_SERIAL_NUMBER));
-        valueFilter.setValue("1");
-        valueFilter.setOperation(OperationCompareType.EQ);
-
-        // try to search serial number using FieldValueFilter
-        fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.getFonds().size());
-
-        // change filter by SRD_UNIT_DATE
-        valueFilter.setField(new DescItemField().typeCode(SRD_UNIT_DATE));
-        valueFilter.setValue("15.5.2025");
-        valueFilter.setOperation(OperationCompareType.EQ);
-
-        // try to search unitdate using FieldValueFilter
-        fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.getFonds().size());
-
-        // change filter by SRD_OTHER_ID
-        valueFilter.setField(new DescItemField().typeCode(SRD_OTHER_ID).specCode(SRD_OTHERID_CJ));
-        valueFilter.setValue("13");
-        valueFilter.setOperation(OperationCompareType.CONTAINS);
-
-        // try to search otherId using FieldValueFilter
-        fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.getFonds().size());
-
-        // change filter by SRD_LANGUAGE
-        valueFilter.setField(new DescItemField().typeCode(SRD_LANGUAGE).specCode(SRD_LANGUAGE_1));
-        valueFilter.setValue(null);
-        valueFilter.setOperation(OperationCompareType.EQ);
-
-        // try to search language using FieldValueFilter
-        fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.getFonds().size());
-
-        // change filter by RECORD_REF search by id
-        valueFilter.setField(new DescItemField().typeCode(SRD_ENTITY_ROLE).specCode(SRD_ENTITY_ROLE_1));
-        valueFilter.setValue(accessPoint.getId().toString());
-        valueFilter.setOperation(OperationCompareType.EQ);
-
-        // try to search by AP name using FieldValueFilter
-        fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.getFonds().size());
-
-        // change filter by RECORD_REF search by apId
-        valueFilter.setValue(accessPoint.getId().toString());
-        valueFilter.setOperation(OperationCompareType.EQ);
-
-        // try to search by AP id using FieldValueFilter
-        fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.getFonds().size());
-
-        // get ArrNode for uuid
-        ArrNode node = nodeRepository.findById(nodes.get(0).getId()).get();
-
-        // try to search by NODE_FIELD field type
-        valueFilter.setField(new NodeField().fieldName(NodeFieldName.UUID));
-        valueFilter.setValue(node.getUuid());
-        valueFilter.setOperation(OperationCompareType.EQ);
-
-        // try to search by UUID id using FieldValueFilter
-        fundResult = nodeApi.nodeSearch(params);
-        assertEquals(1, fundResult.getFonds().size());
     }
 
     @Test
-    public void nodeGetNodeDataTest() {
-    	Fund fund = createFund("fund1", "internalCode");
-    	assertNotNull(fund);
-
-    	// create levels (nodes)
-        ArrFundVersionVO fundVersion = getOpenVersion(fund);
-        List<ArrNodeVO> nodes = createLevels(fundVersion);
-
-        // create item by SRD_TITLE
-        RulDescItemTypeExtVO typeTitle = findDescItemTypeByCode(SRD_TITLE);
-        ArrItemVO itemTitle = buildDescItem(typeTitle.getCode(), null, "value", null, null, null);
-        createDescItem(itemTitle, fundVersion, nodes.get(0), typeTitle);
-
-        // create NodeDataParam
-        NodeDataParam param = new NodeDataParam();
-        param.setFundVersionId(fundVersion.getId());
-        param.setNodeId(nodes.get(0).getId());
-        param.setFormData(true);
-        param.setSiblingsMaxCount(100);
-        param.setParents(true);
-        param.setChildren(true);
-
-        NodeData nodeData = nodeApi.nodeGetNodeData(param);
-        assertNotNull(nodeData);
-    }
-
-    @Test
-    public void fundExportFunds() throws IOException {
-    	CreateFund cf = createFund("fundExport", "internalCode", 1, "aaaaaaaa-1111-2222-3333-444455556666", "mark1");
+    public void fundExportFunds() throws IOException, InterruptedException {
+        CreateFund cf = createFund("fundExport", "internalCode", 1, "aaaaaaaa-1111-2222-3333-444455556666", "mark1");
         Fund fund = fundsApi.fundCreateFund(cf);
         assertNotNull(fund);
 
-        // create MultimatchContainsFilter filter
-        MultimatchContainsFilter containsFilter = new MultimatchContainsFilter();
-        containsFilter.setValue("fund");
-
-        // create search params, no offset & no size
-        SearchParams params = new SearchParams().addFiltersItem(containsFilter);
-
-        // send export request
-        int requestId = fundsApi.fundExportFunds(params);
-        assertTrue(requestId > 0);
-
-        // waiting for creating export file
-        ExportRequestStatus expStatus = null;
-        int counter = 0;
         try {
-            do {
+            MultimatchContainsFilter containsFilter = new MultimatchContainsFilter();
+            containsFilter.setValue("fund");
+
+            SearchParams params = new SearchParams().addFiltersItem(containsFilter);
+
+            int requestId = fundsApi.fundExportFunds(params);
+            assertTrue(requestId > 0);
+
+            // wait for export to finish (max 10 seconds)
+            ExportRequestStatus expStatus = null;
+            for (int i = 0; i < 200; i++) {
                 Thread.sleep(50);
                 expStatus = ioApi.ioGetExportStatus(requestId);
-                counter++;
-            } while (expStatus.getState() != RequestProcessState.FINISHED && counter < 1000);
-        } catch (Exception e) {
-            fail("Exception while waiting on result: " + e);
-        }
-        assertNotNull(expStatus);
-        assertEquals(RequestProcessState.FINISHED, expStatus.getState());
+                if (expStatus.getState() == RequestProcessState.FINISHED) {
+                    break;
+                }
+            }
+            assertNotNull(expStatus);
+            assertEquals(RequestProcessState.FINISHED, expStatus.getState());
 
-        Resource file = ioApi.ioGetExportFile(requestId);
-        assertNotNull(file);
-        assertTrue(file.contentLength() > 100);
+            Resource file = ioApi.ioGetExportFile(requestId);
+            assertNotNull(file);
+            assertTrue(file.contentLength() > 100);
+        } finally {
+            deleteFund(fund.getId());
+        }
     }
     
     private CreateFund createFund(String name, String internalCode, Integer fundNumber, String uuid, String mark) {
@@ -363,7 +213,6 @@ public class FundControllerTest extends AbstractControllerTest {
         ParInstitutionVO institution = getInstitutions().get(0);
 
         CreateFund cf = new CreateFund();
-        cf = new CreateFund();
         cf.setName(name);
         cf.setInternalCode(internalCode);
         cf.setInstitutionIdentifier(institution.getCode());

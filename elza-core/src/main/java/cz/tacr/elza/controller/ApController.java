@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -37,14 +36,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import cz.tacr.cam.client.ApiException;
-import cz.tacr.cam.schema.cam.EntityXml;
-import cz.tacr.cam.schema.cam.QueryResultXml;
+import cz.tacr.elza.cam.ApiCamConnector;
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.common.db.QueryResults;
-import cz.tacr.elza.connector.CamConnector;
 import cz.tacr.elza.controller.factory.ApFactory;
-import cz.tacr.elza.controller.factory.SearchFilterFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApAttributesInfoVO;
@@ -75,7 +70,7 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApBinding;
+
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApExternalIdType;
@@ -98,14 +93,12 @@ import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.projection.ApStateInfo;
 import cz.tacr.elza.drools.model.ModelAvailable;
-import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
@@ -115,6 +108,7 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.AccessPointConnectorService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.MultipleApChangeContext;
 import cz.tacr.elza.service.RevisionService;
@@ -122,8 +116,6 @@ import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.SettingsService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
-import cz.tacr.elza.service.cam.CamService;
-import cz.tacr.elza.service.cam.ProcessingContext;
 import cz.tacr.elza.service.layers.LayersConfig;
 
 /**
@@ -163,19 +155,13 @@ public class ApController {
     private StaticDataService staticDataService;
 
     @Autowired
-    private SearchFilterFactory searchFilterFactory;
-
-    @Autowired
     private RuleService ruleService;
 
     @Autowired
-    private CamConnector camConnector;
+    private AccessPointConnectorService apConnectorService;
 
     @Autowired
     private SettingsService settingsService;
-
-    @Autowired
-    private CamService camService;
 
     @Autowired
     private ApCachedAccessPointRepository apCachedAccessPointRepository;
@@ -844,13 +830,9 @@ public class ApController {
         int fromPage = from / max;
 
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
-        QueryResultXml result;
-        try {
-            result = camConnector.search(fromPage + 1, max, searchFilterFactory.createQueryParamsDef(filter), apExternalSystem);
-        } catch (ApiException e) {
-            throw prepareSystemException(e);
-        }
-        return searchFilterFactory.createArchiveEntityVoListResult(result);
+        ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
+
+        return connector.search(fromPage + 1, max, filter, apExternalSystem);
     }
 
     /**
@@ -891,36 +873,9 @@ public class ApController {
         ApExternalSystem apExternalSystem = sdp.getApExternalSystemByCode(externalSystemCode);
         Validate.notNull(apExternalSystem, "External system code is incorrect: {}", externalSystemCode);
 
-        EntityXml entity;
-        try {
-            entity = camConnector.getEntity(archiveEntityId, apExternalSystem);
-        } catch (ApiException e) {
-            throw prepareSystemException(e);
-        }
+        ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
 
-        ApBinding binding = externalSystemService.findByValueAndExternalSystem(archiveEntityId, apExternalSystem);
-        if (binding != null) {
-            // check state
-            Optional<ApBindingState> bindingState = externalSystemService.getBindingState(binding);
-            bindingState.ifPresent(bs -> {
-                throw new SystemException("Archival entity already imported", ExternalCode.ALREADY_IMPORTED)
-                        .set("externalSystemCode", externalSystemCode)
-                        .set("archiveEntityId", archiveEntityId)
-                        .set("bindingStateId", bs.getBindingStateId())
-                        .set("accessPointId", bs.getAccessPointId());
-
-            });
-        }
-
-        ApScope scope = accessPointService.getApScope(scopeId);
-        ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem, staticDataService);
-        List<ApState> apStates = camService.takeAccessPoints(procCtx, Collections.singletonList(entity));
-        if (apStates.size() != 1) {
-            throw new BusinessException("Failed to create accesspoint from entity", BaseCode.IMPORT_FAILED);
-        }
-
-        ApState apState = apStates.get(0);
-        return apState.getAccessPointId();
+        return connector.takeArchiveEntity(archiveEntityId, scopeId, apExternalSystem);
     }
 
     /**
@@ -950,18 +905,11 @@ public class ApController {
                     RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
         }
 
-        ApScope scope = state.getScope();
         accessPointService.checkUniqueExtSystem(accessPoint, apExternalSystem);
 
-        ProcessingContext procCtx = new ProcessingContext(scope, apExternalSystem, staticDataService);
+        ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
 
-        EntityXml entity;
-        try {
-            entity = camConnector.getEntity(archiveEntityId, apExternalSystem);
-        } catch (ApiException e) {
-            throw prepareSystemException(e);
-        }
-        camService.connectAccessPoint(state, entity, procCtx, replace);
+        connector.connectArchiveEntity(archiveEntityId, state, apExternalSystem, replace);
     }
 
     /**
@@ -977,7 +925,7 @@ public class ApController {
     		"/external/update/{accessPointId}"}, method = RequestMethod.POST)
     public Integer saveAccessPoint(@PathVariable("accessPointId") final Integer accessPointId,
                                 @RequestParam final String externalSystemCode) {
-        ExtSyncsQueueItem item = camService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
+        ExtSyncsQueueItem item = apConnectorService.createExtSyncsQueueItem(accessPointId, externalSystemCode);
         return item.getExtSyncsQueueItemId();
     }
 
@@ -1012,30 +960,10 @@ public class ApController {
 
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, apExternalSystem);
-        ApBinding binding = bindingState.getBinding();
 
-        EntityXml entity;
-        try {
-            entity = camConnector.getEntity(binding.getValue(), apExternalSystem);
-        } catch (ApiException e) {
-            throw prepareSystemException(e);
-        }
-        ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem, staticDataService);
-        try {
-            camService.synchronizeAccessPoint(procCtx, binding, entity, false);
-        } catch (SyncImpossibleException e) {
-            logger.error("Synchronized impossible, accessPointId: {}, bindingId: {}, {}", accessPoint.getAccessPointId(), bindingState.getBindingId(), e.getMessage());
-            throw new BusinessException("Synchronizace této entity s CAM není možná. " + e.getMessage(),
-                    e,
-                    ExternalCode.SYNC_IMPOSSIBLE);
-        }
-    }
+        ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
 
-    private AbstractException prepareSystemException(ApiException e) {
-        return new SystemException("Došlo k chybě při komunikaci s externím systémem.", e)
-                .set("responseBody", e.getResponseBody())
-                .set("responseCode", e.getCode())
-                .set("responseHeaders", e.getResponseHeaders());
+        connector.synchronizeEntity(state, bindingState, apExternalSystem);
     }
 
     /**
@@ -1050,7 +978,7 @@ public class ApController {
                                       @RequestParam final String externalSystemCode) {
         ApAccessPoint accessPoint = accessPointService.getAccessPoint(accessPointId);
 
-        camService.disconnectAccessPoint(accessPoint, externalSystemCode);
+        apConnectorService.disconnectAccessPoint(accessPoint, externalSystemCode);
     }
 
     /**
@@ -1067,20 +995,9 @@ public class ApController {
         ApState state = accessPointService.getStateInternal(accessPoint);
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
 
-        List<String> archiveEntities = accessPointService.findRelArchiveEntities(accessPoint);
-        List<EntityXml> entities = new ArrayList<>();
-
-        try {
-            if (CollectionUtils.isNotEmpty(archiveEntities)) {
-                for (String archiveEntityId : archiveEntities) {
-                    entities.add(camConnector.getEntity(archiveEntityId, apExternalSystem));
-                }
-            }
-        } catch (ApiException e) {
-            throw prepareSystemException(e);
-        }
-        ProcessingContext procCtx = new ProcessingContext(state.getScope(), apExternalSystem, staticDataService);
-        camService.takeAccessPoints(procCtx, entities);
+        ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
+        
+        connector.takeRelArchiveEntities(state, apExternalSystem);
     }
 
     @Transactional

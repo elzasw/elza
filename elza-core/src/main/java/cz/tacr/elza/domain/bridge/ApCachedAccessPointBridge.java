@@ -35,6 +35,7 @@ import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.RulItemSpec;
@@ -61,6 +62,8 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
     public static final String SCOPE_ID = "scope_id";
     public static final String STATE = "state";
     public static final String REV_STATE = "rev_state";
+    public static final String ASSIGNED_TO = "assigned_to";
+    public static final String VALIDATION_RESULT = "validation_result";
 
     public static final String PREFIX_PREF = "pref";
     public static final String SEPARATOR = "_";
@@ -116,6 +119,12 @@ public class ApCachedAccessPointBridge implements TypeBridge<ApCachedAccessPoint
         }
         if (cachedAccessPoint.getCreateUsername() != null) {
         	addStringField(USERNAME, cachedAccessPoint.getCreateUsername().toLowerCase(), document);
+        }
+        if (cachedAccessPoint.getAssignedTo() != null) {
+        	document.addValue(ASSIGNED_TO, cachedAccessPoint.getAssignedTo());
+        }
+        if (cachedAccessPoint.getState() != null) {
+        	addStringField(VALIDATION_RESULT, cachedAccessPoint.getState().name().toLowerCase(), document);
         }
 
         if (CollectionUtils.isNotEmpty(cachedAccessPoint.getParts())) {

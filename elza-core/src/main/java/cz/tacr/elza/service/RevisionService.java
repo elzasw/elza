@@ -46,7 +46,11 @@ import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ChangeType;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulPartType;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.WfTask;
+import cz.tacr.elza.domain.WfTaskApRevState;
+import cz.tacr.elza.domain.WfTaskApState;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -115,6 +119,9 @@ public class RevisionService {
     @Autowired
     private ApRevStateRepository revStateRepository;
 
+    @Autowired
+    private TaskService taskService;
+
     @Transactional
     public ApRevState createRevision(ApState state) {
         ApChange change = accessPointDataService.createChange(ApChange.Type.AP_CREATE);
@@ -161,6 +168,21 @@ public class RevisionService {
         revState.setCreateChange(change);
         revState = revStateRepository.save(revState);
 
+        // Check if entity has an active task on ApState
+        // If so, cancel it and create new revision task for the same assignee
+        WfTaskApState existingTask = taskService.getTask(state);
+        if (existingTask != null) {
+            Integer assigneeId = existingTask.getTask().getAssigneeId();
+            taskService.closeWfTask(state, WfTask.Status.CANCELLED);
+            taskService.createTaskApRevState(revState, assigneeId);
+        } else {
+            UsrUser user = userService.getLoggedUser();
+            if (user != null) {
+                // create new WfTask
+                taskService.createTaskApRevState(revState, user.getUserId());
+            }
+        }
+
         // Permission check - includes new revision state
         accessPointService.checkPermissionForEdit(state, revState);
 
@@ -177,13 +199,24 @@ public class RevisionService {
         deleteRevision(state, revision);
     }
 
+    /**
+     * Odstranění revize
+     * 
+     * @param state
+     * @param revision
+     */
     @Transactional(TxType.MANDATORY)
     public void deleteRevision(ApState state, ApRevision revision) {
+
         // revision might be deleted in any state
         accessPointService.checkPermissionForEdit(state, RevStateApproval.ACTIVE);
 
         ApChange change = accessPointDataService.createChange(ApChange.Type.AP_DELETE);
         ApRevState revState = findLastRevState(revision);
+
+        // close if exists WfTask
+        taskService.closeWfTask(revState, WfTask.Status.CANCELLED);
+
         List<ApRevPart> parts = revisionPartService.findPartsByRevision(revision);
         List<ApRevItem> items = revisionItemService.findByParts(parts);
 
@@ -219,73 +252,99 @@ public class RevisionService {
         }
     }
 
+    /**
+     * Změna stavu revize přístupového bodu
+     * 
+     * @param state        stav entity
+     * @param nextApTypeId ID dalšího typu
+     * @param revNextState nový stav revize
+     * @param nextComment  komentář
+     * @param assignTo     ID uživatele
+     * @return nový stav revize přístupového bodu (nebo starý, pokud nedošlo k žádné změně)
+     */
     @Transactional(value = TxType.MANDATORY)
     public ApRevState changeStateRevision(@NotNull ApState state,
                                           @NotNull Integer nextApTypeId,
                                           @Nullable RevStateApproval revNextState,
-                                          @Nullable String nextComment) {
+                                          @Nullable String nextComment,
+                                          @Nullable Integer assignTo) {
 
         ApRevision revision = findRevisionByState(state);
         if (revision == null) {
             throw new IllegalStateException("Pro tento přístupový bod neexistuje revize");
         }
 
-        ApRevState revState = findLastRevState(revision);
+        ApRevState oldRevState = findLastRevState(revision);
 
         // check permission for other state then to_approve
-        accessPointService.checkPermissionForEdit(state, revState.getStateApproval() != RevStateApproval.TO_APPROVE ? 
-                                                              revState.getStateApproval() : revNextState);
+        accessPointService.checkPermissionForEdit(state, oldRevState.getStateApproval() != RevStateApproval.TO_APPROVE ? 
+                                                              oldRevState.getStateApproval() : revNextState);
 
         StaticDataProvider sdp = staticDataService.createProvider();
 
         // TODO: nutne oddelit do samostatne tabulky revizi a zmenu stavu revize
         // ApRevision revision = createRevision(prevRevision, change);
         // Dočasné řešení: aktuální uživatel se nastaví jako tvůrce revize
-        //      slouoží pro kontrolu toho, kdo naposledy entitu měnil (schvalování)
+        //      slouží pro kontrolu toho, kdo naposledy entitu měnil (schvalování)
 
         // nemůžeme změnit třídu revize, pokud je entita v CAM
-        ApType nextType = revState.getType();
-        if (!nextApTypeId.equals(revState.getTypeId())) {
+        ApType nextType = oldRevState.getType();
+        if (!nextApTypeId.equals(oldRevState.getTypeId())) {
             // dostáváme nový ApType
             nextType = sdp.getApTypeById(nextApTypeId);
         	// nelze změnit třídu pokud existuje platná ApBindingState
             List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoint(state.getAccessPoint());
             if (CollectionUtils.isNotEmpty(bindingStates)) {
             	// nový ApType nesmí být v jiné třídě, pouze v té aktuální
-            	Integer parentApTypeId = revState.getType().getParentApTypeId();
+            	Integer parentApTypeId = oldRevState.getType().getParentApTypeId();
             	if (!nextType.getParentApTypeId().equals(parentApTypeId)) {
                     throw new SystemException("Třídu revize entity z " + bindingStates.get(0).getApExternalSystem().getName() + " nelze změnit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                         .set("accessPointId", state.getAccessPointId())
-                        .set("revisionId", revState.getRevisionId());
+                        .set("revisionId", oldRevState.getRevisionId());
             	}
             }
         }
 
         if (revNextState == null) {
-            revNextState = revState.getStateApproval();
+            revNextState = oldRevState.getStateApproval();
         }
+        
+        // read prevTask
+		WfTaskApRevState prevTask = taskService.getTask(oldRevState);
+		Integer prevAssignTo = prevTask != null ? prevTask.getTask().getAssigneeId() : null;
 
-        // pokud se změní alespoň jeden ze tří parametrů, vytvoříme nový revState.
-        if (!Objects.equals(revState.getType(), nextType) 
-                || !Objects.equals(revState.getStateApproval(), revNextState)
-                || !Objects.equals(revState.getComment(), nextComment)) {
+		ApRevState newRevState = oldRevState;
+
+        // new revState is create when type, stateApproval, comment or assignTo is changed
+        if (!Objects.equals(oldRevState.getType(), nextType) 
+                || !Objects.equals(oldRevState.getStateApproval(), revNextState)
+                || !Objects.equals(oldRevState.getComment(), nextComment)
+                || !Objects.equals(prevAssignTo, assignTo)) {
             ApChange change = accessPointDataService.createChange(ApChange.Type.AP_UPDATE);
 
-            revState.setDeleteChange(change);
-            revState = revStateRepository.saveAndFlush(revState);
+            oldRevState.setDeleteChange(change);
+            oldRevState = revStateRepository.saveAndFlush(oldRevState);
 
-            ApRevState newRevState = new ApRevState();
+            newRevState = new ApRevState();
             newRevState.setRevision(revision);
-            newRevState.setPreferredPart(revState.getPreferredPart());
-            newRevState.setRevPreferredPart(revState.getRevPreferredPart());
+            newRevState.setPreferredPart(oldRevState.getPreferredPart());
+            newRevState.setRevPreferredPart(oldRevState.getRevPreferredPart());
             newRevState.setType(nextType);
             newRevState.setStateApproval(revNextState);
             newRevState.setComment(nextComment);
             newRevState.setCreateChange(change);
-            return revStateRepository.saveAndFlush(newRevState);
+            newRevState = revStateRepository.saveAndFlush(newRevState);
         }
 
-        return revState;
+        // close if exists WfTask
+        taskService.closeWfTask(oldRevState, WfTask.Status.FINISHED);
+
+        if (assignTo != null) {
+        	// create new WfTask
+            taskService.createTaskApRevState(newRevState, assignTo);
+        }
+
+        return newRevState;
     }
 
     /**
@@ -976,14 +1035,13 @@ public class RevisionService {
      * Merge revision
      * 
      * @param apState
-     * @param newStateApproval
-     * @param comment
-     *            optional description, might be null
+     * @param newStateApproval nový stav
+     * @param comment          optional description, might be null
      */
     @Transactional(TxType.MANDATORY)
-    public void mergeRevision(ApState apState,
-                              ApState.StateApproval newStateApproval,
-                              String comment) {
+    public void mergeRevision(@NotNull ApState apState,
+    		                  @Nullable ApState.StateApproval newStateApproval,
+                              @Nullable String comment) {
         Validate.isTrue(apState.getDeleteChangeId() == null, "Only non deleted ApState is valid");
 
         if (newStateApproval == null) {
@@ -1059,16 +1117,22 @@ public class RevisionService {
         // valiudace
         accessPoint = accessPointService.updateAndValidate(accessPoint.getAccessPointId());
 
-        // Pokud je entita schvalena nebo ke schvaleni je nutne overit jeji bezchybnost
+        // pokud je entita schvalena nebo ke schvaleni je nutne overit jeji bezchybnost
         if (newStateApproval == StateApproval.APPROVED || newStateApproval == StateApproval.TO_APPROVE) {
             if (accessPoint.getState() == ApStateEnum.ERROR) {
                 accessPointService.validateEntityAndFailOnError(newState);
             }
         }
+
+        // uzavření úkolů, které se váží k dané revizi a typu: AP_REV_UPDATE nebo AP_REV_CONFIRM
+        taskService.closeWfTask(revState, WfTask.Status.FINISHED);
+        taskService.closeWfTask(apState, WfTask.Status.FINISHED);
+
         accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
     }
 
     /**
+     * Merge parts
      *
      * @param accessPoint
      * @param revParts
@@ -1153,7 +1217,6 @@ public class RevisionService {
         partService.deletePartsWithoutItems(deletedParts, change);
 
         return revPartMap;
-
     }
 
     /**

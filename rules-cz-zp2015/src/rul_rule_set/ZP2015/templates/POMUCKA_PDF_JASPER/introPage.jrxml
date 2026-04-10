@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.20.6.final using JasperReports Library version 6.20.6-5c96b6aa8a39ac1dc6b6bea4b81168e16dd39231  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="intro" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="28" bottomMargin="28" uuid="7dadc22d-1241-4907-8921-52170562f815">
+<!-- Created with Jaspersoft Studio version 7.0.3.final using JasperReports Library version 7.0.3-41034ca841d452f3305ba55b9042260aaa1ab5dd  -->
+<jasperReport name="intro" language="java" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="28" bottomMargin="28" uuid="7dadc22d-1241-4907-8921-52170562f815">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -12,11 +11,11 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
-	<import value="org.apache.commons.lang3.StringUtils"/>
-	<style name="Text" isDefault="true" hTextAlign="Justified" fontName="DejaVu Sans" fontSize="10"/>
-	<style name="Heading 1" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="16" isBold="true"/>
-	<style name="Heading 3" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="10" isBold="true" isItalic="false"/>
-	<style name="HeaderText" forecolor="#999999" fontName="DejaVu Sans" fontSize="8"/>
+	<import>org.apache.commons.lang3.StringUtils</import>
+	<style name="Text" default="true" hTextAlign="Justified" fontName="DejaVu Sans" fontSize="10.0"/>
+	<style name="Heading 1" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="16.0" bold="true"/>
+	<style name="Heading 3" style="Text" hTextAlign="Left" vTextAlign="Middle" fontSize="10.0" bold="true" italic="false"/>
+	<style name="HeaderText" forecolor="#999999" fontName="DejaVu Sans" fontSize="8.0"/>
 	<style name="Table_TH" mode="Opaque" backcolor="#F0F8FF">
 		<box>
 			<pen lineWidth="0.5" lineColor="#000000"/>
@@ -44,14 +43,12 @@
 			<rightPen lineWidth="0.5" lineColor="#000000"/>
 		</box>
 	</style>
-	<subDataset name="tablerows" uuid="643d9627-1c8a-4c67-bff4-993e24ddf759">
+	<dataset name="tablerows" uuid="643d9627-1c8a-4c67-bff4-993e24ddf759">
 		<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 		<parameter name="unitTypeMapper" class="java.util.Map"/>
-		<queryString>
-			<![CDATA[]]>
-		</queryString>
+		<query language="sql"><![CDATA[]]></query>
 		<field name="values" class="java.util.Map"/>
-	</subDataset>
+	</dataset>
 	<parameter name="fund" class="cz.tacr.elza.print.Fund"/>
 	<parameter name="output" class="cz.tacr.elza.print.Output"/>
 	<parameter name="arrangerFormatter" class="cz.tacr.elza.print.format.Formatter">
@@ -130,518 +127,337 @@
 	</parameter>
 	<detail>
 		<band height="50">
-			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField bookmarkLevel="1">
-				<reportElement style="Heading 1" x="0" y="22" width="455" height="28" uuid="add21e86-1c65-4ee5-8b97-d39251536a3d">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<textElement>
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["II. Dějiny archivního souboru"]]></textFieldExpression>
+			<element kind="textField" uuid="add21e86-1c65-4ee5-8b97-d39251536a3d" x="0" y="22" width="455" height="28" pdfEncoding="Cp1250" bookmarkLevel="1" style="Heading 1">
+				<expression><![CDATA["II. Dějiny archivního souboru"]]></expression>
 				<anchorNameExpression><![CDATA["II. Dějiny archivního souboru"]]></anchorNameExpression>
-			</textField>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+			</element>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 		</band>
 		<band height="50">
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="e5a9e916-8c13-48ff-8ac0-f8a1a0b1343b">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_HIST" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="10"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Dějiny jednotky popisu:"]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="8852f770-71f7-4c06-8a38-675773982ab1">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_HIST" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="10"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_HIST" ))]]></textFieldExpression>
-			</textField>
+			<element kind="textField" uuid="e5a9e916-8c13-48ff-8ac0-f8a1a0b1343b" positionType="Float" x="0" y="0" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Heading 3">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_HIST" ))]]></printWhenExpression>
+				<expression><![CDATA["Dějiny jednotky popisu:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<box bottomPadding="10" style="Heading 3"/>
+			</element>
+			<element kind="textField" uuid="8852f770-71f7-4c06-8a38-675773982ab1" positionType="Float" x="0" y="25" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Text">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_HIST" ))]]></printWhenExpression>
+				<expression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_HIST" ))]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<box bottomPadding="10" style="Text"/>
+			</element>
 		</band>
 		<band height="50">
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="244e4aa4-7468-47af-8920-417da956eebd">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_SOURCE" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="10"/>
-				<textElement markup="none">
-					<font isBold="false" pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_SOURCE" ))]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="c2e7e153-3cba-4436-b2d1-0fa8f746129d">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_SOURCE" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="10"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Přímý zdroj akvizice:"]]></textFieldExpression>
-			</textField>
+			<element kind="textField" uuid="244e4aa4-7468-47af-8920-417da956eebd" positionType="Float" x="0" y="25" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" bold="false" style="Text">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_SOURCE" ))]]></printWhenExpression>
+				<expression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_SOURCE" ))]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				<box bottomPadding="10" style="Text"/>
+			</element>
+			<element kind="textField" uuid="c2e7e153-3cba-4436-b2d1-0fa8f746129d" positionType="Float" x="0" y="0" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Heading 3">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_SOURCE" ))]]></printWhenExpression>
+				<expression><![CDATA["Přímý zdroj akvizice:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<box bottomPadding="10" style="Heading 3"/>
+			</element>
 		</band>
 		<band height="30">
-			<textField textAdjust="StretchHeight" bookmarkLevel="1">
-				<reportElement style="Heading 1" positionType="Float" x="0" y="0" width="455" height="30" uuid="c8ddf74f-24f4-4c0d-928a-6450e38b4c61"/>
-				<textElement>
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["III. Archivní charakteristika archivního souboru"]]></textFieldExpression>
+			<element kind="textField" uuid="c8ddf74f-24f4-4c0d-928a-6450e38b4c61" positionType="Float" x="0" y="0" width="455" height="30" pdfEncoding="Cp1250" textAdjust="StretchHeight" bookmarkLevel="1" style="Heading 1">
+				<expression><![CDATA["III. Archivní charakteristika archivního souboru"]]></expression>
 				<anchorNameExpression><![CDATA["III. Archivní charakteristika archivního souboru"]]></anchorNameExpression>
-			</textField>
+			</element>
 		</band>
 		<band height="50">
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="a5ea9ab6-f470-4467-ad8b-e038e4986829">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_ARR" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font isBold="true" pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Způsob uspořádání:"]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="de961593-f230-47c3-ae95-0417361346a7">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_ARR" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_ARR" ))]]></textFieldExpression>
-			</textField>
+			<element kind="textField" uuid="a5ea9ab6-f470-4467-ad8b-e038e4986829" positionType="Float" x="0" y="0" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" bold="true" style="Heading 3">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_ARR" ))]]></printWhenExpression>
+				<expression><![CDATA["Způsob uspořádání:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<box bottomPadding="7" style="Heading 3"/>
+			</element>
+			<element kind="textField" uuid="de961593-f230-47c3-ae95-0417361346a7" positionType="Float" x="0" y="25" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Text">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_ARR" ))]]></printWhenExpression>
+				<expression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_ARR" ))]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<box bottomPadding="7" style="Text"/>
+			</element>
 		</band>
 		<band height="50">
+			<element kind="textField" uuid="53b98787-f512-44a7-9059-e33e7e014cd0" positionType="Float" x="0" y="25" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Text">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_FUTURE_UNITS" ))]]></printWhenExpression>
+				<expression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_FUTURE_UNITS" ))]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				<box bottomPadding="7" style="Text"/>
+			</element>
+			<element kind="textField" uuid="03fea67d-a548-455c-a0ae-643723c42df7" positionType="Float" x="0" y="0" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Heading 3">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_FUTURE_UNITS" ))]]></printWhenExpression>
+				<expression><![CDATA["Budoucí přírůstky:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<box bottomPadding="7" style="Heading 3"/>
+			</element>
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="53b98787-f512-44a7-9059-e33e7e014cd0">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_FUTURE_UNITS" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_FUTURE_UNITS" ))]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="03fea67d-a548-455c-a0ae-643723c42df7">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_FUTURE_UNITS" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Budoucí přírůstky:"]]></textFieldExpression>
-			</textField>
 		</band>
 		<band height="50">
 			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CURRENT_STATUS" ))]]></printWhenExpression>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="19dcc43d-795d-4615-ab33-5264d71fbd20">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CURRENT_STATUS" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Fyzický stav jednotky popisu a technické požadavky:"]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="63886e7b-cec1-476f-9f95-7e1517d5c7d0">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CURRENT_STATUS" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_CURRENT_STATUS" ))]]></textFieldExpression>
-			</textField>
+			<element kind="textField" uuid="19dcc43d-795d-4615-ab33-5264d71fbd20" positionType="Float" x="0" y="0" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Heading 3">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CURRENT_STATUS" ))]]></printWhenExpression>
+				<expression><![CDATA["Fyzický stav jednotky popisu a technické požadavky:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<box bottomPadding="7" style="Heading 3"/>
+			</element>
+			<element kind="textField" uuid="63886e7b-cec1-476f-9f95-7e1517d5c7d0" positionType="Float" x="0" y="25" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Text">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CURRENT_STATUS" ))]]></printWhenExpression>
+				<expression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_CURRENT_STATUS" ))]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<box bottomPadding="7" style="Text"/>
+			</element>
 		</band>
 		<band height="50">
 			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{damageFormatter}.format( $P{output} ))]]></printWhenExpression>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="f25b33fd-65d5-44e6-9ade-da1325840840">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Charakter poškození:"]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="d487b18a-b382-432a-98b1-b70e7138b0b2">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{damageFormatter}.format( $P{output} )]]></textFieldExpression>
-			</textField>
+			<element kind="textField" uuid="f25b33fd-65d5-44e6-9ade-da1325840840" positionType="Float" x="0" y="0" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Heading 3">
+				<expression><![CDATA["Charakter poškození:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<box bottomPadding="7" style="Heading 3"/>
+			</element>
+			<element kind="textField" uuid="d487b18a-b382-432a-98b1-b70e7138b0b2" positionType="Float" x="0" y="25" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Text">
+				<expression><![CDATA[$P{damageFormatter}.format( $P{output} )]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				<box bottomPadding="7" style="Text"/>
+			</element>
 		</band>
 		<band height="100">
+			<element kind="textField" uuid="40760ba3-22f5-4341-8b72-a9287298325b" positionType="Float" x="0" y="75" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Text">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGE_RULES" ))]]></printWhenExpression>
+				<expression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_ARRANGE_RULES" ))]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				<box bottomPadding="7" style="Text"/>
+			</element>
+			<element kind="textField" uuid="8019e65e-fd8f-4f7c-aeee-7396706b0d3f" positionType="Float" x="0" y="0" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Heading 3">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_RELATED_UNITS" ))]]></printWhenExpression>
+				<expression><![CDATA["Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				<box bottomPadding="7" style="Heading 3"/>
+			</element>
+			<element kind="textField" uuid="4e1e9025-27e3-48b5-8597-e1c185bc6f6b" positionType="Float" x="0" y="50" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Heading 3">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGE_RULES" ))]]></printWhenExpression>
+				<expression><![CDATA["Pravidla zpracování:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				<box bottomPadding="7" style="Heading 3"/>
+			</element>
+			<element kind="textField" uuid="4f0d028a-f7ff-49a1-b80b-187359091b90" positionType="Float" x="0" y="25" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Text">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_RELATED_UNITS" ))]]></printWhenExpression>
+				<expression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_RELATED_UNITS" ))]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				<box bottomPadding="7" style="Text"/>
+			</element>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="75" width="455" height="25" isRemoveLineWhenBlank="true" uuid="40760ba3-22f5-4341-8b72-a9287298325b">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGE_RULES" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_ARRANGE_RULES" ))]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="8019e65e-fd8f-4f7c-aeee-7396706b0d3f">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_RELATED_UNITS" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Odkazy na příbuzné dokumenty, archiválie a pomůcky pro vyhledávání:"]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Heading 3" positionType="Float" x="0" y="50" width="455" height="25" isRemoveLineWhenBlank="true" uuid="4e1e9025-27e3-48b5-8597-e1c185bc6f6b">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGE_RULES" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Pravidla zpracování:"]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="4f0d028a-f7ff-49a1-b80b-187359091b90">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_RELATED_UNITS" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_RELATED_UNITS" ))]]></textFieldExpression>
-			</textField>
 		</band>
 		<band height="30" splitType="Prevent">
-			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField textAdjust="StretchHeight" bookmarkLevel="1">
-				<reportElement style="Heading 1" x="0" y="0" width="455" height="30" isPrintInFirstWholeBand="true" uuid="b5ee0b4d-18bb-4beb-b7c8-34e8007d2f4d"/>
-				<textElement>
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["IV. Tematický popis a obsah archivního souboru"]]></textFieldExpression>
+			<element kind="textField" uuid="b5ee0b4d-18bb-4beb-b7c8-34e8007d2f4d" x="0" y="0" width="455" height="30" pdfEncoding="Cp1250" textAdjust="StretchHeight" bookmarkLevel="1" printInFirstWholeBand="true" style="Heading 1">
+				<expression><![CDATA["IV. Tematický popis a obsah archivního souboru"]]></expression>
 				<anchorNameExpression><![CDATA["IV. Tematický popis a obsah archivního souboru"]]></anchorNameExpression>
-			</textField>
+			</element>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 		</band>
 		<band height="50">
-			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="0477089d-2344-4b11-945b-44f339f1f0b4">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Tematický popis:"]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="c1063b45-361d-4763-b3ff-3bd3f03aa121">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></textFieldExpression>
-			</textField>
+			<element kind="textField" uuid="0477089d-2344-4b11-945b-44f339f1f0b4" positionType="Float" x="0" y="0" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Heading 3">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
+				<expression><![CDATA["Tematický popis:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				<box bottomPadding="7" style="Heading 3"/>
+			</element>
+			<element kind="textField" uuid="c1063b45-361d-4763-b3ff-3bd3f03aa121" positionType="Float" x="0" y="25" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Text">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
+				<expression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				<box bottomPadding="7" style="Text"/>
+			</element>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 		</band>
 		<band height="50">
 			<printWhenExpression><![CDATA[$P{output}.getItems( java.util.Collections.singletonList("ZP2015_LANGUAGE") ).size()>0]]></printWhenExpression>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="0f41d8e8-4da9-47bd-9559-16558580bc4d">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Jazyk archiválií popsaných pomůckou:"]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="0bc420bd-d6b6-4152-8386-be377d4e73cf">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{languageFormatter}.format( $P{output} )]]></textFieldExpression>
-			</textField>
+			<element kind="textField" uuid="0f41d8e8-4da9-47bd-9559-16558580bc4d" positionType="Float" x="0" y="0" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Heading 3">
+				<expression><![CDATA["Jazyk archiválií popsaných pomůckou:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				<box bottomPadding="7" style="Heading 3"/>
+			</element>
+			<element kind="textField" uuid="0bc420bd-d6b6-4152-8386-be377d4e73cf" positionType="Float" x="0" y="25" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Text">
+				<expression><![CDATA[$P{languageFormatter}.format( $P{output} )]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				<box bottomPadding="7" style="Text"/>
+			</element>
 		</band>
 		<band height="50">
 			<printWhenExpression><![CDATA[$P{fund}.getRootNode().getItems( java.util.Collections.singletonList("ZP2015_MAJOR_LANG") ).size()>0]]></printWhenExpression>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="d6988573-7915-4e8e-82ae-125f95ef9988">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Jazyk archivního souboru (v evidenci NAD):"]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="25" width="455" height="25" isRemoveLineWhenBlank="true" uuid="f3b9ac16-5ee5-4581-b444-f354d8b5fce5">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{majorLanguageFormatter}.format( $P{fund}.getRootNode() )]]></textFieldExpression>
-			</textField>
+			<element kind="textField" uuid="d6988573-7915-4e8e-82ae-125f95ef9988" positionType="Float" x="0" y="0" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Heading 3">
+				<expression><![CDATA["Jazyk archivního souboru (v evidenci NAD):"]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				<box bottomPadding="7" style="Heading 3"/>
+			</element>
+			<element kind="textField" uuid="f3b9ac16-5ee5-4581-b444-f354d8b5fce5" positionType="Float" x="0" y="25" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Text">
+				<expression><![CDATA[$P{majorLanguageFormatter}.format( $P{fund}.getRootNode() )]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				<box bottomPadding="7" style="Text"/>
+			</element>
 		</band>
 		<band height="62">
-			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_COUNT_TABLE" ))]]></printWhenExpression>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Heading 3" positionType="Float" x="0" y="0" width="455" height="25" isRemoveLineWhenBlank="true" uuid="aaaca87a-2276-42d0-a32a-36ac0d51e830">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Počet zpřístupněných evidenčních jednotek:"]]></textFieldExpression>
-			</textField>
-			<componentElement>
-				<reportElement x="0" y="25" width="455" height="30" uuid="695ef96e-cbe1-4ebc-9707-8b1db428966f">
-					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
-					<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
-					<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
-					<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-				</reportElement>
-				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="tablerows" uuid="3ab9dc2b-3276-423f-85d9-17d3ed0466ad">
-						<datasetParameter name="unitTypeMapper">
-							<datasetParameterExpression><![CDATA[$P{unitTypeMapper}]]></datasetParameterExpression>
-						</datasetParameter>
+			<element kind="textField" uuid="aaaca87a-2276-42d0-a32a-36ac0d51e830" positionType="Float" x="0" y="0" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Heading 3">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_UNIT_CONTENT" ))]]></printWhenExpression>
+				<expression><![CDATA["Počet zpřístupněných evidenčních jednotek:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				<box bottomPadding="7" style="Heading 3"/>
+			</element>
+			<element kind="component" uuid="695ef96e-cbe1-4ebc-9707-8b1db428966f" x="0" y="25" width="455" height="30">
+				<component kind="table">
+					<datasetRun uuid="3ab9dc2b-3276-423f-85d9-17d3ed0466ad" subDataset="tablerows">
 						<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource( ((cz.tacr.elza.print.item.ItemJsonTable)$P{output}.getSingleItem( "ZP2015_UNIT_COUNT_TABLE" )).getTable().getRows())]]></dataSourceExpression>
+						<parameter name="unitTypeMapper">
+							<expression><![CDATA[$P{unitTypeMapper}]]></expression>
+						</parameter>
 					</datasetRun>
-					<jr:column width="205" uuid="1e9867f2-4809-4fea-b1e2-8903b2ab2fc5">
-						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
-						<jr:columnHeader style="Table_CH" height="15" rowSpan="1">
-							<property name="com.jaspersoft.studio.unit.width" value="px"/>
-							<staticText>
-								<reportElement x="0" y="0" width="205" height="15" uuid="31b59932-2fd3-4479-9150-44897992f73d">
-									<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-								</reportElement>
-								<box topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0"/>
-								<textElement verticalAlignment="Middle"/>
+					<column kind="single" uuid="1e9867f2-4809-4fea-b1e2-8903b2ab2fc5" width="205">
+						<columnHeader height="15" rowSpan="1" style="Table_CH">
+							<element kind="staticText" uuid="31b59932-2fd3-4479-9150-44897992f73d" x="0" y="0" width="205" height="15" vTextAlign="Middle">
 								<text><![CDATA[Evidenční jednotka]]></text>
-							</staticText>
-						</jr:columnHeader>
-						<jr:detailCell style="Table_TD" height="15">
+								<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								<box topPadding="0" leftPadding="5" bottomPadding="0" rightPadding="0"/>
+							</element>
+							<property name="com.jaspersoft.studio.unit.width" value="px"/>
+						</columnHeader>
+						<detailCell height="15" style="Table_TD">
+							<element kind="textField" uuid="adac8057-c019-484b-b9f7-8e7e6e7092ad" x="0" y="0" width="205" height="15" textAdjust="StretchHeight" hTextAlign="Left" vTextAlign="Middle">
+								<expression><![CDATA[$P{unitTypeMapper}.getOrDefault( $F{values}.get( "NAME" ), $F{values}.get( "NAME" ))]]></expression>
+								<box leftPadding="5"/>
+							</element>
 							<property name="com.jaspersoft.studio.unit.height" value="px"/>
-							<textField textAdjust="StretchHeight">
-								<reportElement x="0" y="0" width="205" height="15" uuid="adac8057-c019-484b-b9f7-8e7e6e7092ad"/>
-								<box leftPadding="5"/>
-								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$P{unitTypeMapper}.getOrDefault( $F{values}.get( "NAME" ), $F{values}.get( "NAME" ))]]></textFieldExpression>
-							</textField>
-						</jr:detailCell>
-					</jr:column>
-					<jr:column width="50" uuid="7596f960-d609-419d-8ec1-3dc26f9de9d9">
-						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
-						<jr:columnHeader style="Table_CH" height="15" rowSpan="1">
-							<property name="com.jaspersoft.studio.unit.width" value="px"/>
-							<staticText>
-								<reportElement x="0" y="0" width="50" height="15" uuid="457e1ecd-440e-429c-8796-844177118a79"/>
-								<box leftPadding="5"/>
-								<textElement verticalAlignment="Middle"/>
+						</detailCell>
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+					</column>
+					<column kind="single" uuid="7596f960-d609-419d-8ec1-3dc26f9de9d9" width="50">
+						<columnHeader height="15" rowSpan="1" style="Table_CH">
+							<element kind="staticText" uuid="457e1ecd-440e-429c-8796-844177118a79" x="0" y="0" width="50" height="15" vTextAlign="Middle">
 								<text><![CDATA[Počet]]></text>
-							</staticText>
-						</jr:columnHeader>
-						<jr:detailCell style="Table_TD" height="15">
-							<textField textAdjust="ScaleFont">
-								<reportElement x="0" y="0" width="50" height="15" uuid="0a6204f3-ca54-4389-b4b5-34f72f1844b3"/>
-								<box leftPadding="5" rightPadding="0"/>
-								<textElement textAlignment="Left" verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{values}.get( "COUNT" )]]></textFieldExpression>
-							</textField>
-						</jr:detailCell>
-					</jr:column>
-					<jr:column width="200" uuid="b7a1f813-c33a-472d-b1c6-1be6fc060210">
-						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
-						<jr:columnHeader style="Table_CH" height="15" rowSpan="1">
+								<box leftPadding="5"/>
+							</element>
 							<property name="com.jaspersoft.studio.unit.width" value="px"/>
-							<staticText>
-								<reportElement x="0" y="0" width="200" height="15" uuid="bc8f71f5-7597-4e43-b2fa-134d812ed3f1">
-									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-								</reportElement>
-								<box leftPadding="5"/>
-								<textElement verticalAlignment="Middle"/>
+						</columnHeader>
+						<detailCell height="15" style="Table_TD">
+							<element kind="textField" uuid="0a6204f3-ca54-4389-b4b5-34f72f1844b3" x="0" y="0" width="50" height="15" textAdjust="ScaleFont" hTextAlign="Left" vTextAlign="Middle">
+								<expression><![CDATA[$F{values}.get( "COUNT" )]]></expression>
+								<box leftPadding="5" rightPadding="0"/>
+							</element>
+						</detailCell>
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+					</column>
+					<column kind="single" uuid="b7a1f813-c33a-472d-b1c6-1be6fc060210" width="200">
+						<columnHeader height="15" rowSpan="1" style="Table_CH">
+							<element kind="staticText" uuid="bc8f71f5-7597-4e43-b2fa-134d812ed3f1" x="0" y="0" width="200" height="15" vTextAlign="Middle">
 								<text><![CDATA[Datace]]></text>
-							</staticText>
-						</jr:columnHeader>
-						<jr:detailCell style="Table_TD" height="15">
-							<textField textAdjust="ScaleFont">
-								<reportElement x="0" y="0" width="200" height="15" uuid="ee54dad3-f135-4888-8b0a-5d2e59059bdd"/>
+								<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 								<box leftPadding="5"/>
-								<textElement verticalAlignment="Middle"/>
-								<textFieldExpression><![CDATA[$F{values}.get( "DATE_RANGE" )]]></textFieldExpression>
-							</textField>
-						</jr:detailCell>
-					</jr:column>
-				</jr:table>
-			</componentElement>
+							</element>
+							<property name="com.jaspersoft.studio.unit.width" value="px"/>
+						</columnHeader>
+						<detailCell height="15" style="Table_TD">
+							<element kind="textField" uuid="ee54dad3-f135-4888-8b0a-5d2e59059bdd" x="0" y="0" width="200" height="15" textAdjust="ScaleFont" vTextAlign="Middle">
+								<expression><![CDATA[$F{values}.get( "DATE_RANGE" )]]></expression>
+								<box leftPadding="5"/>
+							</element>
+						</detailCell>
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column3"/>
+					</column>
+				</component>
+				<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+				<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
+				<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
+				<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+			</element>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 		</band>
 		<band height="95" splitType="Prevent">
 			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{arrangerFormatter}.format($P{output}))||
 StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_DESCRIPTION_DATE" ))||
 StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_SOURCES" ))||
 StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" ))]]></printWhenExpression>
-			<textField textAdjust="StretchHeight" bookmarkLevel="1">
-				<reportElement style="Heading 1" positionType="Float" x="0" y="0" width="455" height="50" isPrintInFirstWholeBand="true" uuid="94323b71-a6d1-430e-ac07-24a7cae72910">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
-				<textElement>
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky"]]></textFieldExpression>
+			<element kind="textField" uuid="94323b71-a6d1-430e-ac07-24a7cae72910" positionType="Float" x="0" y="0" width="455" height="50" pdfEncoding="Cp1250" textAdjust="StretchHeight" bookmarkLevel="1" printInFirstWholeBand="true" style="Heading 1">
+				<expression><![CDATA["V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky"]]></expression>
 				<anchorNameExpression><![CDATA["V. Záznam o uspořádání archivního souboru a sestavení archivní pomůcky"]]></anchorNameExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Heading 3" positionType="Float" x="0" y="50" width="455" height="20" isRemoveLineWhenBlank="true" uuid="50666061-bb6a-4ea3-aa03-ffd7ac2e7751">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Informace o zpracování:"]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="70" width="455" height="25" isRemoveLineWhenBlank="true" uuid="c65fb600-e002-4000-bb49-b44ea5e3c025">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="none">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" ))]]></textFieldExpression>
-			</textField>
+				<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+			</element>
+			<element kind="textField" uuid="50666061-bb6a-4ea3-aa03-ffd7ac2e7751" positionType="Float" x="0" y="50" width="455" height="20" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Heading 3">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" ))]]></printWhenExpression>
+				<expression><![CDATA["Informace o zpracování:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<box bottomPadding="7" style="Heading 3"/>
+			</element>
+			<element kind="textField" uuid="c65fb600-e002-4000-bb49-b44ea5e3c025" positionType="Float" x="0" y="70" width="455" height="25" markup="none" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Text">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" ))]]></printWhenExpression>
+				<expression><![CDATA[$P{formatter}.format( $P{output}.getSingleItemValue( "ZP2015_ARRANGEMENT_INFO" ))]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				<box bottomPadding="7" style="Text"/>
+			</element>
 		</band>
 		<band height="38">
-			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue("ZP2015_SOURCES"))]]></printWhenExpression>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Heading 3" x="0" y="0" width="455" height="19" uuid="06108af3-8986-4fd5-8158-ac42a04476bb">
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement textAlignment="Left" markup="none">
-					<font isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA["Prameny a literatura:"]]></textFieldExpression>
-			</textField>
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" x="0" y="19" width="455" height="19" uuid="c4cc4ce9-dc99-4f31-8c78-c7da8d14a85e">
-					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textFieldExpression><![CDATA[$P{formatter}.format($P{output}.getSingleItemValue( "ZP2015_SOURCES" ))]]></textFieldExpression>
-			</textField>
+			<element kind="textField" uuid="06108af3-8986-4fd5-8158-ac42a04476bb" x="0" y="0" width="455" height="19" markup="none" textAdjust="StretchHeight" bold="true" hTextAlign="Left" style="Heading 3">
+				<expression><![CDATA["Prameny a literatura:"]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				<box bottomPadding="7" style="Heading 3"/>
+			</element>
+			<element kind="textField" uuid="c4cc4ce9-dc99-4f31-8c78-c7da8d14a85e" x="0" y="19" width="455" height="19" textAdjust="StretchHeight" style="Text">
+				<expression><![CDATA[$P{formatter}.format($P{output}.getSingleItemValue( "ZP2015_SOURCES" ))]]></expression>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				<box bottomPadding="7" style="Text"/>
+			</element>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 		</band>
 		<band height="24">
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="0" width="455" height="24" isRemoveLineWhenBlank="true" uuid="ecbcefb2-2271-4220-8bb4-8bd79f371862">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{arrangerFormatter}.format($P{output}))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["<b>Zpracovatel jednotky popisu: </b>"+$P{arrangerFormatter}.format($P{output})]]></textFieldExpression>
-			</textField>
+			<element kind="textField" uuid="ecbcefb2-2271-4220-8bb4-8bd79f371862" positionType="Float" x="0" y="0" width="455" height="24" markup="html" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Text">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{arrangerFormatter}.format($P{output}))]]></printWhenExpression>
+				<expression><![CDATA["<b>Zpracovatel jednotky popisu: </b>"+$P{arrangerFormatter}.format($P{output})]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<box bottomPadding="7" style="Text"/>
+			</element>
 		</band>
 		<band height="24">
-			<textField textAdjust="StretchHeight">
-				<reportElement style="Text" positionType="Float" x="0" y="0" width="455" height="24" isRemoveLineWhenBlank="true" uuid="13c6949c-d45b-4e95-a56c-217fb22d13ea">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_DESCRIPTION_DATE" ))]]></printWhenExpression>
-				</reportElement>
-				<box bottomPadding="7"/>
-				<textElement markup="html">
-					<font pdfEncoding="Cp1250"/>
-				</textElement>
-				<textFieldExpression><![CDATA["<b>Datum popisu: </b>"+$P{output}.getSingleItemValue( "ZP2015_DESCRIPTION_DATE" )]]></textFieldExpression>
-			</textField>
+			<element kind="textField" uuid="13c6949c-d45b-4e95-a56c-217fb22d13ea" positionType="Float" x="0" y="0" width="455" height="24" markup="html" pdfEncoding="Cp1250" textAdjust="StretchHeight" removeLineWhenBlank="true" style="Text">
+				<printWhenExpression><![CDATA[StringUtils.isNotEmpty($P{output}.getSingleItemValue( "ZP2015_DESCRIPTION_DATE" ))]]></printWhenExpression>
+				<expression><![CDATA["<b>Datum popisu: </b>"+$P{output}.getSingleItemValue( "ZP2015_DESCRIPTION_DATE" )]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<box bottomPadding="7" style="Text"/>
+			</element>
 		</band>
 	</detail>
-	<pageFooter>
-		<band height="15">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField evaluationTime="Master">
-				<reportElement style="HeaderText" x="0" y="1" width="455" height="14" uuid="031d9666-74af-4e0b-b615-d5564532c163">
-					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.5" lineColor="#CCCCCC"/>
-				</box>
-				<textElement textAlignment="Right" verticalAlignment="Middle"/>
-				<textFieldExpression><![CDATA[$V{MASTER_CURRENT_PAGE}]]></textFieldExpression>
-			</textField>
-		</band>
+	<pageFooter height="15">
+		<element kind="textField" uuid="031d9666-74af-4e0b-b615-d5564532c163" x="0" y="1" width="455" height="14" evaluationTime="Master" hTextAlign="Right" vTextAlign="Middle" style="HeaderText">
+			<expression><![CDATA[$V{MASTER_CURRENT_PAGE}]]></expression>
+			<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<box style="HeaderText">
+				<topPen lineWidth="0.5" lineColor="#CCCCCC"/>
+			</box>
+		</element>
+		<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 	</pageFooter>
 </jasperReport>

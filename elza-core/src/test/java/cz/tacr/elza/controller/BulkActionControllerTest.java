@@ -2,9 +2,9 @@ package cz.tacr.elza.controller;
 
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,13 +37,13 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     private int importAndGetVersionId() {
         importXmlFile(null, 1, getResourceFile(XML_FILE));
         List<ArrFundVO> funds = getFunds();
-        Assert.assertEquals(1, funds.size());
-        Assert.assertEquals(1, funds.get(0).getVersions().size());
+        Assertions.assertEquals(1, funds.size());
+        Assertions.assertEquals(1, funds.get(0).getVersions().size());
 
         return funds.get(0).getVersions().get(0).getId();
     }
 
-    @After
+    @AfterEach
     public void cleanUp() {
         for (ApScopeVO scope : getAllScopes()) {
             if (scope.getName().equals(IMPORT_SCOPE)) {
@@ -60,7 +60,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
 		// number of default bulk actions
 		// SRD has 4
-		Assert.assertEquals(4, bulkActionVOs.size());
+		Assertions.assertEquals(4, bulkActionVOs.size());
 
         Boolean unit = false, serial = false, fa = false;
 
@@ -78,9 +78,9 @@ public class BulkActionControllerTest extends AbstractControllerTest {
             }
         }
 
-        Assert.assertTrue("Hromadna akce " + BULK_ACTION_GENERATOR_UNIT + " neni v seznamu", unit);
-        Assert.assertTrue("Hromadna akce " + BULK_ACTION_SERIAL_NUMBER_GENERATOR + " neni v seznamu", serial);
-        Assert.assertTrue("Hromadna akce " + BULK_ACTION_FUND_VALIDATION + " neni v seznamu", fa);
+        Assertions.assertTrue(unit, "Hromadna akce " + BULK_ACTION_GENERATOR_UNIT + " neni v seznamu");
+        Assertions.assertTrue(serial, "Hromadna akce " + BULK_ACTION_SERIAL_NUMBER_GENERATOR + " neni v seznamu");
+        Assertions.assertTrue(fa, "Hromadna akce " + BULK_ACTION_FUND_VALIDATION + " neni v seznamu");
     }
 
     private List<BulkActionRunVO> getBulkActionList(final int versionId) {
@@ -107,8 +107,8 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         faTreeParam.setVersionId(fundVersionId);
         TreeData fundTree = getFundTree(faTreeParam);
         Collection<TreeNodeVO> nodes = fundTree.getNodes();
-        Assert.assertNotNull(nodes);
-        Assert.assertFalse(nodes.isEmpty());
+        Assertions.assertNotNull(nodes);
+        Assertions.assertFalse(nodes.isEmpty());
         TreeNodeVO next = nodes.iterator().next();
 
         post((spec) -> spec.pathParam("versionId", fundVersionId).pathParam("code", BULK_ACTION_SERIAL_NUMBER_GENERATOR).body(Collections.singletonList(next.getId())), BULK_ACTION_QUEUE);
@@ -119,11 +119,11 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 			Thread.sleep(1000);
 
 			BulkActionRunVO stateVo = getBulkActionState(fundVersionId, BULK_ACTION_SERIAL_NUMBER_GENERATOR);
-			Assert.assertNotNull(stateVo);
+			Assertions.assertNotNull(stateVo);
 			State state = stateVo.getState();
 			logger.info("Received state: " + state);
 
-			Assert.assertTrue(state != State.ERROR);
+			Assertions.assertTrue(state != State.ERROR);
 			if (state == State.FINISHED) {
 				logger.info("Async action finished");
 				break;
@@ -172,7 +172,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
                     if (state.getState().equals(State.FINISHED)) {
                         hasResult = true;
                     } else if (state.getState().equals(State.ERROR)) {
-                        Assert.fail("Bulk action failed, code: " + code + " error: " + state.getError());
+                        Assertions.fail("Bulk action failed, code: " + code + " error: " + state.getError());
                     }
                 }
             } else {
@@ -181,7 +181,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
         } while (!hasResult);
 
-        Assert.assertTrue("Čas překročen", counter >= 0);
+        Assertions.assertTrue(counter >= 0, "Čas překročen");
 
         return state;
     }
@@ -204,7 +204,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
         helperTestService.waitForWorkers();
 
-        Assert.assertEquals(200, get((spec) -> spec.pathParam("id", actionId), BULK_ACTION_INTERRUPT).getStatusCode());
+        Assertions.assertEquals(200, get((spec) -> spec.pathParam("id", actionId), BULK_ACTION_INTERRUPT).getStatusCode());
 
         int counter = 6;
 
@@ -226,7 +226,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
                         if (baRunVO.getState().equals(State.INTERRUPTED) || baRunVO.getState().equals(State.FINISHED)) {
                             hasResult = true;
                         } else if (baRunVO.getState().equals(State.ERROR)) {
-                            Assert.fail("Hromadná akce skončila chybou");
+                            Assertions.fail("Hromadná akce skončila chybou");
                         }
                     }
                 } else {
@@ -238,7 +238,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
         } while (!hasResult);
 
-        Assert.assertTrue("Čas překročen (poslední stav: " + baRunVO.getState() + ")", counter >= 0);
+        Assertions.assertTrue(counter >= 0, "Čas překročen (poslední stav: " + baRunVO.getState() + ")");
     }
 
 }

@@ -25,6 +25,102 @@ import {formatDate} from '../validate';
 import {validateUnitDate} from '../registry/field/UnitdateField';
 
 /**
+ * Pole pro výběr entity (archivní entita) - používá se pro podmínku CONTAIN_ENTITY.
+ */
+class EntityField extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            query: '',
+            accessPoints: [],
+            selectedName: '',
+        };
+        this.searchTimeout = null;
+    }
+
+    componentDidMount() {
+        // Pokud je již nastavena hodnota (accessPointId), načteme název entity
+        if (this.props.value) {
+            WebApi.getAccessPoint(this.props.value).then(ap => {
+                this.setState({selectedName: ap.name});
+            });
+        } else {
+            this.fetchAccessPoints('');
+        }
+    }
+
+    fetchAccessPoints(search) {
+        const {versionId} = this.props;
+        WebApi.findAccessPoint(search, null, null, versionId, null, null, 0, 50)
+            .then(result => {
+                this.setState({accessPoints: result.rows || []});
+            });
+    }
+
+    handleQueryChange = (e) => {
+        const query = e.target.value;
+        this.setState({query, selectedName: ''});
+        if (this.searchTimeout) {
+            clearTimeout(this.searchTimeout);
+        }
+        this.searchTimeout = setTimeout(() => {
+            this.fetchAccessPoints(query);
+        }, 300);
+        // Smazání vybrané entity
+        this.props.onChange(null);
+    };
+
+    handleSelect = (accessPoint) => {
+        this.setState({
+            selectedName: accessPoint.name,
+            query: '',
+            accessPoints: [],
+        });
+        this.props.onChange('' + accessPoint.id);
+    };
+
+    render() {
+        const {query, accessPoints, selectedName} = this.state;
+        const {error} = this.props;
+
+        let decorate = {};
+        if (error) {
+            decorate = {
+                variant: 'error',
+                hasFeedback: true,
+                help: error,
+            };
+        }
+
+        return (
+            <div className="value-container entity-field-container">
+                <FormInput
+                    {...decorate}
+                    type="text"
+                    value={selectedName || query}
+                    onChange={this.handleQueryChange}
+                    placeholder={i18n('arr.fund.filterSettings.condition.containEntity')}
+                />
+                {!selectedName && accessPoints.length > 0 && (
+                    <div className="entity-autocomplete-list">
+                        {accessPoints.map(ap => (
+                            <div
+                                key={ap.id}
+                                className="entity-autocomplete-item"
+                                onMouseDown={() => this.handleSelect(ap)}
+                            >
+                                <div>{ap.name}</div>
+                                {ap.description && <div className="entity-description"><small>{ap.description}</small></div>}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    }
+}
+
+/**
  * Formulář nastavení filtru na sloupečku.
  */
 const renderTextFields = fields => {
@@ -380,8 +476,15 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             case 'STRUCTURED':
             case 'JSON_TABLE':
             case 'ENUM':
-            case 'RECORD_REF':
+            case 'RECORD_REF': {
+                const prevCode = this.state.conditionSelectedCode;
+                if ((prevCode === 'CONTAIN' && selectedCode === 'CONTAIN_ENTITY') ||
+                    (prevCode === 'CONTAIN_ENTITY' && selectedCode === 'CONTAIN')) {
+                    useValues = [];
+                    hasErrors = false;
+                }
                 break;
+            }
             case 'UNITDATE':
                 /*
                 if (useValues.length > 0) {
@@ -417,7 +520,7 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
             return null;
         }
 
-        if (dataType.code === 'UNITDATE' || dataType.code === 'TEXT' || dataType.code === 'COORDINATES') {
+        if (dataType.code === 'UNITDATE' || dataType.code === 'TEXT' || dataType.code === 'COORDINATES' || dataType.code === 'RECORD_REF') {
             // zde je výjimka a nechceme dle hodnoty
             return null;
         }
@@ -518,8 +621,24 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                         {values: 2, code: 'NOT_INTERVAL', name: i18n('arr.fund.filterSettings.condition.notInterval')},
                     ];
                     break;
-                case 'RECORD_REF':
-                    renderFields = renderTextFields;
+                case 'RECORD_REF': {
+                    const conditionSelectedCode = this.state ? this.state.conditionSelectedCode : 'NONE';
+                    const {versionId} = this.props;
+                    if (conditionSelectedCode === 'CONTAIN_ENTITY') {
+                        renderFields = fields => {
+                            return fields.map((field, index) => (
+                                <EntityField
+                                    key={index}
+                                    value={field.value}
+                                    error={field.error}
+                                    onChange={field.onChange}
+                                    versionId={versionId}
+                                />
+                            ));
+                        };
+                    } else {
+                        renderFields = renderTextFields;
+                    }
                     validateField = (code, valuesCount, value, index) => {
                         return value ? null : i18n('global.validation.required');
                     };
@@ -529,8 +648,10 @@ const FundFilterSettings = class FundFilterSettings extends AbstractReactCompone
                         {values: 0, code: 'NOT_EMPTY', name: i18n('arr.fund.filterSettings.condition.notEmpty')},
                         {values: 0, code: 'UNDEFINED', name: i18n('arr.fund.filterSettings.condition.undefined')},
                         {values: 1, code: 'CONTAIN', name: i18n('arr.fund.filterSettings.condition.string.contain')},
+                        {values: 1, code: 'CONTAIN_ENTITY', name: i18n('arr.fund.filterSettings.condition.containEntity')},
                     ];
                     break;
+                }
                 case 'UNITDATE':
                     renderFields = renderTextFields ;
                     validateField = (code, valuesCount, value, index) => {

@@ -325,6 +325,17 @@ export interface FundSearch {
     totalCount: number;
 }
 
+export interface NodeSettings {
+  copyAll: boolean;
+  descItemTypeCopyIds: number[];
+  descItemTypeLockIds: number[];
+  id: number;
+}
+
+export interface NodesSettings {
+  nodes: NodeSettings[];
+}
+
 export interface ArrRegion {
     activeIndex: number | null;
     customFund: unknown;
@@ -332,7 +343,7 @@ export interface ArrRegion {
     fundSearch: FundSearch;
     funds: Fund[];
     globalFundTree: unknown;
-    nodeSettings: unknown;
+    nodeSettings: NodesSettings;
     showRegisterJp?: boolean;
     visiblePolicy: VisiblePolicy;
 }
@@ -366,16 +377,19 @@ export interface ExternalSystem {
 
 type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCode" | "publishOnlyApproved" | "userInfo" | "viewFileUrl" | "viewThumbnailUrl" | "sendNotification">;
 
-export interface RegistryDetail {
+export interface RegistryDetail extends ItemDetail<ApAccessPointVO>{
     coordinatesInternalId?: number;
+    variantRecordInternalId?: number;
+}
+
+export interface ItemDetail<T> {
     currentDataKey?: number | string;
-    data?: ApAccessPointVO;
+    data?: T;
     fetched?: boolean;
+    isFetching?: boolean;
     getDataKey?: () => unknown;
     id?: number;
-    isFetching?: boolean;
     reducer?: unknown;
-    variantRecordInternalId?: number;
 }
 
 export interface App {
@@ -389,7 +403,7 @@ export interface App {
     apValidation: DetailStoreState<ApValidationErrorsVO>;
     apViewSettings: unknown;
     arrStructure: unknown;
-    extSystemDetail: unknown;
+    extSystemDetail: ItemDetail<ExternalSystem>;
     extSystemList: SimpleList<ExternalSystem>;
     issueComments: unknown;
     issueDetail: unknown;
@@ -454,6 +468,21 @@ export interface StateRegion {
     registryRegionFront: RegistryRegionFrontEntity[];
 }
 
+export interface StructureNodeFormState {
+    id: number | null;
+    fetched: boolean;
+    fetching: boolean;
+    currentDataKey: unknown;
+    subNodeForm: unknown;
+    version?: number;
+}
+
+export interface StructuresState {
+    stores: {
+        [key: string]: StructureNodeFormState;
+    };
+}
+
 export interface AppState {
     splitter: SplitterState;
     adminRegion: AdminRegionState;
@@ -470,7 +499,7 @@ export interface AppState {
     router: unknown;
     stateRegion: StateRegion;
     status: unknown;
-    structures: unknown;
+    structures: StructuresState;
     tab: unknown;
     toastr: unknown;
     userDetail: UserDetail;

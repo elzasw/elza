@@ -3,9 +3,9 @@ package cz.tacr.elza.controller;
 import java.io.File;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import cz.tacr.elza.controller.vo.PackageVO;
 import cz.tacr.elza.other.HelperTestService;
@@ -21,7 +21,7 @@ public class PackageTest extends AbstractControllerTest {
     private static final String EXPORT_PACKAGE = RULE_CONTROLLER_URL + "/exportPackage/{code}";
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         loadInstitutions = false;
         super.setUp();
@@ -37,7 +37,7 @@ public class PackageTest extends AbstractControllerTest {
                 break;
             }
         }
-        Assert.assertNotNull(packageItem);
+        Assertions.assertNotNull(packageItem);
 
         deletePackage(packageItem.getCode());
         importPackage();

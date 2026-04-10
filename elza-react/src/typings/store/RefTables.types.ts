@@ -108,6 +108,16 @@ export interface RefTablesDataStore<T> {
     reducer?: () => unknown;
 }
 
+export interface RefTablesDataMapStore<T> {
+    data: Record<string, T> & { ids: string[] } | null;
+    currentDataKey?: boolean;
+    id?: boolean;
+    fetched?: boolean;
+    isFetching?: boolean;
+    getDataKey?: () => unknown;
+    reducer?: () => unknown;
+}
+
 enum IssueTypeEnum {
     IMPORTANT = "IMPORTANT",
     RECOMMENDED = "RECOMMENDED",
@@ -147,12 +157,18 @@ export interface RuleSet {
     ruleType: RuleType;
 }
 
+export interface DescItemGroup {
+    code: string;
+    itemTypes: Array<{ id: number, width: number }>;
+    name: string;
+}
+
 export interface RefTablesState {
     apTypes: BaseRefTableStore<ApTypeVO>;
     descItemTypes: BaseRefTableStore<DescItemTypeRef>;
     eidTypes: unknown;
     externalSystems: unknown;
-    groups: unknown;
+    groups: RefTablesDataMapStore<DescItemGroup>;
     institutions: BaseRefTableStore<Institution>;
     issueStates: unknown;
     issueTypes: RefTablesDataStore<IssueType>;

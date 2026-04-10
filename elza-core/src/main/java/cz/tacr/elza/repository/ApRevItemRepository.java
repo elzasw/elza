@@ -31,7 +31,7 @@ public interface ApRevItemRepository extends JpaRepository<ApRevItem, Integer> {
     @Query("SELECT i.dataId FROM ApRevItem i JOIN i.part p WHERE p.revisionId IN :revisionIds")
     List<Integer> findAllDataIdByRevisionIdIn(@Param("revisionIds") Collection<Integer> revisionIds);
 
-    @Query("DELETE FROM ApRevItem i JOIN i.part p WHERE p.revisionId IN :revisionIds")
+    @Query("DELETE FROM ApRevItem i WHERE i.part.partId IN (SELECT p.partId FROM ApRevPart p WHERE p.revisionId IN :revisionIds)")
     @Modifying
 	void deleteAllByRevisionIdIn(@Param("revisionIds") Collection<Integer> revisionIds);
 }

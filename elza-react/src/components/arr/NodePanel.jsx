@@ -6,47 +6,49 @@ import scrollIntoView from 'dom-scroll-into-view';
 import classNames from 'classnames';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {connect} from 'react-redux';
-import {withRouter} from "react-router";
-import {AbstractReactComponent, HorizontalLoader, i18n, Icon, ListBox, TooltipTrigger, Utils} from 'components/shared';
-import {SubNodeDao} from './sub-node-dao';
+import { connect } from 'react-redux';
+import { withRouter } from "react-router";
+import { AbstractReactComponent, HorizontalLoader, i18n, Icon, ListBox, TooltipTrigger, Utils } from 'components/shared';
+import { SubNodeDao } from './sub-node-dao';
 import NodeActionsBar from './NodeActionsBar';
 import NodeSubNodeForm from './NodeSubNodeForm';
-import {Button} from '../ui';
-import {addNodeFormArr} from 'actions/arr/addNodeForm';
-import {nodeFormActions} from 'actions/arr/subNodeForm';
-import {fundSubNodeDaosFetchIfNeeded} from 'actions/arr/subNodeDaos';
-import {fundSelectSubNode, fundSubNodesNext, fundSubNodesPrev} from 'actions/arr/node';
-import {refRulDataTypesFetchIfNeeded} from 'actions/refTables/rulDataTypes';
-import {indexById} from 'stores/app/utils';
-import {createDigitizationName, createFundRoot, getDescItemsAddTree} from './ArrUtils';
-import {createReferenceMarkString, getGlyph, getOneSettings} from 'components/arr/ArrUtils';
-import {descItemTypesFetchIfNeeded} from 'actions/refTables/descItemTypes';
-import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog';
+import { Button } from '../ui';
+import { addNodeFormArr } from 'actions/arr/addNodeForm';
+import { nodeFormActions } from 'actions/arr/subNodeForm';
+import { fundSubNodeDaosFetchIfNeeded } from 'actions/arr/subNodeDaos';
+import { fundSelectSubNode, fundSubNodesNext, fundSubNodesPrev } from 'actions/arr/node';
+import { refRulDataTypesFetchIfNeeded } from 'actions/refTables/rulDataTypes';
+import { indexById } from 'stores/app/utils';
+import { createDigitizationName, createFundRoot, getDescItemsAddTree } from './ArrUtils';
+import { createReferenceMarkString, getGlyph, getOneSettings } from 'components/arr/ArrUtils';
+import { descItemTypesFetchIfNeeded } from 'actions/refTables/descItemTypes';
+import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
 import ArrRequestForm from './ArrRequestForm';
-import {WebApi} from 'actions/index';
-import {Shortcuts} from 'react-shortcuts';
-import {canSetFocus, focusWasSet, isFocusExactFor, isFocusFor, setFocus} from 'actions/global/focus';
+import { WebApi } from 'actions/index';
+import { Shortcuts } from 'react-shortcuts';
+import { canSetFocus, focusWasSet, isFocusExactFor, isFocusFor, setFocus } from 'actions/global/focus';
 import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm';
-import {visiblePolicyTypesFetchIfNeeded} from 'actions/refTables/visiblePolicyTypes';
+import { visiblePolicyTypesFetchIfNeeded } from 'actions/refTables/visiblePolicyTypes';
 import * as perms from 'actions/user/Permission';
-import {PropTypes} from 'prop-types';
+import { PropTypes } from 'prop-types';
 import defaultKeymap from './NodePanelKeymap';
 
 import './NodePanel.scss';
 import { NodeSettingsModal } from './node-settings-form';
-import {FOCUS_KEYS, urlNode} from '../../constants';
+import { FOCUS_KEYS, urlNode } from '../../constants';
 import ConfirmForm from '../shared/form/ConfirmForm';
 import getMapFromList from 'shared/utils/getMapFromList';
 import SyncNodes from './SyncNodes';
 import objectById from "../../shared/utils/objectById";
 import LinkedNodes from "./LinkedNodes";
+import { NodeView } from './node-view/NodeView';
+import { NodeEdit } from './node-edit';
 // Konstance kolik se má maximálně zobrazit v seznamu parents a children záznamů
 const PARENT_CHILD_MAX_LENGTH = 250;
 
 class NodePanel extends AbstractReactComponent {
-    static contextTypes = {shortcuts: PropTypes.object};
-    static childContextTypes = {shortcuts: PropTypes.object.isRequired};
+    static contextTypes = { shortcuts: PropTypes.object };
+    static childContextTypes = { shortcuts: PropTypes.object.isRequired };
 
     static propTypes = {
         versionId: PropTypes.number.isRequired,
@@ -65,7 +67,7 @@ class NodePanel extends AbstractReactComponent {
     }
 
     getChildContext() {
-        return {shortcuts: this.shortcutManager};
+        return { shortcuts: this.shortcutManager };
     }
 
     refSubNodeForm = null;
@@ -110,7 +112,7 @@ class NodePanel extends AbstractReactComponent {
         this.selectorMoveRelative(1);
     };
     selectorMoveEnd = () => {
-        const {node} = this.props;
+        const { node } = this.props;
         const index = Math.min(node.viewStartIndex + node.pageSize - 1, node.childNodes.length - 1);
         this.selectorMoveToIndex(index);
     };
@@ -118,11 +120,11 @@ class NodePanel extends AbstractReactComponent {
         this.selectorMoveToIndex(0);
     };
     selectorMoveRelative = step => {
-        const {focusItemIndex} = this.state;
+        const { focusItemIndex } = this.state;
         this.selectorMoveToIndex(focusItemIndex + step);
     };
     selectorMoveToIndex = index => {
-        const {node, versionId} = this.props;
+        const { node, versionId } = this.props;
         if (node.selectedSubNodeId === null) {
             const pageMax = node.viewStartIndex + node.pageSize - 1;
             const pageMin = node.viewStartIndex;
@@ -138,14 +140,14 @@ class NodePanel extends AbstractReactComponent {
                 this.props.dispatch(fundSubNodesNext(versionId, node.id, node.routingKey));
             }
 
-            this.setState({focusItemIndex: index}, () => {
+            this.setState({ focusItemIndex: index }, () => {
                 this.ensureItemVisibleNoForm(index);
             });
         }
     };
 
     getFocusItemIndex(props, prevFocusItemIndex) {
-        const {node} = props;
+        const { node } = props;
 
         let focusItemIndex = prevFocusItemIndex;
         if (node.selectedSubNodeId !== null) {
@@ -159,7 +161,7 @@ class NodePanel extends AbstractReactComponent {
     }
 
     componentDidMount() {
-        const {node, versionId} = this.props;
+        const { node, versionId } = this.props;
         const settings = this.getSettingsFromProps();
 
         this.requestData(versionId, node, settings);
@@ -198,7 +200,7 @@ class NodePanel extends AbstractReactComponent {
      * Returns fund settings object built from userDetail in props
      */
     getSettingsFromProps(props = this.props) {
-        const {userDetail, fundId, closed, node} = props;
+        const { userDetail, fundId, closed, node } = props;
         // center panel settings
         var settings = getOneSettings(userDetail.settings, 'FUND_CENTER_PANEL', 'FUND', fundId);
         var settingsValues = settings.value ? JSON.parse(settings.value) : null;
@@ -216,7 +218,7 @@ class NodePanel extends AbstractReactComponent {
         const arrPerm = subNodeForm.data && subNodeForm.data.arrPerm;
 
         // sets read mode when user does not have permissions to arrange fund
-        if (!userDetail.hasOne(perms.FUND_ARR_ALL, {type: perms.FUND_ARR, fundId}) && !arrPerm) {
+        if (!userDetail.hasOne(perms.FUND_ARR_ALL, { type: perms.FUND_ARR, fundId }) && !arrPerm) {
             readMode = true;
         }
 
@@ -229,7 +231,7 @@ class NodePanel extends AbstractReactComponent {
     }
 
     trySetFocus(props) {
-        var {focus, node} = props;
+        var { focus, node } = props;
 
         if (canSetFocus()) {
             if (
@@ -256,8 +258,8 @@ class NodePanel extends AbstractReactComponent {
         console.log('#handleShortcuts', '[' + action + ']', this);
         e.preventDefault();
         e.stopPropagation();
-        const {node, versionId, closed, userDetail, fundId} = this.props;
-        const {focusItemIndex} = this.state;
+        const { node, versionId, closed, userDetail, fundId } = this.props;
+        const { focusItemIndex } = this.state;
         const index = indexById(node.childNodes, node.selectedSubNodeId);
 
         var settings = getOneSettings(userDetail.settings, 'FUND_READ_MODE', 'FUND', fundId);
@@ -309,7 +311,7 @@ class NodePanel extends AbstractReactComponent {
     }
 
     handleAccordionShortcuts(action, e) {
-        const {node} = this.props;
+        const { node } = this.props;
         const index = indexById(node.childNodes, node.selectedSubNodeId);
         let preventDefaultActions = ['prevItem', 'nextItem', 'toggleItem'];
         if (preventDefaultActions.indexOf(action) >= 0) {
@@ -330,11 +332,11 @@ class NodePanel extends AbstractReactComponent {
                 break;
             case 'toggleItem':
                 if (node.selectedSubNodeId === null) {
-                    const {focusItemIndex} = this.state;
+                    const { focusItemIndex } = this.state;
                     this.handleOpenItem(node.childNodes[focusItemIndex]);
                     this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'accordion'));
                 } else {
-                    const {focusItemIndex} = this.state;
+                    const { focusItemIndex } = this.state;
                     this.handleCloseItem(node.childNodes[focusItemIndex]);
                     this.props.dispatch(setFocus(FOCUS_KEYS.ARR, 2, 'accordion'));
                 }
@@ -360,7 +362,7 @@ class NodePanel extends AbstractReactComponent {
      * Zobrazení formuláře pro požadavek na digitalizaci.
      */
     handleDigitizationRequest = () => {
-        const {node, versionId} = this.props;
+        const { node, versionId } = this.props;
         const nodeId = node.selectedSubNodeId;
 
         const form = (
@@ -387,7 +389,7 @@ class NodePanel extends AbstractReactComponent {
      * Zobrazení formuláře pro potvrzení synchronizace DAO.
      */
     handleDigitizationSync = () => {
-        const {node, versionId} = this.props;
+        const { node, versionId } = this.props;
         const nodeId = node.selectedSubNodeId;
 
         const confirmForm = (
@@ -407,7 +409,7 @@ class NodePanel extends AbstractReactComponent {
     };
 
     handleRefSync = () => {
-        const {node, fundId} = this.props;
+        const { node, fundId } = this.props;
         const nodeId = node.selectedSubNodeId;
 
         let nodeVersion = node.version;
@@ -445,7 +447,7 @@ class NodePanel extends AbstractReactComponent {
      */
     handleAddDescItemType() {
         const {
-            node: {subNodeForm, selectedSubNodeId, routingKey},
+            node: { subNodeForm, selectedSubNodeId, routingKey },
             versionId,
             fund,
             userDetail,
@@ -508,12 +510,12 @@ class NodePanel extends AbstractReactComponent {
     }
 
     ensureItemVisibleNoForm(index) {
-        const {node} = this.props;
+        const { node } = this.props;
 
         var itemNode = ReactDOM.findDOMNode(this.refObjects['accheader-' + node.childNodes[index].id]);
         if (itemNode !== null) {
             var containerNode = ReactDOM.findDOMNode(this.refAccordionContent);
-            scrollIntoView(itemNode, containerNode, {onlyScrollIfNeeded: true, alignWithTop: false});
+            scrollIntoView(itemNode, containerNode, { onlyScrollIfNeeded: true, alignWithTop: false });
         }
     }
 
@@ -594,7 +596,7 @@ class NodePanel extends AbstractReactComponent {
      * @return {Object} view
      */
     renderChildren() {
-        const {node} = this.props;
+        const { node } = this.props;
         let nodes = this.getChildNodes();
         let children;
         if (node.subNodeInfo.fetched || node.selectedSubNodeId == null) {
@@ -647,7 +649,7 @@ class NodePanel extends AbstractReactComponent {
      * item {Object} položka pro renderování
      */
     renderRowItem(onClick, props) {
-        const {item} = props;
+        const { item } = props;
         var icon = item.icon ? <Icon className="node-icon" glyph={getGlyph(item.icon)} /> : '';
         var refmark = createReferenceMarkString(item);
         var levels = '';
@@ -672,7 +674,7 @@ class NodePanel extends AbstractReactComponent {
      * @return {Array} seznam NODE
      */
     getParentNodes() {
-        const {node} = this.props;
+        const { node } = this.props;
         if (node) {
             return [...node.parentNodes];
         } else {
@@ -801,7 +803,7 @@ class NodePanel extends AbstractReactComponent {
                     icon = <Icon glyph="fa-exclamation-circle" />;
                     tooltip = (
                         <div>
-                             {description} {messages}
+                            {description} {messages}
                         </div>
                     );
                 }
@@ -862,8 +864,8 @@ class NodePanel extends AbstractReactComponent {
      * @return {Object} view
      */
     renderAccordion(form, daos, linkedNodes, readMode, arrPerm) {
-        const {node, versionId, userDetail, fund, fundId, closed, displayAccordion} = this.props;
-        const {focusItemIndex} = this.state;
+        const { node, versionId, userDetail, fund, fundId, closed, displayAccordion } = this.props;
+        const { focusItemIndex } = this.state;
         var rows = [];
 
         if (!node.nodeInfoFetched) {
@@ -909,6 +911,8 @@ class NodePanel extends AbstractReactComponent {
                     );
                 }
 
+                console.log('#np - node', item)
+
                 if (node.selectedSubNodeId === item.id) {
                     rows.push(
                         <div
@@ -949,7 +953,9 @@ class NodePanel extends AbstractReactComponent {
                                 </div>
                             </div>
                             <div key="body" className="accordion-body">
-                                {form}
+                                {/* {form} */}
+                                {readMode && <NodeView nodeId={item.id} fondsVersionId={versionId} />}
+                                {!readMode && <NodeEdit nodeId={item.id} fondsVersionId={versionId} nodeVersionId={item.version} />}
                                 {linkedNodes}
                                 {daos}
                             </div>

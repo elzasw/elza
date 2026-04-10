@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -25,6 +24,5 @@ public interface ApRevStateRepository extends ElzaJpaRepository<ApRevState, Inte
     @Query("SELECT rs FROM ap_rev_state rs JOIN FETCH rs.revision rev WHERE rev.state in :states AND rs.deleteChange IS NULL")
     List<ApRevState> findByStates(@Param("states") List<ApState> state);
 
-    @Modifying
 	void deleteAllByRevisionIdIn(Collection<Integer> revisionIds);
 }

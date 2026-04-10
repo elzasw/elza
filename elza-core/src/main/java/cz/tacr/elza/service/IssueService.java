@@ -243,7 +243,7 @@ public class IssueService {
      */
     @Transactional
     @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_WR})
-    public void deleteIssueList(@NotNull Integer issueListId) {
+    public void deleteIssueList(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull Integer issueListId) {
 
         WfIssueList issueList = getIssueList(issueListId);
         List<WfIssue> issues = findIssueByIssueListId(issueList, null, null);

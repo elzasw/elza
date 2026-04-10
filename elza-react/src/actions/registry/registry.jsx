@@ -47,6 +47,8 @@ const createFilter = values => {
         relFilters: relFilters,
         extFilters: extFilters,
         syncState: values.syncState,
+        assignedTo: parseInt(values.assignedTo),
+        validationResult: values.validationResult != "" ? values.validationResult : undefined,
     };
 };
 
@@ -220,10 +222,9 @@ export function registryDeleteRevision(id, history, select) {
     };
 }
 
-export function registryChangeStateRevision(id, apVersion, revisionState, history, select) {
+export function registryChangeStateRevision(id, apVersion, revisionState, history, select, assignTo) {
     return (dispatch, getState) => {
-
-        return Api.accesspoints.accessPointChangeStateRevision(id, revisionState, apVersion).then(() => {
+        return Api.accesspoints.accessPointChangeStateRevision(id, revisionState, apVersion, assignTo).then(() => {
             const store = getState();
             const detail = storeFromArea(store, AREA_REGISTRY_DETAIL);
             const list = storeFromArea(store, AREA_REGISTRY_LIST);

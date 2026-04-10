@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.12</version><!--3.2.12,3.3.7,3.4.1-->
+        <version>3.5.11</version><!--3.2.12,3.3.7,3.4.1-->
     </parent>
 
     <groupId>cz.tacr.elza</groupId>
@@ -27,19 +27,20 @@
 
         <cxf.version>4.0.8</cxf.version>
         <hibernate.version>6.6.18.Final</hibernate.version>
-        <hibernate.search.version>7.2.4.Final</hibernate.search.version>
+        <hibernate.search.version>7.2.5.Final</hibernate.search.version>
 		<jboss-logging-version>3.6.0.Final</jboss-logging-version>
 		<apache.lucene.version>9.11.1</apache.lucene.version>
         <!--
         <hibernate.lucene.version>5.5.5</hibernate.lucene.version>-->  <!-- nelze zvednout na 6.6.0, protože hibernate.search.orm.version nemá ani
             v 5.8.0.Beta3 závislost na 6.6.0, ale jen 5.5.4. Mezi verzí 5.5.4 a 6.6.0
             byla odebrána vnitřní třída Index ve třídě org.apache.lucene.document.Field. -->
-        <spring.boot.version>3.2.12</spring.boot.version>
+        <spring.boot.version>3.5.11</spring.boot.version>
+        <jackson-bom.version>2.19.3</jackson-bom.version>
 
-        <geotools.version>29.1</geotools.version>
+        <geotools.version>29.2</geotools.version>
 
         <pdfbox.version>3.0.3</pdfbox.version>
-        <jasperreport.version>6.21.2</jasperreport.version>
+        <jasperreport.version>7.0.5</jasperreport.version>
 
         <surefire.version>2.22.0</surefire.version>
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
@@ -49,7 +50,7 @@
 
         <!-- Pri zmene verze OpenApi generatoru je nutno zkontrolovat sedici verze axiosu v elze a ve vygenerovanem elza-api -->
         <!-- V soucasne verzi OpenApi (7.9.0) je axios ve verzi 0.21.1 -->
-        <openapiGenerator.version>7.9.0</openapiGenerator.version>
+        <openapiGenerator.version>7.15.0</openapiGenerator.version>
     </properties>
 
     <modules>
@@ -175,7 +176,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-collections4</artifactId>
-                <version>4.4</version>
+                <version>4.5.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -191,11 +192,6 @@
                 <groupId>org.apache.pdfbox</groupId>
                 <artifactId>pdfbox</artifactId>
                 <version>${pdfbox.version}</version>
-            </dependency>
-            <dependency>
-              <groupId>org.apache.groovy</groupId>
-              <artifactId>groovy</artifactId>
-              <version>4.0.27</version>
             </dependency>
             <dependency>
                 <groupId>org.javassist</groupId>
@@ -288,11 +284,16 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
+			<dependency>
+			    <groupId>org.apache.groovy</groupId>
+			    <artifactId>groovy</artifactId>
+			    <version>4.0.27</version>
+			</dependency>
+            <!--<dependency>
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy</artifactId>
-                <version>3.0.19</version>
-		    </dependency>
+                <version>3.0.25</version>
+		    </dependency>-->
 			<dependency>
 				<groupId>com.github.librepdf</groupId>
 				<artifactId>openpdf</artifactId>
@@ -337,6 +338,26 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
+			<dependency>
+			    <groupId>net.sf.jasperreports</groupId>
+			    <artifactId>jasperreports-jdt</artifactId>
+				<version>${jasperreport.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.sf.jasperreports</groupId>
+				<artifactId>jasperreports-pdf</artifactId>
+				<version>${jasperreport.version}</version>
+			</dependency>
+			<dependency>
+			    <groupId>net.sf.jasperreports</groupId>
+			    <artifactId>jasperreports-barcode4j</artifactId>
+			    <version>${jasperreport.version}</version>
+			</dependency>			
+			<dependency>
+			    <groupId>net.sf.jasperreports</groupId>
+			    <artifactId>jasperreports-barbecue</artifactId>
+			    <version>${jasperreport.version}</version>
+			</dependency>			
 			<dependency>
 				<groupId>net.sf.jasperreports</groupId>
 				<artifactId>jasperreports-fonts</artifactId>

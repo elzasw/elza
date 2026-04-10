@@ -23,6 +23,7 @@ import cz.tacr.elza.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.controller.vo.DeleteAccessPointsDetail;
 import cz.tacr.elza.controller.vo.EntityRef;
 import cz.tacr.elza.controller.vo.InvalidatedEntities;
+import cz.tacr.elza.controller.vo.Participant;
 import cz.tacr.elza.controller.vo.ReplaceType;
 import cz.tacr.elza.controller.vo.ResultAutoItems;
 import cz.tacr.elza.controller.vo.RevStateChange;
@@ -42,18 +43,23 @@ import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.groovy.GroovyItem;
+import cz.tacr.elza.service.AccessPointConnectorService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.GroovyService;
 import cz.tacr.elza.service.PartService;
 import cz.tacr.elza.service.RevisionPartService;
 import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.TaskService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 
 @RestController
 @RequestMapping("/api/v1")
 public class AccessPointController implements AccesspointsApi {
+
+    @Autowired
+    AccessPointConnectorService apConnectService;
 
     @Autowired
     AccessPointCacheService apCacheService;
@@ -70,7 +76,10 @@ public class AccessPointController implements AccesspointsApi {
     @Autowired
     RevisionService revisionService;
 
-    @Autowired
+	@Autowired
+	private TaskService taskService;
+
+	@Autowired
     GroovyService groovyService;
 
     @Autowired
@@ -81,6 +90,14 @@ public class AccessPointController implements AccesspointsApi {
 
     @Autowired
     ApFactory apFactory;
+
+    // PUT /accesspoint/export/{queueItemId}
+    @Override
+    @Transactional
+    public ResponseEntity<Void> accessPointExportForceOrNo(Integer queueItemId, Boolean force) {
+    	apConnectService.exportForceOrNo(queueItemId, force);
+    	return ResponseEntity.ok().build();
+    }
 
     @Override
     @Transactional
@@ -102,8 +119,8 @@ public class AccessPointController implements AccesspointsApi {
     /**
      * Odstranění (zneplatnění) nebo nahrazení archivní entity
      * 
-     * @param id
-     * @param deleteAccessPointDetail
+     * @param id                      id archivní entity
+     * @param deleteAccessPointDetail body třída
      */
     @Override
     @Transactional
@@ -128,8 +145,7 @@ public class AccessPointController implements AccesspointsApi {
         try {
             accessPointService.deleteAccessPoint(apState, replacedBy, copyAll);
         } catch (SyncImpossibleException e) {
-            throw new BusinessException("Failed to replace access point", e,
-                    BaseCode.INVALID_STATE)
+            throw new BusinessException("Failed to replace access point", e, BaseCode.INVALID_STATE)
                             .set("entityId", apState.getAccessPointId());
         }
         return ResponseEntity.ok().build();
@@ -204,16 +220,31 @@ public class AccessPointController implements AccesspointsApi {
     }
 
     /**
+     * Získání seznamu zpracovatelů entity.
+     * 
+     * @param id identifikátor archivní entity
+     */
+    @Override
+	@Transactional
+    public ResponseEntity<List<Participant>> accessPointGetLastParticipants(Integer id) {
+        ApAccessPoint accessPoint = accessPointService.getAccessPoint(id);
+
+    	return ResponseEntity.ok(taskService.getLastParticipants(accessPoint));
+    }
+
+    /**
      * Změna stavu přístupového bodu.
+     * PUT /accesspoint/{id}/state
      *
      * @param accessPointId identifikátor přístupového bodu
      * @param stateUpdate   nový stav přístupového bodu
      * @param apVersion     verze přístupového bodu
+     * @param assignTo		id uživatele
      * @return nová verze = verze + 1
      */
     @Override
     @Transactional
-    public ResponseEntity<Integer> accessPointChangeState(Integer accessPointId, ApStateUpdate stateUpdate, Integer apVersion) {
+    public ResponseEntity<Integer> accessPointChangeState(Integer accessPointId, ApStateUpdate stateUpdate, Integer apVersion, Integer assignTo) {
         Validate.notNull(stateUpdate.getStateApproval(), "AP State is null");
 
         ApAccessPoint accessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
@@ -226,7 +257,7 @@ public class AccessPointController implements AccesspointsApi {
             throw new BusinessException("Nelze změnit stav archivní entity, která má revizi", RegistryCode.CANT_CHANGE_STATE_ENTITY_WITH_REVISION);
         }
 
-        accessPointService.updateApState(accessPoint, newState, stateUpdate.getComment(), stateUpdate.getTypeId(), stateUpdate.getScopeId());
+        accessPointService.updateApState(accessPoint, newState, stateUpdate.getComment(), stateUpdate.getTypeId(), stateUpdate.getScopeId(), assignTo);
         accessPoint = accessPointService.updateAndValidate(accessPoint);
         if (accessPointService.isRevalidaceRequired(state.getStateApproval(), newState)) {
             ruleService.revalidateNodes(accessPoint.getAccessPointId());
@@ -390,7 +421,7 @@ public class AccessPointController implements AccesspointsApi {
     /**
      * Odstranění revize přístupového bodu.
      * 
-     * @param id
+     * @param id       id state
      */
     @Override
     @Transactional
@@ -405,10 +436,11 @@ public class AccessPointController implements AccesspointsApi {
 
     /**
      * Sloučení revize a přístupového bodu.
+     * POST /accesspoint/{id}/revision/merge
      * 
-     * @param accessPointId  identifikátor přístupového bodu
-     * @param stateUpdate    nový stav rvize přístupového bodu + komentář
-     * @param apVersion      verze přístupového bodu
+     * @param accessPointId identifikátor přístupového bodu
+     * @param stateUpdate   nový stav revize přístupového bodu + komentář
+     * @param apVersion     verze přístupového bodu
      * @return nová verze = verze + 1
      */
     @Override
@@ -426,16 +458,19 @@ public class AccessPointController implements AccesspointsApi {
 
     /**
      * Změna stavu revize přístupového bodu.
+     * PUT /accesspoint/{id}/revision/state
      *
      * @param accessPointId  identifikátor přístupového bodu
      * @param revStateChange nový stav rvize přístupového bodu
      * @param apVersion      verze přístupového bodu
+     * @param assignTo		 id uživatele
      * @return nová verze = verze + 1
      */
     @Override
     @Transactional
-    public ResponseEntity<Integer> accessPointChangeStateRevision(Integer accessPointId, RevStateChange revStateChange, Integer apVersion) {
-        ApAccessPoint accessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
+    public ResponseEntity<Integer> accessPointChangeStateRevision(Integer accessPointId, RevStateChange revStateChange, Integer apVersion, Integer assignTo) {
+
+    	ApAccessPoint accessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
         ApState state = accessPointService.getStateInternal(accessPoint);
         RevStateApproval revNextState = RevStateApproval.valueOf(revStateChange.getState().getValue());
         Integer nextTypeId = revStateChange.getTypeId();
@@ -443,7 +478,7 @@ public class AccessPointController implements AccesspointsApi {
             nextTypeId = state.getApTypeId();
         }
 
-        revisionService.changeStateRevision(state, nextTypeId, revNextState, revStateChange.getComment());
+        revisionService.changeStateRevision(state, nextTypeId, revNextState, revStateChange.getComment(), assignTo);
         apCacheService.createApCachedAccessPoint(state.getAccessPointId());
 
         return ResponseEntity.ok(accessPoint.getVersion());
@@ -480,8 +515,7 @@ public class AccessPointController implements AccesspointsApi {
      */
     @Override
     @Transactional
-    public ResponseEntity<Integer> accessPointDeleteRevisionPart(Integer accessPointId, Integer partId,
-                                                                 Integer apVersion) {
+    public ResponseEntity<Integer> accessPointDeleteRevisionPart(Integer accessPointId, Integer partId, Integer apVersion) {
         ApAccessPoint accessPoint = accessPointService.lockAccessPoint(accessPointId, apVersion);
         ApState state = accessPointService.getStateInternal(accessPoint);
 

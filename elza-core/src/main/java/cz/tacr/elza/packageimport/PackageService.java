@@ -89,6 +89,7 @@ import cz.tacr.elza.domain.UISettings.EntityType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.WfIssueState;
 import cz.tacr.elza.domain.WfIssueType;
+import cz.tacr.elza.domain.WfTaskType;
 import cz.tacr.elza.domain.bridge.IndexConfigReaderImpl;
 import cz.tacr.elza.domain.projection.NodeIdFundVersionIdInfo;
 import cz.tacr.elza.exception.AbstractException;
@@ -142,6 +143,8 @@ import cz.tacr.elza.packageimport.xml.StructureDefinition;
 import cz.tacr.elza.packageimport.xml.StructureDefinitions;
 import cz.tacr.elza.packageimport.xml.StructureType;
 import cz.tacr.elza.packageimport.xml.StructureTypes;
+import cz.tacr.elza.packageimport.xml.TaskType;
+import cz.tacr.elza.packageimport.xml.TaskTypes;
 import cz.tacr.elza.packageimport.xml.TemplateXml;
 import cz.tacr.elza.packageimport.xml.Templates;
 import cz.tacr.elza.repository.ActionRecommendedRepository;
@@ -181,6 +184,7 @@ import cz.tacr.elza.repository.StructuredTypeRepository;
 import cz.tacr.elza.repository.TemplateRepository;
 import cz.tacr.elza.repository.WfIssueStateRepository;
 import cz.tacr.elza.repository.WfIssueTypeRepository;
+import cz.tacr.elza.repository.WfTaskTypeRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.CacheService;
@@ -303,7 +307,12 @@ public class PackageService {
     public static final String ISSUE_TYPE_XML = "wf_issue_type.xml";
 
     /**
-     * Složka templatů
+     * typy úkolů
+     */
+    public static final String TASK_TYPE_XML = "wf_task_type.xml";
+
+    /**
+     * složka templatů
      */
     public final static String ZIP_DIR_TEMPLATES = "templates";
 
@@ -476,6 +485,9 @@ public class PackageService {
 
     @Autowired
     private WfIssueStateRepository issueStateRepository;
+
+    @Autowired
+    private WfTaskTypeRepository taskTypeRepository;
 
     @Autowired
     private AsyncRequestService asyncRequestService;
@@ -739,6 +751,9 @@ public class PackageService {
 
         IssueStates issueStates = pkgCtx.convertXmlStreamToObject(IssueStates.class, ISSUE_STATE_XML);
         processIssueStates(issueStates, rulPackage);
+
+        TaskTypes taskTypes = pkgCtx.convertXmlStreamToObject(TaskTypes.class, TASK_TYPE_XML);
+        processTaskTypes(taskTypes, rulPackage);
 
         asyncRequestService.enqueueAp(accessPoints);
 
@@ -1372,6 +1387,40 @@ public class PackageService {
         WfIssueStateDelete.removeAll(wfIssueStatesNew);
 
         issueStateRepository.deleteAll(WfIssueStateDelete);
+    }
+
+    /**
+     * Provede synchronizaci typů úkolu.
+     *
+     * @param issueTypes typy úkolu
+     * @param rulPackage importovaný balíček
+     */
+    private void processTaskTypes(TaskTypes taskTypes, final RulPackage rulPackage) {
+
+        List<WfTaskType> wfTaskTypes = taskTypeRepository.findByRulPackage(rulPackage);
+
+        List<WfTaskType> wfTaskTypesNew = new ArrayList<>();
+
+        if (taskTypes != null) {
+            for (TaskType taskType : taskTypes.getTaskTypes()) {
+                WfTaskType wfTaskType = findEntity(wfTaskTypes, taskType.getCode(), WfTaskType::getCode);
+                if (wfTaskType == null) {
+                	wfTaskType = new WfTaskType();
+                }
+                wfTaskType.setCode(taskType.getCode());
+                wfTaskType.setName(taskType.getName());
+                wfTaskType.setDescription(taskType.getDescription());
+                wfTaskType.setRulPackage(rulPackage);
+                wfTaskTypesNew.add(wfTaskType);
+            }
+        }
+
+        wfTaskTypesNew = taskTypeRepository.saveAll(wfTaskTypesNew);
+
+        List<WfTaskType> WfTaskTypeDelete = new ArrayList<>(wfTaskTypes);
+        WfTaskTypeDelete.removeAll(wfTaskTypesNew);
+
+        taskTypeRepository.deleteAll(WfTaskTypeDelete);
     }
 
     /**

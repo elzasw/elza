@@ -49,6 +49,7 @@ import cz.tacr.elza.repository.StructuredObjectRepository;
 import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.DmsService;
 import cz.tacr.elza.service.StructObjService;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.output.OutputParams;
 import cz.tacr.elza.service.output.generator.PdfAttProvider.Attachments;
@@ -60,10 +61,10 @@ import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
-import net.sf.jasperreports.export.SimplePdfReportConfiguration;
+import net.sf.jasperreports.pdf.JRPdfExporter;
+import net.sf.jasperreports.pdf.SimplePdfReportConfiguration;
 
 public class JasperOutputGenerator extends DmsOutputGenerator {
 
@@ -90,7 +91,8 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                           DmsService dmsService,
                           DaoLinkRepository daoLinkRepository,
                           ExportConfig exportConfig,
-                          StructObjService structObjService, DataService dataService) {
+                          StructObjService structObjService, DataService dataService,
+                          final AccessPointCacheService apCacheService) {
         super(em, dmsService);
 
         StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
@@ -102,9 +104,10 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                 fundRepository, fundTreeProvider,
                 nodeCacheService, institutionRepository,
                 apStateRepository, bindingRepository,
-                pdfAttProvider, structObjRepos, structItemRepos, itemRepository, bindingStateRepository,
+                pdfAttProvider, structObjRepos, itemRepository, bindingStateRepository,
                 indexRepository, daoLinkRepository, exportConfig, structObjService, em,
-                dataService);
+                dataService,
+                apCacheService);
         pdfAttProvider.setOutput(outputModel);
     }
 
@@ -172,6 +175,10 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 
 	private JasperReport loadTemplate(Path templateFile) {
 		try (InputStream is = Files.newInputStream(templateFile, StandardOpenOption.READ)) {
+//			System.setProperty(
+//					"net.sf.jasperreports.compiler.classpath",
+//					System.getProperty("java.class.path")
+//			);
 			return JasperCompileManager.compileReport(is);
 		} catch (IOException | JRException e) {
 			throw new ProcessException(params.getOutputId(), "Failed to parse Jasper template: " + templateFile, e)
@@ -180,22 +187,22 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 	}
 
     private Path generatePdfFile(JasperReport report, Map<String, Object> parameters) {
-        DefaultJasperReportsContext jasperContext = DefaultJasperReportsContext.getInstance();
-        JasperFillManager fillManager = JasperFillManager.getInstance(jasperContext);
-    
+        DefaultJasperReportsContext ctx = DefaultJasperReportsContext.getInstance();
+        JasperFillManager fillManager = JasperFillManager.getInstance(ctx);
+
         JasperPrint jasperPrint;
         try {
             jasperPrint = fillManager.fill(report, parameters, new JREmptyDataSource());
         } catch (JRException e) {
             throw new ProcessException(params.getOutputId(), "Failed to create Jasper document", e);
         }
-    
+
         Path pdfFile = tempFileProvider.createTempFile();
 
         try (OutputStream os = Files.newOutputStream(pdfFile, StandardOpenOption.WRITE)) {
 
             // Generate output to PDF
-            JRPdfExporter exporter = new JRPdfExporter(jasperContext);
+            JRPdfExporter exporter = new JRPdfExporter(ctx);
 
             exporter.setExporterInput(new SimpleExporterInput(jasperPrint));
             exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(os));

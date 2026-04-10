@@ -264,10 +264,12 @@ public class DescriptionItemService {
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
         ArrNode node = arrangementService.getNode(nodeId);
         ArrDescItem descItem = fetchOpenItemFromDB(descItemObjectId);
+        // pokud chceme vrátit smazanou hodnotu
+        descItem.setData(HibernateUtils.unproxy(descItem.getData()));
 
         // kontrola zákazu změn
         if (!forceUpdate) {
-            if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
+            if (descItem.getReadOnly() != null && descItem.getReadOnly()) {
                 throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
             }
         }
@@ -820,23 +822,30 @@ public class DescriptionItemService {
 
         changeContext.addCreatedItem(result);
 
-        return descItem;
+        return result;
     }
 
 
     /**
      * Jedná-li se o odkaz na strukturovaný typ, který je zároveň anonymní, odstraní se i ten.
      *
-     * @param retDescItem hodnota atributu
+     * @param deletedDescItem hodnota atributu
      * @param change      změna, která se má použít pro vymazání
      */
-    private void deleteAnonymousStructObject(final ArrDescItem retDescItem, final ArrChange change) {
-        ItemType itemType = staticDataService.getData().getItemTypeById(retDescItem.getItemTypeId());
+    private void deleteAnonymousStructObject(final ArrDescItem deletedDescItem, final ArrChange change) {
+        ItemType itemType = staticDataService.getData().getItemTypeById(deletedDescItem.getItemTypeId());
         RulStructuredType structuredType = itemType.getEntity().getStructuredType();
         if (structuredType != null) {
             if (structuredType.getAnonymous()) {
-                ArrDataStructureRef data = HibernateUtils.unproxy(retDescItem.getData());
-                structObjInternalService.deleteStructObj(Collections.singletonList(data.getStructuredObject()), change);
+            	// ? Should we try to delete temporary structured object?
+            	// It might be problematic, because such object is referenced 
+            	// from related data object, which is not deleted.
+            	// It will be better to move such functionality to the cleanup process.
+                // ArrDataStructureRef data = HibernateUtils.unproxy(deletedDescItem.getData());
+                // ArrStructuredObject structObj = data.getStructuredObject();
+
+                // Cannot be used directly, see comment above.
+                // structObjInternalService.deleteStructObj(Collections.singletonList(structObj), change);
             }
         }
     }
@@ -934,13 +943,18 @@ public class DescriptionItemService {
         checkFundVersionLock(version);
 
         descItem.setDeleteChange(change);
-        ArrDescItem retDescItem = descItemRepository.save(descItem);
+        ArrDescItem deletedDescItem = descItemRepository.save(descItem);
 
         // pokud existují záznamy, které potlačují dědičnost, pak je smažeme
-        ArrInhibitedItem inhibitedItem = inhibitedItemRepository.findByNodeIdAndDescItemObjectId(descItem.getNodeId(), descItem.getDescItemObjectId()).orElse(null);
-        if (inhibitedItem != null) {
-        	inhibitedItem.setDeleteChange(change);
-        	inhibitedItemRepository.save(inhibitedItem);
+        List<ArrInhibitedItem> inhibitedItems = inhibitedItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(descItem.getDescItemObjectId());
+        if (CollectionUtils.isNotEmpty(inhibitedItems)) {
+        	List<Integer> affectedNodeIds = new ArrayList<>();
+        	for (ArrInhibitedItem inhibitedItem : inhibitedItems) {
+        		inhibitedItem.setDeleteChange(change);
+        		inhibitedItemRepository.save(inhibitedItem);
+        		affectedNodeIds.add(inhibitedItem.getNodeId());
+        	}
+        	nodeCacheService.syncNodes(affectedNodeIds);
         }
 
         if (moveAfter) {
@@ -953,15 +967,13 @@ public class DescriptionItemService {
             copyDescItemsWithData(change, descItems, -1, version, changeContext);
         }
 
-        changeContext.addRemovedItem(descItem);
+        deleteAnonymousStructObject(deletedDescItem, change);
+        changeContext.addRemovedItem(deletedDescItem);
 
-        arrangementCacheService.deleteDescItem(descItem.getNodeId(), descItem.getDescItemObjectId(), changeContext);
+        arrangementCacheService.deleteDescItem(deletedDescItem.getNodeId(), deletedDescItem.getDescItemObjectId(), changeContext);
 
-        deleteAnonymousStructObject(retDescItem, change);
 
-        changeContext.addRemovedItem(descItem);
-
-        return retDescItem;
+        return deletedDescItem;
     }
 
     /**
@@ -1253,8 +1265,7 @@ public class DescriptionItemService {
 
         ArrChange change = null;
 		ArrDescItem descItemUpdated;
-        SingleItemChangeContext changeContext = new SingleItemChangeContext(ruleService, eventNotificationService,
-                fundVersionId, nodeId);
+        SingleItemChangeContext changeContext = new SingleItemChangeContext(ruleService, eventNotificationService, fundVersionId, nodeId);
         if (createNewVersion) {
             node.setVersion(nodeVersion);
 

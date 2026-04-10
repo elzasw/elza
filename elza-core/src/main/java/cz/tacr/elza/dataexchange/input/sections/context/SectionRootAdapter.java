@@ -30,6 +30,11 @@ public interface SectionRootAdapter {
     NodeContext createRoot(SectionContext contextSection, ArrNode rootNode, String importNodeId);
 
     /**
+     * Return fund version ID for this section.
+     */
+    Integer getFundVersionId();
+
+    /**
      * Called when section is processed.
      */
     void onSectionClose();

@@ -40,7 +40,8 @@ public class ExternalSystemController implements ExternalsystemsApi {
     	ApExternalSystem extSys = extSystemService.findExternalSystemByCodeOrId(id);
     	// pokud systém nebyl nalezen nebo jeho typ neodpovídá CAM_COMPLETE(_V2)
     	if (extSys == null 
-    			|| extSys.getType() != ApExternalSystemType.CAM_COMPLETE) {
+    			|| (extSys.getType() != ApExternalSystemType.CAM_COMPLETE
+    			&& extSys.getType() != ApExternalSystemType.CAM_COMPLETE_V2)) {
     		return ResponseEntity.notFound().build();
     	}
     	extSystemService.deleteBindingSync(extSys);

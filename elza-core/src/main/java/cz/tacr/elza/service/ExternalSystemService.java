@@ -5,12 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
@@ -30,8 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
-import cz.tacr.cam.schema.cam.EntityRecordRevInfoXml;
-import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.cam.BindingSyncInfo;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.ExtSystemProperty;
@@ -64,7 +60,6 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
-import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
@@ -78,7 +73,6 @@ import cz.tacr.elza.repository.GisExternalSystemRepository;
 import cz.tacr.elza.repository.SysExternalSystemPropertyRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.cam.BindingSyncInfo;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
@@ -91,9 +85,6 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 public class ExternalSystemService {
 
     static private final Logger log = LoggerFactory.getLogger(ExternalSystemService.class);
-
-    @Autowired
-    private ApAccessPointRepository apAccessPointRepository;
 
     @Autowired
     ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
@@ -351,7 +342,7 @@ public class ExternalSystemService {
                 }
             }
 
-            if (queueItem.get().getState() != ExtAsyncQueueState.EXPORT_START) {
+            if (item.getState() != ExtAsyncQueueState.EXPORT_START) {
                 extSyncsQueueItemRepository.deleteById(extSyncItemId);
             }
         }
@@ -627,7 +618,8 @@ public class ExternalSystemService {
     }
 
     public ApBindingItem createApBindingItem(final ApBinding binding,
-                                             ApChange apChange, final String value,
+                                             ApChange apChange, 
+                                             final String value,
                                              final ApPart part,
                                              final ApItem item) {
     	Objects.requireNonNull(binding);
@@ -662,6 +654,10 @@ public class ExternalSystemService {
         return bindingStateRepository.findByAccessPointAndExternalSystem(accessPoint, externalSystem);
     }
 
+    public ApBindingState getBindingState(final Integer accessPointId, final Integer externalSystemId) {
+        return bindingStateRepository.findByAccessPointIdAndExternalSystemId(accessPointId, externalSystemId);
+    }
+
     @Transactional
     public BindingSyncInfo getBindingSync(final String extSystemCode, final String transactionUuid) {
         ApExternalSystem externalSystem = findApExternalSystemByCode(extSystemCode);
@@ -677,112 +673,6 @@ public class ExternalSystemService {
                                    externalSystem.getExternalSystemId(),
                                    bindingSync.getLastTransaction(), bindingSync.getToTransaction(),
                                    bindingSync.getPage(), bindingSync.getCount());
-    }
-
-    /**
-     * Prepare entities for synchronization
-     *
-     * @param bindingSyncId
-     * @param entityRecordRevInfoXmls entity info list
-     * @param lastTransaction
-     * @param toTransaction
-     * @param page
-     * @param count
-     */
-    @Transactional
-    public void prepareApsForSync(Integer bindingSyncId, List<EntityRecordRevInfoXml> entityRecordRevInfoXmls,
-                                  String lastTransaction, String toTransaction,
-                                  Integer page, Integer count) {
-        log.debug("Preparing APs for synchronization from external system, count: {}", entityRecordRevInfoXmls.size());
-
-        // Prepare keys
-        ApBindingSync bindingSync = bindingSyncRepository.getOneCheckExist(bindingSyncId);
-        ApExternalSystem externalSystem = bindingSync.getApExternalSystem();
-        List<String> keyList = new ArrayList<>(entityRecordRevInfoXmls.size());
-        Map<String, EntityRecordRevInfoXml> recordCodesMap = new HashMap<>();
-        Function<EntityRecordRevInfoXml, String> idGetter;
-        if (externalSystem.getType().equals(ApExternalSystemType.CAM_UUID)) {
-            idGetter = (x) -> x.getEuid().getValue();
-        } else {
-            idGetter = (x) -> Long.toString(x.getEid().getValue());
-        }
-        for (EntityRecordRevInfoXml entityRecordRevInfoXml : entityRecordRevInfoXmls) {
-            String id = idGetter.apply(entityRecordRevInfoXml);
-            keyList.add(id);
-            EntityRecordRevInfoXml prevInfo = recordCodesMap.put(id, entityRecordRevInfoXml);
-            Validate.isTrue(prevInfo == null, "Record with same key already process, %s", id);
-        }
-
-        List<ApBinding> bindings = findBindings(keyList, externalSystem);
-        final Map<String, ApBinding> bindingMap = bindings.stream().collect(Collectors.toMap(p -> p.getValue(), p -> p));
-
-        Map<Integer, ApBindingState> bindingStateMap;
-        if (bindings.size() > 0) {
-            List<ApBindingState> bindingStateList = findBindingStates(bindings);
-            bindingStateMap = bindingStateList.stream().collect(Collectors.toMap(p -> p.getBindingId(), p -> p));
-        } else {
-            bindingStateMap = Collections.emptyMap();
-        }
-
-        int recNo = 0;
-
-        UsrUser user = userService.getLoggedUser();
-        for (String recordCode : keyList) {
-            recNo++;
-            if (log.isDebugEnabled()) {
-                if (recNo%100 == 0) {
-                    log.debug("Prepared records for sync: [{}-{}]", ((recNo+99)/100-1)*100+1, recNo);
-                }
-            }
-
-            ApBinding binding = bindingMap.get(recordCode);
-            ApAccessPoint ap = null;
-            if (binding == null) {
-                // prepare binding for CAM Complete
-                if (externalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
-                    // we are creating all bindings at once
-                    // - will be flush to the DB at the end of this method
-                    binding = createApBinding(recordCode, externalSystem, false);
-                }
-            } else {
-                ApBindingState bindingState = bindingStateMap.get(binding.getBindingId());
-                EntityRecordRevInfoXml xmlRecordInfo = recordCodesMap.get(recordCode);
-                if (bindingState != null) {
-                    ap = bindingState.getAccessPoint();
-                    // kontrola uuid revizi, pokud se rovná extRevizion(), pak aktualizace není potřeba
-                    String uuidRev = xmlRecordInfo.getRev().getValue();
-                    if (bindingState.getExtRevision().equals(uuidRev)) {
-                        continue;
-                    }
-                }
-                // entita mohla být smazána, hledáme ji jinak
-                if (ap == null) {
-                    String uuid = xmlRecordInfo.getEuid().getValue();
-                    ap = apAccessPointRepository.findAccessPointByUuid(uuid);
-                }
-            }
-            // update or add new items from CAM_COMPLETE
-            if (ap != null || externalSystem.getType() == ApExternalSystemType.CAM_COMPLETE) {
-                createExtSyncsQueueItem(ap, externalSystem, binding, null,
-                                        ap != null? ExtAsyncQueueState.UPDATE : ExtAsyncQueueState.IMPORT_NEW,
-                                        OffsetDateTime.now(),
-                                        user);
-            }
-        }
-        if (log.isDebugEnabled()) {
-            if (recNo%100 != 0) {
-                log.debug("Prepared records for sync: [{}-{}]", ((recNo+99)/100-1)*100+1, recNo);
-            }
-        }
-        log.debug("APs prepared for synchronization from external system");
-        log.info("To queue ext_syncs_queue_item added {} records for sync.", recNo);
-
-        // aktualizace dat
-        bindingSync.setLastTransaction(lastTransaction);
-        bindingSync.setToTransaction(toTransaction);
-        bindingSync.setPage(page);
-        bindingSync.setCount(count);
-        bindingSyncRepository.saveAndFlush(bindingSync);
     }
 
     @Transactional

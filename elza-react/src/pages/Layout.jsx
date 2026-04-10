@@ -252,7 +252,7 @@ class Layout extends AbstractReactComponent {
                                     </Route>
                                     <Route path={`${URL_FUND}/`} component={FundPage}/>
                                     <Route path={URL_NODE + "/:nodeId"} component={ArrPage} />
-                                    <Route path={URL_ENTITY + "/:id/revision"} component={(props) => <RegistryPage revisionActive={true} {...props}/>}  />
+                                    <Route path={URL_ENTITY + "/:id/revision"} render={(props) => <RegistryPage revisionActive={true} {...props}/>}  />
                                     <Route path={URL_ENTITY + "/:id"} component={RegistryPage} />
                                     <Route path={URL_ENTITY} component={RegistryPage} />
                                     <Route path={URL_ENTITY_CREATE} component={EntityCreatePage} />
@@ -260,9 +260,9 @@ class Layout extends AbstractReactComponent {
                                     <Route path={URL_AIP + "/:id"} component={AipPage} />
                                     <Route path={URL_AIP} component={AipPage} />
 
-                                    <Route path={URL_COMPONENT} component={(props) => <ComponentPage componentViewRequest={componentViewRequest} {...props}/>} />
+                                    <Route path={URL_COMPONENT} render={(props) => <ComponentPage componentViewRequest={componentViewRequest} {...props}/>} />
 
-                                    <Route path={MAP_URL} component={(props) => <MapPage handleChangeSelectedLayer={this.handleChangeSelectedLayer} polygon={polygon} selectedLayer={selectedLayer} {...props} />} />
+                                    <Route path={MAP_URL} render={(props) => <MapPage handleChangeSelectedLayer={this.handleChangeSelectedLayer} polygon={polygon} selectedLayer={selectedLayer} {...props} />} />
                                     <Route path="/admin">
                                         <Switch>
                                             <Route path="/admin/user/:id" component={AdminUserPage} />

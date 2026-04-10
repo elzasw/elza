@@ -1,25 +1,31 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form as FinalForm, Field } from 'react-final-form';
-import { i18n } from 'components/shared';
+import { Icon, i18n } from 'components/shared';
 import { Form, Modal } from 'react-bootstrap';
 import { Button } from '../ui';
 import FormInputField from '../../components/shared/form/FormInputField';
-import { useSelector } from 'react-redux';
-import { AppState } from "typings/store";
 import { RevStateApproval, RevStateApprovalCaption } from "../../api/RevStateApproval";
 import { ApTypeVO } from 'api/ApTypeVO';
-import { RevStateChange } from 'elza-api';
+import { Participant, RevStateChange } from 'elza-api';
 import { ApValidationErrorsVO } from 'api/ApValidationErrorsVO';
+import { UsrUserVO } from 'api/UsrUserVO';
+import UserField from 'components/admin/UserField';
+import { useAppSelector } from 'utils/hooks/useAppSelector';
+import { Api } from 'api';
 
-interface Props {
+export interface RevStateFormFields extends RevStateChange {
+  assignedTo?: number;
+}
+
+export interface Props {
     accessPointId: number;
     versionId?: number;
     hideType?: boolean;
-    onClose?: Function;
-    onSubmit: (data: any) => void;
+    onClose?: () => void;
+    onSubmit: (data: RevStateFormFields) => void;
     states: string[];
-    initialValues?: Partial<RevStateChange>;
-};
+    initialValues?: Partial<RevStateFormFields>;
+}
 
 type FormErrors<T> = Partial<Record<keyof T, string>>;
 
@@ -28,14 +34,28 @@ export const RevStateChangeFormFn = ({
     hideType = false,
     onSubmit,
     initialValues,
+    accessPointId,
 }: Props) => {
 
-    const apTypes = useSelector((appState: AppState) => appState.refTables.apTypes)
-    const { data: validationData } = useSelector((appState: AppState) => appState.app.apValidation);
+    const apTypes = useAppSelector(({refTables}) => refTables.apTypes)
+    const { data: validationData } = useAppSelector(({app}) => app.apValidation);
+    const {id: currentUserId} = useAppSelector(({ userDetail }) => userDetail);
+
     const isValid = (!validationData?.errors || validationData.errors?.length <= 0) && (!validationData?.partErrors || validationData.partErrors?.length <= 0);
 
-    const getStateOptions = () => {
+    const [lastParticipants, setLastParticipants] = useState<Participant[]>([]);
 
+    useEffect(() => {
+        (async () => {
+            const [{ data: _lastParticipants }] = await Promise.all([
+                Api.accesspoints.accessPointGetLastParticipants(accessPointId),
+            ]);
+
+            setLastParticipants(_lastParticipants)
+        })()
+    }, [accessPointId])
+
+    const getStateOptions = () => {
         const options = [
             RevStateApproval.ACTIVE,
             RevStateApproval.TO_AMEND,
@@ -54,12 +74,21 @@ export const RevStateChangeFormFn = ({
     }
 
     const stateOptions = getStateOptions();
+    const uniqueParticipantsMap = new Map(lastParticipants.map((lastParticipant) => [lastParticipant.userId, lastParticipant]));
+    const uniqueParticipants = Array.from(uniqueParticipantsMap.values()).filter(({userId}) => userId !== currentUserId);
 
-    const validate = (values: RevStateChange) => {
-        const errors: FormErrors<RevStateChange> = {};
+    const validate = (values: RevStateFormFields) => {
+        const errors: FormErrors<RevStateFormFields> = {};
 
         if (!values.state) {
             errors.state = i18n('global.validation.required');
+        }
+
+        const isToApproveSameUser =
+            values.state === RevStateApproval.TO_APPROVE
+            && values.assignedTo === currentUserId;
+        if (isToApproveSameUser) {
+            errors.assignedTo = i18n("ap.state.title.assignedUser.error.toApproveSameUser")
         }
 
         return errors;
@@ -87,12 +116,12 @@ export const RevStateChangeFormFn = ({
     };
 
     return (
-        <FinalForm<RevStateChange>
-            initialValues={initialValues}
+        <FinalForm<RevStateFormFields>
+            initialValues={{ ...initialValues}}
             onSubmit={onSubmit}
             validate={validate}
         >
-            {({ submitting, handleSubmit }) => {
+            {({ submitting, handleSubmit, form, values, valid }) => {
                 return <Form>
                     <Modal.Body>
                         {!isValid && validationData &&
@@ -132,9 +161,57 @@ export const RevStateChangeFormFn = ({
                             label={i18n('ap.state.title.comment')}
                             disabled={submitting}
                         />
+                        <Field<number>
+                            name={'assignedTo'}
+                        >{({input, meta}) => {
+                            function handleChange(user?: UsrUserVO){
+                                input.onChange(user?.id);
+                            }
+                            //@ts-expect-error TODO wrong types on FormInputField
+                            return <FormInputField type="static" label={i18n('ap.state.title.assignedUser')}>
+                                <div style={{display: 'flex'}}>
+                                    <UserField
+                                    disabled={submitting}
+                                    value={input.value || undefined}
+                                    onChange={handleChange}
+                                    all={true}
+                                    excludeUserIds={
+                                        values.state === RevStateApproval.TO_APPROVE
+                                        ? [currentUserId]
+                                        : undefined
+                                    }
+                                    />
+                                    {input.value && <div style={{ position: 'absolute', right: '16px' }}>
+                                        <Button type="button" variant="subtle" onClick={() => handleChange()}>
+                                            <Icon glyph="fa-times" />
+                                        </Button>
+                                    </div>}
+                                </div>
+                                {meta.error && <div style={{ color: 'var(--color-red)' }}>
+                                    {meta.error}
+                                </div>}
+                            </FormInputField>
+                        }}</Field>
+                        {(uniqueParticipants || []).length > 0 && <Field name="lastParticipants">
+                            {() => {
+                                return <div style={{marginTop: "16px"}}>
+                                    {uniqueParticipants.map((participant) => {
+                                        function handleClick() {
+                                            form.change('assignedTo', participant.userId)
+                                        }
+
+                                        return <div style={{margin: '4px 0'}}>
+                                            <Button type="button" variant="outline-secondary" onClick={handleClick}>
+                                                {participant.name} ({participant.username})
+                                            </Button>
+                                        </div>
+                                    })}
+                                </div>
+                            }}
+                        </Field>}
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit" onClick={handleSubmit} variant="outline-secondary" disabled={submitting}>
+                        <Button type="submit" onClick={handleSubmit} variant="outline-secondary" disabled={submitting || !valid}>
                             {i18n('global.action.store')}
                         </Button>
                         <Button variant="link" onClick={onClose}>

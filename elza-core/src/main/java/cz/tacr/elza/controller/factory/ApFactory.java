@@ -21,7 +21,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nullable;
-
+import cz.tacr.elza.service.AccessPointConnectorService;
 import cz.tacr.elza.service.AccessPointItemService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -31,9 +31,8 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.elza.cam.ApiCamConnector;
 import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.connector.CamConnector;
-import cz.tacr.elza.connector.CamInstance;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApBindingVO;
 import cz.tacr.elza.controller.vo.ApChangeVO;
@@ -108,7 +107,6 @@ import cz.tacr.elza.repository.ApRevPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ApTypeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.repository.vo.TypeRuleSet;
 import cz.tacr.elza.service.RevisionItemService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
@@ -133,13 +131,9 @@ public class ApFactory {
 
     private final ApPartRepository partRepository;
 
-    private final CamConnector camConnector;
-
     private final ApIndexRepository indexRepository;
 
     private final ApTypeRepository apTypeRepository;
-
-    private final UserRepository userRepository;
 
     private final ApChangeRepository changeRepository;
 
@@ -151,6 +145,8 @@ public class ApFactory {
 
     private final AccessPointItemService apItemService;
 
+    private final AccessPointConnectorService accessPointConnectorService;
+
     private final ElzaLocale elzaLocale;
 
     @Autowired
@@ -161,15 +157,14 @@ public class ApFactory {
                      final ApPartRepository partRepository,
                      final ApBindingStateRepository bindingStateRepository,
                      final ApBindingItemRepository bindingItemRepository,
-                     final CamConnector camConnector,
                      final ApIndexRepository indexRepository,
                      final ApTypeRepository apTypeRepository,
-                     final UserRepository userRepository,
                      final ApChangeRepository changeRepository,
                      final ApRevPartRepository revPartRepository,
                      final ApRevIndexRepository revIndexRepository,
                      final RevisionItemService revisionItemService,
                      final AccessPointItemService apItemService,
+                     final AccessPointConnectorService apConnectorService,
                      final ElzaLocale elzaLocale) {
         this.apRepository = apRepository;
         this.stateRepository = stateRepository;
@@ -178,15 +173,14 @@ public class ApFactory {
         this.partRepository = partRepository;
         this.bindingStateRepository = bindingStateRepository;
         this.bindingItemRepository = bindingItemRepository;
-        this.camConnector = camConnector;
         this.indexRepository = indexRepository;
         this.apTypeRepository = apTypeRepository;
-        this.userRepository = userRepository;
         this.changeRepository = changeRepository;
         this.revPartRepository = revPartRepository;
         this.revIndexRepository = revIndexRepository;
         this.revisionItemService = revisionItemService;
         this.apItemService = apItemService;
+        this.accessPointConnectorService = apConnectorService;
         this.elzaLocale = elzaLocale;
     }
 
@@ -299,6 +293,7 @@ public class ApFactory {
             if (state.getRevState() != null) {
                 result.setState("REV_" + state.getRevState().toString());
             }
+            result.setOperation(state.getType().name());
             result.setType(state.getTypeName() != null? state.getTypeName() : state.getRevTypeName() != null? state.getRevTypeName() : null);
             result.setComment(state.getComment() != null? state.getComment() : state.getRevComment() != null? state.getRevComment() : null);
             if (state.getUser() != null) {
@@ -349,9 +344,6 @@ public class ApFactory {
             //comments
             Integer comments = stateRepository.countCommentsByAccessPoint(ap);
 
-            // vlastník entity
-            UsrUser ownerUser = userRepository.findAccessPointOwner(ap);
-
             // prepare bindings
             List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPoint(ap);
             Map<ApBinding, ApBindingState> bindings = getBindingMap(bindingStates);
@@ -390,7 +382,6 @@ public class ApFactory {
             apVO.setComments(comments);
             apVO.setPreferredPart(preferredPart.getPartId());
             apVO.setLastChange(createVO(lastChange));
-            apVO.setOwnerUser(createVO(ownerUser));
         }
         return apVO;
     }
@@ -398,11 +389,11 @@ public class ApFactory {
     public ApAccessPointVO createVO(CachedAccessPoint cachedAccessPoint) {
         String name = findAeCachedEntityName(cachedAccessPoint);
         String description = getDescription(cachedAccessPoint);
-        ApAccessPointVO apVO = createVO(cachedAccessPoint.getApState(), cachedAccessPoint, name, description);
+        ApAccessPointVO apVO = createVO(cachedAccessPoint, name, description);
 
         // prepare last change - include deleted items
         Integer lastChangeId = AccessPointCacheService.getLastChange(cachedAccessPoint);
-        ApChange lastChange = lastChangeId!=null ? changeRepository.findById(lastChangeId).get(): null;
+        ApChange lastChange = lastChangeId != null ? changeRepository.findById(lastChangeId).get() : null;
 
         // prepare bindings
         List<ApBindingVO> bindingsVO;
@@ -421,7 +412,7 @@ public class ApFactory {
         apVO.setParts(createPartsVO(cachedAccessPoint.getParts()));
         apVO.setPreferredPart(cachedAccessPoint.getPreferredPartId());
         apVO.setLastChange(createVO(lastChange));
-
+        apVO.setAssignedTo(cachedAccessPoint.getAssignedTo());
         return apVO;
     }
 
@@ -451,11 +442,17 @@ public class ApFactory {
         return vo;
     }
 
-    public ApAccessPointVO createVO(final ApState apState,
-                                    final CachedAccessPoint ap,
+    public ApAccessPointVO createVO(final CachedAccessPoint ap,
                                     final String name,
                                     final String description) {
-        return createVO(apState, ap.getAccessPointId(), ap.getReplacedAPIds(), ap.getUuid(), ap.getAccessPointVersion(), ap.getErrorDescription(), ap.getState(), name, description);
+        return createVO(ap.getApState(), 
+        		        ap.getAccessPointId(), 
+        		        ap.getReplacedAPIds(), 
+        		        ap.getUuid(), 
+        		        ap.getAccessPointVersion(), 
+        		        ap.getErrorDescription(), 
+        		        ap.getState(), name, description,
+        		        ap.getAssignedTo());
     }
 
     public ApAccessPointVO createVO(final ApState apState,
@@ -466,7 +463,8 @@ public class ApFactory {
                                     final String errorDescription,
                                     final ApStateEnum state,
                                     final String name,
-                                    final String description) {
+                                    final String description,
+                                    final Integer assignedTo) {
         // create VO
         ApAccessPointVO vo = new ApAccessPointVO();
         vo.setId(accessPointId);
@@ -488,6 +486,7 @@ public class ApFactory {
         vo.setState(state == null ? null : ApStateVO.valueOf(state.name()));
         vo.setName(name);
         vo.setDescription(description);
+        vo.setAssignedTo(assignedTo);
         return vo;
     }
 
@@ -496,16 +495,16 @@ public class ApFactory {
         if (CollectionUtils.isNotEmpty(bindings)) {
             for (ApBindingVO binding : bindings) {
                 ApExternalSystem externalSystem = sdp.getApExternalSystemById(binding.getExternalSystemId());
-                CamInstance camInstance = camConnector.get(externalSystem);
-                if (camInstance != null) {
+                ApiCamConnector connector = accessPointConnectorService.getConnector(externalSystem);
+                if (connector != null) {
                     String value = binding.getValue();
                     if (StringUtils.isNotEmpty(value)) {
-                        String url = camInstance.getEntityDetailUrl(value);
+                        String url = connector.getDetailUrl(externalSystem) + value;
                         binding.setDetailUrl(url);
                     }
                     String extReplacedBy = binding.getExtReplacedBy();
                     if (StringUtils.isNotEmpty(extReplacedBy)) {
-                        String url = camInstance.getEntityDetailUrl(extReplacedBy);
+                        String url = connector.getDetailUrl(externalSystem) + extReplacedBy;
                         binding.setDetailUrlExtReplacedBy(url);
                     }
                 }
@@ -771,8 +770,8 @@ public class ApFactory {
             case RECORD_REF:
                 item = new ApItemAccessPointRefVO(apItem, ((externalSystemId, value) -> {
                     ApExternalSystem externalSystem = sdp.getApExternalSystemById(externalSystemId);
-                    CamInstance camInstance = camConnector.get(externalSystem);
-                    return camInstance.getEntityDetailUrl(value);
+                    ApiCamConnector connector = accessPointConnectorService.getConnector(externalSystem);
+                    return connector.getDetailUrl(externalSystem) + value;
                 }));
                 break;
             case DECIMAL:

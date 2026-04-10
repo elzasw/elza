@@ -9,6 +9,8 @@ import jakarta.xml.ws.Endpoint;
 import jakarta.xml.ws.handler.Handler;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +38,8 @@ import cz.tacr.elza.ws.core.v1.UserServiceImpl;
 @Configuration
 @ImportResource({"classpath:META-INF/cxf/cxf.xml", "classpath:META-INF/cxf/cxf-servlet.xml"})
 public class WebServiceConfig {
+	
+	static Logger logger = LoggerFactory.getLogger(WebServiceConfig.class);
 
     public final static String DAO_CORE_SERVICE_URL = "/DaoCoreService";
     public final static String STRUCT_OBJ_SERVICE_URL = "/StructuredObjectService";
@@ -76,10 +80,12 @@ public class WebServiceConfig {
         final FaultInterceptor faultInterceptor = new FaultInterceptor();
         bus.getOutFaultInterceptors().add(faultInterceptor);
         // add logging
-        bus.getInInterceptors().add(new org.apache.cxf.interceptor.LoggingInInterceptor());
-        bus.getOutInterceptors().add(new org.apache.cxf.interceptor.LoggingOutInterceptor());
-        bus.getInFaultInterceptors().add(new org.apache.cxf.interceptor.LoggingInInterceptor());
-        bus.getOutFaultInterceptors().add(new org.apache.cxf.interceptor.LoggingOutInterceptor());
+        if(logger.isDebugEnabled()) {
+			bus.getInInterceptors().add(new org.apache.cxf.interceptor.LoggingInInterceptor());
+			bus.getOutInterceptors().add(new org.apache.cxf.interceptor.LoggingOutInterceptor());
+			bus.getInFaultInterceptors().add(new org.apache.cxf.interceptor.LoggingInInterceptor());
+			bus.getOutFaultInterceptors().add(new org.apache.cxf.interceptor.LoggingOutInterceptor());
+		}
     }
 
     @Bean
