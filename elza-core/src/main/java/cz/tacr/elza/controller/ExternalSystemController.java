@@ -7,7 +7,6 @@ import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,8 +20,6 @@ import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.UserService;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -37,16 +34,6 @@ public class ExternalSystemController implements ExternalsystemsApi {
     final UsrPermission.Permission reqPermissions[] = { UsrPermission.Permission.ADMIN,
             UsrPermission.Permission.AP_EXTERNAL_WR };
 
-    @Override
-    @Transactional
-    public ResponseEntity<Void> externalSystemChangeVersionApi(String id, Integer version) {
-		if (extSystemService.changeApiVersion(id, version) == null) {
-			return ResponseEntity.notFound().build();
-		}
-
-    	return ResponseEntity.ok().build();
-    }    
-    
     @Override
     @Transactional
     public ResponseEntity<Void> externalSystemExternalSystemResync(String id) {

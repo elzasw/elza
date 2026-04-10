@@ -20,6 +20,8 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -72,6 +74,7 @@ import cz.tacr.elza.repository.GisExternalSystemRepository;
 import cz.tacr.elza.repository.SysExternalSystemPropertyRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.event.ApExternalSystemEvent;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
@@ -126,6 +129,9 @@ public class ExternalSystemService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     /**
      * Vyhledá všechny externí systémy.
@@ -312,61 +318,16 @@ public class ExternalSystemService {
      *            identifikátor mazaného externího systému
      */
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
-    public void delete(final Integer id) {
-        sendDeleteExternalSystemNotification(id);
-        externalSystemRepository.deleteById(id);
+    public void delete(final SysExternalSystem externalSystem) {
+        sendDeleteExternalSystemNotification(externalSystem.getExternalSystemId());
+        externalSystemRepository.deleteById(externalSystem.getExternalSystemId());
+
+        if (externalSystem instanceof ApExternalSystem extSys) {
+            eventPublisher.publishEvent(new ApExternalSystemEvent(this, extSys));
+        }
 
         staticDataService.reloadOnCommit();
     }
-
-    /**
-     * Změna verze API externího systému
-     * 
-     * @param extSys
-     * @param version
-     */
-    @AuthMethod(permission = UsrPermission.Permission.ADMIN)
-	public ApExternalSystem changeApiVersion(String extSystemId, Integer version) {
-    	ApExternalSystem extSys = findExternalSystemByCodeOrId(extSystemId);
-    	if (extSys == null) {
-    		return null;
-    	}
-
-    	ApExternalSystemType type = extSys.getType();
-    	if ((List.of(ApExternalSystemType.CAM, ApExternalSystemType.CAM_UUID, ApExternalSystemType.CAM_COMPLETE)
-    			.contains(type) && version == 1)
-	    	|| (List.of(ApExternalSystemType.CAM_V2, ApExternalSystemType.CAM_UUID_V2, ApExternalSystemType.CAM_COMPLETE_V2)
-				.contains(type) && version == 2)) {
-            throw new SystemException("Změna verze API není možná", BaseCode.INVALID_STATE)
-            	.set("extSystemId", extSystemId)
-            	.set("version", version);				
-    	}
-
-    	ApExternalSystemType newType = null;
-    	switch (type) {
-    	case CAM:
-    		newType = ApExternalSystemType.CAM_V2;
-    		break;
-    	case CAM_UUID:
-			newType = ApExternalSystemType.CAM_UUID_V2;
-			break;
-		case CAM_COMPLETE:
-			newType = ApExternalSystemType.CAM_COMPLETE_V2;
-			break;
-		case CAM_V2:
-			newType = ApExternalSystemType.CAM;
-			break;
-		case CAM_UUID_V2:
-			newType = ApExternalSystemType.CAM_UUID;
-			break;
-		case CAM_COMPLETE_V2:
-			newType = ApExternalSystemType.CAM_COMPLETE;
-			break;
-    	}
-
-		extSys.setType(newType);
-    	return apExternalSystemRepository.save(extSys);
-	}    
 
     /**
      * Smazání záznamu z tabulky ExtSyncsQueueItem
@@ -429,8 +390,30 @@ public class ExternalSystemService {
     public SysExternalSystem update(final SysExternalSystem externalSystem) {
         staticDataService.reloadOnCommit();
 
+        SysExternalSystem original = externalSystemRepository.getOneCheckExist(externalSystem.getExternalSystemId());
+
+        // if type changed in ApExternalSystem
+        if (externalSystem instanceof ApExternalSystem extSys 
+        		&& original instanceof ApExternalSystem origExtSys
+        		&& origExtSys.getType() != extSys.getType()) {
+        	
+        	ApExternalSystemType extSysType = extSys.getType();
+        	ApExternalSystemType origExtSysType = origExtSys.getType();
+
+        	// if it's a switch between versions
+        	if (!extSysType.isSameType(origExtSysType)) {
+                throw new SystemException("Změna typu Externího Systému není možná", BaseCode.INVALID_STATE)
+	                .set("extSystemId", origExtSys.getExternalSystemId())
+	                .set("extSystemType", origExtSysType)
+	            	.set("newExtSystemType", extSysType);
+        	}
+
+        	eventPublisher.publishEvent(new ApExternalSystemEvent(this, origExtSys));
+        }
+
         validateExternalSystem(externalSystem, false);
         sendUpdateExternalSystemNotification(externalSystem.getExternalSystemId());
+
         return externalSystemRepository.save(externalSystem);
     }
 
