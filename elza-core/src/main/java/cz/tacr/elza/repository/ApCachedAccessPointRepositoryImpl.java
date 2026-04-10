@@ -389,6 +389,9 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
      * délky pole - kratší preferovaná jména obsahující hledané výrazy získají vyšší skóre.
      * Řeší problém, kdy entity bez vedlejší části jména (nm_minor) byly řazeny níže
      * než podřízené entity s nm_minor odpovídajícím hledaným výrazům.
+     *
+     * Váha se bere z konfigurace pole (boost-fulltext). Pokud není nastavena,
+     * použije se násobek stávající hodnoty boost.
      */
     private void addFullTextBoost(SearchPredicateFactory factory,
                                    BooleanPredicateClausesStep<?> bool,
@@ -397,22 +400,45 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         String searchLower = search.toLowerCase();
 
         // Boost on pref_index_analyzed - BM25 field-length normalization favors shorter preferred names
-        String prefIndexField = addDataPrefix(PREFIX_PREF + SEPARATOR + INDEX) + ANALYZED;
-        bool.should(factory.match().field(prefIndexField).matching(searchLower).boost(200f));
+        addFullTextFieldBoost(factory, bool, PREFIX_PREF + SEPARATOR + INDEX, searchLower);
 
-        // Boost on pref_nm_main_analyzed - BM25 scores higher when more search terms match
-        String prefNmMainField = addDataPrefix(PREFIX_PREF + SEPARATOR + NM_MAIN) + ANALYZED;
-        bool.should(factory.match().field(prefNmMainField).matching(searchLower).boost(500f));
+        // Boost on pref_nm_main_analyzed
+        addFullTextFieldBoost(factory, bool, PREFIX_PREF + SEPARATOR + NM_MAIN, searchLower);
 
         if (StringUtils.isEmpty(partTypeCode) || !partTypeCode.equals(PREFIX_PREF)) {
-            // Also boost general index field
-            String indexField = addDataPrefix(INDEX) + ANALYZED;
-            bool.should(factory.match().field(indexField).matching(searchLower).boost(50f));
+            addFullTextFieldBoost(factory, bool, INDEX, searchLower);
+        }
+    }
+
+    /**
+     * Multiplier applied to existing boost value when boost-fulltext is not configured.
+     */
+    private static final float DEFAULT_FULLTEXT_BOOST_MULTIPLIER = 4.0f;
+
+    private void addFullTextFieldBoost(SearchPredicateFactory factory,
+                                        BooleanPredicateClausesStep<?> bool,
+                                        String fieldName,
+                                        String searchLower) {
+        SettingIndexSearch.Field sisField = getFieldSearchConfigByName(fieldName);
+        Float fulltextBoost = null;
+        if (sisField != null) {
+            fulltextBoost = sisField.getBoostFulltext();
+            if (fulltextBoost == null && sisField.getBoost() != null) {
+                // fallback: derive from existing boost value
+                fulltextBoost = sisField.getBoost() * DEFAULT_FULLTEXT_BOOST_MULTIPLIER;
+            }
+        }
+        if (fulltextBoost == null || fulltextBoost <= 0f) {
+            return;
         }
 
+        String resolvedField = addDataPrefix(fieldName) + ANALYZED;
+        bool.should(factory.match().field(resolvedField).matching(searchLower).boost(fulltextBoost));
+
         if (log.isTraceEnabled()) {
-            log.trace("addFullTextBoost: search='{}', prefIndexField='{}', prefNmMainField='{}'",
-                      searchLower, prefIndexField, prefNmMainField);
+            log.trace("addFullTextFieldBoost: field='{}' (resolved='{}'), search='{}', boostFulltext={}, fromConfig={}",
+                      fieldName, resolvedField, searchLower, fulltextBoost,
+                      sisField != null && sisField.getBoostFulltext() != null);
         }
     }
 
@@ -577,9 +603,9 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         }
         StringBuilder sb = new StringBuilder("Search config (INDEX_SEARCH) fields:\n");
         for (SettingIndexSearch.Field field : sis.getFields()) {
-            sb.append(String.format("  field='%s', boost=%s, boostExact=%s, boostTransExact=%s, transliterate=%s%n",
+            sb.append(String.format("  field='%s', boost=%s, boostExact=%s, boostTransExact=%s, boostFulltext=%s, transliterate=%s%n",
                                     field.getName(), field.getBoost(), field.getBoostExact(),
-                                    field.getBoostTransExact(), field.getTransliterate()));
+                                    field.getBoostTransExact(), field.getBoostFulltext(), field.getTransliterate()));
         }
         log.trace(sb.toString());
     }
