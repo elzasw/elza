@@ -65,9 +65,6 @@ public class AdminOldController {
     @Autowired
     private AsyncRequestService asyncRequestService;
 
-    @Autowired
-    private CamConnector camConnector;
-
     @Value("${elza.logFile:}")
     private String logFilePath;
 
@@ -145,9 +142,7 @@ public class AdminOldController {
         ApScope apScope = accessPointService.getApScope(externalSystemVO);
         SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope);
         externalSystem = externalSystemService.update(externalSystem);
-        if (externalSystem instanceof ApExternalSystem) {
-            camConnector.invalidate((ApExternalSystem) externalSystem);
-        }
+
         return factoryVo.createExtSystem(externalSystem);
     }
 
@@ -160,10 +155,7 @@ public class AdminOldController {
     @Transactional
     public void deleteExternalSystemById(@PathVariable("externalSystemId") final Integer externalSystemId) {
         SysExternalSystem externalSystem = externalSystemService.findOne(externalSystemId);
-        externalSystemService.delete(externalSystemId);
-        if (externalSystem instanceof ApExternalSystem) {
-            camConnector.invalidate((ApExternalSystem) externalSystem);
-        }
+        externalSystemService.delete(externalSystem);
     }
 
     /**

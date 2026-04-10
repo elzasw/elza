@@ -261,7 +261,7 @@ public class EntityDBDispatcher {
 
         switch (apExternalSystem.getType()) {
         case CAM_V2:
-        case CAM_COMPLETE:
+        case CAM_COMPLETE_V2:
             List<String> values = CamHelper.getEids(entities);
             prepareBinding = (entity) -> {
                 String bindingValue = CamHelper.getEntityId(entity);
@@ -285,7 +285,7 @@ public class EntityDBDispatcher {
             }
             break;
 
-        case CAM_UUID:
+        case CAM_UUID_V2:
             prepareBinding = (entity) -> {
                 String bindingValue = CamHelper.getEntityUuid(entity);
                 ApBinding binding = procCtx.getBindingByValue(bindingValue);
@@ -448,7 +448,8 @@ public class EntityDBDispatcher {
                 	
                 	// If system is CAM_COMPLETE and entity is return to non deleted state -> 
                 	// -> we respect new state and entity is not further marked as deleted 
-                	if(procCtx.getApExternalSystem().getType().equals(ApExternalSystemType.CAM_COMPLETE)) {
+                	if (procCtx.getApExternalSystem().getType().equals(ApExternalSystemType.CAM_COMPLETE)
+                			|| procCtx.getApExternalSystem().getType().equals(ApExternalSystemType.CAM_COMPLETE_V2)) {
                 		// nop
                 		log.info("Deleted entity is restored to non deleted state, ap id: {}, ext. entity id: {}", state.getAccessPointId(), 
                 				entity.getEntityId() != null ? entity.getEntityId().getValue() : "");

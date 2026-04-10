@@ -20,11 +20,14 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.cam.BindingSyncInfo;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -71,6 +74,7 @@ import cz.tacr.elza.repository.GisExternalSystemRepository;
 import cz.tacr.elza.repository.SysExternalSystemPropertyRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.event.ApExternalSystemEvent;
 import cz.tacr.elza.service.eventnotification.events.EventId;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 
@@ -125,6 +129,9 @@ public class ExternalSystemService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     /**
      * Vyhledá všechny externí systémy.
@@ -311,9 +318,13 @@ public class ExternalSystemService {
      *            identifikátor mazaného externího systému
      */
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
-    public void delete(final Integer id) {
-        sendDeleteExternalSystemNotification(id);
-        externalSystemRepository.deleteById(id);
+    public void delete(final SysExternalSystem externalSystem) {
+        sendDeleteExternalSystemNotification(externalSystem.getExternalSystemId());
+        externalSystemRepository.deleteById(externalSystem.getExternalSystemId());
+
+        if (externalSystem instanceof ApExternalSystem extSys) {
+            eventPublisher.publishEvent(new ApExternalSystemEvent(this, extSys));
+        }
 
         staticDataService.reloadOnCommit();
     }
@@ -379,8 +390,30 @@ public class ExternalSystemService {
     public SysExternalSystem update(final SysExternalSystem externalSystem) {
         staticDataService.reloadOnCommit();
 
+        SysExternalSystem original = externalSystemRepository.getOneCheckExist(externalSystem.getExternalSystemId());
+
+        // if type changed in ApExternalSystem
+        if (externalSystem instanceof ApExternalSystem extSys 
+        		&& original instanceof ApExternalSystem origExtSys
+        		&& origExtSys.getType() != extSys.getType()) {
+        	
+        	ApExternalSystemType extSysType = extSys.getType();
+        	ApExternalSystemType origExtSysType = origExtSys.getType();
+
+        	// if it's a switch between versions
+        	if (!extSysType.isSameType(origExtSysType)) {
+                throw new SystemException("Změna typu Externího Systému není možná", BaseCode.INVALID_STATE)
+	                .set("extSystemId", origExtSys.getExternalSystemId())
+	                .set("extSystemType", origExtSysType)
+	            	.set("newExtSystemType", extSysType);
+        	}
+
+        	eventPublisher.publishEvent(new ApExternalSystemEvent(this, origExtSys));
+        }
+
         validateExternalSystem(externalSystem, false);
         sendUpdateExternalSystemNotification(externalSystem.getExternalSystemId());
+
         return externalSystemRepository.save(externalSystem);
     }
 
@@ -779,7 +812,7 @@ public class ExternalSystemService {
              properties = sysExtSysPropertyRepository.findByUserId(userId);
          } else {
              properties = sysExtSysPropertyRepository.findByExternalSystemIdAndUserId(extSystemId, userId);
- }
+         }
          List<ExtSystemProperty> result = new ArrayList<>(properties.size());
          properties.forEach(i -> {
              ExtSystemProperty p = new ExtSystemProperty();
@@ -851,4 +884,4 @@ public class ExternalSystemService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "SysExternalSystemProperty not found, id: " + extSysPropertyId));
     }
- }
+}
