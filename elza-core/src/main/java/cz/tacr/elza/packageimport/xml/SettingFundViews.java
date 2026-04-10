@@ -285,11 +285,14 @@ public class SettingFundViews extends Setting {
         @XmlAttribute(name = "max-count", required = false)
         private Integer maxCount;
 
-        @XmlAttribute(name = "type", required = true)
+        @XmlAttribute(name = "type", required = false)
         private String type;
 
         @XmlElement(name = "spec", required = false)
         private List<ItemSpec> specs;
+
+        @XmlElement(name = "type", required = false)
+        private List<TypeCode> types;
 
         public Integer getMaxCount() {
             return maxCount;
@@ -315,6 +318,14 @@ public class SettingFundViews extends Setting {
             this.specs = specs;
         }
 
+        public List<TypeCode> getTypes() {
+            return types;
+        }
+
+        public void setTypes(List<TypeCode> types) {
+            this.types = types;
+        }
+
     }
 
     @XmlAccessorType(XmlAccessType.FIELD)
@@ -330,6 +341,23 @@ public class SettingFundViews extends Setting {
 
         public void setType(String type) {
             this.type = type;
+        }
+
+    }
+
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "type-code")
+    public static class TypeCode {
+
+        @XmlAttribute(name = "code", required = true)
+        private String code;
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
         }
 
     }
