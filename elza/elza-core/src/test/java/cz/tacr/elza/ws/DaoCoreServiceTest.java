@@ -32,14 +32,13 @@ import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.service.DaoSyncService;
-import cz.tacr.elza.test.controller.vo.DataText;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.ItemDataResult;
+import cz.tacr.elza.test.controller.vo.NodeBase;
 import cz.tacr.elza.test.controller.vo.NodeItem;
 import cz.tacr.elza.ws.core.v1.DaoService;
 import cz.tacr.elza.ws.core.v1.FundService;
@@ -133,7 +132,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         // Musí existovat pouze root node
         assertEquals(1, treeData.getNodes().size());
         TreeNodeVO rootTreeNodeClient = treeData.getNodes().iterator().next();
-        ArrNodeVO rootNode = convertTreeNode(rootTreeNodeClient);
+        NodeBase rootNode = convertTreeNode(rootTreeNodeClient);
 
         ArrDaoLinkVO linkVo = createDaoLink(fundVersion.getId(), daoVo.getId(), rootNode.getId());
         assertNotNull(linkVo);
@@ -321,7 +320,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         helperTestService.waitForWorkers();
         ArrItemTextVO itemToUpdate = (ArrItemTextVO) findItemByObjectId(formData, descItemTextVO.getDescItemObjectId());
         itemToUpdate.setValue("update value");
-        ArrNodeVO nodeVO = convertTreeNode(levelNode);
+        NodeBase nodeVO = convertTreeNode(levelNode);
         NodeItem nodeItemToUpdate = convertToNodeItem(itemToUpdate, nodeVO);
         ItemDataResult updateResult = descitemsApi.descItemUpdateDescItem(fundVersion.getId(), true, nodeItemToUpdate);
         helperTestService.waitForWorkers();
