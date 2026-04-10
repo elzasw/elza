@@ -1,33 +1,47 @@
 package cz.tacr.elza.dataexchange.output;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
 /**
  * Parameters for io export request.
  */
-public class IOExportRequest {
+public abstract class IOExportRequest {
 
-    final private Integer userId;
+    final protected Integer userId;
 
-    final private Integer requestId;
+    final protected Integer requestId;
 
     /**
      * Recommended file name
      */
-    final private String downloadFileName;
+    final protected String downloadFileName;
 
-    private IOExportState state = IOExportState.PENDING;
-    private Exception exception;
+    protected IOExportState state = IOExportState.PENDING;
 
-    final private DEExportParams exportParams;
+    protected Exception exception;
 
-    public IOExportRequest(final Integer userId,
-                           final Integer requestId,
-                           final String downloadFileName,
-                           final DEExportParams exportParams) {
+    protected final String mediaType;
+    
+    protected final String fileExt;
+
+    protected final DEExportService exportService;
+
+    public IOExportRequest(final Integer userId, 
+    		               final Integer requestId, 
+    		               final String downloadFileName, 
+    		               final String mediaType, 
+    		               final String fileExt,
+    		               final DEExportService exportService) {
         this.userId = userId;
         this.requestId = requestId;
         this.downloadFileName = downloadFileName;
-        this.exportParams = exportParams;
+        this.mediaType = mediaType;
+        this.fileExt = fileExt;
+        this.exportService = exportService;
     }
+
+    abstract void exportToFile(Path exportFile) throws IOException;
 
     public Integer getUserId() {
         return userId;
@@ -35,10 +49,6 @@ public class IOExportRequest {
 
     public Integer getRequestId() {
         return requestId;
-    }
-
-    public DEExportParams getExportParams() {
-        return exportParams;
     }
 
     public IOExportState getState() {
@@ -53,7 +63,15 @@ public class IOExportRequest {
         return downloadFileName;
     }
 
-    public void setStateProcessing() {
+    public String getMediaType() {
+		return mediaType;
+	}
+
+	public String getFileExt() {
+		return fileExt;
+	}
+
+	public void setStateProcessing() {
         state = IOExportState.PROCESSING;
     }
 

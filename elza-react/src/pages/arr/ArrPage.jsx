@@ -34,7 +34,7 @@ import FundTemplateSettingsForm from '../../components/arr/FundTemplateSettingsF
 import LecturingBottom from '../../components/arr/LecturingBottom';
 import LecturingTop from '../../components/arr/LecturingTop';
 import { NodeSettingsForm } from '../../components/arr/node-settings-form';
-import SearchFundsForm from '../../components/arr/SearchFundsForm';
+import SearchFundsForm from '../../components/arr/search-funds-form/SearchFundsForm';
 import { FundFiles, FundSettingsForm, FundTreeMain, NodeTabs } from '../../components/index';
 import HorizontalSplitter from '../../components/shared/splitter/HorizontalSplitter';
 import { Button } from '../../components/ui';

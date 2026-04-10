@@ -17,7 +17,13 @@ public class RuleSet {
 
     final RulRuleSet entity;
 
+    // TODO: check if this it used
     final List<RuleSetExtension> ruleSetExtensions;
+    
+    /**
+     * Map of rule set extensions by rule set id
+     */
+    final Map<Integer, RuleSetExtension> ruleSetExtensionsById;
 
     final Map<String, List<RulExtensionRule>> extRuleByCondition;
 
@@ -46,11 +52,17 @@ public class RuleSet {
         this.ruleSetExtensions = exts.stream()
                 .map(ruleExt -> new RuleSetExtension(ruleExt, extRulesByExtId.get(ruleExt.getArrangementExtensionId())))
                 .collect(Collectors.toList());
+        this.ruleSetExtensionsById = this.ruleSetExtensions.stream().collect(
+        		Collectors.toMap(rex -> rex.getEntity().getArrangementExtensionId(), p -> p));
         this.extRuleByCondition = rulExtensionRules.stream()
                 .collect(Collectors.groupingBy(p -> {
                     return p.getCondition() == null? NULL_CONDITION : p.getCondition();
                 }, HashMap::new, Collectors.toCollection(ArrayList::new)));
     }
+    
+    public RuleSetExtension getRuleSetExtension(Integer ruleSetExtensionId) {
+		return ruleSetExtensionsById.get(ruleSetExtensionId);
+	}
 
     public RulRuleSet getEntity() {
         return entity;

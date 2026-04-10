@@ -3,7 +3,7 @@ package cz.tacr.elza.bulkaction.generator;
 import java.util.List;
 
 import cz.tacr.elza.bulkaction.BaseActionConfig;
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.bulkaction.generator.multiple.ActionConfig;
 
 public class MultiActionConfig extends BaseActionConfig {
@@ -19,7 +19,7 @@ public class MultiActionConfig extends BaseActionConfig {
 	}
 
 	@Override
-	public BulkAction createBulkAction() {
+	public BulkActionTransactional createBulkAction() {
 		MultipleBulkAction mba = new MultipleBulkAction(this);
 		return mba;
 	}

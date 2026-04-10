@@ -7,7 +7,9 @@ import {
     IoApi,
     ExternalsystemsApi,
     DescitemsApi,
-    AipsApi
+    AipsApi,
+    ReportApi,
+    NodeApi,
 } from 'elza-api';
 import globalAxios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import i18n from '../components/i18n';
@@ -15,18 +17,22 @@ import { createException } from 'components/ExceptionUtils.jsx';
 import { logout } from 'actions/global/login';
 import { store } from 'stores/index.jsx';
 
+interface WindowEx extends Window {
+    serverContextPath?: string;
+}
+
 declare module "axios" {
     export interface AxiosRequestConfig {
         overrideErrorHandler?: boolean;
     }
 }
 
-// @ts-ignore
-export const serverContextPath = window.serverContextPath || "";
+export const serverContextPath = (window as WindowEx).serverContextPath || "";
+export function getServerContextPath() { return (window as WindowEx).serverContextPath || ""; }
 
 const baseApiPath = '/api';
 const v1ApiPath = '/v1';
-const basePath = `${serverContextPath}${baseApiPath}${v1ApiPath}`;
+export const basePath = `${serverContextPath}${baseApiPath}${v1ApiPath}`;
 
 export const getFullPath = (path: string) => {
     if (path.startsWith('/')) {
@@ -52,7 +58,10 @@ axios.interceptors.response.use(undefined, error => {
     if (exception.unauthorized && !error.config.noPending) {
         return createPendingPromise(error.config);
     }
-    throw exception;
+    throw {
+        ...exception,
+        processed: true // mark exception as processed
+    };
 });
 
 interface IError {
@@ -196,6 +205,8 @@ export const Api: {
     externalSystems: ExternalsystemsApi;
     descItems: DescitemsApi;
     aips: AipsApi;
+    node: NodeApi;
+    report: ReportApi;
 } = {
     accesspoints: new AccesspointsApi(undefined, basePath, axios),
     admin: new AdminApi(undefined, basePath, axios),
@@ -206,4 +217,6 @@ export const Api: {
     externalSystems: new ExternalsystemsApi(undefined, basePath, axios),
     descItems: new DescitemsApi(undefined, basePath, axios),
     aips: new AipsApi(undefined, basePath, axios),
+    node: new NodeApi(undefined, basePath, axios),
+    report: new ReportApi(undefined, basePath, axios),
 };

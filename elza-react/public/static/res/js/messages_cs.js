@@ -285,7 +285,7 @@ var messages = {
     "ribbon.action.arr.dataGrid": "Tabulkové zobrazení",
     "ribbon.action.arr.ab": "Archivní balíčky",
     "ribbon.action.arr.dataGrid.export": "Export",
-    "ribbon.action.arr.dataGrid.import": "Import",
+    "ribbon.action.arr.dataGrid.import": "Import prvků popisu",
     "ribbon.action.arr.dataGrid.import.success": "Import byl dokončen",
     "ribbon.action.arr.movements": "Přesuny",
     "ribbon.action.arr.output.add": "Nový výstup",
@@ -520,7 +520,8 @@ var messages = {
     "issueList.new.unnamed": "Nepojmenovaný",
     "issueList.missing.name": "Bez jména",
 
-    "arr.fund.search.result.count": "Počet nalezených výsledků: {0}",
+    "arr.fund.search.result.count": "Počet nalezených záznamů: {0}",
+    "arr.fund.search.result.displayedCount": "zobrazeno: {0}",
     "arr.fund.search.noFulltext": "Pro zobrazení výsledků hledání v archivních souborech zadejte vyhledávací podmínku.",
 
     "change.arr.output.generating.title": "Generuje se výstup",
@@ -868,7 +869,7 @@ var messages = {
     "arr.node.status.okx": "Ok*",
     "arr.node.status.err": "Chyba",
     "arr.node.status.err.errors": "Chyby",
-    "arr.node.status.err.missing": "Chybějící",
+    "arr.node.status.err.missing": "Chybějící prvky",
     "arr.node.status.undefined": "Nezvalidovaný",
     "arr.node.noSelection.title": "Není vybrána jednotka popisu",
     "arr.node.noSelection.message": "Prosím vyberte jednotku popisu.",
@@ -1173,7 +1174,7 @@ var messages = {
     "ap.binding.replaced": "nahrazená",
 
     "ap.binding.action.synchronize": "Aktualizovat údaje",
-    "ap.binding.action.synchronize.confirmation": "Opravdu chcete aktualizovat záznam entity z externího systému? Případné změny neopakovatelných částí záznamu entity budou přepsány.",
+    "ap.binding.action.synchronize.confirmation": "Opravdu chcete aktualizovat záznam entity z externího systému? Případné lokální změny těch částí záznamu entity, které existují v externím systému, mohou být přepsány.",
     "ap.binding.action.update": "Zapsat změny",
     "ap.binding.action.disconnect": "Zrušení vazby na ext. systém",
     "ap.binding.action.take-rel-entities": "Převzetí napojených entit",
@@ -1452,7 +1453,7 @@ var messages = {
     "admin.extSystem.publishOnlyApproved.true": "Ano",
     "admin.extSystem.publishOnlyApproved.false": "Ne",
     "admin.extSystem.userInfo": "Autor změny - šablona",
-    "admin.extSystem.userInfo.title": "Šablona pro označení uživatele, které je předáváno do externího systému, jako osoby zodpovědné za provedení a zaslání změny.\nStandardně obsahuje 'název instituce: jméno uživatele', pro vyplnění jména lze použít proměnné:\n%u - uživatelské jméno\n%i - ID uživatele\n%n - preferované označení osoby uživatele",
+    "admin.extSystem.userInfo.title": "Šablona pro označení uživatele, které je předáváno do externího systému, jako osoby zodpovědné za provedení a zaslání změny.\nStandardně obsahuje 'název instituce: jméno uživatele', pro vyplnění jména lze použít proměnné:\n%u - uživatelské jméno\n%i - ID uživatele\n%n - preferované označení osoby uživatele\n%s - zkrácené označení osoby uživatele",
     "admin.extSystem.type": "Typ",
     "admin.extSystem.sysScope": "Oblast entit",
     "admin.extSystem.sysDigitalRepository": "Uložiště digitalizátů",
@@ -1483,6 +1484,7 @@ var messages = {
     "admin.extSystem.da": "Digitální archiv",
     "admin.extSystem.apiKeyId": "ApiKey - ID",
     "admin.extSystem.apiKeyValue": "ApiKey - hodnota",
+    "admin.extSystem.synchronize": "Synchronizovat",
 
     "admin.bulk.detail.queue.empty": "Ve frontě nejsou žádné požadavky",
     "admin.bulk.header.title.NODE": "Validace JP",
@@ -1547,6 +1549,7 @@ var messages = {
     "admin.perms.tabs.advanced.perm.FUND_CREATE": "Zakládání nových AS",
     "admin.perms.tabs.advanced.perm.USR_PERM": "Správa oprávnění a uživatelů",
     "admin.perms.tabs.advanced.perm.AP_EXTERNAL_WR": "Zápis do externích systémů",
+    "admin.perms.tabs.advanced.perm.REPORT_ALL": "Zobrazení přehledů",
     "admin.perms.tabs.advanced.controller.entities.title": "Spravovaní uživatelé a skupiny",
     "admin.perms.fund.tabs.users": "Uživatelé",
     "admin.perms.fund.tabs.users.add.title": "Přidat uživatele",
@@ -1719,6 +1722,7 @@ var messages = {
     "login.field.username": "Uživatelské jméno",
     "login.field.password": "Heslo",
     "login.action.login": "Přihlásit",
+    "login.action.ssoKerberos": "Přihlásit se pomocí Windows autentizace (Kerberos)",
     "login.defaultUserEnabled":
         "Je povolen výchozí uživatel. Vytvořte si vlastního uživatele s oprávněním administrátora a výchozího uživatele vypněte.",
     "login.or-message": "nebo se přihlásit pomocí",
@@ -1804,7 +1808,11 @@ var messages = {
     "dataGrid.export.exportType.noSelection.item": "Není vybrán prvek",
     "dataGrid.export.title": "Export tabulkového zobrazení",
 
-    "dataGrid.import.title": "Import datových sloupců",
+    "dataGrid.import.title": "Import prvků popisu",
+    "dataGrid.import.format.hint":
+        '<p> Pro přidání prvků popisu vložte soubor CSV, kde každý řádek odpovídá jedné jednotce popisu ve tvaru: </p> <p> {<b style="color: var(--color-red)">UUID</b>},{<b style="color: var(--color-blue)">Kód prvku</b>},{<b style="color: var(--color-orange)">Kód specifikace</b>},{<b style="color: var(--color-green)">Hodnota prvku</b>},{<b style="color: var(--color-blue)">Kód prvku</b>},{<b style="color: var(--color-green)">Hodnota prvku</b>}... </p> <p>V jednom řádku je k jedné jednotce popisu možné přidat současně více prvků popisu. Kód specifikace a hodnota prvku jsou povinné/volitelné v závislosti na typu prvku popisu.</p>',
+    "dataGrid.import.format.example.title": "Příklad přidání prvků",
+    "dataGrid.import.format.example.message": "<ul> <li>Formální název: Divá Bára</li> <li>Jiná označení: signatura: 1234/75</li> <li>Typ archiválie: rukopis</li> </ul>",
 
     "accesspoint.name.name": "Jméno",
     "accesspoint.name.complement": "Doplněk",

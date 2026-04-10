@@ -23,7 +23,9 @@ import cz.tacr.elza.asynchactions.AsyncRequest;
 import cz.tacr.elza.asynchactions.AsyncRequestEvent;
 import cz.tacr.elza.asynchactions.IAsyncWorker;
 import cz.tacr.elza.domain.ArrBulkActionRun;
+import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrOutput;
+import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.service.OutputServiceInternal;
 import cz.tacr.elza.service.UserService;
 
@@ -113,10 +115,7 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
         SecurityContext originalSecCtx = SecurityContextHolder.getContext();
         // Run action
         try {
-            new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
-                executeInTransaction();
-                logger.info("Bulk action succesfully finished: {}", this);
-            });
+        	executeAction();
         } catch (Throwable e) {
             logger.error("Bulk action failed, action: " + this + ", error: ", e);
             try {
@@ -137,7 +136,7 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
         }
     }
 
-    private void executeInTransaction() {
+	private void executeAction() throws InterruptedException {
         // set active user
         ArrBulkActionRun bulkActionRun = bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId());
         SecurityContext ctx = userService.createSecurityContext(bulkActionRun.getUserId());
@@ -145,19 +144,24 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
 
         try {
             // prepare context object
-            ActionRunContext runContext = new ActionRunContext(inputNodeIds, bulkActionRun);
+        	ActionRunContext runContext = new TransactionTemplate(transactionManager).execute(status -> {
+            	return new ActionRunContext(inputNodeIds, bulkActionRun);
+            });
 
             bulkAction.execute(runContext);
 
             // TODO: Add check that action was not interrupted
-            bulkActionRun.setDateFinished(new Date());
-            bulkActionRun.setState(ArrBulkActionRun.State.FINISHED);
-            bulkActionHelperService.updateAction(bulkActionRun);
-            bulkActionHelperService.onFinished(bulkActionRun);
+            new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
+            	bulkActionRun.setDateFinished(new Date());
+            	bulkActionRun.setState(ArrBulkActionRun.State.FINISHED);
+            	bulkActionHelperService.updateAction(bulkActionRun);
+            	bulkActionHelperService.onFinished(bulkActionRun);
+            });
 
         } finally {
             eventPublisher.publishEvent(AsyncRequestEvent.success(request, this));
         }
+        logger.info("Bulk action succesfully finished: {}", this);
     }
 
     @Override
@@ -175,9 +179,21 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
     }
 
     private void handleException(Throwable e) {
+    	State actionState = ArrBulkActionRun.State.ERROR;
+    	if (e instanceof InterruptedException || e instanceof BulkActionInterruptedException) {
+    		actionState = ArrBulkActionRun.State.INTERRUPTED;
+            logger.info("Bulk action interrupted: {}", this);
+    	}
         ArrBulkActionRun bulkActionRun = bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId());
-        bulkActionRun.setError(e.getLocalizedMessage());
-        bulkActionRun.setState(ArrBulkActionRun.State.ERROR);
+        // Build message
+        String errorMsg;
+        if(e instanceof AbstractException) {
+        	errorMsg = e.toString();
+        } else {
+        	errorMsg = e.getLocalizedMessage();
+        }
+        bulkActionRun.setError(errorMsg);
+        bulkActionRun.setState(actionState);
 
         // protože hromadná akce skončila chybou vrátíme výstup do původního stavu
         List<Integer> nodeIds = bulkActionHelperService.getBulkActionNodeIds(bulkActionRun);        
@@ -194,29 +210,25 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
      * Ukončí běžící hromadnou akci.
      */
     public void terminate() {
-        ArrBulkActionRun bulkActionRun = bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId());
-        if (!bulkActionRun.setInterrupted(true)) {
-            return;
-        }
-
+    	bulkAction.terminate();
+        ArrBulkActionRun bulkActionRun = null;
+        TransactionTemplate tt = new TransactionTemplate(transactionManager);
+        tt.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
         try {
-            while (bulkActionRun.getState() == ArrBulkActionRun.State.RUNNING) {
+            do {
                 try {
-                    logger.info("Čekání na dokončení hromadné akce: {}", request);
+                    bulkActionRun = tt.execute(status -> bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId()));
+                    logger.info("Waiting for bulkAction to complete: {}", bulkActionRun.getBulkActionCode());
                     Thread.sleep(100);
-                    TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
-                    transactionTemplate.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
-                    bulkActionRun = transactionTemplate.execute(status -> bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId()));
                 } catch (InterruptedException e) {
                     // Nothing to do with this -> simply finish
                     Thread.currentThread().interrupt();
                 }
-            }
+            } while (bulkActionRun.getState() == ArrBulkActionRun.State.RUNNING);
 
             bulkActionRun.setState(ArrBulkActionRun.State.INTERRUPTED);
 
         } finally {
-            bulkActionRun.setInterrupted(false);
             bulkActionHelperService.updateAction(bulkActionRun);
         }
     }
@@ -224,7 +236,7 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
     @Override
     public String toString() {
         return "BulkActionWorker{" +
-                "bulkAction=" + bulkAction +
+                "bulkAction=" + bulkAction.getName() +
                 ", versionId=" + request.getFundVersionId() +
                 '}';
     }

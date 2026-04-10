@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -14,7 +15,6 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.DataType;
@@ -27,6 +27,7 @@ import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.service.DataService;
 
 public class AccessRestrictFilter implements ExportFilter {
 
@@ -56,10 +57,11 @@ public class AccessRestrictFilter implements ExportFilter {
     final private FilterRules filterRules;
 
     public AccessRestrictFilter(final EntityManager em, final StaticDataProvider sdp, final AccessRestrictConfig efc,
-                                final ElzaLocale elzaLocale) {
+                                final ElzaLocale elzaLocale,
+                                final DataService dataService) {
         this.sdp = sdp;
         this.efc = efc;
-        this.soiLoader = new StructObjectInfoLoader(em, 1, sdp);
+        this.soiLoader = new StructObjectInfoLoader(em, 1, sdp, dataService);
         this.filterRules = new FilterRules(efc, sdp);
         this.elzaLocale = elzaLocale;
     }
@@ -234,7 +236,7 @@ public class AccessRestrictFilter implements ExportFilter {
         SoiLoadDispatcher soiLoadDisp = new SoiLoadDispatcher();
         soiLoader.addRequest(structuredObjectId, soiLoadDisp);
         soi = soiLoadDisp.getResult();
-        Validate.notNull(soi);
+        Objects.requireNonNull(soi);
 
         structRestrDefsMap.put(structuredObjectId, soi);
         return soi;

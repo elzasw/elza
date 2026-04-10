@@ -5,7 +5,7 @@ import {AREA_EXT_SYSTEM_DETAIL, extSystemDetailFetchIfNeeded} from 'actions/admi
 import {storeFromArea} from 'shared/utils';
 
 import './AdminExtSystemDetail.scss';
-import {JAVA_ATTR_CLASS} from '../../../constants';
+import {AP_EXT_SYSTEM_TYPE, JAVA_ATTR_CLASS} from '../../../constants';
 import {WebApi} from 'actions/index.jsx';
 import {
     EXT_SYSTEM_CLASS,
@@ -14,6 +14,8 @@ import {
     AP_EXT_SYSTEM_LABEL,
     DIGITAL_REPOSITORY_TYPE_LABEL
 } from './ExtSystemForm';
+import { Api } from 'api';
+import { Button } from '@fluentui/react-components';
 
 /**
  * Komponenta detailu osoby
@@ -64,6 +66,11 @@ class AdminExtSystemDetail extends AbstractReactComponent {
             </>
         }
     };
+
+    handleResyncExtSystem = () => {
+        const { extSystemDetail: {id}, } = this.props;
+        Api.externalSystems.externalSystemExternalSystemResync(id);
+    }
 
     render() {
         const {extSystemDetail} = this.props;
@@ -148,6 +155,11 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                             </>
                         )}
                     </div>
+                    {(extSystem.type === AP_EXT_SYSTEM_TYPE.CAM_COMPLETE
+                        || extSystem.type === AP_EXT_SYSTEM_TYPE.CAM_COMPLETE_V2)
+                        && <div style={{margin: "8px 0"}}>
+                        <Button onClick={this.handleResyncExtSystem}>{i18n('admin.extSystem.synchronize')}</Button>
+                    </div>}
                 </div>
             );
         }

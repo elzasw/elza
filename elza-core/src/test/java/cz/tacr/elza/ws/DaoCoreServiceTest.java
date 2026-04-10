@@ -87,8 +87,8 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         return WebServiceClientFactory.createDaoService(address, "admin", "admin");
     }
 
-    @Override
     @Before
+    @Override
     public void setUp() throws Exception {
         super.setUp();
 
@@ -97,6 +97,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
     }
 
     @After
+    @Override
     public void tearDown() {
         daoServiceClient = null;
 
@@ -154,7 +155,6 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         ArrDaoVO daoConnected2 = daosConnected2.get(0);
         ArrDaoLinkVO daoLinkVo2 = daoConnected2.getDaoLink();
         assertNull(daoLinkVo2);
-
     }
 
     @Test
@@ -216,7 +216,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         assertNotNull(formData);
         List<ArrItemVO> descItems = formData.getDescItems();
         assertEquals(1, descItems.size());
-        ArrItemTextVO descItemTextVO = checkExistsTextVO(descItems, "SRD_TITLE", TEXT_VALUE_XY);
+        ArrItemTextVO descItemTextVO = checkExistsTextVO(descItems, SRD_TITLE, TEXT_VALUE_XY);
         assertTrue(descItemTextVO.getReadOnly());
 
         // opakovaný import dao/update
@@ -240,7 +240,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         assertNotNull(formData);
         descItems = formData.getDescItems();
         assertEquals(1, descItems.size());
-        descItemTextVO = checkExistsTextVO(descItems, "SRD_TITLE", TEXT_VALUE_YZ);
+        descItemTextVO = checkExistsTextVO(descItems, SRD_TITLE, TEXT_VALUE_YZ);
         assertTrue(descItemTextVO.getReadOnly());
 
         helperTestService.waitForWorkers();
@@ -305,7 +305,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         assertNotNull(formData);
         List<ArrItemVO> descItems = formData.getDescItems();
         assertEquals(2, descItems.size());
-        ArrItemTextVO descItemTextVO = checkExistsTextVO(descItems, "SRD_TITLE", TEXT_VALUE_XY);
+        ArrItemTextVO descItemTextVO = checkExistsTextVO(descItems, SRD_TITLE, TEXT_VALUE_XY);
         assertTrue(descItemTextVO.getReadOnly() == null || !descItemTextVO.getReadOnly());
 
         // prepnuti na sc2
@@ -323,7 +323,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         DescItemResult descItemResult = updateDescItem(descItemTextVO, fundVersion, nodeVO, true);
         helperTestService.waitForWorkers();
 
-        this.daosApi.changeLinkScenario(daoVo.getId(), "sc2");
+        daosApi.daoChangeLinkScenario(daoVo.getId(), "sc2");
         daoVos = this.findDaos(fundVersion.getId(), levelNode.getId());
         assertTrue(daoVos.size() == 1);
         daoVo = daoVos.get(0);
@@ -359,7 +359,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         assertNotNull(formData);
         descItems = formData.getDescItems();
         assertEquals(2, descItems.size());
-        descItemTextVO = checkExistsTextVO(descItems, "SRD_TITLE", "update value");
+        descItemTextVO = checkExistsTextVO(descItems, SRD_TITLE, "update value");
         assertTrue(descItemTextVO.getReadOnly() == null || !descItemTextVO.getReadOnly());
 
         helperTestService.waitForWorkers();
@@ -415,6 +415,11 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         String[] refMark2 = secondNode.getReferenceMark();
         assertEquals(refMark2.length, 1);
         assertEquals(refMark2[0], "1");
+        
+        // try to remove package and destroy all links
+        daoServiceClient.removePackage(PACKAGE_ID1);
+        
+        helperTestService.waitForWorkers();
     }
 
     private ArrItemTextVO checkExistsTextVO(List<ArrItemVO> descItems, String itemTypeCode, String textValue) {
@@ -460,7 +465,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         items.getStrOrLongOrEnm().add(ite);
 
         its = objFactory.createItemString();
-        its.setType("SRD_TITLE");
+        its.setType(SRD_TITLE);
         its.setValue(textValue);
         items.getStrOrLongOrEnm().add(its);
 
@@ -477,7 +482,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
         items.getStrOrLongOrEnm().add(ite);
 
         its = objFactory.createItemString();
-        its.setType("SRD_TITLE");
+        its.setType(SRD_TITLE);
         its.setValue(textValue);
         items.getStrOrLongOrEnm().add(its);
         return items;
@@ -486,7 +491,7 @@ public class DaoCoreServiceTest extends AbstractControllerTest {
     private Items createDaoItems(String textValue) {
         cz.tacr.elza.ws.types.v1.Items items = objFactory.createItems();
         cz.tacr.elza.ws.types.v1.ItemString its = objFactory.createItemString();
-        its.setType("SRD_TITLE");
+        its.setType(SRD_TITLE);
         its.setValue(textValue);
         its.setReadOnly(true);
         items.getStrOrLongOrEnm().add(its);

@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 
 import cz.tacr.elza.common.db.HibernateUtils;
@@ -15,7 +15,6 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
 import jakarta.annotation.Nullable;
@@ -35,7 +34,7 @@ public class GroovyUtils {
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         ItemType itemType = sdp.getItemTypeByCode(typeCode);
         RulItemSpec itemSpec = sdp.getItemSpecByCode(specCode);
-        Validate.notNull(itemType);
+        Objects.requireNonNull(itemType);
 
         if (CollectionUtils.isEmpty(aes)) {
             return null;
@@ -59,17 +58,44 @@ public class GroovyUtils {
     }
 
     @Nullable
+    public static GroovyItem findItemByItemTypeCode(final String itemType, List<GroovyItem> items) {
+    	for (GroovyItem item : items) {
+    		if (item.getTypeCode().equals(itemType)) {
+    			return item;
+    		}
+    	}
+    	return null;
+    }
+
+    @Nullable
+    public static GroovyItem findItemByPartContains(final GroovyAe groovyAe,
+                                                    final String partTypeCode,
+                                                    final String containItemType,
+                                                    boolean preferred) {
+    	Objects.requireNonNull(groovyAe, "Nebyla předána entita pro vyhledání");
+    	Objects.requireNonNull(partTypeCode, "Nebyla předán typ části entity");
+    	Objects.requireNonNull(containItemType, "Nebyla předán typ prvku");
+
+        for (GroovyPart part : groovyAe.getParts()) {
+        	if (part.getPartTypeCode().equals(partTypeCode) && Objects.equals(part.isPreferred(), preferred)) {
+        		List<GroovyItem> findItems = part.getItems(containItemType);
+        		if (CollectionUtils.isNotEmpty(findItems)) {
+        			Validate.isTrue(findItems.size() == 1, "Očekává se pouze jeden GroovyItem");
+            		return findItems.get(0);
+        		}
+        	}
+        }
+    	return null;
+    }
+
+    @Nullable
     public static GroovyItem findItemByPartContains(final GroovyAe groovyAe,
                                                     final String partTypeCode,
                                                     final String containItemType,
                                                     final String containItemSpec,
                                                     final String itemType) {
-        Validate.notNull(groovyAe, "Nebyla předána entita pro vyhledání");
-        Validate.notNull(partTypeCode, "Nebyla předán typ části entity");
-        //StaticDataProvider sdp = StaticDataProvider.getInstance();
-        //sdp.getItemTypeByCode(containItemType);
-        //sdp.getItemSpecByCode(containItemSpec);
-        //sdp.getItemTypeByCode(itemType);
+    	Objects.requireNonNull(groovyAe, "Nebyla předána entita pro vyhledání");
+    	Objects.requireNonNull(partTypeCode, "Nebyla předán typ části entity");
 
         for (GroovyPart part : groovyAe.getParts()) {
             if (part.getPartTypeCode().equals(partTypeCode)) {
@@ -92,9 +118,9 @@ public class GroovyUtils {
 
     @Nullable
     public static GroovyItem findFirstItem(final GroovyAe groovyAe, final String partTypeCode, final GroovyPart.PreferredFilter filter, final String itemType) {
-        Validate.notNull(groovyAe, "Nebyla předána entita pro vyhledání");
-        Validate.notNull(partTypeCode, "Nebyla předán typ části entity");
-        Validate.notNull(filter, "Nebyl předán filter preferované části");
+    	Objects.requireNonNull(groovyAe, "Nebyla předána entita pro vyhledání");
+    	Objects.requireNonNull(partTypeCode, "Nebyla předán typ části entity");
+    	Objects.requireNonNull(filter, "Nebyl předán filter preferované části");
 
         for (GroovyPart part : groovyAe.getParts()) {
             if (filter == GroovyPart.PreferredFilter.ALL
@@ -114,9 +140,9 @@ public class GroovyUtils {
 
     @Nullable
     public static List<GroovyItem> findAllItems(final GroovyAe groovyAe, final String partTypeCode, final GroovyPart.PreferredFilter filter, final String itemType) {
-        Validate.notNull(groovyAe, "Nebyla předána entita pro vyhledání");
-        Validate.notNull(partTypeCode, "Nebyla předán typ části entity");
-        Validate.notNull(filter, "Nebyl předán filter preferované části");
+    	Objects.requireNonNull(groovyAe, "Nebyla předána entita pro vyhledání");
+    	Objects.requireNonNull(partTypeCode, "Nebyla předán typ části entity");
+    	Objects.requireNonNull(filter, "Nebyl předán filter preferované části");
         List<GroovyItem> groovyItems = new ArrayList<>();
 
         for (GroovyPart part : groovyAe.getParts()) {
@@ -140,17 +166,20 @@ public class GroovyUtils {
     }
 
     @Nullable
-    public static ArrData findDataByRulItemTypeCode(final CachedAccessPoint accessPoint, final GroovyPart.PreferredFilter filter, String itemTypeCode) {
+    public static ArrData findDataByRulItemTypeCode(final CachedAccessPoint accessPoint, 
+    		final GroovyPart.PreferredFilter filter, String itemTypeCode) {
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        ItemType itemType = sdp.getItemTypeByCode(itemTypeCode);
+    	
         for (CachedPart part : accessPoint.getParts()) {
             if (filter == GroovyPart.PreferredFilter.ALL
                     || filter == GroovyPart.PreferredFilter.NO && !part.getPartId().equals(accessPoint.getPreferredPartId())
                     || filter == GroovyPart.PreferredFilter.YES && part.getPartId().equals(accessPoint.getPreferredPartId())
             ) {
                 for (ApItem item : part.getItems()) {
-                    RulItemType rulItemType = item.getItemType();
-                    if (rulItemType.getCode().equals(itemTypeCode)) {
-                        return HibernateUtils.unproxy(item.getData());
-                    }
+                	if(Objects.equals(itemType.getItemTypeId(), item.getItemTypeId())) {
+                		return HibernateUtils.unproxy(item.getData());
+                	}
                 }
             }
         }
@@ -159,30 +188,35 @@ public class GroovyUtils {
 
     @Nullable
     public static String findItemSpecCodeByItemTypeCode(final CachedAccessPoint accessPoint, String itemTypeCode) {
+        StaticDataProvider sdp = StaticDataProvider.getInstance();
+        ItemType itemType = sdp.getItemTypeByCode(itemTypeCode);
+
         for (CachedPart part : accessPoint.getParts()) {
             for (ApItem item : part.getItems()) {
-                RulItemType rulItemType = item.getItemType();
-                if (rulItemType != null) {
-                    if (rulItemType.getCode().equals(itemTypeCode)) {
-                        if (item.getItemSpec() != null) {
-                            return item.getItemSpec().getCode();
-                        }
-                    }
-                }
+            	if(Objects.equals(itemType.getItemTypeId(), item.getItemTypeId())) {
+            		Integer itemSpecId = item.getItemSpecId();
+            		if(itemSpecId != null) {
+	            		RulItemSpec itemSpec = itemType.getItemSpecById(itemSpecId);
+	            		if(itemSpec != null) {
+	            			return itemSpec.getCode();
+	            		}
+            		}
+            		return null;
+            	}
             }
         }
         return null;
     }
 
     public static boolean hasParent(String typeCode, String parentCode) {
-        Validate.notNull(typeCode, "Nebyl předán typ entity");
+    	Objects.requireNonNull(typeCode, "Nebyl předán typ entity");
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         ApType itemType = sdp.getApTypeByCode(typeCode);
         return hasParent(itemType.getApTypeId(), parentCode);
     }
 
     public static boolean hasParent(Integer typeId, String parentCode) {
-        Validate.notNull(typeId, "Nebyl předán typ entity");
+    	Objects.requireNonNull(typeId, "Nebyl předán typ entity");
         StaticDataProvider sdp = StaticDataProvider.getInstance();
         ApType itemType = sdp.getApTypeById(typeId);
 

@@ -20,6 +20,11 @@ import cz.tacr.elza.ws.types.v1.EntityUpdates;
 import cz.tacr.elza.ws.types.v1.ExportRequest;
 import cz.tacr.elza.ws.types.v1.ExportResponseData;
 import cz.tacr.elza.ws.types.v1.IdentifierList;
+import cz.tacr.elza.ws.types.v1.ItemEnum;
+import cz.tacr.elza.ws.types.v1.ItemString;
+import cz.tacr.elza.ws.types.v1.Items;
+import cz.tacr.elza.ws.types.v1.SearchEntity;
+import cz.tacr.elza.ws.types.v1.SearchEntityResult;
 import cz.tacr.elza.ws.types.v1.SearchEntityUpdates;
 
 public class ExportServiceTest extends AbstractControllerTest {
@@ -33,6 +38,25 @@ public class ExportServiceTest extends AbstractControllerTest {
     @Autowired
     ApAccessPointRepository apRepository;
 
+    @Test
+    public void searchEntityTest() {
+    	SearchEntity searchEntity = new SearchEntity();
+    	Items items = new Items();
+		ItemEnum itemEnum = new ItemEnum();
+        itemEnum.setSpec("WHOIS_CISLO_UK");
+        itemEnum.setType("IDN_TYPE");
+        ItemString itemString = new ItemString();
+        itemString.setType("IDN_VALUE");
+        itemString.setValue("000000010");
+        items.getStrOrLongOrEnm().add(itemEnum);
+        items.getStrOrLongOrEnm().add(itemString);
+    	searchEntity.setItems(items);
+           
+    	SearchEntityResult result = exportServiceImpl.searchEntity(searchEntity);    	
+        assertNotNull(result);
+        assertNotNull(result.getEntityInfo());
+    }
+    
     @Test
     public void searchEntityUpdatesTest() {
         EntityUpdates updates = exportServiceImpl.searchEntityUpdates(new SearchEntityUpdates());

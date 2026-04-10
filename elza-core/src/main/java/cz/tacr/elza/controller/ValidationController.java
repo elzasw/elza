@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.vo.ValidationResult;
 import cz.tacr.elza.domain.ArrItemUnitdate;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 
 
 /**
@@ -31,7 +31,7 @@ public class ValidationController {
     public ValidationResult validateUnitDate(@RequestParam(value = "value") final String value) {
 
         try {
-            UnitDateConvertor.convertToUnitDate(value, new ArrItemUnitdate());
+            UnitDateConverter.convertToUnitDate(value, new ArrItemUnitdate());
         } catch (Exception e) {
             return new ValidationResult(false, e.getMessage());
         }

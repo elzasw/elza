@@ -146,7 +146,7 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
         console.log('#handleShortcuts', '[' + action + ']', this);
     };
 
-    handleSaveOutput = (data: ApScopeVO) => {
+    handleSaveOutput = (data: Partial<ArrOutputVO>) => {
         const {fund, fundOutputDetail} = this.props;
         return this.props.dispatch(fundOutputEdit(fund.versionId, fundOutputDetail.id, data));
     };
@@ -278,7 +278,7 @@ class ArrOutputDetail extends AbstractReactComponent<Props> {
                 <div className="output-definition-commons">
                     <OutputInlineForm
                         disabled={readonly}
-                        initialValues={fundOutputDetail}
+                        output={fundOutputDetail}
                         onSave={this.handleSaveOutput}
                     />
                     {fundOutputDetail.error && (

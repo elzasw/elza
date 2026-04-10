@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -15,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.multiple.ItemGeneratorConfig.CreateItem;
 import cz.tacr.elza.bulkaction.generator.multiple.ItemGeneratorConfig.DeleteItem;
@@ -37,7 +38,6 @@ import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ArrStructuredObject.State;
@@ -63,7 +63,7 @@ public class ItemGeneratorAction extends Action {
     WhenCondition excludeWhen;
 
     WhenCondition when;
-    
+
     interface InnerAction {
         public void apply(LevelWithItems level, TypeLevel typeLevel);
 
@@ -90,8 +90,8 @@ public class ItemGeneratorAction extends Action {
         }
 
         public void init(ArrBulkActionRun bulkActionRun) {
-            fund = bulkActionRun.getFundVersion().getFund();
-            fundVersion = bulkActionRun.getFundVersion();
+        	fundVersion = bulkAction.getFondsVersion();
+            fund = fundVersion.getFund();
             change = bulkActionRun.getChange();
 
             StaticDataProvider sdp = getStaticDataProvider();
@@ -108,7 +108,7 @@ public class ItemGeneratorAction extends Action {
             } else {
                 Integer structTypeId = trgItemType.getEntity().getStructuredTypeId();
                 structType = sdp.getStructuredTypeById(structTypeId);
-                Validate.notNull(structType);
+                Objects.requireNonNull(structType);
             }
         }
 
@@ -170,39 +170,37 @@ public class ItemGeneratorAction extends Action {
          * @param bulkActionRun
          */
         public void init(ArrBulkActionRun bulkActionRun) {
-            fund = bulkActionRun.getFundVersion().getFund();
-            fundVersion = bulkActionRun.getFundVersion();
+        	fundVersion = bulkAction.getFondsVersion();
+            fund = fundVersion.getFund();
             change = bulkActionRun.getChange();
 
             StaticDataProvider sdp = getStaticDataProvider();
-            
+
             // read target type info
             trgItemType = sdp.getItemTypeByCode(createConfig.getItemType());
-            if(trgItemType==null) {
+            if (trgItemType == null) {
                 throw new SystemException("Missing item type", BulkActionCode.INCORRECT_CONFIG)
                     .set("itemType", createConfig.getItemType());
             }
-            if(trgItemType.getDataType()!=DataType.STRUCTURED) {
+            if (trgItemType.getDataType() != DataType.STRUCTURED) {
                 throw new SystemException("Only structured types can be created", BulkActionCode.INCORRECT_CONFIG)
                     .set("itemType", createConfig.getItemType());                
             } else {
                 Integer structTypeId = trgItemType.getEntity().getStructuredTypeId();
                 structType = sdp.getStructuredTypeById(structTypeId);
-                Validate.notNull(structType);
+                Objects.requireNonNull(structType);
             }
-            
+
             StructuredObjectConfig soc = createConfig.getStructuredObject();
-            if(soc==null) {
+            if (soc == null) {
                 throw new SystemException("Missing structure type config", BulkActionCode.INCORRECT_CONFIG);
             }
             init(sdp, soc);
-            
+
             // read max values for prefixes
-            List<MaximalItemValues> maxValuesList = structObjRepository.countMaximalItemValues(bulkActionRun
-                    .getFundVersion().getFundId(), trgSOPrefixType.getItemTypeId(), trgSOValueType.getItemTypeId());
+            List<MaximalItemValues> maxValuesList = structObjRepository.countMaximalItemValues(fund.getFundId(), trgSOPrefixType.getItemTypeId(), trgSOValueType.getItemTypeId());
             // Convert to map
-            maxValues = maxValuesList.stream().collect(Collectors.toMap(MaximalItemValues::getPrefix,
-                                                                        MaximalItemValues::getValue));
+            maxValues = maxValuesList.stream().collect(Collectors.toMap(MaximalItemValues::getPrefix, MaximalItemValues::getValue));
         }
 
         /**
@@ -401,13 +399,12 @@ public class ItemGeneratorAction extends Action {
 
     @Autowired
     public ItemGeneratorAction(final ItemGeneratorConfig itemGeneratorConfig) {
-        Validate.notNull(itemGeneratorConfig);
-        
+    	Objects.requireNonNull(itemGeneratorConfig);
         this.config = itemGeneratorConfig;
     }
 
     @Override
-    public void init(BulkAction bulkAction, ArrBulkActionRun bulkActionRun) {
+    public void init(BulkActionTransactional bulkAction, ArrBulkActionRun bulkActionRun) {
         super.init(bulkAction, bulkActionRun);
 
         StaticDataProvider sdp = getStaticDataProvider();        

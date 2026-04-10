@@ -220,6 +220,7 @@ class FundGroupsPanel extends AbstractReactComponent {
                         onAdd={this.handleAdd}
                         onRemove={this.handleRemove}
                         onFocus={this.selectItem}
+                        onSelect={this.selectItem}
                     />
                 }
             >

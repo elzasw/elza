@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.controller.vo.ExtSystemProperty;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.SysExternalSystemProperty;
@@ -32,6 +33,20 @@ public class ExternalSystemController implements ExternalsystemsApi {
 
     final UsrPermission.Permission reqPermissions[] = { UsrPermission.Permission.ADMIN,
             UsrPermission.Permission.AP_EXTERNAL_WR };
+
+    @Override
+    @Transactional
+    public ResponseEntity<Void> externalSystemExternalSystemResync(String id) {
+    	ApExternalSystem extSys = extSystemService.findExternalSystemByCodeOrId(id);
+    	// pokud systém nebyl nalezen nebo jeho typ neodpovídá CAM_COMPLETE(_V2)
+    	if (extSys == null 
+    			|| extSys.getType() != ApExternalSystemType.CAM_COMPLETE) {
+    		return ResponseEntity.notFound().build();
+    	}
+    	extSystemService.deleteBindingSync(extSys);
+
+    	return ResponseEntity.ok().build();
+    }
 
     @Override
     @Transactional

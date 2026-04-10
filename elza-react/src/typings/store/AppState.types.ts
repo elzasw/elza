@@ -9,7 +9,8 @@ import { FundOutput } from "./Outputs.types";
 import { FundDataGrid } from "./DataGrid.types";
 import { AipFilterCriteria } from "components/aip/filter/forms/EnumAipFilterCriteria.ts";
 import { ApAccessPointVO } from "api/ApAccessPointVO.ts";
-import {AipDetailVO} from "elza-api";
+import { AipDetailVO } from "elza-api";
+import { FilterObject } from "components/fund/filters/types";
 
 export interface SplitterState {
     leftWidth: number;
@@ -240,7 +241,7 @@ export interface Fund {
     fundTreeMovementsLeft: unknown;
     fundTreeMovementsRight: unknown;
     fundTreeNodes: unknown;
-    id?: number | string;
+    id?: number;
     institutionId: number | unknown;
     internalCode: string | unknown;
     isFetching: boolean | unknown;
@@ -258,7 +259,7 @@ export interface Fund {
     requestList: unknown;
     unitdate: unknown | null;
     validNamedOutputs: unknown | null;
-    versionId: number | unknown;
+    versionId: number;
     versionValidation: unknown;
     versions: unknown;
 }
@@ -290,10 +291,10 @@ export interface VisiblePolicy {
 }
 
 export interface FundSearchNodeType {
-    arrPerm: boolean;
+    arrPerm?: boolean;
     depth: number;
     hasChildren: boolean;
-    icon: string;
+    icon?: string;
     id: number;
     name: string;
     referenceMark: string[];
@@ -302,23 +303,26 @@ export interface FundSearchNodeType {
 
 export interface FundSearchFundType {
     count: number;
-    expanded: boolean;
-    fetched: boolean;
-    isFetching: boolean;
+    expanded?: boolean;
+    fetched?: boolean;
+    isFetching?: boolean;
     fundVersionId: number;
-    icon: string;
+    icon?: string;
     id: number;
-    internalCode: string | null;
+    internalCode?: string | null;
     name: string;
-    nodes: FundSearchNodeType[];
+    nodes?: FundSearchNodeType[];
 }
 
 export interface FundSearch {
     fulltext: string;
+    filters: FilterObject[];
     funds: FundSearchFundType[];
     fetched: boolean;
     isFetching: boolean;
     isIdSearch: boolean;
+    partialResult: boolean;
+    totalCount: number;
 }
 
 export interface ArrRegion {
@@ -362,6 +366,18 @@ export interface ExternalSystem {
 
 type KMLExternalSystem = Omit<ExternalSystem, "username" | "password" | "elzaCode" | "publishOnlyApproved" | "userInfo" | "viewFileUrl" | "viewThumbnailUrl" | "sendNotification">;
 
+export interface RegistryDetail {
+    coordinatesInternalId?: number;
+    currentDataKey?: number | string;
+    data?: ApAccessPointVO;
+    fetched?: boolean;
+    getDataKey?: () => unknown;
+    id?: number;
+    isFetching?: boolean;
+    reducer?: unknown;
+    variantRecordInternalId?: number;
+}
+
 export interface App {
     aip: Aip;
     aipList: SimpleList<AipDetailVO>;
@@ -385,7 +401,7 @@ export interface App {
     languageList: unknown;
     mimeTypesList: unknown;
     preparedRequestList: unknown;
-    registryDetail: unknown;
+    registryDetail: RegistryDetail;
     registryDetailHistory: unknown;
     registryLayerList: unknown;
     registryList: unknown;
@@ -393,6 +409,49 @@ export interface App {
     scopeDetail: unknown;
     scopeList: unknown;
     shared: unknown;
+}
+
+export interface ActiveVersion {
+    config?: unknown;
+    createDate?: string;
+    id: number;
+    issues: unknown[];
+    lockDate?: string | null;
+    packageId?: unknown | null;
+    ruleSetId?: number;
+    strictMode?: boolean;
+}
+
+export interface ArrRegionFrontFund {
+    id: number;
+    lockdate?: string | null;
+    lastUseTemplateName?: unknown;
+    name: string;
+    versionId: number;
+    activeVersion?: ActiveVersion;
+    fundDataGrid?: unknown;
+    fundFiles?: unknown;
+    fundOutput?: unknown;
+    fundTree: unknown;
+    fundTreeDaosLeft: unknown;
+    fundTreeDaosRight: unknown;
+    fundTreeMovementsLeft: unknown;
+    fundTreeMovementsRight: unknown;
+    nodes: unknown;
+}
+
+export interface RegistryRegionFrontEntity {
+    id: number;
+    data: ApAccessPointVO;
+}
+
+export interface StateRegion {
+    adminRegion: unknown;
+    app: unknown;
+    arrRegion: unknown;
+    arrRegionFront: ArrRegionFrontFund[];
+    fundRegion: unknown;
+    registryRegionFront: RegistryRegionFrontEntity[];
 }
 
 export interface AppState {
@@ -409,7 +468,7 @@ export interface AppState {
     modalDialog: ModalDialogState;
     refTables: RefTablesState;
     router: unknown;
-    stateRegion: unknown;
+    stateRegion: StateRegion;
     status: unknown;
     structures: unknown;
     tab: unknown;

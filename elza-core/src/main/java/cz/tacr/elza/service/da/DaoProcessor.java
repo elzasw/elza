@@ -22,7 +22,7 @@ import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.domain.RulStructureDefinition;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.DaDaoFileFolderRepository;
@@ -77,13 +77,14 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static cz.tacr.elza.domain.convertor.UnitDateConvertor.FORMATTER_DATE;
+import java.time.format.DateTimeFormatter;
 
 @Component
 @Scope("prototype")
 public class DaoProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(DaoProcessor.class);
+    private static final DateTimeFormatter FORMATTER_DATE = DateTimeFormatter.ofPattern(UnitDateConverter.FORMAT_DATE);
 
     @Autowired
     private DaService daService;
@@ -674,7 +675,7 @@ public class DaoProcessor {
                             date += toDate.format(FORMATTER_DATE);
                         }
 
-                        data = UnitDateConvertor.convertToUnitDate(date, new ArrDataUnitdate());
+                        data = UnitDateConverter.convertToUnitDate(date, new ArrDataUnitdate());
                         data.setDataType(DataType.UNITDATE.getEntity());
                     }
 

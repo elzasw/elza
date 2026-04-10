@@ -7,6 +7,7 @@ import './DetailItem.scss';
 import DetailItemContent from './DetailItemContent';
 import { RevisionDisplay, RevisionItem } from '../../revision';
 import {diffChars} from "diff";
+import { ApItemVO } from 'api/ApItemVO';
 
 interface Props extends ReturnType<typeof mapStateToProps> {
     bindings?: Bindings;
@@ -31,10 +32,14 @@ const DetailMultipleItem: FC<Props> = ({
     const itemType = typeId !== undefined ? descItemTypesMap[typeId] : undefined;
     const itemTypeName = itemType ? itemType.name : `UNKNOWN_AE_TYPE: ${typeId}`;
 
-    const isValueModified = (item?: any, updatedItem?: any) => {
-        if(updatedItem?.changeType === "DELETED") {return true};
-        if(!item && updatedItem) {return true};
-        return item?.value !== updatedItem?.value || item?.specId !== updatedItem?.specId;
+    const isValueModified = (_item?: ApItemVO, updatedItem?: ApItemVO) => {
+        if(
+            updatedItem?.changeType === "DELETED"
+            || updatedItem?.changeType === "UPDATED"
+            || updatedItem?.changeType === "NEW"
+        ) {return true}
+        // if(!item && updatedItem) {return true};
+        // return item?.value !== updatedItem?.value || item?.specId !== updatedItem?.specId;
     }
 
     const isValueNew = (item?: any, updatedItem?: any) => {

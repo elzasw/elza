@@ -66,10 +66,10 @@ export const FormCheckbox:FC<CommonFieldProps<ApItemBitVO>> = ({
                 label={label}
                 prevValue={getValue(item as ApItemBitVO)}
                 disableRevision={disableRevision}
-                value={getValue(updatedItem as ApItemBitVO)}
                 onRevert={!isNew ? handleRevert : undefined}
                 onDelete={isDeleted ? undefined : handleDelete}
                 isDeleted={isDeleted}
+                isUpdated={updatedItem?.changeType === "UPDATED"}
             >
                 <ReduxFormFieldErrorDecorator
                     {...props as any}

@@ -143,15 +143,14 @@ public class PolicyService {
 
         Map<Integer, Map<RulPolicyType, Boolean>> result = new HashMap<>();
 
-        Map<Integer, List<UIVisiblePolicy>> visiblePoliciesByNodes = visiblePolicyRepository.findByNodeIds(nodeIds, policyTypes).stream().collect(Collectors.groupingBy(vp -> vp.getNode().getNodeId()));
-        Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(fundVersion);
+        Map<Integer, List<UIVisiblePolicy>> visiblePoliciesByNodes = visiblePolicyRepository.findByNodeIds(nodeIds, policyTypes).stream().collect(Collectors.groupingBy(vp -> vp.getNode().getNodeId()));        
 
         for (Integer nodeId : nodeIds) {
             Map<Integer, Boolean> parentPolicy = null;
 
             // chci zohlednit i zděděné oprávnění od předků
             if (includeParents) {
-                List<Integer> parentNodeIds = getParentNodeIds(versionTreeCache, nodeId);
+            	List<Integer> parentNodeIds = levelTreeCacheService.getParentNodes(fundVersion, nodeId);
 
                 // existují předci?
                 if (parentNodeIds.size() > 0) {
@@ -334,9 +333,8 @@ public class PolicyService {
         for (RulPolicyType policyType : policyTypes) {
             policyTypeMap.put(policyType, policyTypeIdsMap.get(policyType.getPolicyTypeId()));
         }
-
-        Map<Integer, TreeNode> versionTreeCache = levelTreeCacheService.getVersionTreeCache(fundVersion);
-        TreeNode treeNode = versionTreeCache.get(node.getNodeId());
+        
+        TreeNode treeNode = levelTreeCacheService.getTreeNode(fundVersion, node);
 
         if (includeSubtree) {
             LinkedHashSet<Integer> versionIdsTable = levelTreeCacheWalker.walkThroughDFS(treeNode);
@@ -392,7 +390,7 @@ public class PolicyService {
      * @param parentNodeIds seznam přidaných identifikátorů uzlů
      */
     private void addParentNodeIds(final TreeNode treeNode, final List<Integer> parentNodeIds) {
-        LinkedList<TreeNode> childs = treeNode.getChilds();
+        List<TreeNode> childs = treeNode.getChildren();
         if (childs != null && childs.size() > 0 && parentNodeIds.size() <= MAX_SEND_NODE) {
             parentNodeIds.add(treeNode.getId());
             for (TreeNode child : childs) {

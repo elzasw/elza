@@ -45,6 +45,7 @@ public class ImportServiceTest extends AbstractControllerTest {
         externalSystemVO.setApiKeyId("apikey");
         externalSystemVO.setApiKeyValue("apikeyvalue");
         externalSystemVO.setType(ApExternalSystemType.CAM);
+        externalSystemVO.setScopeId(1);
         SysExternalSystemVO externalSystemCreatedVO = createExternalSystem(externalSystemVO);
         assertNotNull(externalSystemCreatedVO.getId());
 

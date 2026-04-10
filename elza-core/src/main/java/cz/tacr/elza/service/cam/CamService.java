@@ -1,5 +1,8 @@
 package cz.tacr.elza.service.cam;
 
+import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+import static cz.tacr.elza.groovy.GroovyResult.SHORT_NAME;
+
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +34,7 @@ import org.springframework.stereotype.Service;
 import cz.tacr.cam.client.ApiException;
 import cz.tacr.cam.schema.cam.BatchEntityRecordRevXml;
 import cz.tacr.cam.schema.cam.BatchInfoXml;
+import cz.tacr.cam.schema.cam.BatchUpdateErrorXml;
 import cz.tacr.cam.schema.cam.BatchUpdateResultXml;
 import cz.tacr.cam.schema.cam.BatchUpdateSavedXml;
 import cz.tacr.cam.schema.cam.BatchUpdateXml;
@@ -53,6 +57,7 @@ import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApBindingSync;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevision;
@@ -70,6 +75,7 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.enumeration.StringLength;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
@@ -96,6 +102,8 @@ import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedPart;
 
 @Service
 public class CamService {
@@ -104,7 +112,7 @@ public class CamService {
 
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
-
+    
     @Autowired
     private ApBindingRepository bindingRepository;
 
@@ -227,8 +235,9 @@ public class CamService {
         ApType type = sdp.getApTypeByCode(entity.getEnt().getValue());
 
         state.setDeleteChange(apChange);
-        stateRepository.save(state);
-        ApState stateNew = accessPointService.copyState(state, apChange);
+        var stateSaved = stateRepository.save(state);
+        stateRepository.flush();
+        ApState stateNew = accessPointService.copyState(stateSaved, apChange);
         stateNew.setApType(type);
         stateNew.setStateApproval(ApState.StateApproval.NEW);
         stateNew = stateRepository.save(stateNew);
@@ -347,6 +356,8 @@ public class CamService {
                               Map<Integer, String> partUuidMap,
                               Map<Integer, String> stateMap, 
                               BatchInfoXml batchInfoXml) {
+    	log.debug("Updating binding, extSyncsQueueItemId: {}, accessPointId: {}", extSyncsQueueItem.getExtSyncsQueueItemId(), extSyncsQueueItem.getAccessPointId());
+    	
         ApState state = accessPointService.getStateInternal(extSyncsQueueItem.getAccessPointId());
         ApAccessPoint accessPoint = state.getAccessPoint();
         ApExternalSystem apExternalSystem = externalSystemService.getExternalSystemInternal(extSyncsQueueItem.getExternalSystemId());
@@ -374,8 +385,31 @@ public class CamService {
                                                                     accessPoint.getPreferredPart(),
                                                                     state.getApType());
         } else {
-            binding = externalSystemService.createApBinding(Long.toString(batchEntityRecordRev.getEid().getValue()),
-                                                            apExternalSystem, true);
+        	String bindingValue = Long.toString(batchEntityRecordRev.getEid().getValue());
+        	// check if binding exists
+			binding = externalSystemService.findByValueAndExternalSystem(bindingValue, apExternalSystem);
+			if (binding == null) {
+				// binding does not exist
+				binding = externalSystemService.createApBinding(bindingValue, apExternalSystem, true);
+			} else {
+				log.debug("Found existing binding, bindingId: {}, disconnecting existing binding", binding.getBindingId());
+				// invalidate existing binding state
+				// this usually happen in test environment where binding is used in multiple access points
+				// in production it should not happen
+				// we can add some condition to control this behavior
+				var curBindingState = bindingStateRepository.findActiveByBinding(binding);
+				if (curBindingState.isPresent()) {
+					log.info("Deleting previouse binding state, bindingStateId: {}", curBindingState.get().getBindingStateId());
+					curBindingState.get().setDeleteChange(change);					
+					bindingStateRepository.saveAndFlush(curBindingState.get());
+				}
+				var bindingItems = bindingItemRepository.findByBinding(binding);
+				for(var bindingItem : bindingItems) {
+					log.info("Deleting previouse binding item, bindingItemId: {}, value: {}", bindingItem.getBindingId(), bindingItem.getValue());
+					bindingItem.setDeleteChange(change);
+					bindingItemRepository.saveAndFlush(bindingItem);
+				}
+			}
             bindingState = externalSystemService.createBindingState(binding, accessPoint, change, camApState,
                                                                     batchEntityRecordRev.getRev().getValue(),
                                                                     userName.getValue(), null, SyncState.SYNC_OK,
@@ -384,13 +418,14 @@ public class CamService {
         }
 
         // Create bindings
+        var finalBinding = binding;
         itemUuidMap.forEach((itemId, value) -> {
             ApItem item = entityManager.getReference(ApItem.class, itemId);
-            this.externalSystemService.createApBindingItem(binding, change, value, null, item);
+            this.externalSystemService.createApBindingItem(finalBinding, change, value, null, item);
         });
         partUuidMap.forEach((partId, value) -> {
             ApPart part = entityManager.getReference(ApPart.class, partId);
-            this.externalSystemService.createApBindingItem(binding, change, value, part, null);
+            this.externalSystemService.createApBindingItem(finalBinding, change, value, part, null);
         });
 
         setQueueItemState(Collections.singletonList(extSyncsQueueItem), ExtAsyncQueueState.EXPORT_OK, OffsetDateTime.now(), null);
@@ -535,15 +570,27 @@ public class CamService {
     public String createUserInfo(String userInfo, UsrUser user) {
     	String userName;
     	String userId;
-    	String prefName;
+    	String prefName, shortName;
     	if ( user == null) {
     		userName = "admin";
     		userId = "0";
     		prefName = "Admin";
+    		shortName = prefName;
     	} else {
-    		userName = user.getUsername();
+    		prefName = shortName = userName = user.getUsername();
     		userId = Integer.toString(user.getUserId());
-    		prefName = accessPointService.findPreferredPartDisplayName(user.getAccessPoint());
+    		CachedAccessPoint cachedAp = accessPointCacheService.findCachedAccessPoint(user.getAccessPointId());
+    		Objects.requireNonNull(cachedAp);
+			CachedPart prefPart = cachedAp.getPart(cachedAp.getPreferredPartId());
+			Objects.requireNonNull(prefPart);
+			for (ApIndex index : prefPart.getIndices()) {
+				if (index.getIndexType().equals(DISPLAY_NAME)) {
+					prefName = index.getIndexValue();
+				} else 
+				if (index.getIndexType().equals(SHORT_NAME)) {
+					shortName = index.getIndexValue();
+				}
+			}
     	}
     	if (userInfo == null) {
     		return userName;
@@ -551,7 +598,8 @@ public class CamService {
 
         return userInfo.replaceAll("%i", userId)
                 .replaceAll("%u", userName)
-                .replaceAll("%n", prefName);
+                .replaceAll("%n", prefName)
+                .replaceAll("%s", shortName);
     }
 
     /**
@@ -825,12 +873,11 @@ public class CamService {
      */
     public boolean hasModifiedPartOrItem(final ApState state,
                                       final ApBindingState bindingState) {
-        List<ApPart> partList = partService.findNewerPartsByAccessPoint(state.getAccessPoint(),
-                                                                        bindingState.getSyncChange().getChangeId());
+        List<ApPart> partList = partService.findNewerPartsByAccessPoint(state.getAccessPoint(), bindingState.getCreateChangeId());
         if (CollectionUtils.isNotEmpty(partList)) {
             return true;
         }
-        List<ApItem> itemList = apItemService.findNewerValidItemsByAccessPoint(state.getAccessPoint(), bindingState.getSyncChange().getChangeId());
+        List<ApItem> itemList = apItemService.findNewerValidItemsByAccessPoint(state.getAccessPoint(), bindingState.getCreateChangeId());
         if (CollectionUtils.isNotEmpty(itemList)) {
             return true;
         }
@@ -893,8 +940,9 @@ public class CamService {
         UsrUser user = userService.getUserInternal(userId);
 
         // check if sending user has some extra privileges
-        log.debug("Upload to: {}(id: {}), user: {}(id: {})", externalSystem.getName(), externalSystemId,
-                  (user != null) ? user.getUsername() : null, userId);
+        log.debug("Upload to: {}(id: {}), user: {}(id: {}), batchId: {}", externalSystem.getName(), externalSystemId,
+                  (user != null) ? user.getUsername() : null, userId,
+                		  batchUpdateXml.getInf().getBid().getValue());
         List<SysExternalSystemProperty> extSysProperties;
         String apikeyId = null, apikeyValue = null;
         if (user != null) {
@@ -914,6 +962,17 @@ public class CamService {
         }
 
         BatchUpdateResultXml batchUpdateResult = camConnector.postNewBatch(batchUpdateXml, externalSystem, apikeyId, apikeyValue);
+        if(log.isDebugEnabled()) {
+        	if(batchUpdateResult instanceof BatchUpdateResultXml) {
+                log.debug("Upload result success: {}(id: {}), batchId: {} ", externalSystem.getName(), externalSystemId,
+      				  batchUpdateXml.getInf().getBid().getValue());	        	
+        	} else {
+	        	BatchUpdateErrorXml batchUpdateErrorXml = (BatchUpdateErrorXml) batchUpdateResult;
+	        	log.debug("Upload result error: {}(id: {}), batchId: {}: {}", externalSystem.getName(), externalSystemId,
+	        			  batchUpdateXml.getInf().getBid().getValue(), 
+	        			  batchUpdateErrorXml.getMessages());
+        	}
+        }
         return batchUpdateResult;
     }
 
@@ -1119,8 +1178,7 @@ public class CamService {
         ExtSyncsQueueItem firstItem = itemPage.iterator().next();
         ApExternalSystem externalSystem = firstItem.getExternalSystem();
 
-        ItemSyncImportProcessor isiProc = appCtx.getBean(ItemSyncImportProcessor.class, externalSystem
-                .getExternalSystemId());
+        ItemSyncImportProcessor isiProc = appCtx.getBean(ItemSyncImportProcessor.class, externalSystem.getExternalSystemId());
 
         List<Integer> bindingIds = new ArrayList<>(), apIds = new ArrayList<>();
 
@@ -1138,8 +1196,7 @@ public class CamService {
             }
         }
         if (CollectionUtils.isNotEmpty(apIds)) {
-            List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPointIdsAndExternalSystem(apIds,
-                                                                                                              externalSystem);
+            List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPointIdsAndExternalSystem(apIds, externalSystem);
             bindingStates.forEach(bs -> isiProc.addBindingValue(bs.getBinding().getValue()));
         }
         if (CollectionUtils.isNotEmpty(bindingIds)) {

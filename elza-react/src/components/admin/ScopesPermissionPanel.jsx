@@ -397,6 +397,7 @@ class ScopesPermissionPanel extends AbstractReactComponent {
                         onRemove={this.handleRemove}
                         canDeleteItem={(item, index) => item.id !== ScopesPermissionPanel.ALL_ID}
                         onFocus={this.selectItem}
+                        onSelect={this.selectItem}
                     />
                 }
             >

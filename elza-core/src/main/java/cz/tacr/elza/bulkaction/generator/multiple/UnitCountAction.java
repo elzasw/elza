@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -17,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import cz.tacr.elza.bulkaction.BulkAction;
+import cz.tacr.elza.bulkaction.BulkActionTransactional;
 import cz.tacr.elza.bulkaction.generator.LevelWithItems;
 import cz.tacr.elza.bulkaction.generator.result.ActionResult;
 import cz.tacr.elza.bulkaction.generator.result.UnitCountActionResult;
@@ -28,7 +29,6 @@ import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.table.ElzaColumn;
@@ -39,7 +39,6 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
-import cz.tacr.elza.service.DescriptionItemService;
 
 /**
  * Unit count action
@@ -80,9 +79,6 @@ public class UnitCountAction extends Action {
     private StructuredItemRepository structureItemRepository;
 
     @Autowired
-    private DescriptionItemService descriptionItemService;
-
-    @Autowired
     private StructObjService structObjService;
 
     @Autowired
@@ -90,7 +86,6 @@ public class UnitCountAction extends Action {
 
 	final UnitCountConfig config;
 
-	private ArrFundVersion fundVersion;
 	private ArrChange change;
 
     private Consumer<LevelWithItems> counterForSkippedLevels;
@@ -99,16 +94,16 @@ public class UnitCountAction extends Action {
 
 	@Autowired
     UnitCountAction(final UnitCountConfig config) {
-		Validate.notNull(config);
+		Objects.requireNonNull(config);
 
 		this.config = config;
     }
 
     @Override
-    public void init(BulkAction bulkAction, ArrBulkActionRun bulkActionRun) {
+    public void init(BulkActionTransactional bulkAction, ArrBulkActionRun bulkActionRun) {
         super.init(bulkAction, bulkActionRun);
 
-        Validate.notNull(structureItemRepository);
+        Objects.requireNonNull(structureItemRepository);
 
         //dateRangeAction = appCtx.getBean(DateRangeAction.class, config.getDateRangeCounter());
         //dateRangeAction.init(bulkActionRun);
@@ -117,7 +112,6 @@ public class UnitCountAction extends Action {
 
 		String outputType = config.getOutputType();
 		outputItemType = sdp.getItemTypeByCode(outputType);
-		fundVersion = bulkActionRun.getFundVersion();
 		change = bulkActionRun.getChange();
 		if (isLocal()) {
 			checkValidDataType(outputItemType, DataType.INT);
@@ -132,6 +126,7 @@ public class UnitCountAction extends Action {
 			Validate.notBlank(config.getOutputColumnDateRange());
 
 			// validate column definitions
+			@SuppressWarnings("unchecked")
 			List<ElzaColumn> columnsDefinition = (List<ElzaColumn>) outputItemType.getEntity().getViewDefinition();
 			Map<String, ElzaColumn> outputColumns = columnsDefinition.stream()
 					.collect(Collectors.toMap(ElzaColumn::getCode, Function.identity()));
@@ -313,7 +308,7 @@ public class UnitCountAction extends Action {
 	}
 
     public void createDescItem(LevelWithItems level, String value, int count) {
-        ArrNode nodeRef = nodeRepository.getOne(level.getNodeId());
+        ArrNode nodeRef = nodeRepository.getReferenceById(level.getNodeId());
 
 		ArrDataInteger arrDataInteger = new ArrDataInteger();
 		arrDataInteger.setIntegerValue(count);
@@ -332,7 +327,7 @@ public class UnitCountAction extends Action {
             }
             descItem.setItemSpec(rulItemSpec);
         }
-        bulkAction.saveDescItem(descItem);
+        bulkAction.saveNewDescItem(descItem);
 	}
 
     public boolean isCountedObject(Integer packetId) {

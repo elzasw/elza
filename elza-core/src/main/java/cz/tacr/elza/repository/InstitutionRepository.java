@@ -23,19 +23,13 @@ public interface InstitutionRepository extends JpaRepository<ParInstitution, Int
 
     ParInstitution findByInternalCode(String institutionInternalCode);
 
-    //ParInstitution findByParty(ParParty parParty);
-
     ParInstitution findByAccessPoint(ApAccessPoint accessPoint);
 
     Boolean existsByAccessPointId(Integer accessPointId);
 
-    //List<ParInstitutionInfo> findInfoByPartyIdIn(Collection<Integer> partyIds);
-
     List<ParInstitutionInfo> findInfoByAccessPointIdIn(Collection<Integer> accessPointIds);
 
-    @Query("SELECT i FROM par_institution i " +
-            "JOIN FETCH i.accessPoint ap " +
-            "LEFT JOIN FETCH ap.preferredPart prefPart ")
+    @Query("SELECT i FROM par_institution i JOIN FETCH i.accessPoint ap LEFT JOIN FETCH ap.preferredPart prefPart ")
     List<ParInstitution> findAllWithFetch();
 
     @Modifying
@@ -44,11 +38,12 @@ public interface InstitutionRepository extends JpaRepository<ParInstitution, Int
     @Query("SELECT i FROM arr_fund f JOIN f.institution i JOIN FETCH i.institutionType t JOIN FETCH i.accessPoint ap WHERE f=?1")
     ParInstitution findByFundFetchTypeAndAccessPoint(ArrFund arrFund);
 
+    @Query("SELECT i FROM arr_fund f JOIN f.institution i JOIN FETCH i.accessPoint ap WHERE f.fundId IN ?1")
+    List<ParInstitution> findAllByFundIds(Collection<Integer> fundIds);
+
     @Query("SELECT i FROM par_institution i JOIN FETCH i.accessPoint ap WHERE ap.uuid=?1")
     ParInstitution findByAccessPointUUID(String uuid);
 
     @Query("SELECT distinct i FROM arr_fund f JOIN f.institution i JOIN FETCH i.accessPoint ap JOIN FETCH ap.preferredPart pref")
     List<ParInstitution> findListByFundFetchAccessPointFetchPreferredPart();
-
-
 }

@@ -38,7 +38,7 @@ public class ResourcePathResolver {
     public static final String DPKG_DIR = "dpkg";
     private static final String AIP_DIR = "aip";
 
-    private static final String EXPORT_XML_DIR = "export-xml";
+    private static final String EXPORT_DIR = "export";
     private static final String IMPORT_XML_DIR = "import-xml";
 
     private static final String RULESET_TEMPLATES_DIR = "templates";
@@ -113,10 +113,10 @@ public class ResourcePathResolver {
     }
 
     /**
-     * @return Path to export XML transformations directory (may not exist).
+     * @return Path to export transformations directory (may not exist).
      */
-    public Path getExportXmlTrasnformDir() {
-        Path path = Paths.get(workDir, TRANSFORMS_DIR, EXPORT_XML_DIR);
+    public Path getExportTrasnformDir() {
+        Path path = Paths.get(workDir, TRANSFORMS_DIR, EXPORT_DIR);
 
         return path;
     }

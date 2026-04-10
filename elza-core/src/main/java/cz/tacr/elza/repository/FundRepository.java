@@ -20,9 +20,12 @@ public interface FundRepository extends ElzaJpaRepository<ArrFund, Integer> , Fu
     @Query("SELECT fa FROM arr_fund fa JOIN fa.institution inst WHERE inst.institutionId = ?1")
     List<ArrFund> findByInstitutionId(Integer institutionId);
 
-    @Query("SELECT up FROM usr_permission_view up WHERE up.userId = ?1")
+    @Query("SELECT up.fund FROM usr_permission_view up WHERE up.userId = ?1")
     List<ArrFund> findFromUsrPermissionByUserId(Integer userId);
 
     @Query("SELECT af FROM arr_fund af WHERE af.internalCode = ?1")
     ArrFund findByInternalCode(String code);
+
+    @Query("SELECT f FROM arr_fund_version fv JOIN fv.fund f WHERE fv.lockChangeId IS NULL AND fv.fundVersionId = ?1")
+    ArrFund findByFundVersionId(Integer fundVersionId);
 }

@@ -12,10 +12,10 @@ import org.springframework.core.io.Resource;
 
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.test.controller.vo.ExportParams;
-import cz.tacr.elza.test.controller.vo.ExportRequestState;
 import cz.tacr.elza.test.controller.vo.ExportRequestStatus;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.FundSections;
+import cz.tacr.elza.test.controller.vo.RequestProcessState;
 
 public class IOControllerTest extends AbstractControllerTest {
 
@@ -30,7 +30,7 @@ public class IOControllerTest extends AbstractControllerTest {
         exportParams.addFundsSectionsItem(fundsSections);
 
         int requestId = ioApi.ioExportRequest(exportParams);
-        assertEquals(requestId, 1);
+        assertTrue(requestId > 0);
 
         ExportRequestStatus expStatus = null;
         int counter = 0;
@@ -39,12 +39,12 @@ public class IOControllerTest extends AbstractControllerTest {
                 Thread.sleep(50);
                 expStatus = ioApi.ioGetExportStatus(requestId);
                 counter++;
-            } while (expStatus.getState() != ExportRequestState.FINISHED && counter < 1000);
+            } while (expStatus.getState() != RequestProcessState.FINISHED && counter < 1000);
         } catch (Exception e) {
             fail("Exception while waiting on result: " + e);
         }
         assertNotNull(expStatus);
-        assertEquals(ExportRequestState.FINISHED, expStatus.getState());
+        assertEquals(RequestProcessState.FINISHED, expStatus.getState());
 
         Resource file = ioApi.ioGetExportFile(requestId);
         assertNotNull(file);

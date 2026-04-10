@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import org.apache.commons.lang3.Validate;
 import org.springframework.data.rest.core.annotation.RestResource;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -24,7 +23,7 @@ public class ArrDataStructureRef extends ArrData {
     @JoinColumn(name = "structuredObjectId", nullable = false)
     private ArrStructuredObject structuredObject;
 
-    @Column(name = "structuredObjectId", updatable = false, insertable = false)
+    @Column(name = "structuredObjectId", updatable = false, insertable = false, nullable = false)
     private Integer structuredObjectId;
 
     /**
@@ -86,10 +85,5 @@ public class ArrDataStructureRef extends ArrData {
         copyValue(src);
     }
 
-    @Override
-    protected void validateInternal() {
-        Validate.notNull(structuredObject);
-        Validate.notNull(structuredObjectId);
-    }
 }
 

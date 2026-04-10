@@ -1,5 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
+import java.util.Objects;
+
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
@@ -63,6 +65,7 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
 
     @Override
     public SysExternalSystem createEntity(ApScope scope) {
+    	Objects.requireNonNull(scope);
         ApExternalSystem entity = new ApExternalSystem();
         entity.setType(type);
         entity.setScope(scope);

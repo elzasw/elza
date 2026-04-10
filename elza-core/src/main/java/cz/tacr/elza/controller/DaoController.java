@@ -25,8 +25,8 @@ public class DaoController implements DaosApi {
 
     @Override
     @Transactional
-    public ResponseEntity<Void> changeLinkScenario(@ApiParam(value = "Identifikátor dao", required = true) @PathVariable("id") Integer id,
-                                                   @ApiParam(value = "Nový scénář", required = true) @Valid @RequestBody String body) {
+    public ResponseEntity<Void> daoChangeLinkScenario(@ApiParam(value = "Identifikátor dao", required = true) @PathVariable("id") Integer id,
+    												  @ApiParam(value = "Nový scénář", required = true) @Valid @RequestBody String body) {
         // read json - strip "
         if (body.startsWith("\"")) {
             body = body.substring(1, body.length() - 1);

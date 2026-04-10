@@ -86,6 +86,7 @@ import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.StructuredItemRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
+import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 import cz.tacr.elza.service.cache.RestoredNode;
@@ -232,7 +233,8 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                        final DaoLinkRepository daoLinkRepository,
                        final ExportConfig exportConfig,
                        final StructObjService structObjService,
-                       final EntityManager em) {
+                       final EntityManager em, 
+                       final DataService dataService) {
         this.outputContext = outputContext;
         this.staticDataService = staticDataService;
         this.elzaLocale = elzaLocale;
@@ -251,7 +253,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.daoLinkRepository = daoLinkRepository;
         this.exportConfig = exportConfig;
         this.structObjService = structObjService;
-        this.soiLoader = new StructObjectInfoLoader(em, 1, staticDataService.getData());
+        this.soiLoader = new StructObjectInfoLoader(em, 1, staticDataService.getData(), dataService);
     }
 
     public boolean isInitialized() {
@@ -467,11 +469,11 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         Map<Integer, RestoredNode> cachedNodeMap = nodeCacheService.getNodes(arrNodeIds);
         List<Node> nodes = new ArrayList<>(nodeIds.size());
         Map<Integer, Node> daoLinkMap = new HashMap<>();
-
+        
         for (NodeId nodeId : nodeIds) {
             Integer arrNodeId = nodeId.getArrNodeId();
             RestoredNode cachedNode = cachedNodeMap.get(arrNodeId);
-            Validate.notNull(cachedNode);
+            Objects.requireNonNull(cachedNode);
 
             // get list of restriction id relevant filter conditions
             List<ArrItem> restrictionItems = getRestrictionItems(cachedNode);
@@ -506,12 +508,30 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         }
         // read dao links
         if (!daoLinkMap.isEmpty()) {
-            List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(arrNodeIds);
-            Validate.isTrue(daoLinks.size() == daoLinkMap.size());
+            // collection of node ids for loading daos
+            List<Integer> daosFromNodeIds = arrNodeIds;
+            if(arrNodeIds.size() != nodes.size()) {
+                daosFromNodeIds = new ArrayList<>(nodes.size());
+                for (Node node : nodes) {
+                    daosFromNodeIds.add(node.getNodeId().getArrNodeId());
+                }
+            }            
+
+        	
+            List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(daosFromNodeIds);
+            if(daoLinks.size() < daoLinkMap.size()) {
+            	logger.error("Number of loaded daos ({}) is lower then exptected number ({}) for nodes ({}).", 
+            			daoLinks.size(), daoLinkMap.size(), daosFromNodeIds);
+            	throw new BusinessException("Number of loaded daos is not the same as exptected number for nodes.", BaseCode.INVALID_STATE);
+            }
 
             for (ArrDaoLink daoLink : daoLinks) {
                 Node node = daoLinkMap.get(daoLink.getDaoLinkId());
-                Validate.notNull(node);
+                // check if dao for node should be used
+                // if node is null it means that dao link is not allowed for such node
+                if(node==null) {
+                	continue;
+                }
 
                 Dao dao = new Dao(daoLink);
                 node.addDao(dao);
@@ -546,6 +566,13 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         return restrictionItems;
     }
 
+    /**
+     * 
+     * @param nodeId
+     * @param node
+     * @param restrictionItems
+     * @return Return null if node should be filtered
+     */
     private RestoredNode filterNode(NodeId nodeId, RestoredNode node, List<ArrItem> restrictionItems) {
         NodeId parentNodeId = nodeId.getParent();
         if (parentNodeId != null && restrictedNodeIds.contains(parentNodeId.getArrNodeId())) {
@@ -1025,7 +1052,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         return result;
     }
 
-    static public List<cz.tacr.elza.print.item.Item> convert(List<? extends ArrItem> items, OutputItemConvertor conv) {
+    /**
+     * Convert items to print items
+     * @param items
+     * @param conv Convertor
+     * @return
+     */
+    static public List<cz.tacr.elza.print.item.Item> convert(List<? extends ArrItem> items, 
+    		OutputItemConvertor conv) {
         return items.stream()
                 .map(i -> conv.convert(i))
                 .filter(Objects::nonNull)

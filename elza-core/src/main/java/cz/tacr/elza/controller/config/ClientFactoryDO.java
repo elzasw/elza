@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -62,6 +61,7 @@ import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.StringNormalize;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataBit;
@@ -87,7 +87,6 @@ import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
-import cz.tacr.elza.domain.RulDataType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UISettings;
@@ -114,6 +113,7 @@ import cz.tacr.elza.filter.condition.NeDescItemCondition;
 import cz.tacr.elza.filter.condition.NoValuesCondition;
 import cz.tacr.elza.filter.condition.NotContainDescItemCondition;
 import cz.tacr.elza.filter.condition.NotEmptyDescItemCondition;
+import cz.tacr.elza.filter.condition.NotEmptySpecificationDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.NotIntervalDescItemCondition;
 import cz.tacr.elza.filter.condition.SelectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.SelectedValuesDescItemEnumCondition;
@@ -135,12 +135,6 @@ public class ClientFactoryDO {
 
     @Autowired
     private EntityManager em;
-
-    @Autowired
-    private ItemTypeRepository itemTypeRepository;
-
-    @Autowired
-    private ItemSpecRepository itemSpecRepository;
 
     @Autowired
     private InstitutionRepository institutionRepository;
@@ -270,11 +264,13 @@ public class ClientFactoryDO {
 	        	break;
 	        case STRING:
 	            data = new ArrDataString();
-	            ((ArrDataString) data).setStringValue(((DataString) itemData).getStringValue());
+	        	// normalization: replacing non-printable characters, removing double spaces and whitespaces at the beginning and end
+	            ((ArrDataString) data).setStringValue(StringNormalize.normalizeString(((DataString) itemData).getStringValue()));
 	        	break;
 	        case TEXT:
 	        	data = new ArrDataText();
-	        	((ArrDataText) data).setTextValue(((DataText) itemData).getTextValue());
+	        	// normalization: replacing non-printable characters, removing double spaces and whitespaces at the beginning and end
+	        	((ArrDataText) data).setTextValue(StringNormalize.normalizeText(((DataText) itemData).getTextValue()));
 	        	break;
 	        case UNITDATE:
 	        	data = ArrDataUnitdate.valueOf(((DataUnitdate) itemData).getValue());
@@ -334,11 +330,15 @@ public class ClientFactoryDO {
 	        	((ArrDataDate) data).setValue(((DataDate) itemData).getValue());
 	        	break;
 	        case URI_REF:
-	        	data = new ArrDataUriRef();
-	        	String stringValue = ((DataUriRef) itemData).getValue();
-	        	((ArrDataUriRef) data).setUriRefValue(stringValue);
-	        	((ArrDataUriRef) data).setSchema(ArrDataUriRef.createSchema(stringValue));
-	        	((ArrDataUriRef) data).setDescription(((DataUriRef) itemData).getDescription());
+	        	var srcUriRef = (DataUriRef) itemData;
+	        	var dataUriRef = new ArrDataUriRef();
+	        	String stringValue = srcUriRef.getValue();
+	        	dataUriRef.setUriRefValue(stringValue);
+	        	dataUriRef.setSchema(ArrDataUriRef.createSchema(stringValue));
+	        	if(StringUtils.isNotEmpty(srcUriRef.getDescription())) {
+	        		dataUriRef.setDescription(srcUriRef.getDescription());
+	        	}
+	        	data = dataUriRef;
 	        	break;
 	        case BIT:
 	        	data = new ArrDataBit();
@@ -429,16 +429,19 @@ public class ClientFactoryDO {
     	}
 
         ArrDescItem descItem = new ArrDescItem();
-        descItem.setItemType(itemType.getEntity());
+        // set real DB reference
+        descItem.setItemType(em.getReference(RulItemType.class, itemVO.getItemTypeId()));
         
-        if (itemVO.getDescItemSpecId() != null) {
-            RulItemSpec descItemSpec = itemType.getItemSpecById(itemVO.getDescItemSpecId());
+        if (itemVO.getDescItemSpecId() != null) {        	
+        	RulItemSpec descItemSpec = itemType.getItemSpecById(itemVO.getDescItemSpecId());
             if (descItemSpec == null) {
         		throw new BusinessException("Cannot find item spec, itemTypeId: " + itemVO.getItemTypeId()
         		+ ", itemSpecId: " + itemVO.getDescItemSpecId(), BaseCode.ID_NOT_EXIST)
     				.set("itemTypeId", itemVO.getItemTypeId())
     				.set("itemSpecId", itemVO.getDescItemSpecId());
             }
+            // set real DB reference
+            descItemSpec = em.getReference(RulItemSpec.class, itemVO.getDescItemSpecId());
             descItem.setItemSpec(descItemSpec);
         }        
 
@@ -478,6 +481,7 @@ public class ClientFactoryDO {
         arrFund.setInternalCode(fund.getInternalCode());
         arrFund.setMark(fund.getMark());
         arrFund.setInstitution(institution);
+        arrFund.setManaged(fund.getManaged());
         return arrFund;
     }
 
@@ -485,22 +489,26 @@ public class ClientFactoryDO {
         if (filters == null || filters.getFilters() == null || filters.getFilters().isEmpty()) {
             return null;
         }
-
+        
+        StaticDataProvider sdp = this.staticDataService.getData();
+        
         Map<Integer, Filter> filtersMap = filters.getFilters();
         Set<Integer> descItemTypeIds = filtersMap.keySet();
-        List<RulItemType> descItemTypes = itemTypeRepository.findAllById(descItemTypeIds);
-
-        List<DescItemTypeFilter> descItemTypeFilters = new ArrayList<>(descItemTypes.size());
-
-        descItemTypes.forEach(type -> {
-            Filter filter = filtersMap.get(type.getItemTypeId());
+        List<DescItemTypeFilter> descItemTypeFilters = new ArrayList<>(descItemTypeIds.size());
+        for(Integer itemTypeId : descItemTypeIds) {
+	        ItemType itemType = sdp.getItemTypeById(itemTypeId);
+	        if(itemType == null) {
+	        	throw new BusinessException("Cannot find item type, itemTypeId: " + itemTypeId, BaseCode.ID_NOT_EXIST)
+	        		.set("itemTypeId", itemTypeId);
+	        }
+            Filter filter = filtersMap.get(itemType.getItemTypeId());
             if (filter != null) {
-                DescItemTypeFilter descItemTypeFilter = createDescItemFilter(type, filter, lockChangeId);
+                DescItemTypeFilter descItemTypeFilter = createDescItemFilter(itemType, filter, lockChangeId);
                 if (descItemTypeFilter != null) {
                     descItemTypeFilters.add(descItemTypeFilter);
                 }
             }
-        });
+        }
 
         return descItemTypeFilters;
     }
@@ -508,25 +516,24 @@ public class ClientFactoryDO {
     /**
      * Převede VO filter na filtr se kterým pracuje BL.
      *
-     * @param descItemType typ atributu
+     * @param itemType typ atributu
      * @param filter       VO filtr
      * @param lockChangeId
      * @return filtr pro daný typ atributu
      */
-    private DescItemTypeFilter createDescItemFilter(final RulItemType descItemType, final Filter filter, final Integer lockChangeId) {
-        Assert.notNull(descItemType, "Typ atributu musí být vyplněn");
+    private DescItemTypeFilter createDescItemFilter(final ItemType itemType, final Filter filter, final Integer lockChangeId) {
+        Assert.notNull(itemType, "Typ atributu musí být vyplněn");
         Assert.notNull(filter, "Filter musí být vyplněn");
 
         List<DescItemCondition> valuesConditions = createValuesEnumCondition(filter.getValuesType(), filter.getValues(), ArrDescItem.FULLTEXT_ATT);
         List<DescItemCondition> specsConditions = createSpecificationsEnumCondition(filter.getSpecsType(), filter.getSpecs(), ArrDescItem.FIELD_ITEM_SPEC_ID);
-        List<Integer> itemSpecIds = createItemSpecIds(filter, descItemType.getItemTypeId());
+        List<Integer> itemSpecIds = createItemSpecIds(filter, itemType);
         
         List<DescItemCondition> conditions = new LinkedList<>();
         Condition conditionType = filter.getConditionType();
         if (conditionType != null && conditionType != Condition.NONE) {
-            RulDataType rulDataType = descItemType.getDataType();
-            conditionType.checkSupport(rulDataType.getCode());
-            DataType dataType = DataType.fromId(rulDataType.getDataTypeId());
+            DataType dataType = itemType.getDataType();
+            conditionType.checkSupport(itemType.getDataType());
 
             DescItemCondition condition;
             switch (conditionType) {
@@ -552,7 +559,7 @@ public class ClientFactoryDO {
                 case EQ: {
                     if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new EqDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
@@ -561,8 +568,8 @@ public class ClientFactoryDO {
                     } else if (dataType == DataType.UNITDATE) {
                         Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                         condition = new EqIntervalDescItemCondition<>(conditionValue,
-                                ArrDescItem.NORMALIZED_FROM_ATT,
-                                ArrDescItem.NORMALIZED_TO_ATT);
+                                ArrDescItem.NORM_FROM,
+                                ArrDescItem.NORM_TO);
                     } else if (dataType == DataType.DATE) {
                         Date conditionValue = getConditionValueDate(filter.getCondition());
                         condition = new EqDescItemCondition<>(conditionValue, ArrDescItem.DATE_ATT);
@@ -575,7 +582,7 @@ public class ClientFactoryDO {
                 case GE: {
                     if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new GeDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
@@ -593,11 +600,11 @@ public class ClientFactoryDO {
                 case GT: {
                     if (dataType == DataType.UNITDATE) {
                         ArrDataUnitdate unitDate = getConditionValueUnitdate(filter.getCondition());
-                        String attributeName = ArrDescItem.NORMALIZED_TO_ATT;
+                        String attributeName = ArrDescItem.NORM_TO;
                         condition = new GtDescItemCondition<>(unitDate.getNormalizedFrom(), attributeName);
                     } else if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new GtDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
@@ -615,7 +622,7 @@ public class ClientFactoryDO {
                 case INTERVAL: {
                     if (dataType == DataType.INT) {
                         Interval<Integer> conditionValue = getConditionValueIntervalInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new IntervalDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Interval<Double> conditionValue = getConditionValueIntervalDouble(filter.getCondition());
@@ -633,7 +640,7 @@ public class ClientFactoryDO {
                 case LE: {
                     if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new LeDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
@@ -651,11 +658,11 @@ public class ClientFactoryDO {
                 case LT: {
                     if (dataType == DataType.UNITDATE) {
                         ArrDataUnitdate unitDate = getConditionValueUnitdate(filter.getCondition());
-                        String attributeName = ArrDescItem.NORMALIZED_FROM_ATT;
+                        String attributeName = ArrDescItem.NORM_FROM;
                         condition = new LtDescItemCondition<>(unitDate.getNormalizedTo(), attributeName);
                     } else if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new LtDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
@@ -673,7 +680,7 @@ public class ClientFactoryDO {
                 case NE: {
                     if (dataType == DataType.INT) {
                         Integer conditionValue = getConditionValueInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new NeDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Double conditionValue = getConditionValueDouble(filter.getCondition());
@@ -702,7 +709,7 @@ public class ClientFactoryDO {
                 case NOT_INTERVAL: {
                     if (dataType == DataType.INT) {
                         Interval<Integer> conditionValue = getConditionValueIntervalInteger(filter.getCondition());
-                        String attributeName = ArrDescItem.INTGER_ATT;
+                        String attributeName = ArrDescItem.INTEGER_ATT;
                         condition = new NotIntervalDescItemCondition<>(conditionValue, attributeName);
                     } else if (dataType == DataType.DECIMAL) {
                         Interval<Double> conditionValue = getConditionValueIntervalDouble(filter.getCondition());
@@ -720,15 +727,15 @@ public class ClientFactoryDO {
                 case INTERSECT: {
                     Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                     condition = new IntersectDescItemCondition<>(conditionValue,
-                            ArrDescItem.NORMALIZED_FROM_ATT,
-                            ArrDescItem.NORMALIZED_TO_ATT);
+                            ArrDescItem.NORM_FROM,
+                            ArrDescItem.NORM_TO);
                     break;
                 }
                 case SUBSET: {
                     Interval<Long> conditionValue = getConditionValueIntervalLong(filter.getCondition());
                     condition = new SubsetDescItemCondition<>(conditionValue,
-                            ArrDescItem.NORMALIZED_FROM_ATT,
-                            ArrDescItem.NORMALIZED_TO_ATT);
+                            ArrDescItem.NORM_FROM,
+                            ArrDescItem.NORM_TO);
                     break;
                 }
                 default:
@@ -739,7 +746,7 @@ public class ClientFactoryDO {
         }
 
         if (!valuesConditions.isEmpty() || !specsConditions.isEmpty() || !conditions.isEmpty()) {
-            return new DescItemTypeFilter(descItemType, itemSpecIds, valuesConditions, specsConditions, conditions, lockChangeId);
+            return new DescItemTypeFilter(itemType.getEntity(), itemSpecIds, valuesConditions, specsConditions, conditions, lockChangeId);
         }
 
         return null;
@@ -946,7 +953,7 @@ public class ClientFactoryDO {
                 conditions.add(new UnselectedSpecificationsDescItemEnumCondition(values, attName));
                 conditions.add(new NoValuesCondition());
             } else if (containsNull) { // odškrtlé jen "Prázdné" = vše s hodnotou
-                conditions.add(new NotEmptyDescItemCondition());
+                conditions.add(new NotEmptySpecificationDescItemEnumCondition());
             } else {
                 // není potřeba vkládat podmínku, pokud vznikne ještě jiná podmínka tak by se udělal průnik výsledků a když bude seznam podmínek prázdný tak se vrátí všechna data
             }
@@ -959,10 +966,14 @@ public class ClientFactoryDO {
      * Získání seznamu ItemSpec ids, který SELECTED
      * 
      * @param filter
-     * @param itemTypeId
+     * @param itemType
      * @return
      */
-    private List<Integer> createItemSpecIds(final Filter filter, final Integer itemTypeId) {
+    private List<Integer> createItemSpecIds(final Filter filter, final ItemType itemType) {
+    	if(!itemType.hasSpecifications()) {
+    		return null;
+    	}
+    	
     	// pokud je vybrána možnost SELECTED jen vrátíme seznam z filtru
     	if (Objects.equals(filter.getSpecsType(), ValuesTypes.SELECTED)) {
     		return filter.getSpecs();
@@ -970,7 +981,6 @@ public class ClientFactoryDO {
 
     	// pokud je vybrána možnost UNSELECTED vrátíme všechny zbývající itemSpecs, 
     	// který odpovída itemTypeId kromě těch, které jsou uvedeny ve filtru
-        ItemType itemType = staticDataService.getData().getItemTypeById(itemTypeId);
         List<Integer> specIds = itemType.getItemSpecs().stream().map(i -> i.getItemSpecId()).collect(Collectors.toList());
         specIds.removeAll(filter.getSpecs());
 

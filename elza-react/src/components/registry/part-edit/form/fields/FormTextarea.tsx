@@ -65,13 +65,13 @@ export const FormTextarea:FC<CommonFieldProps<ApItemFormattedTextVO> & {
             return <RevisionFieldExample
                 label={label}
                 prevValue={prevValue}
-                value={props.input.value}
                 disableRevision={disableRevision}
                 alignTop={true}
                 equalSplit={true}
                 onRevert={!isNew ? handleRevert : undefined}
                 onDelete={isDeleted ? undefined : handleDelete}
                 isDeleted={isDeleted}
+                isUpdated={updatedItem?.changeType === "UPDATED"}
             >
                 <ReduxFormFieldErrorDecorator
                     {...props as any}

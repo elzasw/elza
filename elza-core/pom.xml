@@ -11,6 +11,7 @@
 
     <properties>
         <drools.version>8.44.0.Final</drools.version> <!-- 7.74.1.Final, 8.44.0.Final -->
+        <kerberos.version>2.1.1</kerberos.version>
     </properties>
 
     <dependencies>
@@ -71,6 +72,10 @@
 		</dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-ldap</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-messaging</artifactId>
 		</dependency>
 
@@ -119,9 +124,18 @@
         </dependency>
 		<dependency>
 		    <groupId>org.apache.lucene</groupId>
-		    <artifactId>lucene-backward-codecs</artifactId>
-		    <version>9.10.0</version>
+		    <artifactId>lucene-core</artifactId>
 		</dependency>
+		<!--<dependency>
+		    <groupId>org.apache.lucene</groupId>
+		    <artifactId>lucene-backward-codecs</artifactId>
+		    <version>${apache.lucene.version}</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.lucene</groupId>
+		    <artifactId>lucene-codecs</artifactId>
+		    <version>${apache.lucene.version}</version>
+		</dependency>-->
 
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
@@ -156,7 +170,7 @@
 		</dependency>
 
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
+            <groupId>org.apache.groovy</groupId>
             <artifactId>groovy</artifactId>
 		</dependency>
 
@@ -281,6 +295,23 @@
             <groupId>org.geotools.xsd</groupId>
             <artifactId>gt-xsd-kml</artifactId>
 		</dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.springframework.security.kerberos -->
+        <dependency>
+            <groupId>org.springframework.security.kerberos</groupId>
+            <artifactId>spring-security-kerberos-core</artifactId>
+            <version>${kerberos.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security.kerberos</groupId>
+            <artifactId>spring-security-kerberos-client</artifactId>
+            <version>${kerberos.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security.kerberos</groupId>
+            <artifactId>spring-security-kerberos-web</artifactId>
+            <version>${kerberos.version}</version>
+        </dependency>
 		<!-- test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -309,10 +340,20 @@
             <scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>com.sun.xml.messaging.saaj</groupId>
-		    <artifactId>saaj-impl</artifactId>
+			<groupId>com.sun.xml.messaging.saaj</groupId>
+			<artifactId>saaj-impl</artifactId>
 		</dependency>
-        <dependency>
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>9.0</version>
+		</dependency>
+		<!-- Required for conditional logging (logback-spring.xml) -->
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
+		</dependency>
+		<dependency>
             <groupId>com.lightcomp.ft</groupId>
             <artifactId>file-transfer</artifactId>
             <version>2.0</version>
@@ -336,7 +377,6 @@
 
 		<!-- Dependency for javax - proper JDOC generation -->
     </dependencies>
-
 
     <build>
         <resources>
@@ -393,7 +433,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <!--<version>3.3.0</version>-->
+				<!--<version>3.3.0</version>-->
                 <executions>
                     <execution>
                         <id>add-gen-sources</id>
@@ -448,7 +488,7 @@
 							</schemaIncludes>
                             <bindingDirectory>${project.basedir}/src/main/resources/schema</bindingDirectory>
                             <bindingIncludes>
-                                <include>elza-schema-v2-bindinds.xml</include>
+                                <include>elza-schema-v2-bindings.xml</include>
 							</bindingIncludes>
                             <plugins>
                                 <plugin>
@@ -494,7 +534,7 @@
                         <id>generate-mets-schema</id>
                         <goals>
                             <goal>generate</goal>
-			</goals>
+						</goals>
                         <phase>generate-sources</phase>
                         <configuration>
                             <extension>true</extension>
@@ -520,15 +560,15 @@
                                     <groupId>org.jvnet.jaxb</groupId>
                                     <artifactId>jaxb-plugins</artifactId>
                                     <version>4.0.0</version>
-				</plugin>
+								</plugin>
                             </plugins>
-			</configuration>
+						</configuration>
                     </execution>
-                    <execution>
+					<execution>
                         <id>generate-premis3-schema</id>
                         <goals>
                             <goal>generate</goal>
-			</goals>
+						</goals>
                         <phase>generate-sources</phase>
                         <configuration>
                             <extension>true</extension>
@@ -554,9 +594,9 @@
                                     <groupId>org.jvnet.jaxb</groupId>
                                     <artifactId>jaxb-plugins</artifactId>
                                     <version>4.0.0</version>
-				</plugin>
+								</plugin>
                             </plugins>
-			</configuration>
+						</configuration>
                     </execution>
                     <execution>
                         <id>generate-ead</id>
@@ -589,7 +629,7 @@
                     </execution>
 				</executions>
                 <dependencies>
-                    <!--<dependency>
+					<!--<dependency>
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-xjc</artifactId>
                         <version>2.3.2</version>
@@ -644,6 +684,15 @@
                                 <interfaceOnly>true</interfaceOnly>
                                 <useTags>true</useTags>
 							</configOptions>
+							<!--https://stackoverflow.com/questions/75791924/use-existing-class-with-openapi-generator-maven-plugin-without-skipping-validati-->
+							<importMappings>
+								<importMapping>ApPartFormVO=cz.tacr.elza.controller.vo.ApPartFormVO</importMapping>
+								<!--<importMapping>NodeData=cz.tacr.elza.controller.vo.nodes.NodeData</importMapping>-->
+							</importMappings>
+							<typeMappings>
+								<typeMapping>object+partform=ApPartFormVO</typeMapping>
+								<!--<typeMapping>object+nodedata=NodeData</typeMapping>-->
+							</typeMappings>
 						</configuration>
 					</execution>
                     <execution>
@@ -702,8 +751,8 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--  TODO pasek hack - cxf-codegen-plugin moment�ln� neum� generovat t��dy s jakarta ee9, nutno ru�n� p�epsat importy -->
-            <!--
+			<!--  TODO pasek hack - cxf-codegen-plugin moment�ln� neum� generovat t��dy s jakarta ee9, nutno ru�n� p�epsat importy -->
+			<!--
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>maven-replacer-plugin</artifactId>

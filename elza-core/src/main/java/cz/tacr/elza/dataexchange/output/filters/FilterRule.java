@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.util.CollectionUtils;
 
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -31,7 +32,7 @@ import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrItem;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
@@ -504,6 +505,8 @@ public class FilterRule {
                 }
             }
         }
+        // unproxy value - will be used by instanceof
+		srcValue = HibernateUtils.unproxy(srcValue);
 
         ArrDescItem descItem = null;
         ArrItem existingItem = filter.getAddedItem(action.getTrgItemType().getEntity(), action.getTrgItemSpec());
@@ -518,11 +521,11 @@ public class FilterRule {
                     localDate = srcDataDate.getValue();
                 } else if (srcValue instanceof ArrDataUnitdate) {
                     ArrDataUnitdate srcDataUnitdate = (ArrDataUnitdate) srcValue;
-                    LocalDateTime localDateTime = UnitDateConvertor.getLocalDateTimeFromUnitDate(srcDataUnitdate,
+                    LocalDateTime localDateTime = UnitDateConverter.getLocalDateTimeFromUnitDate(srcDataUnitdate,
                                                                                                  false);
                     localDate = localDateTime.toLocalDate();
                 } else {
-                    throw new IllegalStateException("Unsupported type: " + srcValue);
+                    throw new IllegalStateException("Unsupported type, dataId = " + srcValue.getDataId() + ": " + srcValue.getClass().getName());
                 }
             }
             localDate = prepareLocalDate(action, filterRuleContext, localDate);
@@ -557,7 +560,7 @@ public class FilterRule {
                     sb.append(formatLocalDate(action, filterRuleContext, localDate, locale));
                 } else if (srcValue instanceof ArrDataUnitdate) {
                     ArrDataUnitdate srcDataUnitdate = (ArrDataUnitdate) srcValue;
-                    LocalDateTime localDateTime = UnitDateConvertor.getLocalDateTimeFromUnitDate(srcDataUnitdate,
+                    LocalDateTime localDateTime = UnitDateConverter.getLocalDateTimeFromUnitDate(srcDataUnitdate,
                                                                                                  false);
                     LocalDate localDate = localDateTime.toLocalDate();
                     localDate = prepareLocalDate(action, filterRuleContext, localDate);
@@ -618,6 +621,7 @@ public class FilterRule {
         Integer addYear = null;
         ArrData srcAddYear = filterRuleContext.getFirstData(action.getValueAddYearFrom(), null);
         if (srcAddYear != null) {
+        	srcAddYear = HibernateUtils.unproxy(srcAddYear);
             ArrDataInteger di = (ArrDataInteger) srcAddYear;
             addYear = di.getIntegerValue();
         }

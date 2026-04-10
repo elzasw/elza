@@ -146,4 +146,636 @@
 		<sql> DELETE FROM ap_cached_access_point WHERE access_point_id IN (SELECT bs.access_point_id FROM ap_binding_state bs WHERE bs.delete_change_id is null AND bs.sync_ok='NOT_SYNCED')</sql>
 	</changeSet>
 
+	<changeSet id="20241106192200" author="ppy">
+		<!-- Speedup revision search and guarantee unique -->
+		<sql dbms="postgresql">CREATE UNIQUE INDEX ap_revision_state_delete_change_null_unique_idx ON ap_revision(state_id) WHERE delete_change_id IS NULL</sql>
+	</changeSet>
+	<changeSet id="20241117231700" author="ppy">
+		<!-- Speedup hsearch_outbox_event access -->
+		<addPrimaryKey columnNames="id" tableName="hsearch_outbox_event" />
+		<createIndex indexName="hsearch_outbox_event_status_idx" tableName="hsearch_outbox_event">
+		    <column name="status" type="varchar(256)" />
+		</createIndex>
+		<createIndex indexName="hsearch_outbox_event_process_after_idx" tableName="hsearch_outbox_event">
+		    <column name="process_after" type="timestamptz" />
+		</createIndex>
+		<createIndex indexName="hsearch_outbox_event_entity_id_hash_idx" tableName="hsearch_outbox_event">
+		    <column name="entity_id_hash" type="int" />
+		</createIndex>
+		<!-- ext_syncs_queue_item -->
+		<createIndex indexName="ext_syncs_queue_item_state_idx" tableName="ext_syncs_queue_item">
+		    <column name="state" type="nvarchar(50)" />
+		</createIndex>
+	</changeSet>
+	<changeSet id="20241218173400" author="ppy">
+	    <sql dbms="postgresql">DELETE FROM arr_cached_node WHERE node_id IN (
+	    select n.node_id from arr_node n
+        left join arr_level l on l.node_id = n.node_id and l.delete_change_id is null
+        where l.level_id is null
+	    )</sql>
+	</changeSet>
+	<changeSet id="20250109112300" author="ppy">
+		<!-- Speedup structured items, index was conditionally removed -->
+		<sql dbms="postgresql">CREATE INDEX arr_item_data_idx ON arr_item(data_id)</sql>
+	</changeSet>
+
+	<changeSet id="20241212121200" author="sergey.iryupin">
+		<!-- časová osa -->
+		<createTable tableName="rpt_view_date">
+            <column name="date_id" type="date">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="date_year" type="int"/>
+            <column name="date_quarter" type="int"/>
+            <column name="date_month" type="int"/>
+            <column name="date_day" type="int"/>
+            <column name="date_day_of_week" type="int"/>
+            <column name="is_holyday" type="boolean"/>
+		</createTable>
+        <createIndex indexName="rpt_view_date_year_idx" tableName="rpt_view_date">
+            <column name="date_year" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_date_month_idx" tableName="rpt_view_date">
+            <column name="date_month" type="int"/>
+        </createIndex>
+        <!-- příprava dat pro Node/Level -->
+        <createTable tableName="rpt_view_node_change">
+        	<column name="change_type" type="varchar(25)">
+                <constraints nullable="false"/>
+        	</column>
+            <column name="node_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="level_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_id" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="int"/>
+            <column name="fond_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="rpt_view_node_change_change_type_idx" tableName="rpt_view_node_change">
+            <column name="change_type" type="varchar(25)"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_node_change_node_id_idx" tableName="rpt_view_node_change">
+            <column name="node_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_node_change_level_id_idx" tableName="rpt_view_node_change">
+            <column name="level_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_node_change_date_id_idx" tableName="rpt_view_node_change">
+            <column name="date_id" type="date"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_node_change_change_id_idx" tableName="rpt_view_node_change">
+            <column name="change_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_node_change_user_id_idx" tableName="rpt_view_node_change">
+            <column name="user_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_node_change_fond_id_idx" tableName="rpt_view_node_change">
+            <column name="fond_id" type="int"/>
+        </createIndex>
+        <addForeignKeyConstraint constraintName="fk_view_node_change_view_date"
+                                 baseTableName="rpt_view_node_change" baseColumnNames="date_id"
+                                 referencedTableName="rpt_view_date" referencedColumnNames="date_id"/>
+		<!-- příprava dat pro Item -->
+		<createTable tableName="rpt_view_item_change">
+        	<column name="change_type" type="varchar(25)">
+                <constraints nullable="false"/>
+        	</column>
+            <column name="obj_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="item_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data_id" type="int"/>
+            <column name="node_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_id" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="int"/>
+            <column name="fond_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+		</createTable>
+        <createIndex indexName="rpt_view_item_change_change_type_idx" tableName="rpt_view_item_change">
+            <column name="change_type" type="varchar(25)"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_item_change_obj_id_idx" tableName="rpt_view_item_change">
+            <column name="obj_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_item_change_item_id_idx" tableName="rpt_view_item_change">
+            <column name="item_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_item_change_node_id_idx" tableName="rpt_view_item_change">
+            <column name="node_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_item_change_date_id_idx" tableName="rpt_view_item_change">
+            <column name="date_id" type="date"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_item_change_change_id_idx" tableName="rpt_view_item_change">
+            <column name="change_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_item_change_user_id_idx" tableName="rpt_view_item_change">
+            <column name="user_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_item_change_fond_id_idx" tableName="rpt_view_item_change">
+            <column name="fond_id" type="int"/>
+        </createIndex>
+        <addForeignKeyConstraint constraintName="fk_view_item_change_view_date"
+                                 baseTableName="rpt_view_item_change" baseColumnNames="date_id"
+                                 referencedTableName="rpt_view_date" referencedColumnNames="date_id"/>
+        <!-- příprava dat pro vztahy -->
+        <createTable tableName="rpt_view_ap_usage">
+            <column name="item_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="node_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="access_point_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="binding_state_id" type="int"/>
+            <column name="create_date_id" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="create_user_id" type="int"/>
+            <column name="delete_date_id" type="date"/>
+            <column name="delete_change_id" type="int"/>
+            <column name="delete_user_id" type="int"/>
+            <column name="fond_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_rpt_view_create_date"
+                                 baseTableName="rpt_view_ap_usage" baseColumnNames="create_date_id"
+                                 referencedTableName="rpt_view_date" referencedColumnNames="date_id"/>
+        <addForeignKeyConstraint constraintName="fk_rpt_view_delete_date"
+                                 baseTableName="rpt_view_ap_usage" baseColumnNames="delete_date_id"
+                                 referencedTableName="rpt_view_date" referencedColumnNames="date_id"/>
+        <createIndex indexName="rpt_view_ap_usage_item_id_idx" tableName="rpt_view_ap_usage">
+            <column name="item_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_ap_usage_create_user_id_idx" tableName="rpt_view_ap_usage">
+            <column name="create_user_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_ap_usage_delete_user_id_idx" tableName="rpt_view_ap_usage">
+            <column name="delete_user_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_ap_usage_create_date_id_idx" tableName="rpt_view_ap_usage">
+            <column name="create_date_id" type="date"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_ap_usage_delete_date_id_idx" tableName="rpt_view_ap_usage">
+            <column name="delete_date_id" type="date"/>
+        </createIndex>
+        <!-- příprava dat pro arch.entity -->
+        <createTable tableName="rpt_view_ap_change">
+        	<column name="change_type" type="varchar(25)">
+                <constraints nullable="false"/>
+        	</column>
+            <column name="access_point_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="state_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_id" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="change_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="int"/>
+            <column name="scope_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint constraintName="fk_rpt_view_ap_change"
+                                 baseTableName="rpt_view_ap_change" baseColumnNames="date_id"
+                                 referencedTableName="rpt_view_date" referencedColumnNames="date_id"/>
+        <createIndex indexName="rpt_view_ap_change_change_type_idx" tableName="rpt_view_ap_change">
+            <column name="change_type" type="varchar(25)"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_ap_change_access_point_id_idx" tableName="rpt_view_ap_change">
+            <column name="access_point_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_ap_change_date_id_idx" tableName="rpt_view_ap_change">
+            <column name="date_id" type="date"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_ap_change_user_id_idx" tableName="rpt_view_ap_change">
+            <column name="user_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_ap_change_scope_id_idx" tableName="rpt_view_ap_change">
+            <column name="scope_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="rpt_view_ap_change_type_id_idx" tableName="rpt_view_ap_change">
+            <column name="type_id" type="int"/>
+        </createIndex>
+		<!-- čas poslední aktualizace View -->
+		<createTable tableName="sys_view_update">
+            <column name="sys_view_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="view_name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_update" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+		</createTable>
+		<!-- kategorie sestav -->
+		<createTable tableName="rpt_category">
+            <column name="category_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+		</createTable>
+		<!-- typy hodnot sestav -->
+		<createTable tableName="rpt_value_type">
+            <column name="value_type_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+		</createTable>
+		<!-- parametr sestavy -->
+		<createTable tableName="rpt_param">
+            <column name="param_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="report_id" type="int"/>
+            <column name="value_type_id" type="int"/>
+            <column name="code" type="nvarchar(50)"/>
+            <column name="name" type="nvarchar(250)"/>
+            <column name="repeatable" type="boolean"/>
+            <column name="required" type="boolean"/>
+            <column name="generator" type="nvarchar(50)"/>
+		</createTable>
+		<!-- statistická sestava -->
+		<createTable tableName="rpt_report">
+            <column name="report_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="category_id" type="int"/>
+            <column name="code" type="nvarchar(50)"/>
+            <column name="name" type="nvarchar(250)"/>
+            <column name="description" type="text"/>
+            <column name="chart_data" type="boolean"/>
+		</createTable>
+		<!-- seznam požadovaných view -->
+		<createTable tableName="rpt_required_view">
+            <column name="required_view_id" type="int">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="report_id" type="int"/>
+            <column name="view_name" type="nvarchar(250)"/>
+		</createTable>
+        <addForeignKeyConstraint constraintName="fk_param_report"
+                                 baseTableName="rpt_param" baseColumnNames="report_id"
+                                 referencedTableName="rpt_report" referencedColumnNames="report_id"/>
+        <addForeignKeyConstraint constraintName="fk_param_value_type"
+                                 baseTableName="rpt_param" baseColumnNames="value_type_id"
+                                 referencedTableName="rpt_value_type" referencedColumnNames="value_type_id"/>
+        <addForeignKeyConstraint constraintName="fk_report_category"
+                                 baseTableName="rpt_report" baseColumnNames="category_id"
+                                 referencedTableName="rpt_category" referencedColumnNames="category_id"/>
+		<!-- kategorie statistických sestav -->
+		<insert tableName="rpt_category">
+			<column name="category_id">1</column>
+			<column name="code">ARRANGEMENT</column>
+			<column name="name">Zpracování archiválií</column>
+		</insert>
+		<insert tableName="rpt_category">
+			<column name="category_id">2</column>
+			<column name="code">ENTITY</column>
+			<column name="name">Archivní entity</column>
+		</insert>
+		<insert tableName="rpt_category">
+			<column name="category_id">3</column>
+			<column name="code">OUTPUT</column>
+			<column name="name">Výstupy</column>
+		</insert>
+		<!-- datové typy pro parametry -->
+		<insert tableName="rpt_value_type"><column name="value_type_id" value="1"/><column name="code" value="INT"/><column name="name" value="Integer"/></insert>
+		<insert tableName="rpt_value_type"><column name="value_type_id" value="2"/><column name="code" value="STRING"/><column name="name" value="String"/></insert>
+		<insert tableName="rpt_value_type"><column name="value_type_id" value="3"/><column name="code" value="BOOLEAN"/><column name="name" value="Boolean"/></insert>
+		<insert tableName="rpt_value_type"><column name="value_type_id" value="4"/><column name="code" value="DATE"/><column name="name" value="Date"/></insert>
+		<insert tableName="rpt_value_type"><column name="value_type_id" value="5"/><column name="code" value="USER_ID"/><column name="name" value="User id"/></insert>
+		<insert tableName="rpt_value_type"><column name="value_type_id" value="6"/><column name="code" value="GROUP_ID"/><column name="name" value="User group id" /></insert>
+		<insert tableName="rpt_value_type"><column name="value_type_id" value="7"/><column name="code" value="FUND_ID"/><column name="name" value="Fund id"/></insert>
+		<insert tableName="rpt_value_type"><column name="value_type_id" value="8"/><column name="code" value="AP_ID"/><column name="name" value="AccessPoint id"/></insert>
+		<insert tableName="rpt_value_type"><column name="value_type_id" value="9"/><column name="code" value="ITEM_TYPE_ID"/><column name="name" value="Item type id"/></insert>
+		<insert tableName="rpt_value_type"><column name="value_type_id" value="10"/><column name="code" value="ITEM_SPEC_ID"/><column name="name" value="Item specification id" /></insert>
+		<insert tableName="rpt_value_type"><column name="value_type_id" value="11"/><column name="code" value="SCOPE_ID"/><column name="name" value="Scope id"/></insert>
+		<insert tableName="rpt_value_type"><column name="value_type_id" value="12"/><column name="code" value="AP_TYPE_ID" /><column name="name" value="AccessPoint type id"/></insert>
+		<!-- interní (vestavěné) sestavy -->
+		<insert tableName="rpt_report">
+			<!-- SYS_TOTAL_COUNT -->
+			<column name="report_id">1</column>
+			<column name="category_id">1</column>
+			<column name="code">SYS_TOTAL_COUNT</column>
+			<column name="name">Souhrnné informace – aktuální stav</column>
+			<column name="description">Souhrnný přehled počtu archivních souborů, jednotek popisu a archivní entit.</column>
+		</insert>
+		<insert tableName="rpt_report">
+			<!-- SYS_MONTH_USER_COUNT -->
+			<column name="report_id">2</column>
+			<column name="category_id">1</column>
+			<column name="code">SYS_MONTH_USER_COUNT</column>
+			<column name="name">Přehled po měsících dle uživatelů</column>
+			<column name="description">Přehled všech změn za dané období a uživatele po měsících. Součástí přehledu jsou jednotky popisu, prvky popisu a archivní entity.</column>
+		</insert>
+		<insert tableName="rpt_report">
+			<!-- SYS_INSTITUTION_COUNT -->
+			<column name="report_id">3</column>
+			<column name="category_id">1</column>
+			<column name="code">SYS_INSTITUTION_COUNT</column>
+			<column name="name">Přehled k datu dle institucí</column>
+			<column name="description">Souhn počtu archivních souborů, jednotek popisu a prvků popisu k danému datu.</column>
+		</insert>
+		<insert tableName="rpt_report">
+			<!-- SYS_EXT_SYSTEM_COUNT -->
+			<column name="report_id">4</column>
+			<column name="category_id">2</column>
+			<column name="code">SYS_EXT_SYSTEM_COUNT</column>
+			<column name="name">Přehled k datu dle zápisu do externích systémů</column>
+			<column name="description">Přehled počtu archivních entit a přístupových bodů, které jsou napojeny na externí systém (je k dispozici ID externího systému).</column>
+		</insert>
+		<insert tableName="rpt_report">
+			<!-- SYS_OUTPUT_COUNT -->
+			<column name="report_id">5</column>
+			<column name="category_id">3</column>
+			<column name="code">SYS_OUTPUT_COUNT</column>
+			<column name="name">Přehled po institucích a archivních souborech</column>
+			<column name="description">Výpis všech realizovaných výstupů za dané období.</column>
+		</insert>
+		<!-- parametry pro interní (vestavěné) sestavy -->
+		<insert tableName="rpt_param">
+			<column name="param_id">1</column>
+			<column name="report_id">2</column> <!-- SYS_MONTH_USER_COUNT -->
+			<column name="value_type_id">4</column>
+			<column name="code">DATE_FROM</column>
+			<column name="name">Datum od</column>
+			<column name="repeatable">false</column>
+			<column name="required">true</column>
+		</insert>
+		<insert tableName="rpt_param">
+			<column name="param_id">2</column>
+			<column name="report_id">2</column> <!-- SYS_MONTH_USER_COUNT -->
+			<column name="value_type_id">4</column>
+			<column name="code">DATE_TO</column>
+			<column name="name">Datum do</column>
+			<column name="repeatable">false</column>
+			<column name="required">false</column>
+			<column name="generator">END_OF_DAY</column>
+		</insert>
+		<insert tableName="rpt_param">
+			<column name="param_id">3</column>
+			<column name="report_id">3</column> <!-- SYS_INSTITUTION_COUNT -->
+			<column name="value_type_id">4</column>
+			<column name="code">DATE_TO</column>
+			<column name="name">Datum do</column>
+			<column name="repeatable">false</column>
+			<column name="required">false</column>
+			<column name="generator">END_OF_DAY</column>
+		</insert>
+		<insert tableName="rpt_param">
+			<column name="param_id">4</column>
+			<column name="report_id">4</column> <!-- SYS_EXT_SYSTEM_COUNT -->
+			<column name="value_type_id">4</column>
+			<column name="code">DATE_TO</column>
+			<column name="name">Datum do</column>
+			<column name="repeatable">false</column>
+			<column name="required">false</column>
+			<column name="generator">END_OF_DAY</column>
+		</insert>
+		<insert tableName="rpt_param">
+			<column name="param_id">5</column>
+			<column name="report_id">5</column> <!-- SYS_OUTPUT_COUNT -->
+			<column name="value_type_id">4</column>
+			<column name="code">DATE_FROM</column>
+			<column name="name">Datum od</column>
+			<column name="repeatable">false</column>
+			<column name="required">false</column>
+			<column name="generator">START_OF_YEAR</column>
+		</insert>
+		<insert tableName="rpt_param">
+			<column name="param_id">6</column>
+			<column name="report_id">5</column> <!-- SYS_OUTPUT_COUNT -->
+			<column name="value_type_id">4</column>
+			<column name="code">DATE_TO</column>
+			<column name="name">Datum do</column>
+			<column name="repeatable">false</column>
+			<column name="required">false</column>
+			<column name="generator">END_OF_DAY</column>
+		</insert>
+		<!-- seznam požadovaných view pro sestavy -->
+		<!-- SYS_TOTAL_COUNT -->
+		<insert tableName="rpt_required_view">
+		  	<column name="required_view_id" value="1"/>
+		  	<column name="report_id" value="1"/>
+          	<column name="view_name" value="rpt_view_node_change"/>
+        </insert>
+		<insert tableName="rpt_required_view">
+		  	<column name="required_view_id" value="2"/>
+		  	<column name="report_id" value="1"/>
+		  	<column name="view_name" value="rpt_view_item_change"/>
+		</insert>
+		<insert tableName="rpt_required_view">
+		  	<column name="required_view_id" value="3"/>
+		  	<column name="report_id" value="1"/>
+		  	<column name="view_name" value="rpt_view_ap_usage"/>
+		</insert>
+		<!-- SYS_MONTH_USER_COUNT -->
+		<insert tableName="rpt_required_view">
+		  	<column name="required_view_id" value="4"/>
+		  	<column name="report_id" value="2"/>
+		  	<column name="view_name" value="rpt_view_node_change"/>
+		</insert>
+		<insert tableName="rpt_required_view">		
+		  	<column name="required_view_id" value="5"/>
+		  	<column name="report_id" value="2"/>
+		  	<column name="view_name" value="rpt_view_item_change"/>
+		</insert>
+		<insert tableName="rpt_required_view">
+		  	<column name="required_view_id" value="6"/>
+		  	<column name="report_id" value="2"/>
+		  	<column name="view_name" value="rpt_view_ap_change"/>
+		</insert>
+		<insert tableName="rpt_required_view">
+		  	<column name="required_view_id" value="7"/>
+		  	<column name="report_id" value="2"/>
+		  	<column name="view_name" value="rpt_view_ap_usage"/>
+		</insert>
+		<!-- SYS_INSTITUTION_COUNT -->
+		<insert tableName="rpt_required_view">
+		  	<column name="required_view_id" value="8"/>
+		  	<column name="report_id" value="3"/>
+		  	<column name="view_name" value="rpt_view_node_change"/>
+		</insert>
+		<insert tableName="rpt_required_view">
+		  	<column name="required_view_id" value="9"/>
+		  	<column name="report_id" value="3"/>
+		  	<column name="view_name" value="rpt_view_item_change"/>
+		</insert>
+		<insert tableName="rpt_required_view">
+			<column name="required_view_id" value="10"/>
+		  	<column name="report_id" value="3"/>
+		  	<column name="view_name" value="rpt_view_ap_usage"/>
+		</insert>
+		<!-- SYS_EXT_SYSTEM_COUNT -->
+		<insert tableName="rpt_required_view">
+			<column name="required_view_id" value="11"/>
+			<column name="report_id" value="4"/>
+			<column name="view_name" value="rpt_view_ap_usage"/>
+		</insert>
+	</changeSet>
+
+	<changeSet id="20250116011600" author="sergey.iryupin">
+		<dropTable tableName="sys_index_work"/>
+	</changeSet>
+
+	<changeSet id="20250117091700" author="sergey.iryupin">
+        <validCheckSum>9:8f575490aa03eedd0016c997da17030a</validCheckSum>
+		<dropColumn tableName="ap_binding_state">
+	        <column name="sync_change_id"/>
+	    </dropColumn>
+        <delete tableName="ap_cached_access_point"/>
+	</changeSet>
+
+	<changeSet id="20250130103000" author="sergey.iryupin">
+		<sql>UPDATE ap_external_system SET scope_id = (SELECT MIN(s.scope_id) FROM ap_scope s) WHERE scope_id IS NULL</sql>
+		<addNotNullConstraint tableName="ap_external_system" columnName="scope_id"/>
+	</changeSet>
+
+	<changeSet id="20250422084500" author="sergey.iryupin">
+        <addColumn tableName="arr_level">
+            <column name="list" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+	</changeSet>
+	<changeSet id="20250629083800" author="ppy">
+		<!-- reindexace pro Elza 3.2 -->
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20230315100801"/>
+	</changeSet>
+
+	<changeSet id="20250812151500" author="sergey.iryupin">
+		<sql dbms="postgresql">INSERT INTO arr_async_request (async_request_id, type, priority, access_point_id)
+			SELECT row_number() OVER (ORDER BY access_point_id) + (SELECT coalesce(
+				(SELECT max(async_request_id) FROM arr_async_request), 0)),
+				'AP', 1,
+				access_point_id
+			FROM ap_access_point WHERE state = 'ERROR'</sql>
+		<sql dbms="postgresql">UPDATE db_hibernate_sequences SET next_val = (SELECT (coalesce(max(async_request_id), 0)+20) FROM arr_async_request)
+			WHERE sequence_name = 'arr_async_request|async_request_id'</sql>
+	</changeSet>
+
+	<changeSet id="20250828160400" author="sergey.iryupin">
+		<!-- reindexace pro Elza 3.2 -->
+        <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20230315100801"/>
+	</changeSet>
+
+	<changeSet id="20251105110500" author="sergey.iryupin">
+		<!-- urychlit mazání záznamů -->
+        <createIndex indexName="ap_item_data_idx" tableName="ap_item">
+            <column name="data_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_rev_item_data_idx" tableName="ap_rev_item">
+            <column name="data_id" type="int"/>
+        </createIndex>
+	</changeSet>
+	<changeSet id="20251113080500" author="ppy">
+	  <sql dbms="postgresql">
+	  INSERT INTO ext_syncs_queue_item(ext_syncs_queue_item_id, access_point_id, external_system_id, state, date) 
+      SELECT ROW_NUMBER() OVER (ORDER BY bs.access_point_id) + (select dhs.next_val from db_hibernate_sequences dhs where dhs.sequence_name = 'ext_syncs_queue_item|ext_syncs_queue_item_id'), 
+             bs.access_point_id, 
+             aes.external_system_id, 'UPDATE' as state, now() as date 
+      FROM ap_external_system aes
+      JOIN ap_binding bnd on bnd.external_system_id = aes.external_system_id 
+	  JOIN ap_binding_state bs on bs.binding_id = bnd.binding_id and bs.delete_change_id is null and bs.ext_state in ('ERS_APPROVED', 'ERS_NEW')
+      LEFT JOIN ap_state st on st.access_point_id = bs.access_point_id and st.delete_change_id is null
+      WHERE aes."type" = 'CAM_COMPLETE' AND st.access_point_id is null	  
+	  </sql>
+	  <sql dbms="postgresql">UPDATE db_hibernate_sequences SET next_val = (SELECT (coalesce(max(ext_syncs_queue_item_id), 0)+20) FROM ext_syncs_queue_item)
+		   WHERE sequence_name = 'ext_syncs_queue_item|ext_syncs_queue_item_id'</sql>
+	</changeSet>
+	<changeSet id="20251212082200" author="ppy">
+	  <validCheckSum>9:56d07d505bee76012054a2a5b07e1b89</validCheckSum>
+	  <sql dbms="postgresql">
+         DELETE FROM ap_cached_access_point WHERE access_point_id IN 
+           (SELECT s.access_point_id FROM ap_state s 
+            WHERE s.delete_change_id IS NULL
+            GROUP BY s.access_point_id 
+            HAVING COUNT(s.state_id) &gt; 1)	  
+	  </sql>
+	  <sql dbms="postgresql">
+		UPDATE ap_state s SET delete_change_id = update_state.create_change_id 
+		FROM (
+         WITH src as (
+             SELECT st.state_id, st.access_point_id, st.create_change_id, src.state_id last_state_id, row_number() OVER (PARTITION BY st.access_point_id ORDER BY st.state_id ) pos 
+             FROM ap_state st
+             JOIN (
+               SELECT s.access_point_id, max(s.state_id) as state_id FROM ap_state s
+	           WHERE s.delete_change_id IS NULL
+   	           GROUP BY s.access_point_id
+	           HAVING COUNT(s.state_id) > 1) src ON src.access_point_id = st.access_point_id
+         )
+         SELECT prev.state_id, next.create_change_id FROM src prev
+         JOIN src next ON next.access_point_id = prev.access_point_id AND next.pos = prev.pos + 1
+        ) update_state 
+        WHERE s.state_id = update_state.state_id	  
+	  </sql>
+	  <dropIndex tableName="ap_state" indexName="ap_state_access_point_delete_change_idx"/>
+	  <!-- Speedup revision search and guarantee unique -->
+	  <sql dbms="postgresql">CREATE UNIQUE INDEX IF NOT EXISTS ap_state_delete_change_null_unique_idx ON ap_state(access_point_id) WHERE delete_change_id IS NULL</sql>
+	</changeSet>
+	<changeSet id="20251212125700" author="ppy">
+	  <sql>DELETE FROM ap_cached_access_point WHERE access_point_id IN (
+        SELECT DISTINCT p.access_point_id FROM arr_data_uri_ref adur 
+        JOIN ap_item itm ON itm.data_id = adur.data_id 
+        JOIN ap_part p ON p.part_id = itm.part_id 
+        WHERE adur.description = '')</sql>
+      <sql>DELETE FROM arr_cached_node WHERE node_id IN (
+        SELECT di.node_id FROM arr_data_uri_ref adur 
+        JOIN arr_item itm ON itm.data_id = adur.data_id 
+        JOIN arr_desc_item di ON di.item_id = itm.item_id 
+        WHERE adur.description = '')</sql>
+      <sql>UPDATE arr_data_uri_ref SET description = null WHERE description=''</sql>	  
+	</changeSet>
+
 </databaseChangeLog>

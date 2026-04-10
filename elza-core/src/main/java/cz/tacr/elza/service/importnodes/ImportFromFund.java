@@ -33,6 +33,7 @@ import cz.tacr.elza.domain.ArrFile;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.service.importnodes.vo.descitems.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,7 +41,6 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.Objects;
 import org.locationtech.jts.geom.Geometry;
 
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -478,7 +478,7 @@ public class ImportFromFund implements ImportSource {
 
         public ItemUnitdateImpl(final ArrDescItem item, final ArrDataUnitdate itemData) {
             super(item);
-            value = UnitDateConvertor.convertToString(itemData);
+            value = UnitDateConverter.convertToString(itemData);
         }
 
         @Override

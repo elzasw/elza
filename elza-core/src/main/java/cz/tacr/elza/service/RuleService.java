@@ -2,7 +2,6 @@ package cz.tacr.elza.service;
 
 import static cz.tacr.elza.domain.RulRuleSet.RuleType.ENTITY;
 import static cz.tacr.elza.repository.ExceptionThrow.itemType;
-import static cz.tacr.elza.repository.ExceptionThrow.node;
 import static cz.tacr.elza.repository.ExceptionThrow.version;
 
 import java.util.ArrayList;
@@ -13,7 +12,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -24,6 +22,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.Validate;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +38,9 @@ import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
-import cz.tacr.elza.controller.vo.ApValidationErrorsVO;
-import cz.tacr.elza.controller.vo.PartValidationErrorsVO;
+import cz.tacr.elza.controller.vo.ApValidationIssues;
+import cz.tacr.elza.controller.vo.PartValidationIssues;
+import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemBitVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemCoordinatesVO;
@@ -52,6 +53,7 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemUriRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.RuleSet;
+import cz.tacr.elza.core.data.RuleSetExtension;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.rules.ItemTypeExtBuilder;
@@ -69,9 +71,11 @@ import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
+import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -91,6 +95,7 @@ import cz.tacr.elza.domain.RulArrangementExtension;
 import cz.tacr.elza.domain.RulComponent;
 import cz.tacr.elza.domain.RulExportFilter;
 import cz.tacr.elza.domain.RulExtensionRule;
+import cz.tacr.elza.domain.RulExtensionRule.RuleType;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeAction;
@@ -126,6 +131,7 @@ import cz.tacr.elza.drools.model.item.AbstractItem;
 import cz.tacr.elza.drools.model.item.BoolItem;
 import cz.tacr.elza.drools.model.item.IntItem;
 import cz.tacr.elza.drools.model.item.Item;
+import cz.tacr.elza.drools.model.item.UnitdateItem;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -135,7 +141,6 @@ import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.ArrangementExtensionRepository;
 import cz.tacr.elza.repository.ExceptionThrow;
 import cz.tacr.elza.repository.ExportFilterRepository;
-import cz.tacr.elza.repository.ExtensionRuleRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.ItemSettingsRepository;
 import cz.tacr.elza.repository.ItemTypeActionRepository;
@@ -199,6 +204,8 @@ public class RuleService {
     private ItemTypeRepository itemTypeRepository;
     @Autowired
     private ArrDescItemsPostValidator descItemsPostValidator;
+    @Autowired
+    private LevelTreeCacheService levelTreeCache;
 
     @Autowired
     private ItemTypeActionRepository itemTypeActionRepository;
@@ -222,9 +229,6 @@ public class RuleService {
 
     @Autowired
     private ArrangementExtensionRepository arrangementExtensionRepository;
-
-    @Autowired
-    private ExtensionRuleRepository extensionRuleRepository;
 
     @Autowired
     private AccessPointService accessPointService;
@@ -302,10 +306,8 @@ public class RuleService {
 
         ArrLevel level = levelRepository.findById(faLevelId)
                 .orElseThrow(ExceptionThrow.level(faLevelId));
-        Integer nodeId = level.getNodeId();
-
-        ArrNode nodeBeforeValidation = nodeRepository.getOneCheckExist(nodeId);
-        Integer nodeVersionBeforeValidation = nodeBeforeValidation.getVersion();
+        // Get node and store its version
+        ArrNode node = level.getNode();
 
         ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
@@ -335,16 +337,7 @@ public class RuleService {
         }
 
         validationResults.addAll(validationResultsBasic);
-        ArrNodeConformityExt result = updateNodeConformityInfo(level, version, validationResults);
-
-        entityManager.detach(nodeBeforeValidation);
-        ArrNode nodeAfterValidation = nodeRepository.getOneCheckExist(nodeId);
-        Integer nodeVersionAfterValidation = nodeAfterValidation.getVersion();
-
-        if (!nodeVersionBeforeValidation.equals(nodeVersionAfterValidation)) {
-            logger.info("Během validace došlo ke změně verze uzlu " + nodeId);
-            //throw new LockVersionChangeException("Behem validace doslo ke zmene verze uzlu " + nodeId);
-        }
+        ArrNodeConformityExt result = updateNodeConformityInfo(node, version, validationResults);
 
         return result;
     }
@@ -372,12 +365,20 @@ public class RuleService {
      * @param validationResults seznam validačních chyb
      */
     // Only one thread can update data in the nodeConformity tables
-    private ArrNodeConformityExt updateNodeConformityInfo(final ArrLevel level,
+    private ArrNodeConformityExt updateNodeConformityInfo(final ArrNode node,
                                                           final ArrFundVersion version,
                                                           final List<DataValidationResult> validationResults) {
 
         ArrNodeConformity conformityInfo = nodeConformityRepository
-                .findByNodeAndFundVersion(level.getNode(), version);
+                .findByNodeAndFundVersion(node, version);
+    	// try to load conformity info from node
+    	/*ArrNodeConformity conformityInfo = null;
+    	for(ArrNodeConformity nc: node.getNodeConformity()) {
+    		if(nc.getFundVersion().getFundVersionId().equals(version.getFundVersionId())) {
+    			conformityInfo = nc;
+    		}
+    	}*/
+        State origState = State.OK;
 
         List<ArrNodeConformityMissing> confPrevMissing;
         List<ArrNodeConformityError> confPrevErrors;
@@ -385,7 +386,8 @@ public class RuleService {
         List<ArrNodeConformityError> confNextErrors = new ArrayList<>();
         if (conformityInfo != null) {
             // we can skip reading errors if prev state was ok
-            if (State.OK != conformityInfo.getState()) {
+        	 origState = conformityInfo.getState();
+            if (State.OK != origState) {
                 List<ArrNodeConformity> confInfoList = Collections.singletonList(conformityInfo);
                 confPrevMissing = nodeConformityMissingRepository.findByNodeConformityInfos(confInfoList);
                 confPrevErrors = this.nodeConformityErrorRepository.findByNodeConformity(conformityInfo);
@@ -395,7 +397,7 @@ public class RuleService {
             }
         } else {
             conformityInfo = new ArrNodeConformity();
-            conformityInfo.setNode(level.getNode());
+            conformityInfo.setNode(node);
             conformityInfo.setFundVersion(version);
 
             confPrevMissing = Collections.emptyList();
@@ -409,7 +411,7 @@ public class RuleService {
         // process errors
         for (DataValidationResult validationResult : validationResults) {
             // policy type has to be set
-            Validate.notNull(validationResult.getPolicyType());
+            Objects.requireNonNull(validationResult.getPolicyType());
 
             switch (validationResult.getResultType()) {
             case MISSING:
@@ -434,6 +436,17 @@ public class RuleService {
         }
 
         ArrNodeConformityExt result = new ArrNodeConformityExt(conformityInfo, confNextMissing, confNextErrors);
+        
+        // run reindex of node if needed
+        if( origState!=State.OK || result.getState()!=State.OK) {
+        	logger.trace("Reindexing node {}", node.getNodeId());
+        	
+            SearchSession searchSession = Search.session(entityManager);
+            ArrCachedNode cachedNode = node.getCachedNode();
+            if(cachedNode!=null) {
+            	searchSession.indexingPlan().addOrUpdate(cachedNode);
+            }            
+        }
 
         return result;
     }
@@ -607,7 +620,7 @@ public class RuleService {
         Set<RelatedNodeDirection> impactOnConformityInfo = getImpactOnConformityInfo(fundVersionId, nodeTypeOperation,
                 createDescItems, updateDescItems, deleteDescItems);
 
-        revalidateNodes(fundVersionId, nodeIds, impactOnConformityInfo, validationPriority);
+        revalidateNodes(fundVersionId, nodeIds, impactOnConformityInfo, validationPriority, false);
 
         return impactOnConformityInfo;
     }
@@ -671,7 +684,8 @@ public class RuleService {
     public void revalidateNodes(final Integer fundVersionId,
                                 final Collection<Integer> nodeIds,
                                 @Nullable final Collection<RelatedNodeDirection> directions,
-                                @Nullable final Integer validationPriority) {
+                                @Nullable final Integer validationPriority,
+                                boolean useCache) {
         Validate.notNull(fundVersionId, "Nebyla vyplněn identifikátor verze AS");
         Validate.notEmpty(nodeIds, "Musí být vyplněna alespoň jedna JP");
 
@@ -681,21 +695,33 @@ public class RuleService {
         ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
                 .orElseThrow(version(fundVersionId));
 
-        Set<ArrNode> updateNodes = new HashSet<>();
+        Set<Integer> updateNodes = new HashSet<>();
 
         if (CollectionUtils.isEmpty(directions)) {
-            updateNodes.addAll(nodes);
+            updateNodes.addAll(nodeIds);
         } else {
             for (RelatedNodeDirection direction : directions) {
                 for (ArrNode node : nodes) {
-                    updateNodes.addAll(nodeRepository.findNodesByDirection(node, version, direction));
+                	if(!useCache) {
+                		Collection<ArrNode> dbNodes = nodeRepository.findNodesByDirection(node, version, direction);
+                		// append nodes for update
+                		if(dbNodes!=null) {
+                			dbNodes.forEach(dbNode -> updateNodes.add(dbNode.getNodeId()));
+                		}
+                	} else {
+                		Collection<TreeNode> treeNodes = levelTreeCache.findNodesByDirection(node, version, direction);
+                		// append nodes for update
+                		if(treeNodes!=null) {
+                			treeNodes.forEach(tn -> updateNodes.add(tn.getId()));
+                		}
+                	}
                 }
             }
         }
 
         if (!updateNodes.isEmpty()) {
             asyncRequestService.enqueueNodes(fundVersionId,
-                                        updateNodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList()),
+                                        updateNodes,
                                         validationPriority);
         }
     }
@@ -731,7 +757,7 @@ public class RuleService {
         for (Integer fundVersionId : nodeIdFundVersionMap.keySet()) {
             ArrFundVersion version = fundVersionRepository.findById(fundVersionId).orElseThrow(version(fundVersionId));
             List<ArrNode> nodes = new ArrayList<>();
-            nodeIdFundVersionMap.get(fundVersionId).forEach(id -> nodes.add(nodeRepository.getOne(id)));
+            nodeIdFundVersionMap.get(fundVersionId).forEach(id -> nodes.add(nodeRepository.getReferenceById(id)));
             asyncRequestService.enqueue(version, nodes);
         }
     }
@@ -942,87 +968,6 @@ public class RuleService {
     }
 
     /**
-     * Vytvoření vazby mezi JP a definicí řídících pravidel.
-     *
-     * @param versionId     identifikátor verze AP
-     * @param nodeId        identifikátor JP
-     * @param nodeExtension  vazba
-     * @return  vazba
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
-    public ArrNodeExtension createNodeExtension(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
-                                                final Integer nodeId,
-                                                final ArrNodeExtension nodeExtension) {
-        Assert.notNull(nodeExtension, "Přirazení musí být vyplněno");
-        Assert.isNull(nodeExtension.getNodeExtensionId(), "Identifikátor přiřazení nesmí být vyplěn");
-
-        ArrNode node = nodeRepository.findById(nodeId)
-                .orElseThrow(node(nodeId));
-
-        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_NODE_EXTENSION, node);
-
-        node.setVersion(nodeExtension.getNode().getVersion());
-        saveNode(node, change);
-
-        validateNodeExtension(nodeExtension, versionId);
-
-        nodeExtension.setNode(node);
-        nodeExtension.setCreateChange(change);
-        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_EXTENSION_CHANGE, versionId, nodeExtension.getNode().getNodeId(), nodeExtension.getNode().getVersion()));
-
-        nodeExtensionRepository.saveAndFlush(nodeExtension);
-        arrangementCacheService.createNodeExtension(nodeId, nodeExtension);
-
-        revalidateNodes(versionId, Collections.singleton(nodeId),
-                        Collections.singleton(RelatedNodeDirection.DESCENDANTS),
-                        null);
-
-        return nodeExtension;
-    }
-
-    /**
-     * Odstranění vazby mezi nodem a definicí řídících pravidel.
-     *
-     * @param versionId     identifikátor verze AP
-     * @param nodeId        identifikátor JP
-     * @param nodeExtension  vazba
-     * @return vazba
-     */
-    @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
-    public ArrNodeExtension deleteNodeExtension(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer versionId,
-                                                final Integer nodeId,
-                                                final ArrNodeExtension nodeExtension) {
-        Assert.notNull(nodeExtension, "Rejstříkové heslo musí být vyplněno");
-        Assert.notNull(nodeExtension.getNodeExtensionId(), "Identifikátor musí být vyplněn");
-
-        ArrNodeExtension nodeExtensionDB = nodeExtensionRepository.findById(nodeExtension.getNodeExtensionId())
-                .orElseThrow(node(nodeExtension.getNodeExtensionId()));
-
-        ArrNode node = nodeRepository.findById(nodeId)
-                .orElseThrow(node(nodeExtension.getNodeExtensionId()));
-
-        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.DELETE_NODE_EXTENSION, node);
-
-        node.setVersion(nodeExtension.getNode().getVersion());
-        saveNode(node, change);
-
-        validateNodeExtension(nodeExtensionDB, versionId);
-
-        nodeExtensionDB.setDeleteChange(change);
-
-        eventNotificationService.publishEvent(new EventNodeIdVersionInVersion(EventType.FUND_EXTENSION_CHANGE, versionId, node.getNodeId(), node.getVersion()));
-
-        nodeExtensionRepository.save(nodeExtensionDB);
-        arrangementCacheService.deleteNodeExtension(nodeId, nodeExtensionDB.getNodeExtensionId());
-
-        revalidateNodes(versionId, Collections.singleton(nodeId),
-                        Collections.singleton(RelatedNodeDirection.DESCENDANTS),
-                        null);
-
-        return nodeExtensionDB;
-    }
-
-    /**
      * Uložení uzlu - optimistické zámky
      *
      * @param node   uzel
@@ -1034,30 +979,6 @@ public class RuleService {
         nodeRepository.save(node);
         nodeRepository.flush();
         return node;
-    }
-
-    /**
-     * Validuje entitu před uložením.
-     *
-     * @param nodeExtension entita
-     * @param fundVersionId
-     */
-    private void validateNodeExtension(final ArrNodeExtension nodeExtension, final Integer fundVersionId) {
-        if (nodeExtension.getDeleteChange() != null) {
-            throw new IllegalStateException("Nelze vytvářet či modifikovat změnu," +
-                    " která již byla smazána (má delete change).");
-        }
-
-        if (nodeExtension.getNode() == null) {
-            throw new IllegalArgumentException("Není vyplněna JP");
-        }
-        if (nodeExtension.getArrangementExtension() == null) {
-            throw new IllegalArgumentException("Nejsou definovány rozšířené pravidla");
-        }
-        List<RulArrangementExtension> arrangementExtensions = findArrangementExtensionsByFundVersionId(fundVersionId);
-        if (!arrangementExtensions.contains(nodeExtension.getArrangementExtension())) {
-            throw new IllegalArgumentException("Řídící pravidla nejsou pro pravidla AS");
-        }
     }
 
     /**
@@ -1083,49 +1004,68 @@ public class RuleService {
      * @return nalezené definice
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_VER_WR})
-    public List<RulArrangementExtension> findArrangementExtensionsByNodeId(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
-                                                                           final Integer nodeId) {
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
-        Assert.notNull(fundVersionId, "Identifikátor verze AS musí být vyplněn");
-        ArrFundVersion version = fundVersionRepository.findById(fundVersionId)
-                .orElseThrow(version(fundVersionId));
-        ArrNode node = nodeRepository.getOneCheckExist(nodeId);
+    public List<RulArrangementExtension> findArrangementExtensionsByNodeId(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
+                                                                           final ArrNode node) {
+    	if(version.getLockChangeId() != null) {
+	    	throw new IllegalArgumentException("Verze AS je zamknuta");
+    	}
         if (!node.getFundId().equals(version.getFundId())) {
             throw new IllegalArgumentException("JP nespadá pod verzi AS");
         }
         return arrangementExtensionRepository.findByNode(node);
     }
-
+    
     /**
-     * Vyhledá všechny použité/zděděné definice rozšíření pro řídící pravidla pro JP. Seřazené podle názvu.
-     *
-     * @param nodeId identifikátor JP
-     * @return nalezené definice
+     * Vyhledá definice rozřízení pro JP z verze AS.
+     * @param nodeIds
+     * @param version
+     * @return
      */
-    public List<RulArrangementExtension> findAllArrangementExtensionsByNodeId(final Integer nodeId) {
-        Assert.notNull(nodeId, "Identifikátor JP musí být vyplněn");
-        return arrangementExtensionRepository.findByNodeIdToRoot(nodeId);
+    public List<RulArrangementExtension> findArrangementExtensionsByNodeIds(Collection<Integer> nodeIds, ArrFundVersion version) {
+    	if(version.getLockChangeId() != null) {
+	    	throw new IllegalArgumentException("Verze AS je zamknuta");
+    	}
+    	
+    	return arrangementExtensionRepository.findByNodeIds(nodeIds);
     }
 
     public RulItemType getItemTypeById(final Integer itemTypeId) {
         return itemTypeRepository.findById(itemTypeId)
                 .orElseThrow(itemType(itemTypeId));
     }
+    
+	public List<RulExtensionRule> findExtensionRuleByNodeIds(Collection<Integer> nodeIds, 
+			ArrFundVersion version, RuleType attributeTypes) {
+		if(CollectionUtils.isEmpty(nodeIds)) {
+			return Collections.emptyList();
+		}
 
-    public List<RulExtensionRule> findExtensionRuleByNode(final ArrNode node,
-                                                          final RulExtensionRule.RuleType attributeTypes) {
-        Assert.notNull(node, "JP musí být vyplněna");
+        List<ArrNodeExtension> nodeExtensions = nodeExtensionRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
+        if(CollectionUtils.isEmpty(nodeExtensions)) {
+			return Collections.emptyList();
+		}
 
-        List<ArrNodeExtension> nodeExtensions = nodeExtensionRepository.findAllByNodeIdFromRoot(node.getNodeId());
-
-        LinkedHashSet<RulArrangementExtension> arrangementExtensions = new LinkedHashSet<>();
-        for (ArrNodeExtension nodeExtension : nodeExtensions) {
-            arrangementExtensions.add(nodeExtension.getArrangementExtension());
+        // Find extensions
+        StaticDataProvider sdp = staticDataService.getData();
+        RuleSet ruleSet = sdp.getRuleSetById(version.getRuleSetId());
+        Set<RuleSetExtension> insertedExtensoins = new HashSet<>();
+        List<RulExtensionRule> result = new ArrayList<>();
+        for(ArrNodeExtension nodeExtension: nodeExtensions) { 
+        	RuleSetExtension ext = ruleSet.getRuleSetExtension(nodeExtension.getArrangementExtensionId());
+        	Validate.notNull(ext, "Cannot find extension, id: %d", nodeExtension.getArrangementExtensionId());
+        	if(insertedExtensoins.add(ext)) {
+        		// append rules to the result
+        		List<RulExtensionRule> filteredRules = ext.getRulesByType(attributeTypes);
+        		if(filteredRules!=null) {
+        			result.addAll(filteredRules);
+        		}
+        	}
         }
-        List<RulArrangementExtension> arrangementExtensionsFinal = new ArrayList<>(arrangementExtensions);
-
-        return extensionRuleRepository.findExtensionRules(arrangementExtensionsFinal, attributeTypes);
-    }
+        
+        // sort extensions
+        result.sort(null);
+        return result;
+	}    
 
     /**
      * Nastaví nodu konkrétní extensions. Synchronizuje dodaný set. Dovytvoří potřebné, smaže nepotřebné.
@@ -1156,9 +1096,18 @@ public class RuleService {
             // Vše je v konzistentním stavu
             return;
         }
-
+        
+        
+        ArrChange.Type changeType = ArrChange.Type.SET_NODE_EXTENSION;
+        if(toDeleteIds.isEmpty()&& !toAddIds.isEmpty()) {
+        	changeType = ArrChange.Type.ADD_NODE_EXTENSION;
+        } else 
+        if(toAddIds.isEmpty() && !toDeleteIds.isEmpty()) {
+	        changeType = ArrChange.Type.DELETE_NODE_EXTENSION;
+        }
+        
         // Změna pod kterou uvidíme nastavení
-        final ArrChange change = arrangementInternalService.createChange(ArrChange.Type.SET_NODE_EXTENSION, node);
+        final ArrChange change = arrangementInternalService.createChange(changeType, node);
 
         // Uložení node pro zaznamenání change
         saveNode(node, change);
@@ -1211,7 +1160,8 @@ public class RuleService {
 
         revalidateNodes(versionId, Collections.singleton(nodeId),
                         Lists.newArrayList(RelatedNodeDirection.NODE, RelatedNodeDirection.DESCENDANTS),
-                        null);
+                        null,
+                        true);
     }
 
     /**
@@ -1264,6 +1214,8 @@ public class RuleService {
                 collect(Collectors.toList());
     }
 
+    // TODO: Refactor this method, VO object should not be parameter of 
+    //       of this method.
     @Transactional
     public ModelAvailable executeAvailable(final ApAccessPointCreateVO form) {
         if (form == null || form.getTypeId() == null || form.getPartForm() == null || form.getScopeId() == null) {
@@ -1323,7 +1275,8 @@ public class RuleService {
             } else if (item instanceof ApItemAccessPointRefVO) {
                 ai = new IntItem(item.getId(), itemType, itemSpec, ((ApItemAccessPointRefVO) item).getValue());
             } else if (item instanceof ApItemUnitdateVO) {
-                ai = new Item(item.getId(), itemType, itemSpec, ((ApItemUnitdateVO) item).getValue());
+            	ArrDataUnitdate unitdate = ArrDataUnitdate.valueOf(((ApItemUnitdateVO) item).getValue());
+                ai = new UnitdateItem(item.getId(), itemType, itemSpec, unitdate);
             } else if (item instanceof ApItemCoordinatesVO) {
                 ai = new Item(item.getId(), itemType, itemSpec, ((ApItemCoordinatesVO) item).getValue());
             } else if (item instanceof ApItemUriRefVO) {
@@ -1361,14 +1314,15 @@ public class RuleService {
      * Method reads current AP state from DB.
      * Method is not using cache.
      *
-     * @param accessPoint
-     * @return
+     * @param apState
+     * @param includeRevision
+     * 
+     * @return ApValidationIssues
      */
     @Transactional(TxType.MANDATORY)
-    public ApValidationErrorsVO executeValidation(final ApState srcApState,
-                                                  final boolean includeRevision) {
+    public ApValidationIssues executeValidation(final ApState apState, final boolean includeRevision) {
 
-        Integer stateId = srcApState.getStateId();
+        Integer stateId = apState.getStateId();
 
         // Flush all changes to DB before reading data for validation
         this.entityManager.flush();
@@ -1452,9 +1406,9 @@ public class RuleService {
                 if (part == null) {
                     // part is only modified?
                     Integer origPartId = revIndex.getPart().getOriginalPartId();
-                    Validate.notNull(origPartId);
+                    Objects.requireNonNull(origPartId);
                     part = apBuilder.getPart(origPartId);
-                    Validate.notNull(part);
+                    Objects.requireNonNull(part);
                 }
 
                 Index index = new Index(revIndex.getIndexType(), revIndex.getRevValue(), part);
@@ -1467,7 +1421,7 @@ public class RuleService {
 
         GeoModel geoModel = createGeoModel(ap);
 
-        ApValidationErrorsVO apValidationErrorsVO = createAeValidationErrorsVO();
+        ApValidationIssues apValidationIssues = new ApValidationIssues();
 
         // vytvoření mapy specifikací vztahů
         Map<Integer, Map<String, Relation>> relationMap = apBuilder.createRelationMap();
@@ -1478,15 +1432,13 @@ public class RuleService {
         ModelValidation modelValidation = new ModelValidation(ap, geoModel, modelPartList, new ApValidationErrors(),
                 items, expectedItems);
         ModelValidation validationResult = executeValidation(modelValidation, ruleSet);
-        // validace opakovatelnosti partů
-        validatePartRepeatability(validationResult);
         // validace opakovatelnosti indexů přes party se stejným part typem
-        validateIndexRepeatability(validationResult, apValidationErrorsVO);
+        validateIndexRepeatability(validationResult, apValidationIssues);
         // validace vztahů na nevalidní nebo nahrazené entity
-        validateEntityRefs(ap, apValidationErrorsVO);
+        validateEntityRefs(ap, apValidationIssues);
 
         if (CollectionUtils.isNotEmpty(validationResult.getApValidationErrors().getErrors())) {
-            apValidationErrorsVO.getErrors().addAll(validationResult.getApValidationErrors().getErrors());
+        	apValidationIssues.getErrors().addAll(validationResult.getApValidationErrors().getErrors());
         }
 
         for (Part part : ap.getParts()) {
@@ -1496,21 +1448,21 @@ public class RuleService {
             // validace možných itemů
             List<String> availableErrors = validateAvailableItems(availableResult, part);
             // validace opakovatelnosti vztahů
-            validateRelationRepeatabilitySpecs(availableResult, relationMap, apValidationErrorsVO);
+            validateRelationRepeatabilitySpecs(availableResult, relationMap, apValidationIssues);
             // validace opakovatelnosti identifikátorů
             List<String> identErrors = validateIdentRepeatabilitySpecs(availableResult, identMap);
 
             if (CollectionUtils.isNotEmpty(availableErrors)) {
-                PartValidationErrorsVO partValidationErrorsVO = getPartValidationErrorsVO(apValidationErrorsVO, part.getId());
-                partValidationErrorsVO.getErrors().addAll(availableErrors);
+                PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, part.getId());
+                partValidationIssues.getErrors().addAll(availableErrors);
             }
             if (CollectionUtils.isNotEmpty(identErrors)) {
-                PartValidationErrorsVO partValidationErrorsVO = getPartValidationErrorsVO(apValidationErrorsVO, part.getId());
-                partValidationErrorsVO.getErrors().addAll(identErrors);
+            	PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, part.getId());
+                partValidationIssues.getErrors().addAll(identErrors);
             }
         }
 
-        return apValidationErrorsVO;
+        return apValidationIssues;
     }
 
     /**
@@ -1531,12 +1483,13 @@ public class RuleService {
             return new Item(0, groovyItem.getItemType(), groovyItem.getSpecType(), groovyItem.getValue());
         case INT:
             return new IntItem(0, groovyItem.getItemType(), groovyItem.getSpecType(), groovyItem.getIntValue());
+        default:
+            throw new SystemException("Unsupported conversion, item type: " + groovyItem.getTypeCode()
+            + ", dataType: " + groovyItem.getItemType().getDataType(), BaseCode.SYSTEM_ERROR);
         }
-        throw new SystemException("Unsupported conversion, item type: " + groovyItem.getTypeCode()
-                + ", dataType: " + groovyItem.getItemType().getDataType(), BaseCode.SYSTEM_ERROR);
     }
 
-    private void validateEntityRefs(Ap ap, ApValidationErrorsVO apValidationErrorsVO) {
+    private void validateEntityRefs(Ap ap, ApValidationIssues apValidationIssues) {
         if (CollectionUtils.isNotEmpty(ap.getParts())) {
             for (Part part : ap.getParts()) {
                 if (CollectionUtils.isNotEmpty(part.getItems())) {
@@ -1553,8 +1506,8 @@ public class RuleService {
                         if (CollectionUtils.isNotEmpty(stateList)) {
                             for (ApState state : stateList) {
                                 if (state.getDeleteChange() != null) {
-                                    PartValidationErrorsVO partValidationErrorsVO = getPartValidationErrorsVO(apValidationErrorsVO, part.getId());
-                                    partValidationErrorsVO.getErrors().add("V části typu " + part.getType().value() + " entita odkazuje na neplatnou entitu");
+                                    PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, part.getId());
+                                    partValidationIssues.addErrorsItem("V části typu " + part.getType().value() + " entita odkazuje na neplatnou entitu");
                                 }
                             }
                         }
@@ -1564,41 +1517,7 @@ public class RuleService {
         }
     }
 
-    /**
-     * Validate part repeatability
-     * 
-     * @param validationResult
-     */
-    private void validatePartRepeatability(final ModelValidation validationResult) {
-        Ap ap = validationResult.getAp();
-        // count parts per type
-        Map<PartType, Integer> partCountMap = new HashMap<>();
-        for (Part part : ap.getParts()) {
-            if (part.getParent() == null) {
-                partCountMap.put(part.getType(), partCountMap.getOrDefault(part.getType(), 0) + 1);
-            }
-        }
-        // check if part is repeatable
-        for (ModelPart modelPart : validationResult.getModelParts()) {
-            if (!modelPart.isRepeatable()) {
-                Integer partCount = partCountMap.getOrDefault(modelPart.getType(), 0);
-                if (partCount > 1) {
-
-                    logger.error("Multiple occurance of non-repeatable part, accessPointId = {}, partType={}, count={}",
-                                 ap.getId(),
-                                 modelPart.getType(), partCount);
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("Část ").append(modelPart.getType())
-                            .append(" je v entitě vícekrát (").append(partCount).append(").");
-                    validationResult.getApValidationErrors().addError(sb.toString());
-                }
-            }
-        }
-    }
-
-    private void validateIndexRepeatability(ModelValidation validationResult,
-                                            ApValidationErrorsVO apValidationErrorsVO) {
+    private void validateIndexRepeatability(ModelValidation validationResult, ApValidationIssues apValidationIssues) {
         for (ModelPart modelPart : validationResult.getModelParts()) {
             if (CollectionUtils.isNotEmpty(modelPart.getIndices())) {
                 Map<String, Integer> indexCount = createIndexCountMap(modelPart.getIndices());
@@ -1606,8 +1525,8 @@ public class RuleService {
                     int parentId = index.getPart().getParent() != null ? index.getPart().getParent().getId() : -1;
                     String key = parentId + ":" + index.getIndexType() + ":" + index.getValue();
                     if (!index.isRepeatable() && indexCount.get(key) > 1) {
-                        PartValidationErrorsVO partValidationErrorsVO = getPartValidationErrorsVO(apValidationErrorsVO, index.getPart().getId());
-                        partValidationErrorsVO.addError("V části typu " + index.getPart().getType().value()
+                        PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, index.getPart().getId());
+                        partValidationIssues.addErrorsItem("V části typu " + index.getPart().getType().value()
                                 + " je duplicitní index typu "
                                 + index.getIndexType() + " hodnoty " + index.getValue());
                     }
@@ -1702,7 +1621,7 @@ public class RuleService {
 
     }
 
-    private void validateRelationRepeatabilitySpecs(ModelAvailable availableResult, Map<Integer, Map<String, Relation>> relationMap, ApValidationErrorsVO aeValidationErrorsVO) {
+    private void validateRelationRepeatabilitySpecs(ModelAvailable availableResult, Map<Integer, Map<String, Relation>> relationMap, ApValidationIssues apValidationIssues) {
         StaticDataProvider sdp = staticDataService.getData();
         if (availableResult.getPart().getType().equals(PartType.PT_REL)) {
             Part parent = availableResult.getPart().getParent();
@@ -1726,11 +1645,11 @@ public class RuleService {
 
                     if (itemSpec != null && !itemSpec.isRepeatable()) {
                         if (parent != null) {
-                            PartValidationErrorsVO partValidationErrorsVO = getPartValidationErrorsVO(aeValidationErrorsVO, parent.getId());
-                            partValidationErrorsVO.getErrors().add("V části typu " + parent.getType().value() + " je vztah "
+                            PartValidationIssues partValidationIssues = getPartValidationIssues(apValidationIssues, parent.getId());
+                            partValidationIssues.addErrorsItem("V části typu " + parent.getType().value() + " je vztah "
                                     + itemSpec.getCode() + "-" + itemSpec.getItemSpec().getName() + " vícekrát.");
                         } else {
-                            aeValidationErrorsVO.getErrors().add("V entitě je vztah " + itemSpec.getCode() + "-"
+                        	apValidationIssues.addErrorsItem("V entitě je vztah " + itemSpec.getCode() + "-"
                                     + itemSpec.getItemSpec().getName() + " vícekrát.");
                         }
                     }
@@ -1914,27 +1833,15 @@ public class RuleService {
         return null;
     }
 
-    private ApValidationErrorsVO createAeValidationErrorsVO() {
-        ApValidationErrorsVO aeValidationErrorsVO = new ApValidationErrorsVO();
-        aeValidationErrorsVO.setPartErrors(new ArrayList<>());
-        aeValidationErrorsVO.setErrors(new ArrayList<>());
-        return aeValidationErrorsVO;
-    }
-
-    private PartValidationErrorsVO getPartValidationErrorsVO(ApValidationErrorsVO aeValidationErrorsVO, Integer partId) {
-        for (PartValidationErrorsVO p : aeValidationErrorsVO.getPartErrors()) {
+    private PartValidationIssues getPartValidationIssues(ApValidationIssues apValidationIssues, Integer partId) {
+        for (PartValidationIssues p : apValidationIssues.getPartErrors()) {
             if (p.getId().equals(partId)) {
                 return p;
             }
         }
-        PartValidationErrorsVO partValidationErrorsVO = createPartValidationErrorsVO(partId);
-        aeValidationErrorsVO.getPartErrors().add(partValidationErrorsVO);
-        return partValidationErrorsVO;
-    }
-
-    private PartValidationErrorsVO createPartValidationErrorsVO(Integer partId) {
-        PartValidationErrorsVO partValidationErrorsVO = new PartValidationErrorsVO(partId);
-        return partValidationErrorsVO;
+        PartValidationIssues partValidationIssues = new PartValidationIssues().id(partId);
+        apValidationIssues.addPartErrorsItem(partValidationIssues);
+        return partValidationIssues;
     }
 
     @Nullable
@@ -2111,6 +2018,6 @@ public class RuleService {
      */
     @Transactional(TxType.MANDATORY)
     public RulExportFilter getExportFilter(Integer exportFilterId) {
-        return exportFilterRepository.getOne(exportFilterId);
+        return exportFilterRepository.getOneCheckExist(exportFilterId);
     }
 }

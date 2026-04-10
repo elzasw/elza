@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.context.annotation.Scope;
@@ -11,9 +12,11 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.vo.NodeTypeOperation;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.cache.NodeCacheService;
+import cz.tacr.elza.service.cache.RestoredNode;
 import cz.tacr.elza.service.eventnotification.EventNotificationService;
 import cz.tacr.elza.service.eventnotification.events.EventChangeDescItem;
 import cz.tacr.elza.service.eventnotification.events.EventIdsInVersion;
@@ -23,8 +26,13 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 @Scope("prototype")
 public class MultipleItemChangeContext implements BatchChangeContext {
 
+    final private DescItemRepository descItemRepository;
+
     final private RuleService ruleService;
+
     final private EventNotificationService notificationService;
+
+    final private NodeCacheService nodeCacheService;
 
     private static class NodeChanges {
 
@@ -84,9 +92,7 @@ public class MultipleItemChangeContext implements BatchChangeContext {
                         item.getNode().getVersion());
                 notificationService.publishEvent(event);
             }
-
         }
-
     }
 
     /**
@@ -108,23 +114,27 @@ public class MultipleItemChangeContext implements BatchChangeContext {
      */
     boolean publishNodeChanges = true;
 
-    final private NodeCacheService nodeCacheService;
-    private DescItemRepository descItemRepository;
-
-    public void setPublishNodeChanges(final boolean publishNodeChanges) {
-        this.publishNodeChanges = publishNodeChanges;
-    }
-
+    /**
+     * If the update NodeCache is delayed until all records are processed
+     */
+    final boolean nodeCacheSyncDelayed;
+    
     public MultipleItemChangeContext(final Integer fundVersionId,
-                                    final DescItemRepository descItemRepository,
-                                    final NodeCacheService nodeCacheService,
-                                    final RuleService ruleService,
-                                    final EventNotificationService eventNotificationService) {
+                                     final DescItemRepository descItemRepository,
+                                     final NodeCacheService nodeCacheService,
+                                     final RuleService ruleService,
+                                     final EventNotificationService eventNotificationService,
+                                     boolean nodeCacheSyncDelayed) {
         this.descItemRepository = descItemRepository;
         this.nodeCacheService = nodeCacheService;
         this.ruleService = ruleService;
         this.notificationService = eventNotificationService;
         this.fundVersionId = fundVersionId;
+        this.nodeCacheSyncDelayed = nodeCacheSyncDelayed;
+    }
+
+    public void setPublishNodeChanges(final boolean publishNodeChanges) {
+        this.publishNodeChanges = publishNodeChanges;
     }
 
     private NodeChanges getNodeChanges(Integer nodeId) {
@@ -158,7 +168,44 @@ public class MultipleItemChangeContext implements BatchChangeContext {
         return false;
     }
 
-    public void flush() {
+	@Override
+	public boolean isNodeCacheSyncDelayed() {
+		return nodeCacheSyncDelayed;
+	}
+
+	private void updateNodeCache() {
+        if (nodeCacheSyncDelayed) {
+        	Map<Integer, RestoredNode> nodesMap = nodeCacheService.getNodes(nodes.keySet());
+			for (RestoredNode cachedNode : nodesMap.values()) {
+        		NodeChanges node = nodes.get(cachedNode.getNodeId());
+        		Objects.requireNonNull(node);
+				node.getCreatedItems().forEach(item -> cachedNode.addDescItem(item));
+				node.getUpdatedItems().forEach(item -> {
+					ArrDescItem findItem = null;
+					for (ArrDescItem descItem : cachedNode.getDescItems()) {
+						if (descItem.getDescItemObjectId().equals(item.getDescItemObjectId())) {
+							findItem = descItem;
+	                        break;
+						}
+					}
+					Objects.requireNonNull(findItem, "Not found ArrDescItem in CachedNode for update.");
+                    // replace data in cache node
+					findItem.setData(item.getData());
+				});
+				node.getDeletedItems().forEach(item -> {
+					throw new SystemException("The functionality is not implemented.");
+				});
+        	}
+        	nodeCacheService.saveNodes(nodesMap.values(), true);
+		}
+	}
+
+	public void flush() {
+        List<ArrDescItem> createdItems, updatedItems, deletedItems;
+
+        // update all NodeCache items
+        updateNodeCache();
+
         nodeCacheService.flushChanges();
         descItemRepository.flush();
 
@@ -168,7 +215,6 @@ public class MultipleItemChangeContext implements BatchChangeContext {
         }
         Set<Integer> nodeIds = nodes.keySet();
 
-        List<ArrDescItem> createdItems, updatedItems, deletedItems;
         if (nodes.size() == 1) {
             NodeChanges nodeChanges = nodes.get(nodeIds.iterator().next());
             createdItems = nodeChanges.getCreatedItems();
@@ -194,8 +240,7 @@ public class MultipleItemChangeContext implements BatchChangeContext {
         if (publishNodeChanges) {
             Integer nodeIdsArray[] = nodeIds.toArray(new Integer[0]);
 
-            EventIdsInVersion event = new EventIdsInVersion(EventType.NODES_CHANGE, fundVersionId,
-                        nodeIdsArray);
+            EventIdsInVersion event = new EventIdsInVersion(EventType.NODES_CHANGE, fundVersionId, nodeIdsArray);
             notificationService.publishEvent(event);
         } else {
             // publish event per change

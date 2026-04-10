@@ -1,6 +1,7 @@
 package cz.tacr.elza.dataexchange.input.sections.context;
 
-import org.apache.commons.lang3.Validate;
+import java.util.Objects;
+
 import org.hibernate.Session;
 
 import cz.tacr.elza.dataexchange.input.context.EntityIdHolder;
@@ -15,8 +16,8 @@ public class ArrNodeWrapper implements EntityWrapper {
 
     protected final ArrNode entity;
 
-    ArrNodeWrapper(ArrNode entity) {
-        this.entity = Validate.notNull(entity);
+    public ArrNodeWrapper(ArrNode entity) {
+        this.entity = Objects.requireNonNull(entity);
     }
 
     public EntityIdHolder<ArrNode> getIdHolder() {

@@ -19,9 +19,6 @@ export const FormUriRef:FC<CommonFieldProps<ApItemUriRefVO>> = ({
     const field = useField<RevisionItem<ApItemUriRefVO>>(`${name}`);
     const {item, updatedItem} = field.input.value;
 
-    const descriptionField = useField(`${name}.updatedItem.description`);
-    const valueField = useField(`${name}.updatedItem.value`)
-
     const isNew = updatedItem ? updatedItem.changeType === "NEW" || !updatedItem.changeType : false;
     const isDeleted = updatedItem?.changeType === "DELETED";
 
@@ -60,20 +57,18 @@ export const FormUriRef:FC<CommonFieldProps<ApItemUriRefVO>> = ({
     }
 
     return <Row>
-        <Col xs={10}>
+        <Col>
             <RevisionFieldExample
                 label={label}
                 prevValue={getValue(item)}
-                value={getValue({
-                    description: descriptionField.input.value,
-                    value: valueField.input.value,
-                })}
                 disableRevision={disableRevision}
                 onRevert={!isNew ? handleRevert : undefined}
                 onDelete={isDeleted ? undefined : handleDelete}
                 isDeleted={isDeleted}
+                equalSplit={true}
+                isUpdated={updatedItem?.changeType === "UPDATED"}
             >
-                <div style={{display: "flex"}}>
+                <div style={{display: "flex", flexDirection: "column", marginLeft: "16px"}}>
                     <Field
                         name={`${name}.updatedItem.description`}
                         label="Název"

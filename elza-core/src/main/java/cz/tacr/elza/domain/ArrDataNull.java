@@ -41,8 +41,4 @@ public class ArrDataNull extends ArrData {
         Validate.isInstanceOf(ArrDataNull.class, srcData);
     }
 
-    @Override
-    protected void validateInternal() {
-        // nothing to check
-    }
 }

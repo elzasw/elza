@@ -7,7 +7,7 @@ import { decorateValue, inputValue } from './DescItemUtils.jsx';
 import { DescItemLabel } from './DescItemLabel';
 import Icon from '../../shared/icon/Icon';
 import { Button } from 'react-bootstrap';
-import { SelectSearchFundsForm } from 'components/arr/SelectSearchFundsForm';
+import { SelectSearchFundsForm } from 'components/arr/search-funds-form/SelectSearchFundsForm.tsx';
 import { modalDialogHide, modalDialogShow } from '../../../actions/global/modalDialog';
 import { WebApi } from '../../../actions';
 import { CLS_CALCULABLE, ELZA_SCHEME_NODE } from '../../../constants';
@@ -72,7 +72,7 @@ class DescItemLink extends AbstractReactComponent {
                             this.props.onChange({
                                 value: ELZA_SCHEME_NODE + '://' + data.uuid,
                                 description:
-                                    fund.id !== this.props.fundId ? data.fundName + ' ' + data.name : data.name,
+                                    fund.id !== this.props.fundId ? data.fundName + '; ' + data.name : data.name,
                             });
                             this.props.onBlur();
                             this.props.dispatch(modalDialogHide());

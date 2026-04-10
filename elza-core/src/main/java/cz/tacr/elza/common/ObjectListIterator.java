@@ -1,7 +1,6 @@
 package cz.tacr.elza.common;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,7 +10,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.apache.commons.collections4.CollectionUtils;
-
 
 /**
  * Iterátor kolekcí. Vrací podkolekci s danou velikostí.

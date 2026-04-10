@@ -1,11 +1,15 @@
 /**
  * Akce pro vyhledávání archivních souborů v komponentě Modal
  */
-import { WebApi } from './../../actions/index.jsx';
 import * as types from './../../actions/constants/ActionTypes';
+import { Api } from 'api';
 
 export const getDataKey = (fulltext, isIdSearch) => {
     return isIdSearch ? `${fulltext}-id` : fulltext;
+}
+
+export const generateDataKey = (filters) => {
+    return JSON.stringify(filters.map((filter) => filter.getSerializedString(filter)));
 }
 
 export function isFundSearchAction(action) {
@@ -22,54 +26,37 @@ export function isFundSearchAction(action) {
     }
 }
 
-export function fundSearchFetchIfNeeded() {
-    return (dispatch, getState) => {
+export function fundSearchFetchIfNeeded(force = false) {
+    return async (dispatch, getState) => {
         const {
             arrRegion: { fundSearch },
         } = getState();
-        const { currentDataKey, isFetching, fulltext, funds, isIdSearch } = fundSearch;
+        const { currentDataKey, filters, funds } = fundSearch;
+        if (!filters || filters.length <= 0) { return; }
+        const newDataKey = generateDataKey(filters);
 
-        if (!fulltext) { return; }
-
-        if (!isIdSearch) {
-            if (fulltext != currentDataKey && !isFetching) {
-                dispatch(fundSearchFulltextRequest());
-                WebApi.fundFulltext(fulltext).then(result => {
-                    dispatch(fundSearchFulltextReceive(result));
-                });
-            }
-
-            funds.forEach(fund => {
-                if (fund.expanded && !fund.isFetching && !fund.fetched) {
-                    dispatch(fundSearchFundRequest(fund));
-                    WebApi.fundFulltextNodes(fund.id).then(result => {
-                        dispatch(fundSearchFundReceive(fund, result));
-                    });
-                }
-            });
+        if (newDataKey !== currentDataKey || force) {
+            dispatch(fundSearchFulltextRequest());
+            const { data } = await Api.node.nodeSearch({
+                filters: filters?.map((filter) => filter.getFilterValue(filter)),
+                // size,
+                // offset: filters.from
+            })
+            dispatch(fundSearchFulltextReceive({
+                funds: data.fonds,
+                partialResult: data.partialResult,
+                totalCount: data.totalCount
+            }));
         }
-        else {
-            if (getDataKey(fulltext, isIdSearch) != currentDataKey && !isFetching) {
-                dispatch(fundSearchFulltextRequest());
-                WebApi.selectNode(fulltext).then(({ fund, nodeWithParent }) => {
-                    const _fund = {
-                        count: 1,
-                        fundVersionId: fund.versions.find((version) => version.lockDate === null)?.id,
-                        internalCode: fund.internalCode,
-                        id: fund.id,
-                        name: fund.name,
-                        expanded: true,
-                    };
 
-                    if (_fund.fundVersionId != undefined) {
-                        WebApi.getNodes(_fund.fundVersionId, [nodeWithParent.node.id]).then((nodes) => {
-                            dispatch(fundSearchFulltextReceive([_fund]));
-                            dispatch(fundSearchFundReceive(_fund, nodes));
-                        })
-                    }
-                })
+        funds.forEach(async (fund) => {
+            if (fund.expanded && !fund.isFetching && !fund.fetched) {
+                dispatch(fundSearchFundRequest(fund));
+
+                const { data } = await Api.node.nodeGetSearchResult(fund.id)
+                dispatch(fundSearchFundReceive(fund, data));
             }
-        }
+        });
     };
 }
 
@@ -78,6 +65,20 @@ export function fundSearchFulltextChange({ fulltext, isIdSearch }) {
         type: types.FUND_SEARCH_FULLTEXT_CHANGE,
         fulltext,
         isIdSearch,
+    };
+}
+
+export function fundSearchFiltersChange({ filters }) {
+    return {
+        type: types.FUND_SEARCH_FULLTEXT_CHANGE,
+        filters,
+    };
+}
+
+export function fundSearchFiltersClear() {
+    return {
+        type: types.FUND_SEARCH_FULLTEXT_CHANGE,
+        filters: [],
     };
 }
 
@@ -94,10 +95,12 @@ function fundSearchFulltextRequest() {
     };
 }
 
-function fundSearchFulltextReceive(funds) {
+function fundSearchFulltextReceive({ funds, partialResult, totalCount }) {
     return {
         type: types.FUND_SEARCH_FULLTEXT_RECEIVE,
         funds,
+        partialResult,
+        totalCount,
     };
 }
 

@@ -163,14 +163,14 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     // pri neexistenci revize dojde k zobrazeni samotne entity
     useEffect(() => {
         // change url when revisionActive changes
-        if (revisionActive !== revisionActiveUrl && !select) {
+        if (revisionActive !== revisionActiveUrl && !select && !detail.isFetching) {
             dispatch(goToAe(history, id, false, !select, revisionActive, true))
         }
     }, [revisionActive]);
 
     useEffect(() => {
         // redirect to url without revision, when the entity is not in revision state
-        if (detail.fetched && !detail.data?.revStateApproval && revisionActiveUrl && !select) {
+        if (detail.fetched && !detail.isFetching && !detail.data?.revStateApproval && revisionActiveUrl && !select) {
             dispatch(goToAe(history, id, false, !select, false, true))
         }
     }, [detail])
@@ -614,7 +614,10 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string
         dispatch(DetailActions.fetchIfNeeded(
             AP_VALIDATION,
             apId,
-            (id: number) => WebApi.validateAccessPoint(id, includeRevision),
+            async (id: number) => {
+                const { data } = await Api.accesspoints.accessPointValidateAccessPoint(id, includeRevision);
+                return data;
+            },
             true
         ));
     },

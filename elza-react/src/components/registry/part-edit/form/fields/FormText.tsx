@@ -49,7 +49,7 @@ export const FormText:FC<CommonFieldProps<ApItemTextVO> & {
                 form.change(`${name}.updatedItem`, newUpdatedItem);
                 handleValueUpdate(form);
             }
-            
+
             const handleDelete = () => {
                 if(disableRevision || isNew){onDelete()}
                 else {
@@ -65,12 +65,12 @@ export const FormText:FC<CommonFieldProps<ApItemTextVO> & {
             return <RevisionFieldExample
                 label={label}
                 prevValue={prevValue}
-                value={props.input.value}
                 disableRevision={disableRevision}
                 equalSplit={true}
                 onRevert={!isNew ? handleRevert : undefined}
                 onDelete={isDeleted ? undefined : handleDelete}
                 isDeleted={isDeleted}
+                isUpdated={updatedItem?.changeType === "UPDATED"}
             >
                 <ReduxFormFieldErrorDecorator
                     {...props as any}

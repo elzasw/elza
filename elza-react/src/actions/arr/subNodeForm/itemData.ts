@@ -141,121 +141,123 @@ export function transformToNodeItem({
     id,
     descItemObjectId,
     position,
-    undefined,
+    undefined: _undefined,
     itemTypeId,
     descItemSpecId,
     readOnly,
     inhibited,
     ...descItem
 }: DescItem, nodeId: number, nodeVersion: number, { dataType }: DescItemTypeRef) {
-    let data: ItemData = { dataType: DataType.Enum }
-    switch (dataType.code) {
-        case DataType.Bit:
-            data = {
-                bitValue: descItem.value as boolean,
-                dataType: DataType.Bit,
-            } as DataBit;
-            break;
-        case DataType.Coordinates:
-            data = {
-                value: descItem.value as string,
-                dataType: DataType.Coordinates,
-            } as DataCoordinates;
-            break;
-        case DataType.Date:
-            data = {
-                value: descItem.value as string,
-                dataType: DataType.Date,
-            } as DataDate;
-            break;
-        case DataType.FileRef:
-            data = {
-                fileId: descItem.value as number,
-                dataType: DataType.FileRef,
-            } as DataFileRef;
-            break;
-        case DataType.FormattedText:
-            data = {
-                value: descItem.value as string,
-                dataType: DataType.FormattedText,
-            } as DataFormattedText;
-            break;
-        case DataType.Int:
-            data = {
-                integerValue: descItem.value as number,
-                dataType: DataType.Int,
-            } as DataInteger;
-            break;
-        case DataType.Decimal:
-            data = {
-                value: descItem.value as number,
-                dataType: DataType.Decimal,
-            } as DataDecimal;
-            break;
-        case DataType.JsonTable:
-            data = {
-                value: JSON.stringify(descItem.value) as string,
-                dataType: DataType.JsonTable,
-            } as DataJsonTable;
-            break;
-        case DataType.RecordRef:
-            data = {
-                value: descItem.value as number,
-                dataType: DataType.RecordRef,
-            } as DataRecordRef;
-            break;
-        case DataType.String:
-            data = {
-                stringValue: descItem.value as string,
-                dataType: DataType.String,
-            } as DataString;
-            break;
-        case DataType.Structured:
-            data = {
-                structuredObjectId: descItem.value as number,
-                dataType: DataType.Structured,
-            } as DataStructureRef;
-            break;
-        case DataType.Text:
-            data = {
-                textValue: descItem.value as string,
-                dataType: DataType.Text,
-            } as DataText;
-            break;
-        case DataType.Unitdate:
-            data = {
-                value: descItem.value as string,
-                dataType: DataType.Unitdate,
-            } as DataUnitdate;
-            break;
-        case DataType.Unitid:
-            data = {
-                unitId: descItem.value as string,
-                dataType: DataType.Unitid,
-            } as DataUnitid;
-            break;
-        case DataType.UriRef:
-            data = {
-                value: descItem.value as number,
-                description: descItem.description,
-                refTemplateId: descItem.refTemplateId,
-                dataType: DataType.UriRef,
-            } as DataRecordRef;
-            break;
-        case DataType.Enum:
-            data = {
-                dataType: DataType.Enum,
-            };
-            break;
-        default:
-            throw Error(`Unknown data type: ${dataType.code}`);
+    let data: ItemData | undefined = undefined;
+    if(!_undefined){
+        switch (dataType.code) {
+            case DataType.Bit:
+                data = {
+                    bitValue: descItem.value as boolean,
+                    dataType: DataType.Bit,
+                } as DataBit;
+                break;
+            case DataType.Coordinates:
+                data = {
+                    value: descItem.value as string,
+                    dataType: DataType.Coordinates,
+                } as DataCoordinates;
+                break;
+            case DataType.Date:
+                data = {
+                    value: descItem.value as string,
+                    dataType: DataType.Date,
+                } as DataDate;
+                break;
+            case DataType.FileRef:
+                data = {
+                    fileId: descItem.value as number,
+                    dataType: DataType.FileRef,
+                } as DataFileRef;
+                break;
+            case DataType.FormattedText:
+                data = {
+                    value: descItem.value as string,
+                    dataType: DataType.FormattedText,
+                } as DataFormattedText;
+                break;
+            case DataType.Int:
+                data = {
+                    integerValue: descItem.value as number,
+                    dataType: DataType.Int,
+                } as DataInteger;
+                break;
+            case DataType.Decimal:
+                data = {
+                    value: descItem.value as number,
+                    dataType: DataType.Decimal,
+                } as DataDecimal;
+                break;
+            case DataType.JsonTable:
+                data = {
+                    value: JSON.stringify(descItem.value) as string,
+                    dataType: DataType.JsonTable,
+                } as DataJsonTable;
+                break;
+            case DataType.RecordRef:
+                data = {
+                    value: descItem.value as number,
+                    dataType: DataType.RecordRef,
+                } as DataRecordRef;
+                break;
+            case DataType.String:
+                data = {
+                    stringValue: descItem.value as string,
+                    dataType: DataType.String,
+                } as DataString;
+                break;
+            case DataType.Structured:
+                data = {
+                    structuredObjectId: descItem.value as number,
+                    dataType: DataType.Structured,
+                } as DataStructureRef;
+                break;
+            case DataType.Text:
+                data = {
+                    textValue: descItem.value as string,
+                    dataType: DataType.Text,
+                } as DataText;
+                break;
+            case DataType.Unitdate:
+                data = {
+                    value: descItem.value as string,
+                    dataType: DataType.Unitdate,
+                } as DataUnitdate;
+                break;
+            case DataType.Unitid:
+                data = {
+                    unitId: descItem.value as string,
+                    dataType: DataType.Unitid,
+                } as DataUnitid;
+                break;
+            case DataType.UriRef:
+                data = {
+                    value: descItem.value as number,
+                    description: descItem.description,
+                    refTemplateId: descItem.refTemplateId,
+                    dataType: DataType.UriRef,
+                } as DataRecordRef;
+                break;
+            case DataType.Enum:
+                data = {
+                    dataType: DataType.Enum,
+                };
+                break;
+            default:
+                throw Error(`Unknown data type: ${dataType.code}`);
+        }
     }
 
     const nodeItem: NodeItem = {
         id,
         itemObjectId: descItemObjectId,
         position,
-        undefined,
+        undefined: _undefined,
         itemTypeId,
         itemSpecId: descItemSpecId,
         readOnly,

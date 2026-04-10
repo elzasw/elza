@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import { IndexLinkContainer, LinkContainer } from 'react-router-bootstrap';
 import { AbstractReactComponent, i18n, Icon, RibbonGroup, RibbonMenu, RibbonSplit } from 'components/shared';
 import { Dropdown, Button as BootstrapButton } from 'react-bootstrap';
+import { FormattedMessage, defineMessages } from 'react-intl';
 import { Button } from '../ui';
 import { canSetFocus, focusWasSet, isFocusFor } from 'actions/global/focus.jsx';
 import { logout } from 'actions/global/login.jsx';
@@ -33,6 +34,13 @@ import UserSettingsModal from 'components/user/UserSettingsModal';
 
 // Nacteni globalni promenne ze <script> v <head>
 const displayUserInfo = window.displayUserInfo !== undefined ? window.displayUserInfo : true;
+
+const messages = defineMessages({
+    reports: {
+        id: 'ribbon_action_admin_reports',
+        defaultMessage: 'Přehledy',
+    },
+});
 
 class Ribbon extends AbstractReactComponent {
     static propTypes = {
@@ -161,6 +169,7 @@ class Ribbon extends AbstractReactComponent {
                 userDetail.hasOne(perms.GROUP_CONTROL_ENTITITY, perms.USR_PERM) ||
                 userDetail.hasOne(perms.USER_CONTROL_ENTITITY, perms.USR_PERM);
             const administersGroup = userDetail.hasOne(perms.GROUP_CONTROL_ENTITITY, perms.USR_PERM);
+            const canSeeReports = userDetail.hasOne(perms.REPORT_ALL);
 
             section = (
                 <RibbonGroup key="ribbon-group-admin" className="large">
@@ -188,11 +197,27 @@ class Ribbon extends AbstractReactComponent {
                             </Button>
                         </LinkContainer>
                     )}
+                    {canSeeReports &&
+                        <LinkContainer key="ribbon-btn-admin-reports" to="/admin/reports">
+                            <Button variant={'default'}>
+                                <Icon glyph="fa-line-chart" />
+                                <span className="btnText">
+                                    <FormattedMessage {...messages.reports} />
+                                </span>
+                            </Button>
+                        </LinkContainer>
+                    }
                     {isSuperuser && [
                         <LinkContainer key="ribbon-btn-admin-packages" to="/admin/packages">
                             <Button variant={'default'}>
                                 <Icon glyph="fa-archive" />
                                 <span className="btnText">{i18n('ribbon.action.admin.packages')}</span>
+                            </Button>
+                        </LinkContainer>,
+                        <LinkContainer key="ribbon-btn-admin-external-systems" to="/admin/extSystem">
+                            <Button variant={'default'}>
+                                <Icon glyph="fa-external-link" />
+                                <span className="btnText">{i18n('ribbon.action.admin.externalSystems')}</span>
                             </Button>
                         </LinkContainer>,
                         <LinkContainer key="ribbon-btn-admin-bulkActions" to="/admin/backgroundProcesses">
@@ -205,12 +230,6 @@ class Ribbon extends AbstractReactComponent {
                             <Button variant={'default'}>
                                 <Icon glyph="fa-shopping-basket" />
                                 <span className="btnText">{i18n('ribbon.action.admin.requestsQueue')}</span>
-                            </Button>
-                        </LinkContainer>,
-                        <LinkContainer key="ribbon-btn-admin-external-systems" to="/admin/extSystem">
-                            <Button variant={'default'}>
-                                <Icon glyph="fa-external-link" />
-                                <span className="btnText">{i18n('ribbon.action.admin.externalSystems')}</span>
                             </Button>
                         </LinkContainer>,
                         <LinkContainer key="ribbon-btn-admin-show-logs" to="/admin/logs">
@@ -322,7 +341,7 @@ class Ribbon extends AbstractReactComponent {
             // submenu se šipkou zpět
             parts.push(
                 <RibbonGroup key="ribbon-group-main" className="large big-icon">
-                    <LinkContainer key="ribbon-btn-arr-back" to={urlFund(fundId)}>
+                    <LinkContainer key="ribbon-btn-arr-back" to={urlFund("")}>
                         <Button
                             variant={'default'}
                             className="large"
@@ -370,6 +389,7 @@ class Ribbon extends AbstractReactComponent {
                         perms.USR_PERM,
                         perms.USER_CONTROL_ENTITITY,
                         perms.GROUP_CONTROL_ENTITITY,
+                        perms.REPORT_ALL,
                     ) && (
                             <LinkContainer key="ribbon-btn-admin" to="/admin">
                                 <Button variant={'default'}>

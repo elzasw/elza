@@ -1,10 +1,12 @@
 package cz.tacr.elza.groovy;
 
+import java.util.List;
+
 import cz.tacr.elza.api.IUnitdate;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.convertor.UnitDateConvertor;
+import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
@@ -58,14 +60,14 @@ public class GroovyItem {
                       @Nullable final RulItemSpec rulItemSpec,
                       @NotNull final String value) {
         this(itemType, rulItemSpec);
-        if (itemType.getDataType() != DataType.TEXT &&
-                itemType.getDataType() != DataType.STRING &&
-                // TODO: Improve URI REF support
-                itemType.getDataType() != DataType.URI_REF &&
-                // TODO: Improve coordinates support
-                itemType.getDataType() != DataType.COORDINATES &&
-                // TODO: Improve enum support
-                itemType.getDataType() != DataType.ENUM) {
+        if (!List.of(DataType.TEXT,
+        		DataType.STRING,
+        		DataType.URI_REF,
+        		DataType.COORDINATES,
+        		DataType.ENUM,
+        		DataType.STRUCTURED,
+        		DataType.UNITID,
+        		DataType.DECIMAL).contains(itemType.getDataType())) {
             throw new BusinessException("String value not supported", BaseCode.PROPERTY_HAS_INVALID_TYPE);
         }
         this.value = value;
@@ -112,7 +114,7 @@ public class GroovyItem {
         if (itemType.getDataType() != DataType.UNITDATE) {
             throw new BusinessException("Integer value not supported", BaseCode.PROPERTY_HAS_INVALID_TYPE);
         }
-        this.value = UnitDateConvertor.convertToString(value);
+        this.value = UnitDateConverter.convertToString(value);
         this.unitdateValue = value;
     }
 

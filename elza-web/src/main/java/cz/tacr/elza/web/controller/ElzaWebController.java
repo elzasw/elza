@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.security.ApplicationSecurity;
 import cz.tacr.elza.service.AccessPointService;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -34,6 +35,10 @@ public class ElzaWebController {
 
     @Autowired
     AccessPointService accessPointService;
+    
+    @Autowired
+    ApplicationSecurity applicationSecurity;
+    
 
     @Value("${spring.app.buildType}")
     private String buildType;
@@ -104,6 +109,11 @@ public class ElzaWebController {
     public String getLogoutUrl() {
         return logoutUrl;
     }
+    
+    @ModelAttribute("ssoKerberosUrl")
+	public String getSsoKerberosUrl() {
+    	return applicationSecurity.isKerberosEnabled() ? ApplicationSecurity.AUTHENTICATE_SSO : null;
+	}
 
     @Value("${elza.integrationScriptUrl:}")
     private String integrationScriptUrl;

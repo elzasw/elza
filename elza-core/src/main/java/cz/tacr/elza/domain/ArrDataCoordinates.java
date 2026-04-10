@@ -1,6 +1,5 @@
 package cz.tacr.elza.domain;
 
-import org.apache.commons.lang3.Validate;
 import org.locationtech.jts.geom.Geometry;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -13,7 +12,6 @@ import cz.tacr.elza.common.GeometryConvertor.GeometryJsonSerializer;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-
 
 /**
  * Hodnota atributu archivního popisu typu Coordinates.
@@ -50,6 +48,11 @@ public class ArrDataCoordinates extends ArrData {
     }
 
     @Override
+    public Geometry getValueGeometry() {
+        return value;
+    }
+
+    @Override
     public String getFulltextValue() {
         String str = GeometryConvertor.convert(value);
         return str;
@@ -73,8 +76,4 @@ public class ArrDataCoordinates extends ArrData {
         copyValue(src);
     }
 
-    @Override
-    protected void validateInternal() {
-        Validate.notNull(value);
-    }
 }

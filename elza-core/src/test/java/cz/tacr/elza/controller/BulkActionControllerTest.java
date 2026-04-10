@@ -4,7 +4,6 @@ import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +12,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
 
 /**
  * @author Petr Compel
@@ -197,12 +195,15 @@ public class BulkActionControllerTest extends AbstractControllerTest {
      */
     @Test
     public void interruptBulkAction() throws InterruptedException {
-        helperTestService.waitForWorkers();
         int fundVersionId = importAndGetVersionId();
-        BulkActionRunVO state;
 
-        state = get((spec) -> spec.pathParam("versionId", fundVersionId).pathParam("code", BULK_ACTION_SERIAL_NUMBER_GENERATOR), BULK_ACTION_QUEUE).getBody().as(BulkActionRunVO.class);
-        int actionId = state.getId();
+        BulkActionRunVO baRunVO = get((spec) -> spec.pathParam("versionId", fundVersionId)
+        					  						.pathParam("code", BULK_ACTION_SERIAL_NUMBER_GENERATOR), BULK_ACTION_QUEUE)
+        				      						.getBody().as(BulkActionRunVO.class);
+        int actionId = baRunVO.getId();
+
+        helperTestService.waitForWorkers();
+
         Assert.assertEquals(200, get((spec) -> spec.pathParam("id", actionId), BULK_ACTION_INTERRUPT).getStatusCode());
 
         int counter = 6;
@@ -214,18 +215,17 @@ public class BulkActionControllerTest extends AbstractControllerTest {
             logger.info("Čekání na dokončení asynchronních operací...");
 
             helperTestService.waitForWorkers();
-            Thread.sleep(10000);
 
             try {
 
-                state = getBulkAction(actionId);
+            	baRunVO = getBulkAction(actionId);
 
                 if (counter >= 0) {
-                    if (state != null) {
+                    if (baRunVO != null) {
                         // TODO: odebrat stav FINISHED, který nastává v případě, že hromadná akce doběhla ještě před požadavkem na přerušení
-                        if (state.getState().equals(State.INTERRUPTED) || state.getState().equals(State.FINISHED)) {
+                        if (baRunVO.getState().equals(State.INTERRUPTED) || baRunVO.getState().equals(State.FINISHED)) {
                             hasResult = true;
-                        } else if (state.getState().equals(State.ERROR)) {
+                        } else if (baRunVO.getState().equals(State.ERROR)) {
                             Assert.fail("Hromadná akce skončila chybou");
                         }
                     }
@@ -238,7 +238,7 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
         } while (!hasResult);
 
-        Assert.assertTrue("Čas překročen (poslední stav: " + state.getState() + ")", counter >= 0);
+        Assert.assertTrue("Čas překročen (poslední stav: " + baRunVO.getState() + ")", counter >= 0);
     }
 
 }

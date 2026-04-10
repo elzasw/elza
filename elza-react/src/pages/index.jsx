@@ -6,6 +6,7 @@ export {default as AdminUserPage} from 'pages/admin/AdminUserPage.jsx';
 export {default as AdminGroupPage} from 'pages/admin/AdminGroupPage.jsx';
 export {default as AdminFundPage} from 'pages/admin/AdminFundPage';
 export {default as AdminRequestsQueuePage} from 'pages/admin/AdminRequestsQueuePage.jsx';
+export {default as ReportsPage} from 'pages/reports/ReportsPage';
 
 export {default as ArrPage} from 'pages/arr/ArrPage.jsx';
 export {default as ArrDataGridPage} from 'pages/arr/ArrDataGridPage.jsx';
@@ -17,7 +18,7 @@ export {default as ArrOutputPage} from 'pages/arr/ArrOutputPage.jsx';
 export {default as ArrRequestPage} from 'pages/arr/ArrRequestPage.jsx';
 
 export {default as RegistryPage} from 'pages/registry/RegistryPage.jsx';
-export {default as HomePage} from 'pages/home/HomePage.jsx';
+export {default as HomePage} from 'pages/home/HomePage.tsx';
 export {default as FundPage} from 'pages/fund/FundPage.jsx';
 
 export {EntityCreatePage} from 'pages/entity/EntityCreatePage';
