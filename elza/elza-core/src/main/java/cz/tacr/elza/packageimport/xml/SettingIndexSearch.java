@@ -72,6 +72,9 @@ public class SettingIndexSearch extends Setting {
         @XmlAttribute(name = "boost-trans-exact")
         private Float boostTransExact;
 
+        @XmlAttribute(name = "boost-fulltext")
+        private Float boostFulltext;
+
         @XmlAttribute(name = "transliterate")
         private Boolean transliterate;
 
@@ -105,6 +108,14 @@ public class SettingIndexSearch extends Setting {
 
         public void setBoostTransExact(Float boostTransExact) {
             this.boostTransExact = boostTransExact;
+        }
+
+        public Float getBoostFulltext() {
+            return boostFulltext;
+        }
+
+        public void setBoostFulltext(Float boostFulltext) {
+            this.boostFulltext = boostFulltext;
         }
 
         public Boolean getTransliterate() {
