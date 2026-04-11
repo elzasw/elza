@@ -130,7 +130,7 @@ public class ArrangementWebsocketControllerTest extends AbstractControllerTest {
                 .filter(t -> t.getCode().equals("SRD_NAD"))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Item type SRD_NAD not found"));
-        NodeItem newItem = buildNodeItem(itemType.getCode(), null, DataType.INT, 1, convertTreeNode(rootNode), null);
+        NodeItem newItem = buildNodeItem(itemType.getCode(), null, DataType.INT, 1, convertToArrNode(convertTreeNode(rootNode)), null);
         NodeUpdateItem[] createItems = { new NodeUpdateItem().updateOp(UpdateOp.CREATE).item(newItem) };        
 
         Receiptable receiptCreate = session.send(createDestination(UPDATE_DESC_ITEMS_MSG_MAPPING, fundVersionId, nodeId, nodeVersion), createItems);
