@@ -68,9 +68,6 @@ public class AdminOldController {
     private AsyncRequestService asyncRequestService;
 
     @Autowired
-    private CamConnector camConnector;
-
-    @Autowired
     private DaConnector daConnector;
 
     @Value("${elza.logFile:}")
@@ -150,9 +147,7 @@ public class AdminOldController {
         ApScope apScope = accessPointService.getApScope(externalSystemVO);
         SysExternalSystem externalSystem = externalSystemVO.createEntity(apScope);
         externalSystem = externalSystemService.update(externalSystem);
-        if (externalSystem instanceof ApExternalSystem) {
-            camConnector.invalidate((ApExternalSystem) externalSystem);
-        }
+
         if (externalSystem instanceof ArrDigitalRepository) {
             daConnector.invalidate((ArrDigitalRepository) externalSystem);
         }
@@ -168,10 +163,7 @@ public class AdminOldController {
     @Transactional
     public void deleteExternalSystemById(@PathVariable("externalSystemId") final Integer externalSystemId) {
         SysExternalSystem externalSystem = externalSystemService.findOne(externalSystemId);
-        externalSystemService.delete(externalSystemId);
-        if (externalSystem instanceof ApExternalSystem) {
-            camConnector.invalidate((ApExternalSystem) externalSystem);
-        }
+        externalSystemService.delete(externalSystem);
         if (externalSystem instanceof ArrDigitalRepository) {
             daConnector.invalidate((ArrDigitalRepository) externalSystem);
         }
