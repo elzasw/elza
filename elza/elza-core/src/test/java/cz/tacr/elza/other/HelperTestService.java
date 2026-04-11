@@ -299,19 +299,13 @@ public class HelperTestService {
         }
 
         deleteTablesInternal();
-        
-        // reset index
-        logger.debug("Start reindexing.");
-        var indexStatus = adminService.reindexInternal();
-        while(!indexStatus.isDone()) {
-        	logger.debug("Reindexing...");
-        	try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-				break;
-			}
-        }
-        logger.debug("Reindexed.");
+
+        // Purge Lucene indexes directly instead of using adminService.reindexInternal().
+        // The mass indexer agent coordination (register → wait for cluster → run → leave)
+        // takes ~2s per cycle due to outbox-polling timing, even for 0 entities.
+        // Direct workspace purge is synchronous and instant.        
+        Search.session(em).workspace().purge();
+        logger.debug("Lucene indexes purged.");
 
         if (stopTasks) {
             packageService.startAsyncTasks();
@@ -529,7 +523,7 @@ public class HelperTestService {
 		OutboxEventOrder processingOrder = OutboxEventOrder.ID;
     	
     	Integer counter = 0;
-    	while(counter<100){
+    	while(counter<300){
     		
     		Integer pendingEvents;
     		try(Session session = this.sessionFactory.openSession()) {
