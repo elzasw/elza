@@ -1,20 +1,20 @@
 elza:
   data:
-      url: jdbc:postgresql://localhost/vyv_elza
-      user: postgres
-      pass: postgres
+    url: jdbc:postgresql://localhost/vyv_elza
+    user: postgres
+    pass: postgres
   map:
-      layers:
-        - name: GR_ZM25
-          url: https://geoportal.cuzk.cz/WMS_ZM25_PUB/WMService.aspx
-          type: WMS
-          initial: false
-          layer: GR_ZM25
-        - name: GR_ORTFOTORGB
-          url: https://geoportal.cuzk.cz/WMS_ORTOFOTO_PUB/WMService.aspx
-          type: WMS
-          initial: false
-          layer: GR_ORTFOTORGB
+    layers:
+      - name: GR_ZM25
+        url: https://geoportal.cuzk.cz/WMS_ZM25_PUB/WMService.aspx
+        type: WMS
+        initial: false
+        layer: GR_ZM25
+      - name: GR_ORTFOTORGB
+        url: https://geoportal.cuzk.cz/WMS_ORTOFOTO_PUB/WMService.aspx
+        type: WMS
+        initial: false
+        layer: GR_ORTFOTORGB
   security:
   #  sso-header:
   #    user-header: X-SSO-User
@@ -51,6 +51,13 @@ elza:
   #reindex:
   #  cron: 0 0 4 ? * SAT
 
+  # Nastavení času spuštění mazání nevázaných ArrData:
+  #
+  # Výchozí nastavení – každý den ve 3:00
+  #  
+  #reindex:
+  #  cron: 0 0 3 * * *
+
   #attachment:
   #  mimeDefs:
   #    - mimeType: application/msword
@@ -67,19 +74,19 @@ elza:
 
 spring:
   app:
-      buildType: DEV
+    buildType: DEV
   jpa:
-      properties:
-          hibernate:
-              # PostgreSQL
-              dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
-              # H2
-              #dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
-              # MySQL
-              #dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
-              # Oracle
-              #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
-              # MSSQL
-              #dialect: org.hibernate.dialect.SQLServer2008Dialect
+    properties:
+      hibernate:
+        # PostgreSQL
+        dialect: org.hibernate.spatial.dialect.postgis.PostgisDialect
+        # H2
+        #dialect: org.hibernate.spatial.dialect.h2geodb.GeoDBDialect
+        # MySQL
+        #dialect: org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
+        # Oracle
+        #dialect: org.hibernate.spatial.dialect.oracle.OracleSpatial10gDialect
+        # MSSQL
+        #dialect: org.hibernate.dialect.SQLServer2008Dialect
 
 multipart.maxFileSize: 10000000
