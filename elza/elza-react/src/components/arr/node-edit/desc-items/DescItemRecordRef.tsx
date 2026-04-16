@@ -219,6 +219,7 @@ export function DescItemRecordRef({
         display: "inline-flex",
         flex: 1,
         alignItems: "center",
+        width: "100%"
       }}
     >
       <Combobox

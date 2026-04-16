@@ -118,6 +118,7 @@ export function DescItemString({
         flex: 1,
         position: "relative",
         flexDirection: "column",
+        width: "100%",
       }}
     >
       {typeWidth === 0 ? (
