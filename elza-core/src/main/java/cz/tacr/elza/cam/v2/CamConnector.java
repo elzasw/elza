@@ -95,7 +95,7 @@ public class CamConnector implements ApiCamConnector {
      */
     private final Map<Integer, CamInstance> instanceMap = new HashMap<>();
 
-	@Override
+    @Override
 	public void synchronizeAccessPointsForExternalSystem(String extSysCode) {
 		camService.synchronizeAccessPointsForExternalSystem(extSysCode);
 	}
@@ -315,7 +315,7 @@ public class CamConnector implements ApiCamConnector {
      */
     public void invalidate(ApExternalSystem apExternalSystem) {
         if (apExternalSystem.getType() == ApExternalSystemType.CAM_V2 ||
-                        apExternalSystem.getType() == ApExternalSystemType.CAM_UUID ||
+                        apExternalSystem.getType() == ApExternalSystemType.CAM_UUID_V2 ||
                         apExternalSystem.getType() == ApExternalSystemType.CAM_COMPLETE_V2) {
             instanceMap.remove(apExternalSystem.getExternalSystemId());
         }

@@ -211,6 +211,7 @@ export function DescItemField({
           whiteSpace: "pre-wrap",
           display: "flex",
           flex: dataTypeCode === DataType.Bit ? undefined : 1,
+          width: "100px",
         }}
       >
         {DataTypeComponent ? (

@@ -66,6 +66,7 @@ import { COL_DEFAULT_WIDTH, COL_REFERENCE_MARK } from './FundDataGridConst';
 import './FundDataGrid.scss';
 import { getPagesCount } from '../shared/datagrid/DataGridPagination';
 import { toDuration } from '../validate';
+import { isMaskViewDefinition, maskString } from './node-edit/desc-items/maskUtils';
 import { DisplayType, urlFundGrid } from '../../constants';
 import Moment from 'moment';
 import * as groups from '../../actions/refTables/groups';
@@ -315,9 +316,15 @@ class FundDataGrid extends AbstractReactComponent {
                         case 'DATE':
                             itemValue = Moment(value.value).format('l');
                             break;
-                        default:
-                            itemValue = value.value;
+                        default: {
+                            const viewDefinition = col.refType.viewDefinition;
+                            if (isMaskViewDefinition(viewDefinition)) {
+                                itemValue = maskString(value.value || '', viewDefinition.mask);
+                            } else {
+                                itemValue = value.value;
+                            }
                             break;
+                        }
                     }
                 }
 
