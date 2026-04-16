@@ -593,14 +593,11 @@
     </changeSet>
 
     <changeSet id="20240717125500" author="fantis">
+        <validCheckSum>ANY</validCheckSum>
         <addColumn tableName="arr_dao_link">
-            <column name="aip_id" type="int">
-                <constraints nullable="false"/>
-            </column>
+            <column name="aip_id" type="int"/>
             <column name="da_dao_id" type="int"/>
-            <column name="link_type" type="varchar(50)">
-                <constraints nullable="false"/>
-            </column>
+            <column name="link_type" type="varchar(50)"/>
         </addColumn>
         <dropNotNullConstraint tableName="arr_dao_link" columnName="dao_id"/>
         <addForeignKeyConstraint baseTableName="arr_dao_link" baseColumnNames="aip_id"

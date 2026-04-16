@@ -1,9 +1,9 @@
 import { Loading } from "components/shared";
 import { FC, useEffect, useRef, useState } from "react";
-import { serverContextPath } from 'api';
+import { getServerContextPath } from 'api';
 
 export const COMPONENT_URL = `/component`;
-export const COMPONENT_URL_WITH_CONTEXT = `${serverContextPath}${COMPONENT_URL}`;
+export const COMPONENT_URL_WITH_CONTEXT = `${getServerContextPath()}${COMPONENT_URL}`;
 
 interface ComponentPageProps {
 	componentViewRequest: {
