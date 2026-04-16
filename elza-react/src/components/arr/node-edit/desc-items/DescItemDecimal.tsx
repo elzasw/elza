@@ -95,6 +95,7 @@ export function DescItemDecimal({
         flex: 1,
         position: "relative",
         flexDirection: "column",
+        width: "100%",
       }}
     >
       <Input
