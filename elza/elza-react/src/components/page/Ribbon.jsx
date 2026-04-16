@@ -30,7 +30,7 @@ import {
     urlFundOutputs, urlFundRequests, urlFundTree, urlFund, URL_FUND_GRID_PATH, GRID
 } from "../../constants";
 import { extSystemListFetchIfNeeded } from 'actions/admin/extSystem.jsx';
-import { EXT_SYSTEM_CLASS } from 'components/admin/extSystem/ExtSystemForm.jsx';
+import { EXT_SYSTEM_CLASS } from 'components/admin/extSystem/ExtSystemForm';
 import UserSettingsModal from 'components/user/UserSettingsModal';
 
 // Nacteni globalni promenne ze <script> v <head>

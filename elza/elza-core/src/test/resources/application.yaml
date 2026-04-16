@@ -34,6 +34,12 @@ spring:
             strategy: outbox-polling
             internal:
               configurer: cz.tacr.elza.domain.bridge.OutboxPollingConfigurer
+            event_processor:
+              pulse_interval: 100
+              polling_interval: 50
+            mass_indexer:
+              pulse_interval: 100
+              polling_interval: 50
           backend:
             analysis:
               configurer: cz.tacr.elza.domain.bridge.LuceneAnalyzerConfigurer
