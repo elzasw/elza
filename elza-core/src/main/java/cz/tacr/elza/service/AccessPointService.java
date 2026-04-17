@@ -2739,7 +2739,7 @@ public class AccessPointService {
         if (!getNextStates(oldApState).contains(newStateApproval)) {
             throw new SystemException("Požadovaný stav entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                 .set("accessPointId", accessPoint.getAccessPointId())
-                .set("scopeId", newApScope.getScopeId())
+                .set("scopeId", (newApScope != null ? newApScope : oldApScope).getScopeId())
                 .set("oldState", oldStateApproval)
                 .set("newState", newStateApproval);
         }
