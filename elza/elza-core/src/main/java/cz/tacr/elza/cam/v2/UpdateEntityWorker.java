@@ -1,7 +1,6 @@
 package cz.tacr.elza.cam.v2;
 
 import java.util.Map;
-import java.util.UUID;
 
 import cz.tacr.cam.v2.schema.cam.BatchUpdateResultXml;
 import cz.tacr.cam.v2.schema.cam.BatchUpdateXml;
@@ -31,12 +30,6 @@ public class UpdateEntityWorker implements UploadWorker {
     public BatchUpdateXml getBatchUpdate() {
         return updateXml;
     }
-
-    @Override
-	public void createBinding(final CamService camService, 
-                              final UUID uuidResponse) {
-		camService.createBinding(queueItem, uuidResponse, itemUuidMap, partUuidMap, stateMap, updateXml.getInfo());
-	}
 
     @Override
     public void updateBinding(final CamService camService,

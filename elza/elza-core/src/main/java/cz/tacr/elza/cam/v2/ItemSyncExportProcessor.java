@@ -62,7 +62,9 @@ public class ItemSyncExportProcessor implements ItemSyncProcessor {
 		        String batchUpdateString = JaxbUtils.asString(batchUpdate, schema);
 		        String batchUpdateInfoUuid = batchUpdate.getInfo().getUuid().getValue();
 				UUID uuidResponse = camService.upload(queueItem, batchUpdateString, batchUpdateInfoUuid);
-				uploadWorker.createBinding(camService, uuidResponse);
+				// Binding is intentionally NOT created here. It is created only after CAM confirms
+				// the batch was stored (see ItemSyncExportConfirmProcessor). Creating it eagerly
+				// would leave an orphan binding in ELZA when CAM rejects/revokes the batch.
 				apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.EXPORT_PROCESSING, null, uuidResponse.toString(), batchUpdateString, null);
 
 			} catch (ApiException e) {
