@@ -109,7 +109,7 @@ export const ApStateChangeForm = ({
 
     return (
         <FinalForm validate={validate} onSubmit={handleSubmit} initialValues={{ ...initialValues, scopeId: preselectedScopeId }}>
-            {({ submitting, handleSubmit, form, values, valid }) => {
+            {({ submitting, handleSubmit, form, values, valid, pristine }) => {
                 const isApproved = values.state === StateApproval.APPROVED;
 
                 return <Form>
@@ -207,7 +207,7 @@ export const ApStateChangeForm = ({
                         </>}
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit" variant="outline-secondary" disabled={submitting || !valid} onClick={handleSubmit}>
+                        <Button type="submit" variant="outline-secondary" disabled={submitting || !valid || pristine} onClick={handleSubmit}>
                             {i18n('global.action.store')}
                         </Button>
                         <Button variant="link" onClick={onClose}>
