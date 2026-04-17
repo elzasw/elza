@@ -3395,10 +3395,32 @@ public class AccessPointService {
         return headers;
     }
 
-    public boolean isRevalidaceRequired(ApState.StateApproval state, ApState.StateApproval newState) {
-        return state != null 
-                && newState != null
-                && (state == ApState.StateApproval.APPROVED || newState == ApState.StateApproval.APPROVED) 
+    /**
+     * Check if require revalidation of archival description based 
+     * on change of entity state.
+     * 
+     * @param state
+     * @param newState
+     * @param wasDelete Flag if item was deleted in previouse state
+     * @param willBeDeleted Flag if item will be deleted in previouse state
+     * @return
+     */
+    public boolean isArchDescRevalidationRequired(ApState.StateApproval state, ApState.StateApproval newState, boolean wasDeleted, boolean willBeDeleted) {
+    	// unknown or deleted state
+    	if(newState==null && state==null) {
+    		return false;
+    	}
+    	// changing deleted -> newState
+    	if(wasDeleted && newState!=null) {
+    		return true;
+    	}
+    	// non deleted -> deleted
+    	if(willBeDeleted && state!=null) {
+    		return true;
+    	}
+    	// Both states are valid
+        return // state was/will be approved and is not longer approved
+               (ApState.StateApproval.APPROVED == state || ApState.StateApproval.APPROVED == newState) 
                 && state != newState;
     }
 
