@@ -32,16 +32,18 @@ class DescItemDate extends AbstractReactComponent {
 
     render() {
         const {descItem, locked, readMode, cal} = this.props;
-        let value = cal && descItem.value == null
-            ? i18n('subNodeForm.descItemType.calculable')
-            : descItem.value == null
-                ? null
-                : Moment(descItem.value).format('l');
+        const isCalculated = cal && descItem.value == null;
+        const dateValue = descItem.value == null ? null : Moment(descItem.value, 'YYYY-MM-DD').toDate();
 
         if (readMode) {
+            const displayValue = isCalculated
+                ? i18n('subNodeForm.descItemType.calculable')
+                : descItem.value == null
+                    ? null
+                    : Moment(descItem.value, 'YYYY-MM-DD').format('DD. MM. YYYY');
             return (
                 <DescItemLabel
-                    value={value}
+                    value={displayValue}
                     cal={cal}
                     isValueUndefined={descItem.undefined}
                     isValueInhibited={descItem.inhibited}
@@ -61,9 +63,10 @@ class DescItemDate extends AbstractReactComponent {
                         ref={ref => (this.focusEl = ref)}
                         {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
                         time={false}
-                        value={value == null ? null : new Date(value)}
+                        value={dateValue}
                         onChange={this.handleChange}
-                        placeholder={DATE_FORMAT}
+                        disabled={isCalculated}
+                        placeholder={isCalculated ? i18n('subNodeForm.descItemType.calculable') : DATE_FORMAT}
                     />
                 </ItemTooltipWrapper>
             </div>

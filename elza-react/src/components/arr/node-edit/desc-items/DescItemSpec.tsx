@@ -52,6 +52,7 @@ const mandatoryTypeConfig: Record<string, IndicatorConfig> = {
 
 const INDICATOR_SIZE = 10;
 const INDICATOR_GAP = 8;
+const MAX_SPEC_LABEL_LENGTH = 30;
 
 interface Props {
   value: number;
@@ -117,6 +118,11 @@ export function DescItemSpec({
   const spec = allSpecs.find(({ rule }) => rule && rule.id === value);
 
   // const [selectedSpec, setSelectedSpec] = useState(value);
+  const maxSpecLabelLength = specs.reduce((longest, currentSpec) => Math.max(longest, getLabel(currentSpec).length), 0);
+  const totalLabelLength = specs.reduce((total, currentSpec) => total + getLabel(currentSpec).length, 0);
+  const averageSpecLabelLength = specs.length > 0 ? Math.round(totalLabelLength / specs.length) : 0;
+  const longestSpecLabelLength = maxSpecLabelLength <= MAX_SPEC_LABEL_LENGTH ? maxSpecLabelLength : averageSpecLabelLength;
+
   const [query, setQuery] = useState(getLabel(spec));
   const [filteredSpecs, setFilteredSpecs] = useState(specs);
   const [listboxMinWidth, setListboxMinWidth] = useState(undefined);
@@ -162,7 +168,8 @@ export function DescItemSpec({
         flexShrink: 2,
         display: "flex",
         flexGrow: autoSize ? 0 : 1,
-        flexBasis: autoSize ? `${query ? query.length + 6 : 10}ch` : undefined,
+        flexBasis: autoSize ? `${longestSpecLabelLength ? longestSpecLabelLength + 6 : 10}ch` : undefined,
+        maxWidth: isSpec && "50%",
       }}
     >
       <Combobox
@@ -170,6 +177,7 @@ export function DescItemSpec({
         root={{ ref: comboboxRef }}
         selectedOptions={spec ? [spec.rule.code] : []}
         value={isUndefined ? "výjimka" : query}
+        title={query}
         disabled={isDisabled}
         onChange={handleQueryChange}
         onOpenChange={(_e, open) => {
