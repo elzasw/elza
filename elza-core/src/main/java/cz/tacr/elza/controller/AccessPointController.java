@@ -260,7 +260,7 @@ public class AccessPointController implements AccesspointsApi {
         accessPointService.updateApState(accessPoint, newState, stateUpdate.getComment(), stateUpdate.getTypeId(), stateUpdate.getScopeId(), assignTo);
         accessPoint = accessPointService.updateAndValidate(accessPoint);
         if (accessPointService.isArchDescRevalidationRequired(state.getStateApproval(), newState, false, false)) {
-            ruleService.revalidateNodes(accessPoint.getAccessPointId());
+            ruleService.revalidateNodesWithApRef(accessPoint.getAccessPointId());
         }
         apCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
 
