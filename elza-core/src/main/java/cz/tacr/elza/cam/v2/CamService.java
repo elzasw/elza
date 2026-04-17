@@ -910,81 +910,23 @@ public class CamService {
     }
 
     /**
-     * Create binding after sending AP to external system
+     * Store binding after CAM confirms the batch was persisted.
      * Transfer: ELZA -> CAM
-     * 
-     * @param queueItem
-     * @param uuidResponse
-     * @param itemUuidMap
-     * @param partUuidMap
-     * @param stateMap
-     * @param batchInfoXml
-     */
-    @Transactional
-    public void createBinding(ExtSyncsQueueItem queueItem,
-    		                  UUID uuidResponse,
-    		                  Map<Integer, String> itemUuidMap,
-    		                  Map<Integer, String> partUuidMap,
-    		                  Map<Integer, String> stateMap,
-    		                  BatchInfoXml batchInfoXml) {
-        // check if binding state already exists 
-        ApBindingState bindingState = externalSystemService.getBindingState(queueItem.getAccessPointId(), queueItem.getExternalSystemId());
-        if (bindingState != null 
-        		&& itemUuidMap.isEmpty() && partUuidMap.isEmpty()) {
-        	return;
-        }
-    	log.debug("Create binding, extSyncsQueueItemId: {}, accessPointId: {}", queueItem.getExtSyncsQueueItemId(), queueItem.getAccessPointId());
-
-        ApChange change = apDataService.createChange(ApChange.Type.AP_SYNCH);
-
-        // create binding && binding state 
-        if (bindingState == null) {
-        	ApState state = accessPointService.getStateInternal(queueItem.getAccessPointId());
-            ApAccessPoint accessPoint = state.getAccessPoint();
-            ApExternalSystem apExternalSystem = externalSystemService.getExternalSystemInternal(queueItem.getExternalSystemId());
-
-        	String camApState = stateMap.get(queueItem.getAccessPointId());
-            if (camApState == null) {
-                camApState = EntityRecordStateXml.ERS_NEW.toString();
-            }
-
-            LongStringXml userName = (LongStringXml) batchInfoXml.getSender().getName();
-            // temporary binding value == UUID response  
-            String bindingValue = uuidResponse.toString();
-	        // create binding
-	        ApBinding binding = externalSystemService.createApBinding(bindingValue, apExternalSystem, true);
-	        // create binding state
-	        bindingState = externalSystemService.createBindingState(binding, accessPoint, change, camApState,
-	        		batchInfoXml.getUuid().getValue(), // later: batchEntityRecordRev.getRev().getValue() 
-	                userName.getValue(), null, SyncState.SYNC_OK,
-	                accessPoint.getPreferredPart(),
-	                state.getApType());
-        }
-
-        // create binding items
-        var finalBinding = bindingState.getBinding();
-        itemUuidMap.forEach((itemId, value) -> {
-            ApItem item = entityManager.getReference(ApItem.class, itemId);
-            this.externalSystemService.createApBindingItem(finalBinding, change, value, null, item);
-        });
-        partUuidMap.forEach((partId, value) -> {
-            ApPart part = entityManager.getReference(ApPart.class, partId);
-            this.externalSystemService.createApBindingItem(finalBinding, change, value, part, null);
-        });
-
-        accessPointCacheService.createApCachedAccessPoint(queueItem.getAccessPointId());
-    }
-
-    /**
-     * Update entity status after successful transfer to external system
-     * Transfer: ELZA -> CAM
+     *
+     * Creates a new binding if none exists (first successful upload of the entity),
+     * or creates a new binding state revision if a binding already exists (subsequent
+     * upload of the same entity). In both cases the item/part binding pairs produced
+     * by the upload builder are persisted.
+     *
+     * Called only from the confirm phase on a {@link BatchChangeSuccessXml} result —
+     * no binding is created when CAM rejects/revokes the batch.
      *
      * @param queueItem
      * @param batchChangeSuccess
      * @param itemUuidMap
      * @param partUuidMap
      * @param stateMap
-     * @param batchInfoXml 
+     * @param batchInfoXml
      */
     @Transactional
     public void updateBinding(ExtSyncsQueueItem queueItem,
@@ -994,7 +936,7 @@ public class CamService {
                               Map<Integer, String> stateMap,
                               BatchInfoXml batchInfoXml) {
         log.debug("Updating binding, extSyncsQueueItemId: {}, accessPointId: {}", queueItem.getExtSyncsQueueItemId(), queueItem.getAccessPointId());
-        
+
         ApState state = accessPointService.getStateInternal(queueItem.getAccessPointId());
         ApAccessPoint accessPoint = state.getAccessPoint();
         ApExternalSystem apExternalSystem = externalSystemService.getExternalSystemInternal(queueItem.getExternalSystemId());
@@ -1012,29 +954,20 @@ public class CamService {
         LongStringXml userName = (LongStringXml) batchInfoXml.getSender().getName();
 
         if (bindingState != null) {
+            // entity already bound -> create new binding state revision
             binding = bindingState.getBinding();
-            if (binding.getValue().equals(queueItem.getBatchId())) {
-            	// update binding value & binding state ext_revision uuid
-            	binding.setValue(Long.toString(batchEntityRecordRev.getEntityId().getValue()));
-            	bindingState.setExtRevision(batchEntityRecordRev.getRev().getValue());
-				bindingRepository.save(binding);
-				bindingStateRepository.save(bindingState);
-            } else {
-		        bindingState = externalSystemService.createBindingState(bindingState, change, camApState,
-		                                                                batchEntityRecordRev.getRev().getValue(),
-		                                                                userName.getValue(),
-		                                                                bindingState.getExtReplacedBy(),
-		                                                                SyncState.SYNC_OK,
-		                                                                accessPoint.getPreferredPart(),
-		                                                                state.getApType());
-            }
+            bindingState = externalSystemService.createBindingState(bindingState, change, camApState,
+                                                                    batchEntityRecordRev.getRev().getValue(),
+                                                                    userName.getValue(),
+                                                                    bindingState.getExtReplacedBy(),
+                                                                    SyncState.SYNC_OK,
+                                                                    accessPoint.getPreferredPart(),
+                                                                    state.getApType());
         } else {
-        	// TODO Question: Is this part of the code fragment relevant?
+            // first successful upload of this entity -> create binding
             String bindingValue = Long.toString(batchEntityRecordRev.getEntityId().getValue());
-            // check if binding exists
             binding = externalSystemService.findByValueAndExternalSystem(bindingValue, apExternalSystem);
             if (binding == null) {
-                // binding does not exist
                 binding = externalSystemService.createApBinding(bindingValue, apExternalSystem, true);
             } else {
                 log.debug("Found existing binding, bindingId: {}, disconnecting existing binding", binding.getBindingId());
@@ -1045,7 +978,7 @@ public class CamService {
                 var curBindingState = bindingStateRepository.findActiveByBinding(binding);
                 if (curBindingState.isPresent()) {
                     log.info("Deleting previouse binding state, bindingStateId: {}", curBindingState.get().getBindingStateId());
-                    curBindingState.get().setDeleteChange(change);                    
+                    curBindingState.get().setDeleteChange(change);
                     bindingStateRepository.saveAndFlush(curBindingState.get());
                 }
                 var bindingItems = bindingItemRepository.findByBinding(binding);
@@ -1061,6 +994,17 @@ public class CamService {
                                                                     accessPoint.getPreferredPart(),
                                                                     state.getApType());
         }
+
+        // persist binding items for newly added parts/items
+        final ApBinding finalBinding = binding;
+        itemUuidMap.forEach((itemId, value) -> {
+            ApItem item = entityManager.getReference(ApItem.class, itemId);
+            this.externalSystemService.createApBindingItem(finalBinding, change, value, null, item);
+        });
+        partUuidMap.forEach((partId, value) -> {
+            ApPart part = entityManager.getReference(ApPart.class, partId);
+            this.externalSystemService.createApBindingItem(finalBinding, change, value, part, null);
+        });
 
         accessPointCacheService.createApCachedAccessPoint(queueItem.getAccessPointId());
     }
