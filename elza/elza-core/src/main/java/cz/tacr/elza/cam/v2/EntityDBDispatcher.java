@@ -483,6 +483,8 @@ public class EntityDBDispatcher {
                                                                      state.getApType());
         StateApproval oldStateApproval = null;
         StateApproval newStateApproval = null;
+        // Flags to determine if arch. desc have to be revalidated
+        boolean wasDeleted = (state.getDeleteChangeId()!=null), willBeDeleted = false;        
         switch (entity.getState()) {
         case ERS_REPLACED:
             // entita je nahrazena v CAM -> musíme nahradit v ELZA
@@ -508,11 +510,13 @@ public class EntityDBDispatcher {
                 }
             }
             state = accessPointService.invalidateAccessPoint(state, accessPoint, procCtx.getApChange());
+            willBeDeleted = true;
             break;
 
         case ERS_INVALID:
             // odstranění entity, která v CAM označena jako neplatná
             state = accessPointService.invalidateAccessPoint(state, accessPoint, procCtx.getApChange());
+            willBeDeleted = true;
             break;
 
         default:
@@ -534,13 +538,12 @@ public class EntityDBDispatcher {
                     stateNew.setStateApproval(newStateApproval);
                     state = stateRepository.save(stateNew);
                 }
-            }
-
+            }            
             break;
         }
 
         accessPointService.updatePartsIndexesAndValidate(accessPoint, state, syncRes.getParts(), syncRes.getItemMap(), syncQueue);
-        if (accessPointService.isRevalidaceRequired(oldStateApproval, newStateApproval)) {
+        if (accessPointService.isArchDescRevalidationRequired(oldStateApproval, newStateApproval, wasDeleted, willBeDeleted)) {
             ruleService.revalidateNodesWithApRef(accessPoint.getAccessPointId());
         }
         mcc.add(accessPoint.getAccessPointId());
