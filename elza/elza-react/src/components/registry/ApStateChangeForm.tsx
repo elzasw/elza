@@ -95,9 +95,12 @@ export const ApStateChangeForm = ({
 
     function validate(values: ApStateChangeVO){
         const errors:Partial<Record<keyof ApStateChangeVO, string>> = {};
+        const assignedToChanged = values.assignedTo !== initialValues?.assignedTo;
+        const stateChanged = values.state !== initialValues?.state;
         const isToApproveSameUser =
             values.state === StateApproval.TO_APPROVE
-            && values.assignedTo === currentUserId;
+            && values.assignedTo === currentUserId
+            && (assignedToChanged || stateChanged);
         if (isToApproveSameUser) {
             errors.assignedTo = i18n("ap.state.title.assignedUser.error.toApproveSameUser")
         }
