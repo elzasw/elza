@@ -73,9 +73,9 @@ export const ApStateChangeForm = ({
 
             setLastParticipants(_lastParticipants);
 
-            if (states.indexOf(initialValues.state) < 0) {
-                states.push(initialValues.state);
-            }
+            // if (states.indexOf(initialValues.state) < 0) {
+            //     states.push(initialValues.state);
+            // }
             setStates(states);
         })()
     }, [accessPointId])
@@ -107,10 +107,15 @@ export const ApStateChangeForm = ({
         return errors;
     }
 
+    // const isApprovingUser = initialValues.assignedTo === currentUserId && initialValues.state === StateApproval.TO_APPROVE;
+    const canApprove = stateOptions.find(({id}) => id === StateApproval.APPROVED);
+    const isToApprove = initialValues.state === StateApproval.TO_APPROVE;
+
     return (
-        <FinalForm validate={validate} onSubmit={handleSubmit} initialValues={{ ...initialValues, scopeId: preselectedScopeId }}>
-            {({ submitting, handleSubmit, form, values, valid }) => {
+        <FinalForm validate={validate} onSubmit={handleSubmit} initialValues={{ ...initialValues, state: (canApprove && isToApprove) ? null : initialValues.state, scopeId: preselectedScopeId }}>
+            {({ submitting, handleSubmit, form, values, valid, pristine }) => {
                 const isApproved = values.state === StateApproval.APPROVED;
+                const isStateChangeDisabled = values.state === StateApproval.APPROVED || !values.state;
 
                 return <Form>
                     <Modal.Body>
@@ -135,18 +140,19 @@ export const ApStateChangeForm = ({
                                 allowSelectItem={(item: ApTypeVO) => item.addRecord}
                                 name={'typeId'}
                                 useIdAsValue={true}
-                                disabled={submitting}
+                                disabled={submitting || isStateChangeDisabled}
                             />
                         )}
                         <Field
                             component={FormInputField}
                             type="autocomplete"
-                            disabled={submitting}
+                            disabled={submitting || stateOptions.length <= 1}
                             useIdAsValue
                             required
                             label={i18n('ap.state.title.state')}
                             items={stateOptions}
                             name={'state'}
+                            placeholder={initialValues?.state && (StateApprovalCaption(initialValues.state) || "")}
                         />
                         <Field
                             component={FormInputField}
@@ -207,7 +213,7 @@ export const ApStateChangeForm = ({
                         </>}
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button type="submit" variant="outline-secondary" disabled={submitting || !valid} onClick={handleSubmit}>
+                        <Button type="submit" variant="outline-secondary" disabled={submitting || !valid || pristine} onClick={handleSubmit}>
                             {i18n('global.action.store')}
                         </Button>
                         <Button variant="link" onClick={onClose}>

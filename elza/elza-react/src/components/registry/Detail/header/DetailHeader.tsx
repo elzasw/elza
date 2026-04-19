@@ -190,11 +190,11 @@ const DetailHeader: FC<Props> = ({
                                             <b>{i18n('arr.node.status.err.errors')}</b>
                                         </div>
                                         <div>
-                                            {validationErrors?.map((error) => { return <div> {error}</div> })}
+                                            {validationErrors?.map((error, i) => <div key={i}> {error}</div>)}
                                         </div>
                                         <div>
-                                            {validationPartErrors?.map((partErrors) => <div>
-                                                {partErrors.errors?.map((error) => <div> {error}</div>)}
+                                            {validationPartErrors?.map((partErrors, i) => <div key={i}>
+                                                {partErrors.errors?.map((error, j) => <div key={j}> {error}</div>)}
                                             </div>)}
                                         </div>
                                     </div>

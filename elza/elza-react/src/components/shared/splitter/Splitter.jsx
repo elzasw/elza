@@ -19,7 +19,7 @@ class Splitter extends AbstractReactComponent {
     static propTypes = {
         left: PropTypes.object,
         leftSize: PropTypes.number,
-        center: PropTypes.object.isRequired,
+        center: PropTypes.object,
         right: PropTypes.object,
         rightSize: PropTypes.number,
         onDragFinished: PropTypes.func,

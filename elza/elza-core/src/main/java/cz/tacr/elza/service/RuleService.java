@@ -727,39 +727,13 @@ public class RuleService {
     }
 
     /**
-     * Provádění validaci nody, které mají odkaz na ApAccessPoint
+     * Revalidace JP, které odkazují na daný přístupový bod.
      *
-     * @param accessPointId
+     * @param accessPointId identifikátor přístupového bodu
      */
     public void revalidateNodesWithApRef(final Integer accessPointId) {
-        List<NodeIdFundVersionIdInfo> nodeIdFundVersionIds = nodeRepository.findNodeIdFundversionIdByAccessPointId(accessPointId);
-        Map<Integer, List<Integer>> nodeIdFundVersionMap = nodeIdFundVersionIds.stream()
-                .collect(Collectors.groupingBy(i -> i.getFundVersionId(),
-                                               Collectors.mapping(i -> i.getNodeId(), 
-                                                                  Collectors.toList())));
-
-        nodeIdFundVersionMap.forEach((fundVersionId, nodeIds) -> {
-            asyncRequestService.enqueueNodes(fundVersionId, nodeIds);
-        });
-    }
-
-    /**
-     * Provádění validaci nody, které mají odkaz na ApAccessPoint
-     * 
-     * @param accessPointId
-     */
-    public void revalidateNodes(final Integer accessPointId) {
-        List<NodeIdFundVersionIdInfo> nodeIdFundVersionIds = nodeRepository.findNodeIdFundversionIdByAccessPointId(accessPointId);
-        Map<Integer, List<Integer>> nodeIdFundVersionMap = nodeIdFundVersionIds.stream()
-                .collect(Collectors.groupingBy(i -> i.getFundVersionId(),
-                                               Collectors.mapping(i -> i.getNodeId(),
-                                                                  Collectors.toList())));
-        for (Integer fundVersionId : nodeIdFundVersionMap.keySet()) {
-            ArrFundVersion version = fundVersionRepository.findById(fundVersionId).orElseThrow(version(fundVersionId));
-            List<ArrNode> nodes = new ArrayList<>();
-            nodeIdFundVersionMap.get(fundVersionId).forEach(id -> nodes.add(nodeRepository.getReferenceById(id)));
-            asyncRequestService.enqueue(version, nodes);
-        }
+        List<NodeIdFundVersionIdInfo> pairs = nodeRepository.findNodeIdFundversionIdByAccessPointId(accessPointId);
+        asyncRequestService.enqueueNodesGrouped(pairs);
     }
 
     /**

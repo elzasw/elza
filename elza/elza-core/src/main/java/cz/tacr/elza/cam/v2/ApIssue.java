@@ -26,7 +26,32 @@ public class ApIssue {
 
 	private LocalDateTime from;
 
+	/** Resolved ELZA ApPart.partId for {@link ExistingIssueXml#getPartRef()}, or null. */
+	private Integer partId;
+
+	/** Resolved ELZA ApItem.itemId for {@link ExistingIssueXml#getItemRef()}, or null. */
+	private Integer itemId;
+
+	/** Resolved ELZA ApAccessPoint.accessPointId for {@link ExistingIssueXml#getEntityRef()}, or null. */
+	private Integer entityId;
+
+	/** Human-readable name of the referenced part (DISPLAY_NAME index, or part-type description as fallback). */
+	private String partName;
+
+	/** Human-readable name of the referenced item ({@code "typeDesc: value"} for scalar data, type description otherwise). */
+	private String itemName;
+
+	/** Human-readable name of the referenced other AP (DISPLAY_NAME of its preferred part). */
+	private String entityName;
+
+	public ApIssue() {
+	}
+
 	public ApIssue(ExistingIssueXml issue) {
+		this(issue, null);
+	}
+
+	public ApIssue(ExistingIssueXml issue, IssueRefResolver resolver) {
 		uuid = issue.getUuid().getValue();
 		severity = issue.getSeverity().toString();
 		message = issue.getMessage().getValue();
@@ -35,6 +60,19 @@ public class ApIssue {
 		source = issue.getSource() != null ? issue.getSource().getValue() : null;
 		detail = issue.getDetail() != null ? issue.getDetail().getValue() : null;
 		from = issue.getFrom().getValue();
+		if (resolver != null) {
+			partId = resolver.resolvePart(issue.getPartRef());
+			itemId = resolver.resolveItem(issue.getItemRef());
+			entityId = resolver.resolveEntity(issue.getEntityRef());
+			// Ensure item-only refs also carry a partId so the frontend has a single
+			// scroll target regardless of which ref CAM returned.
+			if (partId == null && itemId != null) {
+				partId = resolver.partIdForItem(itemId);
+			}
+			partName = resolver.resolvePartName(partId);
+			itemName = resolver.resolveItemName(itemId);
+			entityName = resolver.resolveEntityName(entityId);
+		}
 	}
 
 	public String getUuid() {
@@ -101,17 +139,69 @@ public class ApIssue {
 		this.from = from;
 	}
 
+	public Integer getPartId() {
+		return partId;
+	}
+
+	public void setPartId(Integer partId) {
+		this.partId = partId;
+	}
+
+	public Integer getItemId() {
+		return itemId;
+	}
+
+	public void setItemId(Integer itemId) {
+		this.itemId = itemId;
+	}
+
+	public Integer getEntityId() {
+		return entityId;
+	}
+
+	public void setEntityId(Integer entityId) {
+		this.entityId = entityId;
+	}
+
+	public String getPartName() {
+		return partName;
+	}
+
+	public void setPartName(String partName) {
+		this.partName = partName;
+	}
+
+	public String getItemName() {
+		return itemName;
+	}
+
+	public void setItemName(String itemName) {
+		this.itemName = itemName;
+	}
+
+	public String getEntityName() {
+		return entityName;
+	}
+
+	public void setEntityName(String entityName) {
+		this.entityName = entityName;
+	}
+
 	@Override
 	public String toString() {
 		return "ApIssue [severity=" + severity + ", message=" + message + "]";
 	}
 
 	public static List<ApIssue> createList(BatchChangeFailureXml failure) {
+		return createList(failure, null);
+	}
+
+	public static List<ApIssue> createList(BatchChangeFailureXml failure, IssueRefResolver resolver) {
 		List<ApIssue> issueList = new ArrayList<>();
 		for (EntityIssuesXml entityIssue : failure.getIssues()) {
 			// list of ExistingIssueXml.class -> list of IssueResult.class
 			for (ExistingIssueXml issue : entityIssue.getIssue()) {
-				issueList.add(new ApIssue(issue));
+				issueList.add(new ApIssue(issue, resolver));
 			}
 		}
 		return issueList;
