@@ -1,6 +1,7 @@
 package cz.tacr.elza.service.cam.v2;
 
 import java.io.StringWriter;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -10,9 +11,18 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 
 import cz.tacr.cam.v2.client.controller.vo.RequestProcessState;
+import cz.tacr.cam.v2.schema.cam.BatchChangeFailureXml;
 import cz.tacr.cam.v2.schema.cam.BatchChangeSuccessXml;
 import cz.tacr.cam.v2.schema.cam.BatchEntityRecordRevXml;
+import cz.tacr.cam.v2.schema.cam.CodeXml;
+import cz.tacr.cam.v2.schema.cam.DateTimeXml;
 import cz.tacr.cam.v2.schema.cam.EntityIdXml;
+import cz.tacr.cam.v2.schema.cam.EntityIssuesXml;
+import cz.tacr.cam.v2.schema.cam.ExistingIssueXml;
+import cz.tacr.cam.v2.schema.cam.IssueSeverityXml;
+import cz.tacr.cam.v2.schema.cam.PartRefXml;
+import cz.tacr.cam.v2.schema.cam.PartTypeXml;
+import cz.tacr.cam.v2.schema.cam.StringXml;
 import cz.tacr.cam.v2.schema.cam.UuidXml;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
@@ -89,6 +99,78 @@ public class CamV2MockHelper {
         rev.setRev(new UuidXml(revisionUuid));
         success.getRevision().add(rev);
         return stubResult(batchId, marshal(BatchChangeSuccessXml.class, success));
+    }
+
+    /**
+     * Stub {@code GET /batches/{id}/result} with a {@code BatchChangeFailure} response
+     * built from the given issues. When {@code forceKey} is non-null, it's attached to
+     * the failure so the client (and the user) can retry with force.
+     */
+    public StubMapping stubBatchResultFailure(UUID batchId, List<IssueSpec> issues, String forceKey) {
+        BatchChangeFailureXml failure = new BatchChangeFailureXml();
+        EntityIssuesXml entityIssues = new EntityIssuesXml();
+        for (IssueSpec spec : issues) {
+            entityIssues.getIssue().add(spec.toXml());
+        }
+        failure.getIssues().add(entityIssues);
+        if (forceKey != null) {
+            failure.setForceKey(new StringXml(forceKey));
+        }
+        return stubResult(batchId, marshal(BatchChangeFailureXml.class, failure));
+    }
+
+    /**
+     * Minimal description of an issue used by {@link #stubBatchResultFailure}.
+     * Only severity and message are required; everything else is optional.
+     */
+    public static final class IssueSpec {
+        private final IssueSeverityXml severity;
+        private final String message;
+        private final String ruleCode;
+        private final String detail;
+        private String partUuid;
+        private PartTypeXml partType;
+
+        public IssueSpec(IssueSeverityXml severity, String message, String ruleCode, String detail) {
+            this.severity = severity;
+            this.message = message;
+            this.ruleCode = ruleCode;
+            this.detail = detail;
+        }
+
+        public static IssueSpec warning(String message, String ruleCode) {
+            return new IssueSpec(IssueSeverityXml.WARNING, message, ruleCode, null);
+        }
+
+        public static IssueSpec error(String message, String ruleCode) {
+            return new IssueSpec(IssueSeverityXml.ERROR, message, ruleCode, null);
+        }
+
+        /** Attach a partRef to this issue so the resolver can map it back to an ELZA partId. */
+        public IssueSpec withPart(String partUuid, PartTypeXml partType) {
+            this.partUuid = partUuid;
+            this.partType = partType;
+            return this;
+        }
+
+        ExistingIssueXml toXml() {
+            ExistingIssueXml xml = new ExistingIssueXml();
+            xml.setUuid(new UuidXml(UUID.randomUUID().toString()));
+            xml.setSeverity(severity);
+            xml.setMessage(new StringXml(message));
+            if (ruleCode != null) {
+                xml.setRuleCode(new CodeXml(ruleCode));
+            }
+            if (detail != null) {
+                xml.setDetail(new StringXml(detail));
+            }
+            if (partUuid != null) {
+                xml.setPartRef(new PartRefXml(new UuidXml(partUuid), partType));
+            }
+            // `from` is required by the schema — any point in time works for tests
+            xml.setFrom(new DateTimeXml(LocalDateTime.now()));
+            return xml;
+        }
     }
 
     private StubMapping stubResult(UUID batchId, String body) {

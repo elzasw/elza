@@ -1,0 +1,96 @@
+.export-issues {
+    max-height: 60vh;
+    overflow-y: auto;
+
+    &__intro {
+        margin-bottom: 0.75rem;
+    }
+
+    &__list {
+        list-style: none;
+        padding-left: 0;
+        margin: 0;
+    }
+}
+
+.export-issue {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &__icon {
+        flex: 0 0 auto;
+        margin-top: 0.15rem;
+    }
+
+    &--error .export-issue__icon {
+        color: #d9534f;
+    }
+
+    &--warning .export-issue__icon {
+        color: #f0ad4e;
+    }
+
+    &__body {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    &__message {
+        font-weight: 600;
+        word-break: break-word;
+        white-space: pre-wrap; // preserve newlines coming from v1 plain-text fallback
+    }
+
+    &__detail {
+        margin-top: 0.15rem;
+        color: #666;
+        font-size: 0.9em;
+        word-break: break-word;
+    }
+
+    &__rule {
+        flex: 0 0 auto;
+        align-self: flex-start;
+        margin-left: 0.5rem;
+        padding: 0.1rem 0.4rem;
+        background: #eee;
+        border-radius: 3px;
+        font-family: monospace;
+        font-size: 0.8em;
+        color: #555;
+    }
+
+    &__targets {
+        margin-top: 0.25rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+    }
+
+    &__target {
+        display: inline-block;
+        padding: 0.1rem 0.4rem;
+        background: #eef4fb;
+        border: 1px solid #d0e2f2;
+        border-radius: 3px;
+        font-size: 0.85em;
+        color: #1a5490;
+
+        &--clickable {
+            cursor: pointer;
+            background: #eef4fb;
+            // mimic link affordance without being as heavy as a full button
+            &:hover {
+                background: #d8e6f3;
+                text-decoration: underline;
+            }
+        }
+    }
+}

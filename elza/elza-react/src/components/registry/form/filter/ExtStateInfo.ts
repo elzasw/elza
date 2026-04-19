@@ -1,11 +1,12 @@
 import {ExtAsyncQueueState} from "../../../../api/ExtAsyncQueueState";
 
 export function getValues(): ExtAsyncQueueState[] {
-    return [ExtAsyncQueueState.UPDATE, 
-        ExtAsyncQueueState.IMPORT_NEW, 
-        ExtAsyncQueueState.IMPORT_OK, 
-        ExtAsyncQueueState.EXPORT_NEW, 
-        ExtAsyncQueueState.EXPORT_OK, 
+    return [ExtAsyncQueueState.UPDATE,
+        ExtAsyncQueueState.IMPORT_NEW,
+        ExtAsyncQueueState.IMPORT_OK,
+        ExtAsyncQueueState.EXPORT_NEW,
+        ExtAsyncQueueState.EXPORT_OK,
+        ExtAsyncQueueState.EXPORT_CANCELLED,
         ExtAsyncQueueState.ERROR]
 }
 
@@ -21,6 +22,8 @@ export function getName(state: ExtAsyncQueueState): string {
             return 'Aktualizováno/Staženo';
         case ExtAsyncQueueState.EXPORT_OK:
             return 'Odesláno';
+        case ExtAsyncQueueState.EXPORT_CANCELLED:
+            return 'Zrušeno uživatelem';
         case ExtAsyncQueueState.ERROR:
             return 'Chyba';
         default:

@@ -903,4 +903,14 @@
             WHERE sequence_name = 'arr_async_request|async_request_id'</sql>
     </changeSet>
 
+    <changeSet id="20260419120000" author="ppy">
+        <!-- Transient mapping "ELZA part/item id ↔ CAM UUID" for the in-flight upload.
+             Populated when the batch is posted to CAM; used by the confirm processor
+             to resolve warnings/errors (IssueXml.partRef / itemRef) back to ELZA ids;
+             cleared when the queue item reaches a terminal state. -->
+        <addColumn tableName="ext_syncs_queue_item">
+            <column name="uuid_map" type="${type.text}"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
