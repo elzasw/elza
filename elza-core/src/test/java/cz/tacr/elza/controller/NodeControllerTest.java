@@ -15,8 +15,12 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.test.controller.vo.DescItemField;
+import cz.tacr.elza.test.controller.vo.FieldType;
 import cz.tacr.elza.test.controller.vo.FieldValueFilter;
+import cz.tacr.elza.test.controller.vo.FondsField;
+import cz.tacr.elza.test.controller.vo.FondsFieldName;
 import cz.tacr.elza.test.controller.vo.Fund;
+import cz.tacr.elza.test.controller.vo.LogicalFilter;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.test.controller.vo.NodeData;
 import cz.tacr.elza.test.controller.vo.NodeDataParam;
@@ -26,6 +30,7 @@ import cz.tacr.elza.test.controller.vo.NodeItem;
 import cz.tacr.elza.test.controller.vo.NodeSearchResult;
 import cz.tacr.elza.test.controller.vo.NodeTreeData;
 import cz.tacr.elza.test.controller.vo.OperationCompareType;
+import cz.tacr.elza.test.controller.vo.OperationLogicalType;
 import cz.tacr.elza.test.controller.vo.SearchParams;
 
 public class NodeControllerTest extends AbstractControllerTest {
@@ -67,7 +72,9 @@ public class NodeControllerTest extends AbstractControllerTest {
         nodeItem = buildNodeItem(SRD_ENTITY_ROLE, SRD_ENTITY_ROLE_1, DataType.RECORD_REF, accessPoint, node, null);
         descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
 
+        //
         // create MultimatchContainsFilter filter
+        //
         MultimatchContainsFilter containsFilter = new MultimatchContainsFilter();
         containsFilter.setValue("value");
 
@@ -82,7 +89,9 @@ public class NodeControllerTest extends AbstractControllerTest {
     	List<NodeTreeData> nodeResult = nodeApi.nodeGetSearchResult(fund.getId());
     	assertEquals(1, nodeResult.size());
 
+    	//
         // create FieldValueFilter filter
+    	//
         FieldValueFilter valueFilter = new FieldValueFilter();
         valueFilter.setField(new DescItemField().typeCode(SRD_TITLE));
         valueFilter.setValue("alu");
@@ -159,6 +168,83 @@ public class NodeControllerTest extends AbstractControllerTest {
         // try to search by UUID id using FieldValueFilter
         searchResult = nodeSearch(params);
         assertEquals(1, searchResult.getFonds().size());
+
+        //
+        // testy LogicalFilter s využitím dvou fondů a filtru FONDS_ID
+        //
+
+        // vytvoření druhého fondu s uzlem a položkami
+        Fund fund2 = createFund("fund2", "internalCode2");
+        assertNotNull(fund2);
+
+        ArrFundVersionVO fundVersion2 = getOpenVersion(fund2);
+        List<ArrNodeVO> nodes2 = createLevels(fundVersion2);
+        ArrNodeVO node2 = nodes2.get(0);
+
+        // přidat položku SRD_TITLE do uzlu fund2 (stejná hodnota jako v fund1)
+        NodeItem nodeItem2 = buildNodeItem(SRD_TITLE, null, DataType.TEXT, "value", node2, null);
+        descitemsApi.descItemCreateDescItem(fundVersion2.getId(), nodeItem2);
+
+        // příprava filtru na fondsId pro fund1
+        FieldValueFilter fund1IdFilter = new FieldValueFilter();
+        fund1IdFilter.setField(new FondsField().fieldType(FieldType.FONDS_FIELD).fieldName(FondsFieldName.FONDS_ID));
+        fund1IdFilter.setValue(fund.getId().toString());
+        fund1IdFilter.setOperation(OperationCompareType.EQ);
+
+        // příprava filtru na fondsId pro fund2
+        FieldValueFilter fund2IdFilter = new FieldValueFilter();
+        fund2IdFilter.setField(new FondsField().fieldType(FieldType.FONDS_FIELD).fieldName(FondsFieldName.FONDS_ID));
+        fund2IdFilter.setValue(fund2.getId().toString());
+        fund2IdFilter.setOperation(OperationCompareType.EQ);
+
+        // OR: fond1 nebo fond2 → oba fondy mají uzel s hodnotou "value", očekáváme 2 fondy
+        LogicalFilter orFondsFilter = new LogicalFilter();
+        orFondsFilter.setOperation(OperationLogicalType.OR);
+        orFondsFilter.setFilters(List.of(fund1IdFilter, fund2IdFilter));
+
+        params.filters(List.of(orFondsFilter));
+        // čekáme, až bude fond2 zaindexován
+        NodeSearchResult searchResult2Fonds = null;
+        int counter2 = 0;
+        try {
+            do {
+                Thread.sleep(100);
+                searchResult2Fonds = nodeApi.nodeSearch(params);
+                counter2++;
+            } while (searchResult2Fonds.getFonds().size() < 2 && counter2 < 1000);
+        } catch (Exception e) {
+            fail("Exception while waiting on result: " + e);
+        }
+        assertEquals(2, searchResult2Fonds.getFonds().size());
+
+        // AND: fondsId=fund1 AND title CONTAINS "value" → pouze fond1
+        FieldValueFilter titleFilter2 = new FieldValueFilter();
+        titleFilter2.setField(new DescItemField().typeCode(SRD_TITLE));
+        titleFilter2.setValue("value");
+        titleFilter2.setOperation(OperationCompareType.CONTAINS);
+
+        LogicalFilter andFund1TitleFilter = new LogicalFilter();
+        andFund1TitleFilter.setOperation(OperationLogicalType.AND);
+        andFund1TitleFilter.setFilters(List.of(fund1IdFilter, titleFilter2));
+
+        params.filters(List.of(andFund1TitleFilter));
+        searchResult = nodeSearch(params);
+        assertEquals(1, searchResult.getFonds().size());
+        assertEquals(fund.getId(), searchResult.getFonds().get(0).getId());
+
+        // AND: fondsId=fund2 AND title CONTAINS "xyz" → žádný výsledek
+        FieldValueFilter titleNoMatchFilter = new FieldValueFilter();
+        titleNoMatchFilter.setField(new DescItemField().typeCode(SRD_TITLE));
+        titleNoMatchFilter.setValue("xyz");
+        titleNoMatchFilter.setOperation(OperationCompareType.CONTAINS);
+
+        LogicalFilter andFund2NoMatchFilter = new LogicalFilter();
+        andFund2NoMatchFilter.setOperation(OperationLogicalType.AND);
+        andFund2NoMatchFilter.setFilters(List.of(fund2IdFilter, titleNoMatchFilter));
+
+        params.filters(List.of(andFund2NoMatchFilter));
+        searchResult = nodeApi.nodeSearch(params); // přímé volání — žádný výsledek se neočekává
+        assertEquals(0, searchResult.getFonds().size());        
     }
 
     private NodeSearchResult nodeSearch(SearchParams params) {
