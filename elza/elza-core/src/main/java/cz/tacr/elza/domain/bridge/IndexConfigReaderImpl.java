@@ -125,6 +125,11 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
         });
         Map<String, Integer> packagesMap = packageInfoList.stream().collect(Collectors.toMap(PackageInfo::getCode, PackageInfo::getId));
 
+        // Uložit všechna ID balíčků před tím, než je ZIP zpracování začne odstraňovat.
+        // Potřebujeme je pro případ, kdy dpkgDir neexistuje nebo je testing=true
+        // (v testing=true jsou všechny balíčky odstraněny z packagesMap).
+        List<Integer> allDbPackageIds = new ArrayList<>(packagesMap.values());
+
         // reading data from xml packages files
         Path dpkgDir = Paths.get(workDir, ResourcePathResolver.DPKG_DIR);
         if (Files.exists(dpkgDir)) {
@@ -167,7 +172,7 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
                         }
                     }
 
-                    // pokud balíček není stažen nebo jeho verze neodpovídá stažené (menší) nebo probíhá vývoj 
+                    // pokud balíček není stažen nebo jeho verze neodpovídá stažené (menší) nebo probíhá vývoj
                     if (readFromFile) {
                         packagesToImport.add(new PackageInfoWrapper(pkg.getPkg(), path));
                         latestVersionMap.put(pkg.getCode(), new PackageInfoWrapper(pkg.getPkg(), path));
@@ -180,15 +185,19 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
                     }
                 }
                 allPackages = new ArrayList<>(latestVersionMap.values());
-    
+
             } catch (IOException e) {
                 logger.error("Error processing a package zip file.", e);
                 throw new SystemException("Error processing a package zip file.", e);
             }
-
-            // reading data from db
-            readTypeAndSpecDataFromDb(packagesMap.values());
         }
+
+        // Načíst typy položek z DB vždy — bez ohledu na to, zda dpkgDir existuje nebo ne.
+        // Pokud packagesMap není prázdná (balíčky nebyly načteny ze ZIP), použijeme je.
+        // Pokud je prázdná (testing=true nebo dpkgDir neexistuje), použijeme všechny ID z DB.
+        // Tímto zajistíme, že všechny typy položek z DB jsou zaregistrovány v indexové schémě.
+        Collection<Integer> packagesToLoadFromDb = packagesMap.isEmpty() ? allDbPackageIds : packagesMap.values();
+        readTypeAndSpecDataFromDb(packagesToLoadFromDb);
     }
 
     private void readTypeAndSpecDataFromDb(Collection<Integer> packageIds) {
