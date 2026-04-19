@@ -36,4 +36,14 @@ public class UpdateEntityWorker implements UploadWorker {
                               final BatchUpdateResultXml batchUpdateResult) {
         camService.updateBinding(queueItem, batchUpdateResult, itemUuidMap, partUuidMap, stateMap, updateXml.getInfo());
     }
+
+    @Override
+    public Map<Integer, String> getPartUuidMap() {
+        return partUuidMap;
+    }
+
+    @Override
+    public Map<Integer, String> getItemUuidMap() {
+        return itemUuidMap;
+    }
 }

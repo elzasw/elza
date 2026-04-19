@@ -142,7 +142,7 @@ const FormInput: React.ForwardRefExoticComponent<Props> = memo(
                             className={className}
                             ref={ref}
                             value={value}
-                            error={hasError && error}
+                            error={hasError ? error : undefined}
                             touched={touched}
                             {...otherProps}
                             {...inlineProps}
@@ -159,7 +159,7 @@ const FormInput: React.ForwardRefExoticComponent<Props> = memo(
                             className={className}
                             ref={ref}
                             value={value}
-                            error={hasError && error}
+                            error={hasError ? error : undefined}
                             touched={touched}
                             {...otherProps}
                             {...inlineProps}

@@ -50,6 +50,7 @@ import cz.tacr.elza.cam.ProcessingContext;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.cam.v2.schema.cam.BatchChangeFailureXml;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
@@ -1020,9 +1021,26 @@ public class CamService {
 	public BatchUpdateResultXml getBatchUpdateResult(ExtSyncsQueueItem queueItem) throws ApiException {
 		UUID uuid = UUID.fromString(queueItem.getBatchId());
         ApExternalSystem extSystem = externalSystemService.getExternalSystemInternal(queueItem.getExternalSystemId());
-        
+
         log.debug("Get batch result, systemId: {}, batchId: {}", queueItem.getExternalSystemId(), queueItem.getBatchId());
 		return camConnector.getBatchResult(uuid, extSystem);
+	}
+
+	/**
+	 * Build a resolver that maps CAM part/item/entity refs in a failure response
+	 * back to ELZA DB ids — uses the transient {@code uuid_map} persisted at upload
+	 * time first, then falls back to {@link cz.tacr.elza.domain.ApBindingItem} for
+	 * pre-existing bound parts/items.
+	 */
+	public IssueRefResolver createIssueRefResolver(ExtSyncsQueueItem queueItem, BatchChangeFailureXml failure) {
+		ApExternalSystem extSystem = externalSystemService.getExternalSystemInternal(queueItem.getExternalSystemId());
+		ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(queueItem.getAccessPointId());
+		ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, extSystem);
+		ApBinding binding = bindingState != null ? bindingState.getBinding() : null;
+		return IssueRefResolver.build(failure, queueItem.getUuidMap(),
+				queueItem.getAccessPointId(), binding, extSystem,
+				bindingItemRepository, bindingRepository, bindingStateRepository,
+				accessPointCacheService, staticDataService.getData());
 	}
 
 	private EntityDBDispatcher createEntityDBDispatcher() {

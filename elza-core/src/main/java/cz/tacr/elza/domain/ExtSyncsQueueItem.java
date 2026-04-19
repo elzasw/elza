@@ -77,6 +77,15 @@ public class ExtSyncsQueueItem {
     @Column(length = Length.LONG32, nullable = true)
     private String data;
 
+    /**
+     * JSON mapping of ELZA part/item ids to the CAM UUIDs generated for the in-flight
+     * upload. Populated when the batch is posted to CAM; consulted by the confirm
+     * processor to resolve {@code IssueXml.partRef}/{@code itemRef} back to ELZA ids.
+     * Cleared on terminal states (EXPORT_OK, EXPORT_CANCELLED, ERROR).
+     */
+    @Column(name = "uuid_map", length = Length.LONG32, nullable = true)
+    private String uuidMap;
+
     public Integer getExtSyncsQueueItemId() {
         return extSyncsQueueItemId;
     }
@@ -185,6 +194,14 @@ public class ExtSyncsQueueItem {
 		this.data = data;
 	}
 
+	public String getUuidMap() {
+		return uuidMap;
+	}
+
+	public void setUuidMap(String uuidMap) {
+		this.uuidMap = uuidMap;
+	}
+
 	public enum ExtAsyncQueueState {
 
         UPDATE("K aktualizaci"),
@@ -202,6 +219,8 @@ public class ExtSyncsQueueItem {
         EXPORT_NEED_CONFIRM("Potřeba potvrzení"),
 
         EXPORT_OK("Odesláno"),
+
+        EXPORT_CANCELLED("Zrušeno uživatelem"),
 
         ERROR("Chyba");
 
