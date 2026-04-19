@@ -163,6 +163,7 @@ export function FundFilters({
           <MenuList>
             {getFiltersList().map((fieldName) => {
               return <MenuItem
+                key={fieldName}
                 onClick={async (e) => {
                   e.stopPropagation();
                   e.preventDefault();

@@ -868,4 +868,49 @@
         WHERE rit.code = 'ZP2015_LEGEND')</sql>
     </changeSet>
 
+    <changeSet id="20260417120000" author="ppy">
+        <!-- revalidace JP odkazujících na zneplatněné (invalidované) přístupové body -->
+        <sql dbms="postgresql">
+            WITH latest_ap_state AS (
+                SELECT access_point_id, delete_change_id,
+                    row_number() OVER (PARTITION BY access_point_id ORDER BY create_change_id DESC) AS rn
+                FROM ap_state
+            ),
+            invalidated_ap AS (
+                SELECT access_point_id FROM latest_ap_state WHERE rn = 1 AND delete_change_id IS NOT NULL
+            ),
+            to_enqueue AS (
+                SELECT DISTINCT fv.fund_version_id, n.node_id
+                FROM arr_node n
+                JOIN arr_fund_version fv ON fv.fund_id = n.fund_id AND fv.lock_change_id IS NULL
+                JOIN arr_level l ON l.node_id = n.node_id AND l.delete_change_id IS NULL
+                JOIN arr_desc_item di ON di.node_id = n.node_id
+                JOIN arr_item itm ON itm.item_id = di.item_id AND itm.delete_change_id IS NULL
+                JOIN arr_data_record_ref rr ON rr.data_id = itm.data_id
+                JOIN invalidated_ap iap ON iap.access_point_id = rr.record_id
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM arr_async_request r
+                    WHERE r.type = 'NODE' AND r.node_id = n.node_id
+                )
+            )
+            INSERT INTO arr_async_request (async_request_id, type, priority, fund_version_id, node_id)
+            SELECT row_number() OVER (ORDER BY node_id)
+                + (SELECT coalesce(max(async_request_id), 0) FROM arr_async_request),
+                'NODE', 1, fund_version_id, node_id
+            FROM to_enqueue
+        </sql>
+        <sql dbms="postgresql">UPDATE db_hibernate_sequences SET next_val = (SELECT (coalesce(max(async_request_id), 0)+20) FROM arr_async_request)
+            WHERE sequence_name = 'arr_async_request|async_request_id'</sql>
+    </changeSet>
+
+    <changeSet id="20260419120000" author="ppy">
+        <!-- Transient mapping "ELZA part/item id ↔ CAM UUID" for the in-flight upload.
+             Populated when the batch is posted to CAM; used by the confirm processor
+             to resolve warnings/errors (IssueXml.partRef / itemRef) back to ELZA ids;
+             cleared when the queue item reaches a terminal state. -->
+        <addColumn tableName="ext_syncs_queue_item">
+            <column name="uuid_map" type="${type.text}"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

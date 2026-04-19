@@ -68,9 +68,11 @@ public class ItemSyncExportConfirmProcessor implements ItemSyncProcessor {
 				case ERROR:
 					batchUpdateResult = camService.getBatchUpdateResult(queueItem);
 					BatchChangeFailureXml failure = (BatchChangeFailureXml) batchUpdateResult;
-					List<ApIssue> issueList = ApIssue.createList(failure);
+					IssueRefResolver errorResolver = camService.createIssueRefResolver(queueItem, failure);
+					List<ApIssue> issueList = ApIssue.createList(failure, errorResolver);
+					String errorStateMessage = objectMapper.writeValueAsString(issueList);
 					log.error("Failed to send item, accessPointId: {}, message: {}", queueItem.getAccessPointId(), issueList);
-					apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.ERROR, issueList.toString(), queueItem.getBatchId(), null, null);
+					apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.ERROR, errorStateMessage, queueItem.getBatchId(), null, null);
 					break;
 				case PROCESSING:
 					// TODO
@@ -91,10 +93,11 @@ public class ItemSyncExportConfirmProcessor implements ItemSyncProcessor {
 	}
 
     private void processBatchChangeFailureInCaseFinished(BatchChangeFailureXml failure) throws JsonProcessingException {
-		List<ApIssue> issueList = ApIssue.createList(failure);
+		IssueRefResolver resolver = camService.createIssueRefResolver(queueItem, failure);
+		List<ApIssue> issueList = ApIssue.createList(failure, resolver);
 		String stateMessage = objectMapper.writeValueAsString(issueList);
 		ExtAsyncQueueState queueState = getQueueState(failure);
-		String forceKey = failure.getForceKey() != null ? failure.getForceKey().getValue() : null; 
+		String forceKey = failure.getForceKey() != null ? failure.getForceKey().getValue() : null;
 
 		log.error("Failed to send item, accessPointId: {}, message: {}", queueItem.getAccessPointId(), issueList);
 		apConnectService.setQueueItemStateTA(queueItem, queueState, stateMessage, queueItem.getBatchId(), queueItem.getData(), forceKey);

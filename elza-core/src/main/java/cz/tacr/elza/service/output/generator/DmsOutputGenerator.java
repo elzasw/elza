@@ -85,11 +85,19 @@ public abstract class DmsOutputGenerator implements OutputGenerator {
 
         ArrOutputFile file = new ArrOutputFile();
         file.setName(definitionName);
-        file.setFileName(definitionName + "." + template.getExtension());
-        file.setMimeType(template.getMimeType());
+        file.setFileName(definitionName + "." + getOutputExtension(template));
+        file.setMimeType(getOutputMimeType(template));
         file.setFileSize(0); // DmsService will set real value after write
 
         result.addOutputFile(file);
         return file;
+    }
+
+    protected String getOutputExtension(RulTemplate template) {
+        return template.getExtension();
+    }
+
+    protected String getOutputMimeType(RulTemplate template) {
+        return template.getMimeType();
     }
 }

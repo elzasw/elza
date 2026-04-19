@@ -208,6 +208,7 @@ export function AdminPackagesListFn({ getExportUrl }) {
                 <TableRow>
                     {columns.map(({ columnId }) => {
                         return <TableHeaderCell
+                            key={columnId}
                             {...headerSortProps(columnId)}
                             {...columnSizing_unstable.getTableHeaderCellProps(columnId)}
                         >
@@ -228,7 +229,7 @@ export function AdminPackagesListFn({ getExportUrl }) {
                             const value = item[columnId];
 
                             if (columnId === "action") {
-                                return <TableCell tabIndex={0} role="gridcell">
+                                return <TableCell key={columnId} tabIndex={0} role="gridcell">
                                     <TableCellLayout {...columnSizing_unstable.getTableCellProps("action")}>
                                         <FluentButton
                                             icon={<Icon glyph="fa-download" />}
@@ -244,7 +245,7 @@ export function AdminPackagesListFn({ getExportUrl }) {
                                 </TableCell>
                             }
 
-                            return <TableCell tabIndex={0} role="gridcell">
+                            return <TableCell key={columnId} tabIndex={0} role="gridcell">
                                 <TableCellLayout truncate={false} {...columnSizing_unstable.getTableCellProps(columnId)}>
                                     {renderCell ? renderCell(item, rows) : value}
                                 </TableCellLayout>

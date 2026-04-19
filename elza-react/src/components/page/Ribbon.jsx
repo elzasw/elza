@@ -401,11 +401,11 @@ class Ribbon extends AbstractReactComponent {
         return (
             <div className="ribbon-menu-container">
                 <RibbonMenu>
-                    {partsWithSplit}
+                    {React.Children.toArray(partsWithSplit)}
                 </RibbonMenu>
                 {_showUser && (
                     <div className="user-menu-container">
-                        <Dropdown className="user-menu" id={'user-menu'} alignRight>
+                        <Dropdown className="user-menu" id={'user-menu'} align="end">
                             <Dropdown.Toggle key="user-menu" id="user-menu">
                                 {userDetail.username} <Icon glyph="fa-user" />
                             </Dropdown.Toggle>

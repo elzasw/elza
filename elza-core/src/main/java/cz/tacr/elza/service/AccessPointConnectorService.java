@@ -130,7 +130,10 @@ public class AccessPointConnectorService {
 			throw new BusinessException("Queue item not found in the queue.", BaseCode.ID_NOT_EXIST).set("queueItemId", queueItemId);
 		}
 		if (!force) {
-			setQueueItemStateTA(queueItem, ExtAsyncQueueState.ERROR, queueItem.getStateMessage());
+			// User declined to force-send the entity despite warnings. Record as CANCELLED
+			// (not ERROR) so no ACCESS_POINT_EXPORT_FAILED event is fired — see the switch
+			// in setQueueItemState, which has no case for EXPORT_CANCELLED.
+			setQueueItemStateTA(queueItem, ExtAsyncQueueState.EXPORT_CANCELLED, queueItem.getStateMessage());
 			return;
 		}
 		ApExternalSystem extSystem = staticDataService.getData().getApExternalSystemById(queueItem.getExternalSystemId());
@@ -293,34 +296,60 @@ public class AccessPointConnectorService {
     }
 
     @Transactional
-    public void setQueueItemStateTA(ExtSyncsQueueItem item, 
+    public void setQueueItemStateTA(ExtSyncsQueueItem item,
     		                        ExtAsyncQueueState state,
                                     String message,
                                     String batchId,
                                     String data,
                                     String forceKey) {
-        setQueueItemState(Collections.singletonList(item), state, message, batchId, data, forceKey);
+        setQueueItemState(Collections.singletonList(item), state, message, batchId, data, forceKey, null);
+    }
+
+    /**
+     * Overload that additionally persists the upload-side uuid map onto the queue item.
+     * Pass {@code null} for {@code uuidMap} to leave the existing value unchanged
+     * (which is what all other overloads do).
+     */
+    @Transactional
+    public void setQueueItemStateTA(ExtSyncsQueueItem item,
+                                    ExtAsyncQueueState state,
+                                    String message,
+                                    String batchId,
+                                    String data,
+                                    String forceKey,
+                                    String uuidMap) {
+        setQueueItemState(Collections.singletonList(item), state, message, batchId, data, forceKey, uuidMap);
     }
 
     @Transactional
-    public void setQueueItemStateTA(ExtSyncsQueueItem item, 
+    public void setQueueItemStateTA(ExtSyncsQueueItem item,
     		                        ExtAsyncQueueState state,
                                     String message) {
-        setQueueItemState(Collections.singletonList(item), state, message, null, null, null);
+        setQueueItemState(Collections.singletonList(item), state, message, null, null, null, null);
     }
 
     @Transactional
-    public void setQueueItemStateTA(ExtSyncsQueueItem item, 
+    public void setQueueItemStateTA(ExtSyncsQueueItem item,
     		                        ExtAsyncQueueState state) {
-        setQueueItemState(Collections.singletonList(item), state, null, null, null, null);
+        setQueueItemState(Collections.singletonList(item), state, null, null, null, null, null);
     }
 
-    public void setQueueItemState(List<ExtSyncsQueueItem> items, 
+    public void setQueueItemState(List<ExtSyncsQueueItem> items,
                                   ExtAsyncQueueState state,
                                   String message,
                                   String batchId,
                                   String data,
                                   String forceKey) {
+        setQueueItemState(items, state, message, batchId, data, forceKey, null);
+    }
+
+    public void setQueueItemState(List<ExtSyncsQueueItem> items,
+                                  ExtAsyncQueueState state,
+                                  String message,
+                                  String batchId,
+                                  String data,
+                                  String forceKey,
+                                  String uuidMap) {
 		// check message length
 		if (StringUtils.isNotEmpty(message)) {
 			if(message.length()>StringLength.LENGTH_4000) {
@@ -336,6 +365,21 @@ public class AccessPointConnectorService {
 				item.setBatchId(batchId);
 				item.setData(data);
 				item.setForceKey(forceKey);
+				// uuid_map lifecycle: clear on terminal states (info no longer useful);
+				// otherwise, overwrite only if the caller supplied a new map — null means
+				// "leave as is" so NEED_CONFIRM transitions don't wipe the upload-time map.
+				switch (state) {
+				case EXPORT_OK:
+				case EXPORT_CANCELLED:
+				case ERROR:
+					item.setUuidMap(null);
+					break;
+				default:
+					if (uuidMap != null) {
+						item.setUuidMap(uuidMap);
+					}
+					break;
+				}
 				switch (state) {
 				case EXPORT_START:
 					accessPointService.publishExtQueueProcessStartedEvent(item);
