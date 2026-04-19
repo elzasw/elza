@@ -70,9 +70,9 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId }: Props) {
 
   return (
     <div style={{ padding: "8px" /* , display: "flex", flexWrap: "wrap" */ }}>
-      {viewDescItemGroups.map(({ group, descItemTypes }) => {
+      {viewDescItemGroups.map(({ group, descItemTypes }, groupIndex) => {
         return (
-          <div style={{ margin: "4px" }}>
+          <div key={groupIndex} style={{ margin: "4px" }}>
             <div
               style={{
                 opacity: 0.5,
@@ -94,9 +94,10 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId }: Props) {
               }}
             >
               {/* <table> */}
-              {descItemTypes.map(({ typeRef, typeForm, descItems }) => {
+              {descItemTypes.map(({ typeRef, typeForm, descItems }, typeIndex) => {
                 return (
                   <div
+                    key={typeIndex}
                     style={{
                       verticalAlign: "top",
                       display: "flex",
@@ -125,12 +126,12 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                     {/* </td> */}
                     {/* <td> */}
                     <div>
-                      {descItems.map(({ item }) => {
+                      {descItems.map(({ item }, itemIndex) => {
                         const { data } = item;
                         const DataTypeComponent =
                           data?.dataType && dataTypeMap[data.dataType];
                         return (
-                          <div style={{ display: "flex" }}>
+                          <div key={itemIndex} style={{ display: "flex" }}>
                             {item.itemSpecId &&
                               data?.dataType !== DataType.Enum && (
                                 <div

@@ -658,14 +658,8 @@ public class PackageService {
             // revalidate nodes in funds
             Set<String> ruleCodes = pkgCtx.getRevalidateFundsWithRule();
             if (!ruleCodes.isEmpty()) {
-	            List<NodeIdFundVersionIdInfo> nodeIdFundVersionIds = nodeRepository.findNodeIdFundversionIdByRuleCodes(ruleCodes);
-	            Map<Integer, List<Integer>> nodeIdFundVersionMap = nodeIdFundVersionIds
-	            		.stream()
-	                    .collect(Collectors.groupingBy(i -> i.getFundVersionId(),
-	                                                   Collectors.mapping(i -> i.getNodeId(), Collectors.toList())));
-	            for (Integer fundVersionId : nodeIdFundVersionMap.keySet()) {
-	                asyncRequestService.enqueueNodes(fundVersionId, nodeIdFundVersionMap.get(fundVersionId));
-	            }
+                List<NodeIdFundVersionIdInfo> pairs = nodeRepository.findNodeIdFundversionIdByRuleCodes(ruleCodes);
+                asyncRequestService.enqueueNodesGrouped(pairs);
             }
 
         } finally {

@@ -123,7 +123,7 @@ export function EntityRibbon({
         );
       }
       altActions.push(
-        <Button key="ext-syncs" onClick={showDeleteEntityWindow}>
+        <Button key="invalidated-entities" onClick={showDeleteEntityWindow}>
           <Icon glyph="fa-trash" />
           <div>
             <span className="btnText">{formatMessage(messages.invalidatedEntities)}</span>

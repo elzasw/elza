@@ -54,7 +54,6 @@ class AdminUserPage extends AbstractReactComponent {
             'handleChangeUserPassword',
             'handleChangeUsernameForm',
             'handleUpdateUser',
-            'handlePartyAdd',
         );
     }
 

@@ -47,7 +47,6 @@ export const ModalDialogWrapper = ({
             className={`${visible ? 'dialog-visible' : 'dialog-hidden'} ${className}`}
             show={true}
             onHide={handleHide}
-            maskClosable={false}
         >
             {title !== null && (
                 <Modal.Header closeButton>
