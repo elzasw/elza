@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState, useRef, PropsWithChildren } from 'react';
+import React, { ReactElement, useCallback, useEffect, useState, useRef, PropsWithChildren } from 'react';
 import { connect } from 'react-redux';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
@@ -245,12 +245,22 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         }
     }, [id, detail]);
 
-    // processing the need to confirm accesspoint export 
+    // Handler defined above the useEffect that uses it to avoid a TDZ
+    // ReferenceError when early returns below skip the original declaration
+    // (useEffect registers with a closure that references this binding by name).
+    const handleExportConfirm = useCallback(async (message: string, qId: number) => {
+        const confirmResult = await showConfirmDialog(message);
+        await Api.accesspoints.accessPointExportForceOrNo(qId, confirmResult);
+        // reset state so a later NEED_CONFIRM for the same entity re-triggers the effect
+        setExportState(ExportState.COMPLETED);
+    }, [showConfirmDialog]);
+
+    // processing the need to confirm accesspoint export
     useEffect(() => {
         if (exportState === ExportState.NEED_CONFIRM) {
             handleExportConfirm(exportMessage, itemQueueId);
         }
-    }, [exportState])
+    }, [exportState, handleExportConfirm, exportMessage, itemQueueId])
 
     const isStoreLoading = (stores: Array<BaseRefTableStore<unknown> | DetailStoreState<unknown>>) =>
         stores.some((store) => !store.fetched || store.isFetching)
@@ -294,11 +304,6 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             restoreScrollPosition();
             refreshValidation(id, revisionActive);
         }
-    };
-
-    const handleExportConfirm = async (message, itemQueueId) => {
-        const confirmResult = await showConfirmDialog(message);
-        await Api.accesspoints.accessPointExportForceOrNo(itemQueueId, confirmResult);
     };
 
     const handleDelete = async ({ part, updatedPart }: RevisionPart) => {
