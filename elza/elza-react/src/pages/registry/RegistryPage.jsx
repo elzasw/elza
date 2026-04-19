@@ -76,7 +76,7 @@ class RegistryPage extends AbstractReactComponent {
         focus: PropTypes.object.isRequired,
         userDetail: PropTypes.object.isRequired,
         fund: PropTypes.object,
-        revisionActive: PropTypes.boolean,
+        revisionActive: PropTypes.bool,
     };
 
     state = { items: [] };

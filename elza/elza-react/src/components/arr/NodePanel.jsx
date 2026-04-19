@@ -82,7 +82,6 @@ class NodePanel extends AbstractReactComponent {
             'renderRow',
             'renderChildren',
             'handleOpenItem',
-            'handleSetVisiblePolicy',
             'handleCloseItem',
             'handleParentNodeClick',
             'handleChildNodeClick',

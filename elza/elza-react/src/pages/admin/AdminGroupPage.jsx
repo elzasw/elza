@@ -45,8 +45,6 @@ const AdminGroupPage = class AdminGroupPage extends AbstractReactComponent {
             'handleSelect',
             'handleCreateGroupForm',
             'handleEditGroupForm',
-            'handleCreateGroup',
-            'handleUpdateGroup',
             'handleDeleteGroup',
         );
     }
