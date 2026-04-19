@@ -48,7 +48,6 @@ export const ModalDialogWrapper = ({
             className={`${visible ? 'dialog-visible' : 'dialog-hidden'} ${className}`}
             show={true}
             onHide={handleHide}
-            maskClosable={false}
         >
             <FluentProvider style={{ flex: 1, display: "block"}}>
 

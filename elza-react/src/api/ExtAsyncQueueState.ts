@@ -4,5 +4,6 @@ export enum ExtAsyncQueueState {
     UPDATE = 'UPDATE',
     ERROR = 'ERROR',
     EXPORT_OK = 'EXPORT_OK',
+    EXPORT_CANCELLED = 'EXPORT_CANCELLED',
     IMPORT_OK = 'IMPORT_OK',
 }

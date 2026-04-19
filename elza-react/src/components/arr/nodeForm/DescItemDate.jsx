@@ -11,8 +11,11 @@ import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 import './DescItemDate.scss';
 
 import Moment from 'moment';
-import {DateTimePicker} from 'react-widgets';
+import {DateTimePicker, Localization} from 'react-widgets';
+import MomentLocalizer from 'react-widgets-moment';
 import {formatDate} from '../../validate';
+
+const momentLocalizer = new MomentLocalizer(Moment);
 import {CLS_CALCULABLE} from "../../../constants";
 
 const DATE_FORMAT = "DD.MM.RRRR";
@@ -59,15 +62,19 @@ class DescItemDate extends AbstractReactComponent {
         return (
             <div className="desc-item-value">
                 <ItemTooltipWrapper tooltipTitle="dataType.date.format">
-                    <DateTimePicker
-                        ref={ref => (this.focusEl = ref)}
-                        {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                        time={false}
-                        value={dateValue}
-                        onChange={this.handleChange}
-                        disabled={isCalculated}
-                        placeholder={isCalculated ? i18n('subNodeForm.descItemType.calculable') : DATE_FORMAT}
-                    />
+                    <Localization date={momentLocalizer}>
+                        <DateTimePicker
+                            ref={ref => (this.focusEl = ref)}
+                            {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
+                            time={false}
+                            value={dateValue}
+                            onChange={this.handleChange}
+                            disabled={isCalculated}
+                            placeholder={isCalculated ? i18n('subNodeForm.descItemType.calculable') : DATE_FORMAT}
+                            valueDisplayFormat="DD. MM. YYYY"
+                            valueEditFormat="DD.MM.YYYY"
+                        />
+                    </Localization>
                 </ItemTooltipWrapper>
             </div>
         );

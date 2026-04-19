@@ -230,12 +230,14 @@ export function ReportsForm({ onSubmit }: Props) {
                     let params: ReportReportParamDefinition[] = [];
                     let selectedValue: string = values.definitionCode;
 
-                    try {
-                        const { definition } = getReportDefinition(values.definitionCode);
-                        selectedValue = definition?.name;
-                        params = definition?.params;
-                    } catch (error) {
-                        console.error(error);
+                    if (values.definitionCode) {
+                        try {
+                            const { definition } = getReportDefinition(values.definitionCode);
+                            selectedValue = definition?.name;
+                            params = definition?.params;
+                        } catch (error) {
+                            console.error(error);
+                        }
                     }
 
                     return (
@@ -264,7 +266,7 @@ export function ReportsForm({ onSubmit }: Props) {
                                                     return (
                                                         <OptionGroup key={code} label={formatMessage({ id: `admin_reports_form_category_${code}`, defaultMessage: name })}>
                                                             {reportDefinitions.map(({ name, code }) => {
-                                                                return <Option value={code}>
+                                                                return <Option key={code} value={code}>
                                                                     {formatMessage({ id: `admin_reports_form_report_${code}`, defaultMessage: name })}
                                                                 </Option>;
                                                             })}
@@ -283,16 +285,16 @@ export function ReportsForm({ onSubmit }: Props) {
                                     isRequired: required,
                                 }
                                 if (paramType === ReportValueType.Int) {
-                                    return <FluentFinalNumberField {...commonProps} />;
+                                    return <FluentFinalNumberField key={code} {...commonProps} />;
                                 }
                                 if (paramType === ReportValueType.String) {
-                                    return <FluentFinalStringField {...commonProps} />;
+                                    return <FluentFinalStringField key={code} {...commonProps} />;
                                 }
                                 if (paramType === ReportValueType.Date) {
-                                    return <FluentFinalDateField {...commonProps} />;
+                                    return <FluentFinalDateField key={code} {...commonProps} />;
                                 }
                                 return (
-                                    <div>
+                                    <div key={code}>
                                         <Label>{name}</Label>
                                         <div>unknown type {paramType}</div>
                                     </div>

@@ -29,8 +29,8 @@ export const MultiButtonDialog = <T,>({
                 {message}
             </div>
             <Modal.Footer>
-                {buttons.map(({label, variant, value}) => 
-                    <Button variant={variant} onClick={submitCreator(value)}>
+                {buttons.map(({label, variant, value}, i) =>
+                    <Button key={i} variant={variant} onClick={submitCreator(value)}>
                         {label}
                     </Button>
                 )}
