@@ -19,14 +19,16 @@ Czech archival management system with Java/Spring Boot backend and React/TypeScr
 
 ## Tech Stack
 
-- **Backend:** Java 17, Spring Boot 3.5.11, Hibernate 6.6 + Hibernate Search 7.2 (Lucene), Spring Security, JPA, WebSockets (STOMP)
-- **Frontend:** React 18, TypeScript, Redux 4.2, Vite, React Bootstrap, Fluent UI, SCSS
-- **Rules Engine:** Drools 10.1
-- **Reporting:** JasperReports 7.0, PDFBox 3.0
+- **Backend:** Java 17, Spring Boot 3, Hibernate 6 + Hibernate Search (Lucene), Spring Security, JPA, WebSockets (STOMP)
+- **Frontend:** React 18, TypeScript, Redux 4, Vite, React Bootstrap, Fluent UI, SCSS
+- **Rules Engine:** Drools 10
+- **Reporting:** JasperReports, PDFBox
 - **Database:** PostgreSQL (with PostGIS)
 - **DB Migrations:** Liquibase (XML changesets in elza-core)
 - **API:** REST (OpenAPI spec), SOAP/WSDL, WebSocket
-- **Build:** Maven 3.2+, Node.js 20.11+
+- **Build:** Maven, Node.js
+
+Exact versions live in `pom.xml` / `package.json`.
 
 ## Key Backend Packages (elza-core)
 
@@ -122,10 +124,12 @@ ELZA is an archival management system used by Czech archives. Key domain concept
 - When writing commit messages or comments, use Czech if the surrounding context is Czech, otherwise English.
 - Developers are non-native English speakers. When they write English — in code, comments, commit messages, or chat — gently correct grammar/phrasing mistakes and briefly explain the preferred wording so they can learn.
 
+## Collaboration
+
+- **Ask before acting when uncertain.** If you have doubts about the proposed approach, are missing information needed to implement it correctly, or believe the user's request is suboptimal (wrong abstraction, breaks an invariant, simpler alternative exists), stop and ask rather than guessing or silently "fixing" it. A short clarifying question is always cheaper than a wrong implementation.
+- Surface the specific doubt or concern concretely (what you'd do vs. what seems better, or what information you'd need), not a generic "are you sure?".
+
 ## Conventions
 
-- Backend follows standard Spring Boot patterns (Controller → Service → Repository)
-- Frontend uses Redux for state management with action creators in `actions/`
-- REST API follows OpenAPI specification
-- Database changes must go through Liquibase migrations
-- Tests are in standard Maven test directories (`src/test/`)
+- Database changes must go through Liquibase migrations (XML changesets in `elza-core`; Java-based migrations in `dbchangelog/`).
+- REST API changes start from the OpenAPI spec (`elza-core/src/main/resources/rest/elza-openapi.yml`); the TypeScript client in `elza-react/src/api/generated/` is regenerated from it.
