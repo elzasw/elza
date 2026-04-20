@@ -1,4 +1,4 @@
-package cz.tacr.elza.repository.specification;
+ package cz.tacr.elza.repository.specification;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
@@ -15,6 +15,7 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -150,17 +151,7 @@ public class ApStateSpecification implements Specification<ApState> {
 
             Integer assignTo = searchFilterVO.getAssignedTo();
             if (assignTo != null) {
-                Join<ApState, WfTaskApState> taskStateJoin = stateRoot.join(ApState.FIELD_TASK_STATE_LIST, JoinType.LEFT);
-                Join<WfTaskApState, WfTask> taskJoin = taskStateJoin.join(WfTaskApState.FIELD_TASK, JoinType.LEFT);
-                taskJoin.on(cb.isNull(taskJoin.get(WfTask.FIELD_TIME_CLOSED)));
-
-                Join<ApRevState, WfTaskApRevState> taskRevStateJoin = revStateJoin.join(ApRevState.FIELD_TASK_REV_STATE_LIST, JoinType.LEFT);
-                Join<WfTaskApState, WfTask> taskRevJoin = taskRevStateJoin.join(WfTaskApRevState.FIELD_TASK, JoinType.LEFT);
-                taskRevJoin.on(cb.isNull(taskRevJoin.get(WfTask.FIELD_TIME_CLOSED)));
-
-				condition = cb.and(condition, cb.or(
-						cb.equal(taskJoin.get(WfTask.FIELD_ASSIGNEE_ID), assignTo), 
-						cb.equal(taskRevJoin.get(WfTask.FIELD_ASSIGNEE_ID), assignTo)));
+                condition = cb.and(condition, buildAssignedToPredicate(cb, q, stateRoot, assignTo));
             }
 
             String validationResult = searchFilterVO.getValidationResult();
@@ -196,6 +187,64 @@ public class ApStateSpecification implements Specification<ApState> {
         q.groupBy(stateRoot.get(ApState.FIELD_STATE_ID), accessPointName);
 
         return condition;
+    }
+
+    /**
+     * Returns a predicate for the "assigned to user" filter, expressed as two correlated
+     * EXISTS subqueries:
+     * <pre>
+     *   EXISTS (SELECT 1 FROM wf_task_ap_state ts
+     *             JOIN wf_task t ON t.task_id = ts.task_id
+     *            WHERE ts.state_id = outer.state_id
+     *              AND t.time_closed IS NULL
+     *              AND t.assignee_id = :assignTo)
+     *   OR
+     *   EXISTS (SELECT 1 FROM wf_task_ap_rev_state trs
+     *             JOIN ap_rev_state rs ON rs.state_id = trs.state_id
+     *             JOIN ap_revision r   ON r.revision_id = rs.revision_id
+     *             JOIN wf_task t       ON t.task_id = trs.task_id
+     *            WHERE r.state_id = outer.state_id
+     *              AND r.delete_change_id IS NULL
+     *              AND rs.delete_change_id IS NULL
+     *              AND t.time_closed IS NULL
+     *              AND t.assignee_id = :assignTo)
+     * </pre>
+     * Compared to the original approach (LEFT JOIN over wf_task_ap_state / wf_task_ap_rev_state
+     * with a WHERE filter), this form has several advantages:
+     * <ul>
+     *   <li>PostgreSQL can rewrite each EXISTS as a semijoin and drive the plan from
+     *       wf_task filtered by assignee_id (typically tens of rows) instead of first
+     *       materializing a left join across all of ap_state (hundreds of thousands of rows).
+     *   <li>No duplicate rows when a single state has multiple open tasks — the outer
+     *       GROUP BY becomes a safety net rather than a requirement.
+     *   <li>EXISTS short-circuits on the first match instead of reading every task.
+     * </ul>
+     */
+    private Predicate buildAssignedToPredicate(final CriteriaBuilder cb, final CriteriaQuery<?> q,
+                                               final Root<ApState> stateRoot, final Integer assignTo) {
+        // EXISTS 1: open task attached directly to the entity state
+        Subquery<Integer> stateTaskSq = q.subquery(Integer.class);
+        Root<WfTaskApState> ts = stateTaskSq.from(WfTaskApState.class);
+        Join<WfTaskApState, WfTask> t = ts.join(WfTaskApState.FIELD_TASK, JoinType.INNER);
+        stateTaskSq.select(cb.literal(1))
+                .where(cb.equal(ts.get("stateId"), stateRoot.get(ApState.FIELD_STATE_ID)),
+                       cb.isNull(t.get(WfTask.FIELD_TIME_CLOSED)),
+                       cb.equal(t.get(WfTask.FIELD_ASSIGNEE_ID), assignTo));
+
+        // EXISTS 2: open task attached to an active revision of the state
+        Subquery<Integer> revTaskSq = q.subquery(Integer.class);
+        Root<WfTaskApRevState> trs = revTaskSq.from(WfTaskApRevState.class);
+        Join<WfTaskApRevState, ApRevState> rs = trs.join(WfTaskApRevState.FIELD_STATE, JoinType.INNER);
+        Join<ApRevState, ApRevision> rev = rs.join(ApRevState.FIELD_REVISION, JoinType.INNER);
+        Join<WfTaskApRevState, WfTask> trev = trs.join(WfTaskApRevState.FIELD_TASK, JoinType.INNER);
+        revTaskSq.select(cb.literal(1))
+                .where(cb.equal(rev.get("stateId"), stateRoot.get(ApState.FIELD_STATE_ID)),
+                       cb.isNull(rev.get(ApRevision.FIELD_DELETE_CHANGE_ID)),
+                       cb.isNull(rs.get(ApRevState.FIELD_DELETE_CHANGE_ID)),
+                       cb.isNull(trev.get(WfTask.FIELD_TIME_CLOSED)),
+                       cb.equal(trev.get(WfTask.FIELD_ASSIGNEE_ID), assignTo));
+
+        return cb.or(cb.exists(stateTaskSq), cb.exists(revTaskSq));
     }
 
     private Predicate process(Predicate condition, Ctx ctx) {

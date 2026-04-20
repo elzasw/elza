@@ -913,4 +913,25 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20260420120000" author="ppy">
+        <!-- Indexes on wf_task* FK columns: PostgreSQL does not auto-index foreign keys,
+             which makes registry search with assignedTo filter extremely slow on large
+             datasets (ApStateSpecification joins all three tables). -->
+        <createIndex indexName="wf_task_ap_state_state_idx" tableName="wf_task_ap_state">
+            <column name="state_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="wf_task_ap_state_task_idx" tableName="wf_task_ap_state">
+            <column name="task_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="wf_task_ap_rev_state_state_idx" tableName="wf_task_ap_rev_state">
+            <column name="state_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="wf_task_ap_rev_state_task_idx" tableName="wf_task_ap_rev_state">
+            <column name="task_id" type="int"/>
+        </createIndex>
+        <!-- Partial index on open tasks only; H2 does not support partial indexes,
+             so this is PostgreSQL-only. -->
+        <sql dbms="postgresql">CREATE INDEX IF NOT EXISTS wf_task_assignee_open_idx ON wf_task(assignee_id) WHERE time_closed IS NULL</sql>
+    </changeSet>
+
 </databaseChangeLog>
