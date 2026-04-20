@@ -268,18 +268,24 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     /**
      * Order 2 — spustí hromadnou akci a poté se ji pokusí přerušit.
      *
-     * <p>Po zařazení akce do fronty <b>nečeká</b> na dokončení workerů — kdyby
-     * počkal, akce by doběhla dříve, než se stihne poslat interrupt, a test by
-     * místo {@code INTERRUPTED} končil ve stavu {@code FINISHED}. Interrupt se
-     * proto posílá okamžitě po zařazení a test vyžaduje konečný stav
-     * {@code INTERRUPTED}; stav {@code FINISHED} znamená, že akce doběhla
-     * dříve, než interrupt dorazil, a je to chyba.
+     * <p>Interrupt má úzké časové okno:
+     * <ul>
+     *   <li>příliš brzo (stav {@code WAITING} / {@code PLANNED}) — worker ještě
+     *       akci nepřevzal, interrupt endpoint spadne na NPE na
+     *       {@code AsyncBulkActionWorker.terminate()} (server vrátí 500);</li>
+     *   <li>příliš pozdě (stav {@code FINISHED}) — akce už doběhla, interrupt
+     *       nemá co přerušit.</li>
+     * </ul>
+     * Proto test počká (polling), až se akce dostane do stavu {@code RUNNING},
+     * a teprve pak pošle interrupt. Test pak vyžaduje konečný stav
+     * {@code INTERRUPTED}; {@code FINISHED} znamená, že akce doběhla během
+     * samotného interrupt požadavku, a je to chyba.
      *
      * <p><b>Assumes:</b> fund s maximálním množstvím nezpracované práce — tedy
-     * že ještě neběžel žádný SERIAL_NUMBER_GENERATOR (proto {@code @Order(2)},
-     * před {@link #runBulkActionByNode()} i {@link #bulkActionsTest()}). Kdyby
-     * fond byl již očíslovaný, akce by skončila instantně a interrupt by
-     * nestihl dorazit.
+     * že ještě neběžel žádný {@code SERIAL_NUMBER_GENERATOR} (proto
+     * {@code @Order(2)}, před {@link #runBulkActionByNode()} i
+     * {@link #bulkActionsTest()}). Kdyby fond byl již očíslovaný, akce by
+     * skončila instantně a okno pro interrupt by zmizelo.
      * <br><b>Leaves:</b> fond v částečně očíslovaném stavu — některé uzly stihl
      * serial-number generator zpracovat dřív, než přišel interrupt.
      */
@@ -291,7 +297,21 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         				      						.getBody().as(BulkActionRunVO.class);
         int actionId = baRunVO.getId();
 
-        // NEČEKÁME na dokončení workerů — interrupt musí dorazit dřív, než akce doběhne.
+        // Počkáme (max 5 s), až worker převezme akci a stav přejde do RUNNING.
+        long deadline = System.currentTimeMillis() + 5000;
+        while (baRunVO.getState() != State.RUNNING && System.currentTimeMillis() < deadline) {
+            if (baRunVO.getState() == State.FINISHED) {
+                Assertions.fail("Akce doběhla dříve, než stihla dosáhnout stavu RUNNING — interrupt nelze testovat");
+            } else if (baRunVO.getState() == State.ERROR) {
+                Assertions.fail("Akce skončila chybou: " + baRunVO.getError());
+            }
+            Thread.sleep(10);
+            baRunVO = getBulkAction(actionId);
+        }
+        Assertions.assertEquals(State.RUNNING, baRunVO.getState(),
+                "Akce se nestihla dostat do stavu RUNNING během 5 s (skutečný stav: " + baRunVO.getState() + ")");
+
+        // Pošleme interrupt až teď, kdy worker běží (před: WAITING → NPE, po: FINISHED → nic).
         Assertions.assertEquals(200, get((spec) -> spec.pathParam("id", actionId), BULK_ACTION_INTERRUPT).getStatusCode());
 
         // Počkáme na dosažení terminálního stavu (INTERRUPTED očekáváme).
