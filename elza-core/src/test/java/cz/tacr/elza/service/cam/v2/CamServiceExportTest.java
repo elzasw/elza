@@ -17,7 +17,9 @@ import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -111,7 +113,13 @@ import cz.tacr.elza.service.cam.v2.CamV2MockHelper.IssueSpec;
  * {@code HelperTestService.deleteTables} (called by the base class before
  * the next test) does not know about the queue table, so orphan rows would
  * otherwise trip the next test's setup with a FK violation.
+ *
+ * <p>Uses per-class lifecycle: base setUp/tearDown run once per class via
+ * {@link #initOnce()} / {@link #cleanupOnce()}. Each test still uses a
+ * UUID-suffixed {@code systemCode}, so external systems / bindings created by
+ * earlier tests in the class cannot collide with later ones.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class CamServiceExportTest extends AbstractControllerTest {
 
     /** UUID of an AP preloaded by the SIMPLE-DEV package (see AccessPointControllerTest). */
@@ -165,6 +173,28 @@ public class CamServiceExportTest extends AbstractControllerTest {
         if (wireMockServer != null) {
             wireMockServer.stop();
         }
+    }
+
+    @BeforeAll
+    public void initOnce() throws Exception {
+        super.setUp();
+    }
+
+    @AfterAll
+    public void cleanupOnce() {
+        super.tearDown();
+    }
+
+    @Override
+    @BeforeEach
+    public void setUp() throws Exception {
+        // no-op: setup is done once in @BeforeAll initOnce()
+    }
+
+    @Override
+    @AfterEach
+    public void tearDown() {
+        // no-op: cleanup is done once in @AfterAll cleanupOnce()
     }
 
     @AfterEach
