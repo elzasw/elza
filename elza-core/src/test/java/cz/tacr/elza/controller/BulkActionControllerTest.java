@@ -7,8 +7,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,10 +35,28 @@ import java.util.List;
  * id (not the first one encountered) so that a test querying the state of a
  * run it just queued doesn't see a stale FINISHED entry from a previous test.
  *
+ * <h2>Test ordering (enforced via {@link Order})</h2>
+ * Tests must run in the order below so that each one sees the fund state it
+ * requires — JUnit 5's default method order is not stable across JVM versions,
+ * so order is pinned explicitly:
+ * <ol>
+ *   <li>{@link #getBulkActionsTest()} — read-only, no mutation.</li>
+ *   <li>{@link #interruptBulkAction()} — needs the <b>maximum</b> amount of
+ *       unprocessed work on the fund so {@code SRD_GENERATOR_SERIAL_NUMBER}
+ *       runs long enough for the interrupt to arrive before it finishes.
+ *       Runs before any other test queues serial-number or unit-id actions.</li>
+ *   <li>{@link #runBulkActionByNode()} — queues a serial-number run scoped to
+ *       a single node; small amount of work. Safe after interrupt ran on a
+ *       partially-processed fund.</li>
+ *   <li>{@link #bulkActionsTest()} — runs all three bulk actions fund-wide;
+ *       most destructive, run last.</li>
+ * </ol>
+ *
  * @author Petr Compel
  * @since 23.2.2016
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BulkActionControllerTest extends AbstractControllerTest {
 
     private static final Logger logger = LoggerFactory.getLogger(BulkActionControllerTest.class);
@@ -82,7 +103,14 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         // no-op: cleanup is done once in @AfterAll cleanupOnce()
     }
 
+    /**
+     * Order 1 — read-only listing of bulk actions available on the fund.
+     *
+     * <p><b>Assumes:</b> any fund state (no mutation performed).
+     * <br><b>Leaves:</b> fund unchanged.
+     */
     @Test
+    @Order(1)
     public void getBulkActionsTest() {
         List<BulkActionVO> bulkActionVOs = Arrays.asList(get(spec -> spec.pathParam("versionId", fundVersionId), BULK_ACTIONS).getBody().as(BulkActionVO[].class));
 
@@ -131,9 +159,18 @@ public class BulkActionControllerTest extends AbstractControllerTest {
 
 
     /**
-     * Spustí a čeká na dokončení hromadné akce.
+     * Order 3 — spustí a čeká na dokončení hromadné akce
+     * ({@code SRD_GENERATOR_SERIAL_NUMBER}) zaměřené na jeden uzel.
+     *
+     * <p><b>Assumes:</b> runs after {@link #interruptBulkAction()} — the fund
+     * may already have some nodes numbered (both by the interrupted run and
+     * by the node this test targets).
+     * <br><b>Leaves:</b> target node numbered; generator skips already-numbered
+     * siblings so re-running {@code SRD_GENERATOR_SERIAL_NUMBER} elsewhere is
+     * still safe.
      */
     @Test
+    @Order(3)
     public void runBulkActionByNode() throws InterruptedException {
         ArrangementController.FaTreeParam faTreeParam = new ArrangementController.FaTreeParam();
         faTreeParam.setVersionId(fundVersionId);
@@ -164,9 +201,17 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     }
 
     /**
-     * Bulk Actions test
+     * Order 4 — spustí všechny tři hromadné akce (GENERATOR_UNIT,
+     * FUND_VALIDATION, SRD_GENERATOR_SERIAL_NUMBER) a čeká na FINISHED.
+     *
+     * <p><b>Assumes:</b> any prior fund state. Akce jsou idempotentní — když
+     * už jsou některé uzly zpracované, přeskočí je.
+     * <br><b>Leaves:</b> fund plně validovaný a očíslovaný (serial + unit-id).
+     * Musí běžet <b>jako poslední</b>, protože plně vyčerpá práci, kterou by
+     * {@link #interruptBulkAction()} mohl přerušit.
      */
     @Test
+    @Order(4)
     public void bulkActionsTest() throws InterruptedException {
         runBulkAction(fundVersionId, BULK_ACTION_GENERATOR_UNIT);
         runBulkAction(fundVersionId, BULK_ACTION_FUND_VALIDATION);
@@ -221,38 +266,52 @@ public class BulkActionControllerTest extends AbstractControllerTest {
     }
 
     /**
-     * Spustí homadnou akci a poté se ji pokusí přerušit
+     * Order 2 — spustí hromadnou akci a poté se ji pokusí přerušit.
+     *
+     * <p>Po zařazení akce do fronty <b>nečeká</b> na dokončení workerů — kdyby
+     * počkal, akce by doběhla dříve, než se stihne poslat interrupt, a test by
+     * místo {@code INTERRUPTED} končil ve stavu {@code FINISHED}. Interrupt se
+     * proto posílá okamžitě po zařazení a test vyžaduje konečný stav
+     * {@code INTERRUPTED}; stav {@code FINISHED} znamená, že akce doběhla
+     * dříve, než interrupt dorazil, a je to chyba.
+     *
+     * <p><b>Assumes:</b> fund s maximálním množstvím nezpracované práce — tedy
+     * že ještě neběžel žádný SERIAL_NUMBER_GENERATOR (proto {@code @Order(2)},
+     * před {@link #runBulkActionByNode()} i {@link #bulkActionsTest()}). Kdyby
+     * fond byl již očíslovaný, akce by skončila instantně a interrupt by
+     * nestihl dorazit.
+     * <br><b>Leaves:</b> fond v částečně očíslovaném stavu — některé uzly stihl
+     * serial-number generator zpracovat dřív, než přišel interrupt.
      */
     @Test
+    @Order(2)
     public void interruptBulkAction() throws InterruptedException {
         BulkActionRunVO baRunVO = get((spec) -> spec.pathParam("versionId", fundVersionId)
         					  						.pathParam("code", BULK_ACTION_SERIAL_NUMBER_GENERATOR), BULK_ACTION_QUEUE)
         				      						.getBody().as(BulkActionRunVO.class);
         int actionId = baRunVO.getId();
 
-        helperTestService.waitForWorkers();
-
+        // NEČEKÁME na dokončení workerů — interrupt musí dorazit dřív, než akce doběhne.
         Assertions.assertEquals(200, get((spec) -> spec.pathParam("id", actionId), BULK_ACTION_INTERRUPT).getStatusCode());
 
+        // Počkáme na dosažení terminálního stavu (INTERRUPTED očekáváme).
         int counter = 6;
-
         boolean hasResult = false;
         do {
             counter--;
 
             logger.info("Čekání na dokončení asynchronních operací...");
-
             helperTestService.waitForWorkers();
 
             try {
-
-            	baRunVO = getBulkAction(actionId);
+                baRunVO = getBulkAction(actionId);
 
                 if (counter >= 0) {
                     if (baRunVO != null) {
-                        // TODO: odebrat stav FINISHED, který nastává v případě, že hromadná akce doběhla ještě před požadavkem na přerušení
-                        if (baRunVO.getState().equals(State.INTERRUPTED) || baRunVO.getState().equals(State.FINISHED)) {
+                        if (baRunVO.getState().equals(State.INTERRUPTED)) {
                             hasResult = true;
+                        } else if (baRunVO.getState().equals(State.FINISHED)) {
+                            Assertions.fail("Hromadná akce doběhla dřív, než stihl dorazit interrupt — test nepokryl přerušovací scénář");
                         } else if (baRunVO.getState().equals(State.ERROR)) {
                             Assertions.fail("Hromadná akce skončila chybou");
                         }
@@ -267,6 +326,8 @@ public class BulkActionControllerTest extends AbstractControllerTest {
         } while (!hasResult);
 
         Assertions.assertTrue(counter >= 0, "Čas překročen (poslední stav: " + baRunVO.getState() + ")");
+        Assertions.assertEquals(State.INTERRUPTED, baRunVO.getState(),
+                "Očekávaný stav INTERRUPTED, skutečný: " + baRunVO.getState());
     }
 
 }
