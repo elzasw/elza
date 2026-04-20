@@ -16,8 +16,10 @@ import cz.tacr.cam.v2.schema.cam.BatchChangeSuccessXml;
 import cz.tacr.cam.v2.schema.cam.BatchEntityRecordRevXml;
 import cz.tacr.cam.v2.schema.cam.CodeXml;
 import cz.tacr.cam.v2.schema.cam.DateTimeXml;
+import cz.tacr.cam.v2.schema.cam.EntitiesXml;
 import cz.tacr.cam.v2.schema.cam.EntityIdXml;
 import cz.tacr.cam.v2.schema.cam.EntityIssuesXml;
+import cz.tacr.cam.v2.schema.cam.EntityXml;
 import cz.tacr.cam.v2.schema.cam.ExistingIssueXml;
 import cz.tacr.cam.v2.schema.cam.IssueSeverityXml;
 import cz.tacr.cam.v2.schema.cam.PartRefXml;
@@ -171,6 +173,36 @@ public class CamV2MockHelper {
             xml.setFrom(new DateTimeXml(LocalDateTime.now()));
             return xml;
         }
+    }
+
+    /**
+     * Stub {@code GET /entities/{entityId}}; used by the import flow when the
+     * download processor has exactly one queue item to fetch.
+     */
+    public StubMapping stubGetEntityById(long entityId, EntityXml entityXml) {
+        StubMapping stub = wireMockServer.stubFor(
+                WireMock.get(WireMock.urlPathEqualTo(API_V2 + "/entities/" + entityId))
+                        .willReturn(WireMock.aResponse()
+                                .withStatus(200)
+                                .withHeader("Content-Type", "text/xml;charset=UTF-8")
+                                .withBody(marshal(EntityXml.class, entityXml))));
+        stubs.add(stub);
+        return stub;
+    }
+
+    /**
+     * Stub {@code POST /export/snapshots}; used by the import flow when the
+     * download processor batches multiple queue items into a single call.
+     */
+    public StubMapping stubExportSnapshots(EntitiesXml entitiesXml) {
+        StubMapping stub = wireMockServer.stubFor(
+                WireMock.post(WireMock.urlPathEqualTo(API_V2 + "/export/snapshots"))
+                        .willReturn(WireMock.aResponse()
+                                .withStatus(200)
+                                .withHeader("Content-Type", "text/xml;charset=UTF-8")
+                                .withBody(marshal(EntitiesXml.class, entitiesXml))));
+        stubs.add(stub);
+        return stub;
     }
 
     private StubMapping stubResult(UUID batchId, String body) {
