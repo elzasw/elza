@@ -3727,12 +3727,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
     /**
      * Vytvoření levelů v archivní pomůcce.
-     * <p>
+     *
      * Create 4 levels under root
      *
      * @param fundVersion verze archivní pomůcky
      * @return vytvořené levely
      */
+    @Deprecated
     protected List<ArrNodeVO> createLevels(final ArrFundVersionVO fundVersion) {
 
         ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();

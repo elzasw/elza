@@ -1534,6 +1534,37 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - io
+  /node/copyOlderSiblingAttribute:
+    put:
+      operationId: Node_copyOlderSiblingAttribute
+      description: Copies the attribute of the specified type from the node's parent
+      parameters:
+        - name: versionId
+          in: query
+          required: true
+          description: version id of tree
+          schema:
+            type: integer
+          explode: false
+        - name: descItemTypeId
+          in: query
+          required: true
+          description: id of the attribute we want to copy
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - node
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodeBase'
+        description: node to assign values from the older brother
   /node/node-data:
     post:
       operationId: Node_getNodeData
