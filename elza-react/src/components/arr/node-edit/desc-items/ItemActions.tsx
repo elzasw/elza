@@ -3,6 +3,7 @@ import {
   DismissRegular,
   EyeOffFilled,
   ArrowUndoRegular,
+  DeleteRegular,
 } from "@fluentui/react-icons";
 import { WebApi } from "actions";
 import { FormItemType, MandatoryType, NodeItem } from "elza-api";
@@ -84,7 +85,7 @@ export function ItemActions({
             <Button
               size={compact ? "small" : "medium"}
               appearance="subtle"
-              icon={<DismissRegular />}
+              icon={<DeleteRegular />}
               onClick={() => onDelete()}
               tabIndex={-1}
             />
@@ -105,7 +106,7 @@ export function ItemActions({
           <Button
             appearance="subtle"
             size={compact ? "small" : "medium"}
-            icon={item.inhibited ? <ArrowUndoRegular /> : <DismissRegular />}
+            icon={item.inhibited ? <ArrowUndoRegular /> : <DeleteRegular />}
             onClick={() => handleToggleInhibited()}
             tabIndex={-1}
           />
