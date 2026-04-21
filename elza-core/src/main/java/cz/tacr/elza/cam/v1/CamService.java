@@ -46,7 +46,7 @@ import cz.tacr.cam.v1.schema.cam.UpdatesXml;
 import cz.tacr.cam.v1.schema.cam.UuidXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.cam.BindingSyncInfo;
-import cz.tacr.elza.cam.CamUserInfoBuilder;
+import cz.tacr.elza.cam.CamUserService;
 import cz.tacr.elza.cam.ProcessingContext;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -181,7 +181,7 @@ public class CamService {
     private RuleService ruleService;
 
     @Autowired
-    private CamUserInfoBuilder camUserInfoBuilder;
+    private CamUserService camUserService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -481,7 +481,7 @@ public class CamService {
      * @return user info XML value
      */
     private LongStringXml createUserInfo(String userInfo, UsrUser user) {
-        return new LongStringXml(camUserInfoBuilder.buildUserInfo(userInfo, user));
+        return new LongStringXml(camUserService.buildUserInfo(userInfo, user));
     }
 
     /**
