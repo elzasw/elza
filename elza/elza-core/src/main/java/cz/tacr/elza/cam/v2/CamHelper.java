@@ -3,11 +3,17 @@ package cz.tacr.elza.cam.v2;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import cz.tacr.cam.v2.schema.cam.EntityRecordRefXml;
 import cz.tacr.cam.v2.schema.cam.EntityXml;
 import cz.tacr.cam.v2.schema.cam.ItemEntityRefXml;
+import cz.tacr.cam.v2.schema.cam.UserInfoXml;
+import cz.tacr.cam.v2.schema.cam.UserRefXml;
 import cz.tacr.cam.v2.schema.cam.UuidXml;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 
 /**
@@ -16,9 +22,46 @@ import cz.tacr.elza.exception.codes.BaseCode;
  */
 public class CamHelper {
 
+    private static final Logger log = LoggerFactory.getLogger(CamHelper.class);
+
+    /**
+     * Resolve the {@code ExternalUser} choice ({@link UserInfoXml} or
+     * {@link UserRefXml} IDREF) into a displayable user name.
+     *
+     * @param externalUser value returned by {@code getExternalUser()}; may be {@code null}
+     * @return {@link UserInfoXml#getName()} value, or {@code null} if {@code externalUser} is {@code null}
+     */
+    public static String getExternalUserName(Object externalUser) {
+        if (externalUser == null) {
+            return null;
+        }
+        UserInfoXml userInfo;
+        if (externalUser instanceof UserInfoXml info) {
+            userInfo = info;
+        } else if (externalUser instanceof UserRefXml ref) {
+            // @XmlIDREF: JAXB resolves the ref to the target UserInfoXml during unmarshal
+            Object target = ref.getValue();
+            if (!(target instanceof UserInfoXml resolved)) {
+                log.error("UserRefXml IDREF did not resolve to UserInfoXml: target={}", target);
+                throw new SystemException("UserRefXml IDREF did not resolve to UserInfoXml", BaseCode.INVALID_STATE)
+                        .set("targetType", target == null ? null : target.getClass().getName());
+            }
+            userInfo = resolved;
+        } else {
+            log.error("Unexpected externalUser type: {}", externalUser.getClass().getName());
+            throw new SystemException("Unexpected externalUser type", BaseCode.INVALID_STATE)
+                    .set("type", externalUser.getClass().getName());
+        }
+        if (userInfo.getName() == null || userInfo.getName().getValue() == null) {
+            log.error("UserInfoXml is missing required name: id={}", userInfo.getId());
+            throw new SystemException("UserInfoXml is missing required name", BaseCode.INVALID_STATE);
+        }
+        return userInfo.getName().getValue();
+    }
+
     /**
      * Return list of IDs
-     * 
+     *
      * @param entities
      * @return
      */
