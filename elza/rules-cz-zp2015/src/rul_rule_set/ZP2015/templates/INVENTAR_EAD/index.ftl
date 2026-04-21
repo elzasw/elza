@@ -904,7 +904,7 @@
     <#list output.items?filter(item -> item.type.code=="ZP2015_UNITS_AMOUNT") as item>
       <#lt>  <!-- Rozsah zpřístupněných archiválií -->
       <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
-      <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
+      <#lt>    <ead:quantity>${item.serializedValue?replace("bm", "")?replace("\\s", "", "r")?replace(",", ".")}</ead:quantity>
       <#lt>    <ead:unittype>bm</ead:unittype>
       <#lt>  </ead:physdescstructured>
     </#list>
