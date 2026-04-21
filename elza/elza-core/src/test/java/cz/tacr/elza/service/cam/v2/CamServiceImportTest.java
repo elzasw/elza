@@ -35,6 +35,7 @@ import cz.tacr.cam.v2.schema.cam.PartXml;
 import cz.tacr.cam.v2.schema.cam.PartsXml;
 import cz.tacr.cam.v2.schema.cam.RevisionInfoXml;
 import cz.tacr.cam.v2.schema.cam.StringXml;
+import cz.tacr.cam.v2.schema.cam.UserInfoXml;
 import cz.tacr.cam.v2.schema.cam.UuidXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.cam.ItemSyncProcessor;
@@ -273,7 +274,8 @@ public class CamServiceImportTest extends AbstractControllerTest {
         ent.getParts().getPart().add(prefNamePart);
 
         ent.setRevision(new RevisionInfoXml(new UuidXml(uuid), null, null,
-                new LongStringXml("user"), new DateTimeXml(LocalDateTime.now()), null));
+                new UserInfoXml(new CodeXml("user"), null, new LongStringXml("user"), null, null, null),
+                new DateTimeXml(LocalDateTime.now()), null));
         return ent;
     }
 }
