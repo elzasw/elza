@@ -151,5 +151,5 @@ abstract public class BatchUpdateBuilder extends CamXmlBuilder {
 	 * Create entity reference
 	 * @return Return reference for UpdateEntity
 	 */
-	abstract protected Object createBatchEntityRecordRef();
+	abstract Object createBatchEntityRecordRef();
 }
