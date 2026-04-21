@@ -3,6 +3,7 @@
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -15,7 +16,6 @@ import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import jakarta.persistence.criteria.Subquery;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -47,9 +47,6 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.WfTask;
-import cz.tacr.elza.domain.WfTaskApRevState;
-import cz.tacr.elza.domain.WfTaskApState;
 import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -79,15 +76,29 @@ public class ApStateSpecification implements Specification<ApState> {
     private ApState.StateApproval state;
     private RevStateApproval revState;
     private StaticDataProvider sdp;
+    /**
+     * When non-null, the "assigned to user" filter is enforced via
+     * {@code ap_state.state_id IN (...)} instead of correlated EXISTS. The caller is
+     * responsible for populating this collection from the wf_task tables; leaving it
+     * null keeps the assignedTo branch disabled entirely.
+     */
+    private Collection<Integer> preResolvedStateIds;
 
     public ApStateSpecification(final SearchFilterVO searchFilterVO, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
                                 ApState.StateApproval state, RevStateApproval revState, final StaticDataProvider sdp) {
+        this(searchFilterVO, apTypeIdTree, scopeIds, state, revState, sdp, null);
+    }
+
+    public ApStateSpecification(final SearchFilterVO searchFilterVO, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
+                                ApState.StateApproval state, RevStateApproval revState, final StaticDataProvider sdp,
+                                final Collection<Integer> preResolvedStateIds) {
         this.searchFilterVO = searchFilterVO;
         this.apTypeIdTree = apTypeIdTree;
         this.scopeIds = scopeIds;
         this.state = state;
         this.revState = revState;
         this.sdp = sdp;
+        this.preResolvedStateIds = preResolvedStateIds;
     }
 
     @Override
@@ -108,6 +119,11 @@ public class ApStateSpecification implements Specification<ApState> {
 
         // pouze aktuální state
         condition = cb.and(condition, cb.isNull(stateRoot.get(ApState.FIELD_DELETE_CHANGE_ID)));
+
+        // pre-resolved state ids from the assignedTo filter (empty set is caller-guarded)
+        if (preResolvedStateIds != null) {
+            condition = cb.and(condition, stateRoot.get(ApState.FIELD_STATE_ID).in(preResolvedStateIds));
+        }
 
         // typ archivní entity
         if (CollectionUtils.isNotEmpty(apTypeIdTree)) {
@@ -149,10 +165,7 @@ public class ApStateSpecification implements Specification<ApState> {
             	condition = cb.and(condition, cb.or(usrState, usrRevSt));
             }
 
-            Integer assignTo = searchFilterVO.getAssignedTo();
-            if (assignTo != null) {
-                condition = cb.and(condition, buildAssignedToPredicate(cb, q, stateRoot, assignTo));
-            }
+            // assignedTo filter is resolved to concrete state_ids by the caller; see preResolvedStateIds.
 
             String validationResult = searchFilterVO.getValidationResult();
             if (validationResult != null) {
@@ -187,64 +200,6 @@ public class ApStateSpecification implements Specification<ApState> {
         q.groupBy(stateRoot.get(ApState.FIELD_STATE_ID), accessPointName);
 
         return condition;
-    }
-
-    /**
-     * Returns a predicate for the "assigned to user" filter, expressed as two correlated
-     * EXISTS subqueries:
-     * <pre>
-     *   EXISTS (SELECT 1 FROM wf_task_ap_state ts
-     *             JOIN wf_task t ON t.task_id = ts.task_id
-     *            WHERE ts.state_id = outer.state_id
-     *              AND t.time_closed IS NULL
-     *              AND t.assignee_id = :assignTo)
-     *   OR
-     *   EXISTS (SELECT 1 FROM wf_task_ap_rev_state trs
-     *             JOIN ap_rev_state rs ON rs.state_id = trs.state_id
-     *             JOIN ap_revision r   ON r.revision_id = rs.revision_id
-     *             JOIN wf_task t       ON t.task_id = trs.task_id
-     *            WHERE r.state_id = outer.state_id
-     *              AND r.delete_change_id IS NULL
-     *              AND rs.delete_change_id IS NULL
-     *              AND t.time_closed IS NULL
-     *              AND t.assignee_id = :assignTo)
-     * </pre>
-     * Compared to the original approach (LEFT JOIN over wf_task_ap_state / wf_task_ap_rev_state
-     * with a WHERE filter), this form has several advantages:
-     * <ul>
-     *   <li>PostgreSQL can rewrite each EXISTS as a semijoin and drive the plan from
-     *       wf_task filtered by assignee_id (typically tens of rows) instead of first
-     *       materializing a left join across all of ap_state (hundreds of thousands of rows).
-     *   <li>No duplicate rows when a single state has multiple open tasks — the outer
-     *       GROUP BY becomes a safety net rather than a requirement.
-     *   <li>EXISTS short-circuits on the first match instead of reading every task.
-     * </ul>
-     */
-    private Predicate buildAssignedToPredicate(final CriteriaBuilder cb, final CriteriaQuery<?> q,
-                                               final Root<ApState> stateRoot, final Integer assignTo) {
-        // EXISTS 1: open task attached directly to the entity state
-        Subquery<Integer> stateTaskSq = q.subquery(Integer.class);
-        Root<WfTaskApState> ts = stateTaskSq.from(WfTaskApState.class);
-        Join<WfTaskApState, WfTask> t = ts.join(WfTaskApState.FIELD_TASK, JoinType.INNER);
-        stateTaskSq.select(cb.literal(1))
-                .where(cb.equal(ts.get("stateId"), stateRoot.get(ApState.FIELD_STATE_ID)),
-                       cb.isNull(t.get(WfTask.FIELD_TIME_CLOSED)),
-                       cb.equal(t.get(WfTask.FIELD_ASSIGNEE_ID), assignTo));
-
-        // EXISTS 2: open task attached to an active revision of the state
-        Subquery<Integer> revTaskSq = q.subquery(Integer.class);
-        Root<WfTaskApRevState> trs = revTaskSq.from(WfTaskApRevState.class);
-        Join<WfTaskApRevState, ApRevState> rs = trs.join(WfTaskApRevState.FIELD_STATE, JoinType.INNER);
-        Join<ApRevState, ApRevision> rev = rs.join(ApRevState.FIELD_REVISION, JoinType.INNER);
-        Join<WfTaskApRevState, WfTask> trev = trs.join(WfTaskApRevState.FIELD_TASK, JoinType.INNER);
-        revTaskSq.select(cb.literal(1))
-                .where(cb.equal(rev.get("stateId"), stateRoot.get(ApState.FIELD_STATE_ID)),
-                       cb.isNull(rev.get(ApRevision.FIELD_DELETE_CHANGE_ID)),
-                       cb.isNull(rs.get(ApRevState.FIELD_DELETE_CHANGE_ID)),
-                       cb.isNull(trev.get(WfTask.FIELD_TIME_CLOSED)),
-                       cb.equal(trev.get(WfTask.FIELD_ASSIGNEE_ID), assignTo));
-
-        return cb.or(cb.exists(stateTaskSq), cb.exists(revTaskSq));
     }
 
     private Predicate process(Predicate condition, Ctx ctx) {
