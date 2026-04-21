@@ -1188,7 +1188,7 @@ public class RevertingChangesService {
 
         List<Change> changes = new ArrayList<>(changeResultList.size());
 
-        HashMap<Integer, Integer> changeIdNodeIdMap = new HashMap<>();
+        Map<Integer, Integer> changeIdNodeIdMap = new HashMap<>();
 
         Set<Integer> userIds = new HashSet<>();
 
@@ -1197,14 +1197,14 @@ public class RevertingChangesService {
             if (primaryNodeId != null) {
                 changeIdNodeIdMap.put(changeResult.changeId, changeResult.primaryNodeId);
             }
-            Integer userId = changeResult.getUserId();
+            Integer userId = changeResult.userId;
             if (userId != null) {
                 userIds.add(userId);
             }
         }
 
         ViewTitles viewTitles = configView.getViewTitles(fundVersion.getRuleSetId(), fundVersion.getFundId());
-        
+
         // TODO is it still needed?
         List<Integer> itemTypeIds;
         if(CollectionUtils.isEmpty(viewTitles.getTreeItem().getItemTypeIds())) {
@@ -1214,10 +1214,9 @@ public class RevertingChangesService {
         }
 
         // TODO předělat createNodeLabels()
-        HashMap<Map.Entry<Integer, Integer>, String> changeNodeMap = createNodeLabels(changeIdNodeIdMap, itemTypeIds,
+        Map<Map.Entry<Integer, Integer>, String> changeNodeMap = createNodeLabels(changeIdNodeIdMap, itemTypeIds,
                 fundVersion.getRuleSetId(),
-                fundVersion.getFund()
-                        .getFundId());
+                fundVersion.getFund().getFundId());
 
         Map<Integer, Map<Integer, ArrStructuredObject>> changeIdStructuredObjectMap = structObjService.groupStructuredObjectByChange(
                 fundVersion.getFundId(),
@@ -1232,12 +1231,12 @@ public class RevertingChangesService {
 
         for (ChangeResult changeResult : changeResultList) {
             Change change = new Change();
-            change.setChangeId(changeResult.changeId);
-            change.setNodeChanges(changeResult.nodeChanges == null ? null : changeResult.nodeChanges.intValue());
-            change.setChangeDate(Date.from(changeResult.changeDate.toInstant()));
-            change.setPrimaryNodeId(changeResult.primaryNodeId);
-            change.setType(StringUtils.isEmpty(changeResult.type) ? null : ArrChange.Type.valueOf(changeResult.type));
-            change.setUserId(changeResult.userId);
+            change.setChangeId(changeResult.getChangeId());
+            change.setNodeChanges(changeResult.getNodeChanges() == null ? null : changeResult.getNodeChanges().intValue());
+            change.setChangeDate(Date.from(changeResult.getChangeDate().toInstant()));
+            change.setPrimaryNodeId(changeResult.getPrimaryNodeId());
+            change.setType(StringUtils.isEmpty(changeResult.getType()) ? null : ArrChange.Type.valueOf(changeResult.getType()));
+            change.setUserId(changeResult.getUserId());
 
             // nemůžu revertovat vytvoření AS
             if (change.getType() == null || change.getType().equals(ArrChange.Type.CREATE_AS)) {
@@ -1246,15 +1245,15 @@ public class RevertingChangesService {
 
             if (isNodeContext) {
                 if (change.getType() != null && !allowedNodeChangeTypes.contains(change.getType())
-                        || change.getNodeChanges() > 1) {
+                        || (change.getNodeChanges() != null && change.getNodeChanges() > 1)) {
                     canRevert = false;
                 }
             }
 
             UsrUser usrUser = null;
-            if (changeResult.userId != null) {
-                usrUser = users.get(changeResult.userId);
-                change.setUsername(usrUser.getUsername());
+            if (changeResult.getUserId() != null) {
+                usrUser = users.get(changeResult.getUserId());
+                change.setUsername(usrUser != null ? usrUser.getUsername() : null);
             }
 
             // pokud nemám plné oprávnění vracet změny a pokud nejsem uživatel provedené změny, nemůžu provést změny
@@ -1264,10 +1263,13 @@ public class RevertingChangesService {
 
             change.setRevert(canRevert && canRevertByUser);
 
-            String label = changeNodeMap.get(new AbstractMap.SimpleImmutableEntry<>(changeResult.changeId, changeResult.primaryNodeId));
+            String label = null;
+            if (changeResult.getPrimaryNodeId() != null) {
+            	label = changeNodeMap.get(Map.entry(changeResult.getChangeId(), changeResult.getPrimaryNodeId()));
+            }
             if (label == null) {
                 // zkontrolovat, zda se nejedna o zmenu ve strukturovanem typu
-                Map<Integer, ArrStructuredObject> structuredObjectMap = changeIdStructuredObjectMap.get(changeResult.changeId);
+                Map<Integer, ArrStructuredObject> structuredObjectMap = changeIdStructuredObjectMap.get(changeResult.getChangeId());
                 if (structuredObjectMap != null) {
                     label = structuredObjectMap.values()
                             .stream()
@@ -1294,11 +1296,11 @@ public class RevertingChangesService {
      * @param fundId
      *            @return mapa popisků
      */
-    private HashMap<Map.Entry<Integer, Integer>, String> createNodeLabels(final HashMap<Integer, Integer> changeIdNodeIdMap,
-                                                                          final List<Integer> itemTypeIds,
-                                                                          final Integer ruleSetId,
-                                                                          final Integer fundId) {
-        HashMap<Map.Entry<Integer, Integer>, String> result = new HashMap<>();
+    private Map<Map.Entry<Integer, Integer>, String> createNodeLabels(final Map<Integer, Integer> changeIdNodeIdMap,
+                                                                      final List<Integer> itemTypeIds,
+                                                                      final Integer ruleSetId,
+                                                                      final Integer fundId) {
+        Map<Map.Entry<Integer, Integer>, String> result = new HashMap<>();
 
         for (Map.Entry<Integer, Integer> entry : changeIdNodeIdMap.entrySet()) {
             Integer nodeId = entry.getValue();
@@ -1657,6 +1659,7 @@ public class RevertingChangesService {
                     )
             }
     )
+
     @Entity
     public static class ChangeResult {
 
