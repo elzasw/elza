@@ -1,6 +1,7 @@
 import {
   Combobox,
   Option,
+  OptionGroup,
   OptionOnSelectData,
   SelectionEvents,
   Tooltip,
@@ -161,6 +162,58 @@ export function DescItemSpec({
       setListboxMinWidth(comboboxRef.current?.offsetWidth);
   }, [])
 
+  function renderOption({ rule, form }: { rule: RulDescItemSpecExtVO, form?: FormItemSpec }) {
+    const specType = form?.type;
+    const config = specType ? mandatoryTypeConfig[specType] : mandatoryTypeConfig[MandatoryType.Impossible];
+    const label = getLabel({ rule, form });
+    const isImpossible = !form || specType === MandatoryType.Impossible;
+    const showIndicator = isImpossible || (specType && specType !== MandatoryType.Possible);
+    const Icon = config.icon;
+    return (
+      <Option key={rule.id} value={rule.id.toString()} text={label}>
+        <div style={{ display: "flex", alignItems: "center", gap: INDICATOR_GAP, marginLeft: -(INDICATOR_SIZE + INDICATOR_GAP) }}>
+          <Tooltip content={formatMessage(config.message)} relationship="label" appearance="inverted" positioning="before" visible={showIndicator ? undefined : false}>
+            <div>
+              <Icon style={{ width: INDICATOR_SIZE, height: INDICATOR_SIZE, color: showIndicator ? config.color : "transparent", flexShrink: 0 }} />
+            </div>
+          </Tooltip>
+          <div style={{ opacity: isImpossible ? 0.6 : undefined, fontWeight: rule.id === value ? "bold" : undefined }}>
+            {label}
+          </div>
+        </div>
+      </Option>
+    );
+  }
+
+  function renderSpecOptions(specsToRender: Array<{ rule: RulDescItemSpecExtVO; form?: FormItemSpec }>) {
+    const favoriteSpecIds = typeForm?.favoriteSpecIds || [];
+    const favoriteSet = new Set(favoriteSpecIds);
+
+    if (favoriteSet.size === 0) {
+      return specsToRender.map(renderOption);
+    }
+
+    const favoriteSpecs = specsToRender
+      .filter(({ rule }) => favoriteSet.has(rule.id))
+      .sort((a, b) => favoriteSpecIds.indexOf(a.rule.id) - favoriteSpecIds.indexOf(b.rule.id));
+    const otherSpecs = specsToRender.filter(({ rule }) => !favoriteSet.has(rule.id));
+
+    return (
+      <>
+        {favoriteSpecs.length > 0 && (
+          <OptionGroup label={formatMessage({ id: "subNodeForm.descItemType.spec.favorite", defaultMessage: "Oblíbené" })}>
+            {favoriteSpecs.map(renderOption)}
+          </OptionGroup>
+        )}
+        {otherSpecs.length > 0 && (
+          <OptionGroup label={formatMessage({ id: "subNodeForm.descItemType.spec.all", defaultMessage: "Vše" })}>
+            {otherSpecs.map(renderOption)}
+          </OptionGroup>
+        )}
+      </>
+    );
+  }
+
   return (
     <div
       style={{
@@ -217,36 +270,7 @@ export function DescItemSpec({
             },
         }}
       >
-        {filteredSpecs.map(({ rule, form }) => {
-          const specType = form?.type;
-          const config = specType ? mandatoryTypeConfig[specType] : mandatoryTypeConfig[MandatoryType.Impossible];
-          const label = getLabel({rule, form});
-          const isImpossible = !form || specType === MandatoryType.Impossible;
-          const showIndicator = isImpossible || (specType && specType !== MandatoryType.Possible);
-          const Icon = config.icon;
-          return (
-            <Option
-              value={rule.id.toString()}
-              text={label}
-            >
-                <div style={{display: 'flex', alignItems: 'center', gap: INDICATOR_GAP, marginLeft: -(INDICATOR_SIZE + INDICATOR_GAP)}}>
-                    <Tooltip content={formatMessage(config.message)} relationship="label" appearance="inverted" positioning="before" visible={showIndicator ? undefined : false}>
-                        <div><Icon
-                            style={{ width: INDICATOR_SIZE, height: INDICATOR_SIZE, color: showIndicator ? config.color : "transparent", flexShrink: 0 }}
-                        /></div>
-                    </Tooltip>
-                      <div
-                          style={{
-                            opacity: isImpossible ? 0.6 : undefined,
-                            fontWeight: rule.id === value ? "bold" : undefined,
-                          }}
-                      >
-                          {label}
-                      </div>
-                </div>
-            </Option>
-          );
-        })}
+        {renderSpecOptions(filteredSpecs)}
       </Combobox>
     </div>
   );
