@@ -324,7 +324,7 @@ public class CamService {
                                                                         apChange,
                                                                         entity.getState().name(),
                                                                         entity.getRevision().getRev().getValue(),
-                                                                        entity.getRevision().getExternalUser().toString(),
+                                                                        CamHelper.getExternalUserName(entity.getRevision().getExternalUser()),
                                                                         null, syncState,
                                                                         // We do not know yet prefPart and type
                                                                         // It is Ok for not synced AP
