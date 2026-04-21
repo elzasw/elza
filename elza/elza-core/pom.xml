@@ -14,7 +14,7 @@
         <kerberos.version>2.1.1</kerberos.version>
         <zxing.version>3.5.3</zxing.version>
         <barcode4j.version>2.4.0</barcode4j.version>
-        <webmvc-ui.version>2.6.0</webmvc-ui.version> <!-- 2.8.14 latest version from 2.x -->
+        <webmvc-ui.version>2.8.17</webmvc-ui.version> <!-- 3.x targets Spring Boot 4 -->
         <h2.version>2.2.222</h2.version> <!-- specially for query from ReportServiceQuery.java, v2.3.x causes errors -->
         <ft.version>2.0</ft.version> <!-- com.lightcomp.ft : file-transfer -->
         <jaxb.version>4.0.11</jaxb.version> <!-- 4.0.0 -->
