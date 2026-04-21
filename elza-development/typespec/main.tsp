@@ -3402,6 +3402,22 @@ namespace ElzaAPI.Node {
     @post op getNodeData(
         @body param: NodeDataParam;
     ): NodeData;
+
+    /**
+     * Copies the attribute of the specified type from the node's parent
+     */
+    @route("/copyOlderSiblingAttribute")
+    @put op copyOlderSiblingAttribute(
+        /** version id of tree */
+        @query versionId: integer,
+        /** id of the attribute we want to copy */
+        @query descItemTypeId: integer,
+        /** node to assign values from the older brother */
+        @body body: NodeBase;
+    ): {
+        /** The request has succeeded. */
+        @Http.statusCode statusCode: 200;
+    };
 }
 
 @tag("search")

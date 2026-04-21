@@ -39,8 +39,14 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
@@ -113,9 +119,54 @@ import cz.tacr.elza.test.controller.vo.NodeItem;
 import cz.tacr.elza.utils.CsvUtils;
 import io.restassured.response.Response;
 
+/**
+ * Tests of ArrangementController (fund / version / node / desc-item operations).
+ *
+ * <p>Uses per-class lifecycle: base {@code setUp} / {@code tearDown} run once per
+ * class via {@link #initOnce()} / {@link #cleanupOnce()} — not per method.
+ *
+ * <h2>No per-test fund cleanup (intentional)</h2>
+ * Tests in this class deliberately do <b>not</b> delete the funds they create.
+ * The funds accumulate through the class run and are wiped by the next test
+ * class's {@code @BeforeEach deleteTables()}.
+ *
+ * <p>Reason: {@code deleteFund} is a REST call that generates a large burst of
+ * Lucene / Hibernate Search outbox events; subsequent tests that call
+ * {@code helperTestService.waitForIndexUpdate()} then have to drain those
+ * events, which can take tens of seconds. Skipping the per-test delete keeps
+ * the index churn localised to the test that caused it.
+ *
+ * <p>Each {@code @Test} carries a comment describing what it verifies and
+ * what state it creates. Tests that inspect absolute counts (for example,
+ * {@link #testFilterNodes()}) capture a baseline at their start rather than
+ * assuming an empty DB.
+ */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ArrangementControllerTest extends AbstractControllerTest {
 
     public static final Logger logger = LoggerFactory.getLogger(ArrangementControllerTest.class);
+
+    @BeforeAll
+    public void initOnce() throws Exception {
+        super.setUp();
+    }
+
+    @AfterAll
+    public void cleanupOnce() {
+        super.tearDown();
+    }
+
+    @Override
+    @BeforeEach
+    public void setUp() throws Exception {
+        // no-op: setup is done once in @BeforeAll initOnce()
+    }
+
+    @Override
+    @AfterEach
+    public void tearDown() {
+        // no-op: cleanup is done once in @AfterAll cleanupOnce()
+    }
 
     public static final String STORAGE_NUMBER = "Test 123";
     public static final String STORAGE_NUMBER_FOUND = "Te";
@@ -130,6 +181,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
     // maximální počet položek pro načtení
     public static final int MAX_SIZE = 999;
     
+    /**
+     * Full fund lifecycle: create fund, open/approve version, build node tree,
+     * move/delete nodes, edit description items, run validations, exercise
+     * forms/tree/output/filter endpoints.
+     *
+     * <p><b>Creates:</b> 1 fund + nodes + levels + desc-items + outputs.
+     * <br><b>Cleans up:</b> nothing — fund intentionally left for the class-level cleanup (see class javadoc).
+     */
     @Test
     public void arrangementTest() throws IOException, InterruptedException, ExecutionException, IllegalAccessException {
 
@@ -171,10 +230,6 @@ public class ArrangementControllerTest extends AbstractControllerTest {
 
         // filtry
         filters(fundVersion);
-
-        //smazání fondu
-        helperTestService.waitForWorkers();
-        deleteFund(fund);
     }
 
     //TODO: odkomentovat po změně importu institucí @Test
@@ -241,6 +296,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         return fund;
     }
 
+    /**
+     * Change tracking / revert flow: creates a fund, makes a sequence of
+     * changes (~33 changes documented in the test body), and exercises the
+     * revert endpoint and change-history filtering.
+     *
+     * <p><b>Creates:</b> 1 fund + nodes + desc-items + ~33 change records.
+     * <br><b>Cleans up:</b> nothing — fund intentionally left for the class-level cleanup (see class javadoc).
+     */
     @Test
     public void revertingChangeTest() throws IOException, InterruptedException {
 
@@ -1063,11 +1126,20 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(fulltext);
     }
 
+    /**
+     * Bulk replace / place / delete of description-item values across many
+     * nodes; also exercises the fulltext (Lucene) index update flow.
+     *
+     * <p><b>Creates:</b> 1 fund + nodes + desc-items of type {@code SRD_TITLE}
+     * with varied text values.
+     * <br><b>Cleans up:</b> nothing — fund intentionally left for the class-level cleanup (see class javadoc).
+     */
     @Test
     public void replaceDataValuesTest() throws InterruptedException {
 
         // vytvoření
-        ArrFundVersionVO fundVersion = getOpenVersion(createdFund());
+        Fund fund = createdFund();
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
         // vytvoření uzlů
         helperTestService.waitForWorkers();
@@ -1142,10 +1214,19 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(nodeDescItems.isEmpty());
     }
 
+    /**
+     * Filter unique values of a description item; verifies filtering works
+     * both before and after version approval.
+     *
+     * <p><b>Creates:</b> 1 fund + nodes + desc-items of type
+     * {@code SRD_UNIT_DATE_TEXT} with alternating values.
+     * <br><b>Cleans up:</b> nothing — fund intentionally left for the class-level cleanup (see class javadoc).
+     */
 	@Test
     public void filterUniqueValuesTest() throws InterruptedException {
         // vytvoření
-        ArrFundVersionVO fundVersion = getOpenVersion(createdFund());
+        Fund fund = createdFund();
+        ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
         // vytvoření uzlů
         List<ArrNodeVO> nodes = createLevels(fundVersion);
@@ -1183,6 +1264,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
      * Test method copyOlderSiblingAttribute
      * @throws ApiException
      */
+    /**
+     * Copy description-item attribute from an older sibling node to a newer
+     * one via the {@code copySibling} endpoint.
+     *
+     * <p><b>Creates:</b> 1 fund ({@code fundSource}) + nodes + 1 desc-item of
+     * type {@code SRD_TITLE} (plus its copy on the sibling node).
+     * <br><b>Cleans up:</b> nothing — fund intentionally left for the class-level cleanup (see class javadoc).
+     */
     @Test
     public void copyOlderSiblingAttribute() throws InterruptedException {
         Fund fundSource = createdFund();
@@ -1216,6 +1305,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(textVo.getValue().equals("value"));
     }
 
+    /**
+     * Copy a node hierarchy between two separate funds via
+     * {@code copyLevels}; exercises the copy-parameters and conflict paths.
+     *
+     * <p><b>Creates:</b> 2 funds ({@code fundSource}, {@code fundTarget}) +
+     * node hierarchies in each + copied nodes.
+     * <br><b>Cleans up:</b> nothing — funds intentionally left for the class-level cleanup (see class javadoc).
+     */
     @Test
     public void copyLevelsTest() throws InterruptedException {
         Fund fundSource = createdFund();
@@ -1255,6 +1352,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         copyLevels(copyNodesParams);
     }
 
+    /**
+     * Create / update / delete of ref-templates and their type / spec mappings
+     * (fund-scoped reference templates).
+     *
+     * <p><b>Creates:</b> 1 fund + 1 ref-template + map types (optionally spec
+     * mappings).
+     * <br><b>Cleans up:</b> {@code deleteRefTemplate(...)} at end; fund intentionally left.
+     */
     @Test
     public void refTemplatesTest() {
         Fund fund = createdFund();
@@ -1300,6 +1405,14 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         deleteRefTemplate(refTemplateVO.getId());
     }
 
+    /**
+     * Create a description item of data-type BIT ({@code ZVEREJNENO}) and
+     * verify the data-type handling and returned metadata.
+     *
+     * <p><b>Creates:</b> 1 fund + nodes + 1 desc-item of type
+     * {@code ZVEREJNENO} on node 1.
+     * <br><b>Cleans up:</b> nothing — fund intentionally left for the class-level cleanup (see class javadoc).
+     */
     @Test
     public void createDescItemBit() {
         Fund fundSource = createdFund();
@@ -1319,6 +1432,15 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertNotNull(nodeItemCreated.getItemObjectId());
     }
 
+    /**
+     * Create a description item with an empty enum value
+     * ({@code ZP2015_ARCHDESC_LANG}); also exercises the duplicate-detection
+     * error path for single-valued items.
+     *
+     * <p><b>Creates:</b> 1 fund + nodes + 1 desc-item of type
+     * {@code ZP2015_ARCHDESC_LANG}.
+     * <br><b>Cleans up:</b> nothing — fund intentionally left for the class-level cleanup (see class javadoc).
+     */
     @Test
     public void createDescItemEnumEmpty() {
         Fund fundSource = createdFund();
@@ -1346,19 +1468,36 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         	assertTrue(body.contains(ArrangementCode.ALREADY_INDEFINABLE.name()));
             itemDataResult = null;
         }
-        assertNull(itemDataResult);        
+        assertNull(itemDataResult);
     }
 
+    /**
+     * Filter nodes by description-item values; exercises both SELECT and
+     * UNSELECTED filter modes.
+     *
+     * <p><b>Creates:</b> fund imported from {@code fund-filter-nodes.xml} via
+     * {@code importXmlFile(...)} — includes 5 nodes with varied desc-items.
+     * <br><b>Cleans up:</b> nothing — fund intentionally left for the class-level cleanup (see class javadoc).
+     *
+     * <p>Does not assume an empty DB. Captures the fundVersion count before
+     * the import and asserts it grew by exactly one; then picks the
+     * newly-imported fundVersion as the one with the highest id.
+     */
     @Test
     public void testFilterNodes() throws InterruptedException {
+        long baselineFundVersions = fundVersionRepository.count();
+
     	// import fund from xml
     	importXmlFile(null, 1, getResourceFile(XML_FUND));
 
     	List<ArrFundVersion> fundVersions = fundVersionRepository.findAll();
-        assertTrue(fundVersions.size() == 1);
+        assertTrue(fundVersions.size() == baselineFundVersions + 1,
+                "Expected import to add exactly 1 fundVersion (baseline=" + baselineFundVersions + ", after=" + fundVersions.size() + ")");
 
-        // prepare: fundVersion and list of ids of rulDescItem and itemTypeId by code
-        ArrFundVersion fundVersion = fundVersions.iterator().next();
+        // prepare: newly-imported fundVersion (highest id), plus list of ids of rulDescItem and itemTypeId by code
+        ArrFundVersion fundVersion = fundVersions.stream()
+                .max(java.util.Comparator.comparing(ArrFundVersion::getFundVersionId))
+                .orElseThrow();
         List<RulDescItemTypeExtVO> itemTypes = getDescItemTypes();
         Set<Integer> descItemTypeIds = new HashSet<>();
         Integer itemTypeId = null;

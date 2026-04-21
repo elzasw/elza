@@ -9,10 +9,15 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
+import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.test.controller.vo.DataText;
 import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.test.controller.vo.DescItemField;
 import cz.tacr.elza.test.controller.vo.FieldType;
@@ -20,6 +25,7 @@ import cz.tacr.elza.test.controller.vo.FieldValueFilter;
 import cz.tacr.elza.test.controller.vo.FondsField;
 import cz.tacr.elza.test.controller.vo.FondsFieldName;
 import cz.tacr.elza.test.controller.vo.Fund;
+import cz.tacr.elza.test.controller.vo.ItemDataResult;
 import cz.tacr.elza.test.controller.vo.LogicalFilter;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.test.controller.vo.NodeData;
@@ -293,4 +299,35 @@ public class NodeControllerTest extends AbstractControllerTest {
         assertTrue(nodeData.getParents().isEmpty());
         assertTrue(nodeData.getSiblings().isEmpty());
     }
+
+	@Test
+	public void nodeCopyOlderSiblingAttributeTest() {
+	    Fund fund = createFund("fund1", "internalCode");
+	    ArrFundVersionVO fundVersion = getOpenVersion(fund);
+
+	    List<ArrNodeVO> nodes = createLevels(fundVersion);
+	    ArrNodeVO node1 = nodes.get(1);
+	    ArrNodeVO node2 = nodes.get(2);
+
+	    // vytvoření hodnoty na starším sourozenci
+	    RulDescItemTypeExtVO type = findDescItemTypeByCode(SRD_TITLE);
+	    NodeItem nodeItem = buildNodeItem(type.getCode(), null, DataType.TEXT, "value", node1, null);
+	    ItemDataResult itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+	    NodeItem nodeItemCreated = itemDataResult.getItem();
+
+	    assertNotNull(((DataText) nodeItem.getData()).getTextValue().equals(((DataText) nodeItemCreated.getData()).getTextValue()));
+	    assertNotNull(nodeItemCreated.getPosition());
+	    assertNotNull(nodeItemCreated.getItemObjectId());
+
+	    // zkopírování hodnoty ze staršího sourozence
+	    nodeApi.nodeCopyOlderSiblingAttribute(fundVersion.getId(), type.getId(), convertArrNode(node2));
+
+	    // ověření, že hodnota byla zkopírována
+	    DescFormDataNewVO formData = getNodeFormData(node2.getId(), fundVersion.getId());
+	    List<ArrItemVO> items = formData.getDescItems();
+	    assertTrue(items.size() == 1);
+	    ArrItemVO result = items.get(0);
+	    ArrItemTextVO textVo = (ArrItemTextVO) result;
+	    assertTrue(textVo.getValue().equals("value"));
+	}
 }
