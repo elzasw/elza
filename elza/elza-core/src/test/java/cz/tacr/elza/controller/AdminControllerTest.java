@@ -11,13 +11,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import cz.tacr.elza.api.DigitalRepositoryType;
 import org.junit.jupiter.api.TestInstance;
 
-import org.junit.Test;
-
-
 import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
 import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
