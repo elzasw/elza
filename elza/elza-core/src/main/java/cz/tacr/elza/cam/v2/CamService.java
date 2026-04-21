@@ -1,8 +1,5 @@
 package cz.tacr.elza.cam.v2;
 
-import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
-import static cz.tacr.elza.groovy.GroovyResult.SHORT_NAME;
-
 import static cz.tacr.elza.cam.v2.CamException.prepareExtSystemException;
 
 import java.time.OffsetDateTime;
@@ -22,7 +19,6 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -43,11 +39,11 @@ import cz.tacr.cam.v2.client.ApiException;
 import cz.tacr.cam.v2.client.controller.vo.BatchUpdateStatus;
 import cz.tacr.cam.v2.schema.cam.BatchUpdateXml;
 import cz.tacr.cam.v2.schema.cam.CodeXml;
-import cz.tacr.cam.v2.schema.cam.EntityIdXml;
 import cz.tacr.cam.v2.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.v2.schema.cam.EntityXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.cam.BindingSyncInfo;
+import cz.tacr.elza.cam.CamUserInfoBuilder;
 import cz.tacr.elza.cam.ProcessingContext;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -61,7 +57,6 @@ import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApBindingSync;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevision;
@@ -105,8 +100,6 @@ import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
-import cz.tacr.elza.service.cache.CachedAccessPoint;
-import cz.tacr.elza.service.cache.CachedPart;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -188,6 +181,9 @@ public class CamService {
 
     @Autowired
     private CamConnector camConnector;
+
+    @Autowired
+    private CamUserInfoBuilder camUserInfoBuilder;
 
     @Autowired
     private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
@@ -658,42 +654,17 @@ public class CamService {
     }
 
     /**
-     * Vytváření informací o uživateli na základě šablony
+     * Wrap the rendered user info string into the v2 API type.
      *
-     * @param userInfo šablona
-     * @param user uživatel
-     * @return
+     * @param userInfo template
+     * @param user sending user
+     * @return user info XML value
      */
-    // TODO rework the method
-    public UserInfoXml createUserInfo(String userInfo, UsrUser user) {
-        String userId;
-        String userName;
-        String prefName, shortName;
-        if (user == null) {
-            userId = "0";
-            userName = "admin";
-        } else {
-            prefName = shortName = userName = user.getUsername();
-            userId = Integer.toString(user.getUserId());
-            CachedAccessPoint cachedAp = accessPointCacheService.findCachedAccessPoint(user.getAccessPointId());
-            Objects.requireNonNull(cachedAp);
-            CachedPart prefPart = cachedAp.getPart(cachedAp.getPreferredPartId());
-            Objects.requireNonNull(prefPart);
-            for (ApIndex index : prefPart.getIndices()) {
-                if (index.getIndexType().equals(DISPLAY_NAME)) {
-                    prefName = index.getIndexValue();
-                } else if (index.getIndexType().equals(SHORT_NAME)) {
-                    shortName = index.getIndexValue();
-                }
-            }
-        }
+    private UserInfoXml createUserInfo(String userInfo, UsrUser user) {
+        String userId = user == null ? "0" : Integer.toString(user.getUserId());
         CodeXml id = new CodeXml(userId);
-        UuidXml uuid = null;
-        LongStringXml name = new LongStringXml(userName);
-        EntityIdXml entityId = null;
-        CodeXml institution = null;
-        String localId = null;
-        return new UserInfoXml(id, uuid, name, entityId, institution, localId);
+        LongStringXml name = new LongStringXml(camUserInfoBuilder.buildUserInfo(userInfo, user));
+        return new UserInfoXml(id, null, name, null, null, null);
     }
 
 
