@@ -58,6 +58,7 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.service.AccessPointConnectorService;
 import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.ExtSyncsProcessor;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.cam.v2.CamV2MockHelper.IssueSpec;
 
@@ -155,6 +156,9 @@ public class CamServiceExportTest extends AbstractControllerTest {
     private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
 
     @Autowired
+    private ExtSyncsProcessor extSyncsProcessor;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     private CamV2MockHelper camMock;
@@ -178,10 +182,16 @@ public class CamServiceExportTest extends AbstractControllerTest {
     @BeforeAll
     public void initOnce() throws Exception {
         super.setUp();
+        // The background ExtSyncsProcessor thread calls nextItemSyncProcessor on a timer
+        // and would race with the synchronous nextItemSyncProcessor calls in these tests —
+        // seen as OptimisticLockingFailureException on ExtSyncsQueueItem and queue items
+        // unexpectedly flipping back out of EXPORT_PROCESSING. Pause it for the class.
+        extSyncsProcessor.stopExtSyncs();
     }
 
     @AfterAll
     public void cleanupOnce() {
+        extSyncsProcessor.startExtSyncs();
         super.tearDown();
     }
 
