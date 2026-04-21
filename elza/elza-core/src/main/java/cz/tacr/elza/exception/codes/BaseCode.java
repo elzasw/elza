@@ -96,7 +96,12 @@ public enum BaseCode implements ErrorCode {
     /**
      * Přílišná délka
      */
-    INVALID_LENGTH;
+    INVALID_LENGTH,
+
+    /**
+     * Query would return too many results; caller should refine the filter.
+     */
+    TOO_MANY_RESULTS;
 
     // Konstanty specifické pro jednotlivé chybové kódy
 

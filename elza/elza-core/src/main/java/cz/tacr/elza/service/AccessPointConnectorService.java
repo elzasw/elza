@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -237,13 +238,24 @@ public class AccessPointConnectorService {
         return null;
     }
 
-    // TODO add importProcessor for CAM v2
     private ItemSyncProcessor createDownloadProcessor(Iterable<ExtSyncsQueueItem> itemPage) {
         ExtSyncsQueueItem firstItem = itemPage.iterator().next();
         ApExternalSystem externalSystem = firstItem.getExternalSystem();
 
-        cz.tacr.elza.cam.v1.ItemSyncImportProcessor isiProc = appCtx.getBean(cz.tacr.elza.cam.v1.ItemSyncImportProcessor.class, externalSystem.getExternalSystemId());
+        if (externalSystem.getType().getVersionApi() == 1) {
+            cz.tacr.elza.cam.v1.ItemSyncImportProcessor isiProc = appCtx.getBean(cz.tacr.elza.cam.v1.ItemSyncImportProcessor.class, externalSystem.getExternalSystemId());
+            fillDownloadProcessor(itemPage, externalSystem, isiProc::addQueueItem, isiProc::addBindingValue);
+            return isiProc;
+        }
+        cz.tacr.elza.cam.v2.ItemSyncImportProcessor isiProc = appCtx.getBean(cz.tacr.elza.cam.v2.ItemSyncImportProcessor.class, externalSystem.getExternalSystemId());
+        fillDownloadProcessor(itemPage, externalSystem, isiProc::addQueueItem, isiProc::addBindingValue);
+        return isiProc;
+    }
 
+    private void fillDownloadProcessor(Iterable<ExtSyncsQueueItem> itemPage,
+                                       ApExternalSystem externalSystem,
+                                       Consumer<ExtSyncsQueueItem> addQueueItem,
+                                       Consumer<String> addBindingValue) {
         List<Integer> bindingIds = new ArrayList<>(), apIds = new ArrayList<>();
 
         // read binding values
@@ -252,7 +264,7 @@ public class AccessPointConnectorService {
             if (!externalSystem.getExternalSystemId().equals(queueItem.getExternalSystemId())) {
                 break;
             }
-            isiProc.addQueueItem(queueItem);
+            addQueueItem.accept(queueItem);
             if (queueItem.getBindingId() != null) {
                 bindingIds.add(queueItem.getBindingId());
             } else if (queueItem.getAccessPointId() != null) {
@@ -261,14 +273,12 @@ public class AccessPointConnectorService {
         }
         if (CollectionUtils.isNotEmpty(apIds)) {
             List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPointIdsAndExternalSystem(apIds, externalSystem);
-            bindingStates.forEach(bs -> isiProc.addBindingValue(bs.getBinding().getValue()));
+            bindingStates.forEach(bs -> addBindingValue.accept(bs.getBinding().getValue()));
         }
         if (CollectionUtils.isNotEmpty(bindingIds)) {
             List<ApBinding> bindings = bindingRepository.findAllById(bindingIds);
-            bindings.forEach(b -> isiProc.addBindingValue(b.getValue()));
+            bindings.forEach(b -> addBindingValue.accept(b.getValue()));
         }
-
-        return isiProc;
     }
     
     /**
