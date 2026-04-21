@@ -432,7 +432,7 @@ public class HelperTestService {
 
             rulPackage = getPackage(packageCode);
             Assertions.assertNotNull(rulPackage);
-            logger.info("Package loaded.");
+            logger.debug("Package loaded.");
         }
     }
 
@@ -464,7 +464,7 @@ public class HelperTestService {
      */
     static private void recurseAdd(final byte[] buffer, final ZipOutputStream zout, final File dir, final String path) throws IOException {
         File[] files = dir.listFiles();
-        logger.info("recurseAdd: path: " + path + ", dir: " + dir + ", files: " + files);
+        logger.debug("recurseAdd: path: " + path + ", dir: " + dir + ", files: " + files);
         for (int i = 0; i < files.length; i++) {
             if (files[i].isDirectory()) {
                 recurseAdd(buffer, zout, files[i], path + files[i].getName() + "/");
