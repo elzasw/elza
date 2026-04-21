@@ -697,9 +697,12 @@ public class CamService {
      *            zda-li se jedná o volání z fronty
      *            při volání z fronty:
      *            - lokálně smazaná entita není obnovena (změna stavu)
+     * @return accessPoint belonging to the binding after the sync, or {@code null}
+     *         when the entity was skipped (e.g. INVALID/REPLACED state for a new
+     *         import)
      * @throws  SyncImpossibleException
      */
-    public void synchronizeAccessPoint(ProcessingContext procCtx,
+    public ApAccessPoint synchronizeAccessPoint(ProcessingContext procCtx,
                                        @NotNull ApBinding binding,
                                        @NotNull EntityXml entity, boolean syncQueue) throws SyncImpossibleException {
         Objects.requireNonNull(binding);
@@ -768,7 +771,7 @@ public class CamService {
                 // if async(syncQueue) -> has local changes -> mark as not synced
                 if (syncQueue) {
                     accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
-                    return;
+                    return accessPoint;
                 }
             } else {
                 // ap not found -> new import
@@ -785,7 +788,7 @@ public class CamService {
                         bindingStateRepository.save(bindingState);
                         accessPointCacheService.createApCachedAccessPoint(state.getAccessPointId());
                     }
-                    return;
+                    return accessPoint;
                 } else {
                     throw new SystemException("Entitu v tomto stavu nelze aktualizovat z externího systému", BaseCode.INVALID_STATE)
                         .set("accessPointId", state.getAccessPointId())
@@ -812,7 +815,7 @@ public class CamService {
                     bindingStateRepository.save(bindingState);
                     accessPointCacheService.createApCachedAccessPoint(state.getAccessPointId());
                 }
-                return;
+                return accessPoint;
             }
             if (!modifiedPartOrItem) {
                 // check if any update is needed
@@ -821,7 +824,7 @@ public class CamService {
                         Objects.equals(origBindingState.getExtRevision(), entity.getRevi().getRid().toString())) {
                     // binding already exists and no local changes are detected
                     // -> nothing to synchronize -> return
-                    return;
+                    return accessPoint;
                 }
 
             }
@@ -847,12 +850,14 @@ public class CamService {
                 ec.createAccessPoint(procCtx, entity, binding, syncQueue);
                 bindingState = ec.getBindingState();
                 Validate.notNull(bindingState, "Missing binding state");
+                accessPoint = bindingState.getAccessPoint();
             }
         } else {
             ec.synchronizeAccessPoint(procCtx, state, bindingState, entity, syncQueue);
         }
 
         procCtx.setApChange(null);
+        return accessPoint;
     }
 
     /**
@@ -1052,12 +1057,15 @@ public class CamService {
             }
 
             try {
-                synchronizeAccessPoint(procCtx, binding, entity, true);
+                ApAccessPoint ap = synchronizeAccessPoint(procCtx, binding, entity, true);
+                if (ap != null && queueItem.getAccessPointId() == null) {
+                    queueItem.setAccessPoint(ap);
+                }
                 apConnectService.setQueueItemState(queueItem,
                                                    ExtAsyncQueueState.IMPORT_OK,
                                                    "Synchronized: ES -> ELZA");
             } catch (SyncImpossibleException e) {
-                log.error("Synchronized impossible, accessPointId: {}, camId: {}, queueItemId: {}", queueItem.getAccessPointId(), binding.getValue(), 
+                log.error("Synchronized impossible, accessPointId: {}, camId: {}, queueItemId: {}", queueItem.getAccessPointId(), binding.getValue(),
                           queueItem.getExtSyncsQueueItemId(), e);
                 apConnectService.setQueueItemState(queueItem,
                                                    ExtAsyncQueueState.ERROR,
