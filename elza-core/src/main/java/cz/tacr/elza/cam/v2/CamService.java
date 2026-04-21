@@ -23,6 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -47,6 +49,7 @@ import cz.tacr.cam.v2.schema.cam.EntityXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.cam.BindingSyncInfo;
 import cz.tacr.elza.cam.ProcessingContext;
+import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -62,6 +65,7 @@ import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevision;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -76,6 +80,7 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
@@ -84,7 +89,9 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApBindingSyncRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
+import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.SysExternalSystemPropertyRepository;
+import cz.tacr.elza.service.AccessPointConnectorService;
 import cz.tacr.elza.service.AccessPointDataService;
 import cz.tacr.elza.service.AccessPointItemService;
 import cz.tacr.elza.service.AccessPointItemService.ReferencedEntities;
@@ -181,6 +188,12 @@ public class CamService {
 
     @Autowired
     private CamConnector camConnector;
+
+    @Autowired
+    private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
+
+    @Autowired
+    private AccessPointConnectorService apConnectService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -471,7 +484,7 @@ public class CamService {
         ApAccessPoint referencedAp = null;
         if (refBinding == null) {
         	// check if item should be lookup also by UUID
-            if (ApExternalSystemType.CAM_UUID.equals(procCtx.getApExternalSystem().getType())) {
+            if (ApExternalSystemType.CAM_UUID == procCtx.getApExternalSystem().getType().getBaseType()) {
         		referencedAp = this.apAccessPointRepository.findAccessPointByUuid(value);
                 // finding by UUID
                 log.debug("Finding connected AP by UUID, accessPointId: {}",
@@ -780,7 +793,7 @@ public class CamService {
         List<String> keyList = new ArrayList<>(entityRecordRevInfoXmls.size());
         Map<String, EntityRecordRevInfoXml> recordCodesMap = new HashMap<>();
         Function<EntityRecordRevInfoXml, String> idGetter;
-        if (externalSystem.getType().equals(ApExternalSystemType.CAM_UUID)) {
+        if (externalSystem.getType().getBaseType() == ApExternalSystemType.CAM_UUID) {
             idGetter = (x) -> x.getEntityUuid().getValue();
         } else {
             idGetter = (x) -> Long.toString(x.getEntityId().getValue());
@@ -862,6 +875,105 @@ public class CamService {
         bindingSync.setPage(page);
         bindingSync.setCount(count);
         bindingSyncRepository.saveAndFlush(bindingSync);
+    }
+
+    /**
+     * Synchronizace seznamu záznamů CAM -> ELZA
+     *
+     * Metoda je volána bez nastavení credentials, nastavují se dle
+     * jednotlivého záznamu z fronty.
+     *
+     * @param externalSystemId
+     * @param entityXmlMap
+     * @param queueItemIds
+     */
+    @Transactional
+    public void importEntities(Integer externalSystemId,
+                               Map<String, EntityXml> entityXmlMap,
+                               List<Integer> queueItemIds) {
+        // All objects have to be fully initialized,
+        // no HibernateProxy objects are allowed!!!
+        // EntityManager.clear() is called inside synchronizeAccessPoint
+        ApExternalSystem externalSystem = externalSystemService.getExternalSystemInternal(externalSystemId);
+        ApScope scope = externalSystem.getScope();
+        scope = HibernateUtils.unproxy(scope);
+
+        ProcessingContext procCtx = new ProcessingContext(scope, externalSystem, staticDataService);
+        for (Integer queueItemId : queueItemIds) {
+            ExtSyncsQueueItem queueItem = extSyncsQueueItemRepository.getReferenceById(queueItemId);
+
+            // set authorization
+            Integer userId = queueItem.getUserId();
+            SecurityContext secCtx;
+            if (userId != null) {
+                secCtx = userService.createSecurityContext(userId);
+            } else {
+                //
+                // TODO: find better solution for userId==null
+                //       use admin in such cases
+                //
+                secCtx = userService.createSecurityContextSystem();
+            }
+            SecurityContextHolder.setContext(secCtx);
+
+            ApBinding binding;
+            if (queueItem.getAccessPointId() != null) {
+                ApBindingState bindingState = bindingStateRepository.findByAccessPointAndExternalSystem(queueItem.getAccessPoint(), externalSystem);
+                if (bindingState == null) {
+                    if (queueItem.getBinding() != null) {
+                        // accessPoint and binding are set but bindingState does not exist;
+                        // treat this as a stale but recoverable state
+                        log.info("Synchronization request with accessPointId: {}, bindingId: {} without bindingState.",
+                                 queueItem.getAccessPointId(),
+                                 queueItem.getBindingId());
+
+                        binding = queueItem.getBinding();
+                    } else {
+                        throw new BusinessException("Missing bindingState for accessPoint", BaseCode.DB_INTEGRITY_PROBLEM)
+                                .set("queueItemId", queueItem.getExtSyncsQueueItemId());
+                    }
+                } else {
+                    binding = bindingState.getBinding();
+                }
+            } else {
+                binding = queueItem.getBinding();
+                if (binding == null) {
+                    throw new BusinessException("Missing binding for queueItem", BaseCode.DB_INTEGRITY_PROBLEM)
+                            .set("queueItemId", queueItem.getExtSyncsQueueItemId());
+                }
+            }
+
+            // find related xmlEntity
+            EntityXml entity = entityXmlMap.get(binding.getValue());
+            if (entity == null) {
+                // if batch size == 1, mark queue item as invalid and stop trying
+                if (queueItemIds.size() == 1) {
+                    log.error("Missing requested entity, binding: {}, queueItemId: {}", binding.getValue(), queueItem.getExtSyncsQueueItemId());
+                    apConnectService.setQueueItemState(queueItem,
+                                                       ExtAsyncQueueState.ERROR,
+                                                       "Error: entity not found in ES, binding: " + binding.getValue());
+                    return;
+                } else {
+                    throw new BusinessException("Missing requested entity, binding: " + binding.getValue(),
+                            ExternalCode.RECORD_NOT_FOUND)
+                                    .set("bindingValue", binding.getValue())
+                                    .set("queueItemId", queueItem.getExtSyncsQueueItemId());
+                }
+            }
+
+            try {
+                synchronizeAccessPoint(procCtx, binding, entity, true);
+                apConnectService.setQueueItemState(queueItem,
+                                                   ExtAsyncQueueState.IMPORT_OK,
+                                                   "Synchronized: ES -> ELZA");
+            } catch (SyncImpossibleException e) {
+                log.error("Synchronized impossible, accessPointId: {}, camId: {}, queueItemId: {}", queueItem.getAccessPointId(), binding.getValue(),
+                          queueItem.getExtSyncsQueueItemId(), e);
+                apConnectService.setQueueItemState(queueItem,
+                                                   ExtAsyncQueueState.ERROR,
+                                                   "Error: synchronized impossible: ES -> ELZA, " + e.getMessage());
+            }
+        }
     }
 
     /**

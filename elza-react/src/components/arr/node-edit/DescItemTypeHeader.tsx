@@ -24,9 +24,10 @@ export interface Props extends PropsWithChildren {
   handleCopyFromPrev: (id: number) => void;
   canCopyFromPrev: boolean;
   handleCopyToggle: (id: number) => void;
+  hideCopyButtons?: boolean;
 }
 
-export function FormItemTypeComp({
+export function DescItemTypeHeader({
   children,
   typeRef,
   typeForm,
@@ -35,6 +36,7 @@ export function FormItemTypeComp({
   handleCopyFromPrev,
   handleCopyToggle,
   canCopyFromPrev,
+  hideCopyButtons = false,
 }: Props) {
   const styles = useStyles();
   const [isHovered, setIsHovered] = useState(false);
@@ -97,7 +99,7 @@ export function FormItemTypeComp({
           <div>{typeRef.shortcut}</div>
         </Tooltip>
         <DescItemTypeDebugInfo typeForm={typeForm} />
-        {(
+        {!hideCopyButtons && (
           <div className="actions" >
             <Tooltip
               relationship="label"

@@ -1,8 +1,9 @@
-package cz.tacr.elza.repository.specification;
+ package cz.tacr.elza.repository.specification;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -46,9 +47,6 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrUser;
-import cz.tacr.elza.domain.WfTask;
-import cz.tacr.elza.domain.WfTaskApRevState;
-import cz.tacr.elza.domain.WfTaskApState;
 import cz.tacr.elza.domain.converter.UnitDateConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -78,15 +76,29 @@ public class ApStateSpecification implements Specification<ApState> {
     private ApState.StateApproval state;
     private RevStateApproval revState;
     private StaticDataProvider sdp;
+    /**
+     * When non-null, the "assigned to user" filter is enforced via
+     * {@code ap_state.state_id IN (...)} instead of correlated EXISTS. The caller is
+     * responsible for populating this collection from the wf_task tables; leaving it
+     * null keeps the assignedTo branch disabled entirely.
+     */
+    private Collection<Integer> preResolvedStateIds;
 
     public ApStateSpecification(final SearchFilterVO searchFilterVO, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
                                 ApState.StateApproval state, RevStateApproval revState, final StaticDataProvider sdp) {
+        this(searchFilterVO, apTypeIdTree, scopeIds, state, revState, sdp, null);
+    }
+
+    public ApStateSpecification(final SearchFilterVO searchFilterVO, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
+                                ApState.StateApproval state, RevStateApproval revState, final StaticDataProvider sdp,
+                                final Collection<Integer> preResolvedStateIds) {
         this.searchFilterVO = searchFilterVO;
         this.apTypeIdTree = apTypeIdTree;
         this.scopeIds = scopeIds;
         this.state = state;
         this.revState = revState;
         this.sdp = sdp;
+        this.preResolvedStateIds = preResolvedStateIds;
     }
 
     @Override
@@ -107,6 +119,11 @@ public class ApStateSpecification implements Specification<ApState> {
 
         // pouze aktuální state
         condition = cb.and(condition, cb.isNull(stateRoot.get(ApState.FIELD_DELETE_CHANGE_ID)));
+
+        // pre-resolved state ids from the assignedTo filter (empty set is caller-guarded)
+        if (preResolvedStateIds != null) {
+            condition = cb.and(condition, stateRoot.get(ApState.FIELD_STATE_ID).in(preResolvedStateIds));
+        }
 
         // typ archivní entity
         if (CollectionUtils.isNotEmpty(apTypeIdTree)) {
@@ -148,20 +165,7 @@ public class ApStateSpecification implements Specification<ApState> {
             	condition = cb.and(condition, cb.or(usrState, usrRevSt));
             }
 
-            Integer assignTo = searchFilterVO.getAssignedTo();
-            if (assignTo != null) {
-                Join<ApState, WfTaskApState> taskStateJoin = stateRoot.join(ApState.FIELD_TASK_STATE_LIST, JoinType.LEFT);
-                Join<WfTaskApState, WfTask> taskJoin = taskStateJoin.join(WfTaskApState.FIELD_TASK, JoinType.LEFT);
-                taskJoin.on(cb.isNull(taskJoin.get(WfTask.FIELD_TIME_CLOSED)));
-
-                Join<ApRevState, WfTaskApRevState> taskRevStateJoin = revStateJoin.join(ApRevState.FIELD_TASK_REV_STATE_LIST, JoinType.LEFT);
-                Join<WfTaskApState, WfTask> taskRevJoin = taskRevStateJoin.join(WfTaskApRevState.FIELD_TASK, JoinType.LEFT);
-                taskRevJoin.on(cb.isNull(taskRevJoin.get(WfTask.FIELD_TIME_CLOSED)));
-
-				condition = cb.and(condition, cb.or(
-						cb.equal(taskJoin.get(WfTask.FIELD_ASSIGNEE_ID), assignTo), 
-						cb.equal(taskRevJoin.get(WfTask.FIELD_ASSIGNEE_ID), assignTo)));
-            }
+            // assignedTo filter is resolved to concrete state_ids by the caller; see preResolvedStateIds.
 
             String validationResult = searchFilterVO.getValidationResult();
             if (validationResult != null) {

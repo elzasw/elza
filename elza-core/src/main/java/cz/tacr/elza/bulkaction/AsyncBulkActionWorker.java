@@ -51,9 +51,21 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
     private UserService userService;
 
     /**
-     * Hromadná akce
+     * Hromadná akce. Nastavuje se v {@link #run()} přes {@link #setBulkAction},
+     * čte se přes {@link #getBulkAction}. Obě metody jsou {@code synchronized},
+     * takže pole nemusí být {@code volatile} — vzájemná exkluzivita dává
+     * happens-before garanci mezi zapsáním v {@code run()} a přečtením v
+     * {@link #terminate()} nebo {@link #toString()}.
      */
     private BulkAction bulkAction;
+
+    /**
+     * Příznak, že byl zavolán {@link #terminate()}. Guarded by {@code this}.
+     * Pokud je {@code true} v okamžiku, kdy {@link #setBulkAction} dorazí,
+     * setter spustí {@code terminate()} na nově přiřazené akci, aby
+     * {@code run()} detekoval přerušení co nejdřív.
+     */
+    private boolean terminationRequested;
 
     private Long beginTime;
 
@@ -93,7 +105,7 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
             new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
                 beginTime = System.currentTimeMillis();
                 ArrBulkActionRun bulkActionRun = bulkActionHelperService.getArrBulkActionRun(request.getBulkActionId());
-                bulkAction = bulkActionHelperService.prepareToRun(bulkActionRun);
+                setBulkAction(bulkActionHelperService.prepareToRun(bulkActionRun));
                 inputNodeIds = bulkActionHelperService.getBulkActionNodeIds(bulkActionRun);
                 logger.info("Bulk action started: {}", this);
 
@@ -169,7 +181,7 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
             	return new ActionRunContext(inputNodeIds, bulkActionRun);
             });
 
-            bulkAction.execute(runContext);
+            getBulkAction().execute(runContext);
 
             // TODO: Add check that action was not interrupted
             new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
@@ -230,10 +242,58 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
     }
 
     /**
+     * Přiřadí instanci {@link BulkAction} získanou z DB během {@link #run()}.
+     * Pokud už mezitím někdo zavolal {@link #terminate()}, volá se
+     * {@code action.terminate()} rovnou zde, aby běžící {@code run()} detekoval
+     * přerušení co nejdřív (jinak by {@code run()} dál zpracovával akci,
+     * kterou volající považuje za přerušenou).
+     */
+    private synchronized void setBulkAction(BulkAction action) {
+        this.bulkAction = action;
+        if (terminationRequested && action != null) {
+            action.terminate();
+        }
+    }
+
+    /**
+     * Přečte aktuální instanci {@link BulkAction} (může být {@code null},
+     * pokud {@link #run()} ji ještě nepřiřadil).
+     */
+    private synchronized BulkAction getBulkAction() {
+        return bulkAction;
+    }
+
+    /**
+     * Atomicky označí worker jako požadovaný k přerušení a vrátí aktuální
+     * {@link BulkAction} (nebo {@code null}, pokud {@link #run()} ji ještě
+     * nestihl přiřadit). Volající pak zavolá {@code terminate()} na vrácené
+     * instanci. Pokud je vráceno {@code null}, o přerušení se postará
+     * {@link #setBulkAction}, až jej {@code run()} zavolá.
+     */
+    private synchronized BulkAction requestTerminationAndSnapshot() {
+        terminationRequested = true;
+        return bulkAction;
+    }
+
+    /**
      * Ukončí běžící hromadnou akci.
+     *
+     * <p>Pole {@link #bulkAction} může být {@code null}, pokud byl worker
+     * přidán do seznamu {@code processing}, ale {@link #run()} ještě nestihl
+     * přiřadit instanci. V tom případě nastavíme jen {@code terminationRequested}
+     * a skutečné přerušení proběhne v {@link #setBulkAction}, jakmile
+     * {@code run()} projde přes {@code prepareToRun(...)}. Následně počkáme,
+     * až se stav v DB přestane hlásit jako {@code RUNNING}, a označíme akci
+     * jako {@code INTERRUPTED}.
      */
     public void terminate() {
-    	bulkAction.terminate();
+        BulkAction action = requestTerminationAndSnapshot();
+        if (action != null) {
+            action.terminate();
+        } else {
+            logger.info("terminate() called before bulkAction was initialized for request {}; run() will pick up the termination flag", request.getRequestId());
+        }
+
         ArrBulkActionRun bulkActionRun = null;
         TransactionTemplate tt = new TransactionTemplate(transactionManager);
         tt.setPropagationBehavior(DefaultTransactionDefinition.PROPAGATION_REQUIRES_NEW);
@@ -258,8 +318,9 @@ public class AsyncBulkActionWorker implements IAsyncWorker {
 
     @Override
     public String toString() {
+        BulkAction action = getBulkAction();
         return "BulkActionWorker{" +
-                "bulkAction=" + bulkAction.getName() +
+                "bulkAction=" + (action != null ? action.getName() : "<not-yet-started>") +
                 ", versionId=" + request.getFundVersionId() +
                 '}';
     }

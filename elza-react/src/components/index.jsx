@@ -31,7 +31,7 @@ export {default as ArrSearchForm} from 'components/arr/ArrSearchForm';
 export {default as AddOutputForm} from 'components/arr/AddOutputForm';
 export {default as ArrOutputDetail} from 'components/arr/ArrOutputDetail';
 export {default as ArrRequestDetail} from 'components/arr/ArrRequestDetail';
-export {default as FundDataGridCellForm} from 'components/arr/FundDataGridCellForm';
+export {FundDataGridCellForm} from 'components/arr/node-edit/FundDataGridCellForm';
 export {default as AddFileForm} from 'components/arr/AddFileForm';
 export {default as FundFiles} from 'components/arr/FundFiles';
 export {default as FundOutputFiles} from 'components/arr/FundOutputFiles';

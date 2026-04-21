@@ -12,14 +12,22 @@ import cz.tacr.elza.controller.vo.NodePlainTextRepresentation;
 import cz.tacr.elza.controller.vo.NodeSearchResult;
 import cz.tacr.elza.controller.vo.NodeTreeData;
 import cz.tacr.elza.controller.vo.FundSearchResult;
+import cz.tacr.elza.controller.vo.NodeBase;
 import cz.tacr.elza.controller.vo.NodeData;
 import cz.tacr.elza.controller.vo.NodeDataParam;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ArrChange;
+import cz.tacr.elza.domain.ArrDescItem;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrLevel;
+import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.security.AuthorizationRequest;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.NodeSearchService;
@@ -33,7 +41,10 @@ public class NodeController implements NodeApi {
 	@Autowired
 	private ArrangementService arrangementService; 
 
-	@Autowired
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
+
+    @Autowired
 	private NodeSearchService nodeSearchService;
 
     @Autowired
@@ -77,16 +88,33 @@ public class NodeController implements NodeApi {
 	}
 
     /**
+     * POST /node/node-data
      * Získání dat pro JP.
      *
      * @param param parametry dat, které chceme získat (formálář, sourozence, potomky, předky, ...)
      * @return požadovaná data
      */
-	// POST /node/node-data
 	@Override
     @Transactional
     // kontrola oprávnění uvnitř metody služby
     public ResponseEntity<NodeData> nodeGetNodeData(final @RequestBody NodeDataParam param) {
         return ResponseEntity.ok(levelTreeCacheService.getNodeData(param, userService.getLoggedUserDetail()));
     }
+
+    /**
+     * PUT /node/copyOlderSiblingAttribute
+     * Provede zkopírování atributu daného typu ze staršího bratra uzlu.
+     *
+     * @param versionId      id verze stromu
+     * @param descItemTypeId typ atributu, který chceme zkopírovat
+     * @param nodeBase       uzel, na který nastavíme hodnoty ze staršího bratra
+     */
+	@Override
+    @Transactional
+	public ResponseEntity<Void> nodeCopyOlderSiblingAttribute(final Integer versionId, final Integer descItemTypeId, final NodeBase nodeBase) {
+        arrangementService.copyOlderSiblingAttribute(versionId, descItemTypeId, nodeBase);
+
+		return ResponseEntity.ok().build();
+	}
+
 }
