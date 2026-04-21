@@ -89,6 +89,6 @@ public class ItemSyncExportProcessor implements ItemSyncProcessor {
 
     @Override
     public String toString() {
-    	return "ItemSyncExportProcessor, queueItem.id: " + queueItem.getExtSyncsQueueItemId() + ", accessPointId: " + queueItem.getExtSyncsQueueItemId(); 
+    	return "ItemSyncExportProcessor, queueItem.id: " + queueItem.getExtSyncsQueueItemId() + ", accessPointId: " + queueItem.getAccessPointId();
     }
 }

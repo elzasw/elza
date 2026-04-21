@@ -41,6 +41,32 @@ public class ExtSyncsProcessor implements Runnable {
         }
     }
 
+    /**
+     * Signals the worker thread to stop and waits for it to finish.
+     * Intended for tests that drive {@link AccessPointConnectorService#nextItemSyncProcessor}
+     * synchronously and must not race with the background processor over the same queue item.
+     * No-op when the thread has not been started.
+     */
+    public void stopExtSyncs() {
+        Thread threadToJoin;
+        synchronized (lock) {
+            if (asyncThread == null) {
+                return;
+            }
+            threadToJoin = asyncThread;
+            status = ThreadStatus.STOP_REQUEST;
+            lock.notifyAll();
+        }
+        try {
+            threadToJoin.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        synchronized (lock) {
+            asyncThread = null;
+        }
+    }
+
     @Override
     public void run() {
     	logger.info("ExtSyncsProcessor - thread started.");
