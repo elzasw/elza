@@ -162,6 +162,8 @@ import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
+import cz.tacr.elza.repository.WfTaskApRevStateRepository;
+import cz.tacr.elza.repository.WfTaskApStateRepository;
 import cz.tacr.elza.repository.specification.ApStateSpecification;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
@@ -196,6 +198,12 @@ public class AccessPointService {
 
     @Autowired
     private ApCachedAccessPointRepository cachedAccessPointRepository;
+
+    @Autowired
+    private WfTaskApStateRepository wfTaskApStateRepository;
+
+    @Autowired
+    private WfTaskApRevStateRepository wfTaskApRevStateRepository;
 
     @Autowired
     private ApTypeRepository typeRepository;
@@ -3682,9 +3690,54 @@ public class AccessPointService {
     public Page<ApState> findApAccessPointBySearchFilter(SearchFilterVO searchFilter, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
                                                          StateApproval state, RevStateApproval revState, Integer from, Integer count, StaticDataProvider sdp) {
         int page = from / count;
-        ApStateSpecification specification = new ApStateSpecification(searchFilter, apTypeIdTree, scopeIds, state, revState, sdp);
-        return stateRepository.findAll(specification, PageRequest.of(page, count));
+        PageRequest pageRequest = PageRequest.of(page, count);
+
+        Collection<Integer> preResolvedStateIds = null;
+        if (searchFilter != null && searchFilter.getAssignedTo() != null) {
+            preResolvedStateIds = resolveStateIdsForAssignee(searchFilter.getAssignedTo());
+            if (preResolvedStateIds.isEmpty()) {
+                // no open tasks for this user -> no matching entities; skip the main query
+                return Page.empty(pageRequest);
+            }
+        }
+
+        ApStateSpecification specification = new ApStateSpecification(searchFilter, apTypeIdTree, scopeIds,
+                                                                      state, revState, sdp, preResolvedStateIds);
+        return stateRepository.findAll(specification, pageRequest);
     }
+
+    /**
+     * Pre-resolves the list of {@code ap_state.state_id}s that have an open task assigned
+     * to the given user. Using two small indexed lookups and passing the result as an
+     * {@code IN} list is orders of magnitude faster than the alternative of correlating
+     * EXISTS subqueries from every candidate row of ap_state (hundreds of thousands).
+     * <p>
+     * Caps the result at {@link #ASSIGNED_TO_STATE_ID_CAP} to avoid pathological cases
+     * (e.g. a bulk change that assigned tens of thousands of tasks to a single user).
+     * Exceeding the cap is reported via {@link BusinessException} so the UI can show a
+     * clear "refine your filter" message instead of timing out.
+     */
+    private Collection<Integer> resolveStateIdsForAssignee(Integer assigneeId) {
+        PageRequest limit = PageRequest.of(0, ASSIGNED_TO_STATE_ID_CAP + 1);
+        Set<Integer> stateIds = new HashSet<>(wfTaskApStateRepository.findStateIdsByAssignee(assigneeId, limit));
+        if (stateIds.size() <= ASSIGNED_TO_STATE_ID_CAP) {
+            stateIds.addAll(wfTaskApRevStateRepository.findApStateIdsByRevisionAssignee(assigneeId, limit));
+        }
+        if (stateIds.size() > ASSIGNED_TO_STATE_ID_CAP) {
+            throw new BusinessException("Too many entities match the assigned-user filter; please refine the filter (scope, state, name).",
+                                        BaseCode.TOO_MANY_RESULTS)
+                    .set("assigneeId", assigneeId)
+                    .set("limit", ASSIGNED_TO_STATE_ID_CAP);
+        }
+        return stateIds;
+    }
+
+    /**
+     * Hard ceiling for the number of ap_state ids pre-resolved from the assignedTo
+     * filter. Well under the JDBC 32k bind-parameter limit (Hibernate pads IN-lists to
+     * the next power of two, so 10000 padded becomes 16384).
+     */
+    private static final int ASSIGNED_TO_STATE_ID_CAP = 10_000;
 
     public boolean isQueryComplex(SearchFilterVO searchFilter) {
         //todo fantiš definovat příliš složitý dotaz
