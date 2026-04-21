@@ -382,6 +382,9 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
                 if (!deletedEntity) {
                     state.setDeleteChange(procCtx.getApChange());
                     state = stateRepository.save(state);
+                    // force UPDATE before the following INSERT (partial unique index
+                    // ap_state_delete_change_null_unique_idx rejects two active states)
+                    stateRepository.flush();
                 }
                 stateNew = accessPointService.copyState(state, procCtx.getApChange());
                 if (deletedEntity && syncQueue) {
@@ -473,6 +476,9 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
                     if (stateNew == null) {
                         state.setDeleteChange(procCtx.getApChange());
                         state = stateRepository.save(state);
+                        // force UPDATE before the following INSERT (partial unique index
+                        // ap_state_delete_change_null_unique_idx rejects two active states)
+                        stateRepository.flush();
                         stateNew = accessPointService.copyState(state, procCtx.getApChange());
                     }
                     stateNew.setStateApproval(newStateApproval);
