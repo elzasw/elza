@@ -91,7 +91,7 @@ export function DescItemText({
     }
 
     function handleBlur() {
-        textFragments.unregisterField();
+        textFragments?.unregisterField();
         handleChange();
     }
 

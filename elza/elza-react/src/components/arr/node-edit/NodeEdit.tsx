@@ -1,22 +1,13 @@
-import {
-    Button,
-    Spinner,
-} from "@fluentui/react-components";
-import {
-    AddRegular,
-} from "@fluentui/react-icons";
+import { Spinner } from "@fluentui/react-components";
 import { WebApi } from "actions";
 import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
 import { useEffect, useMemo, useState } from "react";
 import { ArrDaoVO } from "typings/dao";
 import { useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
-import { DescItemInfo } from "./NodeDebugInfo";
-import { DraggableList } from "./DraggableList";
 import { FormItemGroup } from "./FormItemGroup";
-import { FormItemTypeComp } from "./FormItemType";
 import { NodeToolbar } from "./NodeToolbar";
-import { DescItemField } from "./desc-items";
+import { DescItemTypeFields } from "./DescItemTypeFields";
 import { useActiveFund, useActiveParent, useNodeFormData } from "./hooks";
 import { NodeFormContext } from "./NodeFormContext";
 import { TextFragmentsProvider } from "../text-fragments";
@@ -178,111 +169,26 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
         {viewDescItemGroupsLocal.map(({ group, descItemTypes }) => {
           return (
             <FormItemGroup group={group}>
-              {descItemTypes.map(
-                ({ typeRef, typeForm, typeWidth, descItems }) => {
-                    function handleChangeOrder(index: number, newIndex: number) {
-                        const item = descItems[index].item;
-                        let newPosition = descItems[newIndex]?.item.position;
-
-                        // if new position is empty add to end
-                        // (newIndex is higher than number of descItems)
-                        if (!newPosition) {
-                            newPosition = descItems[descItems.length - 1].item.position + 1;
-                        }
-
-                        // subtract self from final position number, when moving down
-                        if (newPosition > item.position) {
-                            newPosition = newPosition - 1;
-                        }
-                        updateDescItem({ ...item, position: newPosition });
-                    }
-
-                  return (
-                    <FormItemTypeComp
-                      typeForm={typeForm}
-                      typeRef={typeRef}
-                      typeWidth={typeWidth}
-                      nodeSettings={nodeSetting}
-                      handleCopyFromPrev={handleCopyFromPrev}
-                      handleCopyToggle={handleCopyToggle}
-                      canCopyFromPrev={!isFirstNode}
-                    >
-                          <DraggableList
-                              canPlaceBeforeItem={(index) => descItems[index].item.position > 0}
-                              isItemDraggable={(index) => {
-                                  const isDraggable = descItems[index].item.position > 0
-                                      && (descItems[index].item.data?.dataId != undefined
-                                          || descItems[index].item.undefined
-                                      )
-
-                                  return isDraggable;
-                              }}
-                              onChangeOrder={handleChangeOrder}
-                          >
-                              {descItems
-                        .sort(
-                          (
-                            { item: { position: positionA } },
-                            { item: { position: positionB } },
-                          ) => positionA - positionB,
-                        )
-                        .map(({ item, localId }) => {
-                          return (
-                            <div key={localId} style={{container: "desc-item-container"}}>
-                              <div>
-                                <DescItemField
-                                typeRef={typeRef}
-                                typeForm={typeForm}
-                                item={item}
-                                fondsVersionId={fondsVersionId}
-                                nodeId={nodeId}
-                                nodeVersionId={nodeVersionId}
-                                typeWidth={typeWidth}
-                                onDelete={(item) =>
-                                  deleteDescItem(item, localId)
-                                }
-                                onCreate={(item) =>
-                                  createDescItem(item, localId)
-                                }
-                                onUpdate={(item) =>
-                                  updateDescItem(item, localId)
-                                }
-                                />
-                              </div>
-                              <DescItemInfo item={item} typeForm={typeForm} localId={localId} nodeId={nodeId} />
-                            </div>
-                          );
-                        })}
-                        </DraggableList>
-                          {typeForm.repeatable &&
-                            ((descItems[descItems.length - 1]?.item.data
-                              ?.dataId != undefined && // last item has data
-                              !descItems[descItems.length - 1]?.item
-                                .undefined) || // last item is not undefined
-                              typeRef.useSpecification) && ( // show when item uses specification
-                              <Button
-                                style={{ borderStyle: "dashed", color: "#666", margin: "2px 0" }}
-                                size={compact ? "small" : "medium"}
-                                icon={<AddRegular />}
-                                onClick={() =>{
-                                    const lastItem = descItems[descItems.length - 1].item;
-                                    const nextPosition = lastItem.position > 0 ? lastItem.position + 1 : 1;
-                                    addEmptyDescItem(
-                                        typeRef.id,
-                                        undefined,
-                                        nextPosition,
-                                    )
-                                }
-                                }
-                                tabIndex={-1}
-                              >
-                                {typeRef.shortcut}
-                              </Button>
-                            )}
-                    </FormItemTypeComp>
-                  );
-                },
-              )}
+              {descItemTypes.map(({ typeRef, typeForm, typeWidth, descItems }) => (
+                <DescItemTypeFields
+                  key={typeRef.id}
+                  typeRef={typeRef}
+                  typeForm={typeForm}
+                  typeWidth={typeWidth}
+                  descItems={descItems}
+                  fondsVersionId={fondsVersionId}
+                  nodeId={nodeId}
+                  nodeVersionId={nodeVersionId}
+                  nodeSetting={nodeSetting}
+                  isFirstNode={isFirstNode}
+                  handleCopyFromPrev={handleCopyFromPrev}
+                  handleCopyToggle={handleCopyToggle}
+                  addEmptyDescItem={addEmptyDescItem}
+                  deleteDescItem={deleteDescItem}
+                  createDescItem={createDescItem}
+                  updateDescItem={updateDescItem}
+                />
+              ))}
             </FormItemGroup>
           );
         })}
