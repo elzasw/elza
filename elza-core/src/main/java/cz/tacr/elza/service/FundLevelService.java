@@ -538,14 +538,46 @@ public class FundLevelService {
         // update nodes
         updateNodes.forEach(i -> i.setLastUpdate(deleteChange.getChangeDate().toLocalDateTime()));
         nodeRepository.saveAll(updateNodes);
-        nodeCacheService.syncNodes(deletedLevelNodeIds);
-        logger.debug("Updated {} nodes...", updateNodes.size());        
+        logger.debug("Updated {} nodes...", updateNodes.size());
 
-        // delete levels
+        // Soft-delete levels. Cache synchronization is deferred to the public
+        // deleteLevel wrapper so it runs after levelRepository.flush() — at
+        // that point the JPQL partition query sees the committed deleteChange.
         deleteLevels.forEach(i -> i.setDeleteChange(deleteChange));
         logger.debug("Deleting {} levels...", deleteLevels.size());
 
         return deleteLevels;
+    }
+
+    /**
+     * Synchronize the node cache after a batch of levels has been soft-deleted.
+     *
+     * Affected nodes are re-synced inline: still-active nodes get refreshed
+     * content, nodes that lost their last active level get an empty shell (see
+     * {@link NodeCacheService#createCachedNodes}) so fulltext search cannot
+     * match them. The physical row DELETE for such nodes is deferred to a
+     * fresh transaction fired after the current one commits, because calling
+     * {@code nodeCacheService.deleteNodes} inline triggers a session-wide
+     * Hibernate auto-flush that collides with unrelated pending writes in
+     * cascading flows (e.g. {@code deleteDaoPackageWithCascade}).
+     */
+    private void syncCacheAfterLevelDelete(final Set<Integer> deletedLevelNodeIds) {
+        if (deletedLevelNodeIds.isEmpty()) {
+            return;
+        }
+        nodeCacheService.syncNodes(deletedLevelNodeIds);
+
+        Set<Integer> toDropFromCache = new HashSet<>(deletedLevelNodeIds);
+        toDropFromCache.removeAll(levelRepository.findNodeIdsWithActiveLevel(deletedLevelNodeIds));
+        if (toDropFromCache.isEmpty()) {
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                nodeCacheService.deleteNodesNewTx(toDropFromCache);
+            }
+        });
     }
 
     /**
@@ -592,7 +624,8 @@ public class FundLevelService {
         List<ArrLevel> updatedLevels = new ArrayList<>();
         // get list of shifted nodes - also have to be revalidated
         List<ArrLevel> shiftnodes = nodesToShift(deleteLevel);
-        updatedLevels.addAll(deleteLevel(version, deleteLevel, change, deleteLevelsWithAttachedDao));
+        List<ArrLevel> deletedLevels = deleteLevel(version, deleteLevel, change, deleteLevelsWithAttachedDao);
+        updatedLevels.addAll(deletedLevels);
         updatedLevels.forEach(l -> nodeIdsToRevalidate.add(l.getNodeId()));
         logger.debug("Deleted {} levels.", updatedLevels.size());
 
@@ -601,6 +634,13 @@ public class FundLevelService {
         levelRepository.saveAll(updatedLevels);
         levelRepository.flush();
         logger.debug("Update {} levels.", updatedLevels.size());
+
+        // Cache partition runs after level flush so the JPQL query sees
+        // the committed deleteChange values.
+        Set<Integer> deletedNodeIds = deletedLevels.stream()
+                .map(ArrLevel::getNodeId)
+                .collect(Collectors.toSet());
+        syncCacheAfterLevelDelete(deletedNodeIds);
         
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
