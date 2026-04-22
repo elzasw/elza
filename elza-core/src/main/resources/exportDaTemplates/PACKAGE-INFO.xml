@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<premis:premis xmlns:premis="http://www.loc.gov/premis/v3">
+    <premis:object xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="premis:intellectualEntity">
+        <premis:objectIdentifier>
+            <premis:objectIdentifierType>FONDS_ID</premis:objectIdentifierType>
+            <premis:objectIdentifierValue>20</premis:objectIdentifierValue>
+        </premis:objectIdentifier>
+        <premis:significantProperties>
+            <premis:significantPropertiesType>INSTITUTION_ID</premis:significantPropertiesType>
+            <premis:significantPropertiesValue>620000010</premis:significantPropertiesValue>
+        </premis:significantProperties>
+        <premis:originalName>Rektorát Univerzity Karlovy</premis:originalName>
+    </premis:object>
+    <premis:object xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="premis:intellectualEntity">
+        <premis:objectIdentifier>
+            <premis:objectIdentifierType>local</premis:objectIdentifierType>
+            <premis:objectIdentifierValue>_THIS</premis:objectIdentifierValue>
+        </premis:objectIdentifier>
+        <premis:objectIdentifier>
+            <premis:objectIdentifierType>AIP_ID</premis:objectIdentifierType>
+            <premis:objectIdentifierValue>04ccc520-c5a9-4c9f-a83f-28d91fd37aa7</premis:objectIdentifierValue>
+        </premis:objectIdentifier>
+        <premis:significantProperties>
+            <premis:significantPropertiesType>AIP_VERSION</premis:significantPropertiesType>
+            <premis:significantPropertiesValue>1</premis:significantPropertiesValue>
+        </premis:significantProperties>
+        <premis:significantProperties>
+            <premis:significantPropertiesType>AIP_SIZE</premis:significantPropertiesType>
+            <premis:significantPropertiesValue>0</premis:significantPropertiesValue>
+        </premis:significantProperties>
+    </premis:object>
+    <premis:agent>
+        <premis:agentIdentifier>
+            <premis:agentIdentifierType>INSTITUTION_ID</premis:agentIdentifierType>
+            <premis:agentIdentifierValue>620000010</premis:agentIdentifierValue>
+        </premis:agentIdentifier>
+        <premis:agentName>Archiv UK Praha</premis:agentName>
+        <premis:agentType>org</premis:agentType>
+    </premis:agent>
+    <premis:agent>
+        <premis:agentIdentifier>
+            <premis:agentIdentifierType>local</premis:agentIdentifierType>
+            <premis:agentIdentifierValue>uuid-d94c6d7f-63d9-46d2-8b76-af2de414ad7b</premis:agentIdentifierValue>
+        </premis:agentIdentifier>
+        <premis:agentName>Abraham, Jan (WHOIS_CISLO_UK: 45218052)</premis:agentName>
+        <premis:agentType>org</premis:agentType>
+    </premis:agent>
+</premis:premis>
+

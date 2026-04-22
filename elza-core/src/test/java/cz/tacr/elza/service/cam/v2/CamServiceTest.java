@@ -1,7 +1,7 @@
 package cz.tacr.elza.service.cam.v2;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDateTime;
@@ -12,7 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.common.db.HibernateUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -33,6 +33,7 @@ import cz.tacr.cam.v2.schema.cam.PartXml;
 import cz.tacr.cam.v2.schema.cam.PartsXml;
 import cz.tacr.cam.v2.schema.cam.RevisionInfoXml;
 import cz.tacr.cam.v2.schema.cam.StringXml;
+import cz.tacr.cam.v2.schema.cam.UserInfoXml;
 import cz.tacr.cam.v2.schema.cam.UuidXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.cam.ProcessingContext;
@@ -117,7 +118,9 @@ public class CamServiceTest extends AbstractControllerTest {
 		prefNamePart.getItems().getItems().add(new ItemStringXml(new StringXml(prefName), null, new CodeXml("NM_MAIN"), new UuidXml(uuid)));
 		ent.getParts().getPart().add(prefNamePart);
 
-		ent.setRevision(new RevisionInfoXml(new UuidXml(uuid), null, null, new LongStringXml("user"), new DateTimeXml(LocalDateTime.now()), null));
+		ent.setRevision(new RevisionInfoXml(new UuidXml(uuid), null, null,
+				new UserInfoXml(new CodeXml("user"), null, new LongStringXml("user"), null, null, null),
+				new DateTimeXml(LocalDateTime.now()), null));
 		return ent;
 	}
 

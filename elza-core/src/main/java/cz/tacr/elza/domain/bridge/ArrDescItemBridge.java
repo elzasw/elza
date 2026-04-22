@@ -12,6 +12,7 @@ import static cz.tacr.elza.domain.ArrDescItem.INTEGER_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.DECIMAL_ATT;
 import static cz.tacr.elza.domain.ArrDescItem.NORM_FROM;
 import static cz.tacr.elza.domain.ArrDescItem.NORM_TO;
+import static cz.tacr.elza.domain.ArrDescItem.REL_AP_ID;
 
 import static cz.tacr.elza.common.string.Normalizer.normalizeLineEnds;
 
@@ -22,6 +23,10 @@ import org.hibernate.search.mapper.pojo.bridge.runtime.TypeBridgeWriteContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.hibernate.Hibernate;
+
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDescItem;
 
 public class ArrDescItemBridge implements TypeBridge<ArrDescItem> {
@@ -51,5 +56,13 @@ public class ArrDescItemBridge implements TypeBridge<ArrDescItem> {
 		document.addValue(DECIMAL_ATT, arrDescItem.getValueDouble());
 		document.addValue(NORM_FROM, arrDescItem.getNormalizedFrom());
 		document.addValue(NORM_TO, arrDescItem.getNormalizedTo());
+
+		if (arrDescItem.getData() != null) {
+			ArrData unproxiedData = (ArrData) Hibernate.unproxy(arrDescItem.getData());
+			if (unproxiedData instanceof ArrDataRecordRef) {
+				Integer recordId = ((ArrDataRecordRef) unproxiedData).getRecordId();
+				document.addValue(REL_AP_ID, recordId);
+			}
+		}
     }
 }

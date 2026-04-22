@@ -5,6 +5,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
+import cz.tacr.elza.service.da.DaExportExtSyncsProcessor;
+import cz.tacr.elza.service.da.DaImportExtSyncsProcessor;
+import cz.tacr.elza.service.da.DaScheduler;
 import jakarta.persistence.EntityManager;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -88,6 +91,10 @@ public class StartupService implements SmartLifecycle {
 
     private final ExtSyncsProcessor extSyncsProcessor;
 
+    private final DaImportExtSyncsProcessor daImportExtSyncsProcessor;
+
+    private final DaExportExtSyncsProcessor daExportExtSyncsProcessor;
+
     private final HibernateConfiguration hibernateConfiguration;
 
     private final AccessPointCacheService accessPointCacheService;
@@ -101,6 +108,8 @@ public class StartupService implements SmartLifecycle {
     private final CamScheduler camScheduler;
 
     private final UserService userService;
+
+    private final DaScheduler daScheduler;
 
     private boolean running;
 
@@ -140,9 +149,12 @@ public class StartupService implements SmartLifecycle {
                           final RuleService ruleService,
                           final PackageService packageService,
                           final ExtSyncsProcessor extSyncsProcessor,
+                          final DaImportExtSyncsProcessor daImportExtSyncsProcessor,
+                          final DaExportExtSyncsProcessor daExportExtSyncsProcessor,
                           final AccessPointCacheService accessPointCacheService,
                           final CamScheduler camScheduler,
-                          final UserService userService) {
+                          final UserService userService,
+                          final DaScheduler daScheduler) {
         this.nodeRepository = nodeRepository;
         this.arrangementService = arrangementService;
         this.bulkActionRunRepository = bulkActionRunRepository;
@@ -161,9 +173,12 @@ public class StartupService implements SmartLifecycle {
         this.ruleService = ruleService;
         this.packageService = packageService;
         this.extSyncsProcessor = extSyncsProcessor;
+        this.daImportExtSyncsProcessor = daImportExtSyncsProcessor;
+        this.daExportExtSyncsProcessor = daExportExtSyncsProcessor;
         this.accessPointCacheService = accessPointCacheService;
         this.camScheduler = camScheduler;
         this.userService = userService;
+        this.daScheduler = daScheduler;
     }
 
     @Autowired
@@ -188,7 +203,7 @@ public class StartupService implements SmartLifecycle {
 
     /**
      * Method for explicit starting of the service
-     * @throws IOException 
+     * @throws IOException
      */
     public void startNow() {
         Validate.isTrue(!running, "Already started");
@@ -237,6 +252,7 @@ public class StartupService implements SmartLifecycle {
         // enable indexing after all caches are loaded and packages are in place
         OutboxPollingConfigurer.setIndexingEnabled(true);
 
+        daScheduler.start();
         if (fullTextReindex) {
             logger.info("Full text reindex ...");
             tt.executeWithoutResult(r -> adminService.reindexInternal());
@@ -258,6 +274,7 @@ public class StartupService implements SmartLifecycle {
     public void stop() {
         logger.info("Elza stopping ...");
         camScheduler.stop();
+        daScheduler.stop();
         asyncRequestService.stop();
         // TODO: stop hibernate mass indexing?
         //indexWorkProcessor.stopIndexing();
@@ -311,6 +328,8 @@ public class StartupService implements SmartLifecycle {
         structureDataService.startGenerator();
         //indexWorkProcessor.startIndexing();
         extSyncsProcessor.startExtSyncs();
+        daImportExtSyncsProcessor.startExtSyncs();
+        daExportExtSyncsProcessor.startExtSyncs();
 
         runQueuedRequests();
     }

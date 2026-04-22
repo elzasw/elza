@@ -34,4 +34,8 @@ export const globalMessages = defineMessages({
     id: "global_undefined",
     defaultMessage: "Výjimka",
   },
+  close: {
+    id: "global.action.close",
+    defaultMessage: "Zavřít",
+  },
 });

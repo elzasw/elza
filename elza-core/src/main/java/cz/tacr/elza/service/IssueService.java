@@ -12,7 +12,6 @@ import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.security.UserDetail;
-import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import org.apache.commons.csv.CSVPrinter;
@@ -244,7 +243,7 @@ public class IssueService {
      */
     @Transactional
     @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_ISSUE_ADMIN_ALL, Permission.FUND_ISSUE_ADMIN, Permission.FUND_ISSUE_LIST_WR})
-    public void deleteIssueList(@NotNull Integer issueListId) {
+    public void deleteIssueList(@AuthParam(type = AuthParam.Type.ISSUE_LIST) @NotNull Integer issueListId) {
 
         WfIssueList issueList = getIssueList(issueListId);
         List<WfIssue> issues = findIssueByIssueListId(issueList, null, null);

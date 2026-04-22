@@ -91,8 +91,12 @@ const DetailPart: FC<Props> = ({
         }
     };
 
+    // exposed so the export-issue dialog can scroll directly to the part via
+    // formatExportIssues → onNavigate → document.querySelector("[data-part-id=…]")
+    const anchorPartId = part?.id ?? updatedPart?.id;
+
     return (
-        <div className="detail-part">
+        <div className="detail-part" data-part-id={anchorPartId}>
             <div className={classNameHeader}>
                 <div style={{display: "flex", alignItems: "center"}}>
                     <RevisionDisplay 

@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState, useRef, PropsWithChildren } from 'react';
+import React, { ReactElement, useCallback, useEffect, useState, useRef, PropsWithChildren } from 'react';
 import { connect } from 'react-redux';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
@@ -24,7 +24,9 @@ import { DetailBodySection, DetailMultiSection } from './Detail/section';
 import { DetailHeader } from './Detail/header';
 import { showPartCreateModal, showPartEditModal } from './part-edit';
 import i18n from 'components/i18n';
-import { showConfirmDialog } from "components/shared/dialog";
+import { showConfirmDialog, showInfoDialog } from "components/shared/dialog";
+import { modalDialogHide } from "../../actions/global/modalDialog";
+import { formatExportIssues, IssueNavTarget } from "./formatExportIssues";
 import './ApDetailPageWrapper.scss';
 import { RevisionPart, getRevisionParts } from './revision';
 import { Api } from '../../api';
@@ -178,6 +180,41 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         }
     }, [detail])
 
+    // Scrolls a part into view by its data-part-id attribute; silent no-op if the
+    // part is not currently rendered (e.g. user navigated away between dialog open
+    // and click, or part was deleted locally).
+    const scrollToPart = useCallback((partId: number) => {
+        // small delay so React can commit the modal-hide before we measure layout
+        setTimeout(() => {
+            const node = document.querySelector(`[data-part-id="${partId}"]`);
+            if (node instanceof HTMLElement) {
+                node.scrollIntoView({ behavior: "smooth", block: "center" });
+            } else {
+                // eslint-disable-next-line no-console
+                console.debug("ApDetailPageWrapper: part not found in DOM for nav", partId);
+            }
+        }, 50);
+    }, []);
+
+    // Invoked from the export-issue dialog when the user clicks a resolved
+    // part/item/entity name. Closes the dialog and performs the navigation.
+    // For a NEED_CONFIRM dialog this also cancels the queue item server-side
+    // so the queue doesn't stay stuck awaiting user input — the user can
+    // re-submit later if they want to see the warnings again.
+    const handleIssueNav = useCallback((target: IssueNavTarget) => {
+        dispatch(modalDialogHide());
+        if (exportState === ExportState.NEED_CONFIRM && itemQueueId > 0) {
+            // fire-and-forget cancel; server moves queue item to EXPORT_CANCELLED
+            Api.accesspoints.accessPointExportForceOrNo(itemQueueId, false);
+            setExportState(ExportState.COMPLETED);
+        }
+        if (target.type === "part") {
+            scrollToPart(target.id);
+        } else if (target.type === "entity") {
+            dispatch(goToAe(history, target.id, false, true, false, false));
+        }
+    }, [dispatch, exportState, itemQueueId, history, scrollToPart]);
+
     // show accesspoint export message on websocket message
     useEffect(() => {
         const eventMap = {
@@ -207,7 +244,13 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             },
             [WebsocketEventType.ACCESS_POINT_EXPORT_FAILED]: ({ accessPointId, state }) => {
                 if (accessPointId.toString() === id.toString()) {
-                    dispatch(addToastrDanger(i18n("ap.push-to-ext.failed.title"), state ? state : i18n("ap.push-to-ext.failed.message")))
+                    const body = state
+                        ? formatExportIssues(state, i18n("ap.push-to-ext.failed.intro"), "ERROR", handleIssueNav)
+                        : i18n("ap.push-to-ext.failed.message");
+                    dispatch(showInfoDialog({
+                        title: i18n("ap.push-to-ext.failed.title"),
+                        message: body,
+                    }));
                     setExportState(ExportState.COMPLETED);
                     refreshDetail(id, true, false, revisionActive);
                 }
@@ -222,7 +265,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         return () => {
             websocket?.removeListener(listener);
         }
-    }, [id, websocket])
+    }, [id, websocket, handleIssueNav])
 
     // show accesspoint export message on bindings state
     useEffect(() => {
@@ -245,12 +288,29 @@ const ApDetailPageWrapper: React.FC<Props> = ({
         }
     }, [id, detail]);
 
-    // processing the need to confirm accesspoint export 
+    // Handler defined above the useEffect that uses it to avoid a TDZ
+    // ReferenceError when early returns below skip the original declaration
+    // (useEffect registers with a closure that references this binding by name).
+    const handleExportConfirm = useCallback(async (message: string, qId: number) => {
+        const body = formatExportIssues(message, i18n("ap.push-to-ext.needConfirm.intro"), "WARNING", handleIssueNav);
+        const confirmResult = await showConfirmDialog(
+            body,
+            i18n("ap.push-to-ext.needConfirm.title"),
+            i18n("ap.push-to-ext.needConfirm.confirm"),
+            i18n("global.action.cancel"),
+        );
+        await Api.accesspoints.accessPointExportForceOrNo(qId, confirmResult);
+        // reset state so a later NEED_CONFIRM for the same entity re-triggers the effect
+        setExportState(ExportState.COMPLETED);
+        refreshDetail(id, true, false, revisionActive);
+    }, [showConfirmDialog, refreshDetail, id, revisionActive, handleIssueNav]);
+
+    // processing the need to confirm accesspoint export
     useEffect(() => {
         if (exportState === ExportState.NEED_CONFIRM) {
             handleExportConfirm(exportMessage, itemQueueId);
         }
-    }, [exportState])
+    }, [exportState, handleExportConfirm, exportMessage, itemQueueId])
 
     const isStoreLoading = (stores: Array<BaseRefTableStore<unknown> | DetailStoreState<unknown>>) =>
         stores.some((store) => !store.fetched || store.isFetching)
@@ -294,11 +354,6 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             restoreScrollPosition();
             refreshValidation(id, revisionActive);
         }
-    };
-
-    const handleExportConfirm = async (message, itemQueueId) => {
-        const confirmResult = await showConfirmDialog(message);
-        await Api.accesspoints.accessPointExportForceOrNo(itemQueueId, confirmResult);
     };
 
     const handleDelete = async ({ part, updatedPart }: RevisionPart) => {
@@ -573,7 +628,12 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 };
 
 const mapDispatchToProps = (dispatch: ThunkDispatch<AppState, any, Action<string>>, { history, select }: RouteComponentProps & { select: boolean }) => ({
-    showConfirmDialog: (message: string) => dispatch(showConfirmDialog(message)),
+    showConfirmDialog: (
+        message: React.ReactNode,
+        title?: string,
+        confirmLabel?: string,
+        cancelLabel?: string,
+    ) => dispatch(showConfirmDialog(message, title, confirmLabel, cancelLabel)),
     showPartEditModal: (
         part: ApPartVO | undefined,
         updatedPart: ApPartVO | undefined,

@@ -1,7 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.controller.ArrangementController;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.service.FundLevelService;
 
 import jakarta.annotation.Nullable;
@@ -23,7 +22,7 @@ public class AddLevelParam extends ArrangementController.NodeParam {
     private String scenarioName;
 
     @Nullable
-    private List<ArrItemVO> createItems;
+    private List<NodeItem> createItems;
 
     /**
      * Seznam id typů atributů, které budou zkopírovány z uzlu přímo nadřazeným nad přidaným uzlem (jeho mladší sourozenec).
@@ -53,11 +52,11 @@ public class AddLevelParam extends ArrangementController.NodeParam {
         this.scenarioName = scenarioName;
     }
 
-    public List<ArrItemVO> getCreateItems() {
+    public List<NodeItem> getCreateItems() {
         return createItems;
     }
 
-    public void setCreateItems(final List<ArrItemVO> createItems) {
+    public void setCreateItems(final List<NodeItem> createItems) {
         this.createItems = createItems;
     }
 

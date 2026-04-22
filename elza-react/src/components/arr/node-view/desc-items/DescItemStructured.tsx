@@ -36,13 +36,13 @@ export function DescItemStructured({ item, typeRef, nodeId }: DescItemProps) {
     if (data.structuredObjectId) {
       (async () => {
         const _structure = await WebApi.getStructureData(
-          fundId,
+          fundVersionId,
           data.structuredObjectId,
         );
         setStructure(_structure);
       })();
     }
-  }, [fundId, data.structuredObjectId]);
+  }, [fundVersionId, data.structuredObjectId]);
 
   if (structureType.anonymous) {
     return (

@@ -10,20 +10,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import cz.tacr.elza.common.FactoryUtils;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.controller.vo.WfCommentVO;
-import cz.tacr.elza.controller.vo.WfConfigVO;
-import cz.tacr.elza.controller.vo.WfIssueListVO;
-import cz.tacr.elza.controller.vo.WfIssueStateVO;
-import cz.tacr.elza.controller.vo.WfIssueTypeVO;
-import cz.tacr.elza.controller.vo.WfIssueVO;
-import cz.tacr.elza.controller.vo.WfSimpleIssueVO;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission;
@@ -141,7 +133,7 @@ public class WfFactory {
             issueVO.setNumber(issue.getNumber());
             issueVO.setDescription(issue.getDescription());
 
-            // TODO: Improve reading of type and state            
+            // TODO: Improve reading of type and state
 
             issueVO.setIssueTypeId(issue.getIssueType().getIssueTypeId());
             issueVO.setIssueStateId(issue.getIssueState().getIssueStateId());

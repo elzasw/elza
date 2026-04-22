@@ -28,20 +28,20 @@ public class TitleBuilder {
     private String separator = " ";
     
     class TitlePart {
-    	Integer itemTypeId;
-    	
+    	List<Integer> itemTypeIds;
+
     	Integer maxCount;
-		
+
 		List<Integer> specs;
-		
-		public TitlePart(final Integer itemTypeId, final Integer maxCount, final List<Integer> specs) {
-			this.itemTypeId = itemTypeId;
+
+		public TitlePart(final List<Integer> itemTypeIds, final Integer maxCount, final List<Integer> specs) {
+			this.itemTypeIds = itemTypeIds;
 			this.maxCount = maxCount;
 			this.specs = specs;
 		}
 
-		public Integer getItemTypeId() {
-			return itemTypeId;
+		public List<Integer> getItemTypeIds() {
+			return itemTypeIds;
 		}
 
 		public Integer getMaxCount() {
@@ -70,11 +70,11 @@ public class TitleBuilder {
         }
     }
 
-    public void addItem(Integer itemTypeId, Integer maxCount, List<Integer> specs) {
-        itemTypeIds.add(itemTypeId);
-   
-        TitlePart tp = new TitlePart(itemTypeId, maxCount, specs);
-		titleParts.add(tp);		
+    public void addItem(List<Integer> itemTypeIds, Integer maxCount, List<Integer> specs) {
+        this.itemTypeIds.addAll(itemTypeIds);
+
+        TitlePart tp = new TitlePart(itemTypeIds, maxCount, specs);
+		titleParts.add(tp);
     }
 
     static private Integer getItemId(String code, StaticDataProvider sdp) {
@@ -108,7 +108,16 @@ public class TitleBuilder {
             return;
         }
         titleConfig.getItems().forEach(s -> {
-            addItem(getItemId(s.getType(), sdp), s.getMaxCount(), getItemSpecIds(s.getSpecs(), sdp));
+            if (s.getType() != null) {
+                // single type item (attribute syntax)
+                addItem(List.of(getItemId(s.getType(), sdp)), s.getMaxCount(), getItemSpecIds(s.getSpecs(), sdp));
+            } else if (!CollectionUtils.isEmpty(s.getTypes())) {
+                // fallback group (child element syntax)
+                List<Integer> typeIds = s.getTypes().stream()
+                        .map(t -> getItemId(t.getCode(), sdp))
+                        .collect(Collectors.toList());
+                addItem(typeIds, s.getMaxCount(), null);
+            }
         });
     }
 
@@ -117,12 +126,15 @@ public class TitleBuilder {
         if(itemsValueMap != null) {
 	        // iterate all title parts
 	        for (TitlePart tp : this.titleParts) {
-	        	Integer itemTypeId = tp.getItemTypeId();
-	        	TitleValues titleValues = itemsValueMap.getTitles(itemTypeId);
-	        	if (titleValues != null) {
+	        	for (Integer itemTypeId : tp.getItemTypeIds()) {
+	        		TitleValues titleValues = itemsValueMap.getTitles(itemTypeId);
+	        		if (titleValues == null) {
+	        			continue;
+	        		}
                     // filtrace podle spec, pokud jsou uvedeny
 	        		List<Integer> specs = tp.getSpecs();
 	        		Integer maxCount = tp.getMaxCount();
+	        		boolean found = false;
 	        		for (TitleValue titleValue : titleValues.getValues()) {
 						Integer specId = titleValue.getSpecId();
 						if (!CollectionUtils.isEmpty(specs) && specId != null && !specs.contains(specId)) {
@@ -131,6 +143,7 @@ public class TitleBuilder {
 						String value = titleValue.getValue();
 						if (StringUtils.isNotBlank(value)) {
 							titleParts.add(value);
+							found = true;
 						}
 						// kontrola hodnoty maxCount, pokud je nastavena
 						if (maxCount != null) {
@@ -139,6 +152,10 @@ public class TitleBuilder {
 								break;
 							}
 						}
+	        		}
+	        		// pokud byly nalezeny hodnoty pro tento typ, nepokračovat na další typy
+	        		if (found) {
+	        			break;
 	        		}
 	        	}
 	        }

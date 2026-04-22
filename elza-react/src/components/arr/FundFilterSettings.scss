@@ -14,6 +14,34 @@
         }
     }
 
+    .entity-field-container {
+        position: relative;
+
+        .entity-autocomplete-list {
+            position: absolute;
+            z-index: 1000;
+            background: white;
+            border: 1px solid #ccc;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 100%;
+
+            .entity-autocomplete-item {
+                padding: 4px 8px;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: #f0f0f0;
+                }
+
+                .entity-description {
+                    color: #888;
+                }
+            }
+        }
+    }
+
     .filterable-listbox-container {
         .search-action-container {
             display: flex;

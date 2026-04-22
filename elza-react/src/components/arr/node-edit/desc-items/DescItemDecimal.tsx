@@ -20,6 +20,7 @@ export function DescItemDecimal({
   onChange,
   nodeId,
   isDisabled: _isDisabled,
+  compact,
 }: Props) {
   if (item.data && item.data.dataType !== DataType.Decimal && !item.undefined) {
     throw "Incorrect data type";
@@ -94,9 +95,11 @@ export function DescItemDecimal({
         flex: 1,
         position: "relative",
         flexDirection: "column",
+        width: "100%",
       }}
     >
       <Input
+        size={compact ? "small" : "medium"}
         disabled={isDisabled}
         value={item.undefined ? formatMessage(commonMessages.undefined) : (value || "").toString()}
         style={{
@@ -113,7 +116,7 @@ export function DescItemDecimal({
         isDirty={isDirty}
         onResolve={resolveConflict}
       >
-        {(conflictValue) => <Input value={conflictValue} readOnly={true} />}
+        {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} />}
       </ConflictValue>
       {isDirty && <EditStateDisplay />}
     </div>

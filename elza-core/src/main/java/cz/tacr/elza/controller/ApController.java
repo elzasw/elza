@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.*;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 
@@ -267,9 +268,9 @@ public class ApController {
         if (StringUtils.isNotEmpty(search)) {
         	return accessPointService.findUseLuceneQueries(search, searchFilter, fund, apTypeIds, scopeId, state, revState, from, count, sdp);
         }
-        return accessPointService.findUseCriteriaQuery(search, searchFilter, 
-        										       searchTypeName, searchTypeUsername, 
-        										       fund, apTypeIds, scopeId, state, revState, 
+        return accessPointService.findUseCriteriaQuery(search, searchFilter,
+        										       searchTypeName, searchTypeUsername,
+        										       fund, apTypeIds, scopeId, state, revState,
         										       from, count, sdp);
     }
 
@@ -659,7 +660,7 @@ public class ApController {
         try {
             accessPointService.replace(replacedState, replacementState, extSystem, mcc, false);
         } catch (SyncImpossibleException e) {
-            throw new BusinessException("Failed to replace access point", e, 
+            throw new BusinessException("Failed to replace access point", e,
                     BaseCode.INVALID_STATE)
                             .set("entityId", replacedState.getAccessPointId());
         }

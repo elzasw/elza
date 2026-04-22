@@ -85,25 +85,25 @@ const DetailItemContent: FC<Props> = ({
                 if(updatedTextValue){
                     const diff = diffFn(textValue, updatedTextValue)
                     valueField = <div>
-                        {diff.map(({removed, value, added})=>{
-                            return !added 
-                                ? <span className={removed ? "removed" : undefined}>
+                        {diff
+                            .filter(({added}) => !added)
+                            .map(({removed, value}, i) => (
+                                <span key={i} className={removed ? "removed" : undefined}>
                                     {value}
-                                </span> 
-                                : <></>
-                        })}
+                                </span>
+                            ))}
                     </div>
                 }
                 if(prevTextValue){
                     const diff = diffFn(prevTextValue, textValue)
                     valueField = <div>
-                        {diff.map(({added, value, removed})=>{
-                            return !removed 
-                                ? <span className={added ? "added" : undefined}>
+                        {diff
+                            .filter(({removed}) => !removed)
+                            .map(({added, value}, i) => (
+                                <span key={i} className={added ? "added" : undefined}>
                                     {value}
-                                </span> 
-                                : <></>
-                        })}
+                                </span>
+                            ))}
                     </div>
                 }
             }

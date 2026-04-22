@@ -13,6 +13,7 @@ export function DescItemEnum({
   typeForm,
   nodeId,
   isDisabled: _isDisabled,
+  compact,
 }: Props) {
   if (item.data && item.data?.dataType !== DataType.Enum && !item.undefined) {
     throw "Incorrect data type";
@@ -45,6 +46,7 @@ export function DescItemEnum({
       autoSize={false}
       isSpec={false}
       labelSource="name"
+      compact={compact}
     />
   );
 }

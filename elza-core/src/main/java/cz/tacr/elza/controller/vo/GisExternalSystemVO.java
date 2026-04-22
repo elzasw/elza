@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.api.GisSystemType;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.GisExternalSystem;
 import cz.tacr.elza.domain.SysExternalSystem;
 

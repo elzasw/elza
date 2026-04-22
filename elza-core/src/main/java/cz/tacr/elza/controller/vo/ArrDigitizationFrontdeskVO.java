@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.SysExternalSystem;
 

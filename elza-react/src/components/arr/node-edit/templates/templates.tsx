@@ -253,17 +253,15 @@ export function useTemplates({ descItems, nodeId, nodeVersion, fondsVersionId, o
                             .forEach((item) => {
                                 onAddDescItem(item.itemTypeId, item.itemSpecId);
                             });
-                        const _createItems = createItems.map((descItem) => convertToOldDescItem(descItem));
-                        const _deleteItems = deleteItems.map((descItem) => convertToOldDescItem(descItem));
 
                         if (createItems.length > 0 || deleteItems.length > 0) {
                             await WebApi.updateDescItems(
                                 fondsVersionId,
                                 nodeId,
                                 nodeVersion,
-                                _createItems,
+                                createItems,
                                 [],
-                                _deleteItems
+                                deleteItems
                             );
                         }
 

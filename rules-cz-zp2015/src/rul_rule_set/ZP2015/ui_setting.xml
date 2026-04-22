@@ -10,8 +10,11 @@
             <title>&lt;Není nastaveno&gt;</title>
             <strict-mode>true</strict-mode>
             <tree separator="; ">
-                <item type="ZP2015_NAME" />
-                <item type="ZP2015_TITLE" />
+                <item>
+                    <type code="ZP2015_NAME"/>
+                    <type code="ZP2015_FORMAL_TITLE"/>
+                    <type code="ZP2015_TITLE"/>
+                </item>
                 <item type="ZP2015_UNIT_DATE" />
                 <item type="ZP2015_OTHER_ID" max-count="2">
                     <spec type="ZP2015_OTHERID_CJ" />
@@ -23,8 +26,11 @@
                 </item>
             </tree>
             <accordion-left separator="; ">
-                <item type="ZP2015_NAME" />
-                <item type="ZP2015_TITLE" />
+                <item>
+                    <type code="ZP2015_NAME"/>
+                    <type code="ZP2015_FORMAL_TITLE"/>
+                    <type code="ZP2015_TITLE"/>
+                </item>
                 <item type="ZP2015_UNIT_DATE" />
                 <item type="ZP2015_OTHER_ID" max-count="2">
                     <spec type="ZP2015_OTHERID_CJ" />
@@ -115,7 +121,7 @@
                 <type code="ZP2015_UNIT_ID" width="1"/>
                 <type code="ZP2015_SERIAL_NUMBER" width="1"/>
                 <type code="ZP2015_OTHER_ID" width="2"/>
-                <type code="ZP2015_INV_CISLO" width="2"/>
+                <type code="ZP2015_INV_CISLO" width="1"/>
                 <type code="ZP2015_ITEM_ORDER" width="1"/>
                 <type code="ZP2015_INVALID_RECORD" width="2"/>
             </group>
@@ -195,7 +201,7 @@
                 <!-- 5.2.3 Způsob a forma dochování -->
                 <type code="ZP2015_STORAGE_COND" width="2"/>
                 <!-- ZP5.2.4 Rozměry, hmotnost, velikost, množství -->
-                <type code="ZP2015_SIZE" width="1"/>
+                <type code="ZP2015_SIZE" width="2"/>
                 <type code="ZP2015_SIZE_WIDTH" width="1"/>
                 <type code="ZP2015_SIZE_HEIGHT" width="1"/>
                 <type code="ZP2015_SIZE_DEPTH" width="1"/>
@@ -222,8 +228,8 @@
                 <!-- 5.2.9 Díl, část, pořadí vydání jednotky popisu -->
                 <type code="ZP2015_PART" width="1"/>
                 <!--  5.2.10 Jazyk -->
-                <type code="ZP2015_LANGUAGE" width="2"/>
-                <type code="ZP2015_MAJOR_LANG" width="2"/>
+                <type code="ZP2015_LANGUAGE" width="1"/>
+                <type code="ZP2015_MAJOR_LANG" width="1"/>
                 <!--  5.2.10 písmo -->
                 <type code="ZP2015_WRITING" width="2"/>
                 <!-- 5.2.11 Edice a literatura -->

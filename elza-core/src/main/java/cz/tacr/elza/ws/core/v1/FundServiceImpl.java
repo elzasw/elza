@@ -60,14 +60,17 @@ public class FundServiceImpl implements FundService {
     @Override
     @Transactional
     public void updateFund(Fund fundUpdate) throws UpdateFundException {
-        logger.debug("Received updateFund");
+        logger.debug("Received updateFund, id: {}, uuid: {}, name: {}, institution: {}, fundNumber: {}", 
+        		fundUpdate.getId(), 
+        		fundUpdate.getUuid(), fundUpdate.getFundName(), fundUpdate.getInstitutionIdentifier(),
+        		fundUpdate.getFundNumber());
 
         try {
             fundServiceWsImpl.updateFund(fundUpdate);
             logger.debug("Finished updateFund");
         } catch (Exception e) {
-            logger.debug("Failed to delete fund", e);
-            throw WSHelper.prepareException("Failed to delete fund", e);
+            logger.debug("Failed to update fund", e);
+            throw WSHelper.prepareException("Failed to update fund", e);
         }
 
     }

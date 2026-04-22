@@ -4,6 +4,16 @@ import { DAO } from "components/arr/ArrUtils";
 
 export const DEFAULT_LIST_SIZE = 200;
 
+/**
+ * Fluent UI field heights matching Input component sizes.
+ * @see @fluentui/react-input useInputStyles.styles.js fieldHeights
+ */
+export const FIELD_HEIGHT = {
+    small: 24,
+    medium: 32,
+    large: 40,
+} as const;
+
 export enum AP_EXT_SYSTEM_TYPE {
     CAM = 'CAM',
     CAM_V2 = 'CAM_V2',
@@ -15,6 +25,12 @@ export enum AP_EXT_SYSTEM_TYPE {
 export enum GisSystemType {
     FrameApiView = "FRAME_API_VIEW",
     FrameApiEdit = "FRAME_API_EDIT"
+}
+
+export enum DigitalRepositoryType {
+    Wsdl = "WSDL",
+    Filesystem = "FILESYSTEM",
+    Da = "DA",
 }
 
 export enum MODAL_DIALOG_VARIANT {
@@ -156,6 +172,7 @@ export const CLS_CALCULABLE = 'calculable';
 export const TREE = 'tree';
 export const NODE = 'node';
 export const GRID = 'grid';
+export const AIP = 'aip';
 export const MOVEMENTS = 'movements';
 export const OUTPUTS = 'outputs';
 export const ACTIONS = 'actions';
@@ -169,6 +186,7 @@ export const URL_FUND = '/fund';
 export const URL_FUND_TREE = `${URL_FUND}/tree`;
 export const URL_FUND_GRID_PATH = `${URL_FUND}/:id/${GRID}`;
 export const URL_FUND_MOVEMENTS_PATH = `${URL_FUND}/:id/${MOVEMENTS}`;
+export const URL_FUND_AIP_PATH = `${URL_FUND}/:id/${AIP}`;
 export const URL_FUND_OUTPUTS_PATH = `${URL_FUND}/:id/${OUTPUTS}/:outputId`;
 export const URL_FUND_ACTIONS_PATH = `${URL_FUND}/:id/${ACTIONS}/:actionId`;
 export const URL_FUND_REQUESTS_PATH = `${URL_FUND}/:id/${REQUESTS}/:requestId`;
@@ -179,6 +197,9 @@ export const URL_ADMIN = '/admin';
 export const URL_ADMIN_USER = `${URL_ADMIN}/user`;
 export const URL_ADMIN_GROUP = `${URL_ADMIN}/group`;
 export const URL_ADMIN_FUND = `${URL_ADMIN}/fund`;
+
+export const URL_AIP = '/aip';
+export const URL_COMPONENT = '/component';
 
 // Used to create version part of arr/fund page url
 // Returns id of locked fund version, if the version is not locked, returns undefined
@@ -231,6 +252,10 @@ export const urlFundGrid = (fundId: number, versionId?: number, filter?: string)
     return `${fundSub(fundId, versionId, GRID)}${filter ? "?filter=" + filter : ""}`;
 }
 
+export const urlFundAb = (fundId: number, versionId?: number) => {
+    return fundSub(fundId, versionId, AIP);
+}
+
 export const urlFundMovements = (fundId: number, versionId?: number) => {
     return fundSub(fundId, versionId, MOVEMENTS);
 }
@@ -273,4 +298,12 @@ export const urlEntity = (entityId?: number | string) => {
 
 export const urlEntityRevision = (entityId?: number | string) => {
     return `${URL_ENTITY}/${(entityId == null ? "" : entityId)}/revision`
+}
+
+export const urlAip = (aipId?: number): string => {
+    return aipId ? `${URL_AIP}/${aipId}` : URL_AIP;
+}
+
+export const urlComponent = () => {
+    return URL_COMPONENT;
 }

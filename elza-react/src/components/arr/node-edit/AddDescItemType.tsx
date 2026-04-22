@@ -61,7 +61,8 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
   const strictMode:boolean = useAppSelector(({userDetail, arrRegion}) => {
     const activeFund = arrRegion.funds[arrRegion.activeIndex];
     const strictModeSetting = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', activeFund.id);
-    return strictModeSetting ? JSON.parse(strictModeSetting.value) : true;
+    const strictModeValue = JSON.parse(strictModeSetting.value);
+    return strictModeValue ?? true;
   })
 
   const { formatMessage } = useIntl();

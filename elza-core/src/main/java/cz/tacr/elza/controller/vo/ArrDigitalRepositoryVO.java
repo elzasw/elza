@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+import cz.tacr.elza.api.DigitalRepositoryType;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.SysExternalSystem;
@@ -17,6 +18,8 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
     private String viewThumbnailUrl;
 
     private Boolean sendNotification;
+
+    private DigitalRepositoryType digitalRepositoryType;
 
     public String getViewDaoUrl() {
         return viewDaoUrl;
@@ -50,6 +53,14 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         this.sendNotification = sendNotification;
     }
 
+    public DigitalRepositoryType getDigitalRepositoryType() {
+        return digitalRepositoryType;
+    }
+
+    public void setDigitalRepositoryType(DigitalRepositoryType digitalRepositoryType) {
+        this.digitalRepositoryType = digitalRepositoryType;
+    }
+
     @Override
     public SysExternalSystem createEntity(ApScope scope) {
         ArrDigitalRepository entity = new ArrDigitalRepository();
@@ -59,6 +70,7 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         entity.setViewFileUrl(viewFileUrl);
         entity.setViewThumbnailUrl(viewThumbnailUrl);
         entity.setSendNotification(sendNotification);
+        entity.setDigitalRepositoryType(digitalRepositoryType);
 
         return entity;
     }
@@ -81,6 +93,7 @@ public class ArrDigitalRepositoryVO extends SysExternalSystemVO {
         vo.setViewFileUrl(src.getViewFileUrl());
         vo.setViewThumbnailUrl(src.getViewThumbnailUrl());
         vo.setSendNotification(src.getSendNotification());
+        vo.setDigitalRepositoryType(src.getDigitalRepositoryType());
         return vo;
     }
 }

@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -11,9 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.cam.ApiCamConnector;
 import cz.tacr.elza.cam.ItemSyncProcessor;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -38,8 +39,8 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.event.ApExternalSystemEvent;
 import jakarta.transaction.Transactional;
-
 
 @Service
 public class AccessPointConnectorService {
@@ -85,14 +86,24 @@ public class AccessPointConnectorService {
     @Autowired
     private cz.tacr.elza.cam.v2.CamConnector camConnectorV2;
 
-	/**
+    @EventListener
+    public void onExternalSystemChanged(ApExternalSystemEvent event) {
+        ApExternalSystem extSys = event.getExternalSystem();
+        if (extSys.getType().getVersionApi() == 1) {
+            camConnectorV1.invalidate(extSys);
+        } else {
+            camConnectorV2.invalidate(extSys);
+        }
+    }
+
+    /**
      * Výběr verze konektoru API CAM 
      * 
      * @param extSystem
      * @return
      */
 	public ApiCamConnector getConnector(ApExternalSystem extSystem) {
-		return getCamVersion(extSystem) == 2 ? camConnectorV2 : camConnectorV1;
+		return extSystem.getType().getVersionApi() == 2 ? camConnectorV2 : camConnectorV1;
 	}
 
 	/**
@@ -104,17 +115,7 @@ public class AccessPointConnectorService {
 	@Transactional
 	public ApiCamConnector getConnector(String extSysCode) {
 		ApExternalSystem extSystem = staticDataService.getData().getApExternalSystemByCode(extSysCode);
-		return getCamVersion(extSystem) == 2 ? camConnectorV2 : camConnectorV1;
-	}
-
-	/**
-	 * Detekce verze CAM -> 1 | 2
-	 * 
-	 * @param extSystem
-	 * @return
-	 */
-	private int getCamVersion(ApExternalSystem extSystem) {
-		return extSystem.getType() == ApExternalSystemType.CAM_V2 || extSystem.getType() == ApExternalSystemType.CAM_COMPLETE_V2 ? 2 : 1;
+		return getConnector(extSystem);
 	}
 
 	/**
@@ -130,7 +131,10 @@ public class AccessPointConnectorService {
 			throw new BusinessException("Queue item not found in the queue.", BaseCode.ID_NOT_EXIST).set("queueItemId", queueItemId);
 		}
 		if (!force) {
-			setQueueItemStateTA(queueItem, ExtAsyncQueueState.ERROR, queueItem.getStateMessage());
+			// User declined to force-send the entity despite warnings. Record as CANCELLED
+			// (not ERROR) so no ACCESS_POINT_EXPORT_FAILED event is fired — see the switch
+			// in setQueueItemState, which has no case for EXPORT_CANCELLED.
+			setQueueItemStateTA(queueItem, ExtAsyncQueueState.EXPORT_CANCELLED, queueItem.getStateMessage());
 			return;
 		}
 		ApExternalSystem extSystem = staticDataService.getData().getApExternalSystemById(queueItem.getExternalSystemId());
@@ -225,7 +229,7 @@ public class AccessPointConnectorService {
             ExtSyncsQueueItem queueItem = itemPage.iterator().next();
             StaticDataProvider sdp = staticDataService.getData();
             ApExternalSystem extSystem = sdp.getApExternalSystemById(queueItem.getExternalSystemId());
-            if (getCamVersion(extSystem) == 1) {
+            if (extSystem.getType().getVersionApi()	 == 1) {
             	return appCtx.getBean(cz.tacr.elza.cam.v1.ItemSyncExportProcessor.class, queueItem);
             }
             return appCtx.getBean(cz.tacr.elza.cam.v2.ItemSyncExportProcessor.class, queueItem);
@@ -234,13 +238,24 @@ public class AccessPointConnectorService {
         return null;
     }
 
-    // TODO add importProcessor for CAM v2
     private ItemSyncProcessor createDownloadProcessor(Iterable<ExtSyncsQueueItem> itemPage) {
         ExtSyncsQueueItem firstItem = itemPage.iterator().next();
         ApExternalSystem externalSystem = firstItem.getExternalSystem();
 
-        cz.tacr.elza.cam.v1.ItemSyncImportProcessor isiProc = appCtx.getBean(cz.tacr.elza.cam.v1.ItemSyncImportProcessor.class, externalSystem.getExternalSystemId());
+        if (externalSystem.getType().getVersionApi() == 1) {
+            cz.tacr.elza.cam.v1.ItemSyncImportProcessor isiProc = appCtx.getBean(cz.tacr.elza.cam.v1.ItemSyncImportProcessor.class, externalSystem.getExternalSystemId());
+            fillDownloadProcessor(itemPage, externalSystem, isiProc::addQueueItem, isiProc::addBindingValue);
+            return isiProc;
+        }
+        cz.tacr.elza.cam.v2.ItemSyncImportProcessor isiProc = appCtx.getBean(cz.tacr.elza.cam.v2.ItemSyncImportProcessor.class, externalSystem.getExternalSystemId());
+        fillDownloadProcessor(itemPage, externalSystem, isiProc::addQueueItem, isiProc::addBindingValue);
+        return isiProc;
+    }
 
+    private void fillDownloadProcessor(Iterable<ExtSyncsQueueItem> itemPage,
+                                       ApExternalSystem externalSystem,
+                                       Consumer<ExtSyncsQueueItem> addQueueItem,
+                                       Consumer<String> addBindingValue) {
         List<Integer> bindingIds = new ArrayList<>(), apIds = new ArrayList<>();
 
         // read binding values
@@ -249,7 +264,7 @@ public class AccessPointConnectorService {
             if (!externalSystem.getExternalSystemId().equals(queueItem.getExternalSystemId())) {
                 break;
             }
-            isiProc.addQueueItem(queueItem);
+            addQueueItem.accept(queueItem);
             if (queueItem.getBindingId() != null) {
                 bindingIds.add(queueItem.getBindingId());
             } else if (queueItem.getAccessPointId() != null) {
@@ -258,14 +273,12 @@ public class AccessPointConnectorService {
         }
         if (CollectionUtils.isNotEmpty(apIds)) {
             List<ApBindingState> bindingStates = bindingStateRepository.findByAccessPointIdsAndExternalSystem(apIds, externalSystem);
-            bindingStates.forEach(bs -> isiProc.addBindingValue(bs.getBinding().getValue()));
+            bindingStates.forEach(bs -> addBindingValue.accept(bs.getBinding().getValue()));
         }
         if (CollectionUtils.isNotEmpty(bindingIds)) {
             List<ApBinding> bindings = bindingRepository.findAllById(bindingIds);
-            bindings.forEach(b -> isiProc.addBindingValue(b.getValue()));
+            bindings.forEach(b -> addBindingValue.accept(b.getValue()));
         }
-
-        return isiProc;
     }
     
     /**
@@ -293,34 +306,60 @@ public class AccessPointConnectorService {
     }
 
     @Transactional
-    public void setQueueItemStateTA(ExtSyncsQueueItem item, 
+    public void setQueueItemStateTA(ExtSyncsQueueItem item,
     		                        ExtAsyncQueueState state,
                                     String message,
                                     String batchId,
                                     String data,
                                     String forceKey) {
-        setQueueItemState(Collections.singletonList(item), state, message, batchId, data, forceKey);
+        setQueueItemState(Collections.singletonList(item), state, message, batchId, data, forceKey, null);
+    }
+
+    /**
+     * Overload that additionally persists the upload-side uuid map onto the queue item.
+     * Pass {@code null} for {@code uuidMap} to leave the existing value unchanged
+     * (which is what all other overloads do).
+     */
+    @Transactional
+    public void setQueueItemStateTA(ExtSyncsQueueItem item,
+                                    ExtAsyncQueueState state,
+                                    String message,
+                                    String batchId,
+                                    String data,
+                                    String forceKey,
+                                    String uuidMap) {
+        setQueueItemState(Collections.singletonList(item), state, message, batchId, data, forceKey, uuidMap);
     }
 
     @Transactional
-    public void setQueueItemStateTA(ExtSyncsQueueItem item, 
+    public void setQueueItemStateTA(ExtSyncsQueueItem item,
     		                        ExtAsyncQueueState state,
                                     String message) {
-        setQueueItemState(Collections.singletonList(item), state, message, null, null, null);
+        setQueueItemState(Collections.singletonList(item), state, message, null, null, null, null);
     }
 
     @Transactional
-    public void setQueueItemStateTA(ExtSyncsQueueItem item, 
+    public void setQueueItemStateTA(ExtSyncsQueueItem item,
     		                        ExtAsyncQueueState state) {
-        setQueueItemState(Collections.singletonList(item), state, null, null, null, null);
+        setQueueItemState(Collections.singletonList(item), state, null, null, null, null, null);
     }
 
-    public void setQueueItemState(List<ExtSyncsQueueItem> items, 
+    public void setQueueItemState(List<ExtSyncsQueueItem> items,
                                   ExtAsyncQueueState state,
                                   String message,
                                   String batchId,
                                   String data,
                                   String forceKey) {
+        setQueueItemState(items, state, message, batchId, data, forceKey, null);
+    }
+
+    public void setQueueItemState(List<ExtSyncsQueueItem> items,
+                                  ExtAsyncQueueState state,
+                                  String message,
+                                  String batchId,
+                                  String data,
+                                  String forceKey,
+                                  String uuidMap) {
 		// check message length
 		if (StringUtils.isNotEmpty(message)) {
 			if(message.length()>StringLength.LENGTH_4000) {
@@ -336,6 +375,21 @@ public class AccessPointConnectorService {
 				item.setBatchId(batchId);
 				item.setData(data);
 				item.setForceKey(forceKey);
+				// uuid_map lifecycle: clear on terminal states (info no longer useful);
+				// otherwise, overwrite only if the caller supplied a new map — null means
+				// "leave as is" so NEED_CONFIRM transitions don't wipe the upload-time map.
+				switch (state) {
+				case EXPORT_OK:
+				case EXPORT_CANCELLED:
+				case ERROR:
+					item.setUuidMap(null);
+					break;
+				default:
+					if (uuidMap != null) {
+						item.setUuidMap(uuidMap);
+					}
+					break;
+				}
 				switch (state) {
 				case EXPORT_START:
 					accessPointService.publishExtQueueProcessStartedEvent(item);

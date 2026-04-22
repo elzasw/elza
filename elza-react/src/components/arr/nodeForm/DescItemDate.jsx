@@ -11,8 +11,11 @@ import ItemTooltipWrapper from './ItemTooltipWrapper.jsx';
 import './DescItemDate.scss';
 
 import Moment from 'moment';
-import {DateTimePicker} from 'react-widgets';
+import {DateTimePicker, Localization} from 'react-widgets';
+import MomentLocalizer from 'react-widgets-moment';
 import {formatDate} from '../../validate';
+
+const momentLocalizer = new MomentLocalizer(Moment);
 import {CLS_CALCULABLE} from "../../../constants";
 
 const DATE_FORMAT = "DD.MM.RRRR";
@@ -32,16 +35,18 @@ class DescItemDate extends AbstractReactComponent {
 
     render() {
         const {descItem, locked, readMode, cal} = this.props;
-        let value = cal && descItem.value == null
-            ? i18n('subNodeForm.descItemType.calculable')
-            : descItem.value == null
-                ? null
-                : Moment(descItem.value).format('l');
+        const isCalculated = cal && descItem.value == null;
+        const dateValue = descItem.value == null ? null : Moment(descItem.value, 'YYYY-MM-DD').toDate();
 
         if (readMode) {
+            const displayValue = isCalculated
+                ? i18n('subNodeForm.descItemType.calculable')
+                : descItem.value == null
+                    ? null
+                    : Moment(descItem.value, 'YYYY-MM-DD').format('DD. MM. YYYY');
             return (
                 <DescItemLabel
-                    value={value}
+                    value={displayValue}
                     cal={cal}
                     isValueUndefined={descItem.undefined}
                     isValueInhibited={descItem.inhibited}
@@ -57,14 +62,19 @@ class DescItemDate extends AbstractReactComponent {
         return (
             <div className="desc-item-value">
                 <ItemTooltipWrapper tooltipTitle="dataType.date.format">
-                    <DateTimePicker
-                        ref={ref => (this.focusEl = ref)}
-                        {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
-                        time={false}
-                        value={value == null ? null : new Date(value)}
-                        onChange={this.handleChange}
-                        placeholder={DATE_FORMAT}
-                    />
+                    <Localization date={momentLocalizer}>
+                        <DateTimePicker
+                            ref={ref => (this.focusEl = ref)}
+                            {...decorateAutocompleteValue(this, descItem.hasFocus, descItem.error.value, locked, cls)}
+                            time={false}
+                            value={dateValue}
+                            onChange={this.handleChange}
+                            disabled={isCalculated}
+                            placeholder={isCalculated ? i18n('subNodeForm.descItemType.calculable') : DATE_FORMAT}
+                            valueDisplayFormat="DD. MM. YYYY"
+                            valueEditFormat="DD.MM.YYYY"
+                        />
+                    </Localization>
                 </ItemTooltipWrapper>
             </div>
         );

@@ -5,6 +5,7 @@ import java.util.Objects;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.SysExternalSystem;
 
 /**
@@ -45,14 +46,14 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
     public void setScopeId(Integer scopeId) {
         this.scopeId = scopeId;
     }
-    
+
     public Boolean getPublishOnlyApproved() {
 		return publishOnlyApproved;
 	}
-    
+
 	private void setPublishOnlyApproved(final Boolean publishOnlyApproved) {
-		this.publishOnlyApproved = publishOnlyApproved;		
-	}    
+		this.publishOnlyApproved = publishOnlyApproved;
+	}
 
     public String getUserInfo() {
         return userInfo;

@@ -11,6 +11,7 @@ export {default as ReportsPage} from 'pages/reports/ReportsPage';
 export {default as ArrPage} from 'pages/arr/ArrPage.jsx';
 export {default as ArrDataGridPage} from 'pages/arr/ArrDataGridPage.jsx';
 export {default as ArrMovementsPage} from 'pages/arr/ArrMovementsPage.jsx';
+export {default as ArrAipPage} from 'pages/arr/ArrAipPage.tsx';
 export {default as ArrDaoPage} from 'pages/arr/ArrDaoPage.jsx';
 export {default as FundActionPage} from 'pages/arr/FundActionPage.jsx';
 export {default as ArrOutputPage} from 'pages/arr/ArrOutputPage.jsx';
@@ -27,3 +28,5 @@ export {default as SelectPage} from 'pages/select/SelectPage';
 export {default as MapPage} from 'pages/map/MapPage.jsx';
 
 export {default as PageLayout} from 'pages/shared/layout/PageLayout.jsx';
+
+export {default as AipPage} from 'pages/aip/AipPage';

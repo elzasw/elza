@@ -54,6 +54,7 @@ export function DescItemCoordinates({
   nodeId,
   onChange,
   isDisabled: _isDisabled,
+  compact,
 }: Props) {
   if (
     item.data &&
@@ -185,6 +186,7 @@ export function DescItemCoordinates({
       }}
     >
       <Input
+        size={compact ? "small" : "medium"}
         ref={inputRef}
         disabled={isDisabled}
         style={{ flex: 1, minWidth: "60px" }}
@@ -200,6 +202,7 @@ export function DescItemCoordinates({
             >
               {({ handleShowInMap }) => (
                 <Button
+                  size={compact ? "small" : "medium"}
                   disabled={isDisabled}
                   appearance="subtle"
                   icon={<MapRegular />}
@@ -218,6 +221,7 @@ export function DescItemCoordinates({
                   }
                 >
                   <Button
+                    size={compact ? "small" : "medium"}
                     disabled={isDisabled}
                     appearance="subtle"
                     icon={<CopyRegular />}
@@ -231,6 +235,7 @@ export function DescItemCoordinates({
                   content={<FormattedMessage {...messages.export} />}
                 >
                   <Button
+                    size={compact ? "small" : "medium"}
                     disabled={isDisabled}
                     appearance="subtle"
                     icon={<ArrowExportRegular />}
@@ -247,6 +252,7 @@ export function DescItemCoordinates({
                 content={<FormattedMessage {...messages.import} />}
               >
                 <Button
+                  size={compact ? "small" : "medium"}
                   disabled={isDisabled}
                   appearance="subtle"
                   icon={<DocumentAddRegular />}
@@ -266,6 +272,7 @@ export function DescItemCoordinates({
       >
         {(conflictValue) => (
           <Textarea
+            size={compact ? "small" : "medium"}
             style={{ borderColor: "var(--color-red)" }}
             value={conflictValue}
             readOnly={true}

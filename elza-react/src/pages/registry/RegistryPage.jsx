@@ -76,7 +76,7 @@ class RegistryPage extends AbstractReactComponent {
         focus: PropTypes.object.isRequired,
         userDetail: PropTypes.object.isRequired,
         fund: PropTypes.object,
-        revisionActive: PropTypes.boolean,
+        revisionActive: PropTypes.bool,
     };
 
     state = { items: [] };
@@ -859,9 +859,13 @@ class RegistryPage extends AbstractReactComponent {
     render() {
         const { splitter, status, registryDetail, select = false } = this.props;
 
+        const matchId = this.props.match?.params?.id;
+        // Don't render detail wrapper until loaded entity matches the URL.
+        const isMatchingEntity = !matchId || registryDetail.id == matchId;
+
         const centerPanel = (
             <div className="registry-page">
-                {(registryDetail.fetched || (select && registryDetail.id && registryDetail.fetched)) &&
+                {isMatchingEntity && (registryDetail.fetched || (select && registryDetail.id && registryDetail.fetched)) &&
                     <ApDetailPageWrapper
                         apVersion={registryDetail?.data?.version}
                         select={select}

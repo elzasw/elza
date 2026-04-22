@@ -1,0 +1,18 @@
+.aip-detail-item-row {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 10px;
+
+    .col {
+        width: 50%;
+    }
+
+    .label {
+        text-align: right;
+    }
+
+    .value {
+        text-align: left;
+    }
+}

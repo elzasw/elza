@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, {FC} from 'react';
 import './ListPager.scss';
 import {Icon} from 'components/shared';
@@ -48,13 +47,5 @@ export const ListPager:FC<ListPagerProps> = ({
         </div>
     );
 }
-
-ListPager.propTypes = {
-    from: PropTypes.number.isRequired,
-    prev: PropTypes.func.isRequired,
-    next: PropTypes.func.isRequired,
-    pageSize: PropTypes.number.isRequired,
-    totalCount: PropTypes.number.isRequired,
-};
 
 export default ListPager;

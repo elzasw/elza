@@ -22,8 +22,8 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
     static propTypes = {
         permCodes: PropTypes.array.isRequired, // seznam kódů oprávnění
         onChangePermission: PropTypes.func.isRequired, // callback při změně
-        onAddNodePermission: PropTypes.func.isRequired, // callback při přidání oprávnění na JP
-        onRemoveNodePermission: PropTypes.func.isRequired, // callback při přidání oprávnění na JP
+        onAddNodePermission: PropTypes.func, // callback při přidání oprávnění na JP (povinné pokud je nastaveno fundId)
+        onRemoveNodePermission: PropTypes.func, // callback při odebrání oprávnění na JP (povinné pokud je nastaveno fundId)
         labelPrefix: PropTypes.string.isRequired, // i18n prefix pro názvy položek
         permission: PropTypes.object.isRequired, // oprávnění, které se edituje
         permissionAll: PropTypes.object, // oprávnění pro all položky, pokud exisutje (a needituje se právě ono, tedy je naplněno pouze pokud permission !== permissionAll a vůbec permissionAll může existovat)

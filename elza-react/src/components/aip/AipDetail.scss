@@ -1,0 +1,40 @@
+@import "../../variables.scss";
+
+.aip-detail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    h2 {
+        font-weight: bold;
+        width: auto;
+    }
+
+    .detail-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem;
+        margin-bottom: 1rem;
+
+        .open-btn {
+            margin-bottom: 0.5rem;
+            gap: 10px;
+        }
+
+        .FolderOpen20Filled {
+            margin-right: 50px;
+        }
+
+    }
+
+
+    .br {
+        border: 1px solid;
+        padding: 5px;
+    }
+
+    .br:not(:last-of-type) {
+        margin-bottom: 1rem;
+    }
+}

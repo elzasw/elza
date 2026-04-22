@@ -8,21 +8,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import cz.tacr.elza.domain.*;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Fetch;
-import jakarta.persistence.criteria.From;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
-import jakarta.persistence.criteria.Subquery;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.*;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,12 +31,6 @@ import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.domain.ApState;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.ws.types.v1.ItemEnum;
 import cz.tacr.elza.ws.types.v1.ItemString;
 
@@ -376,5 +362,49 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         return scrollableResults;
     }
 
+    @Override
+    public FilteredResult<ApAccessPoint> findAccessPointsByText(String text, Integer firstResult, Integer maxResults) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<ApAccessPoint> query = cb.createQuery(ApAccessPoint.class);
+        CriteriaQuery<Long> queryCount = cb.createQuery(Long.class);
 
+        Root<ApAccessPoint> root = query.from(ApAccessPoint.class);
+        Root<ApAccessPoint> apRootCount = queryCount.from(ApAccessPoint.class);
+
+        Predicate condition = prepareFindApByTextCount(text, cb, root);
+        Predicate conditionCount = prepareFindApByTextCount(text, cb, apRootCount);
+
+        query.select(root);
+        queryCount.select(cb.countDistinct(apRootCount));
+
+        if (condition != null) {
+            Order order = cb.asc(root.get(ApAccessPoint.FIELD_ACCESS_POINT_ID));
+            query.where(condition).orderBy(order);
+
+            queryCount.where(conditionCount);
+        }
+
+        TypedQuery<ApAccessPoint> tq = entityManager.createQuery(query)
+                .setFirstResult(firstResult);
+        if (maxResults > 0) {
+            tq.setMaxResults(maxResults);
+        }
+        List<ApAccessPoint> list = tq.getResultList();
+        int count = entityManager.createQuery(queryCount).getSingleResult().intValue();
+
+        return new FilteredResult<>(firstResult, maxResults, count, list);
+    }
+
+    private <T> Predicate prepareFindApByTextCount(final String search,
+                                                    final CriteriaBuilder builder,
+                                                    final Root<ApAccessPoint> apRoot) {
+        List<Predicate> conditions = new ArrayList<>();
+
+        if (StringUtils.isNotBlank(search)) {
+            final String searchValue = "%" + search.toLowerCase() + "%";
+            conditions.add( builder.like(builder.lower(apRoot.get(ApAccessPoint.FIELD_ACCESS_POINT_ID)), searchValue));
+        }
+
+        return builder.and(conditions.toArray(new Predicate[0]));
+    }
 }

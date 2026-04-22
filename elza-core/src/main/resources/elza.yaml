@@ -13,10 +13,15 @@ elza:
   export:
     mapviewer:
         url: "https://www.lightcomp.cz/extra/mapview/?wkb="
+    # Testovací přepínač výstupního formátu pro Jasper generátor.
+    # Povolené hodnoty: PDF (výchozí), DOCX, RTF, ODT.
+    # Při nastavení jiné hodnoty než PDF je nahrazen PDF exportér a přeskočeno
+    # slučování PDF příloh (místa pro přílohy zůstanou v dokumentu).
+    #jasperFormat: PDF
 
   # Integration settings
   #  URL for integration JavaScript
-  # integrationScriptUrl: /elzainteg/integ.js  
+  # integrationScriptUrl: /elzainteg/integ.js
 
   workingDir: ./work
 
@@ -42,6 +47,12 @@ elza:
   # Příznak kontroly datové struktury
   ap:
     checkDb: false
+
+# Časovač sync s DA
+#  da:
+#    sync:
+#      - code: asd
+#        syncDelay: 100
 
 #  hibernate:
 #    index:

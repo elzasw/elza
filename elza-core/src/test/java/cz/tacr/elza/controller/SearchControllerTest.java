@@ -1,9 +1,14 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.repository.HsearchOutboxEventRepository;
@@ -12,11 +17,57 @@ import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.test.controller.vo.ResultEntityRef;
 import cz.tacr.elza.test.controller.vo.SearchParams;
 
+/**
+ * Tests of SearchController against the SIMPLE-DEV package fixture
+ * (3 pre-loaded access points, 2 matching the text "Firma").
+ *
+ * <p>Uses per-class lifecycle. Tests are read-only — they only query the
+ * search API, no DB mutation — so absolute count assertions against the
+ * SIMPLE-DEV fixture remain valid across siblings without any cleanup.
+ *
+ * <p>{@link #searchEntityTest()} waits for the Hibernate Search outbox to
+ * drain before querying; this is the dominant cost (several seconds after
+ * a fresh package load). Under PER_CLASS the wait happens once per class
+ * run, not per test method — that's where the speedup comes from.
+ */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SearchControllerTest extends AbstractControllerTest {
 
     @Autowired
-    HsearchOutboxEventRepository hsearchOutboxEvent; 
+    HsearchOutboxEventRepository hsearchOutboxEvent;
 
+    @BeforeAll
+    public void initOnce() throws Exception {
+        super.setUp();
+    }
+
+    @AfterAll
+    public void cleanupOnce() {
+        super.tearDown();
+    }
+
+    @Override
+    @BeforeEach
+    public void setUp() throws Exception {
+        // no-op: setup is done once in @BeforeAll initOnce()
+    }
+
+    @Override
+    @AfterEach
+    public void tearDown() {
+        // no-op: cleanup is done once in @AfterAll cleanupOnce()
+    }
+
+    /**
+     * Search of access-point entities. Waits for Hibernate Search outbox to
+     * drain (SIMPLE-DEV loaded 3 APs at class startup; their index events
+     * must be processed before search returns meaningful results).
+     *
+     * <p><b>Creates:</b> nothing.
+     * <br><b>Cleans up:</b> n/a.
+     * <br><b>Fixture dependency:</b> SIMPLE-DEV package's 3 access points,
+     * 2 of which contain the text "Firma".
+     */
     @Test
     public void searchEntityTest() throws InterruptedException {
         // wait for ending hibernate search indexing
@@ -29,12 +80,20 @@ public class SearchControllerTest extends AbstractControllerTest {
         assertNotNull(result);
         assertEquals(3, result.getCount().intValue());
 
-        // filter with search text 
+        // filter with search text
         result = searchApi.searchEntity(createSearchParamText("Firma"));
         assertNotNull(result);
         assertEquals(2, result.getCount().intValue());
     }
 
+    /**
+     * Search of archival descriptions. No fund is imported in this class, so
+     * expected count is 0.
+     *
+     * <p><b>Creates:</b> nothing.
+     * <br><b>Cleans up:</b> n/a.
+     * <br><b>Fixture dependency:</b> no funds / arch-desc entities exist.
+     */
     @Test
     public void searchArchDescTest() throws InterruptedException {
         // TODO: wait for ending lucene indexing?

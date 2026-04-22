@@ -48,6 +48,7 @@ import { TextFragmentsWindow } from "../../components/arr/text-fragments";
 import { ScenarioDropdown } from "./sub-node-dao";
 import { showConfirmDialog } from 'components/shared/dialog';
 import { DataTypeCode } from 'stores/app/accesspoint/itemFormUtils';
+import DaoLinkDetail from "components/aip/DaoLinkDetail";
 import { QuoteModal, messages as quoteMessages } from './quote';
 import { FormattedMessage } from 'react-intl';
 
@@ -978,6 +979,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
             singleDescItemTypeId,
             readMode,
             arrPerm,
+            selectedSubNodeId,
         } = this.props;
 
         // console.info('{NodeSubNodeForm}');
@@ -992,6 +994,7 @@ class NodeSubNodeForm extends AbstractReactComponent {
         return (
             <div className="node-item-form-container">
                 {formActions}
+                {selectedSubNodeId && <DaoLinkDetail nodeId={selectedSubNodeId}/>}
                 <SubNodeForm
                     wrappedComponentRef={this.refSubNodeForm}
                     typePrefix="desc"

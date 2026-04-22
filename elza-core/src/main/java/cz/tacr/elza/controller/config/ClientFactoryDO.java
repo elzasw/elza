@@ -547,6 +547,11 @@ public class ClientFactoryDO {
                     condition = new ContainDescItemCondition<>(conditionValue, ArrDescItem.FULLTEXT_ATT);
                     break;
                 }
+                case CONTAIN_ENTITY: {
+                    Integer conditionValue = getConditionValueInteger(filter.getCondition());
+                    condition = new EqDescItemCondition<>(conditionValue, ArrDescItem.REL_AP_ID);
+                    break;
+                }
                 case EMPTY: {
                     condition = new NoValuesCondition();
                     break;

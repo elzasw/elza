@@ -1,13 +1,18 @@
 package cz.tacr.elza.core;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 
 import jakarta.persistence.EntityManager;
 import org.hibernate.Session;
 import org.hibernate.query.NativeQuery;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -17,7 +22,30 @@ import cz.tacr.elza.common.db.RecursiveQueryBuilder;
 import cz.tacr.elza.domain.UISettings;
 import cz.tacr.elza.domain.UISettings.SettingsType;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class RecursiveQueryBuilderTest extends AbstractTest {
+
+    @BeforeAll
+    public void initOnce() throws Exception {
+        super.setUp();
+    }
+
+    @AfterAll
+    public void cleanupOnce() {
+        super.tearDown();
+    }
+
+    @Override
+    @BeforeEach
+    public void setUp() throws Exception {
+        // no-op: setup is done once in @BeforeAll initOnce()
+    }
+
+    @Override
+    @AfterEach
+    public void tearDown() {
+        // no-op: cleanup is done once in @AfterAll cleanupOnce()
+    }
 
     private static final String RECURSIVE_QUERY_P1 = "SELECT DISTINCT col1 FROM ";
     private static final String RECURSIVE_QUERY_P2 = "(WITH RECURSIVE recTable(col1, col2) AS (";
@@ -65,17 +93,17 @@ public class RecursiveQueryBuilderTest extends AbstractTest {
         em.remove(entity);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testH2UknownSQLParamValue() {
         Object notEntity = new Object();
-        createQuery(DatabaseType.H2, notEntity);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> createQuery(DatabaseType.H2, notEntity));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testH2DetachedEntity() {
         UISettings detachedEntity = new UISettings();
         detachedEntity.setSettingsId(999);
-        createQuery(DatabaseType.H2, detachedEntity);
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> createQuery(DatabaseType.H2, detachedEntity));
     }
 
     private Object createEntity() {

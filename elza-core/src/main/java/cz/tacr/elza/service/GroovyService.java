@@ -279,7 +279,7 @@ public class GroovyService {
         GroovyAe groovyAe = convertAe(state, parts, itemsByParts);
         String groovyFilePath = getGroovyFilePath(RulArrangementRule.RuleType.AUTO_ITEMS, scope.getRuleSetId());
 
-        return groovyScriptService.process(groovyAe, groovyFilePath);
+        return groovyScriptService.process(groovyAe, groovyFilePath, accessPointCacheService);
     }
 
     public List<GroovyItem> getAutoItemsForRev(@NotNull final ApState state, @NotNull final ApRevision revision) {
@@ -291,7 +291,7 @@ public class GroovyService {
         GroovyAe groovyAe = convertAe(revision.getState(), parts, revParts, itemsByParts, itemsByRevParts);
         String groovyFilePath = getGroovyFilePath(RulArrangementRule.RuleType.AUTO_ITEMS, scope.getRuleSetId());
 
-        return groovyScriptService.process(groovyAe, groovyFilePath);
+        return groovyScriptService.process(groovyAe, groovyFilePath, accessPointCacheService);
     }
 
     public List<NodePlainTextRepresentation> getNodePlainText(@NotNull final ArrFundVersion fundVersion, ParInstitution institution, List<ArrDescItem> items) {

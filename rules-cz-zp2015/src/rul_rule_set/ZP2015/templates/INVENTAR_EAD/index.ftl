@@ -337,7 +337,7 @@
     </#switch>
   <!-- Druh archivní pomůcky -->
   <ead:localcontrol localtype="FINDING_AID_TYPE">
-    <ead:term identifier="${identifier}">${item.specification.name}</ead:term>
+    <ead:term identifier="${identifier}">${item.specification.name?lower_case}</ead:term>
   </ead:localcontrol>
   </#list>
 
@@ -904,7 +904,7 @@
     <#list output.items?filter(item -> item.type.code=="ZP2015_UNITS_AMOUNT") as item>
       <#lt>  <!-- Rozsah zpřístupněných archiválií -->
       <#lt>  <ead:physdescstructured physdescstructuredtype="spaceoccupied" coverage="whole">
-      <#lt>    <ead:quantity>${item.serializedValue}</ead:quantity>
+      <#lt>    <ead:quantity>${item.serializedValue?replace("bm", "")?replace("\\s", "", "r")?replace(",", ".")}</ead:quantity>
       <#lt>    <ead:unittype>bm</ead:unittype>
       <#lt>  </ead:physdescstructured>
     </#list>

@@ -14,7 +14,7 @@
         <kerberos.version>2.1.1</kerberos.version>
         <zxing.version>3.5.3</zxing.version>
         <barcode4j.version>2.4.0</barcode4j.version>
-        <webmvc-ui.version>2.6.0</webmvc-ui.version> <!-- 2.8.14 latest version from 2.x -->
+        <webmvc-ui.version>2.8.17</webmvc-ui.version> <!-- 3.x targets Spring Boot 4 -->
         <h2.version>2.2.222</h2.version> <!-- specially for query from ReportServiceQuery.java, v2.3.x causes errors -->
         <ft.version>2.0</ft.version> <!-- com.lightcomp.ft : file-transfer -->
         <jaxb.version>4.0.11</jaxb.version> <!-- 4.0.0 -->
@@ -31,6 +31,7 @@
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -184,7 +185,7 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <!-- Drivejsi poznamka: Verze se uvadi povinne z duvodu reseni konfliktu s jinymi komponentami,
-                 bez jejiho uvedeni se vytvari WAR bez CXF 3.9 -->            
+                 bez jejiho uvedeni se vytvari WAR bez CXF 3.9 -->
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
@@ -324,6 +325,11 @@
             <artifactId>h2</artifactId>
             <version>${h2.version}</version>
         </dependency>
+		<dependency>
+		    <groupId>org.awaitility</groupId>
+		    <artifactId>awaitility</artifactId>
+		    <scope>test</scope>
+		</dependency>
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
@@ -341,6 +347,12 @@
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.wiremock</groupId>
+			<artifactId>wiremock-standalone</artifactId>
+			<version>3.12.1</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.xml.messaging.saaj</groupId>
@@ -629,6 +641,35 @@
                             </plugins>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>generate-ead</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <extension>true</extension>
+                            <args>
+                                <arg>-Xinheritance</arg>
+                            </args>
+                            <generateDirectory>${project.build.directory}/generated-sources/ead</generateDirectory>
+                            <schemaDirectory>${project.basedir}/src/main/resources/schema</schemaDirectory>
+                            <schemaIncludes>
+                                <include>ead3.xsd</include>
+                            </schemaIncludes>
+                            <bindingDirectory>${project.basedir}/src/main/resources/schema</bindingDirectory>
+                            <bindingIncludes>
+                                <include>ead3-bindings.xml</include>
+                            </bindingIncludes>
+                            <plugins>
+                                <plugin>
+                                    <groupId>org.jvnet.jaxb</groupId>
+                                    <artifactId>jaxb-plugins</artifactId>
+                                    <version>4.0.0</version>
+                                </plugin>
+                            </plugins>
+                        </configuration>
+                    </execution>
                 </executions>
                 <dependencies>
                     <dependency>
@@ -693,6 +734,24 @@
                             <output>${project.build.directory}/generated-sources/api/cam/rest-client</output>
                             <apiPackage>cz.tacr.cam.v1.client.controller</apiPackage>
                             <modelPackage>cz.tacr.cam.v1.client.controller.vo</modelPackage>
+                            <configOptions>
+                                <useJakartaEe>true</useJakartaEe>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>openapi-da-client</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatorName>java</generatorName>
+                            <inputSpec>${project.basedir}/src/main/resources/rest/da-openapi.yaml</inputSpec>
+                            <output>${project.build.directory}/generated-sources/api/da/rest-client</output>
+                            <apiPackage>cz.tacr.da.controller</apiPackage>
+                            <modelPackage>cz.tacr.da.controller.vo</modelPackage>
+                            <generateApiTests>false</generateApiTests>
                             <configOptions>
                                 <useJakartaEe>true</useJakartaEe>
                             </configOptions>
