@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -115,4 +116,16 @@ public interface LevelRepository extends JpaRepository<ArrLevel, Integer>, Level
      */
     @Query("SELECT COUNT (l) FROM arr_level l WHERE l.deleteChange IS NULL")
     int countValid();
+
+    /**
+     * Returns the subset of the given node IDs that still have at least one
+     * {@code arr_level} row with {@code deleteChange IS NULL}.
+     *
+     * Used to partition nodes into "still active" vs. "lost last active level"
+     * after a level soft-delete, so the cache row can be kept in sync with the
+     * row-existence invariant of {@code arr_cached_node}.
+     */
+    @Query("SELECT DISTINCT l.node.nodeId FROM arr_level l " +
+           "WHERE l.node.nodeId IN :nodeIds AND l.deleteChange IS NULL")
+    Set<Integer> findNodeIdsWithActiveLevel(@Param("nodeIds") Collection<Integer> nodeIds);
 }

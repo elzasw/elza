@@ -315,6 +315,7 @@ public class StartupService implements SmartLifecycle {
         clearBulkActions();
         clearTempStructureData();
         clearOrphanedNodes();
+        nodeCacheService.clearInvalidCachedNodes();
         bulkActionConfigManager.load();
         // kontrola datové struktury
         accessPointService.checkConsistency();
