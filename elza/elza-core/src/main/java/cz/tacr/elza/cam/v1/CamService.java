@@ -1,8 +1,5 @@
 package cz.tacr.elza.cam.v1;
 
-import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
-import static cz.tacr.elza.groovy.GroovyResult.SHORT_NAME;
-
 import static cz.tacr.elza.cam.v1.CamException.prepareExtSystemException;
 
 import java.time.OffsetDateTime;
@@ -49,6 +46,7 @@ import cz.tacr.cam.v1.schema.cam.UpdatesXml;
 import cz.tacr.cam.v1.schema.cam.UuidXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.cam.BindingSyncInfo;
+import cz.tacr.elza.cam.CamUserService;
 import cz.tacr.elza.cam.ProcessingContext;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -60,7 +58,6 @@ import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApBindingSync;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevision;
@@ -105,8 +102,6 @@ import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
-import cz.tacr.elza.service.cache.CachedAccessPoint;
-import cz.tacr.elza.service.cache.CachedPart;
 
 @Service
 public class CamService {
@@ -184,6 +179,9 @@ public class CamService {
 
     @Autowired
     private RuleService ruleService;
+
+    @Autowired
+    private CamUserService camUserService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -470,51 +468,20 @@ public class CamService {
      */
     private BatchInfoXml createBatchInfo(ApExternalSystem externalSystem, UsrUser user) {
         BatchInfoXml batchInfo = new BatchInfoXml();
-        batchInfo.setBatchUserInfo(new LongStringXml(createUserInfo(externalSystem.getUserInfo(), user)));
+        batchInfo.setBatchUserInfo(createUserInfo(externalSystem.getUserInfo(), user));
         batchInfo.setBid(new UuidXml(UUID.randomUUID().toString()));
         return batchInfo;
     }
 
     /**
-     * Vytváření informací o uživateli na základě šablony
+     * Wrap the rendered user info string into the v1 API type.
      *
-     * @param userInfo šablona
-     * @param user uživatel
-     * @return
+     * @param userInfo template
+     * @param user sending user
+     * @return user info XML value
      */
-    public String createUserInfo(String userInfo, UsrUser user) {
-        String userName;
-        String userId;
-        String prefName, shortName;
-        if ( user == null) {
-            userName = "admin";
-            userId = "0";
-            prefName = "Admin";
-            shortName = prefName;
-        } else {
-            prefName = shortName = userName = user.getUsername();
-            userId = Integer.toString(user.getUserId());
-            CachedAccessPoint cachedAp = accessPointCacheService.findCachedAccessPoint(user.getAccessPointId());
-            Objects.requireNonNull(cachedAp);
-            CachedPart prefPart = cachedAp.getPart(cachedAp.getPreferredPartId());
-            Objects.requireNonNull(prefPart);
-            for (ApIndex index : prefPart.getIndices()) {
-                if (index.getIndexType().equals(DISPLAY_NAME)) {
-                    prefName = index.getIndexValue();
-                } else 
-                if (index.getIndexType().equals(SHORT_NAME)) {
-                    shortName = index.getIndexValue();
-                }
-            }
-        }
-        if (userInfo == null) {
-            return userName;
-        }
-
-        return userInfo.replaceAll("%i", userId)
-                .replaceAll("%u", userName)
-                .replaceAll("%n", prefName)
-                .replaceAll("%s", shortName);
+    private LongStringXml createUserInfo(String userInfo, UsrUser user) {
+        return new LongStringXml(camUserService.buildUserInfo(userInfo, user));
     }
 
     /**
@@ -730,9 +697,12 @@ public class CamService {
      *            zda-li se jedná o volání z fronty
      *            při volání z fronty:
      *            - lokálně smazaná entita není obnovena (změna stavu)
+     * @return accessPoint belonging to the binding after the sync, or {@code null}
+     *         when the entity was skipped (e.g. INVALID/REPLACED state for a new
+     *         import)
      * @throws  SyncImpossibleException
      */
-    public void synchronizeAccessPoint(ProcessingContext procCtx,
+    public ApAccessPoint synchronizeAccessPoint(ProcessingContext procCtx,
                                        @NotNull ApBinding binding,
                                        @NotNull EntityXml entity, boolean syncQueue) throws SyncImpossibleException {
         Objects.requireNonNull(binding);
@@ -801,7 +771,7 @@ public class CamService {
                 // if async(syncQueue) -> has local changes -> mark as not synced
                 if (syncQueue) {
                     accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
-                    return;
+                    return accessPoint;
                 }
             } else {
                 // ap not found -> new import
@@ -818,7 +788,7 @@ public class CamService {
                         bindingStateRepository.save(bindingState);
                         accessPointCacheService.createApCachedAccessPoint(state.getAccessPointId());
                     }
-                    return;
+                    return accessPoint;
                 } else {
                     throw new SystemException("Entitu v tomto stavu nelze aktualizovat z externího systému", BaseCode.INVALID_STATE)
                         .set("accessPointId", state.getAccessPointId())
@@ -845,7 +815,7 @@ public class CamService {
                     bindingStateRepository.save(bindingState);
                     accessPointCacheService.createApCachedAccessPoint(state.getAccessPointId());
                 }
-                return;
+                return accessPoint;
             }
             if (!modifiedPartOrItem) {
                 // check if any update is needed
@@ -854,7 +824,7 @@ public class CamService {
                         Objects.equals(origBindingState.getExtRevision(), entity.getRevi().getRid().toString())) {
                     // binding already exists and no local changes are detected
                     // -> nothing to synchronize -> return
-                    return;
+                    return accessPoint;
                 }
 
             }
@@ -880,12 +850,14 @@ public class CamService {
                 ec.createAccessPoint(procCtx, entity, binding, syncQueue);
                 bindingState = ec.getBindingState();
                 Validate.notNull(bindingState, "Missing binding state");
+                accessPoint = bindingState.getAccessPoint();
             }
         } else {
             ec.synchronizeAccessPoint(procCtx, state, bindingState, entity, syncQueue);
         }
 
         procCtx.setApChange(null);
+        return accessPoint;
     }
 
     /**
@@ -1085,12 +1057,15 @@ public class CamService {
             }
 
             try {
-                synchronizeAccessPoint(procCtx, binding, entity, true);
+                ApAccessPoint ap = synchronizeAccessPoint(procCtx, binding, entity, true);
+                if (ap != null && queueItem.getAccessPointId() == null) {
+                    queueItem.setAccessPoint(ap);
+                }
                 apConnectService.setQueueItemState(queueItem,
                                                    ExtAsyncQueueState.IMPORT_OK,
                                                    "Synchronized: ES -> ELZA");
             } catch (SyncImpossibleException e) {
-                log.error("Synchronized impossible, accessPointId: {}, camId: {}, queueItemId: {}", queueItem.getAccessPointId(), binding.getValue(), 
+                log.error("Synchronized impossible, accessPointId: {}, camId: {}, queueItemId: {}", queueItem.getAccessPointId(), binding.getValue(),
                           queueItem.getExtSyncsQueueItemId(), e);
                 apConnectService.setQueueItemState(queueItem,
                                                    ExtAsyncQueueState.ERROR,

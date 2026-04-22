@@ -260,13 +260,12 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
                     // entity exists and not deleted -> synchronization entity with current records
                 	if (bindingState == null) {
                 		UuidXml revisionUuid = entity.getRevision().getRev();
-                    	Object revUser = entity.getRevision().getExternalUser();
                     	EntityRecordRefXml replacedBy = entity.getReplacedBy();
-                    	bindingState = externalSystemService.createBindingState(binding, state.getAccessPoint(), 
+                    	bindingState = externalSystemService.createBindingState(binding, state.getAccessPoint(),
                 				procCtx.getApChange(),
                 				entity.getState().value(),
                 				revisionUuid != null ? revisionUuid.getValue() : null,
-                				revUser != null ? revUser.toString() : null,
+                				CamHelper.getExternalUserName(entity.getRevision().getExternalUser()),
                 				replacedBy != null ? replacedBy.getEntityId().getValue() : null,
                 				SyncState.SYNC_OK,
                                 state.getAccessPoint().getPreferredPart(),
@@ -362,7 +361,7 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
                                                                              procCtx.getApChange(),
                                                                              entity.getState().value(),
                                                                              entity.getRevision().getRev().getValue(),
-                                                                             entity.getRevision().getExternalUser().toString(),
+                                                                             CamHelper.getExternalUserName(entity.getRevision().getExternalUser()),
                                                                              null,
                                                                              SyncState.NOT_SYNCED,
                                                                              accessPoint.getPreferredPart(),
@@ -382,6 +381,9 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
                 if (!deletedEntity) {
                     state.setDeleteChange(procCtx.getApChange());
                     state = stateRepository.save(state);
+                    // force UPDATE before the following INSERT (partial unique index
+                    // ap_state_delete_change_null_unique_idx rejects two active states)
+                    stateRepository.flush();
                 }
                 stateNew = accessPointService.copyState(state, procCtx.getApChange());
                 if (deletedEntity && syncQueue) {
@@ -416,7 +418,7 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
         this.bindingState = externalSystemService.createBindingState(prevBindingState, procCtx.getApChange(),
                                                                      entity.getState().value(),
                                                                      entity.getRevision().getRev().getValue(),
-                                                                     entity.getRevision().getExternalUser().toString(),
+                                                                     CamHelper.getExternalUserName(entity.getRevision().getExternalUser()),
                                                                      extReplacedBy,
                                                                      SyncState.SYNC_OK,
                                                                      accessPoint.getPreferredPart(),
@@ -473,6 +475,9 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
                     if (stateNew == null) {
                         state.setDeleteChange(procCtx.getApChange());
                         state = stateRepository.save(state);
+                        // force UPDATE before the following INSERT (partial unique index
+                        // ap_state_delete_change_null_unique_idx rejects two active states)
+                        stateRepository.flush();
                         stateNew = accessPointService.copyState(state, procCtx.getApChange());
                     }
                     stateNew.setStateApproval(newStateApproval);
@@ -623,13 +628,12 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
 		accessPoint.setPreferredPart(prefPart);
 
 		UuidXml revisionUuid = entity.getRevision().getRev();
-    	Object revUser = entity.getRevision().getExternalUser();
     	EntityRecordRefXml replacedBy = entity.getReplacedBy();
 
 		bindingState = externalSystemService.createBindingState(binding, accessPoint, apChange,
 								   entity.getState().value(),
 								   revisionUuid != null ? revisionUuid.getValue() : null,
-								   revUser != null ? revUser.toString() : null,
+								   CamHelper.getExternalUserName(entity.getRevision().getExternalUser()),
 								   replacedBy != null ? replacedBy.getEntityId().getValue() : null,
 		                           SyncState.SYNC_OK,
 		                           prefPart,
