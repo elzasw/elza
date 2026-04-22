@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,6 +27,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.common.ConsoleNotifier;
+import com.github.tomakehurst.wiremock.verification.LoggedRequest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,16 +48,22 @@ import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
+import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.domain.SyncState;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApChangeRepository;
+import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
+import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.service.AccessPointConnectorService;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ExtSyncsProcessor;
@@ -154,6 +162,15 @@ public class CamServiceExportTest extends AbstractControllerTest {
 
     @Autowired
     private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
+
+    @Autowired
+    private ApChangeRepository apChangeRepository;
+
+    @Autowired
+    private ApPartRepository apPartRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private ExtSyncsProcessor extSyncsProcessor;
@@ -520,6 +537,78 @@ public class CamServiceExportTest extends AbstractControllerTest {
         assertEquals(ExtAsyncQueueState.EXPORT_CANCELLED, afterCancel.getState());
         assertNull(afterCancel.getUuidMap(),
                 "uuid_map must be cleared when the queue item reaches a terminal state");
+    }
+
+    /**
+     * Participants on the AP are reported as {@code addParticipant} change
+     * actions. The test seeds an {@link ApPart#getLastChange()} for the test
+     * AP that points at a brand-new {@link ApChange} attributed to an active
+     * {@link UsrUser}. The collector must detect that user as an EDITOR, and
+     * the uploaded batch XML must carry an {@code <addParticipant>} entry
+     * with role EDITOR and the seeded user's id.
+     */
+    @Test
+    void participantActivity_editorIsEmittedFromApChangeHistory() {
+        // --- given ---------------------------------------------------------
+        camMock = new CamV2MockHelper(wireMockServer);
+        systemCode = "CAM_V2_EXPORT_" + UUID.randomUUID();
+        int externalSystemId = createExternalSystemForWireMock(systemCode);
+
+        ApAccessPoint ap = accessPointRepository.findAccessPointByUuid(AP_UUID);
+        assertNotNull(ap, "SIMPLE-DEV package did not load the expected AP");
+        testApId = ap.getAccessPointId();
+
+        // Seed: an active user recorded as the last editor of one of the AP's parts.
+        // Reusing the test AP as the user's person AP keeps fixtures minimal — the AP
+        // has no binding on the fresh external system, so the registry's entityId
+        // path stays null and we exercise the id + uuid route.
+        Integer editorUserId = new TransactionTemplate(transactionManager).execute(tx -> {
+            ApAccessPoint reloaded = accessPointRepository.findById(testApId).orElseThrow();
+
+            UsrUser editor = new UsrUser();
+            editor.setUsername("participant-editor-" + UUID.randomUUID());
+            editor.setActive(true);
+            editor.setAccessPoint(reloaded);
+            editor = userRepository.save(editor);
+
+            ApChange editChange = new ApChange();
+            editChange.setChangeDate(OffsetDateTime.now());
+            editChange.setUser(editor);
+            editChange.setType(ApChange.Type.AP_UPDATE);
+            editChange = apChangeRepository.save(editChange);
+
+            List<ApPart> parts = apPartRepository.findValidPartByAccessPoint(reloaded);
+            assertFalse(parts.isEmpty(), "Test AP should have at least one part");
+            ApPart part = parts.get(0);
+            part.setLastChange(editChange);
+            apPartRepository.save(part);
+
+            return editor.getUserId();
+        });
+        assertNotNull(editorUserId);
+
+        ExtSyncsQueueItem queueItem = enqueueExportFor(ap.getAccessPointId(), externalSystemId);
+
+        UUID batchUuid = UUID.randomUUID();
+        camMock.stubPostBatch(batchUuid);
+
+        // --- when: upload step --------------------------------------------
+        accessPointConnectorService.nextItemSyncProcessor(1).process();
+
+        assertEquals(ExtAsyncQueueState.EXPORT_PROCESSING, reload(queueItem).getState());
+
+        // --- then: the posted batch XML carries an addParticipant for the editor
+        List<LoggedRequest> posts = wireMockServer.findAll(postRequestedFor(
+                urlPathEqualTo("/api/v2/batches")));
+        assertEquals(1, posts.size(), "Expected exactly one POST to /batches on upload");
+        String body = posts.get(0).getBodyAsString();
+
+        assertTrue(body.contains("<addParticipant>"),
+                   "Batch XML should carry at least one <addParticipant> action; body was:\n" + body);
+        assertTrue(body.contains("<role>EDITOR</role>"),
+                   "At least one participant must carry role EDITOR; body was:\n" + body);
+        assertTrue(body.contains("<id>" + editorUserId + "</id>"),
+                   "The seeded editor's userId should appear as a UserInfoXml id; body was:\n" + body);
     }
 
     // ------------------------------------------------------------------
