@@ -1,11 +1,11 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
@@ -27,7 +27,7 @@ public class DescItemControllerTest extends AbstractControllerTest {
         ArrNodeVO rootNode = nodes.get(0);
 
         // vytvoření hodnoty
-        NodeItem nodeItem = buildNodeItem("SRD_SCALE", null, DataType.TEXT, "value", rootNode);
+        NodeItem nodeItem = buildNodeItem("SRD_SCALE", null, DataType.TEXT, "value", rootNode, null);
         ItemDataResult itemDataResult = descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
         NodeItem nodeItemCreated = itemDataResult.getItem();
 

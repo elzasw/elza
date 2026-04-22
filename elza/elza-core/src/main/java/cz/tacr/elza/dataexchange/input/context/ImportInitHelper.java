@@ -37,6 +37,8 @@ public class ImportInitHelper {
 
     private final ApStateRepository apStateRepository;
 
+    private final ApCachedAccessPointRepository cachedAccessPointRepository;
+
     public ImportInitHelper(final GroovyScriptService groovyScriptService,
                             final InstitutionRepository institutionRepository,
                             final InstitutionTypeRepository institutionTypeRepository,
@@ -52,7 +54,8 @@ public class ImportInitHelper {
                             final ApPartRepository apPartRepository,
                             final ApItemRepository apItemRepository,
                             final AccessPointItemService accessPointItemService,
-                            final ApBindingStateRepository bindingStateRepository) {
+                            final ApBindingStateRepository bindingStateRepository,
+                            final ApCachedAccessPointRepository cachedAccessPointRepository) {
         this.groovyScriptService = groovyScriptService;
         this.institutionRepository = institutionRepository;
         this.institutionTypeRepository = institutionTypeRepository;
@@ -69,6 +72,7 @@ public class ImportInitHelper {
         this.apItemRepository = apItemRepository;
         this.accessPointItemService = accessPointItemService;
         this.bindingStateRepository = bindingStateRepository;
+        this.cachedAccessPointRepository = cachedAccessPointRepository;
     }
 
     public DmsService getDmsService() {
@@ -133,5 +137,9 @@ public class ImportInitHelper {
 
     public AccessPointItemService getAccessPointItemService() {
         return accessPointItemService;
+    }
+
+    public ApCachedAccessPointRepository getCachedAccessPointRepository() {
+        return cachedAccessPointRepository;
     }
 }

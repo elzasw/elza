@@ -20,8 +20,8 @@ class PageLayout extends React.Component {
     };
 
     render() {
-        const {className, status, ribbon, splitter, leftPanel, centerPanel, rightPanel} = this.props;
         const {ribbonOpened} = this.state;
+        const { className, status, ribbon, splitter, leftPanel, centerPanel, rightPanel, area } = this.props;
         const cls = classNames(className, {
             'app-container': true,
             'app-exists-status': status != null,
@@ -44,8 +44,8 @@ class PageLayout extends React.Component {
                     <Splitter
                         leftSize={splitter.leftWidth}
                         rightSize={splitter.rightWidth}
-                        onChange={({leftSize, rightSize}) => {
-                            this.props.dispatch(splitterResize(leftSize, rightSize));
+                        onChange={({ leftSize, rightSize }) => {
+                            this.props.dispatch(splitterResize(leftSize, rightSize, area));
                         }}
                         left={leftPanel}
                         center={centerPanel}

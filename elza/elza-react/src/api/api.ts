@@ -7,6 +7,7 @@ import {
     IoApi,
     ExternalsystemsApi,
     DescitemsApi,
+    AipsApi,
     ReportApi,
     NodeApi,
     TasksApi,
@@ -204,6 +205,7 @@ export const Api: {
     io: IoApi;
     externalSystems: ExternalsystemsApi;
     descItems: DescitemsApi;
+    aips: AipsApi;
     node: NodeApi;
     report: ReportApi;
     tasks: TasksApi;
@@ -216,6 +218,7 @@ export const Api: {
     io: new IoApi(undefined, basePath, axios),
     externalSystems: new ExternalsystemsApi(undefined, basePath, axios),
     descItems: new DescitemsApi(undefined, basePath, axios),
+    aips: new AipsApi(undefined, basePath, axios),
     node: new NodeApi(undefined, basePath, axios),
     report: new ReportApi(undefined, basePath, axios),
     tasks: new TasksApi(undefined, basePath, axios),

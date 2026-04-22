@@ -30,6 +30,7 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.util.Assert;
@@ -122,6 +123,7 @@ public class DescriptionItemService {
     @Autowired
     private AccessPointService accessPointService;
 
+    @Lazy
     @Autowired
     private ArrangementService arrangementService;
 
@@ -944,10 +946,15 @@ public class DescriptionItemService {
         ArrDescItem deletedDescItem = descItemRepository.save(descItem);
 
         // pokud existují záznamy, které potlačují dědičnost, pak je smažeme
-        ArrInhibitedItem inhibitedItem = inhibitedItemRepository.findByNodeIdAndDescItemObjectId(descItem.getNodeId(), descItem.getDescItemObjectId()).orElse(null);
-        if (inhibitedItem != null) {
-        	inhibitedItem.setDeleteChange(change);
-        	inhibitedItemRepository.save(inhibitedItem);
+        List<ArrInhibitedItem> inhibitedItems = inhibitedItemRepository.findByDescItemObjectIdAndDeleteChangeIsNull(descItem.getDescItemObjectId());
+        if (CollectionUtils.isNotEmpty(inhibitedItems)) {
+        	List<Integer> affectedNodeIds = new ArrayList<>();
+        	for (ArrInhibitedItem inhibitedItem : inhibitedItems) {
+        		inhibitedItem.setDeleteChange(change);
+        		inhibitedItemRepository.save(inhibitedItem);
+        		affectedNodeIds.add(inhibitedItem.getNodeId());
+        	}
+        	nodeCacheService.syncNodes(affectedNodeIds);
         }
 
         if (moveAfter) {
@@ -1258,8 +1265,7 @@ public class DescriptionItemService {
 
         ArrChange change = null;
 		ArrDescItem descItemUpdated;
-        SingleItemChangeContext changeContext = new SingleItemChangeContext(ruleService, eventNotificationService,
-                fundVersionId, nodeId);
+        SingleItemChangeContext changeContext = new SingleItemChangeContext(ruleService, eventNotificationService, fundVersionId, nodeId);
         if (createNewVersion) {
             node.setVersion(nodeVersion);
 

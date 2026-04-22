@@ -1,7 +1,10 @@
 package cz.tacr.elza.domain;
 
+import cz.tacr.elza.api.DigitalRepositoryType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 
 import cz.tacr.elza.domain.enumeration.StringLength;
@@ -32,12 +35,17 @@ public class ArrDigitalRepository extends SysExternalSystem {
     	
     }
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = StringLength.LENGTH_ENUM, nullable = false)
+    private DigitalRepositoryType digitalRepositoryType;
+
     public ArrDigitalRepository(ArrDigitalRepository ardr) {
 		super(ardr);
 		this.viewDaoUrl = ardr.getViewDaoUrl();
 		this.viewFileUrl = ardr.getViewFileUrl();
 		this.viewThumbnailUrl = ardr.getViewThumbnailUrl();
 		this.sendNotification = ardr.getSendNotification();
+		this.digitalRepositoryType = ardr.getDigitalRepositoryType();
 	}
 
 	/**
@@ -94,6 +102,14 @@ public class ArrDigitalRepository extends SysExternalSystem {
      */
     public void setSendNotification(final Boolean sendNotification) {
         this.sendNotification = sendNotification;
+    }
+
+    public DigitalRepositoryType getDigitalRepositoryType() {
+        return digitalRepositoryType;
+    }
+
+    public void setDigitalRepositoryType(DigitalRepositoryType digitalRepositoryType) {
+        this.digitalRepositoryType = digitalRepositoryType;
     }
 
     @Override

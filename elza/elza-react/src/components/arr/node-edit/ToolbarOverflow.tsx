@@ -29,6 +29,7 @@ export interface ToolbarButtonDef {
   appearance?: "primary" | "subtle";
   action: () => void;
   isVisible?: boolean;
+  overflowOnly?: boolean;
 }
 
 export interface ToolbarButtonGroupDef {
@@ -41,6 +42,7 @@ interface ToolbarOverflowMenuItemProps extends Omit<MenuItemProps, "id"> {
   action?: () => void;
   icon?: JSX.Element;
   label?: string;
+  overflowOnly?: boolean;
 }
 
 const ToolbarOverflowMenuItem = ({
@@ -48,11 +50,12 @@ const ToolbarOverflowMenuItem = ({
   label,
   icon,
   action,
+  overflowOnly,
   ...rest
 }: ToolbarOverflowMenuItemProps) => {
   const isVisible = useIsOverflowItemVisible(id);
 
-  if (isVisible) {
+  if (isVisible && !overflowOnly) {
     return null;
   }
 
@@ -82,7 +85,11 @@ interface OverflowMenuProps {
 export const OverflowMenu = ({ items }: OverflowMenuProps) => {
   const { ref, isOverflowing } = useOverflowMenu<HTMLButtonElement>();
 
-  if (!isOverflowing) {
+  const hasOverflowOnlyItems = items.some(({ items }) =>
+    items.some(({ overflowOnly }) => overflowOnly),
+  );
+
+  if (!isOverflowing && !hasOverflowOnlyItems) {
     return null;
   }
 
@@ -99,17 +106,18 @@ export const OverflowMenu = ({ items }: OverflowMenuProps) => {
 
       <MenuPopover>
         <MenuList>
-          {items.map(({ groupId, items }, index) => {
-            const isLast = index === items.length - 1;
+          {items.map(({ groupId, items }, index, arr) => {
+            const isLast = index === arr.length - 1;
             return (
               <Fragment key={groupId}>
-                {items.map(({ label, action, id, icon }) => (
+                {items.map(({ label, action, id, icon, overflowOnly }) => (
                   <ToolbarOverflowMenuItem
                     key={id}
                     id={id}
                     label={label}
                     action={action}
                     icon={icon}
+                    overflowOnly={overflowOnly}
                   />
                 ))}
                 {!isLast && <ToolbarMenuOverflowDivider id={groupId} />}
@@ -142,26 +150,32 @@ type ToolbarOverflowMenuProps = {
   overflowId: string;
   overflowGroupId: string;
   tooltip?: string | ReactElement;
+    showDivider?: boolean;
 } & ToolbarButtonProps;
 
 export const ToolbarOverflowButton = ({
   overflowId,
   overflowGroupId,
   tooltip,
+  showDivider,
   ...props
 }: ToolbarOverflowMenuProps) => {
-  const button = (
-    <OverflowItem id={overflowId} groupId={overflowGroupId}>
-      <ToolbarButton style={{ flexShrink: 0 }} {...props} />
-    </OverflowItem>
+  let button = (
+      <ToolbarButton style={{ flexShrink: 0, whiteSpace: "nowrap" }} {...props} />
   );
 
   if (tooltip) {
-    return (
-      <Tooltip appearance="inverted" relationship="label" content={tooltip}>
+    button =  <Tooltip appearance="inverted" relationship="label" content={tooltip}>
         {button}
-      </Tooltip>
-    );
+    </Tooltip>
   }
-  return button;
+
+  return <OverflowItem id={overflowId} groupId={overflowGroupId}>
+      <div>
+          <div style={{display: 'flex', flex: 0}}>
+            {showDivider && <ToolbarDivider />}
+            {button}
+          </div>
+      </div>
+  </OverflowItem>
 };

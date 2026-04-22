@@ -19,7 +19,7 @@ import {
 } from 'components/shared';
 import FundBulkModificationsForm, { OperationType } from './FundBulkModificationsForm';
 import FundFilterSettings from './FundFilterSettings';
-import FundDataGridCellForm from './FundDataGridCellForm';
+import { FundDataGridCellForm } from './node-edit/FundDataGridCellForm';
 import ArrSearchForm from './ArrSearchForm';
 import { Dropdown } from 'react-bootstrap';
 import { Button } from '../ui';
@@ -66,6 +66,7 @@ import { COL_DEFAULT_WIDTH, COL_REFERENCE_MARK } from './FundDataGridConst';
 import './FundDataGrid.scss';
 import { getPagesCount } from '../shared/datagrid/DataGridPagination';
 import { toDuration } from '../validate';
+import { isMaskViewDefinition, maskString } from './node-edit/desc-items/maskUtils';
 import { DisplayType, urlFundGrid } from '../../constants';
 import Moment from 'moment';
 import * as groups from '../../actions/refTables/groups';
@@ -125,7 +126,6 @@ class FundDataGrid extends AbstractReactComponent {
             'handleSelectInNewTab',
             'handleSelectInTab',
             'handleEdit',
-            'handleEditClose',
             'handleFulltextSearch',
             'handleFulltextChange',
             'handleFulltextPrevItem',
@@ -141,7 +141,7 @@ class FundDataGrid extends AbstractReactComponent {
             colState = { cols: [], itemTypeCodes: [] };
         }
 
-        this.state = colState;
+        this.state = { ...colState, cellForm: null };
     }
 
     componentDidMount() {
@@ -315,9 +315,15 @@ class FundDataGrid extends AbstractReactComponent {
                         case 'DATE':
                             itemValue = Moment(value.value).format('l');
                             break;
-                        default:
-                            itemValue = value.value;
+                        default: {
+                            const viewDefinition = col.refType.viewDefinition;
+                            if (isMaskViewDefinition(viewDefinition)) {
+                                itemValue = maskString(value.value || '', viewDefinition.mask);
+                            } else {
+                                itemValue = value.value;
+                            }
                             break;
+                        }
                     }
                 }
 
@@ -775,9 +781,6 @@ class FundDataGrid extends AbstractReactComponent {
     }
 
     handleEdit(row, rowIndex, col, colIndex) {
-        const { versionId, fundId, closed } = this.props;
-        const parentNodeId = row.parentNode ? row.parentNode.id : null;
-
         if (typeof col.id === 'undefined') {
             return;
         }
@@ -786,45 +789,23 @@ class FundDataGrid extends AbstractReactComponent {
             return;
         }
 
-        this.props.dispatch(fundDataGridPrepareEdit(versionId, row.id, parentNodeId, col.id));
-
+        const { versionId } = this.props;
         const dataGridComp = this.dataGridRef;
         const cellEl = dataGridComp.getCellElement(rowIndex, colIndex);
-        const cellRect = cellEl.getBoundingClientRect();
 
-        let x = cellRect.left;
-        let y = cellRect.top;
-        const dataGridCompRect = ReactDOM.findDOMNode(dataGridComp).getBoundingClientRect();
-        if (x < dataGridCompRect.left) {
-            x = dataGridCompRect.left;
-        }
-        if (y < dataGridCompRect.top) {
-            y = dataGridCompRect.top;
-        }
-
-        this.props.dispatch(
-            modalDialogShow(
-                this,
-                null,
-                <FundDataGridCellForm
-                    versionId={versionId}
-                    fundId={fundId}
-                    routingKey="DATA_GRID"
-                    closed={closed}
-                    position={{ x, y }}
-                />,
-                'fund-data-grid-cell-edit',
-                this.handleEditClose,
-            ),
-        );
+        this.setState({
+            cellForm: {
+                fondsVersionId: versionId,
+                nodeId: row.node.id,
+                nodeVersionId: row.node.version,
+                descItemTypeId: col.id,
+                target: cellEl,
+            },
+        });
     }
 
-    handleEditClose() {
-        const { versionId } = this.props;
-
-        this.props.dispatch(nodeFormActions.fundSubNodeFormHandleClose(versionId, 'DATA_GRID'));
-
-        this.setState({}, () => {
+    handleEditClose = () => {
+        this.setState({ cellForm: null }, () => {
             this.dataGridRef.focus();
         });
     }
@@ -954,7 +935,7 @@ class FundDataGrid extends AbstractReactComponent {
 
     render() {
         const { fundId, fund, fundDataGrid, versionId, rulDataTypes, descItemTypes, dispatch, readMode } = this.props;
-        const { cols } = this.state;
+        const { cols, cellForm } = this.state;
 
         // Hledání
         var search = (
@@ -1045,6 +1026,16 @@ class FundDataGrid extends AbstractReactComponent {
                         />
                     </div>
                 </div>
+                {cellForm && (
+                    <FundDataGridCellForm
+                        fondsVersionId={cellForm.fondsVersionId}
+                        nodeId={cellForm.nodeId}
+                        nodeVersionId={cellForm.nodeVersionId}
+                        descItemTypeId={cellForm.descItemTypeId}
+                        target={cellForm.target}
+                        onClose={this.handleEditClose}
+                    />
+                )}
             </div>
         );
     }

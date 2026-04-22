@@ -1,15 +1,15 @@
 package cz.tacr.elza.controller;
 
+import cz.tacr.elza.controller.vo.DaoViewRequestVO;
+import cz.tacr.elza.controller.vo.ExplorerTreeNode;
+import cz.tacr.elza.service.DaoService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import cz.tacr.elza.service.DaoSyncService;
 import io.swagger.annotations.ApiParam;
@@ -20,6 +20,8 @@ public class DaoController implements DaosApi {
 
     @Autowired
     DaoSyncService daoSyncService;
+    @Autowired
+    private DaoService daoService;
 
     @Override
     @Transactional
@@ -31,5 +33,15 @@ public class DaoController implements DaosApi {
         }
         daoSyncService.changeScenario(id, body);
         return new ResponseEntity<Void>(HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<ExplorerTreeNode> daoFindByAipIdAndTypeAndDeleteChangeIsNull(@PathVariable(value = "aipId") final Integer aipId) {
+        return new ResponseEntity<>(daoService.findByAipIdAndTypeAndDeleteChangeIsNull(aipId), HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<DaoViewRequestVO> daoGetDaoViewRequestInfo(@ApiParam(value = "Identifikátor dao", required = true) @PathVariable("id") Integer id) {
+        return new ResponseEntity<>(daoService.getDaoViewRequestInfo(id), HttpStatus.OK);
     }
 }

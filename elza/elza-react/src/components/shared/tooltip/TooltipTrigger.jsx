@@ -16,7 +16,7 @@ const TOOLTIP_WINDOW_PADDING = 40;
  */
 class TooltipTrigger extends AbstractReactComponent {
     static propTypes = {
-        content: PropTypes.object,
+        content: PropTypes.node,
         placement: PropTypes.oneOf(['left', 'right', 'top', 'bottom', 'vertical', 'horizontal', 'auto']),
         holdOnHover: PropTypes.bool,
         holdOnFocus: PropTypes.bool,

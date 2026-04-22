@@ -106,6 +106,7 @@ public class DescItem {
         this.change = descItem.change;
         this.nodeId = descItem.nodeId;
         this.readOnly = descItem.readOnly;
+        this.itemObjectId = descItem.itemObjectId;
     }
 
     private DescItem(ArrDescItem descItem) {

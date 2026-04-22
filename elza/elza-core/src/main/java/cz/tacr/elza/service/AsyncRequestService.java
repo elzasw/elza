@@ -11,7 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
+import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.Max;
@@ -54,6 +56,7 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.AsyncTypeEnum;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.domain.projection.NodeIdFundVersionIdInfo;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
@@ -247,6 +250,37 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         }
 
         dispatchRequests(AsyncTypeEnum.NODE, reqList);
+    }
+
+    /**
+     * Přidání JP z více verzí AS do fronty ke zpracování s výchozí prioritou.
+     *
+     * @param pairs ploché dvojice (nodeId, fundVersionId), mohou obsahovat více verzí AS
+     */
+    @Transactional
+    public void enqueueNodesGrouped(final Collection<NodeIdFundVersionIdInfo> pairs) {
+        enqueueNodesGrouped(pairs, null);
+    }
+
+    /**
+     * Přidání JP z více verzí AS do fronty ke zpracování. Vstup je plochý seznam dvojic
+     * (nodeId, fundVersionId), které metoda sama seskupí podle {@code fundVersionId} a
+     * pro každou verzi AS zavolá {@link #enqueueNodes(Integer, Collection, Integer)}.
+     *
+     * @param pairs    ploché dvojice (nodeId, fundVersionId), mohou obsahovat více verzí AS
+     * @param priority volitelná priorita požadavků (null = výchozí 1)
+     */
+    @Transactional
+    public void enqueueNodesGrouped(final Collection<NodeIdFundVersionIdInfo> pairs,
+                                    @Nullable final Integer priority) {
+        if (CollectionUtils.isEmpty(pairs)) {
+            return;
+        }
+        Map<Integer, List<Integer>> byFundVersion = pairs.stream()
+                .collect(Collectors.groupingBy(NodeIdFundVersionIdInfo::getFundVersionId,
+                                               Collectors.mapping(NodeIdFundVersionIdInfo::getNodeId,
+                                                                  Collectors.toList())));
+        byFundVersion.forEach((fvId, nodeIds) -> enqueueNodes(fvId, nodeIds, priority));
     }
 
     @Transactional

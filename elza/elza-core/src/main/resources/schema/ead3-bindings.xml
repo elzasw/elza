@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<jaxb:bindings version="3.0"
+	xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+	xmlns:inheritance="urn:jaxb.jvnet.org:plugin:inheritance"
+    xmlns:namespace="http://jaxb2-commons.dev.java.net/basic/namespace-prefix"
+    jaxb:extensionBindingPrefixes="xjc">
+
+	<jaxb:bindings schemaLocation="ead3.xsd">
+        <jaxb:bindings node="//xs:attributeGroup[@name='am.common']/xs:attribute[@name='script']">
+            <jaxb:property name="script2"/>
+        </jaxb:bindings>
+        <jaxb:bindings node="//xs:complexType[@name='languagedeclaration']/xs:sequence/xs:element[@name='script']">
+            <jaxb:property name="script3"/>
+        </jaxb:bindings>
+<!--        <jxb:bindings>-->
+<!--            <namespace:prefix name="ead"/>-->
+<!--        </jxb:bindings>-->
+	</jaxb:bindings>
+
+</jaxb:bindings>

@@ -1,14 +1,18 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.core.io.Resource;
 
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
@@ -28,7 +32,36 @@ import cz.tacr.elza.test.controller.vo.RequestProcessState;
 import cz.tacr.elza.test.controller.vo.SearchParams;
 import cz.tacr.elza.test.controller.vo.UpdateFund;
 
+/**
+ * Tests for fund CRUD and search operations.
+ *
+ * Uses per-class lifecycle: setUp/tearDown run once for all test methods.
+ * Each test cleans up funds it creates to keep the database in a consistent state.
+ */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class FundControllerTest extends AbstractControllerTest {
+
+    @BeforeAll
+    public void initOnce() throws Exception {
+        super.setUp();
+    }
+
+    @AfterAll
+    public void cleanupOnce() {
+        super.tearDown();
+    }
+
+    @Override
+    @BeforeEach
+    public void setUp() throws Exception {
+        // no-op: setup is done once in @BeforeAll initOnce()
+    }
+
+    @Override
+    @AfterEach
+    public void tearDown() {
+        // no-op: cleanup is done once in @AfterAll cleanupOnce()
+    }
 
     @Test
     public void createFundTest() {
@@ -39,6 +72,8 @@ public class FundControllerTest extends AbstractControllerTest {
         assertEquals(cf.getInternalCode(), fund.getInternalCode());
         assertEquals(cf.getUuid(), fund.getUuid());
         assertEquals(cf.getMark(), fund.getMark());
+
+        deleteFund(fund.getId());
     }
 
     @Test
@@ -53,19 +88,21 @@ public class FundControllerTest extends AbstractControllerTest {
         // Note:  fundDetail is missing rulesetCode
 
         // check returned object
-        assertEquals(fundDetail.getName(), uf.getName());
-        assertEquals(fundDetail.getInternalCode(), uf.getInternalCode());
-        assertEquals(fundDetail.getMark(), uf.getMark());
-        assertEquals(fundDetail.getFundNumber(), uf.getFundNumber());
-        assertEquals(fundDetail.getUnitdate(), uf.getUnitdate());
+        assertEquals(uf.getName(), fundDetail.getName());
+        assertEquals(uf.getInternalCode(), fundDetail.getInternalCode());
+        assertEquals(uf.getMark(), fundDetail.getMark());
+        assertEquals(uf.getFundNumber(), fundDetail.getFundNumber());
+        assertEquals(uf.getUnitdate(), fundDetail.getUnitdate());
 
         // check DB object
         FundDetail fundInfo = fundsApi.fundGetFund(fund.getId().toString());
-        assertEquals(fundInfo.getName(), uf.getName());
-        assertEquals(fundInfo.getInternalCode(), uf.getInternalCode());
-        assertEquals(fundInfo.getMark(), uf.getMark());
-        assertEquals(fundInfo.getFundNumber(), uf.getFundNumber());
-        assertEquals(fundInfo.getUnitdate(), uf.getUnitdate());
+        assertEquals(uf.getName(), fundInfo.getName());
+        assertEquals(uf.getInternalCode(), fundInfo.getInternalCode());
+        assertEquals(uf.getMark(), fundInfo.getMark());
+        assertEquals(uf.getFundNumber(), fundInfo.getFundNumber());
+        assertEquals(uf.getUnitdate(), fundInfo.getUnitdate());
+
+        deleteFund(fund.getId());
     }
 
     @Test
@@ -77,92 +114,98 @@ public class FundControllerTest extends AbstractControllerTest {
         FundDetail fundDetail = fundsApi.fundGetFund(fund.getId().toString());
         assertNotNull(fundDetail);
         assertEquals(fund.getId(), fundDetail.getId());
+
+        deleteFund(fund.getId());
     }
 
     @Test
     public void searchFundsTest() {
         CreateFund cf = createFund("fund1", "fundCode1", 1, "aaaaaaaa-1111-2222-3333-444455556666", "mark1");
-        fundsApi.fundCreateFund(cf);
+        Fund fund1 = fundsApi.fundCreateFund(cf);
 
         cf = createFund("fund2", "fundCode2", null, null, "mark2");
-        fundsApi.fundCreateFund(cf);
+        Fund fund2 = fundsApi.fundCreateFund(cf);
 
         cf = createFund("fund3", "fund3", null, null, "mark3");
-        fundsApi.fundCreateFund(cf);
+        Fund fund3 = fundsApi.fundCreateFund(cf);
 
-        SearchParams params = new SearchParams();
-        params.setOffset(0);
-        params.setSize(100);
+        try {
+            SearchParams params = new SearchParams();
+            params.setOffset(0);
+            params.setSize(100);
 
-    	FindFundsResult result = fundsApi.fundSearchFunds(params);
-    	assertTrue(result.getTotalCount() == 3);
+            FindFundsResult result = fundsApi.fundSearchFunds(params);
+            assertEquals(3, result.getTotalCount());
 
-    	MultimatchContainsFilter containsFilter = new MultimatchContainsFilter();
-    	containsFilter.setValue("fund");
-    	params.addFiltersItem(containsFilter);
+            MultimatchContainsFilter containsFilter = new MultimatchContainsFilter();
+            containsFilter.setValue("fund");
+            params.addFiltersItem(containsFilter);
 
-    	// fondy s fragmentem "fund" v názvu == 3
-    	result = fundsApi.fundSearchFunds(params);
-    	assertTrue(result.getTotalCount() == 3);
+            // fondy s fragmentem "fund" v názvu == 3
+            result = fundsApi.fundSearchFunds(params);
+            assertEquals(3, result.getTotalCount());
 
-    	// create filter
-    	FieldValueFilter valueFilter = new FieldValueFilter();
-    	valueFilter.setField(new FondsField().fieldType(FieldType.FONDS_FIELD).fieldName(FondsFieldName.INTERNAL_CODE));
-    	valueFilter.setValue("Code");
-    	valueFilter.setOperation(OperationCompareType.CONTAINS);
-    	params.addFiltersItem(valueFilter);
+            // create filter
+            FieldValueFilter valueFilter = new FieldValueFilter();
+            valueFilter.setField(new FondsField().fieldType(FieldType.FONDS_FIELD).fieldName(FondsFieldName.INTERNAL_CODE));
+            valueFilter.setValue("Code");
+            valueFilter.setOperation(OperationCompareType.CONTAINS);
+            params.addFiltersItem(valueFilter);
 
-    	// fondy, jejichž interní kód obsahuje "Code" == 2
-    	result = fundsApi.fundSearchFunds(params);
-    	assertTrue(result.getTotalCount() == 2);
+            // fondy, jejichž interní kód obsahuje "Code" == 2
+            result = fundsApi.fundSearchFunds(params);
+            assertEquals(2, result.getTotalCount());
 
-    	// change filter
-    	valueFilter = new FieldValueFilter();
-    	valueFilter.setField(new FondsField().fieldType(FieldType.FONDS_FIELD).fieldName(FondsFieldName.FONDS_NUMBER));
-    	valueFilter.setValue("");
-    	valueFilter.setOperation(OperationCompareType.NOT_NULL);
-    	params.addFiltersItem(valueFilter);
+            // change filter
+            valueFilter = new FieldValueFilter();
+            valueFilter.setField(new FondsField().fieldType(FieldType.FONDS_FIELD).fieldName(FondsFieldName.FONDS_NUMBER));
+            valueFilter.setValue("");
+            valueFilter.setOperation(OperationCompareType.NOT_NULL);
+            params.addFiltersItem(valueFilter);
 
-    	// fondy, které mají parametr "fundNumber" (není nulový) == 1
-    	result = fundsApi.fundSearchFunds(params);
-    	assertTrue(result.getTotalCount() == 1);
+            // fondy, které mají parametr "fundNumber" (není nulový) == 1
+            result = fundsApi.fundSearchFunds(params);
+            assertEquals(1, result.getTotalCount());
+        } finally {
+            deleteFund(fund1.getId());
+            deleteFund(fund2.getId());
+            deleteFund(fund3.getId());
+        }
     }
 
     @Test
-    public void fundExportFunds() throws IOException {
-    	CreateFund cf = createFund("fundExport", "internalCode", 1, "aaaaaaaa-1111-2222-3333-444455556666", "mark1");
+    public void fundExportFunds() throws IOException, InterruptedException {
+        CreateFund cf = createFund("fundExport", "internalCode", 1, "aaaaaaaa-1111-2222-3333-444455556666", "mark1");
         Fund fund = fundsApi.fundCreateFund(cf);
         assertNotNull(fund);
 
-        // create MultimatchContainsFilter filter
-        MultimatchContainsFilter containsFilter = new MultimatchContainsFilter();
-        containsFilter.setValue("fund");
-
-        // create search params, no offset & no size
-        SearchParams params = new SearchParams().addFiltersItem(containsFilter);
-
-        // send export request
-        int requestId = fundsApi.fundExportFunds(params);
-        assertTrue(requestId > 0);
-
-        // waiting for creating export file
-        ExportRequestStatus expStatus = null;
-        int counter = 0;
         try {
-            do {
+            MultimatchContainsFilter containsFilter = new MultimatchContainsFilter();
+            containsFilter.setValue("fund");
+
+            SearchParams params = new SearchParams().addFiltersItem(containsFilter);
+
+            int requestId = fundsApi.fundExportFunds(params);
+            assertTrue(requestId > 0);
+
+            // wait for export to finish (max 10 seconds)
+            ExportRequestStatus expStatus = null;
+            for (int i = 0; i < 200; i++) {
                 Thread.sleep(50);
                 expStatus = ioApi.ioGetExportStatus(requestId);
-                counter++;
-            } while (expStatus.getState() != RequestProcessState.FINISHED && counter < 1000);
-        } catch (Exception e) {
-            fail("Exception while waiting on result: " + e);
-        }
-        assertNotNull(expStatus);
-        assertEquals(RequestProcessState.FINISHED, expStatus.getState());
+                if (expStatus.getState() == RequestProcessState.FINISHED) {
+                    break;
+                }
+            }
+            assertNotNull(expStatus);
+            assertEquals(RequestProcessState.FINISHED, expStatus.getState());
 
-        Resource file = ioApi.ioGetExportFile(requestId);
-        assertNotNull(file);
-        assertTrue(file.contentLength() > 100);
+            Resource file = ioApi.ioGetExportFile(requestId);
+            assertNotNull(file);
+            assertTrue(file.contentLength() > 100);
+        } finally {
+            deleteFund(fund.getId());
+        }
     }
     
     private CreateFund createFund(String name, String internalCode, Integer fundNumber, String uuid, String mark) {
@@ -170,7 +213,6 @@ public class FundControllerTest extends AbstractControllerTest {
         ParInstitutionVO institution = getInstitutions().get(0);
 
         CreateFund cf = new CreateFund();
-        cf = new CreateFund();
         cf.setName(name);
         cf.setInternalCode(internalCode);
         cf.setInstitutionIdentifier(institution.getCode());

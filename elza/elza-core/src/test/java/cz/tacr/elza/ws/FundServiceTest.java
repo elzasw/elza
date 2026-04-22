@@ -1,13 +1,13 @@
 package cz.tacr.elza.ws;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import cz.tacr.elza.controller.AbstractControllerTest;
 import cz.tacr.elza.controller.vo.ArrFundVO;
@@ -35,9 +35,9 @@ public class FundServiceTest extends AbstractControllerTest {
 
         FundIdentifiers fundCreated = fundServiceClient.createFund(fundCreate);
 
-        Assert.assertNotNull(fundCreated);
+        Assertions.assertNotNull(fundCreated);
         assertTrue(Integer.valueOf(fundCreated.getId()) >= 1);
-        Assert.assertNotNull(UUID.fromString(fundCreated.getUuid()));
+        Assertions.assertNotNull(UUID.fromString(fundCreated.getUuid()));
 
         List<ArrFundVO> funds = getFunds();
         assertTrue(funds.size() == 1);

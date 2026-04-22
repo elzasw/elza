@@ -1,23 +1,23 @@
 package cz.tacr.elza.util;
 
 import cz.tacr.elza.utils.MapyCzUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class MapyCzUtilsTest {
 
     @Test
     public void testDetekceSouradnice() {
-        Assert.assertTrue(MapyCzUtils.isFromMapyCz("49.7474556N, 13.3776397E"));
-        Assert.assertTrue(MapyCzUtils.isFromMapyCz("13.3776397E, 49.7474556N"));
-        Assert.assertTrue(MapyCzUtils.isFromMapyCz("13.3776397e, 49.7474556n"));
-        Assert.assertFalse(MapyCzUtils.isFromMapyCz(""));
-        Assert.assertFalse(MapyCzUtils.isFromMapyCz("asdfadsf asdf asd fasf"));
-        Assert.assertFalse(MapyCzUtils.isFromMapyCz("POINT(1.1 2.2)"));
-        Assert.assertFalse(MapyCzUtils.isFromMapyCz("POINT(-73.9617828 40.7862706)"));
-        Assert.assertFalse(MapyCzUtils.isFromMapyCz("49.7474556E, 13.3776397E"));
-        Assert.assertFalse(MapyCzUtils.isFromMapyCz("49.7474556, 13.3776397"));
-        Assert.assertFalse(MapyCzUtils.isFromMapyCz("49, 13"));
+    	Assertions.assertTrue(MapyCzUtils.isFromMapyCz("49.7474556N, 13.3776397E"));
+    	Assertions.assertTrue(MapyCzUtils.isFromMapyCz("13.3776397E, 49.7474556N"));
+    	Assertions.assertTrue(MapyCzUtils.isFromMapyCz("13.3776397e, 49.7474556n"));
+    	Assertions.assertFalse(MapyCzUtils.isFromMapyCz(""));
+    	Assertions.assertFalse(MapyCzUtils.isFromMapyCz("asdfadsf asdf asd fasf"));
+    	Assertions.assertFalse(MapyCzUtils.isFromMapyCz("POINT(1.1 2.2)"));
+    	Assertions.assertFalse(MapyCzUtils.isFromMapyCz("POINT(-73.9617828 40.7862706)"));
+    	Assertions.assertFalse(MapyCzUtils.isFromMapyCz("49.7474556E, 13.3776397E"));
+    	Assertions.assertFalse(MapyCzUtils.isFromMapyCz("49.7474556, 13.3776397"));
+    	Assertions.assertFalse(MapyCzUtils.isFromMapyCz("49, 13"));
     }
 
     @Test
@@ -25,31 +25,31 @@ public class MapyCzUtilsTest {
 
         // ok
 
-        Assert.assertEquals("POINT(13.3776397 49.7474556)", MapyCzUtils.transformToWKT("49.7474556N, 13.3776397E"));
-        Assert.assertEquals("POINT(13.3776397 49.7474556)", MapyCzUtils.transformToWKT("13.3776397E, 49.7474556N"));
-        Assert.assertEquals("POINT(-73.9617828 40.7862706)", MapyCzUtils.transformToWKT("40.7862706N, 73.9617828W"));
-        Assert.assertEquals("POINT(-47.8344211 -15.7978378)", MapyCzUtils.transformToWKT("15.7978378S, 47.8344211W"));
-        Assert.assertEquals("POINT(151.2912167 -33.6399081)", MapyCzUtils.transformToWKT("33.6399081S, 151.2912167E"));
+    	Assertions.assertEquals("POINT(13.3776397 49.7474556)", MapyCzUtils.transformToWKT("49.7474556N, 13.3776397E"));
+    	Assertions.assertEquals("POINT(13.3776397 49.7474556)", MapyCzUtils.transformToWKT("13.3776397E, 49.7474556N"));
+    	Assertions.assertEquals("POINT(-73.9617828 40.7862706)", MapyCzUtils.transformToWKT("40.7862706N, 73.9617828W"));
+    	Assertions.assertEquals("POINT(-47.8344211 -15.7978378)", MapyCzUtils.transformToWKT("15.7978378S, 47.8344211W"));
+    	Assertions.assertEquals("POINT(151.2912167 -33.6399081)", MapyCzUtils.transformToWKT("33.6399081S, 151.2912167E"));
 
         // fail
 
         try {
             MapyCzUtils.transformToWKT("asdfadsf asdf asd fasf");
-            Assert.fail();
+            Assertions.fail();
         } catch (IllegalArgumentException e) {
             // ok
         }
 
         try {
             MapyCzUtils.transformToWKT("49.7474556E, 13.3776397E");
-            Assert.fail();
+            Assertions.fail();
         } catch (IllegalArgumentException e) {
             // ok
         }
 
         try {
             MapyCzUtils.transformToWKT("49.7474556E, 13.3776397");
-            Assert.fail();
+            Assertions.fail();
         } catch (IllegalArgumentException e) {
             // ok
         }

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Future;
 
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
@@ -21,7 +22,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
@@ -63,6 +63,7 @@ public class AdminService {
      * co znamená: každou sobotu ve 04:00
      * @return 
      * @throws InterruptedException 
+
      */    
     public Future<?> reindexInternal() {
     	if (isIndexingRunning()) {

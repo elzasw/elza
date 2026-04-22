@@ -67,6 +67,11 @@ public class ApExternalSystem extends SysExternalSystem {
     }
 
     public Integer getScopeId() {
+        if (scopeId == null) {
+            if (scope != null) {
+                return scope.getScopeId();
+            }
+        }
         return scopeId;
     }
 

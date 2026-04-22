@@ -15,10 +15,12 @@ import {
     AdminPage,
     AdminRequestsQueuePage,
     AdminUserPage,
+    AipPage,
     ArrDaoPage,
     ArrDataGridPage,
     ArrMovementsPage,
     ArrOutputPage,
+    ArrAipPage,
     ArrPage,
     ArrRequestPage,
     EntityCreatePage,
@@ -46,12 +48,15 @@ import {
     OUTPUTS,
     REQUESTS,
     NODE,
+    AIP,
     TREE,
     urlFundTree,
     URL_ENTITY,
     URL_ENTITY_CREATE,
     URL_FUND,
-    URL_NODE
+    URL_NODE,
+    URL_AIP,
+    URL_COMPONENT
 } from '../constants.tsx';
 import AdminBulkActionPage from './admin/AdminBulkActionPage';
 import AppRouter from './AppRouter';
@@ -59,6 +64,7 @@ import './Layout.scss';
 import defaultKeymap from './LayoutKeymap.jsx';
 import { MAP_URL } from './map/MapPage';
 import { WebsocketProvider } from 'components/shared/web-socket/WebsocketProvider';
+import ComponentPage from './component/ComponentPage.tsx';
 import { FluentDialogProvider } from 'components/shared/dialog/FluentModalDialog';
 // import FundOpenPage from './fund_open/FundOpenPage';
 
@@ -100,6 +106,7 @@ class Layout extends AbstractReactComponent {
         canStartGame: false,
         polygon: undefined,
         selectedLayer: undefined,
+        componentViewRequest: undefined,
     };
 
     componentDidMount() {
@@ -116,8 +123,13 @@ class Layout extends AbstractReactComponent {
     }
 
     processCrossTabEvent = (event) => {
-        if (event.type === CrossTabEventType.SHOW_IN_MAP) {
-            this.setState({polygon: event.data});
+        switch(event.type) {
+            case CrossTabEventType.SHOW_IN_MAP:
+                this.setState({polygon: event.data});
+                break;
+            case CrossTabEventType.DISPLAY_COMPONENT:
+                this.setState({componentViewRequest: event.data});
+                break;
         }
     };
 
@@ -169,7 +181,7 @@ class Layout extends AbstractReactComponent {
     }
 
     render() {
-        const {canStartGame, polygon, showGame, selectedLayer} = this.state;
+        const {canStartGame, polygon, showGame, selectedLayer, componentViewRequest} = this.state;
 
         if (showGame) {
             return (
@@ -211,6 +223,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${TREE}`} component={ArrPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${NODE}/:nodeId`} component={ArrPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${GRID}`} component={ArrDataGridPage} />
+                                            <Route path={`${URL_FUND}/:id/v/:versionId/${AIP}`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${MOVEMENTS}`} component={ArrMovementsPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}/:outputId`} component={ArrOutputPage} />
                                             <Route path={`${URL_FUND}/:id/v/:versionId/${OUTPUTS}`} component={ArrOutputPage} />
@@ -226,6 +239,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path={`${URL_FUND}/:id/${TREE}`} component={ArrPage} />
                                             <Route path={`${URL_FUND}/:id/${NODE}/:nodeId`} component={ArrPage} />
                                             <Route path={`${URL_FUND}/:id/${GRID}`} component={ArrDataGridPage} />
+                                            <Route path={`${URL_FUND}/:id/${AIP}`} component={ArrAipPage} />
                                             <Route path={`${URL_FUND}/:id/${MOVEMENTS}`} component={ArrMovementsPage} />
                                             <Route path={`${URL_FUND}/:id/${OUTPUTS}/:outputId`} component={ArrOutputPage} />
                                             <Route path={`${URL_FUND}/:id/${OUTPUTS}`} component={ArrOutputPage} />
@@ -238,12 +252,17 @@ class Layout extends AbstractReactComponent {
                                     </Route>
                                     <Route path={`${URL_FUND}/`} component={FundPage}/>
                                     <Route path={URL_NODE + "/:nodeId"} component={ArrPage} />
-                                    <Route path={URL_ENTITY + "/:id/revision"} component={(props) => <RegistryPage revisionActive={true} {...props}/>}  />
+                                    <Route path={URL_ENTITY + "/:id/revision"} render={(props) => <RegistryPage revisionActive={true} {...props}/>}  />
                                     <Route path={URL_ENTITY + "/:id"} component={RegistryPage} />
                                     <Route path={URL_ENTITY} component={RegistryPage} />
                                     <Route path={URL_ENTITY_CREATE} component={EntityCreatePage} />
 
-                                    <Route path={MAP_URL} component={(props) => <MapPage handleChangeSelectedLayer={this.handleChangeSelectedLayer} polygon={polygon} selectedLayer={selectedLayer} {...props} />} />
+                                    <Route path={URL_AIP + "/:id"} component={AipPage} />
+                                    <Route path={URL_AIP} component={AipPage} />
+
+                                    <Route path={URL_COMPONENT} render={(props) => <ComponentPage componentViewRequest={componentViewRequest} {...props}/>} />
+
+                                    <Route path={MAP_URL} render={(props) => <MapPage handleChangeSelectedLayer={this.handleChangeSelectedLayer} polygon={polygon} selectedLayer={selectedLayer} {...props} />} />
                                     <Route path="/admin">
                                         <Switch>
                                             <Route path="/admin/user/:id" component={AdminUserPage} />

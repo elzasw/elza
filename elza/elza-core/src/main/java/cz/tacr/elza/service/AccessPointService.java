@@ -23,6 +23,11 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.repository.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -77,26 +82,7 @@ import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.dataexchange.input.parts.context.ItemWrapper;
 import cz.tacr.elza.dataexchange.input.parts.context.PartWrapper;
 import cz.tacr.elza.dataexchange.input.storage.SaveMethod;
-import cz.tacr.elza.domain.AccessPointItem;
-import cz.tacr.elza.domain.AccessPointPart;
-import cz.tacr.elza.domain.ApAccessPoint;
-import cz.tacr.elza.domain.ApBinding;
-import cz.tacr.elza.domain.ApBindingItem;
-import cz.tacr.elza.domain.ApBindingState;
-import cz.tacr.elza.domain.ApCachedAccessPoint;
-import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApChange.Type;
-import cz.tacr.elza.domain.ApExternalSystem;
-import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.domain.ApItem;
-import cz.tacr.elza.domain.ApPart;
-import cz.tacr.elza.domain.ApRevItem;
-import cz.tacr.elza.domain.ApRevPart;
-import cz.tacr.elza.domain.ApRevState;
-import cz.tacr.elza.domain.ApRevision;
-import cz.tacr.elza.domain.ApScope;
-import cz.tacr.elza.domain.ApScopeRelation;
-import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.ApStateEnum;
 import cz.tacr.elza.domain.ApType;
@@ -118,7 +104,6 @@ import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SysLanguage;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermission.Permission;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.WfTask.Status;
 import cz.tacr.elza.domain.WfTaskApState;
 import cz.tacr.elza.domain.projection.ApStateInfo;
@@ -133,7 +118,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.ExternalCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.groovy.GroovyResult;
-import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApAccessPointRepositoryCustom.OrderBy;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
@@ -162,6 +146,8 @@ import cz.tacr.elza.repository.ItemRepository;
 import cz.tacr.elza.repository.ScopeRelationRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.SysLanguageRepository;
+import cz.tacr.elza.repository.WfTaskApRevStateRepository;
+import cz.tacr.elza.repository.WfTaskApStateRepository;
 import cz.tacr.elza.repository.specification.ApStateSpecification;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
@@ -196,6 +182,12 @@ public class AccessPointService {
 
     @Autowired
     private ApCachedAccessPointRepository cachedAccessPointRepository;
+
+    @Autowired
+    private WfTaskApStateRepository wfTaskApStateRepository;
+
+    @Autowired
+    private WfTaskApRevStateRepository wfTaskApRevStateRepository;
 
     @Autowired
     private ApTypeRepository typeRepository;
@@ -576,6 +568,15 @@ public class AccessPointService {
     }
 
     /**
+     * Získání seznamu všech access pointů
+     *
+     * @return LFilteredResult<AccessPoint>
+     */
+    public FilteredResult<ApAccessPoint> findAccessPointsByText(String text, Integer from, Integer count) {
+        return accessPointRepository.findAccessPointsByText(text, from, count);
+    }
+
+    /**
      * Kontrola, jestli je používán přístupový bod v navázaných tabulkách.
      *
      * @param accessPoint přístupový bod
@@ -608,7 +609,7 @@ public class AccessPointService {
     /**
      * Smaže rej. heslo a jeho variantní hesla. Předpokládá,
      * že již proběhlo ověření, že je možné ho smazat (vazby atd...).
-     * 
+     *
      * @throws SyncImpossibleException
      */
     public void deleteAccessPoint(final ApState apState,
@@ -700,7 +701,7 @@ public class AccessPointService {
      * Obnovení zneplatněné entity
      *
      * Entita je vždy obnovena ve stavu nová
-     * 
+     *
      * @param apState
      */
     public void restoreAccessPoint(ApState apState) {
@@ -749,7 +750,7 @@ public class AccessPointService {
 
     /**
      * Validace možnosti sloučení podle stavu revizi
-     * 
+     *
      * @param revState
      */
     private void validationMergePossibility(final ApRevState revState) {
@@ -1323,7 +1324,7 @@ public class AccessPointService {
     private void replaceInArrItems(ApState replacedState, ApState replacementState, boolean syncQueue) throws SyncImpossibleException {
         logger.debug("AccessPoint replacement in ArrItems started ({}->{})", replacedState.getAccessPointId(),
                      replacementState.getAccessPointId());
-        
+
         final ApAccessPoint replaced = replacedState.getAccessPoint();
         final ApAccessPoint replacement = replacementState.getAccessPoint();
 
@@ -2118,7 +2119,7 @@ public class AccessPointService {
 
     /**
      * Vyhledávání pomocí Lucene dotazů
-     * 
+     *
      * @param search
      * @param searchFilter
      * @param fund
@@ -2134,9 +2135,9 @@ public class AccessPointService {
 	public FilteredResultVO<ApAccessPointVO> findUseLuceneQueries(String search,
 																  SearchFilterVO searchFilter,
 																  ArrFund fund,
-																  Set<Integer> apTypeIds, 
-																  Integer scopeId, 
-																  ApState.StateApproval state, 
+																  Set<Integer> apTypeIds,
+																  Integer scopeId,
+																  ApState.StateApproval state,
 																  RevStateApproval revState,
 																  Integer from, Integer count,
 																  StaticDataProvider sdp) {
@@ -2161,21 +2162,21 @@ public class AccessPointService {
 															      SearchType searchTypeName,
 															      SearchType searchTypeUsername,
 			  													  ArrFund fund,
-			  													  Set<Integer> apTypeIds, 
-			  													  Integer scopeId, 
-			  													  ApState.StateApproval state, 
+			  													  Set<Integer> apTypeIds,
+			  													  Integer scopeId,
+			  													  ApState.StateApproval state,
 			  													  RevStateApproval revState,
 			  													  Integer from, Integer count,
 			  													  StaticDataProvider sdp) {
         final long foundRecordsCount;
         final List<ApState> foundRecords;
 
-        if (searchFilter == null && revState == null) {        
+        if (searchFilter == null && revState == null) {
 	        Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
 	        SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
 	        SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.DISABLED;
 
-	        foundRecordsCount = findApAccessPointByTextAndTypeCount(search, apTypeIds, fund, scopeId, states, 
+	        foundRecordsCount = findApAccessPointByTextAndTypeCount(search, apTypeIds, fund, scopeId, states,
 	        														searchTypeNameFinal, searchTypeUsernameFinal);
 	        OrderBy orderBy = OrderBy.LAST_CHANGE;
 	        if (foundRecordsCount < 1000) {
@@ -2204,10 +2205,10 @@ public class AccessPointService {
                     descriptionMap.get(apState.getAccessPointId()) != null ? descriptionMap.get(apState.getAccessPointId()).getIndexValue() : null),
                 foundRecordsCount);
 	}
-	
+
     /**
      * Zvýšení čísla verze archivní entity
-     * 
+     *
      * @param accessPointId
      * @param ctrlVersion
      * @return version
@@ -2739,7 +2740,7 @@ public class AccessPointService {
         if (!getNextStates(oldApState).contains(newStateApproval)) {
             throw new SystemException("Požadovaný stav entity nelze nastavit.", BaseCode.INSUFFICIENT_PERMISSIONS)
                 .set("accessPointId", accessPoint.getAccessPointId())
-                .set("scopeId", newApScope.getScopeId())
+                .set("scopeId", (newApScope != null ? newApScope : oldApScope).getScopeId())
                 .set("oldState", oldStateApproval)
                 .set("newState", newStateApproval);
         }
@@ -3007,7 +3008,7 @@ public class AccessPointService {
      * Má uživatel možnost kopírovat přístupový bod (archivní entitu)
      *
      * @param replace
-     * 
+     *
      * @param oldApScope
      * @param newApScope
      * @return
@@ -3395,10 +3396,32 @@ public class AccessPointService {
         return headers;
     }
 
-    public boolean isRevalidaceRequired(ApState.StateApproval state, ApState.StateApproval newState) {
-        return state != null 
-                && newState != null
-                && (state == ApState.StateApproval.APPROVED || newState == ApState.StateApproval.APPROVED) 
+    /**
+     * Check if require revalidation of archival description based 
+     * on change of entity state.
+     * 
+     * @param state
+     * @param newState
+     * @param wasDelete Flag if item was deleted in previouse state
+     * @param willBeDeleted Flag if item will be deleted in previouse state
+     * @return
+     */
+    public boolean isArchDescRevalidationRequired(ApState.StateApproval state, ApState.StateApproval newState, boolean wasDeleted, boolean willBeDeleted) {
+    	// unknown or deleted state
+    	if(newState==null && state==null) {
+    		return false;
+    	}
+    	// changing deleted -> newState
+    	if(wasDeleted && newState!=null) {
+    		return true;
+    	}
+    	// non deleted -> deleted
+    	if(willBeDeleted && state!=null) {
+    		return true;
+    	}
+    	// Both states are valid
+        return // state was/will be approved and is not longer approved
+               (ApState.StateApproval.APPROVED == state || ApState.StateApproval.APPROVED == newState) 
                 && state != newState;
     }
 
@@ -3424,7 +3447,7 @@ public class AccessPointService {
         ApAccessPoint accessPoint = getAccessPointInternal(accessPointId);
         return updateAndValidate(accessPoint);
     }
-    
+
     /**
      * Update and validate accessPoint
      * 
@@ -3443,7 +3466,7 @@ public class AccessPointService {
 
     /**
      * Updates parts indexes and validate AccessPoint
-     * 
+     *
      * Method will validate only accesspoint itself and not its revision
      * 
      * @param accessPoint
@@ -3660,9 +3683,54 @@ public class AccessPointService {
     public Page<ApState> findApAccessPointBySearchFilter(SearchFilterVO searchFilter, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
                                                          StateApproval state, RevStateApproval revState, Integer from, Integer count, StaticDataProvider sdp) {
         int page = from / count;
-        ApStateSpecification specification = new ApStateSpecification(searchFilter, apTypeIdTree, scopeIds, state, revState, sdp);
-        return stateRepository.findAll(specification, PageRequest.of(page, count));
+        PageRequest pageRequest = PageRequest.of(page, count);
+
+        Collection<Integer> preResolvedStateIds = null;
+        if (searchFilter != null && searchFilter.getAssignedTo() != null) {
+            preResolvedStateIds = resolveStateIdsForAssignee(searchFilter.getAssignedTo());
+            if (preResolvedStateIds.isEmpty()) {
+                // no open tasks for this user -> no matching entities; skip the main query
+                return Page.empty(pageRequest);
+            }
+        }
+
+        ApStateSpecification specification = new ApStateSpecification(searchFilter, apTypeIdTree, scopeIds,
+                                                                      state, revState, sdp, preResolvedStateIds);
+        return stateRepository.findAll(specification, pageRequest);
     }
+
+    /**
+     * Pre-resolves the list of {@code ap_state.state_id}s that have an open task assigned
+     * to the given user. Using two small indexed lookups and passing the result as an
+     * {@code IN} list is orders of magnitude faster than the alternative of correlating
+     * EXISTS subqueries from every candidate row of ap_state (hundreds of thousands).
+     * <p>
+     * Caps the result at {@link #ASSIGNED_TO_STATE_ID_CAP} to avoid pathological cases
+     * (e.g. a bulk change that assigned tens of thousands of tasks to a single user).
+     * Exceeding the cap is reported via {@link BusinessException} so the UI can show a
+     * clear "refine your filter" message instead of timing out.
+     */
+    private Collection<Integer> resolveStateIdsForAssignee(Integer assigneeId) {
+        PageRequest limit = PageRequest.of(0, ASSIGNED_TO_STATE_ID_CAP + 1);
+        Set<Integer> stateIds = new HashSet<>(wfTaskApStateRepository.findStateIdsByAssignee(assigneeId, limit));
+        if (stateIds.size() <= ASSIGNED_TO_STATE_ID_CAP) {
+            stateIds.addAll(wfTaskApRevStateRepository.findApStateIdsByRevisionAssignee(assigneeId, limit));
+        }
+        if (stateIds.size() > ASSIGNED_TO_STATE_ID_CAP) {
+            throw new BusinessException("Too many entities match the assigned-user filter; please refine the filter (scope, state, name).",
+                                        BaseCode.TOO_MANY_RESULTS)
+                    .set("assigneeId", assigneeId)
+                    .set("limit", ASSIGNED_TO_STATE_ID_CAP);
+        }
+        return stateIds;
+    }
+
+    /**
+     * Hard ceiling for the number of ap_state ids pre-resolved from the assignedTo
+     * filter. Well under the JDBC 32k bind-parameter limit (Hibernate pads IN-lists to
+     * the next power of two, so 10000 padded becomes 16384).
+     */
+    private static final int ASSIGNED_TO_STATE_ID_CAP = 10_000;
 
     public boolean isQueryComplex(SearchFilterVO searchFilter) {
         //todo fantiš definovat příliš složitý dotaz
@@ -3831,7 +3899,7 @@ public class AccessPointService {
 
     /**
      * Sloučení Parts z accessPoint do targetAccessPoint s využití revizi
-     * 
+     *
      * @param accessPoint
      * @param targetAccessPoint
      * @param change
@@ -4216,7 +4284,7 @@ public class AccessPointService {
             public int getValidAccessPointCount() {
                 return validAps;
             }
-            
+
         };
     }
 

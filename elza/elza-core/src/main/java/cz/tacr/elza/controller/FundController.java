@@ -67,6 +67,7 @@ import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.RuleSetRepository;
@@ -285,7 +286,11 @@ public class FundController implements FundsApi {
         try (InputStream is = dataFile.getInputStream()) {
             arrangementService.importFundData(fund, importType, is);
             return ResponseEntity.ok(null);
+        } catch (AbstractException ae) {
+        	logger.error("Failed to import data", ae);
+        	throw ae;
         } catch (Exception e) {
+        	// TODO: This should be probably removed - check general exception handler 
             logger.error("Failed to import data", e);
             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
         }

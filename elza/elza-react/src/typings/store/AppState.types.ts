@@ -7,8 +7,10 @@ import { ApValidationErrorsVO } from "api/ApValidationErrorsVO";
 import { SubNodeForm, SubNodeFormCache } from "./SubNodeForm.types";
 import { FundOutput } from "./Outputs.types";
 import { FundDataGrid } from "./DataGrid.types";
+import { AipFilterCriteria } from "components/aip/filter/forms/EnumAipFilterCriteria.ts";
+import { ApAccessPointVO } from "api/ApAccessPointVO.ts";
+import { AipDetailVO } from "elza-api";
 import { FilterObject } from "components/fund/filters/types";
-import { ApAccessPointVO } from "api";
 
 export interface SplitterState {
     leftWidth: number;
@@ -78,6 +80,22 @@ export interface SimpleList<T> {
     sourceRows: T[];
 }
 
+export interface ApAccessPointFilter extends SimpleListFilter { }
+
+export interface ApAccessPoints {
+    count?: number;
+    currentDataKey?: string | number;
+    filter?: ApAccessPointFilter;
+    filterRows?: unknown;
+    getDataKey?: () => number | string;
+    fetched?: boolean;
+    isFetching?: boolean;
+    reducer?: unknown;
+    filteredRows?: ApAccessPointVO[];
+    rows?: ApAccessPointVO[];
+    sourceRows?: ApAccessPointVO[];
+}
+
 export interface AdminFundsFilter extends SimpleListFilter { }
 
 export interface AdminFunds {
@@ -97,6 +115,45 @@ export interface AdminFunds {
 export interface AdminFund {
     currentDataKey?: number | string;
     data?: FundData | null;
+    getDataKey?: () => number | string;
+    id?: number | string;
+    fetched?: boolean;
+    isFetching?: boolean;
+    reducer?: unknown;
+    name?: string;
+}
+export type AipFilter = {
+    id?: string;
+    attr: string;
+    criteria: AipFilterCriteria;
+    value?: any;
+    from?: string;
+    to?: string;
+    path: string;
+    label?: string;
+    invisible?: boolean;
+}
+export interface AipsFilter extends SimpleListFilter {
+    filters?: AipFilter[];
+}
+
+export interface Aips {
+    count?: number;
+    currentDataKey?: string | number;
+    filter?: AipsFilter;
+    filterRows?: unknown;
+    getDataKey?: () => number | string;
+    fetched?: boolean;
+    isFetching?: boolean;
+    reducer?: unknown;
+    filteredRows?: AipDetailVO[];
+    rows?: AipDetailVO[];
+    sourceRows?: AipDetailVO[];
+}
+
+export interface Aip {
+    currentDataKey?: number | string;
+    data?: AipDetailVO | null;
     getDataKey?: () => number | string;
     id?: number | string;
     fetched?: boolean;
@@ -336,6 +393,12 @@ export interface ItemDetail<T> {
 }
 
 export interface App {
+    aip: Aip;
+    aipList: SimpleList<AipDetailVO>;
+    aipStricture: DetailStoreState<any>;
+    daoList: SimpleList<any>; //TODO: @kasparova
+    explorerItem: DetailStoreState<any> //TODO: @kasparova
+    accessPoins:SimpleList<ApAccessPointVO>
     apExtSystemList: SimpleList<ApExternalSystemSimpleVO>;
     apValidation: DetailStoreState<ApValidationErrorsVO>;
     apViewSettings: unknown;
@@ -405,6 +468,21 @@ export interface StateRegion {
     registryRegionFront: RegistryRegionFrontEntity[];
 }
 
+export interface StructureNodeFormState {
+    id: number | null;
+    fetched: boolean;
+    fetching: boolean;
+    currentDataKey: unknown;
+    subNodeForm: unknown;
+    version?: number;
+}
+
+export interface StructuresState {
+    stores: {
+        [key: string]: StructureNodeFormState;
+    };
+}
+
 export interface AppState {
     splitter: SplitterState;
     adminRegion: AdminRegionState;
@@ -421,7 +499,7 @@ export interface AppState {
     router: unknown;
     stateRegion: StateRegion;
     status: unknown;
-    structures: unknown;
+    structures: StructuresState;
     tab: unknown;
     toastr: unknown;
     userDetail: UserDetail;

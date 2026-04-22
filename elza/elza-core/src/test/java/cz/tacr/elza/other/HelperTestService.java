@@ -19,7 +19,7 @@ import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.outboxpolling.event.impl.DefaultOutboxEventFinder;
 import org.hibernate.search.mapper.orm.outboxpolling.event.impl.OutboxEvent;
 import org.hibernate.search.mapper.orm.outboxpolling.event.impl.OutboxEventOrder;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,7 +86,10 @@ import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeOutputRepository;
 import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.repository.OutputFileRepository;
 import cz.tacr.elza.repository.OutputRepository;
+import cz.tacr.elza.repository.OutputResultRepository;
+import cz.tacr.elza.repository.OutputTemplateRepository;
 import cz.tacr.elza.repository.PermissionRepository;
 import cz.tacr.elza.repository.SobjVrequestRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -179,6 +182,12 @@ public class HelperTestService {
     protected ExternalSystemRepository externalSystemRepository;
     @Autowired
     private NodeOutputRepository nodeOutputRepository;
+    @Autowired
+    private OutputFileRepository outputFileRepository;
+    @Autowired
+    private OutputResultRepository outputResultRepository;
+    @Autowired
+    private OutputTemplateRepository outputTemplateRepository;
     @Autowired
     private NodeExtensionRepository nodeExtensionRepository;
     @Autowired
@@ -290,19 +299,13 @@ public class HelperTestService {
         }
 
         deleteTablesInternal();
-        
-        // reset index
-        logger.debug("Start reindexing.");
-        var indexStatus = adminService.reindexInternal();
-        while(!indexStatus.isDone()) {
-        	logger.debug("Reindexing...");
-        	try {
-				Thread.sleep(50);
-			} catch (InterruptedException e) {
-				break;
-			}
-        }
-        logger.debug("Reindexed.");
+
+        // Purge Lucene indexes directly instead of using adminService.reindexInternal().
+        // The mass indexer agent coordination (register → wait for cluster → run → leave)
+        // takes ~2s per cycle due to outbox-polling timing, even for 0 entities.
+        // Direct workspace purge is synchronous and instant.        
+        Search.session(em).workspace().purge();
+        logger.debug("Lucene indexes purged.");
 
         if (stopTasks) {
             packageService.startAsyncTasks();
@@ -368,6 +371,9 @@ public class HelperTestService {
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();
         nodeOutputRepository.deleteAll();
+        outputFileRepository.deleteAll();
+        outputResultRepository.deleteAll();
+        outputTemplateRepository.deleteAll();
         outputRepository.deleteAll();
         nodeExtensionRepository.deleteAll();
         changeRepository.deleteAll();
@@ -405,7 +411,7 @@ public class HelperTestService {
             File file = null;
             try {
                 file = buildPackageFileZip(packageDir);
-                Assert.assertNotNull(file);
+                Assertions.assertNotNull(file);
 
                 //packageService.importPackage(file);
 
@@ -425,8 +431,8 @@ public class HelperTestService {
             }
 
             rulPackage = getPackage(packageCode);
-            Assert.assertNotNull(rulPackage);
-            logger.info("Package loaded.");
+            Assertions.assertNotNull(rulPackage);
+            logger.debug("Package loaded.");
         }
     }
 
@@ -458,7 +464,7 @@ public class HelperTestService {
      */
     static private void recurseAdd(final byte[] buffer, final ZipOutputStream zout, final File dir, final String path) throws IOException {
         File[] files = dir.listFiles();
-        logger.info("recurseAdd: path: " + path + ", dir: " + dir + ", files: " + files);
+        logger.debug("recurseAdd: path: " + path + ", dir: " + dir + ", files: " + files);
         for (int i = 0; i < files.length; i++) {
             if (files[i].isDirectory()) {
                 recurseAdd(buffer, zout, files[i], path + files[i].getName() + "/");
@@ -517,7 +523,7 @@ public class HelperTestService {
 		OutboxEventOrder processingOrder = OutboxEventOrder.ID;
     	
     	Integer counter = 0;
-    	while(counter<100){
+    	while(counter<300){
     		
     		Integer pendingEvents;
     		try(Session session = this.sessionFactory.openSession()) {

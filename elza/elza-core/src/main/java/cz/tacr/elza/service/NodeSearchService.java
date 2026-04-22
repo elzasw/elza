@@ -42,6 +42,7 @@ import cz.tacr.elza.controller.vo.NodeField;
 import cz.tacr.elza.controller.vo.NodeSearchResult;
 import cz.tacr.elza.controller.vo.NodeTreeData;
 import cz.tacr.elza.controller.vo.OperationCompareType;
+import cz.tacr.elza.controller.vo.OperationLogicalType;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.data.DataType;
@@ -218,32 +219,60 @@ public class NodeSearchService {
 
 	/**
 	 * Vytvoření predikátu podle parametrů vyhledávání.
-	 * 
-	 * @param factory
-	 * @param searchParams
-	 * @return
+	 *
+	 * @param factory      továrna predikátů
+	 * @param searchParams parametry vyhledávání
+	 * @return výsledný predikát
 	 */
 	private SearchPredicate createSearchPredicate(SearchPredicateFactory factory, SearchParams searchParams) {
+	    BooleanPredicateClausesStep<?> bool = factory.bool();
 
-		BooleanPredicateClausesStep<?> bool = factory.bool();
+	    // zpracování všech filtrů — každý musí být splněn (AND na nejvyšší úrovni)
+	    for (AbstractFilter filter : searchParams.getFilters()) {
+	        bool.must(filterToPredicate(factory, filter));
+	    }
 
-		// zpracování filtru
-    	for (AbstractFilter filter : searchParams.getFilters()) {
-    		if (filter instanceof MultimatchContainsFilter) {
-    	        bool.must(multimatchContainsPredicate(factory, (MultimatchContainsFilter) filter));
+	    return bool.toPredicate();
+	}
 
-    		} else if (filter instanceof FieldValueFilter) {
-    			bool.must(fieldValuePredicate(factory, (FieldValueFilter) filter));
+	/**
+	 * Převádí jednotlivý filtr na predikát Hibernate Search.
+	 * Podporuje rekurzivní vnořování LogicalFilter.
+	 */
+	private SearchPredicate filterToPredicate(final SearchPredicateFactory factory, final AbstractFilter filter) {
+	    if (filter instanceof MultimatchContainsFilter mcFilter) {
+	        return multimatchContainsPredicate(factory, mcFilter);
+	    } else if (filter instanceof FieldValueFilter fvFilter) {
+	        return fieldValuePredicate(factory, fvFilter);
+	    } else if (filter instanceof LogicalFilter logicalFilter) {
+	        return logicalPredicate(factory, logicalFilter);
+	    } else {
+	        throw new BusinessException("Neznámý typ filtru ve vyhledávacím požadavku", ArrangementCode.REQUEST_INVALID);
+	    }
+	}
 
-    		} else if (filter instanceof LogicalFilter) {
-    			throw new BusinessException("Filter type 'LogicalFilter' is not yet implemented", ArrangementCode.REQUEST_INVALID);
+	/**
+	 * Vytvoření predikátu pro logický filtr (kombinace podfiltrů pomocí AND/OR).
+	 *
+	 * @param factory továrna predikátů
+	 * @param filter  logický filtr s podfiltry a operací AND/OR
+	 * @return složený predikát
+	 */
+	private SearchPredicate logicalPredicate(final SearchPredicateFactory factory, final LogicalFilter filter) {
+	    BooleanPredicateClausesStep<?> bool = factory.bool();
 
-    		} else {
-    			throw new BusinessException("Not specified filter in search request", ArrangementCode.REQUEST_INVALID);
-    		}
-    	}
+	    for (AbstractFilter subFilter : filter.getFilters()) {
+	        SearchPredicate subPredicate = filterToPredicate(factory, subFilter);
+	        if (OperationLogicalType.AND == filter.getOperation()) {
+	            bool.must(subPredicate);
+	        } else if (OperationLogicalType.OR == filter.getOperation()) {
+	            bool.should(subPredicate);
+	        } else {
+	            throw new BusinessException("Nepodporovaná logická operace: " + filter.getOperation(), ArrangementCode.REQUEST_INVALID);
+	        }
+	    }
 
-    	return bool.toPredicate();
+	    return bool.toPredicate();
 	}
 
 	private SearchPredicate multimatchContainsPredicate(final SearchPredicateFactory factory, final MultimatchContainsFilter filter) {
@@ -266,9 +295,11 @@ public class NodeSearchService {
 			FondsFieldName fieldName = ((FondsField) filter.getField()).getFieldName();
 		    OperationCompareType op = filter.getOperation();
 			switch (fieldName) {
+			case FONDS_ID:
 			case INSTITUTION_ID:
+				String searchFieldName = fieldName.equals(FondsFieldName.FONDS_ID) ? "fundId" : fieldName.name();
 			    Integer value = Integer.parseInt(filter.getValue());
-				return getPredicateByNumber(factory, fieldName.name(), op, value);
+				return getPredicateByNumber(factory, searchFieldName, op, value);
 			default:
 				throw new IllegalArgumentException("Unsupported fonds field name: " + fieldName);
 			}

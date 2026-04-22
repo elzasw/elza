@@ -10,7 +10,7 @@ import i18n from '../../i18n';
 class AddRemoveList extends AbstractReactComponent {
     static propTypes = {
         items: PropTypes.array.isRequired,
-        label: PropTypes.string, // pokud je uvedeno, zobrazí se jako nadpis celé sekce
+        label: PropTypes.node, // pokud je uvedeno, zobrazí se jako nadpis celé sekce
         addInLabel: PropTypes.bool, // pokud je true, je akce přidání zobrazena u labelu - tedy nahoře
         onAdd: PropTypes.func,
         onRemove: PropTypes.func.isRequired,

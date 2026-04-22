@@ -24,7 +24,7 @@ import { modalDialogShow } from "actions/global/modalDialog";
 import { useActiveFund } from "../hooks";
 import { RegistrySelectPage } from "pages";
 import classNames from "classnames";
-import { MODAL_DIALOG_VARIANT } from "../../../../constants";
+import { FIELD_HEIGHT, MODAL_DIALOG_VARIANT } from "../../../../constants";
 import { FormattedMessage, defineMessages, useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
 // import { Link } from "react-router-dom";
@@ -52,6 +52,7 @@ export function DescItemRecordRef({
   isDisabled: _isDisabled,
   typeRef,
   selectedSpecId,
+  compact,
 }: Props) {
   if (item.data && item.data?.dataType !== DataType.RecordRef && !item.undefined) {
     throw "Incorrect data type";
@@ -218,9 +219,11 @@ export function DescItemRecordRef({
         display: "inline-flex",
         flex: 1,
         alignItems: "center",
+        width: "100%"
       }}
     >
       <Combobox
+        size={compact ? "small" : "medium"}
         title={query}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -235,7 +238,7 @@ export function DescItemRecordRef({
           minWidth: "unset",
           flex: 1,
           flexGrow: 5,
-          paddingRight: "37px",
+          paddingRight: compact ? FIELD_HEIGHT.small + 2 : FIELD_HEIGHT.medium + 4,
         }}
         input={{
           ref: fieldRef,
@@ -274,7 +277,8 @@ export function DescItemRecordRef({
           content={<FormattedMessage {...messages.openInAccessPoints} />}
         >
           <Button
-            style={{ height: "29px" }}
+            size={compact ? "small" : "medium"}
+            style={{ height: (compact ? FIELD_HEIGHT.small : FIELD_HEIGHT.medium) - 2 }}
             appearance="subtle"
             disabled={
               (typeRef.useSpecification && item.itemSpecId == undefined && selectedSpecId == undefined) ||

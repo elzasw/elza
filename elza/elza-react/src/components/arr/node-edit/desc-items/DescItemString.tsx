@@ -8,6 +8,7 @@ import { TextareaAutosize } from "./inputs/TextareaAutosize";
 import { isMaskViewDefinition, maskString, unmaskString } from "./maskUtils";
 import { useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
+import { useTextFragmentsContext } from "components/arr/text-fragments";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemString) => Promise<void>;
@@ -24,12 +25,14 @@ export function DescItemString({
   isDisabled: _isDisabled,
   typeWidth,
   typeRef,
+  compact,
 }: Props) {
   if (item.data && item.data?.dataType !== DataType.String && !item.undefined) {
     throw "Incorrect data type";
   }
 
   const { formatMessage } = useIntl();
+  const textFragments = useTextFragmentsContext();
   const isInherited = item.nodeId !== nodeId;
   const isDisabled =
     item.undefined ||
@@ -75,6 +78,26 @@ export function DescItemString({
     resetConflict();
   }
 
+  function handleFocus(event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    if (mask) { return; }
+    const field = event.currentTarget;
+    textFragments?.registerField(field, (text: string) => {
+      const start = field.selectionStart;
+      const end = field.selectionEnd;
+      const newPos = start + text.length;
+      setValue(`${field.value.slice(0, start)}${text}${field.value.slice(end)}`);
+      requestAnimationFrame(() => {
+        field.selectionStart = newPos;
+        field.selectionEnd = newPos;
+      });
+    });
+  }
+
+  function handleBlur() {
+    textFragments?.unregisterField();
+    handleChange();
+  }
+
   function handleInputChange({
     currentTarget,
   }: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) {
@@ -95,15 +118,18 @@ export function DescItemString({
         flex: 1,
         position: "relative",
         flexDirection: "column",
+        width: "100%",
       }}
     >
       {typeWidth === 0 ? (
         <TextareaAutosize
           resize="none"
+          size={compact ? "small" : "medium"}
           disabled={isDisabled}
           value={item.undefined ? formatMessage(commonMessages.undefined) : value || ""}
           onChange={handleInputChange}
-          onBlur={() => handleChange()}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           style={{
             flex: 1,
             minWidth: "60px",
@@ -112,10 +138,12 @@ export function DescItemString({
         />
       ) : (
         <Input
+          size={compact ? "small" : "medium"}
           disabled={isDisabled}
           value={item.undefined ? formatMessage(commonMessages.undefined) : value || ""}
           onChange={handleInputChange}
-          onBlur={() => handleChange()}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           style={{
             flex: 1,
             minWidth: "60px",
@@ -129,7 +157,7 @@ export function DescItemString({
         isDirty={isDirty}
         onResolve={resolveConflict}
       >
-        {(conflictValue) => <Input value={conflictValue} readOnly={true} />}
+        {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} />}
       </ConflictValue>
       {isDirty && <EditStateDisplay />}
     </div>

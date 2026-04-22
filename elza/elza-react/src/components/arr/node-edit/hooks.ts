@@ -11,13 +11,14 @@ import {
   NodeFormData,
   NodeItem,
 } from "elza-api";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DescItemTypeRef } from "typings/store";
 import { EventType } from "typings/websocket";
 import { AnyMessage } from "typings/websocket/Message";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { getOneSettings } from "../ArrUtils";
 import { createEmptyDescItem } from "./desc-items/utils";
+import { consumePendingTemplateCallback } from "./pendingTemplateItems";
 
 export function useStrictMode() {
   const strictMode: boolean = useAppSelector(({ userDetail, arrRegion }) => {
@@ -90,6 +91,24 @@ function useWSNodeChanges(nodeId: number, callback: (version: number) => void) {
   }, []);
 }
 
+/**
+ * Generates empty placeholder desc items so the form always shows input fields
+ * for item types that the user is expected or allowed to fill in.
+ *
+ * Rules by mandatory level:
+ *
+ * Required / Recommended types:
+ *   - With specification:
+ *       - Repeatable:     empty item per Required/Recommended spec missing a value
+ *       - Non-repeatable: empty item per Required/Recommended/Possible spec missing a value
+ *   - Without specification: empty item if no value exists
+ *
+ * Possible types (non-repeatable only):
+ *   - With or without specification: empty item only when inherited value is inhibited
+ *
+ * In all cases an inherited-and-inhibited value is treated as "effectively empty"
+ * — the parent's value is suppressed, so the user needs a fresh input slot.
+ */
 export function getForcedItemTypes(
   descItems: NodeItem[] = [],
   itemTypes: FormItemType[],
@@ -99,66 +118,95 @@ export function getForcedItemTypes(
   nodeVersionId: number,
   { skipForcedItems }: { skipForcedItems: boolean },
 ) {
-  const _descItems: NodeItem[] = [];
-  const forcedItemTypes = skipForcedItems
-    ? []
-    : itemTypes.filter(
-        ({ type }) =>
-          type === MandatoryType.Required || type === MandatoryType.Recommended,
-      );
+  const forcedDescItems: NodeItem[] = [];
 
-  forcedItemTypes.forEach(({ itemTypeId, specs }) => {
+  if (skipForcedItems) {
+    return forcedDescItems;
+  }
+
+  // An item counts as "effectively empty" when it comes from a parent node
+  // and its value has been inhibited (suppressed) on the current node
+  const isInheritedAndInhibited = (item: NodeItem) =>
+    item.nodeId !== nodeId && !!item.inhibited;
+
+  itemTypes.forEach(({ itemTypeId, type, repeatable, specs = [] }) => {
     const itemTypeRef = itemTypeRefs[itemTypeId];
     const dataType = dataTypeRefs[itemTypeRef.dataTypeId];
 
-    const forcedSpecs = specs.filter(
-      ({ type }) =>
-        type === MandatoryType.Required || type === MandatoryType.Recommended,
+    const isRequiredOrRecommended =
+      type === MandatoryType.Required || type === MandatoryType.Recommended;
+    const isPossible = type === MandatoryType.Possible;
+
+    // Only process Required, Recommended, and Possible types
+    if (!isRequiredOrRecommended && !isPossible) return;
+
+    // Possible types only get forced items when non-repeatable
+    if (isPossible && repeatable) return;
+
+    const existingItemsOfType = descItems.filter(
+      ({ itemTypeId: existingItemTypeId }) => existingItemTypeId === itemTypeId,
     );
+    const existingItemCount = existingItemsOfType.length;
 
-    const descItemTypeCount = descItems.filter(
-      ({ itemTypeId: _itemTypeId }) => _itemTypeId === itemTypeId,
-    ).length;
+    // TODO Hotfix - enum types are excluded from spec-based prefilling because
+    // the prefilled value appears saved in UI but is not actually persisted
+    const useSpecification = itemTypeRef.useSpecification && dataType.code !== DataType.Enum;
 
-    // TODO Hotfix - prevent prefilling value for enum, it looks like the value
-    // is saved, but it isn't
-    if (forcedSpecs.length > 0 && dataType.code !== DataType.Enum) {
-      forcedSpecs.forEach(({ itemSpecId }) => {
-        const descItem = descItems.find(
-          ({ itemTypeId: _itemTypeId, itemSpecId: _itemSpecId }) =>
-            _itemTypeId === itemTypeId && _itemSpecId === itemSpecId,
+    if (useSpecification) {
+      // Determine which specs need a forced empty item:
+      // - Required/Recommended type + repeatable:     only Required/Recommended specs
+      // - Required/Recommended type + non-repeatable:  Required/Recommended/Possible specs
+      // - Possible type (always non-repeatable here):  all specs
+      const specsToProcess = isRequiredOrRecommended
+        ? specs.filter(
+            ({ type: specType }) =>
+              specType === MandatoryType.Required ||
+              specType === MandatoryType.Recommended ||
+              (!repeatable && specType === MandatoryType.Possible),
+          )
+        : specs;
+
+      specsToProcess.forEach(({ itemSpecId }) => {
+        const existingItemsOfSpec = existingItemsOfType.filter(
+          ({ itemSpecId: existingItemSpecId }) => existingItemSpecId === itemSpecId,
         );
-        if (!descItem) {
-          _descItems.push({
-            ...createEmptyDescItem(
-              itemTypeId,
-              nodeId,
-              nodeVersionId,
-              descItemTypeCount,
-              dataType.code,
-            ),
+        const specHasValue = existingItemsOfSpec.length > 0;
+        const allSpecItemsInheritedAndInhibited =
+          specHasValue && existingItemsOfSpec.every(isInheritedAndInhibited);
+
+        // Required/Recommended: add when missing or effectively empty
+        // Possible: add only when effectively empty (inherited + inhibited)
+        const shouldAdd = isRequiredOrRecommended
+          ? !specHasValue || allSpecItemsInheritedAndInhibited
+          : allSpecItemsInheritedAndInhibited;
+
+        if (shouldAdd) {
+          forcedDescItems.push({
+            ...createEmptyDescItem(itemTypeId, nodeId, nodeVersionId, existingItemCount, dataType.code),
             itemSpecId,
           });
         }
       });
     } else {
-      const descItem = descItems.find(
-        ({ itemTypeId: _itemTypeId }) => _itemTypeId === itemTypeId,
-      );
-      if (!descItem) {
-        _descItems.push(
-          createEmptyDescItem(
-            itemTypeId,
-            nodeId,
-            nodeVersionId,
-            descItemTypeCount,
-            dataType.code,
-          ),
+      const typeHasValue = existingItemsOfType.length > 0;
+      const allTypeItemsInheritedAndInhibited =
+        typeHasValue && existingItemsOfType.every(isInheritedAndInhibited);
+
+      // Required/Recommended: add when missing or effectively empty
+      // Possible (non-repeatable): add only when effectively empty
+      const shouldAdd =
+        (isRequiredOrRecommended && (!typeHasValue || allTypeItemsInheritedAndInhibited)) ||
+        (isPossible && allTypeItemsInheritedAndInhibited);
+
+      if (shouldAdd) {
+        forcedDescItems.push(
+          createEmptyDescItem(itemTypeId, nodeId, nodeVersionId, existingItemCount, dataType.code),
         );
       }
     }
   });
-  return _descItems;
+
+  return forcedDescItems;
 }
 
 export interface FormItem {
@@ -206,6 +254,7 @@ export function useNodeFormData(
   );
 
   const { getKey } = useKeyGen(nodeId);
+  const pendingConsumedRef = useRef(false);
 
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [formData, setFormData] = useState<NodeFormData>();
@@ -237,6 +286,24 @@ export function useNodeFormData(
             nodeVersionId,
             { skipForcedItems: false },
           );
+
+      // add desc items from template used to create the node
+      if (!pendingConsumedRef.current) {
+          pendingConsumedRef.current = true;
+          const pendingCallback = consumePendingTemplateCallback(nodeId);
+          if (pendingCallback) {
+              // prevent adding empty items for already existing/forced
+              const existingTypeIds = [
+                  ...(data.formData.descItems || []),
+                  ...(_forcedDescItems || [])
+              ]?.map(({ itemTypeId }) => itemTypeId);
+              pendingCallback((typeId, specId) => {
+                  if (!existingTypeIds.includes(typeId)) {
+                      addEmptyDescItem(typeId, specId);
+                  }
+              });
+          }
+      }
 
       // setStoredData(undefined);
       setFormData(data.formData);
@@ -303,6 +370,10 @@ export function useNodeFormData(
     },
     [fondsVersionId, nodeId],
   );
+
+  useEffect(() => {
+    pendingConsumedRef.current = false;
+  }, [nodeId]);
 
   useEffect(() => {
     if (reloadData) {

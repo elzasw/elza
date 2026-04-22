@@ -1,6 +1,6 @@
 package cz.tacr.elza.packageimport;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -8,10 +8,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -57,7 +57,7 @@ public class TypeUpdateTest extends AbstractServiceTest {
     @Autowired
     private ApItemRepository apItemRepository;
 
-    @Before
+    @BeforeEach
     @Override
     public void setUp() throws Exception {
     	// package reload - true
@@ -65,7 +65,7 @@ public class TypeUpdateTest extends AbstractServiceTest {
         super.setUp();
     }
 
-    @After
+    @AfterEach
     @Override
     public void tearDown() {
         super.tearDown();
@@ -98,7 +98,7 @@ public class TypeUpdateTest extends AbstractServiceTest {
         }
 
         long cnt = this.itemTypeRepository.count();
-        Assert.assertEquals(0, cnt);
+        Assertions.assertEquals(0, cnt);
 
         // Flush any pending operations
         em.flush();
@@ -155,17 +155,17 @@ public class TypeUpdateTest extends AbstractServiceTest {
         em.flush();
 
         // one node has to be mark as invalid
-        Assert.assertEquals(1, itu.getNumDroppedCachedNode());
+        Assertions.assertEquals(1, itu.getNumDroppedCachedNode());
 
         // read values from repository
         Collection<OnlyValues> ddc = dataDateRepository.findValuesByDataIdIn(Collections.singletonList(descItemResult
                 .getData()
                 .getDataId()));
-        Assert.assertNotNull(ddc);
-        Assert.assertEquals("Neplatný počet položek", 1, ddc.size());
+        Assertions.assertNotNull(ddc);
+        Assertions.assertEquals(1, ddc.size(), "Neplatný počet položek");
         OnlyValues dd = ddc.iterator().next();
         // zde může nastat někdy problém s kompatibilitou JAVA/Locale z metody cz.tacr.elza.packageimport.ItemTypeUpdater.changeString2Date
-        Assert.assertEquals("Neplatný očekávaný datum", LocalDate.of(2018, 10, 13), dd.getValue());
+        Assertions.assertEquals(LocalDate.of(2018, 10, 13), dd.getValue(), "Neplatný očekávaný datum");
     }
 
     private ItemType createItemTypeFor(String itemTypeCode, List<ItemSpec> itemSpecList) {

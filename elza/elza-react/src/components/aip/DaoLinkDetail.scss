@@ -1,0 +1,37 @@
+@import "../../variables.scss";
+
+
+.napojeni {
+    border-style: solid;
+    border-color: #bfbfbf;
+    border-width: 1px;
+    margin: 10px;
+    background-color: #e3e3e3;
+    padding: 10px;
+    max-height: 500px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+
+    > p {
+        margin-bottom: 0;
+    }
+}
+
+.napojeni-row {
+
+    > p {
+        margin-bottom: 0;
+    }
+}
+
+.napojeni-row-child {
+
+    > p {
+        margin-bottom: 0;
+    }
+}
+
+.napojeni-div-child {
+    margin-left: 15px;
+}
+

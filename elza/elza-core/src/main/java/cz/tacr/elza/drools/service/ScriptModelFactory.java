@@ -9,11 +9,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -50,6 +51,8 @@ import cz.tacr.elza.service.cache.NodeCacheService;
  */
 @Component
 public class ScriptModelFactory {
+	
+	private static Logger logger = LoggerFactory.getLogger(ScriptModelFactory.class); 
 	
 	@Autowired
 	private LevelTreeCacheService levelTreeCacheService;
@@ -452,6 +455,15 @@ public class ScriptModelFactory {
 				for (var effectiveDescItemAdd : effectiveDescItemsAdd) {
 					if (!inhItems.contains(effectiveDescItemAdd.getItemObjectId())) {
 						descItemLevel.add(effectiveDescItemAdd);
+						logger.trace("Adding effective item (nodeId: {}), itemObjectId: {}, type: {}, spec: {}",
+								level.getNodeId(),
+								effectiveDescItemAdd.getItemObjectId(),
+								effectiveDescItemAdd.getType(), effectiveDescItemAdd.getSpecCode());
+					} else {
+						logger.trace("Item was inhibited (nodeId: {}), itemObjectId: {}, type: {}, spec: {}",
+								level.getNodeId(),
+								effectiveDescItemAdd.getItemObjectId(),
+								effectiveDescItemAdd.getType(), effectiveDescItemAdd.getSpecCode());
 					}
 				}
 			}

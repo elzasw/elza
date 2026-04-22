@@ -42,10 +42,11 @@ import cz.tacr.cam.v1.schema.cam.ItemsXml;
 import cz.tacr.cam.v1.schema.cam.PartXml;
 import cz.tacr.cam.v1.schema.cam.PartsXml;
 import cz.tacr.elza.api.ApExternalSystemType;
+import cz.tacr.elza.cam.ItemUpdates;
+import cz.tacr.elza.cam.ItemUpdates.ChangedBindedItem;
 import cz.tacr.elza.cam.ProcessingContext;
 import cz.tacr.elza.cam.ReceivedItem;
 import cz.tacr.elza.cam.ReceivedPart;
-import cz.tacr.elza.cam.v1.ItemUpdates.ChangedBindedItem;
 import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.core.data.DataType;
@@ -492,6 +493,8 @@ public class EntityDBDispatcher {
                                                                      state.getApType());
         StateApproval oldStateApproval = null;
         StateApproval newStateApproval = null;
+        // Flags to determine if arch. desc have to be revalidated
+        boolean wasDeleted = (state.getDeleteChangeId() != null), willBeDeleted = false;
         switch (entity.getEns()) {
         case ERS_REPLACED:
             // entita je nahrazena v CAM -> musíme nahradit v ELZA
@@ -517,11 +520,13 @@ public class EntityDBDispatcher {
                 }
             }
             state = accessPointService.invalidateAccessPoint(state, accessPoint, procCtx.getApChange());
+            willBeDeleted = true;
             break;
 
         case ERS_INVALID:
             // odstranění entity, která v CAM označena jako neplatná
             state = accessPointService.invalidateAccessPoint(state, accessPoint, procCtx.getApChange());
+            willBeDeleted = true;
             break;
 
         default:
@@ -562,12 +567,24 @@ public class EntityDBDispatcher {
         }
 
         accessPointService.updatePartsIndexesAndValidate(accessPoint, state, syncRes.getParts(), syncRes.getItemMap(), syncQueue);
-        if (accessPointService.isRevalidaceRequired(oldStateApproval, newStateApproval)) {
+        if (accessPointService.isArchDescRevalidationRequired(oldStateApproval, newStateApproval, wasDeleted, willBeDeleted)) {
             ruleService.revalidateNodesWithApRef(accessPoint.getAccessPointId());
         }
         mcc.add(accessPoint.getAccessPointId());
         for (Integer apId : mcc.getModifiedApIds()) {
             accessPointCacheService.createApCachedAccessPoint(apId);
+        }
+
+        // enqueue dependent APs for async revalidation (index regeneration)
+        // Groovy scripts may include data from referenced APs (e.g. names)
+        // so when this AP changes, dependent APs' indexes may become stale
+        List<Integer> refDataIds = dataRecordRefRepository.findIdsByRecord(accessPoint);
+        if (!refDataIds.isEmpty()) {
+            List<Integer> dependentApIds = accessPointRepository.findAccessPointIdsByRefDataId(refDataIds);
+            dependentApIds.removeAll(mcc.getModifiedApIds());
+            if (!dependentApIds.isEmpty()) {
+                asyncRequestService.enqueueAp(dependentApIds);
+            }
         }
 
         this.procCtx = null;
@@ -1339,12 +1356,30 @@ public class EntityDBDispatcher {
             case STRING:
                 ArrDataString dataString = new ArrDataString();
                 dataString.setStringValue(itemString.getValue().getValue());
+                if(StringUtils.isEmpty(dataString.getStringValue())) {
+	                log.error("ItemString is empty, uuid: {}, itemType: {}, itemSpec: {}", itemString.getUuid().getValue(), 
+	                		itemString.getT().getValue(),
+	                		itemString.getS()!=null?itemString.getS().getValue():null);
+	                // throw new IllegalStateException("ItemString is empty, uuid:" + uuid + ", itemType:" + itemString.getT().getValue());
+	                
+	                // Set some default value
+	                dataString.setStringValue("N/A");
+                }                
                 dataString.setDataType(DataType.STRING.getEntity());
                 data = dataString;
                 break;
             case TEXT:
                 ArrDataText dataText = new ArrDataText();
                 dataText.setTextValue(itemString.getValue().getValue());
+                if(StringUtils.isEmpty(dataText.getTextValue())) {
+	                log.error("ItemText is empty, uuid: {}, itemType: {}, itemSpec: {}", itemString.getUuid().getValue(), 
+	                		itemString.getT().getValue(),
+	                		itemString.getS()!=null?itemString.getS().getValue():null);
+	                // throw new IllegalStateException("ItemText is empty, uuid:" + uuid + ", itemType:" + itemString.getT().getValue());
+	                
+	                // Set some default value
+	                dataText.setTextValue("N/A");
+                }                
                 dataText.setDataType(DataType.TEXT.getEntity());
                 data = dataText;
                 break;

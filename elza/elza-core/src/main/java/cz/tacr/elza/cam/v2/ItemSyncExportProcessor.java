@@ -62,8 +62,13 @@ public class ItemSyncExportProcessor implements ItemSyncProcessor {
 		        String batchUpdateString = JaxbUtils.asString(batchUpdate, schema);
 		        String batchUpdateInfoUuid = batchUpdate.getInfo().getUuid().getValue();
 				UUID uuidResponse = camService.upload(queueItem, batchUpdateString, batchUpdateInfoUuid);
-				uploadWorker.createBinding(camService, uuidResponse);
-				apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.EXPORT_PROCESSING, null, uuidResponse.toString(), batchUpdateString, null);
+				// Binding is intentionally NOT created here. It is created only after CAM confirms
+				// the batch was stored (see ItemSyncExportConfirmProcessor). Creating it eagerly
+				// would leave an orphan binding in ELZA when CAM rejects/revokes the batch.
+				// Persist the new-part / new-item uuid map so the confirm processor can resolve
+				// IssueXml.partRef/itemRef back to ELZA ids when CAM returns warnings.
+				String uuidMapJson = UuidMapping.serialize(uploadWorker.getPartUuidMap(), uploadWorker.getItemUuidMap());
+				apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.EXPORT_PROCESSING, null, uuidResponse.toString(), batchUpdateString, null, uuidMapJson);
 
 			} catch (ApiException e) {
 				// if ApiException -> it means we connected server and it is logical failure
@@ -84,6 +89,6 @@ public class ItemSyncExportProcessor implements ItemSyncProcessor {
 
     @Override
     public String toString() {
-    	return "ItemSyncExportProcessor, queueItem.id: " + queueItem.getExtSyncsQueueItemId() + ", accessPointId: " + queueItem.getExtSyncsQueueItemId(); 
+    	return "ItemSyncExportProcessor, queueItem.id: " + queueItem.getExtSyncsQueueItemId() + ", accessPointId: " + queueItem.getAccessPointId();
     }
 }

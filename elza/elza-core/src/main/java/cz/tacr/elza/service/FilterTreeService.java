@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import jakarta.annotation.Nullable;
 
 import cz.tacr.elza.controller.vo.UniqueValue;
@@ -31,7 +32,6 @@ import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.FilterNode;
 import cz.tacr.elza.controller.vo.FilterNodePosition;
 import cz.tacr.elza.controller.vo.TreeNode;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.core.data.ItemType;

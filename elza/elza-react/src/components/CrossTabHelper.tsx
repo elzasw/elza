@@ -1,7 +1,11 @@
 import { default as AcrossTabs } from 'across-tabs';
 import { MAP_URL, MAP_URL_WITH_CONTEXT } from '../pages/map/MapPage';
+import { COMPONENT_URL, COMPONENT_URL_WITH_CONTEXT } from 'pages/component/ComponentPage';
 
-export enum CrossTabEventType {SHOW_IN_MAP = 'SHOW_IN_MAP'}
+export enum CrossTabEventType {
+    SHOW_IN_MAP = 'SHOW_IN_MAP',
+    DISPLAY_COMPONENT = 'DISPLAY_COMPONENT'
+}
 
 export interface CrossTabEvent {
     type: CrossTabEventType;
@@ -16,6 +20,10 @@ interface CrossTabUserClassInstance {
 
 export const TAB_EVENT_SHOW_IN_MAP = 'TAB_EVENT_SHOW_IN_MAP';
 export const WINDOW_MAP_NAME = 'WINDOW_MAP_NAME';
+
+export const TAB_EVENT_DISPLAY_COMPONENT = 'TAB_EVENT_DISPLAY_COMPONENT';
+export const WINDOW_COMPONENT = 'WINDOW_COMPONENT';
+
 const NO_PARENT_EX = '_NO_PARENT';
 
 export const getThisLayout = (): CrossTabUserClassInstance => ((window as any)?.thisLayout);
@@ -90,13 +98,22 @@ class CrossTabHelper {
         switch (eventType) {
             case TAB_EVENT_SHOW_IN_MAP:
                 return WINDOW_MAP_NAME;
+            case TAB_EVENT_DISPLAY_COMPONENT:
+                return WINDOW_COMPONENT;
             default:
                 return '';
         }
     }
 
-    static getUrlFromEvent = (): string => {
-        return MAP_URL_WITH_CONTEXT;
+    static getUrlFromEvent = (eventType: string): string => {
+        switch (eventType) {
+            case CrossTabEventType.SHOW_IN_MAP:
+                return MAP_URL_WITH_CONTEXT;
+            case CrossTabEventType.DISPLAY_COMPONENT:
+                return COMPONENT_URL_WITH_CONTEXT;
+            default:
+                return '';
+        }
     }
 
     static sendEvent(that: CrossTabUserClassInstance, event: CrossTabEvent) {
@@ -128,7 +145,7 @@ class CrossTabHelper {
             that.parent.broadCastAll(event);
         } else {
             console.log('CrossTabEvent', 'creating new child');
-            const url = CrossTabHelper.getUrlFromEvent();
+            const url = CrossTabHelper.getUrlFromEvent(event.type);
             that.parent.openNewTab({url, windowName});
         }
     }

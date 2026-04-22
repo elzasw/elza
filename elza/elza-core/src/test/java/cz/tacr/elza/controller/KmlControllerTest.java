@@ -5,9 +5,9 @@ import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,7 +32,7 @@ public class KmlControllerTest extends AbstractControllerTest {
     protected final static String IMPORT_SCOPE_FA = "IMPORT_SCOPE_FA";
     protected final static String IMPORT_SCOPE_RECORD = "IMPORT_SCOPE_RECORD";
 
-    @After
+    @AfterEach
     public void cleanUp() {
         // Extra scopes has to be deleted
         helperTestService.deleteTables(true);
@@ -51,9 +51,9 @@ public class KmlControllerTest extends AbstractControllerTest {
         importXmlFile(null, allScopes.get(0).getId(), getFile(ALL_IN_ONE_XML));
 
         List<ArrFundVO> funds = getFunds();
-        Assert.assertEquals("Očekáváme 1 archivní pomůcku", 1, funds.size());
+        Assertions.assertEquals(1, funds.size(), "Očekáváme 1 archivní pomůcku");
 
-        Assert.assertEquals("Očekáváme jméno FA z importu", "Import z XML", funds.get(0).getName());
+        Assertions.assertEquals("Import z XML", funds.get(0).getName(), "Očekáváme jméno FA z importu");
 
         int versionId = funds.get(0).getVersions().get(0).getId();
 
@@ -61,7 +61,7 @@ public class KmlControllerTest extends AbstractControllerTest {
         faTreeParam.setVersionId(versionId);
         TreeData faTree = getFundTree(faTreeParam);
 
-        Assert.assertEquals("Očekáváme 3 JP + parent", 4, faTree.getNodes().size());
+        Assertions.assertEquals(4, faTree.getNodes().size(), "Očekáváme 3 JP + parent");
         ArrangementController.IdsParam idsParam = new ArrangementController.IdsParam();
         idsParam.setVersionId(versionId);
         idsParam.setIds(Collections.singletonList(faTree.getNodes().iterator().next().getId()));
@@ -80,7 +80,7 @@ public class KmlControllerTest extends AbstractControllerTest {
             }
         }
 
-        Assert.assertNotNull(cordType);
+        Assertions.assertNotNull(cordType);
 
         params.put("descItemTypeId", cordType.getId());
         params.put("nodeId", treeNodeClient.getId());

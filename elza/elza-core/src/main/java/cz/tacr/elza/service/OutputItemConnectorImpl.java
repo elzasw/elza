@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +35,9 @@ import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.table.ElzaTable;
+import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import groovyjarjarantlr4.v4.parse.ANTLRParser.throwsSpec_return;
 
 public class OutputItemConnectorImpl implements OutputItemConnector {
 
@@ -111,6 +116,12 @@ public class OutputItemConnectorImpl implements OutputItemConnector {
     public void addStringItem(String value, ItemType rsit, Integer itemSpecId) {
         if (isItemTypeIgnored(rsit)) {
             return;
+        }
+        if(StringUtils.isBlank(value)) {
+        	throw new BusinessException( 
+        			"Trying to store empty value, itemType: "+rsit.getCode(),
+        			BaseCode.PROPERTY_IS_INVALID)
+        		.set("ITEM_TYPE", rsit.getCode());        		
         }
         switch (rsit.getDataType()) {
             case STRING:

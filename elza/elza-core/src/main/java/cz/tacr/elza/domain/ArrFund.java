@@ -33,7 +33,6 @@ import cz.tacr.elza.domain.interfaces.Versionable;
 @Cache(region = "fund", usage = CacheConcurrencyStrategy.READ_WRITE)
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "id"})
 public class ArrFund extends AbstractVersionableEntity implements Versionable, ArrFundGetter {
-
     public static final String FIELD_FUND_ID = "fundId";
     public static final String FIELD_NAME = "name";
     public static final String FIELD_INTERNAL_CODE = "internalCode";

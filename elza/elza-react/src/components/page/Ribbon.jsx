@@ -23,11 +23,16 @@ import {
     URL_ENTITY,
     URL_FUND,
     URL_NODE,
+    JAVA_ATTR_CLASS,
     urlFundActions, urlFundDaos,
     urlFundGrid,
+    urlFundAb,
     urlFundMovements,
-    urlFundOutputs, urlFundRequests, urlFundTree, urlFund, URL_FUND_GRID_PATH, GRID
+    urlFundOutputs, urlFundRequests, urlFundTree, urlFund, URL_FUND_GRID_PATH, GRID, URL_AIP,
+    AIP
 } from "../../constants";
+import { extSystemListFetchIfNeeded } from 'actions/admin/extSystem.jsx';
+import { EXT_SYSTEM_CLASS } from 'components/admin/extSystem/ExtSystemForm';
 import UserSettingsModal from 'components/user/UserSettingsModal';
 
 // Nacteni globalni promenne ze <script> v <head>
@@ -69,11 +74,8 @@ class Ribbon extends AbstractReactComponent {
     state = {};
 
     componentDidMount() {
-        const theme = localStorage.getItem("theme") || "light";
-        document.getElementsByTagName('body')[0].className = theme;
-        this.setState({ theme })
-
         this.trySetFocus();
+        this.props.dispatch(extSystemListFetchIfNeeded());
     }
 
     UNSAFE_componentWillReceiveProps(nextProps) {
@@ -122,19 +124,6 @@ class Ribbon extends AbstractReactComponent {
         return this.props.dispatch(userPasswordChange(data.oldPassword, data.password));
     };
 
-    handleChangeTheme = () => {
-        const body = document.getElementsByTagName('body')[0];
-        if (body.className.indexOf("light") >= 0) {
-            this.setState({ theme: "dark" })
-            body.className = body.className.replace("light", "dark");
-            localStorage.setItem("theme", "dark")
-        } else {
-            this.setState({ theme: "light" })
-            body.className = body.className.replace("dark", "light");
-            localStorage.setItem("theme", "light")
-        }
-    }
-
     handleUserSettings = () => {
         const { dispatch } = this.props;
         dispatch(modalDialogShow(
@@ -156,6 +145,7 @@ class Ribbon extends AbstractReactComponent {
             versionId,
             status: { saveCounter },
             showUser,
+            extSystemList
         } = this.props;
 
         let section = null;
@@ -262,6 +252,14 @@ class Ribbon extends AbstractReactComponent {
                         </Button>
                     </LinkContainer>,
                 );
+                arrParts.push(
+                    <LinkContainer key="ribbon-btn-arr-ab" to={urlFundAb(fundId, versionId)}>
+                        <Button variant='default' className={window.location.pathname.includes(AIP) ? "active" : ""}>
+                            <Icon glyph="fa-archive" />
+                            <span className="btnText">{i18n('ribbon.action.arr.ab')}</span>
+                        </Button>
+                    </LinkContainer>,
+                );
             }
             if (userDetail.hasArrPage(fundId)) {
                 // právo na pořádání
@@ -300,23 +298,35 @@ class Ribbon extends AbstractReactComponent {
             }
 
             if (userDetail.hasRdPage(fundId)) {
-                // právo na pořádání
-                arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-requests" to={urlFundRequests(fundId, versionId)}>
-                        <Button variant={'default'}>
-                            <Icon glyph="fa-shopping-basket" />
-                            <span className="btnText">{i18n('ribbon.action.arr.fund.requests')}</span>
-                        </Button>
-                    </LinkContainer>,
+                const hasDigitizationFrontdesk = extSystemList?.rows?.some(
+                    (sys) => sys[JAVA_ATTR_CLASS] === EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk,
                 );
-                arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-daos" to={urlFundDaos(fundId, versionId)}>
-                        <Button variant={'default'}>
-                            <Icon glyph="fa-camera" />
-                            <span className="btnText">{i18n('ribbon.action.arr.fund.daos')}</span>
-                        </Button>
-                    </LinkContainer>,
+
+                if (hasDigitizationFrontdesk) {
+                    arrParts.push(
+                        <LinkContainer key="ribbon-btn-arr-requests" to={urlFundRequests(fundId, versionId)}>
+                            <Button variant={'default'}>
+                                <Icon glyph="fa-shopping-basket" />
+                                <span className="btnText">{i18n('ribbon.action.arr.fund.requests')}</span>
+                            </Button>
+                        </LinkContainer>,
+                    );
+                }
+
+                const hasDigitalRepository = extSystemList?.rows?.some(
+                    (sys) => sys[JAVA_ATTR_CLASS] === EXT_SYSTEM_CLASS.ArrDigitalRepository,
                 );
+
+                if (hasDigitalRepository) {
+                    arrParts.push(
+                        <LinkContainer key="ribbon-btn-arr-daos" to={urlFundDaos(fundId, versionId)}>
+                            <Button variant={'default'}>
+                                <Icon glyph="fa-camera" />
+                                <span className="btnText">{i18n('ribbon.action.arr.fund.daos')}</span>
+                            </Button>
+                        </LinkContainer>,
+                    );
+                }
             }
 
             section = (
@@ -362,6 +372,12 @@ class Ribbon extends AbstractReactComponent {
                             </Button>
                         </LinkContainer>
                     }
+                    <LinkContainer key="ribbon-btn-aip" to={URL_AIP}>
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-archive" />
+                            <span className="btnText">{i18n('ribbon.action.aip')}</span>
+                        </Button>
+                    </LinkContainer>
                     <LinkContainer key="ribbon-btn-registry" to={URL_ENTITY}>
                         <Button variant={'default'}>
                             <Icon glyph="fa-th-list" />
@@ -401,11 +417,11 @@ class Ribbon extends AbstractReactComponent {
         return (
             <div className="ribbon-menu-container">
                 <RibbonMenu>
-                    {partsWithSplit}
+                    {React.Children.toArray(partsWithSplit)}
                 </RibbonMenu>
                 {_showUser && (
                     <div className="user-menu-container">
-                        <Dropdown className="user-menu" id={'user-menu'} alignRight>
+                        <Dropdown className="user-menu" id={'user-menu'} align="end">
                             <Dropdown.Toggle key="user-menu" id="user-menu">
                                 {userDetail.username} <Icon glyph="fa-user" />
                             </Dropdown.Toggle>
@@ -423,9 +439,6 @@ class Ribbon extends AbstractReactComponent {
                                 ]}
                                 {
                                     <>
-                                        <Dropdown.Item eventKey="3" onClick={this.handleChangeTheme}>
-                                            {this.state.theme === "dark" ? <Icon glyph="fa-check-square" /> : <Icon glyph="fa-square-o" />} {i18n("ribbon.action.darkTheme")}
-                                        </Dropdown.Item>
                                         <Dropdown.Item eventKey="4" onClick={this.handleUserSettings}>
                                             {i18n("userSettings.button.title")}
                                         </Dropdown.Item>
@@ -453,13 +466,14 @@ class Ribbon extends AbstractReactComponent {
 }
 
 function mapStateToProps(state) {
-    const { focus, login, userDetail, status, arrRegion } = state;
+    const { focus, login, userDetail, status, arrRegion, app } = state;
     return {
         serializedFilter: arrRegion.funds?.[arrRegion.activeIndex]?.fundDataGrid?.serializedFilter,
         focus,
         login,
         userDetail,
         status,
+        extSystemList: app.extSystemList,
     };
 }
 

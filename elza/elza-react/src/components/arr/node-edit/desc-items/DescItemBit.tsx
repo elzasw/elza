@@ -16,6 +16,7 @@ export function DescItemBit({
   onChange,
   nodeId,
   isDisabled: _isDisabled,
+  compact,
 }: Props) {
   if (item.data && item.data?.dataType !== DataType.Bit && !item.undefined) {
     throw "Incorrect data type";

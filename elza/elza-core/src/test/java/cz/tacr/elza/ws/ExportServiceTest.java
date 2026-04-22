@@ -1,10 +1,15 @@
 package cz.tacr.elza.ws;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.controller.AbstractControllerTest;
@@ -27,6 +32,7 @@ import cz.tacr.elza.ws.types.v1.SearchEntity;
 import cz.tacr.elza.ws.types.v1.SearchEntityResult;
 import cz.tacr.elza.ws.types.v1.SearchEntityUpdates;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ExportServiceTest extends AbstractControllerTest {
 
     @Autowired
@@ -37,6 +43,28 @@ public class ExportServiceTest extends AbstractControllerTest {
 
     @Autowired
     ApAccessPointRepository apRepository;
+
+    @BeforeAll
+    public void initOnce() throws Exception {
+        super.setUp();
+    }
+
+    @AfterAll
+    public void cleanupOnce() {
+        super.tearDown();
+    }
+
+    @Override
+    @BeforeEach
+    public void setUp() throws Exception {
+        // no-op: setup is done once in @BeforeAll initOnce()
+    }
+
+    @Override
+    @AfterEach
+    public void tearDown() {
+        // no-op: cleanup is done once in @AfterAll cleanupOnce()
+    }
 
     @Test
     public void searchEntityTest() {

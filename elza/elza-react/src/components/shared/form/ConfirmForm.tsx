@@ -8,7 +8,8 @@ import './ConfirmForm.scss';
 
 export interface Props {
     onClose?: () => void;
-    onSubmit?: () => void;
+    onSubmit?: () => void | Promise<unknown>;
+    onSubmitSuccess?: (result?: unknown) => void;
     confirmMessage: string;
     submittingMessage: string;
     submitTitle: string;
@@ -17,13 +18,19 @@ export interface Props {
 export default function ConfirmDialog({
     onClose,
     onSubmit,
+    onSubmitSuccess,
     confirmMessage,
     submittingMessage,
     submitTitle = i18n('global.action.store'),
 }: Props) {
+    const handleFormSubmit = async () => {
+        const result = await onSubmit?.();
+        onSubmitSuccess?.(result);
+    };
+
     return (
         <Form>
-            <FinalForm onSubmit={onSubmit}>
+            <FinalForm onSubmit={handleFormSubmit}>
                 {({ handleSubmit, submitting }) => {
                     return <div className="confirm-form-container">
                         {submitting ?

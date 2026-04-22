@@ -57,7 +57,7 @@ class FundTreeLazy extends AbstractReactComponent {
 
     static propTypes = {
         expandedIds: PropTypes.object.isRequired,
-        cutLongLabels: PropTypes.bool.isRequired,
+        cutLongLabels: PropTypes.bool,
         selectedId: PropTypes.number,
         selectedIds: PropTypes.object,
         filterText: PropTypes.string,

@@ -32,6 +32,7 @@ import cz.tacr.elza.controller.vo.ItemDataResult;
 import cz.tacr.elza.controller.vo.FormItemType;
 import cz.tacr.elza.controller.vo.NodeBase;
 import cz.tacr.elza.controller.vo.NodeItem;
+import cz.tacr.elza.controller.vo.NodeUpdateItem;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
@@ -79,8 +80,6 @@ public class ArrangementFormService {
 
 	private final RuleService ruleService;
 
-	private final LevelRepository levelRepository;
-
 	private final LevelTreeCacheService levelTreeCache;
 
 	private final NodeRepository nodeRepository;
@@ -98,11 +97,10 @@ public class ArrangementFormService {
 	private final ArrangementInternalService arrangementInternalService;
 
     private final UserService userService;
-    
+
 	public ArrangementFormService(StaticDataService staticData,
 								  DescriptionItemServiceInternal arrangementInternal,
 								  DescriptionItemService descriptionItemService,
-								  LevelRepository levelRepository,
 								  LevelTreeCacheService levelTreeCache,
 								  UserService userService,
 								  RuleService ruleService,
@@ -111,7 +109,7 @@ public class ArrangementFormService {
 								  ClientFactoryDO factoryDo,
 								  NodeCacheService nodeCache,
 								  FundVersionRepository fundVersionRepository,
-								  NodeRepository nodeRepository, 
+								  NodeRepository nodeRepository,
 								  final ArrangementService arrangementService,
 								  final ArrangementInternalService arrangementInternalService) {
 		this.staticData = staticData;
@@ -119,7 +117,6 @@ public class ArrangementFormService {
 		this.descriptionItemService = descriptionItemService;
 		this.levelTreeCache = levelTreeCache;
 		this.ruleService = ruleService;
-		this.levelRepository = levelRepository;
 		this.nodeRepository = nodeRepository;
 		this.factoryDo = factoryDo;
 		this.factoryVo = factoryVo;
@@ -206,8 +203,8 @@ public class ArrangementFormService {
 			inhibitedDescItemIds = getInhibitedDescItemIds(parentRestoredNodes);
 			// sbíráme všechny descItems s povolenou dědičností z nadřazených uzlů
 			parentsDescItems = parentRestoredNodes.stream()
-					.flatMap(i -> i.getDescItems()!=null?i.getDescItems().stream():null)
-					.filter(i -> itemTypeIdsWithInheritance.contains(i.getItemTypeId()))
+					.flatMap(i -> i.getDescItems()!=null?i.getDescItems().stream():Stream.empty())
+					.filter(i -> itemTypeIdsWithInheritance.contains(i.getDescItemTypeId()))
 					.toList();
 		} else {
 			var restoredDescItems = arrangementInternal.getDescItems(lockChange, node);
@@ -292,7 +289,7 @@ public class ArrangementFormService {
 			// sbíráme všechny descItems s povolenou dědičností z nadřazených uzlů
 			parentsDescItems = parentRestoredNodes.stream()
 					.flatMap(i -> i.getDescItems()!=null?i.getDescItems().stream():Stream.empty())
-					.filter(i -> itemTypeIdsWithInheritance.contains(i.getItemTypeId()))
+					.filter(i -> itemTypeIdsWithInheritance.contains(i.getDescItemTypeId()))
 					.toList();
 			// seznam descItemId s potlačenou dědičností pro aktuální uzel
 			inhibitedDescItemObjectIds = restoredNode.getInhibitedItems().stream().map(i -> i.getDescItemObjectId()).collect(Collectors.toSet());
@@ -329,7 +326,7 @@ public class ArrangementFormService {
 	
 	/**
 	 * Získání seznamu ID (itemId) s potlačenou dědičností ze seznamu uzlů
-	 * 
+	 *
 	 * @param restoredNodes
 	 * @param descItemObjectIdMap mapa descItemObjectId -> ArrDescItem pro rychlé hledání záznamů s potlačenou dědičností
 	 * @return
@@ -343,11 +340,12 @@ public class ArrangementFormService {
 		
 		Set<Integer> inhibitedDescItemIds = new HashSet<Integer>();
 		for (RestoredNode node : restoredNodes) {
-			if(node.getDescItems()!=null) {
-				for (ArrDescItem descItem : node.getDescItems()) {
-					if (descItemObjectIds.contains(descItem.getDescItemObjectId())) {
-						inhibitedDescItemIds.add(descItem.getItemId());
-					}
+            if (node.getDescItems() == null) {
+                continue;
+            }
+			for (ArrDescItem descItem : node.getDescItems()) {
+				if (descItemObjectIds.contains(descItem.getDescItemObjectId())) {
+					inhibitedDescItemIds.add(descItem.getItemId());
 				}
 			}
 		}
@@ -390,6 +388,57 @@ public class ArrangementFormService {
 	}
 
 	/**
+	 * Hromadná úprava hodnot JP (nová).
+	 *
+	 * Funkce je volána z UI a respektuje read-only u prvků popisu
+	 *
+	 * @param fundVersionId  identifikátor verze AS
+	 * @param nodeId         identifikátor uzlu
+	 * @param nodeVersion    verze uzlu
+	 * @param nodeUpdateItems      seznam
+	 * @param requestHeaders reqh
+	 */
+	@Transactional
+	@AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
+	public void updateDescItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
+								@AuthParam(type = AuthParam.Type.NODE) final Integer nodeId,
+								final Integer nodeVersion,
+								final NodeUpdateItem[] nodeUpdateItems,
+								@Nullable final StompHeaderAccessor requestHeaders) {
+
+		ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+		ArrNode node = arrangementService.getNode(nodeId);
+
+	    List<ArrDescItem> createItems = new ArrayList<>();
+	    List<ArrDescItem> updateItems = new ArrayList<>();
+	    List<ArrDescItem> deleteItems = new ArrayList<>();
+
+	    for (NodeUpdateItem nodeItem : nodeUpdateItems) {
+	        ArrDescItem descItem = factoryDo.createDescItem(nodeItem.getItem());
+	        switch (nodeItem.getUpdateOp()) {
+	        case CREATE:
+	            createItems.add(descItem);
+	            break;
+	        case UPDATE:
+	            updateItems.add(descItem);
+	            break;
+	        case DELETE:
+	            deleteItems.add(descItem);
+	            break;
+	        }
+	    }
+
+		List<ArrDescItem> arrDescItems = updateDescItems(fundVersion, node, nodeVersion, createItems, updateItems, deleteItems);
+
+		if (requestHeaders != null) {
+			List<ItemDataResult> results = arrDescItems.stream().map(this::createItemDataResult).toList();
+
+			// odeslání dat zpět
+			wsStompService.sendReceiptAfterCommit(results, requestHeaders);
+		}
+	}
+
+	/**
 	 * Hromadná úprava hodnot JP.
 	 *
 	 * Funkce je volána z UI a respektuje read-only u prvků popisu
@@ -398,6 +447,7 @@ public class ArrangementFormService {
 	 * @param params         parametry pro úpravu
 	 * @param requestHeaders reqh
 	 */
+	@Deprecated
 	@Transactional
 	@AuthMethod(permission = { UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR, UsrPermission.Permission.FUND_ARR_NODE})
 	public void updateDescItems(@AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId,
@@ -431,7 +481,7 @@ public class ArrangementFormService {
 				results.add(new UpdateItemResult(descItem, descItemVo, itemTypesVO, simpleNode));
 			}
 
-			// Odeslání dat zpět
+			// odeslání dat zpět
 			wsStompService.sendReceiptAfterCommit(results, requestHeaders);
 		}
 	}
@@ -481,29 +531,22 @@ public class ArrangementFormService {
 
 		List<ArrDescItem> result = new ArrayList<>();
 
-        MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion
-                .getFundVersionId());
+        MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion.getFundVersionId());
 
 		if (CollectionUtils.isNotEmpty(deleteItems)) {
-            result.addAll(descriptionItemService.deleteDescriptionItems(deleteItems, fundVersion, change, true,
-                                                                        false,
-                                                                        changeContext));
+            result.addAll(descriptionItemService.deleteDescriptionItems(deleteItems, fundVersion, change, true, false, changeContext));
 		}
 
 		if (CollectionUtils.isNotEmpty(updateItems)) {
             for (ArrDescItem updateDescItem : updateItems) {
-                ArrDescItem updatedItem = descriptionItemService.updateValueAsNewVersion(fundVersion, change,
-                                                                                         updateDescItem, changeContext,
-                                                                                         false);
+                ArrDescItem updatedItem = descriptionItemService.updateValueAsNewVersion(fundVersion, change, updateDescItem, changeContext, false);
                 result.add(updatedItem);
             }
 		}
 
 		if (CollectionUtils.isNotEmpty(createItems)) {
             for (ArrDescItem descItem : createItems) {
-                ArrDescItem createdItem = descriptionItemService.createDescriptionItemInBatch(descItem, node,
-                                                                                              fundVersion, change,
-                                                                                              changeContext);
+                ArrDescItem createdItem = descriptionItemService.createDescriptionItemInBatch(descItem, node, fundVersion, change, changeContext);
                 result.add(createdItem);
             }
 		}
@@ -516,7 +559,7 @@ public class ArrangementFormService {
 
 	/**
      * Update description item and return form data
-     * 
+     *
      * Method is called from WebSocket Controller
      *
      * @param fundVersion

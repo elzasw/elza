@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.controller.vo.*;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
@@ -87,6 +88,7 @@ import cz.tacr.elza.controller.vo.FondsField;
 import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
+import cz.tacr.elza.controller.vo.NodeBase;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.NodePlainTextRepresentation;
 import cz.tacr.elza.controller.vo.OperationCompareType;
@@ -96,6 +98,7 @@ import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.UsedItemType;
 import cz.tacr.elza.controller.vo.filter.SearchParam;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
+import cz.tacr.elza.controller.vo.nodes.NodeBaseMapper;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.SearchType;
@@ -114,6 +117,7 @@ import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataString;
 import cz.tacr.elza.domain.ArrDataText;
+import cz.tacr.elza.domain.ArrDataUnitdate;
 import cz.tacr.elza.domain.ArrDataUriRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
@@ -163,6 +167,7 @@ import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.GroupRepository;
 import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
+import cz.tacr.elza.repository.ItemTypeRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
@@ -270,6 +275,9 @@ public class ArrangementService {
     @Autowired
     private GroovyService groovyService;
 
+    @Autowired
+    private ItemTypeRepository itemTypeRepository;
+
     //TODO: add translation or refactor
     public static final String UNDEFINED = "výjimka";
 
@@ -309,7 +317,7 @@ public class ArrangementService {
 
     /**
      * Načtení záznamy o potlačení dědictví na zaklade descItemObjectId.
-     * 
+     *
      * @param nodeId
      * @param descItemObjectId
      * @return záznam o potlačení dědictví
@@ -419,7 +427,7 @@ public class ArrangementService {
     /**
      * @param fund
      * @param ruleSet
-     * @param scopes  
+     * @param scopes
      * @return Upravená archivní pomůcka
      */
     @Transactional
@@ -440,7 +448,7 @@ public class ArrangementService {
                     || !Objects.equals(fund.getFundNumber(), originalFund.getFundNumber())
                     || !Objects.equals(fund.getMark(), originalFund.getMark())
                     || !Objects.equals(fund.getUnitdate(), originalFund.getUnitdate())) {
-                throw new SystemException("Parameters: name, fundNumber, mark, unitdate - can change only Superuser (admin)", 
+                throw new SystemException("Parameters: name, fundNumber, mark, unitdate - can change only Superuser (admin)",
                                           BaseCode.INSUFFICIENT_PERMISSIONS)
                                           .set("fundId", fund.getFundId());
             }
@@ -910,6 +918,25 @@ public class ArrangementService {
     /**
      * Provede zkopírování atributu daného typu ze staršího bratra uzlu.
      *
+     * @param versionId      id verze stromu
+     * @param descItemTypeId typ atributu, který chceme zkopírovat
+     * @param nodeBase       uzel, na který nastavíme hodnoty ze staršího bratra
+     * @return vytvořené hodnoty
+     */
+	public List<ArrDescItem> copyOlderSiblingAttribute(Integer versionId, Integer descItemTypeId, NodeBase nodeBase) {
+        ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
+        RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
+
+        ArrNode node = NodeBaseMapper.createEntity(nodeBase);
+        ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
+        ArrLevel level = lockNode(node, fundVersion, change);
+
+		return copyOlderSiblingAttribute(fundVersion, descItemType, level, change);
+	}
+
+    /**
+     * Provede zkopírování atributu daného typu ze staršího bratra uzlu.
+     *
      * @param version      verze stromu
      * @param descItemType typ atributu, který chceme zkopírovat
      * @param level        uzel, na který nastavíme hodnoty ze staršího bratra
@@ -925,7 +952,6 @@ public class ArrangementService {
         Validate.notNull(level, "Musí být vyplněno");
 
         isValidAndOpenVersion(version);
-
         Set<RulItemType> typeSet = new HashSet<>();
         typeSet.add(descItemType);
 
@@ -1230,7 +1256,7 @@ public class ArrangementService {
                                                            final ArrFundToNodeList arrFundToNodeList) {
         List<ArrFundToNodeList> fundToNodeList = new ArrayList<>();
 
-        // If the variable `arrFundToNodeList` has a value 
+        // If the variable `arrFundToNodeList` has a value
         if (arrFundToNodeList != null) {
             fundToNodeList.add(arrFundToNodeList);
         } else {
@@ -1308,7 +1334,7 @@ public class ArrangementService {
         Integer fundId = version.getFund().getFundId();
         Integer lockChangeId = version.getLockChangeId();
 
-        Set<Integer> nodeIds = lockChangeId != null? 
+        Set<Integer> nodeIds = lockChangeId != null?
         		nodeRepository.findByFulltextAndVersionLockChangeId(searchValue, fundId, lockChangeId) :
         		nodeRepository.findByFulltext(searchValue, fundId);
 
@@ -2295,7 +2321,7 @@ public class ArrangementService {
         ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFund(fund);
 
         CSVFormat csvf = CSVFormat.EXCEL;
-        try (InputStreamReader isr = new InputStreamReader(new BOMInputStream(is), "UTF-8");
+        try (InputStreamReader isr = new InputStreamReader(BOMInputStream.builder().setInputStream(is).get(), "UTF-8");
                 CSVParser parser = csvf.parse(isr)) {
 
             MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(fundVersion
@@ -2395,8 +2421,13 @@ public class ArrangementService {
                     ArrDataRecordRef dataRr = new ArrDataRecordRef();
                     String str = dataIter.next();
                     dataRr.setRecord(em.getReference(ApAccessPoint.class, Integer.parseInt(str)));
-                    data = dataRr;
-                	
+                    data = dataRr;                	
+                }
+                break;
+                case UNITDATE: {
+                	String str = dataIter.next();
+                	ArrDataUnitdate dataUd = ArrDataUnitdate.valueOf(str);
+                	data = dataUd;
                 }
                 break;
                 default:
@@ -2498,7 +2529,7 @@ public class ArrangementService {
 
     /**
      * Získání seznamu typů id a počet id každého typu
-     * 
+     *
      * @param fundVersion
      * @return seznam UsedItemType
      */
@@ -2511,13 +2542,13 @@ public class ArrangementService {
         }
         List<UsedItemType> result = new ArrayList<>(types.size());
         types.forEach(i -> result.add(new UsedItemType().rulItemTypeId(i.getRulItemTypeId()).count(i.getCount().intValue())));
-        
+
         return result;
     }
 
     /**
      * Potlačení dědictví item.
-     * 
+     *
      * @param node
      * @param itemId
      * @return inhibitedItemId
@@ -2537,7 +2568,7 @@ public class ArrangementService {
                     .set("descItemObjectId", descItemObjectId);
 		}
 
-		ArrChange createChange = arrangementInternalService.createChange(ArrChange.Type.ADD_INHIBITED_ITEM);		 
+		ArrChange createChange = arrangementInternalService.createChange(ArrChange.Type.ADD_INHIBITED_ITEM);
 
 		ArrInhibitedItem inhibitedItem = new ArrInhibitedItem();
 		inhibitedItem.setNode(node);
@@ -2557,7 +2588,7 @@ public class ArrangementService {
 
     /**
      * Povolení dědictví item.
-     * 
+     *
      * @param node
      * @param inhibitItem
      * @return inhibitedItemId

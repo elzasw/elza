@@ -14,7 +14,7 @@ export default class DetailHeader extends AbstractReactComponent {
         return (
             <div className="detail-header-container">
                 <div className="detail-header-main">
-                    {icon && <dic className="detail-header-icon">{icon}</dic>}
+                    {icon && <div className="detail-header-icon">{icon}</div>}
                     <div className="detail-header-content">
                         <div className="detail-header-title">{title}</div>
                         <div className="detail-header-desc">{subtitle || '\u00a0'}</div>

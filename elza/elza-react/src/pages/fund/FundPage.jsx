@@ -82,7 +82,6 @@ class FundPage extends AbstractReactComponent {
             'handleExportDialog',
             'renderListItem',
             'handleSelect',
-            'handleSearch',
             'handleSearchClear',
             'handleApproveFundVersion',
             'handleEditFundVersion',
@@ -624,7 +623,7 @@ class FundPage extends AbstractReactComponent {
                                 <div><b>Výstupy</b></div>
                                 {/* <div style={{overflow: "auto"}}> */}
                                 {fundRegion.fundDetail.validNamedOutputs?.slice(0, OUTPUT_MAX_NUMBER).sort((a, b) => new Date(b.generatedDate) - new Date(a.generatedDate)).map(({ name, id, generatedDate }) => {
-                                    return <div style={{ marginBottom: "5px" }}>
+                                    return <div key={id} style={{ marginBottom: "5px" }}>
                                         <div>
                                             <Link to={urlFundOutputs(fundRegion.fundDetail.id, undefined, id)}>
                                                 {name}
@@ -645,7 +644,7 @@ class FundPage extends AbstractReactComponent {
                             <div style={{ marginBottom: "10px" }}>
                                 <div><b>Verze</b></div>
                                 {fundRegion.fundDetail.versions?.map(({ lockDate, id }) => {
-                                    return <div style={{ fontWeight: fundRegion.fundDetail.versionId === id ? "bold" : undefined }}>
+                                    return <div key={id} style={{ fontWeight: fundRegion.fundDetail.versionId === id ? "bold" : undefined }}>
                                         <Link to={urlFundTree(fundRegion.fundDetail.id, lockDate ? id : undefined)}>
                                             {lockDate ? <>
                                                 {new Date(lockDate).toLocaleDateString()}
@@ -661,7 +660,7 @@ class FundPage extends AbstractReactComponent {
                             <div style={{ marginBottom: "10px" }}>
                                 <div><b>Oblasti entit</b></div>
                                 {fundRegion.fundDetail.apScopes?.map(({ name }) => {
-                                    return <div>
+                                    return <div key={name}>
                                         {name}
                                     </div>
                                 })}

@@ -13,6 +13,8 @@ public enum ExtAsyncQueueState {
 
     EXPORT_OK("Odesláno"),
 
+    EXPORT_CANCELLED("Zrušeno uživatelem"),
+
     ERROR("Chyba");
 
     private String value;
@@ -37,6 +39,8 @@ public enum ExtAsyncQueueState {
             return UPDATE;
         case EXPORT_OK:
             return EXPORT_OK;
+        case EXPORT_CANCELLED:
+            return EXPORT_CANCELLED;
         case EXPORT_NEW:
             return EXPORT_NEW;
         case EXPORT_START:

@@ -1,9 +1,9 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,7 +12,12 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,11 +35,34 @@ import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.test.controller.vo.Fund;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class IssueControllerTest extends AbstractControllerTest {
 
     private static final Logger logger = LoggerFactory.getLogger(IssueControllerTest.class);
 
     private static final String PASSWORD = "passwd";
+
+    @BeforeAll
+    public void initOnce() throws Exception {
+        super.setUp();
+    }
+
+    @AfterAll
+    public void cleanupOnce() {
+        super.tearDown();
+    }
+
+    @Override
+    @BeforeEach
+    public void setUp() throws Exception {
+        // no-op: setup is done once in @BeforeAll initOnce()
+    }
+
+    @Override
+    @AfterEach
+    public void tearDown() {
+        // no-op: cleanup is done once in @AfterAll cleanupOnce()
+    }
 
     /**
      * Získání druhů připomínek.
@@ -230,7 +258,7 @@ public class IssueControllerTest extends AbstractControllerTest {
 
                     assertNotNull(commentVO2);
                     assertNotNull(commentVO2.getId());
-                    assertNotNull(comment, commentVO2.getComment());
+                    assertNotNull(commentVO2.getComment(), comment);
                     assertNotNull(commentVO2.getTimeCreated());
 
                     commentId = commentVO2.getId();
@@ -243,7 +271,7 @@ public class IssueControllerTest extends AbstractControllerTest {
 
                     assertNotNull(commentVO3);
                     assertNotNull(commentVO3.getId());
-                    assertNotNull(comment, commentVO3.getComment());
+                    assertNotNull(commentVO3.getComment(), comment);
                     assertNotNull(commentVO3.getTimeCreated());
                 }
 

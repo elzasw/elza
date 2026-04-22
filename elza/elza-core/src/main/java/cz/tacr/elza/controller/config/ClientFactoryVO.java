@@ -1,7 +1,9 @@
 package cz.tacr.elza.controller.config;
 
 import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME;
+import static org.aspectj.runtime.internal.Conversions.intValue;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -18,9 +20,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import cz.tacr.elza.controller.vo.*;
+import cz.tacr.elza.domain.*;
+import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.DaDao;
+import cz.tacr.elza.domain.DaDaoFile;
+import cz.tacr.elza.domain.DaDaoFileFolder;
+import cz.tacr.elza.repository.*;
+import cz.tacr.elza.service.da.DaService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.NotImplementedException;
@@ -90,6 +103,7 @@ import cz.tacr.elza.controller.vo.GisExternalSystemSimpleVO;
 import cz.tacr.elza.controller.vo.GisExternalSystemVO;
 import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.ItemData;
+import cz.tacr.elza.controller.vo.ItemTypeGroup;
 import cz.tacr.elza.controller.vo.MandatoryType;
 import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.ParInstitutionVO;
@@ -133,7 +147,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUnitidVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemGroupVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroup;
 import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -211,23 +224,6 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.packageimport.ItemTypeUpdater;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs;
 import cz.tacr.elza.packageimport.xml.SettingFavoriteItemSpecs.FavoriteItem;
-import cz.tacr.elza.repository.ApIndexRepository;
-import cz.tacr.elza.repository.AuthenticationRepository;
-import cz.tacr.elza.repository.BulkActionNodeRepository;
-import cz.tacr.elza.repository.DaoFileGroupRepository;
-import cz.tacr.elza.repository.DaoFileRepository;
-import cz.tacr.elza.repository.DaoLinkRepository;
-import cz.tacr.elza.repository.DaoRepository;
-import cz.tacr.elza.repository.DaoRequestDaoRepository;
-import cz.tacr.elza.repository.DigitizationRequestNodeRepository;
-import cz.tacr.elza.repository.FundVersionRepository;
-import cz.tacr.elza.repository.GroupRepository;
-import cz.tacr.elza.repository.NodeRepository;
-import cz.tacr.elza.repository.OutputRepository;
-import cz.tacr.elza.repository.PermissionRepository;
-import cz.tacr.elza.repository.RequestQueueItemRepository;
-import cz.tacr.elza.repository.ScopeRepository;
-import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.DaoService;
@@ -350,7 +346,16 @@ public class ClientFactoryVO {
 
     @Autowired
     private AccessPointService accessPointService;
+    @Autowired
+    private AipStateRepository aipStateRepository;
+
     
+    @Autowired
+    private DaSyncQueueItemRepository daSyncQueueItemRepository;
+
+    @Autowired
+    private InstitutionRepository institutionRepository;
+
     /**
      * Konvertor pro INT data
      * 
@@ -382,6 +387,9 @@ public class ClientFactoryVO {
      * @return
      */
     private static ItemData convertText(ArrData arrData) {
+    	if (arrData instanceof ArrDataString) {
+    		return convertString(arrData);
+    	}
     	DataText data = new DataText(((ArrDataText) arrData).getTextValue(), DataType.TEXT);
         data.setDataId(arrData.getDataId());
         return data;
@@ -647,6 +655,37 @@ public class ClientFactoryVO {
         return localDateTime.atOffset(offset);
     }
 
+    public ArrFundGen createFundGen(final ArrFund fund) {
+        Assert.notNull(fund, "AS musí být vyplněn");
+
+        ArrFundGen fundGen = new ArrFundGen();
+        fundGen.setFundNumber(fund.getFundNumber());
+        fundGen.setCreateDate(fund.getCreateDate().toString());
+        fundGen.setId(fund.getFundId());
+        fundGen.setInternalCode(fund.getInternalCode());
+        fundGen.setInstitutionId(fund.getInstitution().getInstitutionId());
+        fundGen.setUnitdate(fund.getUnitdate());
+        fundGen.setName(fund.getName());
+
+        return fundGen;
+    }
+
+    public ParInstitutionGen createParInstitutionGen(final ParInstitution institution, final ApIndex displayName) {
+        cz.tacr.elza.controller.vo.BaseCode type = new cz.tacr.elza.controller.vo.BaseCode();
+        type.setName(institution.getInstitutionType().getName());
+        type.setCode(institution.getInstitutionType().getCode());
+        type.setId(institution.getInstitutionType().getInstitutionTypeId());
+
+        ParInstitutionGen result = new ParInstitutionGen();
+        result.setId(institution.getInstitutionId());
+        result.setAccessPointId(institution.getAccessPointId());
+        result.setCode(institution.getInternalCode());
+        result.setInstitutionType(type);
+        result.setName(displayName != null? displayName.getIndexValue() : null);
+
+        return result;
+    }
+
     /**
      * Vytvoření Fund z ArrFundVersion
      * 
@@ -856,7 +895,7 @@ public class ClientFactoryVO {
         nodeItem.setPosition(item.getPosition());
         nodeItem.setReadOnly(item.getReadOnly());
 
-        ArrData arrData = item.getData();
+        ArrData arrData = HibernateUtils.unproxy(item.getData());
         if (arrData == null) {
         	nodeItem.setUndefined(true);
         } else {
@@ -1713,8 +1752,8 @@ public class ClientFactoryVO {
         result.setAuthTypes(authenticationRepository.findByUser(user).stream().map(UsrAuthentication::getAuthType).collect(Collectors.toList()));
         // Načtení oprávnění
         if (initPermissions) {
-        	//List<UsrPermission> permissions = permissionRepository.findByUserOrderByPermissionIdAsc(user);
-            List<UsrPermission> permissions = permissionRepository.getAllPermissionsWithGroups(user);
+            List<UsrPermission> permissions = new ArrayList<>(permissionRepository.findByUser(user));
+            permissions.addAll(permissionRepository.findByUserGroups(user));
 
             StaticDataProvider staticData = staticDataService.getData();
             List<UsrPermissionVO> permissionsVOs = permissions.stream().map(
@@ -2225,7 +2264,7 @@ public class ClientFactoryVO {
 
     /**
      * Vytvoření vo z DO
-     * 
+     *
      * @param contextPath
      *
      * @param dao
@@ -2398,4 +2437,213 @@ public class ClientFactoryVO {
     public List<RulExportFilterVO> createExportFilterList(final List<RulExportFilter> exportFilters) {
         return exportFilters.stream().map(i -> new RulExportFilterVO(i)).collect(Collectors.toList());
     }
+
+    public List<AipDetailVO> createAips(List<DaAip> aips) {
+        List<AipDetailVO> aipVOList = new ArrayList<>();
+
+        for (DaAip aip : aips) {
+           aipVOList.add(createAipDetail(aip));
+        }
+        return aipVOList;
+    }
+
+    public AipDetailVO createAipDetail(DaAip daAip) {
+        DaAipState state = aipStateRepository.findByDaAipInAndDeleteChangeIsNull(Collections.singletonList(daAip)).get(0);
+        ParInstitution originator = null;
+        if(state.getOriginatorAccessPoint() != null) {
+            originator = institutionRepository.findByAccessPoint(state.getOriginatorAccessPoint());
+        }
+        List<ArrDaoLink> daoLinks = null;
+        Map<Integer, TreeNodeVO> treeNodeMap = null;
+        if (state.getFund() != null) {
+            daoLinks = daoLinkRepository.findByAipIdAndDeleteChangeIsNull(daAip.getAipId());
+            Set<Integer> nodeIds = daoLinks.stream()
+                    .map(ArrDaoLink::getNodeId)
+                    .collect(Collectors.toSet());
+
+            ArrFundVersion fundVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(state.getFund().getFundId());
+            treeNodeMap = levelTreeCacheService.getNodesByIds(nodeIds, fundVersion.getFundVersionId()).stream()
+                    .collect(Collectors.toMap(TreeNodeVO::getId, v -> v));
+        }
+
+        return createAipDetailVO(daAip, state, originator, daoLinks, treeNodeMap);
+    }
+
+    private AipDetailVO createAipDetailVO(DaAip src, DaAipState state, ParInstitution originator, List<ArrDaoLink> daoLinks, Map<Integer, TreeNodeVO> treeNodeMap) {
+        AipDetailVO vo = new AipDetailVO();
+        vo.setAipId(src.getAipId());
+        vo.setCode(src.getCode());
+        vo.setDigitalRepositoryId(src.getDigitalRepository().getExternalSystemId());
+
+        if (state != null) {
+            vo.setAipVersion(state.getAipVersion());
+
+            if (state.getFund() != null) {
+                vo.setFund(createFundGen(state.getFund()));
+            }
+            vo.setFundCode(state.getFundCode());
+            if (state.getUnitdateFrom() != null) {
+                vo.setUnitdateFrom(state.getUnitdateFrom().toString());
+            }
+            if (state.getUnitdateTo() != null) {
+                vo.setUnitdateTo(state.getUnitdateTo().toString());
+            }
+            vo.setInstitutionCode(state.getInstitutionCode());
+            if (state.getInstitution() != null) {
+                ApIndex displayName = indexRepository.findByPartAndIndexType(state.getInstitution().getAccessPoint().getPreferredPart(), DISPLAY_NAME);
+                vo.setInstitution(createParInstitutionGen(state.getInstitution(), displayName));
+            }
+            if (originator != null) {
+                ApIndex displayName = indexRepository.findByPartAndIndexType(state.getOriginatorAccessPoint().getPreferredPart(), DISPLAY_NAME);
+                vo.setOriginatorInstitution(createParInstitutionGen(originator, displayName));
+            }
+            vo.setOriginator(state.getOriginator());
+            vo.setIngestionCode(state.getIngestionCode());
+            vo.setReferenceNumber(state.getReferenceNumber());
+            vo.setNadChangeCode(state.getNadChangeCode());
+            vo.setAipSize(new BigDecimal(state.getAipSize()).intValue());
+            vo.setMetadataLoad(state.getMetadataLoad());
+            vo.setCompleteAipLoad(state.getCompleteAipLoad());
+            vo.setMetadataError(state.getMetadataError());
+            vo.setMetadataErrorException(state.getMetadataErrorException());
+            vo.setAipVersionMetadata(state.getAipVersionMetadata());
+        }
+
+        DaSyncQueueItem importSyncQueueItem = daSyncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(src, DaService.getQueueImportStates());
+        if (importSyncQueueItem != null) {
+            vo.setImportState(mapQueueItemState(importSyncQueueItem.getState()));
+        }
+
+        DaSyncQueueItem exportSyncQueueItem = daSyncQueueItemRepository.findByAipAndStateInAndActiveIsTrue(src, DaService.getQueueExportStates());
+        if (exportSyncQueueItem != null) {
+            vo.setExportState(mapQueueItemState(exportSyncQueueItem.getState()));
+        }
+
+        if (CollectionUtils.isNotEmpty(daoLinks)) {
+            vo.setLinkedNodes(createLinkedNodeVOs(daoLinks, treeNodeMap));
+        }
+
+        return vo;
+    }
+
+    private List<LinkedNodeVO> createLinkedNodeVOs(List<ArrDaoLink> daoLinks, Map<Integer, TreeNodeVO> treeNodeMap) {
+        List<LinkedNodeVO> linkedNodeList = new ArrayList<>();
+        for (ArrDaoLink daoLink : daoLinks) {
+            TreeNodeVO treeNode = treeNodeMap.get(daoLink.getNodeId());
+            linkedNodeList.add(new LinkedNodeVO(daoLink.getDaoLinkId(), treeNode.getId(), treeNode.getName()));
+        }
+        return linkedNodeList;
+    }
+
+    private LinkType mapArrDaoLink(ArrDaoLink.LinkType type) {
+        switch (type) {
+            case AIP -> {return LinkType.AIP;}
+            case PART_AIP -> {return LinkType.PART_AIP;}
+            case COMPONENT_AIP -> {return LinkType.COMPONENT_AIP;}
+            default -> throw new IllegalArgumentException("Unknown link type: " + type);
+        }
+    }
+
+    private QueueItemState mapQueueItemState(
+            cz.tacr.elza.domain.DaSyncQueueItem.QueueItemState state) {
+        switch (state) {
+            case IMPORT_ERROR -> { return QueueItemState.IMPORT_ERROR; }
+            case UPDATE -> { return QueueItemState.UPDATE; }
+            case IMPORT_OK -> { return QueueItemState.IMPORT_OK; }
+            case IMPORT_NEW -> { return QueueItemState.IMPORT_NEW; }
+            case EXPORT_ERROR -> { return QueueItemState.EXPORT_ERROR; }
+            case EXPORT_OK -> { return QueueItemState.EXPORT_OK; }
+            case EXPORT_NEW -> { return QueueItemState.EXPORT_NEW; }
+            default -> throw new BusinessException("Unrecognized queue item state", BaseCode.INVALID_STATE);
+        }
+    }
+
+    public ExplorerTreeNodeFile createExplorerTreeNodeFile(DaDaoFile daDaoFile, List<ArrDaoLink> daoLinks, Map<Integer, TreeNodeVO> treeNodeMap) {
+        ExplorerTreeNodeFile result = new ExplorerTreeNodeFile();
+        result.setUuid(daDaoFile.getDao().getCode());
+        result.setDaoFileId(daDaoFile.getDaoFileId());
+        result.setChecksum(daDaoFile.getChecksum());
+        result.setChecksumType(daDaoFile.getChecksumType());
+        result.setMimeType(daDaoFile.getMimeType());
+        if(daDaoFile.getSize() != null) {
+            result.setSize(intValue(daDaoFile.getSize()));
+        }
+        result.setImageHeight(daDaoFile.getImageHeight());
+        result.setImageWidth(daDaoFile.getImageWidth());
+        result.setSourceXDimensionUnit(daDaoFile.getSourceXDimensionUnit());
+        result.setSourceXDimensionValue(daDaoFile.getSourceXDimensionValue());
+        result.setSourceYDimensionUnit(daDaoFile.getSourceYDimensionUnit());
+        result.setSourceYDimensionValue(daDaoFile.getSourceYDimensionValue());
+        result.setDuration(daDaoFile.getDuration());
+        result.setDescription(daDaoFile.getDescription());
+        result.setFilename(daDaoFile.getDao().getLabel());
+        result.setDaoId(daDaoFile.getDao().getDaoId());
+        if(daDaoFile.getDaoFileFolder() != null) {
+            result.setDaoFileFolderId(daDaoFile.getDaoFileFolder().getDaoFileFolderId());
+        }
+        result.setLinkedNodes(createLinkedNodes(daoLinks, treeNodeMap));
+        return result;
+    }
+
+    public List<LinkedNodeVO> createLinkedNodes(List<ArrDaoLink> daoLinks, Map<Integer, TreeNodeVO> treeNodeMap) {
+        if (CollectionUtils.isNotEmpty(daoLinks)) {
+            List<LinkedNodeVO> linkedNodeList = new ArrayList<>();
+            for (ArrDaoLink daoLink : daoLinks) {
+                TreeNodeVO treeNode = treeNodeMap.get(daoLink.getNodeId());
+                if(treeNode != null) {
+                    linkedNodeList.add(new LinkedNodeVO(daoLink.getDaoLinkId(), treeNode.getId(), treeNode.getName()));
+                }
+            }
+            return linkedNodeList;
+        }
+        return null;
+    }
+
+    public ExplorerTreeNodeFile copyFile(ExplorerTreeNodeFile file) {
+        ExplorerTreeNodeFile result = new ExplorerTreeNodeFile();
+        result.setUuid(file.getUuid());
+        result.setDaoId(file.getDaoId());
+        result.setDaoFileFolderId(file.getDaoFileFolderId());
+        result.setDaoFileId(file.getDaoFileId());
+        result.setChecksum(file.getChecksum());
+        result.setChecksumType(file.getChecksumType());
+        result.setMimeType(file.getMimeType());
+        result.setSize(file.getSize());
+        result.setImageHeight(file.getImageHeight());
+        result.setImageWidth(file.getImageWidth());
+        result.setSourceXDimensionUnit(file.getSourceXDimensionUnit());
+        result.setSourceXDimensionValue(file.getSourceXDimensionValue());
+        result.setSourceYDimensionUnit(file.getSourceYDimensionUnit());
+        result.setSourceYDimensionValue(file.getSourceYDimensionValue());
+        result.setDuration(file.getDuration());
+        result.setDescription(file.getDescription());
+        result.setFilename(file.getFilename());
+        if(file.getParentFolderLogical() != null) {
+            result.setParentFolderLogical(file.getParentFolderLogical());
+        }
+        if(file.getParentFolder() != null) {
+            result.setParentFolder(file.getParentFolder());
+        }
+        result.setLinkedNodes(file.getLinkedNodes());
+        return result;
+    }
+
+    public ExplorerTreeNode createExplorerTreeNode(DaDaoFileFolder daDaoFileFolder, Map<Integer, List<ArrDaoLink>> daoLinkMap, Map<Integer, TreeNodeVO> treeNodeMap) {
+        ExplorerTreeNode result = new ExplorerTreeNode();
+        result.setUuid(UUID.nameUUIDFromBytes(daDaoFileFolder.getDaoFileFolderId().toString().getBytes()).toString());
+        result.setDaoId(daDaoFileFolder.getRepresentationDao().getDaoId());
+        result.setLinkedNodes(createLinkedNodes(daoLinkMap.getOrDefault(daDaoFileFolder.getRepresentationDao().getDaoId(), new ArrayList<>()), treeNodeMap));
+        if(daDaoFileFolder.getParentFileFolder() != null) {
+            result.setParentFolder(createExplorerTreeNode(daDaoFileFolder.getParentFileFolder(), daoLinkMap, treeNodeMap));
+        }
+        result.setLabel(daDaoFileFolder.getLabel());
+        return result;
+    }
+
+
+
+	public NodeBase createNode(ArrNode arrNode) {
+		NodeBase node = new NodeBase(arrNode.getNodeId(), arrNode.getVersion(), arrNode.getUuid());
+		return node;
+	}
 }

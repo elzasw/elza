@@ -21,12 +21,16 @@ import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDe
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.config.export.ExportConfig;
+import cz.tacr.elza.config.export.JasperFormat;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
+import cz.tacr.elza.domain.RulTemplate;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.fund.FundTreeProvider;
@@ -61,17 +65,25 @@ import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.export.JRRtfExporter;
+import net.sf.jasperreports.engine.export.oasis.JROdtExporter;
+import net.sf.jasperreports.engine.export.ooxml.JRDocxExporter;
 import net.sf.jasperreports.export.SimpleExporterInput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
+import net.sf.jasperreports.export.SimpleWriterExporterOutput;
 import net.sf.jasperreports.pdf.JRPdfExporter;
 import net.sf.jasperreports.pdf.SimplePdfReportConfiguration;
 
 public class JasperOutputGenerator extends DmsOutputGenerator {
 
+    private static final Logger logger = LoggerFactory.getLogger(JasperOutputGenerator.class);
+
     private static final String TEMPLATE_EXTENSION = ".jrxml";
     private static final String MAIN_TEMPLATE_NAME = "index" + TEMPLATE_EXTENSION;
 
     private final OutputModel outputModel;
+
+    private final JasperFormat outputFormat;
 
     SimplePdfReportConfiguration pdfExpConfig = new SimplePdfReportConfiguration();
     private PdfAttProvider pdfAttProvider;
@@ -94,6 +106,10 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
                           StructObjService structObjService, DataService dataService,
                           final AccessPointCacheService apCacheService) {
         super(em, dmsService);
+
+        this.outputFormat = exportConfig.getJasperFormat() != null
+                ? exportConfig.getJasperFormat()
+                : JasperFormat.PDF;
 
         StructuredObjectRepository structObjRepos = applicationContext.getBean(StructuredObjectRepository.class);
         StructuredItemRepository structItemRepos = applicationContext.getBean(StructuredItemRepository.class);
@@ -152,9 +168,74 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 
         prepareSubreports(parameters);
 
-        Path partialResult = generatePdfFile(report, parameters);
+        JasperPrint jasperPrint = fillReport(report, parameters);
 
-        mergePDFAndAttachments(partialResult, os);
+        if (outputFormat == JasperFormat.PDF) {
+            Path partialResult = exportPdfToFile(jasperPrint);
+            mergePDFAndAttachments(partialResult, os);
+        } else {
+            if (pdfAttProvider.getTotalPageCnt() > 0) {
+                logger.warn("Output format {} does not support PDF attachments;"
+                        + " attachment placeholders will remain in the document.", outputFormat);
+            }
+            exportToStream(jasperPrint, os);
+        }
+    }
+
+    @Override
+    protected String getOutputExtension(RulTemplate template) {
+        return outputFormat == JasperFormat.PDF
+                ? super.getOutputExtension(template)
+                : outputFormat.getExtension();
+    }
+
+    @Override
+    protected String getOutputMimeType(RulTemplate template) {
+        return outputFormat == JasperFormat.PDF
+                ? super.getOutputMimeType(template)
+                : outputFormat.getMimeType();
+    }
+
+    private JasperPrint fillReport(JasperReport report, Map<String, Object> parameters) {
+        DefaultJasperReportsContext ctx = DefaultJasperReportsContext.getInstance();
+        JasperFillManager fillManager = JasperFillManager.getInstance(ctx);
+        try {
+            return fillManager.fill(report, parameters, new JREmptyDataSource());
+        } catch (JRException e) {
+            throw new ProcessException(params.getOutputId(), "Failed to create Jasper document", e);
+        }
+    }
+
+    private void exportToStream(JasperPrint jasperPrint, OutputStream os) {
+        DefaultJasperReportsContext ctx = DefaultJasperReportsContext.getInstance();
+        SimpleExporterInput input = new SimpleExporterInput(jasperPrint);
+        SimpleOutputStreamExporterOutput output = new SimpleOutputStreamExporterOutput(os);
+        try {
+            switch (outputFormat) {
+                case DOCX -> {
+                    JRDocxExporter exporter = new JRDocxExporter(ctx);
+                    exporter.setExporterInput(input);
+                    exporter.setExporterOutput(output);
+                    exporter.exportReport();
+                }
+                case RTF -> {
+                    JRRtfExporter exporter = new JRRtfExporter(ctx);
+                    exporter.setExporterInput(input);
+                    exporter.setExporterOutput(new SimpleWriterExporterOutput(os));
+                    exporter.exportReport();
+                }
+                case ODT -> {
+                    JROdtExporter exporter = new JROdtExporter(ctx);
+                    exporter.setExporterInput(input);
+                    exporter.setExporterOutput(output);
+                    exporter.exportReport();
+                }
+                default -> throw new IllegalStateException("Unexpected Jasper format: " + outputFormat);
+            }
+        } catch (JRException e) {
+            throw new ProcessException(params.getOutputId(),
+                    "Failed to export Jasper document to " + outputFormat, e);
+        }
     }
 
     private void prepareSubreports(Map<String, Object> parameters) throws IOException {
@@ -186,17 +267,8 @@ public class JasperOutputGenerator extends DmsOutputGenerator {
 		}
 	}
 
-    private Path generatePdfFile(JasperReport report, Map<String, Object> parameters) {
+    private Path exportPdfToFile(JasperPrint jasperPrint) {
         DefaultJasperReportsContext ctx = DefaultJasperReportsContext.getInstance();
-        JasperFillManager fillManager = JasperFillManager.getInstance(ctx);
-
-        JasperPrint jasperPrint;
-        try {
-            jasperPrint = fillManager.fill(report, parameters, new JREmptyDataSource());
-        } catch (JRException e) {
-            throw new ProcessException(params.getOutputId(), "Failed to create Jasper document", e);
-        }
-
         Path pdfFile = tempFileProvider.createTempFile();
 
         try (OutputStream os = Files.newOutputStream(pdfFile, StandardOpenOption.WRITE)) {
