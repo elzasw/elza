@@ -6,6 +6,10 @@ export const messages = defineMessages({
     id: "fund_filter_institutionId",
     defaultMessage: "Instituce"
   },
+  [FondsFieldName.InstitutionId]: {
+    id: "fund_filter_institutionId",
+    defaultMessage: "Instituce"
+  },
   [FondsFieldName.FondsNumber]: {
     id: "fund_filter_fundNumber",
     defaultMessage: "Číslo AS"

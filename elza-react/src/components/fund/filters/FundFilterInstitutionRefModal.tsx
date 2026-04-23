@@ -21,15 +21,23 @@ function formatOperation(operation: OperationCompareType) {
   }
 }
 
+interface Props extends FilterFormProps<Institution> {
+  valueSource?: "code" | "id";
+}
+
 export function FundFilterInstitutionRefModal({
   filterName,
   onFilterChange,
   onClose = () => { console.warn("'onClose' not defined") },
   initialValue,
-}: FilterFormProps<Institution>) {
+  valueSource = "code",
+}: Props) {
   const availableOperations = [OperationCompareType.Eq, OperationCompareType.Neq];
 
-  const [value, setValue] = useState<string>(initialValue?.data?.code);
+  const getInstitutionValue = (institution: Institution) =>
+    valueSource === "id" ? institution.id.toString() : institution.code;
+
+  const [value, setValue] = useState<string>(initialValue?.data ? getInstitutionValue(initialValue.data) : undefined);
   const [query, setQuery] = useState<string>("");
   const [operation, setOperation] = useState<OperationCompareType>(initialValue.operation || availableOperations?.[0] || OperationCompareType.Eq);
   const [institutions, setInstitutions] = useState<Institution[]>([]);
@@ -37,14 +45,18 @@ export function FundFilterInstitutionRefModal({
 
   const { formatMessage } = useIntl();
 
-  const isDirty = value != initialValue?.data?.code || (initialValue.operation && operation != initialValue.operation);
+  const isDirty = value != (initialValue?.data ? getInstitutionValue(initialValue.data) : undefined) || (initialValue.operation && operation != initialValue.operation);
   const inputRef = useRef(null)
   useInitialFocus(inputRef);
 
   useEffect(() => {
     (async () => {
       const _institutions: Institution[] = await WebApi.getInstitutions(true);
-      const initialInstitution = allInstitutions.find(({ code }) => code === initialValue?.data?.code);
+      const initialInstitution = initialValue?.data
+        ? _institutions.find(({ id, code }) => valueSource === "id"
+          ? id === initialValue.data.id
+          : code === initialValue.data.code)
+        : undefined;
       if (initialInstitution) {
         setQuery(initialInstitution.name);
       }
@@ -58,7 +70,7 @@ export function FundFilterInstitutionRefModal({
   }
 
   const handleFilterChange = useCallback(() => {
-    const institution = institutions.find(({ code }) => code === value);
+    const institution = institutions.find((i) => getInstitutionValue(i) === value);
 
     if (institution && isDirty) {
       onFilterChange({
@@ -78,7 +90,7 @@ export function FundFilterInstitutionRefModal({
             fieldName: name,
           },
           operation,
-          value: data.code,
+          value: getInstitutionValue(data),
         }),
         getSerializedString: ({ data }) => data.name,
       });
@@ -107,8 +119,8 @@ export function FundFilterInstitutionRefModal({
       }}
       onOptionSelect={handleInstitutionSelect}
     >
-      {filteredInstitutions.map(({ name, id, code }) => {
-        return <Option key={id} value={code.toString()}>{name}</Option>
+      {filteredInstitutions.map((institution) => {
+        return <Option key={institution.id} value={getInstitutionValue(institution)}>{institution.name}</Option>
       })}
     </Combobox>
   </FilterWindow>
