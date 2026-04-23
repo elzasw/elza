@@ -4,7 +4,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>3.0-SNAPSHOT</version>
+        <version>3.3.8-SNAPSHOT</version>
     </parent>
     <artifactId>elza-core</artifactId>
     <name>ELZA Core</name>
@@ -763,8 +763,8 @@
 			      </goals>
 			      <configuration>
 			        <target name="delete-folder">
-			          <delete dir="${project.build.directory}/generated-sources/cam-v1/org/w3/_2001/xmlschema" failonerror="false"/>
-			          <delete dir="${project.build.directory}/generated-sources/cam-v2/org/w3/_2001/xmlschema" failonerror="false"/>
+			          <delete dir="${project.build.directory}/generated-sources/cam-v1/org/w3/_2001/xmlschema" failonerror="false" />
+			          <delete dir="${project.build.directory}/generated-sources/cam-v2/org/w3/_2001/xmlschema" failonerror="false" />
 			        </target>
 			      </configuration>
 			    </execution>
