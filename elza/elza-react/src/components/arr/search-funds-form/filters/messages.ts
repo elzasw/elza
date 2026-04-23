@@ -1,4 +1,4 @@
-import { NodeFieldName, OperationCompareType } from "elza-api";
+import { FondsFieldName, NodeFieldName, OperationCompareType } from "elza-api";
 import { defineMessages } from "react-intl";
 
 export const messages = defineMessages({
@@ -61,5 +61,13 @@ export const messages = defineMessages({
   [NodeFieldName.ConformityError]: {
     id: "search_funds_form_conformity_error",
     defaultMessage: "Chyba",
+  },
+  [FondsFieldName.InstitutionId]: {
+    id: "search_funds_form_institution",
+    defaultMessage: "Instituce",
+  },
+  [FondsFieldName.FondsId]: {
+    id: "search_funds_form_fonds",
+    defaultMessage: "Archivní soubor",
   },
 })
