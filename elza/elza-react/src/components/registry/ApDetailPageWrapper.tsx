@@ -1,5 +1,5 @@
 import React, { ReactElement, useCallback, useEffect, useState, useRef, PropsWithChildren } from 'react';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 import { objectByProperty } from "stores/app/utils";
@@ -144,6 +144,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     onPushApToExt,
     revisionActive: revisionActiveUrl = false,
 }) => {
+    const currentUserId = useSelector((state: AppState) => state.userDetail?.id as number | null);
     const apTypeId = detail.fetched && detail.data ? detail.data.typeId : 0;
 
     const [collapsed, setCollapsed] = useState<boolean>(false);
@@ -151,6 +152,28 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     const [exportMessage, setExportMessage] = useState<string>(null);
     const [itemQueueId, setItemQueueId] = useState<number>(-1);
     const [revisionActive, setRevisionActive] = useState<boolean>(revisionActiveUrl);
+    const autoEnabledForEntity = useRef<number | null>(null);
+
+    useEffect(() => {
+        setRevisionActive(revisionActiveUrl);
+    }, [revisionActiveUrl]);
+
+    // Auto-enable revision view when the current user is the assignee of the
+    // loaded entity. Runs once per entity load; a later manual toggle-off is
+    // preserved because the ref remembers we've already applied the default.
+    useEffect(() => {
+        if (select) { return; }
+        if (!detail.fetched || !detail.data) { return; }
+        const entityId = detail.data.id;
+        if (autoEnabledForEntity.current === entityId) { return; }
+
+        const hasRevision = !!detail.data.revStateApproval;
+        const isAssignee = currentUserId != null && detail.data.assignedTo === currentUserId;
+        if (hasRevision && isAssignee && !revisionActive) {
+            setRevisionActive(true);
+        }
+        autoEnabledForEntity.current = entityId;
+    }, [detail, currentUserId, select]);
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -167,18 +190,18 @@ const ApDetailPageWrapper: React.FC<Props> = ({
 
     // pri neexistenci revize dojde k zobrazeni samotne entity
     useEffect(() => {
-        // change url when revisionActive changes
-        if (revisionActive !== revisionActiveUrl && !select && !detail.isFetching) {
-            dispatch(goToAe(history, id, false, !select, revisionActive, true))
-        }
-    }, [revisionActive]);
+        if (select || detail.isFetching) { return; }
 
-    useEffect(() => {
-        // redirect to url without revision, when the entity is not in revision state
-        if (detail.fetched && !detail.isFetching && !detail.data?.revStateApproval && revisionActiveUrl && !select) {
-            dispatch(goToAe(history, id, false, !select, false, true))
+        const entityHasNoRevision = detail.fetched && !detail.data?.revStateApproval;
+        if (entityHasNoRevision && revisionActiveUrl) {
+            dispatch(goToAe(history, id, false, !select, false, true));
+            return;
         }
-    }, [detail])
+
+        if (revisionActive !== revisionActiveUrl) {
+            dispatch(goToAe(history, id, false, !select, revisionActive, true));
+        }
+    }, [revisionActive, revisionActiveUrl, select, detail, id, dispatch, history])
 
     // Scrolls a part into view by its data-part-id attribute; silent no-op if the
     // part is not currently rendered (e.g. user navigated away between dialog open
