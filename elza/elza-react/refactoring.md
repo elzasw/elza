@@ -186,10 +186,11 @@ Setup PR scaffolding drafted on branch `Branch_dec979e2`:
 - [x] [src/test/mocks/handlers.ts](src/test/mocks/handlers.ts) + [server.ts](src/test/mocks/server.ts) — MSW placeholders
 - [x] [src/stores/app/status.test.ts](src/stores/app/status.test.ts) — reducer smoke test (5 cases)
 - [x] [src/test/mocks/stomp.test.ts](src/test/mocks/stomp.test.ts) — proves the STOMP mock contract; doubles as example
-- [ ] `npm install` + `npm test` green locally (**waiting on reviewer**)
-- [ ] CI wiring (`npm test` in PR pipeline)
+- [x] `npm install --legacy-peer-deps` + `npm test` green locally (10/10)
+- [x] Maven integration — [pom.xml](pom.xml) `npm-test` execution bound to `test` phase; respects `-DskipTests` and `-Pskiptest` (via `maven.test.skip` → profile that sets `skipTests=true`)
+- [ ] Dedicated CI step (if separate from `mvn install`)
 - [ ] One page-mount smoke test (candidate: [AdminLogsPage.jsx](src/pages/admin/AdminLogsPage.jsx))
-- [ ] "How to write a test" snippet in README
+- [x] "How to write a test" snippet — linked from [README.md](README.md) and [../CLAUDE.md](../CLAUDE.md); full reference stays in this file
 
 ### How to write a test (quick reference)
 
