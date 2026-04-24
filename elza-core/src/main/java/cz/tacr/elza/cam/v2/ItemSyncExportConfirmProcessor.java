@@ -58,8 +58,10 @@ public class ItemSyncExportConfirmProcessor implements ItemSyncProcessor {
 				case FINISHED:
 					batchUpdateResult = camService.getBatchUpdateResult(queueItem);
 					if (batchUpdateResult instanceof BatchChangeSuccessXml) {
-						UploadWorker uploadWorker = camService.prepareUpload(queueItem);
-						uploadWorker.updateBinding(camService, batchUpdateResult);
+						// Persist bindings using the uuid map captured at upload time —
+						// these are the UUIDs that actually went on the wire to CAM, so the
+						// stored bindings stay consistent with CAM's state.
+						camService.confirmBatchSuccess(queueItem, (BatchChangeSuccessXml) batchUpdateResult);
 						apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.EXPORT_OK);
 					} else {
 						processBatchChangeFailureInCaseFinished((BatchChangeFailureXml) batchUpdateResult);
