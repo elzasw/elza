@@ -14,7 +14,10 @@
     "extract": "formatjs extract 'src/**/*.{ts,tsx,js,jsx}' --ignore 'src/**/*.{d,test}.{ts,tsx}' --out-file lang/extracted/cs.json",
     "compile-folder": "formatjs compile-folder lang/translated public/static/res/locale",
     "compile-extracted": "formatjs compile lang/extracted/cs.json --out-file public/static/res/locale/cs.json",
-    "extract-compile": "formatjs extract 'src/**/*.{ts,tsx,js,jsx}' --ignore 'src/**/*.{d,test}.{ts,tsx}' --out-file temp.json && formatjs compile 'temp.json' --out-file public/static/res/locale/cs.json && rm temp.json"
+    "extract-compile": "formatjs extract 'src/**/*.{ts,tsx,js,jsx}' --ignore 'src/**/*.{d,test}.{ts,tsx}' --out-file temp.json && formatjs compile 'temp.json' --out-file public/static/res/locale/cs.json && rm temp.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.51.1",
@@ -62,18 +65,25 @@
   },
   "devDependencies": {
     "@formatjs/cli": "^6.3.11",
+    "@testing-library/jest-dom": "^6.4.0",
+    "@testing-library/react": "^14.2.0",
+    "@testing-library/user-event": "^14.5.2",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@types/react-redux": "^7.1.26",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "@vitejs/plugin-react": "^4.0.3",
+    "@vitest/coverage-v8": "^1.6.0",
     "concurrently": "^8.2.2",
     "eslint": "^8.45.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
+    "jsdom": "^24.0.0",
+    "msw": "^2.6.0",
     "sass": "^1.66.1",
     "typescript": "^5.0.2",
-    "vite": "^4.4.5"
+    "vite": "^4.4.5",
+    "vitest": "^1.6.0"
   }
 }
