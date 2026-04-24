@@ -202,7 +202,8 @@ class RegistryList extends AbstractReactComponent {
     };
 
     handleRegistryDetail = item => {
-        const { dispatch, history, select } = this.props;
+        const { dispatch, history, select, registryDetail } = this.props;
+        if (registryDetail?.id === item.id) { return; }
         dispatch(goToAe(history, item.id, false, !select));
     };
 
