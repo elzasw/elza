@@ -9,9 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import cz.tacr.elza.repository.HsearchOutboxEventRepository;
 import cz.tacr.elza.test.controller.vo.FilterType;
 import cz.tacr.elza.test.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.test.controller.vo.ResultEntityRef;
@@ -25,16 +23,13 @@ import cz.tacr.elza.test.controller.vo.SearchParams;
  * search API, no DB mutation — so absolute count assertions against the
  * SIMPLE-DEV fixture remain valid across siblings without any cleanup.
  *
- * <p>{@link #searchEntityTest()} waits for the Hibernate Search outbox to
- * drain before querying; this is the dominant cost (several seconds after
- * a fresh package load). Under PER_CLASS the wait happens once per class
- * run, not per test method — that's where the speedup comes from.
+ * <p>{@link #searchEntityTest()} waits for Hibernate Search to finish
+ * indexing before querying; this is the dominant cost (several seconds
+ * after a fresh package load). Under PER_CLASS the wait happens once per
+ * class run, not per test method — that's where the speedup comes from.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SearchControllerTest extends AbstractControllerTest {
-
-    @Autowired
-    HsearchOutboxEventRepository hsearchOutboxEvent;
 
     @BeforeAll
     public void initOnce() throws Exception {
@@ -59,9 +54,10 @@ public class SearchControllerTest extends AbstractControllerTest {
     }
 
     /**
-     * Search of access-point entities. Waits for Hibernate Search outbox to
-     * drain (SIMPLE-DEV loaded 3 APs at class startup; their index events
-     * must be processed before search returns meaningful results).
+     * Search of access-point entities. Waits for Hibernate Search to finish
+     * indexing (SIMPLE-DEV loaded 3 APs at class startup; the startup mass
+     * indexer and the outbox-polling processor must both settle before search
+     * returns meaningful results).
      *
      * <p><b>Creates:</b> nothing.
      * <br><b>Cleans up:</b> n/a.
@@ -69,11 +65,8 @@ public class SearchControllerTest extends AbstractControllerTest {
      * 2 of which contain the text "Firma".
      */
     @Test
-    public void searchEntityTest() throws InterruptedException {
-        // wait for ending hibernate search indexing
-        while (hsearchOutboxEvent.count() > 0) {
-            Thread.sleep(100);
-        }
+    public void searchEntityTest() {
+        helperTestService.waitForIndexUpdate();
 
         // filter is null
         ResultEntityRef result = searchApi.searchEntity(createSearchParamEmpty());
@@ -95,8 +88,8 @@ public class SearchControllerTest extends AbstractControllerTest {
      * <br><b>Fixture dependency:</b> no funds / arch-desc entities exist.
      */
     @Test
-    public void searchArchDescTest() throws InterruptedException {
-        // TODO: wait for ending lucene indexing?
+    public void searchArchDescTest() {
+        helperTestService.waitForIndexUpdate();
 
         // filter is null
         ResultEntityRef result = searchApi.searchArchDesc(createSearchParamEmpty());
