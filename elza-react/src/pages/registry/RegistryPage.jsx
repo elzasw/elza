@@ -86,7 +86,7 @@ class RegistryPage extends AbstractReactComponent {
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
-        this.initData(this.props);
+        this.initData(this.props, prevProps);
     }
 
     canDeleteRegistry = () => {
@@ -102,7 +102,7 @@ class RegistryPage extends AbstractReactComponent {
         return id && data && !isCompleteExternalSystem;
     };
 
-    initData = (props = this.props) => {
+    initData = (props = this.props, prevProps) => {
         const { dispatch, registryDetail, history, select = false } = this.props;
 
         //todo: prevest na apTypes
@@ -121,20 +121,24 @@ class RegistryPage extends AbstractReactComponent {
 
         if (!select) {
             const matchId = this.props.match.params.id;
+            const prevMatchId = prevProps?.match?.params?.id;
+            const matchIdChanged = !prevProps || matchId !== prevMatchId;
 
-            // pokud si pamatujeme spolední navštívenou při prvním vstupu - provedeme přesměrování
-            if (registryDetail.id !== null && matchId == null) {
-                dispatch(goToAe(history, registryDetail.id, false, !select))
-            }
+            if (matchIdChanged) {
+                // pokud si pamatujeme spolední navštívenou při prvním vstupu - provedeme přesměrování
+                if (registryDetail.id !== null && matchId == null) {
+                    dispatch(goToAe(history, registryDetail.id, false, !select))
+                }
 
-            if (isUuid(matchId)) {
-                dispatch(registryDetailFetchIfNeeded(matchId)).then((data) => {
-                    if (data) {
-                        dispatch(routerNavigate(urlEntity(data.id), "REPLACE"));
-                    }
-                });
-            } else if (isInteger(matchId)) {
-                dispatch(registryDetailFetchIfNeeded(parseInt(matchId)));
+                if (isUuid(matchId)) {
+                    dispatch(registryDetailFetchIfNeeded(matchId)).then((data) => {
+                        if (data) {
+                            dispatch(routerNavigate(urlEntity(data.id), "REPLACE"));
+                        }
+                    });
+                } else if (isInteger(matchId)) {
+                    dispatch(registryDetailFetchIfNeeded(parseInt(matchId)));
+                }
             }
         }
 

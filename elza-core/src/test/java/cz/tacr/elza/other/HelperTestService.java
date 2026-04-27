@@ -494,59 +494,58 @@ public class HelperTestService {
     }
     
     /**
-     * Method to wait till index update is finished
+     * Wait until Hibernate Search has caught up with all pending work.
+     *
+     * <p>Two independent mechanisms can leave the index stale:
+     * <ol>
+     *   <li>The {@code MassIndexer} started asynchronously by
+     *       {@link cz.tacr.elza.service.StartupService} on every context
+     *       startup. It reads entities directly and writes Lucene documents
+     *       without touching {@code hsearch_outbox_event}; its completion is
+     *       only observable via {@link AdminService#isIndexingRunning()}.</li>
+     *   <li>Normal entity writes, which enqueue events in
+     *       {@code hsearch_outbox_event} for the outbox-polling processor.</li>
+     * </ol>
+     *
+     * <p>Both must settle before a test can rely on search results.
      */
     public void waitForIndexUpdate() {
-    	// There are several approaches how to wait for the index update to finish.
-    	// 1. Run massIndexer and wait till it is finished. This is not optimal
-    	//    because it might hide some issues with the index update.
-    	//    e.g.: massIndexerStartAndWait(ArrDescItem.class);
-    	//
-    	// 2. Try to get directly to the OutboxPollingSearchMapping
-		//    and wait till the index update is finished.
-    	//    This is the most optimal approach.
-    	//    BUT IT DOES NOT WORK!
-    	/*
-        SearchMapping searchMapping = Search.mapping(sessionFactory);
-        HibernateOrmMapping hibernateOrmMapping = (HibernateOrmMapping) searchMapping;
-        CoordinationStrategy coordStrategy = hibernateOrmMapping.coordinationStrategy();
-        CompletableFuture<?> comp = coordStrategy.completion();
-        try {
-			Object result = comp.get(10, TimeUnit.SECONDS);
-		} catch (Exception e) {
-			throw new IllegalStateException("Index update failed", e);
-		}
-		*/
-        // 3. If it is not possible to read state from OutboxPollingSearchMapping,
-		//    we can read content of table hsearch_outbox_event and check 
-        //    if there are any unfinished events.
-		OutboxEventOrder processingOrder = OutboxEventOrder.ID;
-    	
-    	Integer counter = 0;
-    	while(counter<300){
-    		
-    		Integer pendingEvents;
-    		try(Session session = this.sessionFactory.openSession()) {
-    			DefaultOutboxEventFinder.Provider prov = new DefaultOutboxEventFinder.Provider( processingOrder );
-    			DefaultOutboxEventFinder finder = prov.createWithoutStatusOrProcessAfterFilter();
-    			List<OutboxEvent> results = finder.findOutboxEvents(session, 10);
-    			pendingEvents = results.size();
-    		}
-    		if(pendingEvents==0) {
-    			// success
-    			logger.debug("Indexing finished.");
-    			return;
-    		} else {
-    			logger.debug("Waiting to finish indexing, number of pending events: {}", pendingEvents);
-    		}
-    		counter++;
-    		try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				throw new IllegalStateException(e);
-			}
-    	};
-    	throw new IllegalStateException("Timeout.");
+        long deadline = System.currentTimeMillis() + 30_000;
+
+        while (adminService.isIndexingRunning()) {
+            if (System.currentTimeMillis() > deadline) {
+                throw new IllegalStateException("Mass indexer did not finish in 30s");
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(e);
+            }
+        }
+
+        OutboxEventOrder processingOrder = OutboxEventOrder.ID;
+        while (System.currentTimeMillis() <= deadline) {
+            int pendingEvents;
+            try (Session session = this.sessionFactory.openSession()) {
+                DefaultOutboxEventFinder.Provider prov = new DefaultOutboxEventFinder.Provider(processingOrder);
+                DefaultOutboxEventFinder finder = prov.createWithoutStatusOrProcessAfterFilter();
+                List<OutboxEvent> results = finder.findOutboxEvents(session, 10);
+                pendingEvents = results.size();
+            }
+            if (pendingEvents == 0) {
+                logger.debug("Indexing finished.");
+                return;
+            }
+            logger.debug("Waiting to finish indexing, number of pending events: {}", pendingEvents);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(e);
+            }
+        }
+        throw new IllegalStateException("Timeout waiting for outbox-polling processor to drain");
 	}
     
 

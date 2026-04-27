@@ -118,12 +118,16 @@ ELZA is an archival management system used by Czech archives. Key domain concept
 
 ## Language
 
-- Source code: English (variable names, class names)
-- Comments and documentation: predominantly Czech
-- UI strings: Czech
-- When writing commit messages or comments, use Czech if the surrounding context is Czech, otherwise English.
-- New comments in code should preferably be written in English. The only exception is when fixing or updating a pre-existing comment that is already in Czech — in that case keep it in Czech to stay consistent with the surrounding text.
+- Source code: English (variable names, class names).
+- UI strings: Czech.
+- Commit messages: use Czech if the surrounding context is Czech, otherwise English.
 - Developers are non-native English speakers. When they write English — in code, comments, commit messages, or chat — gently correct grammar/phrasing mistakes and briefly explain the preferred wording so they can learn.
+
+## Comments
+
+When you do write a comment, it should describe the code's current behavior and, where non-obvious, its rationale. Comments must not reference previous versions, past bugs, or how a fix was reached ("previously this…", "used to return…", "pre-existing code did X", "rebuilding here would…"). That kind of history is valuable while reviewing — share it freely in chat and in the PR/commit message — but in source it rots quickly as the code evolves and misleads future readers.
+
+Existing comments in this codebase are predominantly Czech. New comments should be written in English. When editing a pre-existing Czech comment, keep it in Czech to stay consistent with the surrounding text.
 
 ## Collaboration
 

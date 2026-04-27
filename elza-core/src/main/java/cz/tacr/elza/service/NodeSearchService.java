@@ -297,7 +297,7 @@ public class NodeSearchService {
 			switch (fieldName) {
 			case FONDS_ID:
 			case INSTITUTION_ID:
-				String searchFieldName = fieldName.equals(FondsFieldName.FONDS_ID) ? "fundId" : fieldName.name();
+				String searchFieldName = fieldName.equals(FondsFieldName.FONDS_ID) ? "fundId" : fieldName.getValue();
 			    Integer value = Integer.parseInt(filter.getValue());
 				return getPredicateByNumber(factory, searchFieldName, op, value);
 			default:

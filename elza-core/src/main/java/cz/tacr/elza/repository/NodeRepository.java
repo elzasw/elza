@@ -50,6 +50,20 @@ public interface NodeRepository extends ElzaJpaRepository<ArrNode, Integer>, Nod
             "WHERE l.levelId IS NULL")
     List<Integer> findUnusedNodeIds();
 
+    /**
+     * Returns the subset of the given node IDs that are active (have at least
+     * one {@code arr_level} with {@code deleteChange IS NULL}) but currently
+     * have no {@code arr_cached_node} row. Used by
+     * {@link cz.tacr.elza.service.cache.NodeCacheService#syncNodes} to recreate
+     * cache rows for nodes whose levels were resurrected by
+     * {@link cz.tacr.elza.service.RevertingChangesService#revertChanges}.
+     */
+    @Query("SELECT DISTINCT n.nodeId FROM arr_node n " +
+            "WHERE n.nodeId IN :nodeIds " +
+            "AND EXISTS (SELECT 1 FROM arr_level l WHERE l.node = n AND l.deleteChange IS NULL) " +
+            "AND NOT EXISTS (SELECT 1 FROM arr_cached_node cn WHERE cn.nodeId = n.nodeId)")
+    List<Integer> findUncachedActiveNodeIds(@Param("nodeIds") Collection<Integer> nodeIds);
+
     ArrNode findOneByUuid(String uuid);
 
     List<ArrNode> findAllByUuidIn(Collection<String> uuids);
