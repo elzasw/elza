@@ -25,22 +25,27 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 /**
- * Data jednotky popisu serializované pro rychlejší sestavení.
+ * Serialized description-unit (JP) data, stored for fast assembly.
  *
  * <p>
- * Cache consistency: The Hibernate Search index for this entity depends solely
+ * Row-existence invariant: an {@code arr_cached_node} row exists for a node
+ * <i>iff</i> that node has at least one {@code arr_level} with
+ * {@code deleteChange IS NULL}. Invalid nodes (all levels soft-deleted) have
+ * no cache row and are therefore absent from the Lucene index. See
+ * {@link cz.tacr.elza.service.cache.NodeCacheService} for the full cache
+ * contract and lifecycle.
+ * </p>
+ *
+ * <p>
+ * Cache consistency: the Hibernate Search index for this entity depends solely
  * on the serialized {@link #data} column (see {@link ArrCachedNodeBinder}).
  * Changes to underlying entities (ArrDescItem, ArrData, ArrNodeConformity, etc.)
- * do NOT automatically trigger reindexing. The following code paths are responsible
- * for keeping the {@code data} column in sync with the actual DB state:
- * <ul>
- *   <li>{@link cz.tacr.elza.service.cache.NodeCacheService#syncCache()} — creates cache for new (uncached) nodes</li>
- *   <li>{@link cz.tacr.elza.service.cache.NodeCacheService#syncNodes(java.util.Collection)} — updates cache for existing nodes</li>
- *   <li>{@link cz.tacr.elza.service.cache.NodeCacheService#saveNodes(java.util.Collection)} — persists in-memory changes</li>
- *   <li>{@link cz.tacr.elza.service.cache.NodeCacheService#restoreReferralNodeIds} — updates cache when URI refs are resolved</li>
- * </ul>
- * If desc items or other node data are modified outside these paths without
- * updating this cache, the Hibernate Search index will become stale.
+ * do NOT automatically trigger reindexing — the index only refreshes when
+ * {@code data} is rewritten via
+ * {@link cz.tacr.elza.service.cache.NodeCacheService#syncNodes}/{@code saveNodes},
+ * or when the row is deleted via
+ * {@link cz.tacr.elza.service.cache.NodeCacheService#deleteNodes}. Modifying
+ * node data outside those paths will leave the index stale.
  * </p>
  */
 @Table

@@ -2,7 +2,7 @@ import { Button, Divider, Input, InteractionTag, InteractionTagPrimary, Interact
 import { AddRegular, DismissRegular, ArrowSyncRegular } from "@fluentui/react-icons";
 import { Icon } from "components"
 import { Field, Form } from "react-final-form";
-import { FieldType, FilterType, NodeFieldName, OperationCompareType } from "elza-api";
+import { FieldType, FilterType, FondsFieldName, NodeFieldName, OperationCompareType } from "elza-api";
 import { useEffect, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { messages } from "./messages";
@@ -316,6 +316,27 @@ export function NodeSearchFilters({
             </>}
             {["DescItem"].map((fieldName) => {
               return <MenuItem
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+
+                  const addFilterButtonRect = addFilterButtonRef.current?.getBoundingClientRect() || undefined;
+                  const initialPosition = addFilterButtonRect ? formatPosition(addFilterButtonRect.left, addFilterButtonRect.bottom) : undefined;
+
+                  const { data } = await showFilterModal({ name: fieldName }, initialPosition)
+                  if (data) {
+                    handleFilterConfirm({
+                      ...data,
+                      name: fieldName
+                    });
+                  }
+                }}
+              >{messages[fieldName] ? formatMessage(messages[fieldName]) : fieldName}</MenuItem>
+            })}
+            <Divider />
+            {[FondsFieldName.InstitutionId, FondsFieldName.FondsId].map((fieldName) => {
+              return <MenuItem
+                key={fieldName}
                 onClick={async (e) => {
                   e.stopPropagation();
                   e.preventDefault();

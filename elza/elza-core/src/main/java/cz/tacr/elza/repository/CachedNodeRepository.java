@@ -55,4 +55,15 @@ public interface CachedNodeRepository extends ElzaJpaRepository<ArrCachedNode, I
 
     @Query("SELECT cn FROM arr_cached_node cn WHERE cn.nodeId IN (SELECT adl.nodeId FROM arr_dao_link adl WHERE adl.aip.aipId = ?1)")
     List<ArrCachedNode> findByConnectedToAipId(Integer aipId);
+
+    /**
+     * Returns cache row node IDs for nodes whose every {@code arr_level} row
+     * has {@code deleteChange IS NOT NULL} — i.e. invalid nodes that violate
+     * the row-existence invariant of the cache. Used by startup cleanup to
+     * drop stale entries from the cache and Lucene index.
+     */
+    @Query("SELECT cn.nodeId FROM arr_cached_node cn " +
+           "WHERE NOT EXISTS (SELECT 1 FROM arr_level l " +
+           "                  WHERE l.node.nodeId = cn.nodeId AND l.deleteChange IS NULL)")
+    List<Integer> findInvalidCachedNodeIds();
 }

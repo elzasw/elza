@@ -63,6 +63,7 @@ import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DaoRepository;
 import cz.tacr.elza.repository.FundFileRepository;
 import cz.tacr.elza.repository.InhibitedItemRepository;
+import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeExtensionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.StructuredObjectRepository;
@@ -73,12 +74,67 @@ import jakarta.transaction.Transactional;
 import jakarta.transaction.Transactional.TxType;
 
 /**
- * Service for caching node related entities.
+ * Cache of serialized description-unit (JP) data. Used for fast form rendering,
+ * bulk actions, and fulltext search via Hibernate Search.
  *
- * sestavuje jednotný objekt {@link CachedNode}, který se při ukládání do DB
- * serializuje do JSON pro určení, co se má serializovat se využívá interface
- * {@link NodeCacheSerializable} + základní primitivní typy při spuštění
- * synchronizace {@link #syncCache()} je zamknuta cache pro čtení
+ * <h3>Cache contract</h3>
+ * <ul>
+ *   <li><b>Current state only.</b> The cache reflects what is visible in the
+ *       currently open (unlocked) fund version. All loaders filter
+ *       {@code deleteChange IS NULL} — soft-deleted desc items, inhibited
+ *       items, node extensions, and dao links never enter the cached JSON.</li>
+ *   <li><b>Not for historical reads.</b> When reading against a locked
+ *       {@link cz.tacr.elza.domain.ArrFundVersion} (non-null {@code lockChange}),
+ *       callers must bypass the cache and read directly from DB — see
+ *       {@link cz.tacr.elza.service.ArrangementFormService} and
+ *       {@link cz.tacr.elza.drools.service.DescItemReader} for the pattern.</li>
+ *   <li><b>Row-existence invariant:</b> {@code arr_cached_node} exists for a
+ *       node <i>iff</i> that node has at least one {@code arr_level} with
+ *       {@code deleteChange IS NULL}. Invalid nodes (all levels soft-deleted)
+ *       are removed from the cache and thus from the Lucene index.</li>
+ * </ul>
+ *
+ * <h3>Lifecycle</h3>
+ * <ul>
+ *   <li>{@link #createEmptyNode}/{@link #createEmptyNodes} — create an empty
+ *       cache row when a node first joins the tree.</li>
+ *   <li>{@link #syncNodes} — rebuild the serialized JSON from current DB state
+ *       after item-level changes. Automatically creates missing rows for
+ *       active nodes, so callers like
+ *       {@link cz.tacr.elza.service.RevertingChangesService} that may
+ *       resurrect soft-deleted levels do not need special handling.</li>
+ *   <li>{@link #saveNodes}/{@link #saveNode} — persist an in-memory
+ *       {@link CachedNode} without refetching from DB. Used by interactive
+ *       editing paths that mutate the deserialized object directly.</li>
+ *   <li>{@link #deleteNodes} — drop the cache row. Invoked when the
+ *       {@code arr_node} is physically removed (orphan cleanup, full
+ *       revert).</li>
+ *   <li>{@link #deleteNodesNewTx} — drop the cache row in a fresh transaction.
+ *       Used by after-commit hooks in {@link cz.tacr.elza.service.FundLevelService}
+ *       when a node's last active {@code arr_level} is soft-deleted; running
+ *       the delete in the enclosing transaction would trigger a session-wide
+ *       Hibernate auto-flush that collides with unrelated pending writes in
+ *       cascading flows (e.g. {@code deleteDaoPackageWithCascade}).</li>
+ * </ul>
+ *
+ * <h3>Hibernate Search integration</h3>
+ * {@link ArrCachedNode} is {@code @Indexed}; the serialized {@code data} column
+ * feeds the Lucene index used by
+ * {@link cz.tacr.elza.service.NodeSearchService}. Changes to the underlying
+ * entities (desc items, inhibited items, dao links, node extensions) do not
+ * reindex automatically — the index only refreshes when the {@code data}
+ * column changes via {@code syncNodes}/{@code saveNodes}, or when the row is
+ * deleted via {@code deleteNodes}.
+ *
+ * <h3>Concurrency</h3>
+ * A {@link java.util.concurrent.locks.ReentrantReadWriteLock} guards the
+ * cache. {@link #syncCache()} takes the write lock (excludes all other
+ * access); ordinary reads and writes share the read lock.
+ *
+ * <h3>Serialization</h3>
+ * {@link CachedNode} is serialized to JSON via Jackson; which getters are
+ * serialized is controlled by the {@link NodeCacheSerializable} marker
+ * interface plus basic primitive types.
  */
 @Service
 public class NodeCacheService {
@@ -119,6 +175,9 @@ public class NodeCacheService {
 
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private LevelRepository levelRepository;
 
     @Autowired
     private CachedNodeRepository cachedNodeRepository;
@@ -361,6 +420,50 @@ public class NodeCacheService {
     }
 
     /**
+     * Drop cache rows in a fresh transaction, independent of any enclosing one.
+     *
+     * Used by after-commit hooks (e.g. from {@code FundLevelService}) that need
+     * to remove cache rows for nodes whose last active level was just
+     * soft-deleted. Running the delete in the enclosing transaction triggers a
+     * session-wide Hibernate auto-flush that collides with unrelated pending
+     * writes in cascading flows; a fresh transaction has a clean session.
+     */
+    @Transactional(value = TxType.REQUIRES_NEW)
+    public void deleteNodesNewTx(final Collection<Integer> nodeIds) {
+        writeLock.lock();
+        try {
+            logger.trace("deleteNodesNewTx({})", nodeIds);
+            deleteNodesInternal(nodeIds);
+            logger.trace("end of deleteNodesNewTx({})", nodeIds);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    /**
+     * Drop cache rows for nodes that violate the row-existence invariant —
+     * i.e. nodes whose every {@code arr_level} has {@code deleteChange IS NOT NULL}.
+     *
+     * Intended for startup cleanup to repair pre-existing stale entries that
+     * would otherwise leak into the Lucene index.
+     */
+    @Transactional(TxType.MANDATORY)
+    public void clearInvalidCachedNodes() {
+        writeLock.lock();
+        try {
+            List<Integer> invalidIds = cachedNodeRepository.findInvalidCachedNodeIds();
+            if (invalidIds.isEmpty()) {
+                logger.debug("No invalid cached nodes found");
+                return;
+            }
+            logger.info("Removing {} cached node(s) without any active level", invalidIds.size());
+            deleteNodesInternal(invalidIds);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    /**
      * Synchronizace požadovaných JP.
      *
      * @param nodeIds seznam požadovaných JP k synchronizaci
@@ -368,6 +471,17 @@ public class NodeCacheService {
     private void syncNodesInternal(final Collection<Integer> nodeIds) {
         if (CollectionUtils.isEmpty(nodeIds)) {
             return;
+        }
+
+        // Create empty cache rows for active nodes that are not yet cached.
+        // Needed after RevertingChangesService resurrects soft-deleted levels,
+        // where a node transitions from "all levels deleted" back to "has
+        // active level" and its cache row was previously dropped.
+        List<Integer> uncachedActive = nodeRepository.findUncachedActiveNodeIds(nodeIds);
+        if (!uncachedActive.isEmpty()) {
+            logger.debug("Re-creating cache rows for {} active node(s) without cache", uncachedActive.size());
+            List<ArrNode> nodesToCreate = nodeRepository.findAllById(uncachedActive);
+            createEmptyNodes(nodesToCreate);
         }
 
         List<ArrCachedNode> cachedNodes = cachedNodeRepository.findByNodeIdIn(nodeIds);
@@ -471,8 +585,17 @@ public class NodeCacheService {
      * @param nodeIds seznam identifikátorů mazaných JP
      */
     private void deleteNodesInternal(final Collection<Integer> nodeIds) {
-        cachedNodeRepository.deleteByNodeIdIn(nodeIds);
-        cachedNodeRepository.flush();
+        // Fetch and delete managed entities instead of issuing a bulk JPQL
+        // DELETE. A bulk DELETE triggers Hibernate's auto-flush across the
+        // entire session, which can expose unrelated pending writes from the
+        // surrounding transaction (e.g. transient cache rows still queued for
+        // insert via saveAll during cascade cleanup in deleteDaoPackageWithCascade).
+        // deleteAll(entities) queues em.remove calls; the actual SQL is emitted
+        // at the next flush/commit, without forcing a session-wide flush now.
+        List<ArrCachedNode> entities = cachedNodeRepository.findByNodeIdsInNoFetch(nodeIds);
+        if (!entities.isEmpty()) {
+            cachedNodeRepository.deleteAll(entities);
+        }
     }
 
     /**
@@ -629,10 +752,16 @@ public class NodeCacheService {
         List<ArrCachedNode> result = new ArrayList<>(nodeIds.size());
 
         List<ArrNode> nodes = nodeRepository.findAllById(nodeIds);
-        Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
-        Map<Integer, List<ArrInhibitedItem>> nodeIdInhibitedItems = createNodeInhibitedItemMap(nodeIds);
-        Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
-        Map<Integer, List<ArrNodeExtension>> nodeIdNodeExtension = createNodeExtensionMap(nodeIds);
+        // Items are only populated for nodes with at least one active arr_level.
+        // Defence-in-depth: a row for an invalid node is expected to be removed
+        // by the after-commit hook in FundLevelService (or by startup cleanup
+        // as a fallback), but keeping the content empty ensures such a row
+        // cannot leak into fulltext search during that brief window.
+        Collection<Integer> activeNodeIds = levelRepository.findNodeIdsWithActiveLevel(nodeIds);
+        Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(activeNodeIds);
+        Map<Integer, List<ArrInhibitedItem>> nodeIdInhibitedItems = createNodeInhibitedItemMap(activeNodeIds);
+        Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(activeNodeIds);
+        Map<Integer, List<ArrNodeExtension>> nodeIdNodeExtension = createNodeExtensionMap(activeNodeIds);
 
         for (ArrNode node : nodes) {
             Integer nodeId = node.getNodeId();
@@ -674,10 +803,13 @@ public class NodeCacheService {
                     .set("nodeIdsSize", nodeIds.size())
                     .set("foundNodesSize", nodes.size());
         }
-        Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(nodeIds);
-        Map<Integer, List<ArrInhibitedItem>> nodeIdInhibitedItems = createNodeInhibitedItemMap(nodeIds);
-        Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(nodeIds);
-        Map<Integer, List<ArrNodeExtension>> nodeIdNodeExtension = createNodeExtensionMap(nodeIds);
+        // Items are only populated for nodes with at least one active arr_level;
+        // see createCachedNodes for the rationale.
+        Collection<Integer> activeNodeIds = levelRepository.findNodeIdsWithActiveLevel(nodeIds);
+        Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(activeNodeIds);
+        Map<Integer, List<ArrInhibitedItem>> nodeIdInhibitedItems = createNodeInhibitedItemMap(activeNodeIds);
+        Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(activeNodeIds);
+        Map<Integer, List<ArrNodeExtension>> nodeIdNodeExtension = createNodeExtensionMap(activeNodeIds);
 
         for (ArrNode node : nodes) {
             Integer nodeId = node.getNodeId();
@@ -697,6 +829,9 @@ public class NodeCacheService {
     }
 
     private Map<Integer, List<ArrNodeExtension>> createNodeExtensionMap(final Collection<Integer> nodeIds) {
+        if (nodeIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
         List<ArrNodeExtension> nodeExtensions = nodeExtensionRepository.findByNodeIdInAndDeleteChangeIsNull(nodeIds);
 
         Map<Integer, List<ArrNodeExtension>> nodeIdNodeExtension = new HashMap<>();
@@ -713,6 +848,9 @@ public class NodeCacheService {
     }
 
     private Map<Integer, List<ArrDaoLink>> createNodeDaoLinkMap(final Collection<Integer> nodeIds) {
+        if (nodeIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
         List<ArrDaoLink> daoLinks = daoLinkRepository.findByNodeIdsAndFetchDao(nodeIds);
 
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = new HashMap<>();
@@ -729,6 +867,9 @@ public class NodeCacheService {
     }
 
     private Map<Integer, List<ArrDescItem>> createNodeDescItemMap(final Collection<Integer> nodeIds) {
+        if (nodeIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
         List<ArrDescItem> descItems = descItemService.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
 
         Map<Integer, List<ArrDescItem>> nodeIdItems = new HashMap<>();
@@ -746,6 +887,9 @@ public class NodeCacheService {
     }
 
     private Map<Integer, List<ArrInhibitedItem>> createNodeInhibitedItemMap(final Collection<Integer> nodeIds) {
+        if (nodeIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
     	List<ArrInhibitedItem> inhibitedItems = inhibitedItemRepository.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
     	
     	Map<Integer, List<ArrInhibitedItem>> nodeIdItems = new HashMap<>();

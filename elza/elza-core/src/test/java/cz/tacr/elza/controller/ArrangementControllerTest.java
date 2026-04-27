@@ -95,6 +95,7 @@ import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.domain.ArrCachedNode;
 import cz.tacr.elza.domain.ArrDataText;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFundVersion;
@@ -896,6 +897,12 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         ArrNodeVO rootNode = nodes.get(0);
         TreeNodeVO parentNode;
 
+        // baseline: all created nodes must be in the cache
+        for (ArrNodeVO node : nodes) {
+            assertNodeInCache(node.getId());
+        }
+        assertCacheInvariant();
+
         // 1. přesun druhého uzlu před první
         helperTestService.waitForWorkers();
         moveLevelBefore(fundVersion, nodes.get(1), rootNode, Arrays.asList(nodes.get(2)), rootNode);
@@ -909,6 +916,12 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(newNodes.get(2).getId().equals(nodes.get(3).getId()));
         assertTrue(newNodes.get(3).getId().equals(nodes.get(4).getId()));
 
+        // move vytváří nový level pro přesouvaný uzel, uzel má stále aktivní level -> musí být v cache
+        for (ArrNodeVO node : nodes) {
+            assertNodeInCache(node.getId());
+        }
+        assertCacheInvariant();
+
         helperTestService.waitForWorkers();
         rootNode.setVersion(rootNode.getVersion() + 1); // zvýšení verze root
 
@@ -921,6 +934,12 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         // kontrola přesunu
         assertTrue(newNodes2.size() == 1);
         assertTrue(newNodes2.get(0).getId().equals(newNodes.get(1).getId()));
+
+        // po přesunu pod jiný uzel musí být všechny uzly stále v cache
+        for (ArrNodeVO node : nodes) {
+            assertNodeInCache(node.getId());
+        }
+        assertCacheInvariant();
 
         helperTestService.waitForWorkers();
         rootNode.setVersion(rootNode.getVersion() + 1); // zvýšení verze root
@@ -938,6 +957,16 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(newNodes3.size() == 2);
         assertTrue(newNodes3.get(0).getId().equals(newNodes.get(0).getId()));
         assertTrue(newNodes3.get(1).getId().equals(newNodes.get(3).getId()));
+
+        // smazaný uzel ztratil poslední aktivní level -> musí být odstraněn z cache
+        // (fyzické smazání provádí afterCommit hook po commitu této transakce)
+        assertNodeNotInCache(newNodes.get(2).getId());
+        // zbývající uzly zůstávají v cache
+        assertNodeInCache(rootNode.getId());
+        assertNodeInCache(newNodes.get(0).getId());
+        assertNodeInCache(newNodes.get(1).getId());
+        assertNodeInCache(newNodes.get(3).getId());
+        assertCacheInvariant();
 
         helperTestService.waitForWorkers();
         rootNode.setVersion(rootNode.getVersion() + 1); // zvýšení verze root
@@ -1026,6 +1055,33 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         assertTrue(resultNodes.get(0).getId().equals(newNodes.get(0).getId()));
         assertTrue(resultNodes.get(1).getId().equals(newNodes4.get(0).getId()));
         assertTrue(resultNodes.get(2).getId().equals(newNodes7.get(3).getId()));
+
+        // po všech přesunech/smazáních musí cache odpovídat invariantu:
+        // arr_cached_node existuje právě tehdy, když má uzel alespoň jeden aktivní arr_level
+        assertCacheInvariant();
+        // smazaný uzel (krok 3) stále nesmí být v cache
+        assertNodeNotInCache(newNodes.get(2).getId());
+    }
+
+    /**
+     * Asserts the row-existence invariant of {@code arr_cached_node}: no cache
+     * row exists for a node whose every {@code arr_level} has
+     * {@code deleteChange IS NOT NULL}.
+     */
+    private void assertCacheInvariant() {
+        List<Integer> invalid = cachedNodeRepository.findInvalidCachedNodeIds();
+        assertTrue(invalid.isEmpty(),
+                "Cache invariant violated - these cached nodes have no active level: " + invalid);
+    }
+
+    private void assertNodeInCache(Integer nodeId) {
+        assertNotNull(cachedNodeRepository.findByNodeId(nodeId),
+                "Node " + nodeId + " should be in cache (has active level)");
+    }
+
+    private void assertNodeNotInCache(Integer nodeId) {
+        assertNull(cachedNodeRepository.findByNodeId(nodeId),
+                "Node " + nodeId + " should not be in cache (no active level)");
     }
 
     /**

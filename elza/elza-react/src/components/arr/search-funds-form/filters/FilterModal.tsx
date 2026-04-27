@@ -3,8 +3,12 @@ import { DraggableWindow } from "components/shared";
 import { Position } from "components/shared/draggable-window";
 import { FilterObject } from "./types";
 import { FilterDescItemModal } from "./FilterDescItemModal";
-import { NodeFieldName } from "elza-api";
+import { FondsFieldName, NodeFieldName } from "elza-api";
 import { FilterText } from "./FilterText";
+import { FundFilterInstitutionRefModal } from "components/fund/filters/FundFilterInstitutionRefModal";
+import { Institution } from "typings/store";
+
+import { FilterFondsRef, FondsData } from "./FilterFondsRef";
 
 export interface Props {
   filterName: string;
@@ -42,6 +46,23 @@ export function FilterModal({
     case NodeFieldName.Uuid:
       filterForm = <FilterText
         initialValue={initialValue as FilterObject<string>}
+        filterName={filterName}
+        onFilterChange={onFilterChange}
+        onClose={onClose}
+      />
+      break;
+    case FondsFieldName.InstitutionId:
+      filterForm = <FundFilterInstitutionRefModal
+        initialValue={initialValue as FilterObject<Institution>}
+        filterName={filterName}
+        valueSource="id"
+        onFilterChange={onFilterChange}
+        onClose={onClose}
+      />
+      break;
+    case FondsFieldName.FondsId:
+      filterForm = <FilterFondsRef
+        initialValue={initialValue as FilterObject<FondsData>}
         filterName={filterName}
         onFilterChange={onFilterChange}
         onClose={onClose}

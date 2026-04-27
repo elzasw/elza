@@ -9,7 +9,7 @@ import { FundFilterTextForm } from "./FundFilterText";
 import { FilterObject } from "./types";
 
 export interface Props {
-  filterName: FondsFieldName;
+  filterName: string;
   onFilterChange: (data: FilterObject) => void;
   onClose: () => void;
   initialPosition?: Position;
