@@ -70,4 +70,16 @@ export const messages = defineMessages({
     id: "search_funds_form_fonds",
     defaultMessage: "Archivní soubor",
   },
+  filter_confirm: {
+    id: "fund_filter_confirm",
+    defaultMessage: "Potvrdit",
+  },
+  filter_add_value: {
+    id: "fund_filter_add_value",
+    defaultMessage: "Nebo",
+  },
+  filter_or: {
+    id: "fund_filter_or",
+    defaultMessage: "NEBO",
+  },
 })

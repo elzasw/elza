@@ -1,21 +1,19 @@
 import { Button } from "@fluentui/react-components";
 import { DraggableWindow } from "components/shared";
 import { Position } from "components/shared/draggable-window";
-import { FilterObject } from "./types";
-import { FilterDescItemModal } from "./FilterDescItemModal";
+import { MultiFilterObject } from "./types";
+import { DescItemValue, FilterDescItemModal } from "./FilterDescItemModal";
 import { FondsFieldName, NodeFieldName } from "elza-api";
 import { FilterText } from "./FilterText";
-import { FundFilterInstitutionRefModal } from "components/fund/filters/FundFilterInstitutionRefModal";
-import { Institution } from "typings/store";
-
+import { FilterInstitutionRef, InstitutionData } from "./FilterInstitutionRef";
 import { FilterFondsRef, FondsData } from "./FilterFondsRef";
 
 export interface Props {
   filterName: string;
-  onFilterChange: (data: FilterObject) => void;
+  onFilterChange: (data: MultiFilterObject) => void;
   onClose: () => void;
   initialPosition?: Position;
-  initialValue?: Partial<FilterObject>;
+  initialValue?: Partial<MultiFilterObject>;
 }
 
 export function FilterModal({
@@ -35,7 +33,7 @@ export function FilterModal({
   switch (filterName) {
     case "DescItem":
       filterForm = <FilterDescItemModal
-        initialValue={initialValue as FilterObject<string>}
+        initialValue={initialValue as MultiFilterObject<DescItemValue>}
         filterName={filterName}
         onFilterChange={onFilterChange}
         onClose={onClose}
@@ -45,15 +43,15 @@ export function FilterModal({
     case NodeFieldName.ConformityMissing:
     case NodeFieldName.Uuid:
       filterForm = <FilterText
-        initialValue={initialValue as FilterObject<string>}
+        initialValue={initialValue as MultiFilterObject<string>}
         filterName={filterName}
         onFilterChange={onFilterChange}
         onClose={onClose}
       />
       break;
     case FondsFieldName.InstitutionId:
-      filterForm = <FundFilterInstitutionRefModal
-        initialValue={initialValue as FilterObject<Institution>}
+      filterForm = <FilterInstitutionRef
+        initialValue={initialValue as MultiFilterObject<InstitutionData>}
         filterName={filterName}
         valueSource="id"
         onFilterChange={onFilterChange}
@@ -62,7 +60,7 @@ export function FilterModal({
       break;
     case FondsFieldName.FondsId:
       filterForm = <FilterFondsRef
-        initialValue={initialValue as FilterObject<FondsData>}
+        initialValue={initialValue as MultiFilterObject<FondsData>}
         filterName={filterName}
         onFilterChange={onFilterChange}
         onClose={onClose}
