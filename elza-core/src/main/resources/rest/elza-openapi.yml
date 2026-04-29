@@ -3,29 +3,32 @@ info:
   title: ELZA API
   version: 1.0.0
 tags:
-  - name: admin
-    description: Administrativní funkce
-  - name: daos
-    description: Digitální archivní objekty
-  - name: externalsystems
-    description: Externí systémy
-  - name: funds
-    description: Archivní soubory
-  - name: descitems
-    description: Záznamy v archivních fondech
-  - name: accesspoints
-    description: Přístupové body a archivní entity
-  - name: io
-    description: Vstup a výstup informací
-  - name: aips
-  - name: report
-    description: Statistické zprávy
-  - name: node
-    description: Práce s úrovněmi a uzly
-  - name: search
-    description: Vyhledávání
   - name: tasks
     description: Úkoly
+  - name: search
+    description: Vyhledávání
+  - name: structure
+    description: structure
+  - name: node
+    description: Práce s úrovněmi a uzly
+  - name: report
+    description: Statistické zprávy
+  - name: aips
+    description: aips
+  - name: io
+    description: Vstup a výstup informací
+  - name: accesspoints
+    description: Přístupové body a archivní entity
+  - name: descitems
+    description: Záznamy v archivních fondech
+  - name: funds
+    description: Archivní soubory
+  - name: externalsystems
+    description: Externí systémy
+  - name: daos
+    description: Digitální archivní objekty
+  - name: admin
+    description: Administrativní funkce
 servers:
   - url: http://localhost
     description: Výchozí server
@@ -709,97 +712,8 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ApStateUpdate'
-  /accesspoints/{id}/restore:
-    put:
-      summary: Obnovení neplatné entity a návrat do původního stavu
-      operationId: restoreAccessPoint
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Entita byla obnovena
-        404:
-          description: AP neexistuje
-  /accesspoints/{id}/validate:
-    put:
-      summary: Ověřování entity
-      operationId: validateAccessPoint
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: Entita byla ověřena
-        404:
-          description: AP neexistuje
-  /accesspoints:
-    delete:
-      summary: Zneplatnění přístupovych bodu
-      operationId: deleteAccessPoints
-      tags:
-        - accesspoints
-      requestBody:
-        description: Seznam přístupových bodů
-        content:
-          'application/json':
-            schema:
-              $ref: '#/components/schemas/DeleteAccessPointsDetail'
-      responses:
-        200:
-          description: Potvrzení o úspěšném odstranění
-        404:
-          description: AP neexistuje
-  /revision/{id}:
-    post:
-      summary: Vytvoření nové revize přístupového bodu
-      operationId: createRevision
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-      responses:
-        200:
-          description: Potvrzení o úspěšném založení
-        404:
-          description: AP neexistuje
-    delete:
-      summary: Smazání revize přístupového bodu
-      operationId: deleteRevision
-      tags:
-        - accesspoints
-      parameters:
-        - name: id
-          description: Identifikátor archivní entity
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
-      responses:
-        200:
-          description: Potvrzení o úspěšném smazání
-        404:
-          description: AP nebo revize neexistuje
-  /revision/{id}/autoitems:
+        description: data for change ApState
+  /accesspoint/{id}/validate:
     get:
       operationId: AccessPoint_validateAccessPoint
       description: Validation of an archive entity
@@ -898,8 +812,6 @@ paths:
               $ref: '#/components/schemas/Admin.CopyPermissionParams'
   /aip/bulk-connect-logic-to-jp:
     post:
-      tags:
-        - aips
       operationId: Aip_bulkConnectLogicToJp
       description: Bulk connect logical structure to JP
       parameters:
@@ -909,6 +821,7 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
+          explode: false
         - name: daAipIdList
           in: query
           required: true
@@ -924,6 +837,7 @@ paths:
           description: DaLevelView ID
           schema:
             type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -933,10 +847,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /aip/bulk-connect-to-jp:
-    post:
       tags:
         - aips
+  /aip/bulk-connect-to-jp:
+    post:
       operationId: Aip_bulkConnectToJp
       description: Bulk connect to JP
       parameters:
@@ -946,6 +860,7 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
+          explode: false
         - name: daAipIdList
           in: query
           required: true
@@ -964,10 +879,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /aip/bulk-create-from-selected:
-    post:
       tags:
         - aips
+  /aip/bulk-create-from-selected:
+    post:
       operationId: Aip_bulkCreateFromSelected
       description: Bulk create from selected
       parameters:
@@ -977,6 +892,7 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
+          explode: false
         - name: daAipIdList
           in: query
           required: true
@@ -995,10 +911,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /aip/bulk-create-selected-to-jp:
-    post:
       tags:
         - aips
+  /aip/bulk-create-selected-to-jp:
+    post:
       operationId: Aip_bulkCreateSelectedToJp
       description: Bulk create from selected and connect to JP
       parameters:
@@ -1008,6 +924,7 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
+          explode: false
         - name: daAipIdList
           in: query
           required: true
@@ -1023,6 +940,7 @@ paths:
           description: DaLevelView ID
           schema:
             type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -1032,10 +950,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /aip/connect-jp-from-selected:
-    post:
       tags:
         - aips
+  /aip/connect-jp-from-selected:
+    post:
       operationId: Aip_connectJpFromSelected
       description: Create JP from selected
       parameters:
@@ -1045,12 +963,14 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
+          explode: false
         - name: daAipId
           in: query
           required: true
           description: DaAip ID
           schema:
             type: integer
+          explode: false
         - name: daDaoIdList
           in: query
           required: true
@@ -1069,10 +989,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /aip/connect-jp-link-from-selected:
-    post:
       tags:
         - aips
+  /aip/connect-jp-link-from-selected:
+    post:
       operationId: Aip_connectJpLinkFromSelected
       description: Create JP and link from selected
       parameters:
@@ -1082,12 +1002,14 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
+          explode: false
         - name: daAipId
           in: query
           required: true
           description: DaAip ID
           schema:
             type: integer
+          explode: false
         - name: daDaoIdList
           in: query
           required: true
@@ -1106,10 +1028,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /aip/connect-part-to-jp:
-    post:
       tags:
         - aips
+  /aip/connect-part-to-jp:
+    post:
       operationId: Aip_connectPartToJp
       description: Connect Part to JP
       parameters:
@@ -1119,12 +1041,14 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
+          explode: false
         - name: daAipId
           in: query
           required: true
           description: DaAip ID
           schema:
             type: integer
+          explode: false
         - name: daDaoIdList
           in: query
           required: true
@@ -1143,10 +1067,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /aip/connect-selected-to-jp:
-    post:
       tags:
         - aips
+  /aip/connect-selected-to-jp:
+    post:
       operationId: Aip_connectSelectedToJp
       description: Connect selected to JP
       parameters:
@@ -1156,12 +1080,14 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
+          explode: false
         - name: daAipId
           in: query
           required: true
           description: DaAip ID
           schema:
             type: integer
+          explode: false
         - name: daDaoIdList
           in: query
           required: true
@@ -1180,10 +1106,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /aip/connect-to-jp:
-    post:
       tags:
         - aips
+  /aip/connect-to-jp:
+    post:
       operationId: Aip_connectToJp
       description: Connect to JP
       parameters:
@@ -1193,12 +1119,14 @@ paths:
           description: ArrNode ID
           schema:
             type: integer
+          explode: false
         - name: daAipId
           in: query
           required: true
           description: DaAip ID
           schema:
             type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -1208,10 +1136,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /aip/create-dao-link:
-    post:
       tags:
         - aips
+  /aip/create-dao-link:
+    post:
       operationId: Aip_createDaoLink
       description: Create dao link
       parameters:
@@ -1221,24 +1149,28 @@ paths:
           description: AIP ID
           schema:
             type: integer
+          explode: false
         - name: daoId
           in: query
           required: true
           description: DAO ID
           schema:
             type: integer
+          explode: false
         - name: nodeId
           in: query
           required: true
           description: Node ID
           schema:
             type: integer
+          explode: false
         - name: linkType
           in: query
           required: true
           description: Link type
           schema:
             $ref: '#/components/schemas/LinkType'
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -1248,10 +1180,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /aip/create-dao-structure:
-    post:
       tags:
         - aips
+  /aip/create-dao-structure:
+    post:
       operationId: Aip_createDaoStructure
       description: Create dao structure
       parameters: []
@@ -1264,8 +1196,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
       requestBody:
-        description: Aip IDs
         required: true
         content:
           application/json:
@@ -1273,10 +1206,9 @@ paths:
               type: array
               items:
                 type: integer
+        description: Aip IDs
   /aip/dao-links/{nodeId}:
     get:
-      tags:
-        - aips
       operationId: Aip_getDaoLinks
       description: Get dao links for node by id
       parameters:
@@ -1299,10 +1231,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /aip/delete-complete-aip:
-    post:
       tags:
         - aips
+  /aip/delete-complete-aip:
+    post:
       operationId: Aip_deleteCompleteAip
       description: Delete complete AIP
       parameters: []
@@ -1315,8 +1247,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
       requestBody:
-        description: Aip IDs
         required: true
         content:
           application/json:
@@ -1324,10 +1257,9 @@ paths:
               type: array
               items:
                 type: integer
+        description: Aip IDs
   /aip/delete-dao-link:
     post:
-      tags:
-        - aips
       operationId: Aip_deleteDaoLink
       description: Delete dao link
       parameters:
@@ -1337,6 +1269,7 @@ paths:
           description: Dao link ID
           schema:
             type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -1346,10 +1279,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /aip/delete-dao-structure:
-    post:
       tags:
         - aips
+  /aip/delete-dao-structure:
+    post:
       operationId: Aip_deleteDaoStructure
       description: Delete dao structure
       parameters: []
@@ -1362,8 +1295,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
       requestBody:
-        description: Aip IDs
         required: true
         content:
           application/json:
@@ -1371,10 +1305,9 @@ paths:
               type: array
               items:
                 type: integer
+        description: Aip IDs
   /aip/download-complete-aip:
     post:
-      tags:
-        - aips
       operationId: Aip_downloadCompleteAip
       description: Download complete AIP
       parameters: []
@@ -1387,8 +1320,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
       requestBody:
-        description: Aip IDs
         required: true
         content:
           application/json:
@@ -1396,10 +1330,9 @@ paths:
               type: array
               items:
                 type: integer
+        description: Aip IDs
   /aip/download-component/{fileId}:
     get:
-      tags:
-        - aips
       operationId: Aip_downloadComponent
       description: Getting the component file by file id
       parameters:
@@ -1431,10 +1364,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /aip/export-aip:
-    post:
       tags:
         - aips
+  /aip/export-aip:
+    post:
       operationId: Aip_exportAip
       description: Export AIP
       parameters: []
@@ -1447,8 +1380,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
       requestBody:
-        description: Aip IDs
         required: true
         content:
           application/json:
@@ -1456,10 +1390,9 @@ paths:
               type: array
               items:
                 type: integer
+        description: Aip IDs
   /aip/find/filter:
     post:
-      tags:
-        - aips
       operationId: Aip_findByFilter
       description: Find aips by filters
       parameters:
@@ -1468,11 +1401,13 @@ paths:
           required: true
           schema:
             type: integer
+          explode: false
         - name: count
           in: query
           required: true
           schema:
             type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -1486,8 +1421,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
       requestBody:
-        description: Array of filters
         required: true
         content:
           application/json:
@@ -1495,10 +1431,9 @@ paths:
               type: array
               items:
                 $ref: '#/components/schemas/AipFilterGen'
+        description: Array of filters
   /aip/import-package:
     post:
-      tags:
-        - aips
       operationId: Aip_importPackage
       description: Import AIP package
       parameters:
@@ -1508,12 +1443,14 @@ paths:
           description: Digital repository ID
           schema:
             type: integer
+          explode: false
         - name: aipType
           in: query
           required: true
           description: Aip package type
           schema:
             $ref: '#/components/schemas/AipType'
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -1523,6 +1460,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
       requestBody:
         required: true
         content:
@@ -1532,8 +1471,6 @@ paths:
               format: binary
   /aip/levelViewTree:
     post:
-      tags:
-        - aips
       operationId: Aip_levelViewTree
       description: Get level view tree for aips with ids
       parameters: []
@@ -1550,8 +1487,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
       requestBody:
-        description: Aip IDs
         required: true
         content:
           application/json:
@@ -1559,10 +1497,9 @@ paths:
               type: array
               items:
                 type: integer
+        description: Aip IDs
   /aip/tree:
     post:
-      tags:
-        - aips
       operationId: Aip_tree
       description: Get level view tree for aips with ids
       parameters:
@@ -1572,6 +1509,7 @@ paths:
           description: Aip IDs
           schema:
             type: integer
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -1585,10 +1523,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /aip/update-aip:
-    post:
       tags:
         - aips
+  /aip/update-aip:
+    post:
       operationId: Aip_updateAip
       description: Update AIP
       parameters:
@@ -1598,6 +1536,7 @@ paths:
           description: Type of update
           schema:
             $ref: '#/components/schemas/AipUpdateType'
+          explode: false
       responses:
         '200':
           description: The request has succeeded.
@@ -1607,8 +1546,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
       requestBody:
-        description: Aip IDs
         required: true
         content:
           application/json:
@@ -1616,10 +1556,9 @@ paths:
               type: array
               items:
                 type: integer
+        description: Aip IDs
   /aip/{aipId}:
     get:
-      tags:
-        - aips
       operationId: Aip_getAip
       description: Get aip detail by id
       parameters:
@@ -1637,6 +1576,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - aips
   /daorepository:
     get:
       operationId: DaoRepository_fsRepos
@@ -1652,8 +1593,6 @@ paths:
                   $ref: '#/components/schemas/FsRepo'
   /daos/aip/{aipId}:
     get:
-      tags:
-        - daos
       operationId: Dao_findByAipIdAndTypeAndDeleteChangeIsNull
       description: Získání stromu pro průzkumník aipu
       parameters:
@@ -1676,10 +1615,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
-  /daos/component/{id}:
-    get:
       tags:
         - daos
+  /daos/component/{id}:
+    get:
       operationId: Dao_getDaoViewRequestInfo
       description: Získání informací o da dao pro view request na digital repository
       parameters:
@@ -1702,6 +1641,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
+      tags:
+        - daos
   /daos/{id}/change-scenario:
     post:
       operationId: Dao_changeLinkScenario
@@ -5207,52 +5148,6 @@ components:
         primaryEntityType:
           $ref: '#/components/schemas/Tasks.EntityType'
       description: Task detail
-    UpdateFund:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Název
-        ruleSetCode:
-          type: string
-          description: Kód pravidel
-        institutionIdentifier:
-          type: string
-          description: Identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu)
-        internalCode:
-          type: string
-          description: Interní kód
-        fundNumber:
-          type: integer
-          description: Číslo archivního souboru
-        unitdate:
-          type: string
-          description: Datace
-        mark:
-          type: string
-          description: Značka archivního souboru
-        scopes:
-          type: array
-          items:
-            type: string
-          description: Seznam oblastí entit
-        managed:
-          type: boolean
-          description: Zákaz změny vlastností
-      description: Změny archivního souboru
-    SyncProgress:
-      type: string
-      enum:
-        - UPLOAD_PENDING
-        - UPLOAD_STARTED
-      description: Progres synchronizace
-    SyncState:
-      type: string
-      enum:
-        - SYNC_OK
-        - NOT_SYNCED
-        - LOCAL_CHANGE
-      description: Stav synchronizace
     TreeDataCustomGen:
       type: object
       required:
@@ -5303,6 +5198,39 @@ components:
           type: string
           description: Unikátení identifikátor rodičovského uzlu
       description: Custom uzel stromu
+    UpdateFund:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Název
+        ruleSetCode:
+          type: string
+          description: Kód pravidel
+        institutionIdentifier:
+          type: string
+          description: Identifikátor instituce (podpora pro kód instituce i UUID přístupového bodu)
+        internalCode:
+          type: string
+          description: Interní kód
+        fundNumber:
+          type: integer
+          description: Číslo archivního souboru
+        unitdate:
+          type: string
+          description: Datace
+        mark:
+          type: string
+          description: Značka archivního souboru
+        scopes:
+          type: array
+          items:
+            type: string
+          description: Seznam oblastí entit
+        managed:
+          type: boolean
+          description: Zákaz změny vlastností
+      description: Změny archivního souboru
     UpdateOp:
       type: string
       enum:
@@ -5338,16 +5266,3 @@ components:
           type: string
           description: text připomínky
       description: Náhrada `WfSimpleIssueVO`
-    Result_EntityRef:
-      type: object
-      properties:
-        count:
-          type: integer
-          format: int64
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/EntityRef"
-      required:
-        - count
-      title: Result«EntityRef»
