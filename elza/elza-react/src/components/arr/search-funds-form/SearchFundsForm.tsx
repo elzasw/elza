@@ -16,12 +16,12 @@ import { useSelector } from 'react-redux';
 import { useThunkDispatch } from 'utils/hooks';
 import { useEffect } from 'react';
 import { NodeSearchFilters } from './filters/NodeSearchFilters';
-import { FilterObject } from './filters/types';
+import { MultiFilterObject } from './filters/types';
 
 const FUND_NAME_MAX_CHARS = 60;
 
 export function SearchFundsFormFn() {
-    // const [currentFilters, setCurrentFilters] = useState<FilterObject[]>([]);
+    // const [currentFilters, setCurrentFilters] = useState<MultiFilterObject[]>([]);
     const arrRegion = useSelector((state: AppState) => state.arrRegion);
     const { fundSearch } = arrRegion;
     const dispatch = useThunkDispatch();
@@ -41,7 +41,7 @@ export function SearchFundsFormFn() {
         }
     }, [dispatch, fundSearch.isIdSearch])
 
-    const handleFluentSearch = (filters: FilterObject[]) => {
+    const handleFluentSearch = (filters: MultiFilterObject[]) => {
         console.log('#fs', filters);
         // setCurrentFilters(filters);
         dispatch(fundSearchActions.fundSearchFiltersChange({

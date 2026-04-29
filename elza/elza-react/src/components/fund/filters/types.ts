@@ -1,4 +1,4 @@
-import { FieldValueFilter, FilterType, MultimatchContainsFilter, OperationCompareType } from "elza-api";
+import { FieldValueFilter, FilterType, LogicalFilter, MultimatchContainsFilter, OperationCompareType } from "elza-api";
 
 export interface FilterObject<T = unknown> {
   filterType: FilterType;
@@ -6,7 +6,7 @@ export interface FilterObject<T = unknown> {
   operation?: OperationCompareType;
   data: T;
   getDisplayValue: (filter: FilterObject<T>) => React.ReactNode;
-  getFilterValue: (filter: FilterObject<T>) => FieldValueFilter | MultimatchContainsFilter;
+  getFilterValue: (filter: FilterObject<T>) => FieldValueFilter | MultimatchContainsFilter | LogicalFilter;
   getSerializedString: (filter: FilterObject<T>) => string;
 }
 
