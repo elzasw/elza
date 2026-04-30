@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import io.restassured.RestAssured;
 
 import cz.tacr.elza.controller.AbstractControllerTest;
-import cz.tacr.elza.controller.StructureController.StructureDataFormDataVO;
+import cz.tacr.elza.controller.StructureOldController.StructureDataFormDataVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;

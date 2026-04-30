@@ -352,6 +352,73 @@ public class ClientFactoryDO {
     	return data;
     }
 
+    /**
+     * Vytvoření hodnoty strukt. položky z OpenAPI {@link NodeItem}.
+     *
+     * @param nodeItem    OpenAPI hodnota atributu
+     * @param itemTypeId  identifikátor typu hodnoty atributu
+     * @return doménová entita připravená k uložení
+     */
+    public ArrStructuredItem createStructureItem(final NodeItem nodeItem, final Integer itemTypeId) {
+        ArrStructuredItem structureItem = new ArrStructuredItem();
+
+        var sdp = staticDataService.getData();
+        var itemType = sdp.getItemTypeById(itemTypeId);
+        if (itemType == null) {
+            throw new BusinessException("Failed to get item type, itemTypeId: " + itemTypeId, BaseCode.ID_NOT_EXIST);
+        }
+        structureItem.setItemType(itemType.getEntity());
+
+        if (nodeItem.getItemSpecId() != null) {
+            var itemSpec = itemType.getItemSpecById(nodeItem.getItemSpecId());
+            if (itemSpec == null) {
+                throw new BusinessException("Failed to get item specification, itemTypeId: " + itemTypeId 
+                		+ ", itemSpecId: " + nodeItem.getItemSpecId(), BaseCode.ID_NOT_EXIST);
+            }
+            structureItem.setItemSpec(itemSpec);
+        }
+
+        if (!Boolean.TRUE.equals(nodeItem.getUndefined())) {
+            structureItem.setData(createArrData(nodeItem.getData()));
+        }
+
+        return structureItem;
+    }
+
+    /**
+     * Vytvoření hodnoty strukt. položky z OpenAPI {@link NodeItem} (varianta pro update).
+     * @param nodeItem    OpenAPI hodnota atributu
+     * @return doménová entita připravená k uložení
+     */
+    public ArrStructuredItem createStructureItem(final NodeItem nodeItem) {
+        ArrStructuredItem structureItem = new ArrStructuredItem();
+        structureItem.setItemId(nodeItem.getId());
+        structureItem.setDescItemObjectId(nodeItem.getItemObjectId());
+        structureItem.setPosition(nodeItem.getPosition());
+
+        var sdp = staticDataService.getData();
+        var itemType = sdp.getItemTypeById(nodeItem.getItemTypeId());
+        if (itemType == null) {
+            throw new BusinessException("Failed to get item type, itemTypeId: " + nodeItem.getItemTypeId(), BaseCode.ID_NOT_EXIST);
+        }
+        structureItem.setItemType(itemType.getEntity());
+
+        if (nodeItem.getItemSpecId() != null) {
+            var itemSpec = itemType.getItemSpecById(nodeItem.getItemSpecId());
+            if (itemSpec == null) {
+                throw new BusinessException("Failed to get item spec, itemTypeId: " + nodeItem.getItemTypeId()
+                        + ", itemSpecId: " + nodeItem.getItemSpecId(), BaseCode.ID_NOT_EXIST);
+            }
+            structureItem.setItemSpec(itemSpec);
+        }
+
+        if (!Boolean.TRUE.equals(nodeItem.getUndefined())) {
+            structureItem.setData(createArrData(nodeItem.getData()));
+        }
+        return structureItem;
+    }
+
+    @Deprecated
     public ArrStructuredItem createStructureItem(final ArrItemVO itemVO, final Integer itemTypeId) {
         ArrData data = itemVO.createDataEntity(em);
         ArrStructuredItem structureItem = new ArrStructuredItem();
@@ -360,8 +427,7 @@ public class ClientFactoryDO {
         var sdp = staticDataService.getData();
         var itemType = sdp.getItemTypeById(itemTypeId);
         if(itemType==null) {
-        	throw new BusinessException("Failed to get item type, itemTypeId: " + itemTypeId,
-        			 BaseCode.ID_NOT_EXIST);
+        	throw new BusinessException("Failed to get item type, itemTypeId: " + itemTypeId, BaseCode.ID_NOT_EXIST);
         }
         structureItem.setItemType(itemType.getEntity());
 
@@ -369,8 +435,7 @@ public class ClientFactoryDO {
         	var itemSpec = itemType.getItemSpecById(itemVO.getDescItemSpecId());
         	if(itemSpec==null) {
             	throw new BusinessException("Failed to get item specification, itemTypeId: " + itemTypeId
-            			+", itemSpecId: " + itemVO.getDescItemSpecId(),
-           			 BaseCode.ID_NOT_EXIST);        		
+            			+", itemSpecId: " + itemVO.getDescItemSpecId(), BaseCode.ID_NOT_EXIST);        		
         	}
             structureItem.setItemSpec(itemSpec);
         }
@@ -378,6 +443,7 @@ public class ClientFactoryDO {
         return structureItem;
     }
 
+    @Deprecated    
     public ArrStructuredItem createStructureItem(final ArrItemVO descItemVO) {        
         ArrStructuredItem structureItem = new ArrStructuredItem();        
         structureItem.setItemId(descItemVO.getId());

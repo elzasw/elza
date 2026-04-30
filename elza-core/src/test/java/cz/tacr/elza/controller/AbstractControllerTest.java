@@ -59,7 +59,6 @@ import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandler;
 import org.springframework.messaging.simp.stomp.StompSession.Receiptable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
@@ -180,6 +179,7 @@ import cz.tacr.elza.test.controller.IoApi;
 import cz.tacr.elza.test.controller.NodeApi;
 import cz.tacr.elza.test.controller.ReportApi;
 import cz.tacr.elza.test.controller.SearchApi;
+import cz.tacr.elza.test.controller.StructureApi;
 import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.CreateFund;
 import cz.tacr.elza.test.controller.vo.CreatedPart;
@@ -267,14 +267,13 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String CREATE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}";
 	protected static final String CONFIRM_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL
 			+ "/data/{fundVersionId}/{structureDataId}/confirm";
-	protected static final String SET_ASSIGNABLE_STRUCTURE_DATA_LIST = STRUCTURE_CONTROLLER_URL
+	protected static final String SET_ASSIGNABLE_STRUCTURE_DATA_LIST = STRUCTURE_CONTROLLER_URL 
 			+ "/data/{fundVersionId}/assignable/{assignable}";
-	@Deprecated
-	protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL
+	protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL 
 			+ "/data/{fundVersionId}/{structureDataId}";
-	protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL
+	protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL 
 			+ "/data/{fundVersionId}/{structureTypeCode}/search";
-	protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL
+	protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL 
 			+ "/data/{fundVersionId}/{structureDataId}";
 	protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type";
 	protected static final String FIND_PART_TYPES = STRUCTURE_CONTROLLER_URL + "/part-type";
@@ -282,13 +281,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
 			+ "/extension/{fundVersionId}/{structureTypeCode}";
 	protected static final String SET_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL
 			+ "/extension/{fundVersionId}/{structureTypeCode}";
-	protected static final String CREATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL
-			+ "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create";
-	protected static final String UPDATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL
-			+ "/item/{fundVersionId}/update/{createNewVersion}";
+	@Deprecated
+	protected static final String CREATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create";
+	@Deprecated
+	protected static final String UPDATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/update/{createNewVersion}";
+	@Deprecated
 	protected static final String DELETE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/delete";
-	protected static final String DELETE_STRUCTURE_ITEMS_BY_TYPE = STRUCTURE_CONTROLLER_URL
-			+ "/item/{fundVersionId}/{structureDataId}/{itemTypeId}";
+	@Deprecated
+	protected static final String DELETE_STRUCTURE_ITEMS_BY_TYPE = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}";
 	protected static final String GET_FORM_STRUCTURE_ITEMS = STRUCTURE_CONTROLLER_URL
 			+ "/item/form/{fundVersionId}/{structureDataId}";
 	protected static final String DUPLICATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL
@@ -540,6 +540,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 	protected NodeApi nodeApi;
 
+	protected StructureApi structureApi;
+
 	protected static Map<String, String> cookies = null;
 
 	@Override
@@ -565,6 +567,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		descitemsApi = new cz.tacr.elza.test.controller.DescitemsApi(elzaApiClient);
 		reportApi = new cz.tacr.elza.test.controller.ReportApi(elzaApiClient);
 		nodeApi = new cz.tacr.elza.test.controller.NodeApi(elzaApiClient);
+		structureApi = new cz.tacr.elza.test.controller.StructureApi(elzaApiClient);
 
 		loginAsAdmin();
 
@@ -1226,8 +1229,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @return vytvořený object hodnoty atributu
 	 */
 	@Deprecated
-	protected ArrItemVO buildDescItem(final String typeCode, final String specCode, final Object value,
-			final Integer position, final Integer descItemObjectId, final Boolean undefined) {
+	protected ArrItemVO buildDescItem(final String typeCode, 
+			                          final String specCode, 
+			                          final Object value,
+			                          final Integer position,
+			                          final Integer descItemObjectId,
+			                          final Boolean undefined) {
 		org.springframework.util.Assert.notNull(typeCode, "Musí být vyplněn kód typu atributu");
 
 		RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
@@ -1354,6 +1361,56 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 		return descItem;
 	}
+
+	/**
+	 * Vytvoření objektu pro hodnotu atributu.
+	 *
+	 * @param typeCode         kód typu atributu
+	 * @param specCode         kód specifikace atributu
+	 * @param value            hodnota
+	 * @param position         pozice
+	 * @param descItemObjectId identifikátor hodnoty atributu
+	 * @param undefined        nezjištěný (bez hodnoty)
+	 * @return vytvořený objekt hodnoty atributu (OpenAPI {@link NodeItem})
+	 */
+	protected NodeItem buildNodeItem(@Nonnull final String typeCode,
+                                     @Nullable final String specCode,
+                                     @Nullable final Object value,
+	                                 @Nullable final Integer position,
+	                                 @Nullable final Integer descItemObjectId,
+	                                 @Nullable final Boolean undefined) {
+	    Validate.notNull(typeCode, "Musí být vyplněn kód typu atributu");
+
+	    RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
+	    Validate.notNull(type, "Typ atributu neexistuje -> CODE: " + typeCode);
+
+	    Integer specId = null;
+	    if (specCode != null) {
+	        RulDescItemSpecExtVO spec = findDescItemSpecByCode(specCode, type);
+	        Validate.notNull(spec, "Specifikace atributu neexistuje -> CODE: " + specCode);
+	        specId = spec.getId();
+	    }
+
+	    RulDataTypeVO rulDataType = findDataType(type.getDataTypeId());
+	    DataType dataType = DataType.valueOf(rulDataType.getCode());
+
+	    if (dataType == DataType.ENUM && BooleanUtils.isNotTrue(type.getUseSpecification())) {
+	        throw new IllegalStateException(
+	                "Specifikace u typu musí být povinná pro ENUM -> CODE: " + type.getCode());
+	    }
+
+	    NodeItem nodeItem = new NodeItem();
+	    nodeItem.setItemTypeId(type.getId());
+	    nodeItem.setItemSpecId(specId);
+	    nodeItem.setPosition(position);
+	    nodeItem.setItemObjectId(descItemObjectId);
+	    nodeItem.setUndefined(undefined);
+	    if (!Boolean.TRUE.equals(undefined)) {
+	        nodeItem.setData(createItemDataByDataTypeAndValue(dataType, value));
+	    }
+
+	    return nodeItem;
+	}	
 
 	/**
 	 * Vytvoření objektu pro hodnotu atributu (nová).
@@ -3299,11 +3356,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
 	 * @return vytvořená entita
 	 */
-	protected StructureController.StructureItemResult createStructureItem(final ArrItemVO itemVO,
+	@Deprecated
+	protected StructureOldController.StructureItemResult createStructureItem(final ArrItemVO itemVO,
 			final Integer fundVersionId, final Integer itemTypeId, final Integer structureDataId) {
 		return post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("itemTypeId", itemTypeId)
 				.pathParam("structureDataId", structureDataId).body(itemVO), CREATE_STRUCTURE_ITEM)
-				.as(StructureController.StructureItemResult.class);
+				.as(StructureOldController.StructureItemResult.class);
 	}
 
 	/**
@@ -3314,11 +3372,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param createNewVersion provést verzovanou změnu
 	 * @return upravená entita
 	 */
-	protected StructureController.StructureItemResult updateStructureItem(final ArrItemVO itemVO,
+	@Deprecated
+	protected StructureOldController.StructureItemResult updateStructureItem(final ArrItemVO itemVO,
 			final Integer fundVersionId, final Boolean createNewVersion) {
 		return put(spec -> spec.pathParam("fundVersionId", fundVersionId)
 				.pathParam("createNewVersion", createNewVersion).body(itemVO), UPDATE_STRUCTURE_ITEM)
-				.as(StructureController.StructureItemResult.class);
+				.as(StructureOldController.StructureItemResult.class);
 	}
 
 	/**
@@ -3328,9 +3387,10 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param fundVersionId identifikátor verze AS
 	 * @return smazaná entita
 	 */
-	protected StructureController.StructureItemResult deleteStructureItem(final ArrItemVO itemVO, final Integer fundVersionId) {
+	@Deprecated
+	protected StructureOldController.StructureItemResult deleteStructureItem(final ArrItemVO itemVO, final Integer fundVersionId) {
 		return post(spec -> spec.pathParam("fundVersionId", fundVersionId).body(itemVO), DELETE_STRUCTURE_ITEM)
-				.as(StructureController.StructureItemResult.class);
+				.as(StructureOldController.StructureItemResult.class);
 	}
 
 	/**
@@ -3340,11 +3400,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
 	 * @param itemTypeId      identifikátor typu atributu
 	 */
-	protected StructureController.StructureItemResult deleteStructureItemsByType(final Integer fundVersionId,
+	@Deprecated
+	protected StructureOldController.StructureItemResult deleteStructureItemsByType(final Integer fundVersionId,
 			final Integer structureDataId, final Integer itemTypeId) {
 		return delete(spec -> spec.pathParam("fundVersionId", fundVersionId)
 				.pathParam("structureDataId", structureDataId).pathParam("itemTypeId", itemTypeId),
-				DELETE_STRUCTURE_ITEMS_BY_TYPE).as(StructureController.StructureItemResult.class);
+				DELETE_STRUCTURE_ITEMS_BY_TYPE).as(StructureOldController.StructureItemResult.class);
 	}
 
 	/**
@@ -3354,9 +3415,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
 	 * @return data formuláře
 	 */
-	protected StructureController.StructureDataFormDataVO getFormStructureItems(final Integer fundVersionId, final Integer structureDataId) {
+	protected StructureOldController.StructureDataFormDataVO getFormStructureItems(final Integer fundVersionId, final Integer structureDataId) {
 		return get(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureDataId", structureDataId),
-				GET_FORM_STRUCTURE_ITEMS).as(StructureController.StructureDataFormDataVO.class);
+				GET_FORM_STRUCTURE_ITEMS).as(StructureOldController.StructureDataFormDataVO.class);
 	}
 
 	/**
@@ -3373,7 +3434,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected void duplicateStructureDataBatch(final Integer fundVersionId, final Integer structureDataId,
 			final Integer count, final List<Integer> itemTypeIds) {
 		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureDataId", structureDataId)
-				.body(new StructureController.StructureDataBatch(count, itemTypeIds)), DUPLICATE_STRUCTURE_DATA_BATCH);
+				.body(new StructureOldController.StructureDataBatch(count, itemTypeIds)), DUPLICATE_STRUCTURE_DATA_BATCH);
 	}
 
 	/**
@@ -3408,7 +3469,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param structureDataBatchUpdate data pro hromadnou úpravu hodnot
 	 */
 	protected void updateStructureDataBatch(final Integer fundVersionId, final String structureTypeCode,
-			final StructureController.StructureDataBatchUpdate structureDataBatchUpdate) {
+			final StructureOldController.StructureDataBatchUpdate structureDataBatchUpdate) {
 		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureTypeCode", structureTypeCode)
 				.body(structureDataBatchUpdate), UPDATE_STRUCTURE_DATA_BATCH);
 	}

@@ -29,7 +29,6 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.domain.DaDaoFile;
 import cz.tacr.elza.domain.DaDaoFileFolder;
 import cz.tacr.elza.repository.*;
@@ -153,7 +152,6 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
@@ -184,10 +182,7 @@ import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrItemFormattedText;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeOutput;
@@ -889,24 +884,28 @@ public class ClientFactoryVO {
         nodeItem.setId(item.getItemId());
         nodeItem.setItemTypeId(item.getItemTypeId());
         nodeItem.setItemSpecId(item.getItemSpecId());
-        nodeItem.setNodeId(item.getNodeId());
-        nodeItem.setNodeVersion(item.getNode().getVersion());
         nodeItem.setItemObjectId(item.getDescItemObjectId());
         nodeItem.setPosition(item.getPosition());
         nodeItem.setReadOnly(item.getReadOnly());
 
+        ArrNode node = item.getNode();
+        if (node != null) {
+            nodeItem.setNodeId(item.getNodeId());
+            nodeItem.setNodeVersion(node.getVersion());
+        }
+
         ArrData arrData = HibernateUtils.unproxy(item.getData());
         if (arrData == null) {
-        	nodeItem.setUndefined(true);
+            nodeItem.setUndefined(true);
         } else {
-        	StaticDataProvider sdp = staticDataService.getData();
-        	RulItemType itemType = sdp.getItemType(item.getItemTypeId());
-        	cz.tacr.elza.core.data.DataType dataType = cz.tacr.elza.core.data.DataType.fromId(itemType.getDataTypeId());
-        	Function<ArrData, ItemData> dataConvertor = dataConvertors.get(dataType);
-        	Objects.requireNonNull(dataConvertor);
-        	ItemData data = dataConvertor.apply(arrData);
-        	nodeItem.setData(data);
-        }		
+            StaticDataProvider sdp = staticDataService.getData();
+            RulItemType itemType = sdp.getItemType(item.getItemTypeId());
+            cz.tacr.elza.core.data.DataType dataType = cz.tacr.elza.core.data.DataType.fromId(itemType.getDataTypeId());
+            Function<ArrData, ItemData> dataConvertor = dataConvertors.get(dataType);
+            Objects.requireNonNull(dataConvertor);
+            ItemData data = dataConvertor.apply(arrData);
+            nodeItem.setData(data);
+        }
 
         return nodeItem;
     }
@@ -959,6 +958,20 @@ public class ClientFactoryVO {
         Collections.sort(result, (o1, o2) -> o1.getPosition() - o2.getPosition());
 
         return result;
+    }
+
+    public StructureData createStructureData(final ArrStructuredObject so) {
+        StructureData sd = new StructureData();
+        sd.setId(so.getStructuredObjectId());
+        sd.setTypeCode(so.getStructuredType().getCode());
+        sd.setValue(so.getValue());
+        sd.setComplement(so.getComplement());
+        sd.setErrorDescription(so.getErrorDescription());
+        sd.setAssignable(so.getAssignable());
+        if (so.getState() != null) {
+            sd.setState(StructureData.StateEnum.valueOf(so.getState().name()));
+        }
+        return sd;
     }
 
     /**
