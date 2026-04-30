@@ -3437,6 +3437,25 @@ namespace ElzaAPI.Structure {
         assignable: boolean;
         errorDescription?: string;
     }
+
+    /**
+     * Data for bulk value creation
+     */
+    model DataBatch {
+        count: integer;
+        incrementedTypeIds: integer[];
+    }
+
+    /**
+     * Data for bulk value update
+     */
+    model DataBatchUpdate {
+        structureDataIds: integer[];
+        autoincrementItemTypeIds: integer[];
+        deleteItemTypeIds: integer[];
+        items: Record<NodeItem>;
+    }
+
     /**
      * Status of a structured data type
      */
@@ -3444,6 +3463,85 @@ namespace ElzaAPI.Structure {
         item: NodeItem;
         parent: Data;
     }
+
+    /**
+     * Creating object of the structured data type
+     */
+    @route("/data/{fundVersionId}")
+    @post op createData(
+        /** structured data type code */
+        @body body: string;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** value for the structured data */
+        @query value?: string;
+    ): Data;
+
+    /**
+     * Creating duplicates of a structured data type and an auto-increment field
+     */
+    @route("/data/{fundVersionId}/{structureDataId}/batch")
+    @post op createDataBatch(
+        /** batch of data to create */
+        @body body: DataBatch;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** structure data id */
+        @path structureDataId: integer;
+    ): DataBatch;
+
+    /**
+     * Bulk update of items/values of a structural type
+     */
+    @route("/data/{fundVersionId}/{structureTypeCode}/batchUpdate")
+    @post op updateDataBatch(
+        /** batch of data to update */
+        @body body: DataBatchUpdate;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** structure type code */
+        @path structureTypeCode: string;
+    ): void;
+
+    /**
+     * Confirms the value of a structured data type. Sets the value
+     */
+    @route("/data/{fundVersionId}/{structureDataId}/confirm")
+    @post op confirmData(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** structure data id */
+        @path structureDataId: integer;
+    ): void;
+
+    /**
+     * Assignability settings.
+     */
+    @route("/data/{fundVersionId}/assignable/{assignable}")
+    @post op setDataAssignable(
+        /** value ids for a structured data type */
+        @body body: integer[];
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** assignable value */
+        @path assignable: boolean;
+    ): void;
+
+    /**
+     * Getting the value of a structured data type
+     */
+    @route("/data/{fundVersionId}/{structureDataId}")
+    @get op getData(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** structure data id */
+        @path structureDataId: integer;
+    ): Data | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
     /**
      * Create item value of a structured data type
      */
@@ -3458,10 +3556,11 @@ namespace ElzaAPI.Structure {
         /** item type id */
         @path itemTypeId: integer;
     ): ItemResult;
+
     /**
      * Update item value of a structured data type
      */
-    @route("/item/{fundVersionId}/create/{createNewVersion}")
+    @route("/item/{fundVersionId}/update/{createNewVersion}")
     @put op updateItem(
         /** node item */
         @body body: NodeItem;
@@ -3474,6 +3573,7 @@ namespace ElzaAPI.Structure {
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
     };
+
     /**
      * Delete item value of a structured data type
      */
@@ -3488,6 +3588,7 @@ namespace ElzaAPI.Structure {
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
     };
+
     /**
      * Delete items based on the value of a data type structure by attribute type
      */
