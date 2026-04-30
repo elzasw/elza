@@ -80,6 +80,7 @@ public class StructureOldController {
      * @param fundVersionId     identifikátor verze AS
      * @return vytvořená dočasná entita
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/data/{fundVersionId}", method = RequestMethod.POST)
     public ArrStructureDataVO createStructureData(@RequestBody final String structureTypeCode,
@@ -103,6 +104,7 @@ public class StructureOldController {
      * @param fundVersionId      identifikátor verze AS
      * @param structureDataBatch data pro hromadné vytvoření hodnot
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}/batch", method = RequestMethod.POST)
     public void duplicateStructureDataBatch(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -127,6 +129,7 @@ public class StructureOldController {
      * @param structureTypeCode        kód strukturovaného datového typu
      * @param structureDataBatchUpdate data pro hromadnou úpravu hodnot
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/data/{fundVersionId}/{structureTypeCode}/batchUpdate", method = RequestMethod.POST)
     public void updateStructureDataBatch(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -156,6 +159,7 @@ public class StructureOldController {
      * @param structureDataId identifikátor hodnoty strukturovaného datového typu
      * @return potvrzená entita
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}/confirm", method = RequestMethod.POST)
     public ArrStructureDataVO confirmStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -173,6 +177,7 @@ public class StructureOldController {
      * @param assignable       přiřaditelný
      * @param structureDataIds identifikátory hodnot strukturovaného datového typu
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/data/{fundVersionId}/assignable/{assignable}", method = RequestMethod.POST)
     public void setAssignableStructObjList(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -208,6 +213,7 @@ public class StructureOldController {
      * @param structureDataId identifikátor hodnoty strukturovaného datového typu
      * @return nalezená entita
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}", method = RequestMethod.GET)
     public ArrStructureDataVO getStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,

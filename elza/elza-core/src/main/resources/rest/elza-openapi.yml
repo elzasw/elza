@@ -2712,7 +2712,7 @@ paths:
             schema:
               $ref: '#/components/schemas/SearchParams'
         description: search parameters
-  /structure/item/{fundVersionId}/create/{createNewVersion}:
+  /structure/item/{fundVersionId}/update/{createNewVersion}:
     put:
       operationId: Structure_updateItem
       description: Update item value of a structured data type
