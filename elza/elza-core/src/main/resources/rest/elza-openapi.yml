@@ -2712,6 +2712,155 @@ paths:
             schema:
               $ref: '#/components/schemas/SearchParams'
         description: search parameters
+  /structure/item/{fundVersionId}/create/{createNewVersion}:
+    put:
+      operationId: Structure_updateItem
+      description: Update item value of a structured data type
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: createNewVersion
+          in: path
+          required: true
+          description: create a new version
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Structure.ItemResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - structure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodeItem'
+        description: node item
+  /structure/item/{fundVersionId}/delete:
+    delete:
+      operationId: Structure_deleteItem
+      description: Delete item value of a structured data type
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Structure.ItemResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - structure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodeItem'
+        description: node item
+  /structure/item/{fundVersionId}/{structureDataId}/{itemTypeId}:
+    delete:
+      operationId: Structure_deleteItemsByType
+      description: Delete items based on the value of a data type structure by attribute type
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: structureDataId
+          in: path
+          required: true
+          description: structure data id
+          schema:
+            type: integer
+        - name: itemTypeId
+          in: path
+          required: true
+          description: item type id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Structure.ItemResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - structure
+  /structure/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create:
+    post:
+      operationId: Structure_createItem
+      description: Create item value of a structured data type
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: structureDataId
+          in: path
+          required: true
+          description: structure data id
+          schema:
+            type: integer
+        - name: itemTypeId
+          in: path
+          required: true
+          description: item type id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Structure.ItemResult'
+      tags:
+        - structure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NodeItem'
+        description: node item
   /tasks/my:
     get:
       operationId: Tasks_getMyTasks
@@ -5082,6 +5231,46 @@ components:
         - asc
         - desc
       description: Order of sorting
+    Structure.Data:
+      type: object
+      required:
+        - id
+        - value
+        - typeCode
+        - complement
+        - state
+        - assignable
+      properties:
+        id:
+          type: integer
+        value:
+          type: string
+        typeCode:
+          type: string
+        complement:
+          type: string
+        state:
+          type: string
+          enum:
+            - OK
+            - ERROR
+            - TEMP
+        assignable:
+          type: boolean
+        errorDescription:
+          type: string
+      description: Value of a structured type
+    Structure.ItemResult:
+      type: object
+      required:
+        - item
+        - parent
+      properties:
+        item:
+          $ref: '#/components/schemas/NodeItem'
+        parent:
+          $ref: '#/components/schemas/Structure.Data'
+      description: Status of a structured data type
     Tasks.EntityType:
       type: string
       enum:

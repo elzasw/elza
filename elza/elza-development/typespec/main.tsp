@@ -4,6 +4,7 @@ import "@typespec/openapi3";
 
 using TypeSpec.Http;
 using TypeSpec.Rest;
+using TypeSpec.OpenAPI;
 
 /**
  * Basic statistics about Elza instance
@@ -20,7 +21,8 @@ model AdminInfo {
     /** Number of logged users */
     loggedUsers: int32;
 }
-  /** Model DaoVireRequest */
+
+/** Model DaoVireRequest */
 model DaoViewRequestVO {
     /** Identifikátor aipu - aip.code */
     daoId: string;
@@ -936,7 +938,7 @@ model ParInstitutionGen {
      */
     institutionType: BaseCode;
     /**
-     * Id {@ApAccessPoint}
+     * Id ApAccessPoint
      */
     accessPointId: integer;
     /**
@@ -3058,7 +3060,7 @@ namespace ElzaAPI.Aip {
          /** DaAip ID */
          @query daAipId: integer;
          /** DaDao ID List */
-        @query({format: "multi"}) daDaoIdList: integer[];
+        @query daDaoIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -3078,7 +3080,7 @@ namespace ElzaAPI.Aip {
          /** DaAip ID */
          @query daAipId: integer;
          /** DaDao ID List */
-        @query({format: "multi"}) daDaoIdList: integer[];
+        @query daDaoIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -3098,7 +3100,7 @@ namespace ElzaAPI.Aip {
          /** DaAip ID */
          @query daAipId: integer;
          /** DaDao ID List */
-        @query({format: "multi"}) daDaoIdList: integer[];
+        @query daDaoIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -3118,7 +3120,7 @@ namespace ElzaAPI.Aip {
          /** DaAip ID */
          @query daAipId: integer;
          /** DaDao ID List */
-        @query({format: "multi"}) daDaoIdList: integer[];
+        @query daDaoIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -3136,7 +3138,7 @@ namespace ElzaAPI.Aip {
          /** ArrNode ID */
          @query arrNodeId: integer;
          /** DaAip ID list */
-         @query({format: "multi"}) daAipIdList: integer[];
+         @query daAipIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -3154,7 +3156,7 @@ namespace ElzaAPI.Aip {
          /** ArrNode ID */
          @query arrNodeId: integer;
          /** DaAip ID list */
-         @query({format: "multi"}) daAipIdList: integer[];
+         @query daAipIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -3172,7 +3174,7 @@ namespace ElzaAPI.Aip {
          /** ArrNode ID */
          @query arrNodeId: integer;
          /** DaAip ID list */
-         @query({format: "multi"}) daAipIdList: integer[];
+         @query daAipIdList: integer[];
          /** DaLevelView ID */
          @query daLevelViewId: integer;
       ) : {
@@ -3192,7 +3194,7 @@ namespace ElzaAPI.Aip {
          /** ArrNode ID */
          @query arrNodeId: integer;
          /** DaAip ID list */
-         @query({format: "multi"}) daAipIdList: integer[];
+         @query daAipIdList: integer[];
          /** DaLevelView ID */
          @query daLevelViewId: integer;
       ) : {
@@ -3420,6 +3422,90 @@ namespace ElzaAPI.Node {
     };
 }
 
+@tag("structure")
+@route("/structure")
+namespace ElzaAPI.Structure {
+    /**
+     * Value of a structured type
+     */
+    model Data {
+        id: integer;
+        value: string;
+        typeCode: string;
+        complement: string;
+        state: "OK" | "ERROR" | "TEMP";
+        assignable: boolean;
+        errorDescription?: string;
+    }
+    /**
+     * Status of a structured data type
+     */
+    model ItemResult {
+        item: NodeItem;
+        parent: Data;
+    }
+    /**
+     * Create item value of a structured data type
+     */
+    @route("/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create")
+    @post op createItem(
+        /** node item */
+        @body body: NodeItem;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** structure data id */
+        @path structureDataId: integer;
+        /** item type id */
+        @path itemTypeId: integer;
+    ): ItemResult;
+    /**
+     * Update item value of a structured data type
+     */
+    @route("/item/{fundVersionId}/create/{createNewVersion}")
+    @put op updateItem(
+        /** node item */
+        @body body: NodeItem;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** create a new version */
+        @path createNewVersion: boolean;
+    ): ItemResult | {
+        /** item does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+    /**
+     * Delete item value of a structured data type
+     */
+    @route("/item/{fundVersionId}/delete")
+    @delete op deleteItem(
+        /** node item */
+        @body body: NodeItem;
+        /** fund version id */
+        @path fundVersionId: integer;
+    ): ItemResult | {
+        /** item does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+    /**
+     * Delete items based on the value of a data type structure by attribute type
+     */
+    @route("/item/{fundVersionId}/{structureDataId}/{itemTypeId}")
+    @delete op deleteItemsByType(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** structure data id */
+        @path structureDataId: integer;
+        /** item type id */
+        @path itemTypeId: integer;
+    ): ItemResult | {
+        /** item does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+}
+
 @tag("search")
 namespace ElzaAPI.Search {
     /**
@@ -3519,6 +3605,22 @@ namespace ElzaAPI.Tasks {
 @service(#{
     title: "ELZA API",
 })
+@info(#{
+    version: "1.0.0",
+})
+@tagMetadata("admin", #{description: "Administrativní funkce"})
+@tagMetadata("daos", #{description: "Digitální archivní objekty"})
+@tagMetadata("externalsystems", #{description: "Externí systémy"})
+@tagMetadata("funds", #{description: "Archivní soubory"})
+@tagMetadata("descitems", #{description: "Záznamy v archivních fondech"})
+@tagMetadata("accesspoints", #{description: "Přístupové body a archivní entity"})
+@tagMetadata("io", #{description: "Vstup a výstup informací"})
+@tagMetadata("aips", #{description: "aips"})
+@tagMetadata("report", #{description: "Statistické zprávy"})
+@tagMetadata("node", #{description: "Práce s úrovněmi a uzly"})
+@tagMetadata("structure", #{description: "structure"})
+@tagMetadata("search", #{description: "Vyhledávání"})
+@tagMetadata("tasks", #{description: "Úkoly"})
 namespace ElzaAPI {
     // add models not used in operations
     union __Types {
