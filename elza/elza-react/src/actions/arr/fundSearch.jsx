@@ -28,20 +28,32 @@ export function isFundSearchAction(action) {
     }
 }
 
-function unmaskFilterValue(filter) {
-    const filterValue = filter.getFilterValue(filter);
+function unmaskSingleFieldValue(filterValue, itemType) {
     if (
         filterValue.filterType === FilterType.FieldValue &&
         filterValue.field?.fieldType === FieldType.DescItem &&
         filterValue.value &&
-        filter.data?.itemType
+        itemType
     ) {
-        const viewDefinition = filter.data.itemType.viewDefinition;
+        const viewDefinition = itemType.viewDefinition;
         if (isMaskViewDefinition(viewDefinition) && matchesMask(filterValue.value, viewDefinition.mask, true)) {
             return { ...filterValue, value: unmaskString(filterValue.value, viewDefinition.mask) };
         }
     }
     return filterValue;
+}
+
+function unmaskFilterValue(filter) {
+    const filterValue = filter.getFilterValue(filter);
+    const itemType = filter.data?.itemType;
+
+    if (filterValue.filterType === FilterType.Logical && Array.isArray(filterValue.filters)) {
+        return {
+            ...filterValue,
+            filters: filterValue.filters.map((inner) => unmaskSingleFieldValue(inner, itemType)),
+        };
+    }
+    return unmaskSingleFieldValue(filterValue, itemType);
 }
 
 export function fundSearchFetchIfNeeded(force = false) {
