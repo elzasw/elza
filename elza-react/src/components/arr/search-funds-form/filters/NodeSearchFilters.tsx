@@ -1,4 +1,4 @@
-import { Button, Divider, Input, InteractionTag, InteractionTagPrimary, InteractionTagSecondary, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tag, TagDismissData, TagDismissEvent, TagGroup, makeStyles, tokens } from "@fluentui/react-components";
+import { Button, Divider, Input, InteractionTag, InteractionTagPrimary, InteractionTagSecondary, Menu, MenuItem, MenuList, MenuPopover, MenuTrigger, Tag, TagDismissData, TagDismissEvent, TagGroup, Tooltip, makeStyles, tokens } from "@fluentui/react-components";
 import { AddRegular, DismissRegular, ArrowSyncRegular } from "@fluentui/react-icons";
 import { Icon } from "components"
 import { Field, Form } from "react-final-form";
@@ -7,7 +7,8 @@ import { useEffect, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { messages } from "./messages";
 import { useFilterModal } from "./hooks";
-import { FilterObject } from "./types";
+import { FilterEntry, MultiFilterObject } from "./types";
+import { DescItemValue } from "./FilterDescItemModal";
 import { useSelector } from "react-redux";
 import { AppState, DescItemTypeRef } from "typings/store";
 import { useThunkDispatch } from "utils/hooks";
@@ -15,9 +16,9 @@ import { descItemTypesFetchIfNeeded } from "actions/refTables/descItemTypes";
 import { SettingsType } from "api/settings/SettingsType";
 
 interface Props {
-  onChange: (filters: FilterObject[]) => void;
+  onChange: (filters: MultiFilterObject[]) => void;
   onRefresh: () => void;
-  currentFilters: FilterObject[];
+  currentFilters: MultiFilterObject[];
 }
 
 interface FulltextValues {
@@ -29,11 +30,55 @@ function formatPosition(x: number, y: number) {
 }
 
 const useStyles = makeStyles({
+  tagsContainer: {
+    display: "flex",
+    alignItems: "center",
+    margin: "5px",
+    flex: "1 1 100%",
+    minWidth: 0,
+    maxWidth: "100%",
+    overflow: "hidden",
+  },
   tagGroup: {
     display: "flex",
     flexWrap: "wrap",
     rowGap: tokens.spacingVerticalXS,
-  }
+    maxWidth: "100%",
+    minWidth: 0,
+    width: "100%",
+  },
+  tag: {
+    maxWidth: "100%",
+    minWidth: 0,
+    "& > *": {
+      maxWidth: "100%",
+      minWidth: 0,
+    },
+    "& *": {
+      minWidth: 0,
+    },
+    // Targets Fluent UI's internal InteractionTagPrimary content slot so we can
+    // enforce overflow/ellipsis on rich JSX content. The class name is an
+    // implementation detail of @fluentui/react-components and may need updating
+    // on major Fluent UI upgrades.
+    '& [class*="__primaryText"]': {
+      display: "block",
+      overflow: "hidden",
+      minWidth: 0,
+      flex: "1 1 auto",
+    },
+  },
+  tagContent: {
+    display: "block",
+    overflow: "hidden",
+    whiteSpace: "nowrap",
+    textOverflow: "ellipsis",
+    minWidth: 0,
+    maxWidth: "100%",
+  },
+  tagDismiss: {
+    flexShrink: 0,
+  },
 })
 
 interface SearchNodeFilterSetting {
@@ -57,7 +102,7 @@ export function NodeSearchFilters({
   onRefresh,
   currentFilters,
 }: Props) {
-  const [filters, setFilters] = useState<FilterObject[]>(currentFilters as any || []);
+  const [filters, setFilters] = useState<MultiFilterObject[]>(currentFilters as any || []);
 
   const showFilterModal = useFilterModal();
   const addFilterButtonRef = useRef<HTMLButtonElement>(null);
@@ -81,18 +126,22 @@ export function NodeSearchFilters({
     return presetFilters;
   }
 
-  function formatPresetFilter(presetFilter: SearchNodeFilterSetting) {
+  function formatPresetFilter(presetFilter: SearchNodeFilterSetting): Partial<MultiFilterObject<DescItemValue>> {
     const presetType = descItemTypes.find(({ code }) => presetFilter.itemType === code);
     const presetSpec = presetType?.descItemSpecs.find(({ code }) => presetFilter.itemSpec === code);
 
     return {
-      operation: presetFilter.operation,
-      data: {
-        itemType: presetType,
-        itemSpec: presetSpec,
-      },
-      name: "DescItem"
-    }
+      name: "DescItem",
+      data: presetType ? [{
+        value: {
+          itemType: presetType,
+          itemSpec: presetSpec || undefined,
+          itemValue: undefined,
+          itemLabel: undefined,
+        },
+        operation: presetFilter.operation!,
+      }] : [],
+    };
   }
 
   const presetMenuFilters = getPresetFilters()?.filter(({ fixedField }) => !fixedField);
@@ -117,7 +166,7 @@ export function NodeSearchFilters({
     if (fulltext) {
       _filters.push({
         filterType: FilterType.Contains,
-        data: { value: fulltext },
+        data: [{ value: fulltext, operation: OperationCompareType.Contains }],
         getFilterValue: () => ({
           filterType: FilterType.Contains,
           value: fulltext,
@@ -156,7 +205,15 @@ export function NodeSearchFilters({
       _filters.push({
         name,
         filterType: FilterType.FieldValue,
-        data: { value, itemType, itemSpec, operation },
+        data: [{
+          value: {
+            itemType,
+            itemSpec: itemType.descItemSpecs?.find(({ code }) => code === itemSpec),
+            itemValue: value,
+            itemLabel: value,
+          },
+          operation,
+        }],
         getFilterValue: () => ({
           filterType: FilterType.FieldValue,
           field: {
@@ -176,7 +233,7 @@ export function NodeSearchFilters({
     onChange(_filters);
   }
 
-  function handleFilterConfirm(filter: FilterObject) {
+  function handleFilterConfirm(filter: MultiFilterObject) {
     const _filters = [...filters];
     const _filter = _filters.find(f => {
       f.getSerializedString(f) == filter.getSerializedString(filter)
@@ -190,7 +247,7 @@ export function NodeSearchFilters({
     onChange(_filters);
   }
 
-  function handleFilterReplace(filter: FilterObject, index: number) {
+  function handleFilterReplace(filter: MultiFilterObject, index: number) {
     const _filters = [...filters];
 
     _filters.splice(index, 1, filter);
@@ -214,7 +271,7 @@ export function NodeSearchFilters({
     }
   }
 
-  async function handleFilterEdit(e: React.MouseEvent, filter: FilterObject, index: number) {
+  async function handleFilterEdit(e: React.MouseEvent, filter: MultiFilterObject, index: number) {
     const rect = e.currentTarget.getBoundingClientRect();
 
     const { data } = await showFilterModal(filter, formatPosition(rect.left, rect.top + rect.height));
@@ -378,24 +435,31 @@ export function NodeSearchFilters({
         </MenuPopover>
       </Menu>
     </div>
-    <div style={{ display: "flex", alignItems: "center", margin: "5px" }}>
+    <div className={styles.tagsContainer}>
       <TagGroup className={styles.tagGroup} onDismiss={handleFilterRemove}>
         {filters.filter(({ filterType, name }) =>
           filterType !== FilterType.Contains // hide fulltext filter
           && presetFixedFilters.find(({ name: _name }) => _name !== name) // hide fixed filters
         ).map((filter, index) => {
+          const serialized = filter.getSerializedString(filter);
+          const displayValue = filter.getDisplayValue(filter);
           return <InteractionTag
-            value={JSON.stringify({field: filter.name, value: filter.getSerializedString(filter)})}
+            value={JSON.stringify({field: filter.name, value: serialized})}
             key={index}
+            className={styles.tag}
           >
-            <InteractionTagPrimary onClick={async (e) => {
-              handleFilterEdit(e, filter, index);
-            }}>
-              <div style={{ display: "flex", alignItems: "center" }}>
-                {filter.getDisplayValue(filter)}
-              </div>
-            </InteractionTagPrimary>
-            <InteractionTagSecondary aria-label="remove" />
+            <Tooltip appearance="inverted" content={<>{displayValue}</>} relationship="description" withArrow showDelay={1000}>
+              <InteractionTagPrimary
+                onClick={async (e) => {
+                  handleFilterEdit(e, filter, index);
+                }}
+              >
+                <div className={styles.tagContent}>
+                  {displayValue}
+                </div>
+              </InteractionTagPrimary>
+            </Tooltip>
+            <InteractionTagSecondary aria-label="remove" className={styles.tagDismiss} />
           </InteractionTag>
         })}
       </TagGroup>

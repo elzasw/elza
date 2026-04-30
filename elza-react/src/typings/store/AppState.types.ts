@@ -10,7 +10,7 @@ import { FundDataGrid } from "./DataGrid.types";
 import { AipFilterCriteria } from "components/aip/filter/forms/EnumAipFilterCriteria.ts";
 import { ApAccessPointVO } from "api/ApAccessPointVO.ts";
 import { AipDetailVO } from "elza-api";
-import { FilterObject } from "components/fund/filters/types";
+import { MultiFilterObject } from "components/arr/search-funds-form/filters/types";
 
 export interface SplitterState {
     leftWidth: number;
@@ -316,7 +316,7 @@ export interface FundSearchFundType {
 
 export interface FundSearch {
     fulltext: string;
-    filters: FilterObject[];
+    filters: MultiFilterObject[];
     funds: FundSearchFundType[];
     fetched: boolean;
     isFetching: boolean;

@@ -1,15 +1,14 @@
-import { Combobox, OptionOnSelectData, SelectionEvents, Option, Menu, MenuTrigger, MenuButton, MenuPopover, MenuItem } from "@fluentui/react-components";
-import { ShapeIntersectFilled } from "@fluentui/react-icons";
-import { SquaresNestedRegular } from "@fluentui/react-icons";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useInitialFocus } from "./utils";
+import { Combobox, Divider, OptionOnSelectData, SelectionEvents, Option } from "@fluentui/react-components";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { useInitialFocus, formatOperation } from "./utils";
 import { useSelector } from "react-redux";
 import { AppState, DescItemTypeRef, RuleType } from "typings/store";
 import { messages } from "./messages";
-import { FieldType, FilterType, OperationCompareType } from "elza-api";
-import { IntlShape, useIntl } from "react-intl";
-import { BaseFilterWindow } from "./FilterWindow";
-import { FilterFormProps } from "./types";
+import { FieldType, FilterType, OperationCompareType, OperationLogicalType } from "elza-api";
+import { FormattedMessage, useIntl } from "react-intl";
+import { MultiFilterWindow } from "./MultiFilterWindow";
+import { FilterItem } from "./FilterItem";
+import { FilterEntry, FilterFormProps } from "./types";
 import { descItemTypesFetchIfNeeded } from "actions/refTables/descItemTypes";
 import { useThunkDispatch } from "utils/hooks";
 import { RulDataTypeCodeEnum } from "api/RulDataTypeCodeEnum";
@@ -24,63 +23,27 @@ import { FilterFieldRecordRef } from "./fields/FilterFieldRecordRef";
 import { RulDataTypeVO } from "api/RulDataTypeVO";
 import { FilterValueFieldProps } from "./fields/types";
 
-function formatOperation(operation: OperationCompareType, intl?: IntlShape) {
-  switch (operation) {
-    case OperationCompareType.Eq:
-      return ": "
-    case OperationCompareType.Neq:
-      return <div style={{ padding: "0 5px", fontSize: "1.4rem" }}>≠</div>
-    case OperationCompareType.Contains:
-      return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}>∋</div>
-    case OperationCompareType.Gt:
-      return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}>{">"}</div>
-    case OperationCompareType.Lt:
-      return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}>{"<"}</div>
-    case OperationCompareType.Gte:
-      return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}>{">="}</div>
-    case OperationCompareType.Lte:
-      return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}>{"<="}</div>
-    case OperationCompareType.Intersect:
-      return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}><ShapeIntersectFilled /></div>
-    case OperationCompareType.IsIn:
-      return <div style={{ padding: "0 5px", fontSize: "1.2rem" }}><SquaresNestedRegular /></div>
-    case OperationCompareType.NotNull:
-    case OperationCompareType.IsNull:
-      return <div style={{ padding: "0 5px" }}>{intl?.formatMessage(messages[operation]) || operation}</div>
-    default:
-      return <div style={{ padding: "0 5px" }}>{operation}</div>;
-  }
+/**
+ * Persisted shape of one entry in a DescItem filter's `data` array.
+ * `itemType` is denormalised — every entry carries it, but the modal's UI
+ * enforces uniformity, so all entries within a single filter share the same
+ * `itemType`. `itemValue` is always a string at this level; field components
+ * encapsulate the per-data-type encoding (numbers, dates, ids are stringified).
+ */
+export interface DescItemValue {
+  itemType: DescItemTypeRef;
+  itemSpec?: RulDescItemSpecExtVO;
+  itemValue?: string;
+  itemLabel?: string;
 }
 
-function formatSpec(operation: OperationCompareType, data: any, dataType: RulDataTypeVO) {
-  const ignoreValue = operation === OperationCompareType.NotNull || operation === OperationCompareType.IsNull;
-
-  if (!data.itemSpec) {
-    return undefined;
-  }
-  if (dataType.code === RulDataTypeCodeEnum.ENUM) {
-    if (ignoreValue) { return undefined; }
-    return data.itemSpec.name;
-  }
-  return <>
-    &nbsp;
-    ({data.itemSpec.name})
-  </>
-}
-
-function formatLabel(operation: OperationCompareType, data: any) {
-  const ignoreValue = operation === OperationCompareType.NotNull || operation === OperationCompareType.IsNull;
-  return !ignoreValue && data.itemLabel
-}
-
-function formatDisplayValue(operation: OperationCompareType, data: any, dataType: RulDataTypeVO, intl: IntlShape) {
-  return <>
-    <b>{data.itemType.shortcut}</b>
-    {dataType.code === RulDataTypeCodeEnum.ENUM && formatOperation(operation, intl)}
-    {formatSpec(operation, data, dataType)}
-    {dataType.code !== RulDataTypeCodeEnum.ENUM && formatOperation(operation, intl)}
-    {formatLabel(operation, data)}
-  </>
+interface DescItemFilterItem {
+  itemSpecCode?: string;
+  itemSpecQuery: string;
+  operation?: OperationCompareType;
+  itemValue?: string;
+  itemLabel?: string;
+  isValueValid: boolean;
 }
 
 interface DataTypeFilterDefinition {
@@ -90,19 +53,27 @@ interface DataTypeFilterDefinition {
 
 type DataTypeFiltersMap = Partial<Record<RulDataTypeCodeEnum, DataTypeFilterDefinition>>;
 
-// const OperationCompareTypeEx = {
-//   ...OperationCompareType,
-//   Test: "TEST",
-// } as const;
-//
-// type OperationCompareTypeEx = typeof OperationCompareTypeEx[keyof typeof OperationCompareTypeEx];
+function formatSpecNode(item: { itemSpec?: RulDescItemSpecExtVO; itemLabel?: string }, operation: OperationCompareType, dataType: RulDataTypeVO) {
+  const ignoreValue = operation === OperationCompareType.NotNull || operation === OperationCompareType.IsNull;
+  if (!item.itemSpec) { return undefined; }
+  if (dataType.code === RulDataTypeCodeEnum.ENUM) {
+    if (ignoreValue) { return undefined; }
+    return item.itemSpec.name;
+  }
+  return <>&nbsp;({item.itemSpec.name})</>
+}
+
+function formatLabelNode(item: { itemLabel?: string }, operation: OperationCompareType) {
+  const ignoreValue = operation === OperationCompareType.NotNull || operation === OperationCompareType.IsNull;
+  return !ignoreValue && item.itemLabel
+}
 
 export function FilterDescItemModal({
   filterName,
   onFilterChange,
   onClose = () => { console.warn("'onClose' not defined") },
   initialValue,
-}: FilterFormProps<any>) {
+}: FilterFormProps<DescItemValue>) {
   const availableDataTypesMap: DataTypeFiltersMap = {
     [RulDataTypeCodeEnum.INT]: {
       operations: [
@@ -113,163 +84,118 @@ export function FilterDescItemModal({
         OperationCompareType.Lte,
         OperationCompareType.Gte,
         OperationCompareType.IsNull,
-        OperationCompareType.NotNull
+        OperationCompareType.NotNull,
       ],
       fieldComponent: FilterFieldNumber,
     },
     [RulDataTypeCodeEnum.DECIMAL]: {
       operations: [
-        OperationCompareType.Eq,
-        OperationCompareType.Neq,
-        OperationCompareType.Lt,
-        OperationCompareType.Gt,
-        OperationCompareType.Lte,
-        OperationCompareType.Gte,
-        OperationCompareType.IsNull,
-        OperationCompareType.NotNull
+        OperationCompareType.Eq, OperationCompareType.Neq,
+        OperationCompareType.Lt, OperationCompareType.Gt,
+        OperationCompareType.Lte, OperationCompareType.Gte,
+        OperationCompareType.IsNull, OperationCompareType.NotNull,
       ],
       fieldComponent: FilterFieldNumber,
     },
     [RulDataTypeCodeEnum.STRING]: {
       operations: [
-        OperationCompareType.Contains,
-        OperationCompareType.Eq,
-        OperationCompareType.Neq,
-        OperationCompareType.IsNull,
-        OperationCompareType.NotNull
+        OperationCompareType.Contains, OperationCompareType.Eq, OperationCompareType.Neq,
+        OperationCompareType.IsNull, OperationCompareType.NotNull,
       ],
       fieldComponent: FilterFieldText,
     },
     [RulDataTypeCodeEnum.TEXT]: {
       operations: [
-        OperationCompareType.Contains,
-        OperationCompareType.Eq,
-        OperationCompareType.Neq,
-        OperationCompareType.IsNull,
-        OperationCompareType.NotNull
+        OperationCompareType.Contains, OperationCompareType.Eq, OperationCompareType.Neq,
+        OperationCompareType.IsNull, OperationCompareType.NotNull,
       ],
       fieldComponent: FilterFieldText,
     },
-    // [RulDataTypeCodeEnum.COORDINATES]: {operations: [OperationCompareType.Eq, OperationCompareType.Neq]},
     [RulDataTypeCodeEnum.UNITDATE]: {
       operations: [
-        OperationCompareType.Contains,
-        OperationCompareType.Intersect,
-        OperationCompareType.IsIn,
-        OperationCompareType.Eq,
-        OperationCompareType.Neq,
-        OperationCompareType.Lt,
-        OperationCompareType.Gt,
-        OperationCompareType.Lte,
-        OperationCompareType.Gte,
-        OperationCompareType.IsNull,
-        OperationCompareType.NotNull
+        OperationCompareType.Contains, OperationCompareType.Intersect, OperationCompareType.IsIn,
+        OperationCompareType.Eq, OperationCompareType.Neq,
+        OperationCompareType.Lt, OperationCompareType.Gt, OperationCompareType.Lte, OperationCompareType.Gte,
+        OperationCompareType.IsNull, OperationCompareType.NotNull,
       ],
       fieldComponent: FilterFieldUnitdate,
     },
     [RulDataTypeCodeEnum.ENUM]: {
       operations: [
-        OperationCompareType.Eq,
-        OperationCompareType.Neq,
-        OperationCompareType.IsNull,
-        OperationCompareType.NotNull
+        OperationCompareType.Eq, OperationCompareType.Neq,
+        OperationCompareType.IsNull, OperationCompareType.NotNull,
       ],
     },
     [RulDataTypeCodeEnum.RECORD_REF]: {
       operations: [
-        OperationCompareType.Eq,
-        OperationCompareType.Neq,
-        OperationCompareType.IsNull,
-        OperationCompareType.NotNull
+        OperationCompareType.Eq, OperationCompareType.Neq,
+        OperationCompareType.IsNull, OperationCompareType.NotNull,
       ],
       fieldComponent: FilterFieldRecordRef,
     },
     [RulDataTypeCodeEnum.STRUCTURED]: {
       operations: [
-        OperationCompareType.Contains,
-        OperationCompareType.Eq,
-        OperationCompareType.Neq,
-        OperationCompareType.IsNull,
-        OperationCompareType.NotNull
+        OperationCompareType.Contains, OperationCompareType.Eq, OperationCompareType.Neq,
+        OperationCompareType.IsNull, OperationCompareType.NotNull,
       ],
       fieldComponent: FilterFieldText,
     },
     [RulDataTypeCodeEnum.URI_REF]: {
       operations: [
-        OperationCompareType.Contains,
-        OperationCompareType.Eq,
-        OperationCompareType.Neq,
-        OperationCompareType.IsNull,
-        OperationCompareType.NotNull
+        OperationCompareType.Contains, OperationCompareType.Eq, OperationCompareType.Neq,
+        OperationCompareType.IsNull, OperationCompareType.NotNull,
       ],
       fieldComponent: FilterFieldText,
     },
     [RulDataTypeCodeEnum.BIT]: {
-      operations: [
-        OperationCompareType.IsNull,
-        OperationCompareType.NotNull
-      ]
+      operations: [OperationCompareType.IsNull, OperationCompareType.NotNull],
     },
     [RulDataTypeCodeEnum.DATE]: {
-      operations: [
-        OperationCompareType.IsNull,
-        OperationCompareType.NotNull
-      ]
+      operations: [OperationCompareType.IsNull, OperationCompareType.NotNull],
     },
     [RulDataTypeCodeEnum.UNITID]: {
       operations: [
-        OperationCompareType.Contains,
-        OperationCompareType.Eq,
-        OperationCompareType.Neq,
-        OperationCompareType.IsNull,
-        OperationCompareType.NotNull
+        OperationCompareType.Contains, OperationCompareType.Eq, OperationCompareType.Neq,
+        OperationCompareType.IsNull, OperationCompareType.NotNull,
       ],
       fieldComponent: FilterFieldText,
     },
     [RulDataTypeCodeEnum.FILE_REF]: {
       operations: [
-        OperationCompareType.Contains,
-        OperationCompareType.Eq,
-        OperationCompareType.Neq,
-        OperationCompareType.IsNull,
-        OperationCompareType.NotNull
+        OperationCompareType.Contains, OperationCompareType.Eq, OperationCompareType.Neq,
+        OperationCompareType.IsNull, OperationCompareType.NotNull,
       ],
       fieldComponent: FilterFieldText,
     },
-    // [RulDataTypeCodeEnum.JSON_TABLE]: {
-    //   operations: [
-    //     OperationCompareType.IsNull,
-    //     OperationCompareType.NotNull
-    //   ]
-    // },
     [RulDataTypeCodeEnum.COORDINATES]: {
-      operations: [
-        OperationCompareType.IsNull,
-        OperationCompareType.NotNull
-      ]
+      operations: [OperationCompareType.IsNull, OperationCompareType.NotNull],
     },
-    // [RulDataTypeCodeEnum.FORMATTED_TEXT]: {
-    //   operations: [
-    //     OperationCompareType.IsNull,
-    //     OperationCompareType.NotNull
-    //   ]
-    // },
   }
 
-  const [itemTypeCode, setItemTypeCode] = useState<string>(initialValue?.data?.itemType.code);
-  const [itemSpecCode, setItemSpecCode] = useState<string>(initialValue?.data?.itemSpec?.code);
-  const [itemTypeQuery, setItemTypeQuery] = useState<string>(initialValue?.data?.itemType?.name || "");
-  const [itemSpecQuery, setItemSpecQuery] = useState<string>(initialValue?.data?.itemSpec?.name || "");
-  const [itemValue, setItemValue] = useState<string>(initialValue?.data?.itemValue);
-  const [itemLabel, setItemLabel] = useState<string>(initialValue?.data?.itemLabel);
-  const [isValueValid, setIsValueValid] = useState<boolean>(initialValue?.data?.itemValue ? true : false);
-  const [operation, setOperation] = useState<OperationCompareType>(initialValue.operation);
+  const initialItems: DescItemFilterItem[] = (() => {
+    const data = initialValue?.data;
+    if (!Array.isArray(data) || data.length === 0) {
+      return [{ itemSpecQuery: "", isValueValid: false }];
+    }
+    return data.map(({ value, operation }) => ({
+      itemSpecCode: value.itemSpec?.code,
+      itemSpecQuery: value.itemSpec?.name || "",
+      operation,
+      itemValue: value.itemValue,
+      itemLabel: value.itemLabel,
+      isValueValid: value.itemValue ? true : false,
+    }));
+  })();
+
+  const initialItemType = initialValue?.data?.[0]?.value.itemType;
+  const [itemTypeCode, setItemTypeCode] = useState<string>(initialItemType?.code);
+  const [itemTypeQuery, setItemTypeQuery] = useState<string>(initialItemType?.name || "");
+  const [items, setItems] = useState<DescItemFilterItem[]>(initialItems);
   const [descItemTypes, setDescItemTypes] = useState<DescItemTypeRef[]>([]);
   const [descItemTypesFetched, setDescItemTypesFetched] = useState<boolean>(false);
 
   const dataTypes = useSelector(({ refTables }: AppState) => refTables.rulDataTypes);
 
-  // desc item types filtered by possible data types
   const allDescItemTypes = useSelector(({ refTables }: AppState) => {
     if (!dataTypes.fetched) { return null; }
     return refTables.descItemTypes.items.filter(({ dataTypeId }) => {
@@ -288,22 +214,19 @@ export function FilterDescItemModal({
   const intl = useIntl();
   const { formatMessage } = intl;
 
-  const isDirty = itemTypeCode != initialValue?.data?.code || (initialValue.operation && operation != initialValue.operation) || (!itemTypeCode && !!itemTypeQuery);
-  const inputRef = useRef(null)
+  const inputRef = useRef(null);
   useInitialFocus(inputRef);
 
   // desc item types filtered by query
   const filterItemTypes = () => {
-    if (!itemTypeQuery || !isDirty) { return descItemTypes; }
-
-    const normalizedQuery = (itemTypeQuery).toLowerCase();
-
+    if (!itemTypeQuery) { return descItemTypes; }
+    const normalizedQuery = itemTypeQuery.toLowerCase();
     return descItemTypes.filter(({ name, shortcut }) => {
       const sources = [
         name.toLowerCase(),
         shortcut.toLowerCase(),
-        name.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase(), // without diacritic
-        shortcut.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase() // without diacritic
+        name.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase(),
+        shortcut.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase(),
       ]
       return sources.find((normalizedSource) => normalizedSource.indexOf(normalizedQuery) >= 0) != undefined;
     })
@@ -312,32 +235,15 @@ export function FilterDescItemModal({
   const filteredItemTypes = filterItemTypes();
 
   let selectedItemType: DescItemTypeRef | undefined;
-  let selectedItemSpec: RulDescItemSpecExtVO | undefined;
   let selectedDataType: RulDataTypeVO | undefined;
   let dataTypeFilterDefinition: DataTypeFilterDefinition | undefined;
 
-  let filteredItemSpecs = [];
-
   if (itemTypeCode && descItemTypes.length > 0 && dataTypes) {
-
     selectedItemType = descItemTypes.find(({ code }) => code === itemTypeCode);
-    if (!selectedItemType) {
-      throw `Missing item type: ${itemTypeCode}`;
-    }
+    if (!selectedItemType) { throw `Missing item type: ${itemTypeCode}`; }
 
     selectedDataType = dataTypes.items.find(({ id }) => id === selectedItemType.dataTypeId);
-    if (!selectedDataType) {
-      throw `Missing data type: ${selectedItemType.dataTypeId}`;
-    }
-
-    // desc item spec of selected item type filtered by query
-    filteredItemSpecs = isDirty
-      ? selectedItemType.descItemSpecs?.filter((spec) => spec.name.toLowerCase().indexOf((itemSpecQuery || "").toLowerCase()) >= 0)
-      : selectedItemType.descItemSpecs || [];
-
-    if (itemSpecCode) {
-      selectedItemSpec = selectedItemType.descItemSpecs.find(({ code }) => code === itemSpecCode);
-    }
+    if (!selectedDataType) { throw `Missing data type: ${selectedItemType.dataTypeId}`; }
 
     dataTypeFilterDefinition = availableDataTypesMap[selectedDataType.code];
   }
@@ -354,9 +260,7 @@ export function FilterDescItemModal({
       (async function () {
         const promises = arrangementRuleSets.map(({ id }) => WebApi.getItemTypeCodesByRuleSet(id));
         const itemTypes = await Promise.all(promises);
-        // merge all arays into one
         const descItemTypeCodes: string[] = [].concat(...itemTypes);
-
         const availableDescItemTypes = allDescItemTypes.filter(({ code }) => descItemTypeCodes?.includes(code));
         setDescItemTypes(availableDescItemTypes);
         setDescItemTypesFetched(true);
@@ -364,191 +268,221 @@ export function FilterDescItemModal({
     }
   }, [allDescItemTypes, arrangementRuleSets, descItemTypesFetched])
 
-  // Preselect first operation from filter definition when item type changes
+  // Preselect first operation from filter definition when missing
   useEffect(() => {
-    if (!operation) {
-      setOperation(dataTypeFilterDefinition?.operations?.[0]);
-    }
-  }, [dataTypeFilterDefinition?.operations, operation])
+    if (!dataTypeFilterDefinition) { return; }
+    setItems((prev) => prev.map((item) => item.operation
+      ? item
+      : { ...item, operation: dataTypeFilterDefinition.operations?.[0] }));
+  }, [dataTypeFilterDefinition?.operations])
 
   const handleItemTypeSelect = (_e: SelectionEvents, data: OptionOnSelectData) => {
     setItemTypeQuery(data.optionText || "");
     setItemTypeCode(data.optionValue || "");
-    setOperation(undefined);
-    setItemSpecQuery("");
-    setItemSpecCode(undefined);
+    setItems([{ itemSpecQuery: "", isValueValid: false }]);
   }
 
-  const handleItemSpecSelect = (_e: SelectionEvents, data: OptionOnSelectData) => {
-    setItemSpecQuery(data.optionText || "");
-    setItemSpecCode(data.optionValue || "");
+  const updateItem = useCallback((index: number, patch: Partial<DescItemFilterItem>) => {
+    setItems((prev) => prev.map((item, i) => i === index ? { ...item, ...patch } : item));
+  }, []);
+
+  const removeItem = useCallback((index: number) => {
+    setItems((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const addItem = useCallback(() => {
+    setItems((prev) => [...prev, {
+      itemSpecQuery: "",
+      operation: prev[prev.length - 1]?.operation || dataTypeFilterDefinition?.operations?.[0],
+      isValueValid: false,
+    }]);
+  }, [dataTypeFilterDefinition?.operations])
+
+  function validateItem(item: DescItemFilterItem): boolean {
+    if (!item.operation) { return false; }
+    if (
+      item.operation === OperationCompareType.IsNull
+      || item.operation === OperationCompareType.NotNull
+      || !dataTypeFilterDefinition?.fieldComponent
+    ) {
+      return true;
+    }
+    return item.isValueValid;
   }
 
-  const handleValueChange = (value: string = "", valid: boolean = true, valueLabel?: string) => {
-    setItemValue(value);
-    setItemLabel(valueLabel || value);
-    setIsValueValid(value != "" && valid);
-  }
+  const isValid = !!itemTypeCode && items.length > 0 && items.every(validateItem);
+  const isDirty = JSON.stringify({ itemTypeCode, items }) !== JSON.stringify({
+    itemTypeCode: initialItemType?.code,
+    items: initialItems,
+  });
 
   const handleFilterChange = useCallback(() => {
     const itemType = itemTypeCode && descItemTypes.find(({ code }) => code === itemTypeCode);
-    const itemSpec = itemSpecCode && itemType?.descItemSpecs?.find(({ code }) => code === itemSpecCode);
+    if (!itemType || !isDirty) { return; }
     const dataType = dataTypes.itemsMap[itemType.dataTypeId];
 
-    let _itemValue = itemValue;
-    let _itemLabel = itemLabel;
-    let _itemSpec = itemSpec;
-    // remove value when not used by operation
-    if (operation === OperationCompareType.IsNull || operation === OperationCompareType.NotNull) {
-      // remove spec when used as value in enum type
-      if (dataType.code === RulDataTypeCodeEnum.ENUM) {
-        _itemSpec = undefined;
-      }
-      _itemValue = undefined;
-      _itemLabel = undefined;
-    }
+    const entries: FilterEntry<DescItemValue>[] = items.map((item) => {
+      const itemSpec = item.itemSpecCode && itemType.descItemSpecs?.find(({ code }) => code === item.itemSpecCode);
+      let _itemValue = item.itemValue;
+      let _itemLabel = item.itemLabel;
+      let _itemSpec: RulDescItemSpecExtVO | undefined = itemSpec || undefined;
 
-    if (isDirty && itemType) {
-      onFilterChange({
-        filterType: FilterType.FieldValue,
-        name: itemType.code,
-        data: {
+      if (item.operation === OperationCompareType.IsNull || item.operation === OperationCompareType.NotNull) {
+        if (dataType.code === RulDataTypeCodeEnum.ENUM) {
+          _itemSpec = undefined;
+        }
+        _itemValue = undefined;
+        _itemLabel = undefined;
+      }
+
+      return {
+        value: {
           itemType,
           itemSpec: _itemSpec,
           itemValue: _itemValue,
           itemLabel: _itemLabel,
         },
-        operation,
-        getDisplayValue: ({ operation, data }) => <>
-          {formatDisplayValue(operation, data, dataType, intl)}
-        </>,
-        getFilterValue: ({ filterType, operation, data }) => {
-          return ({
-            filterType,
-            field: {
-              fieldType: FieldType.DescItem,
-              typeCode: data.itemType.code,
-              specCode: data.itemSpec?.code,
-            },
-            operation,
-            value: data.itemValue,
-          })
-        },
-        getSerializedString: ({ data, operation }) => {
-          if (data.itemSpec && data.itemValue) {
-            return `${data.itemType.code} - ${data.itemSpec.code} ${operation} ${data.itemValue}`
+        operation: item.operation!,
+      };
+    });
+
+    const isEnumValue = dataType.code === RulDataTypeCodeEnum.ENUM
+      || dataType.code === RulDataTypeCodeEnum.FILE_REF
+      || dataType.code === RulDataTypeCodeEnum.RECORD_REF
+      || dataType.code === RulDataTypeCodeEnum.STRUCTURED
+
+    onFilterChange({
+      filterType: FilterType.FieldValue,
+      name: itemType.code,
+      data: entries,
+      getDisplayValue: ({ data }) => <>
+        <b>{data[0]?.value.itemType.shortcut}</b>
+        {data.map(({ value, operation }, index) => (
+          <Fragment key={index}>
+            {index > 0 && <span style={{ padding: "0 5px" }}><FormattedMessage {...messages.filter_or} /></span>}
+            {dataType.code === RulDataTypeCodeEnum.ENUM && formatOperation(operation, intl, isEnumValue)}
+            {formatSpecNode(value, operation, dataType)}
+            {dataType.code !== RulDataTypeCodeEnum.ENUM && formatOperation(operation, intl, isEnumValue)}
+            {formatLabelNode(value, operation)}
+          </Fragment>
+        ))}
+      </>,
+      getFilterValue: ({ filterType, data }) => {
+        const fieldValueFilters = data.map(({ value, operation }) => ({
+          filterType: FilterType.FieldValue,
+          field: {
+            fieldType: FieldType.DescItem,
+            typeCode: value.itemType.code,
+            specCode: value.itemSpec?.code,
+          },
+          operation,
+          value: value.itemValue,
+        }));
+
+        if (fieldValueFilters.length === 1) {
+          return fieldValueFilters[0];
+        }
+
+        return {
+          filterType: FilterType.Logical,
+          operation: OperationLogicalType.Or,
+          filters: fieldValueFilters,
+        };
+      },
+      getSerializedString: ({ data }) => {
+        const parts = data.map(({ value, operation }, index) => {
+          const typeCode = value.itemType.code;
+          if (value.itemSpec && value.itemValue) {
+            return `${index}:${typeCode} - ${value.itemSpec.code} ${operation} ${value.itemValue}`;
+          } else if (value.itemSpec && !value.itemValue) {
+            return `${index}:${typeCode} ${operation} ${value.itemSpec.code}`;
+          } else if (!value.itemSpec && value.itemValue) {
+            return `${index}:${typeCode} ${operation} ${value.itemValue}`;
           }
-          else if (data.itemSpec && !data.itemValue) {
-            return `${data.itemType.code} ${operation} ${data.itemSpec.code}`
-          }
-          else if (!data.itemSpec && data.itemValue) {
-            return `${data.itemType.code} ${operation} ${data.itemValue}`
-          }
-          return `${data.itemType.code} ${operation}`;
-        },
-      });
-    }
-  }, [
-    onFilterChange,
-    itemTypeCode,
-    itemSpecCode,
-    itemValue,
-    itemLabel,
-    descItemTypes,
-    operation,
-    isDirty,
-    intl,
-    dataTypes,
-  ]);
+          return `${index}:${typeCode} ${operation}`;
+        });
+        return parts.join("|");
+      },
+    });
+  }, [onFilterChange, itemTypeCode, items, descItemTypes, isDirty, intl, dataTypes]);
 
-  function validate() {
-    if (itemTypeCode == "") { return false; }
-    if (!operation) { return false; }
-
-    // if operation is IsNull or NotNull, ignore invalid value
-    if (
-      operation === OperationCompareType.IsNull
-      || operation === OperationCompareType.NotNull
-      // if value field component is defined filter value is required
-      || !dataTypeFilterDefinition?.fieldComponent
-    ) {
-      return true;
-    }
-
-    return isValueValid;
-  }
-
-  const hideValue = operation === OperationCompareType.IsNull || operation === OperationCompareType.NotNull;
-  const hideSpec = hideValue && selectedDataType?.code === RulDataTypeCodeEnum.ENUM;
-
-  return <BaseFilterWindow
+  return <MultiFilterWindow
     filterName={formatMessage(messages[filterName])}
-    isValid={validate()}
+    isValid={isValid}
     isDirty={isDirty}
     onClose={onClose}
     onFilterConfirm={handleFilterChange}
+    onAddItem={itemTypeCode ? addItem : undefined}
+    canAddItem={items.every(validateItem)}
   >
     <Combobox
       ref={inputRef}
       clearable={true}
       value={itemTypeQuery}
       defaultValue={itemTypeQuery}
-      onChange={(e) => {
-        setItemTypeQuery(e.target.value);
-      }}
+      onChange={(e) => setItemTypeQuery(e.target.value)}
       onOptionSelect={handleItemTypeSelect}
       positioning={{ position: "below", autoSize: "height" }}
+      style={{ marginBottom: "4px" }}
     >
-      {filteredItemTypes.map(({ name, id, code }) => {
-        return <Option key={id} value={code.toString()}>{name}</Option>
-      })}
+      {filteredItemTypes.map(({ name, id, code }) => (
+        <Option key={id} value={code.toString()}>{name}</Option>
+      ))}
     </Combobox>
-    {dataTypeFilterDefinition
-      && dataTypeFilterDefinition.operations.length > 1
-      && <div style={{ margin: "5px 0" }}>
-        <Menu>
-          <MenuTrigger>
-            <MenuButton size="small">
-              {operation ? formatMessage(messages[operation]) : "-"}
-            </MenuButton>
-          </MenuTrigger>
-          <MenuPopover>
-            {dataTypeFilterDefinition.operations.map((_operation) => {
-              return <MenuItem
-                onClick={() => setOperation(_operation)}
-              >{formatMessage(messages[_operation])}</MenuItem>
-            })}
-          </MenuPopover>
-        </Menu>
-      </div>
-    }
-    {selectedItemType?.useSpecification
-      && selectedItemType?.descItemSpecs?.length > 0
-      && !hideSpec
-      && <Combobox
-        ref={inputRef}
-        clearable={true}
-        value={itemSpecQuery}
-        defaultValue={itemSpecQuery}
-        onChange={(e) => {
-          setItemSpecQuery(e.target.value);
-        }}
-        onOptionSelect={handleItemSpecSelect}
-        positioning={{ position: "below", autoSize: "height" }}
-      >
-        {filteredItemSpecs.map(({ name, id, code }) => {
-          return <Option key={id} value={code.toString()}>{name}</Option>
-        })}
-      </Combobox>}
-    {!!dataTypeFilterDefinition?.fieldComponent
-      && !hideValue
-      && <dataTypeFilterDefinition.fieldComponent
-        value={itemValue}
-        label={itemLabel}
-        onChange={handleValueChange}
-        itemType={selectedItemType}
-        itemSpec={selectedItemSpec}
-      />}
-  </BaseFilterWindow>
-}
+    {itemTypeCode && items.map((item, index) => {
+      const itemSpec = item.itemSpecCode && selectedItemType?.descItemSpecs?.find(({ code }) => code === item.itemSpecCode);
+      const filteredItemSpecs = selectedItemType?.descItemSpecs?.filter((spec) =>
+        spec.name.toLowerCase().indexOf((item.itemSpecQuery || "").toLowerCase()) >= 0) || [];
 
+      const hideValue = item.operation === OperationCompareType.IsNull || item.operation === OperationCompareType.NotNull;
+      const hideSpec = hideValue && selectedDataType?.code === RulDataTypeCodeEnum.ENUM;
+
+      return <Fragment key={index}>
+        {index > 0 && <Divider style={{ margin: "4px 0", fontSize: "0.75rem", color: "#666" }}>
+          <FormattedMessage {...messages.filter_or} />
+        </Divider>}
+        <FilterItem
+          operation={item.operation}
+          availableOperations={dataTypeFilterDefinition?.operations || []}
+          onOperationChange={(operation) => updateItem(index, { operation })}
+          onRemove={() => removeItem(index)}
+          canRemove={items.length > 1}
+        >
+          <div style={{ display: "flex", gap: "5px" }}>
+            {selectedItemType?.useSpecification
+              && selectedItemType?.descItemSpecs?.length > 0
+              && !hideSpec
+              && <Combobox
+                clearable={true}
+                value={item.itemSpecQuery}
+                defaultValue={item.itemSpecQuery}
+                onChange={(e) => updateItem(index, { itemSpecQuery: e.target.value })}
+                onOptionSelect={(_e, data) => updateItem(index, {
+                  itemSpecQuery: data.optionText || "",
+                  itemSpecCode: data.optionValue || undefined,
+                })}
+                positioning={{ position: "below", autoSize: "height" }}
+              >
+                {filteredItemSpecs.map(({ name, id, code }) => (
+                  <Option key={id} value={code.toString()}>{name}</Option>
+                ))}
+              </Combobox>}
+            {!!dataTypeFilterDefinition?.fieldComponent
+              && !hideValue
+              && <dataTypeFilterDefinition.fieldComponent
+                value={item.itemValue || ""}
+                label={item.itemLabel}
+                onChange={(value, isValid, valueLabel) => updateItem(index, {
+                  itemValue: value,
+                  itemLabel: valueLabel || value,
+                  isValueValid: value !== "" && (isValid ?? true),
+                })}
+                itemType={selectedItemType}
+                itemSpec={itemSpec || undefined}
+              />}
+          </div>
+        </FilterItem>
+      </Fragment>
+    })}
+  </MultiFilterWindow>
+}
