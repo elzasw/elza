@@ -3460,8 +3460,56 @@ namespace ElzaAPI.Structure {
      * Status of a structured data type
      */
     model ItemResult {
-        item: NodeItem;
         parent: Data;
+        item: NodeItem;
+    }
+
+    /**
+     * Form data
+     */
+    model FormData {
+        parent: Data;
+        items: NodeItem[];
+        itemTypes: FormItemType[];
+    }
+
+    /**
+     * Result found
+     */
+    model FindResult {
+        count: int64;
+        rows: Data[];
+    }
+
+    /**
+     * Structure type
+     */
+    model Type {
+        id: integer;
+        name: string;
+        code: string;
+        anonymous: boolean;
+    }
+
+    /**
+     * Part type
+     */
+    model PartType {
+        id: integer;
+        name: string;
+        code: string;
+        childPartId: integer;
+        repeatable: boolean;
+    }
+
+    /**
+     * Extention fund
+     */
+    model ExtensionFund {
+        id: integer;
+        name: string;
+        code: string;
+        active: boolean;
     }
 
     /**
@@ -3605,6 +3653,76 @@ namespace ElzaAPI.Structure {
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
     };
+
+    /**
+     * GET Searching for values of a structured data type: findStructObj()
+     */
+    @route("/data/{fundVersionId}/{structureTypeCode}/search")
+    @get op findStructObj(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** structure type code */
+        @path structureTypeCode: string;
+        /** text for filtering (optional) */
+        @query search?: string;
+        /** assignable value */
+        @query assignable?: boolean;
+        /** from default = 0 */
+        @query from?: integer = 0;
+        /** max number of items */
+        @query count?: integer = 200;
+    ): FindResult;
+
+    /**
+     * GET Lists the possible data types that can be used in AS: findStructureTypes()
+     */
+    @route("/type")
+    @get op findStructureTypes(
+        /** fund version id */
+        @query fundVersionId?: integer;
+    ): Type[];
+
+    /**
+     * GET: findPartTypes()
+     */
+    @route("/part-type")
+    @get op findPartTypes(
+    ): PartType[];
+
+    /**
+     * GET Getting data for a structured data type form: getFormStructureItems()
+     */
+    @route("/item/form/{fundVersionId}/{structureDataId}")
+    @get op getFormStructureItems(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** structure data id */
+        @path structureDataId: integer;
+    ): FormData;
+
+    /**
+     * GET Finds available and enabled AS extensions: findFundStructureExtension()
+     */
+    @route("/extension/{fundVersionId}/{structureTypeCode}")
+    @get op findFundStructureExtension(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** structure type code */
+        @path structureTypeCode: string;
+    ): ExtensionFund[];
+
+    /**
+     * PUT Sets a specific extension on the AS: setFundStructureExtensions()
+     */
+    @route("/extension/{fundVersionId}/{structureTypeCode}")
+    @put op setFundStructureExtensions(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** structure type code */
+        @path structureTypeCode: string;
+        /** structure ext codes */
+        @body body: string[];
+    ): void;
 }
 
 @tag("search")
