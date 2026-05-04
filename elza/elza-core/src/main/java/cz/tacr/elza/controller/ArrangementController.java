@@ -180,7 +180,6 @@ import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import cz.tacr.elza.service.output.OutputData;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
-import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 
 /**
  * Kontroler pro pořádání.
@@ -1637,15 +1636,15 @@ public class ArrangementController {
             @RequestBody final ArrNodeVO nodeVO) {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
-        RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
+        RulItemType rulItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
 
         ArrNode node = factoryDO.createNode(nodeVO);
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
         ArrLevel level = arrangementService.lockNode(node, fundVersion, change);
 
-        List<ArrDescItem> newDescItems = arrangementService.copyOlderSiblingAttribute(fundVersion, descItemType, level, change);
+        List<ArrDescItem> newDescItems = arrangementService.copyOlderSiblingAttribute(fundVersion, rulItemType, level, change);
 
-        RulDescItemTypeDescItemsVO descItemTypeVO = factoryVo.createDescItemTypeVO(descItemType);
+        RulDescItemTypeDescItemsVO descItemTypeVO = factoryVo.createDescItemTypeVO(rulItemType);
         descItemTypeVO.setDescItems(factoryVo.createItems(newDescItems));
 
         ArrNodeVO resultNode = ArrNodeVO.valueOf(level.getNode());
