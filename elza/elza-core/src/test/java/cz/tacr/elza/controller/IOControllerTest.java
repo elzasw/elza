@@ -23,7 +23,9 @@ public class IOControllerTest extends AbstractControllerTest {
     public void ioExportFundTest() throws IOException {
         Fund fund = createFund("fundName", "internalCode");
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
+        createLevels(fundVersion); // vytváříme úrovně
 
+        // export otevřené verze
         ExportParams exportParams = new ExportParams();
         FundSections fundsSections = new FundSections();
         fundsSections.setFundVersionId(fundVersion.getId());
@@ -31,23 +33,41 @@ public class IOControllerTest extends AbstractControllerTest {
 
         int requestId = ioApi.ioExportRequest(exportParams);
         assertTrue(requestId > 0);
+        waitForExportFinished(requestId);
 
-        ExportRequestStatus expStatus = null;
-        int counter = 0;
+        Resource openFile = ioApi.ioGetExportFile(requestId);
+        assertNotNull(openFile);
+        assertTrue(openFile.contentLength() > 100);
+
+        // uzavření verze a export uzavřené verze
+        helperTestService.waitForWorkers();
+        approveVersion(fundVersion); // fundVersion.getId() to je již ID uzavřené verze
+        helperTestService.waitForWorkers();
+
+        requestId = ioApi.ioExportRequest(exportParams);
+        assertTrue(requestId > 0);
+        waitForExportFinished(requestId);
+
+        Resource closedFile = ioApi.ioGetExportFile(requestId);
+        assertNotNull(closedFile);
+        assertTrue(closedFile.contentLength() > 100);
+    }
+
+    private ExportRequestStatus waitForExportFinished(int requestId) {
+        ExportRequestStatus status = null;
         try {
+            int counter = 0;
             do {
                 Thread.sleep(50);
-                expStatus = ioApi.ioGetExportStatus(requestId);
+                status = ioApi.ioGetExportStatus(requestId);
                 counter++;
-            } while (expStatus.getState() != RequestProcessState.FINISHED && counter < 1000);
-        } catch (Exception e) {
-            fail("Exception while waiting on result: " + e);
+            } while (status.getState() != RequestProcessState.FINISHED && counter < 1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            fail("Interrupted while waiting on result: " + e);
         }
-        assertNotNull(expStatus);
-        assertEquals(RequestProcessState.FINISHED, expStatus.getState());
-
-        Resource file = ioApi.ioGetExportFile(requestId);
-        assertNotNull(file);
-        assertTrue(file.contentLength() > 100);
+        assertNotNull(status);
+        assertEquals(RequestProcessState.FINISHED, status.getState());
+        return status;
     }
 }

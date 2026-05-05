@@ -10,9 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.Validate;
 import org.hibernate.CacheMode;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
@@ -20,6 +18,7 @@ import org.hibernate.query.NativeQuery;
 import org.hibernate.type.StandardBasicTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.DatabaseType;
@@ -160,7 +159,7 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     // TODO: Rewrite this query with recursive query
     @Override
     public List<ArrLevel> findAllChildrenByNode(final ArrNode node, final ArrChange lockChange) {
-        Validate.notNull(node, "JP musí být vyplněna");
+        Objects.requireNonNull(node, "JP musí být vyplněna");
 
         if(lockChange==null) {
             // call recursive query for current version
@@ -449,15 +448,19 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
     @Override
     public long readLevelTree(Integer nodeId, ArrChange change, boolean excludeRoot, TreeLevelConsumer treeLevelConsumer) {
     	Objects.requireNonNull(nodeId);
-        Validate.isTrue(change == null, "Not implemented"); // TODO: implement condition for closed versions
+
+        String versionCond = change == null ? 
+        		"l.delete_change_id IS NULL" : "l.create_change_id < :lockChangeId AND (l.delete_change_id IS NULL OR l.delete_change_id > :lockChangeId)";
 
         RecursiveQueryBuilder<ArrLevel> rqBuilder = DatabaseType.getCurrent().createRecursiveQueryBuilder(ArrLevel.class);
 
         rqBuilder.addSqlPart("WITH RECURSIVE fundTree(level_id, create_change_id, delete_change_id, node_id, node_id_parent, position, list, depth) AS (")
-        	.addSqlPart("SELECT l.*, 0 FROM arr_level l WHERE l.node_id = :nodeId AND l.delete_change_id IS NULL ")
-        	.addSqlPart("UNION ALL ")
-        	.addSqlPart("SELECT l.*, ft.depth + 1 FROM arr_level l JOIN fundTree ft ON ft.node_id=l.node_id_parent WHERE l.delete_change_id IS NULL) ")
-        	.addSqlPart("SELECT * FROM fundTree ft ");
+        	.addSqlPart("SELECT l.*, 0 FROM arr_level l WHERE l.node_id = :nodeId AND ")
+        	.addSqlPart(versionCond)
+        	.addSqlPart(" UNION ALL ")
+        	.addSqlPart("SELECT l.*, ft.depth + 1 FROM arr_level l JOIN fundTree ft ON ft.node_id=l.node_id_parent WHERE ")
+        	.addSqlPart(versionCond)
+        	.addSqlPart(") SELECT * FROM fundTree ft ");
         if (excludeRoot) {
             rqBuilder.addSqlPart("WHERE node_id <> :nodeId ");
         }
@@ -465,6 +468,9 @@ public class LevelRepositoryImpl implements LevelRepositoryCustom {
 
         rqBuilder.prepareQuery(entityManager);
         rqBuilder.setParameter("nodeId", nodeId);
+        if (change != null) {
+            rqBuilder.setParameter("lockChangeId", Objects.requireNonNull(change.getChangeId()));
+        }
 
         NativeQuery<ArrLevel> query = rqBuilder.getQuery();
 
