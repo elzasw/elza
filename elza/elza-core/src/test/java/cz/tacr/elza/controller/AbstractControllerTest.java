@@ -200,6 +200,7 @@ import cz.tacr.elza.test.controller.vo.ItemDataResult;
 import cz.tacr.elza.test.controller.vo.NodeBase;
 import cz.tacr.elza.test.controller.vo.NodeDataParam;
 import cz.tacr.elza.test.controller.vo.NodeItem;
+import cz.tacr.elza.test.controller.vo.StructuredObjectItem;
 import cz.tacr.elza.test.controller.vo.DataText;
 import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.test.controller.vo.DataUnitdate;
@@ -1371,14 +1372,14 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param position         pozice
 	 * @param descItemObjectId identifikátor hodnoty atributu
 	 * @param undefined        nezjištěný (bez hodnoty)
-	 * @return vytvořený objekt hodnoty atributu (OpenAPI {@link NodeItem})
+	 * @return vytvořený objekt hodnoty atributu (OpenAPI {@link StructuredObjectItem})
 	 */
-	protected NodeItem buildNodeItem(@Nonnull final String typeCode,
-                                     @Nullable final String specCode,
-                                     @Nullable final Object value,
-	                                 @Nullable final Integer position,
-	                                 @Nullable final Integer descItemObjectId,
-	                                 @Nullable final Boolean undefined) {
+	protected StructuredObjectItem buildStructuredObjectItem(@Nonnull final String typeCode,
+                                     		                 @Nullable final String specCode,
+                                     		                 @Nullable final Object value,
+                                     		                 @Nullable final Integer position,
+                                     		                 @Nullable final Integer itemObjectId,
+                                     		                 @Nullable final Boolean undefined) {
 	    Validate.notNull(typeCode, "Musí být vyplněn kód typu atributu");
 
 	    RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
@@ -1399,18 +1400,18 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	                "Specifikace u typu musí být povinná pro ENUM -> CODE: " + type.getCode());
 	    }
 
-	    NodeItem nodeItem = new NodeItem();
-	    nodeItem.setItemTypeId(type.getId());
-	    nodeItem.setItemSpecId(specId);
-	    nodeItem.setPosition(position);
-	    nodeItem.setItemObjectId(descItemObjectId);
-	    nodeItem.setUndefined(undefined);
+	    StructuredObjectItem soItem = new StructuredObjectItem();
+	    soItem.setItemTypeId(type.getId());
+	    soItem.setItemSpecId(specId);
+	    soItem.setPosition(position);
+	    soItem.setItemObjectId(itemObjectId);
+	    soItem.setUndefined(undefined);
 	    if (!Boolean.TRUE.equals(undefined)) {
-	        nodeItem.setData(createItemDataByDataTypeAndValue(dataType, value));
+	        soItem.setData(createItemDataByDataTypeAndValue(dataType, value));
 	    }
 
-	    return nodeItem;
-	}	
+	    return soItem;
+	}
 
 	/**
 	 * Vytvoření objektu pro hodnotu atributu (nová).

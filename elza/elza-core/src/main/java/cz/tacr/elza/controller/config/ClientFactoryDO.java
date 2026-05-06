@@ -48,6 +48,7 @@ import cz.tacr.elza.controller.vo.DataUriRef;
 import cz.tacr.elza.controller.vo.ItemData;
 import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
+import cz.tacr.elza.controller.vo.StructuredObjectItem;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UpdateFund;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
@@ -353,13 +354,13 @@ public class ClientFactoryDO {
     }
 
     /**
-     * Vytvoření hodnoty strukt. položky z OpenAPI {@link NodeItem}.
+     * Vytvoření hodnoty strukt. položky z OpenAPI {@link StructuredObjectItem}.
      *
-     * @param nodeItem    OpenAPI hodnota atributu
+     * @param soItem      OpenAPI hodnota atributu
      * @param itemTypeId  identifikátor typu hodnoty atributu
      * @return doménová entita připravená k uložení
      */
-    public ArrStructuredItem createStructureItem(final NodeItem nodeItem, final Integer itemTypeId) {
+    public ArrStructuredItem createStructureItem(final StructuredObjectItem soItem, final Integer itemTypeId) {
         ArrStructuredItem structureItem = new ArrStructuredItem();
 
         var sdp = staticDataService.getData();
@@ -369,51 +370,52 @@ public class ClientFactoryDO {
         }
         structureItem.setItemType(itemType.getEntity());
 
-        if (nodeItem.getItemSpecId() != null) {
-            var itemSpec = itemType.getItemSpecById(nodeItem.getItemSpecId());
+        if (soItem.getItemSpecId() != null) {
+            var itemSpec = itemType.getItemSpecById(soItem.getItemSpecId());
             if (itemSpec == null) {
                 throw new BusinessException("Failed to get item specification, itemTypeId: " + itemTypeId 
-                		+ ", itemSpecId: " + nodeItem.getItemSpecId(), BaseCode.ID_NOT_EXIST);
+                		+ ", itemSpecId: " + soItem.getItemSpecId(), BaseCode.ID_NOT_EXIST);
             }
             structureItem.setItemSpec(itemSpec);
         }
 
-        if (!Boolean.TRUE.equals(nodeItem.getUndefined())) {
-            structureItem.setData(createArrData(nodeItem.getData()));
+        if (!Boolean.TRUE.equals(soItem.getUndefined())) {
+            structureItem.setData(createArrData(soItem.getData()));
         }
 
         return structureItem;
     }
 
     /**
-     * Vytvoření hodnoty strukt. položky z OpenAPI {@link NodeItem} (varianta pro update).
-     * @param nodeItem    OpenAPI hodnota atributu
+     * Vytvoření hodnoty strukt. položky z OpenAPI {@link StructuredObjectItem} (varianta pro update).
+     * 
+     * @param soItem    OpenAPI hodnota atributu
      * @return doménová entita připravená k uložení
      */
-    public ArrStructuredItem createStructureItem(final NodeItem nodeItem) {
+    public ArrStructuredItem createStructureItem(final StructuredObjectItem soItem) {
         ArrStructuredItem structureItem = new ArrStructuredItem();
-        structureItem.setItemId(nodeItem.getId());
-        structureItem.setDescItemObjectId(nodeItem.getItemObjectId());
-        structureItem.setPosition(nodeItem.getPosition());
+        structureItem.setItemId(soItem.getId());
+        structureItem.setDescItemObjectId(soItem.getItemObjectId());
+        structureItem.setPosition(soItem.getPosition());
 
         var sdp = staticDataService.getData();
-        var itemType = sdp.getItemTypeById(nodeItem.getItemTypeId());
+        var itemType = sdp.getItemTypeById(soItem.getItemTypeId());
         if (itemType == null) {
-            throw new BusinessException("Failed to get item type, itemTypeId: " + nodeItem.getItemTypeId(), BaseCode.ID_NOT_EXIST);
+            throw new BusinessException("Failed to get item type, itemTypeId: " + soItem.getItemTypeId(), BaseCode.ID_NOT_EXIST);
         }
         structureItem.setItemType(itemType.getEntity());
 
-        if (nodeItem.getItemSpecId() != null) {
-            var itemSpec = itemType.getItemSpecById(nodeItem.getItemSpecId());
+        if (soItem.getItemSpecId() != null) {
+            var itemSpec = itemType.getItemSpecById(soItem.getItemSpecId());
             if (itemSpec == null) {
-                throw new BusinessException("Failed to get item spec, itemTypeId: " + nodeItem.getItemTypeId()
-                        + ", itemSpecId: " + nodeItem.getItemSpecId(), BaseCode.ID_NOT_EXIST);
+                throw new BusinessException("Failed to get item spec, itemTypeId: " + soItem.getItemTypeId()
+                        + ", itemSpecId: " + soItem.getItemSpecId(), BaseCode.ID_NOT_EXIST);
             }
             structureItem.setItemSpec(itemSpec);
         }
 
-        if (!Boolean.TRUE.equals(nodeItem.getUndefined())) {
-            structureItem.setData(createArrData(nodeItem.getData()));
+        if (!Boolean.TRUE.equals(soItem.getUndefined())) {
+            structureItem.setData(createArrData(soItem.getData()));
         }
         return structureItem;
     }

@@ -539,17 +539,27 @@ public class StructObjService {
      * Smazání položky k hodnotě strukt. datového typu.
      *
      * @param itemObjectId položka
+     * @param structuredObjectId pro kontrolu
      * @param fundVersionId identifikátor verze AS
      * @return smazaná položka
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrStructuredItem deleteStructureItem(final Integer itemObjectId,
+    		                                     final Integer structuredObjectId,
                                                  @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
 
         ArrStructuredItem structureItemDB = findOpenItemFetchData(itemObjectId);
         if (structureItemDB == null) {
             throw new ObjectNotFoundException("Neexistuje položka s OID: " + itemObjectId, BaseCode.ID_NOT_EXIST)
             	.setId(itemObjectId);
+        }
+
+        if (structuredObjectId != null) {
+        	if (structureItemDB.getStructuredObjectId() != structuredObjectId) {
+        		throw new BusinessException("Neshoda zadaného ID s ID mazaného objektu", BaseCode.INVALID_STATE)
+        			.set("structuredObjectId", structuredObjectId)
+        			.set("structuredObjectId mazaného objektu", structureItemDB.getStructuredObjectId());
+        	}
         }
 
         ArrStructuredObject structObj = structureItemDB.getStructuredObject();
