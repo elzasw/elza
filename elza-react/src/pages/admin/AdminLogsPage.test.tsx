@@ -2,8 +2,8 @@ import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { delay, http, HttpResponse } from 'msw';
 
-import { renderWithProviders, screen } from 'src/test/test-utils';
-import { server } from 'src/test/mocks/server';
+import { renderWithProviders, screen } from 'test/test-utils';
+import { server } from 'test/mocks/server';
 import AdminLogsPage from './AdminLogsPage';
 
 /**

@@ -15,6 +15,7 @@ export default defineConfig({
             'typings': path.resolve(__dirname, './src/typings/'),
             'contexts': path.resolve(__dirname, './src/contexts/'),
             'shared': path.resolve(__dirname, './src/shared/'),
+            'test': path.resolve(__dirname, './src/test/'),
         },
     },
     plugins: [react()],
