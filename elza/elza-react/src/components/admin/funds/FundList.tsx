@@ -40,7 +40,7 @@ export const FundList:FC<{
 
     const {from, pageSize, text} = funds.filter;
 
-    const activeIndex = activeFund && activeFund.id !== null ? indexById(fundRows, activeFund.id) : undefined;
+    const activeIndex = activeFund && activeFund.id !== null ? fundRows?.findIndex(({ id }) => id == activeFund.id) : undefined;
 
     const handleSelect = (item: ArrFundBaseVO) => history.push(urlAdminFund(item.id));
     const handleSearch = (filterText: string) => dispatch(fundsFilter(filterText, from));
