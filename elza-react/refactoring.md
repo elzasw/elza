@@ -162,6 +162,7 @@ Also stubbed in setup:
 
 ### Known risks / open questions
 
+- **Latent circular dependency in `stores/reducers.jsx`** — surfaced while writing the first page-smoke test. Importing `stores/reducers` directly under Vitest's ESM loader fails with `TypeError: default is not a function` at [stores/app/fund/fundDetail.jsx:10](src/stores/app/fund/fundDetail.jsx#L10), because `fundTree`'s default export is not yet initialized when `fundDetail` evaluates its `initialState`. The chain goes through `components/shared` and wraps around to a reducer. Webpack papers over this; Vite/esbuild does not. Workaround in place in [src/test/test-utils.tsx](src/test/test-utils.tsx): pre-import `stores/AppStore` before `stores/reducers` — this mirrors the production load order and warms the module graph enough for the cycle to resolve. **Proper fix belongs to roadmap item 2 (Redux untangling)** — until then, removing the pre-import will break the test suite.
 - **redux-form & react-intl in tests:** both need providers; `renderWithProviders` in [src/test/test-utils.tsx](src/test/test-utils.tsx) wraps them. Validate with the first page-smoke test.
 - **`.jsx` files without types:** tests on them will work but won't add type safety. That's fine for the baseline; typing work belongs to item 2.
 - **SCSS imports:** Vitest `css: false` (set in [vitest.config.ts](vitest.config.ts)) so SCSS is skipped, not parsed — otherwise test startup is slow.
@@ -189,7 +190,7 @@ Setup PR scaffolding drafted on branch `Branch_dec979e2`:
 - [x] `npm install --legacy-peer-deps` + `npm test` green locally (10/10)
 - [x] Maven integration — [pom.xml](pom.xml) `npm-test` execution bound to `test` phase; respects `-DskipTests` and `-Pskiptest` (via `maven.test.skip` → profile that sets `skipTests=true`)
 - [ ] Dedicated CI step (if separate from `mvn install`)
-- [ ] One page-mount smoke test (candidate: [AdminLogsPage.jsx](src/pages/admin/AdminLogsPage.jsx))
+- [x] One page-mount smoke test — [AdminLogsPage.test.tsx](src/pages/admin/AdminLogsPage.test.tsx) renders the real page through `renderWithProviders`; MSW stubs the logs fetch with `delay('infinite')` and the Ribbon's `externalSystems` call with `[]`; FakeStompClient silently replaces the singleton `@stomp/stompjs` client.
 - [x] "How to write a test" snippet — linked from [README.md](README.md) and [../CLAUDE.md](../CLAUDE.md); full reference stays in this file
 
 ### How to write a test (quick reference)
