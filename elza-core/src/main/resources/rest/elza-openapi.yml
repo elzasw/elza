@@ -2272,6 +2272,519 @@ paths:
               items:
                 type: integer
         description: Seznam id hodnot strukturovaného datového typu
+  /funds/sdo/type:
+    get:
+      operationId: Sdo_findStructureTypes
+      description: 'GET Lists the possible data types that can be used in AS: findStructureTypes()'
+      parameters:
+        - name: fundVersionId
+          in: query
+          required: false
+          description: fund version id
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sdo.Type'
+      tags:
+        - structure
+  /funds/sdo/{fundId}:
+    post:
+      operationId: Sdo_createObject
+      description: Creating object of the structured data type
+      parameters:
+        - name: fundId
+          in: path
+          required: true
+          description: fund id
+          schema:
+            type: integer
+        - name: value
+          in: query
+          required: false
+          description: value for the structured data
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredObject'
+      tags:
+        - structure
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+        description: structured data type code
+  /funds/sdo/{fundId}/assignable/{assignable}:
+    post:
+      operationId: Sdo_setDataAssignable
+      description: Assignability settings.
+      parameters:
+        - name: fundId
+          in: path
+          required: true
+          description: fund id
+          schema:
+            type: integer
+        - name: assignable
+          in: path
+          required: true
+          description: assignable value
+          schema:
+            type: boolean
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - structure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+        description: value ids for a structured data type
+  /funds/sdo/{fundId}/batchUpdate/{structureTypeCode}:
+    post:
+      operationId: Sdo_updateObjects
+      description: Bulk update of items/values of a structural type
+      parameters:
+        - name: fundId
+          in: path
+          required: true
+          description: fund id
+          schema:
+            type: integer
+        - name: structureTypeCode
+          in: path
+          required: true
+          description: structure type code
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - structure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sdo.BatchUpdateParam'
+        description: batch of data to update
+  /funds/sdo/{fundId}/extension/{structureTypeCode}:
+    get:
+      operationId: Sdo_findFundStructureExtension
+      description: 'GET Finds available and enabled AS extensions: findFundStructureExtension()'
+      parameters:
+        - name: fundId
+          in: path
+          required: true
+          description: fund id
+          schema:
+            type: integer
+        - name: structureTypeCode
+          in: path
+          required: true
+          description: structure type code
+          schema:
+            type: string
+        - name: fundVersionId
+          in: query
+          required: false
+          description: fund version id
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sdo.ExtensionFund'
+      tags:
+        - structure
+    put:
+      operationId: Sdo_setFundStructureExtensions
+      description: 'PUT Sets a specific extension on the AS: setFundStructureExtensions()'
+      parameters:
+        - name: fundId
+          in: path
+          required: true
+          description: fund id
+          schema:
+            type: integer
+        - name: structureTypeCode
+          in: path
+          required: true
+          description: structure type code
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - structure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+        description: structure ext codes
+  /funds/sdo/{fundId}/item/{structuredObjectId}:
+    post:
+      operationId: Sdo_createItem
+      description: Create item value of a structured data type
+      parameters:
+        - name: fundId
+          in: path
+          required: true
+          description: fund id
+          schema:
+            type: integer
+        - name: structuredObjectId
+          in: path
+          required: true
+          description: structure data id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sdo.ItemResult'
+      tags:
+        - structure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StructuredObjectItem'
+        description: node item
+    get:
+      operationId: Sdo_getFormStructureItems
+      description: 'GET Getting data for a structured data type form: getFormStructureItems()'
+      parameters:
+        - name: fundId
+          in: path
+          required: true
+          description: fund id
+          schema:
+            type: integer
+        - name: structuredObjectId
+          in: path
+          required: true
+          description: structured object id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: query
+          required: false
+          description: fund version id
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredObjectItems'
+      tags:
+        - structure
+  /funds/sdo/{fundId}/item/{structuredObjectId}/by-type/{itemTypeId}:
+    delete:
+      operationId: Sdo_deleteItemsByType
+      description: Delete items based on the value of a data type structure by attribute type
+      parameters:
+        - name: fundId
+          in: path
+          required: true
+          description: fund id
+          schema:
+            type: integer
+        - name: structuredObjectId
+          in: path
+          required: true
+          description: structured object id
+          schema:
+            type: integer
+        - name: itemTypeId
+          in: path
+          required: true
+          description: item type id
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - structure
+  /funds/sdo/{fundId}/item/{structuredObjectId}/{createNewVersion}:
+    put:
+      operationId: Sdo_updateItem
+      description: Update item value of a structured data type
+      parameters:
+        - name: fundId
+          in: path
+          required: true
+          description: fund id
+          schema:
+            type: integer
+        - name: structuredObjectId
+          in: path
+          required: true
+          description: structure data id
+          schema:
+            type: integer
+        - name: createNewVersion
+          in: path
+          required: true
+          description: create a new version
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sdo.ItemResult'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - structure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StructuredObjectItem'
+        description: node item
+  /funds/sdo/{fundId}/item/{structuredObjectId}/{itemObjectId}:
+    delete:
+      operationId: Sdo_deleteItem
+      description: Delete item value of a structured data type
+      parameters:
+        - name: fundId
+          in: path
+          required: true
+          description: fund id
+          schema:
+            type: integer
+        - name: structuredObjectId
+          in: path
+          required: true
+          description: structured object id
+          schema:
+            type: integer
+        - name: itemObjectId
+          in: path
+          required: true
+          description: item object id
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - structure
+  /funds/sdo/{fundId}/search/{structureTypeCode}:
+    get:
+      operationId: Sdo_findStructObj
+      description: 'GET Searching for values of a structured data type: findStructObj()'
+      parameters:
+        - name: fundId
+          in: path
+          required: true
+          description: fund id
+          schema:
+            type: integer
+        - name: structureTypeCode
+          in: path
+          required: true
+          description: structure type code
+          schema:
+            type: string
+        - name: search
+          in: query
+          required: false
+          description: text for filtering (optional)
+          schema:
+            type: string
+          explode: false
+        - name: assignable
+          in: query
+          required: false
+          description: assignable value
+          schema:
+            type: boolean
+          explode: false
+        - name: from
+          in: query
+          required: false
+          description: from default = 0
+          schema:
+            type: integer
+            default: 0
+          explode: false
+        - name: count
+          in: query
+          required: false
+          description: max number of items
+          schema:
+            type: integer
+            default: 200
+          explode: false
+        - name: fundVersionId
+          in: query
+          required: false
+          description: fund version id
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sdo.FindResult'
+      tags:
+        - structure
+  /funds/sdo/{fundId}/{structuredObjectId}:
+    get:
+      operationId: Sdo_getObject
+      description: Getting the value of a structured data type
+      parameters:
+        - name: fundId
+          in: path
+          required: true
+          description: fund id
+          schema:
+            type: integer
+        - name: structuredObjectId
+          in: path
+          required: true
+          description: structure data id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: query
+          required: false
+          description: fund version id
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredObject'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - structure
+  /funds/sdo/{fundId}/{structuredObjectId}/confirm:
+    post:
+      operationId: Sdo_confirm
+      description: Confirms the value of a structured data type. Sets the value
+      parameters:
+        - name: fundId
+          in: path
+          required: true
+          description: fund id
+          schema:
+            type: integer
+        - name: structuredObjectId
+          in: path
+          required: true
+          description: structure data id
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - structure
+  /funds/sdo/{fundId}/{structuredObjectId}/copy:
+    post:
+      operationId: Sdo_copyObject
+      description: Creating duplicates of a structured data type and an auto-increment field
+      parameters:
+        - name: fundId
+          in: path
+          required: true
+          description: fund id
+          schema:
+            type: integer
+        - name: structuredObjectId
+          in: path
+          required: true
+          description: structure data id
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - structure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Sdo.CopyObjectParam'
+        description: batch of data to create
   /io/export:
     post:
       operationId: Io_exportRequest
@@ -2712,155 +3225,6 @@ paths:
             schema:
               $ref: '#/components/schemas/SearchParams'
         description: search parameters
-  /structure/item/{fundVersionId}/update/{createNewVersion}:
-    put:
-      operationId: Structure_updateItem
-      description: Update item value of a structured data type
-      parameters:
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-        - name: createNewVersion
-          in: path
-          required: true
-          description: create a new version
-          schema:
-            type: boolean
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Structure.ItemResult'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-      tags:
-        - structure
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NodeItem'
-        description: node item
-  /structure/item/{fundVersionId}/delete:
-    delete:
-      operationId: Structure_deleteItem
-      description: Delete item value of a structured data type
-      parameters:
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Structure.ItemResult'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-      tags:
-        - structure
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NodeItem'
-        description: node item
-  /structure/item/{fundVersionId}/{structureDataId}/{itemTypeId}:
-    delete:
-      operationId: Structure_deleteItemsByType
-      description: Delete items based on the value of a data type structure by attribute type
-      parameters:
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-        - name: structureDataId
-          in: path
-          required: true
-          description: structure data id
-          schema:
-            type: integer
-        - name: itemTypeId
-          in: path
-          required: true
-          description: item type id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Structure.ItemResult'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-      tags:
-        - structure
-  /structure/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create:
-    post:
-      operationId: Structure_createItem
-      description: Create item value of a structured data type
-      parameters:
-        - name: fundVersionId
-          in: path
-          required: true
-          description: fund version id
-          schema:
-            type: integer
-        - name: structureDataId
-          in: path
-          required: true
-          description: structure data id
-          schema:
-            type: integer
-        - name: itemTypeId
-          in: path
-          required: true
-          description: item type id
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Structure.ItemResult'
-      tags:
-        - structure
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/NodeItem'
-        description: node item
   /tasks/my:
     get:
       operationId: Tasks_getMyTasks
@@ -3290,6 +3654,34 @@ components:
         stackTrace:
           type: string
       description: Error specification for the client
+    BaseItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: id of item
+        itemObjectId:
+          type: integer
+          description: id value of item
+        position:
+          type: integer
+          description: pozition
+        undefined:
+          type: boolean
+          description: no value
+        itemTypeId:
+          type: integer
+          description: id type of item
+        itemSpecId:
+          type: integer
+          description: id spec of item
+        readOnly:
+          type: boolean
+          description: value cannot be changed
+        data:
+          allOf:
+            - $ref: '#/components/schemas/ItemData'
+          description: item data
     CopyAccessPointDetail:
       type: object
       required:
@@ -4668,27 +5060,6 @@ components:
     NodeItem:
       type: object
       properties:
-        id:
-          type: integer
-          description: id of item
-        itemObjectId:
-          type: integer
-          description: id value of item
-        position:
-          type: integer
-          description: pozition
-        undefined:
-          type: boolean
-          description: no value
-        itemTypeId:
-          type: integer
-          description: id type of item
-        itemSpecId:
-          type: integer
-          description: id spec of item
-        readOnly:
-          type: boolean
-          description: value cannot be changed
         nodeId:
           type: integer
           description: id node
@@ -4698,10 +5069,8 @@ components:
         inhibited:
           type: boolean
           description: if inheritance is prohibited - true
-        data:
-          allOf:
-            - $ref: '#/components/schemas/ItemData'
-          description: item data
+      allOf:
+        - $ref: '#/components/schemas/BaseItem'
       description: Náhrada za třídu `ArrItemVO`
     NodeSearchResult:
       type: object
@@ -5192,6 +5561,103 @@ components:
         - TO_APPROVE
         - TO_AMEND
       description: States of ApRevState
+    Sdo.BatchUpdateParam:
+      type: object
+      required:
+        - ids
+        - autoincrementItemTypeIds
+        - deleteItemTypeIds
+        - items
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+        autoincrementItemTypeIds:
+          type: array
+          items:
+            type: integer
+        deleteItemTypeIds:
+          type: array
+          items:
+            type: integer
+        items:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/StructuredObjectItem'
+      description: Data for bulk value update
+    Sdo.CopyObjectParam:
+      type: object
+      required:
+        - count
+        - incrementedTypeIds
+      properties:
+        count:
+          type: integer
+        incrementedTypeIds:
+          type: array
+          items:
+            type: integer
+      description: Data for bulk value creation
+    Sdo.ExtensionFund:
+      type: object
+      required:
+        - id
+        - name
+        - code
+        - active
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        code:
+          type: string
+        active:
+          type: boolean
+      description: Extention fund
+    Sdo.FindResult:
+      type: object
+      required:
+        - count
+        - rows
+      properties:
+        count:
+          type: integer
+          format: int64
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/StructuredObject'
+      description: Result found
+    Sdo.ItemResult:
+      type: object
+      required:
+        - parent
+        - item
+      properties:
+        parent:
+          $ref: '#/components/schemas/StructuredObject'
+        item:
+          $ref: '#/components/schemas/StructuredObjectItem'
+      description: Status of a structured data type
+    Sdo.Type:
+      type: object
+      required:
+        - id
+        - name
+        - code
+        - anonymous
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        code:
+          type: string
+        anonymous:
+          type: boolean
+      description: Structure type
     SearchParams:
       type: object
       properties:
@@ -5231,7 +5697,7 @@ components:
         - asc
         - desc
       description: Order of sorting
-    Structure.Data:
+    StructuredObject:
       type: object
       required:
         - id
@@ -5260,17 +5726,28 @@ components:
         errorDescription:
           type: string
       description: Value of a structured type
-    Structure.ItemResult:
+    StructuredObjectItem:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/BaseItem'
+    StructuredObjectItems:
       type: object
       required:
-        - item
         - parent
+        - items
+        - itemTypes
       properties:
-        item:
-          $ref: '#/components/schemas/NodeItem'
         parent:
-          $ref: '#/components/schemas/Structure.Data'
-      description: Status of a structured data type
+          $ref: '#/components/schemas/StructuredObject'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/StructuredObjectItem'
+        itemTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormItemType'
+      description: Form data
     Tasks.EntityType:
       type: string
       enum:

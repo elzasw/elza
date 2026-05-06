@@ -618,10 +618,7 @@ model NodeUpdateItem {
     item: NodeItem;
 }
 
-/**
- * Náhrada za třídu `ArrItemVO`
- */
-model NodeItem {
+model BaseItem {
     /** id of item */
     id?: integer;
     /** id value of item */
@@ -636,14 +633,23 @@ model NodeItem {
     itemSpecId?: integer;
     /** value cannot be changed */
     readOnly?: boolean;
+    /** item data */
+    data?: ItemData;
+}
+
+/**
+ * Náhrada za třídu `ArrItemVO`
+ */
+model NodeItem extends BaseItem {
     /** id node */
     nodeId?: integer;
     /** node version */
     nodeVersion?: integer;
     /** if inheritance is prohibited - true */
     inhibited?: boolean;
-    /** item data */
-    data?: ItemData;
+}
+
+model StructuredObjectItem extends BaseItem {
 }
 
 /**
@@ -3422,26 +3428,39 @@ namespace ElzaAPI.Node {
     };
 }
 
+/**
+ * Value of a structured type
+ */
+model StructuredObject {
+    id: integer;
+    value: string;
+    typeCode: string;
+    complement: string;
+    state: "OK" | "ERROR" | "TEMP";
+    assignable: boolean;
+    errorDescription?: string;
+}
+
+/**
+ * Form data
+ */
+model StructuredObjectItems {
+    parent: StructuredObject;
+    items: StructuredObjectItem[];
+    itemTypes: FormItemType[];
+}
+
+/**
+ * 
+ */
 @tag("structure")
-@route("/structure")
-namespace ElzaAPI.Structure {
-    /**
-     * Value of a structured type
-     */
-    model Data {
-        id: integer;
-        value: string;
-        typeCode: string;
-        complement: string;
-        state: "OK" | "ERROR" | "TEMP";
-        assignable: boolean;
-        errorDescription?: string;
-    }
+@route("/funds/sdo")
+namespace ElzaAPI.Sdo {
 
     /**
      * Data for bulk value creation
      */
-    model DataBatch {
+    model CopyObjectParam {
         count: integer;
         incrementedTypeIds: integer[];
     }
@@ -3449,28 +3468,19 @@ namespace ElzaAPI.Structure {
     /**
      * Data for bulk value update
      */
-    model DataBatchUpdate {
-        structureDataIds: integer[];
+    model BatchUpdateParam {
+        ids: integer[];
         autoincrementItemTypeIds: integer[];
         deleteItemTypeIds: integer[];
-        items: Record<NodeItem>;
+        items: Record<StructuredObjectItem>;
     }
 
     /**
      * Status of a structured data type
      */
     model ItemResult {
-        parent: Data;
-        item: NodeItem;
-    }
-
-    /**
-     * Form data
-     */
-    model FormData {
-        parent: Data;
-        items: NodeItem[];
-        itemTypes: FormItemType[];
+        parent: StructuredObject;
+        item: StructuredObjectItem;
     }
 
     /**
@@ -3478,7 +3488,7 @@ namespace ElzaAPI.Structure {
      */
     model FindResult {
         count: int64;
-        rows: Data[];
+        rows: StructuredObject[];
     }
 
     /**
@@ -3489,17 +3499,6 @@ namespace ElzaAPI.Structure {
         name: string;
         code: string;
         anonymous: boolean;
-    }
-
-    /**
-     * Part type
-     */
-    model PartType {
-        id: integer;
-        name: string;
-        code: string;
-        childPartId: integer;
-        repeatable: boolean;
     }
 
     /**
@@ -3515,38 +3514,38 @@ namespace ElzaAPI.Structure {
     /**
      * Creating object of the structured data type
      */
-    @route("/data/{fundVersionId}")
-    @post op createData(
+    @route("/{fundId}")
+    @post op createObject(
         /** structured data type code */
         @body body: string;
-        /** fund version id */
-        @path fundVersionId: integer;
+        /** fund id */
+        @path fundId: integer;
         /** value for the structured data */
         @query value?: string;
-    ): Data;
+    ): StructuredObject;
 
     /**
      * Creating duplicates of a structured data type and an auto-increment field
      */
-    @route("/data/{fundVersionId}/{structureDataId}/batch")
-    @post op createDataBatch(
+    @route("/{fundId}/{structuredObjectId}/copy")
+    @post op copyObject(
         /** batch of data to create */
-        @body body: DataBatch;
-        /** fund version id */
-        @path fundVersionId: integer;
+        @body body: CopyObjectParam;
+        /** fund id */
+        @path fundId: integer;
         /** structure data id */
-        @path structureDataId: integer;
-    ): DataBatch;
+        @path structuredObjectId: integer;
+    ): void;
 
     /**
      * Bulk update of items/values of a structural type
      */
-    @route("/data/{fundVersionId}/{structureTypeCode}/batchUpdate")
-    @post op updateDataBatch(
+    @route("/{fundId}/batchUpdate/{structureTypeCode}")
+    @post op updateObjects(
         /** batch of data to update */
-        @body body: DataBatchUpdate;
-        /** fund version id */
-        @path fundVersionId: integer;
+        @body body: BatchUpdateParam;
+        /** fund id */
+        @path fundId: integer;
         /** structure type code */
         @path structureTypeCode: string;
     ): void;
@@ -3554,23 +3553,23 @@ namespace ElzaAPI.Structure {
     /**
      * Confirms the value of a structured data type. Sets the value
      */
-    @route("/data/{fundVersionId}/{structureDataId}/confirm")
-    @post op confirmData(
-        /** fund version id */
-        @path fundVersionId: integer;
+    @route("/{fundId}/{structuredObjectId}/confirm")
+    @post op confirm(
+        /** fund id */
+        @path fundId: integer;
         /** structure data id */
-        @path structureDataId: integer;
+        @path structuredObjectId: integer;
     ): void;
 
     /**
      * Assignability settings.
      */
-    @route("/data/{fundVersionId}/assignable/{assignable}")
+    @route("/{fundId}/assignable/{assignable}")
     @post op setDataAssignable(
         /** value ids for a structured data type */
         @body body: integer[];
-        /** fund version id */
-        @path fundVersionId: integer;
+        /** fund id */
+        @path fundId: integer;
         /** assignable value */
         @path assignable: boolean;
     ): void;
@@ -3578,13 +3577,15 @@ namespace ElzaAPI.Structure {
     /**
      * Getting the value of a structured data type
      */
-    @route("/data/{fundVersionId}/{structureDataId}")
-    @get op getData(
-        /** fund version id */
-        @path fundVersionId: integer;
+    @route("/{fundId}/{structuredObjectId}")
+    @get op getObject(
+        /** fund id */
+        @path fundId: integer;
         /** structure data id */
-        @path structureDataId: integer;
-    ): Data | {
+        @path structuredObjectId: integer;
+        /** fund version id */
+        @query fundVersionId?: integer;
+    ): StructuredObject | {
         /** ID does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
@@ -3593,27 +3594,27 @@ namespace ElzaAPI.Structure {
     /**
      * Create item value of a structured data type
      */
-    @route("/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create")
+    @route("/{fundId}/item/{structuredObjectId}")
     @post op createItem(
         /** node item */
-        @body body: NodeItem;
-        /** fund version id */
-        @path fundVersionId: integer;
+        @body body: StructuredObjectItem;
+        /** fund id */
+        @path fundId: integer;
         /** structure data id */
-        @path structureDataId: integer;
-        /** item type id */
-        @path itemTypeId: integer;
+        @path structuredObjectId: integer;
     ): ItemResult;
 
     /**
      * Update item value of a structured data type
      */
-    @route("/item/{fundVersionId}/update/{createNewVersion}")
+    @route("/{fundId}/item/{structuredObjectId}/{createNewVersion}")
     @put op updateItem(
         /** node item */
-        @body body: NodeItem;
-        /** fund version id */
-        @path fundVersionId: integer;
+        @body body: StructuredObjectItem;
+        /** fund id */
+        @path fundId: integer;
+        /** structure data id */
+        @path structuredObjectId: integer;
         /** create a new version */
         @path createNewVersion: boolean;
     ): ItemResult | {
@@ -3625,13 +3626,15 @@ namespace ElzaAPI.Structure {
     /**
      * Delete item value of a structured data type
      */
-    @route("/item/{fundVersionId}/delete")
+    @route("/{fundId}/item/{structuredObjectId}/{itemObjectId}")
     @delete op deleteItem(
-        /** node item */
-        @body body: NodeItem;
-        /** fund version id */
-        @path fundVersionId: integer;
-    ): ItemResult | {
+        /** fund id */
+        @path fundId: integer;
+        /** structured object id */
+        @path structuredObjectId: integer;
+        /** item object id */
+        @path itemObjectId: integer;
+    ): void | {
         /** item does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
@@ -3640,15 +3643,15 @@ namespace ElzaAPI.Structure {
     /**
      * Delete items based on the value of a data type structure by attribute type
      */
-    @route("/item/{fundVersionId}/{structureDataId}/{itemTypeId}")
+    @route("/{fundId}/item/{structuredObjectId}/by-type/{itemTypeId}")
     @delete op deleteItemsByType(
-        /** fund version id */
-        @path fundVersionId: integer;
-        /** structure data id */
-        @path structureDataId: integer;
+        /** fund id */
+        @path fundId: integer;
+        /** structured object id */
+        @path structuredObjectId: integer;
         /** item type id */
         @path itemTypeId: integer;
-    ): ItemResult | {
+    ): void | {
         /** item does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
@@ -3657,10 +3660,10 @@ namespace ElzaAPI.Structure {
     /**
      * GET Searching for values of a structured data type: findStructObj()
      */
-    @route("/data/{fundVersionId}/{structureTypeCode}/search")
+    @route("/{fundId}/search/{structureTypeCode}")
     @get op findStructObj(
-        /** fund version id */
-        @path fundVersionId: integer;
+        /** fund id */
+        @path fundId: integer;
         /** structure type code */
         @path structureTypeCode: string;
         /** text for filtering (optional) */
@@ -3671,6 +3674,8 @@ namespace ElzaAPI.Structure {
         @query from?: integer = 0;
         /** max number of items */
         @query count?: integer = 200;
+        /** fund version id */
+        @query fundVersionId?: integer;
     ): FindResult;
 
     /**
@@ -3683,41 +3688,38 @@ namespace ElzaAPI.Structure {
     ): Type[];
 
     /**
-     * GET: findPartTypes()
-     */
-    @route("/part-type")
-    @get op findPartTypes(
-    ): PartType[];
-
-    /**
      * GET Getting data for a structured data type form: getFormStructureItems()
      */
-    @route("/item/form/{fundVersionId}/{structureDataId}")
+    @route("/{fundId}/item/{structuredObjectId}")
     @get op getFormStructureItems(
+        /** fund id */
+        @path fundId: integer;
+        /** structured object id */
+        @path structuredObjectId: integer;
         /** fund version id */
-        @path fundVersionId: integer;
-        /** structure data id */
-        @path structureDataId: integer;
-    ): FormData;
+        @query fundVersionId?: integer;
+    ): StructuredObjectItems;
 
     /**
      * GET Finds available and enabled AS extensions: findFundStructureExtension()
      */
-    @route("/extension/{fundVersionId}/{structureTypeCode}")
+    @route("/{fundId}/extension/{structureTypeCode}")
     @get op findFundStructureExtension(
-        /** fund version id */
-        @path fundVersionId: integer;
+        /** fund id */
+        @path fundId: integer;
         /** structure type code */
         @path structureTypeCode: string;
+        /** fund version id */
+        @query fundVersionId?: integer;
     ): ExtensionFund[];
 
     /**
      * PUT Sets a specific extension on the AS: setFundStructureExtensions()
      */
-    @route("/extension/{fundVersionId}/{structureTypeCode}")
+    @route("/{fundId}/extension/{structureTypeCode}")
     @put op setFundStructureExtensions(
-        /** fund version id */
-        @path fundVersionId: integer;
+        /** fund id */
+        @path fundId: integer;
         /** structure type code */
         @path structureTypeCode: string;
         /** structure ext codes */

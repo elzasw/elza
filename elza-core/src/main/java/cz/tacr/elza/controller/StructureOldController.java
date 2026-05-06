@@ -312,7 +312,7 @@ public class StructureOldController {
     @RequestMapping(value = "/item/{fundVersionId}/delete", method = RequestMethod.POST)
     public StructureItemResult deleteStructureItem(@RequestBody final ArrItemVO itemVO,
                                                    @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
-        ArrStructuredItem deleteStructureItem = structureService.deleteStructureItem(itemVO.getDescItemObjectId(), fundVersionId);
+        ArrStructuredItem deleteStructureItem = structureService.deleteStructureItem(itemVO.getDescItemObjectId(), null, fundVersionId);
         StructureItemResult result = new StructureItemResult();
         result.setItem(factoryVO.createItem(deleteStructureItem));
         result.setParent(ArrStructureDataVO.newInstance(deleteStructureItem.getStructuredObject()));

@@ -9,9 +9,12 @@ import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.NodeItem;
-import cz.tacr.elza.controller.vo.StructureItemResult;
+import cz.tacr.elza.controller.vo.SdoItemResult;
+import cz.tacr.elza.controller.vo.StructuredObjectItem;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.StructObjService;
 import jakarta.transaction.Transactional;
 
@@ -19,6 +22,9 @@ import jakarta.transaction.Transactional;
 @RequestMapping("/api/v1")
 public class StructureController implements StructureApi {
 
+	@Autowired
+	private ArrangementInternalService arrangementInternalService;
+	
 	@Autowired
     private StructObjService structureService;
 
@@ -28,88 +34,87 @@ public class StructureController implements StructureApi {
 	@Autowired
     private ClientFactoryVO factoryVO;
 
-	/**
-     * POST /structure/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create
+    /**
+     * POST /funds/sdo/{fundId}/item/{structuredObjectId}
      * Create item value of a structured data type
      *
-     * @param fundVersionId fund version id (required)
-     * @param structureDataId structure data id (required)
-     * @param itemTypeId item type id (required)
+     * @param fundId fund id (required)
+     * @param structuredObjectId structure data id (required)
      * @param nodeItem node item (required)
      * @return The request has succeeded. (status code 200)
      */
 	@Override
 	@Transactional
-	public ResponseEntity<StructureItemResult> structureCreateItem(Integer fundVersionId, Integer structureDataId, Integer itemTypeId, NodeItem nodeItem) {
-	    ArrStructuredItem structureItem = factoryDO.createStructureItem(nodeItem, itemTypeId);
-	    ArrStructuredItem created = structureService.createStructureItem(structureItem, structureDataId, fundVersionId);
+	public ResponseEntity<SdoItemResult> sdoCreateItem(Integer fundId, Integer structuredObjectId, StructuredObjectItem structuredObjectItem) {
+		ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+	    ArrStructuredItem structureItem = factoryDO.createStructureItem(structuredObjectItem, structuredObjectItem.getItemTypeId());
+	    ArrStructuredItem created = structureService.createStructureItem(structureItem, structuredObjectId, fundVersion.getFundVersionId());
 
-	    StructureItemResult result = new StructureItemResult();
-	    result.setItem(factoryVO.createNodeItem(created));
-	    result.setParent(factoryVO.createStructureData(created.getStructuredObject()));
+	    SdoItemResult result = new SdoItemResult();
+	    result.setItem(factoryVO.createStructuredObjectItem(created));
+	    result.setParent(factoryVO.createStructuredObject(created.getStructuredObject()));
 	    return ResponseEntity.ok(result);
 	}
 
     /**
-     * PUT /structure/item/{fundVersionId}/create/{createNewVersion}
+     * PUT /funds/sdo/{fundId}/item/{structuredObjectId}/{createNewVersion}
      * Update item value of a structured data type
      *
-     * @param fundVersionId fund version id (required)
+     * @param fundId fund id (required)
+     * @param structuredObjectId structure data id (required)
      * @param createNewVersion create a new version (required)
-     * @param nodeItem node item (required)
+     * @param structuredObjectItem node item (required)
      * @return The request has succeeded. (status code 200)
      *         or The server cannot find the requested resource. (status code 404)
      */
 	@Override
 	@Transactional
-	public ResponseEntity<StructureItemResult> structureUpdateItem(Integer fundVersionId, Boolean createNewVersion, NodeItem nodeItem) {
-        ArrStructuredItem structureItem = factoryDO.createStructureItem(nodeItem);
-        ArrStructuredItem updated = structureService.updateStructureItem(structureItem, fundVersionId, createNewVersion);
+	public ResponseEntity<SdoItemResult> sdoUpdateItem(Integer fundId, Integer structuredObjectId, Boolean createNewVersion, StructuredObjectItem structuredObjectItem) {
+		ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+        ArrStructuredItem structureItem = factoryDO.createStructureItem(structuredObjectItem);
+        ArrStructuredItem updated = structureService.updateStructureItem(structureItem, fundVersion.getFundVersionId(), createNewVersion);
 
-	    StructureItemResult result = new StructureItemResult();
-	    result.setItem(factoryVO.createNodeItem(updated));
-	    result.setParent(factoryVO.createStructureData(updated.getStructuredObject()));
+        SdoItemResult result = new SdoItemResult();
+	    result.setItem(factoryVO.createStructuredObjectItem(updated));
+	    result.setParent(factoryVO.createStructuredObject(updated.getStructuredObject()));
 	    return ResponseEntity.ok(result);
 	}
 
     /**
-     * DELETE /structure/item/{fundVersionId}/delete
+     * DELETE /funds/sdo/{fundId}/item/{structuredObjectId}/{itemObjectId}
      * Delete item value of a structured data type
      *
-     * @param fundVersionId fund version id (required)
-     * @param nodeItem node item (required)
-     * @return The request has succeeded. (status code 200)
+     * @param fundId fund id (required)
+     * @param structuredObjectId structured object id (required)
+     * @param itemObjectId item object id (required)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
      *         or The server cannot find the requested resource. (status code 404)
      */
 	@Override
 	@Transactional
-	public ResponseEntity<StructureItemResult> structureDeleteItem(Integer fundVersionId, NodeItem nodeItem) {
-        ArrStructuredItem deleted = structureService.deleteStructureItem(nodeItem.getItemObjectId(), fundVersionId);
+	public ResponseEntity<Void> sdoDeleteItem(Integer fundId, Integer structuredObjectId, Integer itemObjectId) {
+		ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+        structureService.deleteStructureItem(itemObjectId, structuredObjectId, fundVersion.getFundVersionId());
 
-        StructureItemResult result = new StructureItemResult();
-	    result.setItem(factoryVO.createNodeItem(deleted));
-	    result.setParent(factoryVO.createStructureData(deleted.getStructuredObject()));
-	    return ResponseEntity.ok(result);
+	    return ResponseEntity.ok().build();
 	}
 
     /**
-     * DELETE /structure/item/{fundVersionId}/{structureDataId}/{itemTypeId}
+     * DELETE /funds/sdo/{fundId}/item/{structuredObjectId}/by-type/{itemTypeId}
      * Delete items based on the value of a data type structure by attribute type
      *
-     * @param fundVersionId fund version id (required)
-     * @param structureDataId structure data id (required)
+     * @param fundId fund id (required)
+     * @param structuredObjectId structured object id (required)
      * @param itemTypeId item type id (required)
-     * @return The request has succeeded. (status code 200)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
      *         or The server cannot find the requested resource. (status code 404)
      */
 	@Override
 	@Transactional
-	public ResponseEntity<StructureItemResult> structureDeleteItemsByType(Integer fundVersionId, Integer structureDataId, Integer itemTypeId) {
-		ArrStructuredObject structureData = structureService.deleteStructureItemsByType(fundVersionId, structureDataId, itemTypeId);
+	public ResponseEntity<Void> sdoDeleteItemsByType(Integer fundId, Integer structuredObjectId, Integer itemTypeId) {
+		ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+		structureService.deleteStructureItemsByType(fundVersion.getFundVersionId(), structuredObjectId, itemTypeId);
 
-        StructureItemResult result = new StructureItemResult();
-	    result.setItem(null);
-	    result.setParent(factoryVO.createStructureData(structureData));
-	    return ResponseEntity.ok(result);
+	    return ResponseEntity.ok().build();
 	}
 }
