@@ -71,6 +71,7 @@ import {
 import { FormItem, useActiveFund, useActiveParent } from "./hooks";
 import { useTemplates } from "./templates/templates";
 import { useUserSettings } from "contexts/user";
+import { useStyles } from "./styles";
 
 export const messages = defineMessages({
   addDescItem: {
@@ -162,6 +163,7 @@ export const NodeToolbar = ({
   daos = [],
 }: Props) => {
   const descItems = formItems.map(({ item }) => item);
+  const styles = useStyles();
 
   const [showSpecialCharactersWindow, setShowSpecialCharactersWindow] =
     useState<boolean>(false);
@@ -631,18 +633,8 @@ export const NodeToolbar = ({
 
   return (
     <>
-      <div
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-          padding: "8px",
-          background: "var(--shade-1)",
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ flex: 1, minWidth: 0, overflow: "hidden", paddingRight: "8px" }}>
+      <div className={styles.toolbarSticky}>
+        <div className={styles.toolbarMain}>
         <Overflow padding={20}>
           <Toolbar aria-label="Overflow" size="small">
             {/*<Button>test</Button>*/}
@@ -652,11 +644,7 @@ export const NodeToolbar = ({
                   <MenuButton
                     size="small"
                     title={i18n("subNodeDao.dao.action.changeScenario")}
-                    style={{
-                      whiteSpace: "nowrap",
-                      marginRight: "4px",
-                      flexShrink: 0,
-                    }}
+                    className={styles.toolbarScenarioButton}
                     icon={<LinkMultipleRegular />}
                   >
                     {/*{i18n("subNodeDao.dao.action.changeScenario")}*/}
@@ -709,7 +697,7 @@ export const NodeToolbar = ({
           </Toolbar>
         </Overflow>
         </div>
-        {settings.showExperimentalFeatures && <Toolbar aria-label="View settings" size="small" style={{ flexShrink: 0 }}>
+        {settings.showExperimentalFeatures && <Toolbar aria-label="View settings" size="small" className={styles.toolbarFlexShrink}>
           <Tooltip appearance="inverted" relationship="label" content={formatMessage(messages.toggleCompact)}>
             <ToolbarButton
               appearance={"subtle"}
@@ -721,7 +709,7 @@ export const NodeToolbar = ({
           <Tooltip appearance="inverted" relationship="label" content={`${formatMessage(messages.addColumn)} (${settings.groupColumns || 1})`}>
             <ToolbarButton
               appearance="subtle"
-              icon={<span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+              icon={<span className={styles.toolbarColumnIcon}>
                 {(() => {
                   const cols = settings.groupColumns || 1;
                   if (cols >= 4) return <LayoutColumnFourRegular />;

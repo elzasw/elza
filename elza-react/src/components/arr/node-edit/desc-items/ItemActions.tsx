@@ -10,6 +10,7 @@ import { FormItemType, MandatoryType, NodeItem } from "elza-api";
 import { FormattedMessage, defineMessages } from "react-intl";
 import { DescItemTypeRef } from "typings/store";
 import { useUserSettings } from "contexts/user";
+import { useStyles } from "./styles";
 
 interface Props {
   item: NodeItem;
@@ -73,8 +74,9 @@ export function ItemActions({
     }
   }
 
+  const styles = useStyles();
   return (
-    <div style={{ display: "flex", alignItems: "flex-start" }}>
+    <div className={styles.itemActions}>
       {!isInherited &&
         (hasValue || isOptional || (typeForm.repeatable && isSpecOptional)) && !item.readOnly && (
           <Tooltip

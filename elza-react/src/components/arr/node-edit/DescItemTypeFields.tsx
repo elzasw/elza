@@ -3,6 +3,7 @@ import { AddRegular } from "@fluentui/react-icons";
 import { FormItemType } from "elza-api";
 import { DescItemTypeRef } from "typings/store";
 import { useUserSettings } from "contexts/user";
+import { useStyles } from "./styles";
 import { DraggableList } from "./DraggableList";
 import { DescItemTypeHeader } from "./DescItemTypeHeader";
 import { DescItemField } from "./desc-items";
@@ -53,6 +54,7 @@ export function DescItemTypeFields({
 }: Props) {
     const { settings } = useUserSettings();
     const compact = settings.compact;
+    const styles = useStyles();
 
     function handleChangeOrder(index: number, newIndex: number) {
         const item = descItems[index].item;
@@ -123,7 +125,7 @@ export function DescItemTypeFields({
             </DraggableList>
             {showAddButton && (
                 <Button
-                    style={{ borderStyle: "dashed", color: "#666", margin: "2px 0" }}
+                    className={styles.addDescItemButton}
                     size={compact ? "small" : "medium"}
                     icon={<AddRegular />}
                     onClick={() => {
