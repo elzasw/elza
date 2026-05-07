@@ -272,8 +272,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 			+ "/data/{fundVersionId}/assignable/{assignable}";
 	protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL 
 			+ "/data/{fundVersionId}/{structureDataId}";
-	protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL 
-			+ "/data/{fundVersionId}/{structureTypeCode}/search";
+	@Deprecated
+	protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/search";
 	protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL 
 			+ "/data/{fundVersionId}/{structureDataId}";
 	protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type";
@@ -3291,6 +3291,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param count             maximální počet položek
 	 * @return nalezené položky
 	 */
+	@Deprecated
 	protected FilteredResultVO<ArrStructureDataVO> findStructureData(final String structureTypeCode,
 			final Integer fundVersionId, final String search, final Boolean assignable, final Integer from,
 			final Integer count) {

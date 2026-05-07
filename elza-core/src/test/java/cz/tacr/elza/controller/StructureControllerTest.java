@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.ArrStructureDataVO;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
@@ -29,6 +28,7 @@ import cz.tacr.elza.repository.SobjVrequestRepository;
 import cz.tacr.elza.test.controller.vo.DataInteger;
 import cz.tacr.elza.test.controller.vo.DataString;
 import cz.tacr.elza.test.controller.vo.Fund;
+import cz.tacr.elza.test.controller.vo.SdoFindResult;
 import cz.tacr.elza.test.controller.vo.SdoItemResult;
 import cz.tacr.elza.test.controller.vo.StructuredObjectItem;
 
@@ -89,7 +89,7 @@ public class StructureControllerTest extends AbstractControllerTest {
 
         duplicateStructureDataBatch(fundVersion.getId(), structureData.getId(), BATCH_COUNT, itemTypeIds);
 
-        FilteredResultVO<ArrStructureDataVO> structureDataResult = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, null, null, null);
+        SdoFindResult structureDataResult = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, null, null, null, null);
         assertEquals(BATCH_COUNT, structureDataResult.getCount());
         assertEquals(BATCH_COUNT, structureDataResult.getRows().size());
 
@@ -268,24 +268,24 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertTrue(StringUtils.isNotEmpty(structureDataGet.getValue()));
         assertTrue(StringUtils.isEmpty(structureDataConfirmed.getErrorDescription()));
 
-        FilteredResultVO<ArrStructureDataVO> structureDataResult1 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, null, null, null);
+        SdoFindResult structureDataResult1 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, null, null, null, null);
         assertEquals(1, structureDataResult1.getCount());
         assertEquals(1, structureDataResult1.getRows().size());
 
         setAssignableStructureData(fundVersion.getId(), false, Collections.singletonList(structureData.getId()));
 
-        FilteredResultVO<ArrStructureDataVO> structureDataResult2 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, false, null, null);
+        SdoFindResult structureDataResult2 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, false, null, null, null);
         assertEquals(1, structureDataResult2.getCount());
         assertEquals(1, structureDataResult2.getRows().size());
 
-        FilteredResultVO<ArrStructureDataVO> structureDataResult3 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, true, null, null);
+        SdoFindResult structureDataResult3 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, true, null, null, null);
         assertEquals(0, structureDataResult3.getCount());
         assertEquals(0, structureDataResult3.getRows().size());
 
         List<Integer> structureDataDeletedIds = deleteStructureData(fundVersion.getId(), Collections.singletonList(structureData.getId()));
         assertNotNull(structureDataDeletedIds.size() == 1);
 
-        FilteredResultVO<ArrStructureDataVO> structureDataResult4 = findStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId(), null, null, null, null);
+        SdoFindResult structureDataResult4 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, null, null, null, null);
         assertEquals(0, structureDataResult4.getCount());
         assertEquals(0, structureDataResult4.getRows().size());
     }
