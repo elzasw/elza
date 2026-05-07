@@ -135,9 +135,11 @@ public class ArrangementFormService {
 		return getNodeFormDataOld(version, nodeId);
 	}
 
+	/**
+	 * Caller must verify FUND_RD permission on {@code version} before invoking.
+	 */
 	@Transactional
-	@AuthMethod(permission = { UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD })
-	public NodeFormData getNodeFormData(@AuthParam(type = AuthParam.Type.FUND_VERSION) ArrFundVersion version, Integer nodeId) {
+	public NodeFormData getNodeFormData(ArrFundVersion version, Integer nodeId) {
 		// získat seznam rodičovských nodů
 		List<Integer> parentNodeIds = this.levelTreeCache.getParentNodes(version, nodeId);
 		
@@ -203,7 +205,7 @@ public class ArrangementFormService {
 			inhibitedDescItemIds = getInhibitedDescItemIds(parentRestoredNodes);
 			// sbíráme všechny descItems s povolenou dědičností z nadřazených uzlů
 			parentsDescItems = parentRestoredNodes.stream()
-					.flatMap(i -> i.getDescItems()!=null?i.getDescItems().stream():null)
+					.flatMap(i -> i.getDescItems()!=null?i.getDescItems().stream():Stream.empty())
 					.filter(i -> itemTypeIdsWithInheritance.contains(i.getItemTypeId()))
 					.toList();
 		} else {
