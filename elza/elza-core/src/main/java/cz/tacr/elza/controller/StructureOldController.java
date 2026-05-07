@@ -233,6 +233,7 @@ public class StructureOldController {
      * @param count             maximální počet položek
      * @return nalezené položky
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/data/{fundVersionId}/{structureTypeCode}/search", method = RequestMethod.GET)
     public FilteredResultVO<ArrStructureDataVO> findStructObj(@PathVariable("fundVersionId") final Integer fundVersionId,

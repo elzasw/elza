@@ -5,6 +5,7 @@ import java.util.List;
 
 import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.test.controller.vo.NodeBase;
+import cz.tacr.elza.test.controller.vo.SdoFindResult;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -16,8 +17,6 @@ import cz.tacr.elza.controller.ArrangementController.FaTreeParam;
 import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.ArrFundVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrStructureDataVO;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemCoordinatesVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
@@ -29,7 +28,6 @@ import cz.tacr.elza.domain.ArrDataInteger;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.repository.DataCoordinatesRepository;
-import cz.tacr.elza.repository.FundRepository;
 
 /**
  * Test exportu archivního souboru.
@@ -101,7 +99,7 @@ public class DataExchangeControllerTest extends AbstractControllerTest {
         Assertions.assertTrue(nodes.size() == 4);
 
         // check structured object count
-        FilteredResultVO<ArrStructureDataVO> structObjResult = findStructureData(STRUCT_OBJ_1_TYPE, fVersion.getId(), null, null, null, null);
+        SdoFindResult structObjResult = structureApi.sdoFindStructObj(fund.getId(), STRUCT_OBJ_1_TYPE, null, null, null, null, null);
         Assertions.assertTrue(structObjResult.getCount() == 1);
 
         // check structured object item count

@@ -1,19 +1,25 @@
 package cz.tacr.elza.controller;
 
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.ArrStructureDataVO;
-import cz.tacr.elza.controller.vo.NodeItem;
+import cz.tacr.elza.controller.vo.SdoFindResult;
 import cz.tacr.elza.controller.vo.SdoItemResult;
 import cz.tacr.elza.controller.vo.StructuredObjectItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.StructObjService;
 import jakarta.transaction.Transactional;
@@ -117,4 +123,56 @@ public class StructureController implements StructureApi {
 
 	    return ResponseEntity.ok().build();
 	}
+
+    /**
+     * GET /funds/sdo/{fundId}/search/{structureTypeCode}
+     * GET Searching for values of a structured data type: findStructObj()
+     *
+     * @param fundId fund id (required)
+     * @param structureTypeCode structure type code (required)
+     * @param search text for filtering (optional) (optional)
+     * @param assignable assignable value (optional)
+     * @param from from default &#x3D; 0 (optional, default to 0)
+     * @param count max number of items (optional, default to 200)
+     * @param fundVersionId fund version id (optional)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+    public ResponseEntity<SdoFindResult> sdoFindStructObj(Integer fundId,
+                                                          String structureTypeCode,
+                                                          @Nullable String search,
+                                                          @Nullable Boolean assignable,
+                                                          Integer from,
+                                                          Integer count,
+                                                          @Nullable Integer fundVersionId) {
+	    if (from < 0) {
+	        throw new SystemException("Hodnota nesmí být záporná", 
+	        		BaseCode.PROPERTY_IS_INVALID)
+	                .set("from", from);
+	    }
+	    if (count <= 0) {
+	        throw new SystemException("Hodnota musí být kladná", 
+	        		BaseCode.PROPERTY_IS_INVALID)
+	                .set("count", count);
+	    }
+
+	    ArrFundVersion fundVersion;
+	    if (fundVersionId != null) {
+	        fundVersion = arrangementInternalService.getFundVersionById(fundVersionId);
+	    } else {
+	        fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+	    }
+
+	    RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
+	    FilteredResult<ArrStructuredObject> filteredResult = structureService.findStructureData(
+	            structureType, fundVersion.getFund(), search, assignable, from, count);
+
+	    SdoFindResult result = new SdoFindResult();
+	    result.setCount((long) filteredResult.getTotalCount());
+	    result.setRows(filteredResult.getList().stream()
+	            .map(factoryVO::createStructuredObject)
+	            .collect(Collectors.toList()));
+
+	    return ResponseEntity.ok(result);
+    }
 }
