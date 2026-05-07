@@ -119,14 +119,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
   return (
     <TextFragmentsProvider>
     <NodeFormContext.Provider value={nodeFormData}>
-    <div
-      style={{
-        background: "var(--shade-1)",
-        containerName: "form-container",
-        containerType: "inline-size",
-        position: "relative",
-      }}
-    >
+    <div className={styles.nodeEditForm}>
       <NodeToolbar
         formData={formData}
         formItems={[...formItems, ...forcedFormItems, ...addedFormItems]}
@@ -162,7 +155,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
       </div> */}
       <div style={{ padding: compact ? "4px 8px" : "8px", columns: `350px ${settings.groupColumns || 1}` }}>
         {viewDescItemGroupsLocal.length === 0 && (
-          <div style={{ padding: "50px" }}>
+          <div className={styles.spinnerPadding}>
             <Spinner />
           </div>
         )}

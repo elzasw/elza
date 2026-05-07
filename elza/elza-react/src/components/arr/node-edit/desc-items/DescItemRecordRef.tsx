@@ -222,15 +222,7 @@ export function DescItemRecordRef({
     _isDisabled;
 
   return (
-    <div
-      style={{
-        position: "relative",
-        display: "inline-flex",
-        flex: 1,
-        alignItems: "center",
-        width: "100%"
-      }}
-    >
+    <div className={styles.comboboxWrapper}>
       <Combobox
         size={compact ? "small" : "medium"}
         title={query}
@@ -291,12 +283,7 @@ export function DescItemRecordRef({
           );
         })}
       </Combobox>
-      <div
-        style={{
-          position: "absolute",
-          right: "1px",
-        }}
-      >
+      <div className={styles.comboboxActionButton}>
         <Tooltip
           relationship="label"
           appearance="inverted"
