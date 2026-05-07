@@ -4,10 +4,12 @@ import {
   Option,
   OptionOnSelectData,
   SelectionEvents,
+  tokens,
   Tooltip,
 } from "@fluentui/react-components";
 import { DatabasePersonRegular } from "@fluentui/react-icons";
 import { WebApi } from "actions";
+import { refRecordTypesFetchIfNeeded } from "actions/refTables/recordTypes";
 import { ApAccessPointVO } from "api";
 // import { urlEntity } from "../../../../constants";
 import { DataRecordRef, DataType, NodeItem } from "elza-api";
@@ -27,6 +29,7 @@ import classNames from "classnames";
 import { FIELD_HEIGHT, MODAL_DIALOG_VARIANT } from "../../../../constants";
 import { FormattedMessage, defineMessages, useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
+import { useStyles } from "./styles";
 // import { Link } from "react-router-dom";
 // import { Input } from "@fluentui/react-components";
 
@@ -64,7 +67,9 @@ export function DescItemRecordRef({
   const dispatch = useAppThunkDispatch();
   const registryList: any = useAppSelector(({ app }) => app.registryList); // TODO add types
   const registryDetail = useAppSelector(({ app }) => app.registryDetail); // TODO add types
+  const apTypesMap = useAppSelector(({ refTables }) => refTables.recordTypes.itemsMap);
   const activeFund = useActiveFund();
+  const styles = useStyles();
 
   const [query, setQuery] = useState<string>(
     item.undefined ? formatMessage(commonMessages.undefined) : "",
@@ -136,6 +141,10 @@ export function DescItemRecordRef({
     activeFund?.versionId,
     typeRef.useSpecification,
   ]);
+
+  useEffect(() => {
+    dispatch(refRecordTypesFetchIfNeeded());
+  }, []);
 
   function handleSelectModule() {
     // const {hasSpecification, descItem, registryList, fund, nodeName, itemName, specName, history, dispatch} = this.props;
@@ -252,13 +261,30 @@ export function DescItemRecordRef({
         listbox={{ style: { maxHeight: "400px", minWidth: "400px" } }}
         disabled={isDisabled}
       >
-        {accessPoints.map(({ name, id, description }) => {
+        {accessPoints.map(({ name, id, description, typeId, ...rest }) => {
+          const typeName = (apTypesMap as any)?.[typeId]?.name;
           return (
-            <Option text={name} value={id.toString()}>
+            <Option text={name} value={id.toString()} >
               <div>
                 <div>{name}</div>
                 <div>
-                  <small>{description}</small>
+                  <div className={styles.dataPillWrapper}>
+                    <div className={styles.dataPill} >
+                      <small>{id}</small>
+                    </div>
+                    {typeName && (
+                      <>
+                        <Tooltip content={typeName} showDelay={1000} relationship="label" appearance="inverted">
+                          <div className={styles.dataPill} >
+                            <small>{typeName}</small>
+                          </div>
+                        </Tooltip>
+                      </>
+                    )}
+                  </div>
+                  <div>
+                    <small>{description}</small>
+                  </div>
                 </div>
               </div>
             </Option>
