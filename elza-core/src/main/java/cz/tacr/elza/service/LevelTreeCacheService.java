@@ -1606,31 +1606,43 @@ private void processEvent(AbstractEventSimple event) {
         int maxCount = param.getSiblingsMaxCount() == null || param.getSiblingsMaxCount() > 1000 ? 1000 : param.getSiblingsMaxCount();
         String fulltext = StringUtils.isEmpty(param.getSiblingsFilter()) ? null : param.getSiblingsFilter().trim();
         // pokud siblingsFrom == null - pole `siblings` nevyplňujeme
+        NodeAccordionData focusNodeAccordion = null;
         if (siblingsFrom != null) {
 	        if (siblingsFrom < 0) {
 	            throw new IllegalArgumentException("Index pro sourozence nesmí být záporný: " + siblingsFrom);
 	        }
-	        LevelTreeCacheService.SiblingsNew siblings = 
-	        		fulltext != null ? 
+	        LevelTreeCacheService.SiblingsNew siblings =
+	        		fulltext != null ?
 	        			getNodeSiblings(node, fundVersion, 0, maxCount, fulltext, userDetail) :
 	        				getNodeSiblings(node, fundVersion, siblingsFrom, maxCount, fulltext, userDetail);
 	        result.setNodeIndex(siblings.getNodeIndex());
 	        result.setNodeCount(siblings.getSiblingsCount());
 	        result.setSiblings(siblings.getSiblings());
+
+	        // when the focus node is part of the returned sibling window, reuse its
+	        // accordion entry instead of issuing a second getNodes round-trip
+	        for (NodeAccordionData sibling : siblings.getSiblings()) {
+	            if (Objects.equals(sibling.getId(), node.getId())) {
+	                focusNodeAccordion = sibling;
+	                break;
+	            }
+	        }
         }
 
-        // vyplňujeme pole `node`
-        NodeParam nodeParam = NodeParam.create()
-                .accordion()
-                .referenceMark()
-                .digitizationRequest()
-                .nodeConformity();
-        LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
-        nodesMap.put(node.getId(), node);
-        LinkedHashMap<Integer, Node> nodeMap = getNodes(nodesMap, null, nodeParam, fundVersion);
-        Map<Integer, List<WfIssue>> nodeToIssueMap = issueDataService.groupOpenIssueByNodeId(nodeMap.keySet(), userDetail);
-        List<NodeAccordionData> accordionNodes = convertToAccordionNodeData(nodeMap.values(), nodeToIssueMap);
-        result.setNode(accordionNodes.get(0));
+        if (focusNodeAccordion == null) {
+            NodeParam nodeParam = NodeParam.create()
+                    .accordion()
+                    .referenceMark()
+                    .digitizationRequest()
+                    .nodeConformity();
+            LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
+            nodesMap.put(node.getId(), node);
+            LinkedHashMap<Integer, Node> nodeMap = getNodes(nodesMap, null, nodeParam, fundVersion);
+            Map<Integer, List<WfIssue>> nodeToIssueMap = issueDataService.groupOpenIssueByNodeId(nodeMap.keySet(), userDetail);
+            List<NodeAccordionData> accordionNodes = convertToAccordionNodeData(nodeMap.values(), nodeToIssueMap);
+            focusNodeAccordion = accordionNodes.get(0);
+        }
+        result.setNode(focusNodeAccordion);
 
         return result;
     }
