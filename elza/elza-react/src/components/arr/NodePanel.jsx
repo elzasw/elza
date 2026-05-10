@@ -726,9 +726,10 @@ class NodePanel extends AbstractReactComponent {
         if (item.nodeConformity) {
             var _id = 0;
 
-            var policyTypes = item.nodeConformity.policyTypeIdsVisible;
-
-            var description = item.nodeConformity.description ? '<br />' + item.nodeConformity.description : '';
+            // Visible policy types. A finding without a policyTypeId is always shown (defensive — in practice
+            // every finding carries a policyTypeId); only findings whose policyTypeId is set yet absent from
+            // viewPolicyTypeIds are rendered as "ignore".
+            var visiblePolicyTypeIds = item.nodeConformity.viewPolicyTypeIds || [];
             var messages = [];
 
             var errors = item.nodeConformity.errorList;
@@ -745,8 +746,7 @@ class NodePanel extends AbstractReactComponent {
                     var cls = 'message';
                     if (
                         error.policyTypeId != null &&
-                        policyTypes[error.policyTypeId] != null &&
-                        policyTypes[error.policyTypeId] == false
+                        !visiblePolicyTypeIds.includes(error.policyTypeId)
                     ) {
                         cls += ' ignore';
                         errorsHide++;
@@ -770,8 +770,7 @@ class NodePanel extends AbstractReactComponent {
                     var cls = 'message';
                     if (
                         missing.policyTypeId != null &&
-                        policyTypes[missing.policyTypeId] != null &&
-                        policyTypes[missing.policyTypeId] == false
+                        !visiblePolicyTypeIds.includes(missing.policyTypeId)
                     ) {
                         cls += ' ignore';
                         missingsHide++;
@@ -786,7 +785,7 @@ class NodePanel extends AbstractReactComponent {
 
             if (item.nodeConformity.state === 'OK') {
                 icon = <Icon glyph="fa-check" />;
-                tooltip = <div>{i18n('arr.node.status.ok') + description}</div>;
+                tooltip = <div>{i18n('arr.node.status.ok')}</div>;
             } else {
                 if (
                     (missings == null || missingsHide == missings.length) &&
@@ -795,14 +794,14 @@ class NodePanel extends AbstractReactComponent {
                     icon = <Icon glyph="fa-check-circle" />;
                     tooltip = (
                         <div>
-                            {i18n('arr.node.status.okx')} {description} {messages}
+                            {i18n('arr.node.status.okx')} {messages}
                         </div>
                     );
                 } else {
                     icon = <Icon glyph="fa-exclamation-circle" />;
                     tooltip = (
                         <div>
-                            {description} {messages}
+                            {messages}
                         </div>
                     );
                 }
@@ -1177,7 +1176,7 @@ class NodePanel extends AbstractReactComponent {
         };
 
         if (nodeState) {
-            var policyTypes = nodeState.policyTypeIdsVisible;
+            var visiblePolicyTypeIds = nodeState.viewPolicyTypeIds || [];
 
             var errors = nodeState.errorList;
             if (errors && errors.length > 0) {
@@ -1185,10 +1184,10 @@ class NodePanel extends AbstractReactComponent {
                     if (conformityInfo.errors[error.descItemObjectId] == null) {
                         conformityInfo.errors[error.descItemObjectId] = [];
                     }
+                    // Always bind findings without a policyTypeId (defensive); otherwise require visibility.
                     if (
                         error.policyTypeId == null ||
-                        policyTypes[error.policyTypeId] == null ||
-                        policyTypes[error.policyTypeId] == true
+                        visiblePolicyTypeIds.includes(error.policyTypeId)
                     ) {
                         conformityInfo.errors[error.descItemObjectId].push(error);
                     }
@@ -1203,8 +1202,7 @@ class NodePanel extends AbstractReactComponent {
                     }
                     if (
                         missing.policyTypeId == null ||
-                        policyTypes[missing.policyTypeId] == null ||
-                        policyTypes[missing.policyTypeId] == true
+                        visiblePolicyTypeIds.includes(missing.policyTypeId)
                     ) {
                         conformityInfo.missings[missing.descItemTypeId].push(missing);
                     }
