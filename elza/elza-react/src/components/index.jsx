@@ -43,7 +43,6 @@ export {default as FundDataGrid} from 'components/arr/FundDataGrid';
 export {default as FundFilterSettings} from 'components/arr/FundFilterSettings';
 export {default as FundTreeLazy} from 'components/arr/FundTreeLazy';
 // export {default as SubNodeForm} from 'components/arr/SubNodeForm'; -- nelze kvůli cyklické závislosti
-export {default as NodeSubNodeForm} from 'components/arr/NodeSubNodeForm';
 export {default as NodeActionsBar} from 'components/arr/NodeActionsBar';
 export {default as OutputSubNodeForm} from 'components/arr/OutputSubNodeForm';
 export {SubNodeDao} from 'components/arr/sub-node-dao';
