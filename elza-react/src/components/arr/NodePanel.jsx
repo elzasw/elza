@@ -11,7 +11,6 @@ import { withRouter } from "react-router";
 import { AbstractReactComponent, HorizontalLoader, i18n, Icon, ListBox, TooltipTrigger, Utils } from 'components/shared';
 import { SubNodeDao } from './sub-node-dao';
 import NodeActionsBar from './NodeActionsBar';
-import NodeSubNodeForm from './NodeSubNodeForm';
 import { Button } from '../ui';
 import { addNodeFormArr } from 'actions/arr/addNodeForm';
 import { nodeFormActions } from 'actions/arr/subNodeForm';
@@ -90,7 +89,6 @@ class NodePanel extends AbstractReactComponent {
             'getSiblingNodes',
             'renderAccordion',
             'renderState',
-            'transformConformityInfo',
             'renderRowItem',
             'handleShortcuts',
             'trySetFocus',
@@ -854,14 +852,13 @@ class NodePanel extends AbstractReactComponent {
 
     /**
      * Renderování Accordion.
-     * @param form {Object} editační formulář, pokud je k dispozici (k dispozici je, pokud je nějaká položka Accordion vybraná)
      * @param daos digitální entity k JP
      * @param linkedNodes seznam JP odkazujícíh na tuto JP
      * @param readMode pouze čtení
      * @param arrPerm oprávnění pořádání
      * @return {Object} view
      */
-    renderAccordion(form, daos, linkedNodes, readMode, arrPerm) {
+    renderAccordion(daos, linkedNodes, readMode, arrPerm) {
         const { node, versionId, userDetail, fund, fundId, closed, displayAccordion } = this.props;
         const { focusItemIndex } = this.state;
         var rows = [];
@@ -951,7 +948,6 @@ class NodePanel extends AbstractReactComponent {
                                 </div>
                             </div>
                             <div key="body" className="accordion-body">
-                                {/* {form} */}
                                 {readMode && <NodeView nodeId={item.id} fondsVersionId={versionId} />}
                                 {!readMode && <NodeEdit nodeId={item.id} fondsVersionId={versionId} nodeVersionId={item.version} />}
                                 {linkedNodes}
@@ -1066,55 +1062,6 @@ class NodePanel extends AbstractReactComponent {
         const settings = this.getSettingsFromProps();
         const readMode = settings.readMode;
         const arrPerm = settings.arrPerm || false;
-        var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
-
-        var form;
-        if (node.subNodeForm.fetched && descItemTypes.fetched) {
-            // Zjisštění, zda pro daný node existuje v accordion předchozí záznam (který ale není vyfiltrovaný), ze kterého je možné přebírat hodnoty atirbutu pro akci okamžité kopírování
-            var descItemCopyFromPrevEnabled = false;
-            var i1 = indexById(node.childNodes, node.selectedSubNodeId);
-            var i2 = indexById(node.childNodes, node.selectedSubNodeId);
-            if (i1 !== null && i2 !== null && i2 > 0 && i1 > 0) {
-                // před danám nodem existuje nějaký záznam a v případě filtrování existuje před daným nodem také nějaký záznam
-                if (node.childNodes[i1 - 1].id == node.childNodes[i2 - 1].id) {
-                    // jedná se o stejné záznamy, můžeme zobrazit akci kopírování
-                    descItemCopyFromPrevEnabled = true;
-                }
-            }
-
-            // Formulář editace JP
-            var conformityInfo = this.transformConformityInfo(node);
-            // descItemTypeInfos={node.subNodeForm.descItemTypeInfos}
-            form = (
-                <NodeSubNodeForm
-                    key={'sub-node-form-' + node.selectedSubNodeId}
-                    ref={ref => (this.refSubNodeForm = ref)}
-                    singleDescItemTypeEdit={false}
-                    nodeId={node.id}
-                    versionId={versionId}
-                    selectedSubNodeId={node.selectedSubNodeId}
-                    routingKey={node.routingKey}
-                    subNodeForm={node.subNodeForm}
-                    rulDataTypes={rulDataTypes}
-                    descItemTypes={descItemTypes}
-                    conformityInfo={conformityInfo}
-                    parentNode={node}
-                    fundId={fundId}
-                    selectedSubNode={node.subNodeForm.data.parent}
-                    descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
-                    closed={closed}
-                    onAddDescItemType={this.handleAddDescItemType}
-                    onVisiblePolicy={this.handleVisiblePolicy}
-                    onDigitizationRequest={this.handleDigitizationRequest}
-                    onDigitizationSync={this.handleDigitizationSync}
-                    onRefSync={this.handleRefSync}
-                    readMode={readMode}
-                    arrPerm={arrPerm}
-                />
-            );
-        } else {
-            form = <HorizontalLoader text={i18n('global.data.loading.form')} />;
-        }
 
         const daos = (
             <SubNodeDao
@@ -1145,72 +1092,13 @@ class NodePanel extends AbstractReactComponent {
             >
                 <div key="main" className="main">
                     {settings.showParents && this.renderParents()}
-                    {this.renderAccordion(form, daos, linkedNodes, readMode, arrPerm)}
+                    {this.renderAccordion(daos, linkedNodes, readMode, arrPerm)}
                     {settings.showChildren && this.renderChildren()}
                 </div>
             </Shortcuts>
         );
     }
 
-    /**
-     * Převedení dat do lepších struktur.
-     *
-     * @param node {object} JP
-     * @returns {{errors: {}, missings: {}}}
-     */
-    transformConformityInfo(node) {
-        var nodeId = node.subNodeForm.nodeId;
-
-        var nodeState;
-
-        for (var i = 0; i < node.childNodes.length; i++) {
-            if (node.childNodes[i].id == nodeId) {
-                nodeState = node.childNodes[i].nodeConformity;
-                break;
-            }
-        }
-
-        var conformityInfo = {
-            errors: {},
-            missings: {},
-        };
-
-        if (nodeState) {
-            var visiblePolicyTypeIds = nodeState.viewPolicyTypeIds || [];
-
-            var errors = nodeState.errorList;
-            if (errors && errors.length > 0) {
-                errors.forEach(error => {
-                    if (conformityInfo.errors[error.descItemObjectId] == null) {
-                        conformityInfo.errors[error.descItemObjectId] = [];
-                    }
-                    // Always bind findings without a policyTypeId (defensive); otherwise require visibility.
-                    if (
-                        error.policyTypeId == null ||
-                        visiblePolicyTypeIds.includes(error.policyTypeId)
-                    ) {
-                        conformityInfo.errors[error.descItemObjectId].push(error);
-                    }
-                });
-            }
-
-            var missings = nodeState.missingList;
-            if (missings && missings.length > 0) {
-                missings.forEach(missing => {
-                    if (conformityInfo.missings[missing.descItemTypeId] == null) {
-                        conformityInfo.missings[missing.descItemTypeId] = [];
-                    }
-                    if (
-                        missing.policyTypeId == null ||
-                        visiblePolicyTypeIds.includes(missing.policyTypeId)
-                    ) {
-                        conformityInfo.missings[missing.descItemTypeId].push(missing);
-                    }
-                });
-            }
-        }
-        return conformityInfo;
-    }
 }
 
 function mapState(state) {
