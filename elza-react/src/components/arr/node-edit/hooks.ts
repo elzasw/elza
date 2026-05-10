@@ -6,10 +6,10 @@ import {
   FormItemType,
   ItemDataResult,
   MandatoryType,
-  NodeAccordionData,
   NodeData,
   NodeFormData,
   NodeItem,
+  NodeStatus,
 } from "elza-api";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DescItemTypeRef } from "typings/store";
@@ -263,7 +263,7 @@ export function useNodeFormData(
   const [addedFormItems, setAddedFormItems] = useState<FormItem[]>([]);
   const [arrPerm, setArrPerm] = useState<boolean>(false);
   const [itemTypes, setItemTypes] = useState<FormItemType[]>([]);
-  const [nodeData, setNodeData] = useState<NodeAccordionData>();
+  const [nodeData, setNodeData] = useState<NodeStatus>();
   const [reloadData, setReloadData] = useState<boolean>(true);
   const [markedForClean, setMarkedForClean] = useState<
     { id: number; localId: string }[]
@@ -365,6 +365,7 @@ export function useNodeFormData(
         parents: false,
         children: false,
         siblingsMaxCount: 10,
+        nodeStatus: true,
       });
       setStoredData(data);
     },

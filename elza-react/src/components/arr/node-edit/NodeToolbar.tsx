@@ -42,9 +42,9 @@ import { showConfirmDialog } from "components/shared/dialog";
 import ConfirmForm from "components/shared/form/ConfirmForm";
 import {
   FormItemType,
-  NodeAccordionData,
   NodeBase,
   NodeFormData,
+  NodeStatus,
 } from "elza-api";
 import { useState } from "react";
 import { FormattedMessage, defineMessages, useIntl } from "react-intl";
@@ -149,7 +149,7 @@ export interface Props {
   itemTypes?: FormItemType[];
   formItems?: FormItem[];
   parent?: NodeBase;
-  nodeData?: NodeAccordionData;
+  nodeData?: NodeStatus;
   onAddDescItem: (itemTypeId: number, itemSpecId?: number) => void;
   daos?: ArrDaoVO[];
 }
