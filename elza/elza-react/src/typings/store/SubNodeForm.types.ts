@@ -57,8 +57,3 @@ export interface SubNodeForm {
     versionId?: number;
 }
 
-export interface SubNodeFormCache {
-    dataCache?: Record<number, unknown>;
-    isFetching?: boolean;
-}
-

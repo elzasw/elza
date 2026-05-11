@@ -119,8 +119,6 @@ export default function arrRegion(state = initialState, action) {
             action.area !== types.CUSTOM_FUND_TREE_AREA_NODES) ||
         nodeFormActions.isSubNodeFormAction(action) ||
         outputFormActions.isSubNodeFormAction(action) ||
-        nodeFormActions.isSubNodeFormCacheAction(action) ||
-        outputFormActions.isSubNodeFormCacheAction(action) ||
         isSubNodeDaosAction(action) ||
         isSubNodeInfoAction(action) ||
         isNodeInfoAction(action) ||
