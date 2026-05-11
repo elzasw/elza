@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,6 +13,7 @@ import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.SdoFindResult;
 import cz.tacr.elza.controller.vo.SdoItemResult;
+import cz.tacr.elza.controller.vo.StructuredObject;
 import cz.tacr.elza.controller.vo.StructuredObjectItem;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrStructuredItem;
@@ -40,6 +42,26 @@ public class StructureController implements StructureApi {
 	@Autowired
     private ClientFactoryVO factoryVO;
 
+    /**
+     * POST /funds/sdo/{fundId}
+     * Creating object of the structured data type
+     *
+     * @param fundId fund id (required)
+     * @param body structured data type code (required)
+     * @param value value for the structured data (optional)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Transactional
+	public ResponseEntity<StructuredObject> sdoCreateObject(Integer fundId, @RequestBody String structureTypeCode, @Nullable String value) {
+	    ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+	    RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
+	    ArrStructuredObject structuredObject = structureService.createStructObj(fundVersion.getFund(), structureType, ArrStructuredObject.State.TEMP);
+	    if (value != null) {
+	        structureService.addItemsFromValue(structuredObject, value);
+	    }
+	    return ResponseEntity.ok(factoryVO.createStructuredObject(structuredObject));
+    }
+	
     /**
      * POST /funds/sdo/{fundId}/item/{structuredObjectId}
      * Create item value of a structured data type

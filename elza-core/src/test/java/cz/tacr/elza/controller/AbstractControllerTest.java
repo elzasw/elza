@@ -265,6 +265,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String DELETE_EXTERNAL_SYSTEM = EXTERNAL_SYSTEMS + "/{externalSystemId}";
 
 	// STRUCTURE
+	@Deprecated
 	protected static final String CREATE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}";
 	protected static final String CONFIRM_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL
 			+ "/data/{fundVersionId}/{structureDataId}/confirm";
@@ -3249,6 +3250,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param fundVersionId     identifikátor verze AS
 	 * @return vytvořená dočasná entita
 	 */
+	@Deprecated
 	protected ArrStructureDataVO createStructureData(final String structureTypeCode, final Integer fundVersionId) {
 		return post(spec -> spec.body(structureTypeCode).pathParam("fundVersionId", fundVersionId),
 				CREATE_STRUCTURE_DATA).as(ArrStructureDataVO.class);

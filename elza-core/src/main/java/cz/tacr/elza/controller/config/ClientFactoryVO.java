@@ -938,7 +938,7 @@ public class ClientFactoryVO {
         so.setComplement(aso.getComplement());
         so.setErrorDescription(aso.getErrorDescription());
         so.setAssignable(aso.getAssignable());
-        if (so.getState() != null) {
+        if (aso.getState() != null) {
             so.setState(StructuredObject.StateEnum.valueOf(aso.getState().name()));
         }
         return so;
