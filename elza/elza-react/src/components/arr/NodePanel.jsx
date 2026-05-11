@@ -18,7 +18,7 @@ import { fundSubNodeDaosFetchIfNeeded } from 'actions/arr/subNodeDaos';
 import { fundSelectSubNode, fundSubNodesNext, fundSubNodesPrev } from 'actions/arr/node';
 import { refRulDataTypesFetchIfNeeded } from 'actions/refTables/rulDataTypes';
 import { indexById } from 'stores/app/utils';
-import { createDigitizationName, createFundRoot, getDescItemsAddTree } from './ArrUtils';
+import { createDigitizationName, createFundRoot } from './ArrUtils';
 import { createReferenceMarkString, getGlyph, getOneSettings } from 'components/arr/ArrUtils';
 import { descItemTypesFetchIfNeeded } from 'actions/refTables/descItemTypes';
 import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
@@ -26,7 +26,6 @@ import ArrRequestForm from './ArrRequestForm';
 import { WebApi } from 'actions/index';
 import { Shortcuts } from 'react-shortcuts';
 import { canSetFocus, focusWasSet, isFocusExactFor, isFocusFor, setFocus } from 'actions/global/focus';
-import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm';
 import { visiblePolicyTypesFetchIfNeeded } from 'actions/refTables/visiblePolicyTypes';
 import * as perms from 'actions/user/Permission';
 import { PropTypes } from 'prop-types';
@@ -92,7 +91,6 @@ class NodePanel extends AbstractReactComponent {
             'renderRowItem',
             'handleShortcuts',
             'trySetFocus',
-            'handleAddDescItemType',
             'handleVisiblePolicy',
             'ensureItemVisibleNoForm',
         );
@@ -277,11 +275,6 @@ class NodePanel extends AbstractReactComponent {
             case 'searchItem':
                 ReactDOM.findDOMNode(this.refs.search.getInput().refs.input).focus();
                 break;
-            case 'addDescItemType':
-                if (node.selectedSubNodeId !== null && !readMode) {
-                    this.handleAddDescItemType();
-                }
-                break;
             case 'addNodeAfter':
                 if (!readMode) {
                     this.props.dispatch(addNodeFormArr('AFTER', node, focusItemIndex, versionId));
@@ -437,62 +430,6 @@ class NodePanel extends AbstractReactComponent {
                 fundVersionId={versionId}
             />
         )));
-    }
-
-    /**
-     * Zobrazení dialogu pro přidání atributu.
-     */
-    handleAddDescItemType() {
-        const {
-            node: { subNodeForm, selectedSubNodeId, routingKey },
-            versionId,
-            fund,
-            userDetail,
-        } = this.props;
-        let strictMode = fund.activeVersion.strictMode;
-
-        let userStrictMode = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
-        if (userStrictMode && userStrictMode.value !== null) {
-            strictMode = userStrictMode.value === 'true';
-        }
-
-        const formData = subNodeForm.formData;
-        const descItemTypes = getDescItemsAddTree(
-            formData.descItemGroups,
-            subNodeForm.infoTypesMap,
-            subNodeForm.refTypesMap,
-            subNodeForm.infoGroups,
-            strictMode,
-        );
-
-        // Zatím zakomentováno, možná se bude ještě nějak řadit - zatím není jasné podle čeho řadit - podle uvedení v yaml nebo jinak?
-        // function typeId(type) {
-        //     switch (type) {
-        //         case "REQUIRED":
-        //             return 0;
-        //         case "RECOMMENDED":
-        //             return 1;
-        //         case "POSSIBLE":
-        //             return 2;
-        //         case "IMPOSSIBLE":
-        //             return 99;
-        //         default:
-        //             return 3;
-        //     }
-        // }
-        //
-        // // Seřazení podle position
-        // descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
-
-        var submit = data => {
-            return this.props.dispatch(
-                nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, data.descItemTypeId.id),
-            );
-        };
-
-        // Modální dialog
-        const form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit} />;
-        this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form, "dialog-md"));
     }
 
     ensureItemVisible() {
