@@ -107,7 +107,6 @@ const initialState = {
     infoGroupsMap: null,
     infoTypesMap: null,
     refTypesMap: null,
-    addItemTypeIds: null,
     getLoc: getLoc,
 };
 
@@ -279,22 +278,6 @@ export function convertValue(value, descItem, type) {
     } else {
         return dataTypeMap['DEFAULT'](value);
     }
-}
-
-/**
- * Vyhledani skupiny a typu atributu v existujicich skupinach podle itemTypeId.
- */
-const findGroupAndType = (groups, itemTypeId) => {
-    let descItemGroup = null;
-    let descItemType = null;
-    groups.find((group) => {
-        descItemType = group.descItemTypes.find((descItemType) => descItemType.id == itemTypeId)
-        if (descItemType != undefined) {
-            descItemGroup = group;
-            return true;
-        }
-    })
-    return [descItemGroup, descItemType];
 }
 
 /**
@@ -643,110 +626,6 @@ export default function subNodeForm(state = initialState, action = {}) {
             }
             return newState;
 
-        case types.FUND_SUB_NODE_FORM_TEMPLATE_USE: {
-            const { template: { formData, replaceValues }, groups } = action;
-            console.log("use template", action.template);
-
-            const { refTypesMap, infoTypesMap } = state;
-
-            const currentFormData = state.formData
-            let descItemGroups = [];
-            let descItemTypes = [];
-
-            currentFormData.descItemGroups.forEach((group) => {
-                descItemGroups.push(group);
-                group.descItemTypes.forEach((type) => {
-                    descItemTypes.push(type);
-                })
-            })
-
-            const appendEmptyDescItems = (itemType, descItemsFromTemplate) => {
-                let descItems = itemType.descItems ? [...itemType.descItems] : [];
-
-                // find descItems, that exist in the template, but not in formData
-                const emptyDescItems = descItemsFromTemplate.filter((newDescItem) => {
-                    const descItem = descItems.find((descItem) => {
-                        if (newDescItem.descItemSpecId === descItem.descItemSpecId
-                            && newDescItem.value === descItem.value) {
-                            return true;
-                        }
-                    })
-                    if (!descItem) {
-                        return true;
-                    }
-                })
-
-                return { ...itemType, descItems: [...descItems, ...emptyDescItems] };
-            }
-
-            Object.entries(formData).forEach(([itemTypeId, newItemTypeDescItems]) => {
-                itemTypeId = parseInt(itemTypeId);
-                const descItemTypeIndex = descItemTypes.findIndex((type) => type.id === itemTypeId);
-                let itemType = descItemTypeIndex !== -1 ? descItemTypes[descItemTypeIndex] : infoTypesMap[itemTypeId];
-
-                // Create new descItems for items without value or marked as undefined
-                const newDescItems = newItemTypeDescItems.filter((item) =>
-                    !item.undefined && (item.value === null || item.descItemSpecId == "")
-                ).map((item) => ({
-                    ...createDescItem(refTypesMap[itemTypeId], true, item.position),
-                    ...item,
-                }))
-
-                itemType = appendEmptyDescItems(itemType, newDescItems, replaceValues);
-
-                // item from template does not contain empty items
-                if (itemType.descItems.length <= 0) {
-                    return;
-                }
-
-                consolidateDescItems(itemType, infoTypesMap[itemTypeId], refTypesMap[itemTypeId], true);
-
-                // if itemType exists, update values, if not, add it
-                if (descItemTypeIndex !== -1) {
-                    descItemTypes[descItemTypeIndex] = itemType;
-                } else {
-                    descItemTypes.push(itemType);
-                }
-
-                const groupCode = groups.reverse[itemTypeId];
-                const descItemGroup = groups[groupCode];
-
-                // if the group doesn't exist in the existing list, add it
-                if (descItemGroups.find((group) => group.code === groupCode) === undefined) {
-                    descItemGroups.push(descItemGroup);
-                }
-            })
-
-            // order types by viewOrder
-            descItemTypes = descItemTypes.sort((typeA, typeB) =>
-                refTypesMap[typeA.id].viewOrder - refTypesMap[typeB.id].viewOrder
-            )
-
-            // order groups by code
-            descItemGroups = descItemGroups.sort((groupA, groupB) => {
-                if (groupA.code < groupB.code) { return -1 }
-                if (groupA.code > groupB.code) { return 1 }
-                return 0;
-            })
-
-            // update groups with new types
-            descItemGroups = descItemGroups.map((group) => ({
-                ...group,
-                descItemTypes: descItemTypes.filter((type) => groups.reverse[type.id] === group.code)
-            }))
-
-            state.formData.descItemGroups = [...descItemGroups];
-            checkFormData(state.formData);
-            return { ...state };
-        }
-
-        // Přidá identifikátory typů atributů, které budou s dalším načtením obsahu JP přidány (prázdné)
-        case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPES_ADD_TEMPLATE: {
-            state.addItemTypeIds = action.itemTypeIds;
-            checkFormData(state.formData);
-            return { ...state };
-        }
-
         case types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPE_ADD:
             addItemType(state, action.descItemTypeId);
             checkFormData(state.formData);
@@ -830,7 +709,6 @@ export default function subNodeForm(state = initialState, action = {}) {
                     infoGroupsMap: null,
                     infoTypesMap: null,
                     refTypesMap: null,
-                    addItemTypeIds: null,
                 };
             }
 
@@ -875,45 +753,6 @@ export default function subNodeForm(state = initialState, action = {}) {
             checkFormData(result.formData, '#checkFormData - 1');
             updateFormData(result, action.data, refTypesMap, action.groups, null, state.dirty);
             checkFormData(result.formData, '#checkFormData - 2');
-
-            // Pokud existují typy atributů, které chceme po načtení přidat, přidáme je
-            if (result.addItemTypeIds?.length > 0) {
-                const itemTypeIds = {};
-                // Group itemTypes
-                (result.addItemTypeIds).forEach((itemTypeId) => {
-                    if (!itemTypeIds[itemTypeId]) {
-                        itemTypeIds[itemTypeId] = 1;
-                    } else {
-                        itemTypeIds[itemTypeId] = itemTypeIds[itemTypeId] + 1;
-                    }
-                })
-
-                // Adds empty items from template for requested itemTypes
-                Object.entries(itemTypeIds).forEach(([itemTypeId, emptyItemCount]) => {
-                    let [descItemGroup, descItemType] = findGroupAndType(result.formData.descItemGroups, itemTypeId);
-
-                    let existingCount = descItemType?.descItems?.length || 0;
-                    let existingEmptyItemCount = descItemType?.descItems?.filter(
-                        (descItem) => descItem.value == undefined
-                            && (descItem.descItemSpecId == undefined || descItem.descItemSpecId == "")
-                            && !descItem.undefined
-                    ).length || 0;
-                    // Subtract already existing empty items
-                    let missingEmptyItemCount = emptyItemCount - existingEmptyItemCount;
-
-                    while (missingEmptyItemCount > 0) {
-                        if (existingCount !== 0) {
-                            [descItemGroup, descItemType] = findGroupAndType(result.formData.descItemGroups, itemTypeId);
-                            addValue(result, { descItemGroup, descItemType });
-                        } else {
-                            addItemType(result, itemTypeId);
-                        }
-                        missingEmptyItemCount--;
-                        existingCount++;
-                    }
-                });
-                result.addItemTypeIds = null;
-            }
             checkFormData(result.formData, '#checkFormData - final');
             const postState = JSON.stringify(result, null, 4);
             window.postState = postState;

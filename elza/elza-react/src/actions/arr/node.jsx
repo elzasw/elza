@@ -396,21 +396,11 @@ export function addNode(
             WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems, count),
         ).then(json => {
             dispatch(fundNodeChangeAdd(versionId, json.nodes, indexNode, json.parentNode, direction));
+            // The new node-edit pipeline consumes emptyItemTypeIds via setPendingTemplateCallback
+            // (registered in addNodeForm.jsx afterCreateCallback). The legacy
+            // FUND_SUB_NODE_FORM_DESC_ITEM_TYPES_ADD_TEMPLATE dispatch that lived here is no longer
+            // needed — its reducer path was bypassed once NODE area moved to the new endpoint.
             afterCreateCallback && afterCreateCallback(versionId, json.nodes, json.parentNode, emptyItemTypeIds);
-
-            const state = getState();
-            const activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
-            const activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
-
-            if (emptyItemTypeIds) {
-                dispatch({
-                    type: types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPES_ADD_TEMPLATE,
-                    area: 'NODE',
-                    versionId,
-                    routingKey: activeNode.routingKey,
-                    itemTypeIds: emptyItemTypeIds,
-                });
-            }
         });
     };
 }
