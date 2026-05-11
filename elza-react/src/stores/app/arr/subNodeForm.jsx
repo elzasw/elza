@@ -17,6 +17,7 @@ import {
 } from './subNodeFormUtils';
 import { validateUnitDate } from '../../../components/registry/field/UnitdateField';
 import { RulItemTypeType } from '../../../api/RulItemTypeType';
+import { NODE_AREA } from '../../../actions/arr/subNodeForm/itemFormActions';
 
 const FORM_KEY = 'formKey'; // klíč verze formuláře
 const UID = '_uid'; // virtuální identifikátor hodnoty atributu (jedná se buď o objectId a nebo virtuální klíč v případě, že ještě hodnota atributu nebyla uložena na serveru)
@@ -809,6 +810,30 @@ export default function subNodeForm(state = initialState, action = {}) {
                 isFetching: true,
             });
         case types.FUND_SUB_NODE_FORM_RECEIVE: {
+            // NODE area is served by the new /node/node-data endpoint and returns NodeFormData
+            // (NodeItem[] / FormItemType[]). The legacy derived state (descItemGroups, infoTypesMap,
+            // infoGroupsMap, refTypesMap) is no longer consumed for NODE area — NodeSubNodeForm was
+            // retired in Wave B.1, and node-edit fetches form data via its own useNodeFormData hook.
+            // Store the response as-is and leave the legacy derived fields null.
+            if (action.area === NODE_AREA) {
+                return {
+                    ...state,
+                    isFetching: false,
+                    fetched: true,
+                    dirty: false,
+                    versionId: action.versionId,
+                    nodeId: action.nodeId,
+                    needClean: false,
+                    data: action.data,
+                    formData: null,
+                    infoGroups: null,
+                    infoGroupsMap: null,
+                    infoTypesMap: null,
+                    refTypesMap: null,
+                    addItemTypeIds: null,
+                };
+            }
+
             const prevSTate = JSON.stringify(state, null, 4);
             window.prevSTATE = prevSTate;
             // ##
