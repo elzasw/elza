@@ -93,6 +93,7 @@ class NodePanel extends AbstractReactComponent {
             'trySetFocus',
             'handleVisiblePolicy',
             'ensureItemVisibleNoForm',
+            'handleFormRefresh',
         );
 
         this.state = {
@@ -484,6 +485,27 @@ class NodePanel extends AbstractReactComponent {
             this.props.dispatch(fundSubNodeDaosFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
         }
         this.props.dispatch(visiblePolicyTypesFetchIfNeeded());
+    }
+
+    /**
+     * Re-fetch the node form data (used as `onRefresh` callback by seed-mode NodeEdit/NodeView).
+     * Forces a fresh fetch via `needClean: true` so accordion titles and form contents stay in sync
+     * after a websocket NODES_CHANGE or other refresh-trigger.
+     */
+    handleFormRefresh() {
+        const { node, versionId } = this.props;
+        const settings = this.getSettingsFromProps();
+        if (node.selectedSubNodeId != null) {
+            this.props.dispatch(
+                nodeFormActions.fundSubNodeFormFetchIfNeeded(
+                    versionId,
+                    node.routingKey,
+                    true, // needClean → force re-fetch
+                    settings.showChildren,
+                    settings.showParents,
+                ),
+            );
+        }
     }
 
     /**
@@ -885,8 +907,28 @@ class NodePanel extends AbstractReactComponent {
                                 </div>
                             </div>
                             <div key="body" className="accordion-body">
-                                {readMode && <NodeView nodeId={item.id} fondsVersionId={versionId} />}
-                                {!readMode && <NodeEdit nodeId={item.id} fondsVersionId={versionId} nodeVersionId={item.version} />}
+                                {readMode && (
+                                    <NodeView
+                                        nodeId={item.id}
+                                        fondsVersionId={versionId}
+                                        nodeVersionId={item.version}
+                                        seedFromParent
+                                        seedFormData={node.subNodeForm.data}
+                                        seedNodeStatus={node.subNodeForm.nodeStatus}
+                                        onRefresh={this.handleFormRefresh}
+                                    />
+                                )}
+                                {!readMode && (
+                                    <NodeEdit
+                                        nodeId={item.id}
+                                        fondsVersionId={versionId}
+                                        nodeVersionId={item.version}
+                                        seedFromParent
+                                        seedFormData={node.subNodeForm.data}
+                                        seedNodeStatus={node.subNodeForm.nodeStatus}
+                                        onRefresh={this.handleFormRefresh}
+                                    />
+                                )}
                                 {linkedNodes}
                                 {daos}
                             </div>

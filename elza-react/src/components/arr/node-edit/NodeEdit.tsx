@@ -2,6 +2,7 @@ import { Spinner } from "@fluentui/react-components";
 import { WebApi } from "actions";
 import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
 import { useEffect, useMemo, useState } from "react";
+import { NodeFormData, NodeStatus } from "elza-api";
 import { ArrDaoVO } from "typings/dao";
 import { useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
@@ -19,9 +20,15 @@ interface Props {
   fondsVersionId: number;
   nodeId: number;
   nodeVersionId: number;
+  /** When provided, NodeEdit waits for `seedFormData`/`seedNodeStatus` from parent instead of fetching. */
+  seedFromParent?: boolean;
+  seedFormData?: NodeFormData;
+  seedNodeStatus?: NodeStatus;
+  /** Called when the form requests a refresh (e.g. websocket NODES_CHANGE). Parent re-fetches and re-seeds. */
+  onRefresh?: () => void;
 }
 
-export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
+export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent, seedFormData, seedNodeStatus, onRefresh }: Props) {
   const dispatch = useAppThunkDispatch();
   const activeParent = useActiveParent(); // TODO use different way of getting active parent node
   const activeFund = useActiveFund();
@@ -39,7 +46,12 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     arrRegion.nodeSettings.nodes.find(({ id }) => id === activeParent?.id),
   );
 
-  const nodeFormData = useNodeFormData(fondsVersionId, nodeId, nodeVersionId);
+  const nodeFormData = useNodeFormData(fondsVersionId, nodeId, nodeVersionId, {
+    seedFromParent,
+    seedFormData,
+    seedNodeStatus,
+    onRefresh,
+  });
   const {
     formData,
     formItems,

@@ -50,6 +50,8 @@ export interface SubNodeForm {
     isFetching?: boolean;
     needClean?: boolean;
     nodeId?: number;
+    /** Focus-node status (validation conformity) — populated for NODE area via the new endpoint. */
+    nodeStatus?: import("elza-api").NodeStatus | null;
     refTypesMap?: Record<string, DescItemTypeRef>;
     unusedItemTypeIds?: unknown;
     versionId?: number;
