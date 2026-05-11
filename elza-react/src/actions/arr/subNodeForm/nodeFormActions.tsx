@@ -17,11 +17,6 @@ import { ValueLocationIndex } from 'typings/store/SubNodeForm.types';
 import { NodeItem } from 'elza-api';
 import { transformToNodeItem } from './itemData';
 
-// Konfigurace velikosti cache dat pro formulář
-const CACHE_SIZE = 20;
-const CACHE_SIZE2 = CACHE_SIZE / 2;
-
-//var debouncedGetFundNodeForm = debounce(WebApi.getFundNodeForm,200);
 export class NodeFormActions extends ItemFormActions {
     static AREA = AreaType.NODE_AREA;
 

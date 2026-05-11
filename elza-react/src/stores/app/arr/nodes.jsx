@@ -39,8 +39,7 @@ export default function nodes(state = nodesInitialState, action) {
         isNodeInfoAction(action) ||
         isNodeAction(action) ||
         isSubNodeDaosAction(action) ||
-        isDeveloperScenariosAction(action) ||
-        nodeFormActions.isSubNodeFormCacheAction(action)
+        isDeveloperScenariosAction(action)
     ) {
         if (action.type === types.CHANGE_DAOS) {
             let result = {
