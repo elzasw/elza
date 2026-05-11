@@ -6,10 +6,10 @@ import {
   FormItemType,
   ItemDataResult,
   MandatoryType,
-  NodeAccordionData,
   NodeData,
   NodeFormData,
   NodeItem,
+  NodeStatus,
 } from "elza-api";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DescItemTypeRef } from "typings/store";
@@ -244,7 +244,20 @@ export function useNodeFormData(
   fondsVersionId: number,
   nodeId: number,
   nodeVersionId?: number,
-  options?: { skipForcedItems: boolean },
+  options?: {
+    skipForcedItems?: boolean;
+    /**
+     * If true, the hook skips its own initial fetch and waits for `seedFormData`/`seedNodeStatus`
+     * to arrive via props from the parent. Refresh events (websocket NODES_CHANGE / VISIBLE_POLICY_CHANGE)
+     * call `onRefresh` instead of fetching directly, so the parent can re-fetch and re-seed
+     * (keeps accordion titles in sync with form edits).
+     */
+    seedFromParent?: boolean;
+    seedFormData?: NodeFormData;
+    seedNodeStatus?: NodeStatus;
+    /** Called when seed mode requests a refresh. Parent should re-fetch and pass updated seed back. */
+    onRefresh?: () => void;
+  },
 ) {
   const itemTypeRefs = useAppSelector(
     ({ refTables }) => refTables.descItemTypes.itemsMap,
@@ -263,8 +276,13 @@ export function useNodeFormData(
   const [addedFormItems, setAddedFormItems] = useState<FormItem[]>([]);
   const [arrPerm, setArrPerm] = useState<boolean>(false);
   const [itemTypes, setItemTypes] = useState<FormItemType[]>([]);
-  const [nodeData, setNodeData] = useState<NodeAccordionData>();
-  const [reloadData, setReloadData] = useState<boolean>(true);
+  const [nodeData, setNodeData] = useState<NodeStatus>();
+  const seedFromParent = !!options?.seedFromParent;
+  const seedFormData = options?.seedFormData;
+  const seedNodeStatus = options?.seedNodeStatus;
+  const onRefresh = options?.onRefresh;
+  // Skip the initial fetch when the parent will seed the data.
+  const [reloadData, setReloadData] = useState<boolean>(!seedFromParent);
   const [markedForClean, setMarkedForClean] = useState<
     { id: number; localId: string }[]
   >([]);
@@ -365,6 +383,7 @@ export function useNodeFormData(
         parents: false,
         children: false,
         siblingsMaxCount: 10,
+        nodeStatus: true,
       });
       setStoredData(data);
     },
@@ -376,11 +395,26 @@ export function useNodeFormData(
   }, [nodeId]);
 
   useEffect(() => {
-    if (reloadData) {
+    if (reloadData && !seedFromParent) {
       fetchAndStoreData();
       setReloadData(false);
     }
-  }, [fondsVersionId, nodeId, reloadData, fetchAndStoreData]);
+  }, [fondsVersionId, nodeId, reloadData, seedFromParent, fetchAndStoreData]);
+
+  // Apply parent-provided seed when it arrives (and matches the current nodeId).
+  // Routes through setStoredData → the existing isSaving/storedData sync effect handles the rest.
+  useEffect(() => {
+    if (!seedFromParent || !seedFormData) {
+      return;
+    }
+    if (seedFormData.parent?.id !== nodeId) {
+      return; // stale seed for a different node — wait for matching seed
+    }
+    setStoredData({
+      formData: seedFormData,
+      node: seedNodeStatus,
+    } as NodeData);
+  }, [seedFromParent, seedFormData, seedNodeStatus, nodeId]);
 
   useEffect(() => {
     // Serves for synchronizing desc item Create request with NODES_CHANGE event from websocket
@@ -396,7 +430,14 @@ export function useNodeFormData(
   }, [isSaving, storedData, applyStoredData]);
 
   useWSNodeChanges(nodeId, () => {
-    fetchAndStoreData();
+    // In seed mode the parent owns the data lifecycle so it can also refresh accordion titles
+    // that depend on the same response. Delegate to the parent's refresh; the new seed will
+    // re-enter via the seedFormData/seedNodeStatus props.
+    if (seedFromParent) {
+      onRefresh?.();
+    } else {
+      fetchAndStoreData();
+    }
   });
 
   const ws = useWebsocket();
@@ -524,6 +565,13 @@ export function useNodeFormData(
     });
   }
 
+  // Loading state — true while waiting for the parent's seed to arrive (or to match the current nodeId).
+  // In fetch mode (no parent seed), `formData` toggles from undefined to populated on the API response;
+  // we treat that as loading too so the consumer can show a spinner uniformly.
+  const isLoading = seedFromParent
+    ? !formData || formData.parent?.id !== nodeId
+    : !formData;
+
   return {
     formData,
     formItems,
@@ -532,6 +580,7 @@ export function useNodeFormData(
     itemTypes,
     arrPerm,
     nodeData,
+    isLoading,
     addDescItem,
     addEmptyDescItem,
     deleteDescItem,

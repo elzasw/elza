@@ -1,4 +1,4 @@
-import { DataType } from "elza-api";
+import { DataType, NodeFormData, NodeStatus } from "elza-api";
 import { useMemo } from "react";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useNodeFormData } from "../node-edit/hooks";
@@ -24,6 +24,12 @@ interface Props {
   fondsVersionId: number;
   nodeId: number;
   nodeVersionId: number;
+  /** When provided, NodeView waits for parent-supplied data instead of fetching. */
+  seedFromParent?: boolean;
+  seedFormData?: NodeFormData;
+  seedNodeStatus?: NodeStatus;
+  /** Called when the form requests a refresh (e.g. websocket NODES_CHANGE). */
+  onRefresh?: () => void;
 }
 
 const dataTypeMap = {
@@ -42,7 +48,7 @@ const dataTypeMap = {
   [DataType.Bit]: DescItemBit,
 };
 
-export function NodeView({ fondsVersionId, nodeId, nodeVersionId }: Props) {
+export function NodeView({ fondsVersionId, nodeId, nodeVersionId, seedFromParent, seedFormData, seedNodeStatus, onRefresh }: Props) {
   const itemTypeRefs = useAppSelector(
     ({ refTables }) => refTables.descItemTypes.itemsMap,
   );
@@ -52,7 +58,13 @@ export function NodeView({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     fondsVersionId,
     nodeId,
     nodeVersionId,
-    { skipForcedItems: true },
+    {
+      skipForcedItems: true,
+      seedFromParent,
+      seedFormData,
+      seedNodeStatus,
+      onRefresh,
+    },
   );
 
   // build display groups only after groups refs and form data are both loaded

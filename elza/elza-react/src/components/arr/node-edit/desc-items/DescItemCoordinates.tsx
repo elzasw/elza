@@ -25,6 +25,9 @@ import { ExportCoordinateModal } from "components/shared/coordinates";
 import ImportCoordinateModal from "components/registry/Detail/coordinate/ImportCoordinateModal";
 import { WebApi } from "actions";
 import { useRef } from "react";
+import { useStyles } from "./styles";
+
+const COORDINATE_CROP_LENGTH = 100;
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemCoordinates) => Promise<void>;
@@ -69,6 +72,7 @@ export function DescItemCoordinates({
   const inputRef = useRef<HTMLInputElement>(null);
   const dispatch = useAppThunkDispatch();
   const { formatMessage } = useIntl();
+  const styles = useStyles();
 
   const {
     value,
@@ -177,20 +181,15 @@ export function DescItemCoordinates({
   console.log("#dic - value", item.id, value);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flex: 1,
-        position: "relative",
-        flexDirection: "column",
-      }}
-    >
+    <div className={styles.descItemContainer}>
       <Input
         size={compact ? "small" : "medium"}
         ref={inputRef}
-        disabled={isDisabled}
+        disabled={isDisabled || (value || "").length > COORDINATE_CROP_LENGTH}
         style={{ flex: 1, minWidth: "60px" }}
-        value={item.undefined ? formatMessage(commonMessages.undefined) : value || ""}
+        value={item.undefined
+          ? formatMessage(commonMessages.undefined)
+          : (value || "").substring(0, COORDINATE_CROP_LENGTH - 1)}
         onChange={handleInputChange}
         onBlur={() => handleChange()}
         contentAfter={
@@ -273,7 +272,7 @@ export function DescItemCoordinates({
         {(conflictValue) => (
           <Textarea
             size={compact ? "small" : "medium"}
-            style={{ borderColor: "var(--color-red)" }}
+            className={styles.conflictTextarea}
             value={conflictValue}
             readOnly={true}
           />

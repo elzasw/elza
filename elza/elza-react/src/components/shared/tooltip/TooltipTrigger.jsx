@@ -283,19 +283,39 @@ class TooltipTrigger extends AbstractReactComponent {
                         show={this.state.showTooltip}
                         placement={this.state.placement}
                         target={() => this.ttTarget}
+                        popperConfig={{
+                            modifiers: [
+                                {
+                                    // Reveal after Popper writes the final position.
+                                    name: 'revealAfterPosition',
+                                    enabled: true,
+                                    phase: 'write',
+                                    fn: ({ state }) => {
+                                        state.elements.popper.style.visibility = 'visible';
+                                    },
+                                },
+                            ],
+                        }}
                     >
-                        <Tooltip
-                            onMouseOver={() => this.handleTooltipHover(true)}
-                            onMouseLeave={() => this.handleTooltipHover(false)}
-                            id="tt"
-                        >
-                            <div
-                                className={'tooltip-inner-content ' + tooltipClass}
-                                style={{maxWidth: maxWidth + 'px', maxHeight: maxHeight + 'px'}}
+                        {/* Render-prop form merges a custom style onto Overlay's positioning props. */}
+                        {({ placement: pp, ...overlayProps }) => (
+                            <Tooltip
+                                {...overlayProps}
+                                placement={pp}
+                                onMouseOver={() => this.handleTooltipHover(true)}
+                                onMouseLeave={() => this.handleTooltipHover(false)}
+                                id="tt"
+                                // Hidden until the modifier above reveals it.
+                                style={{ ...overlayProps.style, visibility: 'hidden' }}
                             >
-                                {content}
-                            </div>
-                        </Tooltip>
+                                <div
+                                    className={'tooltip-inner-content ' + tooltipClass}
+                                    style={{ maxWidth: maxWidth + 'px', maxHeight: maxHeight + 'px' }}
+                                >
+                                    {content}
+                                </div>
+                            </Tooltip>
+                        )}
                     </Overlay>
                 )}
             </span>

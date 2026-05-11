@@ -20,6 +20,7 @@ import type {
   ToolbarButtonProps,
   MenuItemProps,
 } from "@fluentui/react-components";
+import { useStyles } from "./styles";
 
 export interface ToolbarButtonDef {
   id: string;
@@ -160,8 +161,9 @@ export const ToolbarOverflowButton = ({
   showDivider,
   ...props
 }: ToolbarOverflowMenuProps) => {
+  const styles = useStyles();
   let button = (
-      <ToolbarButton style={{ flexShrink: 0, whiteSpace: "nowrap" }} {...props} />
+      <ToolbarButton className={styles.toolbarOverflowButton} {...props} />
   );
 
   if (tooltip) {
@@ -172,7 +174,7 @@ export const ToolbarOverflowButton = ({
 
   return <OverflowItem id={overflowId} groupId={overflowGroupId}>
       <div>
-          <div style={{display: 'flex', flex: 0}}>
+          <div className={styles.toolbarOverflowInner}>
             {showDivider && <ToolbarDivider />}
             {button}
           </div>

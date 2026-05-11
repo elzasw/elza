@@ -9,6 +9,7 @@ import { DataFileRef, DataType, NodeItem } from "elza-api";
 import { useEffect, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
+import { useStyles } from "./styles";
 import { useActiveFund } from "../hooks";
 import { DescItemProps } from "./types";
 
@@ -47,6 +48,7 @@ export function DescItemFileRef({
   }
 
   const { formatMessage } = useIntl();
+  const styles = useStyles();
   const activeFund = useActiveFund();
 
   const [query, setQuery] = useState<string>(
@@ -124,7 +126,7 @@ export function DescItemFileRef({
         }
       }}
       onBlur={handleBlur}
-      style={{ minWidth: "unset", flex: 1, flexGrow: 5 }}
+      className={styles.comboboxNoMinWidth}
       input={{
         ref: fieldRef,
         style: {

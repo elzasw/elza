@@ -3,6 +3,7 @@
  */
 
 import {WebApi} from 'actions/index';
+import { Api } from 'api';
 import * as types from './../../actions/constants/ActionTypes';
 import {findByRoutingKeyInGlobalState, indexById} from 'stores/app/utils';
 import {createFundRoot, isFundRootId} from 'components/arr/ArrUtils';
@@ -276,28 +277,34 @@ export function fundNodeSubNodeFulltextSearch(filterText) {
             filterText,
         });
 
-        let nodeId;
+        let parentRoutingId;
         if (activeNode.id != null && (typeof activeNode.id === 'string' || activeNode.id instanceof String)) {
-            nodeId = null;
+            parentRoutingId = null;
         } else {
-            nodeId = activeNode.id;
+            parentRoutingId = activeNode.id;
         }
 
-        // activeFund.versionId, nodeId, false, false, false, 0, activeNode.pageSize, filterText !== '' ? filterText : null, true)
-        const nodeParam = {parentNodeId: nodeId, nodeIndex: 0};
-        const resultParam = {
-            formData: true,
+        // The new endpoint requires a numeric nodeId; siblings are computed from its parent.
+        // Any current child of the active accordion parent works as a focus anchor.
+        const focusNodeId = activeNode.childNodes?.[0]?.id;
+        if (focusNodeId == null) {
+            return Promise.resolve();
+        }
+
+        return Api.node.nodeGetNodeData({
+            fundVersionId: activeFund.versionId,
+            nodeId: focusNodeId,
+            formData: false,
             parents: false,
             children: false,
             siblingsFrom: 0,
             siblingsMaxCount: activeNode.pageSize,
             siblingsFilter: filterText !== '' ? filterText : null,
-        };
-        return WebApi.getNodeData(activeFund.versionId, nodeParam, resultParam).then(json => {
+        }).then(({ data: json }) => {
             dispatch(
                 fundNodeInfoReceive(
                     activeFund.versionId,
-                    nodeId,
+                    parentRoutingId,
                     activeNode.routingKey,
                     {
                         childNodes: json.siblings ? json.siblings : null,
@@ -389,21 +396,11 @@ export function addNode(
             WebApi.addNode(indexNode, parentNode, versionId, direction, descItemCopyTypes, scenarioName, createItems, count),
         ).then(json => {
             dispatch(fundNodeChangeAdd(versionId, json.nodes, indexNode, json.parentNode, direction));
+            // The new node-edit pipeline consumes emptyItemTypeIds via setPendingTemplateCallback
+            // (registered in addNodeForm.jsx afterCreateCallback). The legacy
+            // FUND_SUB_NODE_FORM_DESC_ITEM_TYPES_ADD_TEMPLATE dispatch that lived here is no longer
+            // needed — its reducer path was bypassed once NODE area moved to the new endpoint.
             afterCreateCallback && afterCreateCallback(versionId, json.nodes, json.parentNode, emptyItemTypeIds);
-
-            const state = getState();
-            const activeFund = state.arrRegion.funds[state.arrRegion.activeIndex];
-            const activeNode = activeFund.nodes.nodes[activeFund.nodes.activeIndex];
-
-            if (emptyItemTypeIds) {
-                dispatch({
-                    type: types.FUND_SUB_NODE_FORM_DESC_ITEM_TYPES_ADD_TEMPLATE,
-                    area: 'NODE',
-                    versionId,
-                    routingKey: activeNode.routingKey,
-                    itemTypeIds: emptyItemTypeIds,
-                });
-            }
         });
     };
 }
@@ -497,9 +494,16 @@ const fundNodeSelect = function(getState, versionId, routingKey, dispatch, fceIn
         if (nodeId) {
             let index = fceIndex(node.viewStartIndex, node.pageSize / 2);
             index = index < 0 ? 0 : index;
-            const nodeParam = {nodeId};
-            const resultParam = {siblingsFrom: index, siblingsMaxCount: node.pageSize, siblingsFilter: node.filterText};
-            WebApi.getNodeData(versionId, nodeParam, resultParam).then(json => {
+            Api.node.nodeGetNodeData({
+                fundVersionId: versionId,
+                nodeId,
+                formData: false,
+                parents: false,
+                children: false,
+                siblingsFrom: index,
+                siblingsMaxCount: node.pageSize,
+                siblingsFilter: node.filterText,
+            }).then(({ data: json }) => {
                 dispatch(
                     fundNodeInfoReceive(
                         versionId,
