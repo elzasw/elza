@@ -38,7 +38,6 @@ export interface InfoGroup {
 }
 
 export interface SubNodeForm {
-    addItemTypeIds: null | unknown;
     data?: NodeData;
     dirty?: boolean;
     fetched?: boolean;
