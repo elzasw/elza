@@ -107,6 +107,7 @@ const initialState = {
     infoGroupsMap: null,
     infoTypesMap: null,
     refTypesMap: null,
+    nodeStatus: null,
     getLoc: getLoc,
 };
 
@@ -704,6 +705,7 @@ export default function subNodeForm(state = initialState, action = {}) {
                     nodeId: action.nodeId,
                     needClean: false,
                     data: action.data,
+                    nodeStatus: action.nodeStatus,
                     formData: null,
                     infoGroups: null,
                     infoGroupsMap: null,

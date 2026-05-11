@@ -9,6 +9,7 @@ import { increaseNodeVersion } from '../node';
 import { fundNodeInfoReceive } from '../nodeInfo';
 import { fundSubNodeInfoReceive } from '../subNodeInfo';
 import { AreaType, CreateDescItemResult, ItemFormActions } from './itemFormActions';
+import * as ActionTypes from 'actions/constants/ActionTypes';
 import { Api } from 'api';
 import { AppState, DescItemTypeRef, Node } from 'typings/store';
 import { DescItem, DescItemFromServer } from 'typings/DescItem';
@@ -49,113 +50,68 @@ export class NodeFormActions extends ItemFormActions {
     }
 
     /**
-     * Načtení server dat pro formulář pro aktuálně předané parametry s využitím cache - pokud jsou data v cache, použije je, jinak si vyžádá nová data a zajistí i nakešování okolí.
-     * Odpovídá volání WebApi.getFundNodeForm, jen dále zajišťuje cache.
+     * Načtení server dat pro formulář pro aktuálně předané parametry.
+     *
+     * NODE area override: calls the new /node/node-data endpoint inline with `nodeStatus: true` so the
+     * response carries both NodeFormData and NodeStatus. Both are dispatched into Redux so NodePanel can
+     * forward them to NodeEdit/NodeView as seed props (eliminating the duplicate fetch the hook used to do).
      */
-    //@Override
-    _getItemFormData(getState: () => AppState, dispatch, versionId: number, nodeId: number, routingKey: string, showChildren: boolean, showParents: boolean) {
-        const type = getRoutingKeyType(routingKey);
-        switch (type) {
-            case 'NODE': // podpora kešování
-                const state = getState();
-                const node = this._getParentObjStore(state, versionId, routingKey) as Node;
-                if (node === null) {
-                    console.error('Node not found, versionId=' + versionId);
-                    return; // nemělo by nastat
-                }
+    // @Override
+    _fundSubNodeFormFetch(versionId: number, nodeId: number, routingKey: string, needClean: boolean, showChildren?: boolean, showParents?: boolean) {
+        return (dispatch, getState) => {
+            dispatch(this.fundSubNodeFormRequest(versionId, nodeId, routingKey));
 
-                const subNodeFormCache = node.subNodeFormCache;
+            const state = getState();
+            const node = this._getParentObjStore(state, versionId, routingKey) as Node;
+            if (node === null) {
+                console.error('Node not found, versionId=' + versionId);
+                return;
+            }
 
-                const data = subNodeFormCache.dataCache[nodeId];
-                if (!data) {
-                    // není v cache, načteme ji včetně okolí
-                    // ##
-                    // # Data pro cache, jen pokud již cache nenačítá
-                    // ##
-                    /*
-                    if (false) {
-                        if (node.isNodeInfoFetching || !node.nodeInfoFetched || node.nodeInfoDirty) {
-                            // nemáme platné okolí (okolní NODE) pro daný NODE, raději je načteme ze serveru; nemáme vlastně okolní NODE pro získání seznamu ID pro načtení formulářů pro cache
-                            //console.log('### READ_CACHE', 'around')
+            Api.node.nodeGetNodeData({
+                fundVersionId: versionId,
+                nodeId,
+                formData: true,
+                parents: !!(showParents && node.changeParent),
+                children: !!showChildren,
+                siblingsFrom: node.viewStartIndex,
+                siblingsMaxCount: node.pageSize,
+                siblingsFilter: node.filterText,
+                nodeStatus: true,
+            }).then(({ data: json }) => {
+                dispatch(
+                    fundNodeInfoReceive(versionId, nodeId, routingKey, {
+                        childNodes: json.siblings ? json.siblings : null,
+                        nodeCount: json.nodeCount,
+                        nodeIndex: json.nodeIndex,
+                        parentNodes: json.parents ? json.parents : null,
+                    }),
+                );
 
-                            dispatch(this._fundSubNodeFormCacheRequest(versionId, routingKey));
-                            WebApi.getFundNodeFormsWithAround(versionId, nodeId, CACHE_SIZE2).then(json => {
-                                dispatch(this._fundSubNodeFormCacheResponse(versionId, routingKey, json.forms));
-                            });
-                        } else {
-                            // pro získání id okolí můžeme použít store
-                            // Načtení okolí položky
-                            const index = indexById(node.childNodes, nodeId);
-                            const left = node.childNodes.slice(Math.max(index - CACHE_SIZE2, 0), index);
-                            const right = node.childNodes.slice(index, index + CACHE_SIZE2);
+                dispatch(fundSubNodeInfoReceive(versionId, nodeId, routingKey, { nodes: json.children }));
 
-                            const idsForFetch = [];
-                            left.forEach(n => {
-                                if (!subNodeFormCache.dataCache[n.id]) {
-                                    idsForFetch.push(n.id);
-                                }
-                            });
-                            right.forEach(n => {
-                                if (!subNodeFormCache.dataCache[n.id]) {
-                                    idsForFetch.push(n.id);
-                                }
-                            });
-
-                            //console.log('### READ_CACHE', idsForFetch, node.childNodes, left, right)
-
-                            if (idsForFetch.length > 0) {
-                                // máme něco pro načtení
-                                dispatch(this._fundSubNodeFormCacheRequest(versionId, routingKey));
-                                WebApi.getFundNodeForms(versionId, idsForFetch).then(json => {
-                                    dispatch(this._fundSubNodeFormCacheResponse(versionId, routingKey, json.forms));
-                                });
-                            }
-                        }
-                    }
-                    */
-
-                    // ##
-                    // # Data požadovaného formuláře
-                    // ##
-
-                    return Api.node.nodeGetNodeData({
-                        fundVersionId: versionId,
+                const newState = getState();
+                const subNodeForm = this._getItemFormStore(newState, versionId, routingKey);
+                if (subNodeForm && subNodeForm.fetchingId == nodeId) {
+                    // Dispatch the receive action directly so we can carry the nodeStatus payload alongside
+                    // the legacy formData. The reducer's NODE branch reads action.nodeStatus.
+                    dispatch({
+                        type: ActionTypes.FUND_SUB_NODE_FORM_RECEIVE,
+                        area: this.area,
+                        versionId,
                         nodeId,
-                        formData: true,
-                        parents: !!(showParents && node.changeParent),
-                        children: !!showChildren,
-                        siblingsFrom: node.viewStartIndex,
-                        siblingsMaxCount: node.pageSize,
-                        siblingsFilter: node.filterText,
-                        // nodeStatus omitted — NodePanel does not consume data.node;
-                        // NodeEdit fetches it separately via its own useNodeFormData hook.
-                    }).then(({ data: json }) => {
-                        dispatch(
-                            fundNodeInfoReceive(versionId, nodeId, routingKey, {
-                                childNodes: json.siblings ? json.siblings : null,
-                                nodeCount: json.nodeCount,
-                                nodeIndex: json.nodeIndex,
-                                parentNodes: json.parents ? json.parents : null,
-                            }),
-                        );
-
-                        dispatch(fundSubNodeInfoReceive(versionId, nodeId, routingKey, { nodes: json.children }));
-
-                        return json.formData;
-                    });
-                } else {
-                    // je v cache, vrátíme ji
-                    //console.log('### USE_CACHE')
-                    return new Promise(function(resolve, reject) {
-                        resolve(data);
+                        routingKey,
+                        data: json.formData,
+                        nodeStatus: json.node,
+                        rulDataTypes: newState.refTables.rulDataTypes,
+                        refDescItemTypes: newState.refTables.descItemTypes,
+                        groups: newState.refTables.groups.data,
+                        receivedAt: Date.now(),
+                        needClean,
                     });
                 }
-            // DATA_GRID routing previously fetched form-data for in-grid cell editing.
-            // Replaced by FundDataGridCellForm (uses useNodeFormData hook → new endpoint directly);
-            // this branch is no longer reachable from any dispatcher.
-            default:
-                break;
-        }
+            });
+        };
     }
 
     // @Override
