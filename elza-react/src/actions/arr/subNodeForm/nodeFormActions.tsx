@@ -63,12 +63,19 @@ export class NodeFormActions extends ItemFormActions {
                 return;
             }
 
+            // Parents are only fetched when the parent chain may have changed (e.g. user navigates to a
+            // different level). When switching focus between siblings at the same level the previously
+            // fetched parents stay valid — `parentsRequested` is false and the dispatch passes `null` to
+            // signal "no update", which the node reducer treats as preserve-previous.
+            const parentsRequested = !!(showParents && node.changeParent);
+            const childrenRequested = !!showChildren;
+
             Api.node.nodeGetNodeData({
                 fundVersionId: versionId,
                 nodeId,
                 formData: true,
-                parents: !!(showParents && node.changeParent),
-                children: !!showChildren,
+                parents: parentsRequested,
+                children: childrenRequested,
                 siblingsFrom: node.viewStartIndex,
                 siblingsMaxCount: node.pageSize,
                 siblingsFilter: node.filterText,
@@ -79,11 +86,15 @@ export class NodeFormActions extends ItemFormActions {
                         childNodes: json.siblings ? json.siblings : null,
                         nodeCount: json.nodeCount,
                         nodeIndex: json.nodeIndex,
-                        parentNodes: json.parents ? json.parents : null,
+                        // Pass null when parents weren't requested so the reducer preserves the previous
+                        // list. An empty array means "requested but empty" (e.g. focus on the fund root).
+                        parentNodes: parentsRequested ? (json.parents ?? []) : null,
                     }),
                 );
 
-                dispatch(fundSubNodeInfoReceive(versionId, nodeId, routingKey, { nodes: json.children }));
+                if (childrenRequested) {
+                    dispatch(fundSubNodeInfoReceive(versionId, nodeId, routingKey, { nodes: json.children ?? [] }));
+                }
 
                 const newState = getState();
                 const subNodeForm = this._getItemFormStore(newState, versionId, routingKey);
