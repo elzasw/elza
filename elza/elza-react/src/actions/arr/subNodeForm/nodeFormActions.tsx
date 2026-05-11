@@ -118,16 +118,18 @@ export class NodeFormActions extends ItemFormActions {
                     // # Data požadovaného formuláře
                     // ##
 
-                    const nodeParam = { nodeId };
-                    const resultParam = {
+                    return Api.node.nodeGetNodeData({
+                        fundVersionId: versionId,
+                        nodeId,
                         formData: true,
-                        parents: showParents && node.changeParent,
-                        children: showChildren,
+                        parents: !!(showParents && node.changeParent),
+                        children: !!showChildren,
                         siblingsFrom: node.viewStartIndex,
                         siblingsMaxCount: node.pageSize,
                         siblingsFilter: node.filterText,
-                    };
-                    return WebApi.getNodeData(versionId, nodeParam, resultParam).then(json => {
+                        // nodeStatus omitted — NodePanel does not consume data.node;
+                        // NodeEdit fetches it separately via its own useNodeFormData hook.
+                    }).then(({ data: json }) => {
                         dispatch(
                             fundNodeInfoReceive(versionId, nodeId, routingKey, {
                                 childNodes: json.siblings ? json.siblings : null,
