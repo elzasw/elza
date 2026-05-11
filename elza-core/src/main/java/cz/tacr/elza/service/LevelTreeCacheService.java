@@ -50,7 +50,7 @@ import cz.tacr.elza.controller.vo.AccordionNodeVO;
 import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
 import cz.tacr.elza.controller.vo.ArrRequestVO;
 import cz.tacr.elza.controller.vo.DigitizationRequest;
-import cz.tacr.elza.controller.vo.NodeAccordionData;
+import cz.tacr.elza.controller.vo.NodeBrief;
 import cz.tacr.elza.controller.vo.NodeConformity;
 import cz.tacr.elza.controller.vo.NodeConformityError;
 import cz.tacr.elza.controller.vo.NodeConformityMissing;
@@ -59,6 +59,7 @@ import cz.tacr.elza.controller.vo.NodeConformityVO;
 import cz.tacr.elza.controller.vo.NodeData;
 import cz.tacr.elza.controller.vo.NodeDataParam;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
+import cz.tacr.elza.controller.vo.NodeStatus;
 import cz.tacr.elza.controller.vo.NodeTreeData;
 import cz.tacr.elza.controller.vo.RequestState;
 import cz.tacr.elza.controller.vo.TreeData;
@@ -1606,7 +1607,6 @@ private void processEvent(AbstractEventSimple event) {
         int maxCount = param.getSiblingsMaxCount() == null || param.getSiblingsMaxCount() > 1000 ? 1000 : param.getSiblingsMaxCount();
         String fulltext = StringUtils.isEmpty(param.getSiblingsFilter()) ? null : param.getSiblingsFilter().trim();
         // pokud siblingsFrom == null - pole `siblings` nevyplňujeme
-        NodeAccordionData focusNodeAccordion = null;
         if (siblingsFrom != null) {
 	        if (siblingsFrom < 0) {
 	            throw new IllegalArgumentException("Index pro sourozence nesmí být záporný: " + siblingsFrom);
@@ -1618,33 +1618,77 @@ private void processEvent(AbstractEventSimple event) {
 	        result.setNodeIndex(siblings.getNodeIndex());
 	        result.setNodeCount(siblings.getSiblingsCount());
 	        result.setSiblings(siblings.getSiblings());
-
-	        // when the focus node is part of the returned sibling window, reuse its
-	        // accordion entry instead of issuing a second getNodes round-trip
-	        for (NodeAccordionData sibling : siblings.getSiblings()) {
-	            if (Objects.equals(sibling.getId(), node.getId())) {
-	                focusNodeAccordion = sibling;
-	                break;
-	            }
-	        }
         }
 
-        if (focusNodeAccordion == null) {
-            NodeParam nodeParam = NodeParam.create()
-                    .accordion()
-                    .referenceMark()
-                    .digitizationRequest()
-                    .nodeConformity();
-            LinkedHashMap<Integer, TreeNode> nodesMap = new LinkedHashMap<>();
-            nodesMap.put(node.getId(), node);
-            LinkedHashMap<Integer, Node> nodeMap = getNodes(nodesMap, null, nodeParam, fundVersion);
-            Map<Integer, List<WfIssue>> nodeToIssueMap = issueDataService.groupOpenIssueByNodeId(nodeMap.keySet(), userDetail);
-            List<NodeAccordionData> accordionNodes = convertToAccordionNodeData(nodeMap.values(), nodeToIssueMap);
-            focusNodeAccordion = accordionNodes.get(0);
+        if (BooleanUtils.isTrue(param.getNodeStatus())) {
+            result.setNode(buildNodeStatus(node, fundVersion));
         }
-        result.setNode(focusNodeAccordion);
 
         return result;
+    }
+
+    /**
+     * Build the lean {@link NodeStatus} payload for the focus node — id, version, and (optionally) validation conformity.
+     *
+     * Loads only what {@link NodeStatus} carries; deliberately skips accordion text, reference mark, daoLinks, digitization
+     * requests, and open issues that the previous {@link NodeBrief}-based fallback used to fetch.
+     */
+    private NodeStatus buildNodeStatus(TreeNode node, ArrFundVersion fundVersion) {
+        Integer nodeId = node.getId();
+        ArrNode arrNode = nodeRepository.findById(nodeId)
+                .orElseThrow(() -> new ObjectNotFoundException("Node not found, nodeId=" + nodeId, BaseCode.ID_NOT_EXIST)
+                        .setId(nodeId));
+
+        NodeStatus status = new NodeStatus();
+        status.setId(nodeId);
+        status.setVersion(arrNode.getVersion());
+
+        RuleService ruleService = applicationContext.getBean(RuleService.class);
+        Map<Integer, ArrNodeConformityExt> conformityMap = ruleService
+                .getNodeConformityInfoForNodes(Collections.singleton(nodeId), fundVersion);
+        ArrNodeConformityExt conformityExt = conformityMap.get(nodeId);
+        if (conformityExt != null) {
+            NodeConformityVO ncVO = clientFactoryVO.createNodeConformity(conformityExt);
+            Map<Integer, Map<Integer, Boolean>> visiblePolicy = policyService
+                    .getVisiblePolicyIds(Collections.singletonList(nodeId), fundVersion, true);
+            Map<Integer, Boolean> nodeVisible = visiblePolicy.get(nodeId);
+            if (nodeVisible != null) {
+                ncVO.setPolicyTypeIdsVisible(nodeVisible);
+            }
+            status.setNodeConformity(buildNodeConformity(ncVO));
+        }
+
+        return status;
+    }
+
+    /**
+     * Convert internal {@link NodeConformityVO} into the public {@link NodeConformity} response type.
+     * Single source of truth used by both the siblings accordion converter and {@link #buildNodeStatus}.
+     */
+    private NodeConformity buildNodeConformity(NodeConformityVO ncVO) {
+        List<NodeConformityError> errorList = ncVO.getErrorList().stream()
+                .map(e -> new NodeConformityError(e.getDescItemObjectId(), e.getDescription(), e.getPolicyTypeId()))
+                .toList();
+
+        List<NodeConformityMissing> missingList = ncVO.getMissingList().stream()
+                .map(m -> new NodeConformityMissing(m.getDescItemTypeId(), m.getDescItemSpecId(),
+                        m.getDescription(), m.getPolicyTypeId()))
+                .toList();
+
+        List<Integer> viewPolicyTypeIds = new ArrayList<>();
+        ncVO.getPolicyTypeIdsVisible().forEach((policyTypeId, visible) -> {
+            if (visible) {
+                viewPolicyTypeIds.add(policyTypeId);
+            }
+        });
+
+        NodeConformity nodeConformity = new NodeConformity();
+        nodeConformity.setDate(DateTimeConvertor.toLocalDate(ncVO.getDate()));
+        nodeConformity.setState(NodeConformityState.valueOf(ncVO.getState().name()));
+        nodeConformity.setErrorList(errorList);
+        nodeConformity.setMissingList(missingList);
+        nodeConformity.setViewPolicyTypeIds(viewPolicyTypeIds);
+        return nodeConformity;
     }
 
 	/**
@@ -1907,10 +1951,10 @@ private void processEvent(AbstractEventSimple event) {
      * @param nodeToIssueMap
      * @return převedené JP
      */
-    private List<NodeAccordionData> convertToAccordionNodeData(final Collection<Node> nodes, Map<Integer, List<WfIssue>> nodeToIssueMap) {
+    private List<NodeBrief> convertToNodeBrief(final Collection<Node> nodes, Map<Integer, List<WfIssue>> nodeToIssueMap) {
         return nodes.stream().map(node -> {
 
-        	NodeAccordionData accordionNode = new NodeAccordionData();
+        	NodeBrief accordionNode = new NodeBrief();
             accordionNode.setId(node.getId());
             accordionNode.setAccordionLeft(node.getAccordionLeft());
             accordionNode.setAccordionRight(node.getAccordionRight());
@@ -1952,32 +1996,9 @@ private void processEvent(AbstractEventSimple event) {
 
             // set NodeConformity
             NodeConformityVO ncVO = node.getNodeConformity();
-            if(ncVO != null) {
-				List<NodeConformityError> errorList = ncVO.getErrorList().stream().map(
-						e -> new NodeConformityError(e.getDescItemObjectId(), e.getDescription(), e.getPolicyTypeId()))
-						.toList();
-
-				List<NodeConformityMissing> missingList = ncVO.getMissingList().stream()
-						.map(m -> new NodeConformityMissing(m.getDescItemTypeId(), m.getDescItemSpecId(),
-								m.getDescription(), m.getPolicyTypeId()))
-						.toList();
-
-				List<Integer> viewPolicyTypeIds = new ArrayList<>();
-				ncVO.getPolicyTypeIdsVisible().entrySet().forEach(e -> {
-					Boolean value = e.getValue();
-					if (value) {
-						viewPolicyTypeIds.add(e.getKey());
-					}
-				});
-
-				NodeConformity nodeConformity = new NodeConformity();
-				nodeConformity.setDate(DateTimeConvertor.toLocalDate(ncVO.getDate()));
-				nodeConformity.setState(NodeConformityState.valueOf(ncVO.getState().name()));
-				nodeConformity.setErrorList(errorList);
-				nodeConformity.setMissingList(missingList);
-				nodeConformity.setViewPolicyTypeIds(viewPolicyTypeIds);
-				accordionNode.setNodeConformity(nodeConformity);
-            }            
+            if (ncVO != null) {
+                accordionNode.setNodeConformity(buildNodeConformity(ncVO));
+            }
 
             // set list of WfSimpleIssue
             List<WfIssue> wfIssues = nodeToIssueMap.getOrDefault(node.getId(), Collections.emptyList());
@@ -2703,7 +2724,7 @@ private void processEvent(AbstractEventSimple event) {
 
         Map<Integer, List<WfIssue>> nodeToIssueMap = issueDataService.groupOpenIssueByNodeId(nodeMap.keySet(), userDetail);
 
-        List<NodeAccordionData> accordionNodes = convertToAccordionNodeData(nodeMap.values(), nodeToIssueMap);
+        List<NodeBrief> accordionNodes = convertToNodeBrief(nodeMap.values(), nodeToIssueMap);
 
         int nodeIndex = childs.indexOf(node);
         if (nodeIndex < 0) {
@@ -2779,7 +2800,7 @@ private void processEvent(AbstractEventSimple event) {
         /**
          * Seznam sourozenců.
          */
-        private List<NodeAccordionData> siblings;
+        private List<NodeBrief> siblings;
 
         /**
          * Skutečný index JP.
@@ -2791,7 +2812,7 @@ private void processEvent(AbstractEventSimple event) {
          */
         private int siblingsCount;
 
-        public SiblingsNew(final List<NodeAccordionData> siblings, final int siblingsCount, final int nodeIndex) {
+        public SiblingsNew(final List<NodeBrief> siblings, final int siblingsCount, final int nodeIndex) {
             if (nodeIndex < 0) {
                 throw new IllegalArgumentException("nodeIndex is " + nodeIndex);
             }
@@ -2800,7 +2821,7 @@ private void processEvent(AbstractEventSimple event) {
             this.nodeIndex = nodeIndex;
         }
 
-        public List<NodeAccordionData> getSiblings() {
+        public List<NodeBrief> getSiblings() {
             return siblings;
         }
 

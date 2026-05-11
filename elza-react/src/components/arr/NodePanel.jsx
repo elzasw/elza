@@ -11,7 +11,6 @@ import { withRouter } from "react-router";
 import { AbstractReactComponent, HorizontalLoader, i18n, Icon, ListBox, TooltipTrigger, Utils } from 'components/shared';
 import { SubNodeDao } from './sub-node-dao';
 import NodeActionsBar from './NodeActionsBar';
-import NodeSubNodeForm from './NodeSubNodeForm';
 import { Button } from '../ui';
 import { addNodeFormArr } from 'actions/arr/addNodeForm';
 import { nodeFormActions } from 'actions/arr/subNodeForm';
@@ -19,7 +18,7 @@ import { fundSubNodeDaosFetchIfNeeded } from 'actions/arr/subNodeDaos';
 import { fundSelectSubNode, fundSubNodesNext, fundSubNodesPrev } from 'actions/arr/node';
 import { refRulDataTypesFetchIfNeeded } from 'actions/refTables/rulDataTypes';
 import { indexById } from 'stores/app/utils';
-import { createDigitizationName, createFundRoot, getDescItemsAddTree } from './ArrUtils';
+import { createDigitizationName, createFundRoot } from './ArrUtils';
 import { createReferenceMarkString, getGlyph, getOneSettings } from 'components/arr/ArrUtils';
 import { descItemTypesFetchIfNeeded } from 'actions/refTables/descItemTypes';
 import { modalDialogHide, modalDialogShow } from 'actions/global/modalDialog';
@@ -27,7 +26,6 @@ import ArrRequestForm from './ArrRequestForm';
 import { WebApi } from 'actions/index';
 import { Shortcuts } from 'react-shortcuts';
 import { canSetFocus, focusWasSet, isFocusExactFor, isFocusFor, setFocus } from 'actions/global/focus';
-import AddDescItemTypeForm from './nodeForm/AddDescItemTypeForm';
 import { visiblePolicyTypesFetchIfNeeded } from 'actions/refTables/visiblePolicyTypes';
 import * as perms from 'actions/user/Permission';
 import { PropTypes } from 'prop-types';
@@ -90,13 +88,12 @@ class NodePanel extends AbstractReactComponent {
             'getSiblingNodes',
             'renderAccordion',
             'renderState',
-            'transformConformityInfo',
             'renderRowItem',
             'handleShortcuts',
             'trySetFocus',
-            'handleAddDescItemType',
             'handleVisiblePolicy',
             'ensureItemVisibleNoForm',
+            'handleFormRefresh',
         );
 
         this.state = {
@@ -279,11 +276,6 @@ class NodePanel extends AbstractReactComponent {
             case 'searchItem':
                 ReactDOM.findDOMNode(this.refs.search.getInput().refs.input).focus();
                 break;
-            case 'addDescItemType':
-                if (node.selectedSubNodeId !== null && !readMode) {
-                    this.handleAddDescItemType();
-                }
-                break;
             case 'addNodeAfter':
                 if (!readMode) {
                     this.props.dispatch(addNodeFormArr('AFTER', node, focusItemIndex, versionId));
@@ -441,62 +433,6 @@ class NodePanel extends AbstractReactComponent {
         )));
     }
 
-    /**
-     * Zobrazení dialogu pro přidání atributu.
-     */
-    handleAddDescItemType() {
-        const {
-            node: { subNodeForm, selectedSubNodeId, routingKey },
-            versionId,
-            fund,
-            userDetail,
-        } = this.props;
-        let strictMode = fund.activeVersion.strictMode;
-
-        let userStrictMode = getOneSettings(userDetail.settings, 'FUND_STRICT_MODE', 'FUND', fund.id);
-        if (userStrictMode && userStrictMode.value !== null) {
-            strictMode = userStrictMode.value === 'true';
-        }
-
-        const formData = subNodeForm.formData;
-        const descItemTypes = getDescItemsAddTree(
-            formData.descItemGroups,
-            subNodeForm.infoTypesMap,
-            subNodeForm.refTypesMap,
-            subNodeForm.infoGroups,
-            strictMode,
-        );
-
-        // Zatím zakomentováno, možná se bude ještě nějak řadit - zatím není jasné podle čeho řadit - podle uvedení v yaml nebo jinak?
-        // function typeId(type) {
-        //     switch (type) {
-        //         case "REQUIRED":
-        //             return 0;
-        //         case "RECOMMENDED":
-        //             return 1;
-        //         case "POSSIBLE":
-        //             return 2;
-        //         case "IMPOSSIBLE":
-        //             return 99;
-        //         default:
-        //             return 3;
-        //     }
-        // }
-        //
-        // // Seřazení podle position
-        // descItemTypes.sort((a, b) => typeId(a.type) - typeId(b.type));
-
-        var submit = data => {
-            return this.props.dispatch(
-                nodeFormActions.fundSubNodeFormDescItemTypeAdd(versionId, routingKey, data.descItemTypeId.id),
-            );
-        };
-
-        // Modální dialog
-        const form = <AddDescItemTypeForm descItemTypes={descItemTypes} onSubmitForm={submit} onSubmit2={submit} />;
-        this.props.dispatch(modalDialogShow(this, i18n('subNodeForm.descItemType.title.add'), form, "dialog-md"));
-    }
-
     ensureItemVisible() {
         if (this.props.node.selectedSubNodeId !== null) {
             var itemNode = ReactDOM.findDOMNode(this.refObjects['accheader-' + this.props.node.selectedSubNodeId]);
@@ -549,6 +485,27 @@ class NodePanel extends AbstractReactComponent {
             this.props.dispatch(fundSubNodeDaosFetchIfNeeded(versionId, node.selectedSubNodeId, node.routingKey));
         }
         this.props.dispatch(visiblePolicyTypesFetchIfNeeded());
+    }
+
+    /**
+     * Re-fetch the node form data (used as `onRefresh` callback by seed-mode NodeEdit/NodeView).
+     * Forces a fresh fetch via `needClean: true` so accordion titles and form contents stay in sync
+     * after a websocket NODES_CHANGE or other refresh-trigger.
+     */
+    handleFormRefresh() {
+        const { node, versionId } = this.props;
+        const settings = this.getSettingsFromProps();
+        if (node.selectedSubNodeId != null) {
+            this.props.dispatch(
+                nodeFormActions.fundSubNodeFormFetchIfNeeded(
+                    versionId,
+                    node.routingKey,
+                    true, // needClean → force re-fetch
+                    settings.showChildren,
+                    settings.showParents,
+                ),
+            );
+        }
     }
 
     /**
@@ -726,9 +683,10 @@ class NodePanel extends AbstractReactComponent {
         if (item.nodeConformity) {
             var _id = 0;
 
-            var policyTypes = item.nodeConformity.policyTypeIdsVisible;
-
-            var description = item.nodeConformity.description ? '<br />' + item.nodeConformity.description : '';
+            // Visible policy types. A finding without a policyTypeId is always shown (defensive — in practice
+            // every finding carries a policyTypeId); only findings whose policyTypeId is set yet absent from
+            // viewPolicyTypeIds are rendered as "ignore".
+            var visiblePolicyTypeIds = item.nodeConformity.viewPolicyTypeIds || [];
             var messages = [];
 
             var errors = item.nodeConformity.errorList;
@@ -745,8 +703,7 @@ class NodePanel extends AbstractReactComponent {
                     var cls = 'message';
                     if (
                         error.policyTypeId != null &&
-                        policyTypes[error.policyTypeId] != null &&
-                        policyTypes[error.policyTypeId] == false
+                        !visiblePolicyTypeIds.includes(error.policyTypeId)
                     ) {
                         cls += ' ignore';
                         errorsHide++;
@@ -770,8 +727,7 @@ class NodePanel extends AbstractReactComponent {
                     var cls = 'message';
                     if (
                         missing.policyTypeId != null &&
-                        policyTypes[missing.policyTypeId] != null &&
-                        policyTypes[missing.policyTypeId] == false
+                        !visiblePolicyTypeIds.includes(missing.policyTypeId)
                     ) {
                         cls += ' ignore';
                         missingsHide++;
@@ -786,7 +742,7 @@ class NodePanel extends AbstractReactComponent {
 
             if (item.nodeConformity.state === 'OK') {
                 icon = <Icon glyph="fa-check" />;
-                tooltip = <div>{i18n('arr.node.status.ok') + description}</div>;
+                tooltip = <div>{i18n('arr.node.status.ok')}</div>;
             } else {
                 if (
                     (missings == null || missingsHide == missings.length) &&
@@ -795,14 +751,14 @@ class NodePanel extends AbstractReactComponent {
                     icon = <Icon glyph="fa-check-circle" />;
                     tooltip = (
                         <div>
-                            {i18n('arr.node.status.okx')} {description} {messages}
+                            {i18n('arr.node.status.okx')} {messages}
                         </div>
                     );
                 } else {
                     icon = <Icon glyph="fa-exclamation-circle" />;
                     tooltip = (
                         <div>
-                            {description} {messages}
+                            {messages}
                         </div>
                     );
                 }
@@ -855,14 +811,13 @@ class NodePanel extends AbstractReactComponent {
 
     /**
      * Renderování Accordion.
-     * @param form {Object} editační formulář, pokud je k dispozici (k dispozici je, pokud je nějaká položka Accordion vybraná)
      * @param daos digitální entity k JP
      * @param linkedNodes seznam JP odkazujícíh na tuto JP
      * @param readMode pouze čtení
      * @param arrPerm oprávnění pořádání
      * @return {Object} view
      */
-    renderAccordion(form, daos, linkedNodes, readMode, arrPerm) {
+    renderAccordion(daos, linkedNodes, readMode, arrPerm) {
         const { node, versionId, userDetail, fund, fundId, closed, displayAccordion } = this.props;
         const { focusItemIndex } = this.state;
         var rows = [];
@@ -952,9 +907,28 @@ class NodePanel extends AbstractReactComponent {
                                 </div>
                             </div>
                             <div key="body" className="accordion-body">
-                                {/* {form} */}
-                                {readMode && <NodeView nodeId={item.id} fondsVersionId={versionId} />}
-                                {!readMode && <NodeEdit nodeId={item.id} fondsVersionId={versionId} nodeVersionId={item.version} />}
+                                {readMode && (
+                                    <NodeView
+                                        nodeId={item.id}
+                                        fondsVersionId={versionId}
+                                        nodeVersionId={item.version}
+                                        seedFromParent
+                                        seedFormData={node.subNodeForm.data}
+                                        seedNodeStatus={node.subNodeForm.nodeStatus}
+                                        onRefresh={this.handleFormRefresh}
+                                    />
+                                )}
+                                {!readMode && (
+                                    <NodeEdit
+                                        nodeId={item.id}
+                                        fondsVersionId={versionId}
+                                        nodeVersionId={item.version}
+                                        seedFromParent
+                                        seedFormData={node.subNodeForm.data}
+                                        seedNodeStatus={node.subNodeForm.nodeStatus}
+                                        onRefresh={this.handleFormRefresh}
+                                    />
+                                )}
                                 {linkedNodes}
                                 {daos}
                             </div>
@@ -1067,55 +1041,6 @@ class NodePanel extends AbstractReactComponent {
         const settings = this.getSettingsFromProps();
         const readMode = settings.readMode;
         const arrPerm = settings.arrPerm || false;
-        var siblings = this.getSiblingNodes().map(s => <span key={s.id}> {s.id}</span>);
-
-        var form;
-        if (node.subNodeForm.fetched && descItemTypes.fetched) {
-            // Zjisštění, zda pro daný node existuje v accordion předchozí záznam (který ale není vyfiltrovaný), ze kterého je možné přebírat hodnoty atirbutu pro akci okamžité kopírování
-            var descItemCopyFromPrevEnabled = false;
-            var i1 = indexById(node.childNodes, node.selectedSubNodeId);
-            var i2 = indexById(node.childNodes, node.selectedSubNodeId);
-            if (i1 !== null && i2 !== null && i2 > 0 && i1 > 0) {
-                // před danám nodem existuje nějaký záznam a v případě filtrování existuje před daným nodem také nějaký záznam
-                if (node.childNodes[i1 - 1].id == node.childNodes[i2 - 1].id) {
-                    // jedná se o stejné záznamy, můžeme zobrazit akci kopírování
-                    descItemCopyFromPrevEnabled = true;
-                }
-            }
-
-            // Formulář editace JP
-            var conformityInfo = this.transformConformityInfo(node);
-            // descItemTypeInfos={node.subNodeForm.descItemTypeInfos}
-            form = (
-                <NodeSubNodeForm
-                    key={'sub-node-form-' + node.selectedSubNodeId}
-                    ref={ref => (this.refSubNodeForm = ref)}
-                    singleDescItemTypeEdit={false}
-                    nodeId={node.id}
-                    versionId={versionId}
-                    selectedSubNodeId={node.selectedSubNodeId}
-                    routingKey={node.routingKey}
-                    subNodeForm={node.subNodeForm}
-                    rulDataTypes={rulDataTypes}
-                    descItemTypes={descItemTypes}
-                    conformityInfo={conformityInfo}
-                    parentNode={node}
-                    fundId={fundId}
-                    selectedSubNode={node.subNodeForm.data.parent}
-                    descItemCopyFromPrevEnabled={descItemCopyFromPrevEnabled}
-                    closed={closed}
-                    onAddDescItemType={this.handleAddDescItemType}
-                    onVisiblePolicy={this.handleVisiblePolicy}
-                    onDigitizationRequest={this.handleDigitizationRequest}
-                    onDigitizationSync={this.handleDigitizationSync}
-                    onRefSync={this.handleRefSync}
-                    readMode={readMode}
-                    arrPerm={arrPerm}
-                />
-            );
-        } else {
-            form = <HorizontalLoader text={i18n('global.data.loading.form')} />;
-        }
 
         const daos = (
             <SubNodeDao
@@ -1146,73 +1071,13 @@ class NodePanel extends AbstractReactComponent {
             >
                 <div key="main" className="main">
                     {settings.showParents && this.renderParents()}
-                    {this.renderAccordion(form, daos, linkedNodes, readMode, arrPerm)}
+                    {this.renderAccordion(daos, linkedNodes, readMode, arrPerm)}
                     {settings.showChildren && this.renderChildren()}
                 </div>
             </Shortcuts>
         );
     }
 
-    /**
-     * Převedení dat do lepších struktur.
-     *
-     * @param node {object} JP
-     * @returns {{errors: {}, missings: {}}}
-     */
-    transformConformityInfo(node) {
-        var nodeId = node.subNodeForm.nodeId;
-
-        var nodeState;
-
-        for (var i = 0; i < node.childNodes.length; i++) {
-            if (node.childNodes[i].id == nodeId) {
-                nodeState = node.childNodes[i].nodeConformity;
-                break;
-            }
-        }
-
-        var conformityInfo = {
-            errors: {},
-            missings: {},
-        };
-
-        if (nodeState) {
-            var policyTypes = nodeState.policyTypeIdsVisible;
-
-            var errors = nodeState.errorList;
-            if (errors && errors.length > 0) {
-                errors.forEach(error => {
-                    if (conformityInfo.errors[error.descItemObjectId] == null) {
-                        conformityInfo.errors[error.descItemObjectId] = [];
-                    }
-                    if (
-                        error.policyTypeId == null ||
-                        policyTypes[error.policyTypeId] == null ||
-                        policyTypes[error.policyTypeId] == true
-                    ) {
-                        conformityInfo.errors[error.descItemObjectId].push(error);
-                    }
-                });
-            }
-
-            var missings = nodeState.missingList;
-            if (missings && missings.length > 0) {
-                missings.forEach(missing => {
-                    if (conformityInfo.missings[missing.descItemTypeId] == null) {
-                        conformityInfo.missings[missing.descItemTypeId] = [];
-                    }
-                    if (
-                        missing.policyTypeId == null ||
-                        policyTypes[missing.policyTypeId] == null ||
-                        policyTypes[missing.policyTypeId] == true
-                    ) {
-                        conformityInfo.missings[missing.descItemTypeId].push(missing);
-                    }
-                });
-            }
-        }
-        return conformityInfo;
-    }
 }
 
 function mapState(state) {

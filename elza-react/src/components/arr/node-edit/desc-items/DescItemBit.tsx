@@ -2,6 +2,7 @@ import { Switch } from "@fluentui/react-components";
 import { DataBit, DataType, NodeItem } from "elza-api";
 import { useState } from "react";
 import { DescItemProps } from "./types";
+import { useStyles } from "./styles";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemBit) => Promise<void>;
@@ -30,6 +31,7 @@ export function DescItemBit({
     item.readOnly ||
     _isDisabled;
   const data = item.data as DataBit;
+  const styles = useStyles();
 
   const [value, setValue] = useState<boolean>(data.bitValue);
 
@@ -48,14 +50,7 @@ export function DescItemBit({
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flex: 1,
-        position: "relative",
-        flexDirection: "column",
-      }}
-    >
+    <div className={styles.descItemContainer}>
       <Switch
         disabled={isDisabled}
         checked={value}

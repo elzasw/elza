@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -268,36 +269,50 @@ public class NodeControllerTest extends AbstractControllerTest {
         return searchResult;
     }
 
-	@Test
+    @Test
     public void nodeGetNodeDataTest() {
-    	Fund fund = createFund("fund1", "internalCode");
-    	assertNotNull(fund);
-
-    	// create levels (nodes)
+        Fund fund = createFund("fund1", "internalCode");
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
         List<ArrNodeVO> nodes = createLevels(fundVersion);
-        ArrNodeVO node = nodes.get(0);
+        ArrNodeVO focusNode = nodes.get(0);
 
-        // create item by SRD_TITLE
-        NodeItem nodeItem = buildNodeItem(SRD_TITLE, null, DataType.TEXT, "value", node, null);
-        descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        // attach a desc item so the form has content to return
+        descitemsApi.descItemCreateDescItem(fundVersion.getId(),
+                buildNodeItem(SRD_TITLE, null, DataType.TEXT, "value", focusNode, null));
 
-        // create NodeDataParam
+        // nodeStatus=true → response.node populated with id + version
+        NodeData withStatus = fetchNodeData(fundVersion, focusNode, true);
+        assertNotNull(withStatus.getFormData());
+        assertNotNull(withStatus.getNode());
+        assertEquals(focusNode.getId(), withStatus.getNode().getId());
+        assertNotNull(withStatus.getNode().getVersion());
+        assertTrue(!withStatus.getChildren().isEmpty());
+        assertTrue(withStatus.getParents().isEmpty());
+        assertTrue(withStatus.getSiblings().isEmpty());
+
+        // nodeStatus=false → focus-node block is skipped, response.node is null
+        NodeData withoutStatus = fetchNodeData(fundVersion, focusNode, false);
+        assertNull(withoutStatus.getNode());
+        // toggling the flag must not affect the rest of the payload
+        assertNotNull(withoutStatus.getFormData());
+    }
+
+    /**
+     * Fetch node data with a common parameter set, varying only the {@code nodeStatus} flag.
+     */
+    private NodeData fetchNodeData(ArrFundVersionVO fundVersion, ArrNodeVO node, boolean nodeStatus) {
         NodeDataParam param = new NodeDataParam();
         param.setFundVersionId(fundVersion.getId());
-        param.setNodeId(nodes.get(0).getId());
+        param.setNodeId(node.getId());
         param.setSiblingsMaxCount(100);
         param.setFormData(true);
         param.setParents(true);
         param.setChildren(true);
+        param.setNodeStatus(nodeStatus);
 
-        NodeData nodeData = nodeApi.nodeGetNodeData(param);
-        assertNotNull(nodeData);
-        assertNotNull(nodeData.getFormData());
-        assertNotNull(nodeData.getNode());
-        assertTrue(!nodeData.getChildren().isEmpty());
-        assertTrue(nodeData.getParents().isEmpty());
-        assertTrue(nodeData.getSiblings().isEmpty());
+        NodeData data = nodeApi.nodeGetNodeData(param);
+        assertNotNull(data);
+        return data;
     }
 
 	@Test

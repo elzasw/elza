@@ -1260,23 +1260,6 @@ export class WebApiCls {
         }, null);
     }
 
-
-    getNodeData(fundVersionId, nodeParam, resultParam: any | object = {}) {
-        const data = {
-            fundVersionId: fundVersionId,
-            nodeId: nodeParam.nodeId,
-            nodeIndex: nodeParam.nodeIndex,
-            parentNodeId: nodeParam.parentNodeId,
-            formData: resultParam.formData,
-            siblingsFrom: resultParam.siblingsFrom,
-            siblingsMaxCount: resultParam.siblingsMaxCount,
-            siblingsFilter: resultParam.siblingsFilter,
-            parents: resultParam.parents,
-            children: resultParam.children,
-        };
-        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/nodeData', null, data);
-    }
-
     getFundTreeNodes(versionId, nodeIds) {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fundTree/nodes', null, {
             versionId,

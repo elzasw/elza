@@ -11,23 +11,15 @@ import org.springframework.web.bind.annotation.RestController;
 import cz.tacr.elza.controller.vo.NodePlainTextRepresentation;
 import cz.tacr.elza.controller.vo.NodeSearchResult;
 import cz.tacr.elza.controller.vo.NodeTreeData;
-import cz.tacr.elza.controller.vo.FundSearchResult;
 import cz.tacr.elza.controller.vo.NodeBase;
 import cz.tacr.elza.controller.vo.NodeData;
 import cz.tacr.elza.controller.vo.NodeDataParam;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
-import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrDescItem;
-import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.ArrLevel;
-import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.security.AuthorizationRequest;
-import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.NodeSearchService;
@@ -40,9 +32,6 @@ public class NodeController implements NodeApi {
 
 	@Autowired
 	private ArrangementService arrangementService; 
-
-    @Autowired
-    private ArrangementInternalService arrangementInternalService;
 
     @Autowired
 	private NodeSearchService nodeSearchService;
