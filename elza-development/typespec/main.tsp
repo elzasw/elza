@@ -1566,11 +1566,11 @@ model NodeData {
     formData: NodeFormData;
     /** Status of the focus node. Returned only when request.nodeStatus is true. */
     node?: NodeStatus;
-    /** požadovaní rodiče ke kořeni */
-    parents: NodeTreeData[];
-    /** požadovaní přímí potomci */
-    children: NodeTreeData[];
-    /** požadovaní sourozenci */
+    /** Parents chain up to the root. Returned only when request.parents is true. */
+    parents?: NodeTreeData[];
+    /** Direct children. Returned only when request.children is true. */
+    children?: NodeTreeData[];
+    /** Siblings window. Returned only when request.siblingsFrom is set. */
     siblings?: NodeBrief[];
     /** index požadované JP */
     nodeIndex: integer;

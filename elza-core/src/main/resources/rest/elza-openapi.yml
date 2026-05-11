@@ -4936,8 +4936,6 @@ components:
       type: object
       required:
         - formData
-        - parents
-        - children
         - nodeIndex
         - nodeCount
       properties:
@@ -4953,12 +4951,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/NodeTreeData'
-          description: požadovaní rodiče ke kořeni
+          description: Parents chain up to the root. Returned only when request.parents is true.
         children:
           type: array
           items:
             $ref: '#/components/schemas/NodeTreeData'
-          description: požadovaní přímí potomci
+          description: Direct children. Returned only when request.children is true.
         siblings:
           type: array
           items:
