@@ -148,12 +148,9 @@ export class NodeFormActions extends ItemFormActions {
                         resolve(data);
                     });
                 }
-            case 'DATA_GRID': // není podpora kešování
-                const nodeParam = { nodeId };
-                const resultParam = {
-                    formData: true,
-                };
-                return WebApi.getNodeData(versionId, nodeParam, resultParam).then(json => json.formData);
+            // DATA_GRID routing previously fetched form-data for in-grid cell editing.
+            // Replaced by FundDataGridCellForm (uses useNodeFormData hook → new endpoint directly);
+            // this branch is no longer reachable from any dispatcher.
             default:
                 break;
         }
