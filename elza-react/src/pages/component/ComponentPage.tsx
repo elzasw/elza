@@ -3,7 +3,10 @@ import { FC, useEffect, useRef, useState } from "react";
 import { getServerContextPath } from 'api';
 
 export const COMPONENT_URL = `/component`;
-export const COMPONENT_URL_WITH_CONTEXT = `${getServerContextPath()}${COMPONENT_URL}`;
+// Deferred lookup: getServerContextPath() depends on the `api` module being
+// fully evaluated, so we can't safely call it at module top-level (transitive
+// importers may load this file before `api.ts` finishes binding its exports).
+export const getComponentUrlWithContext = () => `${getServerContextPath()}${COMPONENT_URL}`;
 
 interface ComponentPageProps {
 	componentViewRequest: {
