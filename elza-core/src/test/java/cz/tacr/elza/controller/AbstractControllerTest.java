@@ -267,22 +267,20 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	// STRUCTURE
 	@Deprecated
 	protected static final String CREATE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}";
-	protected static final String CONFIRM_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL
-			+ "/data/{fundVersionId}/{structureDataId}/confirm";
-	protected static final String SET_ASSIGNABLE_STRUCTURE_DATA_LIST = STRUCTURE_CONTROLLER_URL 
-			+ "/data/{fundVersionId}/assignable/{assignable}";
-	protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL 
-			+ "/data/{fundVersionId}/{structureDataId}";
+	@Deprecated
+	protected static final String CONFIRM_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}/confirm";
+	@Deprecated
+	protected static final String SET_ASSIGNABLE_STRUCTURE_DATA_LIST = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/assignable/{assignable}";
+	@Deprecated
+	protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
 	@Deprecated
 	protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/search";
-	protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL 
-			+ "/data/{fundVersionId}/{structureDataId}";
+	@Deprecated
+	protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
 	protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type";
 	protected static final String FIND_PART_TYPES = STRUCTURE_CONTROLLER_URL + "/part-type";
-	protected static final String FIND_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL
-			+ "/extension/{fundVersionId}/{structureTypeCode}";
-	protected static final String SET_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL
-			+ "/extension/{fundVersionId}/{structureTypeCode}";
+	protected static final String FIND_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}";
+	protected static final String SET_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}";
 	@Deprecated
 	protected static final String CREATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create";
 	@Deprecated
@@ -291,12 +289,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String DELETE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/delete";
 	@Deprecated
 	protected static final String DELETE_STRUCTURE_ITEMS_BY_TYPE = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}";
-	protected static final String GET_FORM_STRUCTURE_ITEMS = STRUCTURE_CONTROLLER_URL
-			+ "/item/form/{fundVersionId}/{structureDataId}";
+	@Deprecated
+	protected static final String GET_FORM_STRUCTURE_ITEMS = STRUCTURE_CONTROLLER_URL + "/item/form/{fundVersionId}/{structureDataId}";
 	@Deprecated
 	protected static final String DUPLICATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}/batch";
-	protected static final String UPDATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL
-			+ "/data/{fundVersionId}/{structureTypeCode}/batchUpdate";
+	@Deprecated
+	protected static final String UPDATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/batchUpdate";
 
 	// ARRANGEMENT
 	protected static final String FUND = ARRANGEMENT_CONTROLLER_URL + "/getFund/{fundId}";
@@ -3263,6 +3261,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
 	 * @return potvrzená entita
 	 */
+	@Deprecated
 	protected ArrStructureDataVO confirmStructureData(final Integer fundVersionId, final Integer structureDataId) {
 		return post(
 				spec -> spec.pathParam("structureDataId", structureDataId).pathParam("fundVersionId", fundVersionId),
@@ -3419,6 +3418,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
 	 * @return data formuláře
 	 */
+	@Deprecated
 	protected StructureOldController.StructureDataFormDataVO getFormStructureItems(final Integer fundVersionId, final Integer structureDataId) {
 		return get(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureDataId", structureDataId),
 				GET_FORM_STRUCTURE_ITEMS).as(StructureOldController.StructureDataFormDataVO.class);
@@ -3449,6 +3449,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
 	 * @return nalezená entita
 	 */
+	@Deprecated
 	protected ArrStructureDataVO getStructureData(final Integer fundVersionId, final Integer structureDataId) {
 		return get(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureDataId", structureDataId),
 				GET_STRUCTURE_DATA).as(ArrStructureDataVO.class);
@@ -3461,6 +3462,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param assignable       přiřaditelný
 	 * @param structureDataIds identifikátory hodnoty strukturovaného datového typu
 	 */
+	@Deprecated
 	protected void setAssignableStructureData(final Integer fundVersionId, final boolean assignable, List<Integer> structureDataIds) {
 		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("assignable", assignable)
 				.body(structureDataIds), SET_ASSIGNABLE_STRUCTURE_DATA_LIST);
@@ -3473,6 +3475,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param structureTypeCode        kód strukturovaného datového typu
 	 * @param structureDataBatchUpdate data pro hromadnou úpravu hodnot
 	 */
+	@Deprecated
 	protected void updateStructureDataBatch(final Integer fundVersionId, final String structureTypeCode,
 			final StructureOldController.StructureDataBatchUpdate structureDataBatchUpdate) {
 		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureTypeCode", structureTypeCode)

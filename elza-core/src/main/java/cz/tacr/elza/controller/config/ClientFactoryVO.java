@@ -1253,9 +1253,9 @@ public class ClientFactoryVO {
 
         // remove empty groups and return result
         return formItemTypes.stream()
-                //.filter(s -> s.getType() > 0) // ignorují se nemožné TODO
+                .filter(s -> s.getType() != MandatoryType.IMPOSSIBLE) // ignorují se nemožné
                 .collect(Collectors.toList());
-    }    
+    }
 
     /**
      * Vytvoření seznamu rozšířených typů, ignoruje nemožné typy.

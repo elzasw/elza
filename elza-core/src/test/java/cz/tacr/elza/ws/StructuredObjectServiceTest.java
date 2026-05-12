@@ -68,6 +68,7 @@ public class StructuredObjectServiceTest extends AbstractControllerTest {
         StructuredObject updateStructuredObject = createPacket(fundIdents, "v3");
         updateStructuredObject.setUuid(createStructuredObject2.getUuid());
         structObjServiceClient.updateStructuredObject(updateStructuredObject);
+        
         // check existence of updated item
         StructureDataFormDataVO structDataVo = getFormStructureItems(fundVersionVO.getId(), Integer.valueOf(sois2
                 .getId()));

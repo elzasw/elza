@@ -8,8 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -17,22 +15,21 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrStructureDataVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemIntVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
-import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.repository.SobjVrequestRepository;
 import cz.tacr.elza.test.controller.vo.DataInteger;
 import cz.tacr.elza.test.controller.vo.DataString;
 import cz.tacr.elza.test.controller.vo.Fund;
+import cz.tacr.elza.test.controller.vo.SdoBatchUpdateParam;
 import cz.tacr.elza.test.controller.vo.SdoCopyObjectParam;
 import cz.tacr.elza.test.controller.vo.SdoFindResult;
 import cz.tacr.elza.test.controller.vo.SdoItemResult;
 import cz.tacr.elza.test.controller.vo.StructuredObject;
+import cz.tacr.elza.test.controller.vo.StructuredObject.StateEnum;
 import cz.tacr.elza.test.controller.vo.StructuredObjectItem;
+import cz.tacr.elza.test.controller.vo.StructuredObjectItems;
 
 /**
  * Test pro {@link StructureOldController} &&  {@link StructureController}.
@@ -99,22 +96,19 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertEquals(BATCH_COUNT, structureDataResult.getCount());
         assertEquals(BATCH_COUNT, structureDataResult.getRows().size());
 
-        StructureOldController.StructureDataFormDataVO structureDataForm = getFormStructureItems(fundVersion.getId(),
-                                                                                              structureData.getId());
-
-        Map<Integer, List<ArrItemVO>> items = structureDataForm.getDescItems().stream().peek(it -> {
+        StructuredObjectItems structureDataForm = structureApi.sdoGetFormStructureItems(fund.getId(), structureData.getId(), null);
+        structureDataForm.getItems().forEach(it -> {
             if (it.getItemTypeId().equals(typeNumber.getId())) {
-                ((ArrItemIntVO) it).setValue(BATCH_COUNT + 1);
+                ((DataInteger) it.getData()).setIntegerValue(BATCH_COUNT + 1);
             }
-        }).collect(Collectors.groupingBy(ArrItemVO::getItemTypeId));
+        });
 
-        StructureOldController.StructureDataBatchUpdate data = new StructureOldController.StructureDataBatchUpdate();
-        data.setStructureDataIds(structureDataResult.getRows().stream().map(sd -> sd.getId())
-                .collect(Collectors.toList()));
+        SdoBatchUpdateParam data = new SdoBatchUpdateParam();
+        data.setIds(structureDataResult.getRows().stream().map(sd -> sd.getId()).collect(Collectors.toList()));
         data.setDeleteItemTypeIds(Collections.singletonList(typePostfix.getId()));
-        data.setItems(items);
+        data.setItems(structureDataForm.getItems());
         data.setAutoincrementItemTypeIds(Collections.singletonList(typeNumber.getId()));
-        updateStructureDataBatch(fundVersion.getId(), STRUCTURE_TYPE_CODE, data);
+        structureApi.sdoUpdateObjects(fund.getId(), STRUCTURE_TYPE_CODE, data);
 
         // wait to process whole queue
         while (sobjVrequestRepository.count() > 0) {
@@ -126,42 +120,39 @@ public class StructureControllerTest extends AbstractControllerTest {
     }
 
     private void structureItemTest(final ArrFundVersionVO fundVersion, final Fund fund) {
-        StructuredObject structureData = structureApi.sdoCreateObject(fund.getId(), STRUCTURE_TYPE_CODE, null);
+        StructuredObject structureObject = structureApi.sdoCreateObject(fund.getId(), STRUCTURE_TYPE_CODE, null);
 
         // vytvoření hodnoty
-        SdoItemResult siNumberCreated = createStructureItemPacketNumber(fund, structureData);
+        SdoItemResult siNumberCreated = createStructureItemPacketNumber(fund, structureObject);
         StructuredObjectItem createdNumber = siNumberCreated.getItem();
 
         // aktualizace hodnoty
         ((DataInteger) createdNumber.getData()).setIntegerValue(NUMBER_VALUE_2);
-        SdoItemResult siNumberUpdated = structureApi.sdoUpdateItem(fund.getId(), structureData.getId(), true, createdNumber);
+        SdoItemResult siNumberUpdated = structureApi.sdoUpdateItem(fund.getId(), structureObject.getId(), true, createdNumber);
         StructuredObjectItem updatedNumber = siNumberUpdated.getItem();
         assertEquals(NUMBER_VALUE_2, ((DataInteger) updatedNumber.getData()).getIntegerValue());
 
         // vytvoření hodnoty
-        SdoItemResult siPrefixCreated = createStructureItemPacketPrefix(fund, structureData);
+        SdoItemResult siPrefixCreated = createStructureItemPacketPrefix(fund, structureObject);
         StructuredObjectItem typePrefix = siPrefixCreated.getItem();
 
         // vytvoření hodnoty
-        SdoItemResult siPostfixCreated = createStructureItemPacketPostfix(fund, structureData);
+        SdoItemResult siPostfixCreated = createStructureItemPacketPostfix(fund, structureObject);
         StructuredObjectItem typePostfix = siPostfixCreated.getItem();
 
         // vytvoření hodnoty
-        SdoItemResult siPackedTypeCreated = createStructureItemPacketType(fund, structureData);
+        SdoItemResult siPackedTypeCreated = createStructureItemPacketType(fund, structureObject);
         StructuredObjectItem typePacketType = siPackedTypeCreated.getItem();
 
-        StructureOldController.StructureDataFormDataVO formStructureItems = getFormStructureItems(fundVersion.getId(), structureData.getId());
-        assertEquals(5, formStructureItems.getItemTypes().size());
+        StructuredObjectItems structuteObjectItems = structureApi.sdoGetFormStructureItems(fund.getId(), structureObject.getId(), null);
+        assertEquals(5, structuteObjectItems.getItemTypes().size());
 
         // smazání hodnoty
-        structureApi.sdoDeleteItem(fund.getId(), structureData.getId(), updatedNumber.getItemObjectId());
+        structureApi.sdoDeleteItem(fund.getId(), structureObject.getId(), updatedNumber.getItemObjectId());
 
-        structureApi.sdoDeleteItemsByType(fund.getId(), structureData.getId(), typePrefix.getId());
-        structureApi.sdoDeleteItemsByType(fund.getId(), structureData.getId(), typePostfix.getId());
-        structureApi.sdoDeleteItemsByType(fund.getId(), structureData.getId(), typePacketType.getId());
-
-        getFormStructureItems(fundVersion.getId(), structureData.getId());
-
+        structureApi.sdoDeleteItemsByType(fund.getId(), structureObject.getId(), typePrefix.getId());
+        structureApi.sdoDeleteItemsByType(fund.getId(), structureObject.getId(), typePostfix.getId());
+        structureApi.sdoDeleteItemsByType(fund.getId(), structureObject.getId(), typePacketType.getId());
     }
 
     // SRD_PACKET_NUMBER
@@ -249,18 +240,20 @@ public class StructureControllerTest extends AbstractControllerTest {
 
     private void structureDataTest(final ArrFundVersionVO fundVersion, final Fund fund) {
         // create data type
-        StructuredObject structureData = structureApi.sdoCreateObject(fund.getId(), STRUCTURE_TYPE_CODE, null);
-        assertNotNull(structureData);
-        assertNotNull(structureData.getId());
-        assertNotNull(structureData.getAssignable());
-        assertSame(structureData.getState(), StructuredObject.StateEnum.TEMP);
+        StructuredObject structureObject = structureApi.sdoCreateObject(fund.getId(), STRUCTURE_TYPE_CODE, null);
+        assertNotNull(structureObject);
+        assertNotNull(structureObject.getId());
+        assertNotNull(structureObject.getAssignable());
+        assertSame(structureObject.getState(), StateEnum.TEMP);
 
         // add item
-        createStructureItemPacketNumber(fund, structureData);
+        createStructureItemPacketNumber(fund, structureObject);
 
-        ArrStructureDataVO structureDataConfirmed = confirmStructureData(fundVersion.getId(), structureData.getId());
-        // check id of returned type
-        assertTrue(Objects.equals(structureDataConfirmed.getId(), structureDataConfirmed.getId()));
+        StructuredObject confirmedStructureObject = structureApi.sdoConfirm(fund.getId(), structureObject.getId());
+        // check returned object
+        assertEquals(structureObject.getId(), confirmedStructureObject.getId());
+        assertEquals(confirmedStructureObject.getState(), StateEnum.OK);
+        assertTrue(StringUtils.isEmpty(confirmedStructureObject.getErrorDescription()));
 
         // wait to process whole queue
         while (sobjVrequestRepository.count() > 0) {
@@ -269,16 +262,15 @@ public class StructureControllerTest extends AbstractControllerTest {
             } catch (InterruptedException e) {
             }
         }
-        ArrStructureDataVO structureDataGet = getStructureData(fundVersion.getId(), structureData.getId());
-        assertSame(structureDataGet.getState(), ArrStructuredObject.State.OK);
-        assertTrue(StringUtils.isNotEmpty(structureDataGet.getValue()));
-        assertTrue(StringUtils.isEmpty(structureDataConfirmed.getErrorDescription()));
+        structureObject = structureApi.sdoGetObject(fund.getId(), structureObject.getId(), null);
+        assertSame(structureObject.getState(), StateEnum.OK);
+        assertTrue(StringUtils.isNotEmpty(structureObject.getValue()));
 
         SdoFindResult structureDataResult1 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, null, null, null, null);
         assertEquals(1, structureDataResult1.getCount());
         assertEquals(1, structureDataResult1.getRows().size());
 
-        setAssignableStructureData(fundVersion.getId(), false, Collections.singletonList(structureData.getId()));
+        structureApi.sdoSetDataAssignable(fund.getId(), false, Collections.singletonList(structureObject.getId()));
 
         SdoFindResult structureDataResult2 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, false, null, null, null);
         assertEquals(1, structureDataResult2.getCount());
@@ -288,8 +280,8 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertEquals(0, structureDataResult3.getCount());
         assertEquals(0, structureDataResult3.getRows().size());
 
-        List<Integer> structureDataDeletedIds = deleteStructureData(fundVersion.getId(), Collections.singletonList(structureData.getId()));
-        assertNotNull(structureDataDeletedIds.size() == 1);
+        List<Integer> structureDataDeletedIds = deleteStructureData(fundVersion.getId(), Collections.singletonList(structureObject.getId()));
+        assertTrue(structureDataDeletedIds.size() == 1);
 
         SdoFindResult structureDataResult4 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, null, null, null, null);
         assertEquals(0, structureDataResult4.getCount());

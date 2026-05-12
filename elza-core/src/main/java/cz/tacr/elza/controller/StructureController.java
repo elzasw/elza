@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -8,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,19 +21,19 @@ import cz.tacr.elza.controller.vo.SdoFindResult;
 import cz.tacr.elza.controller.vo.SdoItemResult;
 import cz.tacr.elza.controller.vo.StructuredObject;
 import cz.tacr.elza.controller.vo.StructuredObjectItem;
+import cz.tacr.elza.controller.vo.StructuredObjectItems;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
+import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.service.ArrangementInternalService;
+import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.StructObjService;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -41,7 +41,10 @@ public class StructureController implements StructureApi {
 
 	@Autowired
 	private ArrangementInternalService arrangementInternalService;
-	
+
+	@Autowired
+	private RuleService ruleService;
+
 	@Autowired
     private StructObjService structureService;
 
@@ -111,8 +114,144 @@ public class StructureController implements StructureApi {
 	@Override
 	@Transactional
 	public ResponseEntity<Void> sdoUpdateObjects(Integer fundId, String structureTypeCode, @RequestBody SdoBatchUpdateParam sdoBatchUpdateParam) {
-		return null;
+	    Objects.requireNonNull(sdoBatchUpdateParam.getAutoincrementItemTypeIds(), "Identifikátory typů atributu pro autoincrement nesmí být null");
+	    Objects.requireNonNull(sdoBatchUpdateParam.getDeleteItemTypeIds(), "Identifikátory typů atributu pro odstranění nesmí být null");
+	    Objects.requireNonNull(sdoBatchUpdateParam.getItems(), "Položky nesmí být null");
+	    if (CollectionUtils.isEmpty(sdoBatchUpdateParam.getIds())) {
+	    	throw new IllegalArgumentException("Musí být vyplněn alespoň jeden identifikátor hodnoty strukt. typu");
+	    }
+
+	    ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+	    RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
+
+	    List<ArrStructuredItem> structureItems = sdoBatchUpdateParam.getItems().stream()
+	            .map(factoryDO::createStructureItem)
+	            .collect(Collectors.toList());
+
+	    structureService.updateStructObjBatch(fundVersion,
+	            structureType,
+	            sdoBatchUpdateParam.getIds(),
+	            structureItems,
+	            sdoBatchUpdateParam.getAutoincrementItemTypeIds(),
+	            sdoBatchUpdateParam.getDeleteItemTypeIds());
+
+	    return ResponseEntity.ok().build();
+    }
+
+    /**
+     * POST /funds/sdo/{fundId}/{structuredObjectId}/confirm
+     * Confirms the value of a structured data type. Sets the value
+     *
+     * @param fundId fund id (required)
+     * @param structuredObjectId structure data id (required)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
+     */
+	@Override
+	@Transactional
+	public ResponseEntity<StructuredObject> sdoConfirm(Integer fundId, Integer structuredObjectId) {
+		ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+        ArrStructuredObject structureObject = structureService.getStructObjById(structuredObjectId);
+        ArrStructuredObject confirmedStructureObject = structureService.confirmStructureData(fundVersion.getFund(), structureObject);
+
+        return ResponseEntity.ok(factoryVO.createStructuredObject(confirmedStructureObject));
 	}
+
+    /**
+     * POST /funds/sdo/{fundId}/assignable/{assignable}
+     * Assignability settings.
+     *
+     * @param fundId fund id (required)
+     * @param assignable assignable value (required)
+     * @param requestBody value ids for a structured data type (required)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
+     */
+	@Override
+	@Transactional
+	public ResponseEntity<Void> sdoSetDataAssignable(Integer fundId, Boolean assignable, @RequestBody List<Integer> structureDataIds) {
+		ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+        List<ArrStructuredObject> structureDataList = structureService.getStructObjByIds(structureDataIds);
+        structureService.setAssignableStructureDataList(fundVersion.getFund(), structureDataList, assignable);
+
+	    return ResponseEntity.ok().build();
+	}
+
+    /**
+     * GET /funds/sdo/{fundId}/{structuredObjectId}
+     * Getting the value of a structured data type
+     *
+     * @param fundId fund id (required)
+     * @param structuredObjectId structure data id (required)
+     * @param fundVersionId fund version id (optional)
+     * @return The request has succeeded. (status code 200)
+     *         or The server cannot find the requested resource. (status code 404)
+     */
+	@Override
+	@Transactional
+	public ResponseEntity<StructuredObject> sdoGetObject(Integer fundId, Integer structuredObjectId, @Nullable Integer fundVersionId) {
+	    ArrFundVersion fundVersion = fundVersionId != null ? 
+	    		arrangementInternalService.getFundVersionById(fundVersionId) : 
+	    			arrangementInternalService.getOpenVersionByFundId(fundId);
+
+	    ArrStructuredObject structuredObject = structureService.getStructObjById(structuredObjectId, fundVersion);
+
+        return ResponseEntity.ok(factoryVO.createStructuredObject(structuredObject));
+	}
+
+    /**
+     * DELETE /funds/sdo/{fundId}/{structuredObjectId}
+     * Deleting a value of a structured data type
+     *
+     * @param fundId fund id (required)
+     * @param structuredObjectId structure data id (required)
+     * @param fundVersionId fund version id (optional)
+     * @return The request has succeeded. (status code 200)
+     *         or The server cannot find the requested resource. (status code 404)
+     */
+	@Override
+	@Transactional
+	public ResponseEntity<StructuredObject> sdoDeleteObject(Integer fundId, Integer structuredObjectId, @Nullable Integer fundVersionId) {
+	    ArrFundVersion fundVersion = fundVersionId != null ? 
+	    		arrangementInternalService.getFundVersionById(fundVersionId) : 
+	    			arrangementInternalService.getOpenVersionByFundId(fundId);
+        ArrStructuredObject structuredObject = structureService.getStructObjById(structuredObjectId);
+        structureService.deleteStructObj(fundVersion.getFundId(), Collections.singletonList(structuredObject));
+		
+        return ResponseEntity.ok(factoryVO.createStructuredObject(structuredObject));
+	}
+
+    /**
+     * GET /funds/sdo/{fundId}/item/{structuredObjectId}
+     * GET Getting data for a structured data type form: getFormStructureItems()
+     *
+     * @param fundId fund id (required)
+     * @param structuredObjectId structured object id (required)
+     * @param fundVersionId fund version id (optional)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+	@Transactional
+	public ResponseEntity<StructuredObjectItems> sdoGetFormStructureItems(Integer fundId, Integer structuredObjectId, @Nullable Integer fundVersionId) {
+	    ArrFundVersion fundVersion = fundVersionId != null ? 
+	    		arrangementInternalService.getFundVersionById(fundVersionId) : 
+	    			arrangementInternalService.getOpenVersionByFundId(fundId);
+
+	    ArrStructuredObject structuredObject = structureService.getStructObjById(structuredObjectId);
+
+	    List<ArrStructuredItem> structureItems = structureService.findStructureItems(structuredObject);
+	    List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypes(structuredObject.getStructuredTypeId(),
+	                                                                                fundVersion, structureItems);
+
+	    String ruleCode = fundVersion.getRuleSet().getCode();
+
+	    StructuredObjectItems result = new StructuredObjectItems();
+	    result.setParent(factoryVO.createStructuredObject(structuredObject));
+	    result.setItems(structureItems.stream()
+	            .map(factoryVO::createStructuredObjectItem)
+	            .collect(Collectors.toList()));
+	    result.setItemTypes(factoryVO.createFormItemTypes(ruleCode, fundId, structureItemTypes));
+
+	    return ResponseEntity.ok(result);
+    }
 
     /**
      * POST /funds/sdo/{fundId}/item/{structuredObjectId}
@@ -230,12 +369,9 @@ public class StructureController implements StructureApi {
 	                .set("count", count);
 	    }
 
-	    ArrFundVersion fundVersion;
-	    if (fundVersionId != null) {
-	        fundVersion = arrangementInternalService.getFundVersionById(fundVersionId);
-	    } else {
-	        fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
-	    }
+	    ArrFundVersion fundVersion = fundVersionId != null ? 
+	    		arrangementInternalService.getFundVersionById(fundVersionId) : 
+	    			arrangementInternalService.getOpenVersionByFundId(fundId);
 
 	    RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
 	    FilteredResult<ArrStructuredObject> filteredResult = structureService.findStructureData(

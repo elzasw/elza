@@ -4267,6 +4267,23 @@ namespace ElzaAPI.Sdo {
     };
 
     /**
+     * Deleting a value of a structured data type
+     */
+    @route("/{fundId}/{structuredObjectId}")
+    @delete op deleteObject(
+        /** fund id */
+        @path fundId: integer;
+        /** structure data id */
+        @path structuredObjectId: integer;
+        /** fund version id */
+        @query fundVersionId?: integer;
+    ): StructuredObject | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
      * Create item value of a structured data type
      */
     @route("/{fundId}/item/{structuredObjectId}")

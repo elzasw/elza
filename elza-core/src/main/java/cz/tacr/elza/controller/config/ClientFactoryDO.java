@@ -477,6 +477,7 @@ public class ClientFactoryDO {
         return structureItem;
     }
 
+    @Deprecated
     public List<ArrStructuredItem> createStructureItem(final Map<Integer, List<ArrItemVO>> descItemVO) {
         List<ArrStructuredItem> result = new ArrayList<>();
         for (Map.Entry<Integer, List<ArrItemVO>> entry : descItemVO.entrySet()) {

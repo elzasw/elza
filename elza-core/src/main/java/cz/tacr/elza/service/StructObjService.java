@@ -784,14 +784,14 @@ public class StructObjService {
     /**
      * Potvrzení hodnoty strukt. datového typu.
      *
-     * @param fund          archivní soubor
-     * @param structureData hodnota struktovaného datového typu
+     * @param fund            archivní soubor
+     * @param structureObject hodnota struktovaného datového typu
      * @return entita
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrStructuredObject confirmStructureData(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
-                                                    final ArrStructuredObject structureData) {
-        return confirmInternal(fund, structureData);
+                                                    final ArrStructuredObject structureObject) {
+        return confirmInternal(fund, structureObject);
     }
 
     /**
@@ -801,19 +801,16 @@ public class StructObjService {
      * @param structureData hodnota struktovaného datového typu
      * @return entita
      */
-    private ArrStructuredObject confirmInternal(final ArrFund fund,
-                                                     final ArrStructuredObject structureData) {
+    private ArrStructuredObject confirmInternal(final ArrFund fund, final ArrStructuredObject structureData) {
         if (structureData.getDeleteChange() != null) {
             throw new BusinessException("Nelze potvrdit smazaná strukturovaná data", BaseCode.INVALID_STATE);
         }
         if (!structureData.getState().equals(ArrStructuredObject.State.TEMP)) {
             throw new BusinessException("Strukturovaná data nemají dočasný stav", BaseCode.INVALID_STATE);
         }
-        int itemCount = structureItemRepository
-                .countItemsByStructuredObjectAndDeleteChangeIsNull(structureData);
+        int itemCount = structureItemRepository.countItemsByStructuredObjectAndDeleteChangeIsNull(structureData);
         if (itemCount == 0) {
-            throw new BusinessException("Structured object without items cannot be confirmed.",
-                    StructObjCode.NO_VALID_ITEMS)
+            throw new BusinessException("Structured object without items cannot be confirmed.", StructObjCode.NO_VALID_ITEMS)
                             .set("structObjId", structureData.getStructuredObjectId());
         }
         // reset temporary value -> final have to be calculated
