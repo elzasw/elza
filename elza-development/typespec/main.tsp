@@ -55,26 +55,26 @@ model LoggedUsers {
 }
 
 /**
- * Archivní soubor
+ * Archival fonds described by basic information
  */
 model Fund {
-    /** Identifikátor */
+    /** Fonds identifier */
     id: integer;
-    /** UUID - identifikátor AS */
+    /** Fonds UUID */
     uuid: string;
-    /** Název */
+    /** Fonds name */
     name: string;
-    /** Identifikátor instituce (vždy kód instituce) */
+    /** Archival institution identifier */
     institutionIdentifier: string;
-    /** Interní kód */
+    /** Internal organization fonds code */
     internalCode?: string;
-    /** Datum založení */
+    /** Creation fonds date */
     createDate?: offsetDateTime;
-    /** Číslo archivního souboru */
+    /** Archival fonds number */
     fundNumber?: integer;
-    /** Datace */
+    /** Date range for the fonds */
     unitdate?: string;
-    /** Značka archivního souboru */
+    /** Fonds mark */
     mark?: string;
 }
 
@@ -101,29 +101,13 @@ model NodeSearchResult {
 }
 
 /**
- * Zakládaný archivní souboru
+ * Details about archival funds
  */
-model FundDetail {
-    /** Identifikátor */
-    id: integer;
-    /** UUID - identifikátor AS */
-    uuid: string;
-    /** Název */
-    name: string;
-    /** Identifikátor instituce (vždy kód instituce) */
-    institutionIdentifier: string;
-    /** Interní kód */
-    internalCode?: string;
-    /** Datum založení */
-    createDate?: offsetDateTime;
-    /** Číslo archivního souboru */
-    fundNumber?: integer;
-    /** Datace */
-    unitdate?: string;
-    /** Značka archivního souboru */
-    mark?: string;
+model FundDetail extends Fund {
     /** Seznam oblastí entit */
     scopes: string[];
+    /** Active funds version */
+    fundVersionId: integer;
 }
 
 /**
@@ -588,7 +572,7 @@ model ItemDataResult {
 }
 
 /**
- * Náhrada za třídu `ArrNodeVO`
+ * Node information without item values, used for parent and sibling nodes in NodeData
  */
 model NodeBase {
     /** id of node */
@@ -4462,6 +4446,7 @@ namespace ElzaAPI.Search {
         @body data: BaseException;
     };
 }
+
 
 /**
  * Processing tasks

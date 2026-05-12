@@ -5036,76 +5036,50 @@ components:
       properties:
         id:
           type: integer
-          description: Identifikátor
+          description: Fonds identifier
         uuid:
           type: string
-          description: UUID - identifikátor AS
+          description: Fonds UUID
         name:
           type: string
-          description: Název
+          description: Fonds name
         institutionIdentifier:
           type: string
-          description: Identifikátor instituce (vždy kód instituce)
+          description: Archival institution identifier
         internalCode:
           type: string
-          description: Interní kód
+          description: Internal organization fonds code
         createDate:
           type: string
           format: date-time
-          description: Datum založení
+          description: Creation fonds date
         fundNumber:
           type: integer
-          description: Číslo archivního souboru
+          description: Archival fonds number
         unitdate:
           type: string
-          description: Datace
+          description: Date range for the fonds
         mark:
           type: string
-          description: Značka archivního souboru
-      description: Archivní soubor
+          description: Fonds mark
+      description: Archival fonds described by basic information
     FundDetail:
       type: object
       required:
-        - id
-        - uuid
-        - name
-        - institutionIdentifier
         - scopes
+        - fundVersionId
       properties:
-        id:
-          type: integer
-          description: Identifikátor
-        uuid:
-          type: string
-          description: UUID - identifikátor AS
-        name:
-          type: string
-          description: Název
-        institutionIdentifier:
-          type: string
-          description: Identifikátor instituce (vždy kód instituce)
-        internalCode:
-          type: string
-          description: Interní kód
-        createDate:
-          type: string
-          format: date-time
-          description: Datum založení
-        fundNumber:
-          type: integer
-          description: Číslo archivního souboru
-        unitdate:
-          type: string
-          description: Datace
-        mark:
-          type: string
-          description: Značka archivního souboru
         scopes:
           type: array
           items:
             type: string
           description: Seznam oblastí entit
-      description: Zakládaný archivní souboru
+        fundVersionId:
+          type: integer
+          description: Active funds version
+      allOf:
+        - $ref: '#/components/schemas/Fund'
+      description: Details about archival funds
     FundSearchResult:
       type: object
       required:
@@ -5350,7 +5324,7 @@ components:
         uuid:
           type: string
           description: node uuid
-      description: Náhrada za třídu `ArrNodeVO`
+      description: Node information without item values, used for parent and sibling nodes in NodeData
     NodeBrief:
       type: object
       required:
