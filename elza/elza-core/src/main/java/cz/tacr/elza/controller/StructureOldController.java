@@ -372,6 +372,7 @@ public class StructureOldController {
      * @param structureDataId identifikátor hodnoty strukturovaného datového typu
      * @return data formuláře
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/item/form/{fundVersionId}/{structureDataId}", method = RequestMethod.GET)
     public StructureDataFormDataVO getFormStructureItems(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
