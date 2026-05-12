@@ -33,6 +33,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
         [perms.FUND_ARR_ALL]: perms.FUND_ARR,
         [perms.FUND_OUTPUT_WR_ALL]: perms.FUND_OUTPUT_WR,
         [perms.FUND_EXPORT_ALL]: perms.FUND_EXPORT,
+        [perms.FUND_PUBLISH_ALL]: perms.FUND_PUBLISH,
         [perms.FUND_BA_ALL]: perms.FUND_BA,
         [perms.FUND_CL_VER_WR_ALL]: perms.FUND_CL_VER_WR,
     };
@@ -42,6 +43,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
         [perms.FUND_ARR]: perms.FUND_ARR_ALL,
         [perms.FUND_OUTPUT_WR]: perms.FUND_OUTPUT_WR_ALL,
         [perms.FUND_EXPORT]: perms.FUND_EXPORT_ALL,
+        [perms.FUND_PUBLISH]: perms.FUND_PUBLISH_ALL,
         [perms.FUND_BA]: perms.FUND_BA_ALL,
         [perms.FUND_CL_VER_WR]: perms.FUND_CL_VER_WR_ALL,
     };
@@ -128,6 +130,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
                 switch (p.permission) {
                     case perms.FUND_ARR_ALL:
                     case perms.FUND_EXPORT_ALL:
+                    case perms.FUND_PUBLISH_ALL:
                     case perms.FUND_RD_ALL:
                     case perms.FUND_BA_ALL:
                     case perms.FUND_OUTPUT_WR_ALL:
@@ -137,6 +140,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
                         break;
                     case perms.FUND_ARR:
                     case perms.FUND_EXPORT:
+                    case perms.FUND_PUBLISH:
                     case perms.FUND_RD:
                     case perms.FUND_BA:
                     case perms.FUND_OUTPUT_WR:
