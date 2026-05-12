@@ -2674,6 +2674,266 @@ namespace ElzaAPI.Io {
     };
 }
 
+// ---------------------------------------------------------------------------
+// Publications — public integration API for an external publication system.
+//
+// Elza's internal publication states (NEW, PREPARE_ERROR, INVALIDATED) are
+// not part of the public contract. The client never observes them: /available
+// does not return such records, and /download collapses them into the more
+// general "file not available" responses.
+// ---------------------------------------------------------------------------
+
+/**
+ * Entry in the list of prepared exports.
+ *
+ * The archival institution code and NAD are not part of this header — they
+ * are contained in the XML.
+ */
+model AvailablePublication {
+    /** Publication identifier (ARR_EXPORT.export_id). */
+    publicationId: integer;
+
+    /** Archival fund identifier. */
+    fundId: integer;
+
+    /** Identifier of the fund version the export was created from. */
+    fundVersionId: integer;
+
+    /** Time the publication request was created. */
+    createdTime: offsetDateTime;
+
+    /**
+     * ID of the last fund change included in the export (reference to
+     * arr_change). May be null if the originating change has been removed
+     * from arr_change — the XML content itself is not affected.
+     */
+    lastChangeId?: integer;
+
+    /**
+     * Export data format expressed as the URI of the target XSD namespace.
+     * The client should pick the schema to parse the XML with according to
+     * this value; unknown values should be ignored.
+     *
+     * Known values:
+     *  - `http://elza.tacr.cz/schema/v2` — Elza native XML schema, version 2.
+     *
+     * The field is intentionally typed as a free-form string (not an enum)
+     * so that new formats can be introduced without a TypeSpec change.
+     */
+    publicationType: string;
+}
+
+/**
+ * Page of prepared exports for a given target system.
+ *
+ * The caller remembers the `nextTransaction` value from the response and
+ * sends it back in the next request as `lastTransaction`. The value is an
+ * opaque key from the caller's perspective — its internal structure may
+ * change in the future and must not be parsed by the caller.
+ */
+model AvailablePublications {
+    /**
+     * Transaction identifier the caller should send in the next request as
+     * `lastTransaction`. When `items` is empty, the same value as the
+     * input is returned.
+     */
+    nextTransaction: string;
+
+    /**
+     * List of prepared exports after `lastTransaction` (exclusive),
+     * ordered ascending by internal transaction.
+     *
+     * At most 100 records are returned. If multiple prepared exports exist
+     * for the same fund with the same export parameters (target system
+     * and filter), only the most recent one is returned — superseded
+     * entries are suppressed so the recipient does not have to download
+     * already-obsolete versions.
+     *
+     * Records that do not currently have a downloadable file (e.g. removed
+     * by retention or invalidated) are not returned.
+     */
+    items: AvailablePublication[];
+}
+
+/**
+ * Outcome reported back to Elza by the publication system.
+ */
+enum PublicationReportStatus {
+    /** Publication succeeded. */
+    OK,
+    /** Publication failed. */
+    ERROR,
+}
+
+/**
+ * Body of `POST /publications/status/{id}`.
+ */
+model PublicationStatusReport {
+    /** Publication outcome. */
+    status: PublicationReportStatus;
+
+    /**
+     * Time at which publication succeeded or failed, as reported by the
+     * publication system.
+     */
+    publishedAt: offsetDateTime;
+
+    /** Error message. Filled only when status = ERROR. */
+    errorMessage?: string;
+}
+
+/**
+ * Public API for the publication system.
+ *
+ * Endpoints live under `/publications` within `/api/v1` and exchange data
+ * between Elza and an external publication system:
+ *
+ *  - Elza offers the list of prepared exports,
+ *  - the publication system downloads the prepared XML,
+ *  - the publication system reports the publication outcome back.
+ *
+ * A dedicated technical account with restricted permissions is recommended
+ * for deployment.
+ *
+ * Error codes returned in `BaseException.code`:
+ *
+ *  - `PUBLICATION_TYPE_NOT_FOUND` — no publication type with the given code
+ *    exists
+ *  - `PUBLICATION_TYPE_INACTIVE`  — the publication type has been
+ *    deactivated and no longer accepts publication traffic
+ *  - `PUBLICATION_NOT_FOUND`     — the publication ID is unknown or is in
+ *    an internal state that is not exposed to the client
+ *  - `PUBLICATION_FILE_GONE`     — the XML file is no longer available
+ *    (publication was invalidated or removed by retention)
+ *  - `PUBLICATION_STATE_CONFLICT` — the status report cannot be accepted
+ *    from the publication's current state
+ */
+@tag("publication")
+@route("/publications")
+namespace ElzaAPI.Publication {
+    /**
+     * Get the list of prepared XML exports for a given target system.
+     *
+     * On the first call `lastTransaction` is omitted. The response carries
+     * `nextTransaction`, which the caller stores and sends in the next
+     * request as `lastTransaction`. This way only new exports since the
+     * previous call are returned.
+     *
+     * At most 100 records are returned. If multiple prepared exports exist
+     * for the same fund, only the most recent one is included.
+     *
+     * If the publication type (target system) is inactive, the call returns
+     * 403 — information about prepared exports is not exposed in that case.
+     *
+     * @param targetSystem Publication type code (ARR_EXPORT_TYPE.code),
+     *   which also identifies the target system.
+     * @param lastTransaction Opaque key of the last already-processed
+     *   transaction. Omitted on the first call. The caller must not parse
+     *   the key — Elza reserves the right to change its format in the
+     *   future.
+     */
+    @route("/available/{targetSystem}")
+    @get op getAvailablePublications(
+        @path targetSystem: string,
+        @query lastTransaction?: string,
+    ): AvailablePublications | {
+        /** `PUBLICATION_TYPE_NOT_FOUND` — no publication type with this code exists. */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** `PUBLICATION_TYPE_INACTIVE` — the publication type is inactive. */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    };
+
+    /**
+     * Download the prepared XML.
+     *
+     * The client should only call this with an ID it received from
+     * `/available`. The download succeeds as long as the XML file is
+     * physically present on the server; each successful download updates
+     * the internal audit trail of the last fetch.
+     *
+     * The file is returned as `application/xml` with header
+     * `Content-Disposition: attachment; filename="{mark}-{fundNumber}-{publicationId}.xml"`.
+     * If the fund has neither `mark` nor `fundNumber` set, the fallback
+     * `fundId-{fundId}-{publicationId}.xml` is used.
+     *
+     * HTTP responses:
+     *  - 200 + XML — the file is available
+     *  - 403       — the publication type has been deactivated
+     *  - 404       — unknown ID, or an ID in an internal state that is not
+     *                exposed to the client (e.g. preparation in progress —
+     *                such IDs are never returned by `/available` and the
+     *                client should not encounter them)
+     *  - 410       — the file is permanently unavailable to the client
+     *                (publication invalidated by the user, or retention
+     *                expired)
+     *
+     * @param id Publication identifier (ARR_EXPORT.export_id).
+     */
+    @route("/download/{id}")
+    @get op downloadPublication(
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/xml";
+        @body data: bytes;
+    } | {
+        /** `PUBLICATION_TYPE_INACTIVE` — the publication type is inactive. */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    } | {
+        /** `PUBLICATION_NOT_FOUND` — the publication ID is not available to the client. */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** `PUBLICATION_FILE_GONE` — XML file is no longer available (invalidation or retention). */
+        @Http.statusCode statusCode: 410;
+        @body data: BaseException;
+    };
+
+    /**
+     * Report the publication outcome from the publication system.
+     *
+     * The client reports the outcome of a publication it has been
+     * working with — typically after a successful `/download/{id}`,
+     * but a report from a publication that was prepared and not yet
+     * marked as fetched is also accepted (e.g. when the download
+     * response was lost in transit but the publication system still
+     * processed the file).
+     *
+     *  - status OK    — publication succeeded
+     *  - status ERROR — publication failed; the outcome may later be
+     *                   reported again with status OK (recovery) or ERROR
+     *                   (updated error message)
+     *
+     * The call is idempotent: a repeated call with an identical body
+     * returns 200 OK without changing internal state.
+     *
+     * @param id Publication identifier (ARR_EXPORT.export_id).
+     */
+    @route("/status/{id}")
+    @post op reportPublicationStatus(
+        @path id: integer,
+        @body report: PublicationStatusReport,
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** `PUBLICATION_NOT_FOUND` — the publication ID is not available to the client. */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /**
+         * `PUBLICATION_STATE_CONFLICT` — the report cannot be accepted: the
+         * client has not downloaded this publication yet, or the publication
+         * is in an internal state that does not accept further reports.
+         */
+        @Http.statusCode statusCode: 409;
+        @body data: BaseException;
+    };
+}
+
 @tag("report")
 @route("/report")
 namespace ElzaAPI.Report {
@@ -3928,6 +4188,7 @@ namespace ElzaAPI.Tasks {
 @tagMetadata("structure", #{description: "structure"})
 @tagMetadata("search", #{description: "Vyhledávání"})
 @tagMetadata("tasks", #{description: "Úkoly"})
+@tagMetadata("publication", #{description: "Public API for the publication system"})
 namespace ElzaAPI {
     // add models not used in operations
     union __Types {
