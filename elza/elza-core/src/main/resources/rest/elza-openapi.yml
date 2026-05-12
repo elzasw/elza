@@ -33,6 +33,8 @@ tags:
     description: Digitální archivní objekty
   - name: admin
     description: Administrativní funkce
+  - name: rules
+    description: Pravidla popisu archiválií (typy atributů, datové typy, …)
 servers:
   - url: http://localhost
     description: Výchozí server
@@ -3710,6 +3712,37 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - report
+  /rules/itemTypes:
+    get:
+      operationId: Rules_listItemTypes
+      description: |-
+        Returns all item types defined across loaded rule sets, together with
+        their specifications and rendering hints.
+
+        Public URL: `GET /api/v1/rules/itemTypes`.
+
+        Localized strings (`name`, `shortcut`, `description` on `ItemType` and
+        `ItemTypeSpec`, plus `name` on `ItemTableColumn`) honour the
+        `Accept-Language` request header when provided; otherwise the server
+        default language is used.
+
+        Replaces the legacy `GET /api/rule/descItemTypes`.
+      parameters:
+        - name: Accept-Language
+          in: header
+          required: false
+          description: Preferred language for localized strings (e.g. "cs", "en").
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemTypeList'
+      tags:
+        - rules
   /search-ap:
     post:
       operationId: Search_entity
@@ -5254,6 +5287,16 @@ components:
       required:
         - importType
         - dataFile
+    IntViewDefinition:
+      type: object
+      required:
+        - displayType
+      properties:
+        displayType:
+          $ref: '#/components/schemas/ItemDisplayType'
+      allOf:
+        - $ref: '#/components/schemas/ItemViewDefinition'
+      description: 'Display hint for INT items: numeric vs. duration formatting.'
     InvalidatedEntities:
       type: object
       required:
@@ -5311,6 +5354,89 @@ components:
             - $ref: '#/components/schemas/NodeItem'
           description: item
       description: Výsledek vytvoření nebo aktualizace ArrDescItem
+    ItemDisplayType:
+      type: string
+      enum:
+        - NUMBER
+        - DURATION
+      description: Display hint for items of `dataType == INT`.
+    ItemTableColumn:
+      type: object
+      required:
+        - code
+        - name
+        - dataType
+      properties:
+        code:
+          type: string
+          description: Column code.
+        name:
+          type: string
+          description: Human-readable column name (localized).
+        dataType:
+          type: string
+          description: Column data type — limited subset; see ELZA package XSD.
+        width:
+          type: integer
+          description: Suggested column width.
+      description: Column definition for items of `dataType == JSON_TABLE`.
+    ItemType:
+      type: object
+      required:
+        - id
+        - code
+        - name
+        - shortcut
+        - dataType
+        - sortable
+      properties:
+        id:
+          type: integer
+          description: Database identifier of the underlying `rul_item_type` row. Not stable across deployments — use `code` for cross-system references.
+        code:
+          type: string
+          description: Stable public code (e.g. "ZP2015_UNIT_ID").
+        name:
+          type: string
+          description: Human-readable name (localized).
+        shortcut:
+          type: string
+          description: Short label for compact UI such as column headers (localized).
+        description:
+          type: string
+          description: Longer description (localized).
+        dataType:
+          allOf:
+            - $ref: '#/components/schemas/DataType'
+          description: Underlying value type.
+        sortable:
+          type: boolean
+          description: Whether items of this type can be used as a sort key.
+        structureTypeCode:
+          type: string
+          description: |-
+            For `dataType == STRUCTURED` only: code of the structure type whose
+            template defines this item's nested fields.
+        viewDefinition:
+          allOf:
+            - $ref: '#/components/schemas/ItemViewDefinition'
+          description: Optional rendering hints; variant determined by `dataType`.
+        specs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemTypeSpec'
+          description: Available specifications, in display order. Empty/omitted ⇒ no specifications.
+      description: |-
+        Definition of one item type registered in the rules.
+
+        Replaces the legacy `RulDescItemTypeExtVO` exposed via
+        `GET /api/rule/descItemTypes`. Display order is given by the order of
+        the response `itemTypes[]` array.
+
+        Per-form behaviour (whether the item is required/recommended, whether it
+        is repeatable in a given context, etc.) is **not** part of this registry
+        — that information lives in `FormItemType` / `FormItemSpec`, returned by
+        the node-form endpoints.
     ItemTypeGroup:
       type: object
       required:
@@ -5329,6 +5455,74 @@ components:
         Skupina zapouzdrující typy hodnot atributů pro UI
 
         Náhrada `ItemTypeGroupVO`
+    ItemTypeList:
+      type: object
+      required:
+        - itemTypes
+      properties:
+        itemTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemType'
+          description: Item types defined across all loaded rule sets, in display order.
+      description: Response payload for `GET /itemTypes`.
+    ItemTypeSpec:
+      type: object
+      required:
+        - id
+        - code
+        - name
+        - shortcut
+      properties:
+        id:
+          type: integer
+          description: Database identifier of the underlying `rul_item_spec` row. Not stable across deployments — use `code` for cross-system references.
+        code:
+          type: string
+          description: Stable public code.
+        name:
+          type: string
+          description: Human-readable name (localized).
+        shortcut:
+          type: string
+          description: Short label for compact UI (localized).
+        description:
+          type: string
+          description: Longer description (localized).
+      description: |-
+        A specification (enumerated value) of an item type.
+        Display order is given by the order of the parent `specs[]` array.
+    ItemViewDefinition:
+      type: object
+      required:
+        - dataType
+      properties:
+        dataType:
+          $ref: '#/components/schemas/DataType'
+      discriminator:
+        propertyName: dataType
+        mapping:
+          INT: '#/components/schemas/IntViewDefinition'
+          STRING: '#/components/schemas/StringViewDefinition'
+          JSON_TABLE: '#/components/schemas/JsonTableViewDefinition'
+      description: |-
+        Optional rendering hints for an `ItemType`.
+
+        Discriminated by `dataType`. Item types whose data type has no rendering
+        hint (DATE, COORDINATES, RECORD_REF, …) simply omit `viewDefinition` on
+        `ItemType`.
+    JsonTableViewDefinition:
+      type: object
+      required:
+        - tableColumns
+      properties:
+        tableColumns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemTableColumn'
+      allOf:
+        - $ref: '#/components/schemas/ItemViewDefinition'
+      description: Column definitions for JSON_TABLE items.
     LinkType:
       type: string
       enum:
@@ -6581,6 +6775,19 @@ components:
         - asc
         - desc
       description: Order of sorting
+    StringViewDefinition:
+      type: object
+      required:
+        - mask
+      properties:
+        mask:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/ItemViewDefinition'
+      description: |-
+        Input mask for STRING items (e.g. "###-##"). `#` denotes a value
+        character, `*` denotes a variable-length run, other characters are
+        literals automatically inserted by the UI.
     StructuredObject:
       type: object
       required:

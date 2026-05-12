@@ -1400,6 +1400,132 @@ model FormItemType {
 }
 
 /**
+ * Display hint for items of `dataType == INT`.
+ */
+enum ItemDisplayType {
+    NUMBER,
+    DURATION,
+}
+
+/**
+ * Column definition for items of `dataType == JSON_TABLE`.
+ */
+model ItemTableColumn {
+    /** Column code. */
+    code: string;
+    /** Human-readable column name (localized). */
+    name: string;
+    /** Column data type — limited subset; see ELZA package XSD. */
+    dataType: string;
+    /** Suggested column width. */
+    width?: integer;
+}
+
+/**
+ * Optional rendering hints for an `ItemType`.
+ *
+ * Discriminated by `dataType`. Item types whose data type has no rendering
+ * hint (DATE, COORDINATES, RECORD_REF, …) simply omit `viewDefinition` on
+ * `ItemType`.
+ */
+@discriminator("dataType")
+model ItemViewDefinition {
+    dataType: DataType;
+}
+
+/**
+ * Display hint for INT items: numeric vs. duration formatting.
+ */
+model IntViewDefinition extends ItemViewDefinition {
+    @invisible(Lifecycle)
+    dataType: DataType.INT;
+    displayType: ItemDisplayType;
+}
+
+/**
+ * Input mask for STRING items (e.g. "###-##"). `#` denotes a value
+ * character, `*` denotes a variable-length run, other characters are
+ * literals automatically inserted by the UI.
+ */
+model StringViewDefinition extends ItemViewDefinition {
+    @invisible(Lifecycle)
+    dataType: DataType.STRING;
+    mask: string;
+}
+
+/**
+ * Column definitions for JSON_TABLE items.
+ */
+model JsonTableViewDefinition extends ItemViewDefinition {
+    @invisible(Lifecycle)
+    dataType: DataType.JSON_TABLE;
+    tableColumns: ItemTableColumn[];
+}
+
+/**
+ * A specification (enumerated value) of an item type.
+ * Display order is given by the order of the parent `specs[]` array.
+ */
+model ItemTypeSpec {
+    /** Database identifier of the underlying `rul_item_spec` row. Not stable across deployments — use `code` for cross-system references. */
+    id: integer;
+    /** Stable public code. */
+    code: string;
+    /** Human-readable name (localized). */
+    name: string;
+    /** Short label for compact UI (localized). */
+    shortcut: string;
+    /** Longer description (localized). */
+    description?: string;
+}
+
+/**
+ * Definition of one item type registered in the rules.
+ *
+ * Replaces the legacy `RulDescItemTypeExtVO` exposed via
+ * `GET /api/rule/descItemTypes`. Display order is given by the order of
+ * the response `itemTypes[]` array.
+ *
+ * Per-form behaviour (whether the item is required/recommended, whether it
+ * is repeatable in a given context, etc.) is **not** part of this registry
+ * — that information lives in `FormItemType` / `FormItemSpec`, returned by
+ * the node-form endpoints.
+ */
+model ItemType {
+    /** Database identifier of the underlying `rul_item_type` row. Not stable across deployments — use `code` for cross-system references. */
+    id: integer;
+    /** Stable public code (e.g. "ZP2015_UNIT_ID"). */
+    code: string;
+    /** Human-readable name (localized). */
+    name: string;
+    /** Short label for compact UI such as column headers (localized). */
+    shortcut: string;
+    /** Longer description (localized). */
+    description?: string;
+    /** Underlying value type. */
+    dataType: DataType;
+    /** Whether items of this type can be used as a sort key. */
+    sortable: boolean;
+    /**
+     * For `dataType == STRUCTURED` only: code of the structure type whose
+     * template defines this item's nested fields.
+     */
+    structureTypeCode?: string;
+    /** Optional rendering hints; variant determined by `dataType`. */
+    viewDefinition?: ItemViewDefinition;
+    /** Available specifications, in display order. Empty/omitted ⇒ no specifications. */
+    specs?: ItemTypeSpec[];
+}
+
+/**
+ * Response payload for `GET /itemTypes`.
+ */
+model ItemTypeList {
+    /** Item types defined across all loaded rule sets, in display order. */
+    itemTypes: ItemType[];
+}
+
+/**
  * Náhrada `DescFormDataNewVO`
  */
 model NodeFormData {
@@ -2226,6 +2352,39 @@ namespace ElzaAPI.DescItem {
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
     };
+}
+
+/**
+ * Public API for archival description rules — item types, their
+ * specifications and (in the future) data types, rule sets and policy
+ * types.
+ *
+ * Endpoints live under `/rules` within `/api/v1` (the `/api/v1` prefix is
+ * applied by the Spring controller; see `PublicationController` for the
+ * same pattern). The legacy `RuleController` at `/api/rule/*` remains
+ * available during migration.
+ */
+@tag("rules")
+@route("/rules")
+namespace ElzaAPI.Rules {
+    /**
+     * Returns all item types defined across loaded rule sets, together with
+     * their specifications and rendering hints.
+     *
+     * Public URL: `GET /api/v1/rules/itemTypes`.
+     *
+     * Localized strings (`name`, `shortcut`, `description` on `ItemType` and
+     * `ItemTypeSpec`, plus `name` on `ItemTableColumn`) honour the
+     * `Accept-Language` request header when provided; otherwise the server
+     * default language is used.
+     *
+     * Replaces the legacy `GET /api/rule/descItemTypes`.
+     */
+    @route("/itemTypes")
+    @get op listItemTypes(
+        /** Preferred language for localized strings (e.g. "cs", "en"). */
+        @header("Accept-Language") acceptLanguage?: string
+    ): ItemTypeList;
 }
 
 @tag("accesspoints")
@@ -4537,6 +4696,7 @@ namespace ElzaAPI.Tasks {
 @tagMetadata("tasks", #{description: "Úkoly"})
 @tagMetadata("publication", #{description: "Public API for the publication system"})
 @tagMetadata("publication-internal", #{description: "Publication API used by the Elza UI"})
+@tagMetadata("rules", #{description: "Pravidla popisu archiválií (typy atributů, datové typy, …)"})
 namespace ElzaAPI {
     // add models not used in operations
     union __Types {
