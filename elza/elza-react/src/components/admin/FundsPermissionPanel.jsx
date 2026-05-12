@@ -270,14 +270,9 @@ class FundsPermissionPanel extends AbstractReactComponent {
         const applyChange = (id) => {
             this.setState(({permissions, selectedPermission}) => {
                 const current = permissions[selectedPermission.index];
-                console.log("#add", current, permCode);
                 const updated = {
                     ...current,
-                    [permCode]: {
-                        ...(current[permCode] || {groupIds: {}}),
-                        checked: add,
-                        id
-                    },
+                    [permCode]: {...(current[permCode] || {groupIds: {}}), checked: add, id},
                 };
                 return {
                     permissions: [
