@@ -260,12 +260,9 @@ export const NodeToolbar = ({
             }
           }
           console.log("#nt", activeParent.childNodes, nodeId);
-          // const data = await WebApi.selectNode(nodeId);
-          // console.log("#nt - after select", data);
           dispatch(
             routerNavigate(urlFundNode(activeFund.id, undefined, nodeId)),
           );
-          // dispatch(processNodeNavigation(data, activeFund.versionId));
         }),
       );
     }
