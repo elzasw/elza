@@ -934,4 +934,133 @@
         <sql dbms="postgresql">CREATE INDEX IF NOT EXISTS wf_task_assignee_open_idx ON wf_task(assignee_id) WHERE time_closed IS NULL</sql>
     </changeSet>
 
+    <changeSet id="20260512120000" author="ppy">
+        <!-- Publication of archival description: storage for publication types and
+             publication records consumed by the public /publications API. -->
+        <createTable tableName="arr_export_type">
+            <column name="export_type_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_arr_export_type" nullable="false"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="nvarchar(50)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uq_arr_export_type_code"/>
+            </column>
+            <column name="active" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="export_filter_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_arr_export_type_export_filter"
+                             referencedTableName="rul_export_filter"
+                             referencedColumnNames="export_filter_id"/>
+            </column>
+            <column name="retention_count" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="allow_perm_export" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="allow_perm_publication" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="arr_export">
+            <column name="export_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_arr_export" nullable="false"/>
+            </column>
+            <column name="export_type_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_export_export_type"
+                             referencedTableName="arr_export_type"
+                             referencedColumnNames="export_type_id"/>
+            </column>
+            <column name="state" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_export_user"
+                             referencedTableName="usr_user"
+                             referencedColumnNames="user_id"/>
+            </column>
+            <column name="created_at" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="prepared_at" type="timestamp with time zone"/>
+            <column name="error_at" type="timestamp with time zone"/>
+            <column name="last_fetched_at" type="timestamp with time zone"/>
+            <column name="published_at" type="timestamp with time zone"/>
+            <column name="invalidated_at" type="timestamp with time zone"/>
+            <!-- Snapshot of the filter used when the export was created. Allows
+                 the publication type's filter setting to change without affecting
+                 already-issued exports. -->
+            <column name="export_filter_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_arr_export_export_filter"
+                             referencedTableName="rul_export_filter"
+                             referencedColumnNames="export_filter_id"/>
+            </column>
+            <column name="fund_version_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_arr_export_fund_version"
+                             referencedTableName="arr_fund_version"
+                             referencedColumnNames="fund_version_id"/>
+            </column>
+            <!-- Application must null this column before the referenced arr_change
+                 row is deleted (no ON DELETE SET NULL). -->
+            <column name="last_change_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_arr_export_last_change"
+                             referencedTableName="arr_change"
+                             referencedColumnNames="change_id"/>
+            </column>
+            <!-- Application must null this column before the referenced dms_file
+                 row is deleted (retention sweep handles this). -->
+            <column name="file_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_arr_export_file"
+                             referencedTableName="dms_file"
+                             referencedColumnNames="file_id"/>
+            </column>
+            <column name="error_message" type="${type.text}"/>
+            <!-- Monotonic cursor backing the lastTransaction parameter of the
+                 public /publications/available endpoint. Set on transition to
+                 PREPARED via nextval(arr_export_seq). -->
+            <column name="export_seq" type="bigint"/>
+        </createTable>
+
+        <!-- /publications/available cursor scan (export_type_id, export_seq > ?). -->
+        <createIndex indexName="arr_export_type_seq_idx" tableName="arr_export">
+            <column name="export_type_id"/>
+            <column name="export_seq"/>
+        </createIndex>
+        <!-- "newest export per fund within publication type" dedup query. -->
+        <createIndex indexName="arr_export_type_fund_seq_idx" tableName="arr_export">
+            <column name="export_type_id"/>
+            <column name="fund_version_id"/>
+            <column name="export_seq"/>
+        </createIndex>
+        <!-- Retention sweep lookups by file_id. -->
+        <createIndex indexName="arr_export_file_idx" tableName="arr_export">
+            <column name="file_id"/>
+        </createIndex>
+
+        <!-- Global monotonic sequence for export_seq, used as the opaque
+             lastTransaction cursor by the public publication API. -->
+        <createSequence sequenceName="arr_export_seq" startValue="1" incrementBy="1"/>
+
+        <!-- Hibernate-managed primary-key sequences. -->
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="arr_export_type|export_type_id"/>
+            <column name="next_val" value="1"/>
+        </insert>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="arr_export|export_id"/>
+            <column name="next_val" value="1"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>
