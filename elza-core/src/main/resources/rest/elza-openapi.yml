@@ -2752,8 +2752,18 @@ paths:
           schema:
             type: integer
       responses:
-        '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StructuredObject'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
       tags:
         - structure
   /funds/sdo/{fundId}/{structuredObjectId}/copy:
@@ -4851,6 +4861,23 @@ components:
           type: string
           description: vytvořená citace
       description: Received quote
+    NodeBase:
+      type: object
+      required:
+        - id
+        - version
+        - uuid
+      properties:
+        id:
+          type: integer
+          description: id of node
+        version:
+          type: integer
+          description: node version
+        uuid:
+          type: string
+          description: node uuid
+      description: Náhrada za třídu `ArrNodeVO`
     NodeBrief:
       type: object
       required:
@@ -4896,23 +4923,6 @@ components:
         Used wherever a list of nodes is presented (e.g. siblings).
 
         Náhrada `AccordionNodeVO`
-    NodeBase:
-      type: object
-      required:
-        - id
-        - version
-        - uuid
-      properties:
-        id:
-          type: integer
-          description: id of node
-        version:
-          type: integer
-          description: node version
-        uuid:
-          type: string
-          description: node uuid
-      description: Náhrada za třídu `ArrNodeVO`
     NodeConformity:
       type: object
       required:
@@ -5020,7 +5030,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/NodeBrief'
-          description: požadovaní sourozenci
+          description: Siblings window. Returned only when request.siblingsFrom is set.
         nodeIndex:
           type: integer
           description: index požadované JP
@@ -5703,8 +5713,8 @@ components:
           items:
             type: integer
         items:
-          type: object
-          additionalProperties:
+          type: array
+          items:
             $ref: '#/components/schemas/StructuredObjectItem'
       description: Data for bulk value update
     Sdo.CopyObjectParam:

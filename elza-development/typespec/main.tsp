@@ -3554,7 +3554,7 @@ namespace ElzaAPI.Sdo {
         ids: integer[];
         autoincrementItemTypeIds: integer[];
         deleteItemTypeIds: integer[];
-        items: Record<StructuredObjectItem>;
+        items: StructuredObjectItem[];
     }
 
     /**
@@ -3641,7 +3641,11 @@ namespace ElzaAPI.Sdo {
         @path fundId: integer;
         /** structure data id */
         @path structuredObjectId: integer;
-    ): void;
+    ): StructuredObject | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
 
     /**
      * Assignability settings.
