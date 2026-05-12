@@ -2934,6 +2934,351 @@ namespace ElzaAPI.Publication {
     };
 }
 
+// ---------------------------------------------------------------------------
+// Internal publication API — consumed only by the Elza web UI.
+//
+// Served under /api/internal (separate Spring controller). Not intended for
+// external integration; backwards compatibility is not guaranteed.
+//
+// All seven internal states are exposed here so that admins/users can see
+// the operational state of every record they manage. Compare to the public
+// API, which deliberately hides NEW / PREPARE_ERROR / INVALIDATED.
+// ---------------------------------------------------------------------------
+
+/**
+ * Internal-only view of a publication's life-cycle state. Mirrors
+ * {@code ARR_EXPORT.state} 1-to-1.
+ */
+enum PublicationStateInternal {
+    NEW,
+    PREPARED,
+    FETCHED,
+    PUBLISHED,
+    PREPARE_ERROR,
+    PUBLISH_ERROR,
+    INVALIDATED,
+}
+
+/**
+ * Publication type — target-system configuration.
+ *
+ * Used as both the read shape (responses) and the write shape (create / update
+ * request bodies). The `id` is server-assigned and is absent on create or
+ * update requests — on `PUT /{id}` the path parameter is authoritative; any
+ * `id` carried in the body is ignored.
+ *
+ * Changing `code` on an existing type is permitted by the API but will break
+ * the cursor for any publication system bound to the old code. The UI
+ * surfaces a warning (or disables the field) to prevent accidental changes.
+ */
+model PublicationType {
+    /** Server-assigned identifier. Absent on create / update request bodies. */
+    id?: integer;
+
+    /** Human-readable name shown in the UI. */
+    name: string;
+
+    /**
+     * Stable code identifying the target system; also used as
+     * {@code targetSystem} in the public `/publications/available` endpoint.
+     */
+    code: string;
+
+    /** When false, the type accepts neither new publications nor downloads. */
+    active?: boolean = true;
+
+    /**
+     * Code of {@code rul_export_filter}. Null means no filter
+     * (the entire fund is exported).
+     */
+    exportFilterCode?: string;
+
+    /**
+     * Number of most recent exports retained on disk per type. 0 means
+     * unlimited; 1 keeps only the latest; default is 5.
+     */
+    @minValue(0)
+    retentionCount?: integer = 5;
+
+    /** Users holding the FUND_EXPORT permission may publish into this type. */
+    allowPermExport: boolean;
+
+    /** Users holding the FUND_PUBLISH permission may publish into this type. */
+    allowPermPublication: boolean;
+}
+
+/**
+ * One publication record as shown in the UI.
+ */
+model PublicationDetail {
+    /** Publication identifier (ARR_EXPORT.export_id). */
+    id: integer;
+
+    /** Publication type ID. */
+    typeId: integer;
+
+    /** Publication type code (target system). */
+    typeCode: string;
+
+    /** Publication type name (display). */
+    typeName: string;
+
+    /** Fund version the export was created from. */
+    fundVersionId: integer;
+
+    /** Current life-cycle state. */
+    state: PublicationStateInternal;
+
+    /** ID of the user who created the publication request. */
+    createdByUserId: integer;
+
+    /** Time the publication request was created. */
+    createdAt: offsetDateTime;
+
+    /** Time XML preparation finished. Null until PREPARED. */
+    preparedAt?: offsetDateTime;
+
+    /** Time of the last fetch by the publication system. */
+    lastFetchedAt?: offsetDateTime;
+
+    /** Time the publication reported completion. */
+    publishedAt?: offsetDateTime;
+
+    /** Time the record entered an error state. */
+    errorAt?: offsetDateTime;
+
+    /** Time the record was invalidated by a user. */
+    invalidatedAt?: offsetDateTime;
+
+    /**
+     * ID of the last fund change included in the export snapshot. Null
+     * when the originating change has been purged (the XML itself is
+     * not affected).
+     */
+    lastChangeId?: integer;
+
+    /** Error description for PREPARE_ERROR / PUBLISH_ERROR. */
+    errorMessage?: string;
+
+    /** Whether a downloadable XML file is currently available on the server. */
+    hasDownloadableFile: boolean;
+}
+
+/**
+ * Paginated list of publications for a fund.
+ */
+model PublicationList {
+    items: PublicationDetail[];
+    /** Total number of publications matching the query, not just on this page. */
+    totalCount: integer;
+}
+
+/**
+ * Body of POST /fund/{fundId}/publication — request to enqueue a new
+ * publication for the current open version of the fund.
+ */
+model CreatePublication {
+    /** Identifier of the publication type to publish into. */
+    publicationTypeId: integer;
+}
+
+/**
+ * Body of POST /fund/{fundId}/publication/{publicationId}/copy — copy an
+ * existing prepared export into another target system. The target type
+ * must have a compatible filter setting.
+ */
+model CopyPublication {
+    /** Identifier of the publication type to copy the export into. */
+    targetPublicationTypeId: integer;
+}
+
+/**
+ * Path parameter for publication ID inside fund-scoped routes.
+ */
+model PublicationIdParameter {
+    /** Publication ID (ARR_EXPORT.export_id). */
+    @path
+    publicationId: integer;
+}
+
+/**
+ * Publication type management (admin dialog "Správa typů publikace").
+ *
+ * Requires administrator permission. Type configuration changes do not
+ * affect already-issued publications — each export keeps a snapshot of
+ * the filter that was active when it was created.
+ */
+@tag("publication-internal")
+@route("/publication/types")
+namespace ElzaAPI.Internal.PublicationTypeAdmin {
+    /** Return all publication types, including inactive ones. */
+    @get op listPublicationTypes(): PublicationType[];
+
+    /** Create a new publication type. */
+    @post op createPublicationType(
+        @body body: PublicationType,
+    ): PublicationType | {
+        /** Code already used by another type. */
+        @Http.statusCode statusCode: 409;
+        @body data: BaseException;
+    };
+
+    /** Update an existing publication type. */
+    @route("/{id}")
+    @put op updatePublicationType(
+        @path id: integer,
+        @body body: PublicationType,
+    ): PublicationType | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Code conflicts with another existing type. */
+        @Http.statusCode statusCode: 409;
+        @body data: BaseException;
+    };
+
+    /**
+     * Remove a publication type.
+     *
+     * Deactivating via {@code active=false} is preferred so the history of
+     * already-issued exports is preserved. A hard delete is rejected when
+     * any record in `arr_export` still references this type.
+     */
+    @route("/{id}")
+    @delete op deletePublicationType(
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 204;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Cannot delete — exports still reference this type. */
+        @Http.statusCode statusCode: 409;
+        @body data: BaseException;
+    };
+}
+
+/**
+ * Fund-scoped publication operations (UI page "Publikace" on a fund).
+ *
+ * Visible to users holding FUND_PUBLISH for the fund (or FUND_PUBLISH_ALL).
+ * Enforcement is wired in alongside the service implementation.
+ */
+@tag("publication-internal")
+@route("/fund")
+namespace ElzaAPI.Internal.FundPublication {
+    /**
+     * Return the publications for a fund, newest first.
+     *
+     * The UI must paginate — the list can grow large.
+     */
+    @route("/{fundId}/publication")
+    @get op listFundPublications(
+        ...FundIdParameter,
+        /** Optional filter on publication type. */
+        @query publicationTypeId?: integer,
+        /** Offset for pagination. */
+        @query offset?: integer = 0,
+        /** Page size. */
+        @query @minValue(1) @maxValue(200) limit?: integer = 50,
+    ): PublicationList;
+
+    /**
+     * Enqueue a new publication for the current open version of the fund.
+     *
+     * Rejected with 409 if the current fund version already has a
+     * publication of the same type in {@link PublicationStateInternal.NEW}
+     * or {@link PublicationStateInternal.PREPARED} state — we avoid
+     * re-generating identical output.
+     */
+    @route("/{fundId}/publication")
+    @post op createFundPublication(
+        ...FundIdParameter,
+        @body body: CreatePublication,
+    ): PublicationDetail | {
+        /** Publication type not found or inactive. */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** An identical publication is already pending or prepared. */
+        @Http.statusCode statusCode: 409;
+        @body data: BaseException;
+    };
+
+    /**
+     * Download the prepared XML from the UI.
+     *
+     * Unlike the public {@code /publications/download/{id}}, this UI call
+     * does not advance the publication's state and does not touch
+     * {@code last_fetched_at} — it is for human inspection.
+     */
+    @route("/{fundId}/publication/{publicationId}/download")
+    @get op downloadFundPublication(
+        ...FundIdParameter,
+        ...PublicationIdParameter,
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/xml";
+        @body data: bytes;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** File is not available (INVALIDATED or removed by retention). */
+        @Http.statusCode statusCode: 410;
+        @body data: BaseException;
+    };
+
+    /**
+     * Invalidate a publication.
+     *
+     * The associated DMS file is deleted from disk; the
+     * {@code arr_export} row is preserved as an audit trail and its
+     * state transitions to {@link PublicationStateInternal.INVALIDATED}.
+     *
+     * A regular user can only invalidate publications they created that
+     * have not yet been fetched (state PREPARED). Administrators can
+     * invalidate at any time.
+     */
+    @route("/{fundId}/publication/{publicationId}")
+    @delete op invalidateFundPublication(
+        ...FundIdParameter,
+        ...PublicationIdParameter,
+    ): {
+        @Http.statusCode statusCode: 204;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Caller is not allowed to invalidate this publication. */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    };
+
+    /**
+     * Copy an existing publication into another target system.
+     *
+     * The target publication type must have a compatible filter setting
+     * (same {@code rul_export_filter} or both unfiltered). A new
+     * {@code arr_export} row is created with its own life cycle; the
+     * source row is unchanged.
+     */
+    @route("/{fundId}/publication/{publicationId}/copy")
+    @post op copyFundPublication(
+        ...FundIdParameter,
+        ...PublicationIdParameter,
+        @body body: CopyPublication,
+    ): PublicationDetail | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Target type has an incompatible filter setting. */
+        @Http.statusCode statusCode: 409;
+        @body data: BaseException;
+    };
+}
+
 @tag("report")
 @route("/report")
 namespace ElzaAPI.Report {
@@ -4189,6 +4534,7 @@ namespace ElzaAPI.Tasks {
 @tagMetadata("search", #{description: "Vyhledávání"})
 @tagMetadata("tasks", #{description: "Úkoly"})
 @tagMetadata("publication", #{description: "Public API for the publication system"})
+@tagMetadata("publication-internal", #{description: "Publication API used by the Elza UI"})
 namespace ElzaAPI {
     // add models not used in operations
     union __Types {

@@ -31,6 +31,8 @@ tags:
     description: Administrativní funkce
   - name: publication
     description: Public API for the publication system
+  - name: publication-internal
+    description: Publication API used by the Elza UI
 servers:
   - url: http://localhost
     description: Výchozí server
@@ -2143,6 +2145,191 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - funds
+  /fund/{fundId}/publication:
+    get:
+      operationId: FundPublication_listFundPublications
+      description: |-
+        Return the publications for a fund, newest first.
+
+        The UI must paginate — the list can grow large.
+      parameters:
+        - $ref: '#/components/parameters/FundIdParameter'
+        - name: publicationTypeId
+          in: query
+          required: false
+          description: Optional filter on publication type.
+          schema:
+            type: integer
+          explode: false
+        - name: offset
+          in: query
+          required: false
+          description: Offset for pagination.
+          schema:
+            type: integer
+            default: 0
+          explode: false
+        - name: limit
+          in: query
+          required: false
+          description: Page size.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicationList'
+      tags:
+        - publication-internal
+    post:
+      operationId: FundPublication_createFundPublication
+      description: |-
+        Enqueue a new publication for the current open version of the fund.
+
+        Rejected with 409 if the current fund version already has a publication
+        of the same type in NEW or PREPARED state — we avoid re-generating
+        identical output.
+      parameters:
+        - $ref: '#/components/parameters/FundIdParameter'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicationDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - publication-internal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePublication'
+  /fund/{fundId}/publication/{publicationId}:
+    delete:
+      operationId: FundPublication_invalidateFundPublication
+      description: |-
+        Invalidate a publication.
+
+        The associated DMS file is deleted from disk; the arr_export row is
+        preserved as an audit trail and its state transitions to INVALIDATED.
+
+        A regular user can only invalidate publications they created that
+        have not yet been fetched (state PREPARED). Administrators can
+        invalidate at any time.
+      parameters:
+        - $ref: '#/components/parameters/FundIdParameter'
+        - $ref: '#/components/parameters/PublicationIdParameter'
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - publication-internal
+  /fund/{fundId}/publication/{publicationId}/copy:
+    post:
+      operationId: FundPublication_copyFundPublication
+      description: |-
+        Copy an existing publication into another target system.
+
+        The target publication type must have a compatible filter setting
+        (same rul_export_filter or both unfiltered). A new arr_export row
+        is created with its own life cycle; the source row is unchanged.
+      parameters:
+        - $ref: '#/components/parameters/FundIdParameter'
+        - $ref: '#/components/parameters/PublicationIdParameter'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicationDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - publication-internal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopyPublication'
+  /fund/{fundId}/publication/{publicationId}/download:
+    get:
+      operationId: FundPublication_downloadFundPublication
+      description: |-
+        Download the prepared XML from the UI.
+
+        Unlike the public /publications/download/{id}, this UI call does not
+        advance the publication's state and does not touch last_fetched_at —
+        it is for human inspection.
+      parameters:
+        - $ref: '#/components/parameters/FundIdParameter'
+        - $ref: '#/components/parameters/PublicationIdParameter'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/xml:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '410':
+          description: File is not available (INVALIDATED or removed by retention).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - publication-internal
   /fund/{fundId}/usedItemtypes/{fundVersionId}:
     get:
       operationId: fund_usedItemTypes
@@ -3099,6 +3286,115 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - node
+  /publication/types:
+    get:
+      operationId: PublicationTypeAdmin_listPublicationTypes
+      description: Return all publication types, including inactive ones.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PublicationType'
+      tags:
+        - publication-internal
+    post:
+      operationId: PublicationTypeAdmin_createPublicationType
+      description: Create a new publication type.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicationType'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - publication-internal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicationType'
+  /publication/types/{id}:
+    put:
+      operationId: PublicationTypeAdmin_updatePublicationType
+      description: Update an existing publication type.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicationType'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - publication-internal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicationType'
+    delete:
+      operationId: PublicationTypeAdmin_deletePublicationType
+      description: |-
+        Remove a publication type.
+
+        Deactivating via active=false is preferred so the history of
+        already-issued exports is preserved. A hard delete is rejected when
+        any record in arr_export still references this type.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - publication-internal
   /publications/available/{targetSystem}:
     get:
       operationId: Publication_getAvailablePublications
@@ -3515,6 +3811,13 @@ components:
       in: path
       required: true
       description: Node ID
+      schema:
+        type: integer
+    PublicationIdParameter:
+      name: publicationId
+      in: path
+      required: true
+      description: Publication ID (ARR_EXPORT.export_id).
       schema:
         type: integer
   schemas:
@@ -5642,6 +5945,181 @@ components:
           type: string
           description: Error message. Filled only when status = ERROR.
       description: Body of `POST /publications/status/{id}`.
+    PublicationStateInternal:
+      type: string
+      enum:
+        - NEW
+        - PREPARED
+        - FETCHED
+        - PUBLISHED
+        - PREPARE_ERROR
+        - PUBLISH_ERROR
+        - INVALIDATED
+      description: |-
+        Internal-only view of a publication's life-cycle state.
+        Mirrors ARR_EXPORT.state 1-to-1.
+    PublicationType:
+      type: object
+      required:
+        - name
+        - code
+        - allowPermExport
+        - allowPermPublication
+      properties:
+        id:
+          type: integer
+          description: Server-assigned identifier. Absent on create / update request bodies.
+        name:
+          type: string
+          description: Human-readable name shown in the UI.
+        code:
+          type: string
+          description: |-
+            Stable code identifying the target system; also used as targetSystem
+            in the public /publications/available endpoint.
+        active:
+          type: boolean
+          description: When false, the type accepts neither new publications nor downloads.
+          default: true
+        exportFilterCode:
+          type: string
+          description: |-
+            Code of rul_export_filter. Null means no filter (the entire fund
+            is exported).
+        retentionCount:
+          type: integer
+          minimum: 0
+          default: 5
+          description: |-
+            Number of most recent exports retained on disk per type. 0 means
+            unlimited; 1 keeps only the latest; default is 5.
+        allowPermExport:
+          type: boolean
+          description: Users holding the FUND_EXPORT permission may publish into this type.
+        allowPermPublication:
+          type: boolean
+          description: Users holding the FUND_PUBLISH permission may publish into this type.
+      description: |-
+        Publication type — target-system configuration.
+
+        Used as both the read shape (responses) and the write shape (create
+        / update request bodies). The id is server-assigned and is absent on
+        create or update requests — on PUT /{id} the path parameter is
+        authoritative; any id carried in the body is ignored.
+
+        Changing code on an existing type is permitted by the API but will
+        break the cursor for any publication system bound to the old code.
+        The UI surfaces a warning (or disables the field) to prevent
+        accidental changes.
+    PublicationDetail:
+      type: object
+      required:
+        - id
+        - typeId
+        - typeCode
+        - typeName
+        - fundVersionId
+        - state
+        - createdByUserId
+        - createdAt
+        - hasDownloadableFile
+      properties:
+        id:
+          type: integer
+          description: Publication identifier (ARR_EXPORT.export_id).
+        typeId:
+          type: integer
+          description: Publication type ID.
+        typeCode:
+          type: string
+          description: Publication type code (target system).
+        typeName:
+          type: string
+          description: Publication type name (display).
+        fundVersionId:
+          type: integer
+          description: Fund version the export was created from.
+        state:
+          allOf:
+            - $ref: '#/components/schemas/PublicationStateInternal'
+          description: Current life-cycle state.
+        createdByUserId:
+          type: integer
+          description: ID of the user who created the publication request.
+        createdAt:
+          type: string
+          format: date-time
+          description: Time the publication request was created.
+        preparedAt:
+          type: string
+          format: date-time
+          description: Time XML preparation finished. Null until PREPARED.
+        lastFetchedAt:
+          type: string
+          format: date-time
+          description: Time of the last fetch by the publication system.
+        publishedAt:
+          type: string
+          format: date-time
+          description: Time the publication reported completion.
+        errorAt:
+          type: string
+          format: date-time
+          description: Time the record entered an error state.
+        invalidatedAt:
+          type: string
+          format: date-time
+          description: Time the record was invalidated by a user.
+        lastChangeId:
+          type: integer
+          description: |-
+            ID of the last fund change included in the export snapshot. Null
+            when the originating change has been purged (the XML itself is
+            not affected).
+        errorMessage:
+          type: string
+          description: Error description for PREPARE_ERROR / PUBLISH_ERROR.
+        hasDownloadableFile:
+          type: boolean
+          description: Whether a downloadable XML file is currently available on the server.
+      description: One publication record as shown in the UI.
+    PublicationList:
+      type: object
+      required:
+        - items
+        - totalCount
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicationDetail'
+        totalCount:
+          type: integer
+          description: Total number of publications matching the query, not just on this page.
+      description: Paginated list of publications for a fund.
+    CreatePublication:
+      type: object
+      required:
+        - publicationTypeId
+      properties:
+        publicationTypeId:
+          type: integer
+          description: Identifier of the publication type to publish into.
+      description: |-
+        Body of POST /fund/{fundId}/publication — request to enqueue a new
+        publication for the current open version of the fund.
+    CopyPublication:
+      type: object
+      required:
+        - targetPublicationTypeId
+      properties:
+        targetPublicationTypeId:
+          type: integer
+          description: Identifier of the publication type to copy the export into.
+      description: |-
+        Body of POST /fund/{fundId}/publication/{publicationId}/copy — copy
+        an existing prepared export into another target system. The target
+        type must have a compatible filter setting.
     QueueItemState:
       type: string
       enum:
