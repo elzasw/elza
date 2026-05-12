@@ -293,8 +293,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String DELETE_STRUCTURE_ITEMS_BY_TYPE = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}";
 	protected static final String GET_FORM_STRUCTURE_ITEMS = STRUCTURE_CONTROLLER_URL
 			+ "/item/form/{fundVersionId}/{structureDataId}";
-	protected static final String DUPLICATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL
-			+ "/data/{fundVersionId}/{structureDataId}/batch";
+	@Deprecated
+	protected static final String DUPLICATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}/batch";
 	protected static final String UPDATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL
 			+ "/data/{fundVersionId}/{structureTypeCode}/batchUpdate";
 
@@ -3435,6 +3435,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param itemTypeIds     identifikátory číselných typů atributu, které se budou
 	 *                        incrementovat
 	 */
+	@Deprecated
 	protected void duplicateStructureDataBatch(final Integer fundVersionId, final Integer structureDataId,
 			final Integer count, final List<Integer> itemTypeIds) {
 		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureDataId", structureDataId)

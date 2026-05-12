@@ -28,6 +28,7 @@ import cz.tacr.elza.repository.SobjVrequestRepository;
 import cz.tacr.elza.test.controller.vo.DataInteger;
 import cz.tacr.elza.test.controller.vo.DataString;
 import cz.tacr.elza.test.controller.vo.Fund;
+import cz.tacr.elza.test.controller.vo.SdoCopyObjectParam;
 import cz.tacr.elza.test.controller.vo.SdoFindResult;
 import cz.tacr.elza.test.controller.vo.SdoItemResult;
 import cz.tacr.elza.test.controller.vo.StructuredObject;
@@ -88,7 +89,11 @@ public class StructureControllerTest extends AbstractControllerTest {
         RulDescItemTypeExtVO typeNumber = findDescItemTypeByCode("SRD_PACKET_NUMBER");
         List<Integer> itemTypeIds = Collections.singletonList(typeNumber.getId());
 
-        duplicateStructureDataBatch(fundVersion.getId(), structureData.getId(), BATCH_COUNT, itemTypeIds);
+        SdoCopyObjectParam copyObjectParam = new SdoCopyObjectParam();
+        copyObjectParam.setCount(BATCH_COUNT);
+        copyObjectParam.setIncrementedTypeIds(itemTypeIds);
+
+        structureApi.sdoCopyObject(fund.getId(), structureData.getId(), copyObjectParam);
 
         SdoFindResult structureDataResult = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, null, null, null, null);
         assertEquals(BATCH_COUNT, structureDataResult.getCount());
@@ -290,10 +295,4 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertEquals(0, structureDataResult4.getCount());
         assertEquals(0, structureDataResult4.getRows().size());
     }
-
-    @Deprecated
-    private ArrStructureDataVO createStructureData(final ArrFundVersionVO fundVersion) {
-        return createStructureData(STRUCTURE_TYPE_CODE, fundVersion.getId());
-    }
-
 }

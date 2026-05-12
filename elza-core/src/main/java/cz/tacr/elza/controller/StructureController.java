@@ -1,16 +1,22 @@
 package cz.tacr.elza.controller;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.SdoBatchUpdateParam;
+import cz.tacr.elza.controller.vo.SdoCopyObjectParam;
 import cz.tacr.elza.controller.vo.SdoFindResult;
 import cz.tacr.elza.controller.vo.SdoItemResult;
 import cz.tacr.elza.controller.vo.StructuredObject;
@@ -24,7 +30,10 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.StructObjService;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -51,6 +60,7 @@ public class StructureController implements StructureApi {
      * @param value value for the structured data (optional)
      * @return The request has succeeded. (status code 200)
      */
+	@Override
 	@Transactional
 	public ResponseEntity<StructuredObject> sdoCreateObject(Integer fundId, @RequestBody String structureTypeCode, @Nullable String value) {
 	    ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
@@ -61,7 +71,49 @@ public class StructureController implements StructureApi {
 	    }
 	    return ResponseEntity.ok(factoryVO.createStructuredObject(structuredObject));
     }
-	
+
+    /**
+     * POST /funds/sdo/{fundId}/{structuredObjectId}/copy
+     * Creating duplicates of a structured data type and an auto-increment field
+     *
+     * @param fundId fund id (required)
+     * @param structuredObjectId structure data id (required)
+     * @param sdoCopyObjectParam batch of data to create (required)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
+     */
+	@Override
+	@Transactional
+	public ResponseEntity<Void> sdoCopyObject(Integer fundId, Integer structuredObjectId, @RequestBody SdoCopyObjectParam sdoCopyObjectParam) {
+	    Integer count = sdoCopyObjectParam.getCount();
+	    Objects.requireNonNull(count, "Počet položek musí být vyplněn");
+
+	    List<Integer> incrementedTypeIds = sdoCopyObjectParam.getIncrementedTypeIds();
+	    if (CollectionUtils.isEmpty(incrementedTypeIds)) {
+	        throw new IllegalArgumentException("Autoincrementující typ musí být alespoň jeden");
+	    }
+
+	    ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+	    ArrStructuredObject structuredObject = structureService.getStructObjById(structuredObjectId);
+	    structureService.duplicateStructureDataBatch(fundVersion, structuredObject, count, incrementedTypeIds);
+
+	    return ResponseEntity.ok().build();
+    }
+
+    /**
+     * POST /funds/sdo/{fundId}/batchUpdate/{structureTypeCode}
+     * Bulk update of items/values of a structural type
+     *
+     * @param fundId fund id (required)
+     * @param structureTypeCode structure type code (required)
+     * @param sdoBatchUpdateParam batch of data to update (required)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
+     */
+	@Override
+	@Transactional
+	public ResponseEntity<Void> sdoUpdateObjects(Integer fundId, String structureTypeCode, @RequestBody SdoBatchUpdateParam sdoBatchUpdateParam) {
+		return null;
+	}
+
     /**
      * POST /funds/sdo/{fundId}/item/{structuredObjectId}
      * Create item value of a structured data type
