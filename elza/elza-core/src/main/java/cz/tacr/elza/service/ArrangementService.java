@@ -89,6 +89,7 @@ import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.controller.vo.NodeBase;
+import cz.tacr.elza.controller.vo.NodeInfo;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.NodePlainTextRepresentation;
 import cz.tacr.elza.controller.vo.OperationCompareType;
@@ -149,6 +150,7 @@ import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ConflictException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.exception.LockVersionChangeException;
@@ -313,6 +315,72 @@ public class ArrangementService {
     public ArrFund getFund(@AuthParam(type = AuthParam.Type.FUND) @NotNull Integer fundId) {
         return fundRepository.findById(fundId)
                 .orElseThrow(fund(fundId));
+    }
+
+    /**
+     * Build a {@link NodeInfo} for the given node — id/version/uuid, fund placement,
+     * and deletion state relative to the most recent fund version that contained it.
+     *
+     * Permission is checked against {@code fundId} (FUND_RD on the owning fund).
+     *
+     * Algorithm:
+     *   1. Load all levels of the node (active + historical).
+     *   2. More than one active level (deleteChange = null) → {@link ConflictException} (HTTP 409).
+     *   3. If exactly one level is active, the node is alive: report the open fund version
+     *      (or the latest version if the fund has no open one). {@code deleteChangeId} is null.
+     *   4. Otherwise every level has been deleted. Take MAX_DEL = max(deleteChange.changeId)
+     *      across all levels; {@code fundVersionId} is the highest fundVersionId whose
+     *      createChange is strictly less than MAX_DEL (i.e. the version was created before
+     *      the level was deleted, so the level was alive at its start). {@code deleteChangeId}
+     *      is MAX_DEL.
+     *
+     * @param fundId fund the node belongs to (must equal {@code node.getFundId()})
+     * @param node   the resolved node entity
+     * @return basic node info
+     */
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD })
+    public NodeInfo getNodeInfo(@AuthParam(type = AuthParam.Type.FUND) @NotNull final Integer fundId,
+                                @NotNull final ArrNode node) {
+        Validate.isTrue(fundId.equals(node.getFundId()), "fundId does not match node.fundId");
+
+        List<ArrLevel> levels = levelRepository.findByNodeOrderByCreateChangeAsc(node);
+        if (levels.isEmpty()) {
+            throw new ObjectNotFoundException("JP nemá žádnou úroveň", BaseCode.ID_NOT_EXIST)
+                    .setId(node.getNodeId());
+        }
+
+        long activeCount = levels.stream().filter(l -> l.getDeleteChange() == null).count();
+        if (activeCount > 1) {
+            throw new ConflictException("JP je zařazena pod více aktivními rodiči", BaseCode.TOO_MANY_RESULTS)
+                    .set("nodeId", node.getNodeId());
+        }
+
+        Integer fundVersionId;
+        Integer deleteChangeId;
+        if (activeCount == 1) {
+            ArrFundVersion openVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
+            fundVersionId = openVersion != null
+                    ? openVersion.getFundVersionId()
+                    : fundVersionRepository.findMaxFundVersionIdByFundId(fundId);
+            deleteChangeId = null;
+        } else {
+            int maxDel = levels.stream()
+                    .map(ArrLevel::getDeleteChange)
+                    .mapToInt(ArrChange::getChangeId)
+                    .max()
+                    .getAsInt();
+            fundVersionId = fundVersionRepository.findMaxFundVersionIdByFundIdAndCreateChangeBefore(fundId, maxDel);
+            if (fundVersionId == null) {
+                throw new ObjectNotFoundException("JP nebyla dostupná v žádné verzi AS", BaseCode.ID_NOT_EXIST)
+                        .setId(node.getNodeId());
+            }
+            deleteChangeId = maxDel;
+        }
+
+        return new NodeInfo(node.getNodeId(), node.getVersion(), node.getUuid(),
+                            fundId, fundVersionId)
+                .deleteChangeId(deleteChangeId);
     }
 
     /**

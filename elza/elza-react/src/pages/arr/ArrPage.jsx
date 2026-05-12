@@ -46,7 +46,7 @@ import './ArrPage.scss';
 import defaultKeymap from './ArrPageKeymap';
 import ArrPageRibbon from './ArrPageRibbon';
 import ArrParentPage from './ArrParentPage';
-import {processNodeNavigation} from "../../utils/ArrShared";
+import {fetchNodeInfo, processNodeNavigation} from "../../utils/ArrShared";
 
 const AREA = "ARR";
 
@@ -127,8 +127,8 @@ class ArrPage extends ArrParentPage {
             if(!match.params.nodeId){
                 throw "chybi node id"
             }
-            selectedNodeInfo = await WebApi.selectNode(match.params.nodeId);
-            urlFundId = selectedNodeInfo.fund.id;
+            selectedNodeInfo = await fetchNodeInfo(match.params.nodeId);
+            urlFundId = selectedNodeInfo.fundId;
         } else {
             urlFundId = parseInt(match.params.id);
         }
@@ -151,7 +151,7 @@ class ArrPage extends ArrParentPage {
 
         if(selectedNodeInfo){
             // directly select node with info
-            dispatch(processNodeNavigation(selectedNodeInfo, urlVersionId));
+            dispatch(processNodeNavigation(selectedNodeInfo));
         } else {
             this.selectNodeFromUrl(activeNode, urlNodeId, urlVersionId);
         }
@@ -195,8 +195,8 @@ class ArrPage extends ArrParentPage {
         if (nodeId != null) {
             // select node from url only when it is not already selected (url inserted into address bar)
             if(activeNode?.selectedSubNodeId.toString() !== nodeId){
-                const data = await WebApi.selectNode(nodeId);
-                dispatch(processNodeNavigation(data, versionId));
+                const info = await fetchNodeInfo(nodeId);
+                dispatch(processNodeNavigation(info));
             }
         }
     }

@@ -2902,6 +2902,65 @@ paths:
             schema:
               $ref: '#/components/schemas/NodeBase'
         description: node to assign values from the older brother
+  /node/info/id/{nodeId}:
+    get:
+      operationId: Node_getNodeInfoById
+      description: Get basic information about a node by its numeric ID.
+      parameters:
+        - $ref: '#/components/parameters/NodeIdParameter'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeInfo'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - node
+  /node/info/uuid/{nodeUuid}:
+    get:
+      operationId: Node_getNodeInfoByUuid
+      description: Get basic information about a node by its UUID.
+      parameters:
+        - name: nodeUuid
+          in: path
+          required: true
+          description: Node UUID (36 characters)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeInfo'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - node
   /node/node-data:
     post:
       operationId: Node_getNodeData
@@ -5058,6 +5117,46 @@ components:
           type: boolean
           description: oprávnění pořádat v dané JP
       description: Náhrada `DescFormDataNewVO`
+    NodeInfo:
+      type: object
+      required:
+        - id
+        - version
+        - uuid
+        - fundId
+        - fundVersionId
+      properties:
+        id:
+          type: integer
+          description: Node ID
+        version:
+          type: integer
+          description: Node DB row version (for optimistic concurrency on subsequent writes)
+        uuid:
+          type: string
+          description: Node UUID
+        fundId:
+          type: integer
+          description: Fund ID the node belongs to
+        fundVersionId:
+          type: integer
+          description: |-
+            ID of the most recent fund version in which the node was available
+            (i.e. had an active level). Not necessarily the open version —
+            if the node has been deleted in the open version, this points to
+            the latest version that still contained it.
+        deleteChangeId:
+          type: integer
+          description: |-
+            ID of the ArrChange that deleted the node's level after `fundVersionId`
+            was locked. Absent if the node's level is still active in `fundVersionId`
+            (i.e. the node is still reachable in that version).
+      description: |-
+        Basic information about a node — its identifiers, fund placement,
+        and deletion state relative to the most recent version that contained it.
+
+        Lightweight alternative to the full node-data load for clients that
+        only need to resolve a node identifier to fund/version context.
     NodeItem:
       type: object
       properties:

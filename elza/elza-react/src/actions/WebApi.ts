@@ -120,10 +120,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fulltext', null, data);
     }
 
-    selectNode(nodeUuid) {
-        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/selectNode/' + nodeUuid);
-    }
-
     getDaDaoListByAipId(id) {
         return AjaxUtils.ajaxGet(WebApiCls.v1 + "/daos/aip/" + id);
     }

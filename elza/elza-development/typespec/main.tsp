@@ -600,6 +600,37 @@ model NodeBase {
 }
 
 /**
+ * Basic information about a node — its identifiers, fund placement,
+ * and deletion state relative to the most recent version that contained it.
+ *
+ * Lightweight alternative to the full node-data load for clients that
+ * only need to resolve a node identifier to fund/version context.
+ */
+model NodeInfo {
+    /** Node ID */
+    id: integer;
+    /** Node DB row version (for optimistic concurrency on subsequent writes) */
+    version: integer;
+    /** Node UUID */
+    uuid: string;
+    /** Fund ID the node belongs to */
+    fundId: integer;
+    /**
+     * ID of the most recent fund version in which the node was available
+     * (i.e. had an active level). Not necessarily the open version —
+     * if the node has been deleted in the open version, this points to
+     * the latest version that still contained it.
+     */
+    fundVersionId: integer;
+    /**
+     * ID of the ArrChange that deleted the node's level after `fundVersionId`
+     * was locked. Absent if the node's level is still active in `fundVersionId`
+     * (i.e. the node is still reachable in that version).
+     */
+    deleteChangeId?: integer;
+}
+
+/**
  * Type of update Item
  */
 enum UpdateOp {
@@ -3366,6 +3397,39 @@ namespace ElzaAPI.Node {
         /** vytvořená citace */
         value: string;
     }
+
+    /**
+     * Get basic information about a node by its numeric ID.
+     */
+    @route("/info/id/{nodeId}")
+    @get op getNodeInfoById(
+        ...NodeIdParameter;
+    ): NodeInfo | {
+        /** Node not found */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Node found in more than one active level — ambiguous request */
+        @Http.statusCode statusCode: 409;
+        @body data: BaseException;
+    };
+
+    /**
+     * Get basic information about a node by its UUID.
+     */
+    @route("/info/uuid/{nodeUuid}")
+    @get op getNodeInfoByUuid(
+        /** Node UUID (36 characters) */
+        @path nodeUuid: string;
+    ): NodeInfo | {
+        /** Node not found */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Node found in more than one active level — ambiguous request */
+        @Http.statusCode statusCode: 409;
+        @body data: BaseException;
+    };
 
     /**
      * Get quote by fundVersionId & nodeId

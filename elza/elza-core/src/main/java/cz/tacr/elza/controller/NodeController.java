@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import cz.tacr.elza.controller.vo.NodeInfo;
 import cz.tacr.elza.controller.vo.NodePlainTextRepresentation;
 import cz.tacr.elza.controller.vo.NodeSearchResult;
 import cz.tacr.elza.controller.vo.NodeTreeData;
@@ -17,9 +18,14 @@ import cz.tacr.elza.controller.vo.NodeDataParam;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.exception.AccessDeniedException;
+import cz.tacr.elza.exception.ObjectNotFoundException;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.NodeSearchService;
@@ -31,7 +37,10 @@ import jakarta.transaction.Transactional;
 public class NodeController implements NodeApi {
 
 	@Autowired
-	private ArrangementService arrangementService; 
+	private ArrangementService arrangementService;
+
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
 
     @Autowired
 	private NodeSearchService nodeSearchService;
@@ -41,6 +50,9 @@ public class NodeController implements NodeApi {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private NodeRepository nodeRepository;
 
     // POST /node/search
     @Override
@@ -105,5 +117,27 @@ public class NodeController implements NodeApi {
 
 		return ResponseEntity.ok().build();
 	}
+
+    // GET /node/info/id/{nodeId}
+    @Override
+    @Transactional
+    // permission is checked inside ArrangementService.getNodeInfo (FUND_RD on resolved fundId)
+    public ResponseEntity<NodeInfo> nodeGetNodeInfoById(final Integer nodeId) {
+        ArrNode node = nodeRepository.findById(nodeId)
+                .orElseThrow(() -> new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST).setId(nodeId));
+        return ResponseEntity.ok(arrangementService.getNodeInfo(node.getFundId(), node));
+    }
+
+    // GET /node/info/uuid/{nodeUuid}
+    @Override
+    @Transactional
+    // permission is checked inside ArrangementService.getNodeInfo (FUND_RD on resolved fundId)
+    public ResponseEntity<NodeInfo> nodeGetNodeInfoByUuid(final String nodeUuid) {
+        ArrNode node = arrangementInternalService.findNodeByUuid(nodeUuid);
+        if (node == null) {
+            throw new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST).setId(nodeUuid);
+        }
+        return ResponseEntity.ok(arrangementService.getNodeInfo(node.getFundId(), node));
+    }
 
 }
