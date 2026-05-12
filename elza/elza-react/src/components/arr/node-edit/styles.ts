@@ -1,14 +1,13 @@
 import { makeStyles } from "@fluentui/react-components";
+import { GRID_BREAKPOINTS, gridBreakpointsToStyles } from "./gridBreakpoints";
 
 export const useStyles = makeStyles({
   groupWrapper: {
-    breakInside: "avoid",
     padding: "4px",
     containerName: "group-container",
     containerType: "inline-size",
   },
   groupWrapperCompact: {
-    breakInside: "avoid",
     padding: "4px 4px",
     containerName: "group-container",
     containerType: "inline-size",
@@ -27,15 +26,7 @@ export const useStyles = makeStyles({
     background: "var(--shade-0)",
     borderRadius: "8px",
     boxShadow: "0 1px 5px #0003, 0px 5px 5px #0001",
-    "@container group-container (width > 600px)": {
-      gridTemplateColumns: "repeat(2 ,1fr)",
-    },
-    "@container group-container (width > 1000px)": {
-      gridTemplateColumns: "repeat(4 ,1fr)",
-    },
-    "@container group-container (width > 1600px)": {
-      gridTemplateColumns: "repeat(6 ,1fr)",
-    },
+    ...gridBreakpointsToStyles(GRID_BREAKPOINTS),
   },
   gridContainerCompact: {
     display: "grid",
@@ -45,18 +36,7 @@ export const useStyles = makeStyles({
     background: "var(--shade-0)",
     borderRadius: "4px",
     boxShadow: "0 1px 5px #0003, 0px 5px 5px #0001",
-    "@container group-container (width > 500px)": {
-      gridTemplateColumns: "repeat(2 ,1fr)",
-    },
-    "@container group-container (width > 900px)": {
-      gridTemplateColumns: "repeat(4 ,1fr)",
-    },
-    "@container group-container (width > 1400px)": {
-      gridTemplateColumns: "repeat(6 ,1fr)",
-    },
-    "@container group-container (width > 1800px)": {
-      gridTemplateColumns: "repeat(8 ,1fr)",
-    },
+    ...gridBreakpointsToStyles(GRID_BREAKPOINTS),
   },
   gridItem: {
     verticalAlign: "top",
