@@ -2357,7 +2357,22 @@ public class ClientFactoryVO {
         return vo;
     }
 
-    public List<StructureExtensionFundVO> createStructureExtensionFund(final List<RulStructuredTypeExtension> allStructureExtensions,
+    public List<SdoExtensionFund> createStructureExtensionFund(final List<RulStructuredTypeExtension> allStructureExtensions,
+                                                               final List<RulStructuredTypeExtension> structureExtensions) {
+        List<SdoExtensionFund> result = new ArrayList<>(allStructureExtensions.size());
+        allStructureExtensions.forEach(se -> {
+        	SdoExtensionFund sdoExtensionFund = new SdoExtensionFund();
+        	sdoExtensionFund.setId(se.getStructuredTypeExtensionId());
+        	sdoExtensionFund.setCode(se.getCode());
+        	sdoExtensionFund.setName(se.getName());
+        	sdoExtensionFund.setActive(structureExtensions.contains(se));
+            result.add(sdoExtensionFund);
+        });
+        return result;
+    }
+
+    @Deprecated
+    public List<StructureExtensionFundVO> createStructureExtensionFundDeprecated(final List<RulStructuredTypeExtension> allStructureExtensions,
                                                                        final List<RulStructuredTypeExtension> structureExtensions) {
         List<StructureExtensionFundVO> result = new ArrayList<>(allStructureExtensions.size());
         allStructureExtensions.forEach(se -> {
@@ -2368,6 +2383,7 @@ public class ClientFactoryVO {
         return result;
     }
 
+    @Deprecated
     private StructureExtensionFundVO createStructureExtensionFund(final RulStructuredTypeExtension structureExtension) {
         StructureExtensionFundVO structureExtensionFundVO = new StructureExtensionFundVO();
         structureExtensionFundVO.setId(structureExtension.getStructuredTypeExtensionId());

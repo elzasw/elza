@@ -318,11 +318,12 @@ public class FundController implements FundsApi {
     }
 
     /**
-     * Smazání hodnot strukturovaného datového typu.
+     * DELETE /fund/{id}/structuredObject
+     * Smazání seznamu hodnot strukturovaného datového typu
      *
-     * @param fundVersionId    identifikátor verze AS
-     * @param structureDataIds identifikátory hodnot strukturovaného datového typu
-     * @return smazané entity
+     * @param id Identifikátor AS (required)
+     * @param requestBody Seznam id hodnot strukturovaného datového typu (required)
+     * @return The request has succeeded. (status code 200)
      */
     @Override
     @Transactional

@@ -17,6 +17,7 @@ import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.controller.vo.SdoBatchUpdateParam;
 import cz.tacr.elza.controller.vo.SdoCopyObjectParam;
+import cz.tacr.elza.controller.vo.SdoExtensionFund;
 import cz.tacr.elza.controller.vo.SdoFindResult;
 import cz.tacr.elza.controller.vo.SdoItemResult;
 import cz.tacr.elza.controller.vo.StructuredObject;
@@ -27,6 +28,7 @@ import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.domain.RulStructuredType;
+import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
@@ -351,6 +353,7 @@ public class StructureController implements StructureApi {
      * @return The request has succeeded. (status code 200)
      */
 	@Override
+	@Transactional
     public ResponseEntity<SdoFindResult> sdoFindStructObj(Integer fundId,
                                                           String structureTypeCode,
                                                           @Nullable String search,
@@ -385,4 +388,48 @@ public class StructureController implements StructureApi {
 
 	    return ResponseEntity.ok(result);
     }
+
+    /**
+     * GET /funds/sdo/{fundId}/extension/{structureTypeCode}
+     * GET Finds available and enabled AS extensions: findFundStructureExtension()
+     *
+     * @param fundId fund id (required)
+     * @param structureTypeCode structure type code (required)
+     * @param fundVersionId fund version id (optional)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+	@Transactional
+    public ResponseEntity<List<SdoExtensionFund>> sdoFindFundStructureExtension(Integer fundId, String structureTypeCode, @Nullable Integer fundVersionId) {
+	    ArrFundVersion fundVersion = fundVersionId != null ? 
+	    		arrangementInternalService.getFundVersionById(fundVersionId) : 
+	    			arrangementInternalService.getOpenVersionByFundId(fundId);
+
+	    RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
+        List<RulStructuredTypeExtension> allStructureExtensions = structureService.findAllStructureExtensions(structureType);
+        List<RulStructuredTypeExtension> structureExtensions = structureService.findStructureExtensions(fundVersion.getFund(), structureType);
+
+        return ResponseEntity.ok(factoryVO.createStructureExtensionFund(allStructureExtensions, structureExtensions));		
+	}
+
+    /**
+     * PUT /funds/sdo/{fundId}/extension/{structureTypeCode}
+     * PUT Sets a specific extension on the AS: setFundStructureExtensions()
+     *
+     * @param fundId fund id (required)
+     * @param structureTypeCode structure type code (required)
+     * @param requestBody structure ext codes (required)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
+     */
+	@Override
+	@Transactional
+	public ResponseEntity<Void> sdoSetFundStructureExtensions(Integer fundId, String structureTypeCode, @RequestBody List<String> structureExtensionCodes) {
+	    ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+	    RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
+        List<RulStructuredTypeExtension> structureExtensions = structureService.findStructureExtensionByCodes(structureExtensionCodes);
+        structureService.setFundStructureExtensions(fundVersion, structureType, structureExtensions);
+
+	    return ResponseEntity.ok().build();
+	}
+
 }

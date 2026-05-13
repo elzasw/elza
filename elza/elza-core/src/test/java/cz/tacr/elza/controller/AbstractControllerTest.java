@@ -280,7 +280,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
 	protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type";
 	protected static final String FIND_PART_TYPES = STRUCTURE_CONTROLLER_URL + "/part-type";
+	@Deprecated
 	protected static final String FIND_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}";
+	@Deprecated
 	protected static final String SET_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}";
 	@Deprecated
 	protected static final String CREATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create";
@@ -486,11 +488,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String SET_ISSUE_TYPE = ISSUE_CONTROLLER_URL + "/issues/{issueId}/type";
 	protected static final String UPDATE_COMMENT = ISSUE_CONTROLLER_URL + "/comments/{commentId}";
 	protected static final String EXPORT_ISSUE_LIST = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}/export";
-
-	// FUND
-	protected static final String FUND_V1 = FUND_CONTROLLER_URL + "/fund/{id}";
-	protected static final String FUNDS_V1 = FUND_CONTROLLER_URL + "/fund";
-	protected static final String FUND_DELETE_STRUCTURE_DATA = FUND_CONTROLLER_URL + "/fund/{id}/structuredObject";
 
 	// ACCESSPOINTS
 	protected static final String DELETE_ACCESSPOINTS_ID = FUND_CONTROLLER_URL + "/accesspoints/{id}";
@@ -3273,19 +3270,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	}
 
 	/**
-	 * Smazání hodnoty strukturovaného datového typu.
-	 *
-	 * @param fundVersionId    identifikátor verze AS
-	 * @param structureDataIds seznam identifikátorů hodnot strukturovaného datového
-	 *                         typu
-	 * @return seznam identifikátorů smazaných entit
-	 */
-	protected List<Integer> deleteStructureData(final Integer fundVersionId, final List<Integer> structureDataIds) {
-		return delete(spec -> spec.pathParams("id", fundVersionId).body(structureDataIds), FUND_DELETE_STRUCTURE_DATA)
-				.as(ArrayList.class);
-	}
-
-	/**
 	 * Vyhledání hodnot strukturovaného datového typu.
 	 *
 	 * @param structureTypeCode kód typu strukturovaného datového
@@ -3334,6 +3318,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param fundVersionId identifikátor verze AS
 	 * @return nalezené entity
 	 */
+	@Deprecated
 	protected List<StructureExtensionFundVO> findFundStructureExtension(final Integer fundVersionId,
 			final String structureTypeCode) {
 		return Arrays.asList(get(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureTypeCode",
@@ -3348,6 +3333,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @param structureExtensionCodes seznam kódů rozšíření, které mají být
 	 *                                aktivovány na AS
 	 */
+	@Deprecated
 	protected void setFundStructureExtensions(final Integer fundVersionId, final String structureTypeCode,
 			final List<String> structureExtensionCodes) {
 		put(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureTypeCode", structureTypeCode)

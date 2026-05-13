@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
-import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.repository.SobjVrequestRepository;
 import cz.tacr.elza.test.controller.vo.DataInteger;
@@ -24,6 +23,7 @@ import cz.tacr.elza.test.controller.vo.DataString;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.SdoBatchUpdateParam;
 import cz.tacr.elza.test.controller.vo.SdoCopyObjectParam;
+import cz.tacr.elza.test.controller.vo.SdoExtensionFund;
 import cz.tacr.elza.test.controller.vo.SdoFindResult;
 import cz.tacr.elza.test.controller.vo.SdoItemResult;
 import cz.tacr.elza.test.controller.vo.StructuredObject;
@@ -56,9 +56,9 @@ public class StructureControllerTest extends AbstractControllerTest {
         Fund fund = createFund(NAME_AS, CODE_AS);
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
-        structureTypesAndExtensions(fundVersion);
+        structureTypesAndExtensions(fund);
         structureDataTest(fundVersion, fund);
-        structureItemTest(fundVersion, fund);
+        structureItemTest(fund);
 
         // wait to process whole queue
         while (sobjVrequestRepository.count() > 0) {
@@ -72,8 +72,8 @@ public class StructureControllerTest extends AbstractControllerTest {
     @Test
     public void structureBatchTest() {
         Fund fund = createFund(NAME_AS, CODE_AS);
-        ArrFundVersionVO fundVersion = getOpenVersion(fund);
 
+        // create object
         StructuredObject structureData = structureApi.sdoCreateObject(fund.getId(), STRUCTURE_TYPE_CODE, null);
 
         // vytvoření hodnot
@@ -119,7 +119,7 @@ public class StructureControllerTest extends AbstractControllerTest {
         }
     }
 
-    private void structureItemTest(final ArrFundVersionVO fundVersion, final Fund fund) {
+    private void structureItemTest(final Fund fund) {
         StructuredObject structureObject = structureApi.sdoCreateObject(fund.getId(), STRUCTURE_TYPE_CODE, null);
 
         // vytvoření hodnoty
@@ -201,7 +201,7 @@ public class StructureControllerTest extends AbstractControllerTest {
      *
      * @param fundVersion
      */
-    private void structureTypesAndExtensions(final ArrFundVersionVO fundVersion) {
+    private void structureTypesAndExtensions(final Fund fund) {
         // find structure types
         List<RulStructureTypeVO> structureTypes = findStructureTypes();
         assertNotNull(structureTypes);
@@ -209,31 +209,31 @@ public class StructureControllerTest extends AbstractControllerTest {
 
         // check name and id
         RulStructureTypeVO structureType = structureTypes.stream()
-                .filter(
-                        st -> st.getCode().equals(STRUCTURE_TYPE_CODE))
-                .findFirst().get();
+                .filter(st -> st.getCode().equals(STRUCTURE_TYPE_CODE))
+                .findFirst()
+                .get();
         assertEquals(STRUCTURE_TYPE_CODE, structureType.getCode());
         assertNotNull(structureType.getId());
         assertNotNull(structureType.getName());
 
         // check extensions
-        List<StructureExtensionFundVO> fundStructureExtension = findFundStructureExtension(fundVersion.getId(), STRUCTURE_TYPE_CODE);
+        List<SdoExtensionFund> fundStructureExtension = structureApi.sdoFindFundStructureExtension(fund.getId(), STRUCTURE_TYPE_CODE, null);
         assertNotNull(fundStructureExtension);
         assertEquals(1, fundStructureExtension.size());
 
-        StructureExtensionFundVO structureExtensionFund = fundStructureExtension.get(0);
+        SdoExtensionFund structureExtensionFund = fundStructureExtension.get(0);
         assertNotNull(structureExtensionFund.getId());
         assertNotNull(structureExtensionFund.getName());
         assertNotNull(structureExtensionFund.getCode());
         assertFalse(structureExtensionFund.getActive());
 
-        setFundStructureExtensions(fundVersion.getId(), STRUCTURE_TYPE_CODE, Collections.singletonList(STRUCTURE_EXTENSION_CODE));
-        fundStructureExtension = findFundStructureExtension(fundVersion.getId(), STRUCTURE_TYPE_CODE);
+        structureApi.sdoSetFundStructureExtensions(fund.getId(), STRUCTURE_TYPE_CODE, Collections.singletonList(STRUCTURE_EXTENSION_CODE));
+        fundStructureExtension = structureApi.sdoFindFundStructureExtension(fund.getId(), STRUCTURE_TYPE_CODE, null);
         structureExtensionFund = fundStructureExtension.get(0);
         assertTrue(structureExtensionFund.getActive());
 
-        setFundStructureExtensions(fundVersion.getId(), STRUCTURE_TYPE_CODE, Collections.emptyList());
-        fundStructureExtension = findFundStructureExtension(fundVersion.getId(), STRUCTURE_TYPE_CODE);
+        structureApi.sdoSetFundStructureExtensions(fund.getId(), STRUCTURE_TYPE_CODE, Collections.emptyList());
+        fundStructureExtension = structureApi.sdoFindFundStructureExtension(fund.getId(), STRUCTURE_TYPE_CODE, null);
         structureExtensionFund = fundStructureExtension.get(0);
         assertFalse(structureExtensionFund.getActive());
     }
@@ -266,25 +266,32 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertSame(structureObject.getState(), StateEnum.OK);
         assertTrue(StringUtils.isNotEmpty(structureObject.getValue()));
 
-        SdoFindResult structureDataResult1 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, null, null, null, null);
-        assertEquals(1, structureDataResult1.getCount());
-        assertEquals(1, structureDataResult1.getRows().size());
+        SdoFindResult findResult1 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, null, null, null, null);
+        assertEquals(1, findResult1.getCount());
+        assertEquals(1, findResult1.getRows().size());
 
         structureApi.sdoSetDataAssignable(fund.getId(), false, Collections.singletonList(structureObject.getId()));
 
-        SdoFindResult structureDataResult2 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, false, null, null, null);
-        assertEquals(1, structureDataResult2.getCount());
-        assertEquals(1, structureDataResult2.getRows().size());
+        SdoFindResult findResult2 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, false, null, null, null);
+        assertEquals(1, findResult2.getCount());
+        assertEquals(1, findResult2.getRows().size());
 
-        SdoFindResult structureDataResult3 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, true, null, null, null);
-        assertEquals(0, structureDataResult3.getCount());
-        assertEquals(0, structureDataResult3.getRows().size());
+        SdoFindResult findResult3 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, true, null, null, null);
+        assertEquals(0, findResult3.getCount());
+        assertEquals(0, findResult3.getRows().size());
 
-        List<Integer> structureDataDeletedIds = deleteStructureData(fundVersion.getId(), Collections.singletonList(structureObject.getId()));
+        // ? DELETE /api/v1/fund/{id}/structuredObject
+        List<Integer> structureDataDeletedIds = fundsApi.fundDeleteStructureData(fundVersion.getId(), List.of(structureObject.getId()));
         assertTrue(structureDataDeletedIds.size() == 1);
 
-        SdoFindResult structureDataResult4 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, null, null, null, null);
-        assertEquals(0, structureDataResult4.getCount());
-        assertEquals(0, structureDataResult4.getRows().size());
+        SdoFindResult findResult4 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, null, null, null, null);
+        assertEquals(0, findResult4.getCount());
+        assertEquals(0, findResult4.getRows().size());
+
+        // сhecking delete request
+        StructuredObject createdStructureObject = structureApi.sdoCreateObject(fund.getId(), STRUCTURE_TYPE_CODE, null);
+        StructuredObject deletedStructureObject = structureApi.sdoDeleteObject(fund.getId(), createdStructureObject.getId(), null);
+        assertNotNull(deletedStructureObject);
+        assertEquals(createdStructureObject.getId(), deletedStructureObject.getId());
     }
 }
