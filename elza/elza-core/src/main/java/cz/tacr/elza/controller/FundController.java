@@ -325,6 +325,7 @@ public class FundController implements FundsApi {
      * @param requestBody Seznam id hodnot strukturovaného datového typu (required)
      * @return The request has succeeded. (status code 200)
      */
+    @Deprecated
     @Override
     @Transactional
     public ResponseEntity<List<Integer>> fundDeleteStructureData(final Integer fundVersionId, final List<Integer> structureDataIds) {

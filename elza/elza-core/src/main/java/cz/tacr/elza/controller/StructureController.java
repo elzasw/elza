@@ -1,6 +1,5 @@
 package cz.tacr.elza.controller;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -200,25 +199,25 @@ public class StructureController implements StructureApi {
 	}
 
     /**
-     * DELETE /funds/sdo/{fundId}/{structuredObjectId}
-     * Deleting a value of a structured data type
+     * DELETE /funds/sdo/{fundId}
+     * Deleting a value(s) of a structured data type
      *
      * @param fundId fund id (required)
-     * @param structuredObjectId structure data id (required)
+     * @param requestBody list of id value(s) of structured data type (required)
      * @param fundVersionId fund version id (optional)
-     * @return The request has succeeded. (status code 200)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
      *         or The server cannot find the requested resource. (status code 404)
      */
 	@Override
 	@Transactional
-	public ResponseEntity<StructuredObject> sdoDeleteObject(Integer fundId, Integer structuredObjectId, @Nullable Integer fundVersionId) {
+	public ResponseEntity<Void> sdoDeleteObjects(Integer fundId, @RequestBody List<Integer> structureObjectIds, @Nullable Integer fundVersionId) {
 	    ArrFundVersion fundVersion = fundVersionId != null ? 
 	    		arrangementInternalService.getFundVersionById(fundVersionId) : 
 	    			arrangementInternalService.getOpenVersionByFundId(fundId);
-        ArrStructuredObject structuredObject = structureService.getStructObjById(structuredObjectId);
-        structureService.deleteStructObj(fundVersion.getFundId(), Collections.singletonList(structuredObject));
-		
-        return ResponseEntity.ok(factoryVO.createStructuredObject(structuredObject));
+        List<ArrStructuredObject> structObjList = structureService.getStructObjByIds(structureObjectIds);
+        structureService.deleteStructObj(fundVersion.getFundId(), structObjList);
+
+        return ResponseEntity.ok().build();
 	}
 
     /**

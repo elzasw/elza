@@ -2512,6 +2512,43 @@ paths:
             schema:
               type: string
         description: structured data type code
+    delete:
+      operationId: Sdo_deleteObjects
+      description: Deleting a value(s) of a structured data type
+      parameters:
+        - name: fundId
+          in: path
+          required: true
+          description: fund id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: query
+          required: false
+          description: fund version id
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - structure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+        description: list of id value(s) of structured data type
   /funds/sdo/{fundId}/assignable/{assignable}:
     post:
       operationId: Sdo_setDataAssignable
@@ -2882,44 +2919,6 @@ paths:
     get:
       operationId: Sdo_getObject
       description: Getting the value of a structured data type
-      parameters:
-        - name: fundId
-          in: path
-          required: true
-          description: fund id
-          schema:
-            type: integer
-        - name: structuredObjectId
-          in: path
-          required: true
-          description: structure data id
-          schema:
-            type: integer
-        - name: fundVersionId
-          in: query
-          required: false
-          description: fund version id
-          schema:
-            type: integer
-          explode: false
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StructuredObject'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-      tags:
-        - structure
-    delete:
-      operationId: Sdo_deleteObject
-      description: Deleting a value of a structured data type
       parameters:
         - name: fundId
           in: path
