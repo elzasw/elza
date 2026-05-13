@@ -239,7 +239,11 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 
         // get part type codes from db
         List<String> partCodes = jdbcTemplate.query(SELECT_RUL_PART_TYPE + condition, (rs, rowNum) -> rs.getString(CODE));
-        partTypeCodes.addAll(partCodes);
+        partCodes.forEach(code -> {
+        	if (!partTypeCodes.contains(code)) {
+                partTypeCodes.add(code);
+            }
+        });
     }
 
     private void readTypeAndSpecDataFromZipFilePackage(Map<String, ByteArrayInputStream> streamMap) {
