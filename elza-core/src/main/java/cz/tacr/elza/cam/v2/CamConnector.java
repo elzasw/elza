@@ -1,11 +1,9 @@
 package cz.tacr.elza.cam.v2;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,12 +14,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static cz.tacr.elza.cam.v2.CamException.prepareExtSystemException; 
+import static cz.tacr.elza.cam.v2.CamException.prepareExtSystemException;
 
 import cz.tacr.cam.v2.client.ApiException;
 import cz.tacr.cam.v2.client.ApiResponse;
@@ -30,7 +29,9 @@ import cz.tacr.cam.v2.client.controller.ExportApi;
 import cz.tacr.cam.v2.client.controller.SearchApi;
 import cz.tacr.cam.v2.client.controller.UpdatesApi;
 import cz.tacr.cam.v2.client.controller.vo.BatchUpdateStatus;
+import cz.tacr.cam.v2.client.controller.vo.ExportRequestStatus;
 import cz.tacr.cam.v2.client.controller.vo.QueryParamsDef;
+import cz.tacr.cam.v2.client.controller.vo.RequestProcessState;
 import cz.tacr.cam.v2.client.controller.vo.SearchType;
 import cz.tacr.cam.v2.schema.cam.BatchUpdateResultXml;
 import cz.tacr.cam.v2.schema.cam.EntitiesXml;
@@ -71,6 +72,10 @@ public class CamConnector implements ApiCamConnector {
 
     public static final String APIKEY_ID = "apiKeyId";
     public static final String APIKEY_VALUE = "apiKeyValue";
+
+    private static final int MAX_EXPORT_BATCH_SIZE = 1000;
+    private static final long EXPORT_POLL_INTERVAL_MS = 1000L;
+    private static final long EXPORT_TIMEOUT_MS = 5L * 60L * 1000L;
 
     @Autowired
     private AccessPointConnectorService apConnectService;
@@ -236,14 +241,113 @@ public class CamConnector implements ApiCamConnector {
 
     public EntitiesXml getEntities(final List<String> archiveEntityIds,
                                    final Integer externalSystemId) throws ApiException {
-        ApiResponse<String> stringApiResponse = getExportApi(externalSystemId).exportSnapshotsWithHttpInfo(archiveEntityIds);
-        return unmarshalString(EntitiesXml.class, stringApiResponse);
+        return exportEntities(archiveEntityIds, getExportApi(externalSystemId), getEntityApi(externalSystemId));
     }
 
     public EntitiesXml getEntities(final List<String> archiveEntityIds,
                                    final ApExternalSystem externalSystem) throws ApiException {
-        ApiResponse<String> stringApiResponse = getExportApi(externalSystem).exportSnapshotsWithHttpInfo(archiveEntityIds);
-        return unmarshalString(EntitiesXml.class, stringApiResponse);
+        return exportEntities(archiveEntityIds, getExportApi(externalSystem), getEntityApi(externalSystem));
+    }
+
+    private EntitiesXml exportEntities(final List<String> archiveEntityIds,
+                                       final ExportApi exportApi,
+                                       final EntityApi entityApi) throws ApiException {
+        if (CollectionUtils.isEmpty(archiveEntityIds)) {
+            return new EntitiesXml();
+        }
+        EntitiesXml merged = new EntitiesXml();
+        for (List<String> chunk : ListUtils.partition(archiveEntityIds, MAX_EXPORT_BATCH_SIZE)) {
+            EntitiesXml part;
+            try {
+                part = exportChunk(exportApi, chunk);
+            } catch (ApiException | SystemException e) {
+                if (!isFallbackEligible(e)) {
+                    throw e;
+                }
+                logger.warn("CAM v2 bulk export failed, falling back to per-entity download; chunkSize: {}",
+                            chunk.size(), e);
+                part = fetchEntitiesIndividually(entityApi, chunk);
+            }
+            if (part.getEntity() != null) {
+                merged.getEntity().addAll(part.getEntity());
+            }
+        }
+        return merged;
+    }
+
+    private EntitiesXml fetchEntitiesIndividually(final EntityApi entityApi,
+                                                  final List<String> archiveEntityIds) throws ApiException {
+        EntitiesXml result = new EntitiesXml();
+        for (String id : archiveEntityIds) {
+            try {
+                ApiResponse<File> resp = entityApi.getEntityByIdWithHttpInfo(id);
+                EntityXml entity = unmarshal(EntityXml.class, resp);
+                result.getEntity().add(entity);
+            } catch (ApiException e) {
+                if (e.getCode() == 404) {
+                    logger.warn("CAM v2 fallback: entity not found, skipping; id: {}", id);
+                    continue;
+                }
+                throw e;
+            }
+        }
+        return result;
+    }
+
+    private static boolean isFallbackEligible(final Throwable e) {
+        if (Thread.currentThread().isInterrupted()) {
+            return false;
+        }
+        if (e instanceof ApiException) {
+            int code = ((ApiException) e).getCode();
+            return code == 0 || code >= 500;
+        }
+        return e instanceof SystemException;
+    }
+
+    private EntitiesXml exportChunk(final ExportApi exportApi,
+                                    final List<String> chunk) throws ApiException {
+        String requestId = exportApi.exportSnapshots(chunk);
+        logger.info("CAM v2 export started, requestId: {}, size: {}", requestId, chunk.size());
+
+        awaitExportFinished(exportApi, requestId);
+
+        ApiResponse<File> fileApiResponse = exportApi.downloadExportWithHttpInfo(requestId);
+        EntitiesXml result = unmarshal(EntitiesXml.class, fileApiResponse);
+        logger.info("CAM v2 export downloaded, requestId: {}", requestId);
+        return result;
+    }
+
+    private void awaitExportFinished(final ExportApi exportApi,
+                                     final String requestId) throws ApiException {
+        long deadline = System.currentTimeMillis() + EXPORT_TIMEOUT_MS;
+        while (true) {
+            ExportRequestStatus status = exportApi.getExportStatus(requestId);
+            RequestProcessState state = status.getState();
+            logger.debug("CAM v2 export status, requestId: {}, state: {}, progress: {}",
+                         requestId, state, status.getProgress());
+
+            if (state == RequestProcessState.FINISHED) {
+                return;
+            }
+            if (state == RequestProcessState.ERROR) {
+                throw new SystemException("CAM v2 export skončil chybou", PackageCode.PARSE_ERROR)
+                        .set("requestId", requestId);
+            }
+            if (System.currentTimeMillis() > deadline) {
+                throw new SystemException("CAM v2 export nedokončen v časovém limitu", PackageCode.PARSE_ERROR)
+                        .set("requestId", requestId)
+                        .set("state", state != null ? state.getValue() : null)
+                        .set("timeoutMs", EXPORT_TIMEOUT_MS);
+            }
+            try {
+                Thread.sleep(EXPORT_POLL_INTERVAL_MS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new SystemException("CAM v2 export přerušen", e, PackageCode.PARSE_ERROR)
+                        .set("requestId", requestId);
+            }
+        }
     }
 
     public UUID postNewBatch(final String batchUpdate,
@@ -362,20 +466,6 @@ public class CamConnector implements ApiCamConnector {
             throw new SystemException("Nepodařilo se načíst objekt " + classObject.getSimpleName() + " ze streamu", e, PackageCode.PARSE_ERROR).set("class", classObject.toString());
         } finally {
             apiResponse.getData().delete();
-        }
-    }
-
-    private <T> T unmarshalString(final Class<T> classObject, final ApiResponse<String> apiResponse) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("Unmarshalling received data ({}), statusCode: {}", classObject.getName(),
-                         apiResponse.getStatusCode());
-        }
-        try (InputStream in = new ByteArrayInputStream(apiResponse.getData().getBytes(StandardCharsets.UTF_8))) {
-            JAXBContext jaxbContext = JAXBContext.newInstance(classObject);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            return (T) unmarshaller.unmarshal(in);
-        } catch (Exception e) {
-            throw new SystemException("Nepodařilo se načíst objekt " + classObject.getSimpleName() + " ze streamu", e, PackageCode.PARSE_ERROR).set("class", classObject.toString());
         }
     }
 
