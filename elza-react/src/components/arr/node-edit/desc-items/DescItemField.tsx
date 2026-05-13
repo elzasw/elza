@@ -28,8 +28,9 @@ import { ErrorDisplay } from "./ErrorDisplay";
 import { ItemActions } from "./ItemActions";
 import { SavingDisplay } from "./SavingDisplay";
 import { createEmptyDescItem } from "./utils";
-import { makeStyles } from "@fluentui/react-components";
+import { makeStyles, mergeClasses } from "@fluentui/react-components";
 import { useUserSettings } from "contexts/user";
+import { useStyles as useDescItemStyles } from "./styles";
 
 const useStyles = makeStyles({
   descItem: {
@@ -105,6 +106,7 @@ export function DescItemField({
   const compact = settings.compact;
 
   const styles = useStyles();
+  const descItemStyles = useDescItemStyles();
 
   const { data } = item;
 
@@ -185,14 +187,7 @@ export function DescItemField({
 
   return (
     <div
-      className={styles.descItem}
-      style={{
-        margin: "2px 0",
-        position: "relative",
-        flex: 1,
-        // alignItems: "center",
-        alignItems: "flex-start",
-      }}
+      className={mergeClasses(styles.descItem, descItemStyles.descItemFieldRow)}
     >
       {(item.itemSpecId || typeRef.useSpecification) && !isEnum && (
         <DescItemSpec

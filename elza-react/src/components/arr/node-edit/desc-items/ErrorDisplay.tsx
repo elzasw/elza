@@ -29,6 +29,7 @@ export function ErrorDisplay({ itemObjectId }: Props) {
   const nodeConformity = nodeData?.nodeConformity;
   const styles = useStyles();
 
+  // Findings without a policyTypeId always render (defensive — in practice every finding has one).
   const visibleErrors = (nodeConformity?.errorList ?? []).filter(
     ({ descItemObjectId, policyTypeId }) =>
       descItemObjectId === itemObjectId &&

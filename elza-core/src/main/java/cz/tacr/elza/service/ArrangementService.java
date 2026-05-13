@@ -918,41 +918,41 @@ public class ArrangementService {
      * Provede zkopírování atributu daného typu ze staršího bratra uzlu.
      *
      * @param versionId      id verze stromu
-     * @param descItemTypeId typ atributu, který chceme zkopírovat
+     * @param rulItemTypeId  typ atributu, který chceme zkopírovat
      * @param nodeBase       uzel, na který nastavíme hodnoty ze staršího bratra
      * @return vytvořené hodnoty
      */
-	public List<ArrDescItem> copyOlderSiblingAttribute(Integer versionId, Integer descItemTypeId, NodeBase nodeBase) {
+	public List<ArrDescItem> copyOlderSiblingAttribute(Integer versionId, Integer rulItemTypeId, NodeBase nodeBase) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
-        RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
+        RulItemType rulItemType = itemTypeRepository.getOneCheckExist(rulItemTypeId);
 
         ArrNode node = NodeBaseMapper.createEntity(nodeBase);
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
         ArrLevel level = lockNode(node, fundVersion, change);
 
-		return copyOlderSiblingAttribute(fundVersion, descItemType, level, change);
+		return copyOlderSiblingAttribute(fundVersion, rulItemType, level, change);
 	}
 
     /**
      * Provede zkopírování atributu daného typu ze staršího bratra uzlu.
      *
      * @param version      verze stromu
-     * @param descItemType typ atributu, který chceme zkopírovat
+     * @param rulItemType  typ atributu, který chceme zkopírovat
      * @param level        uzel, na který nastavíme hodnoty ze staršího bratra
      * @return vytvořené hodnoty
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrDescItem> copyOlderSiblingAttribute(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
-                                                       final RulItemType descItemType,
+                                                       final RulItemType rulItemType,
                                                        final ArrLevel level,
                                                        final ArrChange change) {
         Validate.notNull(version, "Verze AS musí být vyplněna");
-        Validate.notNull(descItemType, "Typ atributu musí být vyplněn");
+        Validate.notNull(rulItemType, "Typ atributu musí být vyplněn");
         Validate.notNull(level, "Musí být vyplněno");
 
         isValidAndOpenVersion(version);
         Set<RulItemType> typeSet = new HashSet<>();
-        typeSet.add(descItemType);
+        typeSet.add(rulItemType);
 
         ArrLevel olderSibling = levelRepository.findOlderSibling(level, version.getLockChange());
         if (olderSibling == null) {
@@ -962,6 +962,11 @@ public class ArrangementService {
         // Read source data
         List<ArrDescItem> siblingDescItems = descriptionItemService.findOpenByNodeAndTypes(olderSibling.getNode(), typeSet);
 
+        // If previous description element has no values
+        if (CollectionUtils.isEmpty(siblingDescItems)) {
+        	throw new BusinessException("Previous description element (PP) has no value(s)", BaseCode.INVALID_STATE);
+        }
+
         MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(version.getFundVersionId());
 
         // Delete old values for these items
@@ -969,12 +974,10 @@ public class ArrangementService {
         List<ArrDescItem> nodeDescItems = descriptionItemService.findOpenByNodeAndTypes(level.getNode(), typeSet);
         if (CollectionUtils.isNotEmpty(nodeDescItems)) {
             for (ArrDescItem descItem : nodeDescItems) {
-                if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
+                if (descItem.getReadOnly() !=null && descItem.getReadOnly()) {
                     throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
                 }
-
-                descriptionItemService.deleteDescriptionItem(descItem, version,
-                        change, false, changeContext);
+                descriptionItemService.deleteDescriptionItem(descItem, version, change, false, changeContext);
             }
         }
 

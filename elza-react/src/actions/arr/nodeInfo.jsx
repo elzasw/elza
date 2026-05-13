@@ -2,9 +2,6 @@
  * Akce pro doplňující informace k záložce NODE.
  */
 
-import {WebApi} from 'actions/index';
-import {findByRoutingKeyInGlobalState} from 'stores/app/utils';
-import {isFundRootId} from 'components/arr/ArrUtils';
 import * as types from 'actions/constants/ActionTypes';
 
 export function isNodeInfoAction(action) {
@@ -16,31 +13,6 @@ export function isNodeInfoAction(action) {
         default:
             return false;
     }
-}
-
-/**
- * Nové načtení dat.
- */
-export function fundNodeInfoFetch(versionId, nodeId, routingKey, showParents) {
-    return dispatch => {
-        dispatch(fundNodeInfoRequest(versionId, nodeId, routingKey));
-
-        const isRoot = isFundRootId(nodeId);
-        let request;
-        if (isRoot) {
-            request = WebApi.getNodeData(versionId, null, false, false, true);
-        } else {
-            request = WebApi.getNodeData(versionId, nodeId, false, true, true);
-        }
-        request
-            .then(data => {
-                return {
-                    childNodes: data.children ? data.children : [],
-                    parentNodes: data.parents ? data.parents : [],
-                };
-            })
-            .then(json => dispatch(fundNodeInfoReceive(versionId, nodeId, routingKey, json)));
-    };
 }
 
 /**

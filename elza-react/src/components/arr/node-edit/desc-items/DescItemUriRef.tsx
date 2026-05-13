@@ -24,6 +24,7 @@ import { SelectSearchFundsForm } from "components/arr/search-funds-form/SelectSe
 import { i18n } from "components";
 import { FormattedMessage, defineMessages, useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
+import { useStyles } from "./styles";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemUriRef) => Promise<void>;
@@ -68,6 +69,7 @@ export function DescItemUriRef({
   }
 
   const { formatMessage } = useIntl();
+  const styles = useStyles();
   const dispatch = useAppThunkDispatch();
   const activeFund = useActiveFund();
   const isInherited = item.nodeId !== nodeId;
@@ -204,22 +206,9 @@ export function DescItemUriRef({
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flex: 1,
-        position: "relative",
-        flexDirection: "column",
-      }}
-    >
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            position: "relative",
-          }}
-        >
+    <div className={styles.descItemContainer}>
+      <div className={styles.columnFlex}>
+        <div className={styles.columnFlexRelative}>
           <Input
             size={compact ? "small" : "medium"}
             disabled={isDisabled}
@@ -275,7 +264,7 @@ export function DescItemUriRef({
             {(conflictValue) => (
               <Textarea
                 size={compact ? "small" : "medium"}
-                style={{ borderColor: "var(--color-red)", minWidth: "100px" }}
+                className={styles.conflictTextareaWithMinWidth}
                 value={conflictValue}
                 readOnly={true}
               />
@@ -283,13 +272,7 @@ export function DescItemUriRef({
           </ConflictValue>
         </div>
         {!item.undefined && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              position: "relative",
-            }}
-          >
+          <div className={styles.columnFlexRelative}>
             <Input
               size={compact ? "small" : "medium"}
               disabled={isDisabled || !data?.value}
@@ -313,7 +296,7 @@ export function DescItemUriRef({
               {(conflictValue) => (
                 <Textarea
                   size={compact ? "small" : "medium"}
-                  style={{ borderColor: "var(--color-red)", minWidth: "100px" }}
+                  className={styles.conflictTextareaWithMinWidth}
                   value={conflictValue}
                   readOnly={true}
                 />
@@ -339,13 +322,7 @@ export function DescItemUriRef({
                 // fieldRef.current?.setSelectionRange(0, query?.length || 0);
               }
             }}
-            style={{
-              minWidth: "unset",
-              // maxWidth: "60px",
-              flex: 1,
-              flexGrow: 1,
-              // paddingRight: "37px",
-            }}
+            className={styles.comboboxUriRef}
             input={{
               // ref: fieldRef,
               style: {

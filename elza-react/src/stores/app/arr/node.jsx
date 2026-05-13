@@ -1,7 +1,6 @@
 import * as types from 'actions/constants/ActionTypes';
 import {indexById} from 'stores/app/utils';
 import subNodeForm from './subNodeForm';
-import subNodeFormCache from './subNodeFormCache';
 import subNodeDaos from './subNodeDaos';
 import subNodeInfo from './subNodeInfo';
 import {consolidateState} from 'components/Utils';
@@ -56,13 +55,11 @@ export function nodeInitState(node, prevNodesNode) {
     if (prevNodesNode) {
         result.routingKey = prevNodesNode.routingKey;
         result.subNodeForm = prevNodesNode.subNodeForm;
-        result.subNodeFormCache = prevNodesNode.subNodeFormCache;
         result.subNodeInfo = prevNodesNode.subNodeInfo;
         result.subNodeDaos = prevNodesNode.subNodeDaos;
     } else {
         result.routingKey = _routingKeyAreaPrefix + _nextRoutingKey++;
         result.subNodeForm = subNodeForm(undefined, {type: ''});
-        result.subNodeFormCache = subNodeFormCache(undefined, {type: ''});
         result.subNodeInfo = subNodeInfo(undefined, {type: ''});
         result.subNodeDaos = subNodeDaos();
     }
@@ -96,7 +93,6 @@ export function nodeInitState(node, prevNodesNode) {
         result.selectedSubNodeId = null;
         result.filterText = '';
         result.searchedIds = {};
-        result.subNodeFormCache = subNodeFormCache(undefined, {type: ''});
         result.changeParent = true;
     }
 
@@ -128,7 +124,6 @@ const nodeInitialState = {
     routingKey: _routingKeyAreaPrefix + _nextRoutingKey++,
     selectedSubNodeId: null,
     subNodeForm: subNodeForm(undefined, {type: ''}),
-    subNodeFormCache: subNodeFormCache(undefined, {type: ''}),
     subNodeDaos: subNodeDaos(),
     subNodeInfo: subNodeInfo(undefined, {type: ''}),
     isNodeInfoFetching: false,
@@ -159,13 +154,6 @@ export function node(state = nodeInitialState, action) {
             subNodeForm: subNodeForm(state.subNodeForm, action),
         };
         return consolidateState(state, result);
-    }
-
-    if (nodeFormActions.isSubNodeFormCacheAction(action)) {
-        return {
-            ...state,
-            subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
-        };
     }
 
     if (isSubNodeInfoAction(action)) {
@@ -199,7 +187,6 @@ export function node(state = nodeInitialState, action) {
                 parentNodes: [],
                 pageSize: _pageSize,
                 subNodeForm: subNodeForm(undefined, {type: ''}),
-                subNodeFormCache: subNodeFormCache(undefined, {type: ''}),
                 subNodeDaos: subNodeDaos(),
                 subNodeInfo: subNodeInfo(undefined, {type: ''}),
                 routingKey: _routingKeyAreaPrefix + _nextRoutingKey++,
@@ -275,7 +262,6 @@ export function node(state = nodeInitialState, action) {
                 ...state,
                 subNodeForm: subNodeForm(state.subNodeForm, action),
                 subNodeDaos: subNodeDaos(state.subNodeDaos, action),
-                subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
             };
 
             if (action.nodeIds) {
@@ -327,7 +313,6 @@ export function node(state = nodeInitialState, action) {
 
             resultState.subNodeForm = subNodeForm(state.subNodeForm, action);
             resultState.subNodeDaos = subNodeDaos(state.subNodeDaos, action);
-            resultState.subNodeFormCache = subNodeFormCache(state.subNodeFormCache, action);
             return consolidateState(state, resultState);
         }
         case types.FUND_FUND_CHANGE_READ_MODE: {
@@ -584,7 +569,6 @@ export function node(state = nodeInitialState, action) {
             return consolidateState(state, {
                 ...state,
                 subNodeForm: subNodeForm(state.subNodeForm, action),
-                subNodeFormCache: subNodeFormCache(state.subNodeFormCache, action),
             });
 
         case types.NODES_DELETE: {
@@ -597,7 +581,6 @@ export function node(state = nodeInitialState, action) {
             }
 
             result.subNodeForm = subNodeForm(result.subNodeForm, action);
-            result.subNodeFormCache = subNodeFormCache(result.subNodeFormCache, action);
 
             let childNodes = [];
             result.childNodes.forEach(node => {

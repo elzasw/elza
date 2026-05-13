@@ -4,7 +4,7 @@ import { UserDetail } from "./UserDetail.types";
 import { ModalDialogState } from "./ModalDialog.types";
 import { DetailStoreState } from "types";
 import { ApValidationErrorsVO } from "api/ApValidationErrorsVO";
-import { SubNodeForm, SubNodeFormCache } from "./SubNodeForm.types";
+import { SubNodeForm } from "./SubNodeForm.types";
 import { FundOutput } from "./Outputs.types";
 import { FundDataGrid } from "./DataGrid.types";
 import { FilterObject } from "components/fund/filters/types";
@@ -147,7 +147,6 @@ export interface Node extends NodeBase {
     selectedSubNodeId?: number;
     subNodeDaos?: unknown;
     subNodeForm?: SubNodeForm;
-    subNodeFormCache?: SubNodeFormCache;
     subNodeInfo?: unknown;
     viewStartIndex: number;
 }

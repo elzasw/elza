@@ -6,6 +6,7 @@ import { DescItemProps } from "./types";
 import { useValueManager } from "./utils";
 import { useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
+import { useStyles } from "./styles";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemDecimal) => Promise<void>;
@@ -27,6 +28,7 @@ export function DescItemDecimal({
   }
 
   const { formatMessage } = useIntl();
+  const styles = useStyles();
   const isInherited = item.nodeId !== nodeId;
   const isDisabled =
     item.undefined ||
@@ -89,15 +91,7 @@ export function DescItemDecimal({
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flex: 1,
-        position: "relative",
-        flexDirection: "column",
-        width: "100%",
-      }}
-    >
+    <div className={styles.descItemContainerWithWidth}>
       <Input
         size={compact ? "small" : "medium"}
         disabled={isDisabled}

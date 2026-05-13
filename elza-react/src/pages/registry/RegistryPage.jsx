@@ -127,7 +127,9 @@ class RegistryPage extends AbstractReactComponent {
             if (matchIdChanged) {
                 // pokud si pamatujeme spolední navštívenou při prvním vstupu - provedeme přesměrování
                 if (registryDetail.id !== null && matchId == null) {
-                    dispatch(goToAe(history, registryDetail.id, false, !select))
+                    // Replace the id-less entry so Back doesn't bounce the user
+                    // between /ap and /ap/<id>.
+                    dispatch(goToAe(history, registryDetail.id, false, !select, false, true))
                 }
 
                 if (isUuid(matchId)) {

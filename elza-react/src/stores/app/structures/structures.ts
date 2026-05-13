@@ -16,7 +16,7 @@ const initialState: State = {
 };
 
 export default function sturctures(state = initialState, action: StructureNodeFormAction) {
-    if (structureFormActions.isSubNodeFormAction(action) || structureFormActions.isSubNodeFormCacheAction(action)) {
+    if (structureFormActions.isSubNodeFormAction(action)) {
         if (action.routingKey && state.stores.hasOwnProperty(String(action.routingKey))) {
             const result = {
                 ...state,

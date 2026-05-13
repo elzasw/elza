@@ -1,5 +1,6 @@
 import { Button } from "@fluentui/react-components";
 import { ReactNode } from "react";
+import { useStyles } from "./styles";
 
 interface Props {
   value: string;
@@ -11,29 +12,18 @@ interface Props {
 }
 
 export function ConflictValue({ conflictValue, children, onResolve, isValid = true }: Props) {
+  const styles = useStyles();
   return (
     conflictValue && (
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        <div
-          style={{
-            marginTop: "4px",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
+      <div className={styles.conflictOuter}>
+        <div className={styles.conflictActions}>
           <Button appearance="primary" onClick={() => onResolve()} disabled={!isValid}>
             Uložit
           </Button>
         </div>
-        <label style={{ color: "var(--color-red)" }}>Konfliktní hodnota</label>
+        <label className={styles.conflictLabel}>Konfliktní hodnota</label>
         {children(conflictValue)}
-        <div
-          style={{
-            marginTop: "4px",
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
+        <div className={styles.conflictActions}>
           <Button appearance="outline" onClick={() => onResolve(true)}>
             Převzít
           </Button>

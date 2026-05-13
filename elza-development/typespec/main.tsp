@@ -916,11 +916,12 @@ model WfSimpleIssue {
 }
 
 /**
- * Struktura pro položky v accordionu.
+ * Brief view of a description unit — id, version, accordion-row presentation fields, and per-node status indicators.
+ * Used wherever a list of nodes is presented (e.g. siblings).
  *
  * Náhrada `AccordionNodeVO`
  */
-model NodeAccordionData {
+model NodeBrief {
     /** nodeid uzlu */
     id: integer;
     /** popis levé části accordionu */
@@ -940,6 +941,21 @@ model NodeAccordionData {
 }
 
 /**
+ * Status information about a single description unit (the node referenced by request.nodeId).
+ * Returned in response.node when the request flag `nodeStatus` is true.
+ *
+ * Designed to be additive-only: new optional fields may be appended without breaking clients.
+ */
+model NodeStatus {
+    /** Node identifier — echoes request.nodeId for self-describing responses. */
+    id: integer;
+    /** DB version of the node, for optimistic concurrency on subsequent writes. */
+    version: integer;
+    /** Validation conformity (errors, missing items, visible policy types). Absent if no conformity record exists for this node. */
+    nodeConformity?: NodeConformity;
+}
+
+/**
  * Received data of the unit of description
  *
  * Náhrada `NodeDataVO`
@@ -947,14 +963,14 @@ model NodeAccordionData {
 model NodeData {
     /** data formuláře požadované JP */
     formData: NodeFormData;
-    /** node data */
-    node: NodeAccordionData;
-    /** požadovaní rodiče ke kořeni */
-    parents: NodeTreeData[];
-    /** požadovaní přímí potomci */
-    children: NodeTreeData[];
-    /** požadovaní sourozenci */
-    siblings?: NodeAccordionData[];
+    /** Status of the focus node. Returned only when request.nodeStatus is true. */
+    node?: NodeStatus;
+    /** Parents chain up to the root. Returned only when request.parents is true. */
+    parents?: NodeTreeData[];
+    /** Direct children. Returned only when request.children is true. */
+    children?: NodeTreeData[];
+    /** Siblings window. Returned only when request.siblingsFrom is set. */
+    siblings?: NodeBrief[];
     /** index požadované JP */
     nodeIndex: integer;
     /** celkový počet JP v úrovni požadované JP */
@@ -981,6 +997,8 @@ model NodeDataParam {
     parents: boolean;
     /** Load children description units? */
     children: boolean;
+    /** Load focus-node status (response.node)? Default false. */
+    nodeStatus?: boolean;
 }
 
 /**

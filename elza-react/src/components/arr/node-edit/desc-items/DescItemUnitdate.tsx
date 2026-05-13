@@ -12,6 +12,7 @@ import { DescItemProps } from "./types";
 import { useValueManager } from "./utils";
 import { useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
+import { useStyles } from "./styles";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemUnitdate) => Promise<void>;
@@ -37,6 +38,7 @@ export function DescItemUnitdate({
   }
 
   const { formatMessage } = useIntl();
+  const styles = useStyles();
   const dispatch = useAppThunkDispatch();
 
   const isInherited = item.nodeId !== nodeId;
@@ -97,14 +99,7 @@ export function DescItemUnitdate({
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flex: 1,
-        position: "relative",
-        flexDirection: "column",
-      }}
-    >
+    <div className={styles.descItemContainer}>
       <Input
         size={compact ? "small" : "medium"}
         disabled={isDisabled}
@@ -118,7 +113,7 @@ export function DescItemUnitdate({
           textDecoration: item.inhibited ? "line-through" : undefined,
         }}
       />
-      <div style={{ color: "var(--color-red)" }}>{validationMessage}</div>
+      <div className={styles.validationMessage}>{validationMessage}</div>
       <ConflictValue
         value={value?.toString()}
         conflictValue={conflictValue?.toString()}
@@ -129,7 +124,7 @@ export function DescItemUnitdate({
         {(conflictValue) => (
           <Input
             size={compact ? "small" : "medium"}
-            style={{ borderColor: "var(--color-red)" }}
+            className={styles.conflictTextarea}
             value={conflictValue}
             readOnly={true}
           />
