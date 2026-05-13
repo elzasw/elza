@@ -280,18 +280,11 @@ public class StructureControllerTest extends AbstractControllerTest {
         assertEquals(0, findResult3.getCount());
         assertEquals(0, findResult3.getRows().size());
 
-        // ? DELETE /api/v1/fund/{id}/structuredObject
-        List<Integer> structureDataDeletedIds = fundsApi.fundDeleteStructureData(fundVersion.getId(), List.of(structureObject.getId()));
-        assertTrue(structureDataDeletedIds.size() == 1);
+        // delete
+        structureApi.sdoDeleteObjects(fund.getId(), List.of(structureObject.getId()), null);
 
         SdoFindResult findResult4 = structureApi.sdoFindStructObj(fund.getId(), STRUCTURE_TYPE_CODE, null, null, null, null, null);
         assertEquals(0, findResult4.getCount());
         assertEquals(0, findResult4.getRows().size());
-
-        // сhecking delete request
-        StructuredObject createdStructureObject = structureApi.sdoCreateObject(fund.getId(), STRUCTURE_TYPE_CODE, null);
-        StructuredObject deletedStructureObject = structureApi.sdoDeleteObject(fund.getId(), createdStructureObject.getId(), null);
-        assertNotNull(deletedStructureObject);
-        assertEquals(createdStructureObject.getId(), deletedStructureObject.getId());
     }
 }
