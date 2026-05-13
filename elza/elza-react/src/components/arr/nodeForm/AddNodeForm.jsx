@@ -360,8 +360,8 @@ class AddNodeForm extends AbstractReactComponent {
             });
         } else if (this.state.selectedSourceAS === 'OTHER') {
             const newNode = {
-                id: node.id,
-                version: node.version,
+                id: dataServ.activeNode.id,
+                version: dataServ.activeNode.version,
             };
 
             const sourceNodes = [];
@@ -385,8 +385,8 @@ class AddNodeForm extends AbstractReactComponent {
             const submitData = {
                 targetFundVersionId: versionId,
                 targetStaticNode: newNode,
-                targetStaticNodeParent: getParentNode(parentNode),
-                selectedDirection,
+                targetStaticNodeParent: getParentNode(dataServ.parentNode),
+                selectedDirection: dataServ.direction,
                 sourceFundVersionId: this.props.globalFundTree.versionId,
                 sourceNodes,
                 ignoreRootNodes: this.state.ignoreRootNodes,

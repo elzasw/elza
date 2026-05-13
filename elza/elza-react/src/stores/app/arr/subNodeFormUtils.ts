@@ -36,7 +36,6 @@ interface MergeFromState {
         parent: { id: number; version: number };
     };
 
-    addItemTypeIds: null | any;
     dirty: boolean;
     fetched: boolean;
     fetchingId: number;

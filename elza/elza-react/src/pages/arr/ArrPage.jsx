@@ -724,7 +724,9 @@ class ArrPage extends ArrParentPage {
         const rows = [];
         if (!node) {
             return <div className="developer-panel">Je potřeba vybrat jednotku popisu.</div>;
-        } else if (node.subNodeForm.fetched) {
+        } else if (node.subNodeForm.fetched && node.subNodeForm.infoGroups) {
+            // infoGroups is null for NODE area since the new endpoint flow doesn't populate
+            // legacy derived state. Other areas (OUTPUT, STRUCTURE) still build it.
             node.subNodeForm.infoGroups.forEach(group => {
                 const types = [];
                 group.types.forEach(type => {

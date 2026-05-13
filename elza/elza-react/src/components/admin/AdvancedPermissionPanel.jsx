@@ -87,37 +87,28 @@ class AdvancedPermissionPanel extends AbstractReactComponent {
 
     changePermission = (e, permCode) => {
         const {onAddPermission, onDeletePermission} = this.props;
-        const value = e.target.checked;
+        const add = e.target.checked;
         const {permission} = this.state;
 
-        const newPermission = {
-            ...permission,
-        };
-
-        const obj = newPermission[permCode] || {groupIds: {}};
-
-        const newObj = {
-            ...obj,
-            checked: value,
-        };
-        newPermission[permCode] = newObj;
-
-        const usrPermission = {
-            id: obj.id,
+        const permissionData = {
+            id: permission[permCode]?.id,
             permission: permCode,
             scope: permission.scope,
         };
 
-        if (value) {
-            onAddPermission([usrPermission]).then(data => {
-                newObj.id = data[0].id;
-                this.setState({permission: newPermission});
-            });
+        const applyChange = (id) => {
+            this.setState(({permission}) => ({
+                permission: {
+                    ...permission,
+                    [permCode]: {...(permission[permCode] || {groupIds: {}}), checked: add, id},
+                },
+            }));
+        };
+
+        if (add) {
+            return onAddPermission([permissionData]).then(data => applyChange(data[0].id));
         } else {
-            onDeletePermission(usrPermission).then(data => {
-                newObj.id = null;
-                this.setState({permission: newPermission});
-            });
+            return onDeletePermission(permissionData).then(() => applyChange(null));
         }
     };
 

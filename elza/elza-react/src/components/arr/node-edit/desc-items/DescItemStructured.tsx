@@ -23,6 +23,7 @@ import { modalDialogShow } from "actions/global/modalDialog";
 import { useAppThunkDispatch } from "utils/hooks";
 import DescItemFactory from "components/arr/nodeForm/DescItemFactory";
 import { FormattedMessage, defineMessages } from "react-intl";
+import { useStyles } from "./styles";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemStructureRef) => Promise<void>;
@@ -189,6 +190,7 @@ export function DescItemStructured({
     );
   }
 
+  const styles = useStyles();
   const isInherited = item.nodeId != nodeId;
   const isDisabled =
     item.undefined ||
@@ -198,14 +200,7 @@ export function DescItemStructured({
     _isDisabled;
 
   return (
-    <div
-      style={{
-        position: "relative",
-        display: "inline-flex",
-        flex: 1,
-        alignItems: "center",
-      }}
-    >
+    <div className={styles.comboboxWrapperNoWidth}>
       {!structureType.anonymous && (
         // <Input
         //   style={{ flex: 1, minWidth: "60px" }}
@@ -285,22 +280,12 @@ export function DescItemStructured({
               fontSize: compact ? tokens.fontSizeBase200 : tokens.fontSizeBase300,
             }}
           >
-              <div style={{
-                  visibility: "hidden",
-                  background: "red",
-                  marginRight: "8px",
-                  flex: 0,
-              }}>{query}</div>
-              <div style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }} >
+              <div className={styles.structureQueryHidden}>{query}</div>
+              <div className={styles.structureComplement}>
                   {structure?.complement}
               </div>
           </div>
-          <div
-            style={{
-              position: "absolute",
-              right: "1px",
-            }}
-          >
+          <div className={styles.comboboxActionButton}>
             <Tooltip
               relationship="label"
               appearance="inverted"

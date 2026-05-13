@@ -14,6 +14,7 @@ import { DescItemTypeRef } from "typings/store";
 import { useStrictMode } from "../hooks";
 import { findInSources } from "./utils";
 import { RulDescItemSpecExtVO } from "api/RulDescItemSpecExtVO";
+import { useStyles } from "./styles";
 
 const mandatoryTypeMessages = defineMessages({
   [MandatoryType.Required]: { id: "mandatoryType.required", defaultMessage: "Povinný" },
@@ -83,6 +84,7 @@ export function DescItemSpec({
   compact,
 }: Props) {
   const { formatMessage } = useIntl();
+  const styles = useStyles();
   const strictMode = useStrictMode();
 
   const formSpecs = typeForm.specs;
@@ -246,10 +248,7 @@ export function DescItemSpec({
         }}
         onOptionSelect={handleOptionSelect}
         multiselect={false}
-        style={{
-          minWidth: "unset",
-          flex: 1,
-        }}
+        className={styles.comboboxSpecWrapper}
         input={{
           ref: fieldRef,
           style: {

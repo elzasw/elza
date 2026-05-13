@@ -38,7 +38,6 @@ export interface InfoGroup {
 }
 
 export interface SubNodeForm {
-    addItemTypeIds: null | unknown;
     data?: NodeData;
     dirty?: boolean;
     fetched?: boolean;
@@ -51,13 +50,10 @@ export interface SubNodeForm {
     isFetching?: boolean;
     needClean?: boolean;
     nodeId?: number;
+    /** Focus-node status (validation conformity) — populated for NODE area via the new endpoint. */
+    nodeStatus?: import("elza-api").NodeStatus | null;
     refTypesMap?: Record<string, DescItemTypeRef>;
     unusedItemTypeIds?: unknown;
     versionId?: number;
-}
-
-export interface SubNodeFormCache {
-    dataCache?: Record<number, unknown>;
-    isFetching?: boolean;
 }
 

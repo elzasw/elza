@@ -12,7 +12,7 @@ const initialState = {
 };
 
 export default function structureNodeForm(state = initialState, action = {}) {
-    if (structureFormActions.isSubNodeFormAction(action) || structureFormActions.isSubNodeFormCacheAction(action)) {
+    if (structureFormActions.isSubNodeFormAction(action)) {
         const result = {
             ...state,
             subNodeForm: subNodeForm(state.subNodeForm, action),

@@ -7,6 +7,7 @@ import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useActiveFund, useActiveParent, useNodeFormData } from "./hooks";
 import { NodeFormContext } from "./NodeFormContext";
 import { DescItemTypeFields } from "./DescItemTypeFields";
+import { useStyles } from "./styles";
 
 interface Props {
     fondsVersionId: number;
@@ -21,6 +22,7 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
     const dispatch = useAppThunkDispatch();
     const activeParent = useActiveParent();
     const activeFund = useActiveFund();
+    const styles = useStyles();
 
     const itemTypeRefs = useAppSelector(({ refTables }) => refTables.descItemTypes.itemsMap);
     const groupRefs = useAppSelector(({ refTables }) => refTables.groups.data);
@@ -113,7 +115,7 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
                 // overflowBoundary: "viewport"
             }}
         >
-            <PopoverSurface style={{ minWidth: "300px", maxWidth: "600px", padding: "8px" }}>
+            <PopoverSurface className={styles.fundDataGridPopover}>
                 {!descItemTypeEntry ? <Spinner /> : (
                     <NodeFormContext.Provider value={nodeFormData}>
                         <DescItemTypeFields

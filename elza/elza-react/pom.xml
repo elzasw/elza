@@ -10,6 +10,10 @@
     <name>ELZA React</name>
     <packaging>pom</packaging>
 
+    <properties>
+        <skipTests>false</skipTests>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>cz.tacr.elza</groupId>
@@ -147,12 +151,38 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>npm-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${skipTests}</skip>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>test</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
 
     <profiles>
+        <profile>
+            <id>elza-react-skip-on-maven-test-skip</id>
+            <activation>
+                <property>
+                    <name>maven.test.skip</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <skipTests>true</skipTests>
+            </properties>
+        </profile>
         <profile>
             <id>release</id>
             <build>

@@ -15,13 +15,16 @@ class PageLayout extends React.Component {
         ribbonOpened: true,
     };
 
+    _pendingLeftSize = null;
+    _pendingRightSize = null;
+
     handleRibbonShowHide = opened => {
         this.setState({ribbonOpened: opened});
     };
 
     render() {
-        const {className, status, ribbon, splitter, leftPanel, centerPanel, rightPanel} = this.props;
         const {ribbonOpened} = this.state;
+        const { className, status, ribbon, splitter, leftPanel, centerPanel, rightPanel, area } = this.props;
         const cls = classNames(className, {
             'app-container': true,
             'app-exists-status': status != null,
@@ -45,7 +48,15 @@ class PageLayout extends React.Component {
                         leftSize={splitter.leftWidth}
                         rightSize={splitter.rightWidth}
                         onChange={({leftSize, rightSize}) => {
-                            this.props.dispatch(splitterResize(leftSize, rightSize));
+                            this._pendingLeftSize = leftSize;
+                            this._pendingRightSize = rightSize;
+                        }}
+                        onDragFinished={() => {
+                            if (this._pendingLeftSize !== null || this._pendingRightSize !== null) {
+                                this.props.dispatch(splitterResize(this._pendingLeftSize ?? splitter.leftWidth, this._pendingRightSize ?? splitter.rightWidth));
+                                this._pendingLeftSize = null;
+                                this._pendingRightSize = null;
+                            }
                         }}
                         left={leftPanel}
                         center={centerPanel}

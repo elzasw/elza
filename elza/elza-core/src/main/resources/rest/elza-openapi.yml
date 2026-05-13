@@ -2955,7 +2955,7 @@ components:
           type: string
           description: vytvořená citace
       description: Received quote
-    NodeAccordionData:
+    NodeBrief:
       type: object
       required:
         - id
@@ -2996,7 +2996,8 @@ components:
             $ref: '#/components/schemas/WfSimpleIssue'
           description: seznam otevřených připomínek
       description: |-
-        Struktura pro položky v accordionu.
+        Brief view of a description unit — id, version, accordion-row presentation fields, and per-node status indicators.
+        Used wherever a list of nodes is presented (e.g. siblings).
 
         Náhrada `AccordionNodeVO`
     NodeBase:
@@ -3098,9 +3099,6 @@ components:
       type: object
       required:
         - formData
-        - node
-        - parents
-        - children
         - nodeIndex
         - nodeCount
       properties:
@@ -3110,22 +3108,22 @@ components:
           description: data formuláře požadované JP
         node:
           allOf:
-            - $ref: '#/components/schemas/NodeAccordionData'
-          description: node data
+            - $ref: '#/components/schemas/NodeStatus'
+          description: Status of the focus node. Returned only when request.nodeStatus is true.
         parents:
           type: array
           items:
             $ref: '#/components/schemas/NodeTreeData'
-          description: požadovaní rodiče ke kořeni
+          description: Parents chain up to the root. Returned only when request.parents is true.
         children:
           type: array
           items:
             $ref: '#/components/schemas/NodeTreeData'
-          description: požadovaní přímí potomci
+          description: Direct children. Returned only when request.children is true.
         siblings:
           type: array
           items:
-            $ref: '#/components/schemas/NodeAccordionData'
+            $ref: '#/components/schemas/NodeBrief'
           description: požadovaní sourozenci
         nodeIndex:
           type: integer
@@ -3171,6 +3169,9 @@ components:
         children:
           type: boolean
           description: Load children description units?
+        nodeStatus:
+          type: boolean
+          description: Load focus-node status (response.node)? Default false.
       description: Parameters for get information about the description unit and its "surroundings"
     NodeField:
       type: object
@@ -3278,6 +3279,27 @@ components:
           type: boolean
           description: znak částečného výsledku
       description: Seznam archivních souborů jako výsledek vyhledávání
+    NodeStatus:
+      type: object
+      required:
+        - id
+        - version
+      properties:
+        id:
+          type: integer
+          description: Node identifier — echoes request.nodeId for self-describing responses.
+        version:
+          type: integer
+          description: DB version of the node, for optimistic concurrency on subsequent writes.
+        nodeConformity:
+          allOf:
+            - $ref: '#/components/schemas/NodeConformity'
+          description: Validation conformity (errors, missing items, visible policy types). Absent if no conformity record exists for this node.
+      description: |-
+        Status information about a single description unit (the node referenced by request.nodeId).
+        Returned in response.node when the request flag `nodeStatus` is true.
+
+        Designed to be additive-only: new optional fields may be appended without breaking clients.
     NodeTreeData:
       type: object
       required:

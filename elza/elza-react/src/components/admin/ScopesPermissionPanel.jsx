@@ -137,16 +137,13 @@ class ScopesPermissionPanel extends AbstractReactComponent {
             newSelectedIndex = 0;
         }
 
-        newState = {
-            ...this.state,
-            permissions,
-        };
-
         let permission = permissions[newSelectedIndex] || {id: null};
 
         this.selectItem(permission, newSelectedIndex);
 
-        this.setState(newState);
+        if (this.props.entityPermissions.isFetching && !nextProps.entityPermissions.isFetching) {
+            this.setState({permissions});
+        }
     }
 
     /*
@@ -166,51 +163,39 @@ class ScopesPermissionPanel extends AbstractReactComponent {
 
     changePermission = (e, permCode) => {
         const {onAddPermission, onDeletePermission} = this.props;
-        const value = e.target.checked;
+        const add = e.target.checked;
         const {selectedPermission, permissions} = this.state;
         const permission = permissions[selectedPermission.index];
 
-        const newPermission = {
-            ...permission,
-        };
-
-        const obj = newPermission[permCode] || {groupIds: {}};
-
-        const newObj = {
-            ...obj,
-            checked: value,
-        };
-        newPermission[permCode] = newObj;
-
-        const newPermissions = [
-            ...permissions.slice(0, selectedPermission.index),
-            newPermission,
-            ...permissions.slice(selectedPermission.index + 1),
-        ];
-
-        const usrPermission = {
-            id: obj.id,
-            permission:
-                permission.id === ScopesPermissionPanel.ALL_ID
-                    ? ScopesPermissionPanel.permCodesMapRev[permCode]
-                    : permCode,
+        const permissionData = {
+            id: permission[permCode]?.id,
+            permission: permission.id === ScopesPermissionPanel.ALL_ID
+                ? ScopesPermissionPanel.permCodesMapRev[permCode]
+                : permCode,
             scope: permission.scope,
         };
 
-        if (value) {
-            onAddPermission([usrPermission]).then(data => {
-                newObj.id = data[0].id;
-                this.setState({
-                    permissions: newPermissions,
-                });
+        const applyChange = (id) => {
+            this.setState(({permissions, selectedPermission}) => {
+                const current = permissions[selectedPermission.index];
+                const updated = {
+                    ...current,
+                    [permCode]: {...(current[permCode] || {groupIds: {}}), checked: add, id},
+                };
+                return {
+                    permissions: [
+                        ...permissions.slice(0, selectedPermission.index),
+                        updated,
+                        ...permissions.slice(selectedPermission.index + 1),
+                    ],
+                };
             });
+        };
+
+        if (add) {
+            return onAddPermission([permissionData]).then(data => applyChange(data[0].id));
         } else {
-            onDeletePermission(usrPermission).then(data => {
-                newObj.id = null;
-                this.setState({
-                    permissions: newPermissions,
-                });
-            });
+            return onDeletePermission(permissionData).then(() => applyChange(null));
         }
     };
 
