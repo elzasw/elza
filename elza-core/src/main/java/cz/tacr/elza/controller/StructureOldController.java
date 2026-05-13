@@ -399,6 +399,7 @@ public class StructureOldController {
      * @param fundVersionId identifikátor verze AS
      * @return nalezené entity
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/extension/{fundVersionId}/{structureTypeCode}", method = RequestMethod.GET)
     public List<StructureExtensionFundVO> findFundStructureExtension(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -407,7 +408,7 @@ public class StructureOldController {
         RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
         List<RulStructuredTypeExtension> allStructureExtensions = structureService.findAllStructureExtensions(structureType);
         List<RulStructuredTypeExtension> structureExtensions = structureService.findStructureExtensions(fundVersion.getFund(), structureType);
-        return factoryVO.createStructureExtensionFund(allStructureExtensions, structureExtensions);
+        return factoryVO.createStructureExtensionFundDeprecated(allStructureExtensions, structureExtensions);
     }
 
     /**
@@ -416,6 +417,7 @@ public class StructureOldController {
      * @param fundVersionId           identifikátor verze AS
      * @param structureExtensionCodes seznam kódů rozšíření, které mají být aktivovány na AS
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/extension/{fundVersionId}/{structureTypeCode}", method = RequestMethod.PUT)
     public void setFundStructureExtensions(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
