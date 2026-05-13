@@ -59,7 +59,7 @@ public class ApIssue {
 		issueCode = issue.getIssueCode() != null ? issue.getIssueCode().getValue() : null;
 		source = issue.getSource() != null ? issue.getSource().getValue() : null;
 		detail = issue.getDetail() != null ? issue.getDetail().getValue() : null;
-		from = issue.getFrom().getValue();
+		from = issue.getFrom() != null ? issue.getFrom().getValue() : null;
 		if (resolver != null) {
 			partId = resolver.resolvePart(issue.getPartRef());
 			itemId = resolver.resolveItem(issue.getItemRef());
