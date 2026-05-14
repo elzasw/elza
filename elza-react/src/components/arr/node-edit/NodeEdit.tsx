@@ -7,6 +7,7 @@ import { ArrDaoVO } from "typings/dao";
 import { useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { FormItemGroup } from "./FormItemGroup";
+import { GroupColumns } from "./GroupColumns";
 import { NodeToolbar } from "./NodeToolbar";
 import { DescItemTypeFields } from "./DescItemTypeFields";
 import { useActiveFund, useActiveParent, useNodeFormData } from "./hooks";
@@ -167,15 +168,15 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
           });
         })}
       </div> */}
-      <div style={{ padding: compact ? "4px 8px" : "8px", columns: `350px ${settings.groupColumns || 1}` }}>
+      <div style={{ padding: compact ? "4px 8px" : "8px" }}>
         {viewDescItemGroupsLocal.length === 0 && (
           <div className={styles.spinnerPadding}>
             <Spinner />
           </div>
         )}
-        {viewDescItemGroupsLocal.map(({ group, descItemTypes }) => {
-          return (
-            <FormItemGroup group={group}>
+        <GroupColumns groups={viewDescItemGroupsLocal} columnCount={settings.groupColumns || 1}>
+          {({ group, descItemTypes }) => (
+            <FormItemGroup key={group.code} group={group}>
               {descItemTypes.map(({ typeRef, typeForm, typeWidth, descItems }) => (
                 <DescItemTypeFields
                   key={typeRef.id}
@@ -197,8 +198,8 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
                 />
               ))}
             </FormItemGroup>
-          );
-        })}
+          )}
+        </GroupColumns>
       </div>
     </div>
     </NodeFormContext.Provider>
