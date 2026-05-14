@@ -21,8 +21,8 @@
             typesafeEnumMemberName="generateName">
         <xjc:javaType name="java.time.LocalDate" xmlType="xsd:date"
                       adapter="cz.tacr.elza.schema.support.LocalDateAdapter"/>
-        <xjc:javaType name="java.time.OffsetDateTime" xmlType="xsd:dateTime"
-                      adapter="cz.tacr.elza.schema.support.OffsetDateTimeAdapter"/>
+        <xjc:javaType name="java.time.LocalDateTime" xmlType="xsd:dateTime"
+                      adapter="cz.tacr.elza.schema.support.LocalDateTimeAdapter"/>
         <xjc:javaType name="java.time.LocalTime" xmlType="xsd:time"
                       adapter="cz.tacr.elza.schema.support.LocalTimeAdapter"/>
         <!-- integer se defaultne mapuje na BigInteger, coz je uplne k nicemu -->
