@@ -3,7 +3,6 @@ package cz.tacr.elza.cam.v2;
 import static cz.tacr.elza.cam.v2.CamException.prepareExtSystemException;
 
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -596,8 +595,7 @@ public class CamService {
         for (ParticipantRecord p : participants) {
             ParticipantActivityXml activity = new ParticipantActivityXml();
             activity.setRole(toParticipantTypeXml(p.role()));
-            activity.setLastChange(new DateTimeXml(
-                    p.lastChange().atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime()));
+            activity.setLastChange(new DateTimeXml(p.lastChange()));
             activity.setExternalUser(userRegistry.inlineOrRef(p.user(), template));
             Object entityRef = xmlBuilder.createBatchEntityRecordRef();
             batchUpdate.getChanges().add(new UpdateEntityXml(entityRef,
