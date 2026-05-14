@@ -17,7 +17,8 @@ import cz.tacr.elza.controller.vo.CreatePublication;
 import cz.tacr.elza.controller.vo.PublicationDetail;
 import cz.tacr.elza.controller.vo.PublicationList;
 import cz.tacr.elza.controller.vo.PublicationType;
-import cz.tacr.elza.service.ExportTypeService;
+import cz.tacr.elza.service.PublicationService;
+import cz.tacr.elza.service.PublicationTypeService;
 
 /**
  * Internal REST API for the Elza UI.
@@ -37,7 +38,10 @@ import cz.tacr.elza.service.ExportTypeService;
 public class PublicationInternalController implements PublicationInternalApi {
 
 	@Autowired
-	private ExportTypeService exportTypeService;
+	private PublicationTypeService exportTypeService;
+	
+	@Autowired
+	private PublicationService exportService;
 
     // -----------------------------------------------------------------------
     // Publication type management (admin)
@@ -115,14 +119,11 @@ public class PublicationInternalController implements PublicationInternalApi {
      * @return The request has succeeded. (status code 200)
      */
     @Override
-    public ResponseEntity<PublicationList> fundPublicationListFundPublications(
-            @PathVariable("fundId") Integer fundId,
+    public ResponseEntity<PublicationList> fundPublicationListFundPublications(Integer fundId,
             @RequestParam(value = "publicationTypeId", required = false) Integer publicationTypeId,
             @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
             @RequestParam(value = "limit", required = false, defaultValue = "50") Integer limit) {
-        // TODO: list ARR_EXPORT rows for the fund (newest first), with paging
-        //       and optional filter by publication type.
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    	return ResponseEntity.ok(exportService.listByFund(fundId, publicationTypeId, offset, limit));
     }
 
     /**
@@ -136,13 +137,8 @@ public class PublicationInternalController implements PublicationInternalApi {
      *         or The request conflicts with the current state of the server. (status code 409)
      */
     @Override
-    public ResponseEntity<PublicationDetail> fundPublicationCreateFundPublication(
-            @PathVariable("fundId") Integer fundId,
-            @RequestBody CreatePublication createPublication) {
-        // TODO: enqueue a new ARR_EXPORT against the current open version of
-        //       the fund; reject 409 if an identical pending/prepared
-        //       publication already exists.
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<PublicationDetail> fundPublicationCreateFundPublication(Integer fundId, @RequestBody CreatePublication createPublication) {
+    	return ResponseEntity.ok(exportService.create(fundId, createPublication.getPublicationTypeId()));
     }
 
     @Override
@@ -154,22 +150,36 @@ public class PublicationInternalController implements PublicationInternalApi {
         return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
     }
 
+    /**
+     * DELETE /fund/{fundId}/publication/{publicationId}
+     * Invalidate a publication.  The associated DMS file is deleted from disk; the {
+     *
+     * @param fundId Fund ID (required)
+     * @param publicationId Publication ID (ARR_EXPORT.export_id). (required)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
+     *         or Access is forbidden. (status code 403)
+     *         or The server cannot find the requested resource. (status code 404)
+     */
     @Override
-    public ResponseEntity<Void> fundPublicationInvalidateFundPublication(
-            @PathVariable("fundId") Integer fundId,
-            @PathVariable("publicationId") Integer publicationId) {
-        // TODO: delete the associated dms_file and transition the
-        //       arr_export row to INVALIDATED; preserve the audit trail.
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<Void> fundPublicationInvalidateFundPublication(Integer fundId,Integer publicationId) {
+    	exportService.invalidate(fundId, publicationId);
+    	return ResponseEntity.ok().build();
     }
 
+    /**
+     * POST /fund/{fundId}/publication/{publicationId}/copy
+     * Copy an existing publication into another target system.  The target publication type must have a compatible filter setting (same {
+     *
+     * @param fundId Fund ID (required)
+     * @param publicationId Publication ID (ARR_EXPORT.export_id). (required)
+     * @param copyPublication  (required)
+     * @return The request has succeeded. (status code 200)
+     *         or The server cannot find the requested resource. (status code 404)
+     *         or The request conflicts with the current state of the server. (status code 409)
+     */
     @Override
-    public ResponseEntity<PublicationDetail> fundPublicationCopyFundPublication(
-            @PathVariable("fundId") Integer fundId,
-            @PathVariable("publicationId") Integer publicationId,
-            @RequestBody CopyPublication copyPublication) {
-        // TODO: clone the existing export into the target type; reject 409
-        //       on incompatible filter setting.
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<PublicationDetail> fundPublicationCopyFundPublication(Integer fundId, Integer publicationId, @RequestBody CopyPublication copyPublication) {
+    	PublicationDetail publicationDetail = exportService.copy(fundId, publicationId, copyPublication.getTargetPublicationTypeId());
+        return ResponseEntity.ok(publicationDetail);
     }
 }

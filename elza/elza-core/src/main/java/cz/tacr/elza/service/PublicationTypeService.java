@@ -26,7 +26,7 @@ import cz.tacr.elza.repository.ExportTypeRepository;
  * referenced-by-export conflict detection.
  */
 @Service
-public class ExportTypeService {
+public class PublicationTypeService {
 
     /** Default retention applied when the API request does not carry a value. */
     public static final int DEFAULT_RETENTION_COUNT = 5;
