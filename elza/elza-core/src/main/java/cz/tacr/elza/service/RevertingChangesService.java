@@ -163,6 +163,9 @@ public class RevertingChangesService {
     @Autowired
     private StaticDataService staticDataService;
 
+    @Autowired
+    private ArrangementInternalService arrangementInternalService;
+
     /**
      * Vyhledání provedení změn nad AS, případně nad konkrétní JP z AS.
      *
@@ -355,13 +358,16 @@ public class RevertingChangesService {
 
         sw.start("delete from arr_desc_item");
         {
-//            List<Integer> toReindex = new ArrayList<>(1024);
+            // Collect ids BEFORE bulk SQL bypasses Hibernate Search lifecycle hooks.
+            // Items created after toChange will be hard-deleted -> must be purged from the index.
+            List<Integer> idsToPurge = node != null
+                    ? descItemRepository.findIdByNodeAndCreatedAfterChange(node, toChange)
+                    : descItemRepository.findIdByFundAndCreatedAfterChange(fund, toChange);
 
-//            // preindexovat zaznamy, ktere mohou byt smazane
-//            toReindex.addAll(node != null
-//                    ? descItemRepository.findIdByNodeAndCreatedAfterChange(node, toChange)
-//                    : descItemRepository.findIdByFundAndCreatedAfterChange(fund, toChange)
-//            );
+            // Items deleted after toChange will have their deleteChange nulled (restored) -> must be reindexed.
+            List<Integer> idsToRestore = node != null
+                    ? descItemRepository.findIdByNodeAndDeletedAfterChange(node, toChange)
+                    : descItemRepository.findIdByFundAndDeletedAfterChange(fund, toChange);
 
             Query deleteEntityQuery = createExtendDeleteEntityQuery(fund, node, "createChange", "arr_desc_item", "arr_item", toChange);
             int count = deleteEntityQuery.executeUpdate();
@@ -378,13 +384,12 @@ public class RevertingChangesService {
 
             dataRepository.deleteAll(arrDataList);
 
-//            // preindexovat všechny aktualni
-//            toReindex.addAll(node != null
-//                    ? descItemRepository.findOpenIdByNodeAndCreatedAfterChange(node)
-//                    : descItemRepository.findOpenIdByFundAndCreatedAfterChange(fund)
-//            );
-
-//            descriptionItemService.reindexDescItem(toReindex);
+            // Sync the Hibernate Search index with the new post-revert state.
+            arrangementInternalService.purgeArrDescItemFromIndex(idsToPurge);
+            if (!idsToRestore.isEmpty()) {
+                List<ArrDescItem> restored = descItemRepository.findAllById(idsToRestore);
+                arrangementInternalService.reindexArrDescItemAndArrCacheNode(restored);
+            }
         }
         sw.stop();
 
