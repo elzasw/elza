@@ -68,7 +68,7 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
 
     const [from, setFrom] = useState(0);
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-    const [items, setItems] = useState<PublicationDetail[]>();
+    const [items, setItems] = useState<PublicationDetail[]>([]);
     const [totalCount, setTotalCount] = useState(0);
     const [refreshToken, setRefreshToken] = useState(0);
 
