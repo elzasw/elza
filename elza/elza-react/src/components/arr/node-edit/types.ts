@@ -6,7 +6,7 @@ export interface ViewDescItemGroups {
   group: DescItemGroup;
   descItemTypes: {
     typeRef: DescItemTypeRef;
-    typeForm: FormItemType;
+    typeForm?: FormItemType;
     typeWidth: number;
     // type: DescItemTypeMix;
     descItems: NodeItem[];
@@ -17,7 +17,7 @@ export interface ViewDescItemGroupsLocal {
   group: DescItemGroup;
   descItemTypes: {
     typeRef: DescItemTypeRef;
-    typeForm: FormItemType;
+    typeForm?: FormItemType;
     typeWidth: number;
     // type: DescItemTypeMix;
     descItems: FormItem[];

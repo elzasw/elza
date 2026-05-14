@@ -63,7 +63,7 @@ const useStyles = makeStyles({
 interface Props {
   item: NodeItem;
   typeRef: DescItemTypeRef;
-  typeForm: FormItemType;
+  typeForm?: FormItemType;
   typeWidth?: number;
   fondsVersionId: number;
   nodeId: number;

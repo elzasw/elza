@@ -18,7 +18,7 @@ const richTextValues = {
 
 export interface Props extends PropsWithChildren {
   typeRef: DescItemTypeRef;
-  typeForm: FormItemType;
+  typeForm?: FormItemType;
   typeWidth: number;
   nodeSettings: NodeSettings;
   handleCopyFromPrev: (id: number) => void;
@@ -98,7 +98,7 @@ export function DescItemTypeHeader({
         >
           <div>{typeRef.shortcut}</div>
         </Tooltip>
-        <DescItemTypeDebugInfo typeForm={typeForm} />
+        <DescItemTypeDebugInfo typeRef={typeRef} typeForm={typeForm} />
         {!hideCopyButtons && (
           <div className="actions" >
             <Tooltip

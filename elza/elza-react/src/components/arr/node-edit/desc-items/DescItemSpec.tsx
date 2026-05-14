@@ -63,7 +63,7 @@ interface Props {
   isUndefined?: boolean;
   onChange: (specId: number) => void;
   typeRef: DescItemTypeRef;
-  typeForm: FormItemType;
+  typeForm?: FormItemType;
   autoSize?: boolean;
   isSpec?: boolean;
   labelSource?: "shortcut" | "name";
@@ -87,7 +87,7 @@ export function DescItemSpec({
   const styles = useStyles();
   const strictMode = useStrictMode();
 
-  const formSpecs = typeForm.specs;
+  const formSpecs = typeForm?.specs ?? [];
   const refSpecs = typeRef.descItemSpecs;
 
   function getLabel(spec: {form:FormItemSpec, rule: RulDescItemSpecExtVO}){
