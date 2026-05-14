@@ -173,6 +173,7 @@ export const TREE = 'tree';
 export const NODE = 'node';
 export const GRID = 'grid';
 export const AIP = 'aip';
+export const PUBLICATION = 'publication';
 export const MOVEMENTS = 'movements';
 export const OUTPUTS = 'outputs';
 export const ACTIONS = 'actions';
@@ -254,6 +255,10 @@ export const urlFundGrid = (fundId: number, versionId?: number, filter?: string)
 
 export const urlFundAb = (fundId: number, versionId?: number) => {
     return fundSub(fundId, versionId, AIP);
+}
+
+export const urlFundPublication = (fundId: number, versionId?: number) => {
+    return fundSub(fundId, versionId, PUBLICATION);
 }
 
 export const urlFundMovements = (fundId: number, versionId?: number) => {

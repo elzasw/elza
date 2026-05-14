@@ -29,7 +29,8 @@ import {
     HomePage,
     MapPage,
     RegistryPage,
-    ReportsPage
+    ReportsPage,
+    ArrPublicationPage
 } from 'pages';
 import { PropTypes } from 'prop-types';
 import React, { useEffect, useRef } from 'react';
@@ -56,6 +57,7 @@ import {
     URL_FUND,
     URL_NODE,
     URL_AIP,
+    PUBLICATION,
     URL_COMPONENT
 } from '../constants.tsx';
 import AdminBulkActionPage from './admin/AdminBulkActionPage';
@@ -240,6 +242,7 @@ class Layout extends AbstractReactComponent {
                                             <Route path={`${URL_FUND}/:id/${NODE}/:nodeId`} component={ArrPage} />
                                             <Route path={`${URL_FUND}/:id/${GRID}`} component={ArrDataGridPage} />
                                             <Route path={`${URL_FUND}/:id/${AIP}`} component={ArrAipPage} />
+                                            <Route path={`${URL_FUND}/:id/${PUBLICATION}`} component={ArrPublicationPage} />
                                             <Route path={`${URL_FUND}/:id/${MOVEMENTS}`} component={ArrMovementsPage} />
                                             <Route path={`${URL_FUND}/:id/${OUTPUTS}/:outputId`} component={ArrOutputPage} />
                                             <Route path={`${URL_FUND}/:id/${OUTPUTS}`} component={ArrOutputPage} />
