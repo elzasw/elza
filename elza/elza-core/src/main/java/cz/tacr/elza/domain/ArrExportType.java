@@ -21,6 +21,7 @@ import jakarta.persistence.ManyToOne;
 @Entity(name = "arr_export_type")
 public class ArrExportType {
 
+	public static final String FIELD_NAME = "name";
     public static final String FIELD_CODE = "code";
 
     @Id

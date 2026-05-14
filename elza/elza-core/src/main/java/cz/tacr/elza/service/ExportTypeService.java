@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +42,7 @@ public class ExportTypeService {
 
     @Transactional(readOnly = true)
     public List<ArrExportType> listAll() {
-        return exportTypeRepository.findAll();
+        return exportTypeRepository.findAll(Sort.by(ArrExportType.FIELD_NAME).ascending());
     }
 
     @Transactional
@@ -52,8 +53,7 @@ public class ExportTypeService {
                     .set("property", "code")
                     .set("code", vo.getCode());
         }
-        ArrExportType entity = new ArrExportType();
-        applyVO(entity, vo);
+        ArrExportType entity = createEntity(vo, null);
         return exportTypeRepository.save(entity);
     }
 
@@ -73,19 +73,17 @@ public class ExportTypeService {
             }
         }
 
-        applyVO(entity, vo);
+        entity = createEntity(vo, entity);
         return exportTypeRepository.save(entity);
     }
 
     @Transactional
     public void delete(final Integer id) {
         ArrExportType entity = exportTypeRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException(
-                        "Publication type not found", BaseCode.ID_NOT_EXIST).setId(id));
+                .orElseThrow(() -> new ObjectNotFoundException("Publication type not found", BaseCode.ID_NOT_EXIST).setId(id));
 
         if (exportRepository.existsByExportTypeExportTypeId(id)) {
-            throw new ConflictException("Publication type is referenced by existing publications",
-                    BaseCode.DB_INTEGRITY_PROBLEM).set("id", id);
+            throw new ConflictException("Publication type is referenced by existing publications", BaseCode.DB_INTEGRITY_PROBLEM).set("id", id);
         }
         exportTypeRepository.delete(entity);
     }
@@ -105,14 +103,15 @@ public class ExportTypeService {
         return vo;
     }
 
-    private void applyVO(final ArrExportType entity, final PublicationType vo) {
+    private ArrExportType createEntity(final PublicationType vo, ArrExportType entity) {
         if (vo.getName() == null || vo.getName().isBlank()) {
-            throw new BusinessException("Publication type name must be set",
-                    BaseCode.PROPERTY_NOT_EXIST).set("property", "name");
+            throw new BusinessException("Publication type name must be set", BaseCode.PROPERTY_NOT_EXIST).set("property", "name");
         }
         if (vo.getCode() == null || vo.getCode().isBlank()) {
-            throw new BusinessException("Publication type code must be set",
-                    BaseCode.PROPERTY_NOT_EXIST).set("property", "code");
+            throw new BusinessException("Publication type code must be set", BaseCode.PROPERTY_NOT_EXIST).set("property", "code");
+        }
+        if (entity == null) {
+        	entity = new ArrExportType();
         }
         entity.setName(vo.getName());
         entity.setCode(vo.getCode());
@@ -121,6 +120,7 @@ public class ExportTypeService {
         entity.setAllowPermExport(Boolean.TRUE.equals(vo.getAllowPermExport()));
         entity.setAllowPermPublication(Boolean.TRUE.equals(vo.getAllowPermPublication()));
         entity.setExportFilter(resolveExportFilter(vo.getExportFilterCode()));
+        return entity;
     }
 
     private RulExportFilter resolveExportFilter(final String code) {
