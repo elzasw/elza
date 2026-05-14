@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -275,7 +274,7 @@ public class CamServiceImportTest extends AbstractControllerTest {
 
         ent.setRevision(new RevisionInfoXml(new UuidXml(uuid), null, null,
                 new UserInfoXml(new CodeXml("user"), null, new LongStringXml("user"), null, null, null),
-                new DateTimeXml(LocalDateTime.now()), null));
+                new DateTimeXml(OffsetDateTime.now()), null));
         return ent;
     }
 }

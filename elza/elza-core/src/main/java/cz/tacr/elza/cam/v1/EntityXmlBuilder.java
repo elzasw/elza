@@ -1,6 +1,5 @@
 package cz.tacr.elza.cam.v1;
 
-import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -103,8 +102,7 @@ public class EntityXmlBuilder extends CamXmlBuilder {
         revInfo.setRid(new UuidXml(UUID.randomUUID().toString()));
 
         ApChange createChange = apState.getCreateChange();
-        revInfo.setModt(new DateTimeXml(
-                createChange.getChangeDate().atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime()));
+        revInfo.setModt(new DateTimeXml(createChange.getChangeDate()));
 
         // User info
         String usr = "system";
