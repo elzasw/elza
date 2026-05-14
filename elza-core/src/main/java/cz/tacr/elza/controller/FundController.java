@@ -63,7 +63,6 @@ import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrUser;
@@ -78,7 +77,6 @@ import cz.tacr.elza.service.ArrangementService.FindFundVersionsResult;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FundLevelService;
-import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 
@@ -114,9 +112,6 @@ public class FundController implements FundsApi {
 
     @Autowired
     private ScopeRepository scopeRepository;
-
-    @Autowired
-    private StructObjService structureService;
 
     @Autowired
     private FileSystemRepoService fileSystemRepoService;
