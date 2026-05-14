@@ -9,15 +9,16 @@ type PublicationToolbarProps = {
     onColsChange: (e: MenuCheckedValueChangeEvent, data: MenuCheckedValueChangeData) => void;
     onPublish: () => void;
     publicationTypes: PublicationType[];
+    disabledTypeIds?: Set<number>;
     fundId: number;
 };
 
-const PublicationToolbar = ({ columns, onColsChange, onPublish, publicationTypes, fundId }: PublicationToolbarProps) => {
+const PublicationToolbar = ({ columns, onColsChange, onPublish, publicationTypes, disabledTypeIds, fundId }: PublicationToolbarProps) => {
     const classes = useToolbarStyles();
 
     return (
         <div className={classes.root}>
-            <PublishButton onPublish={onPublish} types={publicationTypes} fundId={fundId} />
+            <PublishButton onPublish={onPublish} types={publicationTypes} disabledTypeIds={disabledTypeIds} fundId={fundId} />
             <div style={{ flex: 1 }} />
             <PublicationListColSelector
                 columns={columns}

@@ -1,4 +1,4 @@
-import { Button, Popover, PopoverSurface, PopoverTrigger, makeStyles, tokens } from "@fluentui/react-components";
+import { Button, Popover, PopoverSurface, PopoverTrigger, PositioningShorthand, makeStyles, tokens } from "@fluentui/react-components";
 import { useState } from "react";
 import { defineMessages, useIntl } from "react-intl";
 
@@ -31,19 +31,20 @@ const messages = defineMessages({
 interface Props {
     text: string;
     confirmLabel?: string;
+    positioning?: PositioningShorthand;
     onConfirm: () => void;
     children: React.ReactElement;
 }
 
 export type { Props as ConfirmPopoverProps };
 
-export function ConfirmPopover({ text, confirmLabel, onConfirm, children }: Props) {
+export function ConfirmPopover({ text, confirmLabel, positioning = "after", onConfirm, children }: Props) {
     const classes = useConfirmPopoverStyles();
     const { formatMessage } = useIntl();
     const [open, setOpen] = useState(false);
 
     return (
-        <Popover withArrow positioning="after" open={open} onOpenChange={(_, data) => setOpen(data.open)}>
+        <Popover withArrow positioning={positioning} open={open} onOpenChange={(_, data) => setOpen(data.open)}>
             <PopoverTrigger disableButtonEnhancement>
                 {children}
             </PopoverTrigger>

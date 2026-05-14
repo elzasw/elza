@@ -86,13 +86,11 @@ export const useDialogStyles = makeStyles({
         color: tokens.colorNeutralForeground3,
         fontStyle: "italic",
     },
-    deleteBtnHidden: {
-        opacity: "0",
-        transition: "opacity 0.1s",
-    },
-    deleteBtnVisible: {
-        opacity: "1",
-        transition: "opacity 0.1s",
+    inactiveIcon: {
+        color: tokens.colorNeutralForeground3,
+        flexShrink: "0",
+        fontSize: tokens.fontSizeBase400,
+        marginRight: tokens.spacingHorizontalXS,
     },
     addButton: {
         margin: "8px",
@@ -146,6 +144,12 @@ export const useDetailStyles = makeStyles({
         display: "flex",
         gap: "8px",
         paddingTop: "12px",
-        borderTop: `1px solid ${tokens.colorNeutralStroke1}`,
+        // borderTop: `1px solid ${tokens.colorNeutralStroke1}`,
+    },
+    dangerBtn: {
+        ":hover": {
+            backgroundColor: tokens.colorStatusDangerBackground3Hover,
+            color: tokens.colorNeutralForegroundOnBrand,
+        },
     },
 });
