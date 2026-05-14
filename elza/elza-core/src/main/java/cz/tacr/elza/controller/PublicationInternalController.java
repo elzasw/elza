@@ -33,7 +33,7 @@ import cz.tacr.elza.service.ExportTypeService;
  * endpoints are not an integration contract.
  */
 @RestController
-@RequestMapping("/api/internal")
+@RequestMapping("/api/v1")
 public class PublicationInternalController implements PublicationInternalApi {
 
 	@Autowired

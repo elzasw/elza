@@ -66,6 +66,7 @@ import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DigitizationRequestRepository;
+import cz.tacr.elza.repository.ExportTypeRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -258,6 +259,8 @@ public class HelperTestService {
 	private WfTaskApStateRepository wfTaskApStateRepository;
 	@Autowired
 	private WfTaskApRevStateRepository wfTaskApRevStateRepository;
+    @Autowired
+    private ExportTypeRepository exportTypeRepository;
 
     @Autowired
     private PackageService packageService;
@@ -386,6 +389,7 @@ public class HelperTestService {
         apChangeRepository.deleteAll();
         externalSystemRepository.deleteAll();
         userRepository.deleteAll();
+        exportTypeRepository.deleteAll();
 
         // DB has to be flushed before start
         em.flush();
