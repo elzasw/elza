@@ -546,7 +546,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 	protected PublicationApi publicationApi;
 
-	protected PublicationInternalApi publicationInternalApi;
+	protected PublicationInternalApi publicationIntApi;
 
 	protected static Map<String, String> cookies = null;
 
@@ -576,7 +576,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		structureApi = new cz.tacr.elza.test.controller.StructureApi(elzaApiClient);
 		rulesApi = new cz.tacr.elza.test.controller.RulesApi(elzaApiClient);
 		publicationApi = new cz.tacr.elza.test.controller.PublicationApi(elzaApiClient);
-		publicationInternalApi = new cz.tacr.elza.test.controller.PublicationInternalApi(elzaApiClient);
+		publicationIntApi = new cz.tacr.elza.test.controller.PublicationInternalApi(elzaApiClient);
 
 		loginAsAdmin();
 
