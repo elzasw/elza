@@ -12,6 +12,7 @@ import {
     NodeApi,
     TasksApi,
     StructureApi,
+    PublicationInternalApi,
 } from 'elza-api';
 import globalAxios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import i18n from '../components/i18n';
@@ -211,6 +212,7 @@ export const Api: {
     report: ReportApi;
     tasks: TasksApi;
     structure: StructureApi;
+    publication: PublicationInternalApi;
 } = {
     accesspoints: new AccesspointsApi(undefined, basePath, axios),
     admin: new AdminApi(undefined, basePath, axios),
@@ -225,4 +227,5 @@ export const Api: {
     report: new ReportApi(undefined, basePath, axios),
     tasks: new TasksApi(undefined, basePath, axios),
     structure: new StructureApi(undefined, basePath, axios),
+    publication: new PublicationInternalApi(undefined, basePath, axios),
 };

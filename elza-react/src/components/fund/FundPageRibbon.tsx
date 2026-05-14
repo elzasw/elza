@@ -2,10 +2,12 @@ import { Icon, Ribbon, i18n } from 'components';
 import { Button } from 'components/ui';
 import * as perms from 'actions/user/Permission';
 import { RibbonGroup } from 'components/shared';
-import { JSX } from 'react/jsx-runtime';
+import { JSX, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from 'typings/store';
 import { useSearchFundsModal } from 'components/shared/dialog/FluentModalDialog';
+import { PublicationSystemsDialog } from 'components/arr/publication/PublicationSystemsDialog';
+import { FormattedMessage } from 'react-intl';
 
 interface Props {
     onAddFund: () => void;
@@ -19,6 +21,7 @@ export function FundPageRibbon({
     const userDetail = useSelector(({ userDetail }: AppState) => userDetail);
 
     const showSearchModal = useSearchFundsModal();
+    const [publicationSystemsOpen, setPublicationSystemsOpen] = useState(false);
 
     const altActions = [];
     if (userDetail.hasOne(perms.FUND_ADMIN, perms.FUND_CREATE)) {
@@ -52,6 +55,19 @@ export function FundPageRibbon({
         );
     }
 
+    if (userDetail.hasOne(perms.FUND_ADMIN)) {
+        altActions.push(
+            <Button key="publication-systems" onClick={() => setPublicationSystemsOpen(true)}>
+                <Icon glyph="fa-newspaper-o" />
+                <div>
+                    <span className="btnText">
+                        <FormattedMessage id="ribbon.action.arr.fund.publicationSystems" defaultMessage="Typy publikací" />
+                    </span>
+                </div>
+            </Button>,
+        );
+    }
+
     let altSection: React.ReactNode[];
     if (altActions.length > 0) {
         altSection = [
@@ -61,7 +77,11 @@ export function FundPageRibbon({
         ];
     }
 
-    return <Ribbon
-        altSection={altSection}
-    />;
+    return <>
+        <Ribbon altSection={altSection} />
+        <PublicationSystemsDialog
+            open={publicationSystemsOpen}
+            onClose={() => setPublicationSystemsOpen(false)}
+        />
+    </>;
 }

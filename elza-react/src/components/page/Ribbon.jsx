@@ -28,7 +28,7 @@ import {
     urlFundGrid,
     urlFundAb,
     urlFundMovements,
-    urlFundOutputs, urlFundRequests, urlFundTree, urlFund, URL_FUND_GRID_PATH, GRID, URL_AIP,
+    urlFundOutputs, urlFundRequests, urlFundTree, urlFund, URL_FUND_GRID_PATH, GRID, URL_AIP, urlFundPublication, PUBLICATION,
     AIP
 } from "../../constants";
 import { extSystemListFetchIfNeeded } from 'actions/admin/extSystem.jsx';
@@ -42,6 +42,10 @@ const messages = defineMessages({
     reports: {
         id: 'ribbon_action_admin_reports',
         defaultMessage: 'Přehledy',
+    },
+    publication: {
+        id: 'ribbon.action.publication',
+        defaultMessage: 'Publikace',
     },
 });
 
@@ -257,6 +261,14 @@ class Ribbon extends AbstractReactComponent {
                         <Button variant='default' className={window.location.pathname.includes(AIP) ? "active" : ""}>
                             <Icon glyph="fa-archive" />
                             <span className="btnText">{i18n('ribbon.action.arr.ab')}</span>
+                        </Button>
+                    </LinkContainer>,
+                );
+                arrParts.push(
+                    <LinkContainer key="ribbon-btn-arr-publication" to={urlFundPublication(fundId, versionId)}>
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-newspaper-o" />
+                            <span className="btnText"><FormattedMessage {...messages.publication} /></span>
                         </Button>
                     </LinkContainer>,
                 );
