@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,11 +9,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 import cz.tacr.elza.test.controller.vo.PublicationType;
-import io.restassured.response.Response;
 
 /**
  * Tests for {@link PublicationInternalController} — exercises the admin CRUD
@@ -54,10 +54,11 @@ public class PublicationControllerTest extends AbstractControllerTest {
         assertEquals(true, created.getAllowPermExport());
         assertEquals(true, created.getAllowPermPublication());
 
-//        // Duplicate code → 409.
-//        Response conflict = httpMethod(spec -> spec.body(buildPublicationType("TST_CREATE", "Different name")),
-//                PUBLICATION_TYPES, HttpMethod.POST, HttpStatus.CONFLICT);
-//        assertNotNull(conflict);
+        // duplicate code  → 409
+        PublicationType badPublicationType = buildPublicationType("TST_CREATE", "Different name");
+        HttpClientErrorException ex = assertThrows(HttpClientErrorException.class, () -> publicationIntApi.publicationTypeAdminCreatePublicationType(badPublicationType));
+        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+        assertNotNull(ex.getResponseHeaders());    
     }
 
     @Test
@@ -75,17 +76,16 @@ public class PublicationControllerTest extends AbstractControllerTest {
         assertEquals(7, updated.getRetentionCount());
         assertEquals(false, updated.getActive());
 
-//        // Updating to a code already taken by another type → 409.
-//        publicationIntApi.publicationTypeAdminCreatePublicationType(buildPublicationType("TST_UPDATE_C", "Other"));
-//        PublicationType clash = buildPublicationType("TST_UPDATE_C", "Trying to steal the code");
-//        Response conflict = httpMethod(spec -> spec.body(clash).pathParam("id", updated.getId()),
-//                PUBLICATION_TYPE, HttpMethod.PUT, HttpStatus.CONFLICT);
-//        assertNotNull(conflict);
-//
-//        // Updating a non-existent id → 404.
-//        Response notFound = httpMethod(spec -> spec.body(buildPublicationType("TST_NEW", "x")).pathParam("id", 999_999),
-//                PUBLICATION_TYPE, HttpMethod.PUT, HttpStatus.NOT_FOUND);
-//        assertNotNull(notFound);
+//        // Updating to a code already taken by another type → 409
+//        PublicationType badUdate = buildPublicationType("TST_UPDATE_B", "Other");
+//        HttpClientErrorException ex = assertThrows(HttpClientErrorException.class, () -> publicationIntApi.publicationTypeAdminUpdatePublicationType(updated.getId(), badUdate));
+//        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+//        assertNotNull(ex.getResponseHeaders());    
+
+        // Updating a non-existent id → 404
+        HttpClientErrorException ex = assertThrows(HttpClientErrorException.class, () -> publicationIntApi.publicationTypeAdminUpdatePublicationType(999_999, update));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+        assertNotNull(ex.getResponseHeaders());
     }
 
     @Test
@@ -98,10 +98,10 @@ public class PublicationControllerTest extends AbstractControllerTest {
         publications = publicationIntApi.publicationTypeAdminListPublicationTypes();
         assertTrue(publications.isEmpty());
 
-//        // Deleting an unknown id → 404.
-//        Response notFound = httpMethod(spec -> spec.pathParam("id", 999_999),
-//                PUBLICATION_TYPE, HttpMethod.DELETE, HttpStatus.NOT_FOUND);
-//        assertNotNull(notFound);
+        // Deleting unknown id → 404
+        HttpClientErrorException ex = assertThrows(HttpClientErrorException.class, () -> publicationIntApi.publicationTypeAdminDeletePublicationType(999_999));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+        assertNotNull(ex.getResponseHeaders());    
     }
 
     // -------------------------------------------------------------------
