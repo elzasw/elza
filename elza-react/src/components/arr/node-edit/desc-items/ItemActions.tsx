@@ -18,7 +18,7 @@ interface Props {
   specId?: number;
   onDelete: () => void;
   onSetUndefined: () => void;
-  typeForm: FormItemType;
+  typeForm?: FormItemType;
   typeRef: DescItemTypeRef;
 }
 
@@ -55,12 +55,12 @@ export function ItemActions({
   const compact = settings.compact;
   const isInherited = item.nodeId != nodeId;
   const hasValue = item.data?.dataId != undefined || item.undefined;
-  const canSetUndefined = typeForm.undefinable;
+  const canSetUndefined = typeForm?.undefinable;
   const isOptional =
-    typeForm.type === MandatoryType.Possible ||
-    typeForm.type === MandatoryType.Impossible;
+    typeForm?.type === MandatoryType.Possible ||
+    typeForm?.type === MandatoryType.Impossible;
 
-  const spec = typeForm.specs.find(({ itemSpecId }) => itemSpecId === specId);
+  const spec = typeForm?.specs?.find(({ itemSpecId }) => itemSpecId === specId);
   const isSpecOptional =
     (typeRef.useSpecification && !spec) ||
     spec?.type === MandatoryType.Possible ||
@@ -78,7 +78,7 @@ export function ItemActions({
   return (
     <div className={styles.itemActions}>
       {!isInherited &&
-        (hasValue || isOptional || (typeForm.repeatable && isSpecOptional)) && !item.readOnly && (
+        (hasValue || isOptional || (typeForm?.repeatable && isSpecOptional)) && !item.readOnly && (
           <Tooltip
             relationship="label"
             appearance="inverted"

@@ -17,7 +17,7 @@ interface DescItem {
 
 interface Props {
     typeRef: DescItemTypeRef;
-    typeForm: FormItemType;
+    typeForm?: FormItemType;
     typeWidth: number;
     descItems: DescItem[];
     fondsVersionId: number;
@@ -77,7 +77,7 @@ export function DescItemTypeFields({
 
     const lastItem = descItems[descItems.length - 1];
     const showAddButton =
-        typeForm.repeatable &&
+        typeForm?.repeatable &&
         ((lastItem?.item.data?.dataId != undefined && !lastItem?.item.undefined) ||
             typeRef.useSpecification);
 
