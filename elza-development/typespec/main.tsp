@@ -2217,17 +2217,6 @@ namespace ElzaAPI.fund {
     };
 
     /**
-     * Smazání seznamu hodnot strukturovaného datového typu
-     */
-    @route("/{id}/structuredObject")
-    @delete op deleteStructureData(
-        /** Identifikátor AS */
-        @path id: integer;
-        /** Seznam id hodnot strukturovaného datového typu */
-        @body data: integer[];
-    ): integer[];
-
-    /**
      * Return list of item type id & count
      */
     @route("{fundId}/usedItemtypes/{fundVersionId}")
