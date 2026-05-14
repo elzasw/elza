@@ -168,76 +168,6 @@ public class FundController implements FundsApi {
         return ResponseEntity.ok(factoryVo.createFund(fundVersion.getFund(), rootNode.getUuid()));
     }
 
-//    @Deprecated
-//    @Override
-//    public ResponseEntity<FindFundsResult> fundFindFunds(@RequestParam(value = "fulltext", required = false) String fulltext,
-//                                                     @RequestParam(value = "institutionIdentifier", required = false) String institutionIdentifier,
-//                                                     @RequestParam(value = "max", required = false, defaultValue = "200") Integer max,
-//                                                     @RequestParam(value = "from", required = false, defaultValue = "0") Integer from) {
-//        //UserDetail userDetail = userService.getLoggedUserDetail();
-//        //FilteredResult<ArrFund> funds;
-//    	FieldValueFilter institutionIdFilter = null;
-//        if (institutionIdentifier != null && !institutionIdentifier.isEmpty()) {
-//            ParInstitution institution = arrangementService.getInstitution(institutionIdentifier);
-//            if (institution != null) {
-//                Integer institutionId = institution.getInstitutionId();
-//                institutionIdFilter = new FieldValueFilter()
-//                		                    .field(FondsFilterField.INSTITUTION_ID)
-//                		                    .value(institutionId.toString())
-//                							.operation(OperationCompareType.EQ);
-//            } else {
-//                return ResponseEntity.ok(new FindFundsResult());
-//            }
-//        }
-//
-//        FieldValueFilter nameFilter = new FieldValueFilter().field(FondsFilterField.NAME).value(fulltext)
-//        		.operation(OperationCompareType.CONTAINS);
-//
-//        FieldValueFilter internalCodeFilter = new FieldValueFilter().field(FondsFilterField.INTERNAL_CODE).value(fulltext)
-//        		.operation(OperationCompareType.CONTAINS);
-//        
-//        FieldValueFilter fundNumberFilter = new FieldValueFilter().field(FondsFilterField.FUND_NUMBER).value(fulltext)
-//        		.operation(OperationCompareType.CONTAINS);
-//
-//        FieldValueFilter markFilter = new FieldValueFilter().field(FondsFilterField.MARK).value(fulltext)
-//        		.operation(OperationCompareType.CONTAINS);
-//
-//        SearchParams searchParams = new SearchParams()
-//        		.addFiltersItem(nameFilter)
-//        		.addFiltersItem(internalCodeFilter)
-//        		.addFiltersItem(fundNumberFilter)
-//        		.addFiltersItem(markFilter)
-//        		.offset(from)
-//        		.size(max);
-//
-//        if (institutionIdFilter != null) {
-//        	searchParams.addFiltersItem(institutionIdFilter);
-//        }
-//
-//        FindFundVersionsResult fundVersionsResult = arrangementService.findFundsBySearchParams(searchParams);
-//        List<Fund> funds = fundVersionsResult.getFundVersionList().stream().map(fv -> factoryVo.createFund(fv)).toList();
-//
-////        if (userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL)) {
-////            // read all funds
-////            funds = fundRepository.findFunds(fulltext, institutionId, from, max);
-////
-////        } else {
-////            Integer userId = userDetail.getId();
-////            funds = fundRepository.findFundsWithPermissions(fulltext, institutionId, from, max, userId);
-////        }
-////
-////        List<ArrFund> fundList = funds.getList();
-////        FindFundsResult fundsResult = new FindFundsResult();
-////        fundsResult.setTotalCount(funds.getTotalCount());
-////        fundList.forEach(f -> {
-////            Fund fund = factoryVo.createFund(f.getFund(), "TODO: uuid");
-////            fundsResult.addFundsItem(fund);
-////        });
-//
-////        return ResponseEntity.ok(fundsResult);
-//        return ResponseEntity.ok(new FindFundsResult(funds, fundVersionsResult.getTotalCount()));
-//    }
-
     // POST /fund/search
     @Override
     public ResponseEntity<FindFundsResult> fundSearchFunds(@RequestBody SearchParams searchParams) {
@@ -315,25 +245,6 @@ public class FundController implements FundsApi {
         ArrNode rootNode = fundVersion.getRootNode();
 
         return ResponseEntity.ok(factoryVo.createFundDetail(fundVersion.getFund(), rootNode.getUuid()));
-    }
-
-    /**
-     * DELETE /fund/{id}/structuredObject
-     * Smazání seznamu hodnot strukturovaného datového typu
-     *
-     * @param id Identifikátor AS (required)
-     * @param requestBody Seznam id hodnot strukturovaného datového typu (required)
-     * @return The request has succeeded. (status code 200)
-     */
-    @Deprecated
-    @Override
-    @Transactional
-    public ResponseEntity<List<Integer>> fundDeleteStructureData(final Integer fundVersionId, final List<Integer> structureDataIds) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        List<ArrStructuredObject> structObjList = structureService.getStructObjByIds(structureDataIds);
-        List<Integer> deletedIds = structureService.deleteStructObj(fundVersion.getFundId(), structObjList);
-
-        return ResponseEntity.ok(deletedIds);
     }
 
     @Override
