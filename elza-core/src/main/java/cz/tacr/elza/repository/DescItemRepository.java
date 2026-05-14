@@ -228,6 +228,12 @@ public interface DescItemRepository extends ElzaJpaRepository<ArrDescItem, Integ
     @Query("SELECT i.id FROM arr_desc_item i WHERE i.node.fund = :fund AND i.deleteChange IS NULL")
     List<Integer> findOpenIdByFundAndCreatedAfterChange(@Param("fund") final ArrFund fund);
 
+    @Query("SELECT i.id FROM arr_desc_item i WHERE i.node = :node AND i.deleteChange >= :change")
+    List<Integer> findIdByNodeAndDeletedAfterChange(@Param("node") final ArrNode node, @Param("change") final ArrChange change);
+
+    @Query("SELECT i.id FROM arr_desc_item i WHERE i.node.fund = :fund AND i.deleteChange >= :change")
+    List<Integer> findIdByFundAndDeletedAfterChange(@Param("fund") final ArrFund fund, @Param("change") final ArrChange change);
+
     @Modifying
     @Query("DELETE FROM arr_desc_item i WHERE i.node IN (SELECT n FROM arr_node n WHERE n.fund = ?1)")
     void deleteByNodeFund(ArrFund fund);
