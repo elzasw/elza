@@ -11,6 +11,8 @@ public enum ExtAsyncQueueState {
 
     EXPORT_NEW("K odeslání"),
 
+    EXPORT_NEED_CONFIRM("Čeká na potvrzení"),
+
     EXPORT_OK("Odesláno"),
 
     EXPORT_CANCELLED("Zrušeno uživatelem"),
@@ -44,8 +46,11 @@ public enum ExtAsyncQueueState {
         case EXPORT_NEW:
             return EXPORT_NEW;
         case EXPORT_START:
-            // state is not propagated to the client
+        case EXPORT_PROCESSING:
+            // transient upload states are not propagated to the client
             return EXPORT_NEW;
+        case EXPORT_NEED_CONFIRM:
+            return EXPORT_NEED_CONFIRM;
         case IMPORT_NEW:
             return IMPORT_NEW;
         case IMPORT_OK:

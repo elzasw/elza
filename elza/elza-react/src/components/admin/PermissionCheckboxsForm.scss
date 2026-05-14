@@ -8,13 +8,25 @@
 
     .item-row{
         margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        height: 25px;
 
         .icon {
             padding: 5px;
             margin-right: 5px;
         }
+        .icon-wrapper {
+            display: flex;
+            justifyContent: flex-end;
+            width: 40px;
+        }
         label{
             margin:0;
+        }
+        .form-check-input,
+        .form-check-label {
+            transition: opacity 0.3s ease;
         }
     }
     .items-left {
