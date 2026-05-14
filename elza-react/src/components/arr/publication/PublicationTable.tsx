@@ -28,7 +28,7 @@ import {
 } from '@fluentui/react-components';
 import { MoreHorizontalRegular, ArrowDownloadRegular, CopyRegular, DeleteRegular } from '@fluentui/react-icons';
 import { defineMessages, FormattedMessage, useIntl } from 'react-intl';
-import { PublicationDetail, PublicationType } from 'elza-api';
+import { PublicationDetail, PublicationType, PublicationStateInternal } from 'elza-api';
 import { colDef } from './utils';
 import PublicationToolbar from './filter/PublicationToolbar';
 import Pagination from 'components/shared/pagination/Pagination';
@@ -38,7 +38,7 @@ import { useTableStyles } from './styles';
 
 const messages = defineMessages({
     menuDownload: { id: 'publication.table.menu.download', defaultMessage: 'Stáhnout' },
-    menuCopy:     { id: 'publication.table.menu.copy',     defaultMessage: 'Kopírovat' },
+    menuCopy:     { id: 'publication.table.menu.copy',     defaultMessage: 'Kopírovat do...' },
     menuDelete:   { id: 'publication.table.menu.delete',   defaultMessage: 'Odstranit' },
 });
 
@@ -171,6 +171,10 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
         setRefreshToken((t) => t + 1);
     };
 
+    const typeIdsWithNew = new Set(
+        items.filter((item) => item.state === PublicationStateInternal.New).map((item) => item.typeId)
+    );
+
     return (
         <div className={classes.root}>
             <PublicationToolbar
@@ -178,6 +182,7 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
                 onColsChange={handleToggleColumns}
                 onPublish={() => setRefreshToken((t) => t + 1)}
                 publicationTypes={publicationTypes}
+                disabledTypeIds={typeIdsWithNew}
                 fundId={fundId}
             />
             <div className={classes.tableWrapper}>
@@ -246,11 +251,11 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
                                         </MenuTrigger>
                                         <MenuPopover>
                                             <MenuList>
-                                                <MenuItem icon={<ArrowDownloadRegular />} onClick={() => handleDownload(item)}>
+                                                <MenuItem disabled={!item.hasDownloadableFile} icon={<ArrowDownloadRegular />} onClick={() => handleDownload(item)}>
                                                     <FormattedMessage {...messages.menuDownload} />
                                                 </MenuItem>
                                                 {(() => {
-                                                    const copyTargets = publicationTypes.filter((type) => type.id !== item.typeId && type.exportFilterCode === publicationTypes.find((t) => t.id === item.typeId)?.exportFilterCode);
+                                                    const copyTargets = publicationTypes.filter((type) => (type.active ?? true) && type.id !== item.typeId && type.exportFilterCode === publicationTypes.find((t) => t.id === item.typeId)?.exportFilterCode);
                                                     return copyTargets.length === 0
                                                         ? <MenuItem icon={<CopyRegular />} disabled><FormattedMessage {...messages.menuCopy} /></MenuItem>
                                                         : (

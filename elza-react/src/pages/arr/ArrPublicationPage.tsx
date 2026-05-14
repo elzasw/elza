@@ -1,18 +1,18 @@
-import { Icon, Ribbon } from "components/index.jsx";
-import { RibbonGroup } from "components/shared";
-import { Button } from "components/ui";
-import PageLayout from "../shared/layout/PageLayout";
-import { useSelector } from "react-redux";
-import { AppState } from "typings/store";
-import PublicationTable from "components/arr/publication/PublicationTable";
-import { getFundVersion } from "../../constants";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { PublicationSystemsDialog } from "components/arr/publication/PublicationSystemsDialog";
-import * as perms from "actions/user/Permission";
-import { FormattedMessage } from "react-intl";
-import { PublicationType } from "elza-api";
-import { Api } from "api/api";
+import { Icon, Ribbon } from 'components/index.jsx';
+import { RibbonGroup } from 'components/shared';
+import { Button } from 'components/ui';
+import PageLayout from '../shared/layout/PageLayout';
+import { useSelector } from 'react-redux';
+import { AppState } from 'typings/store';
+import PublicationTable from 'components/arr/publication/PublicationTable';
+import { getFundVersion } from '../../constants';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { PublicationSystemsDialog } from 'components/arr/publication/PublicationSystemsDialog';
+import * as perms from 'actions/user/Permission';
+import { FormattedMessage } from 'react-intl';
+import { PublicationType } from 'elza-api';
+import { Api } from 'api/api';
 
 export function ArrPublicationPage() {
     const { id } = useParams<{ id: string }>();
@@ -23,11 +23,7 @@ export function ArrPublicationPage() {
     );
     const userDetail = useSelector(({ userDetail }: AppState) => userDetail);
     const [publicationSystemsOpen, setPublicationSystemsOpen] = useState(false);
-    const [publicationTypes, setPublicationTypes] = useState<PublicationType[]>([
-        { id: 1, name: "Veřejný portál",  code: "PUBLIC",    retentionCount: 5,  exportFilterCode: "ead-filter", active: true, allowPermExport: true,  allowPermPublication: true  },
-        { id: 2, name: "Interní systém",  code: "INTERNAL",  retentionCount: 10, exportFilterCode: "dc-filter",  active: true, allowPermExport: true,  allowPermPublication: false },
-        { id: 3, name: "Archivní portál", code: "ARCHIV",    retentionCount: 3,  exportFilterCode: "ead-filter", active: true, allowPermExport: false, allowPermPublication: true  },
-    ]);
+    const [publicationTypes, setPublicationTypes] = useState<PublicationType[]>([]);
 
     const fetchPublicationTypes = async () => {
         const { data } = await Api.publication.publicationTypeAdminListPublicationTypes();
@@ -46,7 +42,10 @@ export function ArrPublicationPage() {
                 <Icon glyph="fa-newspaper-o" />
                 <div>
                     <span className="btnText">
-                        <FormattedMessage id="ribbon.action.arr.fund.publicationSystems" defaultMessage="Správa typů publikací" />
+                        <FormattedMessage
+                            id="ribbon.action.arr.fund.publicationSystems"
+                            defaultMessage="Správa typů publikací"
+                        />
                     </span>
                 </div>
             </Button>
@@ -55,14 +54,26 @@ export function ArrPublicationPage() {
 
     const ribbon = (
         <>
-            <Ribbon arr subMenu fundId={activeFund?.id} versionId={getFundVersion(activeFund)} altSection={altSection} />
-            <PublicationSystemsDialog open={publicationSystemsOpen} onClose={() => { setPublicationSystemsOpen(false); fetchPublicationTypes(); }} />
+            <Ribbon
+                arr
+                subMenu
+                fundId={activeFund?.id}
+                versionId={getFundVersion(activeFund)}
+                altSection={altSection}
+            />
+            <PublicationSystemsDialog
+                open={publicationSystemsOpen}
+                onClose={() => {
+                    setPublicationSystemsOpen(false);
+                    fetchPublicationTypes();
+                }}
+            />
         </>
     );
 
     const centerPanel = (
         <div className="splitter-home">
-            <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
                 <PublicationTable fundId={fundId} publicationTypes={publicationTypes} />
             </div>
         </div>

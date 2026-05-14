@@ -19,10 +19,13 @@ const messages = defineMessages({
 interface Props {
     fundId: number;
     types: PublicationType[];
+    disabledTypeIds?: Set<number>;
     onPublish: () => void;
 }
 
-export function PublishButton({ fundId, types, onPublish }: Props) {
+const STATIC_PUBLICATION_TYPES = 2;
+
+export function PublishButton({ fundId, types, disabledTypeIds, onPublish }: Props) {
     const { formatMessage } = useIntl();
 
     const handlePublish = async (publicationTypeId: number) => {
@@ -36,13 +39,17 @@ export function PublishButton({ fundId, types, onPublish }: Props) {
         return null;
     }
 
-    const [first, ...rest] = activeTypes;
+    // const [first, ...rest] = activeTypes;
+    const staticTypes = STATIC_PUBLICATION_TYPES > 0 ? activeTypes.slice(0, STATIC_PUBLICATION_TYPES) : [];
+    const rest = activeTypes.slice(staticTypes.length);
 
     return (
         <>
-            <Button appearance="primary" onClick={() => handlePublish(first.id!)}>
-                {formatMessage(messages.btnPublish, { name: first.name })}
-            </Button>
+            {staticTypes.map((type) => {
+                return <Button appearance="primary" disabled={disabledTypeIds?.has(type.id!)} onClick={() => handlePublish(type.id!)}>
+                    {formatMessage(messages.btnPublish, { name: type.name })}
+                </Button>
+            })}
             {rest.length > 0 && (
                 <Menu>
                     <MenuTrigger disableButtonEnhancement>
@@ -51,7 +58,7 @@ export function PublishButton({ fundId, types, onPublish }: Props) {
                     <MenuPopover>
                         <MenuList>
                             {rest.map((type) => (
-                                <MenuItem key={type.id} onClick={() => handlePublish(type.id!)}>
+                                <MenuItem key={type.id} disabled={disabledTypeIds?.has(type.id!)} onClick={() => handlePublish(type.id!)}>
                                     {type.name}
                                 </MenuItem>
                             ))}

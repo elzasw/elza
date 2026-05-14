@@ -6,14 +6,12 @@ import {
     DialogContent,
     DialogSurface,
     DialogTitle,
-    Tooltip,
 } from "@fluentui/react-components";
-import { AddRegular, DeleteRegular, EyeRegular, EyeOffRegular } from "@fluentui/react-icons";
+import { AddRegular, EyeOffRegular } from "@fluentui/react-icons";
 import { useEffect, useState } from "react";
 import { defineMessages, useIntl } from "react-intl";
 import { PublicationType } from "elza-api";
 import { PublicationSystemDetail } from "./PublicationSystemDetail";
-import { ConfirmPopover } from "./ConfirmPopover";
 import { Api } from "api/api";
 import { useDialogStyles } from "./styles";
 
@@ -21,11 +19,6 @@ const messages = defineMessages({
     title: { id: "publication.systems.dialog.title", defaultMessage: "Správa typů publikací" },
     btnAdd: { id: "publication.systems.dialog.add", defaultMessage: "Přidat" },
     btnClose: { id: "publication.systems.dialog.close", defaultMessage: "Zavřít" },
-    btnRemove: { id: "publication.systems.dialog.remove", defaultMessage: "Odebrat" },
-    btnActivate: { id: "publication.systems.dialog.activate", defaultMessage: "Aktivovat" },
-    btnDeactivate: { id: "publication.systems.dialog.deactivate", defaultMessage: "Deaktivovat" },
-    confirmRemoveText: { id: "publication.systems.dialog.confirmRemove", defaultMessage: "Opravdu odebrat tento typ?" },
-    confirmRemoveYes: { id: "publication.systems.dialog.confirmRemoveYes", defaultMessage: "Odebrat" },
     newSystem: { id: "publication.systems.new", defaultMessage: "Nový typ" },
 });
 
@@ -45,7 +38,6 @@ export type { Props as PublicationSystemsDialogProps };
 export function PublicationSystemsDialog({ open, onClose }: Props) {
     const classes = useDialogStyles();
     const { formatMessage } = useIntl();
-    const [hoveredKey, setHoveredKey] = useState<string | null>(null);
 
     const [systems, setSystems] = useState<PublicationType[]>([]);
     const [selectedId, setSelectedId] = useState<number | null>(systems[0]?.id ?? null);
@@ -84,23 +76,17 @@ export function PublicationSystemsDialog({ open, onClose }: Props) {
         setEditedSystem({ ...newSystem });
     };
 
-    const handleSave = async () => {
-        if (!editedSystem) { return; }
-        if (editedSystem.id === undefined) {
-            const { data: created } = await Api.publication.publicationTypeAdminCreatePublicationType(editedSystem);
+    const handleSave = async (values: PublicationType) => {
+        if (values.id === undefined) {
+            const { data: created } = await Api.publication.publicationTypeAdminCreatePublicationType(values);
             setSystems(systems.map((s) => s === editedSystem ? created : s));
             setSelectedId(created.id ?? null);
             setEditedSystem({ ...created });
         } else {
-            const { data: updated } = await Api.publication.publicationTypeAdminUpdatePublicationType(editedSystem.id, editedSystem);
+            const { data: updated } = await Api.publication.publicationTypeAdminUpdatePublicationType(values.id, values);
             setSystems(systems.map((s) => s.id === updated.id ? updated : s));
             setEditedSystem({ ...updated });
         }
-    };
-
-    const handleReset = () => {
-        if (!selectedSystem) { return; }
-        setEditedSystem({ ...selectedSystem });
     };
 
     const handleToggleActive = async (system: PublicationType) => {
@@ -141,34 +127,9 @@ export function PublicationSystemsDialog({ open, onClose }: Props) {
                                             key={system.id ?? `new-${index}`}
                                             className={`${classes.listItem} ${isSelected ? classes.listItemSelected : ""}`}
                                             onClick={() => handleSelect(system)}
-                                            onMouseEnter={() => setHoveredKey(system.id !== undefined ? String(system.id) : `new-${index}`)}
-                                            onMouseLeave={() => setHoveredKey(null)}
                                         >
+                                            {!(system.active ?? true) && <EyeOffRegular className={classes.inactiveIcon} />}
                                             <span className={`${classes.listItemName} ${!(system.active ?? true) ? classes.listItemInactive : ""}`}>{system.name}</span>
-                                            <Tooltip content={formatMessage(system.active ?? true ? messages.btnDeactivate : messages.btnActivate)} relationship="label" positioning="after" showDelay={800}>
-                                                <Button
-                                                    className={system.active ?? true ? (hoveredKey === (system.id !== undefined ? String(system.id) : `new-${index}`) ? classes.deleteBtnVisible : classes.deleteBtnHidden) : classes.deleteBtnVisible}
-                                                    appearance="subtle"
-                                                    size="small"
-                                                    icon={system.active ?? true ? <EyeRegular /> : <EyeOffRegular />}
-                                                    onClick={(e) => { e.stopPropagation(); handleToggleActive(system); }}
-                                                />
-                                            </Tooltip>
-                                            <ConfirmPopover
-                                                text={formatMessage(messages.confirmRemoveText)}
-                                                confirmLabel={formatMessage(messages.confirmRemoveYes)}
-                                                onConfirm={() => handleRemove(system)}
-                                            >
-                                                <Tooltip content={formatMessage(messages.btnRemove)} relationship="label" positioning="after" showDelay={800}>
-                                                    <Button
-                                                        className={hoveredKey === (system.id !== undefined ? String(system.id) : `new-${index}`) ? classes.deleteBtnVisible : classes.deleteBtnHidden}
-                                                        appearance="subtle"
-                                                        size="small"
-                                                        icon={<DeleteRegular />}
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    />
-                                                </Tooltip>
-                                            </ConfirmPopover>
                                         </div>
                                     );
                                 })}
@@ -186,9 +147,9 @@ export function PublicationSystemsDialog({ open, onClose }: Props) {
                             {editedSystem
                                 ? <PublicationSystemDetail
                                     value={editedSystem}
-                                    onChange={setEditedSystem}
                                     onSave={handleSave}
-                                    onReset={handleReset}
+                                    onToggleActive={() => handleToggleActive(editedSystem)}
+                                    onRemove={() => handleRemove(editedSystem)}
                                 />
                                 : <div className={classes.empty}>{formatMessage(messages.btnAdd)}</div>
                             }
