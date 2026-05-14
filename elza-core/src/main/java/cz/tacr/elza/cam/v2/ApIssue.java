@@ -1,6 +1,6 @@
 package cz.tacr.elza.cam.v2;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class ApIssue {
 
 	private String detail;
 
-	private LocalDateTime from;
+	private OffsetDateTime from;
 
 	/** Resolved ELZA ApPart.partId for {@link ExistingIssueXml#getPartRef()}, or null. */
 	private Integer partId;
@@ -131,11 +131,11 @@ public class ApIssue {
 		this.detail = detail;
 	}
 
-	public LocalDateTime getFrom() {
+	public OffsetDateTime getFrom() {
 		return from;
 	}
 
-	public void setFrom(LocalDateTime from) {
+	public void setFrom(OffsetDateTime from) {
 		this.from = from;
 	}
 
