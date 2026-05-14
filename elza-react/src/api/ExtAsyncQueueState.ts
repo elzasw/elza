@@ -1,5 +1,6 @@
 export enum ExtAsyncQueueState {
     EXPORT_NEW = 'EXPORT_NEW',
+    EXPORT_NEED_CONFIRM = 'EXPORT_NEED_CONFIRM',
     IMPORT_NEW = 'IMPORT_NEW',
     UPDATE = 'UPDATE',
     ERROR = 'ERROR',
