@@ -31,6 +31,7 @@ import { MoreHorizontalRegular, ArrowDownloadRegular, CopyRegular, DeleteRegular
 import { defineMessages, FormattedMessage, useIntl } from 'react-intl';
 import { PublicationDetail, PublicationType, PublicationStateInternal } from 'elza-api';
 import { colDef, stateMessages } from './utils';
+import { useCanUsePublicationType } from './hooks';
 import PublicationToolbar from './filter/PublicationToolbar';
 import Pagination from 'components/shared/pagination/Pagination';
 import { Api } from 'api/api';
@@ -66,6 +67,7 @@ interface Props {
 function PublicationTable({ fundId, publicationTypes }: Props) {
     const classes = useTableStyles();
     const { formatMessage } = useIntl();
+    const canPublishToType = useCanUsePublicationType(fundId);
 
     const [from, setFrom] = useState(0);
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
@@ -273,7 +275,7 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
                                                     <FormattedMessage {...messages.menuDownload} />
                                                 </MenuItem>
                                                 {(() => {
-                                                    const copyTargets = publicationTypes.filter((type) => (type.active ?? true) && type.id !== item.typeId && type.exportFilterCode === publicationTypes.find((t) => t.id === item.typeId)?.exportFilterCode);
+                                                    const copyTargets = publicationTypes.filter((type) => (type.active ?? true) && canPublishToType(type) && type.id !== item.typeId && type.exportFilterCode === publicationTypes.find((t) => t.id === item.typeId)?.exportFilterCode);
                                                     return copyTargets.length === 0
                                                         ? <MenuItem icon={<CopyRegular />} disabled><FormattedMessage {...messages.menuCopy} /></MenuItem>
                                                         : (
