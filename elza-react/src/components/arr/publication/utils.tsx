@@ -1,8 +1,8 @@
 import { defineMessages, MessageDescriptor } from "react-intl";
-import { PublicationDetail } from "elza-api";
+import { PublicationDetail, PublicationStateInternal } from "elza-api";
 
 export const messages = defineMessages({
-    typeName:         { id: "publication.col.typeName",         defaultMessage: "Typ publikace" },
+    typeName:         { id: "publication.col.typeName",         defaultMessage: "Systém" },
     state:            { id: "publication.col.state",            defaultMessage: "Stav" },
     createdByUserId:  { id: "publication.col.createdByUserId",  defaultMessage: "Uživatel" },
     createdAt:        { id: "publication.col.createdAt",        defaultMessage: "Vytvořeno" },
@@ -12,6 +12,16 @@ export const messages = defineMessages({
     publishedAt:      { id: "publication.col.publishedAt",      defaultMessage: "Publikováno" },
     invalidatedAt:    { id: "publication.col.invalidatedAt",    defaultMessage: "Zneplatněno" },
     errorMessage:     { id: "publication.col.errorMessage",     defaultMessage: "Chybová zpráva" },
+});
+
+export const stateMessages = defineMessages({
+    [PublicationStateInternal.New]:          { id: `publication.state.${PublicationStateInternal.New}`,          defaultMessage: "Nová" },
+    [PublicationStateInternal.Prepared]:     { id: `publication.state.${PublicationStateInternal.Prepared}`,     defaultMessage: "Připravená" },
+    [PublicationStateInternal.Fetched]:      { id: `publication.state.${PublicationStateInternal.Fetched}`,      defaultMessage: "Stažená" },
+    [PublicationStateInternal.Published]:    { id: `publication.state.${PublicationStateInternal.Published}`,    defaultMessage: "Publikovaná" },
+    [PublicationStateInternal.PrepareError]: { id: `publication.state.${PublicationStateInternal.PrepareError}`, defaultMessage: "Chyba přípravy" },
+    [PublicationStateInternal.PublishError]: { id: `publication.state.${PublicationStateInternal.PublishError}`, defaultMessage: "Chyba publikace" },
+    [PublicationStateInternal.Invalidated]:  { id: `publication.state.${PublicationStateInternal.Invalidated}`,  defaultMessage: "Zneplatněná" },
 });
 
 export const colDef: { key: keyof PublicationDetail; message: MessageDescriptor; type: string; minWidth: number; idealWidth: number }[] = [

@@ -29,7 +29,7 @@ import {
 import { MoreHorizontalRegular, ArrowDownloadRegular, CopyRegular, DeleteRegular } from '@fluentui/react-icons';
 import { defineMessages, FormattedMessage, useIntl } from 'react-intl';
 import { PublicationDetail, PublicationType, PublicationStateInternal } from 'elza-api';
-import { colDef } from './utils';
+import { colDef, stateMessages } from './utils';
 import PublicationToolbar from './filter/PublicationToolbar';
 import Pagination from 'components/shared/pagination/Pagination';
 import { Api } from 'api/api';
@@ -84,7 +84,13 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
         createTableColumn<PublicationDetail>({
             columnId: def.key,
             renderHeaderCell: () => <>{formatMessage(def.message)}</>,
-            renderCell: (item: PublicationDetail) => <>{item[def.key] ?? '-'}</>,
+            renderCell: (item: PublicationDetail) => {
+                if (def.key === 'state' && item.state) {
+                    const stateMsg = stateMessages[item.state];
+                    return <>{stateMsg ? formatMessage(stateMsg) : item.state}</>;
+                }
+                return <>{item[def.key] ?? '-'}</>;
+            },
             compare: (a, b) => String(a[def.key] ?? '').localeCompare(String(b[def.key] ?? '')),
         })
     );
