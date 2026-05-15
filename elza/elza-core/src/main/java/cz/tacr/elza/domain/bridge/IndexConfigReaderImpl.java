@@ -190,6 +190,9 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
                 logger.error("Error processing a package zip file.", e);
                 throw new SystemException("Error processing a package zip file.", e);
             }
+        } else {
+            // Fallback initialization if dpkg directory does not exist, e.g. for tests or first run without packages
+            allPackages = Collections.emptyList();
         }
 
         // Načíst typy položek z DB vždy — bez ohledu na to, zda dpkgDir existuje nebo ne.
@@ -248,21 +251,25 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 
     private void readTypeAndSpecDataFromZipFilePackage(Map<String, ByteArrayInputStream> streamMap) {
         ItemTypes itemTypes = PackageUtils.convertXmlStreamToObject(ItemTypes.class, streamMap.get(ITEM_TYPE_XML));
-        for (ItemType itemType : itemTypes.getItemTypes()) {
-            if (!itemTypeMap.keySet().contains(itemType.getCode())) {
-                ItemTypeInfo itemTypeInfo = new ItemTypeInfo(itemType.getCode(), DataType.valueOf(itemType.getDataType()));
-                itemTypeMap.put(itemType.getCode(), itemTypeInfo);
-                itemTypeDataTypeMap.put(itemType.getCode(), DataType.valueOf(itemType.getDataType()));
+        if (itemTypes != null) {
+            for (ItemType itemType : itemTypes.getItemTypes()) {
+                if (!itemTypeMap.keySet().contains(itemType.getCode())) {
+                    ItemTypeInfo itemTypeInfo = new ItemTypeInfo(itemType.getCode(), DataType.valueOf(itemType.getDataType()));
+                    itemTypeMap.put(itemType.getCode(), itemTypeInfo);
+                    itemTypeDataTypeMap.put(itemType.getCode(), DataType.valueOf(itemType.getDataType()));
+                }
             }
         }
         ItemSpecs itemSpecs = PackageUtils.convertXmlStreamToObject(ItemSpecs.class, streamMap.get(ITEM_SPEC_XML));
-        for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
-            if (!itemSpecCodes.contains(itemSpec.getCode())) {
-                itemSpecCodes.add(itemSpec.getCode());
-                for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
-                    ItemTypeInfo itemTypeInfo = itemTypeMap.get(itemTypeAssign.getCode());
-                    List<String> listItemSpecCodes = itemTypeInfo.getSpecs();
-                    listItemSpecCodes.add(itemSpec.getCode());
+        if (itemSpecs != null) {
+            for (ItemSpec itemSpec : itemSpecs.getItemSpecs()) {
+                if (!itemSpecCodes.contains(itemSpec.getCode())) {
+                    itemSpecCodes.add(itemSpec.getCode());
+                    for (ItemTypeAssign itemTypeAssign : itemSpec.getItemTypeAssigns()) {
+                        ItemTypeInfo itemTypeInfo = itemTypeMap.get(itemTypeAssign.getCode());
+                        List<String> listItemSpecCodes = itemTypeInfo.getSpecs();
+                        listItemSpecCodes.add(itemSpec.getCode());
+                    }
                 }
             }
         }

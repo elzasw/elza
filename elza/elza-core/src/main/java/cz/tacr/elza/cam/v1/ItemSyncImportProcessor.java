@@ -132,21 +132,21 @@ public class ItemSyncImportProcessor implements ItemSyncProcessor {
             return true;
         } catch (Exception e) {
             // handling other errors -> if it is one record - write the error
-        	if(log.isTraceEnabled()) {
-        		for(var entityXml: entityXmlMap.values()) {
-        			try {
-        				Schema schema = schemaManager.getSchema(SchemaManager.CAM_SCHEMA_2019);
-        				File xmlFile = JaxbUtils.asFile(entityXml, schema);
-        	        	// log file content if needed
-       					byte[] encoded = Files.readAllBytes(xmlFile.toPath());
-       					String data = new String(encoded, "utf-8");
-       					Files.delete(xmlFile.toPath());       					
-        				log.trace("Entity XML: {}", data);        				
-        			} catch (Exception ex) {
-						log.error("Failed to log entity XML file", ex);
-					}
-        		}
-        	}
+            if (log.isTraceEnabled()) {
+                for (var entityXml : entityXmlMap.values()) {
+                    try {
+                        Schema schema = schemaManager.getSchema(SchemaManager.CAM_SCHEMA_2019);
+                        File xmlFile = JaxbUtils.asFile(entityXml, schema);
+                        // log file content if needed
+                        byte[] encoded = Files.readAllBytes(xmlFile.toPath());
+                        String data = new String(encoded, "utf-8");
+                        Files.delete(xmlFile.toPath());
+                        log.trace("Entity XML: {}", data);
+                    } catch (Exception ex) {
+                        log.error("Failed to log entity XML file", ex);
+                    }
+                }
+            }
             log.error("Failed to synchronize access points: {}", queueItemIds.size(), e);
             throw e;
         }
