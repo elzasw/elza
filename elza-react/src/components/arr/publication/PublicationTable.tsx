@@ -19,6 +19,7 @@ import {
     TableHeaderCell,
     TableRow,
     TableSelectionCell,
+    Tooltip,
     useTableColumnSizing_unstable,
     useTableFeatures,
     useTableSelection,
@@ -71,7 +72,6 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
     const [items, setItems] = useState<PublicationDetail[]>([]);
     const [totalCount, setTotalCount] = useState(0);
     const [refreshToken, setRefreshToken] = useState(0);
-
     useEffect(() => {
         (async () => {
             const {data} = await Api.publication.fundPublicationListFundPublications(fundId, undefined, from, pageSize);
@@ -88,6 +88,18 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
                 if (def.key === 'state' && item.state) {
                     const stateMsg = stateMessages[item.state];
                     return <>{stateMsg ? formatMessage(stateMsg) : item.state}</>;
+                }
+                if (def.type === 'date') {
+                    const raw = item[def.key] as string | undefined;
+                    if (!raw) { return <>-</>; }
+                    const date = new Date(raw);
+                    const dateStr = date.toLocaleDateString();
+                    const dateTimeStr = date.toLocaleString();
+                    return (
+                        <Tooltip content={dateTimeStr} relationship="label" appearance="inverted">
+                            <span>{dateStr}</span>
+                        </Tooltip>
+                    );
                 }
                 return <>{item[def.key] ?? '-'}</>;
             },
