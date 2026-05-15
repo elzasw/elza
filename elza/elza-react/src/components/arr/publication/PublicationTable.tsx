@@ -19,6 +19,7 @@ import {
     TableHeaderCell,
     TableRow,
     TableSelectionCell,
+    Tooltip,
     useTableColumnSizing_unstable,
     useTableFeatures,
     useTableSelection,
@@ -29,7 +30,8 @@ import {
 import { MoreHorizontalRegular, ArrowDownloadRegular, CopyRegular, DeleteRegular } from '@fluentui/react-icons';
 import { defineMessages, FormattedMessage, useIntl } from 'react-intl';
 import { PublicationDetail, PublicationType, PublicationStateInternal } from 'elza-api';
-import { colDef } from './utils';
+import { colDef, stateMessages } from './utils';
+import { useCanUsePublicationType } from './hooks';
 import PublicationToolbar from './filter/PublicationToolbar';
 import Pagination from 'components/shared/pagination/Pagination';
 import { Api } from 'api/api';
@@ -62,13 +64,13 @@ interface Props {
 function PublicationTable({ fundId, publicationTypes }: Props) {
     const classes = useTableStyles();
     const { formatMessage } = useIntl();
+    const canPublishToType = useCanUsePublicationType(fundId);
 
     const [from, setFrom] = useState(0);
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const [items, setItems] = useState<PublicationDetail[]>([]);
     const [totalCount, setTotalCount] = useState(0);
     const [refreshToken, setRefreshToken] = useState(0);
-
     useEffect(() => {
         (async () => {
             const {data} = await Api.publication.fundPublicationListFundPublications(fundId, undefined, from, pageSize);
@@ -81,7 +83,25 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
         createTableColumn<PublicationDetail>({
             columnId: def.key,
             renderHeaderCell: () => <>{formatMessage(def.message)}</>,
-            renderCell: (item: PublicationDetail) => <>{cellValue(def, item) || '-'}</>,
+            renderCell: (item: PublicationDetail) => {
+                if (def.key === 'state' && item.state) {
+                    const stateMsg = stateMessages[item.state];
+                    return <>{stateMsg ? formatMessage(stateMsg) : item.state}</>;
+                }
+                if (def.type === 'date') {
+                    const raw = item[def.key] as string | undefined;
+                    if (!raw) { return <>-</>; }
+                    const date = new Date(raw);
+                    const dateStr = date.toLocaleDateString();
+                    const dateTimeStr = date.toLocaleString();
+                    return (
+                        <Tooltip content={dateTimeStr} relationship="label" appearance="inverted">
+                            <span>{dateStr}</span>
+                        </Tooltip>
+                    );
+                }
+                return <>{cellValue(def, item) || '-'}</>;
+            },
             compare: (a, b) => cellValue(def, a).localeCompare(cellValue(def, b)),
         })
     );
@@ -252,7 +272,9 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
                                                     <FormattedMessage {...messages.menuDownload} />
                                                 </MenuItem>
                                                 {(() => {
-                                                    const copyTargets = publicationTypes.filter((type) => (type.active ?? true) && type.id !== item.typeId && type.exportFilterCode === publicationTypes.find((t) => t.id === item.typeId)?.exportFilterCode);
+                                                    const copyTargets = item.hasDownloadableFile
+                                                        ? publicationTypes.filter((type) => (type.active ?? true) && canPublishToType(type) && type.id !== item.typeId && type.exportFilterCode === publicationTypes.find((t) => t.id === item.typeId)?.exportFilterCode)
+                                                        : [];
                                                     return copyTargets.length === 0
                                                         ? <MenuItem icon={<CopyRegular />} disabled><FormattedMessage {...messages.menuCopy} /></MenuItem>
                                                         : (

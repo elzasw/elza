@@ -10,10 +10,11 @@ import {
 import { defineMessages, useIntl } from "react-intl";
 import { PublicationType } from "elza-api";
 import { Api } from "api/api";
+import { useCanUsePublicationType } from "./hooks";
 
 const messages = defineMessages({
-    btnPublish:      { id: "publication.btn.publish",      defaultMessage: "Publikovat do {name}" },
-    btnPublishOther: { id: "publication.btn.publishOther", defaultMessage: "Publikovat..." },
+    btnPublish:      { id: "publication.btn.publish",      defaultMessage: "Publikovat: {name}" },
+    btnPublishOther: { id: "publication.btn.publishOther", defaultMessage: "Publikovat: ..." },
 });
 
 interface Props {
@@ -27,13 +28,14 @@ const STATIC_PUBLICATION_TYPES = 2;
 
 export function PublishButton({ fundId, types, disabledTypeIds, onPublish }: Props) {
     const { formatMessage } = useIntl();
+    const canUse = useCanUsePublicationType(fundId);
 
     const handlePublish = async (publicationTypeId: number) => {
         await Api.publication.fundPublicationCreateFundPublication(fundId, { publicationTypeId });
         onPublish();
     };
 
-    const activeTypes = types.filter((t) => t.active ?? true);
+    const activeTypes = types.filter((t) => (t.active ?? true) && canUse(t));
 
     if (activeTypes.length === 0) {
         return null;

@@ -34,7 +34,7 @@ export function ArrPublicationPage() {
         fetchPublicationTypes();
     }, []);
 
-    const isFundAdmin = userDetail.hasOne(perms.FUND_ADMIN);
+    const isFundAdmin = userDetail.hasOne(perms.ADMIN);
 
     const altSection = isFundAdmin ? (
         <RibbonGroup key="alt-actions" className="small">
@@ -44,7 +44,7 @@ export function ArrPublicationPage() {
                     <span className="btnText">
                         <FormattedMessage
                             id="ribbon.action.arr.fund.publicationSystems"
-                            defaultMessage="Správa typů publikací"
+                            defaultMessage="Správa publikačních systémů"
                         />
                     </span>
                 </div>
