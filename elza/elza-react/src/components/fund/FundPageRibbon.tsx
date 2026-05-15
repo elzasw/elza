@@ -55,7 +55,7 @@ export function FundPageRibbon({
         );
     }
 
-    if (userDetail.hasOne(perms.FUND_ADMIN)) {
+    if (userDetail.hasOne(perms.ADMIN)) {
         altActions.push(
             <Button key="publication-systems" onClick={() => setPublicationSystemsOpen(true)}>
                 <Icon glyph="fa-newspaper-o" />

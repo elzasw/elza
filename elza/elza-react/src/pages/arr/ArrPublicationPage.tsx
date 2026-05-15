@@ -34,7 +34,7 @@ export function ArrPublicationPage() {
         fetchPublicationTypes();
     }, []);
 
-    const isFundAdmin = userDetail.hasOne(perms.FUND_ADMIN);
+    const isFundAdmin = userDetail.hasOne(perms.ADMIN);
 
     const altSection = isFundAdmin ? (
         <RibbonGroup key="alt-actions" className="small">
