@@ -44,7 +44,7 @@ export function ArrPublicationPage() {
                     <span className="btnText">
                         <FormattedMessage
                             id="ribbon.action.arr.fund.publicationSystems"
-                            defaultMessage="Správa typů publikací"
+                            defaultMessage="Správa publikačních systémů"
                         />
                     </span>
                 </div>

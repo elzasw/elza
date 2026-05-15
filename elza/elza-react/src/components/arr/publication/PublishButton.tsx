@@ -12,8 +12,8 @@ import { PublicationType } from "elza-api";
 import { Api } from "api/api";
 
 const messages = defineMessages({
-    btnPublish:      { id: "publication.btn.publish",      defaultMessage: "Publikovat do {name}" },
-    btnPublishOther: { id: "publication.btn.publishOther", defaultMessage: "Publikovat..." },
+    btnPublish:      { id: "publication.btn.publish",      defaultMessage: "Publikovat: {name}" },
+    btnPublishOther: { id: "publication.btn.publishOther", defaultMessage: "Publikovat: ..." },
 });
 
 interface Props {

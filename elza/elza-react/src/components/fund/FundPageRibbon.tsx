@@ -61,7 +61,7 @@ export function FundPageRibbon({
                 <Icon glyph="fa-newspaper-o" />
                 <div>
                     <span className="btnText">
-                        <FormattedMessage id="ribbon.action.arr.fund.publicationSystems" defaultMessage="Typy publikací" />
+                        <FormattedMessage id="ribbon.action.arr.fund.publicationSystems" defaultMessage="Správa publikačních systémů" />
                     </span>
                 </div>
             </Button>,

@@ -16,7 +16,7 @@ import { Api } from "api/api";
 import { useDialogStyles } from "./styles";
 
 const messages = defineMessages({
-    title: { id: "publication.systems.dialog.title", defaultMessage: "Správa typů publikací" },
+    title: { id: "publication.systems.dialog.title", defaultMessage: "Správa publikačních systémů" },
     btnAdd: { id: "publication.systems.dialog.add", defaultMessage: "Přidat" },
     btnClose: { id: "publication.systems.dialog.close", defaultMessage: "Zavřít" },
     newSystem: { id: "publication.systems.new", defaultMessage: "Nový typ" },
