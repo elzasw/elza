@@ -4333,6 +4333,13 @@ components:
           allOf:
             - $ref: '#/components/schemas/ItemData'
           description: item data
+    ConnectionType:
+      type: string
+      enum:
+        - DEVELOPMENT
+        - TEST
+        - PRODUCTION
+      description: Kind of target environment a publication type connects to.
     CopyAccessPointDetail:
       type: object
       required:
@@ -6238,6 +6245,7 @@ components:
         - code
         - allowPermExport
         - allowPermPublication
+        - connectionType
       properties:
         id:
           type: integer
@@ -6270,6 +6278,10 @@ components:
         allowPermPublication:
           type: boolean
           description: Users holding the FUND_PUBLISH permission may publish into this type.
+        connectionType:
+          allOf:
+            - $ref: '#/components/schemas/ConnectionType'
+          description: Target environment kind (development / test / production).
       description: |-
         Publication type — target-system configuration.
 

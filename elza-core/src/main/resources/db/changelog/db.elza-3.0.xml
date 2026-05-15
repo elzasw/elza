@@ -1063,4 +1063,16 @@
         </insert>
     </changeSet>
 
+    <changeSet id="20260515120000" author="ppy">
+        <!-- Connection type of the publication target (development / test / production).
+             Default during the add backfills existing rows to PRODUCTION; the default
+             is dropped afterwards so applications must always set the value explicitly. -->
+        <addColumn tableName="arr_export_type">
+            <column name="connection_type" type="nvarchar(50)" defaultValue="PRODUCTION">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <dropDefaultValue tableName="arr_export_type" columnName="connection_type"/>
+    </changeSet>
+
 </databaseChangeLog>

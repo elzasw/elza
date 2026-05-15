@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import cz.tacr.elza.controller.vo.ConnectionType;
 import cz.tacr.elza.controller.vo.PublicationType;
 import cz.tacr.elza.domain.ArrExportType;
 import cz.tacr.elza.domain.RulExportFilter;
@@ -97,6 +98,7 @@ public class PublicationTypeService {
         vo.setRetentionCount(entity.getRetentionCount());
         vo.setAllowPermExport(entity.getAllowPermExport());
         vo.setAllowPermPublication(entity.getAllowPermPublication());
+        vo.setConnectionType(ConnectionType.fromValue(entity.getConnectionType().name()));
         if (entity.getExportFilter() != null) {
             vo.setExportFilterCode(entity.getExportFilter().getCode());
         }
@@ -110,6 +112,9 @@ public class PublicationTypeService {
         if (vo.getCode() == null || vo.getCode().isBlank()) {
             throw new BusinessException("Publication type code must be set", BaseCode.PROPERTY_NOT_EXIST).set("property", "code");
         }
+        if (vo.getConnectionType() == null) {
+            throw new BusinessException("Publication type connection type must be set", BaseCode.PROPERTY_NOT_EXIST).set("property", "connectionType");
+        }
         if (entity == null) {
         	entity = new ArrExportType();
         }
@@ -119,6 +124,7 @@ public class PublicationTypeService {
         entity.setRetentionCount(vo.getRetentionCount() == null ? DEFAULT_RETENTION_COUNT : vo.getRetentionCount());
         entity.setAllowPermExport(Boolean.TRUE.equals(vo.getAllowPermExport()));
         entity.setAllowPermPublication(Boolean.TRUE.equals(vo.getAllowPermPublication()));
+        entity.setConnectionType(cz.tacr.elza.domain.ConnectionType.valueOf(vo.getConnectionType().getValue()));
         entity.setExportFilter(resolveExportFilter(vo.getExportFilterCode()));
         return entity;
     }

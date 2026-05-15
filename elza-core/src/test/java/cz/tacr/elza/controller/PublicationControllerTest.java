@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
+import cz.tacr.elza.test.controller.vo.ConnectionType;
 import cz.tacr.elza.test.controller.vo.PublicationType;
 
 /**
@@ -116,6 +117,7 @@ public class PublicationControllerTest extends AbstractControllerTest {
         ptVO.setRetentionCount(5);
         ptVO.setAllowPermExport(true);
         ptVO.setAllowPermPublication(false);
+        ptVO.setConnectionType(ConnectionType.TEST);
         return ptVO;
     }
 }
