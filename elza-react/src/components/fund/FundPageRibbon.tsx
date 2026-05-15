@@ -55,13 +55,13 @@ export function FundPageRibbon({
         );
     }
 
-    if (userDetail.hasOne(perms.FUND_ADMIN)) {
+    if (userDetail.hasOne(perms.ADMIN)) {
         altActions.push(
             <Button key="publication-systems" onClick={() => setPublicationSystemsOpen(true)}>
                 <Icon glyph="fa-newspaper-o" />
                 <div>
                     <span className="btnText">
-                        <FormattedMessage id="ribbon.action.arr.fund.publicationSystems" defaultMessage="Typy publikací" />
+                        <FormattedMessage id="ribbon.action.arr.fund.publicationSystems" defaultMessage="Správa publikačních systémů" />
                     </span>
                 </div>
             </Button>,
