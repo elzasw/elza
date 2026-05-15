@@ -188,6 +188,9 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 
             // reading data from db
             readTypeAndSpecDataFromDb(packagesMap.values());
+        } else {
+            // Fallback initialization if dpkg directory does not exist, e.g. for tests or first run without packages
+            allPackages = Collections.emptyList();
         }
     }
 
