@@ -706,11 +706,27 @@ public abstract class AbstractEntityDBDispatcher {
             case STRING:
                 ArrDataString ds = new ArrDataString();
                 ds.setStringValue(item.getStringValue());
+                if (StringUtils.isEmpty(ds.getStringValue())) {
+                    log.error("ItemString is empty, uuid: {}, itemType: {}, itemSpec: {}",
+                            item.getUuid(),
+                            item.getType() != null ? item.getType().getValue() : null,
+                            item.getSpec() != null ? item.getSpec().getValue() : null);
+                    // Set some default value
+                    ds.setStringValue("N/A");
+                }
                 ds.setDataType(DataType.STRING.getEntity());
                 return ds;
             case TEXT:
                 ArrDataText dt2 = new ArrDataText();
                 dt2.setTextValue(item.getStringValue());
+                if (StringUtils.isEmpty(dt2.getTextValue())) {
+                    log.error("ItemText is empty, uuid: {}, itemType: {}, itemSpec: {}",
+                            item.getUuid(),
+                            item.getType() != null ? item.getType().getValue() : null,
+                            item.getSpec() != null ? item.getSpec().getValue() : null);
+                    // Set some default value
+                    dt2.setTextValue("N/A");
+                }
                 dt2.setDataType(DataType.TEXT.getEntity());
                 return dt2;
             case COORDINATES:
