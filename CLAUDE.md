@@ -128,7 +128,7 @@ ELZA is an archival management system used by Czech archives. Key domain concept
 
 - Source code: English (variable names, class names).
 - UI strings: Czech.
-- Commit messages: use Czech if the surrounding context is Czech, otherwise English.
+- Commit messages and comments: use Czech if the surrounding context is Czech, otherwise English.
 - Developers are non-native English speakers. When they write English — in code, comments, commit messages, or chat — gently correct grammar/phrasing mistakes and briefly explain the preferred wording so they can learn.
 
 ## Comments
