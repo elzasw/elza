@@ -3092,6 +3092,15 @@ enum PublicationStateInternal {
 }
 
 /**
+ * Kind of target environment a publication type connects to.
+ */
+enum ConnectionType {
+    DEVELOPMENT,
+    TEST,
+    PRODUCTION,
+}
+
+/**
  * Publication type — target-system configuration.
  *
  * Used as both the read shape (responses) and the write shape (create / update
@@ -3137,6 +3146,9 @@ model PublicationType {
 
     /** Users holding the FUND_PUBLISH permission may publish into this type. */
     allowPermPublication: boolean;
+
+    /** Target environment kind (development / test / production). */
+    connectionType: ConnectionType;
 }
 
 /**

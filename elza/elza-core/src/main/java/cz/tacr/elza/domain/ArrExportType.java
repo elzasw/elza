@@ -5,6 +5,8 @@ import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -15,7 +17,8 @@ import jakarta.persistence.ManyToOne;
  * Publication / export type definition.
  *
  * Configures one target system for the public publication API: its filter,
- * retention policy and which Elza permissions allow publishing into it.
+ * retention policy, which Elza permissions allow publishing into it, and which
+ * environment kind (development / test / production) the target represents.
  * Persisted into {@code arr_export_type}.
  */
 @Entity(name = "arr_export_type")
@@ -56,6 +59,11 @@ public class ArrExportType {
     /** Users holding the FUND_PUBLISH permission may publish to this type. */
     @Column(nullable = false)
     private Boolean allowPermPublication;
+
+    /** Kind of target environment (development / test / production). Descriptive only. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "connection_type", length = StringLength.LENGTH_50, nullable = false)
+    private ConnectionType connectionType;
 
     public Integer getExportTypeId() {
         return exportTypeId;
@@ -124,5 +132,13 @@ public class ArrExportType {
 
     public void setAllowPermPublication(Boolean allowPermPublication) {
         this.allowPermPublication = allowPermPublication;
+    }
+
+    public ConnectionType getConnectionType() {
+        return connectionType;
+    }
+
+    public void setConnectionType(ConnectionType connectionType) {
+        this.connectionType = connectionType;
     }
 }

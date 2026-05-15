@@ -14,17 +14,17 @@ import org.apache.commons.lang3.StringUtils;
  * the cam-2019 (APIv1) binding.
  * <p>
  * Marshalling emits the wall clock in the JVM default zone, truncated to seconds
- * and without a zone suffix — i.e. {@code 2026-05-06T16:25:07}. APIv1 keeps this
+ * and without a zone suffix -- i.e. {@code 2026-05-06T16:25:07}. APIv1 keeps this
  * legacy zone-less form for wire compatibility; clients re-interpret it in their
  * own implicit zone. (APIv2 uses {@link OffsetDateTimeWithZoneAdapter}, which
  * preserves the offset on the wire.)
  * <p>
- * Unmarshalling is lenient — both forms permitted by {@code xs:dateTime} are
+ * Unmarshalling is lenient -- both forms permitted by {@code xs:dateTime} are
  * accepted:
  * <ul>
  *   <li>with explicit offset (e.g. {@code 2026-05-06T16:25:07+02:00}, or
- *       {@code …Z}) – parsed as-is,</li>
- *   <li>without offset (e.g. {@code 2026-05-06T16:25:07}) – the JVM default zone
+ *       {@code ...Z}) -- parsed as-is,</li>
+ *   <li>without offset (e.g. {@code 2026-05-06T16:25:07}) -- the JVM default zone
  *       is attached, matching the legacy assumption that zone-less timestamps
  *       reflect the writer's wall clock.</li>
  * </ul>
@@ -51,7 +51,7 @@ public class OffsetDateTimeAdapter extends XmlAdapter<String, OffsetDateTime> {
         // Shift to the JVM default zone first (Hibernate's default storage policy
         // normalises to UTC; emitting the UTC wall clock zone-less would otherwise
         // mislead clients that assume local time), then drop sub-second precision
-        // so the output is always {@code …:SS} not {@code …:SS.NNN}.
+        // so the output is always {@code ...:SS} not {@code ...:SS.NNN}.
         return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
                 value.atZoneSameInstant(ZoneId.systemDefault())
                         .truncatedTo(ChronoUnit.SECONDS));

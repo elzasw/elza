@@ -10,7 +10,7 @@ import {
 import { AddRegular, EyeOffRegular } from "@fluentui/react-icons";
 import { useEffect, useState } from "react";
 import { defineMessages, useIntl } from "react-intl";
-import { PublicationType } from "elza-api";
+import { ConnectionType, PublicationType } from "elza-api";
 import { PublicationSystemDetail } from "./PublicationSystemDetail";
 import { Api } from "api/api";
 import { useDialogStyles } from "./styles";
@@ -70,6 +70,7 @@ export function PublicationSystemsDialog({ open, onClose }: Props) {
             active: true,
             allowPermExport: false,
             allowPermPublication: false,
+            connectionType: ConnectionType.Development,
         };
         setSystems([...systems, newSystem]);
         setSelectedId(null);
