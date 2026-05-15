@@ -275,7 +275,9 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
                                                     <FormattedMessage {...messages.menuDownload} />
                                                 </MenuItem>
                                                 {(() => {
-                                                    const copyTargets = publicationTypes.filter((type) => (type.active ?? true) && canPublishToType(type) && type.id !== item.typeId && type.exportFilterCode === publicationTypes.find((t) => t.id === item.typeId)?.exportFilterCode);
+                                                    const copyTargets = item.hasDownloadableFile
+                                                        ? publicationTypes.filter((type) => (type.active ?? true) && canPublishToType(type) && type.id !== item.typeId && type.exportFilterCode === publicationTypes.find((t) => t.id === item.typeId)?.exportFilterCode)
+                                                        : [];
                                                     return copyTargets.length === 0
                                                         ? <MenuItem icon={<CopyRegular />} disabled><FormattedMessage {...messages.menuCopy} /></MenuItem>
                                                         : (
