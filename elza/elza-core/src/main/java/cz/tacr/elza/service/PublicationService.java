@@ -2,7 +2,9 @@ package cz.tacr.elza.service;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import cz.tacr.elza.controller.vo.PublicationDetail;
 import cz.tacr.elza.controller.vo.PublicationList;
 import cz.tacr.elza.controller.vo.PublicationStateInternal;
+import cz.tacr.elza.controller.vo.UserRef;
 import cz.tacr.elza.domain.ArrExport;
 import cz.tacr.elza.domain.ArrExportType;
 import cz.tacr.elza.domain.ArrFund;
@@ -84,8 +87,16 @@ public class PublicationService {
         List<ArrExport> rows = exportRepository.findFundExports(fundId, publicationTypeId, pageable);
         long total = exportRepository.countFundExports(fundId, publicationTypeId);
 
+        Set<Integer> userIds = rows.stream()
+                .map(ArrExport::getUserId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Integer, UserRef> userRefs = userService.toUserRefMap(userIds);
+
         PublicationList result = new PublicationList();
-        result.setItems(rows.stream().map(this::toVO).collect(Collectors.toList()));
+        result.setItems(rows.stream()
+                .map(r -> toVO(r, userRefs.get(r.getUserId())))
+                .collect(Collectors.toList()));
         result.setTotalCount(Math.toIntExact(total));
         return result;
     }
@@ -181,7 +192,17 @@ public class PublicationService {
         return toVO(exportRepository.save(copy));
     }
 
+    /**
+     * Single-record path: resolves the {@code createdBy} UserRef inline. Each
+     * call costs one extra query; do not use in list loops — use
+     * {@link #toVO(ArrExport, UserRef)} with a pre-built map instead.
+     */
     public PublicationDetail toVO(final ArrExport export) {
+        UserRef createdBy = export.getUser() != null ? userService.toUserRef(export.getUser()) : null;
+        return toVO(export, createdBy);
+    }
+
+    public PublicationDetail toVO(final ArrExport export, final UserRef createdBy) {
         PublicationDetail vo = new PublicationDetail();
         vo.setId(export.getExportId());
         ArrExportType type = export.getExportType();
@@ -190,7 +211,7 @@ public class PublicationService {
         vo.setTypeName(type.getName());
         vo.setFundVersionId(export.getFundVersionId());
         vo.setState(PublicationStateInternal.fromValue(export.getState().name()));
-        vo.setCreatedByUserId(export.getUserId());
+        vo.setCreatedBy(createdBy);
         vo.setCreatedAt(export.getCreatedAt());
         vo.setPreparedAt(export.getPreparedAt());
         vo.setLastFetchedAt(export.getLastFetchedAt());
