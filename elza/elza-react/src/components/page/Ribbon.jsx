@@ -264,14 +264,6 @@ class Ribbon extends AbstractReactComponent {
                         </Button>
                     </LinkContainer>,
                 );
-                arrParts.push(
-                    <LinkContainer key="ribbon-btn-arr-publication" to={urlFundPublication(fundId, versionId)}>
-                        <Button variant={'default'}>
-                            <Icon glyph="fa-newspaper-o" />
-                            <span className="btnText"><FormattedMessage {...messages.publication} /></span>
-                        </Button>
-                    </LinkContainer>,
-                );
             }
             if (userDetail.hasArrPage(fundId)) {
                 // právo na pořádání
@@ -297,6 +289,16 @@ class Ribbon extends AbstractReactComponent {
                 );
             }
 
+            if (userDetail.hasRdPage(fundId)) {
+                arrParts.push(
+                    <LinkContainer key="ribbon-btn-arr-publication" to={urlFundPublication(fundId, versionId)}>
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-newspaper-o" />
+                            <span className="btnText"><FormattedMessage {...messages.publication} /></span>
+                        </Button>
+                    </LinkContainer>,
+                );
+            }
             if (userDetail.hasRdPage(fundId)) {
                 // právo na hromadné akce
                 arrParts.push(
