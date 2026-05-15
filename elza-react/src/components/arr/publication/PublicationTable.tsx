@@ -42,20 +42,17 @@ const messages = defineMessages({
     menuDelete:   { id: 'publication.table.menu.delete',   defaultMessage: 'Odstranit' },
 });
 
-// const ALL_DUMMY_DATA: PublicationDetail[] = [
-//     { id: 1,  typeId: 1, typeCode: 'PUBLIC',   typeName: 'Veřejný portál',  fundVersionId: 1, state: 'PUBLISHED',     createdByUserId: 1, createdAt: '2024-01-15', preparedAt: '2024-01-16',                          lastFetchedAt: '2024-03-01', publishedAt: '2024-01-17',                             hasDownloadableFile: true  },
-//     { id: 2,  typeId: 2, typeCode: 'INTERNAL', typeName: 'Interní systém',  fundVersionId: 1, state: 'PREPARE_ERROR', createdByUserId: 2, createdAt: '2024-02-20',                          errorAt: '2024-02-21',                                                                                  hasDownloadableFile: false, errorMessage: 'Timeout při exportu' },
-//     { id: 3,  typeId: 1, typeCode: 'PUBLIC',   typeName: 'Veřejný portál',  fundVersionId: 2, state: 'NEW',           createdByUserId: 3, createdAt: '2024-03-10',                                                                                                                                   hasDownloadableFile: false },
-//     { id: 4,  typeId: 3, typeCode: 'ARCHIV',   typeName: 'Archivní portál', fundVersionId: 1, state: 'PUBLISHED',     createdByUserId: 1, createdAt: '2024-03-18', preparedAt: '2024-03-19',                          lastFetchedAt: '2024-04-10', publishedAt: '2024-03-20',                             hasDownloadableFile: true  },
-//     { id: 5,  typeId: 1, typeCode: 'PUBLIC',   typeName: 'Veřejný portál',  fundVersionId: 2, state: 'INVALIDATED',   createdByUserId: 2, createdAt: '2024-04-01', preparedAt: '2024-04-02',                          lastFetchedAt: '2024-04-15', publishedAt: '2024-04-03', invalidatedAt: '2024-05-01', hasDownloadableFile: false },
-//     { id: 6,  typeId: 2, typeCode: 'INTERNAL', typeName: 'Interní systém',  fundVersionId: 3, state: 'PUBLISHED',     createdByUserId: 3, createdAt: '2024-04-12', preparedAt: '2024-04-13',                          lastFetchedAt: '2024-05-02', publishedAt: '2024-04-14',                             hasDownloadableFile: true  },
-//     { id: 7,  typeId: 3, typeCode: 'ARCHIV',   typeName: 'Archivní portál', fundVersionId: 2, state: 'PREPARE_ERROR', createdByUserId: 1, createdAt: '2024-04-25',                          errorAt: '2024-04-26',                                                                                  hasDownloadableFile: false, errorMessage: 'Neplatný formát záznamu' },
-//     { id: 8,  typeId: 1, typeCode: 'PUBLIC',   typeName: 'Veřejný portál',  fundVersionId: 1, state: 'PUBLISHED',     createdByUserId: 2, createdAt: '2024-05-03', preparedAt: '2024-05-04',                          lastFetchedAt: '2024-06-01', publishedAt: '2024-05-05',                             hasDownloadableFile: true  },
-//     { id: 9,  typeId: 2, typeCode: 'INTERNAL', typeName: 'Interní systém',  fundVersionId: 2, state: 'NEW',           createdByUserId: 3, createdAt: '2024-05-17',                                                                                                                                   hasDownloadableFile: false },
-//     { id: 10, typeId: 3, typeCode: 'ARCHIV',   typeName: 'Archivní portál', fundVersionId: 1, state: 'PUBLISHED',     createdByUserId: 1, createdAt: '2024-05-29', preparedAt: '2024-05-30',                          lastFetchedAt: '2024-06-20', publishedAt: '2024-05-31',                             hasDownloadableFile: true  },
-// ];
-
 const DEFAULT_PAGE_SIZE = 25;
+
+/**
+ * Resolve the displayable string for a column. Object-typed columns
+ * (e.g. `createdBy: UserRef`) supply a {@link colDef.getValue} extractor;
+ * scalar columns fall back to direct property access.
+ */
+const cellValue = (def: typeof colDef[number], item: PublicationDetail): string => {
+    const raw = def.getValue ? def.getValue(item) : item[def.key];
+    return raw == null ? '' : String(raw);
+};
 
 interface Props {
     fundId: number;
@@ -84,8 +81,8 @@ function PublicationTable({ fundId, publicationTypes }: Props) {
         createTableColumn<PublicationDetail>({
             columnId: def.key,
             renderHeaderCell: () => <>{formatMessage(def.message)}</>,
-            renderCell: (item: PublicationDetail) => <>{item[def.key] ?? '-'}</>,
-            compare: (a, b) => String(a[def.key] ?? '').localeCompare(String(b[def.key] ?? '')),
+            renderCell: (item: PublicationDetail) => <>{cellValue(def, item) || '-'}</>,
+            compare: (a, b) => cellValue(def, a).localeCompare(cellValue(def, b)),
         })
     );
 

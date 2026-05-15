@@ -1952,12 +1952,25 @@ model ResultEntityRef {
 }
 
 /**
+ * Reference to a user account.
+ *
+ * Carries enough information for the client to display the user
+ * (name, username) without an extra lookup, while still keeping the
+ * stable identifier.
+ */
+model UserRef {
+    /** User identifier */
+    userId: integer;
+    /** Full display name */
+    name: string;
+    /** Username (login) */
+    username: string;
+}
+
+/**
  * Entity processor (user)
  */
-model Participant {
-    userId: integer;
-    name: string;
-    username: string;
+model Participant extends UserRef {
     /** if user has ability to save and modify new entity */
     canWrite: boolean;
     /** if user has ability to approve entity */
@@ -3173,8 +3186,8 @@ model PublicationDetail {
     /** Current life-cycle state. */
     state: PublicationStateInternal;
 
-    /** ID of the user who created the publication request. */
-    createdByUserId: integer;
+    /** User who created the publication request. */
+    createdBy: UserRef;
 
     /** Time the publication request was created. */
     createdAt: offsetDateTime;

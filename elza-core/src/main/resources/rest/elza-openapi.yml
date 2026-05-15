@@ -6090,19 +6090,10 @@ components:
     Participant:
       type: object
       required:
-        - userId
-        - name
-        - username
         - canWrite
         - canConfirm
         - canEditConfirmed
       properties:
-        userId:
-          type: integer
-        name:
-          type: string
-        username:
-          type: string
         canWrite:
           type: boolean
           description: if user has ability to save and modify new entity
@@ -6112,6 +6103,8 @@ components:
         canEditConfirmed:
           type: boolean
           description: if user has ability to change approved entity
+      allOf:
+        - $ref: '#/components/schemas/UserRef'
       description: Entity processor (user)
     PublicationDetail:
       type: object
@@ -6122,7 +6115,7 @@ components:
         - typeName
         - fundVersionId
         - state
-        - createdByUserId
+        - createdBy
         - createdAt
         - hasDownloadableFile
       properties:
@@ -6145,9 +6138,10 @@ components:
           allOf:
             - $ref: '#/components/schemas/PublicationStateInternal'
           description: Current life-cycle state.
-        createdByUserId:
-          type: integer
-          description: ID of the user who created the publication request.
+        createdBy:
+          allOf:
+            - $ref: '#/components/schemas/UserRef'
+          description: User who created the publication request.
         createdAt:
           type: string
           format: date-time
@@ -6986,6 +6980,28 @@ components:
         count:
           type: integer
       description: Fund node item type id and quantity
+    UserRef:
+      type: object
+      required:
+        - userId
+        - name
+        - username
+      properties:
+        userId:
+          type: integer
+          description: User identifier
+        name:
+          type: string
+          description: Full display name
+        username:
+          type: string
+          description: Username (login)
+      description: |-
+        Reference to a user account.
+
+        Carries enough information for the client to display the user
+        (name, username) without an extra lookup, while still keeping the
+        stable identifier.
     WfSimpleIssue:
       type: object
       required:

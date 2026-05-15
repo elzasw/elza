@@ -49,6 +49,8 @@ import com.google.common.collect.Lists;
 
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.vo.UserInfoVO;
+import cz.tacr.elza.controller.vo.UserRef;
+import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.core.data.SearchType;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
@@ -2012,6 +2014,76 @@ public class UserService {
         }
         List<UsrUser> users = userRepository.findAllById(userIds);
         return users.stream().collect(Collectors.toMap(UsrUser::getUserId, Function.identity()));
+    }
+
+    /**
+     * Placeholder used when a UserRef cannot be fully resolved (e.g. deactivated
+     * user with no preferred-name index). Real deletion of UsrUser rows is not
+     * supported, so this is expected to be a rare fallback.
+     */
+    private static final String UNKNOWN_USER_LABEL = "?";
+
+    /**
+     * Build a {@link UserRef} for a single user.
+     *
+     * Resolves the display name via the preferred-part {@code DISPLAY_NAME}
+     * index of the user's access point. TODO: switch to {@code SHORT_NAME} once
+     * a shared helper exists — the short variant omits dates of birth and is
+     * better suited for in-line display.
+     *
+     * @param user user entity (must not be null)
+     * @return populated UserRef; never null
+     */
+    @Transactional(Transactional.TxType.MANDATORY)
+    public UserRef toUserRef(final UsrUser user) {
+        Validate.notNull(user, "User must not be null");
+        ApIndex apIndex = user.getAccessPointId() != null
+                ? accessPointService.findPreferredPartIndex(user.getAccessPointId())
+                : null;
+        return buildUserRef(user, apIndex);
+    }
+
+    /**
+     * Build a {@link UserRef} map for many users in a single pair of queries
+     * (one for users, one for preferred-name indexes). Use on list endpoints
+     * to avoid N+1 lookups.
+     *
+     * @param userIds ids to resolve; missing ids are simply absent from the map
+     * @return userId → UserRef
+     */
+    @Transactional(Transactional.TxType.MANDATORY)
+    public Map<Integer, UserRef> toUserRefMap(final Collection<Integer> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        List<UsrUser> users = userRepository.findAllById(userIds);
+        if (users.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        List<Integer> apIds = users.stream()
+                .map(UsrUser::getAccessPointId)
+                .filter(Objects::nonNull)
+                .toList();
+        Map<Integer, ApIndex> apIndexMap = apIds.isEmpty()
+                ? Collections.emptyMap()
+                : accessPointService.findPreferredPartIndexMapByIds(apIds);
+
+        Map<Integer, UserRef> result = new HashMap<>(users.size());
+        for (UsrUser u : users) {
+            ApIndex apIndex = u.getAccessPointId() != null ? apIndexMap.get(u.getAccessPointId()) : null;
+            result.put(u.getUserId(), buildUserRef(u, apIndex));
+        }
+        return result;
+    }
+
+    private static UserRef buildUserRef(final UsrUser user, @Nullable final ApIndex apIndex) {
+        UserRef ref = new UserRef();
+        ref.setUserId(user.getUserId());
+        ref.setUsername(user.getUsername() != null ? user.getUsername() : UNKNOWN_USER_LABEL);
+        ref.setName(apIndex != null && apIndex.getIndexValue() != null
+                ? apIndex.getIndexValue()
+                : UNKNOWN_USER_LABEL);
+        return ref;
     }
 
     /**
