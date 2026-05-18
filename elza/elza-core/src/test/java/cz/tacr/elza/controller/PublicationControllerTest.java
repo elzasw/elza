@@ -64,27 +64,28 @@ public class PublicationControllerTest extends AbstractControllerTest {
 
     @Test
     public void publicationTypeAdminUpdatePublicationTypeTest() {
-        PublicationType created = publicationIntApi.publicationTypeAdminCreatePublicationType(buildPublicationType("TST_UPDATE_A", "Original"));
+        PublicationType createdA = publicationIntApi.publicationTypeAdminCreatePublicationType(buildPublicationType("TST_UPDATE_A", "Original"));
+        publicationIntApi.publicationTypeAdminCreatePublicationType(buildPublicationType("TST_UPDATE_C", "Original")); // for conflict update
 
         PublicationType update = buildPublicationType("TST_UPDATE_B", "Renamed");
         update.setRetentionCount(7);
         update.setActive(false);
-        PublicationType updated = publicationIntApi.publicationTypeAdminUpdatePublicationType(created.getId(), update);
+        PublicationType updated = publicationIntApi.publicationTypeAdminUpdatePublicationType(createdA.getId(), update);
 
-        assertEquals(created.getId(), updated.getId());
+        assertEquals(createdA.getId(), updated.getId());
         assertEquals("TST_UPDATE_B", updated.getCode());
         assertEquals("Renamed", updated.getName());
         assertEquals(7, updated.getRetentionCount());
         assertEquals(false, updated.getActive());
 
-//        // Updating to a code already taken by another type → 409
-//        PublicationType badUdate = buildPublicationType("TST_UPDATE_B", "Other");
-//        HttpClientErrorException ex = assertThrows(HttpClientErrorException.class, () -> publicationIntApi.publicationTypeAdminUpdatePublicationType(updated.getId(), badUdate));
-//        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
-//        assertNotNull(ex.getResponseHeaders());    
+        // Updating to a code already taken by another type → 409
+        PublicationType badUdate = buildPublicationType("TST_UPDATE_C", "Other");
+        HttpClientErrorException ex = assertThrows(HttpClientErrorException.class, () -> publicationIntApi.publicationTypeAdminUpdatePublicationType(updated.getId(), badUdate));
+        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+        assertNotNull(ex.getResponseHeaders());    
 
         // Updating a non-existent id → 404
-        HttpClientErrorException ex = assertThrows(HttpClientErrorException.class, () -> publicationIntApi.publicationTypeAdminUpdatePublicationType(999_999, update));
+        ex = assertThrows(HttpClientErrorException.class, () -> publicationIntApi.publicationTypeAdminUpdatePublicationType(999_999, update));
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
         assertNotNull(ex.getResponseHeaders());
     }
