@@ -40,8 +40,11 @@ export function PublicationSystemsDialog({ open, onClose }: Props) {
     const { formatMessage } = useIntl();
 
     const [systems, setSystems] = useState<PublicationType[]>([]);
-    const [selectedId, setSelectedId] = useState<number | null>(systems[0]?.id ?? null);
-    const [editedSystem, setEditedSystem] = useState<PublicationType | null>(systems[0] ?? null);
+    const [selectedId, setSelectedId] = useState<number | null>(null);
+    const [editedSystem, setEditedSystem] = useState<PublicationType | null>(null);
+
+    const isSameSystem = (a: PublicationType, b: PublicationType) =>
+        a.id !== undefined ? a.id === b.id : a === b;
 
     useEffect(() => {
         if (!open) { return; }
@@ -54,11 +57,9 @@ export function PublicationSystemsDialog({ open, onClose }: Props) {
         })();
     }, [open]);
 
-    const selectedSystem = systems.find((s) => s.id === selectedId) ?? null;
-
     const handleSelect = (system: PublicationType) => {
         setSelectedId(system.id ?? null);
-        setEditedSystem({ ...system });
+        setEditedSystem(system.id !== undefined ? { ...system } : system);
     };
 
     const handleAdd = () => {
@@ -72,33 +73,33 @@ export function PublicationSystemsDialog({ open, onClose }: Props) {
             allowPermPublication: false,
             connectionType: ConnectionType.Development,
         };
-        setSystems([...systems, newSystem]);
+        setSystems((prev) => [...prev, newSystem]);
         setSelectedId(null);
-        setEditedSystem({ ...newSystem });
+        setEditedSystem(newSystem);
     };
 
     const handleSave = async (values: PublicationType) => {
         if (values.id === undefined) {
             const { data: created } = await Api.publication.publicationTypeAdminCreatePublicationType(values);
-            setSystems(systems.map((s) => s === editedSystem ? created : s));
+            setSystems((prev) => prev.map((s) => isSameSystem(s, editedSystem!) ? created : s));
             setSelectedId(created.id ?? null);
             setEditedSystem({ ...created });
         } else {
             const { data: updated } = await Api.publication.publicationTypeAdminUpdatePublicationType(values.id, values);
-            setSystems(systems.map((s) => s.id === updated.id ? updated : s));
+            setSystems((prev) => prev.map((s) => isSameSystem(s, updated) ? updated : s));
             setEditedSystem({ ...updated });
         }
     };
 
     const handleToggleActive = async (system: PublicationType) => {
-        const updated = { ...system, active: !(system.active ?? true) };
+        const toggled = { ...system, active: !(system.active ?? true) };
         if (system.id !== undefined) {
-            const { data } = await Api.publication.publicationTypeAdminUpdatePublicationType(system.id, updated);
-            setSystems(systems.map((s) => s.id === data.id ? data : s));
-            if (editedSystem?.id === data.id) { setEditedSystem({ ...data }); }
+            const { data } = await Api.publication.publicationTypeAdminUpdatePublicationType(system.id, toggled);
+            setSystems((prev) => prev.map((s) => isSameSystem(s, data) ? data : s));
+            if (editedSystem && isSameSystem(editedSystem, data)) { setEditedSystem({ ...data }); }
         } else {
-            setSystems(systems.map((s) => s === system ? updated : s));
-            if (editedSystem === system) { setEditedSystem(updated); }
+            setSystems((prev) => prev.map((s) => s === system ? toggled : s));
+            if (editedSystem === system) { setEditedSystem(toggled); }
         }
     };
 
@@ -106,11 +107,13 @@ export function PublicationSystemsDialog({ open, onClose }: Props) {
         if (system.id !== undefined) {
             await Api.publication.publicationTypeAdminDeletePublicationType(system.id);
         }
-        const remaining = systems.filter((s) => s !== system);
-        setSystems(remaining);
-        const next = remaining[0] ?? null;
-        setSelectedId(next?.id ?? null);
-        setEditedSystem(next ? { ...next } : null);
+        setSystems((prev) => {
+            const remaining = prev.filter((s) => !isSameSystem(s, system));
+            const next = remaining[0] ?? null;
+            setSelectedId(next?.id ?? null);
+            setEditedSystem(next ? { ...next } : null);
+            return remaining;
+        });
     };
 
     return (
