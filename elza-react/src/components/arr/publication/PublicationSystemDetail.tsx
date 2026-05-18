@@ -19,7 +19,7 @@ import { defineMessages, useIntl } from 'react-intl';
 import { ConnectionType, PublicationType } from 'elza-api';
 import { WebApi } from 'actions/WebApi';
 import { useDetailStyles } from './styles';
-import { ConfirmPopover } from './ConfirmPopover';
+import { ConfirmDialog } from './ConfirmDialog';
 
 const messages = defineMessages({
     sectionStorage: { id: 'publication.system.section.storage', defaultMessage: 'Ukládání exportů' },
@@ -226,35 +226,44 @@ export function PublicationSystemDetail({ value, onSave, onToggleActive, onRemov
                         </div>
                     </div>
 
-                    <div className={classes.footer}>
-                        <Button appearance="primary" disabled={!dirty} onClick={handleSubmit}>
-                            {formatMessage(messages.btnSave)}
-                        </Button>
-                        <Button disabled={!dirty} onClick={() => form.reset()}>
-                            {formatMessage(messages.btnReset)}
-                        </Button>
-                        <div style={{ flex: 1 }} />
-                        {isInactive ? (
-                            <Button onClick={onToggleActive}>{formatMessage(messages.btnActivate)}</Button>
-                        ) : (
-                            <ConfirmPopover
-                                text={formatMessage(messages.confirmDeactivate)}
-                                confirmLabel={formatMessage(messages.btnDeactivate)}
-                                positioning="above"
-                                onConfirm={onToggleActive}
-                            >
-                                <Button className={classes.dangerBtn}>{formatMessage(messages.btnDeactivate)}</Button>
-                            </ConfirmPopover>
+                    <ConfirmDialog>
+                        {(confirm) => (
+                            <div className={classes.footer}>
+                                <Button appearance="primary" disabled={!dirty} onClick={handleSubmit}>
+                                    {formatMessage(messages.btnSave)}
+                                </Button>
+                                <Button disabled={!dirty} onClick={() => form.reset()}>
+                                    {formatMessage(messages.btnReset)}
+                                </Button>
+                                <div style={{ flex: 1 }} />
+                                {isInactive ? (
+                                    <Button onClick={onToggleActive}>{formatMessage(messages.btnActivate)}</Button>
+                                ) : (
+                                    <Button
+                                        className={classes.dangerBtn}
+                                        onClick={() => confirm({
+                                            text: formatMessage(messages.confirmDeactivate),
+                                            confirmLabel: formatMessage(messages.btnDeactivate),
+                                            destructive: true,
+                                            onConfirm: onToggleActive,
+                                        })}
+                                    >
+                                        {formatMessage(messages.btnDeactivate)}
+                                    </Button>
+                                )}
+                                <Button
+                                    icon={<DeleteRegular />}
+                                    className={classes.dangerBtn}
+                                    onClick={() => confirm({
+                                        text: formatMessage(messages.confirmRemove),
+                                        confirmLabel: formatMessage(messages.btnRemove),
+                                        destructive: true,
+                                        onConfirm: onRemove,
+                                    })}
+                                />
+                            </div>
                         )}
-                        <ConfirmPopover
-                            text={formatMessage(messages.confirmRemove)}
-                            confirmLabel={formatMessage(messages.btnRemove)}
-                            positioning="above"
-                            onConfirm={onRemove}
-                        >
-                            <Button icon={<DeleteRegular />} className={classes.dangerBtn} />
-                        </ConfirmPopover>
-                    </div>
+                    </ConfirmDialog>
                 </div>
             )}
         />
