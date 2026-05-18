@@ -83,8 +83,17 @@ export function PublicationSystemDetail({ value, onSave, onToggleActive, onRemov
         <Form<PublicationType>
             initialValues={value}
             onSubmit={onSave}
-            render={({ handleSubmit, form, dirty }) => (
-                <div className={classes.root}>
+            render={({ handleSubmit, form, dirty, values }) => {
+                const codePlaceholder = (values.name ?? '')
+                    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+                    .toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+                const handleSubmitWithCode = (e?: React.FormEvent) => {
+                    e?.preventDefault();
+                    if (!values.code) { form.change('code', codePlaceholder); }
+                    handleSubmit();
+                };
+                return (
+                <form className={classes.root} onSubmit={handleSubmitWithCode}>
                     <div className={classes.form}>
                         <div className={classes.section}>
                             <FinalField
@@ -106,6 +115,7 @@ export function PublicationSystemDetail({ value, onSave, onToggleActive, onRemov
                                         <Input
                                             disabled={isInactive}
                                             value={input.value}
+                                            placeholder={codePlaceholder}
                                             onChange={(_, data) => input.onChange(data.value)}
                                         />
                                     </Field>
@@ -229,7 +239,7 @@ export function PublicationSystemDetail({ value, onSave, onToggleActive, onRemov
                     <ConfirmDialog>
                         {(confirm) => (
                             <div className={classes.footer}>
-                                <Button appearance="primary" disabled={!dirty} onClick={handleSubmit}>
+                                <Button type="submit" appearance="primary" disabled={!dirty}>
                                     {formatMessage(messages.btnSave)}
                                 </Button>
                                 <Button disabled={!dirty} onClick={() => form.reset()}>
@@ -264,8 +274,9 @@ export function PublicationSystemDetail({ value, onSave, onToggleActive, onRemov
                             </div>
                         )}
                     </ConfirmDialog>
-                </div>
-            )}
+                </form>
+                );
+            }}
         />
     );
 }
