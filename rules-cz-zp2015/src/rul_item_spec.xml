@@ -2411,9 +2411,9 @@
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_RESTRICTION_ABSTRACT">
-        <name>nepřístupný prvek obsah</name>
-        <description>nepřístupný prvek obsah</description>
-        <shortcut>nepř. prvek obsah</shortcut>
+        <name>nepřístupné prvky název a obsah</name>
+        <description>nepřístupné prvky název a obsah</description>
+        <shortcut>nepř. prvky název a obsah</shortcut>
         <item-type-assign code="ZP2015_RESTRICTED_ACCESS_TYPE"/>
     </item-spec>
     <item-spec code="ZP2015_RESTRICTION_LIMITED">
@@ -2527,9 +2527,9 @@
         <item-type-assign code="ZP2015_APPLIED_RESTRICTION"/>
     </item-spec>
     <item-spec code="ZP2015_APPLIED_RESTRICTION_ABSTRACT">
-        <name>nepřístupný prvek obsah</name>
-        <description>Obsah nezveřejněn nebo nahrazen z důvodu omezení přístupnosti.</description>
-        <shortcut>nepřístupný prvek obsah</shortcut>
+        <name>nepřístupné prvky název a obsah</name>
+        <description>Popis nezveřejněn nebo nahrazen z důvodu omezení přístupnosti.</description>
+        <shortcut>nepřístupné prvky název a obsah</shortcut>
         <item-type-assign code="ZP2015_APPLIED_RESTRICTION"/>
     </item-spec>
     <item-spec code="ZP2015_APPLIED_RESTRICTION_LIMITED">
