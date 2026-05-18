@@ -6,12 +6,28 @@ import {
     MenuList,
     MenuPopover,
     MenuTrigger,
+    makeStyles,
+    tokens,
 } from "@fluentui/react-components";
 import { defineMessages, useIntl } from "react-intl";
-import { PublicationType } from "elza-api";
+import { ConnectionType, PublicationType } from "elza-api";
 import { Api } from "api/api";
 import { useCanUsePublicationType } from "./hooks";
 import { ConfirmDialog } from "./ConfirmDialog";
+
+const useStyles = makeStyles({
+    btnTest: {
+        backgroundColor: tokens.colorPaletteYellowBackground3,
+        // color: tokens.colorNeutralForeground1,
+        ":hover": { backgroundColor: tokens.colorPaletteYellowBackground2 },
+        ":active": { backgroundColor: tokens.colorPaletteYellowBackground2 },
+    },
+    btnDev: {
+        backgroundColor: tokens.colorStatusDangerBackground3,
+        ":hover": { backgroundColor: tokens.colorStatusDangerBackground3Hover },
+        ":active": { backgroundColor: tokens.colorStatusDangerBackground3Pressed },
+    },
+});
 
 const messages = defineMessages({
     btnPublish:        { id: "publication.btn.publish",        defaultMessage: "Publikovat: {name}" },
@@ -27,10 +43,11 @@ interface Props {
     onPublish: () => void;
 }
 
-const STATIC_PUBLICATION_TYPES = 2;
+const STATIC_PUBLICATION_TYPES = 3;
 
 export function PublishButton({ fundId, types, disabledTypeIds, onPublish }: Props) {
     const { formatMessage } = useIntl();
+    const classes = useStyles();
     const canUse = useCanUsePublicationType(fundId);
 
     const handlePublish = async (publicationTypeId: number) => {
@@ -54,7 +71,7 @@ export function PublishButton({ fundId, types, disabledTypeIds, onPublish }: Pro
                     {staticTypes.map((type) => (
                         <Button
                             key={type.id}
-                            appearance="primary"
+                            appearance={type.connectionType === ConnectionType.Production ? "primary" : "secondary"}
                             disabled={disabledTypeIds?.has(type.id!)}
                             onClick={() => confirm({
                                 text: formatMessage(messages.confirmPublish, { name: type.name }),
