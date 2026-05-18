@@ -1,5 +1,7 @@
 package cz.tacr.elza.cam.v1;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.xml.validation.Schema;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +24,8 @@ import cz.tacr.cam.v1.client.ApiException;
 import cz.tacr.cam.v1.schema.cam.EntitiesXml;
 import cz.tacr.cam.v1.schema.cam.EntityXml;
 import cz.tacr.elza.cam.ItemSyncProcessor;
+import cz.tacr.elza.cam.JaxbUtils;
+import cz.tacr.elza.core.schema.SchemaManager;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.service.AccessPointConnectorService;
@@ -43,6 +49,9 @@ public class ItemSyncImportProcessor implements ItemSyncProcessor {
 
     @Autowired
     private AccessPointConnectorService apConnectService;
+
+    @Autowired
+    private SchemaManager schemaManager;
 
     private List<Integer> queueItemIds = new ArrayList<>();
     private Set<String> bindingValues = new HashSet<>();
@@ -112,7 +121,6 @@ public class ItemSyncImportProcessor implements ItemSyncProcessor {
                 log.error("Failed to synchronize items, code: {}, body: {}", e.getCode(), e.getResponseBody(), e);
                 throw new RuntimeException(e);
             } catch (Exception e) {
-                // handling other errors -> if it is one record - write the error
                 log.error("Failed to synchronize item(s), list size: {}", queueItemIds.size(), e);
                 throw e;
             }
@@ -123,6 +131,22 @@ public class ItemSyncImportProcessor implements ItemSyncProcessor {
             log.info("Downloaded {} entity from CAM", queueItemIds.size());
             return true;
         } catch (Exception e) {
+            // handling other errors -> if it is one record - write the error
+            if (log.isTraceEnabled()) {
+                for (var entityXml : entityXmlMap.values()) {
+                    try {
+                        Schema schema = schemaManager.getSchema(SchemaManager.CAM_SCHEMA_2019);
+                        File xmlFile = JaxbUtils.asFile(entityXml, schema);
+                        // log file content if needed
+                        byte[] encoded = Files.readAllBytes(xmlFile.toPath());
+                        String data = new String(encoded, "utf-8");
+                        Files.delete(xmlFile.toPath());
+                        log.trace("Entity XML: {}", data);
+                    } catch (Exception ex) {
+                        log.error("Failed to log entity XML file", ex);
+                    }
+                }
+            }
             log.error("Failed to synchronize access points: {}", queueItemIds.size(), e);
             throw e;
         }
