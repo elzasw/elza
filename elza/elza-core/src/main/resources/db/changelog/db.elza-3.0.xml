@@ -935,6 +935,7 @@
     </changeSet>
 
     <changeSet id="20260512120000" author="ppy">
+        <validCheckSum>ANY</validCheckSum>
         <!-- Publication of archival description: storage for publication types and
              publication records consumed by the public /publications API. -->
         <createTable tableName="arr_export_type">
@@ -1055,11 +1056,11 @@
         <!-- Hibernate-managed primary-key sequences. -->
         <insert tableName="db_hibernate_sequences">
             <column name="sequence_name" value="arr_export_type|export_type_id"/>
-            <column name="next_val" value="1"/>
+            <column name="next_val" value="0"/>
         </insert>
         <insert tableName="db_hibernate_sequences">
             <column name="sequence_name" value="arr_export|export_id"/>
-            <column name="next_val" value="1"/>
+            <column name="next_val" value="0"/>
         </insert>
     </changeSet>
 
@@ -1074,5 +1075,15 @@
         </addColumn>
         <dropDefaultValue tableName="arr_export_type" columnName="connection_type"/>
     </changeSet>
+
+	<changeSet id="20260519131000" author="sergey.iryupin">
+        <addColumn tableName="arr_async_request">
+            <column name="export_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_arr_async_request_export"
+                             references="arr_export(export_id)"/>
+            </column>
+        </addColumn>
+	</changeSet>
 
 </databaseChangeLog>

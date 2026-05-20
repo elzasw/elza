@@ -14,6 +14,7 @@ public class AsyncRequest extends AsyncRequestBase {
     private Integer outputId;
     private Integer accessPointId;
     private Integer userId;
+    private Integer exportId;
 
     public AsyncRequest(ArrAsyncRequest request) {
         super(request.getAsyncRequestId(),
@@ -22,15 +23,19 @@ public class AsyncRequest extends AsyncRequestBase {
                 request.getType());
         switch (type) {
             case BULK:
-                this.bulkActionId = request.getBulkAction().getBulkActionRunId();
+                bulkActionId = request.getBulkAction().getBulkActionRunId();
                 break;
             case OUTPUT:
-                this.outputId = request.getOutput().getOutputId();
-                this.userId = request.getUserId();
+                outputId = request.getOutput().getOutputId();
+                userId = request.getUserId();
                 break;
             case AP:
-                this.accessPointId = request.getAccessPoint().getAccessPointId();
+                accessPointId = request.getAccessPoint().getAccessPointId();
                 break;
+            case EXPORT:
+            	exportId = request.getExport().getExportId();
+                userId = request.getUserId();
+            	break;
             default:
                 throw new NotImplementedException("Neimplmentovaný typ: " + type);
         }
@@ -44,6 +49,8 @@ public class AsyncRequest extends AsyncRequestBase {
                 return bulkActionId;
             case AP:
                 return accessPointId;
+            case EXPORT:
+            	return exportId;
             default:
                 throw new NotImplementedException("Neimplmentovaný typ: " + type);
         }
@@ -71,6 +78,10 @@ public class AsyncRequest extends AsyncRequestBase {
 
     public Integer getAccessPointId() {
         return accessPointId;
+    }
+
+    public Integer getExportId() {
+        return exportId;
     }
 
     @Override

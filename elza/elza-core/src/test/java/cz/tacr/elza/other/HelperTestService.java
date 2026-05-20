@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulPackage;
@@ -66,6 +65,7 @@ import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DigitizationRequestRepository;
+import cz.tacr.elza.repository.ExportRepository;
 import cz.tacr.elza.repository.ExportTypeRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
@@ -261,6 +261,8 @@ public class HelperTestService {
 	private WfTaskApRevStateRepository wfTaskApRevStateRepository;
     @Autowired
     private ExportTypeRepository exportTypeRepository;
+    @Autowired
+    private ExportRepository exportRepository;
 
     @Autowired
     private PackageService packageService;
@@ -276,9 +278,6 @@ public class HelperTestService {
 
     @Autowired
 	private SessionFactory sessionFactory;
-
-    @Autowired
-    private PlatformTransactionManager transactionManager;
 
     public List<RulPackage> getPackages() {
         return packageService.getPackages();
@@ -370,6 +369,10 @@ public class HelperTestService {
         apItemRepository.deleteAll();
         partRepository.deleteAll();
         keyValueRepository.deleteAll();
+
+        exportRepository.deleteAll();
+        exportTypeRepository.deleteAll();
+
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();
@@ -389,7 +392,6 @@ public class HelperTestService {
         apChangeRepository.deleteAll();
         externalSystemRepository.deleteAll();
         userRepository.deleteAll();
-        exportTypeRepository.deleteAll();
 
         // DB has to be flushed before start
         em.flush();

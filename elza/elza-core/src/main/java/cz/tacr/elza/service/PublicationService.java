@@ -53,18 +53,21 @@ public class PublicationService {
     private final FundVersionRepository fundVersionRepository;
     private final DmsService dmsService;
     private final UserService userService;
+    private final AsyncRequestService asyncRequestService;
 
     @Autowired
     public PublicationService(final ExportRepository exportRepository,
-                            final ExportTypeRepository exportTypeRepository,
-                            final FundVersionRepository fundVersionRepository,
-                            final DmsService dmsService,
-                            final UserService userService) {
+                              final ExportTypeRepository exportTypeRepository,
+                              final FundVersionRepository fundVersionRepository,
+                              final DmsService dmsService,
+                              final UserService userService,
+                              final AsyncRequestService asyncRequestService) {
         this.exportRepository = exportRepository;
         this.exportTypeRepository = exportTypeRepository;
         this.fundVersionRepository = fundVersionRepository;
         this.dmsService = dmsService;
         this.userService = userService;
+        this.asyncRequestService = asyncRequestService;
     }
 
     @Transactional(readOnly = true)
@@ -107,9 +110,7 @@ public class PublicationService {
         ArrExportType type = requireType(publicationTypeId);
 
         if (exportRepository.countOutstanding(fundVersion.getFundVersionId(), publicationTypeId) > 0) {
-            throw new ConflictException(
-                    "Pending or prepared publication already exists for this fund and type",
-                    BaseCode.DB_INTEGRITY_PROBLEM)
+            throw new ConflictException("Pending or prepared publication already exists for this fund and type", BaseCode.DB_INTEGRITY_PROBLEM)
                     .set("fundVersionId", fundVersion.getFundVersionId())
                     .set("publicationTypeId", publicationTypeId);
         }
@@ -121,8 +122,11 @@ public class PublicationService {
         export.setState(ArrExport.State.NEW);
         export.setCreatedAt(OffsetDateTime.now());
         export.setUser(requireLoggedUser());
+        export = exportRepository.save(export);
 
-        return toVO(exportRepository.save(export));
+        asyncRequestService.enqueue(fundVersion, export, export.getUserId());
+
+        return toVO(export);
     }
 
     @Transactional(readOnly = true)
@@ -160,6 +164,7 @@ public class PublicationService {
     public PublicationDetail copy(final Integer fundId,
                                   final Integer publicationId,
                                   final Integer targetPublicationTypeId) {
+    	ArrFundVersion fundVersion = requireOpenVersion(fundId);
         ArrExport source = requireExportInFund(fundId, publicationId);
         ArrExportType targetType = requireType(targetPublicationTypeId);
 
@@ -188,8 +193,11 @@ public class PublicationService {
         copy.setState(ArrExport.State.NEW);
         copy.setCreatedAt(OffsetDateTime.now());
         copy.setUser(requireLoggedUser());
+        copy = exportRepository.save(copy);
 
-        return toVO(exportRepository.save(copy));
+        asyncRequestService.enqueue(fundVersion, copy, copy.getUserId());        
+
+        return toVO(copy);
     }
 
     /**
