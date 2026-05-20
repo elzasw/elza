@@ -57,6 +57,13 @@ public class IOController implements IoApi {
     @Autowired
     private ResourcePathResolver resourcePathResolver;
 
+    /**
+     * POST /io/export
+     * Create export file of funds or access points
+     *
+     * @param exportParams Export request parameters (required)
+     * @return The request has succeeded. (status code 200)
+     */
     @Override
     @Transactional
     public ResponseEntity<Integer> ioExportRequest(@RequestBody ExportParams exportParams) {
@@ -126,6 +133,15 @@ public class IOController implements IoApi {
         return fileName;
     }
 
+    /**
+     * GET /io/export-status/{requestId}
+     * Getting the export status by request id
+     *
+     * @param requestId  (required)
+     * @return The request has succeeded. (status code 200)
+     *         or The server cannot find the requested resource. (status code 404)
+     *         or Server error (status code 500)
+     */
     @Override
     public ResponseEntity ioGetExportStatus(@PathVariable Integer requestId) {
 
@@ -166,6 +182,16 @@ public class IOController implements IoApi {
         return ret;
     }
 
+    /**
+     * GET /io/file/{requestId}
+     * Getting the generated file by request id
+     *
+     * @param requestId  (required)
+     * @return Informational (status code 102)
+     *         or The request has succeeded. (status code 200)
+     *         or The server cannot find the requested resource. (status code 404)
+     *         or Server error (status code 500)
+     */
     @Override
     public ResponseEntity<Resource> ioGetExportFile(@PathVariable Integer requestId) {
 

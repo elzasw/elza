@@ -68,6 +68,10 @@ public class ArrAsyncRequest {
     @JoinColumn(name = "access_point_id", nullable = true)
     private ApAccessPoint accessPoint;
 
+    @OneToOne(fetch = FetchType.LAZY, targetEntity = ArrExport.class)
+    @JoinColumn(name = "export_id", nullable = true)
+    private ArrExport export;
+
     @Column(name="user_id")
     private Integer userId;
 
@@ -102,8 +106,18 @@ public class ArrAsyncRequest {
         return new ArrAsyncRequest(fundVersion, output, priority, userId);
     }
 
+	public static ArrAsyncRequest create(final ArrFundVersion fundVersion, 
+			                             final ArrExport export,
+			                             final Integer priority,
+			                             final Integer userId) {
+		Objects.requireNonNull(fundVersion);
+		Objects.requireNonNull(export);
+		Objects.requireNonNull(priority);
+		return new ArrAsyncRequest(fundVersion, export, priority, userId);
+	}
+
     public static ArrAsyncRequest create(final ApAccessPoint accessPoint,
-                                       final Integer priority) {
+                                         final Integer priority) {
         Objects.requireNonNull(accessPoint);
         Objects.requireNonNull(priority);
         return new ArrAsyncRequest(accessPoint, priority);
@@ -141,6 +155,18 @@ public class ArrAsyncRequest {
         this.output = output;
         this.userId = userId;
     }
+
+	protected ArrAsyncRequest(final ArrFundVersion fundVersion, 
+			                  final ArrExport export,
+			                  final Integer priority,
+			                  final Integer userId) {
+		this.type = AsyncTypeEnum.EXPORT;
+		this.priority = priority;
+		this.fundVersion = fundVersion;
+		this.fundVersionId = (fundVersion != null) ? fundVersion.getFundVersionId() : null;
+		this.export = export;
+		this.userId = userId;
+	}
 
     protected ArrAsyncRequest(final ApAccessPoint accessPoint,
                               final Integer priority) {
@@ -242,4 +268,12 @@ public class ArrAsyncRequest {
     public void setAccessPoint(ApAccessPoint accessPoint) {
         this.accessPoint = accessPoint;
     }
+
+	public ArrExport getExport() {
+		return export;
+	}
+
+	public void setExport(ArrExport export) {
+		this.export = export;
+	}
 }
