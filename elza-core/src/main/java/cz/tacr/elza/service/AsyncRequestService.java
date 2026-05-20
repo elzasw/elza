@@ -3,6 +3,7 @@ package cz.tacr.elza.service;
 import static cz.tacr.elza.repository.ExceptionThrow.bulkAction;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,6 +52,7 @@ import cz.tacr.elza.controller.vo.FundStatisticsVO;
 import cz.tacr.elza.domain.ArrAsyncRequest;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
+import cz.tacr.elza.domain.ArrExport;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrOutput;
@@ -62,12 +64,14 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ArrAsyncRequestRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
+import cz.tacr.elza.repository.ExportRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.OutputRepository;
 import cz.tacr.elza.service.eventnotification.EventFactory;
 import cz.tacr.elza.service.eventnotification.events.EventType;
 import cz.tacr.elza.service.output.AsyncOutputGeneratorWorker;
+import cz.tacr.elza.service.publication.AsyncExportGeneratorWorker;
 
 /**
  * Servisní třída pro spouštění validací a hromadných akcí.
@@ -94,6 +98,11 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     @Max(100)
     private int outputMaxPerFund;
 
+    @Value("${elza.asyncActions.export.maxPerFund:1}")
+    @Min(1)
+    @Max(100)
+    private int exportMaxPerFund;
+
     @Autowired
     private ApplicationContext appCtx;
 
@@ -114,6 +123,8 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
     private OutputRepository outputRepository;
 
+    private ExportRepository exportRepository;
+    
     @Autowired
     private IEventNotificationService eventNotificationService;
 
@@ -133,6 +144,10 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     private ThreadPoolTaskExecutor outputTaskExecutor;
 
     @Autowired
+    @Qualifier("threadPoolTaskExecutorEX")
+    private ThreadPoolTaskExecutor exportTaskExecutor;
+
+    @Autowired
     @Qualifier("threadPoolTaskExecutorAP")
     private ThreadPoolTaskExecutor accessPointTaskExecutor;
 
@@ -148,6 +163,7 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         register(new AsyncNodeExecutor(nodeTaskExecutor, txManager, asyncRequestRepository, appCtx, nodeMaxPerFund));
         register(new AsyncBulkExecutor(bulkActionTaskExecutor, txManager, asyncRequestRepository, appCtx, bulkMaxPerFund, bulkActionRepository));
         register(new AsyncOutputExecutor(outputTaskExecutor, txManager, asyncRequestRepository, appCtx, outputMaxPerFund, outputRepository));
+        register(new AsyncExportExecutor(exportTaskExecutor, txManager, asyncRequestRepository, appCtx, exportMaxPerFund, exportRepository));
         register(new AsyncAccessPointExecutor(accessPointTaskExecutor, txManager, asyncRequestRepository, appCtx));
     }
 
@@ -175,7 +191,6 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         Iterable<ArrAsyncRequest> saveReqList = asyncRequestRepository.saveAll(reqList);
 
         getExecutor(type).enqueue(saveReqList);
-
     }
 
     /**
@@ -184,6 +199,15 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
     @Transactional
     public void enqueue(ArrFundVersion fundVersion, ArrOutput output, Integer userId) {
         ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, output, 1, userId);
+        dispatchRequest(request);
+    }
+
+    /**
+     * Přídání exportu do fronty na zpracování
+     */
+    @Transactional
+    public void enqueue(ArrFundVersion fundVersion, ArrExport export, Integer userId) {
+        ArrAsyncRequest request = ArrAsyncRequest.create(fundVersion, export, 1, userId);
         dispatchRequest(request);
     }
 
@@ -587,9 +611,13 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
 
         private final OutputRepository outputRepository;
 
-        AsyncOutputExecutor(final ThreadPoolTaskExecutor executor, final PlatformTransactionManager txManager, final ArrAsyncRequestRepository asyncRequestRepository, final ApplicationContext appCtx, final int maxPerFund, final OutputRepository outputRepository) {
-            super(AsyncTypeEnum.OUTPUT, executor, new RequestQueue<>(), txManager, asyncRequestRepository, appCtx,
-                    maxPerFund);
+        AsyncOutputExecutor(final ThreadPoolTaskExecutor executor, 
+        		            final PlatformTransactionManager txManager, 
+        		            final ArrAsyncRequestRepository asyncRequestRepository, 
+        		            final ApplicationContext appCtx, 
+        		            final int maxPerFund, 
+        		            final OutputRepository outputRepository) {
+            super(AsyncTypeEnum.OUTPUT, executor, new RequestQueue<>(), txManager, asyncRequestRepository, appCtx, maxPerFund);
             this.outputRepository = outputRepository;
         }
 
@@ -617,4 +645,47 @@ public class AsyncRequestService implements ApplicationListener<AsyncRequestEven
         }
 
     }
+
+    private static class AsyncExportExecutor extends AsyncExecutor {
+
+        private final ExportRepository exportRepository;
+
+        AsyncExportExecutor(final ThreadPoolTaskExecutor executor,
+                            final PlatformTransactionManager txManager,
+                            final ArrAsyncRequestRepository asyncRequestRepository,
+                            final ApplicationContext appCtx,
+                            final int maxPerFund,
+                            final ExportRepository exportRepository) {
+            super(AsyncTypeEnum.EXPORT, executor, new RequestQueue<>(), txManager, asyncRequestRepository, appCtx, maxPerFund);
+            this.exportRepository = exportRepository;
+        }
+
+        @Override
+        protected boolean isFailedRequest(final ArrAsyncRequest request) {
+            ArrExport export = request.getExport();
+            ArrExport.State state = export.getState();
+            // Server restarted mid-generation: the record is still NEW (the worker
+            // never transitioned it to PREPARED). Mark it as PREPARE_ERROR so the
+            // user explicitly retriggers — avoids a restart loop on a deterministic
+            // failure.
+            if (state == ArrExport.State.NEW) {
+                export.setState(ArrExport.State.PREPARE_ERROR);
+                export.setErrorAt(OffsetDateTime.now());
+                export.setErrorMessage("Byl proveden restart serveru");
+                exportRepository.save(export);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        protected Class<? extends IAsyncWorker> workerClass() {
+            return AsyncExportGeneratorWorker.class;
+        }
+
+        @Override
+        protected IAsyncRequest readRequest(ArrAsyncRequest request) {
+            return new AsyncRequest(request);
+        }
+    }    
 }
