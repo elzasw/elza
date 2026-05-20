@@ -11,10 +11,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 import cz.tacr.elza.domain.UsrPermission;
+import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
@@ -34,6 +36,9 @@ import cz.tacr.elza.test.controller.vo.PublicationType;
  * test starts from an empty publication-type list.
  */
 public class PublicationControllerTest extends AbstractControllerTest {
+
+	@Autowired
+	private AsyncRequestService asyncRequestService;
 
     @Test
     public void publicationTypeAdminListPublicationTypesTest() {
@@ -153,6 +158,9 @@ public class PublicationControllerTest extends AbstractControllerTest {
         TestContext ctx = setupUserAndFund();
         CreatePublication createBody = new CreatePublication();
         PublicationType type = createTypeAs(ctx, "TST_FUND_CREATE", "Create test", null);
+
+        // stop all async services
+        asyncRequestService.stop();
 
         createBody.setPublicationTypeId(type.getId());
         PublicationDetail detail = publicationIntApi.fundPublicationCreateFundPublication(ctx.fundId, createBody);
