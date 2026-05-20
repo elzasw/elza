@@ -69,6 +69,11 @@ public class ElzaCore {
     @Max(16)
     private int outputThreadCount;
 
+    @Value("${elza.asyncActions.export.threadCount:2}")
+    @Min(1)
+    @Max(16)
+    private int exportThreadCount;
+
     @Value("${elza.asyncActions.ap.threadCount:2}")
     @Min(1)
     @Max(16)
@@ -155,6 +160,19 @@ public class ElzaCore {
         threadPoolTaskExecutor.afterPropertiesSet();
         
         logger.debug("Creating threadPoolTaskExecutorOP, corePoolSize: {}, maxPoolSize: {}",
+        		threadPoolTaskExecutor.getCorePoolSize(),
+        		threadPoolTaskExecutor.getMaxPoolSize());
+        return threadPoolTaskExecutor;
+    }
+
+    @Bean(name = "threadPoolTaskExecutorEX")
+    public ThreadPoolTaskExecutor threadPoolTaskExecutorExport() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize((outputThreadCount+1) / 2);
+        threadPoolTaskExecutor.setMaxPoolSize(outputThreadCount);
+        threadPoolTaskExecutor.afterPropertiesSet();
+        
+        logger.debug("Creating threadPoolTaskExecutorEX, corePoolSize: {}, maxPoolSize: {}",
         		threadPoolTaskExecutor.getCorePoolSize(),
         		threadPoolTaskExecutor.getMaxPoolSize());
         return threadPoolTaskExecutor;

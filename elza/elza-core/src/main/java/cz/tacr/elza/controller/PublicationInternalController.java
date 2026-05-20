@@ -1,12 +1,15 @@
 package cz.tacr.elza.controller;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -141,13 +144,24 @@ public class PublicationInternalController implements PublicationInternalApi {
     	return ResponseEntity.ok(exportService.create(fundId, createPublication.getPublicationTypeId()));
     }
 
+    /**
+     * GET /fund/{fundId}/publication/{publicationId}/download
+     * Stream the prepared XML for human inspection.
+     *
+     * Internal endpoint — does NOT advance state or update last_fetched_at;
+     * that is the responsibility of the public publication API.
+     */
     @Override
-    public ResponseEntity<Resource> fundPublicationDownloadFundPublication(
-            @PathVariable("fundId") Integer fundId,
-            @PathVariable("publicationId") Integer publicationId) {
-        // TODO: stream the prepared XML for human inspection; do NOT advance
-        //       state or touch last_fetched_at (that is the public API's job).
-        return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+    public ResponseEntity<Resource> fundPublicationDownloadFundPublication(Integer fundId, Integer publicationId) {
+        PublicationService.DownloadPayload payload = exportService.download(fundId, publicationId);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_XML)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment()
+                                .filename(payload.getFileName(), StandardCharsets.UTF_8)
+                                .build()
+                                .toString())
+                .body(payload.getResource());
     }
 
     /**
