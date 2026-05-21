@@ -1802,8 +1802,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.attachmentUrl + '/mimeTypes', null);
     }
 
-    findFundFiles(fundId, searchText, count = 20) {
-        return AjaxUtils.ajaxGet(WebApiCls.dmsUrl + '/fund/' + fundId, { count: count, search: searchText });
+    findFundFiles(fundId, searchText, count = 20, from = 0) {
+        return AjaxUtils.ajaxGet(WebApiCls.dmsUrl + '/fund/' + fundId, { count: count, search: searchText, from });
     }
 
     getEditableFundFile(fundId, fileId) {
