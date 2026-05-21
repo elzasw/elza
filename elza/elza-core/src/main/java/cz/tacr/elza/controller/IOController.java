@@ -26,6 +26,7 @@ import cz.tacr.elza.controller.vo.RequestProcessState;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
+import cz.tacr.elza.dataexchange.output.IOExportFundXmlRequest;
 import cz.tacr.elza.dataexchange.output.IOExportRequest;
 import cz.tacr.elza.dataexchange.output.IOExportWorker;
 import cz.tacr.elza.domain.ArrFund;
@@ -98,7 +99,9 @@ public class IOController implements IoApi {
 
         Integer userId = (user == null ? null : user.getUserId());
 
-        int id = ioExportWorker.addExportRequest(userId, fileName, deExportParams);
+        final String dlFileName = fileName;
+        final DEExportParams deParams = deExportParams;
+        int id = ioExportWorker.enqueue(requestId -> new IOExportFundXmlRequest(userId, requestId, dlFileName, deParams));
         return ResponseEntity.ok(id);
     }
 
@@ -144,10 +147,10 @@ public class IOController implements IoApi {
             body = ResponseFactory.createExportRequestStatus(RequestProcessState.PENDING);
             break;
         case PROCESSING:
-            body = ResponseFactory.createExportRequestStatus(RequestProcessState.PROCESSING);
+            body = ResponseFactory.createExportRequestStatus(RequestProcessState.PROCESSING, result.getProgress());
             break;
         case FINISHED:
-            body = ResponseFactory.createExportRequestStatus(RequestProcessState.FINISHED);
+            body = ResponseFactory.createExportRequestStatus(RequestProcessState.FINISHED, result.getProgress());
             break;
         case ERROR:
             status = HttpStatus.INTERNAL_SERVER_ERROR;

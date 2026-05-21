@@ -55,6 +55,7 @@ import cz.tacr.elza.controller.vo.UsedItemType;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.dataexchange.output.IOExportFundsCsv;
 import cz.tacr.elza.dataexchange.output.IOExportWorker;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrDao;
@@ -256,7 +257,7 @@ public class FundController implements FundsApi {
         Integer userId = (user == null ? null : user.getUserId());
         String downloadFileName = "funds_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss")) + ".csv";
 
-        int id = ioExportWorker.addExportRequest(userId, downloadFileName, searchParams);
+        int id = ioExportWorker.enqueue(requestId -> new IOExportFundsCsv(userId, requestId, downloadFileName, searchParams));
         return ResponseEntity.ok(id);
     }
 

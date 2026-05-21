@@ -42,8 +42,13 @@ public class ResponseFactory {
     }
 
     public static ExportRequestStatus createExportRequestStatus(RequestProcessState state) {
+        return createExportRequestStatus(state, null);
+    }
+
+    public static ExportRequestStatus createExportRequestStatus(RequestProcessState state, Integer progress) {
         ExportRequestStatus ers = new ExportRequestStatus();
         ers.setState(state);
+        ers.setProgress(progress);
         return ers;
     }
 
