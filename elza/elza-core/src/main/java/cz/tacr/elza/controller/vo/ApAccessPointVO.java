@@ -70,7 +70,7 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
     /**
      * Externí identifikátory rejstříkového hesla.
      */
-    private Collection<ApBindingVO> bindings;
+    private Collection<ExtEntityBinding> bindings;
 
     /**
      * Stav přístupového bodu.
@@ -229,11 +229,11 @@ public class ApAccessPointVO extends AbstractApAccessPoint {
         this.invalid = invalid;
     }
 
-    public Collection<ApBindingVO> getBindings() {
+    public Collection<ExtEntityBinding> getBindings() {
         return bindings;
     }
 
-    public void setBindings(Collection<ApBindingVO> bindings) {
+    public void setBindings(Collection<ExtEntityBinding> bindings) {
         this.bindings = bindings;
     }
 

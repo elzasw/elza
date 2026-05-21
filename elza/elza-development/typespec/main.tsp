@@ -1979,6 +1979,173 @@ model Participant extends UserRef {
     canEditConfirmed: boolean;
 }
 
+// =============================================================================
+// CAMv2 — external entity binding (issues, revisions, participants)
+// =============================================================================
+
+/** Binding of one part or item of an access point to an external entity. */
+model ExtItemBinding {
+    partId?: integer;
+    itemId?: integer;
+    sync: boolean;
+}
+
+/**
+ * One binding of an access point to an external system. Represents the
+ * entity's identity in that system together with sync/state metadata and
+ * (since CAMv2) per-revision metadata and issue summary.
+ */
+model ExtEntityBinding {
+    id: integer;
+    externalSystemId: integer;
+    /**
+     * Code of the external system. Marked deprecated on the Java VO, but
+     * still load-bearing for several action calls — kept until the callers
+     * migrate to externalSystemId.
+     */
+    externalSystemCode: string;
+    /** Identifier of the entity in the external system. */
+    value: string;
+    extState?: string;
+    extRevision?: string;
+    extUser?: string;
+    extReplacedBy?: string;
+    detailUrlExtReplacedBy?: string;
+    syncState?: SyncState;
+    syncProgress?: SyncProgress;
+    bindingItemList?: ExtItemBinding[];
+
+    // CAMv2 additions
+    extMetadataRevision?: string;
+    extPrevRevision?: string;
+    /** Creation time of this revision in the external system. */
+    extCreatedAt?: utcDateTime;
+    /** Pre-computed badge for the warning icon. Absent = no issues. */
+    issueSummary?: ExtIssueSummary;
+}
+
+/** Severity of a CAM-side issue attached to an entity binding. */
+enum ExtIssueSeverity {
+    WARNING,
+    ERROR,
+}
+
+/**
+ * Resolution state of an issue. Absent on the wire = new issue not yet
+ * evaluated by the user.
+ */
+enum ExtIssueStatus {
+    IR_ALL_REVISIONS_OK,
+    IR_FIX_NEEDED,
+    IR_REVISION_OK,
+}
+
+/**
+ * Aggregated badge state computed by the server from all issues on a binding.
+ *
+ *   NONE      no issues
+ *   NEUTRAL   only WARNING issues with status IR_ALL_REVISIONS_OK / IR_REVISION_OK
+ *   NEW       at least one WARNING with status absent
+ *   ATTENTION any ERROR, or any status = IR_FIX_NEEDED — single most prominent icon
+ */
+enum ExtIssueIconState {
+    NONE,
+    NEUTRAL,
+    NEW,
+    ATTENTION,
+}
+
+/**
+ * Pre-computed badge for a binding, embedded in ExtEntityBinding so the client
+ * renders the warning icon without a second round-trip.
+ */
+model ExtIssueSummary {
+    /** total number of issues attached to the binding */
+    count: integer;
+    iconState: ExtIssueIconState;
+}
+
+/**
+ * One issue/finding reported by CAM about an entity binding. Issues are not
+ * versioned in Elza — only the current state synced from CAM is kept. Issue
+ * references never cross external systems: relatedBindingId always points to
+ * a binding within the same external system as this entity.
+ */
+model ExtIssue {
+    /** binding_issue_id */
+    id: integer;
+    /** stable identifier from CAM, when provided */
+    uuid?: string;
+    severity: ExtIssueSeverity;
+    status?: ExtIssueStatus;
+    ruleCode?: string;
+    issueCode?: string;
+    message?: string;
+    source?: string;
+    detail?: string;
+    note?: string;
+    /** valid-from timestamp from CAM */
+    issueFrom?: utcDateTime;
+    /** external revision in which the issue first appeared */
+    extFromRev?: string;
+    /** referenced part of the AP, when applicable */
+    partId?: integer;
+    /** referenced item of the AP, when applicable */
+    itemId?: integer;
+    /** related binding within the same external system, when applicable */
+    relatedBindingId?: integer;
+    /** value of the related binding in the external system */
+    relatedBindingExtValue?: string;
+}
+
+/** Role of a participant on an entity revision. */
+enum ExtParticipantRole {
+    AUTHOR,
+    APPROVAL,
+}
+
+/** One person who participated on a binding revision. */
+model ExtParticipant {
+    /** binding_participant_id */
+    id: integer;
+    role: ExtParticipantRole;
+    name: string;
+    institutionCode?: string;
+    lastChange: utcDateTime;
+}
+
+/**
+ * One revision in the binding's history, assembled from ap_binding_state with
+ * embedded participants from ap_binding_participant. Participants are returned
+ * ordered by lastChange (ascending).
+ */
+model ExtRevision {
+    /** binding_state_id */
+    bindingStateId: integer;
+    extRevision?: string;
+    extPrevRevision?: string;
+    extMetadataRevision?: string;
+    /** time of revision creation in the external system */
+    extCreatedAt?: utcDateTime;
+    /** fallback timestamp from arr_change when extCreatedAt is missing */
+    createChangeAt?: utcDateTime;
+    /** sender of the revision — value of ApBindingState.extUser */
+    sender?: string;
+    participants: ExtParticipant[];
+}
+
+/** Paginated history of a binding, newest revision first. */
+model ExtHistory {
+    revisions: ExtRevision[];
+    /** total number of revisions known to Elza for this binding */
+    totalCount: integer;
+    /**
+     * True when the chain has gaps (some extPrevRevision points to a revision
+     * Elza does not have). The UI then suggests consulting the source system.
+     */
+    incomplete: boolean;
+}
+
 /**
  * Administrativní funkce
  */
@@ -3436,6 +3603,53 @@ namespace ElzaAPI.Internal.FundPublication {
     };
 }
 
+// ---------------------------------------------------------------------------
+// Internal access-point binding API — consumed only by the Elza web UI.
+//
+// Served from the same Spring prefix as other UI-only endpoints
+// (currently /api/v1, mounted on a separate AccessPointBindingInternalController).
+// Not intended for external integration; backwards compatibility is not
+// guaranteed.
+//
+// Surfaces CAMv2 metadata that arrives alongside each entity revision:
+// warnings/issues and per-revision participant history.
+// ---------------------------------------------------------------------------
+
+@tag("accesspoint-internal")
+@route("/binding")
+namespace ElzaAPI.Internal.AccessPointBinding {
+    /**
+     * List CAM-side issues attached to a binding.
+     */
+    @route("/{bindingId}/issues")
+    @get op getBindingIssues(
+        /** id of binding */
+        @path bindingId: integer,
+    ): ExtIssue[] | {
+        /** binding not found */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Paginated history of binding revisions, newest first, built from
+     * ap_binding_state and ap_binding_participant. Participants within each
+     * revision are ordered by lastChange (ascending).
+     */
+    @route("/{bindingId}/history")
+    @get op getBindingHistory(
+        /** id of binding */
+        @path bindingId: integer,
+        @query offset?: integer = 0,
+        /** server caps at 100 */
+        @query limit?: integer = 100,
+    ): ExtHistory | {
+        /** binding not found */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+}
+
 @tag("report")
 @route("/report")
 namespace ElzaAPI.Report {
@@ -4710,12 +4924,14 @@ namespace ElzaAPI.Tasks {
 @tagMetadata("tasks", #{description: "Úkoly"})
 @tagMetadata("publication", #{description: "Public API for the publication system"})
 @tagMetadata("publication-internal", #{description: "Publication API used by the Elza UI"})
+@tagMetadata("accesspoint-internal", #{description: "Access-point API used by the Elza UI"})
 @tagMetadata("rules", #{description: "Pravidla popisu archiválií (typy atributů, datové typy, …)"})
 namespace ElzaAPI {
     // add models not used in operations
     union __Types {
         a: NodeUpdateItem,
-        b: ItemTypeGroup
+        b: ItemTypeGroup,
+        c: ExtEntityBinding
     }
     @route("/__types") @get
     op __typeRegistry(): __Types;

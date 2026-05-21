@@ -2,11 +2,11 @@ import { showAsyncWaiting, modalDialogShow, modalDialogHide } from 'actions/glob
 import * as perms from 'actions/user/Permission';
 import { WebApi } from 'actions/WebApi';
 import { ApAccessPointVO } from 'api/ApAccessPointVO';
-import { ApBindingVO } from 'api/ApBindingVO';
+import { ExtEntityBinding } from 'elza-api';
 import { RulDataTypeCodeEnum } from 'api/RulDataTypeCodeEnum';
 import { RulDataTypeVO } from 'api/RulDataTypeVO';
 import { RulDescItemTypeExtVO } from 'api/RulDescItemTypeExtVO';
-import { SyncState } from 'api/SyncState';
+import { SyncState } from 'elza-api';
 import i18n from 'components/i18n';
 import { Icon, TooltipTrigger } from 'components/shared';
 import { FC, useCallback } from 'react';
@@ -116,7 +116,7 @@ export const EntityBindings: FC<{
             );
         }
 
-        const handleSynchronize = async (binding: ApBindingVO) => {
+        const handleSynchronize = async (binding: ExtEntityBinding) => {
             const result = await dispatch(showConfirmDialog(i18n("ap.binding.action.synchronize.confirmation")));
             if (result) {
                 dispatch(
@@ -132,7 +132,7 @@ export const EntityBindings: FC<{
             }
         };
 
-        const handleUpdate = (binding: ApBindingVO) => {
+        const handleUpdate = (binding: ExtEntityBinding) => {
             const extSystem = externalSystems.find((extSystem) => extSystem.code === binding.externalSystemCode);
             if (!extSystem) { throw Error("External system not found.") }
             dispatch(
@@ -159,7 +159,7 @@ export const EntityBindings: FC<{
             );
         };
 
-        const handleTakeRelEntities = (binding: ApBindingVO) => {
+        const handleTakeRelEntities = (binding: ExtEntityBinding) => {
             dispatch(
                 showAsyncWaiting(
                     null,
@@ -217,7 +217,7 @@ export const EntityBindings: FC<{
                                         }
                                     </DropdownButton>
                                     {apExternalWr && hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED"])
-                                        && binding.syncState === SyncState.LOCAL_CHANGE
+                                        && binding.syncState === SyncState.LocalChange
                                         && (
                                             <Button
                                                 className="button save-button"

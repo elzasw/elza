@@ -10,7 +10,7 @@ import { ApStateUpdate, ApStateApproval } from 'elza-api';
 import { useSelector } from 'react-redux';
 import { AppState } from 'typings/store';
 import * as perms from 'actions/user/Permission';
-import { ApBindingVO } from 'api/ApBindingVO';
+import { ExtEntityBinding } from 'elza-api';
 
 const stateToOption = (item: ApStateApproval) => ({
     id: item,
@@ -22,7 +22,7 @@ type Props = {
     onClose?: Function;
     onSubmit: (values: ApStateUpdate) => void;
     states: string[];
-    bindings?: ApBindingVO[];
+    bindings?: ExtEntityBinding[];
     initialValues: ApStateUpdate;
 };
 

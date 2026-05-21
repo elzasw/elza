@@ -34,7 +34,7 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.cam.ApiCamConnector;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApBindingVO;
+import cz.tacr.elza.controller.vo.ExtEntityBinding;
 import cz.tacr.elza.controller.vo.ApChangeVO;
 import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApPartVO;
@@ -355,7 +355,7 @@ public class ApFactory {
             }
             ApChange lastChange = changeRepository.findById(lastChangeId).get();
 
-            List<ApBindingVO> bindingsVO;
+            List<ExtEntityBinding> bindingsVO;
             if (bindingStates != null) {
             	Map<Integer, List<ApBindingItem>> bindingItemsMap = new HashMap<>();
                 if (MapUtils.isNotEmpty(bindings)) {
@@ -368,7 +368,7 @@ public class ApFactory {
             		// check existence of nonbinded items
             		List<ApBindingItem> bindedItems = bindingItemsMap.get(bindingState.getBindingId());
 
-                    ApBindingVO bivo = ApBindingVO.newInstance(bindingState, state, bindedItems, parts, items,
+                    ExtEntityBinding bivo = ExtEntityBindingFactory.newInstance(bindingState, state, bindedItems, parts, items,
                                                                lastChange);
             		bindingsVO.add(bivo);
             	}
@@ -396,11 +396,11 @@ public class ApFactory {
         ApChange lastChange = lastChangeId != null ? changeRepository.findById(lastChangeId).get() : null;
 
         // prepare bindings
-        List<ApBindingVO> bindingsVO;
+        List<ExtEntityBinding> bindingsVO;
         if (cachedAccessPoint.getBindings() != null) {
             bindingsVO = new ArrayList<>(cachedAccessPoint.getBindings().size());
 			for(CachedBinding binding: cachedAccessPoint.getBindings()) {
-                ApBindingVO bindingVo = ApBindingVO.newInstance(binding, cachedAccessPoint, lastChange);
+                ExtEntityBinding bindingVo = ExtEntityBindingFactory.newInstance(binding, cachedAccessPoint, lastChange);
             	bindingsVO.add(bindingVo);
             }
         } else {
@@ -490,18 +490,13 @@ public class ApFactory {
         return vo;
     }
 
-    private void fillBindingUrls(final List<ApBindingVO> bindings) {
+    private void fillBindingUrls(final List<ExtEntityBinding> bindings) {
         StaticDataProvider sdp = staticDataService.getData();
         if (CollectionUtils.isNotEmpty(bindings)) {
-            for (ApBindingVO binding : bindings) {
+            for (ExtEntityBinding binding : bindings) {
                 ApExternalSystem externalSystem = sdp.getApExternalSystemById(binding.getExternalSystemId());
                 ApiCamConnector connector = accessPointConnectorService.getConnector(externalSystem);
                 if (connector != null) {
-                    String value = binding.getValue();
-                    if (StringUtils.isNotEmpty(value)) {
-                        String url = connector.getDetailUrl(externalSystem) + value;
-                        binding.setDetailUrl(url);
-                    }
                     String extReplacedBy = binding.getExtReplacedBy();
                     if (StringUtils.isNotEmpty(extReplacedBy)) {
                         String url = connector.getDetailUrl(externalSystem) + extReplacedBy;

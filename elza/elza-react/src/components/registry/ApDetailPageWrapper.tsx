@@ -34,7 +34,7 @@ import { RouteComponentProps, useHistory, withRouter } from "react-router";
 import { RevStateApproval } from 'api/RevStateApproval';
 import Icon from 'components/shared/icon/FontIcon';
 import { useWebsocket } from 'components/shared/web-socket/WebsocketProvider';
-import { SyncProgress } from 'api/ApBindingVO';
+import { SyncProgress } from 'elza-api';
 import { WebsocketEventType } from 'components/shared/web-socket/enums';
 import { addToastrDanger } from 'components/shared/toastr/ToastrActions';
 import { WaitingOverlay } from 'components/shared/waiting-overlay';
@@ -307,8 +307,8 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     // show accesspoint export message on bindings state
     useEffect(() => {
         const stateMap = {
-            [SyncProgress.UPLOAD_PENDING]: ExportState.PENDING,
-            [SyncProgress.UPLOAD_STARTED]: ExportState.STARTED,
+            [SyncProgress.UploadPending]: ExportState.PENDING,
+            [SyncProgress.UploadStarted]: ExportState.STARTED,
         }
         bindings.forEach(({ syncProgress }) => {
             const state = stateMap[syncProgress];
