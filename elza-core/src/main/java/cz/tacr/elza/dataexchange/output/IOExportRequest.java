@@ -22,26 +22,33 @@ public abstract class IOExportRequest {
     protected Exception exception;
 
     protected final String mediaType;
-    
+
     protected final String fileExt;
 
-    protected final DEExportService exportService;
+    /**
+     * Optional progress in percent (0-100). Null when not reported.
+     */
+    protected volatile Integer progress;
 
-    public IOExportRequest(final Integer userId, 
-    		               final Integer requestId, 
-    		               final String downloadFileName, 
-    		               final String mediaType, 
-    		               final String fileExt,
-    		               final DEExportService exportService) {
+    public IOExportRequest(final Integer userId,
+                           final Integer requestId,
+                           final String downloadFileName,
+                           final String mediaType,
+                           final String fileExt) {
         this.userId = userId;
         this.requestId = requestId;
         this.downloadFileName = downloadFileName;
         this.mediaType = mediaType;
         this.fileExt = fileExt;
-        this.exportService = exportService;
     }
 
-    abstract void exportToFile(Path exportFile) throws IOException;
+    /**
+     * Write exported content to the given file.
+     *
+     * @param exportFile  target file
+     * @param exportService shared service that owns the heavy export logic
+     */
+    abstract void exportToFile(Path exportFile, DEExportService exportService) throws IOException;
 
     public Integer getUserId() {
         return userId;
@@ -64,14 +71,22 @@ public abstract class IOExportRequest {
     }
 
     public String getMediaType() {
-		return mediaType;
-	}
+        return mediaType;
+    }
 
-	public String getFileExt() {
-		return fileExt;
-	}
+    public String getFileExt() {
+        return fileExt;
+    }
 
-	public void setStateProcessing() {
+    public Integer getProgress() {
+        return progress;
+    }
+
+    public void setProgress(int progress) {
+        this.progress = progress;
+    }
+
+    public void setStateProcessing() {
         state = IOExportState.PROCESSING;
     }
 

@@ -15,8 +15,8 @@ public class IOExportFundsCsv extends IOExportRequest {
 
 	final private SearchParams searchParams;
 
-	public IOExportFundsCsv(Integer userId, Integer requestId, String dlFileName, SearchParams params, DEExportService service) {
-		super(userId, requestId, dlFileName, MediaType.TEXT_PLAIN_VALUE, FILE_NAME_EXT, service);
+	public IOExportFundsCsv(Integer userId, Integer requestId, String dlFileName, SearchParams params) {
+		super(userId, requestId, dlFileName, MediaType.TEXT_PLAIN_VALUE, FILE_NAME_EXT);
 		this.searchParams = params;
 	}
 
@@ -25,7 +25,7 @@ public class IOExportFundsCsv extends IOExportRequest {
 	}
 
 	@Override
-	void exportToFile(Path exportFile) throws IOException {
+	void exportToFile(Path exportFile, DEExportService exportService) throws IOException {
         exportService.exportCsvDataToFile(searchParams, exportFile);
 	}
 }
