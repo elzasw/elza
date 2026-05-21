@@ -5,7 +5,7 @@ import {FormInputField} from "../../../shared";
 import {ApTypeVO} from "../../../../api/ApTypeVO";
 import { StatesField } from 'components/registry/field/StatesField';
 import {TypesField} from "../../field/TypesField";
-import { SyncState } from 'api/SyncState';
+import { SyncState } from 'elza-api';
 import UserField from 'components/admin/UserField';
 import { UsrUserVO } from 'api/UsrUserVO';
 
@@ -81,7 +81,7 @@ const BaseFilterSection = ({submitting, nameFormSection = "", name = 'ap.ext-sea
                disabled={submitting}
         >
             <option value={undefined}/>
-            {[SyncState.SYNC_OK, SyncState.NOT_SYNCED].map((value) => {
+            {[SyncState.SyncOk, SyncState.NotSynced].map((value) => {
                 return <option value={value}>
                     {i18n(`ap.binding.syncState.${value}`)}
                 </option>

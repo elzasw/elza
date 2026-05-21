@@ -33,7 +33,7 @@ public class SearchFilterVO {
 
     private List<ExtensionFilterVO> extFilters = null;
 
-    private SyncStateVO syncState = null;
+    private SyncState syncState = null;
 
     // seznam ID entit, které budou z výsledku odfiltrovány
     private List<Integer> excludeAps = null;
@@ -142,11 +142,11 @@ public class SearchFilterVO {
         this.extFilters = extFilters;
     }
 
-	public SyncStateVO getSyncState() {
+	public SyncState getSyncState() {
 		return syncState;
 	}
 
-	public void setSyncState(SyncStateVO syncState) {
+	public void setSyncState(SyncState syncState) {
 		this.syncState = syncState;
 	}
 

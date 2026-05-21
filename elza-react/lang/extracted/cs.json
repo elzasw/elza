@@ -1,4 +1,10 @@
 {
+  "+zU9gq": {
+    "defaultMessage": "Produkce"
+  },
+  "EofFKR": {
+    "defaultMessage": "Vývoj"
+  },
   "KYiMel": {
     "defaultMessage": "Nová"
   },
@@ -466,6 +472,12 @@
   "pP1mv6": {
     "defaultMessage": "Chyba publikace"
   },
+  "publication.btn.confirmPublish": {
+    "defaultMessage": "Opravdu publikovat do {name}?"
+  },
+  "publication.btn.confirmPublishBtn": {
+    "defaultMessage": "Publikovat"
+  },
   "publication.btn.publish": {
     "defaultMessage": "Publikovat: {name}"
   },
@@ -525,6 +537,9 @@
   },
   "publication.system.label.code": {
     "defaultMessage": "Kód"
+  },
+  "publication.system.label.connectionType": {
+    "defaultMessage": "Typ připojení"
   },
   "publication.system.label.filter": {
     "defaultMessage": "Filtr"
@@ -633,5 +648,8 @@
   },
   "vZ26+m": {
     "defaultMessage": "<p><b>Načtení souřadnic ze souboru</b> ve formátu KML, GML nebo WKT</p><p><b>Systém WGS84</b> (např. Mapy.cz)</p><p><i>příklad: 49.5765442N, 14.3965617E</i></p><p><b>Značkovací jazyk WKT</b></p><p><i>příklady: POINT (14.3965617 49.5765442)</i></p><p><i>LINESTRING (14.3965528 49.5765909,14.4172300 49.5551484)</i></p><p><i>POLYGON ((14.3828494 49.5976066,14.3829031 49.5971094,14.3842817 49.5971546,14.3842281 49.5976379,14.3828494 49.5976066))</i></p>"
+  },
+  "xu6eM8": {
+    "defaultMessage": "Test"
   }
 }

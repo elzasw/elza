@@ -43,7 +43,7 @@ import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApAttributesInfoVO;
-import cz.tacr.elza.controller.vo.ApBindingVO;
+import cz.tacr.elza.controller.vo.ExtEntityBinding;
 import cz.tacr.elza.controller.vo.ApCreateTypeVO;
 import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
@@ -60,7 +60,7 @@ import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.MapLayerVO;
 import cz.tacr.elza.controller.vo.RequiredType;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
-import cz.tacr.elza.controller.vo.SyncProgressVO;
+import cz.tacr.elza.controller.vo.SyncProgress;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.ap.ApViewSettings;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
@@ -358,17 +358,15 @@ public class ApController {
         // read status of data in export/import queue
         if (CollectionUtils.isNotEmpty(vo.getBindings())) {
             // read upload settings
-            for (ApBindingVO b : vo.getBindings()) {
+            for (ExtEntityBinding b : vo.getBindings()) {
                 List<ExtSyncsQueueItem> queueItems = externalSystemService.getQueueItems(apState.getAccessPointId(), b
                         .getExternalSystemId(), ExtAsyncQueueState.EXPORT_NEW, ExtAsyncQueueState.EXPORT_START);
                 // expecting zero or one item
                 for (ExtSyncsQueueItem queueItem : queueItems) {
                     if (queueItem.getState() == ExtAsyncQueueState.EXPORT_NEW) {
-                        b.setSyncProgress(SyncProgressVO.UPLOAD_PENDING);
-                        b.setSyncLastUploadError(queueItem.getStateMessage());
+                        b.setSyncProgress(SyncProgress.UPLOAD_PENDING);
                     } else if (queueItem.getState() == ExtAsyncQueueState.EXPORT_START) {
-                        b.setSyncProgress(SyncProgressVO.UPLOAD_STARTED);
-                        b.setSyncLastUploadError(queueItem.getStateMessage());
+                        b.setSyncProgress(SyncProgress.UPLOAD_STARTED);
                     }
                 }
             }

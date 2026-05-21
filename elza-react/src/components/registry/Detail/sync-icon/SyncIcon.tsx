@@ -1,24 +1,24 @@
 import React, { FC } from "react";
-import { SyncState } from '../../../../api/SyncState';
+import { SyncState } from 'elza-api';
 import i18n from '../../../i18n';
 import { Icon } from '../../../index';
 import "./SyncIcon.scss";
 import classnames from "classnames";
 
 const getIconForState = (state: SyncState) => {
-    if(state === SyncState.SYNC_OK) {return "fa-circle"}
+    if(state === SyncState.SyncOk) {return "fa-circle"}
     return "fa-square";
 }
 
 export const SyncIcon:FC<{
     syncState: SyncState;
 }> = ({
-    syncState = SyncState.SYNC_OK
+    syncState = SyncState.SyncOk
 }) => {
     const classname = classnames("sync", {
-        "not-synced": syncState === SyncState.NOT_SYNCED,
-        "sync-ok": syncState === SyncState.SYNC_OK,
-        "local-change": syncState === SyncState.LOCAL_CHANGE,
+        "not-synced": syncState === SyncState.NotSynced,
+        "sync-ok": syncState === SyncState.SyncOk,
+        "local-change": syncState === SyncState.LocalChange,
     })
     return <div className="sync-icon">
         <Icon

@@ -28,7 +28,7 @@ import cz.tacr.elza.controller.vo.Area;
 import cz.tacr.elza.controller.vo.ExtensionFilterVO;
 import cz.tacr.elza.controller.vo.RelationFilterVO;
 import cz.tacr.elza.controller.vo.SearchFilterVO;
-import cz.tacr.elza.controller.vo.SyncStateVO;
+import cz.tacr.elza.controller.vo.SyncState;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -182,7 +182,7 @@ public class ApStateSpecification implements Specification<ApState> {
                 }
             }
 
-            SyncStateVO syncState = searchFilterVO.getSyncState();
+            SyncState syncState = searchFilterVO.getSyncState();
             if (searchFilterVO.getSyncState() != null) {
             	Join<ApAccessPoint, ApBindingState> bindingJoin = accessPointJoin.join(ApAccessPoint.BINDING_STATE, JoinType.LEFT);
             	bindingJoin.on(cb.isNull(bindingJoin.get(ApBindingState.DELETE_CHANGE_ID)));

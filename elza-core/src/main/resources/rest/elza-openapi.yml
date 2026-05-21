@@ -3,6 +3,8 @@ info:
   title: ELZA API
   version: 1.0.0
 tags:
+  - name: accesspoint-internal
+    description: Access-point API used by the Elza UI
   - name: publication-internal
     description: Publication API used by the Elza UI
   - name: publication
@@ -1584,6 +1586,78 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - aips
+  /binding/{bindingId}/history:
+    get:
+      operationId: AccessPointBinding_getBindingHistory
+      description: |-
+        Paginated history of binding revisions, newest first, built from
+        ap_binding_state and ap_binding_participant. Participants within each
+        revision are ordered by lastChange (ascending).
+      parameters:
+        - name: bindingId
+          in: path
+          required: true
+          description: id of binding
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          explode: false
+        - name: limit
+          in: query
+          required: false
+          description: server caps at 100
+          schema:
+            type: integer
+            default: 100
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExtHistory'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - accesspoint-internal
+  /binding/{bindingId}/issues:
+    get:
+      operationId: AccessPointBinding_getBindingIssues
+      description: List CAM-side issues attached to a binding.
+      parameters:
+        - name: bindingId
+          in: path
+          required: true
+          description: id of binding
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExtIssue'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - accesspoint-internal
   /daorepository:
     get:
       operationId: DaoRepository_fsRepos
@@ -4958,6 +5032,249 @@ components:
         progress:
           type: integer
       description: Status of request
+    ExtEntityBinding:
+      type: object
+      required:
+        - id
+        - externalSystemId
+        - externalSystemCode
+        - value
+      properties:
+        id:
+          type: integer
+        externalSystemId:
+          type: integer
+        externalSystemCode:
+          type: string
+          description: |-
+            Code of the external system. Marked deprecated on the Java VO, but
+            still load-bearing for several action calls — kept until the callers
+            migrate to externalSystemId.
+        value:
+          type: string
+          description: Identifier of the entity in the external system.
+        extState:
+          type: string
+        extRevision:
+          type: string
+        extUser:
+          type: string
+        extReplacedBy:
+          type: string
+        detailUrlExtReplacedBy:
+          type: string
+        syncState:
+          $ref: '#/components/schemas/SyncState'
+        syncProgress:
+          $ref: '#/components/schemas/SyncProgress'
+        bindingItemList:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtItemBinding'
+        extMetadataRevision:
+          type: string
+        extPrevRevision:
+          type: string
+        extCreatedAt:
+          type: string
+          format: date-time
+          description: Creation time of this revision in the external system.
+        issueSummary:
+          allOf:
+            - $ref: '#/components/schemas/ExtIssueSummary'
+          description: Pre-computed badge for the warning icon. Absent = no issues.
+      description: |-
+        One binding of an access point to an external system. Represents the
+        entity's identity in that system together with sync/state metadata and
+        (since CAMv2) per-revision metadata and issue summary.
+    ExtHistory:
+      type: object
+      required:
+        - revisions
+        - totalCount
+        - incomplete
+      properties:
+        revisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtRevision'
+        totalCount:
+          type: integer
+          description: total number of revisions known to Elza for this binding
+        incomplete:
+          type: boolean
+          description: |-
+            True when the chain has gaps (some extPrevRevision points to a revision
+            Elza does not have). The UI then suggests consulting the source system.
+      description: Paginated history of a binding, newest revision first.
+    ExtIssue:
+      type: object
+      required:
+        - id
+        - severity
+      properties:
+        id:
+          type: integer
+          description: binding_issue_id
+        uuid:
+          type: string
+          description: stable identifier from CAM, when provided
+        severity:
+          $ref: '#/components/schemas/ExtIssueSeverity'
+        status:
+          $ref: '#/components/schemas/ExtIssueStatus'
+        ruleCode:
+          type: string
+        issueCode:
+          type: string
+        message:
+          type: string
+        source:
+          type: string
+        detail:
+          type: string
+        note:
+          type: string
+        issueFrom:
+          type: string
+          format: date-time
+          description: valid-from timestamp from CAM
+        extFromRev:
+          type: string
+          description: external revision in which the issue first appeared
+        partId:
+          type: integer
+          description: referenced part of the AP, when applicable
+        itemId:
+          type: integer
+          description: referenced item of the AP, when applicable
+        relatedBindingId:
+          type: integer
+          description: related binding within the same external system, when applicable
+        relatedBindingExtValue:
+          type: string
+          description: value of the related binding in the external system
+      description: |-
+        One issue/finding reported by CAM about an entity binding. Issues are not
+        versioned in Elza — only the current state synced from CAM is kept. Issue
+        references never cross external systems: relatedBindingId always points to
+        a binding within the same external system as this entity.
+    ExtIssueIconState:
+      type: string
+      enum:
+        - NONE
+        - NEUTRAL
+        - NEW
+        - ATTENTION
+      description: |-
+        Aggregated badge state computed by the server from all issues on a binding.
+
+        NONE      no issues
+        NEUTRAL   only WARNING issues with status IR_ALL_REVISIONS_OK / IR_REVISION_OK
+        NEW       at least one WARNING with status absent
+        ATTENTION any ERROR, or any status = IR_FIX_NEEDED — single most prominent icon
+    ExtIssueSeverity:
+      type: string
+      enum:
+        - WARNING
+        - ERROR
+      description: Severity of a CAM-side issue attached to an entity binding.
+    ExtIssueStatus:
+      type: string
+      enum:
+        - IR_ALL_REVISIONS_OK
+        - IR_FIX_NEEDED
+        - IR_REVISION_OK
+      description: |-
+        Resolution state of an issue. Absent on the wire = new issue not yet
+        evaluated by the user.
+    ExtIssueSummary:
+      type: object
+      required:
+        - count
+        - iconState
+      properties:
+        count:
+          type: integer
+          description: total number of issues attached to the binding
+        iconState:
+          $ref: '#/components/schemas/ExtIssueIconState'
+      description: |-
+        Pre-computed badge for a binding, embedded in ExtEntityBinding so the client
+        renders the warning icon without a second round-trip.
+    ExtItemBinding:
+      type: object
+      required:
+        - sync
+      properties:
+        partId:
+          type: integer
+        itemId:
+          type: integer
+        sync:
+          type: boolean
+      description: Binding of one part or item of an access point to an external entity.
+    ExtParticipant:
+      type: object
+      required:
+        - id
+        - role
+        - name
+        - lastChange
+      properties:
+        id:
+          type: integer
+          description: binding_participant_id
+        role:
+          $ref: '#/components/schemas/ExtParticipantRole'
+        name:
+          type: string
+        institutionCode:
+          type: string
+        lastChange:
+          type: string
+          format: date-time
+      description: One person who participated on a binding revision.
+    ExtParticipantRole:
+      type: string
+      enum:
+        - AUTHOR
+        - APPROVAL
+      description: Role of a participant on an entity revision.
+    ExtRevision:
+      type: object
+      required:
+        - bindingStateId
+        - participants
+      properties:
+        bindingStateId:
+          type: integer
+          description: binding_state_id
+        extRevision:
+          type: string
+        extPrevRevision:
+          type: string
+        extMetadataRevision:
+          type: string
+        extCreatedAt:
+          type: string
+          format: date-time
+          description: time of revision creation in the external system
+        createChangeAt:
+          type: string
+          format: date-time
+          description: fallback timestamp from arr_change when extCreatedAt is missing
+        sender:
+          type: string
+          description: sender of the revision — value of ApBindingState.extUser
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExtParticipant'
+      description: |-
+        One revision in the binding's history, assembled from ap_binding_state with
+        embedded participants from ap_binding_participant. Participants are returned
+        ordered by lastChange (ascending).
     ExtSystemProperty:
       type: object
       required:
@@ -6813,6 +7130,19 @@ components:
           items:
             $ref: '#/components/schemas/FormItemType'
       description: Form data
+    SyncProgress:
+      type: string
+      enum:
+        - UPLOAD_PENDING
+        - UPLOAD_STARTED
+      description: Progres synchronizace
+    SyncState:
+      type: string
+      enum:
+        - SYNC_OK
+        - NOT_SYNCED
+        - LOCAL_CHANGE
+      description: Stav synchronizace
     Tasks.EntityType:
       type: string
       enum:

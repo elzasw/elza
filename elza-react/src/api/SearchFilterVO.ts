@@ -8,7 +8,7 @@ import { UserVO } from "./UserVO";
 import { Area } from "./Area";
 import { RelationFilterVO } from "./RelationFilterVO";
 import { ExtensionFilterVO } from "./ExtensionFilterVO";
-import { SyncState } from "./SyncState";
+import { SyncState } from "elza-api";
 
 export interface SearchFilterVO {
     /**

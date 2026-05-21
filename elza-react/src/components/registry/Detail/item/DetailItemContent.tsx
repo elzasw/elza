@@ -24,7 +24,7 @@ import { formatDate } from '../../../validate';
 import { DetailCoordinateItem } from '../coordinate/DetailCoordinateItem';
 import './DetailItem.scss';
 import { SyncIcon } from '../sync-icon';
-import { SyncState } from '../../../../api/SyncState';
+import { SyncState } from 'elza-api';
 import {RouteComponentProps, withRouter} from "react-router";
 import {Link} from "react-router-dom";
 import {diffChars, diffWords} from "diff";
@@ -212,7 +212,7 @@ const DetailItemContent: FC<Props> = ({
             {valueField}
             {(itemBinding != null) && (
                 <span className="sync-wrapper">
-                    <SyncIcon syncState={ itemBinding ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
+                    <SyncIcon syncState={ itemBinding ? SyncState.SyncOk : SyncState.LocalChange}/>
                 </span>
             )}
         </div>
