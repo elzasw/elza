@@ -1086,4 +1086,133 @@
         </addColumn>
 	</changeSet>
 
+    <changeSet id="20260521120000" author="ppy">
+        <!-- CAMv2 — additional revision metadata, CAM-side issues and participant history.
+             Surfaces extra information that arrives alongside each entity revision
+             so the Elza UI can display warnings and revision history. -->
+
+        <!-- Extra revision metadata stored on each binding state row. -->
+        <addColumn tableName="ap_binding_state">
+            <column name="ext_metadata_revision" type="nvarchar(50)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="ext_prev_revision" type="nvarchar(50)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="ext_created_at" type="timestamp with time zone">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <!-- CAM-side issues. Issues are not versioned: only the current state
+             synced from CAM is kept. Each issue is attached to exactly one binding. -->
+        <createTable tableName="ap_binding_issue">
+            <column name="binding_issue_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_ap_binding_issue" nullable="false"/>
+            </column>
+            <column name="binding_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_binding_issue_binding"
+                             referencedTableName="ap_binding"
+                             referencedColumnNames="binding_id"/>
+            </column>
+            <column name="uuid" type="nvarchar(36)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="severity" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="nvarchar(50)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="rule_code" type="nvarchar(50)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="issue_code" type="nvarchar(50)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="message" type="${type.text}">
+                <constraints nullable="true"/>
+            </column>
+            <column name="source" type="${type.text}">
+                <constraints nullable="true"/>
+            </column>
+            <column name="detail" type="${type.text}">
+                <constraints nullable="true"/>
+            </column>
+            <column name="note" type="${type.text}">
+                <constraints nullable="true"/>
+            </column>
+            <column name="issue_from" type="timestamp with time zone">
+                <constraints nullable="true"/>
+            </column>
+            <column name="ext_from_rev" type="nvarchar(50)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="part_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_binding_issue_part"
+                             referencedTableName="ap_part"
+                             referencedColumnNames="part_id"/>
+            </column>
+            <column name="item_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_binding_issue_item"
+                             referencedTableName="ap_item"
+                             referencedColumnNames="item_id"/>
+            </column>
+            <column name="related_binding_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_ap_binding_issue_related_binding"
+                             referencedTableName="ap_binding"
+                             referencedColumnNames="binding_id"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="ap_binding_issue_binding_idx" tableName="ap_binding_issue" unique="false">
+            <column name="binding_id" type="int"/>
+        </createIndex>
+        <createIndex indexName="ap_binding_issue_uuid_idx" tableName="ap_binding_issue" unique="false">
+            <column name="uuid" type="nvarchar(36)"/>
+        </createIndex>
+
+        <!-- Participant history: one row per (revision, person, role). -->
+        <createTable tableName="ap_binding_participant">
+            <column name="binding_participant_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_ap_binding_participant" nullable="false"/>
+            </column>
+            <column name="binding_state_id" type="int">
+                <constraints nullable="false"
+                             foreignKeyName="fk_ap_binding_participant_state"
+                             referencedTableName="ap_binding_state"
+                             referencedColumnNames="binding_state_id"/>
+            </column>
+            <column name="role" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_change" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="nvarchar(250)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="institution_code" type="nvarchar(250)">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+
+        <createIndex indexName="ap_binding_participant_state_idx" tableName="ap_binding_participant" unique="false">
+            <column name="binding_state_id" type="int"/>
+        </createIndex>
+
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="ap_binding_issue|binding_issue_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="ap_binding_participant|binding_participant_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>
