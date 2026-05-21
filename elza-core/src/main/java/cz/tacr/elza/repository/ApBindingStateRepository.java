@@ -26,6 +26,9 @@ public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingSta
     @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding b JOIN FETCH b.apExternalSystem WHERE bis.accessPoint IN :accessPoints AND bis.deleteChangeId IS NULL")
     List<ApBindingState> findByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
 
+    @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding b WHERE bis.accessPointId IN :accessPointIds AND bis.deleteChangeId IS NULL")
+    List<ApBindingState> findActiveByAccessPointIdIn(@Param("accessPointIds") Collection<Integer> accessPointIds);
+
     @Query("SELECT bis FROM ap_binding_state bis WHERE bis.binding = :binding AND bis.deleteChangeId IS NULL")
     Optional<ApBindingState> findActiveByBinding(@Param("binding") ApBinding binding);
 

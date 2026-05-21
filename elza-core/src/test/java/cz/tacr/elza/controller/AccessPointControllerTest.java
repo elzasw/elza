@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +18,7 @@ import java.util.stream.Collectors;
 import cz.tacr.elza.service.AccessPointItemService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
@@ -38,6 +42,7 @@ import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.WfTaskRepository;
 import cz.tacr.elza.service.PartService;
+import cz.tacr.elza.test.controller.vo.AccessPointBatchExportParams;
 import cz.tacr.elza.test.controller.vo.ApStateApproval;
 import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.CopyAccessPointDetail;
@@ -45,8 +50,10 @@ import cz.tacr.elza.test.controller.vo.CreatedPart;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointsDetail;
 import cz.tacr.elza.test.controller.vo.EntityRef;
+import cz.tacr.elza.test.controller.vo.ExportRequestStatus;
 import cz.tacr.elza.test.controller.vo.InvalidatedEntities;
 import cz.tacr.elza.test.controller.vo.ReplaceType;
+import cz.tacr.elza.test.controller.vo.RequestProcessState;
 import cz.tacr.elza.test.controller.vo.RevStateChange;
 import cz.tacr.elza.test.controller.vo.RevisionState;
 
@@ -420,5 +427,71 @@ public class AccessPointControllerTest extends AbstractControllerTest {
         assertTrue(tasks.size() == 1);
         assertTrue(tasks.get(0).getClosedById() == userVO.getId());
         assertTrue(tasks.get(0).getStatus().equals(Status.FINISHED));
+    }
+
+    /**
+     * End-to-end test of POST /accesspoint/export.
+     *
+     * Triggers the async CSV export against the SIMPLE-DEV seed (3 access points), polls the IO
+     * status endpoint until FINISHED, downloads the file, and verifies the UTF-8 BOM, header line,
+     * ascending {@code accessPointId} order, and that at least one seed UUID appears.
+     */
+    @Test
+    public void batchExportTest() throws IOException, InterruptedException {
+        helperTestService.waitForIndexUpdate();
+
+        AccessPointBatchExportParams params = new AccessPointBatchExportParams();
+        int requestId = accesspointsApi.accessPointBatchExport(params);
+        assertTrue(requestId > 0);
+
+        ExportRequestStatus expStatus = null;
+        for (int i = 0; i < 200; i++) {
+            Thread.sleep(50);
+            expStatus = ioApi.ioGetExportStatus(requestId);
+            if (expStatus.getState() == RequestProcessState.FINISHED) {
+                break;
+            }
+        }
+        assertNotNull(expStatus);
+        assertEquals(RequestProcessState.FINISHED, expStatus.getState());
+
+        Resource file = ioApi.ioGetExportFile(requestId);
+        assertNotNull(file);
+
+        byte[] bytes;
+        try (InputStream is = file.getInputStream()) {
+            bytes = is.readAllBytes();
+        }
+        assertTrue(bytes.length > 3, "file should contain at least BOM + content");
+        assertEquals((byte) 0xEF, bytes[0]);
+        assertEquals((byte) 0xBB, bytes[1]);
+        assertEquals((byte) 0xBF, bytes[2]);
+
+        String content = new String(bytes, 3, bytes.length - 3, StandardCharsets.UTF_8);
+        String[] lines = content.split("\r?\n");
+        assertTrue(lines.length >= 2, "expected header + at least one data row, got " + lines.length);
+        assertTrue(lines[0].startsWith("accessPointId,uuid,externalId"),
+                "unexpected header: " + lines[0]);
+
+        // At least one seed AP UUID must be present.
+        assertTrue(content.contains("9f783015-b9af-42fc-bff4-11ff57cdb072"),
+                "expected seed AP UUID in CSV content");
+
+        // Data rows must be sorted by accessPointId ascending.
+        int previous = Integer.MIN_VALUE;
+        int dataRows = 0;
+        for (int i = 1; i < lines.length; i++) {
+            String line = lines[i];
+            if (line.isEmpty()) {
+                continue;
+            }
+            int comma = line.indexOf(',');
+            assertTrue(comma > 0, "missing comma in row: " + line);
+            int apId = Integer.parseInt(line.substring(0, comma));
+            assertTrue(apId > previous, "rows not in ascending order: " + apId + " <= " + previous);
+            previous = apId;
+            dataRows++;
+        }
+        assertTrue(dataRows >= 3, "expected at least 3 data rows from seed, got " + dataRows);
     }
 }

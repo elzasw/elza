@@ -82,7 +82,14 @@ public abstract class IOExportRequest {
         return progress;
     }
 
-    public void setProgress(int progress) {
+    /**
+     * Update progress. A {@code null} value is ignored — the last reported percentage is preserved
+     * so transient "no value available" updates don't erase what has already been achieved.
+     */
+    public void setProgress(Integer progress) {
+        if (progress == null) {
+            return;
+        }
         this.progress = progress;
     }
 
