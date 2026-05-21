@@ -54,6 +54,50 @@ paths:
             schema:
               $ref: '#/components/schemas/DeleteAccessPointsDetail'
         description: seznam ID nebo UUID, které chceme smazat
+  /accesspoint/export:
+    post:
+      operationId: AccessPoint_batchExport
+      description: |-
+        Asynchronously export access points matching the given search query to CSV.
+        Returns the request id; poll /io/export-status/{id} and download the result via /io/file/{id}.
+        Results are ordered by accessPointId ascending. The filter shape mirrors the scalar
+        parameters of /registry/search, so the same registry-list filter values can be passed
+        through. Empty body / null fields means "all access points visible to the user".
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: integer
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - accesspoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessPointBatchExportParams'
+        description: filter selecting the access points to export
   /accesspoint/export/{queueItemId}:
     put:
       operationId: AccessPoint_exportForceOrNo
@@ -2012,6 +2056,36 @@ components:
         - APPROVED
         - TO_AMEND
       description: States of ApState
+    AccessPointBatchExportParams:
+      type: object
+      properties:
+        search:
+          type: string
+          description: Full-text search
+        apTypeId:
+          type: integer
+          description: Single AP-type id; on the backend it is subtree-expanded so descendant types are included
+        versionId:
+          type: integer
+          description: Fund version id (used to resolve scope context, optional)
+        scopeId:
+          type: integer
+          description: Scope id; on the backend it is expanded for the resolved fund + user-visible scopes
+        itemTypeId:
+          type: integer
+          description: Restrict to AP types referenced from this item type
+        itemSpecId:
+          type: integer
+          description: Restrict to AP types referenced from this item specification
+        state:
+          allOf:
+            - $ref: '#/components/schemas/ApStateApproval'
+          description: Filter by access-point state
+        revState:
+          allOf:
+            - $ref: '#/components/schemas/RevisionState'
+          description: Filter by revision state
+      description: Body of POST /accesspoint/export. Mirrors the scalar parameters of /registry/search; advanced SearchFilterVO is not yet supported
     ApStateUpdate:
       type: object
       required:

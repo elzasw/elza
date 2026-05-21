@@ -1612,9 +1612,51 @@ namespace ElzaAPI.DescItem {
     };
 }
 
+/**
+ * Body of POST /accesspoint/export.
+ *
+ * Mirrors the scalar parameters of /registry/search so the registry-list filter values
+ * can be passed through. Advanced SearchFilterVO is not yet supported.
+ */
+model AccessPointBatchExportParams {
+    /** Full-text search */
+    search?: string;
+    /** Single AP-type id; subtree-expanded on the backend to include descendant types */
+    apTypeId?: integer;
+    /** Fund version id (used to resolve scope context, optional) */
+    versionId?: integer;
+    /** Scope id; expanded on the backend for the resolved fund + user-visible scopes */
+    scopeId?: integer;
+    /** Restrict to AP types referenced from this item type */
+    itemTypeId?: integer;
+    /** Restrict to AP types referenced from this item specification */
+    itemSpecId?: integer;
+    /** Filter by access-point state */
+    state?: ApStateApproval;
+    /** Filter by revision state */
+    revState?: RevisionState;
+}
+
 @tag("accesspoints")
 @route("/accesspoint")
 namespace ElzaAPI.AccessPoint {
+    /**
+     * Asynchronously export access points matching the given filter to CSV.
+     *
+     * Returns the request id; poll /io/export-status/{id} and download the result via /io/file/{id}.
+     * Results are ordered by accessPointId ascending. Empty body / null fields means
+     * "all access points visible to the user".
+     */
+    @route("/export")
+    @post op batchExport(
+        /** filter selecting the access points to export */
+        @body params: AccessPointBatchExportParams
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer;
+    };
+
     /**
      * Invalidation of access points
      */
