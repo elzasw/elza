@@ -41,7 +41,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import cz.tacr.elza.common.ObjectListIterator;
-import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.ResourcePathResolver;
@@ -94,6 +94,7 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.RuleService;
@@ -138,6 +139,8 @@ public class DEExportService {
     
     private final RuleService ruleService;
 
+    private final AccessPointService accessPointService;
+
     private final ElzaLocale elzaLocale;
 
     @Autowired
@@ -161,6 +164,7 @@ public class DEExportService {
                            final InstitutionRepository institutionRepository,
                            final ScopeRepository scopeRepository,
                            final RuleService ruleService,
+                           final AccessPointService accessPointService,
                            final ElzaLocale elzaLocale,
                            final AccessPointCacheService apcService) {
         this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, apRepository,
@@ -179,6 +183,7 @@ public class DEExportService {
         this.arrangementService = arrangementService;
         this.staticDataService = staticDataService;
         this.ruleService = ruleService;
+        this.accessPointService = accessPointService;
         this.elzaLocale = elzaLocale;
     }
 
@@ -445,7 +450,7 @@ public class DEExportService {
      * @param progressSink receives a 0..100 percentage after each batch; may not be {@code null}
      */
     @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
-    public void exportAccessPointsCsv(SearchFilterVO searchFilter,
+    public void exportAccessPointsCsv(ApAdvanceSearchFilter searchFilter,
                                       Collection<Integer> apTypeIds,
                                       Collection<Integer> scopeIds,
                                       ApState.StateApproval state,
@@ -457,9 +462,25 @@ public class DEExportService {
         ApAccessPointRepository apRepository = initHelper.getApRepository();
         EntityManager em = initHelper.getEm();
 
-        List<Integer> allIds = apcService.searchAllIds(searchFilter, apTypeIds, scopeIds,
-                                                      state, revState, sdp,
-                                                      AccessPointCacheService.DEFAULT_SEARCH_ALL_PAGE_SIZE);
+        // Match the bifurcation used by the search endpoint (see AccessPointService.findUseCriteriaQuery):
+        //   - When there's no full-text search but a searchFilter/revState is present, the criteria
+        //     query is the source of truth — it resolves filters like assignedTo against live
+        //     wf_task state, which the Lucene cache may not reflect promptly.
+        //   - Otherwise the Lucene cache is fine (and faster for large result sets).
+        String searchText = searchFilter != null ? searchFilter.getSearch() : null;
+        boolean hasSearchText = searchText != null && !searchText.isBlank();
+        boolean useCriteria = !hasSearchText && (searchFilter != null || revState != null);
+
+        final List<Integer> allIds;
+        if (useCriteria) {
+            Set<Integer> apTypeIdSet = apTypeIds == null ? Collections.emptySet() : new HashSet<>(apTypeIds);
+            Set<Integer> scopeIdSet = scopeIds == null ? Collections.emptySet() : new HashSet<>(scopeIds);
+            allIds = accessPointService.findAllIdsBySearchFilter(searchFilter, apTypeIdSet, scopeIdSet, state, revState);
+        } else {
+            allIds = apcService.searchAllIds(searchFilter, apTypeIds, scopeIds,
+                                             state, revState, sdp,
+                                             AccessPointCacheService.DEFAULT_SEARCH_ALL_PAGE_SIZE);
+        }
         final int total = allIds.size();
 
         ItemType nmMainType = sdp.getItemTypeByCode("NM_MAIN");

@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { AppState } from "typings/store";
 import ReduxFormFieldErrorDecorator from "../../shared/form/ReduxFormFieldErrorDecorator";
 import FormInput from "../../shared/form/FormInput";
-import {Area} from "../../../api/Area";
+import {ApSearchArea} from 'elza-api';
 import {ArchiveEntityVO} from "../../../api/ArchiveEntityVO";
 import {WebApi} from "../../../actions/WebApi";
 import {debounce} from "../../../shared/utils";
@@ -19,7 +19,7 @@ type OwnProps = {}
 
 type Props = {
     onlyMainPart: boolean;
-    area: Area;
+    area: ApSearchArea;
     itemTypeId: number;
     itemSpecId?: number;
     scopeId?: number;

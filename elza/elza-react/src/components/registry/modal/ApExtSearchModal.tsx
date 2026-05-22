@@ -21,9 +21,8 @@ import TextFilterSection from "../form/filter/TextFilterSection";
 import BaseFilterSection from "../form/filter/BaseFilterSection";
 import CreExtFilterSection from "../form/filter/CreExtFilterSection";
 import {WebApi} from "../../../actions/WebApi";
-import {SearchFilterVO} from "../../../api/SearchFilterVO";
+import {ApAdvanceSearchFilter} from "elza-api";
 import {ArchiveEntityVO} from "../../../api/ArchiveEntityVO";
-import {AeState} from "../../../api/AeState";
 import {indexById} from "../../../shared/utils";
 import InifiniteList from "../../../shared/list/InifiniteList";
 import {HorizontalLoader} from "../../shared";
@@ -76,8 +75,7 @@ type Data = {
     filter: object;
 }
 
-const createFilter = (values): SearchFilterVO => {
-    const aeStates = values.states as AeState[];
+const createFilter = (values): ApAdvanceSearchFilter => {
     const aeTypeIds = values.types as number[];
     const extFilters = values.extFilters ? values.extFilters.map(f => {
         return {
@@ -96,7 +94,6 @@ const createFilter = (values): SearchFilterVO => {
     return {
         search: values.search,
         area: values.area,
-        aeStates: aeStates,
         aeTypeIds: aeTypeIds,
         onlyMainPart: values.onlyMainPart === 'true',
         user: values.user,
@@ -147,7 +144,7 @@ const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSy
         }
     };
 
-    const fetchData = (from: number, externalSystemCode: string, filter: SearchFilterVO) => {
+    const fetchData = (from: number, externalSystemCode: string, filter: ApAdvanceSearchFilter) => {
         return WebApi.findArchiveEntitiesInExternalSystem(from, 50, externalSystemCode, filter);
     }
 

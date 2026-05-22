@@ -33,12 +33,12 @@ import { FOCUS_KEYS, urlEntity } from '../../constants.tsx';
 import { requestScopesIfNeeded } from '../../actions/refTables/scopesData';
 import { Col, Dropdown, Row } from 'react-bootstrap';
 import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
-import { Area } from '../../api/Area';
+import { ApSearchArea } from 'elza-api';
 import ExtFilterModal from './modal/ExtFilterModal';
 import { Button } from '../ui';
 import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
-import { goToAe } from "../../actions/registry/registry";
+import { createFilter, goToAe } from "../../actions/registry/registry";
 import { batchExportAccessPoints } from '../../actions/registry/batchExportAccessPoints';
 import { refRuleSetFetchIfNeeded } from 'actions/refTables/ruleSet';
 
@@ -351,8 +351,10 @@ class RegistryList extends AbstractReactComponent {
 
     /**
      * Spustí asynchronní export aktuálně filtrované sady AP do CSV (Superadmin-only,
-     * experimentální). Mapuje viditelné filtry sidebar -> AccessPointBatchExportParams;
-     * rozšířený filtr (searchFilter) zatím není podporován a je z exportu vynechán.
+     * experimentální). Mapuje viditelné filtry sidebar i rozšířený filtr ("Použít
+     * rozšířený filtr" / "Moje úkoly") -> AccessPointBatchExportParams. Stejný
+     * {@code createFilter} se používá i při běžném listingu, takže search a export
+     * posílají identický tvar searchFilter.
      */
     handleBatchExport = () => {
         const { dispatch, registryList } = this.props;
@@ -363,6 +365,7 @@ class RegistryList extends AbstractReactComponent {
             scopeId: filter.scopeId || undefined,
             state: filter.state || undefined,
             revState: filter.revState || undefined,
+            searchFilter: filter.searchFilter ? createFilter(filter.searchFilter) : undefined,
         }));
     };
 
@@ -376,7 +379,7 @@ class RegistryList extends AbstractReactComponent {
                 <ExtFilterModal
                     scopeId={registryList.filter.scopeId}
                     initialValues={{
-                        area: Area.ALLNAMES,
+                        area: ApSearchArea.AllNames,
                         onlyMainPart: 'false',
                         search: registryList.filter.text,
                         ...registryList.filter.searchFilter,

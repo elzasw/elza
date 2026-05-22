@@ -32,7 +32,7 @@ import { descItemTypesFetchIfNeeded } from '../../actions/refTables/descItemType
 import { refRulDataTypesFetchIfNeeded } from '../../actions/refTables/rulDataTypes';
 import CreateAccessPointModal from '../../components/registry/modal/CreateAccessPointModal';
 import ApExtSearchModal, { TypeModal } from '../../components/registry/modal/ApExtSearchModal';
-import { Area } from 'api/Area';
+import { ApSearchArea } from 'elza-api';
 import { ApPushToExt } from '../../components/registry/modal/ApPushToExt';
 import ExtSyncsModal from '../../components/registry/modal/ExtSyncsModal';
 import { objectById, storeFromArea } from '../../shared/utils';
@@ -243,7 +243,7 @@ class RegistryPage extends AbstractReactComponent {
     handleApExtSearch = () => {
         const { extSystems } = this.props;
         const initialValues = {
-            area: Area.ALLNAMES,
+            area: ApSearchArea.AllNames,
             onlyMainPart: 'false', // musí být jako string, autocomplete má problém s true/false hodnotou
         };
         if (extSystems.length === 1) {
@@ -291,7 +291,7 @@ class RegistryPage extends AbstractReactComponent {
         } = this.props;
         const id = data.id;
         const initialValues = {
-            area: Area.ALLNAMES,
+            area: ApSearchArea.AllNames,
             onlyMainPart: 'false', // musí být jako string, autocomplete má problém s true/false hodnotou
         };
 

@@ -24,11 +24,11 @@ import org.apache.commons.lang3.Validate;
 import org.springframework.data.jpa.domain.Specification;
 
 import cz.tacr.cam.v1.client.controller.vo.QueryComparator;
-import cz.tacr.elza.controller.vo.Area;
-import cz.tacr.elza.controller.vo.ExtensionFilterVO;
-import cz.tacr.elza.controller.vo.RelationFilterVO;
-import cz.tacr.elza.controller.vo.SearchFilterVO;
-import cz.tacr.elza.controller.vo.SyncStateVO;
+import cz.tacr.elza.controller.vo.ApSearchArea;
+import cz.tacr.elza.controller.vo.ApSearchByItemWithValue;
+import cz.tacr.elza.controller.vo.ApSearchByRelation;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
+import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -70,7 +70,7 @@ import cz.tacr.elza.repository.specification.search.UnitdateComparator;
 
 public class ApStateSpecification implements Specification<ApState> {
 
-    private SearchFilterVO searchFilterVO;
+    private ApAdvanceSearchFilter searchFilterVO;
     private Set<Integer> apTypeIdTree;
     private Set<Integer> scopeIds;
     private ApState.StateApproval state;
@@ -84,12 +84,12 @@ public class ApStateSpecification implements Specification<ApState> {
      */
     private Collection<Integer> preResolvedStateIds;
 
-    public ApStateSpecification(final SearchFilterVO searchFilterVO, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
+    public ApStateSpecification(final ApAdvanceSearchFilter searchFilterVO, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
                                 ApState.StateApproval state, RevStateApproval revState, final StaticDataProvider sdp) {
         this(searchFilterVO, apTypeIdTree, scopeIds, state, revState, sdp, null);
     }
 
-    public ApStateSpecification(final SearchFilterVO searchFilterVO, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
+    public ApStateSpecification(final ApAdvanceSearchFilter searchFilterVO, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
                                 ApState.StateApproval state, RevStateApproval revState, final StaticDataProvider sdp,
                                 final Collection<Integer> preResolvedStateIds) {
         this.searchFilterVO = searchFilterVO;
@@ -182,7 +182,7 @@ public class ApStateSpecification implements Specification<ApState> {
                 }
             }
 
-            SyncStateVO syncState = searchFilterVO.getSyncState();
+            SyncState syncState = searchFilterVO.getSyncState();
             if (searchFilterVO.getSyncState() != null) {
             	Join<ApAccessPoint, ApBindingState> bindingJoin = accessPointJoin.join(ApAccessPoint.BINDING_STATE, JoinType.LEFT);
             	bindingJoin.on(cb.isNull(bindingJoin.get(ApBindingState.DELETE_CHANGE_ID)));
@@ -205,8 +205,8 @@ public class ApStateSpecification implements Specification<ApState> {
     private Predicate process(Predicate condition, Ctx ctx) {
         CriteriaBuilder cb = ctx.cb;
         String search = searchFilterVO.getSearch();
-        Area area = searchFilterVO.getArea();
-        if (area != Area.ENTITY_CODE) {
+        ApSearchArea area = searchFilterVO.getArea();
+        if (area != ApSearchArea.ENTITY_CODE) {
             Predicate and = cb.conjunction();
             if (StringUtils.isNotEmpty(search)) {
                 List<String> keyWords = getKeyWordsFromSearch(search);
@@ -228,7 +228,7 @@ public class ApStateSpecification implements Specification<ApState> {
                         default:
                             throw new NotImplementedException("Neimplementovaný stav oblasti: " + area);
                     }
-                    if (searchFilterVO.getOnlyMainPart() && !area.equals(Area.ALL_PARTS)) {
+                    if (searchFilterVO.getOnlyMainPart() && !area.equals(ApSearchArea.ALL_PARTS)) {
                         and = processValueCondDef(ctx, and, keyWord, partTypeCode, "NM_MAIN", null, QueryComparator.CT_CONTAIN, prefPart);
                     } else {
                         and = processIndexCondDef(ctx, and, keyWord, partTypeCode, prefPart);
@@ -236,7 +236,7 @@ public class ApStateSpecification implements Specification<ApState> {
                 }
             }
             if (CollectionUtils.isNotEmpty(searchFilterVO.getExtFilters())) {
-                for (ExtensionFilterVO ext : searchFilterVO.getExtFilters()) {
+                for (ApSearchByItemWithValue ext : searchFilterVO.getExtFilters()) {
                     ItemType itemType = ext.getItemTypeId() != null ? sdp.getItemTypeById(ext.getItemTypeId()) : null;
                     String itemTypeCode = itemType != null ? itemType.getCode() : null;  
                     String itemSpecCode = ext.getItemSpecId() != null ? sdp.getItemSpecById(ext.getItemSpecId()).getCode() : null;
@@ -252,7 +252,7 @@ public class ApStateSpecification implements Specification<ApState> {
                 }
             }
             if (CollectionUtils.isNotEmpty(searchFilterVO.getRelFilters())) {
-                for (RelationFilterVO rel : searchFilterVO.getRelFilters()) {
+                for (ApSearchByRelation rel : searchFilterVO.getRelFilters()) {
                     if (rel.getCode() != null) {
                         // relation without item type
                         if(rel.getRelTypeId()==null) {
