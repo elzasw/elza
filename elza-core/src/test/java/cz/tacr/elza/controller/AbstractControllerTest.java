@@ -110,7 +110,6 @@ import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
@@ -164,7 +163,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.SearchType;
-import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.FundLevelService;
@@ -268,38 +266,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String DELETE_EXTERNAL_SYSTEM = EXTERNAL_SYSTEMS + "/{externalSystemId}";
 
 	// STRUCTURE
-	@Deprecated
-	protected static final String CREATE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}";
-	@Deprecated
-	protected static final String CONFIRM_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}/confirm";
-	@Deprecated
-	protected static final String SET_ASSIGNABLE_STRUCTURE_DATA_LIST = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/assignable/{assignable}";
-	@Deprecated
-	protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
-	@Deprecated
-	protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/search";
-	@Deprecated
-	protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}";
 	protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type";
 	protected static final String FIND_PART_TYPES = STRUCTURE_CONTROLLER_URL + "/part-type";
-	@Deprecated
-	protected static final String FIND_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}";
-	@Deprecated
-	protected static final String SET_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL + "/extension/{fundVersionId}/{structureTypeCode}";
-	@Deprecated
-	protected static final String CREATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create";
-	@Deprecated
-	protected static final String UPDATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/update/{createNewVersion}";
-	@Deprecated
-	protected static final String DELETE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/delete";
-	@Deprecated
-	protected static final String DELETE_STRUCTURE_ITEMS_BY_TYPE = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/{structureDataId}/{itemTypeId}";
-	@Deprecated
-	protected static final String GET_FORM_STRUCTURE_ITEMS = STRUCTURE_CONTROLLER_URL + "/item/form/{fundVersionId}/{structureDataId}";
-	@Deprecated
-	protected static final String DUPLICATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureDataId}/batch";
-	@Deprecated
-	protected static final String UPDATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}/{structureTypeCode}/batchUpdate";
 
 	// ARRANGEMENT
 	protected static final String FUND = ARRANGEMENT_CONTROLLER_URL + "/getFund/{fundId}";
@@ -3251,54 +3219,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	}
 
 	/**
-	 * Vytvoření hodnoty strukturovaného datového typu.
-	 *
-	 * @param structureTypeCode kód strukturovaného datového typu
-	 * @param fundVersionId     identifikátor verze AS
-	 * @return vytvořená dočasná entita
-	 */
-	@Deprecated
-	protected ArrStructureDataVO createStructureData(final String structureTypeCode, final Integer fundVersionId) {
-		return post(spec -> spec.body(structureTypeCode).pathParam("fundVersionId", fundVersionId),
-				CREATE_STRUCTURE_DATA).as(ArrStructureDataVO.class);
-	}
-
-	/**
-	 * Potvrzení hodnoty strukturovaného datového typu. Provede nastavení hodnoty.
-	 *
-	 * @param fundVersionId   identifikátor verze AS
-	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-	 * @return potvrzená entita
-	 */
-	@Deprecated
-	protected ArrStructureDataVO confirmStructureData(final Integer fundVersionId, final Integer structureDataId) {
-		return post(
-				spec -> spec.pathParam("structureDataId", structureDataId).pathParam("fundVersionId", fundVersionId),
-				CONFIRM_STRUCTURE_DATA).as(ArrStructureDataVO.class);
-	}
-
-	/**
-	 * Vyhledání hodnot strukturovaného datového typu.
-	 *
-	 * @param structureTypeCode kód typu strukturovaného datového
-	 * @param fundVersionId     identifikátor verze AS
-	 * @param search            text pro filtrování (nepovinné)
-	 * @param assignable        přiřaditelnost
-	 * @param from              od položky
-	 * @param count             maximální počet položek
-	 * @return nalezené položky
-	 */
-	@Deprecated
-	protected FilteredResultVO<ArrStructureDataVO> findStructureData(final String structureTypeCode,
-			final Integer fundVersionId, final String search, final Boolean assignable, final Integer from,
-			final Integer count) {
-		return get(spec -> spec.pathParam("structureTypeCode", structureTypeCode)
-				.pathParam("fundVersionId", fundVersionId).queryParam("search", search)
-				.queryParam("assignable", assignable).queryParam("from", from).queryParam("count", count),
-				FIND_STRUCTURE_DATA).as(FilteredResultVO.class);
-	}
-
-	/**
 	 * Vyhledá možné typy strukt. datových typů, které lze v AS používat.
 	 *
 	 * @return nalezené entity
@@ -3318,166 +3238,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 	protected Map<String, RulPartTypeVO> findPartTypesMap() {
 		return findPartTypes().stream().collect(Collectors.toMap(RulPartTypeVO::getCode, Function.identity()));
-	}
-
-	/**
-	 * Vyhledá dostupná a aktivovaná rozšíření k AS.
-	 *
-	 * @param fundVersionId identifikátor verze AS
-	 * @return nalezené entity
-	 */
-	@Deprecated
-	protected List<StructureExtensionFundVO> findFundStructureExtension(final Integer fundVersionId,
-			final String structureTypeCode) {
-		return Arrays.asList(get(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureTypeCode",
-				structureTypeCode), FIND_FUND_STRUCTURE_EXTENSION).as(StructureExtensionFundVO[].class));
-	}
-
-	/**
-	 * Nastaví konkrétní rozšíření na AS.
-	 *
-	 * @param fundVersionId           identifikátor verze AS
-	 * @param structureTypeCode       kód strukturovaného datového typu
-	 * @param structureExtensionCodes seznam kódů rozšíření, které mají být
-	 *                                aktivovány na AS
-	 */
-	@Deprecated
-	protected void setFundStructureExtensions(final Integer fundVersionId, final String structureTypeCode,
-			final List<String> structureExtensionCodes) {
-		put(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureTypeCode", structureTypeCode)
-				.body(structureExtensionCodes), SET_FUND_STRUCTURE_EXTENSION);
-	}
-
-	/**
-	 * Vytvoření položky k hodnotě strukt. datového typu.
-	 *
-	 * @param itemVO          položka
-	 * @param fundVersionId   identifikátor verze AS
-	 * @param itemTypeId      identifikátor typu atributu
-	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-	 * @return vytvořená entita
-	 */
-	@Deprecated
-	protected StructureOldController.StructureItemResult createStructureItem(final ArrItemVO itemVO,
-			final Integer fundVersionId, final Integer itemTypeId, final Integer structureDataId) {
-		return post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("itemTypeId", itemTypeId)
-				.pathParam("structureDataId", structureDataId).body(itemVO), CREATE_STRUCTURE_ITEM)
-				.as(StructureOldController.StructureItemResult.class);
-	}
-
-	/**
-	 * Upravení položky k hodnotě strukt. datového typu.
-	 *
-	 * @param itemVO           položka
-	 * @param fundVersionId    identifikátor verze AS
-	 * @param createNewVersion provést verzovanou změnu
-	 * @return upravená entita
-	 */
-	@Deprecated
-	protected StructureOldController.StructureItemResult updateStructureItem(final ArrItemVO itemVO,
-			final Integer fundVersionId, final Boolean createNewVersion) {
-		return put(spec -> spec.pathParam("fundVersionId", fundVersionId)
-				.pathParam("createNewVersion", createNewVersion).body(itemVO), UPDATE_STRUCTURE_ITEM)
-				.as(StructureOldController.StructureItemResult.class);
-	}
-
-	/**
-	 * Odstranení položky k hodnotě strukt. datového typu.
-	 *
-	 * @param itemVO        položka
-	 * @param fundVersionId identifikátor verze AS
-	 * @return smazaná entita
-	 */
-	@Deprecated
-	protected StructureOldController.StructureItemResult deleteStructureItem(final ArrItemVO itemVO, final Integer fundVersionId) {
-		return post(spec -> spec.pathParam("fundVersionId", fundVersionId).body(itemVO), DELETE_STRUCTURE_ITEM)
-				.as(StructureOldController.StructureItemResult.class);
-	}
-
-	/**
-	 * Odstranení položek k hodnotě strukt. datového typu podle typu atributu.
-	 *
-	 * @param fundVersionId   identifikátor verze AS
-	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-	 * @param itemTypeId      identifikátor typu atributu
-	 */
-	@Deprecated
-	protected StructureOldController.StructureItemResult deleteStructureItemsByType(final Integer fundVersionId,
-			final Integer structureDataId, final Integer itemTypeId) {
-		return delete(spec -> spec.pathParam("fundVersionId", fundVersionId)
-				.pathParam("structureDataId", structureDataId).pathParam("itemTypeId", itemTypeId),
-				DELETE_STRUCTURE_ITEMS_BY_TYPE).as(StructureOldController.StructureItemResult.class);
-	}
-
-	/**
-	 * Získání dat pro formulář strukt. datového typu.
-	 *
-	 * @param fundVersionId   identifikátor verze AS
-	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-	 * @return data formuláře
-	 */
-	@Deprecated
-	protected StructureOldController.StructureDataFormDataVO getFormStructureItems(final Integer fundVersionId, final Integer structureDataId) {
-		return get(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureDataId", structureDataId),
-				GET_FORM_STRUCTURE_ITEMS).as(StructureOldController.StructureDataFormDataVO.class);
-	}
-
-	/**
-	 * Založení duplikátů strukturovaného datového typu a autoinkrementační.
-	 * Předloha musí být ve stavu {@link ArrStructuredObject.State#TEMP}.
-	 *
-	 * @param structureDataId identifikátor předlohy hodnoty strukturovaného
-	 *                        datového typu
-	 * @param fundVersionId   identifikátor verze AS
-	 * @param count           počet položek, které se budou budou vytvářet
-	 * @param itemTypeIds     identifikátory číselných typů atributu, které se budou
-	 *                        incrementovat
-	 */
-	@Deprecated
-	protected void duplicateStructureDataBatch(final Integer fundVersionId, final Integer structureDataId,
-			final Integer count, final List<Integer> itemTypeIds) {
-		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureDataId", structureDataId)
-				.body(new StructureOldController.StructureDataBatch(count, itemTypeIds)), DUPLICATE_STRUCTURE_DATA_BATCH);
-	}
-
-	/**
-	 * Získání hodnoty strukturovaného datového typu.
-	 *
-	 * @param fundVersionId   identifikátor verze AS
-	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-	 * @return nalezená entita
-	 */
-	@Deprecated
-	protected ArrStructureDataVO getStructureData(final Integer fundVersionId, final Integer structureDataId) {
-		return get(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureDataId", structureDataId),
-				GET_STRUCTURE_DATA).as(ArrStructureDataVO.class);
-	}
-
-	/**
-	 * Nastavení přiřaditelnosti.
-	 *
-	 * @param fundVersionId    identifikátor verze AS
-	 * @param assignable       přiřaditelný
-	 * @param structureDataIds identifikátory hodnoty strukturovaného datového typu
-	 */
-	@Deprecated
-	protected void setAssignableStructureData(final Integer fundVersionId, final boolean assignable, List<Integer> structureDataIds) {
-		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("assignable", assignable)
-				.body(structureDataIds), SET_ASSIGNABLE_STRUCTURE_DATA_LIST);
-	}
-
-	/**
-	 * Hromadná úprava položek/hodnot strukt. typu.
-	 *
-	 * @param fundVersionId            identifikátor verze AS
-	 * @param structureTypeCode        kód strukturovaného datového typu
-	 * @param structureDataBatchUpdate data pro hromadnou úpravu hodnot
-	 */
-	@Deprecated
-	protected void updateStructureDataBatch(final Integer fundVersionId, final String structureTypeCode,
-			final StructureOldController.StructureDataBatchUpdate structureDataBatchUpdate) {
-		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureTypeCode", structureTypeCode)
-				.body(structureDataBatchUpdate), UPDATE_STRUCTURE_DATA_BATCH);
 	}
 
 	/**
