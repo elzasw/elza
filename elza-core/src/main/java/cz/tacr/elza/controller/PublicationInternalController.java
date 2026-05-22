@@ -21,6 +21,7 @@ import cz.tacr.elza.controller.vo.PublicationDetail;
 import cz.tacr.elza.controller.vo.PublicationList;
 import cz.tacr.elza.controller.vo.PublicationType;
 import cz.tacr.elza.service.PublicationService;
+import cz.tacr.elza.service.PublicationService.DownloadPayload;
 import cz.tacr.elza.service.PublicationTypeService;
 
 /**
@@ -41,10 +42,10 @@ import cz.tacr.elza.service.PublicationTypeService;
 public class PublicationInternalController implements PublicationInternalApi {
 
 	@Autowired
-	private PublicationTypeService exportTypeService;
+	private PublicationTypeService publicationTypeService;
 	
 	@Autowired
-	private PublicationService exportService;
+	private PublicationService publicationService;
 
     // -----------------------------------------------------------------------
     // Publication type management (admin)
@@ -58,7 +59,7 @@ public class PublicationInternalController implements PublicationInternalApi {
      */
     @Override
     public ResponseEntity<List<PublicationType>> publicationTypeAdminListPublicationTypes() {
-        List<PublicationType> result = exportTypeService.listAll().stream().map(exportTypeService::toVO).toList();
+        List<PublicationType> result = publicationTypeService.listAll().stream().map(publicationTypeService::toVO).toList();
 
         return ResponseEntity.ok(result);
     }
@@ -73,7 +74,7 @@ public class PublicationInternalController implements PublicationInternalApi {
      */
     @Override
     public ResponseEntity<PublicationType> publicationTypeAdminCreatePublicationType(@RequestBody PublicationType publicationType) {
-    	return ResponseEntity.ok(exportTypeService.toVO(exportTypeService.create(publicationType)));
+    	return ResponseEntity.ok(publicationTypeService.toVO(publicationTypeService.create(publicationType)));
     }
 
     /**
@@ -89,7 +90,7 @@ public class PublicationInternalController implements PublicationInternalApi {
     @Override
     public ResponseEntity<PublicationType> publicationTypeAdminUpdatePublicationType(Integer id, 
     		                                                                         @RequestBody PublicationType publicationType) {
-    	return ResponseEntity.ok(exportTypeService.toVO(exportTypeService.update(id, publicationType)));
+    	return ResponseEntity.ok(publicationTypeService.toVO(publicationTypeService.update(id, publicationType)));
     }
 
     /**
@@ -103,7 +104,7 @@ public class PublicationInternalController implements PublicationInternalApi {
      */
     @Override
     public ResponseEntity<Void> publicationTypeAdminDeletePublicationType(Integer id) {
-        exportTypeService.delete(id);
+        publicationTypeService.delete(id);
         return ResponseEntity.ok().build();
     }
 
@@ -126,7 +127,7 @@ public class PublicationInternalController implements PublicationInternalApi {
             @RequestParam(value = "publicationTypeId", required = false) Integer publicationTypeId,
             @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
             @RequestParam(value = "limit", required = false, defaultValue = "50") Integer limit) {
-    	return ResponseEntity.ok(exportService.listByFund(fundId, publicationTypeId, offset, limit));
+    	return ResponseEntity.ok(publicationService.listByFund(fundId, publicationTypeId, offset, limit));
     }
 
     /**
@@ -141,7 +142,7 @@ public class PublicationInternalController implements PublicationInternalApi {
      */
     @Override
     public ResponseEntity<PublicationDetail> fundPublicationCreateFundPublication(Integer fundId, @RequestBody CreatePublication createPublication) {
-    	return ResponseEntity.ok(exportService.create(fundId, createPublication.getPublicationTypeId()));
+    	return ResponseEntity.ok(publicationService.create(fundId, createPublication.getPublicationTypeId()));
     }
 
     /**
@@ -153,7 +154,7 @@ public class PublicationInternalController implements PublicationInternalApi {
      */
     @Override
     public ResponseEntity<Resource> fundPublicationDownloadFundPublication(Integer fundId, Integer publicationId) {
-        PublicationService.DownloadPayload payload = exportService.download(fundId, publicationId);
+        DownloadPayload payload = publicationService.download(fundId, publicationId);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_XML)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
@@ -176,7 +177,7 @@ public class PublicationInternalController implements PublicationInternalApi {
      */
     @Override
     public ResponseEntity<Void> fundPublicationInvalidateFundPublication(Integer fundId,Integer publicationId) {
-    	exportService.invalidate(fundId, publicationId);
+    	publicationService.invalidate(fundId, publicationId);
     	return ResponseEntity.ok().build();
     }
 
@@ -193,7 +194,7 @@ public class PublicationInternalController implements PublicationInternalApi {
      */
     @Override
     public ResponseEntity<PublicationDetail> fundPublicationCopyFundPublication(Integer fundId, Integer publicationId, @RequestBody CopyPublication copyPublication) {
-    	PublicationDetail publicationDetail = exportService.copy(fundId, publicationId, copyPublication.getTargetPublicationTypeId());
+    	PublicationDetail publicationDetail = publicationService.copy(fundId, publicationId, copyPublication.getTargetPublicationTypeId());
         return ResponseEntity.ok(publicationDetail);
     }
 }

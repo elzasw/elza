@@ -21,6 +21,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import cz.tacr.elza.controller.config.ClientFactoryVO;
 import cz.tacr.elza.core.ElzaLocale;
+import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.other.HelperTestService;
 import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DataRepository;
@@ -119,6 +120,9 @@ public abstract class AbstractTest {
 	@Autowired
 	protected DmsService dmsService;
 
+	@Autowired
+	protected ResourcePathResolver resourcePathResolver;
+	
     @Autowired
     protected ElzaLocale elzaLocale;
 

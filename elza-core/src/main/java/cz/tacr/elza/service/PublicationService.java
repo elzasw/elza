@@ -1,6 +1,7 @@
 package cz.tacr.elza.service;
 
 import java.time.OffsetDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -15,16 +16,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import cz.tacr.elza.controller.vo.AvailablePublication;
+import cz.tacr.elza.controller.vo.AvailablePublications;
 import cz.tacr.elza.controller.vo.PublicationDetail;
 import cz.tacr.elza.controller.vo.PublicationList;
+import cz.tacr.elza.controller.vo.PublicationReportStatus;
 import cz.tacr.elza.controller.vo.PublicationStateInternal;
+import cz.tacr.elza.controller.vo.PublicationStatusReport;
 import cz.tacr.elza.controller.vo.UserRef;
 import cz.tacr.elza.domain.ArrExport;
+import cz.tacr.elza.domain.ArrExport.State;
 import cz.tacr.elza.domain.ArrExportType;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.DmsFile;
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ConflictException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -55,6 +62,12 @@ public class PublicationService {
     private final UserService userService;
     private final AsyncRequestService asyncRequestService;
 
+    /** Public-API page size cap; matches the contract. */
+    private static final int PUBLIC_API_PAGE_SIZE = 100;
+
+    /** Default cursor returned when caller omits {@code lastTransaction} and the result is empty. */
+    private static final String EMPTY_CURSOR = "0";
+
     @Autowired
     public PublicationService(final ExportRepository exportRepository,
                               final ExportTypeRepository exportTypeRepository,
@@ -68,6 +81,133 @@ public class PublicationService {
         this.dmsService = dmsService;
         this.userService = userService;
         this.asyncRequestService = asyncRequestService;
+    }
+
+    @Transactional(readOnly = true)
+	public AvailablePublications listAvailable(final String targetSystem, final String lastTransaction) {
+        ArrExportType type = requireActiveType(targetSystem);
+
+        Long lastSeq = parseCursor(lastTransaction);
+
+        List<ArrExport> rows = exportRepository.findAvailable(type.getCode(), lastSeq, PageRequest.of(0, PUBLIC_API_PAGE_SIZE));
+
+        // Per spec: when several prepared exports exist for the same fund,
+        // expose only the most recent one. Rows are already ordered by exportSeq ASC,
+        // so a LinkedHashMap keyed by fundId keeps the highest seq per fund while
+        // preserving cursor order.
+        Map<Integer, ArrExport> dedupedByFund = new LinkedHashMap<>();
+        for (ArrExport e : rows) {
+            dedupedByFund.put(e.getFundVersion().getFundId(), e);
+        }
+
+        AvailablePublications result = new AvailablePublications();
+        result.setItems(dedupedByFund.values().stream()
+                .map(this::toAvailableVO)
+                .collect(Collectors.toList()));
+
+        // Advance the cursor by the last raw row (not the deduplicated one) so the
+        // skipped duplicates are not replayed on the next call.
+        String nextCursor = rows.isEmpty()
+                ? (lastTransaction != null ? lastTransaction : EMPTY_CURSOR)
+                : Long.toString(rows.get(rows.size() - 1).getExportSeq());
+        result.setNextTransaction(nextCursor);
+        return result;
+    }
+
+    @Transactional
+	public DownloadPayload downloadAvailable(final Integer publicationId) {
+        ArrExport export = exportRepository.findById(publicationId)
+                .orElseThrow(() -> new ObjectNotFoundException("Publication not found", BaseCode.ID_NOT_EXIST).setId(publicationId));
+
+        // Hide internal-only states from the public API (NEW / PREPARE_ERROR / INVALIDATED).
+        State state = export.getState();
+        if (state != State.PREPARED && state != State.FETCHED
+                && state != State.PUBLISHED && state != State.PUBLISH_ERROR) {
+            throw new ObjectNotFoundException(
+                    "Publication not found", BaseCode.ID_NOT_EXIST).setId(publicationId);
+        }
+
+        requireActiveType(export.getExportType().getCode());
+
+        DmsFile file = export.getFile();
+        if (file == null) {
+            // 410 Gone — retention sweep already deleted the file.
+            // Controller maps a null payload to HttpStatus.GONE.
+            return null;
+        }
+
+        // First successful fetch: PREPARED → FETCHED, stamp lastFetchedAt.
+        OffsetDateTime now = OffsetDateTime.now();
+        if (state == State.PREPARED) {
+            export.setState(State.FETCHED);
+        }
+        export.setLastFetchedAt(now);
+        exportRepository.save(export);
+
+        Resource resource = new FileSystemResource(dmsService.getFilePath(file));
+        return new DownloadPayload(resource, buildFileName(export));
+	}
+
+    @Transactional
+	public void reportStatus(final Integer publicationId, final PublicationStatusReport report) {
+        ArrExport export = exportRepository.findById(publicationId)
+                .orElseThrow(() -> new ObjectNotFoundException(
+                        "Publication not found", BaseCode.ID_NOT_EXIST).setId(publicationId));
+
+        State state = export.getState();
+        if (state == State.NEW || state == State.PREPARE_ERROR || state == State.INVALIDATED) {
+            // Internal-only states are not exposed.
+            throw new ObjectNotFoundException(
+                    "Publication not found", BaseCode.ID_NOT_EXIST).setId(publicationId);
+        }
+        // PREPARED means no download has happened yet — a status report at this point is a protocol violation.
+        if (state == State.PREPARED) {
+            throw new ConflictException(
+                    "Publication has not been fetched yet", BaseCode.INVALID_STATE)
+                    .set("id", publicationId).set("state", state.name());
+        }
+
+        PublicationReportStatus reported = report.getStatus();
+        OffsetDateTime reportedAt = report.getPublishedAt();
+
+        if (reported == PublicationReportStatus.OK) {
+            if (state == State.PUBLISHED) {
+                // Idempotent replay of an already-accepted OK report.
+                if (Objects.equals(export.getPublishedAt(), reportedAt)) {
+                    return;
+                }
+                // OK with a different publishedAt is not allowed to overwrite a successful publication.
+                throw new ConflictException(
+                        "Publication already reported with a different publishedAt",
+                        BaseCode.INVALID_STATE)
+                        .set("id", publicationId)
+                        .set("storedPublishedAt", export.getPublishedAt())
+                        .set("reportedPublishedAt", reportedAt);
+            }
+            // FETCHED → PUBLISHED, or recovery PUBLISH_ERROR → PUBLISHED.
+            export.setState(State.PUBLISHED);
+            export.setPublishedAt(reportedAt);
+            export.setErrorMessage(null);
+            export.setErrorAt(null);
+        } else { // ERROR
+            if (state == State.PUBLISHED) {
+                // Don't let a late ERROR roll back an already-successful publication.
+                throw new ConflictException(
+                        "Publication is already PUBLISHED, cannot report ERROR",
+                        BaseCode.INVALID_STATE).set("id", publicationId);
+            }
+            // Idempotent replay of an already-accepted ERROR report.
+            if (state == State.PUBLISH_ERROR
+                    && Objects.equals(export.getErrorAt(), reportedAt)
+                    && Objects.equals(export.getErrorMessage(), report.getErrorMessage())) {
+                return;
+            }
+            // FETCHED → PUBLISH_ERROR, or refresh of error details on PUBLISH_ERROR.
+            export.setState(State.PUBLISH_ERROR);
+            export.setErrorAt(reportedAt);
+            export.setErrorMessage(report.getErrorMessage());
+        }
+        exportRepository.save(export);
     }
 
     @Transactional(readOnly = true)
@@ -232,6 +372,45 @@ public class PublicationService {
         return vo;
     }
 
+    private ArrExportType requireActiveType(final String code) {
+        ArrExportType type = exportTypeRepository.findByCode(code)
+                .orElseThrow(() -> new ObjectNotFoundException("Publication type not found", BaseCode.ID_NOT_EXIST).set("code", code));
+        if (!Boolean.TRUE.equals(type.getActive())) {
+            // Spec: inactive type → 403, internal state not exposed.
+            throw new AccessDeniedException("Publication type is inactive").set("code", code);
+        }
+        return type;
+    }
+
+    private Long parseCursor(final String lastTransaction) {
+        if (lastTransaction == null || lastTransaction.isBlank()) {
+            return null;
+        }
+        try {
+            long v = Long.parseLong(lastTransaction.trim());
+            return v < 0 ? null : v;
+        } catch (NumberFormatException ex) {
+            // Unknown / corrupt cursors are treated as "start over" rather than 400 —
+            // a publication system that lost its state can resume cleanly.
+            return null;
+        }
+    }
+
+    private AvailablePublication toAvailableVO(final ArrExport e) {
+        AvailablePublication vo = new AvailablePublication();
+        vo.setPublicationId(e.getExportId());
+        ArrFundVersion fv = e.getFundVersion();
+        vo.setFundId(fv.getFund().getFundId());
+        vo.setFundVersionId(fv.getFundVersionId());
+        vo.setCreatedTime(e.getCreatedAt());
+        vo.setLastChangeId(e.getLastChangeId());
+        // TODO: publicationType is the XSD namespace URI. Wire it from the export
+        //       filter / type once that mapping is finalised; "v2" is the only
+        //       value we emit today.
+        vo.setPublicationType("http://elza.tacr.cz/schema/v2");
+        return vo;
+    }
+
     private ArrFundVersion requireOpenVersion(final Integer fundId) {
         ArrFundVersion version = fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
         if (version == null) {
@@ -362,4 +541,5 @@ public class PublicationService {
             return offset > 0;
         }
     }
+
 }
