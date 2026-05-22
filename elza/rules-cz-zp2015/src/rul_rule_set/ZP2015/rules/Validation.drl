@@ -262,6 +262,42 @@ then
     dvResults.createError($di.getDescItemId(), "Prvek " + $di.getTypeName() + " odkazuje na neschválenou entitu (id: "+$ap.getId()+").", "ZP2015_POL_ENTITY");
 end
 
+
+rule "Kontrola duplicitních hodnot prvků datového typu RECORD_REF bez specifikace"
+when
+    $activeLevel: ActiveLevel( $descItems: descItems, $ownDescItems: ownDescItems )
+    $di1: DescItem( dataType=="RECORD_REF" && ap != null && specCode == null && $type: type, $ap1: ap ) from $descItems
+    Ap( $apId: id ) from $ap1
+    $di2: DescItem( dataType=="RECORD_REF" && ap != null && specCode == null && type == $type
+                    && descItemId > $di1.descItemId && $ap2: ap ) from $descItems
+    Ap( id == $apId ) from $ap2
+    // alespoň jeden z dvojice patří mezi vlastní prvky této úrovně
+    exists DescItem( this == $di1 || this == $di2 ) from $ownDescItems
+then
+    dvResults.createError($di2.getDescItemId(),
+        "Prvek " + $di2.getTypeName() + " obsahuje duplicitní hodnotu (id: " + $apId + ").",
+        "ZP2015_POL_BASIC");
+end
+
+rule "Kontrola duplicitních hodnot prvků datového typu RECORD_REF se specifikací"
+when
+    $activeLevel: ActiveLevel( $descItems: descItems, $ownDescItems: ownDescItems )
+    $di1: DescItem( dataType=="RECORD_REF" && ap != null && specCode != null
+                    && $type: type, $specCode: specCode, $ap1: ap ) from $descItems
+    Ap( $apId: id ) from $ap1
+    $di2: DescItem( dataType=="RECORD_REF" && ap != null && type == $type && specCode == $specCode
+                    && descItemId > $di1.descItemId && $ap2: ap ) from $descItems
+    Ap( id == $apId ) from $ap2
+    // alespoň jeden z dvojice patří mezi vlastní prvky této úrovně
+    exists DescItem( this == $di1 || this == $di2 ) from $ownDescItems
+then
+    dvResults.createError($di2.getDescItemId(),
+        "Prvek " + $di2.getTypeName() + " se specifikací " + $di2.getSpecName()
+            + " obsahuje duplicitní hodnotu (id: " + $apId + ").",
+        "ZP2015_POL_BASIC");
+end
+
+
 rule "Kontrola délky prvku Název"
 when
     $activeLevel : ActiveLevel( $ownDescItems: ownDescItems)
