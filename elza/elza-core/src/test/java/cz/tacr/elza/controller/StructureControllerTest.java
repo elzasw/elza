@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.repository.SobjVrequestRepository;
 import cz.tacr.elza.test.controller.vo.DataInteger;
@@ -26,6 +25,7 @@ import cz.tacr.elza.test.controller.vo.SdoCopyObjectParam;
 import cz.tacr.elza.test.controller.vo.SdoExtensionFund;
 import cz.tacr.elza.test.controller.vo.SdoFindResult;
 import cz.tacr.elza.test.controller.vo.SdoItemResult;
+import cz.tacr.elza.test.controller.vo.SdoType;
 import cz.tacr.elza.test.controller.vo.StructuredObject;
 import cz.tacr.elza.test.controller.vo.StructuredObject.StateEnum;
 import cz.tacr.elza.test.controller.vo.StructuredObjectItem;
@@ -203,12 +203,12 @@ public class StructureControllerTest extends AbstractControllerTest {
      */
     private void structureTypesAndExtensions(final Fund fund) {
         // find structure types
-        List<RulStructureTypeVO> structureTypes = findStructureTypes();
+        List<SdoType> structureTypes = structureApi.sdoFindStructureTypes(null);
         assertNotNull(structureTypes);
         assertEquals(11, structureTypes.size()); // SRD_PACKET, STAT_ZASTUPCE, SRD_*
 
         // check name and id
-        RulStructureTypeVO structureType = structureTypes.stream()
+        SdoType structureType = structureTypes.stream()
                 .filter(st -> st.getCode().equals(STRUCTURE_TYPE_CODE))
                 .findFirst()
                 .get();

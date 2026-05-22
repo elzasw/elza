@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.controller.vo.SdoType;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -1341,8 +1343,16 @@ public class StructObjService {
         }
     }
 
-    public Map<Integer, Map<Integer, ArrStructuredObject>> groupStructuredObjectByChange(Integer fundId, List<Integer> changeIdList) {
+    public List<SdoType> structuredTypeToSdoType(List<RulStructuredType> types) {
+    	List<SdoType> result = new ArrayList<>(types.size());
+    	types.forEach(t -> {
+    		SdoType type = new SdoType(t.getStructuredTypeId(), t.getName(), t.getCode(), t.getAnonymous());
+    		result.add(type);
+    	});
+    	return result;
+    }
 
+    public Map<Integer, Map<Integer, ArrStructuredObject>> groupStructuredObjectByChange(Integer fundId, List<Integer> changeIdList) {
         if (changeIdList.isEmpty()) {
             return Collections.emptyMap();
         }

@@ -19,6 +19,7 @@ import cz.tacr.elza.controller.vo.SdoCopyObjectParam;
 import cz.tacr.elza.controller.vo.SdoExtensionFund;
 import cz.tacr.elza.controller.vo.SdoFindResult;
 import cz.tacr.elza.controller.vo.SdoItemResult;
+import cz.tacr.elza.controller.vo.SdoType;
 import cz.tacr.elza.controller.vo.StructuredObject;
 import cz.tacr.elza.controller.vo.StructuredObjectItem;
 import cz.tacr.elza.controller.vo.StructuredObjectItems;
@@ -429,6 +430,25 @@ public class StructureController implements StructureApi {
         structureService.setFundStructureExtensions(fundVersion, structureType, structureExtensions);
 
 	    return ResponseEntity.ok().build();
+	}
+
+    /**
+     * GET /funds/sdo/type
+     * GET Lists the possible data types that can be used in AS: findStructureTypes()
+     *
+     * @param fundVersionId fund version id (optional)
+     * @return The request has succeeded. (status code 200)
+     */	
+	@Override
+	public ResponseEntity<List<SdoType>> sdoFindStructureTypes(@Nullable Integer fundVersionId) {
+		List<RulStructuredType> structuredTypes;
+		if (fundVersionId == null) {
+			structuredTypes = structureService.findStructureTypes();
+		} else {
+			ArrFundVersion fundVersion = arrangementInternalService.getFundVersionById(fundVersionId);
+			structuredTypes = structureService.findStructureTypes(fundVersion);
+		}
+		return ResponseEntity.ok(structureService.structuredTypeToSdoType(structuredTypes));
 	}
 
 }
