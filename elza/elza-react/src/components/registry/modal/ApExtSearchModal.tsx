@@ -1,14 +1,16 @@
 import React, {useState} from 'react';
 import {
     ConfigProps,
+    Field,
+    FieldArray,
     Form as ReduxForm,
-    formValueSelector,
+    FormSection,
     InjectedFormProps,
     reduxForm,
     SubmitHandler,
 } from 'redux-form';
 import {Col, Dropdown, DropdownButton, Modal, Row} from 'react-bootstrap';
-import {connect,useSelector} from "react-redux";
+import {connect, useSelector} from "react-redux";
 import {Action} from "redux";
 import { AppState } from 'typings/store';
 import * as perms from '../../../actions/user/Permission.jsx';
@@ -18,17 +20,14 @@ import i18n from "../../i18n";
 import './ApExtSearchModal.scss';
 import ExtSystemFilterSection from '../form/filter/ExtSystemFilterSection';
 import TextFilterSection from "../form/filter/TextFilterSection";
-import BaseFilterSection from "../form/filter/BaseFilterSection";
-import CreExtFilterSection from "../form/filter/CreExtFilterSection";
+import {TypesField} from "../field/TypesField";
+import {FormInputField} from "../../shared";
 import {WebApi} from "../../../actions/WebApi";
 import {ApAdvanceSearchFilter} from "elza-api";
 import {ArchiveEntityVO} from "../../../api/ArchiveEntityVO";
 import {indexById} from "../../../shared/utils";
 import InifiniteList from "../../../shared/list/InifiniteList";
 import {HorizontalLoader} from "../../shared";
-import ExtendsFilterSection from "../form/filter/ExtendsFilterSection";
-import RelationsFilterSection from "../form/filter/RelationsFilterSection";
-import {ArchiveEntityResultListVO} from "../../../api/ArchiveEntityResultListVO";
 
 const FORM_NAME = "apExtSearch";
 
@@ -77,35 +76,16 @@ type Data = {
 
 const createFilter = (values): ApAdvanceSearchFilter => {
     const aeTypeIds = values.types as number[];
-    const extFilters = values.extFilters ? values.extFilters.map(f => {
-        return {
-            partTypeCode: f.partType ? f.partType.code : null,
-            itemTypeId: f.itemType ? f.itemType.id : null,
-            itemSpecId: f.itemSpec ? f.itemSpec.id : null,
-            value: f.obj ? f.obj.id : f.value,
-        }
-    }) : null;
-    const relFilters = values.relFilters ? values.relFilters.map(f => {
-        return {
-            relTypeId: f.itemType ? f.itemType.id : null,
-            code: f.obj ? f.obj.id : null,
-        }
-    }) : null;
     return {
         search: values.search,
         area: values.area,
         aeTypeIds: aeTypeIds,
         onlyMainPart: values.onlyMainPart === 'true',
-        user: values.user,
         code: values.id,
-        creation: values.creation,
-        extinction: values.extinction,
-        relFilters: relFilters,
-        extFilters: extFilters
     };
 }
 
-const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSystems, extSystem, refTables, scopes, reset, itemType, accessPointId}: Props) => {
+const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSystems, refTables, scopes, reset, itemType, accessPointId}: Props) => {
     const [data, setData] = useState<Data>({
         isFetching: false,
         fetched: false,
@@ -259,10 +239,6 @@ const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSy
         </InifiniteList>
     }
 
-    const relEntityApi = (itemTypeId: number, itemSpecId: number, filter: any): Promise<ArchiveEntityResultListVO> => {
-        return WebApi.findArchiveEntitiesInExternalSystem(0, 50, extSystem, filter);
-    };
-
     return <ReduxForm className="ap-ext-search-modal" onSubmit={handleSubmit(submit)}>
         <Modal.Body className="no-padding">
             <Row noGutters>
@@ -270,10 +246,22 @@ const ApExtSearchModal = ({handleSubmit, onClose, onConnected, submitting, extSy
                     <div className="search-fields">
                         <ExtSystemFilterSection submitting={submitting} extSystems={extSystems}/>
                         <TextFilterSection submitting={submitting}/>
-                        <BaseFilterSection submitting={submitting} types={apTypes.items}/>
-                        <CreExtFilterSection submitting={submitting}/>
-                        <RelationsFilterSection relApi={relEntityApi} formName={FORM_NAME} submitting={submitting || !extSystem}/>
-                        <ExtendsFilterSection relEntityApi={relEntityApi} formName={FORM_NAME} submitting={submitting || !extSystem}/>
+                        <FormSection name="" className="filter-section">
+                            <span className="name-section">{i18n('ap.ext-search.section.base')}</span>
+                            <FieldArray
+                                name="types"
+                                component={TypesField}
+                                label={i18n('registry.type')}
+                                disabled={submitting}
+                                items={apTypes.items}
+                            />
+                            <Field name="id"
+                                   type="text"
+                                   component={FormInputField}
+                                   label={i18n('ap.ext-search.id')}
+                                   disabled={submitting}
+                            />
+                        </FormSection>
                     </div>
                     <div className="search-controller">
                         <Button disabled={submitting} type="submit" variant="outline-secondary">{i18n('global.action.search')}</Button>
@@ -301,7 +289,6 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action<string>>) => 
 });
 
 const mapStateToProps = (state: any) => {
-    const selector = formValueSelector(FORM_NAME);
     const scopesData = state.refTables.scopesData;
     const id = scopesData && indexById(scopesData.scopes, -1, 'versionId'); // všechny scope
     let scopes = [];
@@ -309,7 +296,6 @@ const mapStateToProps = (state: any) => {
         scopes = scopesData.scopes[id].scopes;
     }
     return {
-        extSystem: selector(state, 'extSystem'),
         refTables: state.refTables,
         scopes: scopes,
     };
