@@ -107,7 +107,6 @@ import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
@@ -267,7 +266,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String DELETE_EXTERNAL_SYSTEM = EXTERNAL_SYSTEMS + "/{externalSystemId}";
 
 	// STRUCTURE
-	protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type";
+	@Deprecated
 	protected static final String FIND_PART_TYPES = STRUCTURE_CONTROLLER_URL + "/part-type";
 
 	// ARRANGEMENT
@@ -3208,23 +3207,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	}
 
 	/**
-	 * Vyhledá možné typy strukt. datových typů, které lze v AS používat.
-	 *
-	 * @return nalezené entity
-	 */
-	protected List<RulStructureTypeVO> findStructureTypes() {
-		return Arrays.asList(get(spec -> spec, FIND_STRUCTURE_TYPES).as(RulStructureTypeVO[].class));
-	}
-
-	/**
 	 * Vyhledá možné typy partů.
 	 *
 	 * @return nalezené entity
 	 */
+	@Deprecated
 	protected List<RulPartTypeVO> findPartTypes() {
 		return Arrays.asList(get(spec -> spec, FIND_PART_TYPES).as(RulPartTypeVO[].class));
 	}
 
+	@Deprecated
 	protected Map<String, RulPartTypeVO> findPartTypesMap() {
 		return findPartTypes().stream().collect(Collectors.toMap(RulPartTypeVO::getCode, Function.identity()));
 	}
