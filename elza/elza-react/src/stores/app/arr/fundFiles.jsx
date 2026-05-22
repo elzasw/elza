@@ -2,6 +2,8 @@ import * as types from 'actions/constants/ActionTypes';
 
 const initialState = {
     filterText: '',
+    from: 0,
+    count: 0,
     data: null,
     isFetching: false,
     fetched: false,
@@ -21,9 +23,10 @@ export default function fundFiles(state = initialState, action = {}) {
             };
         }
         case types.STORE_SAVE: {
-            const {filterText} = state;
+            const {filterText, from} = state;
             return {
                 filterText,
+                from,
             };
         }
         case types.CHANGE_FILES: {
@@ -44,6 +47,7 @@ export default function fundFiles(state = initialState, action = {}) {
                 ...state,
                 isFetching: false,
                 fetched: true,
+                count: action.data.count,
                 data: action.data,
             };
         }
@@ -51,6 +55,7 @@ export default function fundFiles(state = initialState, action = {}) {
             return {
                 ...state,
                 filterText: action.filterText,
+                from: action.from ?? 0,
                 currentDataKey: '',
             };
         }

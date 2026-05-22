@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.ws.types.v1.ItemEnum;
@@ -58,8 +58,8 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
                                                         OrderBy orderBy,
                                                         Set<Integer> scopeIds,
                                                         @Nullable Collection<ApState.StateApproval> approvalStates,
-                                                        @Nullable SearchType searchTypeName,
-                                                        @Nullable SearchType searchTypeUsername) {
+                                                        @Nullable ApSearchType searchTypeName,
+                                                        @Nullable ApSearchType searchTypeUsername) {
 
         if (CollectionUtils.isEmpty(scopeIds)) {
             return Collections.emptyList();
@@ -114,8 +114,8 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
             @Nullable Collection<Integer> apTypeIds,
             @Nullable Set<Integer> scopeIds,
             @Nullable Collection<ApState.StateApproval> approvalStates,
-            @Nullable SearchType searchTypeName,
-            @Nullable SearchType searchTypeUsername) {
+            @Nullable ApSearchType searchTypeName,
+            @Nullable ApSearchType searchTypeUsername) {
 
         if (CollectionUtils.isEmpty(scopeIds)) {
             return 0L;
@@ -167,20 +167,20 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
                                                             @Nullable final Collection<ApState.StateApproval> approvalStates,
                                                             final From<?, ApState> apState,
                                                             final CriteriaBuilder cb,
-                                                            @Nullable SearchType searchTypeName,
-                                                            @Nullable SearchType searchTypeUsername) {
+                                                            @Nullable ApSearchType searchTypeName,
+                                                            @Nullable ApSearchType searchTypeUsername) {
         searchValue = StringUtils.trimToNull(searchValue);
         Join<ApState, ApAccessPoint> apJoin = null;
 
         if (searchValue == null) {
             // Disable on empty search value
-            searchTypeName = SearchType.DISABLED;
-            searchTypeUsername = SearchType.DISABLED;
+            searchTypeName = ApSearchType.DISABLED;
+            searchTypeUsername = ApSearchType.DISABLED;
         } else {
-            searchTypeName = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
-            searchTypeUsername = searchTypeUsername != null ? searchTypeUsername : SearchType.DISABLED;
+            searchTypeName = searchTypeName != null ? searchTypeName : ApSearchType.FULLTEXT;
+            searchTypeUsername = searchTypeUsername != null ? searchTypeUsername : ApSearchType.DISABLED;
 
-            if (searchTypeName != SearchType.DISABLED || searchTypeUsername != SearchType.DISABLED) {
+            if (searchTypeName != ApSearchType.DISABLED || searchTypeUsername != ApSearchType.DISABLED) {
                 // join AccessPoint
                 apJoin = apState.join(ApState.FIELD_ACCESS_POINT);
             }
@@ -199,7 +199,7 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
         // add name join
         Path<String> accessPointName = null;
         Path<String> userName = null;
-        if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
+        if (searchTypeName == ApSearchType.FULLTEXT || searchTypeName == ApSearchType.RIGHT_SIDE_LIKE) {
             Join<ApAccessPoint, ApPart> nameJoin = apJoin.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.LEFT);
             Predicate nameFkCond = cb.equal(apJoin.get(ApAccessPoint.FIELD_PREFFERED_PART),
                                             nameJoin.get(ApPart.PART_ID));
@@ -227,14 +227,14 @@ public class ApAccessPointRepositoryImpl implements ApAccessPointRepositoryCusto
             }
         }
 
-        if (searchTypeUsername == SearchType.JOIN) {
+        if (searchTypeUsername == ApSearchType.JOIN) {
             Join<ApAccessPoint, UsrUser> userJoin = apJoin.join(ApAccessPoint.FIELD_USER_LIST, JoinType.INNER);
             Predicate userFkCond = cb.equal(apJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID),
                                             userJoin.get(UsrUser.FIELD_ACCESS_POINT));
             Predicate activeUserCond = cb.equal(userJoin.get(UsrUser.FIELD_ACTIVE), true);
             userJoin.on(cb.and(userFkCond, activeUserCond));
 
-        } else if (searchTypeUsername == SearchType.FULLTEXT || searchTypeUsername == SearchType.RIGHT_SIDE_LIKE) {
+        } else if (searchTypeUsername == ApSearchType.FULLTEXT || searchTypeUsername == ApSearchType.RIGHT_SIDE_LIKE) {
             Join<ApAccessPoint, UsrUser> userJoin = apJoin.join(ApAccessPoint.FIELD_USER_LIST, JoinType.INNER);
             Predicate userFkCond = cb.equal(apJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID),
                                             userJoin.get(UsrUser.FIELD_ACCESS_POINT));

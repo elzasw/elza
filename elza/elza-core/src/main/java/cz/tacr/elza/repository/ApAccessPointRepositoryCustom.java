@@ -7,7 +7,7 @@ import java.util.Set;
 
 import org.hibernate.ScrollableResults;
 
-import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApState;
 import jakarta.annotation.Nullable;
@@ -51,8 +51,8 @@ public interface ApAccessPointRepositoryCustom {
                                                  OrderBy orderBy,
                                                  Set<Integer> scopeIds,
                                                  @Nullable Collection<ApState.StateApproval> approvalStates,
-                                                 @Nullable SearchType searchTypeName,
-                                                 @Nullable SearchType searchTypeUsername);
+                                                 @Nullable ApSearchType searchTypeName,
+                                                 @Nullable ApSearchType searchTypeUsername);
 
     /**
      * Celkový počet záznamů v DB pro funkci {@link #findApAccessPointByTextAndType(String, Collection, Integer, Integer, ApAccessPoint, Set, Boolean)}
@@ -68,8 +68,8 @@ public interface ApAccessPointRepositoryCustom {
             @Nullable Collection<Integer> apTypeIds,
             @Nullable Set<Integer> scopeIds,
             @Nullable Collection<ApState.StateApproval> approvalStates,
-            @Nullable SearchType searchTypeName,
-            @Nullable SearchType searchTypeUsername);
+            @Nullable ApSearchType searchTypeName,
+            @Nullable ApSearchType searchTypeUsername);
 
     List<ApAccessPoint> findAccessPointsBySinglePartValues(List<Object> criterias);
 

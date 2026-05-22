@@ -45,7 +45,7 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.EntityRef;
-import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -1060,7 +1060,7 @@ public class AccessPointCacheService {
     }
 
     @Transactional(value = TxType.MANDATORY)
-    public QueryResults<CachedAccessPoint> search(SearchFilterVO searchFilter,
+    public QueryResults<CachedAccessPoint> search(ApAdvanceSearchFilter searchFilter,
                                                   Collection<Integer> apTypeIds,
                                                   Collection<Integer> scopeIds,
                                                   ApState.StateApproval state,
@@ -1093,6 +1093,66 @@ public class AccessPointCacheService {
         }
         QueryResults<CachedAccessPoint> result = new QueryResults<>(r.getRecordCount(), capList);
         return result;
+    }
+
+    /**
+     * Default page size used by {@link #searchAllIds} when the caller does not specify one.
+     */
+    public static final int DEFAULT_SEARCH_ALL_PAGE_SIZE = 5000;
+
+    /**
+     * Iterates the same Lucene search used by {@link #search} and collects the ids of every match.
+     *
+     * Designed for bulk operations (e.g. CSV export) that need every matching access point, not a
+     * single page. Only ids are extracted from the cache rows so the heavy JSON deserialization of
+     * full {@link CachedAccessPoint} objects is avoided.
+     *
+     * The returned list is sorted ascending by {@code accessPointId}.
+     *
+     * @param pageSize size of one underlying search page; values &lt;= 0 fall back to {@link #DEFAULT_SEARCH_ALL_PAGE_SIZE}
+     */
+    @Transactional(value = TxType.MANDATORY)
+    public List<Integer> searchAllIds(ApAdvanceSearchFilter searchFilter,
+                                      Collection<Integer> apTypeIds,
+                                      Collection<Integer> scopeIds,
+                                      ApState.StateApproval state,
+                                      cz.tacr.elza.domain.RevStateApproval revState,
+                                      StaticDataProvider sdp,
+                                      int pageSize) {
+        String searchText = (searchFilter != null) ? searchFilter.getSearch() : null;
+        int effectivePageSize = pageSize > 0 ? pageSize : DEFAULT_SEARCH_ALL_PAGE_SIZE;
+
+        QueryResults<ApCachedAccessPoint> firstPage = cachedAccessPointRepository
+                .findApCachedAccessPointisByQuery(searchText, searchFilter, apTypeIds, scopeIds,
+                                                  state, revState, 0, effectivePageSize, sdp);
+        int total = firstPage.getRecordCount();
+        if (total == 0) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> ids = new ArrayList<>(total);
+        appendIds(ids, firstPage.getRecords());
+
+        while (ids.size() < total) {
+            int offset = ids.size();
+            QueryResults<ApCachedAccessPoint> page = cachedAccessPointRepository
+                    .findApCachedAccessPointisByQuery(searchText, searchFilter, apTypeIds, scopeIds,
+                                                      state, revState, offset, effectivePageSize, sdp);
+            if (CollectionUtils.isEmpty(page.getRecords())) {
+                // index produced fewer rows than the initial total reported — stop to avoid spinning
+                break;
+            }
+            appendIds(ids, page.getRecords());
+        }
+
+        Collections.sort(ids);
+        return ids;
+    }
+
+    private static void appendIds(List<Integer> sink, List<ApCachedAccessPoint> records) {
+        for (ApCachedAccessPoint cap : records) {
+            sink.add(cap.getAccessPointId());
+        }
     }
 
     public Map<Integer, ApCachedAccessPoint> findToIndex(Collection<Integer> ids) {

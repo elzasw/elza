@@ -1,7 +1,7 @@
 package cz.tacr.elza.repository;
 
 import cz.tacr.elza.common.db.QueryResults;
-import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
 import cz.tacr.elza.domain.ApState;
@@ -26,7 +26,7 @@ public interface ApCachedAccessPointRepositoryCustom {
      * @return
      */
     QueryResults<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search,
-                                                                       SearchFilterVO searchFilter,
+                                                                       ApAdvanceSearchFilter searchFilter,
                                                                        Collection<Integer> apTypeIdTree,
                                                                        Collection<Integer> scopeIds,
                                                                        ApState.StateApproval state,

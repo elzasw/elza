@@ -31,14 +31,15 @@ import ListPager from '../shared/listPager/ListPager';
 import * as perms from '../../actions/user/Permission';
 import { FOCUS_KEYS, urlEntity } from '../../constants.tsx';
 import { requestScopesIfNeeded } from '../../actions/refTables/scopesData';
-import { Col, Row } from 'react-bootstrap';
+import { Col, Dropdown, Row } from 'react-bootstrap';
 import { modalDialogHide, modalDialogShow } from '../../actions/global/modalDialog';
-import { Area } from '../../api/Area';
+import { ApSearchArea } from 'elza-api';
 import ExtFilterModal from './modal/ExtFilterModal';
 import { Button } from '../ui';
 import { withRouter } from "react-router";
 import { Link } from "react-router-dom";
-import { goToAe } from "../../actions/registry/registry";
+import { createFilter, goToAe } from "../../actions/registry/registry";
+import { batchExportAccessPoints } from '../../actions/registry/batchExportAccessPoints';
 import { refRuleSetFetchIfNeeded } from 'actions/refTables/ruleSet';
 
 class RegistryList extends AbstractReactComponent {
@@ -348,6 +349,26 @@ class RegistryList extends AbstractReactComponent {
         return rulSetsIds;
     }
 
+    /**
+     * Spustí asynchronní export aktuálně filtrované sady AP do CSV (Superadmin-only,
+     * experimentální). Mapuje viditelné filtry sidebar i rozšířený filtr ("Použít
+     * rozšířený filtr" / "Moje úkoly") -> AccessPointBatchExportParams. Stejný
+     * {@code createFilter} se používá i při běžném listingu, takže search a export
+     * posílají identický tvar searchFilter.
+     */
+    handleBatchExport = () => {
+        const { dispatch, registryList } = this.props;
+        const filter = registryList.filter || {};
+        dispatch(batchExportAccessPoints({
+            search: filter.text || undefined,
+            apTypeId: filter.registryTypeId || undefined,
+            scopeId: filter.scopeId || undefined,
+            state: filter.state || undefined,
+            revState: filter.revState || undefined,
+            searchFilter: filter.searchFilter ? createFilter(filter.searchFilter) : undefined,
+        }));
+    };
+
     handleExtFilter = () => {
         const { dispatch, registryList } = this.props;
 
@@ -358,7 +379,7 @@ class RegistryList extends AbstractReactComponent {
                 <ExtFilterModal
                     scopeId={registryList.filter.scopeId}
                     initialValues={{
-                        area: Area.ALLNAMES,
+                        area: ApSearchArea.AllNames,
                         onlyMainPart: 'false',
                         search: registryList.filter.text,
                         ...registryList.filter.searchFilter,
@@ -461,16 +482,40 @@ class RegistryList extends AbstractReactComponent {
                         onChange={this.handleFilterRegistryType}
                         actions={this.getRegistryTypeActions()}
                     />
-                    <SearchWithGoto
-                        onFulltextSearch={this.handleFilterText}
-                        onClear={this.handleFilterTextClear}
-                        placeholder={i18n('search.input.search')}
-                        filterText={registryList.filter.text}
-                        showFilterResult={true}
-                        type="INFO"
-                        itemsCount={registryList.filteredRows ? registryList.filteredRows.length : 0}
-                        allItemsCount={registryList.count}
-                    />
+                    <div style={{display: 'flex', alignItems: 'center'}}>
+                        <div style={{flexGrow: 1, minWidth: 0}}>
+                            <SearchWithGoto
+                                onFulltextSearch={this.handleFilterText}
+                                onClear={this.handleFilterTextClear}
+                                placeholder={i18n('search.input.search')}
+                                filterText={registryList.filter.text}
+                                showFilterResult={true}
+                                type="INFO"
+                                itemsCount={registryList.filteredRows ? registryList.filteredRows.length : 0}
+                                allItemsCount={registryList.count}
+                            />
+                        </div>
+                        {userDetail.hasOne(perms.ADMIN) && (
+                            <Dropdown align="end">
+                                <Dropdown.Toggle
+                                    variant="link"
+                                    size="sm"
+                                    id="registry-experimental-actions"
+                                    title={i18n('registry.experimentalActions.title')}
+                                    bsPrefix="registry-experimental-toggle"
+                                >
+                                    <Icon glyph="fa-ellipsis-h" />
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    <Dropdown.Item onClick={this.handleBatchExport}>
+                                        <Icon glyph="fa-download" />
+                                        {' '}
+                                        {i18n('registry.batchExport.action')}
+                                    </Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        )}
+                    </div>
                     <div style={{display: "flex"}} className={filterCls}>
                         {!registryList.filter.searchFilter && (
                             <Col style={{display: 'flex'}}>

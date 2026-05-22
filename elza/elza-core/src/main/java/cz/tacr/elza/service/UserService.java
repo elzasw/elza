@@ -51,7 +51,7 @@ import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UserRef;
 import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.core.security.Authorization;
@@ -1616,7 +1616,7 @@ public class UserService {
      */
 	public FilteredResult<UsrUser> findUser(final String search, final boolean active, final boolean disabled,
 			final boolean allUsers,
-	        final int firstResult, final int maxResults, final Integer excludedGroupId, final SearchType searchTypeName, final SearchType searchTypeUsername ) {
+	        final int firstResult, final int maxResults, final Integer excludedGroupId, final ApSearchType searchTypeName, final ApSearchType searchTypeUsername ) {
 		UserDetail userDetail = getLoggedUserDetail();
 		if(userDetail==null) {
 			throw new AccessDeniedException("User is not logged.", new ArrayList<>());
@@ -1648,7 +1648,7 @@ public class UserService {
 	@AuthMethod(permission={UsrPermission.Permission.FUND_ADMIN, UsrPermission.Permission.FUND_CREATE,
 			UsrPermission.Permission.USR_PERM})
 	public FilteredResult<UsrUser> findUserWithFundCreate(final String search, final Integer firstResult,
-                                                          final Integer maxResults, final SearchType searchTypeName, final SearchType searchTypeUsername) {
+                                                          final Integer maxResults, final ApSearchType searchTypeName, final ApSearchType searchTypeUsername) {
 		// get current user
 		UserDetail userDetail = getLoggedUserDetail();
     	// if has admin rights -> we can find any user

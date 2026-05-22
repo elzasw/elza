@@ -16,7 +16,7 @@ export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 export const AREA_REGISTRY_LIST = 'registryList';
 export const AREA_REGISTRY_LAYER_LIST = 'registryLayerList';
 
-const createFilter = values => {
+export const createFilter = values => {
     const extFilters = values.extFilters
         ? values.extFilters.map(f => {
               return {

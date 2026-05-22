@@ -43,7 +43,7 @@ import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.cam.ApiCamConnector;
 import cz.tacr.elza.cam.ProcessingContext;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
-import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
@@ -112,7 +112,7 @@ public class CamConnector implements ApiCamConnector {
     }
 
 	@Override
-	public ArchiveEntityResultListVO search(int from, int max, SearchFilterVO filter, ApExternalSystem extlSystem) {
+	public ArchiveEntityResultListVO search(int from, int max, ApAdvanceSearchFilter filter, ApExternalSystem extlSystem) {
         QueryResultXml result;
         try {
             result = search(from + 1, max, searchFilterFactory.createQueryParamsDef(filter), null, extlSystem);

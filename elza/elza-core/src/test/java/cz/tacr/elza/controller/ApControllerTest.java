@@ -41,7 +41,7 @@ import cz.tacr.elza.controller.vo.ap.item.ApItemVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemSpecExtVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.test.controller.vo.ApStateApproval;
@@ -134,7 +134,7 @@ public class ApControllerTest extends AbstractControllerTest {
 
     @Test
     public void findAccessPoint() {
-        List<ApAccessPointVO> records = findRecord(null, 0, 10, null, null, SearchType.FULLTEXT);
+        List<ApAccessPointVO> records = findRecord(null, 0, 10, null, null, ApSearchType.FULLTEXT);
         assertNotNull(records);
     }
 

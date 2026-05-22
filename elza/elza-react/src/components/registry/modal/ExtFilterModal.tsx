@@ -10,8 +10,7 @@ import TextFilterSection from "../form/filter/TextFilterSection";
 import BaseFilterSection from "../form/filter/BaseFilterSection";
 import CreExtFilterSection from "../form/filter/CreExtFilterSection";
 import {WebApi} from "../../../actions/WebApi";
-import {SearchFilterVO} from "../../../api/SearchFilterVO";
-import {AeState} from "../../../api/AeState";
+import {ApAdvanceSearchFilter} from "elza-api";
 import ExtendsFilterSection from "../form/filter/ExtendsFilterSection";
 import {ArchiveEntityResultListVO} from "../../../api/ArchiveEntityResultListVO";
 import RelationsFilterSection from "../form/filter/RelationsFilterSection";
@@ -55,7 +54,7 @@ const ExtFilterModal = ({
             <Row>
                 <Col xs={6}>
                     <TextFilterSection submitting={submitting}/>
-                    <BaseFilterSection hideState hideType submitting={submitting} types={apTypes.items}/>
+                    <BaseFilterSection hideType submitting={submitting} types={apTypes.items}/>
                 </Col>
                 <Col xs={6}>
                     <CreExtFilterSection submitting={submitting}/>
