@@ -16,6 +16,7 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
+import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedBinding;
@@ -44,7 +45,7 @@ public class ApBindingVO {
 
     private String detailUrlExtReplacedBy;
 
-    private SyncStateVO syncState;
+    private SyncState syncState;
 
     private SyncProgressVO syncProgress;
 
@@ -118,11 +119,11 @@ public class ApBindingVO {
         this.extReplacedBy = extReplacedBy;
     }
 
-    public SyncStateVO getSyncState() {
+    public SyncState getSyncState() {
         return syncState;
     }
 
-    public void setSyncState(SyncStateVO syncState) {
+    public void setSyncState(SyncState syncState) {
         this.syncState = syncState;
     }
 
@@ -356,27 +357,27 @@ public class ApBindingVO {
 	}
 
 
-    private static SyncStateVO createSyncStateVO(ApBindingState bindingState, ApChange lastChange, boolean otherLocalChange) {
-    	SyncStateVO syncState;
+    private static SyncState createSyncStateVO(ApBindingState bindingState, ApChange lastChange, boolean otherLocalChange) {
+    	SyncState syncState;
     	
         if (bindingState.getSyncOk() != null) {            
             switch (bindingState.getSyncOk()) {
             case SYNC_OK:
                 if (lastChange.getChangeId() > bindingState.getCreateChangeId() || otherLocalChange) {
-                    syncState = SyncStateVO.LOCAL_CHANGE;
+                    syncState = SyncState.LOCAL_CHANGE;
                 } else {
-                    syncState = SyncStateVO.SYNC_OK;
+                    syncState = SyncState.SYNC_OK;
                 }
                 break;
             case NOT_SYNCED:
-                syncState = SyncStateVO.NOT_SYNCED;
+                syncState = SyncState.NOT_SYNCED;
                 break;
             default:
                 throw new SystemException("Chyba datových polí ApBindingState.SyncOk");
             }
         } else {
         	if(otherLocalChange) {
-        		syncState = SyncStateVO.LOCAL_CHANGE;
+        		syncState = SyncState.LOCAL_CHANGE;
         	} else {
         		syncState = null;
         	}

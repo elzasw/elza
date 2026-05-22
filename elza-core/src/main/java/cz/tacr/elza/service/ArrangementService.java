@@ -100,7 +100,7 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.NodeBaseMapper;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -629,7 +629,7 @@ public class ArrangementService {
             // pokud není admin, musí zadat je uživatele, kteří mají oprávnění (i zděděné) na zakládání nových AS
             if (userIds != null && !userIds.isEmpty()) {
                 // TODO: Remove stream and user more direct query
-                final Set<Integer> userFundCreateIds = userService.findUserWithFundCreate(null, 0, -1, SearchType.DISABLED, SearchType.FULLTEXT).getList().stream()
+                final Set<Integer> userFundCreateIds = userService.findUserWithFundCreate(null, 0, -1, ApSearchType.DISABLED, ApSearchType.FULLTEXT).getList().stream()
                         .map(x -> x.getUserId())
                         .collect(toSet());
                 userIds.forEach(u -> {

@@ -45,7 +45,7 @@ import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.common.db.QueryResults;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.EntityRef;
-import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -1060,7 +1060,7 @@ public class AccessPointCacheService {
     }
 
     @Transactional(value = TxType.MANDATORY)
-    public QueryResults<CachedAccessPoint> search(SearchFilterVO searchFilter,
+    public QueryResults<CachedAccessPoint> search(ApAdvanceSearchFilter searchFilter,
                                                   Collection<Integer> apTypeIds,
                                                   Collection<Integer> scopeIds,
                                                   ApState.StateApproval state,
@@ -1112,7 +1112,7 @@ public class AccessPointCacheService {
      * @param pageSize size of one underlying search page; values &lt;= 0 fall back to {@link #DEFAULT_SEARCH_ALL_PAGE_SIZE}
      */
     @Transactional(value = TxType.MANDATORY)
-    public List<Integer> searchAllIds(SearchFilterVO searchFilter,
+    public List<Integer> searchAllIds(ApAdvanceSearchFilter searchFilter,
                                       Collection<Integer> apTypeIds,
                                       Collection<Integer> scopeIds,
                                       ApState.StateApproval state,

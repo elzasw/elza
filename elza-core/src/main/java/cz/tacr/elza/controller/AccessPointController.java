@@ -11,6 +11,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.AccessPointBatchExportParams;
+import cz.tacr.elza.controller.vo.AccessPointSearchParams;
+import cz.tacr.elza.controller.vo.ApAccessPointSearchResult;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApStateUpdate;
 import cz.tacr.elza.controller.vo.ApValidationIssues;
@@ -30,12 +35,14 @@ import cz.tacr.elza.controller.vo.CreatedPart;
 import cz.tacr.elza.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.controller.vo.DeleteAccessPointsDetail;
 import cz.tacr.elza.controller.vo.EntityRef;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.InvalidatedEntities;
 import cz.tacr.elza.controller.vo.Participant;
 import cz.tacr.elza.controller.vo.ReplaceType;
 import cz.tacr.elza.controller.vo.ResultAutoItems;
 import cz.tacr.elza.controller.vo.RevStateChange;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.dataexchange.output.IOExportAccessPointsCsv;
@@ -131,6 +138,68 @@ public class AccessPointController implements AccesspointsApi {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessPointController.class);
 
+    // POST /accesspoint/search
+    @Override
+    @Transactional
+    public ResponseEntity<ApAccessPointSearchResult> accessPointSearch(@Valid AccessPointSearchParams params) {
+        if (params == null) {
+            params = new AccessPointSearchParams();
+        }
+        StaticDataProvider sdp = staticDataService.getData();
+
+        ArrFund fund = null;
+        if (params.getVersionId() != null) {
+            ArrFundVersion version = fundVersionRepository.getOneCheckExist(params.getVersionId());
+            fund = version.getFund();
+        }
+
+        Set<Integer> apTypeIds = new HashSet<>();
+        if (params.getApTypeId() != null) {
+            apTypeIds.add(params.getApTypeId());
+        }
+        apTypeIds = apTypeRepository.findSubtreeIds(apTypeIds);
+        apTypeIds = applyItemTypeOrSpecLimit(sdp, apTypeIds, params.getItemTypeId(), params.getItemSpecId());
+
+        StateApproval state = params.getState() == null
+                ? null
+                : StateApproval.valueOf(params.getState().getValue());
+        RevStateApproval revState = params.getRevState() == null
+                ? null
+                : RevStateApproval.valueOf(params.getRevState().getValue());
+
+        // Start from the advanced filter (if any); top-level scalar search overrides searchFilter.search.
+        ApAdvanceSearchFilter searchFilter = params.getSearchFilter();
+        String searchText = params.getSearch();
+        if (searchText != null && !searchText.isBlank()) {
+            if (searchFilter == null) {
+                searchFilter = new ApAdvanceSearchFilter();
+            }
+            searchFilter.setSearch(searchText);
+        } else if (searchFilter != null && searchFilter.getSearch() != null && !searchFilter.getSearch().isBlank()) {
+            // Allow the filter to carry the search if the top-level scalar is empty.
+            searchText = searchFilter.getSearch();
+        }
+
+        Integer from = params.getFrom();
+        Integer count = params.getCount();
+        Integer scopeId = params.getScopeId();
+
+        FilteredResultVO<cz.tacr.elza.controller.vo.ApAccessPointVO> result;
+        if (StringUtils.isNotEmpty(searchText)) {
+            result = accessPointService.findUseLuceneQueries(searchText, searchFilter, fund, apTypeIds,
+                    scopeId, state, revState, from, count, sdp);
+        } else {
+            result = accessPointService.findUseCriteriaQuery(searchText, searchFilter,
+                    params.getSearchTypeName(), params.getSearchTypeUsername(),
+                    fund, apTypeIds, scopeId, state, revState, from, count, sdp);
+        }
+
+        ApAccessPointSearchResult body = new ApAccessPointSearchResult();
+        body.setCount(result.getCount());
+        body.setRows(result.getRows() == null ? List.of() : result.getRows());
+        return ResponseEntity.ok(body);
+    }
+
     // POST /accesspoint/export
     @Override
     @Transactional
@@ -163,9 +232,12 @@ public class AccessPointController implements AccesspointsApi {
                 ? null
                 : RevStateApproval.valueOf(params.getRevState().getValue());
 
-        cz.tacr.elza.controller.vo.SearchFilterVO searchFilter = null;
+        // Start from the advanced filter (if any) and let top-level scalar fields override.
+        ApAdvanceSearchFilter searchFilter = params.getSearchFilter();
         if (params.getSearch() != null && !params.getSearch().isBlank()) {
-            searchFilter = new cz.tacr.elza.controller.vo.SearchFilterVO();
+            if (searchFilter == null) {
+                searchFilter = new ApAdvanceSearchFilter();
+            }
             searchFilter.setSearch(params.getSearch());
         }
 
@@ -175,7 +247,7 @@ public class AccessPointController implements AccesspointsApi {
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss"))
                 + ".csv";
 
-        final cz.tacr.elza.controller.vo.SearchFilterVO finalFilter = searchFilter;
+        final ApAdvanceSearchFilter finalFilter = searchFilter;
         final Set<Integer> finalApTypeIds = apTypeIds;
         final Set<Integer> finalScopeIds = scopeIds;
         int id = ioExportWorker.enqueue(requestId -> new IOExportAccessPointsCsv(

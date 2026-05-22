@@ -6,21 +6,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.RevStateApproval;
 
 /**
  * Request that exports access points matching a user filter to CSV.
  *
- * The filter shape mirrors the scalar parameters of /registry/search. Results are streamed
+ * The filter shape mirrors the scalar parameters of /accesspoint/search. Results are streamed
  * ordered by accessPointId ascending.
  */
 public class IOExportAccessPointsCsv extends IOExportRequest {
 
     private static final String FILE_NAME_EXT = ".csv";
 
-    private final SearchFilterVO searchFilter;
+    private final ApAdvanceSearchFilter searchFilter;
     private final Collection<Integer> apTypeIds;
     private final Collection<Integer> scopeIds;
     private final ApState.StateApproval state;
@@ -29,7 +29,7 @@ public class IOExportAccessPointsCsv extends IOExportRequest {
     public IOExportAccessPointsCsv(Integer userId,
                                    Integer requestId,
                                    String downloadFileName,
-                                   SearchFilterVO searchFilter,
+                                   ApAdvanceSearchFilter searchFilter,
                                    Collection<Integer> apTypeIds,
                                    Collection<Integer> scopeIds,
                                    ApState.StateApproval state,
@@ -42,7 +42,7 @@ public class IOExportAccessPointsCsv extends IOExportRequest {
         this.revState = revState;
     }
 
-    public SearchFilterVO getSearchFilter() {
+    public ApAdvanceSearchFilter getSearchFilter() {
         return searchFilter;
     }
 

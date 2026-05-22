@@ -54,6 +54,48 @@ paths:
             schema:
               $ref: '#/components/schemas/DeleteAccessPointsDetail'
         description: seznam ID nebo UUID, které chceme smazat
+  /accesspoint/search:
+    post:
+      operationId: AccessPoint_search
+      description: |-
+        Search for access points.
+        Accepts the same filter inputs as /accesspoint/export (scalar fields + ApAdvanceSearchFilter)
+        plus pagination (from, count) and the criteria-query SearchType selectors.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApAccessPointSearchResult'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - accesspoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessPointSearchParams'
+        description: filter selecting the access points to search for
   /accesspoint/export:
     post:
       operationId: AccessPoint_batchExport
@@ -2056,6 +2098,106 @@ components:
         - APPROVED
         - TO_AMEND
       description: States of ApState
+    ApSearchArea:
+      type: string
+      enum:
+        - PREFER_NAMES
+        - ALL_NAMES
+        - ALL_PARTS
+        - ENTITY_CODE
+      description: 'Area in which to search: preferred names only / all names / all parts / by entity code'
+    SyncState:
+      type: string
+      enum:
+        - SYNC_OK
+        - NOT_SYNCED
+        - LOCAL_CHANGE
+      description: Binding synchronisation state
+    ApSearchByRelation:
+      type: object
+      properties:
+        relTypeId:
+          type: integer
+          description: Item type id of the relation
+        relSpecId:
+          type: integer
+          description: Item specification id of the relation
+        code:
+          type: integer
+          description: Access-point id the relation must point to
+      description: Filter for searching by a relation (item type, specification, target AP)
+    ApSearchByItemWithValue:
+      type: object
+      properties:
+        partTypeCode:
+          type: string
+          description: Code of the part type to search in
+        itemTypeId:
+          type: integer
+          description: Item type id
+        itemSpecId:
+          type: integer
+          description: Item specification id (optional)
+        value:
+          type: object
+          description: Value to match (free-form; interpretation depends on item type)
+      description: Filter for searching by an item with a specific value
+    ApAdvanceSearchFilter:
+      type: object
+      properties:
+        search:
+          type: string
+          description: Full-text search term
+        area:
+          allOf:
+            - $ref: '#/components/schemas/ApSearchArea'
+          description: Area in which to search
+        onlyMainPart:
+          type: boolean
+          description: Restrict the search to the main part
+        aeTypeIds:
+          type: array
+          items:
+            type: integer
+          description: List of access-point type ids to include
+        code:
+          type: string
+          description: Identifier of a concrete access point
+        user:
+          type: string
+          description: Username (or login) filter
+        assignedTo:
+          type: integer
+          description: Id of user the access point is assigned to
+        validationResult:
+          type: string
+          description: 'Validation result: ok | error'
+        creation:
+          type: string
+          description: Creation date filter
+        extinction:
+          type: string
+          description: Extinction date filter
+        relFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApSearchByRelation'
+          description: Filters by relation
+        extFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApSearchByItemWithValue'
+          description: Filters by item value
+        syncState:
+          allOf:
+            - $ref: '#/components/schemas/SyncState'
+          description: Filter by binding synchronisation state
+        excludeAps:
+          type: array
+          items:
+            type: integer
+          description: List of access-point ids to exclude from the result
+      description: Advanced filter for access-point search; used as the request body of /accesspoint/search
     AccessPointBatchExportParams:
       type: object
       properties:
@@ -2085,7 +2227,87 @@ components:
           allOf:
             - $ref: '#/components/schemas/RevisionState'
           description: Filter by revision state
-      description: Body of POST /accesspoint/export. Mirrors the scalar parameters of /registry/search; advanced SearchFilterVO is not yet supported
+        searchFilter:
+          allOf:
+            - $ref: '#/components/schemas/ApAdvanceSearchFilter'
+          description: Advanced filter (mirrors the body of /accesspoint/search). When the top-level scalar fields and searchFilter both define a value, the top-level value wins for the parameters where this conflicts (e.g. top-level search vs. searchFilter.search).
+      description: Body of POST /accesspoint/export. Mirrors the scalar parameters of /accesspoint/search and accepts the same advanced filter via searchFilter.
+    ApSearchType:
+      type: string
+      enum:
+        - DISABLED
+        - JOIN
+        - FULLTEXT
+        - RIGHT_SIDE_LIKE
+      description: Search strategy for criteria-based access-point queries (name / username fields)
+    ApAccessPointVO:
+      type: object
+      format: ap-access-point-vo
+      description: Access-point view object (returned by /accesspoint/search). Externally provided — see cz.tacr.elza.controller.vo.ApAccessPointVO
+    AccessPointSearchParams:
+      type: object
+      properties:
+        search:
+          type: string
+          description: Full-text search
+        from:
+          type: integer
+          description: Offset (zero-based) of the first result to return
+        count:
+          type: integer
+          description: Maximum number of rows to return
+        apTypeId:
+          type: integer
+          description: Single AP-type id; on the backend it is subtree-expanded so descendant types are included
+        versionId:
+          type: integer
+          description: Fund version id (used to resolve scope context, optional)
+        scopeId:
+          type: integer
+          description: Scope id; expanded on the backend
+        itemTypeId:
+          type: integer
+          description: Restrict to AP types referenced from this item type
+        itemSpecId:
+          type: integer
+          description: Restrict to AP types referenced from this item specification
+        state:
+          allOf:
+            - $ref: '#/components/schemas/ApStateApproval'
+          description: Filter by access-point state
+        revState:
+          allOf:
+            - $ref: '#/components/schemas/RevisionState'
+          description: Filter by revision state
+        searchTypeName:
+          allOf:
+            - $ref: '#/components/schemas/ApSearchType'
+          description: Search strategy applied to access-point name (criteria-query path)
+        searchTypeUsername:
+          allOf:
+            - $ref: '#/components/schemas/ApSearchType'
+          description: Search strategy applied to user / username (criteria-query path)
+        searchFilter:
+          allOf:
+            - $ref: '#/components/schemas/ApAdvanceSearchFilter'
+          description: Advanced filter; same precedence rule as AccessPointBatchExportParams (top-level scalar fields override conflicting fields inside searchFilter)
+      description: Body of POST /accesspoint/search.
+    ApAccessPointSearchResult:
+      type: object
+      required:
+        - count
+        - rows
+      properties:
+        count:
+          type: integer
+          format: int64
+          description: Total number of matches (before pagination)
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApAccessPointVO'
+          description: One page of results
+      description: Paginated access-point search result returned by /accesspoint/search
     ApStateUpdate:
       type: object
       required:
