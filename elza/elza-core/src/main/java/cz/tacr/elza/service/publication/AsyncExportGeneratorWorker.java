@@ -189,13 +189,11 @@ public class AsyncExportGeneratorWorker implements IAsyncWorker {
 	            } catch (Exception e) {
 	                // Consumer<OutputStream> doesn't allow checked exceptions —
 	                // wrap and let createFile() propagate it out as IOException.
-	                throw new SystemException("Failed to generate publication XML",
-	                        e, BaseCode.INVALID_STATE);
+	                throw new SystemException("Failed to generate publication XML", e, BaseCode.INVALID_STATE);
 	            }
 	        });
 	    } catch (IOException e) {
-	        throw new SystemException("Failed to write publication file", e,
-	                BaseCode.INVALID_STATE);
+	        throw new SystemException("Failed to write publication file", e, BaseCode.INVALID_STATE);
 	    }
 
 	    // Opaque monotonic cursor for the public publication API.
