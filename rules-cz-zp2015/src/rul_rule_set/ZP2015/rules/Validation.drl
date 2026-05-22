@@ -268,11 +268,13 @@ when
     $activeLevel: ActiveLevel( $descItems: descItems, $ownDescItems: ownDescItems )
     $di1: DescItem( dataType=="RECORD_REF" && ap != null && specCode == null && $type: type, $ap1: ap ) from $descItems
     Ap( $apId: id ) from $ap1
+    // $di2 je vždy vlastní prvek aktuální úrovně - chyba se tak nikdy nenaváže
+    // na poděděný prvek patřící vyšší úrovni
     $di2: DescItem( dataType=="RECORD_REF" && ap != null && specCode == null && type == $type
-                    && descItemId > $di1.descItemId && $ap2: ap ) from $descItems
+                    && descItemId != $di1.descItemId && $ap2: ap ) from $ownDescItems
     Ap( id == $apId ) from $ap2
-    // alespoň jeden z dvojice patří mezi vlastní prvky této úrovně
-    exists DescItem( this == $di1 || this == $di2 ) from $ownDescItems
+    // u páru vlastní/vlastní hlásit jen jednou - na pozdějším výskytu (vyšší descItemId)
+    eval( !$ownDescItems.contains($di1) || $di2.getDescItemId() > $di1.getDescItemId() )
 then
     dvResults.createError($di2.getDescItemId(),
         "Prvek " + $di2.getTypeName() + " obsahuje duplicitní hodnotu (id: " + $apId + ").",
@@ -285,11 +287,13 @@ when
     $di1: DescItem( dataType=="RECORD_REF" && ap != null && specCode != null
                     && $type: type, $specCode: specCode, $ap1: ap ) from $descItems
     Ap( $apId: id ) from $ap1
+    // $di2 je vždy vlastní prvek aktuální úrovně - chyba se tak nikdy nenaváže
+    // na poděděný prvek patřící vyšší úrovni
     $di2: DescItem( dataType=="RECORD_REF" && ap != null && type == $type && specCode == $specCode
-                    && descItemId > $di1.descItemId && $ap2: ap ) from $descItems
+                    && descItemId != $di1.descItemId && $ap2: ap ) from $ownDescItems
     Ap( id == $apId ) from $ap2
-    // alespoň jeden z dvojice patří mezi vlastní prvky této úrovně
-    exists DescItem( this == $di1 || this == $di2 ) from $ownDescItems
+    // u páru vlastní/vlastní hlásit jen jednou - na pozdějším výskytu (vyšší descItemId)
+    eval( !$ownDescItems.contains($di1) || $di2.getDescItemId() > $di1.getDescItemId() )
 then
     dvResults.createError($di2.getDescItemId(),
         "Prvek " + $di2.getTypeName() + " se specifikací " + $di2.getSpecName()
