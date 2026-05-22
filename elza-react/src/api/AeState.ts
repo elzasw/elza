@@ -1,6 +1,0 @@
-export enum AeState {
-    APSNEW = 'APS_NEW',
-    APSAPPROVED = 'APS_APPROVED',
-    APSINVALID = 'APS_INVALID',
-    APSREPLACED = 'APS_REPLACED'
-}

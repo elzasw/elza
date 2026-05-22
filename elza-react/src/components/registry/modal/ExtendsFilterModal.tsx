@@ -22,7 +22,7 @@ import ReduxFormFieldErrorDecorator from '../../shared/form/ReduxFormFieldErrorD
 import UnitdateField from '../field/UnitdateField';
 import * as AreaInfo from '../form/filter/AreaInfo';
 import {ArchiveEntityRel} from '../field/ArchiveEntityRel';
-import {Area} from '../../../api/Area';
+import {ApSearchArea} from 'elza-api';
 import {ArchiveEntityResultListVO} from '../../../api/ArchiveEntityResultListVO';
 import {FilteredResultVO} from '../../../api/FilteredResultVO';
 import {ApAccessPointVO} from '../../../api/ApAccessPointVO';
@@ -186,7 +186,7 @@ const ExtendsFilterModal = ({
                             </Field>
                         </Col>
                         <Col xs={6}>
-                                {area !== Area.ALLPARTS && <>
+                                {area !== ApSearchArea.AllParts && <>
                                     <Form.Label>
                                         {i18n('ap.ext-search.section.relations.only-main-part')}
                                     </Form.Label>
@@ -203,7 +203,7 @@ const ExtendsFilterModal = ({
                                 <ArchiveEntityRel
                                     name={'obj'}
                                     label={i18n('ap.ext-search.section.relations.obj')}
-                                    onlyMainPart={area !== Area.ALLPARTS && onlyMainPart}
+                                    onlyMainPart={area !== ApSearchArea.AllParts && onlyMainPart}
                                     area={area}
                                     api={relEntityApi}
                                     itemTypeId={itemType.id}
