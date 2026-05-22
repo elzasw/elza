@@ -11,12 +11,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 import cz.tacr.elza.domain.UsrPermission;
-import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
@@ -36,9 +34,6 @@ import cz.tacr.elza.test.controller.vo.PublicationType;
  * test starts from an empty publication-type list.
  */
 public class PublicationControllerTest extends AbstractControllerTest {
-
-	@Autowired
-	private AsyncRequestService asyncRequestService;
 
     @Test
     public void publicationTypeAdminListPublicationTypesTest() {
@@ -159,9 +154,6 @@ public class PublicationControllerTest extends AbstractControllerTest {
         CreatePublication createBody = new CreatePublication();
         PublicationType type = createTypeAs(ctx, "TST_FUND_CREATE", "Create test", null);
 
-        // stop all async services
-        asyncRequestService.stop();
-
         createBody.setPublicationTypeId(type.getId());
         PublicationDetail detail = publicationIntApi.fundPublicationCreateFundPublication(ctx.fundId, createBody);
         assertNotNull(detail.getId());
@@ -172,6 +164,9 @@ public class PublicationControllerTest extends AbstractControllerTest {
         assertFalse(detail.getHasDownloadableFile());
         assertNull(detail.getPreparedAt());
         assertNull(detail.getInvalidatedAt());
+
+        // wait for AsyncExportExecutor
+        helperTestService.waitForWorkers();
 
         // outstanding NEW publication for the same fund+type → 409.
         HttpClientErrorException duplicate = assertThrows(HttpClientErrorException.class, 
@@ -223,9 +218,11 @@ public class PublicationControllerTest extends AbstractControllerTest {
     private TestContext setupUserAndFund() {
         ApAccessPointVO ap = findRecord(null, null, null, null, null).get(0);
         UsrUserVO user = createUser(ap.getId(), "publication-user", "publication-pass");
-        UsrPermissionVO permission = new UsrPermissionVO();
-        permission.setPermission(UsrPermission.Permission.FUND_ADMIN);
-        addUserPermission(user.getId(), List.of(permission));
+        UsrPermissionVO faPermission = new UsrPermissionVO();
+        faPermission.setPermission(UsrPermission.Permission.FUND_ADMIN);
+        UsrPermissionVO fePermission = new UsrPermissionVO();
+        fePermission.setPermission(UsrPermission.Permission.FUND_EXPORT_ALL);
+        addUserPermission(user.getId(), List.of(faPermission, fePermission));
         login("publication-user", "publication-pass");
 
         Fund fund = createFund("publication-fund", "publication-fund-code");
@@ -265,13 +262,5 @@ public class PublicationControllerTest extends AbstractControllerTest {
             this.userId = userId;
             this.fundId = fundId;
         }
-
-		public Integer getUserId() {
-			return userId;
-		}
-
-		public Integer getFundId() {
-			return fundId;
-		}
     }
 }

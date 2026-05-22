@@ -3,7 +3,9 @@ package cz.tacr.elza;
 import java.io.File;
 import java.net.URL;
 
+import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.DmsService;
 import jakarta.persistence.EntityManager;
 
 import org.junit.jupiter.api.AfterEach;
@@ -24,6 +26,8 @@ import cz.tacr.elza.repository.CachedNodeRepository;
 import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
+import cz.tacr.elza.repository.ExportRepository;
+import cz.tacr.elza.repository.ExportTypeRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InhibitedItemRepository;
 import cz.tacr.elza.repository.ItemSpecRepository;
@@ -32,6 +36,7 @@ import cz.tacr.elza.repository.ItemTypeSpecAssignRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.StartupService;
+import cz.tacr.elza.service.UserService;
 
 /**
  * Base test class
@@ -103,6 +108,16 @@ public abstract class AbstractTest {
     protected DescriptionItemService descItemService;
     @Autowired
     protected LevelRepository levelRepository;
+	@Autowired
+	protected AsyncRequestService asyncRequestService;
+    @Autowired
+    protected ExportRepository exportRepository;
+    @Autowired
+    protected ExportTypeRepository exportTypeRepository;
+	@Autowired
+	protected UserService userService;
+	@Autowired
+	protected DmsService dmsService;
 
     @Autowired
     protected ElzaLocale elzaLocale;
