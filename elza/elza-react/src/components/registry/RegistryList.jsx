@@ -41,6 +41,7 @@ import { Link } from "react-router-dom";
 import { createFilter, goToAe } from "../../actions/registry/registry";
 import { batchExportAccessPoints } from '../../actions/registry/batchExportAccessPoints';
 import { refRuleSetFetchIfNeeded } from 'actions/refTables/ruleSet';
+import { useUserSettings } from 'contexts/user';
 
 class RegistryList extends AbstractReactComponent {
     static propTypes = {
@@ -400,7 +401,7 @@ class RegistryList extends AbstractReactComponent {
     registryTypeDefaultValue = i18n('registry.all');
 
     render() {
-        const { registryDetail, registryList, maxSize, registryTypes, scopes, eidTypes, userDetail } = this.props;
+        const { registryDetail, registryList, maxSize, registryTypes, scopes, eidTypes, userDetail, settings } = this.props;
 
         let activeIndex = null;
         if (registryList.fetched && registryDetail.id !== null) {
@@ -495,14 +496,14 @@ class RegistryList extends AbstractReactComponent {
                                 allItemsCount={registryList.count}
                             />
                         </div>
-                        {userDetail.hasOne(perms.ADMIN) && (
+                        {settings?.showExperimentalFeatures && (
                             <Dropdown align="end">
                                 <Dropdown.Toggle
                                     variant="link"
                                     size="sm"
-                                    id="registry-experimental-actions"
-                                    title={i18n('registry.experimentalActions.title')}
-                                    bsPrefix="registry-experimental-toggle"
+                                    id="registry-more-actions"
+                                    title={i18n('registry.moreActions.title')}
+                                    bsPrefix="registry-more-actions-toggle"
                                 >
                                     <Icon glyph="fa-ellipsis-h" />
                                 </Dropdown.Toggle>
@@ -569,7 +570,9 @@ class RegistryList extends AbstractReactComponent {
     }
 }
 
-export default withRouter(connect(state => {
+// Injects useUserSettings() output into the connected class component as a `settings` prop.
+// RegistryList is a class component and cannot call the hook directly.
+const ConnectedRegistryList = withRouter(connect(state => {
     const {
         app: { registryList, registryDetail },
         userDetail,
@@ -588,3 +591,8 @@ export default withRouter(connect(state => {
         ruleSet,
     };
 })(RegistryList));
+
+export default function RegistryListWithSettings(props) {
+    const { settings } = useUserSettings();
+    return <ConnectedRegistryList {...props} settings={settings} />;
+}
