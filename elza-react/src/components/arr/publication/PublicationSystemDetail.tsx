@@ -32,12 +32,12 @@ const messages = defineMessages({
     labelPermExport: { id: 'publication.system.label.permExport', defaultMessage: 'Oprávnění pro export' },
     labelPermPublication: { id: 'publication.system.label.permPublication', defaultMessage: 'Oprávnění pro publikaci' },
     connectionTypeDevelopment: {
-        id: `publication.system.connectionType.${ConnectionType.Development}`,
+        id: 'publication.system.connectionType.DEVELOPMENT',
         defaultMessage: 'Vývoj',
     },
-    connectionTypeTest: { id: `publication.system.connectionType.${ConnectionType.Test}`, defaultMessage: 'Test' },
+    connectionTypeTest: { id: 'publication.system.connectionType.TEST', defaultMessage: 'Test' },
     connectionTypeProduction: {
-        id: `publication.system.connectionType.${ConnectionType.Production}`,
+        id: 'publication.system.connectionType.PRODUCTION',
         defaultMessage: 'Produkce',
     },
     btnSave: { id: 'publication.system.btn.save', defaultMessage: 'Uložit' },

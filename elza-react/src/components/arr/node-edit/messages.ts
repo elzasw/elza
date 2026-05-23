@@ -14,7 +14,7 @@ export const messages = defineMessages({
 
 export const dataTypeFormatMessages: Partial<Record<RulDataTypeCodeEnum, MessageDescriptor>> = defineMessages({
   [RulDataTypeCodeEnum.COORDINATES]: {
-    id: `dataType.${RulDataTypeCodeEnum.COORDINATES}.format`,
+    id: "dataType.COORDINATES.format",
     defaultMessage:
       "<p><b>Načtení souřadnic ze souboru</b> ve formátu KML, GML nebo WKT</p>" +
       "<p><b>Systém WGS84</b> (např. Mapy.cz)</p>" +
@@ -25,7 +25,7 @@ export const dataTypeFormatMessages: Partial<Record<RulDataTypeCodeEnum, Message
       "<p><i>POLYGON ((14.3828494 49.5976066,14.3829031 49.5971094,14.3842817 49.5971546,14.3842281 49.5976379,14.3828494 49.5976066))</i></p>",
   },
   [RulDataTypeCodeEnum.UNITDATE]: {
-    id: `dataType.${RulDataTypeCodeEnum.UNITDATE}.format`,
+    id: "dataType.UNITDATE.format",
     defaultMessage:
       "<p><b>Formát datace</b></p>" +
       "<p>Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st</p>" +

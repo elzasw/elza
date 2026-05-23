@@ -15,13 +15,13 @@ export const messages = defineMessages({
 });
 
 export const stateMessages = defineMessages({
-    [PublicationStateInternal.New]:          { id: `publication.state.${PublicationStateInternal.New}`,          defaultMessage: "Nová" },
-    [PublicationStateInternal.Prepared]:     { id: `publication.state.${PublicationStateInternal.Prepared}`,     defaultMessage: "Připravená" },
-    [PublicationStateInternal.Fetched]:      { id: `publication.state.${PublicationStateInternal.Fetched}`,      defaultMessage: "Stažená" },
-    [PublicationStateInternal.Published]:    { id: `publication.state.${PublicationStateInternal.Published}`,    defaultMessage: "Publikovaná" },
-    [PublicationStateInternal.PrepareError]: { id: `publication.state.${PublicationStateInternal.PrepareError}`, defaultMessage: "Chyba přípravy" },
-    [PublicationStateInternal.PublishError]: { id: `publication.state.${PublicationStateInternal.PublishError}`, defaultMessage: "Chyba publikace" },
-    [PublicationStateInternal.Invalidated]:  { id: `publication.state.${PublicationStateInternal.Invalidated}`,  defaultMessage: "Zneplatněná" },
+    [PublicationStateInternal.New]:          { id: "publication.state.NEW",           defaultMessage: "Nová" },
+    [PublicationStateInternal.Prepared]:     { id: "publication.state.PREPARED",      defaultMessage: "Připravená" },
+    [PublicationStateInternal.Fetched]:      { id: "publication.state.FETCHED",       defaultMessage: "Stažená" },
+    [PublicationStateInternal.Published]:    { id: "publication.state.PUBLISHED",     defaultMessage: "Publikovaná" },
+    [PublicationStateInternal.PrepareError]: { id: "publication.state.PREPARE_ERROR", defaultMessage: "Chyba přípravy" },
+    [PublicationStateInternal.PublishError]: { id: "publication.state.PUBLISH_ERROR", defaultMessage: "Chyba publikace" },
+    [PublicationStateInternal.Invalidated]:  { id: "publication.state.INVALIDATED",   defaultMessage: "Zneplatněná" },
 });
 
 export type PublicationColDef = {
