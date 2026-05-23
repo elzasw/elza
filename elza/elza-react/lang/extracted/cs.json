@@ -1,19 +1,4 @@
 {
-  "+zU9gq": {
-    "defaultMessage": "Produkce"
-  },
-  "EofFKR": {
-    "defaultMessage": "Vývoj"
-  },
-  "KYiMel": {
-    "defaultMessage": "Nová"
-  },
-  "UOU7ej": {
-    "defaultMessage": "Publikovaná"
-  },
-  "YFo5OF": {
-    "defaultMessage": "<p><b>Formát datace</b></p><p>Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st</p><p>Rok: 1968</p><p>Měsíc: 8.1968</p><p>Den: 21.8.1968</p><p>Hodiny, minuty, sekundy: 21.8.1968 2:43 <i>nebo</i> 21.8.1968 8:23:31</p><p><b>Intervaly</b></p><p>Roky: 1968-1969</p><p>Kombinace: 8.1968-1969 <i>nebo</i> 21.8.1968 2:43-27.6.1989</p><p><b>Odhad</b></p><p>Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek:</p><p>Např.: [16.8.1977] <i>nebo</i> [1990]-1992</p><p>Při použití znaku '/' pro oddělení intervalu jsou od i do chápány jako odhad:</p><p>Např.: 1985/1990</p>"
-  },
   "add_desc_item_form_title": {
     "defaultMessage": "Přidat prvek popisu"
   },
@@ -229,6 +214,12 @@
   "dataGridColumns_visible": {
     "defaultMessage": "Vybrané"
   },
+  "dataType.COORDINATES.format": {
+    "defaultMessage": "<p><b>Načtení souřadnic ze souboru</b> ve formátu KML, GML nebo WKT</p><p><b>Systém WGS84</b> (např. Mapy.cz)</p><p><i>příklad: 49.5765442N, 14.3965617E</i></p><p><b>Značkovací jazyk WKT</b></p><p><i>příklady: POINT (14.3965617 49.5765442)</i></p><p><i>LINESTRING (14.3965528 49.5765909,14.4172300 49.5551484)</i></p><p><i>POLYGON ((14.3828494 49.5976066,14.3829031 49.5971094,14.3842817 49.5971546,14.3842281 49.5976379,14.3828494 49.5976066))</i></p>"
+  },
+  "dataType.UNITDATE.format": {
+    "defaultMessage": "<p><b>Formát datace</b></p><p>Století: 20. st. <i>nebo</i> 20.st. <i>nebo</i> 20st</p><p>Rok: 1968</p><p>Měsíc: 8.1968</p><p>Den: 21.8.1968</p><p>Hodiny, minuty, sekundy: 21.8.1968 2:43 <i>nebo</i> 21.8.1968 8:23:31</p><p><b>Intervaly</b></p><p>Roky: 1968-1969</p><p>Kombinace: 8.1968-1969 <i>nebo</i> 21.8.1968 2:43-27.6.1989</p><p><b>Odhad</b></p><p>Definuje se uzavřením hodnoty do kulatých nebo hranatých závorek:</p><p>Např.: [16.8.1977] <i>nebo</i> [1990]-1992</p><p>Při použití znaku '/' pro oddělení intervalu jsou od i do chápány jako odhad:</p><p>Např.: 1985/1990</p>"
+  },
   "deleted_entity_table_column_deleteDate": {
     "defaultMessage": "Datum smazání"
   },
@@ -300,9 +291,6 @@
   },
   "edit_state_unsaved": {
     "defaultMessage": "Neuloženo"
-  },
-  "f0tUr4": {
-    "defaultMessage": "Připravená"
   },
   "fundPage_export_results": {
     "defaultMessage": "Stáhnout CSV"
@@ -391,14 +379,8 @@
   "global_yes": {
     "defaultMessage": "Ano"
   },
-  "hJBJlm": {
-    "defaultMessage": "Chyba přípravy"
-  },
   "invalidated_entities": {
     "defaultMessage": "Zneplatněné entity"
-  },
-  "j8Ao9A": {
-    "defaultMessage": "Stažená"
   },
   "mandatoryType.impossible": {
     "defaultMessage": "Nemožný"
@@ -411,9 +393,6 @@
   },
   "mandatoryType.required": {
     "defaultMessage": "Povinný"
-  },
-  "n8Qku+": {
-    "defaultMessage": "Zneplatněná"
   },
   "nodeSubNodeForm_quote_title": {
     "defaultMessage": "Citace"
@@ -469,9 +448,6 @@
   "node_action_visiblePolicy": {
     "defaultMessage": "Pravidla kontroly"
   },
-  "pP1mv6": {
-    "defaultMessage": "Chyba publikace"
-  },
   "publication.btn.confirmPublish": {
     "defaultMessage": "Opravdu publikovat do {name}?"
   },
@@ -514,6 +490,27 @@
   "publication.col.typeName": {
     "defaultMessage": "Systém"
   },
+  "publication.state.FETCHED": {
+    "defaultMessage": "Stažená"
+  },
+  "publication.state.INVALIDATED": {
+    "defaultMessage": "Zneplatněná"
+  },
+  "publication.state.NEW": {
+    "defaultMessage": "Nová"
+  },
+  "publication.state.PREPARED": {
+    "defaultMessage": "Připravená"
+  },
+  "publication.state.PREPARE_ERROR": {
+    "defaultMessage": "Chyba přípravy"
+  },
+  "publication.state.PUBLISHED": {
+    "defaultMessage": "Publikovaná"
+  },
+  "publication.state.PUBLISH_ERROR": {
+    "defaultMessage": "Chyba publikace"
+  },
   "publication.system.btn.activate": {
     "defaultMessage": "Aktivovat"
   },
@@ -534,6 +531,15 @@
   },
   "publication.system.btn.save": {
     "defaultMessage": "Uložit"
+  },
+  "publication.system.connectionType.DEVELOPMENT": {
+    "defaultMessage": "Vývoj"
+  },
+  "publication.system.connectionType.PRODUCTION": {
+    "defaultMessage": "Produkce"
+  },
+  "publication.system.connectionType.TEST": {
+    "defaultMessage": "Test"
   },
   "publication.system.label.code": {
     "defaultMessage": "Kód"
@@ -645,11 +651,5 @@
   },
   "userSettings.display.showExperimentalFeatures": {
     "defaultMessage": "Zobrazit experimentální funkce"
-  },
-  "vZ26+m": {
-    "defaultMessage": "<p><b>Načtení souřadnic ze souboru</b> ve formátu KML, GML nebo WKT</p><p><b>Systém WGS84</b> (např. Mapy.cz)</p><p><i>příklad: 49.5765442N, 14.3965617E</i></p><p><b>Značkovací jazyk WKT</b></p><p><i>příklady: POINT (14.3965617 49.5765442)</i></p><p><i>LINESTRING (14.3965528 49.5765909,14.4172300 49.5551484)</i></p><p><i>POLYGON ((14.3828494 49.5976066,14.3829031 49.5971094,14.3842817 49.5971546,14.3842281 49.5976379,14.3828494 49.5976066))</i></p>"
-  },
-  "xu6eM8": {
-    "defaultMessage": "Test"
   }
 }
