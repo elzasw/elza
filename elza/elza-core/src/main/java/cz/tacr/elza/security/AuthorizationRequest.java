@@ -103,6 +103,7 @@ public class AuthorizationRequest {
 				|| perm == Permission.FUND_ADMIN
 				|| perm == Permission.FUND_BA_ALL || perm == Permission.FUND_CL_VER_WR_ALL
 				|| perm == Permission.FUND_EXPORT_ALL || perm == Permission.FUND_OUTPUT_WR_ALL
+				|| perm == Permission.FUND_PUBLISH_ALL
 				|| perm == Permission.FUND_RD_ALL || perm == Permission.FUND_ISSUE_ADMIN_ALL
 				|| perm == Permission.AP_SCOPE_RD_ALL || perm == Permission.AP_SCOPE_WR_ALL
                 || perm == Permission.USR_PERM,
@@ -133,6 +134,7 @@ public class AuthorizationRequest {
 		case FUND_BA:
 		case FUND_CL_VER_WR:
 		case FUND_EXPORT:
+		case FUND_PUBLISH:
 		case FUND_VER_WR:
 		case FUND_RD:
 		case FUND_ISSUE_ADMIN:

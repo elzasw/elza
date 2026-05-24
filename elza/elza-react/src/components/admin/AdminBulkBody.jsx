@@ -4,39 +4,24 @@ import './AdminBulkBody.scss';
 import i18n from "../i18n";
 
 class AdminBulkBody extends React.Component {
-    constructor(props) {
-        super(props);
-        this.stop = false;
-        this.state = {
-            fetched: false,
-            asyncRequestDetail: []
-        };
-    }
+    state = {
+        fetched: false,
+        asyncRequestDetail: []
+    };
 
     componentDidMount() {
         this.refresh();
     }
 
     componentWillUnmount() {
-        this.stop = true;
+        clearTimeout(this.timer);
     }
 
     refresh = () => {
-        if (this.stop) {
-            return;
-        }
-
-        WebApi.getAsyncRequestDetail(this.props.type).then(
-            newData => {
-                this.setState({
-                    ...this.state,
-                    fetched: true,
-                    asyncRequestDetail: newData
-                }, () => {
-                    setTimeout(this.refresh, 10000);
-                });
-            }
-        )
+        WebApi.getAsyncRequestDetail(this.props.type).then(newData => {
+            this.setState({fetched: true, asyncRequestDetail: newData});
+            this.timer = setTimeout(this.refresh, 10000);
+        });
     }
 
     render() {

@@ -1,10 +1,10 @@
 package cz.tacr.elza.controller;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
@@ -146,11 +147,15 @@ public class PublicationPublicApiTest extends AbstractControllerTest {
         assertEquals("999", echo.getNextTransaction());
 
         // ------------------------------------------------------------------
-        // 7. Malformed cursor → treated as a fresh start (no 400).
-        //    A publication system that lost its state can resume cleanly.
+        // 7. Malformed cursor → contract violation, server returns 5xx with
+        //    a structured BaseException; we never silently restart, because
+        //    that could replay records the publication system already
+        //    processed.
         // ------------------------------------------------------------------
-        AvailablePublications garbage = publicationApi.publicationGetAvailablePublications("TST_AVAIL_ACTIVE", "garbage");
-        assertEquals(4, garbage.getItems().size());
+        HttpServerErrorException garbageCursor = assertThrows(HttpServerErrorException.class,
+                () -> publicationApi.publicationGetAvailablePublications("TST_AVAIL_ACTIVE", "garbage"));
+        assertTrue(garbageCursor.getStatusCode().is5xxServerError(),
+                "malformed lastTransaction must not silently restart");
 
         // ------------------------------------------------------------------
         // 8. Other target system listing must not include the active-type rows.
@@ -203,7 +208,8 @@ public class PublicationPublicApiTest extends AbstractControllerTest {
         for (Integer hidden : List.of(newE.getExportId(), peE.getExportId(), invE.getExportId())) {
             HttpClientErrorException ex = assertThrows(HttpClientErrorException.class,
                     () -> publicationApi.publicationDownloadPublication(hidden));
-            assertEquals("publication id " + hidden + " must be hidden from the public API", HttpStatus.NOT_FOUND, ex.getStatusCode());
+            assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode(),
+                    "publication id " + hidden + " must be hidden from the public API");
         }
 
         // ------------------------------------------------------------------
@@ -224,12 +230,12 @@ public class PublicationPublicApiTest extends AbstractControllerTest {
         Resource body = publicationApi.publicationDownloadPublication(prepE.getExportId());
         assertNotNull(body);
         String xml = new String(body.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertTrue("body should be the XML written by prepareExport", xml.contains("state=\"PREPARED\""));
+        assertTrue(xml.contains("state=\"PREPARED\""), "body should be the XML written by prepareExport");
 
         ArrExport afterFirst = exportRepository.findById(prepE.getExportId()).orElseThrow();
         assertEquals(ArrExport.State.FETCHED, afterFirst.getState());
         assertNotNull(afterFirst.getLastFetchedAt());
-        assertTrue("lastFetchedAt must be stamped on the first download", !afterFirst.getLastFetchedAt().isBefore(before));
+        assertTrue(!afterFirst.getLastFetchedAt().isBefore(before), "lastFetchedAt must be stamped on the first download");
 
         // ------------------------------------------------------------------
         // 5. Every subsequent download refreshes lastFetchedAt — we prove it
@@ -244,8 +250,8 @@ public class PublicationPublicApiTest extends AbstractControllerTest {
 
         ArrExport afterSecond = exportRepository.findById(prepE.getExportId()).orElseThrow();
         assertEquals(ArrExport.State.FETCHED, afterSecond.getState());
-        assertTrue("lastFetchedAt must be refreshed on every download, not only on the PREPARED→FETCHED transition",
-        		afterSecond.getLastFetchedAt().isAfter(oneHourAgo.plusMinutes(30)));
+        assertTrue(afterSecond.getLastFetchedAt().isAfter(oneHourAgo.plusMinutes(30)),
+        		"lastFetchedAt must be refreshed on every download, not only on the PREPARED→FETCHED transition");
 
         // ------------------------------------------------------------------
         // 6. PUBLISHED + file → still downloadable; state remains PUBLISHED.
@@ -274,12 +280,12 @@ public class PublicationPublicApiTest extends AbstractControllerTest {
      * Covers {@code POST /publications/status/{id}}:
      *
      *   • OK on FETCHED → PUBLISHED; ERROR on FETCHED → PUBLISH_ERROR,
-     *   • idempotent replay (same payload) is a 200 no-op,
-     *   • OK with a different publishedAt on PUBLISHED → 409,
-     *   • ERROR on PUBLISHED → 409 (already-successful publication not rolled back),
-     *   • ERROR on PUBLISH_ERROR with different details → overwrites (recovery path),
-     *   • OK on PUBLISH_ERROR → recovery to PUBLISHED,
-     *   • OK on PREPARED (no download yet) → 409,
+     *   • OK on PREPARED → PUBLISHED (download response may have been lost in transit),
+     *   • last-writer-wins on any externally-observable state: OK with a
+     *     different publishedAt on PUBLISHED silently overwrites; a late ERROR
+     *     on PUBLISHED demotes the row to PUBLISH_ERROR; ERROR on PUBLISH_ERROR
+     *     refreshes the message; OK on PUBLISH_ERROR is the documented recovery
+     *     path,
      *   • internal-only states (NEW / PREPARE_ERROR / INVALIDATED) → 404,
      *   • unknown id → 404.
      *
@@ -312,17 +318,20 @@ public class PublicationPublicApiTest extends AbstractControllerTest {
         for (Integer hidden : List.of(newE.getExportId(), peE.getExportId(), invE.getExportId())) {
             HttpClientErrorException ex = assertThrows(HttpClientErrorException.class,
                     () -> publicationApi.publicationReportPublicationStatus(hidden, reportOk(t1)));
-            assertEquals("publication id " + hidden + " must be hidden from the public API", 
-            		HttpStatus.NOT_FOUND, ex.getStatusCode());
+            assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode(),
+            		"publication id " + hidden + " must be hidden from the public API");
         }
 
         // ------------------------------------------------------------------
-        // 3. Reporting before any download (PREPARED) is a protocol violation → 409.
+        // 3. PREPARED + OK → PUBLISHED. A publication system whose download
+        //    response was lost in transit (so Elza never saw the
+        //    PREPARED → FETCHED bump) is still allowed to report success.
         // ------------------------------------------------------------------
         ArrExport prepE = prepareExport(fund, active, ArrExport.State.PREPARED, 10L, true);
-        HttpClientErrorException tooEarly = assertThrows(HttpClientErrorException.class,
-                () -> publicationApi.publicationReportPublicationStatus(prepE.getExportId(), reportOk(t1)));
-        assertEquals(HttpStatus.CONFLICT, tooEarly.getStatusCode());
+        publicationApi.publicationReportPublicationStatus(prepE.getExportId(), reportOk(t1));
+        ArrExport prepPublished = exportRepository.findById(prepE.getExportId()).orElseThrow();
+        assertEquals(ArrExport.State.PUBLISHED, prepPublished.getState());
+        assertEquals(t1, prepPublished.getPublishedAt());
 
         // ------------------------------------------------------------------
         // 4. Happy path OK: FETCHED → PUBLISHED.
@@ -345,27 +354,26 @@ public class PublicationPublicApiTest extends AbstractControllerTest {
         assertEquals(t1, okReplayed.getPublishedAt());
 
         // ------------------------------------------------------------------
-        // 6. OK on PUBLISHED with a different publishedAt → 409, stored
-        //    state preserved untouched.
+        // 6. OK on PUBLISHED with a different publishedAt — last-writer-wins:
+        //    publishedAt is silently overwritten, state stays PUBLISHED.
         // ------------------------------------------------------------------
-        HttpClientErrorException okConflict = assertThrows(HttpClientErrorException.class,
-                () -> publicationApi.publicationReportPublicationStatus(okE.getExportId(), reportOk(t2)));
-        assertEquals(HttpStatus.CONFLICT, okConflict.getStatusCode());
-        ArrExport okAfterConflict = exportRepository.findById(okE.getExportId()).orElseThrow();
-        assertEquals(ArrExport.State.PUBLISHED, okAfterConflict.getState());
-        assertEquals(t1, okAfterConflict.getPublishedAt());
+        publicationApi.publicationReportPublicationStatus(okE.getExportId(), reportOk(t2));
+        ArrExport okOverwritten = exportRepository.findById(okE.getExportId()).orElseThrow();
+        assertEquals(ArrExport.State.PUBLISHED, okOverwritten.getState());
+        assertEquals(t2, okOverwritten.getPublishedAt());
 
         // ------------------------------------------------------------------
-        // 7. ERROR on PUBLISHED → 409, must not roll back a successful
-        //    publication.
+        // 7. ERROR on PUBLISHED — last-writer-wins: a publication system
+        //    whose state diverged may report any outcome at any time. The
+        //    row demotes to PUBLISH_ERROR, mirroring what the publication
+        //    system currently believes.
         // ------------------------------------------------------------------
-        HttpClientErrorException lateError = assertThrows(HttpClientErrorException.class,
-                () -> publicationApi.publicationReportPublicationStatus(okE.getExportId(),
-                        reportError(t2, "late failure")));
-        assertEquals(HttpStatus.CONFLICT, lateError.getStatusCode());
-        ArrExport okAfterLateError = exportRepository.findById(okE.getExportId()).orElseThrow();
-        assertEquals(ArrExport.State.PUBLISHED, okAfterLateError.getState());
-        assertNull(okAfterLateError.getErrorMessage());
+        publicationApi.publicationReportPublicationStatus(okE.getExportId(),
+                reportError(t2, "late failure"));
+        ArrExport okDemoted = exportRepository.findById(okE.getExportId()).orElseThrow();
+        assertEquals(ArrExport.State.PUBLISH_ERROR, okDemoted.getState());
+        assertEquals(t2, okDemoted.getErrorAt());
+        assertEquals("late failure", okDemoted.getErrorMessage());
 
         // ------------------------------------------------------------------
         // 8. Happy path ERROR: FETCHED → PUBLISH_ERROR.
@@ -417,6 +425,49 @@ public class PublicationPublicApiTest extends AbstractControllerTest {
         assertNull(nullMsgStored.getErrorMessage());
     }
 
+    /**
+     * Public publication API requires {@code FUND_PUBLISH_ALL}; without it
+     * every endpoint returns 403, no matter how plausible the request body or
+     * how the underlying export looks. Per-fund permissions
+     * ({@code FUND_PUBLISH}, {@code FUND_EXPORT}) are intentionally not
+     * sufficient — the publication system speaks across funds.
+     */
+    @Test
+    public void publicationApiRequiresPublishAllPermissionTest() {
+        // Seed an export under the privileged user so we have a real ID to
+        // probe with. The auth check fires before any service logic, so the
+        // export only matters in that it makes the test realistic.
+        TestContext priv = setupUserAndFund();
+        ArrExportType active = createTypeAndFetch(priv, "TST_AUTH");
+        ArrExport seeded = prepareExport(priv.fundId, active, ArrExport.State.FETCHED, 10L, true);
+
+        // Provision a second user with FUND_EXPORT_ALL but NOT FUND_PUBLISH_ALL.
+        // findRecord / createUser / addUserPermission are admin operations —
+        // switch back to admin before calling them.
+        loginAsAdmin();
+        ApAccessPointVO ap = findRecord(null, null, null, null, null).get(0);
+        UsrUserVO weak = createUser(ap.getId(), "pub-no-pub-all", "pub-no-pub-all-pass");
+        UsrPermissionVO exportAll = new UsrPermissionVO();
+        exportAll.setPermission(UsrPermission.Permission.FUND_EXPORT_ALL);
+        addUserPermission(weak.getId(), List.of(exportAll));
+        login("pub-no-pub-all", "pub-no-pub-all-pass");
+
+        HttpClientErrorException available = assertThrows(HttpClientErrorException.class,
+                () -> publicationApi.publicationGetAvailablePublications("TST_AUTH", null));
+        assertEquals(HttpStatus.FORBIDDEN, available.getStatusCode());
+
+        HttpClientErrorException download = assertThrows(HttpClientErrorException.class,
+                () -> publicationApi.publicationDownloadPublication(seeded.getExportId()));
+        assertEquals(HttpStatus.FORBIDDEN, download.getStatusCode());
+
+        PublicationStatusReport report = new PublicationStatusReport();
+        report.setStatus(PublicationReportStatus.OK);
+        report.setPublishedAt(OffsetDateTime.now(ZoneOffset.UTC));
+        HttpClientErrorException status = assertThrows(HttpClientErrorException.class,
+                () -> publicationApi.publicationReportPublicationStatus(seeded.getExportId(), report));
+        assertEquals(HttpStatus.FORBIDDEN, status.getStatusCode());
+    }
+
     // ----------------------------------------------------------------------
     // Helpers
     // ----------------------------------------------------------------------
@@ -461,7 +512,10 @@ public class PublicationPublicApiTest extends AbstractControllerTest {
         faPermission.setPermission(UsrPermission.Permission.FUND_ADMIN);
         UsrPermissionVO fePermission = new UsrPermissionVO();
         fePermission.setPermission(UsrPermission.Permission.FUND_EXPORT_ALL);
-        addUserPermission(user.getId(), List.of(faPermission, fePermission));
+        // FUND_PUBLISH_ALL is required to call the public publication API.
+        UsrPermissionVO fpPermission = new UsrPermissionVO();
+        fpPermission.setPermission(UsrPermission.Permission.FUND_PUBLISH_ALL);
+        addUserPermission(user.getId(), List.of(faPermission, fePermission, fpPermission));
         login("publication-user", "publication-pass");
 
         Fund fund = createFund("publication-fund", "publication-fund-code");

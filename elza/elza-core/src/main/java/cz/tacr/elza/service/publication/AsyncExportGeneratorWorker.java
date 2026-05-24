@@ -35,6 +35,7 @@ import cz.tacr.elza.exception.ExceptionResponseBuilder;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.service.DmsService;
+import cz.tacr.elza.service.PublicationService;
 import cz.tacr.elza.service.UserService;
 import jakarta.persistence.EntityManager;
 
@@ -62,6 +63,9 @@ public class AsyncExportGeneratorWorker implements IAsyncWorker {
     @Autowired
     private ApplicationEventPublisher eventPublisher;
 
+    @Autowired
+    private PublicationService publicationService;
+
     private Long beginTime;
 
     private final AtomicBoolean running = new AtomicBoolean(false);
@@ -81,21 +85,56 @@ public class AsyncExportGeneratorWorker implements IAsyncWorker {
     public void run() {
         running.set(true);
         beginTime = System.currentTimeMillis();
-        boolean success = false; 
+        boolean success = false;
         Throwable failure = null;
+        // Snapshot the thread's current security context so we can restore it
+        // after we finish — worker threads are pooled, leaving our user's
+        // context behind would leak permissions into the next task.
+        SecurityContext originalSecCtx = SecurityContextHolder.getContext();
         try {
-            new TransactionTemplate(transactionManager).execute(status -> {
-                generateExport(request.getExportId(), request.getUserId());
-                return null;
+            // Set the security context to the user who created the publication
+            // request (arr_export.user_id). DEExportService and any downstream
+            // permission / scope checks read it.
+            SecurityContext userCtx = userService.createSecurityContext(request.getUserId());
+            SecurityContextHolder.setContext(userCtx);
+
+            // Capture the IDs needed for the retention sweep inside the
+            // transaction so we can use them after the entity is detached.
+            int[] sweepIds = new TransactionTemplate(transactionManager).execute(status -> {
+                ArrExport export = generateExport(request.getExportId());
+                return new int[] {
+                        export.getFundVersion().getFundId(),
+                        export.getExportType().getExportTypeId()
+                };
             });
+            // Retention sweep runs in its own transaction (PublicationService
+            // is @Transactional, called from outside any TX → REQUIRED opens a
+            // new one). A sweep failure must not turn a successful generation
+            // into PREPARE_ERROR; the freshly prepared file stays usable and
+            // retention will catch up on the next successful generation.
+            try {
+                publicationService.sweepRetention(sweepIds[0], sweepIds[1]);
+            } catch (Exception sweepEx) {
+                logger.warn("Retention sweep failed for export {} (fund {} / type {})",
+                        request.getExportId(), sweepIds[0], sweepIds[1], sweepEx);
+            }
             success = true;
         } catch (Throwable t) {
             failure = t;
             new TransactionTemplate(transactionManager).execute(status -> {
-                handleExportError(t); 
+                handleExportError(t);
                 return null;
             });
         } finally {
+            // Restore the thread's pre-worker security context. If nothing was
+            // set previously (empty context), clear instead so we don't pin an
+            // empty Authentication on the thread.
+            SecurityContext emptyContext = SecurityContextHolder.createEmptyContext();
+            if (emptyContext.equals(originalSecCtx)) {
+                SecurityContextHolder.clearContext();
+            } else {
+                SecurityContextHolder.setContext(originalSecCtx);
+            }
             eventPublisher.publishEvent(success ? AsyncRequestEvent.success(request, this) : AsyncRequestEvent.fail(request, this, failure));
             running.set(false);
         }
@@ -140,22 +179,25 @@ public class AsyncExportGeneratorWorker implements IAsyncWorker {
 
 	/**
      * Generate publication XML for an existing arr_export record.
-     * Runs inside a write transaction opened by {@link #run()}.
-	 * 
+     * Runs inside a write transaction opened by {@link #run()}; the security
+     * context has already been set on the worker thread by {@link #run()}.
+	 *
 	 * @param exportId
-	 * @param userId
+	 * @return the persisted (now PREPARED) {@code arr_export} entity, so the
+	 *         caller can read {@code fundId} / {@code exportTypeId} before
+	 *         the transaction commits and the entity detaches
 	 */
-	private void generateExport(Integer exportId, Integer userId) {
+	private ArrExport generateExport(Integer exportId) {
 	    ArrExport export = em.find(ArrExport.class, exportId);
 	    if (export == null) {
 	        throw new SystemException("Export not found", BaseCode.ID_NOT_EXIST)
 	                .set("exportId", exportId);
 	    }
 
-	    // DEExportService and any downstream permission/scope checks read
-	    // the security context — set it from the user who requested the export.
-	    SecurityContext secCtx = userService.createSecurityContext(userId);
-	    SecurityContextHolder.setContext(secCtx);
+	    // Security context is set by run() before this method is called — see
+	    // there for the lifecycle (set on entry, restored in finally). Don't
+	    // touch it here: re-setting would mask the snapshot, and we'd lose the
+	    // ability to restore the original context on the worker thread.
 
 	    ArrFundVersion fundVersion = export.getFundVersion();
 	    RulExportFilter exportFilter = export.getExportFilter();
@@ -203,6 +245,7 @@ public class AsyncExportGeneratorWorker implements IAsyncWorker {
 	    export.setExportSeq(seq.longValue());
 	    export.setState(ArrExport.State.PREPARED);
 	    export.setPreparedAt(OffsetDateTime.now());
+	    return export;
 	}
 
     /**

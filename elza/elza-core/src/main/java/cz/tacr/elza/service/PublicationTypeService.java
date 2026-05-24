@@ -115,6 +115,17 @@ public class PublicationTypeService {
         if (vo.getConnectionType() == null) {
             throw new BusinessException("Publication type connection type must be set", BaseCode.PROPERTY_NOT_EXIST).set("property", "connectionType");
         }
+        // Spec: "musí být nastaveno alespoň jedno" — at least one of the
+        // allowed-permission flags must be true, otherwise no user (short of
+        // ADMIN / FUND_ADMIN) can ever publish into this type.
+        boolean exportAllowed = Boolean.TRUE.equals(vo.getAllowPermExport());
+        boolean publishAllowed = Boolean.TRUE.equals(vo.getAllowPermPublication());
+        if (!exportAllowed && !publishAllowed) {
+            throw new BusinessException(
+                    "At least one of allowPermExport / allowPermPublication must be true",
+                    BaseCode.PROPERTY_IS_INVALID)
+                    .set("property", "allowPermExport,allowPermPublication");
+        }
         if (entity == null) {
         	entity = new ArrExportType();
         }
@@ -122,8 +133,8 @@ public class PublicationTypeService {
         entity.setCode(vo.getCode());
         entity.setActive(vo.getActive() == null ? Boolean.TRUE : vo.getActive());
         entity.setRetentionCount(vo.getRetentionCount() == null ? DEFAULT_RETENTION_COUNT : vo.getRetentionCount());
-        entity.setAllowPermExport(Boolean.TRUE.equals(vo.getAllowPermExport()));
-        entity.setAllowPermPublication(Boolean.TRUE.equals(vo.getAllowPermPublication()));
+        entity.setAllowPermExport(exportAllowed);
+        entity.setAllowPermPublication(publishAllowed);
         entity.setConnectionType(cz.tacr.elza.domain.ConnectionType.valueOf(vo.getConnectionType().getValue()));
         entity.setExportFilter(resolveExportFilter(vo.getExportFilterCode()));
         return entity;
