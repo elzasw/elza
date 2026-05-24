@@ -3292,8 +3292,6 @@ model PublicationStatusReport {
  *    an internal state that is not exposed to the client
  *  - `PUBLICATION_FILE_GONE`     — the XML file is no longer available
  *    (publication was invalidated or removed by retention)
- *  - `PUBLICATION_STATE_CONFLICT` — the status report cannot be accepted
- *    from the publication's current state
  */
 @tag("publication")
 @route("/publications")
@@ -3391,12 +3389,13 @@ namespace ElzaAPI.Publication {
      * processed the file).
      *
      *  - status OK    — publication succeeded
-     *  - status ERROR — publication failed; the outcome may later be
-     *                   reported again with status OK (recovery) or ERROR
-     *                   (updated error message)
+     *  - status ERROR — publication failed
      *
-     * The call is idempotent: a repeated call with an identical body
-     * returns 200 OK without changing internal state.
+     * The call is last-writer-wins: a publication system that gets
+     * resynchronised may report the same publication any number of
+     * times — identical replays are no-ops, new values silently
+     * overwrite. Rate-limiting / conflict detection may be added in
+     * a later revision.
      *
      * @param id Publication identifier (ARR_EXPORT.export_id).
      */
@@ -3409,14 +3408,6 @@ namespace ElzaAPI.Publication {
     } | {
         /** `PUBLICATION_NOT_FOUND` — the publication ID is not available to the client. */
         @Http.statusCode statusCode: 404;
-        @body data: BaseException;
-    } | {
-        /**
-         * `PUBLICATION_STATE_CONFLICT` — the report cannot be accepted: the
-         * client has not downloaded this publication yet, or the publication
-         * is in an internal state that does not accept further reports.
-         */
-        @Http.statusCode statusCode: 409;
         @body data: BaseException;
     };
 }
@@ -3688,16 +3679,22 @@ namespace ElzaAPI.Internal.FundPublication {
      *
      * Rejected with 409 if the current fund version already has a
      * publication of the same type in {@link PublicationStateInternal.NEW}
-     * or {@link PublicationStateInternal.PREPARED} state — we avoid
-     * re-generating identical output.
+     * state — we avoid racing two identical async generations. A previous
+     * publication in {@link PublicationStateInternal.PREPARED} (or later)
+     * does NOT block: the fund may have changed and a fresh publication
+     * carries different content.
      */
     @route("/{fundId}/publication")
     @post op createFundPublication(
         ...FundIdParameter,
         @body body: CreatePublication,
     ): PublicationDetail | {
-        /** Publication type not found or inactive. */
+        /** Publication type or fund not found. */
         @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Publication type is inactive. */
+        @Http.statusCode statusCode: 403;
         @body data: BaseException;
     } | {
         /** An identical publication is already pending or prepared. */
@@ -3769,7 +3766,12 @@ namespace ElzaAPI.Internal.FundPublication {
         ...PublicationIdParameter,
         @body body: CopyPublication,
     ): PublicationDetail | {
+        /** Source publication, target publication type, or fund not found. */
         @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Target publication type is inactive. */
+        @Http.statusCode statusCode: 403;
         @body data: BaseException;
     } | {
         /** Target type has an incompatible filter setting. */

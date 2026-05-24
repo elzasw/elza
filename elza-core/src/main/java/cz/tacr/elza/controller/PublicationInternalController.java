@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,22 +19,37 @@ import cz.tacr.elza.controller.vo.CreatePublication;
 import cz.tacr.elza.controller.vo.PublicationDetail;
 import cz.tacr.elza.controller.vo.PublicationList;
 import cz.tacr.elza.controller.vo.PublicationType;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.core.security.AuthParam;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.service.PublicationService;
 import cz.tacr.elza.service.PublicationService.DownloadPayload;
 import cz.tacr.elza.service.PublicationTypeService;
+import jakarta.transaction.Transactional;
 
 /**
  * Internal REST API for the Elza UI.
  *
  * Implements the contract generated from {@code elza-openapi.yml} (tag
- * {@code publication-internal}). All operations are currently stubs
- * returning {@link HttpStatus#NOT_IMPLEMENTED}; the actual logic will be
- * added once {@code ArrExportTypeService} and {@code ArrExportService} are
- * in place.
+ * {@code publication-internal}). Per-endpoint permissions:
  *
- * Served under {@code /api/internal}, separate from the public publication
- * API at {@code /api/v1}. This separation is intentional — internal
- * endpoints are not an integration contract.
+ * <ul>
+ *   <li>{@code /publication/types/*} — {@code ADMIN} (system-level
+ *       configuration of target systems).</li>
+ *   <li>{@code GET /fund/{fundId}/publication} — {@code FUND_RD} /
+ *       {@code FUND_RD_ALL} / {@code ADMIN}.</li>
+ *   <li>{@code GET /fund/{fundId}/publication/{id}/download} —
+ *       {@code FUND_EXPORT} / {@code FUND_EXPORT_ALL} / {@code ADMIN}.</li>
+ *   <li>Create / invalidate / copy — dynamic, see
+ *       {@link cz.tacr.elza.service.PublicationService#authorizePublishToType}.
+ *       {@code ADMIN} / {@code FUND_ADMIN} always pass; otherwise the type's
+ *       {@code allowPerm*} flags decide which permission family is accepted.</li>
+ * </ul>
+ *
+ * Internal endpoints share the {@code /api/v1} prefix with the rest of the
+ * API; the separation from the public publication API is by tag, not URL
+ * (so a future migration of an endpoint between the two doesn't require
+ * a URL change).
  */
 @RestController
 @RequestMapping("/api/v1")
@@ -58,6 +72,8 @@ public class PublicationInternalController implements PublicationInternalApi {
      * @return The request has succeeded. (status code 200)
      */
     @Override
+    @Transactional
+    @AuthMethod(permission = {Permission.ADMIN})
     public ResponseEntity<List<PublicationType>> publicationTypeAdminListPublicationTypes() {
         List<PublicationType> result = publicationTypeService.listAll().stream().map(publicationTypeService::toVO).toList();
 
@@ -73,6 +89,8 @@ public class PublicationInternalController implements PublicationInternalApi {
      *         or The request conflicts with the current state of the server. (status code 409)
      */
     @Override
+    @Transactional
+    @AuthMethod(permission = {Permission.ADMIN})
     public ResponseEntity<PublicationType> publicationTypeAdminCreatePublicationType(@RequestBody PublicationType publicationType) {
     	return ResponseEntity.ok(publicationTypeService.toVO(publicationTypeService.create(publicationType)));
     }
@@ -88,7 +106,9 @@ public class PublicationInternalController implements PublicationInternalApi {
      *         or The request conflicts with the current state of the server. (status code 409)
      */
     @Override
-    public ResponseEntity<PublicationType> publicationTypeAdminUpdatePublicationType(Integer id, 
+    @Transactional
+    @AuthMethod(permission = {Permission.ADMIN})
+    public ResponseEntity<PublicationType> publicationTypeAdminUpdatePublicationType(Integer id,
     		                                                                         @RequestBody PublicationType publicationType) {
     	return ResponseEntity.ok(publicationTypeService.toVO(publicationTypeService.update(id, publicationType)));
     }
@@ -103,6 +123,8 @@ public class PublicationInternalController implements PublicationInternalApi {
      *         or The request conflicts with the current state of the server. (status code 409)
      */
     @Override
+    @Transactional
+    @AuthMethod(permission = {Permission.ADMIN})
     public ResponseEntity<Void> publicationTypeAdminDeletePublicationType(Integer id) {
         publicationTypeService.delete(id);
         return ResponseEntity.ok().build();
@@ -123,7 +145,9 @@ public class PublicationInternalController implements PublicationInternalApi {
      * @return The request has succeeded. (status code 200)
      */
     @Override
-    public ResponseEntity<PublicationList> fundPublicationListFundPublications(Integer fundId,
+    @Transactional
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_RD_ALL, Permission.FUND_RD})
+    public ResponseEntity<PublicationList> fundPublicationListFundPublications(@AuthParam(type = AuthParam.Type.FUND) Integer fundId,
             @RequestParam(value = "publicationTypeId", required = false) Integer publicationTypeId,
             @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
             @RequestParam(value = "limit", required = false, defaultValue = "50") Integer limit) {
@@ -153,7 +177,9 @@ public class PublicationInternalController implements PublicationInternalApi {
      * that is the responsibility of the public publication API.
      */
     @Override
-    public ResponseEntity<Resource> fundPublicationDownloadFundPublication(Integer fundId, Integer publicationId) {
+    @Transactional
+    @AuthMethod(permission = {Permission.ADMIN, Permission.FUND_EXPORT_ALL, Permission.FUND_EXPORT})
+    public ResponseEntity<Resource> fundPublicationDownloadFundPublication(@AuthParam(type = AuthParam.Type.FUND) Integer fundId, Integer publicationId) {
         DownloadPayload payload = publicationService.download(fundId, publicationId);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_XML)

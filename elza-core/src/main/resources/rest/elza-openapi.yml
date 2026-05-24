@@ -2356,7 +2356,11 @@ paths:
         Enqueue a new publication for the current open version of the fund.
 
         Rejected with 409 if the current fund version already has a
-        publication of the same type in {
+        publication of the same type in NEW state (avoids racing two
+        identical async generations). A previous publication in PREPARED
+        or later state does NOT block: the fund may have changed and
+        the new publication carries different content.
+        Rejected with 403 if the target publication type is inactive.
       parameters:
         - $ref: '#/components/parameters/FundIdParameter'
       responses:
@@ -2366,8 +2370,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PublicationDetail'
+        '403':
+          description: Publication type is inactive.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
         '404':
-          description: The server cannot find the requested resource.
+          description: Publication type or fund not found.
           content:
             application/json:
               schema:
@@ -2421,7 +2431,8 @@ paths:
         Copy an existing publication into another target system.
 
         The target publication type must have a compatible filter setting
-        (same {
+        (same rul_export_filter snapshot, or both unfiltered).
+        Rejected with 403 if the target publication type is inactive.
       parameters:
         - $ref: '#/components/parameters/FundIdParameter'
         - $ref: '#/components/parameters/PublicationIdParameter'
@@ -2432,14 +2443,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PublicationDetail'
+        '403':
+          description: Target publication type is inactive.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
         '404':
-          description: The server cannot find the requested resource.
+          description: Source publication, target publication type, or fund not found.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
         '409':
-          description: The request conflicts with the current state of the server.
+          description: Target type has an incompatible filter setting.
           content:
             application/json:
               schema:
@@ -3685,12 +3702,13 @@ paths:
         processed the file).
 
         - status OK    — publication succeeded
-        - status ERROR — publication failed; the outcome may later be
-        reported again with status OK (recovery) or ERROR
-        (updated error message)
+        - status ERROR — publication failed
 
-        The call is idempotent: a repeated call with an identical body
-        returns 200 OK without changing internal state.
+        The call is last-writer-wins: a publication system that gets
+        resynchronised may report the same publication any number of
+        times — identical replays are no-ops, new values silently
+        overwrite. Rate-limiting / conflict detection may be added in
+        a later revision.
       parameters:
         - name: id
           in: path
@@ -3703,12 +3721,6 @@ paths:
           description: The request has succeeded.
         '404':
           description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-        '409':
-          description: The request conflicts with the current state of the server.
           content:
             application/json:
               schema:

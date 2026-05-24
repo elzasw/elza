@@ -1512,6 +1512,7 @@ var messages = {
     "admin.bulk.header.title.BULK": "Hromadné akce",
     "admin.bulk.header.title.OUTPUT": "Výstupy",
     "admin.bulk.header.title.AP": "Validace AE",
+    "admin.bulk.header.title.EXPORT": "Publikace",
     "admin.bulk.title.load": "Zatížení",
     "admin.bulk.title.requestPerHour": "Požadavků za hodinu",
     "admin.bulk.title.waitingRequests": "Čekajících požadavků",

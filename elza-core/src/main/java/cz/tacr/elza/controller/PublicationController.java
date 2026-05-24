@@ -14,17 +14,20 @@ import org.springframework.web.bind.annotation.RestController;
 import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.vo.AvailablePublications;
 import cz.tacr.elza.controller.vo.PublicationStatusReport;
+import cz.tacr.elza.core.security.AuthMethod;
+import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.service.PublicationService;
 import cz.tacr.elza.service.PublicationService.DownloadPayload;
+import jakarta.transaction.Transactional;
 
 /**
  * Public REST API for the publication system.
  *
  * Implements the contract generated from {@code elza-openapi.yml} (tag
- * {@code publication}). All operations are currently stubs returning
- * {@link HttpStatus#NOT_IMPLEMENTED}; the actual logic will be added as
- * the publication feature is implemented (see "Publikace archivního popisu"
- * spec).
+ * {@code publication}). All endpoints require {@code FUND_PUBLISH_ALL}
+ * (or {@code ADMIN}); see the {@link AuthMethod @AuthMethod} annotations
+ * on the methods. Behaviour follows the "Publikace archivního popisu"
+ * specification.
  */
 @RestController
 @RequestMapping("/api/v1")
@@ -49,9 +52,11 @@ public class PublicationController implements PublicationApi {
      *         or The server cannot find the requested resource. (status code 404)
      */
     @Override
+    @Transactional
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN, UsrPermission.Permission.FUND_PUBLISH_ALL})
     public ResponseEntity<AvailablePublications> publicationGetAvailablePublications(String targetSystem,
             @RequestParam(value = "lastTransaction", required = false) String lastTransaction) {
-    	return ResponseEntity.ok(publicationService.listAvailable(targetSystem, lastTransaction));
+        return ResponseEntity.ok(publicationService.listAvailable(targetSystem, lastTransaction));
     }
 
     /**
@@ -74,8 +79,10 @@ public class PublicationController implements PublicationApi {
      *         or Client error (status code 410)
      */
     @Override
+    @Transactional
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN, UsrPermission.Permission.FUND_PUBLISH_ALL})
     public ResponseEntity<Resource> publicationDownloadPublication(Integer id) {
-    	DownloadPayload payload = publicationService.downloadAvailable(id);
+        DownloadPayload payload = publicationService.downloadAvailable(id);
         if (payload == null) {
             return ResponseEntity.status(HttpStatus.GONE).build();
         }
@@ -100,8 +107,10 @@ public class PublicationController implements PublicationApi {
      *         or The request conflicts with the current state of the server. (status code 409)
      */
     @Override
+    @Transactional
+    @AuthMethod(permission = {UsrPermission.Permission.ADMIN, UsrPermission.Permission.FUND_PUBLISH_ALL})
     public ResponseEntity<Void> publicationReportPublicationStatus(Integer id, @RequestBody PublicationStatusReport publicationStatusReport) {
         publicationService.reportStatus(id, publicationStatusReport);
-        return ResponseEntity.ok().build();   
+        return ResponseEntity.ok().build();
     }
 }
