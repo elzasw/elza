@@ -95,11 +95,15 @@
             }
         }
 
-        .collapse-button {
+        .header-actions {
             background: transparent;
             position: absolute;
             right: 0;
             bottom: 0;
+
+            .button {
+                background: transparent;
+            }
         }
     }
 
