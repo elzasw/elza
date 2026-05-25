@@ -12,12 +12,14 @@ interface ApTypeNamesProps {
     apType: ApType;
     delimiter?: ReactNode;
     className?: string;
+    actions?: ReactNode;
 }
 
-export const ApTypeNames:FC<ApTypeNamesProps> = ({
+export const ApTypeNames: FC<ApTypeNamesProps> = ({
     apType,
     className,
     delimiter = <Icon glyph="fa-angle-right"/>,
+    actions,
 }) => {
     const elements: ReactNode[] = [];
 
@@ -41,28 +43,30 @@ export const ApTypeNames:FC<ApTypeNamesProps> = ({
         </span>,
     );
 
-    return <div className={`ap-type ${className}`}>
+    return (
+        <div className={`ap-type ${className}`}>
             {elements}
+            {actions && <>
+                <div style={{ flex: 1 }} />
+                <div className="header-actions">{actions}</div>
+            </>}
         </div>
+    );
 }
 
-export const RevisionApTypeNames:FC<ApTypeNamesProps & {apTypeNew?: ApType}> = ({
+export const RevisionApTypeNames: FC<ApTypeNamesProps & { apTypeNew?: ApType }> = ({
     apType,
     apTypeNew,
     className,
+    actions,
     ...otherProps
 }) => {
     const isApTypeChanged = apTypeNew?.name !== apType.name;
-    const oldClassName = classnames({
-        old: apTypeNew && isApTypeChanged,
-    }, className)
-    const newClassName = classnames({
-        new: apTypeNew && isApTypeChanged,
-    }, className)
+    const oldClassName = classnames({ old: apTypeNew && isApTypeChanged }, className)
+    const newClassName = classnames({ new: apTypeNew && isApTypeChanged }, className)
 
     return <>
-        <ApTypeNames apType={apType} {...otherProps} className={oldClassName}/>
+        <ApTypeNames apType={apType} {...otherProps} className={oldClassName} actions={actions}/>
         {apTypeNew && isApTypeChanged && <ApTypeNames apType={apTypeNew} {...otherProps} className={newClassName}/>}
     </>
 }
-
