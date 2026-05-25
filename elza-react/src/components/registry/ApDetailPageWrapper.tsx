@@ -148,7 +148,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     const apTypeId = detail.fetched && detail.data ? detail.data.typeId : 0;
 
     const [collapsed, setCollapsed] = useState<boolean>(false);
-    const [localGlobalCollapsed, setLocalGlobalCollapsed] = useLocalStorageState<boolean>('apDetail-globalCollapsed', globalCollapsed);
+    const [localGlobalCollapsed, setLocalGlobalCollapsed] = useLocalStorageState<boolean>('apDetail-globalCollapsed', true);
     const [exportState, setExportState] = useState<ExportState>(ExportState.COMPLETED);
     const [exportMessage, setExportMessage] = useState<string>(null);
     const [itemQueueId, setItemQueueId] = useState<number>(-1);
