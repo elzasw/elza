@@ -368,7 +368,16 @@ class RegistryPage extends AbstractReactComponent {
                         const id = detail.id;
                         const result = await Api.accesspoints.accessPointCopyAccessPoint(id, data);
                         dispatch(modalDialogHide())
-                        dispatch(goToAe(history, result.data.id, true, true, revisionActive));
+                        // accessPointCopyAccessPoint returns EntityRef with a UUID id.
+                        // Resolve UUID -> numeric AP id before navigating; pushing
+                        // /entity/<uuid> strands the page because the post-fetch
+                        // URL-rewrite chain in initData races the in-flight fetch
+                        // and DetailActions.fetchIfNeeded's dedup branch drops
+                        // the redirect.
+                        const ap = await dispatch(registryDetailFetchIfNeeded(result.data.id, true));
+                        if (ap) {
+                            dispatch(goToAe(history, ap.id, true, true, revisionActive));
+                        }
                         return;
                     }}
                     detail={detail.data}
