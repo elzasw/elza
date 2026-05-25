@@ -1612,9 +1612,193 @@ namespace ElzaAPI.DescItem {
     };
 }
 
+/**
+ * Area in which the access-point search runs.
+ */
+enum ApSearchArea {
+    PREFER_NAMES,
+    ALL_NAMES,
+    ALL_PARTS,
+    ENTITY_CODE,
+}
+
+/**
+ * Binding synchronisation state.
+ */
+enum SyncState {
+    SYNC_OK,
+    NOT_SYNCED,
+    LOCAL_CHANGE,
+}
+
+/**
+ * Filter for searching by a relation (item type, specification, target AP id).
+ */
+model ApSearchByRelation {
+    relTypeId?: integer;
+    relSpecId?: integer;
+    /** Access-point id the relation must point to */
+    code?: integer;
+}
+
+/**
+ * Filter for searching by an item with a specific value.
+ * The {@code value} is free-form — its interpretation depends on the item type.
+ */
+model ApSearchByItemWithValue {
+    partTypeCode?: string;
+    itemTypeId?: integer;
+    itemSpecId?: integer;
+    value?: unknown;
+}
+
+/**
+ * Advanced filter for access-point search; used as the request body of /accesspoint/search.
+ */
+model ApAdvanceSearchFilter {
+    search?: string;
+    area?: ApSearchArea;
+    onlyMainPart?: boolean;
+    aeTypeIds?: integer[];
+    /** Identifier of a concrete access point */
+    code?: string;
+    user?: string;
+    /** Id of user the access point is assigned to */
+    assignedTo?: integer;
+    /** Validation result: ok | error */
+    validationResult?: string;
+    creation?: string;
+    extinction?: string;
+    relFilters?: ApSearchByRelation[];
+    extFilters?: ApSearchByItemWithValue[];
+    syncState?: SyncState;
+    /** List of access-point ids to exclude from the result */
+    excludeAps?: integer[];
+}
+
+/**
+ * Search strategy for criteria-based access-point queries (name / username fields).
+ */
+enum ApSearchType {
+    DISABLED,
+    JOIN,
+    FULLTEXT,
+    RIGHT_SIDE_LIKE,
+}
+
+/**
+ * Access-point view object returned by /accesspoint/search.
+ * Externally provided (see cz.tacr.elza.controller.vo.ApAccessPointVO) — kept opaque in
+ * the contract (the canonical yml emits `format: ap-access-point-vo` so the OpenAPI generator
+ * maps it to the hand-coded Java + TS class).
+ */
+model ApAccessPointVO {}
+
+/**
+ * Paginated access-point search result returned by /accesspoint/search.
+ */
+model ApAccessPointSearchResult {
+    /** Total number of matches (before pagination) */
+    count: int64;
+    /** One page of results */
+    rows: ApAccessPointVO[];
+}
+
+/**
+ * Body of POST /accesspoint/search.
+ */
+model AccessPointSearchParams {
+    /** Full-text search */
+    search?: string;
+    /** Offset (zero-based) of the first result to return */
+    from?: integer;
+    /** Maximum number of rows to return */
+    count?: integer;
+    /** Single AP-type id; subtree-expanded on the backend */
+    apTypeId?: integer;
+    /** Fund version id (used to resolve scope context, optional) */
+    versionId?: integer;
+    /** Scope id; expanded on the backend */
+    scopeId?: integer;
+    /** Restrict to AP types referenced from this item type */
+    itemTypeId?: integer;
+    /** Restrict to AP types referenced from this item specification */
+    itemSpecId?: integer;
+    /** Filter by access-point state */
+    state?: ApStateApproval;
+    /** Filter by revision state */
+    revState?: RevisionState;
+    /** Search strategy applied to access-point name (criteria-query path) */
+    searchTypeName?: ApSearchType;
+    /** Search strategy applied to user / username (criteria-query path) */
+    searchTypeUsername?: ApSearchType;
+    /** Advanced filter; same precedence rule as AccessPointBatchExportParams */
+    searchFilter?: ApAdvanceSearchFilter;
+}
+
+/**
+ * Body of POST /accesspoint/export.
+ *
+ * Mirrors the scalar parameters of /accesspoint/search and accepts the same advanced filter
+ * via {@link AccessPointBatchExportParams.searchFilter}. Top-level scalar fields win when
+ * they conflict with fields inside searchFilter (e.g. top-level search vs. searchFilter.search).
+ */
+model AccessPointBatchExportParams {
+    /** Full-text search */
+    search?: string;
+    /** Single AP-type id; subtree-expanded on the backend to include descendant types */
+    apTypeId?: integer;
+    /** Fund version id (used to resolve scope context, optional) */
+    versionId?: integer;
+    /** Scope id; expanded on the backend for the resolved fund + user-visible scopes */
+    scopeId?: integer;
+    /** Restrict to AP types referenced from this item type */
+    itemTypeId?: integer;
+    /** Restrict to AP types referenced from this item specification */
+    itemSpecId?: integer;
+    /** Filter by access-point state */
+    state?: ApStateApproval;
+    /** Filter by revision state */
+    revState?: RevisionState;
+    /** Advanced filter (mirrors the body of /accesspoint/search) */
+    searchFilter?: ApAdvanceSearchFilter;
+}
+
 @tag("accesspoints")
 @route("/accesspoint")
 namespace ElzaAPI.AccessPoint {
+    /**
+     * Search for access points.
+     * Accepts the same filter inputs as /accesspoint/export (scalar fields + ApAdvanceSearchFilter)
+     * plus pagination (from, count) and the criteria-query SearchType selectors.
+     */
+    @route("/search")
+    @post op search(
+        /** filter selecting the access points to search for */
+        @body params: AccessPointSearchParams
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: ApAccessPointSearchResult;
+    };
+
+    /**
+     * Asynchronously export access points matching the given filter to CSV.
+     *
+     * Returns the request id; poll /io/export-status/{id} and download the result via /io/file/{id}.
+     * Results are ordered by accessPointId ascending. Empty body / null fields means
+     * "all access points visible to the user".
+     */
+    @route("/export")
+    @post op batchExport(
+        /** filter selecting the access points to export */
+        @body params: AccessPointBatchExportParams
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer;
+    };
+
     /**
      * Invalidation of access points
      */

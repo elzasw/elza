@@ -25,7 +25,7 @@ import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.controller.vo.OperationLogicalType;
 import cz.tacr.elza.controller.vo.ResultEntityRef;
-import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -86,7 +86,7 @@ public class SearchController implements SearchApi {
 		List<Integer> apTypeIds = null;
 		private StaticDataProvider sdp;
 
-        SearchFilterVO searchFilterVO = new SearchFilterVO();
+        ApAdvanceSearchFilter searchFilterVO = new ApAdvanceSearchFilter();
 
 		public ApSearchParams(final StaticDataProvider sdp) {
 			this.sdp = sdp;
@@ -245,7 +245,7 @@ public class SearchController implements SearchApi {
             return scopeIds;
 		}
 
-        public SearchFilterVO getSearchFilter() {
+        public ApAdvanceSearchFilter getSearchFilter() {
             return searchFilterVO;
         }
 	};
@@ -280,7 +280,7 @@ public class SearchController implements SearchApi {
 			return ResponseEntity.badRequest().build();
 		}
 
-		SearchFilterVO searchFilter = apsp.getSearchFilter();
+		ApAdvanceSearchFilter searchFilter = apsp.getSearchFilter();
 
         QueryResults<CachedAccessPoint> searchResult = apCacheService.search(searchFilter,
 		                      apsp.getApTypeIds(),

@@ -4,6 +4,8 @@
     color: #{$contrast-color-fg}; /* TODO alpha*/
     font-size: 1.2em;
     padding: 5px 10px;
+    display: flex;
+    align-items: center;
 
     &.new, &.old {
         color: $contrast-color-fg;
@@ -38,5 +40,17 @@
 
     .hierarchy-delimiter {
         margin: 0 10px;
+    }
+
+    .header-actions {
+        background: transparent;
+        font-size: 0.9em;
+
+        .button {
+            background: transparent;
+            color: inherit;
+            height: 1.2em;
+            line-height: 1.2em;
+        }
     }
 }

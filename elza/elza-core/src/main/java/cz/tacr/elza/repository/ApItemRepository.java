@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import cz.tacr.elza.dataexchange.output.PreferredPartNameItem;
 import cz.tacr.elza.dataexchange.output.RefRecordsFromIds;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
@@ -60,7 +61,20 @@ public interface ApItemRepository extends JpaRepository<ApItem, Integer> {
     @Query("SELECT i FROM ApItem i JOIN i.part p JOIN p.partType pt WHERE i.deleteChange IS NULL AND i.itemType IN :itemTypes AND p.deleteChange IS NULL AND pt.code = :partTypeCode AND p.accessPointId = :accessPointId")
     List<ApItem> findItemsByAccessPointIdAndItemTypesAndPartTypeCode(@Param("accessPointId") Integer accessPointId,
                                                                      @Param("itemTypes") Collection<RulItemType> itemTypes,
-                                                                     @Param("partTypeCode") String partTypeCode);  
+                                                                     @Param("partTypeCode") String partTypeCode);
+
+    @Query("SELECT new cz.tacr.elza.dataexchange.output.PreferredPartNameItem(" +
+            "p.accessPointId, i.itemTypeId, i.dataId) " +
+            "FROM ApItem i " +
+            "JOIN i.part p " +
+            "JOIN p.accessPoint ap " +
+            "WHERE p.partId = ap.preferredPartId " +
+            "AND p.accessPointId IN :accessPointIds " +
+            "AND i.itemType IN :itemTypes " +
+            "AND i.deleteChange IS NULL " +
+            "AND p.deleteChange IS NULL")
+    List<PreferredPartNameItem> findPreferredPartNameItemsByAccessPointIdsAndItemTypes(@Param("accessPointIds") Collection<Integer> accessPointIds,
+                                                                                       @Param("itemTypes") Collection<RulItemType> itemTypes);
 
     @Query("SELECT part FROM ApItem i JOIN i.part part JOIN i.data data WHERE data IN :dataRecordRefList AND i.deleteChange IS NULL")
     List<ApPart> findPartsByDataRecordRefList(@Param("dataRecordRefList") List<ArrDataRecordRef> dataRecordRefList);

@@ -8,9 +8,10 @@ import {
     fetchFundFilesIfNeeded,
     fundFilesCreate,
     fundFilesDelete,
-    fundFilesFilterByText,
+    fundFilesFilter,
     fundFilesReplace,
     fundFilesUpdate,
+    PAGE_SIZE,
 } from 'actions/arr/fundFiles.jsx';
 import {modalDialogHide, modalDialogShow} from 'actions/global/modalDialog.jsx';
 import {UrlFactory} from 'actions/index.jsx';
@@ -24,6 +25,7 @@ import TooltipTrigger from '../shared/tooltip/TooltipTrigger';
 
 import * as dms from '../../actions/global/dms';
 import storeFromArea from '../../shared/utils/storeFromArea';
+import ListPager from '../shared/listPager/ListPager';
 
 let _ReplaceId = null;
 
@@ -63,7 +65,17 @@ class FundFiles extends AbstractReactComponent {
 
     handleTextSearch = text => {
         const {versionId} = this.props;
-        this.props.dispatch(fundFilesFilterByText(versionId, text));
+        this.props.dispatch(fundFilesFilter(versionId, text));
+    };
+
+    handleFilterPrev = (from) => {
+        const {versionId, fundFiles} = this.props;
+        this.props.dispatch(fundFilesFilter(versionId, fundFiles.filterText, from));
+    };
+
+    handleFilterNext = (from) => {
+        const {versionId, fundFiles} = this.props;
+        this.props.dispatch(fundFilesFilter(versionId, fundFiles.filterText, from));
     };
 
     handleEdit = id => {
@@ -218,21 +230,32 @@ class FundFiles extends AbstractReactComponent {
                 />
 
                 {fundFiles.fetched && (
-                    <FileListBox
-                        ref={ref => (this.listBox = ref)}
-                        items={fundFiles.data.rows}
-                        searchable
-                        filterText={fundFiles.filterText}
-                        onSearch={this.handleTextSearch}
-                        onDownload={this.handleDownload}
-                        onReplace={this.handleReplace}
-                        onDelete={this.handleDelete}
-                        onEdit={this.handleEdit}
-                        supportEdit={(id, item) => item.editable}
-                        onDownloadPdf={id => this.handleDownloadByMimeType(id, 'application/pdf')}
-                        readMode={readMode}
-                        supportDownloadPdf={(id, item) => item.generatePdf}
-                    />
+                    <>
+                        <FileListBox
+                            ref={ref => (this.listBox = ref)}
+                            items={fundFiles.data.rows}
+                            searchable
+                            filterText={fundFiles.filterText}
+                            onSearch={this.handleTextSearch}
+                            onDownload={this.handleDownload}
+                            onReplace={this.handleReplace}
+                            onDelete={this.handleDelete}
+                            onEdit={this.handleEdit}
+                            supportEdit={(id, item) => item.editable}
+                            onDownloadPdf={id => this.handleDownloadByMimeType(id, 'application/pdf')}
+                            readMode={readMode}
+                            supportDownloadPdf={(id, item) => item.generatePdf}
+                        />
+                        {(fundFiles.count > PAGE_SIZE || fundFiles.from !== 0) && (
+                            <ListPager
+                                prev={this.handleFilterPrev}
+                                next={this.handleFilterNext}
+                                from={fundFiles.from}
+                                pageSize={PAGE_SIZE}
+                                totalCount={fundFiles.count}
+                            />
+                        )}
+                    </>
                 )}
             </div>
         );

@@ -29,15 +29,14 @@ import cz.tacr.cam.v1.schema.cam.FoundEntityInfoXml;
 import cz.tacr.cam.v1.schema.cam.HightlightPosXml;
 import cz.tacr.cam.v1.schema.cam.QueryResultXml;
 import cz.tacr.cam.v1.schema.cam.ResultLookupXml;
-import cz.tacr.elza.controller.vo.AeState;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityVO;
-import cz.tacr.elza.controller.vo.Area;
-import cz.tacr.elza.controller.vo.ExtensionFilterVO;
+import cz.tacr.elza.controller.vo.ApSearchArea;
+import cz.tacr.elza.controller.vo.ApSearchByItemWithValue;
 import cz.tacr.elza.controller.vo.HighlightVO;
-import cz.tacr.elza.controller.vo.RelationFilterVO;
+import cz.tacr.elza.controller.vo.ApSearchByRelation;
 import cz.tacr.elza.controller.vo.ResultLookupVO;
-import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -59,19 +58,18 @@ public class SearchFilterFactory {
     @Autowired
     private StaticDataService staticDataService;
 
-    public QueryParamsDef createQueryParamsDef(SearchFilterVO filter) {
+    public QueryParamsDef createQueryParamsDef(ApAdvanceSearchFilter filter) {
         QueryParamsDef queryParamsDef = new QueryParamsDef();
         queryParamsDef.setTypes(createTypeList(filter.getAeTypeIds()));
-        queryParamsDef.setState(createStateList(filter.getAeStates()));
         queryParamsDef.setCond(createQueryBaseCondDef(filter));
         queryParamsDef.setCodes(createCodeList(filter));
         queryParamsDef.setUser(filter.getUser());
         return queryParamsDef;
     }
 
-    private List<String> createCodeList(SearchFilterVO filter) {
+    private List<String> createCodeList(ApAdvanceSearchFilter filter) {
         List<String> codes = null;
-        String code = filter.getArea() == Area.ENTITY_CODE ? filter.getSearch() : null;
+        String code = filter.getArea() == ApSearchArea.ENTITY_CODE ? filter.getSearch() : null;
         if (StringUtils.isNotEmpty(code)) {
             codes = Collections.singletonList(code);
         }
@@ -101,7 +99,7 @@ public class SearchFilterFactory {
         return types;
     }
 
-    public void completeApTypesTreeInFilter(final SearchFilterVO filter) {
+    public void completeApTypesTreeInFilter(final ApAdvanceSearchFilter filter) {
         StaticDataProvider sdp = staticDataService.getData();
         List<ApType> apTypeList = sdp.getApTypes();
         if (filter.getAeTypeIds() != null) {
@@ -140,53 +138,23 @@ public class SearchFilterFactory {
     }
 
     /**
-     * Převod setu AeStateEnum na list QueryParamsDef.StateEnum
-     *
-     * @param aeStates Set AeStateEnum
-     * @return List QueryParamsDef.StateEnum
-     */
-    private List<QueryParamsDef.StateEnum> createStateList(Collection<AeState> aeStates) {
-        List<QueryParamsDef.StateEnum> stateEnumList = null;
-        if (aeStates != null) {
-            stateEnumList = new ArrayList<>();
-            for (AeState aeStateEnum : aeStates) {
-                switch (aeStateEnum) {
-                    case APS_NEW:
-                        stateEnumList.add(QueryParamsDef.StateEnum.RS_NEW);
-                        break;
-                    case APS_APPROVED:
-                        stateEnumList.add(QueryParamsDef.StateEnum.RS_APPROVED);
-                        break;
-                    case APS_INVALID:
-                        stateEnumList.add(QueryParamsDef.StateEnum.RS_INVALID);
-                        break;
-                    case APS_REPLACED:
-                        stateEnumList.add(QueryParamsDef.StateEnum.RS_REPLACED);
-                        break;
-                }
-            }
-        }
-        return stateEnumList;
-    }
-
-    /**
      * Vytvoření podmínky z parametrů filtru
      *
      * @param filter GlobalSearchFilterVO
      * @return podmínka QueryBaseCondDef
      */
-    private QueryBaseCondDef createQueryBaseCondDef(SearchFilterVO filter) {
+    private QueryBaseCondDef createQueryBaseCondDef(ApAdvanceSearchFilter filter) {
         QueryBaseCondDef queryBaseCondDef = null;
         String search = filter.getSearch();
-        Area area = filter.getArea();
-        if (area != Area.ENTITY_CODE) {
+        ApSearchArea area = filter.getArea();
+        if (area != ApSearchArea.ENTITY_CODE) {
             List<QueryBaseCondDef> andCondDefList = new ArrayList<>();
 
             if (StringUtils.isNotEmpty(search)) {
                 List<String> keyWords = getKeyWordsFromSearch(search);
                 for (String keyWord : keyWords) {
                     QueryBaseCondDef cond;
-                    if (filter.getOnlyMainPart() && !area.equals(Area.ALL_PARTS)) {
+                    if (filter.getOnlyMainPart() && !area.equals(ApSearchArea.ALL_PARTS)) {
                         cond = createQueryValueCondDef(NM_MAIN, null, QueryComparator.CT_CONTAIN, keyWord);
                     } else {
                         cond = createQueryIndexCondDef(keyWord);
@@ -210,13 +178,13 @@ public class SearchFilterFactory {
                 }
             }
             if (CollectionUtils.isNotEmpty(filter.getExtFilters())) {
-                for (ExtensionFilterVO ext : filter.getExtFilters()) {
+                for (ApSearchByItemWithValue ext : filter.getExtFilters()) {
                     QueryValueCondDef valueCondDef = createQueryValueCondDef(ext.getItemTypeId(), ext.getItemSpecId(), QueryComparator.CT_CONTAIN, String.valueOf(ext.getValue()));
                     andCondDefList.add(createQueryPartCondDef(valueCondDef, QueryPartCondDef.PartTypeEnum.fromValue(ext.getPartTypeCode())));
                 }
             }
             if (CollectionUtils.isNotEmpty(filter.getRelFilters())) {
-                for (RelationFilterVO rel : filter.getRelFilters()) {
+                for (ApSearchByRelation rel : filter.getRelFilters()) {
                     if (rel.getCode() != null) {
                         andCondDefList.add(createQueryValueCondDef(rel.getRelTypeId(), rel.getRelSpecId(), QueryComparator.CT_EQ, String.valueOf(rel.getCode())));
                     }

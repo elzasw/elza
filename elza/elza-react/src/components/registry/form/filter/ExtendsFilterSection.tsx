@@ -13,7 +13,7 @@ import {RulDescItemTypeExtVO} from "../../../../api/RulDescItemTypeExtVO";
 import {RulDescItemSpecExtVO} from "../../../../api/RulDescItemSpecExtVO";
 import {Col, Row} from "react-bootstrap";
 import {ArchiveEntityResultListVO} from "../../../../api/ArchiveEntityResultListVO";
-import {Area} from "../../../../api/Area";
+import {ApSearchArea} from 'elza-api';
 import {ApAccessPointVO} from "../../../../api/ApAccessPointVO";
 import {FilteredResultVO} from "../../../../api/FilteredResultVO";
 
@@ -105,7 +105,7 @@ const ExtFilters: React.FC<ExtFilterFieldProps> = memo(({
                     <ExtendsFilterModal
                         initialValues={{
                             onlyMainPart: true,
-                            area: Area.ALLNAMES,
+                            area: ApSearchArea.AllNames,
                             scopeId,
                         }}
                         rulSetsIds={rulSetsIds}

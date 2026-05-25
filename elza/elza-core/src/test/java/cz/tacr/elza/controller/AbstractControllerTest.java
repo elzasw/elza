@@ -164,7 +164,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.table.ElzaTable;
@@ -389,7 +389,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String ALL_SCOPES = AP_CONTROLLER_URL + "/scopes";
 	protected static final String RECORD_TYPES = AP_CONTROLLER_URL + "/recordTypes";
 
-	protected static final String FIND_RECORD = AP_CONTROLLER_URL + "/search";
 	protected static final String GET_RECORD = AP_CONTROLLER_URL + "/{recordId}";
 	protected static final String CREATE_ACCESS_POINT = AP_CONTROLLER_URL + "/";
 	protected static final String UPDATE_RECORD = AP_CONTROLLER_URL + "/{recordId}";
@@ -2270,22 +2269,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 */
 	protected List<ApAccessPointVO> findRecord(final String search, final Integer from, final Integer count,
 			final Integer apTypeId, final Integer versionId) {
-		HashMap<String, Object> params = new HashMap<>();
-
-		if (search != null) {
-			params.put("search", search);
-		}
-		if (versionId != null) {
-			params.put("versionId", versionId);
-		}
-		if (apTypeId != null) {
-			params.put("apTypeId", apTypeId);
-		}
-		params.put("from", from != null ? from : 0);
-		params.put("count", count != null ? count : 20);
-		params.put("excludeInvalid", true);
-
-		return post(spec -> spec.queryParams(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
+		return findRecord(search, from, count, apTypeId, versionId, null);
 	}
 
 	/**
@@ -2299,27 +2283,31 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @return List nalezených záznamů
 	 */
 	protected List<ApAccessPointVO> findRecord(final String search, final Integer from, final Integer count,
-			final Integer apTypeId, final Integer versionId, final SearchType searchType) {
-		HashMap<String, Object> params = new HashMap<>();
-
-		if (search != null) {
-			params.put("search", search);
-		}
-		if (versionId != null) {
-			params.put("versionId", versionId);
-		}
-		if (apTypeId != null) {
-			params.put("apTypeId", apTypeId);
-		}
+			final Integer apTypeId, final Integer versionId, final ApSearchType searchType) {
+		cz.tacr.elza.test.controller.vo.AccessPointSearchParams params =
+				new cz.tacr.elza.test.controller.vo.AccessPointSearchParams()
+				.search(search)
+				.versionId(versionId)
+				.apTypeId(apTypeId)
+				.from(from != null ? from : 0)
+				.count(count != null ? count : 20);
 		if (searchType != null) {
-			params.put("searchType", searchType);
+			// Test-client ApSearchType is a separate enum from the one used by callers; the value names match.
+			params.setSearchTypeName(cz.tacr.elza.test.controller.vo.ApSearchType.valueOf(searchType.name()));
 		}
-		params.put("from", from != null ? from : 0);
-		params.put("count", count != null ? count : 20);
-		params.put("excludeInvalid", true);
-
-		return post(spec -> spec.queryParams(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
+		cz.tacr.elza.test.controller.vo.ApAccessPointSearchResult result = accesspointsApi.accessPointSearch(params);
+		if (result == null || result.getRows() == null) {
+			return new ArrayList<>();
+		}
+		// rows arrive as Object (Map<String,Object>) — the ApAccessPointVO schema is stubbed in the contract.
+		return result.getRows().stream()
+				.map(row -> ROW_MAPPER.convertValue(row, ApAccessPointVO.class))
+				.collect(Collectors.toList());
 	}
+
+	private static final com.fasterxml.jackson.databind.ObjectMapper ROW_MAPPER =
+			new com.fasterxml.jackson.databind.ObjectMapper()
+					.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 	/**
 	 * Smazání variantního hesla

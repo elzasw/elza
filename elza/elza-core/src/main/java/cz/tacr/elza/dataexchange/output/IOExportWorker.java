@@ -19,13 +19,10 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
 
-import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.service.UserService;
 
@@ -33,6 +30,14 @@ import cz.tacr.elza.service.UserService;
 public class IOExportWorker implements SmartLifecycle {
 
     static final Logger log = LoggerFactory.getLogger(IOExportWorker.class);
+
+    /**
+     * Factory used by {@link #enqueue(IOExportRequestFactory)} to build a request once its id is allocated.
+     */
+    @FunctionalInterface
+    public interface IOExportRequestFactory {
+        IOExportRequest create(int requestId);
+    }
 
     private enum ThreadStatus {
         RUNNING, STOP_REQUEST, STOPPED
@@ -47,16 +52,16 @@ public class IOExportWorker implements SmartLifecycle {
     @Autowired
     private UserService userService;
 
-    private static int requestCount = 0; 
+    private static int requestCount = 0;
 
     // queue of export requests
     private LinkedList<IOExportRequest> exportRequests = new LinkedList<>();
 
-    // lookup by id
+    // lookup by id; holds pending/processing requests and (until eviction) finished/error ones
     private Map<Integer, IOExportRequest> mapExportResult = new HashMap<>();
-    
-    // cach for timeout removal
-    private LoadingCache<Integer, IOExportRequest> mapCacheResult;
+
+    // TTL cache for finished/error requests; eviction triggers file deletion + map cleanup
+    private Cache<Integer, IOExportRequest> mapCacheResult;
 
     private ThreadStatus status = ThreadStatus.STOPPED;
 
@@ -64,70 +69,50 @@ public class IOExportWorker implements SmartLifecycle {
 
     @PostConstruct
     protected void init() {
-        CacheLoader<Integer, IOExportRequest> loader = new CacheLoader<Integer, IOExportRequest>() {
-            @Override
-            public IOExportRequest load(Integer key) throws Exception {
-                IOExportRequest r = mapExportResult.get(key);
-                if (r != null) {
-                    if (r.getState() == IOExportState.FINISHED || r.getState() == IOExportState.ERROR) {
-                        return r;
-                    }
-                }
-                return null;
+        RemovalListener<Integer, IOExportRequest> removalListener = notification -> {
+            IOExportRequest request = notification.getValue();
+            if (request == null) {
+                return;
             }
-        };
-        RemovalListener<Integer, IOExportRequest> removalListener = new RemovalListener<Integer, IOExportRequest>() {
-            @Override
-            public void onRemoval(RemovalNotification<Integer, IOExportRequest> notification) {
-                Path filePath = resourcePathResolver.getExportTrasnformDir().resolve(notification.getKey() + ".xml");
-                try {
-                    Files.delete(filePath);
-                } catch (IOException e) {
-                    log.error("Error deleting a file: {}", filePath);
-                }
-                synchronized (lock) {
-                    mapExportResult.remove(notification.getKey());
-                }
+            Path filePath = resourcePathResolver.getExportTrasnformDir()
+                    .resolve(notification.getKey() + request.getFileExt());
+            try {
+                Files.deleteIfExists(filePath);
+            } catch (IOException e) {
+                log.error("Error deleting a file: {}", filePath, e);
+            }
+            synchronized (lock) {
+                mapExportResult.remove(notification.getKey());
             }
         };
         mapCacheResult = CacheBuilder.newBuilder()
                 .expireAfterWrite(5, TimeUnit.MINUTES) // časový interval uchování souboru (5 min)
                 .removalListener(removalListener)
-                .build(loader);
+                .build();
     }
 
-    public int addExportRequest(final Integer userId, final String downloadFileName, DEExportParams exportParams) {
+    /**
+     * Allocate a request id, build the request via the factory, store it and notify the worker.
+     *
+     * @return id of the newly queued request
+     */
+    public int enqueue(IOExportRequestFactory factory) {
         synchronized (lock) {
-            IOExportRequest exportRequest = new IOExportFundXmlRequest(userId, ++requestCount, downloadFileName, exportParams, exportService);
-
-            // store result
-            mapExportResult.put(exportRequest.getRequestId(), exportRequest);
-            exportRequests.add(exportRequest);         
+            IOExportRequest request = factory.create(++requestCount);
+            mapExportResult.put(request.getRequestId(), request);
+            exportRequests.add(request);
             lock.notifyAll();
-            return exportRequest.getRequestId();
-        }        
-    }
-
-    public int addExportRequest(final Integer userId, final String downloadFileName, SearchParams searchParams) {
-        synchronized (lock) {
-            IOExportRequest exportRequest = new IOExportFundsCsv(userId, ++requestCount, downloadFileName, searchParams, exportService);
-
-            // store result
-            mapExportResult.put(exportRequest.getRequestId(), exportRequest);
-            exportRequests.add(exportRequest);         
-            lock.notifyAll();
-            return exportRequest.getRequestId();
-        }        
+            return request.getRequestId();
+        }
     }
 
     public IOExportRequest getExportState(Integer requestId) {
 
-        // activation of deletion of expired records
+        // trigger eviction of expired entries (file deletion + map cleanup)
         mapCacheResult.cleanUp();
 
         synchronized (lock) {
-            IOExportRequest result = mapExportResult.get(requestId);
-            return result;
+            return mapExportResult.get(requestId);
         }
     }
 
@@ -140,7 +125,7 @@ public class IOExportWorker implements SmartLifecycle {
         Path exportTrasnformDir = resourcePathResolver.getExportTrasnformDir();
         Files.createDirectories(exportTrasnformDir);
         Path exportFile = Files.createFile(exportTrasnformDir.resolve(request.getRequestId() + request.getFileExt()));
-        request.exportToFile(exportFile);
+        request.exportToFile(exportFile, exportService);
     }
 
     public void run() {
@@ -178,12 +163,13 @@ public class IOExportWorker implements SmartLifecycle {
             }
 
             synchronized (lock) {
-                // set result
+                // set result and start TTL eviction
                 if (exception == null) {
                     request.setFinished();
                 } else {
                     request.setFailed(exception);
                 }
+                mapCacheResult.put(request.getRequestId(), request);
             }
         }
 
