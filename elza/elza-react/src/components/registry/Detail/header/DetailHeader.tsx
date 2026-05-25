@@ -245,31 +245,35 @@ const DetailHeader: FC<Props> = ({
                         </DetailDescriptions>
                     </div>
                 )}
-                <div
-                    className="header-actions"
-                >
-                {onToggleGlobalCollapsed && <Button
-                    onClick={onToggleGlobalCollapsed}
-                    variant={'light'}
-                    title={globalCollapsed ? 'Rozbalit všechny části' : 'Sbalit všechny části'}
-                    className='button'
-                    style={{fontSize: "0.8em"}}
-                >
-                    <Icon glyph={globalCollapsed ? 'fa-expand' : 'fa-compress'} />
-                </Button>}
-                <Button
-                    onClick={onToggleCollapsed}
-                    variant={'light'}
-                    title={collapsed ? 'Zobrazit podrobnosti' : 'Skrýt podrobnosti'}
-                    className='button'
-                >
-                    <Icon glyph={collapsed ? 'fa-angle-double-down' : 'fa-angle-double-up'} />
-                </Button>
-                </div>
-                <div>
-                </div>
             </div>
-            <RevisionApTypeNames className={"test"} apType={apType} apTypeNew={revisionActive ? apTypeNew : undefined} />
+            {apType && (
+                <RevisionApTypeNames
+                    className={"test"}
+                    apType={apType}
+                    apTypeNew={revisionActive ? apTypeNew : undefined}
+                    actions={<>
+                        {onToggleGlobalCollapsed && (
+                            <Button
+                                onClick={onToggleGlobalCollapsed}
+                                variant={'light'}
+                                title={globalCollapsed ? 'Rozbalit všechny části' : 'Sbalit všechny části'}
+                                className='button'
+                                style={{fontSize: "0.8em"}}
+                            >
+                                <Icon glyph={globalCollapsed ? 'fa-expand' : 'fa-compress'} />
+                            </Button>
+                        )}
+                        <Button
+                            onClick={onToggleCollapsed}
+                            variant={'light'}
+                            title={collapsed ? 'Zobrazit podrobnosti' : 'Skrýt podrobnosti'}
+                            className='button'
+                        >
+                            <Icon glyph={collapsed ? 'fa-angle-double-down' : 'fa-angle-double-up'} />
+                        </Button>
+                    </>}
+                />
+            )}
         </div>
     );
 };
