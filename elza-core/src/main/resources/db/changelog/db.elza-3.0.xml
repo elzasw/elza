@@ -934,4 +934,50 @@
         <sql dbms="postgresql">CREATE INDEX IF NOT EXISTS wf_task_assignee_open_idx ON wf_task(assignee_id) WHERE time_closed IS NULL</sql>
     </changeSet>
 
+    <changeSet id="20260520120000" author="ppy">
+        <!-- Cleanup of arr_inhibited_item rows whose desc_item was deleted but the
+             inhibited_item was left open (delete_change_id IS NULL). Matches the
+             arr_item via desc_item_object_id and closes the inhibited_item with the
+             delete_change_id of the desc_item's final (deletion) version. The node
+             cache of every affected arr_inhibited_item.node_id is invalidated so
+             it gets rebuilt on next read without the stale inhibition. -->
+        <sql dbms="postgresql">
+            DELETE FROM arr_cached_node WHERE node_id IN (
+                SELECT DISTINCT ii.node_id
+                FROM arr_inhibited_item ii
+                WHERE ii.delete_change_id IS NULL
+                  AND NOT EXISTS (
+                      SELECT 1 FROM arr_item ai
+                      WHERE ai.desc_item_object_id = ii.desc_item_object_id
+                        AND ai.delete_change_id IS NULL
+                  )
+                  AND EXISTS (
+                      SELECT 1 FROM arr_item ai
+                      WHERE ai.desc_item_object_id = ii.desc_item_object_id
+                        AND ai.delete_change_id IS NOT NULL
+                  )
+            )
+        </sql>
+        <sql dbms="postgresql">
+            UPDATE arr_inhibited_item ii
+            SET delete_change_id = (
+                SELECT MAX(ai.delete_change_id)
+                FROM arr_item ai
+                WHERE ai.desc_item_object_id = ii.desc_item_object_id
+                  AND ai.delete_change_id IS NOT NULL
+            )
+            WHERE ii.delete_change_id IS NULL
+              AND NOT EXISTS (
+                  SELECT 1 FROM arr_item ai2
+                  WHERE ai2.desc_item_object_id = ii.desc_item_object_id
+                    AND ai2.delete_change_id IS NULL
+              )
+              AND EXISTS (
+                  SELECT 1 FROM arr_item ai3
+                  WHERE ai3.desc_item_object_id = ii.desc_item_object_id
+                    AND ai3.delete_change_id IS NOT NULL
+              )
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

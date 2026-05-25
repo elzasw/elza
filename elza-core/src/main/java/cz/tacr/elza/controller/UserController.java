@@ -30,7 +30,7 @@ import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UserInfoVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
-import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFund;
@@ -264,13 +264,13 @@ public class UserController {
                                                 @RequestParam("from") final Integer from,
                                                 @RequestParam("count") final Integer count,
                                                 @RequestParam(value = "excludedGroupId", required = false) final Integer excludedGroupId,
-                                                @RequestParam(value = "searchTypeName", required = false) @Nullable final SearchType searchTypeName,
-                                                @RequestParam(value = "searchTypeUsername",required = false) @Nullable final SearchType searchTypeUsername
+                                                @RequestParam(value = "searchTypeName", required = false) @Nullable final ApSearchType searchTypeName,
+                                                @RequestParam(value = "searchTypeUsername",required = false) @Nullable final ApSearchType searchTypeUsername
     ) {
         Objects.requireNonNull(active);
         Objects.requireNonNull(disabled);
-        SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
-        SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.FULLTEXT;
+        ApSearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : ApSearchType.FULLTEXT;
+        ApSearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : ApSearchType.FULLTEXT;
 
         if (!active && !disabled) {
             throw new IllegalArgumentException("Musí být uveden alespoň jeden z parametrů: active, disabled.");
@@ -297,11 +297,11 @@ public class UserController {
     public FilteredResultVO<UsrUserVO> findUserWithFundCreate(@Nullable @RequestParam(value = "search", required = false) final String search,
                                                               @RequestParam("from") final Integer from,
                                                               @RequestParam("count") final Integer count,
-                                                              @RequestParam(value = "searchTypeName", required = false) @Nullable final SearchType searchTypeName,
-                                                              @RequestParam(value = "searchTypeUsername", required = false) @Nullable final SearchType searchTypeUsername
+                                                              @RequestParam(value = "searchTypeName", required = false) @Nullable final ApSearchType searchTypeName,
+                                                              @RequestParam(value = "searchTypeUsername", required = false) @Nullable final ApSearchType searchTypeUsername
     ) {
-        SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.DISABLED;
-        SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.FULLTEXT;
+        ApSearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : ApSearchType.DISABLED;
+        ApSearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : ApSearchType.FULLTEXT;
         FilteredResult<UsrUser> users = userService.findUserWithFundCreate(search, from, count, searchTypeNameFinal, searchTypeUsernameFinal);
         return new FilteredResultVO<>(users.getList(),
                 (entity) -> factoryVO.createUser(entity, false, false),

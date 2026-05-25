@@ -1,10 +1,13 @@
 package cz.tacr.elza.dataexchange.output.sections;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import jakarta.persistence.EntityManager;
 
@@ -38,6 +41,18 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
 
     private final boolean includeUuid;
 
+    /**
+     * descItemObjectIds of desc items dropped by the export filter on each processed node.
+     * Populated only when {@link #includeAccessPoints} is false.
+     */
+    private final Map<Integer, Set<Integer>> removedDescObjectIdsByNode = new HashMap<>();
+
+    /**
+     * Parent of each processed node, used to walk the tree up when filtering inhibited items.
+     * Populated only when {@link #includeAccessPoints} is false.
+     */
+    private final Map<Integer, Integer> parentNodeByNode = new HashMap<>();
+
     public LevelInfoLoader(final EntityManager em,
                            final int batchSize,
                            final NodeCacheService nodeCacheService,
@@ -66,6 +81,12 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
             Integer parentNodeId = firstBatch && i == 0 ? null : level.getNodeIdParent();
             // cached node from prepared map
             RestoredNode cachedNode = cachedNodes.get(level.getNodeId());
+
+            // remember real parent (independent of section-root nulling) so inhibited
+            // refs can be checked against ancestor levels processed earlier
+            if (!includeAccessPoints) {
+                parentNodeByNode.put(level.getNodeId(), level.getNodeIdParent());
+            }
 
             LevelInfoImpl levelInfo = createLevelInfo(level.getNodeId(), parentNodeId, cachedNode, daoMap);
             entry.setResult(levelInfo);
@@ -121,7 +142,8 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
         return nodeIds;
     }
 
-    private LevelInfoImpl createLevelInfo(Integer nodeId, Integer parentNodeId, CachedNode cachedNode, Map<Integer, ArrDao> daoMap) {
+    private LevelInfoImpl createLevelInfo(Integer nodeId, Integer parentNodeId, CachedNode cachedNode,
+                                          Map<Integer, ArrDao> daoMap) {
     	Objects.requireNonNull(nodeId);
     	Objects.requireNonNull(cachedNode);
 
@@ -134,16 +156,34 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
         // add desc items
         List<ArrDescItem> descItems = cachedNode.getDescItems();
         if (descItems != null) {
-            // sort items by item type and position & filter by condition
-            descItems.stream().filter(item -> isItemIncluded(item))
-                .sorted((item1, item2) -> compareItems(item1, item2))
-                .forEachOrdered(levelInfo::addItem);
+            // partition: keep items that pass the filter; remember dropped descItemObjectIds
+            // so inhibited references from descendants can be cleaned up
+            Set<Integer> droppedAtThisNode = null;
+            List<ArrDescItem> kept = new ArrayList<>(descItems.size());
+            for (ArrDescItem item : descItems) {
+                if (isItemIncluded(item)) {
+                    kept.add(item);
+                } else {
+                    if (droppedAtThisNode == null) {
+                        droppedAtThisNode = new HashSet<>();
+                    }
+                    droppedAtThisNode.add(item.getDescItemObjectId());
+                }
+            }
+            if (droppedAtThisNode != null) {
+                removedDescObjectIdsByNode.put(nodeId, droppedAtThisNode);
+            }
+            kept.sort(this::compareItems);
+            kept.forEach(levelInfo::addItem);
         }
 
-        // add inhibited items
+        // add inhibited items, dropping refs whose target item was removed from any ancestor
         List<ArrInhibitedItem> inhibitedItems = cachedNode.getInhibitedItems();
         if (inhibitedItems != null) {
-        	levelInfo.addInhibitedItems(inhibitedItems);
+            Collection<ArrInhibitedItem> filtered = filterInhibitedItems(inhibitedItems, nodeId);
+            if (!filtered.isEmpty()) {
+                levelInfo.addInhibitedItems(filtered);
+            }
         }
 
         // add daos
@@ -191,6 +231,38 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
             if (item.getData() != null && DataType.fromId(item.getData().getDataTypeId()) == DataType.RECORD_REF) {
                 return false;
             }
+        }
+        return true;
+    }
+
+    private Collection<ArrInhibitedItem> filterInhibitedItems(List<ArrInhibitedItem> inhibitedItems,
+                                                              Integer currentNodeId) {
+        if (includeAccessPoints || removedDescObjectIdsByNode.isEmpty()) {
+            return inhibitedItems;
+        }
+        List<ArrInhibitedItem> result = new ArrayList<>(inhibitedItems.size());
+        for (ArrInhibitedItem inh : inhibitedItems) {
+            if (isInhibitedItemIncluded(inh, currentNodeId)) {
+                result.add(inh);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * An inhibited item targets a description item on some ancestor level. Walk the parent
+     * chain and look for a node where that target was filtered out — if found, the inhibition
+     * is meaningless in the export and must be omitted.
+     */
+    private boolean isInhibitedItemIncluded(ArrInhibitedItem inh, Integer currentNodeId) {
+        Integer refId = inh.getDescItemObjectId();
+        Integer ancestorId = parentNodeByNode.get(currentNodeId);
+        while (ancestorId != null) {
+            Set<Integer> dropped = removedDescObjectIdsByNode.get(ancestorId);
+            if (dropped != null && dropped.contains(refId)) {
+                return false;
+            }
+            ancestorId = parentNodeByNode.get(ancestorId);
         }
         return true;
     }

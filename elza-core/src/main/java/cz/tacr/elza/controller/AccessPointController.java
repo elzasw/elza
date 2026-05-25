@@ -1,18 +1,31 @@
 package cz.tacr.elza.controller;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.factory.ApFactory;
+import cz.tacr.elza.controller.vo.AccessPointBatchExportParams;
+import cz.tacr.elza.controller.vo.AccessPointSearchParams;
+import cz.tacr.elza.controller.vo.ApAccessPointSearchResult;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
+import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApStateUpdate;
 import cz.tacr.elza.controller.vo.ApValidationIssues;
@@ -22,12 +35,24 @@ import cz.tacr.elza.controller.vo.CreatedPart;
 import cz.tacr.elza.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.controller.vo.DeleteAccessPointsDetail;
 import cz.tacr.elza.controller.vo.EntityRef;
+import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.InvalidatedEntities;
 import cz.tacr.elza.controller.vo.Participant;
 import cz.tacr.elza.controller.vo.ReplaceType;
 import cz.tacr.elza.controller.vo.ResultAutoItems;
 import cz.tacr.elza.controller.vo.RevStateChange;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.controller.vo.ApSearchType;
+import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.dataexchange.output.IOExportAccessPointsCsv;
+import cz.tacr.elza.dataexchange.output.IOExportWorker;
+import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.repository.ApTypeRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.ItemAptypeRepository;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApRevPart;
@@ -36,7 +61,10 @@ import cz.tacr.elza.domain.ApRevision;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApState.StateApproval;
+import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.RevStateApproval;
+import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SyncImpossibleException;
@@ -51,8 +79,10 @@ import cz.tacr.elza.service.RevisionPartService;
 import cz.tacr.elza.service.RevisionService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.TaskService;
+import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.cache.AccessPointCacheService;
 import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.domain.UsrUser;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -90,6 +120,199 @@ public class AccessPointController implements AccesspointsApi {
 
     @Autowired
     ApFactory apFactory;
+
+    @Autowired
+    UserService userService;
+
+    @Autowired
+    IOExportWorker ioExportWorker;
+
+    @Autowired
+    ApTypeRepository apTypeRepository;
+
+    @Autowired
+    FundVersionRepository fundVersionRepository;
+
+    @Autowired
+    ItemAptypeRepository itemAptypeRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(AccessPointController.class);
+
+    // POST /accesspoint/search
+    @Override
+    @Transactional
+    public ResponseEntity<ApAccessPointSearchResult> accessPointSearch(@Valid AccessPointSearchParams params) {
+        if (params == null) {
+            params = new AccessPointSearchParams();
+        }
+        StaticDataProvider sdp = staticDataService.getData();
+
+        ArrFund fund = null;
+        if (params.getVersionId() != null) {
+            ArrFundVersion version = fundVersionRepository.getOneCheckExist(params.getVersionId());
+            fund = version.getFund();
+        }
+
+        Set<Integer> apTypeIds = new HashSet<>();
+        if (params.getApTypeId() != null) {
+            apTypeIds.add(params.getApTypeId());
+        }
+        apTypeIds = apTypeRepository.findSubtreeIds(apTypeIds);
+        apTypeIds = applyItemTypeOrSpecLimit(sdp, apTypeIds, params.getItemTypeId(), params.getItemSpecId());
+
+        StateApproval state = params.getState() == null
+                ? null
+                : StateApproval.valueOf(params.getState().getValue());
+        RevStateApproval revState = params.getRevState() == null
+                ? null
+                : RevStateApproval.valueOf(params.getRevState().getValue());
+
+        // Start from the advanced filter (if any); top-level scalar search overrides searchFilter.search.
+        ApAdvanceSearchFilter searchFilter = params.getSearchFilter();
+        String searchText = params.getSearch();
+        if (searchText != null && !searchText.isBlank()) {
+            if (searchFilter == null) {
+                searchFilter = new ApAdvanceSearchFilter();
+            }
+            searchFilter.setSearch(searchText);
+        } else if (searchFilter != null && searchFilter.getSearch() != null && !searchFilter.getSearch().isBlank()) {
+            // Allow the filter to carry the search if the top-level scalar is empty.
+            searchText = searchFilter.getSearch();
+        }
+
+        Integer from = params.getFrom();
+        Integer count = params.getCount();
+        Integer scopeId = params.getScopeId();
+
+        FilteredResultVO<cz.tacr.elza.controller.vo.ApAccessPointVO> result;
+        if (StringUtils.isNotEmpty(searchText)) {
+            result = accessPointService.findUseLuceneQueries(searchText, searchFilter, fund, apTypeIds,
+                    scopeId, state, revState, from, count, sdp);
+        } else {
+            result = accessPointService.findUseCriteriaQuery(searchText, searchFilter,
+                    params.getSearchTypeName(), params.getSearchTypeUsername(),
+                    fund, apTypeIds, scopeId, state, revState, from, count, sdp);
+        }
+
+        ApAccessPointSearchResult body = new ApAccessPointSearchResult();
+        body.setCount(result.getCount());
+        body.setRows(result.getRows() == null ? List.of() : result.getRows());
+        return ResponseEntity.ok(body);
+    }
+
+    // POST /accesspoint/export
+    @Override
+    @Transactional
+    public ResponseEntity<Integer> accessPointBatchExport(@Valid AccessPointBatchExportParams params) {
+        if (params == null) {
+            params = new AccessPointBatchExportParams();
+        }
+
+        StaticDataProvider sdp = staticDataService.getData();
+
+        ArrFund fund = null;
+        if (params.getVersionId() != null) {
+            ArrFundVersion version = fundVersionRepository.getOneCheckExist(params.getVersionId());
+            fund = version.getFund();
+        }
+
+        Set<Integer> apTypeIds = new HashSet<>();
+        if (params.getApTypeId() != null) {
+            apTypeIds.add(params.getApTypeId());
+        }
+        apTypeIds = apTypeRepository.findSubtreeIds(apTypeIds);
+        apTypeIds = applyItemTypeOrSpecLimit(sdp, apTypeIds, params.getItemTypeId(), params.getItemSpecId());
+
+        Set<Integer> scopeIds = accessPointService.getScopeIdsForSearch(fund, params.getScopeId(), false);
+
+        StateApproval state = params.getState() == null
+                ? null
+                : StateApproval.valueOf(params.getState().getValue());
+        RevStateApproval revState = params.getRevState() == null
+                ? null
+                : RevStateApproval.valueOf(params.getRevState().getValue());
+
+        // Start from the advanced filter (if any) and let top-level scalar fields override.
+        ApAdvanceSearchFilter searchFilter = params.getSearchFilter();
+        if (params.getSearch() != null && !params.getSearch().isBlank()) {
+            if (searchFilter == null) {
+                searchFilter = new ApAdvanceSearchFilter();
+            }
+            searchFilter.setSearch(params.getSearch());
+        }
+
+        UsrUser user = userService.getLoggedUser();
+        final Integer userId = user == null ? null : user.getUserId();
+        final String fileName = "access-points_"
+                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss"))
+                + ".csv";
+
+        final ApAdvanceSearchFilter finalFilter = searchFilter;
+        final Set<Integer> finalApTypeIds = apTypeIds;
+        final Set<Integer> finalScopeIds = scopeIds;
+        int id = ioExportWorker.enqueue(requestId -> new IOExportAccessPointsCsv(
+                userId, requestId, fileName, finalFilter, finalApTypeIds, finalScopeIds, state, revState));
+        return ResponseEntity.ok(id);
+    }
+
+    /**
+     * Restrict the AP-type set by an item-type or item-specification filter.
+     *
+     * Mirrors the logic of {@code ApController.findAccessPoint} so the export endpoint resolves
+     * the registry-list filters identically: the input apTypeIds (already subtree-expanded) is
+     * intersected with the AP types that may carry the given item type / spec.
+     */
+    private Set<Integer> applyItemTypeOrSpecLimit(StaticDataProvider sdp,
+                                                  Set<Integer> apTypeIdTree,
+                                                  Integer itemTypeId,
+                                                  Integer itemSpecId) {
+        if (itemSpecId != null) {
+            RulItemSpec spec = sdp.getItemSpecById(itemSpecId);
+            if (spec == null) {
+                throw new cz.tacr.elza.exception.ObjectNotFoundException(
+                        "Specification not found", ArrangementCode.ITEM_SPEC_NOT_FOUND)
+                        .setId(itemSpecId);
+            }
+            List<Integer> extraApTypeLimit = itemAptypeRepository.findApTypeIdsByItemSpec(spec);
+            if (extraApTypeLimit.isEmpty()) {
+                logger.error("Specification has no associated classes, itemSpecId={}", itemSpecId);
+                throw new SystemException("Configuration error, specification without associated classes",
+                        BaseCode.SYSTEM_ERROR).set("itemSpecId", itemSpecId);
+            }
+            return intersectWithApTypeSubtree(apTypeIdTree, extraApTypeLimit);
+        }
+        if (itemTypeId != null) {
+            ItemType itemType = sdp.getItemTypeById(itemTypeId);
+            if (itemType == null) {
+                throw new cz.tacr.elza.exception.ObjectNotFoundException(
+                        "Item type not found", ArrangementCode.ITEM_TYPE_NOT_FOUND)
+                        .setId(itemTypeId);
+            }
+            if (itemType.hasSpecifications()) {
+                throw new BusinessException("Item type requires specification", BaseCode.PROPERTY_NOT_EXIST)
+                        .set("itemTypeId", itemTypeId)
+                        .set("itemTypeCode", itemType.getCode());
+            }
+            List<Integer> extraApTypeLimit = itemAptypeRepository.findApTypeIdsByItemType(itemType.getEntity());
+            if (extraApTypeLimit.isEmpty()) {
+                logger.error("Item type has no associated classes, itemTypeId={}", itemTypeId);
+                throw new SystemException("Configuration error, item type without associated classes",
+                        BaseCode.SYSTEM_ERROR).set("itemTypeId", itemTypeId);
+            }
+            return intersectWithApTypeSubtree(apTypeIdTree, extraApTypeLimit);
+        }
+        return apTypeIdTree;
+    }
+
+    private Set<Integer> intersectWithApTypeSubtree(Set<Integer> apTypeIdTree, List<Integer> extraApTypeLimit) {
+        Set<Integer> extraSubTree = apTypeRepository.findSubtreeIds(extraApTypeLimit);
+        if (CollectionUtils.isEmpty(apTypeIdTree)) {
+            return extraSubTree;
+        }
+        Set<Integer> intersection = new HashSet<>(apTypeIdTree);
+        intersection.retainAll(extraSubTree);
+        return intersection;
+    }
 
     // PUT /accesspoint/export/{queueItemId}
     @Override

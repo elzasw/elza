@@ -32,7 +32,7 @@ import { descItemTypesFetchIfNeeded } from '../../actions/refTables/descItemType
 import { refRulDataTypesFetchIfNeeded } from '../../actions/refTables/rulDataTypes';
 import CreateAccessPointModal from '../../components/registry/modal/CreateAccessPointModal';
 import ApExtSearchModal, { TypeModal } from '../../components/registry/modal/ApExtSearchModal';
-import { Area } from 'api/Area';
+import { ApSearchArea } from 'elza-api';
 import { ApPushToExt } from '../../components/registry/modal/ApPushToExt';
 import ExtSyncsModal from '../../components/registry/modal/ExtSyncsModal';
 import { objectById, storeFromArea } from '../../shared/utils';
@@ -243,7 +243,7 @@ class RegistryPage extends AbstractReactComponent {
     handleApExtSearch = () => {
         const { extSystems } = this.props;
         const initialValues = {
-            area: Area.ALLNAMES,
+            area: ApSearchArea.AllNames,
             onlyMainPart: 'false', // musí být jako string, autocomplete má problém s true/false hodnotou
         };
         if (extSystems.length === 1) {
@@ -291,7 +291,7 @@ class RegistryPage extends AbstractReactComponent {
         } = this.props;
         const id = data.id;
         const initialValues = {
-            area: Area.ALLNAMES,
+            area: ApSearchArea.AllNames,
             onlyMainPart: 'false', // musí být jako string, autocomplete má problém s true/false hodnotou
         };
 
@@ -368,7 +368,16 @@ class RegistryPage extends AbstractReactComponent {
                         const id = detail.id;
                         const result = await Api.accesspoints.accessPointCopyAccessPoint(id, data);
                         dispatch(modalDialogHide())
-                        dispatch(goToAe(history, result.data.id, true, true, revisionActive));
+                        // accessPointCopyAccessPoint returns EntityRef with a UUID id.
+                        // Resolve UUID -> numeric AP id before navigating; pushing
+                        // /entity/<uuid> strands the page because the post-fetch
+                        // URL-rewrite chain in initData races the in-flight fetch
+                        // and DetailActions.fetchIfNeeded's dedup branch drops
+                        // the redirect.
+                        const ap = await dispatch(registryDetailFetchIfNeeded(result.data.id, true));
+                        if (ap) {
+                            dispatch(goToAe(history, ap.id, true, true, revisionActive));
+                        }
                         return;
                     }}
                     detail={detail.data}

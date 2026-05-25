@@ -4,6 +4,8 @@ import {objectById} from 'stores/app/utils';
 import {savingApiWrapper} from 'actions/global/status';
 import {JAVA_ATTR_CLASS} from '../../constants';
 
+export const PAGE_SIZE = 50;
+
 export function isFundFilesAction(action) {
     switch (action.type) {
         case types.FUND_FILES_REQUEST:
@@ -16,7 +18,7 @@ export function isFundFilesAction(action) {
 }
 
 function _dataGridKey(state) {
-    return '-filterText' + state.filterText;
+    return '-filterText' + state.filterText + '-from' + state.from;
 }
 
 export function fetchFundFilesIfNeeded(versionId, fundId) {
@@ -32,7 +34,7 @@ export function fetchFundFilesIfNeeded(versionId, fundId) {
         if (fundFiles.currentDataKey !== dataKey) {
             dispatch(_dataRequest(versionId, dataKey));
 
-            WebApi.findFundFiles(fundId, fundFiles.filterText).then(response => {
+            WebApi.findFundFiles(fundId, fundFiles.filterText, PAGE_SIZE, fundFiles.from).then(response => {
                 const newFund = objectById(state.arrRegion.funds, versionId, 'versionId');
                 if (newFund !== null) {
                     const newFundFiles = fund.fundFiles;
@@ -62,11 +64,12 @@ function _dataReceive(versionId, data) {
     };
 }
 
-export function fundFilesFilterByText(versionId, filterText) {
+export function fundFilesFilter(versionId, filterText, from = 0) {
     return {
         type: types.FUND_FILES_FILTER,
         versionId,
         filterText,
+        from,
     };
 }
 

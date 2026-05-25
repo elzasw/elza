@@ -14,8 +14,8 @@ public class IOExportFundXmlRequest extends IOExportRequest {
 
 	final private DEExportParams exportParams;
 
-    public IOExportFundXmlRequest(Integer userId, Integer requestId, String dlFileName, DEExportParams params, DEExportService service) {
-		super(userId, requestId, dlFileName, MediaType.APPLICATION_XML_VALUE, FILE_NAME_EXT, service);
+    public IOExportFundXmlRequest(Integer userId, Integer requestId, String dlFileName, DEExportParams params) {
+		super(userId, requestId, dlFileName, MediaType.APPLICATION_XML_VALUE, FILE_NAME_EXT);
 		this.exportParams = params;
 	}
 
@@ -24,7 +24,7 @@ public class IOExportFundXmlRequest extends IOExportRequest {
     }
 
 	@Override
-	void exportToFile(Path exportFile) throws IOException {
+	void exportToFile(Path exportFile, DEExportService exportService) throws IOException {
         exportService.exportXmlDataToFile(exportParams, exportFile);
 	}
 }

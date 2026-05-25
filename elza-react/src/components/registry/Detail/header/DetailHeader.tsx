@@ -28,11 +28,13 @@ import { WebApi } from 'actions';
 interface Props {
     item: ApAccessPointVO;
     onToggleCollapsed?: () => void;
+    onToggleGlobalCollapsed?: () => void;
     onInvalidateDetail?: () => void;
     onInvalidateValidation?: () => void;
     onPushApToExt?: (item: ApAccessPointVO, extSystems: ApExternalSystemSimpleVO[]) => void;
     onToggleRevision?: () => void;
     collapsed: boolean;
+    globalCollapsed: boolean;
     id?: number;
     validationErrors?: string[];
     validationPartErrors?: PartValidationErrorsVO[]
@@ -52,8 +54,10 @@ const DetailHeader: FC<Props> = ({
     item,
     id,
     collapsed,
+    globalCollapsed,
     onPushApToExt,
     onToggleCollapsed,
+    onToggleGlobalCollapsed,
     onToggleRevision,
     validationErrors,
     validationPartErrors,
@@ -241,18 +245,35 @@ const DetailHeader: FC<Props> = ({
                         </DetailDescriptions>
                     </div>
                 )}
-                <Button
-                    onClick={onToggleCollapsed}
-                    variant={'light'}
-                    className="collapse-button"
-                    title={collapsed ? 'Zobrazit podrobnosti' : 'Skrýt podrobnosti'}
-                >
-                    <Icon glyph={collapsed ? 'fa-angle-double-down' : 'fa-angle-double-up'} />
-                </Button>
-                <div>
-                </div>
             </div>
-            <RevisionApTypeNames className={"test"} apType={apType} apTypeNew={revisionActive ? apTypeNew : undefined} />
+            {apType && (
+                <RevisionApTypeNames
+                    className={"test"}
+                    apType={apType}
+                    apTypeNew={revisionActive ? apTypeNew : undefined}
+                    actions={<>
+                        {onToggleGlobalCollapsed && (
+                            <Button
+                                onClick={onToggleGlobalCollapsed}
+                                variant={'light'}
+                                title={globalCollapsed ? 'Rozbalit všechny části' : 'Sbalit všechny části'}
+                                className='button'
+                                style={{fontSize: "0.8em"}}
+                            >
+                                <Icon glyph={globalCollapsed ? 'fa-expand' : 'fa-compress'} />
+                            </Button>
+                        )}
+                        <Button
+                            onClick={onToggleCollapsed}
+                            variant={'light'}
+                            title={collapsed ? 'Zobrazit podrobnosti' : 'Skrýt podrobnosti'}
+                            className='button'
+                        >
+                            <Icon glyph={collapsed ? 'fa-angle-double-down' : 'fa-angle-double-up'} />
+                        </Button>
+                    </>}
+                />
+            )}
         </div>
     );
 };

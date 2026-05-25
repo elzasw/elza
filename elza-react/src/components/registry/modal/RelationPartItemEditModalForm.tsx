@@ -17,7 +17,7 @@ import {DetailStoreState} from "../../../types";
 import {ApViewSettings} from "../../../api/ApViewSettings";
 import {objectById} from "../../../shared/utils";
 import {RulPartTypeVO} from "../../../api/RulPartTypeVO";
-import { Area } from 'api/Area';
+import { ApSearchArea } from 'elza-api';
 
 const FORM_NAME = "relationPartItemEditModalForm";
 
@@ -135,7 +135,7 @@ const RelationPartItemEditModalForm = ({
                     </Field>
                 </Col>
                 <Col xs={6}>
-                    {area !== Area.ALLPARTS && <>
+                    {area !== ApSearchArea.AllParts && <>
                         <Form.Label>
                             {i18n('ap.ext-search.section.relations.only-main-part')}
                         </Form.Label>
@@ -154,7 +154,7 @@ const RelationPartItemEditModalForm = ({
                     <ArchiveEntityRel
                         name={'codeObj'}
                         label={i18n('ap.ext-search.section.relations.obj')}
-                        onlyMainPart={area !== Area.ALLPARTS && onlyMainPart}
+                        onlyMainPart={area !== ApSearchArea.AllParts && onlyMainPart}
                         area={area}
                         scopeId={scopeId}
                         itemTypeId={typeId}

@@ -15,7 +15,7 @@ import {RulDataTypeVO} from "../../../api/RulDataTypeVO";
 import {RulDataTypeCodeEnum} from "../../../api/RulDataTypeCodeEnum";
 import {FilteredResultVO} from "../../../api/FilteredResultVO";
 import {ApAccessPointVO} from "../../../api/ApAccessPointVO";
-import { Area } from 'api/Area';
+import { ApSearchArea } from 'elza-api';
 
 const FORM_NAME = "relationFilterModalForm";
 
@@ -121,7 +121,7 @@ const RelationFilterModal = ({
                     </Field>
                 </Col>
                 <Col xs={6}>
-                    {area !== Area.ALLPARTS && <>
+                    {area !== ApSearchArea.AllParts && <>
                         <Form.Label>
                             {i18n('ap.ext-search.section.relations.only-main-part')}
                         </Form.Label>
@@ -137,7 +137,7 @@ const RelationFilterModal = ({
                     <ArchiveEntityRel
                         name={'obj'}
                         label={i18n('ap.ext-search.section.relations.obj')}
-                        onlyMainPart={area !== Area.ALLPARTS && onlyMainPart}
+                        onlyMainPart={area !== ApSearchArea.AllParts && onlyMainPart}
                         area={area}
                         api={relApi}
                         scopeId={scopeId}

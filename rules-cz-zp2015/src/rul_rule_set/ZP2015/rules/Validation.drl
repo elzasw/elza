@@ -262,6 +262,50 @@ then
     dvResults.createError($di.getDescItemId(), "Prvek " + $di.getTypeName() + " odkazuje na neschválenou entitu (id: "+$ap.getId()+").", "ZP2015_POL_ENTITY");
 end
 
+
+rule "Kontrola duplicitních hodnot prvků datového typu RECORD_REF bez specifikace"
+when
+    $activeLevel: ActiveLevel( $ownDescItems: ownDescItems )
+    // $ownDi je vždy vlastní prvek aktuální úrovně - chyba se naváže na něj
+    $ownDi: DescItem( dataType=="RECORD_REF" && ap != null && specCode == null && $type: type, $ownAp: ap ) from $ownDescItems
+    Ap( $apId: id ) from $ownAp
+    // duplicitní hodnotu hledáme na aktuální úrovni i u všech předků
+    // (předkové jsou v session jako Level fakta, viz ValidationRules.execute)
+    Level( $searchItems: descItems )
+    $otherDi: DescItem( dataType=="RECORD_REF" && ap != null && specCode == null && type == $type
+                    && descItemId != $ownDi.descItemId && $otherAp: ap ) from $searchItems
+    Ap( id == $apId ) from $otherAp
+    // u páru vlastní/vlastní na téže úrovni hlásit jen jednou - na pozdějším výskytu
+    eval( !$ownDescItems.contains($otherDi) || $ownDi.getDescItemId() > $otherDi.getDescItemId() )
+then
+    dvResults.createError($ownDi.getDescItemId(),
+        "Prvek " + $ownDi.getTypeName() + " obsahuje duplicitní hodnotu (id: " + $apId + ").",
+        "ZP2015_POL_BASIC");
+end
+
+rule "Kontrola duplicitních hodnot prvků datového typu RECORD_REF se specifikací"
+when
+    $activeLevel: ActiveLevel( $ownDescItems: ownDescItems )
+    // $ownDi je vždy vlastní prvek aktuální úrovně - chyba se naváže na něj
+    $ownDi: DescItem( dataType=="RECORD_REF" && ap != null && specCode != null
+                    && $type: type, $specCode: specCode, $ownAp: ap ) from $ownDescItems
+    Ap( $apId: id ) from $ownAp
+    // duplicitní hodnotu hledáme na aktuální úrovni i u všech předků
+    // (předkové jsou v session jako Level fakta, viz ValidationRules.execute)
+    Level( $searchItems: descItems )
+    $otherDi: DescItem( dataType=="RECORD_REF" && ap != null && type == $type && specCode == $specCode
+                    && descItemId != $ownDi.descItemId && $otherAp: ap ) from $searchItems
+    Ap( id == $apId ) from $otherAp
+    // u páru vlastní/vlastní na téže úrovni hlásit jen jednou - na pozdějším výskytu
+    eval( !$ownDescItems.contains($otherDi) || $ownDi.getDescItemId() > $otherDi.getDescItemId() )
+then
+    dvResults.createError($ownDi.getDescItemId(),
+        "Prvek " + $ownDi.getTypeName() + " se specifikací " + $ownDi.getSpecName()
+            + " obsahuje duplicitní hodnotu (id: " + $apId + ").",
+        "ZP2015_POL_BASIC");
+end
+
+
 rule "Kontrola délky prvku Název"
 when
     $activeLevel : ActiveLevel( $ownDescItems: ownDescItems)

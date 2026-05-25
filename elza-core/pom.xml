@@ -685,9 +685,21 @@
                             <importMappings>
                                 <importMapping>ApPartFormVO=cz.tacr.elza.controller.vo.ApPartFormVO</importMapping>
                                 <!--<importMapping>NodeData=cz.tacr.elza.controller.vo.nodes.NodeData</importMapping>-->
+                                <!-- SyncState lives in the domain layer because it is referenced by a JPA entity
+                                     (ApBindingState); moving it to controller.vo would break domain-layer purity. -->
+                                <importMapping>SyncState=cz.tacr.elza.domain.SyncState</importMapping>
+                                <!-- ApAccessPointVO is a complex hand-coded class; the schema is intentionally
+                                     stubbed (`format: ap-access-point-vo`) until it gets ported in full. -->
+                                <importMapping>ApAccessPointVO=cz.tacr.elza.controller.vo.ApAccessPointVO</importMapping>
                             </importMappings>
+                            <!-- schemaMappings: schemas provided externally (hand-coded); generator must NOT emit them. -->
+                            <schemaMappings>
+                                <schemaMapping>SyncState=cz.tacr.elza.domain.SyncState</schemaMapping>
+                                <schemaMapping>ApAccessPointVO=cz.tacr.elza.controller.vo.ApAccessPointVO</schemaMapping>
+                            </schemaMappings>
                             <typeMappings>
                                 <typeMapping>object+partform=ApPartFormVO</typeMapping>
+                                <typeMapping>object+ap-access-point-vo=ApAccessPointVO</typeMapping>
                                 <!--<typeMapping>object+nodedata=NodeData</typeMapping>-->
                             </typeMappings>
                         </configuration>
