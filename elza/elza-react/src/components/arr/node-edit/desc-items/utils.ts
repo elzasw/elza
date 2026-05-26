@@ -22,26 +22,31 @@ export function createLocalStorageItemKey(item: NodeItem) {
   return `descItem-${item.nodeId}-${item.itemTypeId}-${item.itemObjectId || "new"}`;
 }
 
-export function useValueManager<T>(initialValue: T, item: NodeItem) {
+export function useValueManager<T extends string | number>(initialValue: T, item: NodeItem) {
   const [save, load, reset] = useLocalStorage<T>(
     createLocalStorageItemKey(item),
   );
 
   const storedValue = load();
-  // const initialValue = data?.integerValue;
+  const hasStaleStorage = storedValue != null && storedValue == initialValue;
+  if (hasStaleStorage) { reset(); }
 
-  const [value, setValue] = useState(storedValue || initialValue || null);
+  const effectiveStoredValue = hasStaleStorage ? null : storedValue;
+
+  const [value, setValue] = useState(effectiveStoredValue || initialValue || null);
   const [isDirty, setIsDirty] = useState(initialValue != value);
   const [conflictValue, setConflictValue] = useState<T>(
-    storedValue ? initialValue : null,
+    effectiveStoredValue ? initialValue : null,
   );
-  // Assign conflict value when initialValue changes
-  // and the current value is dirty
+  // Assign conflict value when initialValue changes and the current value is dirty.
+  // If the server caught up to the local value, clear dirty state instead.
   useEffect(() => {
-    if (!isDirty) {
-      setValue(initialValue);
+    if (value == initialValue) {
+      finishChange();
     } else if (isDirty) {
       setConflictValue(initialValue);
+    } else {
+      setValue(initialValue);
     }
   }, [initialValue]);
 
