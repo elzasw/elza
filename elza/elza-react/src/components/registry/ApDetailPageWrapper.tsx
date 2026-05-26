@@ -38,7 +38,7 @@ import { SyncProgress } from 'elza-api';
 import { WebsocketEventType } from 'components/shared/web-socket/enums';
 import { addToastrDanger } from 'components/shared/toastr/ToastrActions';
 import { WaitingOverlay } from 'components/shared/waiting-overlay';
-import { useThunkDispatch } from 'utils/hooks';
+import { useThunkDispatch, useLocalStorageState } from 'utils/hooks';
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
     const bindingsMaps: Bindings = {
@@ -148,6 +148,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     const apTypeId = detail.fetched && detail.data ? detail.data.typeId : 0;
 
     const [collapsed, setCollapsed] = useState<boolean>(false);
+    const [localGlobalCollapsed, setLocalGlobalCollapsed] = useLocalStorageState<boolean>('apDetail-globalCollapsed', true);
     const [exportState, setExportState] = useState<ExportState>(ExportState.COMPLETED);
     const [exportMessage, setExportMessage] = useState<string>(null);
     const [itemQueueId, setItemQueueId] = useState<number>(-1);
@@ -554,7 +555,9 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                     item={detail.data!}
                     id={detail.data!.id}
                     collapsed={collapsed}
+                    globalCollapsed={localGlobalCollapsed}
                     onToggleCollapsed={() => setCollapsed(!collapsed)}
+                    onToggleGlobalCollapsed={() => setLocalGlobalCollapsed(!localGlobalCollapsed)}
                     onToggleRevision={() => {
                         setRevisionActive(!revisionActive);
                         refreshValidation(id, !revisionActive);
@@ -641,7 +644,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                     newPreferred={detail.data && revisionActive ? detail.data.newPreferredPart : undefined}
                                     revPreferred={detail.data && revisionActive ? detail.data.revPreferredPart : undefined}
                                     revision={detail.data ? !!detail.data.revStateApproval && revisionActive : false}
-                                    globalCollapsed={globalCollapsed}
+                                    globalCollapsed={localGlobalCollapsed}
                                     onSetPreferred={handleSetPreferred}
                                     onEdit={handleEdit}
                                     onDelete={handleDelete}

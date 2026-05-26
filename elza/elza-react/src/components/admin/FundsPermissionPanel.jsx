@@ -259,7 +259,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
     };
 
     changePermission = (e, permCode) => {
-        const {onAddPermission, onDeletePermission} = this.props;
+        const {onAddPermission, onDeletePermission, fundId} = this.props;
         const add = e.target.checked;
         const permission = this.getPermission();
 
@@ -273,16 +273,22 @@ class FundsPermissionPanel extends AbstractReactComponent {
 
         const applyChange = (id) => {
             this.setState(({permissions, selectedPermission}) => {
-                const current = permissions[selectedPermission.index];
+                // When fundId is provided (FundDetail context), selectedPermission.index is
+                // irrelevant — find the entry by fund id instead.
+                const index = fundId != null
+                    ? permissions.findIndex(p => p.id != null && p.id.toString() === fundId.toString())
+                    : selectedPermission.index;
+                if (index === -1) { return null; }
+                const current = permissions[index];
                 const updated = {
                     ...current,
                     [permCode]: {...(current[permCode] || {groupIds: {}}), checked: add, id},
                 };
                 return {
                     permissions: [
-                        ...permissions.slice(0, selectedPermission.index),
+                        ...permissions.slice(0, index),
                         updated,
-                        ...permissions.slice(selectedPermission.index + 1),
+                        ...permissions.slice(index + 1),
                     ],
                 };
             });
