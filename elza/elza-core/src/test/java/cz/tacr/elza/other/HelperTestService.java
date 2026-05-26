@@ -29,7 +29,9 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBindingIssueRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
+import cz.tacr.elza.repository.ApBindingParticipantRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
@@ -263,7 +265,10 @@ public class HelperTestService {
     private ExportTypeRepository exportTypeRepository;
     @Autowired
     private ExportRepository exportRepository;
-
+    @Autowired
+    private ApBindingIssueRepository bindingIssueRepository;
+    @Autowired
+    private ApBindingParticipantRepository bindingParticipantRepository;
     @Autowired
     private PackageService packageService;
 
@@ -365,6 +370,7 @@ public class HelperTestService {
         faBulkActionRepository.deleteAll();
         indexRepository.deleteAll();
         bindingItemRepository.deleteAll();
+        bindingParticipantRepository.deleteAll();
         bindingStateRepository.deleteAll();
         apItemRepository.deleteAll();
         partRepository.deleteAll();
@@ -386,6 +392,7 @@ public class HelperTestService {
         nodeRepository.deleteAll();
         fundRepository.deleteAll();
         institutionRepository.deleteAll();
+        bindingIssueRepository.deleteAll();
         bindingRepository.deleteAll();
         apStateRepository.deleteAll();
         apRepository.deleteAll();
