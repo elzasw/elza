@@ -2,6 +2,7 @@ package cz.tacr.elza.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.vo.ExtHistory;
 import cz.tacr.elza.controller.vo.ExtIssue;
+import cz.tacr.elza.service.ExternalSystemService;
+import jakarta.transaction.Transactional;
 
 /**
  * Internal REST API for the Elza UI — CAMv2 binding issues and history.
@@ -27,13 +30,36 @@ import cz.tacr.elza.controller.vo.ExtIssue;
 @RequestMapping("/api/v1")
 public class AccessPointBindingInternalController implements AccesspointInternalApi {
 
-    @Override
+    @Autowired
+    private ExternalSystemService externalSystemService;
+
+    /**
+     * GET /binding/{bindingId}/issues
+     * List CAM-side issues attached to a binding.
+     *
+     * @param bindingId id of binding (required)
+     * @return The request has succeeded. (status code 200)
+     *         or The server cannot find the requested resource. (status code 404)
+     */
+	@Override
+	@Transactional
     public ResponseEntity<List<ExtIssue>> accessPointBindingGetBindingIssues(Integer bindingId) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+		return ResponseEntity.ok(externalSystemService.findBindingIssues(bindingId));
     }
 
-    @Override
+    /**
+     * GET /binding/{bindingId}/history
+     * Paginated history of binding revisions, newest first, built from ap_binding_state and ap_binding_participant. Participants within each revision are ordered by lastChange (ascending).
+     *
+     * @param bindingId id of binding (required)
+     * @param offset  (optional, default to 0)
+     * @param limit server caps at 100 (optional, default to 100)
+     * @return The request has succeeded. (status code 200)
+     *         or The server cannot find the requested resource. (status code 404)
+     */
+	@Override
+	@Transactional
     public ResponseEntity<ExtHistory> accessPointBindingGetBindingHistory(Integer bindingId, Integer offset, Integer limit) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+		return ResponseEntity.ok(externalSystemService.findBindingHistory(bindingId, offset, limit));
     }
 }
