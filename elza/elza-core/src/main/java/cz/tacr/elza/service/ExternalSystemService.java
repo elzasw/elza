@@ -55,6 +55,7 @@ import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
@@ -80,6 +81,7 @@ import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApBindingSyncRepository;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.DigitizationFrontdeskRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
@@ -125,6 +127,9 @@ public class ExternalSystemService {
 
     @Autowired
     private IEventNotificationService eventNotificationService;
+
+    @Autowired
+    private ApStateRepository stateRepository;
 
     @Autowired
     private ApBindingRepository bindingRepository;
@@ -802,14 +807,26 @@ public class ExternalSystemService {
 	    if (userDetail == null) {
 	        throw new AccessDeniedException("User not authorized.", Collections.emptyList());
 	    }
+	    // fast path — global reader doesn't need a scope at allS
+	    if (userDetail.hasPermission(Permission.AP_SCOPE_RD_ALL)) {
+	        return;
+	    }
+	    Integer scopeId = null;
+	    ApBindingState activeState = bindingStateRepository.findActiveByBinding(binding).orElse(null);
+	    if (activeState != null) {
+	        ApState lastState = stateRepository.findLastByAccessPointId(activeState.getAccessPointId());
+	        if (lastState != null) {
+	            scopeId = lastState.getScopeId();
+	        }
+	    }
 	    AuthorizationRequest authRequest = AuthorizationRequest
 	    		.hasPermission(Permission.AP_SCOPE_RD_ALL)
-	            .or(Permission.AP_SCOPE_RD, binding.getApExternalSystem().getScopeId());
+	            .or(Permission.AP_SCOPE_RD, scopeId);
 	    if (!authRequest.matches(userDetail)) {
 	        throw new AccessDeniedException("Read permission required for binding issues", authRequest.getPermissions());
 	    }
 	}
-	
+
 	private static ExtIssue toExtIssue(final ApBindingIssue bi) {
 	    ExtIssue ei = new ExtIssue();
 	    ei.setId(bi.getBindingIssueId());
