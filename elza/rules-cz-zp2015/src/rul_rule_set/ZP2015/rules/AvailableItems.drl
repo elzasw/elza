@@ -1518,8 +1518,9 @@ end
 rule "Obsah/regest - povinný pro sérii"
 when
     $activeLevel: ActiveLevel( )
-    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_SERIES") ) from $activeLevel.descItems
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_SERIES") ) from $activeLevel.ownDescItems
     $itemType : RulItemTypeExt(code in ( "ZP2015_TITLE" ) )
+    not DescItem(type=="ZP2015_NAME") from $activeLevel.ownDescItems
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
