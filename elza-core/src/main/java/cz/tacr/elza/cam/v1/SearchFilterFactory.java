@@ -69,7 +69,7 @@ public class SearchFilterFactory {
 
     private List<String> createCodeList(ApAdvanceSearchFilter filter) {
         List<String> codes = null;
-        String code = filter.getArea() == ApSearchArea.ENTITY_CODE ? filter.getSearch() : null;
+        String code = filter.getArea() == ApSearchArea.ENTITY_CODE ? filter.getSearch() : filter.getCode();
         if (StringUtils.isNotEmpty(code)) {
             codes = Collections.singletonList(code);
         }

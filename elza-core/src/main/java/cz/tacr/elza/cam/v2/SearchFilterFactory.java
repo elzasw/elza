@@ -16,7 +16,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.cam.v2.schema.cam.EntityXml;
 import cz.tacr.cam.v2.schema.cam.FoundEntityInfoXml;
+import cz.tacr.cam.v2.schema.cam.ItemStringXml;
+import cz.tacr.cam.v2.schema.cam.PartXml;
 import cz.tacr.cam.v2.schema.cam.ResultLookupXml;
 import cz.tacr.cam.v2.schema.cam.HightlightPosXml;
 import cz.tacr.cam.v2.client.controller.vo.QueryAndDef;
@@ -72,6 +75,62 @@ public class SearchFilterFactory {
         archiveEntityVOListResult.setData(createArchiveEntityVoList(queryResult.getList().getEntityInfo()));
         return archiveEntityVOListResult;
 	}
+
+    /**
+     * Empty result, used when an entity requested by its identifier does not exist.
+     */
+    public ArchiveEntityResultListVO createEmptyResult() {
+        ArchiveEntityResultListVO result = new ArchiveEntityResultListVO();
+        result.setTotal(0);
+        result.setData(new ArrayList<>());
+        return result;
+    }
+
+    /**
+     * Wrap a single entity fetched by its identifier as a one-item search result.
+     */
+    public ArchiveEntityResultListVO createSingleEntityResult(EntityXml entity) {
+        ArchiveEntityResultListVO result = new ArchiveEntityResultListVO();
+        List<ArchiveEntityVO> data = new ArrayList<>();
+        data.add(createArchiveEntityVO(entity));
+        result.setData(data);
+        result.setTotal(1);
+        return result;
+    }
+
+    private ArchiveEntityVO createArchiveEntityVO(EntityXml entity) {
+        StaticDataProvider sdp = staticDataService.getData();
+        ArchiveEntityVO archiveEntityVO = new ArchiveEntityVO();
+        archiveEntityVO.setId((int) entity.getEntityId().getValue());
+        archiveEntityVO.setAeTypeId(sdp.getApTypeByCode(entity.getEntityType().getValue()).getApTypeId());
+        archiveEntityVO.setName(findDisplayName(entity));
+        return archiveEntityVO;
+    }
+
+    /**
+     * Display name of an entity: the DISPLAY_NAME index of the first PT_NAME part.
+     * Indexes are carried in the part's {@code eits} collection as string items
+     * whose type holds the index name.
+     */
+    private String findDisplayName(EntityXml entity) {
+        if (entity.getParts() == null) {
+            return null;
+        }
+        for (PartXml part : entity.getParts().getPart()) {
+            if (!StaticDataProvider.DEFAULT_PART_TYPE.equals(part.getType().value()) || part.getEits() == null) {
+                continue;
+            }
+            for (Object index : part.getEits().getItems()) {
+                if (index instanceof ItemStringXml) {
+                    ItemStringXml stringIndex = (ItemStringXml) index;
+                    if (DISPLAY_NAME.equals(stringIndex.getType().getValue()) && stringIndex.getValue() != null) {
+                        return stringIndex.getValue().getValue();
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
     private List<ArchiveEntityVO> createArchiveEntityVoList(List<FoundEntityInfoXml> foundEntityInfoList) {
         List<ArchiveEntityVO> archiveEntityVOList = new ArrayList<>();
