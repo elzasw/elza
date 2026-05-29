@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +43,9 @@ import cz.tacr.cam.v2.schema.cam.UpdatesXml;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.cam.ApiCamConnector;
 import cz.tacr.elza.cam.ProcessingContext;
-import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
 import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
+import cz.tacr.elza.controller.vo.ApSearchArea;
+import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingState;
@@ -113,6 +115,12 @@ public class CamConnector implements ApiCamConnector {
 
 	@Override
 	public ArchiveEntityResultListVO search(int from, int max, ApAdvanceSearchFilter filter, ApExternalSystem extlSystem) {
+        // The CAM v2 search API has no by-identifier lookup (unlike v1's codes parameter),
+        // so a concrete entity is resolved directly through getEntity by its identifier.
+        String code = resolveEntityCode(filter);
+        if (StringUtils.isNotBlank(code)) {
+            return searchByCode(code, extlSystem);
+        }
         QueryResultXml result;
         try {
             result = search(from + 1, max, searchFilterFactory.createQueryParamsDef(filter), null, extlSystem);
@@ -121,6 +129,30 @@ public class CamConnector implements ApiCamConnector {
         }
         return searchFilterFactory.createArchiveEntityVoListResult(result);
 	}
+
+    /**
+     * Identifier of a concrete entity to fetch directly, mirroring the v1 codes lookup:
+     * the dedicated code field, or the search term when searching by entity code.
+     */
+    private String resolveEntityCode(ApAdvanceSearchFilter filter) {
+        if (StringUtils.isNotBlank(filter.getCode())) {
+            return filter.getCode();
+        }
+        return filter.getArea() == ApSearchArea.ENTITY_CODE ? filter.getSearch() : null;
+    }
+
+    private ArchiveEntityResultListVO searchByCode(String code, ApExternalSystem extlSystem) {
+        EntityXml entity;
+        try {
+            entity = getEntity(code, extlSystem);
+        } catch (ApiException e) {
+            if (e.getCode() == 404) {
+                return searchFilterFactory.createEmptyResult();
+            }
+            throw prepareExtSystemException(e);
+        }
+        return searchFilterFactory.createSingleEntityResult(entity);
+    }
 
 	@Override
 	public Integer takeArchiveEntity(String archiveEntityId, Integer scopeId, ApExternalSystem extSystem) {
