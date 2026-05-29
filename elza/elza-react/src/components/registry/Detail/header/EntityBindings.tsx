@@ -9,13 +9,16 @@ import { RulDescItemTypeExtVO } from 'api/RulDescItemTypeExtVO';
 import { SyncState } from 'elza-api';
 import i18n from 'components/i18n';
 import { Icon, TooltipTrigger } from 'components/shared';
-import { FC, useCallback } from 'react';
+import { FC, useCallback, useState } from 'react';
+import { defineMessages, FormattedMessage } from 'react-intl';
 import { Dropdown, DropdownButton } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { AnyAction } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
 import { AppState, RefTablesState, ApExternalSystemSimpleVO } from 'typings/store';
 import { SyncIcon } from "../sync-icon";
+import { BindingIssuesIcon } from './BindingIssuesIcon';
+import { BindingHistoryDialog } from './BindingHistoryDialog';
 import './DetailHeader.scss';
 import { DetailDescriptionsItemWithButton } from './DetailDescriptionsItem';
 import { showConfirmDialog } from 'components/shared/dialog';
@@ -23,6 +26,10 @@ import { ApPushToExt } from 'components/registry/modal/ApPushToExt';
 import { Button } from 'components/ui';
 
 import { AP_EXT_SYSTEM_TYPE } from '../../../../constants';
+
+const messages = defineMessages({
+    actionHistory: { id: 'ap.binding.action.history', defaultMessage: 'Revize v externím systému' },
+});
 
 const useThunkDispatch = <State,>(): ThunkDispatch<State, void, AnyAction> => useDispatch()
 
@@ -177,9 +184,17 @@ export const EntityBindings: FC<{
         }
 
         const apExternalWr = userDetail.hasOne(perms.AP_EXTERNAL_WR);
+        const [historyBindingId, setHistoryBindingId] = useState<number | null>(null);
 
         return (
             <div className="bindings" key="bindings">
+            {historyBindingId !== null && (
+                <BindingHistoryDialog
+                    bindingId={historyBindingId}
+                    open={true}
+                    onClose={() => setHistoryBindingId(null)}
+                />
+            )}
                 {item.bindings.map(binding => {
                     const externalSystem = externalSystems.find((externalSystem) => binding.externalSystemCode === externalSystem.code);
                     const tooltip = ('id: ' + binding.value) + (binding.extRevision ? (', uuid: ' + binding.extRevision) : '')
@@ -215,6 +230,9 @@ export const EntityBindings: FC<{
                                                 {i18n('ap.binding.action.take-rel-entities')}
                                             </Dropdown.Item>
                                         }
+                                        <Dropdown.Item key="history" onClick={() => setHistoryBindingId(binding.id)}>
+                                            <FormattedMessage {...messages.actionHistory} />
+                                        </Dropdown.Item>
                                     </DropdownButton>
                                     {apExternalWr && hasState(item.stateApproval, ["NEW", "TO_AMEND", "APPROVED"])
                                         && binding.syncState === SyncState.LocalChange
@@ -233,7 +251,8 @@ export const EntityBindings: FC<{
                                     <div className="info">
                                         {/* {i18n('ap.binding.source')}{': '} */}
                                         <span className="system">{externalSystem?.name}</span>
-                                        {i18n('ap.binding.extState.' + binding.extState)}
+                                        <span className="binding-value">id: {binding.value}</span>
+                                        <span>{i18n('ap.binding.extState.' + binding.extState)}</span>
                                         {binding.extReplacedBy && (
                                             <span className="link">
                                                 {' '}
@@ -252,6 +271,7 @@ export const EntityBindings: FC<{
                                 </TooltipTrigger>
                                 <div className="action">
                                     <SyncIcon syncState={binding.syncState || undefined} />
+                                    <BindingIssuesIcon binding={binding} />
                                 </div>
                             </DetailDescriptionsItemWithButton>
 
