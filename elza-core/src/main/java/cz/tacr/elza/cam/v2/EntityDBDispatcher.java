@@ -1,7 +1,5 @@
 package cz.tacr.elza.cam.v2;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,21 +16,11 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
-import org.locationtech.jts.geom.Geometry;
 
 import cz.tacr.cam.v2.schema.cam.PartXml;
-import cz.tacr.cam.v2.schema.cam.ItemBinaryXml;
-import cz.tacr.cam.v2.schema.cam.ItemBooleanXml;
-import cz.tacr.cam.v2.schema.cam.ItemEntityRefXml;
-import cz.tacr.cam.v2.schema.cam.ItemEnumXml;
-import cz.tacr.cam.v2.schema.cam.ItemIntegerXml;
-import cz.tacr.cam.v2.schema.cam.ItemLinkXml;
-import cz.tacr.cam.v2.schema.cam.ItemStringXml;
-import cz.tacr.cam.v2.schema.cam.ItemUnitDateXml;
 import cz.tacr.cam.v2.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.v2.schema.cam.PartsXml;
 import cz.tacr.cam.v2.schema.cam.ItemsXml;
-import cz.tacr.cam.v2.schema.cam.CodeXml;
 import cz.tacr.cam.v2.schema.cam.EntityRecordRefXml;
 import cz.tacr.cam.v2.schema.cam.EntityXml;
 import cz.tacr.cam.v2.schema.cam.UuidXml;
@@ -43,10 +31,8 @@ import cz.tacr.elza.cam.ItemUpdates.ChangedBindedItem;
 import cz.tacr.elza.cam.ProcessingContext;
 import cz.tacr.elza.cam.ReceivedItem;
 import cz.tacr.elza.cam.ReceivedPart;
-import cz.tacr.elza.common.GeometryConvertor;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
-import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
@@ -58,23 +44,10 @@ import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
-import cz.tacr.elza.domain.ArrData;
-import cz.tacr.elza.domain.ArrDataBit;
-import cz.tacr.elza.domain.ArrDataCoordinates;
-import cz.tacr.elza.domain.ArrDataInteger;
-import cz.tacr.elza.domain.ArrDataNull;
 import cz.tacr.elza.domain.ArrDataRecordRef;
-import cz.tacr.elza.domain.ArrDataString;
-import cz.tacr.elza.domain.ArrDataText;
-import cz.tacr.elza.domain.ArrDataUnitdate;
-import cz.tacr.elza.domain.ArrDataUriRef;
-import cz.tacr.elza.domain.RulDataType;
-import cz.tacr.elza.domain.RulItemSpec;
-import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.ApState.StateApproval;
-import cz.tacr.elza.domain.converter.CalendarConverter;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
@@ -82,6 +55,9 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.service.AccessPointItemService;
@@ -109,6 +85,9 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
             			      final ApBindingRepository bindingRepository,
             			      final ApBindingItemRepository bindingItemRepository,
             			      final DataRecordRefRepository dataRecordRefRepository,
+            			      final ApPartRepository partRepository,
+            			      final ApItemRepository itemRepository,
+            			      final ApBindingStateRepository bindingStateRepository,            			      
             			      final ExternalSystemService externalSystemService,
             			      final AccessPointService accessPointService,
             			      final AccessPointItemService accessPointItemService,
@@ -118,7 +97,8 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
             			      final RuleService ruleService,
             			      final CamService camService) {
     	super(accessPointRepository, stateRepository, bindingRepository, bindingItemRepository,
-    	      dataRecordRefRepository, externalSystemService, accessPointService, accessPointItemService,
+    	      dataRecordRefRepository, partRepository, itemRepository, bindingStateRepository, 
+    	      externalSystemService, accessPointService, accessPointItemService,
     	      asyncRequestService, partService, accessPointCacheService, ruleService,
     	      V2XmlAdapters.INSTANCE);
     	this.camService = camService;
@@ -310,20 +290,20 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
      *            feedback)
      * @return ApState
      */
-    public ApState synchronizeAccessPoint(ProcessingContext procCtx, 
-    		                               ApState state, 
-    		                               @Nonnull final ApBindingState prevBindingState, 
-    		                               EntityXml entity, 
-    		                               boolean syncQueue) {
-    	Objects.requireNonNull(procCtx.getApChange());
-    	Objects.requireNonNull(prevBindingState);
+    public ApState synchronizeAccessPoint(ProcessingContext procCtx,
+                                          ApState state,
+                                          @Nonnull final ApBindingState prevBindingState,
+                                          EntityXml entity,
+                                          boolean syncQueue) {
+        Objects.requireNonNull(procCtx.getApChange());
+        Objects.requireNonNull(prevBindingState);
 
         this.procCtx = procCtx;
 
         // Flag if entity is deleted
         // Deleted entity has to be retained as deleted if
         // synQueue is true.
-        boolean deletedEntity = (state.getDeleteChangeId()!=null);
+        boolean deletedEntity = (state.getDeleteChangeId() != null);
         ApState stateNew = null;
 
         StaticDataProvider sdp = procCtx.getStaticDataProvider();
@@ -366,6 +346,12 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
                                                                              SyncState.NOT_SYNCED,
                                                                              accessPoint.getPreferredPart(),
                                                                              state.getApType());
+
+                // === CAM v2: issues/participants ===
+                // Persist participants even on a failed sync — they describe the CAM
+                // revision we have just observed, not the local sync outcome.
+                syncCamBindingIssuesAndParticipants(prevBindingState.getBinding(), entity, this.bindingState);
+
                 accessPointCacheService.createApCachedAccessPoint(state.getAccessPointId());
                 this.procCtx = null;
                 return state;
@@ -373,10 +359,10 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
         }
 
         // check s AP class/subclass was cha
-        ApType apType = sdp.getApTypeByCode(entity.getEntityType().getValue());        
+        ApType apType = sdp.getApTypeByCode(entity.getEntityType().getValue());
         if (!state.getApTypeId().equals(apType.getApTypeId())) {
             log.debug("Změna třídy (typu) entity: typeId={} -> newTypeId={}", state.getApTypeId(), apType.getApTypeId());
-        	if (entity.getState() != EntityRecordStateXml.ERS_REPLACED && entity.getState() != EntityRecordStateXml.ERS_INVALID) {
+            if (entity.getState() != EntityRecordStateXml.ERS_REPLACED && entity.getState() != EntityRecordStateXml.ERS_INVALID) {
                 // změna třídy (typu) entity
                 if (!deletedEntity) {
                     state.setDeleteChange(procCtx.getApChange());
@@ -387,26 +373,26 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
                 }
                 stateNew = accessPointService.copyState(state, procCtx.getApChange());
                 if (deletedEntity && syncQueue) {
-                	
-                	// If system is CAM_COMPLETE and entity is return to non deleted state -> 
-                	// -> we respect new state and entity is not further marked as deleted 
-                	if (procCtx.getApExternalSystem().getType().equals(ApExternalSystemType.CAM_COMPLETE)
-                			|| procCtx.getApExternalSystem().getType().equals(ApExternalSystemType.CAM_COMPLETE_V2)) {
-                		// nop
-                		log.info("Deleted entity is restored to non deleted state, ap id: {}, ext. entity id: {}", state.getAccessPointId(), 
-                				entity.getEntityId() != null ? entity.getEntityId().getValue() : "");
-                	} else {
-                		// retain deleted state
-                		stateNew.setDeleteChange(procCtx.getApChange());
-                	}
+
+                    // If system is CAM_COMPLETE and entity is return to non deleted state ->
+                    // -> we respect new state and entity is not further marked as deleted
+                    if (procCtx.getApExternalSystem().getType().equals(ApExternalSystemType.CAM_COMPLETE)
+                            || procCtx.getApExternalSystem().getType().equals(ApExternalSystemType.CAM_COMPLETE_V2)) {
+                        // nop
+                        log.info("Deleted entity is restored to non deleted state, ap id: {}, ext. entity id: {}", state.getAccessPointId(),
+                                entity.getEntityId() != null ? entity.getEntityId().getValue() : "");
+                    } else {
+                        // retain deleted state
+                        stateNew.setDeleteChange(procCtx.getApChange());
+                    }
                 }
                 stateNew.setApType(apType);
                 state = stateRepository.save(stateNew);
-        	} else {
-        		// if entity will be deleted and class is changed
-        		// -> create unversioned change of class
-        		state.setApType(apType);
-        	}
+            } else {
+                // if entity will be deleted and class is changed
+                // -> create unversioned change of class
+                state.setApType(apType);
+            }
         }
 
         String extReplacedBy = (entity.getReplacedBy() != null) ? Long.toString(entity.getReplacedBy().getEntityId().getValue()) : null;
@@ -423,10 +409,19 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
                                                                      SyncState.SYNC_OK,
                                                                      accessPoint.getPreferredPart(),
                                                                      state.getApType());
+
+        // === CAM v2: issues/participants ===
+        // Mirror CAM-side issues into ap_binding_issue (rewrite-on-sync semantics
+        // per ApBindingIssue javadoc) and persist participants of this revision
+        // into ap_binding_participant.
+        // Must run after createBindingState (so participants can FK to it) and
+        // after synchronizeParts (so issues' partRef/itemRef resolve to fresh ids).
+        syncCamBindingIssuesAndParticipants(prevBindingState.getBinding(), entity, this.bindingState);
+
         StateApproval oldStateApproval = null;
         StateApproval newStateApproval = null;
         // Flags to determine if arch. desc have to be revalidated
-        boolean wasDeleted = (state.getDeleteChangeId()!=null), willBeDeleted = false;        
+        boolean wasDeleted = (state.getDeleteChangeId() != null), willBeDeleted = false;
         switch (entity.getState()) {
         case ERS_REPLACED:
             // entita je nahrazena v CAM -> musíme nahradit v ELZA
@@ -437,17 +432,17 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
                     ApAccessPoint replacedBy = replacedBindingState.get().getAccessPoint();
                     ApState replacementState = stateRepository.findLastByAccessPointId(replacedBy.getAccessPointId());
                     try {
-						accessPointService.replace(state, replacementState, bindingState.getApExternalSystem(), mcc, syncQueue);
-					} catch (SyncImpossibleException e) {
-			            log.error("Replacement error, accessPointId: {}, replacedAccessPointId: {}",
-			            		  state.getAccessPointId(),
-			            		  replacementState.getAccessPointId());
-			            throw new BusinessException("Replacement error, accessPointId: " + state.getAccessPointId()
-			                      + ", replacedAccessPointId: " + replacementState.getAccessPointId(), e,
-			                      BaseCode.INVALID_STATE)
-			                      .set("accessPointId", state.getAccessPointId())
-			                      .set("replacedAccessPointId", replacementState.getAccessPointId());
-					}
+                        accessPointService.replace(state, replacementState, bindingState.getApExternalSystem(), mcc, syncQueue);
+                    } catch (SyncImpossibleException e) {
+                        log.error("Replacement error, accessPointId: {}, replacedAccessPointId: {}",
+                                  state.getAccessPointId(),
+                                  replacementState.getAccessPointId());
+                        throw new BusinessException("Replacement error, accessPointId: " + state.getAccessPointId()
+                                  + ", replacedAccessPointId: " + replacementState.getAccessPointId(), e,
+                                  BaseCode.INVALID_STATE)
+                                  .set("accessPointId", state.getAccessPointId())
+                                  .set("replacedAccessPointId", replacementState.getAccessPointId());
+                    }
                     state.setReplacedBy(replacedBy);
                 }
             }
@@ -483,7 +478,7 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
                     stateNew.setStateApproval(newStateApproval);
                     state = stateRepository.save(stateNew);
                 }
-            }            
+            }
             break;
         }
 
@@ -511,7 +506,38 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
         this.procCtx = null;
 
         return state;
-	}
+    }
+
+    /**
+     * Mirror CAM v2 {@code entity.issues} and {@code revision.participant[]}
+     * into {@code ap_binding_issue} / {@code ap_binding_participant}.
+     *
+     * Issues are rewritten on every sync; participants are appended per binding
+     * state.
+     */
+    private void syncCamBindingIssuesAndParticipants(ApBinding binding,
+                                                     EntityXml entity,
+                                                     ApBindingState bindingState) {
+        IssueRefResolver resolver = IssueRefResolver.buildForImport(
+                entity,                              // EntityXml
+                bindingState.getAccessPointId(),     // AccessPointId
+                binding,                             // ApBinding
+                procCtx.getApExternalSystem(),       // ApExternalSystem
+                bindingItemRepository,
+                bindingRepository,
+                bindingStateRepository,
+                accessPointCacheService,
+                procCtx.getStaticDataProvider());
+
+        externalSystemService.replaceBindingIssues(binding,
+                BindingSyncMapper.toApBindingIssues(entity, binding, resolver,
+                        bindingRepository, partRepository, itemRepository));
+
+        if (entity.getRevision() != null) {
+            externalSystemService.saveBindingStateParticipants(
+                    BindingSyncMapper.toApBindingParticipants(bindingState, entity.getRevision().getParticipant()));
+        }
+    }
 
     /**
      * Restore access point which was alreay deleted

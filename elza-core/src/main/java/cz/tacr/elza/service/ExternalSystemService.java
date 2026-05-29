@@ -1103,4 +1103,19 @@ public class ExternalSystemService {
             return digitalRepository;
         }
     }
+
+    @Transactional
+    public void replaceBindingIssues(ApBinding binding, List<ApBindingIssue> newIssues) {
+        bindingIssueRepository.deleteByBindingId(binding.getBindingId());
+        if (!newIssues.isEmpty()) {
+            bindingIssueRepository.saveAll(newIssues);
+        }
+    }
+
+    @Transactional
+    public void saveBindingStateParticipants(List<ApBindingParticipant> participants) {
+        if (!participants.isEmpty()) {
+            bindingParticipantRepository.saveAll(participants);
+        }
+    }
 }

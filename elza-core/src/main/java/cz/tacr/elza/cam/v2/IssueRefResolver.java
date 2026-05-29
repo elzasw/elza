@@ -12,6 +12,7 @@ import java.util.Set;
 import cz.tacr.cam.v2.schema.cam.BatchChangeFailureXml;
 import cz.tacr.cam.v2.schema.cam.EntityIssuesXml;
 import cz.tacr.cam.v2.schema.cam.EntityRecordRefXml;
+import cz.tacr.cam.v2.schema.cam.EntityXml;
 import cz.tacr.cam.v2.schema.cam.ExistingIssueXml;
 import cz.tacr.cam.v2.schema.cam.ItemRefXml;
 import cz.tacr.cam.v2.schema.cam.PartRefXml;
@@ -39,25 +40,36 @@ import cz.tacr.elza.service.cache.CachedAccessPoint;
 import cz.tacr.elza.service.cache.CachedPart;
 
 /**
- * Resolves CAM-domain UUIDs coming back in an {@link BatchChangeFailureXml}
- * into ELZA DB ids (partId, itemId, accessPointId) and human-readable names,
- * so the UI can offer navigation to the offending part/item/entity with context
- * about what the user is about to click.
+ * Resolves CAM-domain UUIDs in {@link ExistingIssueXml} refs (partRef, itemRef,
+ * entityRef) into ELZA DB ids (partId, itemId, accessPointId) and
+ * human-readable names for UI navigation.
  *
- * Id resolution uses two sources, checked in order:
+ * <p>Has two construction entry points for the two flows where CAM issues are
+ * processed:
+ * <ul>
+ *   <li>{@link #build} — export-failure path. Source of refs is a
+ *       {@link BatchChangeFailureXml}; ids may come from a transient
+ *       {@code uuid_map} attached to the export queue item (parts/items
+ *       created in the same upload don't have an {@link ApBindingItem} yet).</li>
+ *   <li>{@link #buildForImport} — import path. Source of refs is
+ *       {@code entity.getIssues()}; all parts/items already have an
+ *       {@link ApBindingItem} for the binding, so no transient map is
+ *       needed.</li>
+ * </ul>
+ *
+ * Id resolution checks two sources in order:
  * <ol>
- *   <li>The transient {@code uuid_map} on the queue item — contains only the
- *       parts/items newly created for this upload.</li>
+ *   <li>The transient seed map (only populated on the export-failure path).</li>
  *   <li>{@link ApBindingItem} — source of truth for parts/items that already
- *       have a binding from a previous export.</li>
+ *       have a binding.</li>
  * </ol>
  *
- * Name resolution uses the {@link CachedAccessPoint} of the exported AP (for
- * parts/items) and of each referenced entity (for entityRef); both come out of
+ * Name resolution uses the {@link CachedAccessPoint} of the AP for parts/items
+ * and of each referenced entity for entityRef; both come from
  * {@code ap_cached_access_point} and already contain the DISPLAY_NAME indexes.
  *
- * Unresolved refs simply return {@code null}; callers fall back to rendering
- * the issue without a nav target rather than guessing.
+ * Unresolved refs return {@code null}; callers fall back to rendering the
+ * issue without a nav target rather than guessing.
  */
 public class IssueRefResolver {
 
@@ -91,8 +103,8 @@ public class IssueRefResolver {
     }
 
     /**
-     * Build a resolver for the given failure against the given queue context.
-     * Does a single batch lookup per external source:
+     * Build a resolver for the export-failure path. Does a single batch lookup
+     * per external source:
      * <ul>
      *   <li>one {@link ApBindingItem} query for all unresolved part/item uuids,</li>
      *   <li>one {@link ApBinding} query for all referenced entity ids/uuids,</li>
@@ -110,49 +122,96 @@ public class IssueRefResolver {
                                          AccessPointCacheService accessPointCacheService,
                                          StaticDataProvider staticData) {
         // 1. seed from the transient map (new parts/items in this upload)
-        Map<String, Integer> partUuidToId = new HashMap<>();
-        Map<String, Integer> itemUuidToId = new HashMap<>();
+        Map<String, Integer> partSeed = new HashMap<>();
+        Map<String, Integer> itemSeed = new HashMap<>();
         for (UuidMapping m : UuidMapping.deserialize(uuidMapJson)) {
             if (m.getPartId() != null) {
-                partUuidToId.put(m.getUuid(), m.getPartId());
+                partSeed.put(m.getUuid(), m.getPartId());
             } else if (m.getItemId() != null) {
-                itemUuidToId.put(m.getUuid(), m.getItemId());
+                itemSeed.put(m.getUuid(), m.getItemId());
             }
         }
 
-        // 2. collect uuids/ids referenced by issues that aren't in the map yet
+        // 2. flatten failure's per-entity issues into one stream
+        List<ExistingIssueXml> issues = new ArrayList<>();
+        for (EntityIssuesXml entityIssues : failure.getIssues()) {
+            issues.addAll(entityIssues.getIssue());
+        }
+
+        return buildInternal(issues, partSeed, itemSeed, exportedApId, apBinding, externalSystem,
+                bindingItemRepository, bindingRepository, bindingStateRepository,
+                accessPointCacheService, staticData);
+    }
+
+    /**
+     * Build a resolver for the CAM-import path. Source of refs is
+     * {@code entity.getIssues()}; there is no transient uuid-map (all
+     * parts/items are already persisted with binding for this AP).
+     */
+    public static IssueRefResolver buildForImport(EntityXml entity,
+                                                  Integer accessPointId,
+                                                  ApBinding apBinding,
+                                                  ApExternalSystem externalSystem,
+                                                  ApBindingItemRepository bindingItemRepository,
+                                                  ApBindingRepository bindingRepository,
+                                                  ApBindingStateRepository bindingStateRepository,
+                                                  AccessPointCacheService accessPointCacheService,
+                                                  StaticDataProvider staticData) {
+        List<ExistingIssueXml> issues = (entity.getIssues() != null)
+                ? entity.getIssues().getIssue()
+                : Collections.emptyList();
+
+        return buildInternal(issues, Collections.emptyMap(), Collections.emptyMap(),
+                accessPointId, apBinding, externalSystem,
+                bindingItemRepository, bindingRepository, bindingStateRepository,
+                accessPointCacheService, staticData);
+    }
+
+    private static IssueRefResolver buildInternal(List<ExistingIssueXml> issues,
+                                                  Map<String, Integer> partUuidToIdSeed,
+                                                  Map<String, Integer> itemUuidToIdSeed,
+                                                  Integer apId,
+                                                  ApBinding apBinding,
+                                                  ApExternalSystem externalSystem,
+                                                  ApBindingItemRepository bindingItemRepository,
+                                                  ApBindingRepository bindingRepository,
+                                                  ApBindingStateRepository bindingStateRepository,
+                                                  AccessPointCacheService accessPointCacheService,
+                                                  StaticDataProvider staticData) {
+        Map<String, Integer> partUuidToId = new HashMap<>(partUuidToIdSeed);
+        Map<String, Integer> itemUuidToId = new HashMap<>(itemUuidToIdSeed);
+
+        // collect uuids/ids referenced by issues that aren't in the seed
         Set<String> unresolvedUuids = new HashSet<>();
         Set<String> referencedEntityUuids = new HashSet<>();
         Set<String> referencedEntityIds = new HashSet<>();
-        for (EntityIssuesXml entityIssues : failure.getIssues()) {
-            for (ExistingIssueXml issue : entityIssues.getIssue()) {
-                PartRefXml partRef = issue.getPartRef();
-                if (partRef != null && partRef.getPartUuid() != null) {
-                    String u = partRef.getPartUuid().getValue();
-                    if (!partUuidToId.containsKey(u)) {
-                        unresolvedUuids.add(u);
-                    }
+        for (ExistingIssueXml issue : issues) {
+            PartRefXml partRef = issue.getPartRef();
+            if (partRef != null && partRef.getPartUuid() != null) {
+                String u = partRef.getPartUuid().getValue();
+                if (!partUuidToId.containsKey(u)) {
+                    unresolvedUuids.add(u);
                 }
-                ItemRefXml itemRef = issue.getItemRef();
-                if (itemRef != null && itemRef.getUuid() != null) {
-                    String u = itemRef.getUuid().getValue();
-                    if (!itemUuidToId.containsKey(u)) {
-                        unresolvedUuids.add(u);
-                    }
+            }
+            ItemRefXml itemRef = issue.getItemRef();
+            if (itemRef != null && itemRef.getUuid() != null) {
+                String u = itemRef.getUuid().getValue();
+                if (!itemUuidToId.containsKey(u)) {
+                    unresolvedUuids.add(u);
                 }
-                EntityRecordRefXml entityRef = issue.getEntityRef();
-                if (entityRef != null) {
-                    if (entityRef.getEntityUuid() != null) {
-                        referencedEntityUuids.add(entityRef.getEntityUuid().getValue());
-                    }
-                    if (entityRef.getEntityId() != null) {
-                        referencedEntityIds.add(Long.toString(entityRef.getEntityId().getValue()));
-                    }
+            }
+            EntityRecordRefXml entityRef = issue.getEntityRef();
+            if (entityRef != null) {
+                if (entityRef.getEntityUuid() != null) {
+                    referencedEntityUuids.add(entityRef.getEntityUuid().getValue());
+                }
+                if (entityRef.getEntityId() != null) {
+                    referencedEntityIds.add(Long.toString(entityRef.getEntityId().getValue()));
                 }
             }
         }
 
-        // 3. one batch query for the part/item binding items, if any remain
+        // one batch query for the part/item binding items, if any remain
         if (!unresolvedUuids.isEmpty() && apBinding != null) {
             List<ApBindingItem> items = bindingItemRepository.findByBindingAndUuidIn(apBinding, unresolvedUuids);
             for (ApBindingItem bi : items) {
@@ -164,8 +223,8 @@ public class IssueRefResolver {
             }
         }
 
-        // 4. entityRef resolution — bind value of an ApBinding equals CAM entityId
-        //    (for CAM_V2) or entityUuid (for CAM_UUID_V2); both columns live in ApBinding.value
+        // entityRef resolution — bind value of an ApBinding equals CAM entityId
+        // (for CAM_V2) or entityUuid (for CAM_UUID_V2); both columns live in ApBinding.value
         Map<String, Integer> entityUuidToAp = Collections.emptyMap();
         Map<String, Integer> entityIdToAp = new HashMap<>();
         if (!referencedEntityIds.isEmpty() || !referencedEntityUuids.isEmpty()) {
@@ -181,33 +240,33 @@ public class IssueRefResolver {
                 }
             }
             for (ApBinding b : bindings) {
-                Integer apId = bindingIdToAp.get(b.getBindingId());
-                if (apId != null) {
-                    entityIdToAp.put(b.getValue(), apId);
+                Integer apIdResolved = bindingIdToAp.get(b.getBindingId());
+                if (apIdResolved != null) {
+                    entityIdToAp.put(b.getValue(), apIdResolved);
                 }
             }
         }
 
-        // 5. resolve names — parts / items via the exported AP's cache;
-        //    entities via each referenced AP's cache.
+        // resolve names — parts / items via the AP's cache;
+        // entities via each referenced AP's cache.
         Map<Integer, Integer> itemIdToPartId = new HashMap<>();
         Map<Integer, String> partIdToName = new HashMap<>();
         Map<Integer, String> itemIdToName = new HashMap<>();
         Map<Integer, String> apIdToName = new HashMap<>();
 
-        if (exportedApId != null) {
-            CachedAccessPoint cachedAp = accessPointCacheService.findCachedAccessPoint(exportedApId);
+        if (apId != null) {
+            CachedAccessPoint cachedAp = accessPointCacheService.findCachedAccessPoint(apId);
             if (cachedAp != null) {
                 indexLocalNames(cachedAp, staticData, partIdToName, itemIdToName, itemIdToPartId);
             }
         }
         Set<Integer> distinctEntityApIds = new HashSet<>(entityIdToAp.values());
-        for (Integer apId : distinctEntityApIds) {
-            CachedAccessPoint cachedAp = accessPointCacheService.findCachedAccessPoint(apId);
+        for (Integer refApId : distinctEntityApIds) {
+            CachedAccessPoint cachedAp = accessPointCacheService.findCachedAccessPoint(refApId);
             if (cachedAp != null) {
                 String name = extractAccessPointDisplayName(cachedAp);
                 if (name != null) {
-                    apIdToName.put(apId, name);
+                    apIdToName.put(refApId, name);
                 }
             }
         }

@@ -1,5 +1,6 @@
 import {
     AccesspointsApi,
+    AccesspointInternalApi,
     AdminApi,
     DaosApi,
     FundsApi,
@@ -200,6 +201,7 @@ try {
 
 export const Api: {
     accesspoints: AccesspointsApi;
+    accesspointInternal: AccesspointInternalApi;
     admin: AdminApi;
     funds: FundsApi;
     daos: DaosApi;
@@ -215,6 +217,7 @@ export const Api: {
     publication: PublicationInternalApi;
 } = {
     accesspoints: new AccesspointsApi(undefined, basePath, axios),
+    accesspointInternal: new AccesspointInternalApi(undefined, basePath, axios),
     admin: new AdminApi(undefined, basePath, axios),
     funds: new FundsApi(undefined, basePath, axios),
     daos: new DaosApi(undefined, basePath, axios),

@@ -87,6 +87,8 @@ import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApBindingSyncRepository;
+import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
@@ -118,6 +120,12 @@ public class CamService {
     @Autowired
     private ApAccessPointRepository apAccessPointRepository;
     
+    @Autowired
+    private ApPartRepository partRepository;
+
+    @Autowired
+    private ApItemRepository itemRepository;
+
     @Autowired
     private ApBindingRepository bindingRepository;
 
@@ -1189,6 +1197,9 @@ public class CamService {
                 bindingRepository,
                 bindingItemRepository,
                 dataRecordRefRepository,
+			    partRepository,
+			    itemRepository,
+			    bindingStateRepository,            			      
                 externalSystemService,
                 accessPointService,
                 accessPointItemService,
