@@ -61,6 +61,9 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
+import cz.tacr.elza.repository.ApItemRepository;
+import cz.tacr.elza.repository.ApPartRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DataRecordRefRepository;
 import cz.tacr.elza.service.AccessPointItemService;
@@ -96,6 +99,12 @@ public abstract class AbstractEntityDBDispatcher {
     protected final ApBindingItemRepository bindingItemRepository;
 
     protected final DataRecordRefRepository dataRecordRefRepository;
+
+    protected final ApPartRepository partRepository;
+
+    protected final ApItemRepository itemRepository;
+
+    protected final ApBindingStateRepository bindingStateRepository;            			      
 
     protected final ExternalSystemService externalSystemService;
 
@@ -139,6 +148,9 @@ public abstract class AbstractEntityDBDispatcher {
                                          final ApBindingRepository bindingRepository,
                                          final ApBindingItemRepository bindingItemRepository,
                                          final DataRecordRefRepository dataRecordRefRepository,
+                       			         final ApPartRepository partRepository,
+                    			         final ApItemRepository itemRepository,
+                    			         final ApBindingStateRepository bindingStateRepository,            			      
                                          final ExternalSystemService externalSystemService,
                                          final AccessPointService accessPointService,
                                          final AccessPointItemService accessPointItemService,
@@ -152,6 +164,9 @@ public abstract class AbstractEntityDBDispatcher {
         this.bindingRepository = bindingRepository;
         this.bindingItemRepository = bindingItemRepository;
         this.dataRecordRefRepository = dataRecordRefRepository;
+        this.partRepository = partRepository;
+        this.itemRepository = itemRepository;
+	    this.bindingStateRepository = bindingStateRepository;
         this.externalSystemService = externalSystemService;
         this.accessPointService = accessPointService;
         this.accessPointItemService = accessPointItemService;
