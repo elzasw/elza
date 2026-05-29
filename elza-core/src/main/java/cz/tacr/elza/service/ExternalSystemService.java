@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -807,7 +808,7 @@ public class ExternalSystemService {
 	    if (userDetail == null) {
 	        throw new AccessDeniedException("User not authorized.", Collections.emptyList());
 	    }
-	    // fast path — global reader doesn't need a scope at allS
+	    // fast path — global reader doesn't need a scope at all
 	    if (userDetail.hasPermission(Permission.AP_SCOPE_RD_ALL)) {
 	        return;
 	    }
@@ -1104,12 +1105,81 @@ public class ExternalSystemService {
         }
     }
 
+    /**
+     * Mirror the CAM-side issues of a single revision into {@code ap_binding_issue}.
+     *
+     * CAM issues typically persist unchanged across many revisions, so instead of
+     * rewriting the whole set on every sync the stored issues are merged against
+     * the incoming ones by their {@code uuid}:
+     * <ul>
+     *   <li>matched issue (same uuid) — kept; its CAM-derived state is refreshed
+     *       in place, preserving the row id (and the local {@code note}),</li>
+     *   <li>incoming issue with no matching uuid — inserted,</li>
+     *   <li>stored issue whose uuid is absent from the revision — deleted.</li>
+     * </ul>
+     * Matched rows are only written back when a field actually changed, thanks to
+     * Hibernate dirty checking on the managed entities loaded here.
+     */
     @Transactional
-    public void replaceBindingIssues(ApBinding binding, List<ApBindingIssue> newIssues) {
-        bindingIssueRepository.deleteByBindingId(binding.getBindingId());
-        if (!newIssues.isEmpty()) {
-            bindingIssueRepository.saveAll(newIssues);
+    public void syncBindingIssues(ApBinding binding, List<ApBindingIssue> newIssues) {
+        List<ApBindingIssue> existing = bindingIssueRepository.findByBindingId(binding.getBindingId());
+
+        // Index stored issues by their CAM uuid. An issue without a uuid (or a
+        // duplicate uuid) cannot be matched against a revision and is dropped.
+        Map<String, ApBindingIssue> existingByUuid = new HashMap<>();
+        List<ApBindingIssue> toDelete = new ArrayList<>();
+        for (ApBindingIssue issue : existing) {
+            if (issue.getUuid() == null || existingByUuid.putIfAbsent(issue.getUuid(), issue) != null) {
+                toDelete.add(issue);
+            }
         }
+
+        List<ApBindingIssue> toSave = new ArrayList<>();
+        Set<String> incomingUuids = new HashSet<>();
+        for (ApBindingIssue incoming : newIssues) {
+            String uuid = incoming.getUuid();
+            ApBindingIssue match = (uuid != null) ? existingByUuid.get(uuid) : null;
+            if (match != null) {
+                incomingUuids.add(uuid);
+                updateBindingIssueState(match, incoming);
+                toSave.add(match);
+            } else {
+                toSave.add(incoming);
+            }
+        }
+
+        // stored issues whose uuid is no longer reported by CAM
+        for (Map.Entry<String, ApBindingIssue> entry : existingByUuid.entrySet()) {
+            if (!incomingUuids.contains(entry.getKey())) {
+                toDelete.add(entry.getValue());
+            }
+        }
+
+        if (!toDelete.isEmpty()) {
+            bindingIssueRepository.deleteAll(toDelete);
+        }
+        if (!toSave.isEmpty()) {
+            bindingIssueRepository.saveAll(toSave);
+        }
+    }
+
+    /**
+     * Copy the CAM-derived fields of {@code source} onto the kept {@code target}.
+     * The row id and the local {@code note} are intentionally left untouched.
+     */
+    private static void updateBindingIssueState(ApBindingIssue target, ApBindingIssue source) {
+        target.setSeverity(source.getSeverity());
+        target.setStatus(source.getStatus());
+        target.setRuleCode(source.getRuleCode());
+        target.setIssueCode(source.getIssueCode());
+        target.setMessage(source.getMessage());
+        target.setSource(source.getSource());
+        target.setDetail(source.getDetail());
+        target.setIssueFrom(source.getIssueFrom());
+        target.setExtFromRev(source.getExtFromRev());
+        target.setPart(source.getPart());
+        target.setItem(source.getItem());
+        target.setRelatedBinding(source.getRelatedBinding());
     }
 
     @Transactional
