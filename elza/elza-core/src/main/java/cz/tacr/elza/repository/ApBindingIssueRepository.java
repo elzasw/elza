@@ -2,6 +2,7 @@ package cz.tacr.elza.repository;
 
 import java.util.List;
 
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -13,4 +14,8 @@ public interface ApBindingIssueRepository extends ElzaJpaRepository<ApBindingIss
            "LEFT JOIN FETCH bi.relatedBinding " +
            "WHERE bi.bindingId = :bindingId")
     List<ApBindingIssue> findByBindingIdFetchRelated(@Param("bindingId") Integer bindingId);
+
+    @Modifying
+    @Query("DELETE FROM ap_binding_issue bi WHERE bi.bindingId = :bindingId")
+    int deleteByBindingId(@Param("bindingId") Integer bindingId);
 }
