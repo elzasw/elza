@@ -87,7 +87,7 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
             			      final DataRecordRefRepository dataRecordRefRepository,
             			      final ApPartRepository partRepository,
             			      final ApItemRepository itemRepository,
-            			      final ApBindingStateRepository bindingStateRepository,            			      
+            			      final ApBindingStateRepository bindingStateRepository,
             			      final ExternalSystemService externalSystemService,
             			      final AccessPointService accessPointService,
             			      final AccessPointItemService accessPointItemService,
@@ -97,7 +97,7 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
             			      final RuleService ruleService,
             			      final CamService camService) {
     	super(accessPointRepository, stateRepository, bindingRepository, bindingItemRepository,
-    	      dataRecordRefRepository, partRepository, itemRepository, bindingStateRepository, 
+    	      dataRecordRefRepository, partRepository, itemRepository, bindingStateRepository,
     	      externalSystemService, accessPointService, accessPointItemService,
     	      asyncRequestService, partService, accessPointCacheService, ruleService,
     	      V2XmlAdapters.INSTANCE);
@@ -411,9 +411,9 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
                                                                      state.getApType());
 
         // === CAM v2: issues/participants ===
-        // Mirror CAM-side issues into ap_binding_issue (rewrite-on-sync semantics
-        // per ApBindingIssue javadoc) and persist participants of this revision
-        // into ap_binding_participant.
+        // Merge CAM-side issues into ap_binding_issue (matched-by-uuid merge per
+        // ApBindingIssue javadoc) and persist participants of this revision into
+        // ap_binding_participant.
         // Must run after createBindingState (so participants can FK to it) and
         // after synchronizeParts (so issues' partRef/itemRef resolve to fresh ids).
         syncCamBindingIssuesAndParticipants(prevBindingState.getBinding(), entity, this.bindingState);
@@ -512,24 +512,15 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
      * Mirror CAM v2 {@code entity.issues} and {@code revision.participant[]}
      * into {@code ap_binding_issue} / {@code ap_binding_participant}.
      *
-     * Issues are rewritten on every sync; participants are appended per binding
-     * state.
+     * Issues are merged by uuid (kept/updated/inserted/deleted as needed);
+     * participants are appended per binding state.
      */
     private void syncCamBindingIssuesAndParticipants(ApBinding binding,
                                                      EntityXml entity,
                                                      ApBindingState bindingState) {
-        IssueRefResolver resolver = IssueRefResolver.buildForImport(
-                entity,                              // EntityXml
-                bindingState.getAccessPointId(),     // AccessPointId
-                binding,                             // ApBinding
-                procCtx.getApExternalSystem(),       // ApExternalSystem
-                bindingItemRepository,
-                bindingRepository,
-                bindingStateRepository,
-                accessPointCacheService,
-                procCtx.getStaticDataProvider());
+        IssueRefResolver resolver = IssueRefResolver.buildForImport(entity, binding, bindingItemRepository);
 
-        externalSystemService.replaceBindingIssues(binding,
+        externalSystemService.syncBindingIssues(binding,
                 BindingSyncMapper.toApBindingIssues(entity, binding, resolver,
                         bindingRepository, partRepository, itemRepository));
 
@@ -667,6 +658,13 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
 
 		accessPointService.updatePartsIndexesAndValidate(accessPoint, apState, partList, itemMap, async);
 		accessPointCacheService.createApCachedAccessPoint(accessPoint.getAccessPointId());
+
+		// === CAM v2: issues/participants ===
+		// Mirror the issues/participants of this revision the same way the update
+		// path does. Shared by download/create, connect and restore, this runs
+		// after createBindingState (participants FK to it) and after the AP cache
+		// is (re)built (so issues' partRef/itemRef and names resolve).
+		syncCamBindingIssuesAndParticipants(binding, entity, this.bindingState);
 	}
 
     private ApPart findParentPart(PartXml partXml, ApAccessPoint accessPoint, ApBinding binding) {

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.AfterAll;
@@ -26,9 +27,14 @@ import cz.tacr.cam.v2.schema.cam.DateTimeXml;
 import cz.tacr.cam.v2.schema.cam.EntityIdXml;
 import cz.tacr.cam.v2.schema.cam.EntityRecordStateXml;
 import cz.tacr.cam.v2.schema.cam.EntityXml;
+import cz.tacr.cam.v2.schema.cam.ExistingIssueXml;
+import cz.tacr.cam.v2.schema.cam.IssueSeverityXml;
+import cz.tacr.cam.v2.schema.cam.IssuesXml;
+import cz.tacr.cam.v2.schema.cam.ItemRefXml;
 import cz.tacr.cam.v2.schema.cam.ItemStringXml;
 import cz.tacr.cam.v2.schema.cam.ItemsXml;
 import cz.tacr.cam.v2.schema.cam.LongStringXml;
+import cz.tacr.cam.v2.schema.cam.PartRefXml;
 import cz.tacr.cam.v2.schema.cam.PartTypeXml;
 import cz.tacr.cam.v2.schema.cam.PartXml;
 import cz.tacr.cam.v2.schema.cam.PartsXml;
@@ -45,12 +51,14 @@ import cz.tacr.elza.controller.vo.ApScopeVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingIssue;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBindingIssueRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
@@ -100,6 +108,9 @@ public class CamServiceImportTest extends AbstractControllerTest {
 
     @Autowired
     private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
+
+    @Autowired
+    private ApBindingIssueRepository bindingIssueRepository;
 
     private CamV2MockHelper camMock;
     private String systemCode;
@@ -176,6 +187,14 @@ public class CamServiceImportTest extends AbstractControllerTest {
      * is picked up, the download processor fetches the entity via CAM v2, and
      * a new AP + bindingState is persisted.
      *
+     * The downloaded entity carries one issue referencing a part and an item by
+     * uuid, so this also guards that issues are stored on the initial download
+     * (not only on a later update) and that their refs resolve to local ids.
+     * The resolved {@code partId}/{@code itemId} matter: the parts/items and
+     * their {@code ApBindingItem}s are created in the same transaction just
+     * before the issue resolver queries them, so a non-null id proves those rows
+     * are visible to the resolver (i.e. flushed) at that point.
+     *
      * Regression guard for the {@code CAM_COMPLETE_V2} routing bug: we
      * explicitly assert the returned processor is the v2 implementation.
      */
@@ -189,11 +208,15 @@ public class CamServiceImportTest extends AbstractControllerTest {
         long camEntityId = 900_001L;
         String camEntityUuid = UUID.randomUUID().toString();
         createdApUuid = camEntityUuid;
+        String partUuid = UUID.randomUUID().toString();
+        String itemUuid = UUID.randomUUID().toString();
+        String issueUuid = UUID.randomUUID().toString();
 
         ExtSyncsQueueItem queueItem = enqueueImport(externalSystemId, camEntityId);
 
-        // CAM returns the entity when the processor calls GET /entities/{id}
-        EntityXml entityXml = buildEntity(camEntityId, camEntityUuid, "Imported person");
+        // CAM returns the entity (carrying one issue) when the processor calls GET /entities/{id}
+        EntityXml entityXml = buildEntity(camEntityId, camEntityUuid, "Imported person",
+                partUuid, itemUuid, issueUuid);
         camMock.stubGetEntityById(camEntityId, entityXml);
 
         // --- when ---------------------------------------------------------
@@ -218,6 +241,22 @@ public class CamServiceImportTest extends AbstractControllerTest {
         assertNotNull(bindingState, "Binding state should link the new AP to the external system");
         assertEquals(SyncState.SYNC_OK, bindingState.getSyncOk());
         assertEquals(Long.toString(camEntityId), bindingState.getBinding().getValue());
+
+        // issues are stored on download, with part/item refs resolved to local ids
+        new TransactionTemplate(transactionManager).executeWithoutResult(tx -> {
+            List<ApBindingIssue> issues = bindingIssueRepository.findByBindingId(testBindingId);
+            assertEquals(1, issues.size(), "the entity's single issue must be stored on download");
+
+            ApBindingIssue issue = issues.get(0);
+            assertEquals(issueUuid, issue.getUuid());
+            assertEquals(ApBindingIssue.Severity.WARNING, issue.getSeverity());
+            assertEquals("Missing birth date", issue.getMessage());
+            assertNotNull(issue.getPartId(),
+                          "issue.partRef must resolve to a local partId — the part's ApBindingItem "
+                                  + "must be visible to the resolver at issue-sync time");
+            assertNotNull(issue.getItemId(),
+                          "issue.itemRef must resolve to a local itemId");
+        });
     }
 
     // ------------------------------------------------------------------
@@ -259,7 +298,13 @@ public class CamServiceImportTest extends AbstractControllerTest {
                 .orElseThrow(() -> new AssertionError("Queue item disappeared"));
     }
 
-    private static EntityXml buildEntity(long entityId, String uuid, String prefName) {
+    /**
+     * Builds a minimal PERSON_BEING entity with one preferred-name part/item and
+     * a single WARNING issue referencing that part and item by uuid, so the
+     * import path's issue storage and ref resolution can be exercised.
+     */
+    private static EntityXml buildEntity(long entityId, String uuid, String prefName,
+                                         String partUuid, String itemUuid, String issueUuid) {
         EntityXml ent = new EntityXml();
         ent.setEntityId(new EntityIdXml(entityId));
         ent.setEntityUuid(new UuidXml(uuid));
@@ -267,14 +312,27 @@ public class CamServiceImportTest extends AbstractControllerTest {
         ent.setEntityType(new CodeXml("PERSON_BEING"));
         ent.setParts(new PartsXml());
 
-        PartXml prefNamePart = new PartXml(new ItemsXml(), null, null, new UuidXml(uuid), PartTypeXml.PT_NAME);
+        PartXml prefNamePart = new PartXml(new ItemsXml(), null, null, new UuidXml(partUuid), PartTypeXml.PT_NAME);
         prefNamePart.getItems().getItems().add(
-                new ItemStringXml(new StringXml(prefName), null, new CodeXml("NM_MAIN"), new UuidXml(uuid)));
+                new ItemStringXml(new StringXml(prefName), null, new CodeXml("NM_MAIN"), new UuidXml(itemUuid)));
         ent.getParts().getPart().add(prefNamePart);
 
         ent.setRevision(new RevisionInfoXml(new UuidXml(uuid), null, null,
                 new UserInfoXml(new CodeXml("user"), null, new LongStringXml("user"), null, null, null),
                 new DateTimeXml(OffsetDateTime.now()), null));
+
+        ExistingIssueXml issue = new ExistingIssueXml();
+        issue.setUuid(new UuidXml(issueUuid));
+        issue.setSeverity(IssueSeverityXml.WARNING);
+        issue.setMessage(new StringXml("Missing birth date"));
+        issue.setRuleCode(new CodeXml("RULE_X"));
+        issue.setPartRef(new PartRefXml(new UuidXml(partUuid), PartTypeXml.PT_NAME));
+        issue.setItemRef(new ItemRefXml(null, new CodeXml("NM_MAIN"), new UuidXml(itemUuid)));
+        issue.setFrom(new DateTimeXml(OffsetDateTime.now()));
+
+        IssuesXml issues = new IssuesXml();
+        issues.getIssue().add(issue);
+        ent.setIssues(issues);
         return ent;
     }
 }

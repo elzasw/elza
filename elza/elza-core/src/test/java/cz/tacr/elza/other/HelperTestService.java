@@ -369,6 +369,8 @@ public class HelperTestService {
         bulkActionNodeRepository.deleteAll();
         faBulkActionRepository.deleteAll();
         indexRepository.deleteAll();
+        // must precede apItem/part/binding cleanup — ap_binding_issue FKs them
+        bindingIssueRepository.deleteAll();
         bindingItemRepository.deleteAll();
         bindingParticipantRepository.deleteAll();
         bindingStateRepository.deleteAll();
@@ -392,7 +394,6 @@ public class HelperTestService {
         nodeRepository.deleteAll();
         fundRepository.deleteAll();
         institutionRepository.deleteAll();
-        bindingIssueRepository.deleteAll();
         bindingRepository.deleteAll();
         apStateRepository.deleteAll();
         apRepository.deleteAll();

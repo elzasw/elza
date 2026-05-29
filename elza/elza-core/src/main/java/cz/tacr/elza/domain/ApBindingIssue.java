@@ -19,8 +19,10 @@ import jakarta.persistence.ManyToOne;
 
 /**
  * CAM-side issue/finding attached to an entity binding. Issues are not
- * versioned in Elza — only the current state synced from CAM is kept and
- * rewritten on every sync.
+ * versioned in Elza — only the current state synced from CAM is kept. On each
+ * sync the stored issues are merged with the incoming revision by {@link #uuid}:
+ * unchanged issues keep their row (and the local {@link #note}), changed issues
+ * are updated in place, missing ones are deleted and new ones inserted.
  *
  * Issue references never cross external systems: {@code relatedBinding} (if
  * set) always points to a binding within the same external system as

@@ -104,7 +104,7 @@ public abstract class AbstractEntityDBDispatcher {
 
     protected final ApItemRepository itemRepository;
 
-    protected final ApBindingStateRepository bindingStateRepository;            			      
+    protected final ApBindingStateRepository bindingStateRepository;
 
     protected final ExternalSystemService externalSystemService;
 
@@ -148,9 +148,9 @@ public abstract class AbstractEntityDBDispatcher {
                                          final ApBindingRepository bindingRepository,
                                          final ApBindingItemRepository bindingItemRepository,
                                          final DataRecordRefRepository dataRecordRefRepository,
-                       			         final ApPartRepository partRepository,
-                    			         final ApItemRepository itemRepository,
-                    			         final ApBindingStateRepository bindingStateRepository,            			      
+                                         final ApPartRepository partRepository,
+                                         final ApItemRepository itemRepository,
+                                         final ApBindingStateRepository bindingStateRepository,
                                          final ExternalSystemService externalSystemService,
                                          final AccessPointService accessPointService,
                                          final AccessPointItemService accessPointItemService,
@@ -166,7 +166,7 @@ public abstract class AbstractEntityDBDispatcher {
         this.dataRecordRefRepository = dataRecordRefRepository;
         this.partRepository = partRepository;
         this.itemRepository = itemRepository;
-	    this.bindingStateRepository = bindingStateRepository;
+        this.bindingStateRepository = bindingStateRepository;
         this.externalSystemService = externalSystemService;
         this.accessPointService = accessPointService;
         this.accessPointItemService = accessPointItemService;
