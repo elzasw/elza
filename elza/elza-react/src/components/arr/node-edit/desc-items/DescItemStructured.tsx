@@ -12,6 +12,7 @@ import { DocumentAddRegular } from "@fluentui/react-icons";
 import { WebApi } from "actions";
 import { DataStructureRef, DataType, NodeItem } from "elza-api";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useDebouncedEffect } from "utils/hooks/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useActiveFund } from "../hooks";
 import { FIELD_HEIGHT } from "../../../../constants";
@@ -121,11 +122,13 @@ export function DescItemStructured({
     ],
   );
 
-  async function handleQueryChange(e: ChangeEvent<HTMLInputElement>) {
-    const _query = e.currentTarget.value;
-    loadStructures(_query);
-    setQuery(_query);
+  function handleQueryChange(e: ChangeEvent<HTMLInputElement>) {
+    setQuery(e.currentTarget.value);
   }
+
+  useDebouncedEffect(() => {
+    loadStructures(query);
+  }, 300, [query, loadStructures]);
 
   async function handleSelect(_e: SelectionEvents, _data: OptionOnSelectData) {
     setQuery(_data.optionText);
@@ -165,10 +168,6 @@ export function DescItemStructured({
       ),
     );
   }
-
-  useEffect(() => {
-    loadStructures(query);
-  }, [query, loadStructures]);
 
   async function handleCreateAnonymousStructure(_structureObjectId: number) {
     await onChange({
