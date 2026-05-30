@@ -10,8 +10,11 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import cz.tacr.cam.v1.schema.cam.EntityRecordStateXml;
 import cz.tacr.elza.controller.vo.ExtEntityBinding;
+import cz.tacr.elza.controller.vo.ExtIssueIconState;
+import cz.tacr.elza.controller.vo.ExtIssueSummary;
 import cz.tacr.elza.controller.vo.ExtItemBinding;
 import cz.tacr.elza.controller.vo.SyncState;
+import cz.tacr.elza.domain.ApBindingIssue;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
@@ -170,8 +173,45 @@ public final class ExtEntityBindingFactory {
         vo.setExtRevision(bindingState.getExtRevision());
         vo.setExtUser(bindingState.getExtUser());
         vo.setExtReplacedBy(bindingState.getExtReplacedBy());
+        vo.setExtMetadataRevision(bindingState.getExtMetadataRevision());
+        vo.setExtPrevRevision(bindingState.getExtPrevRevision());
+        vo.setExtCreatedAt(bindingState.getExtCreatedAt());
         vo.setSyncState(createSyncState(bindingState, lastChange, otherLocalChange));
         return vo;
+    }
+
+    /**
+     * Aggregate a binding's issues into the badge embedded in {@link ExtEntityBinding}.
+     * Returns {@code null} when there are no issues (the wire field is then absent).
+     * Icon state, from most to least prominent:
+     * <ul>
+     *   <li>{@code ATTENTION} — any ERROR, or any status {@code IR_FIX_NEEDED},</li>
+     *   <li>{@code NEW} — at least one WARNING with no status yet,</li>
+     *   <li>{@code NEUTRAL} — only WARNINGs already resolved.</li>
+     * </ul>
+     */
+    public static ExtIssueSummary issueSummary(List<ApBindingIssue> issues) {
+        if (CollectionUtils.isEmpty(issues)) {
+            return null;
+        }
+        boolean attention = false;
+        boolean isNew = false;
+        for (ApBindingIssue issue : issues) {
+            if (issue.getSeverity() == ApBindingIssue.Severity.ERROR
+                    || issue.getStatus() == ApBindingIssue.Status.IR_FIX_NEEDED) {
+                attention = true;
+            } else if (issue.getSeverity() == ApBindingIssue.Severity.WARNING && issue.getStatus() == null) {
+                isNew = true;
+            }
+        }
+        ExtIssueIconState iconState = attention ? ExtIssueIconState.ATTENTION
+                : isNew ? ExtIssueIconState.NEW
+                : ExtIssueIconState.NEUTRAL;
+
+        ExtIssueSummary summary = new ExtIssueSummary();
+        summary.setCount(issues.size());
+        summary.setIconState(iconState);
+        return summary;
     }
 
     private static ExtItemBinding newItemInstance(ApBindingItem src) {
