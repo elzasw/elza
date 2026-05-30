@@ -123,12 +123,6 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
             packageInfo.setVersion(rs.getInt("version"));
             return packageInfo;
         });
-        Map<String, Integer> packagesMap = packageInfoList.stream().collect(Collectors.toMap(PackageInfo::getCode, PackageInfo::getId));
-
-        // Uložit všechna ID balíčků před tím, než je ZIP zpracování začne odstraňovat.
-        // Potřebujeme je pro případ, kdy dpkgDir neexistuje nebo je testing=true
-        // (v testing=true jsou všechny balíčky odstraněny z packagesMap).
-        List<Integer> allDbPackageIds = new ArrayList<>(packagesMap.values());
 
         // reading data from xml packages files
         Path dpkgDir = Paths.get(workDir, ResourcePathResolver.DPKG_DIR);
@@ -179,9 +173,6 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
 
                         Map<String, ByteArrayInputStream> streamMap = PackageUtils.createStreamsMap(pkg.getPath().toFile());
                         readTypeAndSpecDataFromZipFilePackage(streamMap);
-
-                        // remove the read package
-                        packagesMap.remove(pkg.getCode());
                     }
                 }
                 allPackages = new ArrayList<>(latestVersionMap.values());
@@ -195,58 +186,74 @@ public class IndexConfigReaderImpl implements IndexConfigReader {
             allPackages = Collections.emptyList();
         }
 
-        // Načíst typy položek z DB vždy — bez ohledu na to, zda dpkgDir existuje nebo ne.
-        // Pokud packagesMap není prázdná (balíčky nebyly načteny ze ZIP), použijeme je.
-        // Pokud je prázdná (testing=true nebo dpkgDir neexistuje), použijeme všechny ID z DB.
-        // Tímto zajistíme, že všechny typy položek z DB jsou zaregistrovány v indexové schémě.
-        Collection<Integer> packagesToLoadFromDb = packagesMap.isEmpty() ? allDbPackageIds : packagesMap.values();
-        readTypeAndSpecDataFromDb(packagesToLoadFromDb);
+        // Merge data from DB across ALL packages — always, even when dpkgDir is absent
+        // (e.g. tests or first run without packages), so that DB-defined types/specs/parts
+        // are still registered in the index schema.
+        // ZIP contributions are preserved (authoritative for newly added types/specs not yet in DB);
+        // DB fills in cross-package spec assignments and any specs/types only present in DB
+        // (e.g. customer-specific specs added without refreshing the package XML).
+        mergeTypeAndSpecDataFromDb();
     }
 
-    private void readTypeAndSpecDataFromDb(Collection<Integer> packageIds) {
-        if (packageIds.isEmpty()) {
-            return;
-        }
-        // prepare string condition
-        String strList = packageIds.stream().map(String::valueOf).collect(Collectors.joining(","));
-        String condition = String.format(" WHERE package_id IN (%s)", strList);
-
-        // create dataTypeMap<data_type_id, DataType> from rul_data_type from db
+    private void mergeTypeAndSpecDataFromDb() {
+        // dataType lookup
         Map<Integer, DataType> dataTypeMap = new HashMap<>();
         jdbcTemplate.query(SELECT_RUL_DATA_TYPE, (rs, rowNum) -> dataTypeMap.put(rs.getInt(DATA_TYPE_ID), DataType.fromCode(rs.getString(CODE))));
 
-        // get item type codes from db
-        List<RulItemType> itemTypeItems = jdbcTemplate.query(SELECT_RUL_ITEM_TYPE + condition, (rs, rowNum) -> new RulItemType(rs.getInt(ITEM_TYPE_ID), rs.getInt(DATA_TYPE_ID), rs.getString(CODE)));
+        // all item types from DB (no package filter — needed to resolve cross-package spec assignments)
+        List<RulItemType> itemTypeItems = jdbcTemplate.query(SELECT_RUL_ITEM_TYPE, (rs, rowNum) -> new RulItemType(rs.getInt(ITEM_TYPE_ID), rs.getInt(DATA_TYPE_ID), rs.getString(CODE)));
+        Map<Integer, String> itemTypeCodeById = itemTypeItems.stream()
+                .collect(Collectors.toMap(RulItemType::getId, RulItemType::getCode));
 
-        // get item spec codes from db
-        List<RulItemSpec> itemSpecItems = jdbcTemplate.query(SELECT_RUL_ITEM_SPEC + condition, (rs, rowNum) -> new RulItemSpec(rs.getInt(ITEM_SPEC_ID), rs.getString(CODE)));
-        Map<Integer, String> itemSpecMap = itemSpecItems.stream().collect(Collectors.toMap(RulItemSpec::getId, RulItemSpec::getCode));
-        itemSpecCodes = itemSpecItems.stream().map(i -> i.getCode()).collect(Collectors.toList());
-
-        // get item type spec assign from db
-        List<RulItemTypeSpecAssign> typeSpecAssign = jdbcTemplate.query(SELECT_RUL_ITEM_TYPE_SPEC, (rs, rowNum) -> new RulItemTypeSpecAssign(rs.getInt(ITEM_TYPE_ID), rs.getInt(ITEM_SPEC_ID)));
-        Map<Integer, List<Integer>> typeSpecsMap = typeSpecAssign.stream().collect(Collectors.groupingBy(
-                            RulItemTypeSpecAssign::getTypeId, Collectors.mapping(RulItemTypeSpecAssign::getSpecId, Collectors.toList())
-                        ));
-
-        // create Map<String, ItemTypeInfo>
-        for (RulItemType itemType : itemTypeItems) {
-            ItemTypeInfo itemTypeInfo = new ItemTypeInfo(itemType.getId(), itemType.getCode(), dataTypeMap.get(itemType.getDataTypeId()));
-            List<Integer> itemSpecs = typeSpecsMap.get(itemType.getId());
-            if (itemSpecs != null) {
-                List<String> specs = itemSpecs.stream().map(spec -> itemSpecMap.get(spec)).toList();
-                itemTypeInfo.setSpecs(specs);
+        // all item specs from DB
+        List<RulItemSpec> itemSpecItems = jdbcTemplate.query(SELECT_RUL_ITEM_SPEC, (rs, rowNum) -> new RulItemSpec(rs.getInt(ITEM_SPEC_ID), rs.getString(CODE)));
+        Map<Integer, String> itemSpecCodeById = itemSpecItems.stream()
+                .collect(Collectors.toMap(RulItemSpec::getId, RulItemSpec::getCode));
+        for (RulItemSpec spec : itemSpecItems) {
+            if (!itemSpecCodes.contains(spec.getCode())) {
+                itemSpecCodes.add(spec.getCode());
             }
-            itemTypeMap.put(itemType.getCode(), itemTypeInfo);
         }
 
-        // get part type codes from db
-        List<String> partCodes = jdbcTemplate.query(SELECT_RUL_PART_TYPE + condition, (rs, rowNum) -> rs.getString(CODE));
-        partCodes.forEach(code -> {
-        	if (!partTypeCodes.contains(code)) {
+        // ensure every DB itemType is present in itemTypeMap.
+        // ZIP-loaded entries are preserved — for an upgraded package the ZIP carries the
+        // authoritative DataType for any newly added itemType not yet in DB.
+        for (RulItemType itemType : itemTypeItems) {
+            if (!itemTypeMap.containsKey(itemType.getCode())) {
+                ItemTypeInfo info = new ItemTypeInfo(itemType.getId(), itemType.getCode(),
+                                                    dataTypeMap.get(itemType.getDataTypeId()));
+                itemTypeMap.put(itemType.getCode(), info);
+            }
+        }
+
+        // merge all type-spec assignments. rul_item_type_spec_assign has no package_id,
+        // so a single pass over all rows covers cross-package assignments and any specs
+        // that exist only in DB (e.g. customer extensions). Dedup via .contains() avoids
+        // duplicate Lucene field registration when ZIP and DB list the same assignment.
+        List<RulItemTypeSpecAssign> typeSpecAssign = jdbcTemplate.query(SELECT_RUL_ITEM_TYPE_SPEC, (rs, rowNum) -> new RulItemTypeSpecAssign(rs.getInt(ITEM_TYPE_ID), rs.getInt(ITEM_SPEC_ID)));
+        for (RulItemTypeSpecAssign assign : typeSpecAssign) {
+            String typeCode = itemTypeCodeById.get(assign.getTypeId());
+            String specCode = itemSpecCodeById.get(assign.getSpecId());
+            if (typeCode == null || specCode == null) {
+                continue;
+            }
+            ItemTypeInfo info = itemTypeMap.get(typeCode);
+            if (info == null) {
+                continue;
+            }
+            List<String> specs = info.getSpecs();
+            if (!specs.contains(specCode)) {
+                specs.add(specCode);
+            }
+        }
+
+        // part type codes
+        List<String> partCodes = jdbcTemplate.query(SELECT_RUL_PART_TYPE, (rs, rowNum) -> rs.getString(CODE));
+        for (String code : partCodes) {
+            if (!partTypeCodes.contains(code)) {
                 partTypeCodes.add(code);
             }
-        });
+        }
     }
 
     private void readTypeAndSpecDataFromZipFilePackage(Map<String, ByteArrayInputStream> streamMap) {
