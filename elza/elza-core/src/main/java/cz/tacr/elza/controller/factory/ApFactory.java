@@ -70,6 +70,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingIssue;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
@@ -97,6 +98,7 @@ import cz.tacr.elza.domain.projection.ApStateInfo;
 import cz.tacr.elza.packageimport.xml.SettingItemTypes;
 import cz.tacr.elza.packageimport.xml.SettingPartsOrder;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBindingIssueRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
@@ -124,6 +126,8 @@ public class ApFactory {
     private final ApBindingStateRepository bindingStateRepository;
 
     private final ApBindingItemRepository bindingItemRepository;
+
+    private final ApBindingIssueRepository bindingIssueRepository;
 
     private final ScopeRepository scopeRepository;
 
@@ -157,6 +161,7 @@ public class ApFactory {
                      final ApPartRepository partRepository,
                      final ApBindingStateRepository bindingStateRepository,
                      final ApBindingItemRepository bindingItemRepository,
+                     final ApBindingIssueRepository bindingIssueRepository,
                      final ApIndexRepository indexRepository,
                      final ApTypeRepository apTypeRepository,
                      final ApChangeRepository changeRepository,
@@ -173,6 +178,7 @@ public class ApFactory {
         this.partRepository = partRepository;
         this.bindingStateRepository = bindingStateRepository;
         this.bindingItemRepository = bindingItemRepository;
+        this.bindingIssueRepository = bindingIssueRepository;
         this.indexRepository = indexRepository;
         this.apTypeRepository = apTypeRepository;
         this.changeRepository = changeRepository;
@@ -377,6 +383,7 @@ public class ApFactory {
             }
             apVO.setBindings(bindingsVO);
             fillBindingUrls(bindingsVO);
+            fillIssueSummaries(bindingsVO);
 
             apVO.setParts(createVO(parts, items, indices));
             apVO.setComments(comments);
@@ -408,6 +415,7 @@ public class ApFactory {
         }
         apVO.setBindings(bindingsVO);
         fillBindingUrls(bindingsVO);
+        fillIssueSummaries(bindingsVO);
 
         apVO.setParts(createPartsVO(cachedAccessPoint.getParts()));
         apVO.setPreferredPart(cachedAccessPoint.getPreferredPartId());
@@ -488,6 +496,26 @@ public class ApFactory {
         vo.setDescription(description);
         vo.setAssignedTo(assignedTo);
         return vo;
+    }
+
+    /**
+     * Fill the issue badge ({@link ExtEntityBinding#getIssueSummary()}) for each binding.
+     * Issues live in {@code ap_binding_issue} (not the AP cache), so they are loaded here
+     * by binding id in a single batch and aggregated per binding.
+     */
+    private void fillIssueSummaries(final List<ExtEntityBinding> bindings) {
+        if (CollectionUtils.isEmpty(bindings)) {
+            return;
+        }
+        List<Integer> bindingIds = bindings.stream()
+                .map(ExtEntityBinding::getId)
+                .collect(Collectors.toList());
+        Map<Integer, List<ApBindingIssue>> issuesByBinding = bindingIssueRepository.findByBindingIdIn(bindingIds)
+                .stream()
+                .collect(Collectors.groupingBy(ApBindingIssue::getBindingId));
+        for (ExtEntityBinding binding : bindings) {
+            binding.setIssueSummary(ExtEntityBindingFactory.issueSummary(issuesByBinding.get(binding.getId())));
+        }
     }
 
     private void fillBindingUrls(final List<ExtEntityBinding> bindings) {
