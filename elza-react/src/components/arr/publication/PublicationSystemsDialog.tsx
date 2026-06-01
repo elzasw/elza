@@ -19,7 +19,7 @@ const messages = defineMessages({
     title: { id: "publication.systems.dialog.title", defaultMessage: "Správa publikačních systémů" },
     btnAdd: { id: "publication.systems.dialog.add", defaultMessage: "Přidat" },
     btnClose: { id: "publication.systems.dialog.close", defaultMessage: "Zavřít" },
-    newSystem: { id: "publication.systems.new", defaultMessage: "Nový typ" },
+    newSystem: { id: "publication.systems.new", defaultMessage: "Nový publikační systém" },
 });
 
 
@@ -46,14 +46,32 @@ export function PublicationSystemsDialog({ open, onClose }: Props) {
     const isSameSystem = (a: PublicationType, b: PublicationType) =>
         a.id !== undefined ? a.id === b.id : a === b;
 
+    const createEmptySystem = (): PublicationType => ({
+        name: "",
+        code: "",
+        retentionCount: 5,
+        exportFilterCode: undefined,
+        active: true,
+        allowPermExport: false,
+        allowPermPublication: false,
+        connectionType: ConnectionType.Development,
+    });
+
     useEffect(() => {
         if (!open) { return; }
         (async () => {
             const { data } = await Api.publication.publicationTypeAdminListPublicationTypes();
-            setSystems(data);
-            const first = data[0] ?? null;
-            setSelectedId(first?.id ?? null);
-            setEditedSystem(first ? { ...first } : null);
+            if (data.length === 0) {
+                const newSystem = createEmptySystem();
+                setSystems([newSystem]);
+                setSelectedId(null);
+                setEditedSystem(newSystem);
+            } else {
+                setSystems(data);
+                const first = data[0];
+                setSelectedId(first.id ?? null);
+                setEditedSystem({ ...first });
+            }
         })();
     }, [open]);
 
@@ -63,16 +81,7 @@ export function PublicationSystemsDialog({ open, onClose }: Props) {
     };
 
     const handleAdd = () => {
-        const newSystem: PublicationType = {
-            name: formatMessage(messages.newSystem),
-            code: "",
-            retentionCount: 5,
-            exportFilterCode: undefined,
-            active: true,
-            allowPermExport: false,
-            allowPermPublication: false,
-            connectionType: ConnectionType.Development,
-        };
+        const newSystem = createEmptySystem();
         setSystems((prev) => [...prev, newSystem]);
         setSelectedId(null);
         setEditedSystem(newSystem);
@@ -133,7 +142,7 @@ export function PublicationSystemsDialog({ open, onClose }: Props) {
                                             onClick={() => handleSelect(system)}
                                         >
                                             {!(system.active ?? true) && <EyeOffRegular className={classes.inactiveIcon} />}
-                                            <span className={`${classes.listItemName} ${!(system.active ?? true) ? classes.listItemInactive : ""}`}>{system.name}</span>
+                                            <span className={`${classes.listItemName} ${!(system.active ?? true) ? classes.listItemInactive : ""}`}>{system.name || formatMessage(messages.newSystem)}</span>
                                         </div>
                                     );
                                 })}
