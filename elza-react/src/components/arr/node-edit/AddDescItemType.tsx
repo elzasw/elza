@@ -110,7 +110,7 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
     const descItem = descItems.find(({itemTypeId}) => itemTypeId === item.id);
     // hide when descItem already added
     // and if impossible when strictMode enabled
-    return !descItem && !(strictMode && itemType.type === MandatoryType.Impossible);
+    return !descItem && !!itemType && !(strictMode && itemType.type === MandatoryType.Impossible);
   }).map((item) => {
     const itemType = itemTypes.find(({itemTypeId}) => itemTypeId === item.id);
     return {
