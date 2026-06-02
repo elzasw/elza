@@ -164,9 +164,9 @@ export function DescItemTypeDebugInfo({ typeRef, typeForm }: DescItemTypeDebugIn
         return null;
     }
 
-    const type = (typeForm?.type ?? typeRef.type) as MandatoryType;
+    const type = (typeForm?.type ?? MandatoryType.Impossible) as MandatoryType;
     const id = typeForm?.itemTypeId ?? typeRef.id;
-    const repeatable = typeForm?.repeatable ?? typeRef.repeatable;
+    const repeatable = typeForm?.repeatable ?? false;
     const undefinable = typeForm?.undefinable ?? false;
 
     return (
