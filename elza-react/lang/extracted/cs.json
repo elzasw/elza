@@ -476,7 +476,7 @@
     "defaultMessage": "Zneplatněno"
   },
   "publication.col.lastFetchedAt": {
-    "defaultMessage": "Naposledy staženo"
+    "defaultMessage": "Převzato"
   },
   "publication.col.preparedAt": {
     "defaultMessage": "Připraveno"
