@@ -86,6 +86,7 @@ export function DescItemRecordRef({
     _e: SelectionEvents,
     data: OptionOnSelectData,
   ) => {
+    if(!data.optionValue){return;}
     setQuery(data.optionText);
     onChange({
       ...item,
@@ -228,6 +229,7 @@ export function DescItemRecordRef({
         size={compact ? "small" : "medium"}
         title={query}
         value={query}
+        selectedOptions={data?.value != null ? [data.value.toString()] : []}
         onChange={(e) => setQuery(e.target.value)}
         onOptionSelect={handleAccessPointSelect}
         onOpenChange={(_e, open) => {
