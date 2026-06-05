@@ -25,6 +25,7 @@ export interface Props extends PropsWithChildren {
   canCopyFromPrev: boolean;
   handleCopyToggle: (id: number) => void;
   hideCopyButtons?: boolean;
+  extraActions?: ReactNode;
 }
 
 export function DescItemTypeHeader({
@@ -37,6 +38,7 @@ export function DescItemTypeHeader({
   handleCopyToggle,
   canCopyFromPrev,
   hideCopyButtons = false,
+  extraActions,
 }: Props) {
   const styles = useStyles();
   const [isHovered, setIsHovered] = useState(false);
@@ -99,6 +101,7 @@ export function DescItemTypeHeader({
           <div>{typeRef.shortcut}</div>
         </Tooltip>
         <DescItemTypeDebugInfo typeRef={typeRef} typeForm={typeForm} />
+        {extraActions}
         {!hideCopyButtons && (
           <div className="actions" >
             <Tooltip

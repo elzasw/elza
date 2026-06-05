@@ -8,7 +8,7 @@ export const NodeFormContext = createContext<NodeFormContextValue | undefined>(u
 export function useNodeFormContext() {
     const nodeFormContext = useContext(NodeFormContext);
     if (!nodeFormContext) {
-        throw new Error("useNodeFormContext must be used within NodeFormContext.Provider");
+        console.warn("useNodeFormContext must be used within NodeFormContext.Provider");
     }
     return nodeFormContext;
 }

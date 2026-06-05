@@ -112,7 +112,6 @@ class ArrStructurePanel extends AbstractReactComponent {
                     fundId={fundId}
                     fundVersionId={fundVersionId}
                     structureTypeCode={code}
-                    descItemFactory={DescItemFactory}
                 />,
             ),
         );
@@ -129,7 +128,6 @@ class ArrStructurePanel extends AbstractReactComponent {
                     fundId={fundId}
                     fundVersionId={fundVersionId}
                     structureTypeCode={code}
-                    descItemFactory={DescItemFactory}
                 />,
             ),
         );

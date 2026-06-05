@@ -1,6 +1,7 @@
 import { Button } from "@fluentui/react-components";
 import { AddRegular } from "@fluentui/react-icons";
 import { FormItemType } from "elza-api";
+import { ReactNode } from "react";
 import { DescItemTypeRef } from "typings/store";
 import { useUserSettings } from "contexts/user";
 import { useStyles } from "./styles";
@@ -20,9 +21,9 @@ interface Props {
     typeForm?: FormItemType;
     typeWidth: number;
     descItems: DescItem[];
-    fondsVersionId: number;
-    nodeId: number;
-    nodeVersionId: number;
+    fondsVersionId?: number;
+    nodeId?: number;
+    nodeVersionId?: number;
     nodeSetting?: any;
     isFirstNode: boolean;
     handleCopyFromPrev: (descItemTypeId: number) => void;
@@ -32,6 +33,7 @@ interface Props {
     createDescItem: (item: any, localId: string) => Promise<any>;
     updateDescItem: (item: any, localId?: string) => void | Promise<void>;
     hideCopyButtons?: boolean;
+    renderExtraActions?: (typeRef: DescItemTypeRef) => ReactNode;
 }
 
 export function DescItemTypeFields({
@@ -51,6 +53,7 @@ export function DescItemTypeFields({
     createDescItem,
     updateDescItem,
     hideCopyButtons = false,
+    renderExtraActions,
 }: Props) {
     const { settings } = useUserSettings();
     const compact = settings.compact;
@@ -91,6 +94,7 @@ export function DescItemTypeFields({
             handleCopyToggle={handleCopyToggle}
             canCopyFromPrev={!isFirstNode}
             hideCopyButtons={hideCopyButtons}
+            extraActions={renderExtraActions?.(typeRef)}
         >
             <DraggableList
                 canPlaceBeforeItem={(index) => descItems[index].item.position > 0}

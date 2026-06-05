@@ -11,8 +11,9 @@ import FF from "../../shared/form/FF";
 import { getInfoSpecType } from "../../../stores/app/accesspoint/itemFormUtils";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { RulItemTypeType } from "api/RulItemTypeType";
-import { FormItemType, MandatoryType, NodeItem } from "elza-api";
+import { FormItemType, MandatoryType } from "elza-api";
 import { RulDescItemTypeVO } from "api/RulDescItemTypeVO";
+import { EditItem } from "./types";
 import { DescItemGroup, DescItemTypeRef } from "typings/store";
 import {
   AddRegular,
@@ -28,7 +29,7 @@ import { defineMessages, useIntl } from "react-intl";
 interface Props {
   // groups: ViewDescItemGroups[];
   itemTypes: FormItemType[];
-  descItems: NodeItem[];
+  descItems: EditItem[];
   onSubmit: (descItemType: DescItemTypeRef) => void;
   onClose: () => void;
 }

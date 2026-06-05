@@ -23,7 +23,7 @@ interface Props {
 }
 
 export function ErrorDisplay({ itemObjectId }: Props) {
-  const { nodeData } = useNodeFormContext();
+  const nodeData = useNodeFormContext()?.nodeData;
   const { settings } = useUserSettings();
   const size = settings.compact ? FIELD_HEIGHT.small : FIELD_HEIGHT.medium;
   const nodeConformity = nodeData?.nodeConformity;
