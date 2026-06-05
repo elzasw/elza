@@ -8,7 +8,7 @@ export const messages = defineMessages({
     createdAt:     { id: "publication.col.createdAt",     defaultMessage: "Vytvořeno" },
     preparedAt:    { id: "publication.col.preparedAt",    defaultMessage: "Připraveno" },
     errorAt:       { id: "publication.col.errorAt",       defaultMessage: "Čas chyby" },
-    lastFetchedAt: { id: "publication.col.lastFetchedAt", defaultMessage: "Naposledy staženo" },
+    lastFetchedAt: { id: "publication.col.lastFetchedAt", defaultMessage: "Převzato" },
     publishedAt:   { id: "publication.col.publishedAt",   defaultMessage: "Publikováno" },
     invalidatedAt: { id: "publication.col.invalidatedAt", defaultMessage: "Zneplatněno" },
     errorMessage:  { id: "publication.col.errorMessage",  defaultMessage: "Chybová zpráva" },
