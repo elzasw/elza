@@ -5,6 +5,7 @@ import {
   ItemDataResult,
   NodeItem,
 } from "elza-api";
+import { EditItem } from "../types";
 import { useState } from "react";
 import { DescItemTypeRef } from "typings/store";
 import { useAppSelector } from "utils/hooks/useAppSelector";
@@ -61,16 +62,16 @@ const useStyles = makeStyles({
 })
 
 interface Props {
-  item: NodeItem;
+  item: EditItem;
   typeRef: DescItemTypeRef;
   typeForm?: FormItemType;
   typeWidth?: number;
-  fondsVersionId: number;
-  nodeId: number;
-  nodeVersionId: number;
-  onDelete?: (item: NodeItem) => Promise<void>;
-  onCreate: (item: NodeItem) => Promise<ItemDataResult>;
-  onUpdate: (item: NodeItem) => Promise<void>;
+  fondsVersionId?: number;
+  nodeId?: number;
+  nodeVersionId?: number;
+  onDelete?: (item: EditItem) => Promise<void>;
+  onCreate: (item: EditItem) => Promise<ItemDataResult>;
+  onUpdate: (item: EditItem) => Promise<void>;
 }
 
 const dataTypeComponentMap = {

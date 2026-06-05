@@ -6,15 +6,16 @@ import {
   DeleteRegular,
 } from "@fluentui/react-icons";
 import { WebApi } from "actions";
-import { FormItemType, MandatoryType, NodeItem } from "elza-api";
+import { FormItemType, MandatoryType } from "elza-api";
+import { EditItem } from "../types";
 import { FormattedMessage, defineMessages } from "react-intl";
 import { DescItemTypeRef } from "typings/store";
 import { useUserSettings } from "contexts/user";
 import { useStyles } from "./styles";
 
 interface Props {
-  item: NodeItem;
-  nodeId: number;
+  item: EditItem;
+  nodeId?: number;
   specId?: number;
   onDelete: () => void;
   onSetUndefined: () => void;

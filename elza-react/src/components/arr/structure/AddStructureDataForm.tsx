@@ -4,16 +4,14 @@ import { Button } from '../../ui';
 import { i18n } from 'components/shared';
 import { Form as FinalForm, Field } from 'react-final-form';
 import { FORM_ERROR } from 'final-form';
-import StructureSubNodeForm from './StructureSubNodeForm';
-import { structureNodeFormFetchIfNeeded, structureNodeFormSelectId } from '../../../actions/arr/structureNodeForm';
 import FormInputField from '../../shared/form/FormInputField';
 import { useAppThunkDispatch } from 'utils/hooks';
-import DescItemFactory from 'components/arr/nodeForm/DescItemFactory';
+import { useAppSelector } from 'utils/hooks/useAppSelector';
 import { WebApi } from 'actions';
-import { DataTypeCode } from 'stores/app/accesspoint/itemFormUtils';
-import { ItemTypeLiteVO } from 'api/ItemTypeLiteVO';
+import { DataType } from 'elza-api';
 import { modalDialogHide } from 'actions/global/modalDialog';
 import { structureTypeInvalidate } from 'actions/arr/structureType';
+import { StructureEdit } from './StructureEdit';
 
 export interface FormValues {
     count: string;
@@ -30,7 +28,6 @@ interface Props {
     fundId: number;
     structureTypeCode: string;
     initialQuery?: string;
-    descItemFactory: typeof DescItemFactory;
     onConfirm?: (structureId: number) => void | Promise<void>;
     onClose?: () => void;
 }
@@ -41,11 +38,11 @@ function AddStructureDataForm({
     fundId,
     structureTypeCode,
     initialQuery = '',
-    descItemFactory,
     onConfirm,
     onClose,
 }: Props) {
     const dispatch = useAppThunkDispatch();
+    const dataTypeRefs = useAppSelector(({ refTables }) => refTables.rulDataTypes.itemsMap);
 
     // Creates a temp structure on mount, deletes on unmount (unless confirmed).
     // Ref + cancelled flag ensure correct cleanup even if unmount races with the API call.
@@ -70,14 +67,6 @@ function AddStructureDataForm({
             }
         };
     }, [fundVersionId, structureTypeCode, initialQuery]);
-
-    // Populate Redux store for StructureSubNodeForm (which handles its own loading).
-    useEffect(() => {
-        if (structureData?.id) {
-            dispatch(structureNodeFormSelectId(fundVersionId, structureData.id));
-            dispatch(structureNodeFormFetchIfNeeded(fundVersionId, structureData.id));
-        }
-    }, [dispatch, fundVersionId, structureData?.id]);
 
     const isLoading = !structureData;
 
@@ -118,31 +107,7 @@ function AddStructureDataForm({
 
     return (
         <FinalForm<FormValues> initialValues={initialValues} onSubmit={handleFormSubmit} validate={validate}>
-            {({ handleSubmit, submitting, submitError, error }) => {
-                const customRender = (code: DataTypeCode, infoType: ItemTypeLiteVO) => {
-                    if (code === DataTypeCode.INT) {
-                        const index = incrementedTypeIds.indexOf(infoType.id);
-                        const checked = index !== -1;
-
-                        return (
-                            <FormCheck
-                                key="increment"
-                                checked={checked}
-                                onChange={() => {
-                                    if (checked) {
-                                        setIncrementedTypeIds((ids) => ids.filter((id) => id !== infoType.id));
-                                    } else {
-                                        setIncrementedTypeIds((ids) => [...ids, infoType.id]);
-                                    }
-                                }}
-                                label={i18n('arr.structure.modal.increment')}
-                            />
-                        );
-                    }
-                    return null;
-                };
-
-                return (
+            {({ handleSubmit, submitting, submitError, error }) => (
                     <Form onSubmit={handleSubmit}>
                         <Modal.Body>
                             {(submitError || error) && <p>{submitError || error}</p>}
@@ -151,13 +116,29 @@ function AddStructureDataForm({
                                     {i18n('global.data.loading')}
                                 </div>
                             ) : (
-                                <StructureSubNodeForm
-                                    id={structureData!.id}
-                                    versionId={fundVersionId}
+                                <StructureEdit
                                     fundId={fundId}
-                                    selectedSubNodeId={structureData!.id}
-                                    customActions={multiple && customRender}
-                                    descItemFactory={descItemFactory}
+                                    fundVersionId={fundVersionId}
+                                    structureObjectId={structureData!.id}
+                                    renderExtraActions={multiple ? (typeRef) => {
+                                        const dataType = dataTypeRefs[typeRef.dataTypeId];
+                                        if (dataType?.code !== DataType.Int) { return null; }
+                                        const checked = incrementedTypeIds.includes(typeRef.id);
+                                        return (
+                                            <FormCheck
+                                                key="increment"
+                                                checked={checked}
+                                                onChange={() => {
+                                                    if (checked) {
+                                                        setIncrementedTypeIds((ids) => ids.filter((id) => id !== typeRef.id));
+                                                    } else {
+                                                        setIncrementedTypeIds((ids) => [...ids, typeRef.id]);
+                                                    }
+                                                }}
+                                                label={i18n('arr.structure.modal.increment')}
+                                            />
+                                        );
+                                    } : undefined}
                                 />
                             )}
                             {multiple && (
@@ -186,8 +167,7 @@ function AddStructureDataForm({
                             </Button>
                         </Modal.Footer>
                     </Form>
-                );
-            }}
+            )}
         </FinalForm>
     );
 }

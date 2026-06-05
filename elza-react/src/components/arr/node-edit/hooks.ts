@@ -19,6 +19,7 @@ import { useAppSelector } from "utils/hooks/useAppSelector";
 import { getOneSettings } from "../ArrUtils";
 import { createEmptyDescItem } from "./desc-items/utils";
 import { consumePendingTemplateCallback } from "./pendingTemplateItems";
+import { EditItem } from "./types";
 
 export function useStrictMode() {
   const strictMode: boolean = useAppSelector(({ userDetail, arrRegion }) => {
@@ -217,7 +218,7 @@ export function getForcedItemTypes(
 }
 
 export interface FormItem {
-  item: NodeItem;
+  item: EditItem;
   localId: string;
 }
 

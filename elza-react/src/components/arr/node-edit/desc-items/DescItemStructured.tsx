@@ -22,7 +22,6 @@ import { i18n } from "components";
 import AddStructureDataForm from "components/arr/structure/AddStructureDataForm";
 import { modalDialogShow } from "actions/global/modalDialog";
 import { useAppThunkDispatch } from "utils/hooks";
-import DescItemFactory from "components/arr/nodeForm/DescItemFactory";
 import { FormattedMessage, defineMessages } from "react-intl";
 import { useStyles } from "./styles";
 
@@ -162,7 +161,6 @@ export function DescItemStructured({
           fundVersionId={fundVersionId}
           structureTypeCode={structureType.code}
           initialQuery={query}
-          descItemFactory={DescItemFactory}
           onConfirm={(structureId) => handleChange(structureId)}
         />,
       ),
