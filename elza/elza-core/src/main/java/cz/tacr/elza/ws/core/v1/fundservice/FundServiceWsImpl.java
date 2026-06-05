@@ -191,7 +191,9 @@ public class FundServiceWsImpl {
                 } else {
                     scopes = scopeRepository.findByCodes(strings);
                 }
-                Validate.isTrue(strings.size() == scopes.size(), "Nebyly nalezeny všechny ApScope");
+                Validate.isTrue(strings.size() == scopes.size(),
+                        "Nebyly nalezeny všechny ApScope. Požadované: %s, nalezené: %s (pozor, kódy jsou citlivé na velikost písmen)",
+                        strings, scopes.stream().map(ApScope::getCode).collect(Collectors.toList()));
                 return scopes;
             }
         }
