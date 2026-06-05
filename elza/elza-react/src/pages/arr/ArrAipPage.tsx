@@ -125,7 +125,7 @@ class ArrAipPage extends ArrParentPage {
     renderCenterPanel(readMode, closed) {
         const activeFund = this.getActiveFund(this.props);
         return (
-            <div className='center-panel'>
+            <div className='aip-center-panel'>
                 <AipExplorer mode={ExplorerMode.VIEW}/>
                 <ActionsContainer fund={activeFund} readMode={readMode}/>
             </div>
