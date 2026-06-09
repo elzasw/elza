@@ -83,11 +83,13 @@ export function StructureEdit({ fundId, fundVersionId, structureObjectId, readMo
     }
 
     return (
-        <div>
+        <div style={{width: '100%'}}>
             {hasPossibleTypes && !readMode && (
-                <Button appearance="primary" icon={<AddRegular />} onClick={handleAddDescItemType}>
-                    {formatMessage(messages.addDescItem)}
-                </Button>
+                <div style={{margin: '4px 0 0 4px'}}>
+                    <Button appearance="primary" icon={<AddRegular />} onClick={handleAddDescItemType}>
+                        {formatMessage(messages.addDescItem)}
+                    </Button>
+                </div>
             )}
             <GroupColumns groups={groups} columnCount={settings.groupColumns || 1}>
                 {({ group, descItemTypes }) => (
