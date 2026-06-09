@@ -7,6 +7,7 @@ import {
 import { WebApi } from "actions";
 import { DataFileRef, DataType, NodeItem } from "elza-api";
 import { useEffect, useRef, useState } from "react";
+import { useDebouncedEffect } from "utils/hooks/hooks";
 import { useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
 import { useStyles } from "./styles";
@@ -93,7 +94,7 @@ export function DescItemFileRef({
     }
   }, [data?.fileId, item.undefined]);
 
-  useEffect(() => {
+  useDebouncedEffect(() => {
     if (!item.undefined && item.nodeId === nodeId) {
       (async () => {
         const { rows } = await WebApi.findFundFiles(
@@ -103,7 +104,7 @@ export function DescItemFileRef({
         setFiles(rows);
       })();
     }
-  }, [query, item.undefined, item.nodeId, nodeId]);
+  }, 300, [query, item.undefined, item.nodeId, nodeId]);
 
   const isInherited = item.nodeId != nodeId;
   const isDisabled =
