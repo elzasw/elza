@@ -4,6 +4,7 @@ export * from "./DescItemText";
 export * from "./DescItemEnum";
 export * from "./DescItemUnitid";
 export * from "./DescItemUnitdate";
+export * from "./DescItemDate";
 export * from "./DescItemRecordRef";
 export * from "./DescItemField";
 export * from "./DescItemStructured";
