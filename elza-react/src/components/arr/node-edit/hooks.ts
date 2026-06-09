@@ -187,6 +187,13 @@ export function getForcedItemTypes(
           });
         }
       });
+
+      // Required/Recommended: if no specs qualified for processing, still add an empty item
+      if (isRequiredOrRecommended && specsToProcess.length === 0 && existingItemCount === 0) {
+        forcedDescItems.push(
+          createEmptyDescItem(itemTypeId, nodeId, nodeVersionId, existingItemCount, dataType.code),
+        );
+      }
     } else {
       const typeHasValue = existingItemsOfType.length > 0;
       const allTypeItemsInheritedAndInhibited =

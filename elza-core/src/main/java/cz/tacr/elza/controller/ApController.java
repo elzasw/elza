@@ -714,7 +714,8 @@ public class ApController {
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
 
-        return connector.search(fromPage + 1, max, filter, apExternalSystem);
+        // fromPage is a 0-based page index; the connector converts it to the API's 1-based page number
+        return connector.search(fromPage, max, filter, apExternalSystem);
     }
 
     /**
