@@ -3,7 +3,7 @@
     <parent>
         <artifactId>elza</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>3.3.15</version>
+        <version>3.3.16-SNAPSHOT</version>
     </parent>
     <artifactId>package-cz-base</artifactId>
     <name>Package Base CZ</name>
