@@ -25,6 +25,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
         this.state = {
             permissions: [],
             selectedPermission: props.selectedPermission,
+            isDeletingFund: false,
         };
     }
 
@@ -123,6 +124,14 @@ class FundsPermissionPanel extends AbstractReactComponent {
             const permFundMap = {};
             permFundMap[FundsPermissionPanel.ALL_ID] = {id: FundsPermissionPanel.ALL_ID, groupIds: {}};
 
+            // Preserve funds that were explicitly added to the list, so removing the last
+            // permission doesn't drop the fund entry from the list after the refetch.
+            permissions.forEach(p => {
+                if (p.id !== FundsPermissionPanel.ALL_ID && p.id != null) {
+                    permFundMap[p.id] = { id: p.id, fund: p.fund, groupIds: {} };
+                }
+            });
+
             nextProps.entityPermissions.data.permissions.forEach(p => {
                 let id = null;
                 let permissionCode;
@@ -176,25 +185,23 @@ class FundsPermissionPanel extends AbstractReactComponent {
             permissions = Object.values(permFundMap);
         }
 
-        this.sortPermissions(permissions);
+        if (this.props.entityPermissions.isFetching && !nextProps.entityPermissions.isFetching) {
+            this.sortPermissions(permissions);
 
-        // Creates new selected id from props. Uses state, if the selected permission in props didn't change.
-        let newSelectedId =
-            nextProps.selectedPermission.index >= 0
+            // Prefer local state's selected id, fall back to props only when the prop selection changed.
+            const propSelectionChanged = nextProps.selectedPermission.id !== this.props.selectedPermission.id;
+            const newSelectedId = propSelectionChanged
                 ? nextProps.selectedPermission.id
                 : this.state.selectedPermission.id;
-        let newSelectedIndex = this.getIndexById(newSelectedId, permissions);
+            let newSelectedIndex = this.getIndexById(newSelectedId, permissions);
 
-        // Selects the first item, if the index is not found for the selected id.
-        if (newSelectedIndex === -1) {
-            newSelectedIndex = 0;
-        }
+            // Selects the first item, if the index is not found for the selected id.
+            if (newSelectedIndex === -1) {
+                newSelectedIndex = 0;
+            }
 
-        let permission = permissions[newSelectedIndex] || {id: null};
-
-        this.selectItem(permission, newSelectedIndex);
-
-        if (this.props.entityPermissions.isFetching && !nextProps.entityPermissions.isFetching) {
+            const permission = permissions[newSelectedIndex] || {id: null};
+            this.selectItem(permission, newSelectedIndex);
             this.setState({permissions});
         }
     }
@@ -271,33 +278,20 @@ class FundsPermissionPanel extends AbstractReactComponent {
             fund: permission.fund,
         };
 
-        const applyChange = (id) => {
-            this.setState(({permissions, selectedPermission}) => {
-                // When fundId is provided (FundDetail context), selectedPermission.index is
-                // irrelevant — find the entry by fund id instead.
-                const index = fundId != null
-                    ? permissions.findIndex(p => p.id != null && p.id.toString() === fundId.toString())
-                    : selectedPermission.index;
-                if (index === -1) { return null; }
-                const current = permissions[index];
-                const updated = {
-                    ...current,
-                    [permCode]: {...(current[permCode] || {groupIds: {}}), checked: add, id},
-                };
-                return {
-                    permissions: [
-                        ...permissions.slice(0, index),
-                        updated,
-                        ...permissions.slice(index + 1),
-                    ],
-                };
-            });
+        const refetch = () => {
+            if (this.state.isDeletingFund) { return; }
+            const {userId, groupId} = this.props;
+            if (userId) {
+                this.props.dispatch(adminPermissions.fetchUser(userId));
+            } else {
+                this.props.dispatch(adminPermissions.fetchGroup(groupId));
+            }
         };
 
         if (add) {
-            return onAddPermission([permissionData]).then(data => applyChange(data[0].id));
+            return onAddPermission([permissionData]).then(() => refetch());
         } else {
-            return onDeletePermission(permissionData).then(() => applyChange(null));
+            return onDeletePermission(permissionData).then(() => refetch());
         }
     };
 
@@ -309,7 +303,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
         let newPermissions = [...permissions];
 
         // Pokud má nějaké právo zděděné, musí položka po smazání zůstat, ale jen pokud je právo zděděné ze skupina přímo na daný fund
-        const permission = this.getPermission();
+        const permission = permissions[index];
         let hasInheritRight = false;
         Object.values(FundsPermissionPanel.permCodesMap).forEach(permCode => {
             if (permission[permCode] && Object.keys(permission[permCode].groupIds).length > 0) {
@@ -326,12 +320,14 @@ class FundsPermissionPanel extends AbstractReactComponent {
         let newSelectedPermissionIndex = selectedPermission.index;
 
         if (!hasInheritRight) {
-            // Remove selected item
-            newPermissions.splice(selectedPermission.index, 1);
+            // Remove item at the given index
+            newPermissions.splice(index, 1);
 
-            // Decrements index, if selected item is last.
+            // Adjust selected index if it pointed at or past the removed item
             if (selectedPermission.index >= newPermissions.length) {
                 newSelectedPermissionIndex = newPermissions.length - 1;
+            } else if (selectedPermission.index > index) {
+                newSelectedPermissionIndex = selectedPermission.index - 1;
             }
         } else {
             // Removes all permissions that are not inherited.
@@ -347,16 +343,18 @@ class FundsPermissionPanel extends AbstractReactComponent {
                 }
             });
 
-            newPermissions[selectedPermission.index] = newPermission;
+            newPermissions[index] = newPermission;
         }
 
-        onDeleteFundPermission(item.id).then(data => {
+        this.setState({ isDeletingFund: true });
+        onDeleteFundPermission(item.id).then(() => {
             this.setState({
                 permissions: newPermissions,
                 selectedPermission: {
                     ...selectedPermission,
                     index: newSelectedPermissionIndex,
                 },
+                isDeletingFund: false,
             });
         });
     };
@@ -466,7 +464,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
     };
 
     render() {
-        const {selectedPermission, permissions} = this.state;
+        const {selectedPermission, permissions, isDeletingFund} = this.state;
         const {fundId, entityPermissions, groupId} = this.props;
 
         if (!entityPermissions.fetched) {
@@ -517,6 +515,7 @@ class FundsPermissionPanel extends AbstractReactComponent {
                         permissionAllTitle="admin.perms.tabs.funds.items.fundAll"
                         fundId={selectedPermission.id === FundsPermissionPanel.ALL_ID ? null : selectedPermission.id}
                         groupId={groupId}
+                        disabled={isDeletingFund}
                     />
                 )}
             </AdminRightsContainer>
