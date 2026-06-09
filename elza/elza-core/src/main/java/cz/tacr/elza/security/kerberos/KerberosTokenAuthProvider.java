@@ -14,6 +14,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import cz.tacr.elza.domain.UsrUser;
+import cz.tacr.elza.security.DeferredAuthFailureLog;
 import cz.tacr.elza.security.SiemAuditLogger;
 import cz.tacr.elza.security.SiemAuditLogger.AuthenticationType;
 import cz.tacr.elza.service.UserService;
@@ -55,7 +56,7 @@ public class KerberosTokenAuthProvider implements AuthenticationProvider {
 			ticketValidation = this.ticketValidator.validateTicket(token);
 			LOG.debug("Successfully validated " + ticketValidation.username());
 		} catch (Exception e) {
-			LOG.error("Failed to validate Kerberos Token", e);
+			DeferredAuthFailureLog.defer(LOG, "Failed to validate Kerberos Token", e);
 			// try another method
 			return null;
 		}
