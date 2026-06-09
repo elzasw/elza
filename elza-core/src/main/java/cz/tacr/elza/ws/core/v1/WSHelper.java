@@ -262,4 +262,36 @@ public class WSHelper {
         ed.setDetail(detail);
         return ed;
     }
+
+    static private String detailOf(Exception e) {
+        return e != null ? e.getClass().getSimpleName() + ": " + e.getMessage() : null;
+    }
+
+    /**
+     * Prepare the fault declared by the createFund operation.
+     *
+     * The fault bean must be thrown as the exception type declared by the operation
+     * (mapped to the createFundFailed element), otherwise CXF cannot resolve the fault
+     * detail element and fails to marshal it.
+     */
+    static public CreateFundException prepareCreateFundException(String msg, Exception e) {
+        if (e instanceof CreateFundException) {
+            return (CreateFundException) e;
+        }
+        return new CreateFundException(msg, prepareErrorDescription(msg, detailOf(e)), e);
+    }
+
+    static public UpdateFundException prepareUpdateFundException(String msg, Exception e) {
+        if (e instanceof UpdateFundException) {
+            return (UpdateFundException) e;
+        }
+        return new UpdateFundException(msg, prepareErrorDescription(msg, detailOf(e)), e);
+    }
+
+    static public DeleteFundException prepareDeleteFundException(String msg, Exception e) {
+        if (e instanceof DeleteFundException) {
+            return (DeleteFundException) e;
+        }
+        return new DeleteFundException(msg, prepareErrorDescription(msg, detailOf(e)), e);
+    }
 }
