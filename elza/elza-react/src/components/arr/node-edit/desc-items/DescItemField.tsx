@@ -12,6 +12,7 @@ import { useAppSelector } from "utils/hooks/useAppSelector";
 import {
   DescItemBit,
   DescItemCoordinates,
+  DescItemDate,
   DescItemDecimal,
   DescItemEnum,
   DescItemFileRef,
@@ -82,6 +83,7 @@ const dataTypeComponentMap = {
   [DataType.String]: DescItemString,
   [DataType.Unitid]: DescItemUnitid,
   [DataType.Unitdate]: DescItemUnitdate,
+  [DataType.Date]: DescItemDate,
   [DataType.RecordRef]: DescItemRecordRef,
   [DataType.Structured]: DescItemStructured,
   [DataType.Coordinates]: DescItemCoordinates,
