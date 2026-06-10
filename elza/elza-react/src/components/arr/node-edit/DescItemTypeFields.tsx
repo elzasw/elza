@@ -14,6 +14,7 @@ import { FormItem } from "./hooks";
 interface DescItem {
     item: FormItem["item"];
     localId: string;
+    forcedDisplayString?: string;
 }
 
 interface Props {
@@ -107,13 +108,14 @@ export function DescItemTypeFields({
                 }}
                 onChangeOrder={handleChangeOrder}
             >
-                {sortedDescItems.map(({ item, localId }) => (
+                {sortedDescItems.map(({ item, localId, forcedDisplayString }) => (
                     <div key={localId} style={{ container: "desc-item-container" }}>
                         <div>
                             <DescItemField
                                 typeRef={typeRef}
                                 typeForm={typeForm}
                                 item={item}
+                                forcedDisplayString={forcedDisplayString}
                                 fondsVersionId={fondsVersionId}
                                 nodeId={nodeId}
                                 nodeVersionId={nodeVersionId}

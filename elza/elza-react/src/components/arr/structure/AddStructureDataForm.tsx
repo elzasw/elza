@@ -120,6 +120,7 @@ function AddStructureDataForm({
                                     fundId={fundId}
                                     fundVersionId={fundVersionId}
                                     structureObjectId={structureData!.id}
+                                    plain={true}
                                     renderExtraActions={multiple ? (typeRef) => {
                                         const dataType = dataTypeRefs[typeRef.dataTypeId];
                                         if (dataType?.code !== DataType.Int) { return null; }

@@ -557,7 +557,7 @@ public class StructObjService {
         }
 
         if (structuredObjectId != null) {
-        	if (structureItemDB.getStructuredObjectId() != structuredObjectId) {
+        	if (!structureItemDB.getStructuredObjectId().equals(structuredObjectId)) {
         		throw new BusinessException("Neshoda zadaného ID s ID mazaného objektu", BaseCode.INVALID_STATE)
         			.set("structuredObjectId", structuredObjectId)
         			.set("structuredObjectId mazaného objektu", structureItemDB.getStructuredObjectId());
