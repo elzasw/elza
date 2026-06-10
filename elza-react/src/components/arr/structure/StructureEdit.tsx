@@ -25,12 +25,13 @@ interface Props {
     fundVersionId: number;
     structureObjectId: number;
     readMode?: boolean;
+    plain?: boolean;
     renderExtraActions?: (typeRef: DescItemTypeRef) => ReactNode;
 }
 
 export type { Props as StructureEditProps };
 
-export function StructureEdit({ fundId, fundVersionId, structureObjectId, readMode = false, renderExtraActions }: Props) {
+export function StructureEdit({ fundId, fundVersionId, structureObjectId, readMode = false, plain = false, renderExtraActions }: Props) {
     const dispatch = useAppThunkDispatch();
     const { formatMessage } = useIntl();
     const { settings } = useUserSettings();
@@ -93,7 +94,7 @@ export function StructureEdit({ fundId, fundVersionId, structureObjectId, readMo
             )}
             <GroupColumns groups={groups} columnCount={settings.groupColumns || 1}>
                 {({ group, descItemTypes }) => (
-                    <FormItemGroup key={group.code} group={group}>
+                    <FormItemGroup key={group.code} group={group} plain={plain}>
                         {descItemTypes.map(({ typeRef, typeForm, typeWidth, descItems }) => (
                             <DescItemTypeFields
                                 key={typeRef.id}

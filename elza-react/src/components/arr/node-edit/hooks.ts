@@ -220,6 +220,8 @@ export function getForcedItemTypes(
 export interface FormItem {
   item: EditItem;
   localId: string;
+  // When set, the field renders this string read-only instead of the item's value.
+  forcedDisplayString?: string;
 }
 
 function convertToFormItems(

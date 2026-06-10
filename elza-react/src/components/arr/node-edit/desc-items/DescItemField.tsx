@@ -30,7 +30,7 @@ import { ErrorDisplay } from "./ErrorDisplay";
 import { ItemActions } from "./ItemActions";
 import { SavingDisplay } from "./SavingDisplay";
 import { createEmptyDescItem } from "./utils";
-import { makeStyles, mergeClasses } from "@fluentui/react-components";
+import { Input, makeStyles, mergeClasses } from "@fluentui/react-components";
 import { useUserSettings } from "contexts/user";
 import { useStyles as useDescItemStyles } from "./styles";
 
@@ -67,6 +67,7 @@ interface Props {
   typeRef: DescItemTypeRef;
   typeForm?: FormItemType;
   typeWidth?: number;
+  forcedDisplayString?: string;
   fondsVersionId?: number;
   nodeId?: number;
   nodeVersionId?: number;
@@ -96,6 +97,7 @@ export function DescItemField({
   item,
   typeRef,
   typeForm,
+  forcedDisplayString,
   fondsVersionId,
   nodeId,
   onDelete,
@@ -187,6 +189,19 @@ export function DescItemField({
   //   }
   // }, [selectedSpec?.id]);
   // console.log("#dif - render", item);
+
+  if (forcedDisplayString != undefined) {
+    return (
+      <div className={mergeClasses(styles.descItem, descItemStyles.descItemFieldRow)}>
+        <Input
+          size={compact ? "small" : "medium"}
+          disabled={true}
+          value={forcedDisplayString}
+          style={{ flex: 1, minWidth: "60px" }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
