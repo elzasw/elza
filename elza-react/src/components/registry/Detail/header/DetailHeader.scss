@@ -139,11 +139,15 @@
                 .system {
                     margin-right: 5px;
                 }
+                .binding-value {
+                    margin-right: 5px;
+                }
             }
             .action {
                 padding-left: 10px;
                 display: flex;
                 align-items: center;
+                gap: 6px;
 
                 .disabled {
                     color: #A7A7A7;
