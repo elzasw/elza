@@ -25,4 +25,14 @@ interface TestMessage extends Message {
   test?: boolean;
 }
 
-export type AnyMessage = ChangeMessage | TestMessage | PolicyChangeMessage;
+export interface StructureDataChangeMessage extends Message {
+  eventType: EventType.STRUCTURE_DATA_CHANGE;
+  fundId: number;
+  structureTypeCode: string;
+  tempIds: number[];
+  createIds: number[];
+  updateIds: number[];
+  deleteIds: number[];
+}
+
+export type AnyMessage = ChangeMessage | TestMessage | PolicyChangeMessage | StructureDataChangeMessage;
