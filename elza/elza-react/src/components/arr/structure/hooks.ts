@@ -137,7 +137,11 @@ export interface UseStructureFormDataResult {
 
 export function useStructureFormData(
     fundId: number,
+    fundVersionId: number,
     structureObjectId: number,
+    options?: {
+        skipForcedItems?: boolean;
+    },
 ): UseStructureFormDataResult {
     const itemTypeRefs = useAppSelector(({ refTables }) => refTables.descItemTypes.itemsMap);
     const dataTypeRefs = useAppSelector(({ refTables }) => refTables.rulDataTypes.itemsMap);
@@ -157,25 +161,27 @@ export function useStructureFormData(
             itemsRef.current = items;
             setItemTypes(types);
             setFormItems((prev) => convertToFormItems(items, prev, getKey));
-            const forced = getForcedItems(
-                [...items, ...addedFormItems.map(({ item }) => item)],
-                types,
-                itemTypeRefs,
-                dataTypeRefs,
-            );
+            const forced = options?.skipForcedItems
+                ? []
+                : getForcedItems(
+                    [...items, ...addedFormItems.map(({ item }) => item)],
+                    types,
+                    itemTypeRefs,
+                    dataTypeRefs,
+                );
             setForcedFormItems(forced.map((item) => ({ localId: getKey(), item })));
         },
-        [itemTypeRefs, dataTypeRefs, addedFormItems],
+        [itemTypeRefs, dataTypeRefs, addedFormItems, options?.skipForcedItems],
     );
 
     useEffect(() => {
         setIsLoading(true);
         (async () => {
-            const { data } = await Api.structure.sdoGetFormStructureItems(fundId, structureObjectId);
+            const { data } = await Api.structure.sdoGetFormStructureItems(fundId, structureObjectId, fundVersionId);
             applyData(data.items, data.itemTypes);
             setIsLoading(false);
         })();
-    }, [fundId, structureObjectId]);
+    }, [fundId, fundVersionId, structureObjectId]);
 
     function addEmptyItem(typeId: number, specId?: number) {
         const itemTypeRef = itemTypeRefs[typeId];

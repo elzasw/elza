@@ -89,7 +89,7 @@ export const MultiStructureEdit = forwardRef<MultiStructureEditHandle, Props>(
             updateItem,
             deleteItem,
             buildPayload,
-        } = useMultiStructureFormData(fundId, structureObjectId, structureObjectIds);
+        } = useMultiStructureFormData(fundId, fundVersionId, structureObjectId, structureObjectIds);
 
         useImperativeHandle(ref, () => ({ buildPayload }), [buildPayload]);
 
