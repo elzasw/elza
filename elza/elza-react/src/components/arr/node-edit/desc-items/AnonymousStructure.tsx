@@ -47,7 +47,7 @@ export function AnonymousStructure({ structureType, data, onCreate, readOnly }: 
       ) : readOnly ? (
         <StructureView fundId={fundId} fundVersionId={fundVersionId} structureObjectId={structureObjectId} />
       ) : (
-        <StructureEdit fundId={fundId} fundVersionId={fundVersionId} structureObjectId={structureObjectId} />
+        <StructureEdit fundId={fundId} fundVersionId={fundVersionId} structureObjectId={structureObjectId} confirmOnCreate={true} />
       )}
     </div>
   );
