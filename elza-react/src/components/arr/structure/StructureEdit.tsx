@@ -24,14 +24,13 @@ interface Props {
     fundId: number;
     fundVersionId: number;
     structureObjectId: number;
-    readMode?: boolean;
     plain?: boolean;
     renderExtraActions?: (typeRef: DescItemTypeRef) => ReactNode;
 }
 
 export type { Props as StructureEditProps };
 
-export function StructureEdit({ fundId, fundVersionId, structureObjectId, readMode = false, plain = false, renderExtraActions }: Props) {
+export function StructureEdit({ fundId, fundVersionId, structureObjectId, plain = false, renderExtraActions }: Props) {
     const dispatch = useAppThunkDispatch();
     const { formatMessage } = useIntl();
     const { settings } = useUserSettings();
@@ -49,7 +48,7 @@ export function StructureEdit({ fundId, fundVersionId, structureObjectId, readMo
         createItem,
         updateItem,
         deleteItem,
-    } = useStructureFormData(fundId, structureObjectId);
+    } = useStructureFormData(fundId, fundVersionId, structureObjectId);
 
     const allItems = useMemo(
         () => [...formItems, ...forcedFormItems, ...addedFormItems],
@@ -85,7 +84,7 @@ export function StructureEdit({ fundId, fundVersionId, structureObjectId, readMo
 
     return (
         <div style={{width: '100%'}}>
-            {hasPossibleTypes && !readMode && (
+            {hasPossibleTypes && (
                 <div style={{margin: '4px 0 0 4px'}}>
                     <Button appearance="primary" icon={<AddRegular />} onClick={handleAddDescItemType}>
                         {formatMessage(messages.addDescItem)}

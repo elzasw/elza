@@ -61,6 +61,7 @@ export interface UseMultiStructureFormDataResult {
 
 export function useMultiStructureFormData(
     fundId: number,
+    fundVersionId: number,
     structureObjectId: number,
     structureObjectIds: number[],
 ): UseMultiStructureFormDataResult {
@@ -80,7 +81,7 @@ export function useMultiStructureFormData(
     useEffect(() => {
         setIsLoading(true);
         (async () => {
-            const { data } = await Api.structure.sdoGetFormStructureItems(fundId, structureObjectId);
+            const { data } = await Api.structure.sdoGetFormStructureItems(fundId, structureObjectId, fundVersionId);
             data.itemTypes.forEach(({ itemTypeId }) => {
                 const itemTypeRef = itemTypeRefs[itemTypeId];
                 const dataType = itemTypeRef ? dataTypeRefs[itemTypeRef.dataTypeId] : undefined;
@@ -92,7 +93,7 @@ export function useMultiStructureFormData(
             setPresentTypeIds([...new Set(data.items.map(({ itemTypeId }) => itemTypeId))]);
             setIsLoading(false);
         })();
-    }, [fundId, structureObjectId, itemTypeRefs, dataTypeRefs]);
+    }, [fundId, fundVersionId, structureObjectId, itemTypeRefs, dataTypeRefs]);
 
     const visibleTypeIds = useMemo(
         () => [...new Set([...presentTypeIds, ...addedTypeIds])],
