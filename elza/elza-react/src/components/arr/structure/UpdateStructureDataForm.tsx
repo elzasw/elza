@@ -2,6 +2,7 @@ import { Modal } from "react-bootstrap";
 import { FormattedMessage, defineMessages } from "react-intl";
 import { Button } from "../../ui";
 import { StructureEdit } from "./StructureEdit";
+import { StructureView } from "./StructureView";
 
 const messages = defineMessages({
     close: { id: "global.action.close", defaultMessage: "Zavřít" },
@@ -27,13 +28,21 @@ export function UpdateStructureDataForm({
     return (
         <div>
             <Modal.Body>
-                <StructureEdit
-                    fundId={fundId}
-                    fundVersionId={fundVersionId}
-                    structureObjectId={structureObjectId}
-                    readMode={readMode}
-                    plain={true}
-                />
+                {readMode ? (
+                    <StructureView
+                        fundId={fundId}
+                        fundVersionId={fundVersionId}
+                        structureObjectId={structureObjectId}
+                        plain={true}
+                    />
+                ) : (
+                    <StructureEdit
+                        fundId={fundId}
+                        fundVersionId={fundVersionId}
+                        structureObjectId={structureObjectId}
+                        plain={true}
+                    />
+                )}
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="link" onClick={onClose}>

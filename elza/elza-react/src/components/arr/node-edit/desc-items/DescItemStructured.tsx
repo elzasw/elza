@@ -9,7 +9,7 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { DocumentAddRegular } from "@fluentui/react-icons";
-import { WebApi } from "actions";
+import { Api } from "api/api";
 import { DataStructureRef, DataType, NodeItem } from "elza-api";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useDebouncedEffect } from "utils/hooks/hooks";
@@ -85,7 +85,11 @@ export function DescItemStructured({
       while (!cancelled) {
         setIsLoading(true);
 
-        const result = await WebApi.getStructureData(fundVersionId, data.structuredObjectId);
+        const { data: result } = await Api.structure.sdoGetObject(
+          fundId,
+          data.structuredObjectId,
+          fundVersionId,
+        );
         if (cancelled) return;
 
         if (result.value != null) {
@@ -100,20 +104,25 @@ export function DescItemStructured({
     })();
 
     return () => { cancelled = true; setIsLoading(false); };
-  }, [fundVersionId, data.structuredObjectId, structureType?.anonymous]);
+  }, [fundId, fundVersionId, data.structuredObjectId, structureType?.anonymous]);
 
   const loadStructures = useCallback(
     async (_query: string) => {
       if (structureType?.code && !structureType.anonymous) {
-        const _structures = await WebApi.findStructureData(
-          fundVersionId,
-          structureType?.code,
+        const { data: _structures } = await Api.structure.sdoFindStructObj(
+          fundId,
+          structureType.code,
           _query === structure?.value ? "" : _query,
+          true,
+          undefined,
+          undefined,
+          fundVersionId,
         );
         setStructures(_structures.rows);
       }
     },
     [
+      fundId,
       fundVersionId,
       structureType?.code,
       structureType?.anonymous,
