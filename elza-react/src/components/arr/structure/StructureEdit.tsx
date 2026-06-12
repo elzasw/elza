@@ -25,12 +25,13 @@ interface Props {
     fundVersionId: number;
     structureObjectId: number;
     plain?: boolean;
+    confirmOnCreate?: boolean;
     renderExtraActions?: (typeRef: DescItemTypeRef) => ReactNode;
 }
 
 export type { Props as StructureEditProps };
 
-export function StructureEdit({ fundId, fundVersionId, structureObjectId, plain = false, renderExtraActions }: Props) {
+export function StructureEdit({ fundId, fundVersionId, structureObjectId, plain = false, confirmOnCreate = false, renderExtraActions }: Props) {
     const dispatch = useAppThunkDispatch();
     const { formatMessage } = useIntl();
     const { settings } = useUserSettings();
@@ -48,7 +49,7 @@ export function StructureEdit({ fundId, fundVersionId, structureObjectId, plain 
         createItem,
         updateItem,
         deleteItem,
-    } = useStructureFormData(fundId, fundVersionId, structureObjectId);
+    } = useStructureFormData(fundId, fundVersionId, structureObjectId, { confirmOnCreate });
 
     const allItems = useMemo(
         () => [...formItems, ...forcedFormItems, ...addedFormItems],

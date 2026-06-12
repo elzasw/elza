@@ -1,6 +1,6 @@
 import { Api } from "api/api";
 import { RulDataTypeVO } from "api/RulDataTypeVO";
-import { DataType, FormItemType, MandatoryType, StructuredObjectItem } from "elza-api";
+import { DataType, FormItemType, MandatoryType, StructuredObjectItem, StructuredObjectStateEnum } from "elza-api";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DescItemTypeRef } from "typings/store";
 import { EventType } from "typings/websocket";
@@ -13,9 +13,12 @@ function useWSStructureChanges(structureObjectId: number, callback: () => void) 
     const { addListener, removeListener } = useWebsocket();
 
     const handleMessage = (message: AnyMessage) => {
+        // TEMP (unconfirmed) structures report recomputation via tempIds, confirmed ones via updateIds.
         if (
             message.eventType === EventType.STRUCTURE_DATA_CHANGE &&
-            message.updateIds.includes(structureObjectId)
+            (message.updateIds.includes(structureObjectId) ||
+                message.tempIds.includes(structureObjectId) ||
+                message.createIds.includes(structureObjectId))
         ) {
             callback();
         }
@@ -164,6 +167,7 @@ export function useStructureFormData(
     structureObjectId: number,
     options?: {
         skipForcedItems?: boolean;
+        confirmOnCreate?: boolean;
     },
 ): UseStructureFormDataResult {
     const itemTypeRefs = useAppSelector(({ refTables }) => refTables.descItemTypes.itemsMap);
@@ -210,8 +214,11 @@ export function useStructureFormData(
         })();
     }, [fundId, fundVersionId, structureObjectId]);
 
+    // STRUCTURE_DATA_CHANGE is currently not emitted for anonymous (TEMP) structures, so the
+    // form refetches inline after each mutation instead. The listener is kept for the case the
+    // event is emitted for all structure types in the future, at which point it can drive the refetch.
     useWSStructureChanges(structureObjectId, () => {
-        fetchAndApply();
+        console.info("STRUCTURE_DATA_CHANGE received for", structureObjectId);
     });
 
     function addEmptyItem(typeId: number, specId?: number) {
@@ -235,6 +242,17 @@ export function useStructureFormData(
         setForcedFormItems(removeLocalId);
         setFormItems((prev) => [...prev, { localId, item: created }]);
         itemsRef.current = [...itemsRef.current, data.item];
+        // A TEMP structure has no valid items until the first one is created; confirm it then
+        // so it transitions to OK and the server recomputes available item types and specs.
+        // Gated by confirmOnCreate: the add dialog owns the TEMP→OK transition itself (submit,
+        // duplicate, cancel-cleanup all rely on the structure staying TEMP).
+        if (options?.confirmOnCreate && data.parent?.state === StructuredObjectStateEnum.Temp) {
+            await Api.structure.sdoConfirm(fundId, structureObjectId);
+        }
+        // Refetch so available item types/specs and forced items are recomputed server-side.
+        // The STRUCTURE_DATA_CHANGE event is not emitted for anonymous (TEMP) structures,
+        // so the refetch must be triggered explicitly here.
+        await fetchAndApply();
         return created;
     }
 
@@ -248,6 +266,7 @@ export function useStructureFormData(
             return;
         }
         await Api.structure.sdoUpdateItem(fundId, structureObjectId, true, item as StructuredObjectItem);
+        await fetchAndApply();
     }
 
     async function deleteItem(item: EditItem, localId: string): Promise<void> {
