@@ -3,8 +3,31 @@ import { RulDataTypeVO } from "api/RulDataTypeVO";
 import { DataType, FormItemType, MandatoryType, StructuredObjectItem } from "elza-api";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DescItemTypeRef } from "typings/store";
+import { EventType } from "typings/websocket";
+import { AnyMessage } from "typings/websocket/Message";
 import { useAppSelector } from "utils/hooks/useAppSelector";
+import { useWebsocket } from "components/shared/web-socket/WebsocketProvider";
 import { EditItem } from "components/arr/node-edit/types";
+
+function useWSStructureChanges(structureObjectId: number, callback: () => void) {
+    const { addListener, removeListener } = useWebsocket();
+
+    const handleMessage = (message: AnyMessage) => {
+        if (
+            message.eventType === EventType.STRUCTURE_DATA_CHANGE &&
+            message.updateIds.includes(structureObjectId)
+        ) {
+            callback();
+        }
+    };
+
+    useEffect(() => {
+        const listener = addListener(handleMessage);
+        return () => {
+            removeListener(listener);
+        };
+    }, []);
+}
 
 export interface FormItem {
     item: EditItem;
@@ -174,14 +197,22 @@ export function useStructureFormData(
         [itemTypeRefs, dataTypeRefs, addedFormItems, options?.skipForcedItems],
     );
 
+    const fetchAndApply = useCallback(async () => {
+        const { data } = await Api.structure.sdoGetFormStructureItems(fundId, structureObjectId, fundVersionId);
+        applyData(data.items, data.itemTypes);
+    }, [fundId, structureObjectId, fundVersionId, applyData]);
+
     useEffect(() => {
         setIsLoading(true);
         (async () => {
-            const { data } = await Api.structure.sdoGetFormStructureItems(fundId, structureObjectId, fundVersionId);
-            applyData(data.items, data.itemTypes);
+            await fetchAndApply();
             setIsLoading(false);
         })();
     }, [fundId, fundVersionId, structureObjectId]);
+
+    useWSStructureChanges(structureObjectId, () => {
+        fetchAndApply();
+    });
 
     function addEmptyItem(typeId: number, specId?: number) {
         const itemTypeRef = itemTypeRefs[typeId];
@@ -222,8 +253,7 @@ export function useStructureFormData(
     async function deleteItem(item: EditItem, localId: string): Promise<void> {
         if (item.data?.dataId != undefined || item.undefined) {
             await Api.structure.sdoDeleteItem(fundId, structureObjectId, item.itemObjectId!);
-            setFormItems((prev) => prev.filter(({ localId: id }) => id !== localId));
-            itemsRef.current = itemsRef.current.filter(({ itemObjectId }) => itemObjectId !== item.itemObjectId);
+            await fetchAndApply();
             return;
         }
 
@@ -245,8 +275,7 @@ export function useStructureFormData(
 
     async function deleteItemsByType(itemTypeId: number): Promise<void> {
         await Api.structure.sdoDeleteItemsByType(fundId, structureObjectId, itemTypeId);
-        setFormItems((prev) => prev.filter(({ item }) => item.itemTypeId !== itemTypeId));
-        itemsRef.current = itemsRef.current.filter(({ itemTypeId: id }) => id !== itemTypeId);
+        await fetchAndApply();
     }
 
     return {
