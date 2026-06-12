@@ -6,6 +6,7 @@ import { buildGroupsForm } from "../node-edit/utils";
 import {
   DescItemBit,
   DescItemCoordinates,
+  DescItemDate,
   DescItemDecimal,
   DescItemEnum,
   DescItemFileRef,
@@ -40,6 +41,7 @@ const dataTypeMap = {
   [DataType.String]: DescItemString,
   [DataType.Unitid]: DescItemUnitid,
   [DataType.Unitdate]: DescItemUnitdate,
+  [DataType.Date]: DescItemDate,
   [DataType.RecordRef]: DescItemRecordRef,
   [DataType.UriRef]: DescItemUriRef,
   [DataType.Coordinates]: DescItemCoordinates,
