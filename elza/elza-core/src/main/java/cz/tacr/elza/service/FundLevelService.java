@@ -552,14 +552,13 @@ public class FundLevelService {
     /**
      * Synchronize the node cache after a batch of levels has been soft-deleted.
      *
-     * Affected nodes are re-synced inline: still-active nodes get refreshed
-     * content, nodes that lost their last active level get an empty shell (see
-     * {@link NodeCacheService#createCachedNodes}) so fulltext search cannot
-     * match them. The physical row DELETE for such nodes is deferred to a
-     * fresh transaction fired after the current one commits, because calling
-     * {@code nodeCacheService.deleteNodes} inline triggers a session-wide
-     * Hibernate auto-flush that collides with unrelated pending writes in
-     * cascading flows (e.g. {@code deleteDaoPackageWithCascade}).
+     * Still-active nodes get their content refreshed inline. Nodes that lost
+     * their last active level are left untouched by the refresh (the cache
+     * invariant forbids caching them) and have their cache row physically
+     * deleted in a fresh transaction fired after the current one commits —
+     * calling {@code nodeCacheService.deleteNodes} inline would trigger a
+     * session-wide Hibernate auto-flush that collides with unrelated pending
+     * writes in cascading flows (e.g. {@code deleteDaoPackageWithCascade}).
      */
     private void syncCacheAfterLevelDelete(final Set<Integer> deletedLevelNodeIds) {
         if (deletedLevelNodeIds.isEmpty()) {
@@ -1040,6 +1039,10 @@ public class FundLevelService {
         List<ArrNode> nodes = createNodes(version.getFund(), change, count, null);
 
         List<ArrLevel> levels = createLevels(change, staticLevelParent.getNode(), newLevelPosition, nodes);
+        // Create the cache rows only now that the levels exist (createLevels has
+        // flushed them), preserving the invariant: a cache row exists only for a
+        // node that has an active level.
+        nodeCacheService.addNodesToCache(nodes);
         return levels;
     }
 
@@ -1085,17 +1088,18 @@ public class FundLevelService {
 
 	public ArrLevel createLevel(final ArrChange createChange, final ArrNode parentNode, final int position,
 			final String uuid, final ArrFund fund) {
-        Validate.notNull(createChange, "Change nesmí být prázdná");
-
-		ArrNode node = arrangementService.createNode(fund, uuid, createChange);
-		return createLevel(createChange, parentNode, position, node);
+		// createLevelSimple builds the node and its level; register the node in the
+		// cache only afterwards, when it already has an active level.
+		ArrLevel level = createLevelSimple(createChange, parentNode, position, uuid, fund);
+		nodeCacheService.addNodeToCache(level.getNode());
+		return level;
 	}
 
 	public ArrLevel createLevelSimple(final ArrChange createChange, final ArrNode parentNode, final int position,
 			final String uuid, final ArrFund fund) {
         Validate.notNull(createChange, "Change nesmí být prázdná");
 
-		ArrNode node = arrangementService.createNodeSimple(fund, uuid, createChange);
+		ArrNode node = arrangementService.createNode(fund, uuid, createChange);
 		return createLevel(createChange, parentNode, position, node);
 	}
 
@@ -1127,6 +1131,10 @@ public class FundLevelService {
 
         // create levels
         List<ArrLevel> levels = createLevels(change, parentLevel.getNode(), 1 + maxPosition, nodes);
+        // Create the cache rows only now that the levels exist (createLevels has
+        // flushed them), preserving the invariant: a cache row exists only for a
+        // node that has an active level.
+        nodeCacheService.addNodesToCache(nodes);
         return levels;
     }
 
@@ -1153,7 +1161,9 @@ public class FundLevelService {
         }
         nodeRepository.saveAll(nodes);
         nodeRepository.flush();
-        nodeCacheService.createEmptyNodes(nodes);
+        // Cache rows are intentionally NOT created here. The caller creates them
+        // only after the corresponding levels exist, so a cache row never exists
+        // for a node without an active level (see addLevelUnder / addLevelBeforeAfter).
         return nodes;
     }
 
