@@ -812,7 +812,11 @@ public class ArrangementService {
         level.setCreateChange(createChange);
         level.setNodeParent(null);
         level.setNode(createNode(fund, uuid, createChange));
-        return levelRepository.saveAndFlush(level);
+        level = levelRepository.saveAndFlush(level);
+        // The root node now has an active level, so create its cache record here
+        // rather than ahead of the level.
+        nodeCacheService.addNodeToCache(level.getNode());
+        return level;
     }
 
     /**
@@ -822,12 +826,6 @@ public class ArrangementService {
      */
     public String generateUuid() {
         return UUID.randomUUID().toString();
-    }
-
-    public ArrNode createNode(final ArrFund fund, final String uuid, final ArrChange createChange) {
-        ArrNode node = createNodeSimple(fund, uuid, createChange);
-        nodeCacheService.createEmptyNode(node);
-        return node;
     }
 
     /**
@@ -853,7 +851,7 @@ public class ArrangementService {
         return node;
     }
 
-    public ArrNode createNodeSimple(final ArrFund fund, final String uuid, final ArrChange createChange) {
+    public ArrNode createNode(final ArrFund fund, final String uuid, final ArrChange createChange) {
         ArrNode node = createNodeObject(fund, uuid, createChange);
 
         return nodeRepository.save(node);
