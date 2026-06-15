@@ -33,7 +33,7 @@ export function useValueManager<T extends string | number>(initialValue: T, item
 
   const effectiveStoredValue = hasStaleStorage ? null : storedValue;
 
-  const [value, setValue] = useState(effectiveStoredValue || initialValue || null);
+  const [value, setValue] = useState(effectiveStoredValue ?? initialValue ?? null);
   const [isDirty, setIsDirty] = useState(initialValue != value);
   const [conflictValue, setConflictValue] = useState<T>(
     effectiveStoredValue ? initialValue : null,
