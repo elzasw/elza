@@ -77,6 +77,7 @@ export function DescItemRecordRef({
   );
   const [accessPoints, setAccessPoints] = useState<ApAccessPointVO[]>([]);
   const [accessPoint, setAccessPoint] = useState<ApAccessPointVO>();
+  const [isFocused, setIsFocused] = useState(false);
 
   const fieldRef = useRef<HTMLInputElement>(null);
 
@@ -98,7 +99,10 @@ export function DescItemRecordRef({
   };
 
   function handleBlur() {
-    setQuery(accessPoint?.name || "");
+    setIsFocused(false);
+    if (accessPoint?.name) {
+      setQuery(accessPoint.name);
+    }
   }
 
   useEffect(() => {
@@ -116,8 +120,10 @@ export function DescItemRecordRef({
   }, [data?.value, item.undefined]);
 
   useDebouncedEffect(() => {
+    const hasEnoughCharacters = (query?.length ?? 0) >= 3;
     if (
-      !item.undefined
+      hasEnoughCharacters
+      && !item.undefined
       && item.nodeId === nodeId
       && (!typeRef.useSpecification || itemSpecId != undefined) // spec id is required for types that use specification
     ) {
@@ -133,7 +139,7 @@ export function DescItemRecordRef({
         setAccessPoints(accessPoints.rows);
       })();
     }
-  }, 300, [
+  }, 500, [
     itemTypeId,
     itemSpecId,
     query,
@@ -237,23 +243,60 @@ export function DescItemRecordRef({
             fieldRef.current?.setSelectionRange(0, query?.length || 0);
           }
         }}
+        onFocus={() => setIsFocused(true)}
         onBlur={handleBlur}
         style={{
           minWidth: "unset",
           flex: 1,
           flexGrow: 5,
-          paddingRight: compact ? FIELD_HEIGHT.small + 2 : FIELD_HEIGHT.medium + 4,
+          padding: 0,
+          display: "flex",
         }}
         input={{
           ref: fieldRef,
           style: {
             minWidth: "30px",
-            textDecoration: item.inhibited ? "line-through" : undefined,
+            width: "30px",
+            // fontSize: "1em",
+            textDecoration:
+              item.inhibited || (!isFocused && data?.value == null)
+                ? "line-through"
+                : undefined,
             flex: 1,
             flexBasis: `${(query || "").length + 3}ch`,
           },
         }}
         listbox={{ style: { maxHeight: "400px", minWidth: "400px" } }}
+        expandIcon={{
+          style: { height: "100%", position: "relative" },
+          children: (
+            <Tooltip
+              relationship="label"
+              appearance="inverted"
+              content={<FormattedMessage {...messages.openInAccessPoints} />}
+            >
+              <Button
+                size={compact ? "small" : "medium"}
+                appearance="subtle"
+                disabled={
+                  (typeRef.useSpecification && item.itemSpecId == undefined && selectedSpecId == undefined) ||
+                    isDisabled
+                }
+                style={{
+                  height: `calc( 100% - ${compact ? 4 : 2}px )`,
+                }}
+                icon={<DatabasePersonRegular />}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  handleSelectModule();
+                }}
+                tabIndex={-1}
+              />
+            </Tooltip>
+          ),
+        }}
         disabled={isDisabled}
       >
         {accessPoints.map(({ name, id, description, typeId, ...rest }) => {
@@ -286,26 +329,6 @@ export function DescItemRecordRef({
           );
         })}
       </Combobox>
-      <div className={styles.comboboxActionButton}>
-        <Tooltip
-          relationship="label"
-          appearance="inverted"
-          content={<FormattedMessage {...messages.openInAccessPoints} />}
-        >
-          <Button
-            size={compact ? "small" : "medium"}
-            style={{ height: (compact ? FIELD_HEIGHT.small : FIELD_HEIGHT.medium) - 2 }}
-            appearance="subtle"
-            disabled={
-              (typeRef.useSpecification && item.itemSpecId == undefined && selectedSpecId == undefined) ||
-              isDisabled
-            }
-            icon={<DatabasePersonRegular />}
-            onClick={handleSelectModule}
-            tabIndex={-1}
-          />
-        </Tooltip>
-      </div>
     </div>
   );
 }
