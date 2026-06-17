@@ -257,7 +257,7 @@ export function DescItemRecordRef({
           style: {
             minWidth: "30px",
             width: "30px",
-            // fontSize: "1em",
+            fontSize: "1em",
             textDecoration:
               item.inhibited || (!isFocused && data?.value == null)
                 ? "line-through"
