@@ -1,6 +1,6 @@
 import { Api } from "api/api";
 import { RulDataTypeVO } from "api/RulDataTypeVO";
-import { DataType, FormItemType, MandatoryType, StructuredObjectItem, StructuredObjectStateEnum } from "elza-api";
+import { DataType, FormItemType, MandatoryType, StructuredObjectItem, StructuredObjectItems, StructuredObjectStateEnum } from "elza-api";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DescItemTypeRef } from "typings/store";
 import { EventType } from "typings/websocket";
@@ -180,6 +180,7 @@ export function useStructureFormData(
     const [forcedFormItems, setForcedFormItems] = useState<FormItem[]>([]);
     const [addedFormItems, setAddedFormItems] = useState<FormItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [storedData, setStoredData] = useState<StructuredObjectItems>();
 
     const itemsRef = useRef<StructuredObjectItem[]>([]);
 
@@ -201,15 +202,25 @@ export function useStructureFormData(
         [itemTypeRefs, dataTypeRefs, addedFormItems, options?.skipForcedItems],
     );
 
-    const fetchAndApply = useCallback(async () => {
+    const fetchAndStoreData = useCallback(async () => {
         const { data } = await Api.structure.sdoGetFormStructureItems(fundId, structureObjectId, fundVersionId);
-        applyData(data.items, data.itemTypes);
-    }, [fundId, structureObjectId, fundVersionId, applyData]);
+        setStoredData(data);
+    }, [fundId, structureObjectId, fundVersionId]);
+
+    // Apply fetched data through the current applyData closure (which depends on addedFormItems),
+    // so forced items are always recomputed against the up-to-date added items. Mirrors the
+    // storedData→applyStoredData indirection in useNodeFormData.
+    useEffect(() => {
+        if (storedData) {
+            applyData(storedData.items, storedData.itemTypes);
+            setStoredData(undefined);
+        }
+    }, [storedData, applyData]);
 
     useEffect(() => {
         setIsLoading(true);
         (async () => {
-            await fetchAndApply();
+            await fetchAndStoreData();
             setIsLoading(false);
         })();
     }, [fundId, fundVersionId, structureObjectId]);
@@ -252,7 +263,7 @@ export function useStructureFormData(
         // Refetch so available item types/specs and forced items are recomputed server-side.
         // The STRUCTURE_DATA_CHANGE event is not emitted for anonymous (TEMP) structures,
         // so the refetch must be triggered explicitly here.
-        await fetchAndApply();
+        await fetchAndStoreData();
         return created;
     }
 
@@ -266,13 +277,13 @@ export function useStructureFormData(
             return;
         }
         await Api.structure.sdoUpdateItem(fundId, structureObjectId, true, item as StructuredObjectItem);
-        await fetchAndApply();
+        await fetchAndStoreData();
     }
 
     async function deleteItem(item: EditItem, localId: string): Promise<void> {
         if (item.data?.dataId != undefined || item.undefined) {
             await Api.structure.sdoDeleteItem(fundId, structureObjectId, item.itemObjectId!);
-            await fetchAndApply();
+            await fetchAndStoreData();
             return;
         }
 
@@ -294,7 +305,7 @@ export function useStructureFormData(
 
     async function deleteItemsByType(itemTypeId: number): Promise<void> {
         await Api.structure.sdoDeleteItemsByType(fundId, structureObjectId, itemTypeId);
-        await fetchAndApply();
+        await fetchAndStoreData();
     }
 
     return {
