@@ -109,6 +109,7 @@ export function DescItemUnitdate({
         style={{
           flex: 1,
           minWidth: "60px",
+          fontSize: "1em",
           borderColor: isValid ? undefined : "var(--color-red)",
           textDecoration: item.inhibited ? "line-through" : undefined,
         }}
@@ -127,6 +128,7 @@ export function DescItemUnitdate({
             className={styles.conflictTextarea}
             value={conflictValue}
             readOnly={true}
+            style={{ fontSize: "1em" }}
           />
         )}
       </ConflictValue>
