@@ -4,6 +4,7 @@ import {
   Option,
   OptionOnSelectData,
   SelectionEvents,
+  Spinner,
   tokens,
   Tooltip,
 } from "@fluentui/react-components";
@@ -47,6 +48,14 @@ const messages = defineMessages({
     id: "desc_item_record_ref_action_openInAccessPoints",
     defaultMessage: "Otevřít v archivních entitách",
   },
+  noResults: {
+    id: "desc_item_record_ref_no_results",
+    defaultMessage: "Žádné výsledky",
+  },
+  startTyping: {
+    id: "desc_item_record_ref_start_typing",
+    defaultMessage: "Začněte psát pro vyhledávání",
+  },
 });
 
 export function DescItemRecordRef({
@@ -78,6 +87,7 @@ export function DescItemRecordRef({
   const [accessPoints, setAccessPoints] = useState<ApAccessPointVO[]>([]);
   const [accessPoint, setAccessPoint] = useState<ApAccessPointVO>();
   const [isFocused, setIsFocused] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fieldRef = useRef<HTMLInputElement>(null);
 
@@ -120,7 +130,7 @@ export function DescItemRecordRef({
   }, [data?.value, item.undefined]);
 
   useDebouncedEffect(() => {
-    const hasEnoughCharacters = (query?.length ?? 0) >= 3;
+    const hasEnoughCharacters = (query?.length ?? 0) >= 1;
     if (
       hasEnoughCharacters
       && !item.undefined
@@ -128,16 +138,27 @@ export function DescItemRecordRef({
       && (!typeRef.useSpecification || itemSpecId != undefined) // spec id is required for types that use specification
     ) {
       (async () => {
-        const accessPoints = await WebApi.findAccessPoint(
-          query,
-          undefined,
-          undefined,
-          activeFund.versionId,
-          itemTypeId,
-          itemSpecId,
-        );
-        setAccessPoints(accessPoints.rows);
+        // clear before fetching so no option stays active across the result swap;
+        // this lets the Combobox re-highlight the first item when the new list mounts
+        setAccessPoints([]);
+        setIsLoading(true);
+        try {
+          const accessPoints = await WebApi.findAccessPoint(
+            query,
+            undefined,
+            undefined,
+            activeFund.versionId,
+            itemTypeId,
+            itemSpecId,
+          );
+          setAccessPoints(accessPoints.rows);
+        } finally {
+          setIsLoading(false);
+        }
       })();
+    } else {
+      setAccessPoints([]);
+      setIsLoading(false);
     }
   }, 500, [
     itemTypeId,
@@ -236,7 +257,15 @@ export function DescItemRecordRef({
         title={query}
         value={query}
         selectedOptions={data?.value != null ? [data.value.toString()] : []}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => {
+          const value = e.target.value;
+          setQuery(value);
+          // clear stale results immediately; the debounced effect refetches
+          setAccessPoints([]);
+          // show the spinner right away while waiting for the debounced fetch,
+          // unless the query is too short to trigger a search
+          setIsLoading(value.length >= 1);
+        }}
         onOptionSelect={handleAccessPointSelect}
         onOpenChange={(_e, open) => {
           if (open) {
@@ -328,6 +357,20 @@ export function DescItemRecordRef({
             </Option>
           );
         })}
+        {isLoading && (
+          <div className={styles.noResults}>
+            <Spinner size="tiny" />
+          </div>
+        )}
+        {!isLoading && accessPoints.length === 0 && (
+          <div className={styles.noResults}>
+            {(query?.length ?? 0) < 1 ? (
+              <FormattedMessage {...messages.startTyping} />
+            ) : (
+              <FormattedMessage {...messages.noResults} />
+            )}
+          </div>
+        )}
       </Combobox>
     </div>
   );
