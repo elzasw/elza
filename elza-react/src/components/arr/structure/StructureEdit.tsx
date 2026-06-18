@@ -3,7 +3,7 @@ import { AddRegular } from "@fluentui/react-icons";
 import { modalDialogShow } from "actions/global/modalDialog";
 import { MandatoryType } from "elza-api";
 import { ReactNode, useMemo } from "react";
-import { defineMessages, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 import { DescItemTypeRef } from "typings/store";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useAppThunkDispatch } from "utils/hooks";
@@ -13,12 +13,8 @@ import { DescItemTypeFields } from "components/arr/node-edit/DescItemTypeFields"
 import { FormItemGroup } from "components/arr/node-edit/FormItemGroup";
 import { GroupColumns } from "components/arr/node-edit/GroupColumns";
 import { buildGroupsForm } from "components/arr/node-edit/utils";
+import { messages } from "components/arr/node-edit/messages";
 import { useStructureFormData } from "./hooks";
-
-const messages = defineMessages({
-    addDescItemTitle: { id: "subNodeForm.descItemType.title.add", defaultMessage: "Přidat prvek popisu" },
-    addDescItem: { id: "node_action_addDescItem", defaultMessage: "Přidat prvek popisu" },
-});
 
 interface Props {
     fundId: number;

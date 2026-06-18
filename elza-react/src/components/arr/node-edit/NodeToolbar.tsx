@@ -60,6 +60,7 @@ import { isFundRootId } from "../ArrUtils";
 import SyncNodes from "../SyncNodes";
 import { NodeSettingsModal } from "../node-settings-form";
 import { QuoteModal, messages as quoteMessages } from "../quote";
+import { messages as nodeEditMessages } from "./messages";
 import { TextFragmentsWindow } from "../text-fragments";
 import { AddDescItemTypeForm } from "./AddDescItemType";
 import {
@@ -74,10 +75,6 @@ import { useUserSettings } from "contexts/user";
 import { useStyles } from "./styles";
 
 export const messages = defineMessages({
-  addDescItem: {
-    id: "node_action_addDescItem",
-    defaultMessage: "Prvek popisu",
-  },
   toggleCopyFromPrevious: {
     id: "node_action_toggleCopyFromPrevious",
     defaultMessage: "Nastavení opakovaného kopírování všech hodnot PP",
@@ -438,7 +435,7 @@ export const NodeToolbar = ({
       groupId: "1",
       items: [
         {
-          label: formatMessage(messages.addDescItem),
+          label: formatMessage(nodeEditMessages.addDescItem),
           showLabel: true,
           icon: <AddRegular />,
           appearance: "primary",

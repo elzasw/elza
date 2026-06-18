@@ -18,6 +18,7 @@ import { DescItemTypeFields } from "components/arr/node-edit/DescItemTypeFields"
 import { FormItemGroup } from "components/arr/node-edit/FormItemGroup";
 import { GroupColumns } from "components/arr/node-edit/GroupColumns";
 import { buildGroupsForm } from "components/arr/node-edit/utils";
+import { messages as nodeEditMessages } from "components/arr/node-edit/messages";
 import { FormItem } from "components/arr/node-edit/hooks";
 import { EditItem } from "components/arr/node-edit/types";
 import {
@@ -33,8 +34,6 @@ const messages = defineMessages({
     increment: { id: "arr.structure.modal.increment", defaultMessage: "Inkrementovat" },
     originalValue: { id: "arr.structure.modal.updateMultiple.originalValue", defaultMessage: "Původní hodnota" },
     deletedValue: { id: "arr.structure.modal.updateMultiple.deletedValue", defaultMessage: "Smazaná hodnota" },
-    addDescItemTitle: { id: "subNodeForm.descItemType.title.add", defaultMessage: "Přidat prvek popisu" },
-    addDescItem: { id: "node_action_addDescItem", defaultMessage: "Přidat prvek popisu" },
 });
 
 interface Props {
@@ -170,7 +169,7 @@ export const MultiStructureEdit = forwardRef<MultiStructureEditHandle, Props>(
 
         function handleAddDescItemType() {
             dispatch(
-                modalDialogShow(null, formatMessage(messages.addDescItemTitle), ({ onClose }) => (
+                modalDialogShow(null, formatMessage(nodeEditMessages.addDescItemTitle), ({ onClose }) => (
                     <AddDescItemTypeForm
                         itemTypes={allItemTypes}
                         descItems={visibleTypeIds.map((itemTypeId) => ({ itemTypeId }))}
@@ -197,7 +196,7 @@ export const MultiStructureEdit = forwardRef<MultiStructureEditHandle, Props>(
                 {hasAddableTypes && (
                     <div style={{ marginLeft: "4px" }}>
                         <Button appearance="primary" icon={<AddRegular />} onClick={handleAddDescItemType}>
-                            {formatMessage(messages.addDescItem)}
+                            {formatMessage(nodeEditMessages.addDescItem)}
                         </Button>
                     </div>
                 )}
