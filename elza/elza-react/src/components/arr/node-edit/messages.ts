@@ -10,6 +10,14 @@ export const messages = defineMessages({
     id: "desc_item_action_copyToggle",
     defaultMessage: "Nastavení opakovaného kopírování hodnot PP",
   },
+  addDescItem: {
+    id: "node_action_addDescItem",
+    defaultMessage: "Prvek popisu",
+  },
+  addDescItemTitle: {
+    id: "subNodeForm.descItemType.title.add",
+    defaultMessage: "Přidat prvek popisu",
+  },
 });
 
 export const dataTypeFormatMessages: Partial<Record<RulDataTypeCodeEnum, MessageDescriptor>> = defineMessages({
