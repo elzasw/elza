@@ -48,6 +48,13 @@
             background-color: $button-bg-hover;
         }
 
+        &.queued,
+        &.queued:hover,
+        &.active {
+            background-color: $accent-color;
+            color: $accent-color-fg;
+        }
+
         .icon {
             padding-right: 4px;
         }
