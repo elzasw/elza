@@ -161,7 +161,7 @@ const DetailHeader: FC<Props> = ({
                                     }
                                 >
                                     <DetailDescriptionsItem>
-                                        {`id: ${id}`}
+                                        id: <span className="entity-id">{id}</span>
                                     </DetailDescriptionsItem>
                                 </TooltipTrigger>
                             }
