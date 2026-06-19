@@ -251,7 +251,7 @@ export const EntityBindings: FC<{
                                     <div className="info">
                                         {/* {i18n('ap.binding.source')}{': '} */}
                                         <span className="system">{externalSystem?.name}</span>
-                                        <span className="binding-value">id: {binding.value}</span>
+                                        <span className="binding-id">id: <span className="binding-value">{binding.value}</span></span>
                                         <span>{i18n('ap.binding.extState.' + binding.extState)}</span>
                                         {binding.extReplacedBy && (
                                             <span className="link">
