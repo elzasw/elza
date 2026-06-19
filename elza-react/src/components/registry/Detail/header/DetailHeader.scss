@@ -19,6 +19,10 @@
             margin: 4px;
             transition: background-color 200ms ease-in 200ms, color 200ms ease-in 200ms;
 
+            .entity-id {
+                user-select: all;
+            }
+
             &.revision {
                 background-color: $color-orange;
                 color: $fg-shade-4;
