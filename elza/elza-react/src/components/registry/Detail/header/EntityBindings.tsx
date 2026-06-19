@@ -28,7 +28,7 @@ import { Button } from 'components/ui';
 import { AP_EXT_SYSTEM_TYPE } from '../../../../constants';
 
 const messages = defineMessages({
-    actionHistory: { id: 'ap.binding.action.history', defaultMessage: 'Revize v externím systému' },
+    actionHistory: { id: 'ap.binding.action.history', defaultMessage: 'Historie revizí' },
 });
 
 const useThunkDispatch = <State,>(): ThunkDispatch<State, void, AnyAction> => useDispatch()

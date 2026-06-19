@@ -59,7 +59,7 @@ const useStyles = makeStyles({
 });
 
 const messages = defineMessages({
-    title:      { id: 'ap.binding.history.title',      defaultMessage: 'Revize v externím systému' },
+    title:      { id: 'ap.binding.history.title',      defaultMessage: 'Historie revizí v externím systému' },
     revision:   { id: 'ap.binding.history.revision',   defaultMessage: 'Revize {id}, {date}, odeslal: {sender}' },
     approval:   { id: 'ap.binding.history.approval',   defaultMessage: 'Schválil: {names}' },
     author:     { id: 'ap.binding.history.author',     defaultMessage: 'Autor: {names}' },
