@@ -190,9 +190,8 @@ export const NodeToolbar = ({
   function handleAddDescItem() {
     dispatch(
       modalDialogShow(this, undefined, ({ onClose }) => {
-        function handleSubmit(item: DescItemTypeRef) {
-          onAddDescItem(item.id);
-          onClose();
+        function handleSubmit(items: DescItemTypeRef[]) {
+          items.forEach((item) => onAddDescItem(item.id));
         }
         return (
           <AddDescItemTypeForm

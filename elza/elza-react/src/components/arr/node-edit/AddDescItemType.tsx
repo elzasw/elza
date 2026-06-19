@@ -18,6 +18,7 @@ import { DescItemGroup, DescItemTypeRef } from "typings/store";
 import {
   AddRegular,
 } from "@fluentui/react-icons";
+import { Text, tokens } from "@fluentui/react-components";
 // import { Combobox, makeStyles, Option } from "@fluentui/react-components";
 import { getOneSettings } from "../ArrUtils";
 import { useInitialFocus } from "../search-funds-form/filters/utils";
@@ -30,7 +31,7 @@ interface Props {
   // groups: ViewDescItemGroups[];
   itemTypes: FormItemType[];
   descItems: EditItem[];
-  onSubmit: (descItemType: DescItemTypeRef) => void;
+  onSubmit: (descItemTypes: DescItemTypeRef[]) => void;
   onClose: () => void;
 }
 
@@ -52,10 +53,15 @@ export const messages = defineMessages({
     id: "add_desc_item_form_title",
     defaultMessage: "Přidat prvek popisu",
   },
+  multiAddHint: {
+    id: "add_desc_item_form_multi_hint",
+    defaultMessage: "Tip: podržte Ctrl a klikněte pro přidání více prvků najednou.",
+  },
 });
 
 export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }: Props) {
   const [selectedItemType, setSelectedItem] = useState<DescItemTypeRef>();
+  const [queuedItemTypes, setQueuedItemTypes] = useState<DescItemTypeRef[]>([]);
   const descItemTypes = useAppSelector(({ refTables }) => refTables.descItemTypes.items);
   const descItemGroups = useAppSelector(({ refTables }) => refTables.groups.data);
   // const activeFund = useAppSelector(({arrRegion}) => arrRegion.funds[arrRegion.activeIndex]);
@@ -97,13 +103,38 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
   }
 
   function handleChange(itemType: DescItemTypeRef) {
-    console.log("#adit - handleChange", itemType);
     setSelectedItem(itemType);
   }
 
-  function handleSubmit(itemType: DescItemTypeRef = selectedItemType) {
-    onSubmit(itemType);
-    // onSubmit();
+  function addAndClose(itemType: DescItemTypeRef) {
+    onSubmit([itemType]);
+    onClose();
+  }
+
+  // Ctrl/Cmd+click queues the type for a batch add and keeps the dialog open; a plain click adds it
+  // and closes immediately.
+  function handleItemClick(event: React.MouseEvent, itemType: DescItemTypeRef) {
+    if (event.ctrlKey || event.metaKey) {
+      setQueuedItemTypes((queued) =>
+        queued.some(({ id }) => id === itemType.id)
+          ? queued.filter(({ id }) => id !== itemType.id)
+          : [...queued, itemType],
+      );
+    } else {
+      addAndClose(itemType);
+    }
+  }
+
+  function handleSubmitChecked() {
+    const types = [...queuedItemTypes];
+    if (selectedItemType && !types.some(({ id }) => id === selectedItemType.id)) {
+      types.push(selectedItemType);
+    }
+    if (types.length === 0) {
+      return;
+    }
+    onSubmit(types);
+    onClose();
   }
 
   const modifiedItemTypes: Array<DescItemTypeRef & {className: string}> = descItemTypes.filter((item) => {
@@ -123,20 +154,33 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
     <ModalDialogWrapper className="dialog-lg" title={formatMessage(messages.addDescItemFormTitle)} onHide={onClose}>
       <Form onSubmit={(e) => {
         e.preventDefault();
-        handleSubmit(selectedItemType);
+        handleSubmitChecked();
       }}>
         <Modal.Body>
+          <Text
+            size={200}
+            style={{ display: "block", marginBottom: "8px", color: tokens.colorNeutralForeground3 }}
+          >
+            {formatMessage(messages.multiAddHint)}
+          </Text>
           <div>
             {getPossibleItemTypes().map((node, index) => {
               return (
                 <FormGroup key={index}>
                   <FormLabel className={"d-block"}>{node.name}</FormLabel>
-                  {node.children.map((itemType) => (
-                    <Button className="add-link" key={itemType.id} onClick={() => onSubmit(itemType)}>
-                      {/* <Icon glyph="fa-plus" /> */}
-                      {itemType.name}
-                    </Button>
-                  ))}
+                  {node.children.map((itemType) => {
+                    const isQueued = queuedItemTypes.some(({ id }) => id === itemType.id);
+                    return (
+                      <Button
+                        className={`add-link${isQueued ? " queued" : ""}`}
+                        key={itemType.id}
+                        active={isQueued}
+                        onClick={(e) => handleItemClick(e, itemType)}
+                      >
+                        {itemType.name}
+                      </Button>
+                    );
+                  })}
                 </FormGroup>
               );
             })}
@@ -164,7 +208,11 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="outline-secondary" disabled={!selectedItemType} type={"submit"}>
+          <Button
+            variant="outline-secondary"
+            disabled={queuedItemTypes.length === 0 && !selectedItemType}
+            type={"submit"}
+          >
             {i18n("global.action.add")}
           </Button>
           <Button variant="link" onClick={onClose}>

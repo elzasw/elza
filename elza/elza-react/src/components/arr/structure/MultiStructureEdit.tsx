@@ -173,9 +173,8 @@ export const MultiStructureEdit = forwardRef<MultiStructureEditHandle, Props>(
                     <AddDescItemTypeForm
                         itemTypes={allItemTypes}
                         descItems={visibleTypeIds.map((itemTypeId) => ({ itemTypeId }))}
-                        onSubmit={(typeRef) => {
-                            addType(typeRef.id);
-                            onClose();
+                        onSubmit={(typeRefs) => {
+                            typeRefs.forEach((typeRef) => addType(typeRef.id));
                         }}
                         onClose={onClose}
                     />

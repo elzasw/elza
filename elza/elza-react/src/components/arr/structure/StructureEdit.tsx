@@ -63,9 +63,8 @@ export function StructureEdit({ fundId, fundVersionId, structureObjectId, plain 
                 <AddDescItemTypeForm
                     itemTypes={itemTypes}
                     descItems={allItems.map(({ item }) => item)}
-                    onSubmit={(typeRef) => {
-                        addEmptyItem(typeRef.id);
-                        onClose();
+                    onSubmit={(typeRefs) => {
+                        typeRefs.forEach((typeRef) => addEmptyItem(typeRef.id));
                     }}
                     onClose={onClose}
                 />
