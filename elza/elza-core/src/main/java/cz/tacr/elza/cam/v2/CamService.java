@@ -58,6 +58,7 @@ import cz.tacr.cam.v2.schema.cam.BatchChangeFailureXml;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
+import cz.tacr.elza.domain.ApBindingParticipant;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApBindingSync;
 import cz.tacr.elza.domain.ApChange;
@@ -573,11 +574,12 @@ public class CamService {
             return null;
         }
         xmlBuilder.storeChanges(batchUpdate);
-        appendParticipantActivities(batchUpdate, xmlBuilder, accessPoint, bindingState,
-                                    externalSystem, userRegistry);
+        List<ParticipantMapping> participants = appendParticipantActivities(batchUpdate, xmlBuilder, accessPoint,
+                                                                            bindingState, externalSystem, userRegistry);
         UpdateEntityWorker uew = new UpdateEntityWorker(batchUpdate,
                 xmlBuilder.getItemUuids(),
-                xmlBuilder.getPartUuids());
+                xmlBuilder.getPartUuids(),
+                participants);
         return uew;
     }
 
@@ -588,18 +590,19 @@ public class CamService {
      * {@link cz.tacr.cam.v2.schema.cam.UserRefXml} IDREF when they happen
      * to be the batch sender.
      */
-    private void appendParticipantActivities(BatchUpdateXml batchUpdate,
-                                             BatchUpdateBuilder xmlBuilder,
-                                             ApAccessPoint accessPoint,
-                                             ApBindingState bindingState,
-                                             ApExternalSystem externalSystem,
-                                             CamV2UserInfoRegistry userRegistry) {
+    private List<ParticipantMapping> appendParticipantActivities(BatchUpdateXml batchUpdate,
+                                                                 BatchUpdateBuilder xmlBuilder,
+                                                                 ApAccessPoint accessPoint,
+                                                                 ApBindingState bindingState,
+                                                                 ApExternalSystem externalSystem,
+                                                                 CamV2UserInfoRegistry userRegistry) {
         Integer sinceChangeId = bindingState == null ? null : bindingState.getCreateChangeId();
         List<ParticipantRecord> participants = camUserService.collectParticipants(accessPoint, sinceChangeId);
         if (participants.isEmpty()) {
-            return;
+            return List.of();
         }
         String template = externalSystem.getUserInfo();
+        List<ParticipantMapping> participantMappings = new ArrayList<>(participants.size());
         for (ParticipantRecord p : participants) {
             ParticipantActivityXml activity = new ParticipantActivityXml();
             activity.setRole(toParticipantTypeXml(p.role()));
@@ -608,13 +611,26 @@ public class CamService {
             Object entityRef = xmlBuilder.createBatchEntityRecordRef();
             batchUpdate.getChanges().add(new UpdateEntityXml(entityRef,
                     CamUtils.getObjectFactory().createUpdateEntityXmlAddParticipant(activity)));
+            // capture the same participant for ap_binding_participant, reusing the name the
+            // registry just rendered for the wire so buildUserInfo runs only once per user
+            participantMappings.add(ParticipantMapping.of(toBindingParticipantRole(p.role()).name(),
+                                                          userRegistry.renderedNameOf(p.user()),
+                                                          p.lastChange()));
         }
+        return participantMappings;
     }
 
     private ParticipantTypeXml toParticipantTypeXml(ParticipantRole role) {
         return switch (role) {
             case EDITOR -> ParticipantTypeXml.EDITOR;
             case APPROVER -> ParticipantTypeXml.APPROVER;
+        };
+    }
+
+    private ApBindingParticipant.Role toBindingParticipantRole(ParticipantRole role) {
+        return switch (role) {
+            case EDITOR -> ApBindingParticipant.Role.AUTHOR;
+            case APPROVER -> ApBindingParticipant.Role.APPROVAL;
         };
     }
 
@@ -1053,9 +1069,10 @@ public class CamService {
     @Transactional
     public void confirmBatchSuccess(ExtSyncsQueueItem queueItem,
                                     BatchChangeSuccessXml batchChangeSuccess) {
+        UploadMapping uploadMapping = UploadMapping.deserialize(queueItem.getUploadMap());
         Map<Integer, String> partUuidMap = new HashMap<>();
         Map<Integer, String> itemUuidMap = new HashMap<>();
-        for (UuidMapping m : UuidMapping.deserialize(queueItem.getUuidMap())) {
+        for (UuidMapping m : uploadMapping.getUuidMappings()) {
             if (m.getPartId() != null) {
                 partUuidMap.put(m.getPartId(), m.getUuid());
             } else if (m.getItemId() != null) {
@@ -1073,7 +1090,7 @@ public class CamService {
         String userName = camUserService.buildUserInfo(apExternalSystem.getUserInfo(), user);
 
         updateBinding(queueItem, state, apExternalSystem, batchChangeSuccess,
-                      itemUuidMap, partUuidMap, camApState, userName);
+                      itemUuidMap, partUuidMap, uploadMapping.getParticipants(), camApState, userName);
     }
 
     /**
@@ -1091,6 +1108,7 @@ public class CamService {
                                BatchChangeSuccessXml batchChangeSuccess,
                                Map<Integer, String> itemUuidMap,
                                Map<Integer, String> partUuidMap,
+                               List<ParticipantMapping> participants,
                                String camApState,
                                String userName) {
         log.debug("Updating binding, extSyncsQueueItemId: {}, accessPointId: {}", queueItem.getExtSyncsQueueItemId(), queueItem.getAccessPointId());
@@ -1155,7 +1173,32 @@ public class CamService {
             this.externalSystemService.createApBindingItem(finalBinding, change, value, part, null);
         });
 
+        // mirror the participants sent to CAM into ap_binding_participant, tied to the new
+        // revision; the set was collected at upload time and carried on the queue item
+        saveSentParticipants(bindingState, participants);
+
         accessPointCacheService.createApCachedAccessPoint(queueItem.getAccessPointId());
+    }
+
+    /**
+     * Persist the participants that were sent to CAM (and carried on the queue item's
+     * upload payload) into {@code ap_binding_participant}, tied to the new binding state
+     * revision. Institution is not part of the outgoing user info, so it is left unset.
+     */
+    private void saveSentParticipants(ApBindingState bindingState, List<ParticipantMapping> participants) {
+        if (participants.isEmpty()) {
+            return;
+        }
+        List<ApBindingParticipant> rows = new ArrayList<>(participants.size());
+        for (ParticipantMapping participant : participants) {
+            ApBindingParticipant bp = new ApBindingParticipant();
+            bp.setBindingState(bindingState);
+            bp.setRole(ApBindingParticipant.Role.valueOf(participant.getRole()));
+            bp.setName(participant.getName());
+            bp.setLastChange(OffsetDateTime.parse(participant.getLastChange()));
+            rows.add(bp);
+        }
+        externalSystemService.saveBindingStateParticipants(rows);
     }
 
 	public BatchUpdateStatus getBatchStatus(ExtSyncsQueueItem queueItem) throws ApiException {
@@ -1176,8 +1219,8 @@ public class CamService {
 
 	/**
 	 * Build a resolver that maps CAM part/item/entity refs in a failure response
-	 * back to ELZA DB ids — uses the transient {@code uuid_map} persisted at upload
-	 * time first, then falls back to {@link cz.tacr.elza.domain.ApBindingItem} for
+	 * back to ELZA DB ids — uses the transient {@code upload_map} payload persisted at
+	 * upload time first, then falls back to {@link cz.tacr.elza.domain.ApBindingItem} for
 	 * pre-existing bound parts/items.
 	 */
 	public IssueRefResolver createIssueRefResolver(ExtSyncsQueueItem queueItem, BatchChangeFailureXml failure) {
@@ -1185,7 +1228,7 @@ public class CamService {
 		ApAccessPoint accessPoint = accessPointService.getAccessPointInternal(queueItem.getAccessPointId());
 		ApBindingState bindingState = externalSystemService.findByAccessPointAndExternalSystem(accessPoint, extSystem);
 		ApBinding binding = bindingState != null ? bindingState.getBinding() : null;
-		return IssueRefResolver.build(failure, queueItem.getUuidMap(),
+		return IssueRefResolver.build(failure, queueItem.getUploadMap(),
 				queueItem.getAccessPointId(), binding, extSystem,
 				bindingItemRepository, bindingRepository, bindingStateRepository,
 				accessPointCacheService, staticDataService.getData());
