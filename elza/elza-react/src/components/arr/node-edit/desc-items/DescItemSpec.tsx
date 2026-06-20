@@ -253,6 +253,7 @@ export function DescItemSpec({
           ref: fieldRef,
           style: {
             minWidth: "30px",
+            fontSize: "1em",
             textDecoration: isInhibited ? "line-through" : undefined,
           },
         }}

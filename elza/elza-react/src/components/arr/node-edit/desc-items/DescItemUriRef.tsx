@@ -221,6 +221,7 @@ export function DescItemUriRef({
             style={{
               flexGrow: 2,
               marginBottom: "4px",
+              fontSize: "1em",
               textDecoration: item.inhibited ? "line-through" : undefined,
             }}
             contentAfter={
@@ -267,6 +268,7 @@ export function DescItemUriRef({
                 className={styles.conflictTextareaWithMinWidth}
                 value={conflictValue}
                 readOnly={true}
+                style={{ fontSize: "1em" }}
               />
             )}
           </ConflictValue>
@@ -282,6 +284,7 @@ export function DescItemUriRef({
               style={{
                 flexGrow: 2,
                 marginBottom: "4px",
+                fontSize: "1em",
                 textDecoration: item.inhibited ? "line-through" : undefined,
               }}
               placeholder={formatMessage(messages.description)}
@@ -299,6 +302,7 @@ export function DescItemUriRef({
                   className={styles.conflictTextareaWithMinWidth}
                   value={conflictValue}
                   readOnly={true}
+                  style={{ fontSize: "1em" }}
                 />
               )}
             </ConflictValue>
@@ -327,6 +331,7 @@ export function DescItemUriRef({
               // ref: fieldRef,
               style: {
                 minWidth: "30px",
+                fontSize: "1em",
                 textDecoration: item.inhibited ? "line-through" : undefined,
                 flex: 1,
                 flexBasis: `${(query || "").length + 3}ch`,
