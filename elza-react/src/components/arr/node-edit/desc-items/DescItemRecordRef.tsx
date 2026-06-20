@@ -4,6 +4,7 @@ import {
   Option,
   OptionOnSelectData,
   SelectionEvents,
+  Spinner,
   tokens,
   Tooltip,
 } from "@fluentui/react-components";
@@ -47,6 +48,14 @@ const messages = defineMessages({
     id: "desc_item_record_ref_action_openInAccessPoints",
     defaultMessage: "Otevřít v archivních entitách",
   },
+  noResults: {
+    id: "desc_item_record_ref_no_results",
+    defaultMessage: "Žádné výsledky",
+  },
+  startTyping: {
+    id: "desc_item_record_ref_start_typing",
+    defaultMessage: "Začněte psát pro vyhledávání",
+  },
 });
 
 export function DescItemRecordRef({
@@ -77,6 +86,8 @@ export function DescItemRecordRef({
   );
   const [accessPoints, setAccessPoints] = useState<ApAccessPointVO[]>([]);
   const [accessPoint, setAccessPoint] = useState<ApAccessPointVO>();
+  const [isFocused, setIsFocused] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const fieldRef = useRef<HTMLInputElement>(null);
 
@@ -98,7 +109,10 @@ export function DescItemRecordRef({
   };
 
   function handleBlur() {
-    setQuery(accessPoint?.name || "");
+    setIsFocused(false);
+    if (accessPoint?.name) {
+      setQuery(accessPoint.name);
+    }
   }
 
   useEffect(() => {
@@ -116,24 +130,37 @@ export function DescItemRecordRef({
   }, [data?.value, item.undefined]);
 
   useDebouncedEffect(() => {
+    const hasEnoughCharacters = (query?.length ?? 0) >= 1;
     if (
-      !item.undefined
+      hasEnoughCharacters
+      && !item.undefined
       && item.nodeId === nodeId
       && (!typeRef.useSpecification || itemSpecId != undefined) // spec id is required for types that use specification
     ) {
       (async () => {
-        const accessPoints = await WebApi.findAccessPoint(
-          query,
-          undefined,
-          undefined,
-          activeFund.versionId,
-          itemTypeId,
-          itemSpecId,
-        );
-        setAccessPoints(accessPoints.rows);
+        // clear before fetching so no option stays active across the result swap;
+        // this lets the Combobox re-highlight the first item when the new list mounts
+        setAccessPoints([]);
+        setIsLoading(true);
+        try {
+          const accessPoints = await WebApi.findAccessPoint(
+            query,
+            undefined,
+            undefined,
+            activeFund.versionId,
+            itemTypeId,
+            itemSpecId,
+          );
+          setAccessPoints(accessPoints.rows);
+        } finally {
+          setIsLoading(false);
+        }
       })();
+    } else {
+      setAccessPoints([]);
+      setIsLoading(false);
     }
-  }, 300, [
+  }, 500, [
     itemTypeId,
     itemSpecId,
     query,
@@ -230,30 +257,75 @@ export function DescItemRecordRef({
         title={query}
         value={query}
         selectedOptions={data?.value != null ? [data.value.toString()] : []}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => {
+          const value = e.target.value;
+          setQuery(value);
+          // clear stale results immediately; the debounced effect refetches
+          setAccessPoints([]);
+          // show the spinner right away while waiting for the debounced fetch,
+          // unless the query is too short to trigger a search
+          setIsLoading(value.length >= 1);
+        }}
         onOptionSelect={handleAccessPointSelect}
         onOpenChange={(_e, open) => {
           if (open) {
             fieldRef.current?.setSelectionRange(0, query?.length || 0);
           }
         }}
+        onFocus={() => setIsFocused(true)}
         onBlur={handleBlur}
         style={{
           minWidth: "unset",
           flex: 1,
           flexGrow: 5,
-          paddingRight: compact ? FIELD_HEIGHT.small + 2 : FIELD_HEIGHT.medium + 4,
+          padding: 0,
+          display: "flex",
         }}
         input={{
           ref: fieldRef,
           style: {
             minWidth: "30px",
-            textDecoration: item.inhibited ? "line-through" : undefined,
+            width: "30px",
+            fontSize: "1em",
+            textDecoration:
+              item.inhibited || (!isFocused && data?.value == null)
+                ? "line-through"
+                : undefined,
             flex: 1,
             flexBasis: `${(query || "").length + 3}ch`,
           },
         }}
         listbox={{ style: { maxHeight: "400px", minWidth: "400px" } }}
+        expandIcon={{
+          style: { height: "100%", position: "relative" },
+          children: (
+            <Tooltip
+              relationship="label"
+              appearance="inverted"
+              content={<FormattedMessage {...messages.openInAccessPoints} />}
+            >
+              <Button
+                size={compact ? "small" : "medium"}
+                appearance="subtle"
+                disabled={
+                  (typeRef.useSpecification && item.itemSpecId == undefined && selectedSpecId == undefined) ||
+                    isDisabled
+                }
+                style={{
+                  height: `calc( 100% - ${compact ? 4 : 2}px )`,
+                }}
+                icon={<DatabasePersonRegular />}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  handleSelectModule();
+                }}
+                tabIndex={-1}
+              />
+            </Tooltip>
+          ),
+        }}
         disabled={isDisabled}
       >
         {accessPoints.map(({ name, id, description, typeId, ...rest }) => {
@@ -285,27 +357,21 @@ export function DescItemRecordRef({
             </Option>
           );
         })}
+        {isLoading && (
+          <div className={styles.noResults}>
+            <Spinner size="tiny" />
+          </div>
+        )}
+        {!isLoading && accessPoints.length === 0 && (
+          <div className={styles.noResults}>
+            {(query?.length ?? 0) < 1 ? (
+              <FormattedMessage {...messages.startTyping} />
+            ) : (
+              <FormattedMessage {...messages.noResults} />
+            )}
+          </div>
+        )}
       </Combobox>
-      <div className={styles.comboboxActionButton}>
-        <Tooltip
-          relationship="label"
-          appearance="inverted"
-          content={<FormattedMessage {...messages.openInAccessPoints} />}
-        >
-          <Button
-            size={compact ? "small" : "medium"}
-            style={{ height: (compact ? FIELD_HEIGHT.small : FIELD_HEIGHT.medium) - 2 }}
-            appearance="subtle"
-            disabled={
-              (typeRef.useSpecification && item.itemSpecId == undefined && selectedSpecId == undefined) ||
-              isDisabled
-            }
-            icon={<DatabasePersonRegular />}
-            onClick={handleSelectModule}
-            tabIndex={-1}
-          />
-        </Tooltip>
-      </div>
     </div>
   );
 }
