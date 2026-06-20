@@ -65,10 +65,12 @@ public class ItemSyncExportProcessor implements ItemSyncProcessor {
 				// Binding is intentionally NOT created here. It is created only after CAM confirms
 				// the batch was stored (see ItemSyncExportConfirmProcessor). Creating it eagerly
 				// would leave an orphan binding in ELZA when CAM rejects/revokes the batch.
-				// Persist the new-part / new-item uuid map so the confirm processor can resolve
-				// IssueXml.partRef/itemRef back to ELZA ids when CAM returns warnings.
-				String uuidMapJson = UuidMapping.serialize(uploadWorker.getPartUuidMap(), uploadWorker.getItemUuidMap());
-				apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.EXPORT_PROCESSING, null, uuidResponse.toString(), batchUpdateString, null, uuidMapJson);
+				// Persist the upload payload (new-part / new-item uuid map + the participants
+				// sent in this batch) so the confirm processor can resolve IssueXml.partRef/
+				// itemRef back to ELZA ids on warnings and create ap_binding_participant on success.
+				String uploadMapJson = UploadMapping.serialize(uploadWorker.getPartUuidMap(),
+						uploadWorker.getItemUuidMap(), uploadWorker.getParticipants());
+				apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.EXPORT_PROCESSING, null, uuidResponse.toString(), batchUpdateString, null, uploadMapJson);
 
 			} catch (ApiException e) {
 				// if ApiException -> it means we connected server and it is logical failure

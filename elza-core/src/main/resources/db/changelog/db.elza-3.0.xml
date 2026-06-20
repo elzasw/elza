@@ -1262,4 +1262,16 @@
         </insert>
     </changeSet>
 
+    <changeSet id="20260619120000" author="ppy">
+        <!-- The transient upload payload now carries more than the part/item ↔ CAM UUID
+             map: it also holds the participants sent in the batch, so they can be turned
+             into ap_binding_participant once CAM confirms. Rename the column to reflect
+             that it is the whole pending-upload payload, not just the uuid map. The column
+             is null between syncs (cleared on terminal states), so no data is migrated. -->
+        <renameColumn tableName="ext_syncs_queue_item"
+                      oldColumnName="uuid_map"
+                      newColumnName="upload_map"
+                      columnDataType="${type.text}"/>
+    </changeSet>
+
 </databaseChangeLog>

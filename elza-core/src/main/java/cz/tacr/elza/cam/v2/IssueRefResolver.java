@@ -50,8 +50,8 @@ import cz.tacr.elza.service.cache.CachedPart;
  *   <li>{@link #build} — export-failure path. Resolves part/item ids <em>and</em>
  *       entityRefs <em>and</em> display names for the failure VO shown in the UI.
  *       Source of refs is a {@link BatchChangeFailureXml}; ids may come from a
- *       transient {@code uuid_map} attached to the export queue item (parts/items
- *       created in the same upload don't have an {@link ApBindingItem} yet).</li>
+ *       transient {@code upload_map} payload attached to the export queue item
+ *       (parts/items created in the same upload don't have an {@link ApBindingItem} yet).</li>
  *   <li>{@link #buildForImport} — import path. Resolves <em>only</em> part/item
  *       ids (the only thing the import mapper stores); all parts/items already
  *       have an {@link ApBindingItem} for the binding, so one batch query
@@ -105,7 +105,7 @@ public class IssueRefResolver {
      * </ul>
      */
     public static IssueRefResolver build(BatchChangeFailureXml failure,
-                                         String uuidMapJson,
+                                         String uploadMapJson,
                                          Integer exportedApId,
                                          ApBinding apBinding,
                                          ApExternalSystem externalSystem,
@@ -114,10 +114,11 @@ public class IssueRefResolver {
                                          ApBindingStateRepository bindingStateRepository,
                                          AccessPointCacheService accessPointCacheService,
                                          StaticDataProvider staticData) {
-        // 1. seed from the transient map (new parts/items in this upload)
+        // 1. seed from the transient payload (new parts/items in this upload);
+        //    only the uuid mappings are relevant here, participants are ignored
         Map<String, Integer> partSeed = new HashMap<>();
         Map<String, Integer> itemSeed = new HashMap<>();
-        for (UuidMapping m : UuidMapping.deserialize(uuidMapJson)) {
+        for (UuidMapping m : UploadMapping.deserialize(uploadMapJson).getUuidMappings()) {
             if (m.getPartId() != null) {
                 partSeed.put(m.getUuid(), m.getPartId());
             } else if (m.getItemId() != null) {

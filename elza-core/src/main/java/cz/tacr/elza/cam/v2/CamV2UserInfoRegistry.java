@@ -65,6 +65,15 @@ class CamV2UserInfoRegistry {
                 .orElseGet(() -> create(user, template));
     }
 
+    /**
+     * Rendered user-info name for a user already registered in this batch (i.e. after
+     * {@link #inlineOrRef} / {@link #ensureInline} has run for that user). Lets callers
+     * reuse the name that went on the wire without re-rendering the template.
+     */
+    String renderedNameOf(UsrUser user) {
+        return find(user).map(info -> info.getName().getValue()).orElse(null);
+    }
+
     private Optional<UserInfoXml> find(UsrUser user) {
         if (user == null) {
             return Optional.ofNullable(anonymousUserInfo);

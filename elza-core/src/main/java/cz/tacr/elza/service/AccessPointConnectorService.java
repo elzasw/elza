@@ -316,8 +316,8 @@ public class AccessPointConnectorService {
     }
 
     /**
-     * Overload that additionally persists the upload-side uuid map onto the queue item.
-     * Pass {@code null} for {@code uuidMap} to leave the existing value unchanged
+     * Overload that additionally persists the upload payload onto the queue item.
+     * Pass {@code null} for {@code uploadMap} to leave the existing value unchanged
      * (which is what all other overloads do).
      */
     @Transactional
@@ -327,8 +327,8 @@ public class AccessPointConnectorService {
                                     String batchId,
                                     String data,
                                     String forceKey,
-                                    String uuidMap) {
-        setQueueItemState(Collections.singletonList(item), state, message, batchId, data, forceKey, uuidMap);
+                                    String uploadMap) {
+        setQueueItemState(Collections.singletonList(item), state, message, batchId, data, forceKey, uploadMap);
     }
 
     @Transactional
@@ -359,7 +359,7 @@ public class AccessPointConnectorService {
                                   String batchId,
                                   String data,
                                   String forceKey,
-                                  String uuidMap) {
+                                  String uploadMap) {
 		// check message length
 		if (StringUtils.isNotEmpty(message)) {
 			if(message.length()>StringLength.LENGTH_4000) {
@@ -375,18 +375,18 @@ public class AccessPointConnectorService {
 				item.setBatchId(batchId);
 				item.setData(data);
 				item.setForceKey(forceKey);
-				// uuid_map lifecycle: clear on terminal states (info no longer useful);
-				// otherwise, overwrite only if the caller supplied a new map — null means
-				// "leave as is" so NEED_CONFIRM transitions don't wipe the upload-time map.
+				// upload_map lifecycle: clear on terminal states (info no longer useful);
+				// otherwise, overwrite only if the caller supplied a new payload — null means
+				// "leave as is" so NEED_CONFIRM transitions don't wipe the upload-time payload.
 				switch (state) {
 				case EXPORT_OK:
 				case EXPORT_CANCELLED:
 				case ERROR:
-					item.setUuidMap(null);
+					item.setUploadMap(null);
 					break;
 				default:
-					if (uuidMap != null) {
-						item.setUuidMap(uuidMap);
+					if (uploadMap != null) {
+						item.setUploadMap(uploadMap);
 					}
 					break;
 				}
