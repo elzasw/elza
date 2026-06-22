@@ -345,6 +345,7 @@ public class StructureOldController {
      *
      * @return nalezené entity
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/type", method = RequestMethod.GET)
     public List<RulStructureTypeVO> findStructureTypes(@RequestParam(value = "fundVersionId", required = false) final Integer fundVersionId) {
@@ -358,6 +359,7 @@ public class StructureOldController {
         return structureTypes.stream().map(i -> RulStructureTypeVO.newInstance(i)).collect(Collectors.toList());
     }
 
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/part-type", method = RequestMethod.GET)
     public List<RulPartTypeVO> findPartTypes() {

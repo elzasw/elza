@@ -1525,6 +1525,14 @@ model ItemTypeList {
     itemTypes: ItemType[];
 }
 
+/*
+ * Náhrada 'RulPartTypeVO'
+ */
+model PartType extends BaseCode {
+    childPartId: integer;
+    repeatable: boolean;
+}
+
 /**
  * Náhrada `DescFormDataNewVO`
  */
@@ -2554,6 +2562,16 @@ namespace ElzaAPI.Rules {
         /** Preferred language for localized strings (e.g. "cs", "en"). */
         @header("Accept-Language") acceptLanguage?: string
     ): ItemTypeList;
+
+    /**
+     * Returns all types of parts.
+     * 
+     * Public URL: `GET /api/v1/rules/partTypes`.
+     * 
+     * Replaces the legacy `GET /api/structure/part-type`.
+     */
+    @route("/partTypes")
+    @get op listPartTypes(): PartType[];
 }
 
 /**

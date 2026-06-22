@@ -24,7 +24,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApPartFormVO;
 import cz.tacr.elza.controller.vo.ApPartVO;
-import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
 import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
@@ -52,6 +51,7 @@ import cz.tacr.elza.test.controller.vo.DeleteAccessPointsDetail;
 import cz.tacr.elza.test.controller.vo.EntityRef;
 import cz.tacr.elza.test.controller.vo.ExportRequestStatus;
 import cz.tacr.elza.test.controller.vo.InvalidatedEntities;
+import cz.tacr.elza.test.controller.vo.PartType;
 import cz.tacr.elza.test.controller.vo.ReplaceType;
 import cz.tacr.elza.test.controller.vo.RequestProcessState;
 import cz.tacr.elza.test.controller.vo.RevStateChange;
@@ -229,8 +229,8 @@ public class AccessPointControllerTest extends AbstractControllerTest {
 
         RulItemType nmMainItemType = itemTypeRepository.findOneByCode(ApControllerTest.NM_MAIN);
         RulItemType nmSupGenItemType = itemTypeRepository.findOneByCode(ApControllerTest.NM_SUP_GEN);
-        Map<String, RulPartTypeVO> partTypes = findPartTypesMap();
-        RulPartTypeVO ptName = partTypes.get(ApControllerTest.PT_NAME);
+        Map<String, PartType> partTypes = findPartTypesMap();
+        PartType ptName = partTypes.get(ApControllerTest.PT_NAME);
 
         // add new part Karel IV
         List<ApItemVO> items = new ArrayList<>();
