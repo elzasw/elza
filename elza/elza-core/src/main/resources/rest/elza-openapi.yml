@@ -66,57 +66,15 @@ paths:
             schema:
               $ref: '#/components/schemas/DeleteAccessPointsDetail'
         description: seznam ID nebo UUID, které chceme smazat
-  /accesspoint/search:
-    post:
-      operationId: AccessPoint_search
-      description: |-
-        Search for access points.
-        Accepts the same filter inputs as /accesspoint/export (scalar fields + ApAdvanceSearchFilter)
-        plus pagination (from, count) and the criteria-query SearchType selectors.
-      parameters: []
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApAccessPointSearchResult'
-        '400':
-          description: The server could not understand the request due to invalid syntax.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-        '403':
-          description: Access is forbidden.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-      tags:
-        - accesspoints
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AccessPointSearchParams'
-        description: filter selecting the access points to search for
   /accesspoint/export:
     post:
       operationId: AccessPoint_batchExport
       description: |-
-        Asynchronously export access points matching the given search query to CSV.
+        Asynchronously export access points matching the given filter to CSV.
+
         Returns the request id; poll /io/export-status/{id} and download the result via /io/file/{id}.
-        Results are ordered by accessPointId ascending. The filter shape mirrors the scalar
-        parameters of /registry/search, so the same registry-list filter values can be passed
-        through. Empty body / null fields means "all access points visible to the user".
+        Results are ordered by accessPointId ascending. Empty body / null fields means
+        "all access points visible to the user".
       parameters: []
       responses:
         '200':
@@ -211,6 +169,30 @@ paths:
                 $ref: '#/components/schemas/InvalidatedEntities'
       tags:
         - accesspoints
+  /accesspoint/search:
+    post:
+      operationId: AccessPoint_search
+      description: |-
+        Search for access points.
+        Accepts the same filter inputs as /accesspoint/export (scalar fields + ApAdvanceSearchFilter)
+        plus pagination (from, count) and the criteria-query SearchType selectors.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApAccessPointSearchResult'
+      tags:
+        - accesspoints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessPointSearchParams'
+        description: filter selecting the access points to search for
   /accesspoint/{id}:
     delete:
       operationId: AccessPoint_deleteAccessPoint
@@ -2356,11 +2338,7 @@ paths:
         Enqueue a new publication for the current open version of the fund.
 
         Rejected with 409 if the current fund version already has a
-        publication of the same type in NEW state (avoids racing two
-        identical async generations). A previous publication in PREPARED
-        or later state does NOT block: the fund may have changed and
-        the new publication carries different content.
-        Rejected with 403 if the target publication type is inactive.
+        publication of the same type in {
       parameters:
         - $ref: '#/components/parameters/FundIdParameter'
       responses:
@@ -2371,13 +2349,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/PublicationDetail'
         '403':
-          description: Publication type is inactive.
+          description: Access is forbidden.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
         '404':
-          description: Publication type or fund not found.
+          description: The server cannot find the requested resource.
           content:
             application/json:
               schema:
@@ -2431,8 +2409,7 @@ paths:
         Copy an existing publication into another target system.
 
         The target publication type must have a compatible filter setting
-        (same rul_export_filter snapshot, or both unfiltered).
-        Rejected with 403 if the target publication type is inactive.
+        (same {
       parameters:
         - $ref: '#/components/parameters/FundIdParameter'
         - $ref: '#/components/parameters/PublicationIdParameter'
@@ -2444,19 +2421,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/PublicationDetail'
         '403':
-          description: Target publication type is inactive.
+          description: Access is forbidden.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
         '404':
-          description: Source publication, target publication type, or fund not found.
+          description: The server cannot find the requested resource.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BaseException'
         '409':
-          description: Target type has an incompatible filter setting.
+          description: The request conflicts with the current state of the server.
           content:
             application/json:
               schema:
@@ -4071,6 +4048,92 @@ components:
           contains: '#/components/schemas/MultimatchContainsFilter'
           logical: '#/components/schemas/LogicalFilter'
       description: Used as a parent for all other filters
+    AccessPointBatchExportParams:
+      type: object
+      properties:
+        search:
+          type: string
+          description: Full-text search
+        apTypeId:
+          type: integer
+          description: Single AP-type id; subtree-expanded on the backend to include descendant types
+        versionId:
+          type: integer
+          description: Fund version id (used to resolve scope context, optional)
+        scopeId:
+          type: integer
+          description: Scope id; expanded on the backend for the resolved fund + user-visible scopes
+        itemTypeId:
+          type: integer
+          description: Restrict to AP types referenced from this item type
+        itemSpecId:
+          type: integer
+          description: Restrict to AP types referenced from this item specification
+        state:
+          allOf:
+            - $ref: '#/components/schemas/ApStateApproval'
+          description: Filter by access-point state
+        revState:
+          allOf:
+            - $ref: '#/components/schemas/RevisionState'
+          description: Filter by revision state
+        searchFilter:
+          allOf:
+            - $ref: '#/components/schemas/ApAdvanceSearchFilter'
+          description: Advanced filter (mirrors the body of /accesspoint/search)
+      description: |-
+        Body of POST /accesspoint/export.
+
+        Mirrors the scalar parameters of /accesspoint/search and accepts the same advanced filter
+        via {
+    AccessPointSearchParams:
+      type: object
+      properties:
+        search:
+          type: string
+          description: Full-text search
+        from:
+          type: integer
+          description: Offset (zero-based) of the first result to return
+        count:
+          type: integer
+          description: Maximum number of rows to return
+        apTypeId:
+          type: integer
+          description: Single AP-type id; subtree-expanded on the backend
+        versionId:
+          type: integer
+          description: Fund version id (used to resolve scope context, optional)
+        scopeId:
+          type: integer
+          description: Scope id; expanded on the backend
+        itemTypeId:
+          type: integer
+          description: Restrict to AP types referenced from this item type
+        itemSpecId:
+          type: integer
+          description: Restrict to AP types referenced from this item specification
+        state:
+          allOf:
+            - $ref: '#/components/schemas/ApStateApproval'
+          description: Filter by access-point state
+        revState:
+          allOf:
+            - $ref: '#/components/schemas/RevisionState'
+          description: Filter by revision state
+        searchTypeName:
+          allOf:
+            - $ref: '#/components/schemas/ApSearchType'
+          description: Search strategy applied to access-point name (criteria-query path)
+        searchTypeUsername:
+          allOf:
+            - $ref: '#/components/schemas/ApSearchType'
+          description: Search strategy applied to user / username (criteria-query path)
+        searchFilter:
+          allOf:
+            - $ref: '#/components/schemas/ApAdvanceSearchFilter'
+          description: Advanced filter; same precedence rule as AccessPointBatchExportParams
+      description: Body of POST /accesspoint/search.
     Admin.CopyPermissionParams:
       type: object
       required:
@@ -4286,205 +4349,6 @@ components:
         - DOWNLOAD_UPDATE
         - FORCE_UPDATE
       description: AIP update type
-    ApPartFormVO:
-      type: object
-      format: partform
-      description: Data for create/update a part (external)
-    ApStateApproval:
-      type: string
-      enum:
-        - NEW
-        - TO_APPROVE
-        - APPROVED
-        - TO_AMEND
-      description: States of ApState
-    ApSearchArea:
-      type: string
-      enum:
-        - PREFER_NAMES
-        - ALL_NAMES
-        - ALL_PARTS
-        - ENTITY_CODE
-      description: 'Area in which to search: preferred names only / all names / all parts / by entity code'
-    ApSearchByRelation:
-      type: object
-      properties:
-        relTypeId:
-          type: integer
-          description: Item type id of the relation
-        relSpecId:
-          type: integer
-          description: Item specification id of the relation
-        code:
-          type: integer
-          description: Access-point id the relation must point to
-      description: Filter for searching by a relation (item type, specification, target AP)
-    ApSearchByItemWithValue:
-      type: object
-      properties:
-        partTypeCode:
-          type: string
-          description: Code of the part type to search in
-        itemTypeId:
-          type: integer
-          description: Item type id
-        itemSpecId:
-          type: integer
-          description: Item specification id (optional)
-        value:
-          type: object
-          description: Value to match (free-form; interpretation depends on item type)
-      description: Filter for searching by an item with a specific value
-    ApAdvanceSearchFilter:
-      type: object
-      properties:
-        search:
-          type: string
-          description: Full-text search term
-        area:
-          allOf:
-            - $ref: '#/components/schemas/ApSearchArea'
-          description: Area in which to search
-        onlyMainPart:
-          type: boolean
-          description: Restrict the search to the main part
-        aeTypeIds:
-          type: array
-          items:
-            type: integer
-          description: List of access-point type ids to include
-        code:
-          type: string
-          description: Identifier of a concrete access point
-        user:
-          type: string
-          description: Username (or login) filter
-        assignedTo:
-          type: integer
-          description: Id of user the access point is assigned to
-        validationResult:
-          type: string
-          description: 'Validation result: ok | error'
-        creation:
-          type: string
-          description: Creation date filter
-        extinction:
-          type: string
-          description: Extinction date filter
-        relFilters:
-          type: array
-          items:
-            $ref: '#/components/schemas/ApSearchByRelation'
-          description: Filters by relation
-        extFilters:
-          type: array
-          items:
-            $ref: '#/components/schemas/ApSearchByItemWithValue'
-          description: Filters by item value
-        syncState:
-          allOf:
-            - $ref: '#/components/schemas/SyncState'
-          description: Filter by binding synchronisation state
-        excludeAps:
-          type: array
-          items:
-            type: integer
-          description: List of access-point ids to exclude from the result
-      description: Advanced filter for access-point search; used as the request body of /accesspoint/search
-    AccessPointBatchExportParams:
-      type: object
-      properties:
-        search:
-          type: string
-          description: Full-text search
-        apTypeId:
-          type: integer
-          description: Single AP-type id; on the backend it is subtree-expanded so descendant types are included
-        versionId:
-          type: integer
-          description: Fund version id (used to resolve scope context, optional)
-        scopeId:
-          type: integer
-          description: Scope id; on the backend it is expanded for the resolved fund + user-visible scopes
-        itemTypeId:
-          type: integer
-          description: Restrict to AP types referenced from this item type
-        itemSpecId:
-          type: integer
-          description: Restrict to AP types referenced from this item specification
-        state:
-          allOf:
-            - $ref: '#/components/schemas/ApStateApproval'
-          description: Filter by access-point state
-        revState:
-          allOf:
-            - $ref: '#/components/schemas/RevisionState'
-          description: Filter by revision state
-        searchFilter:
-          allOf:
-            - $ref: '#/components/schemas/ApAdvanceSearchFilter'
-          description: Advanced filter (mirrors the body of /accesspoint/search). When the top-level scalar fields and searchFilter both define a value, the top-level value wins for the parameters where this conflicts (e.g. top-level search vs. searchFilter.search).
-      description: Body of POST /accesspoint/export. Mirrors the scalar parameters of /accesspoint/search and accepts the same advanced filter via searchFilter.
-    ApSearchType:
-      type: string
-      enum:
-        - DISABLED
-        - JOIN
-        - FULLTEXT
-        - RIGHT_SIDE_LIKE
-      description: Search strategy for criteria-based access-point queries (name / username fields)
-    ApAccessPointVO:
-      type: object
-      format: ap-access-point-vo
-      description: Access-point view object (returned by /accesspoint/search). Externally provided — see cz.tacr.elza.controller.vo.ApAccessPointVO
-    AccessPointSearchParams:
-      type: object
-      properties:
-        search:
-          type: string
-          description: Full-text search
-        from:
-          type: integer
-          description: Offset (zero-based) of the first result to return
-        count:
-          type: integer
-          description: Maximum number of rows to return
-        apTypeId:
-          type: integer
-          description: Single AP-type id; on the backend it is subtree-expanded so descendant types are included
-        versionId:
-          type: integer
-          description: Fund version id (used to resolve scope context, optional)
-        scopeId:
-          type: integer
-          description: Scope id; expanded on the backend
-        itemTypeId:
-          type: integer
-          description: Restrict to AP types referenced from this item type
-        itemSpecId:
-          type: integer
-          description: Restrict to AP types referenced from this item specification
-        state:
-          allOf:
-            - $ref: '#/components/schemas/ApStateApproval'
-          description: Filter by access-point state
-        revState:
-          allOf:
-            - $ref: '#/components/schemas/RevisionState'
-          description: Filter by revision state
-        searchTypeName:
-          allOf:
-            - $ref: '#/components/schemas/ApSearchType'
-          description: Search strategy applied to access-point name (criteria-query path)
-        searchTypeUsername:
-          allOf:
-            - $ref: '#/components/schemas/ApSearchType'
-          description: Search strategy applied to user / username (criteria-query path)
-        searchFilter:
-          allOf:
-            - $ref: '#/components/schemas/ApAdvanceSearchFilter'
-          description: Advanced filter; same precedence rule as AccessPointBatchExportParams (top-level scalar fields override conflicting fields inside searchFilter)
-      description: Body of POST /accesspoint/search.
     ApAccessPointSearchResult:
       type: object
       required:
@@ -4500,7 +4364,110 @@ components:
           items:
             $ref: '#/components/schemas/ApAccessPointVO'
           description: One page of results
-      description: Paginated access-point search result returned by /accesspoint/search
+      description: Paginated access-point search result returned by /accesspoint/search.
+    ApAccessPointVO:
+      type: object
+      description: |-
+        Access-point view object returned by /accesspoint/search.
+        Externally provided (see cz.tacr.elza.controller.vo.ApAccessPointVO) — kept opaque in
+        the contract (the canonical yml emits `format: ap-access-point-vo` so the OpenAPI generator
+        maps it to the hand-coded Java + TS class).
+    ApAdvanceSearchFilter:
+      type: object
+      properties:
+        search:
+          type: string
+        area:
+          $ref: '#/components/schemas/ApSearchArea'
+        onlyMainPart:
+          type: boolean
+        aeTypeIds:
+          type: array
+          items:
+            type: integer
+        code:
+          type: string
+          description: Identifier of a concrete access point
+        user:
+          type: string
+        assignedTo:
+          type: integer
+          description: Id of user the access point is assigned to
+        validationResult:
+          type: string
+          description: 'Validation result: ok | error'
+        creation:
+          type: string
+        extinction:
+          type: string
+        relFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApSearchByRelation'
+        extFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApSearchByItemWithValue'
+        syncState:
+          $ref: '#/components/schemas/SyncState'
+        excludeAps:
+          type: array
+          items:
+            type: integer
+          description: List of access-point ids to exclude from the result
+      description: Advanced filter for access-point search; used as the request body of /accesspoint/search.
+    ApPartFormVO:
+      type: object
+      format: partform
+      description: Data for create/update a part (external)
+    ApSearchArea:
+      type: string
+      enum:
+        - PREFER_NAMES
+        - ALL_NAMES
+        - ALL_PARTS
+        - ENTITY_CODE
+      description: Area in which the access-point search runs.
+    ApSearchByItemWithValue:
+      type: object
+      properties:
+        partTypeCode:
+          type: string
+        itemTypeId:
+          type: integer
+        itemSpecId:
+          type: integer
+        value: {}
+      description: |-
+        Filter for searching by an item with a specific value.
+        The {
+    ApSearchByRelation:
+      type: object
+      properties:
+        relTypeId:
+          type: integer
+        relSpecId:
+          type: integer
+        code:
+          type: integer
+          description: Access-point id the relation must point to
+      description: Filter for searching by a relation (item type, specification, target AP id).
+    ApSearchType:
+      type: string
+      enum:
+        - DISABLED
+        - JOIN
+        - FULLTEXT
+        - RIGHT_SIDE_LIKE
+      description: Search strategy for criteria-based access-point queries (name / username fields).
+    ApStateApproval:
+      type: string
+      enum:
+        - NEW
+        - TO_APPROVE
+        - APPROVED
+        - TO_AMEND
+      description: States of ApState
     ApStateUpdate:
       type: object
       required:
