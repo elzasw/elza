@@ -75,7 +75,7 @@ export function DescItemTypeFields({
             positionA - positionB,
     );
 
-    const lastItem = descItems[descItems.length - 1];
+    const lastItem = sortedDescItems[sortedDescItems.length - 1];
     const showAddButton =
         typeForm.repeatable &&
         ((lastItem?.item.data?.dataId != undefined && !lastItem?.item.undefined) ||
