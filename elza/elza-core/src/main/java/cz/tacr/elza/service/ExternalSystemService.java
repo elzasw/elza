@@ -396,7 +396,7 @@ public class ExternalSystemService {
         if (externalSystem instanceof ApExternalSystem extSys 
         		&& original instanceof ApExternalSystem origExtSys
         		&& origExtSys.getType() != extSys.getType()) {
-        	
+
         	ApExternalSystemType extSysType = extSys.getType();
         	ApExternalSystemType origExtSysType = origExtSys.getType();
 
@@ -407,8 +407,12 @@ public class ExternalSystemService {
 	                .set("extSystemType", origExtSysType)
 	            	.set("newExtSystemType", extSysType);
         	}
+        }
 
-        	eventPublisher.publishEvent(new ApExternalSystemEvent(this, origExtSys));
+        // any ApExternalSystem update may have changed url/apiKey -
+        // notify listeners so cached connector instances get invalidated
+        if (original instanceof ApExternalSystem origExtSys) {
+            eventPublisher.publishEvent(new ApExternalSystemEvent(this, origExtSys));
         }
 
         validateExternalSystem(externalSystem, false);
