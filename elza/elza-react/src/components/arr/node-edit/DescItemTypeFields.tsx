@@ -60,7 +60,7 @@ export function DescItemTypeFields({
         const item = descItems[index].item;
         let newPosition = descItems[newIndex]?.item.position;
 
-        if (!newPosition) {
+        if (newPosition == null) {
             newPosition = descItems[descItems.length - 1].item.position + 1;
         }
 
@@ -93,10 +93,10 @@ export function DescItemTypeFields({
             hideCopyButtons={hideCopyButtons}
         >
             <DraggableList
-                canPlaceBeforeItem={(index) => descItems[index].item.position > 0}
+                canPlaceBeforeItem={(index) => descItems[index].item.nodeId == nodeId}
                 isItemDraggable={(index) => {
                     const isDraggable =
-                        descItems[index].item.position > 0 &&
+                        descItems[index].item.nodeId == nodeId &&
                         (descItems[index].item.data?.dataId != undefined ||
                             descItems[index].item.undefined);
                     return isDraggable;
