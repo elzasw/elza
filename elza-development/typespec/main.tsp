@@ -2750,6 +2750,15 @@ namespace ElzaAPI.AccessPoint {
         @Http.statusCode statusCode: 200;
         @header contentType: "application/json";
         @body data: integer;
+    } | {
+        @Http.statusCode statusCode: 400;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 401;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
     };
 
     /**
