@@ -3,6 +3,8 @@ info:
   title: ELZA API
   version: 1.0.0
 tags:
+  - name: rules
+    description: Pravidla popisu archiválií (typy atributů, datové typy, …)
   - name: accesspoint-internal
     description: Access-point API used by the Elza UI
   - name: publication-internal
@@ -35,8 +37,6 @@ tags:
     description: Digitální archivní objekty
   - name: admin
     description: Administrativní funkce
-  - name: rules
-    description: Pravidla popisu archiválií (typy atributů, datové typy, …)
 servers:
   - url: http://localhost
     description: Výchozí server
@@ -3883,6 +3883,27 @@ paths:
                 $ref: '#/components/schemas/ItemTypeList'
       tags:
         - rules
+  /rules/partTypes:
+    get:
+      operationId: Rules_listPartTypes
+      description: |-
+        Returns all types of parts.
+
+        Public URL: `GET /api/v1/rules/partTypes`.
+
+        Replaces the legacy `GET /api/structure/part-type`.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PartType'
+      tags:
+        - rules
   /search-ap:
     post:
       operationId: Search_entity
@@ -6692,6 +6713,18 @@ components:
           type: string
           description: Kód instituce
       description: VO pro instituce
+    PartType:
+      type: object
+      required:
+        - childPartId
+        - repeatable
+      properties:
+        childPartId:
+          type: integer
+        repeatable:
+          type: boolean
+      allOf:
+        - $ref: '#/components/schemas/BaseCode'
     PartValidationIssues:
       type: object
       required:

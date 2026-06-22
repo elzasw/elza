@@ -2,7 +2,7 @@
  * Akce pro seznam partTypes.
  */
 
-import {WebApi} from 'actions/index.jsx';
+import {Api} from 'api/api';
 import * as types from "../constants/ActionTypes";
 
 
@@ -26,7 +26,7 @@ export function refPartTypesFetchIfNeeded() {
 export function refPartTypesFetch() {
     return dispatch => {
         dispatch(refPartTypesRequest());
-        return WebApi.findPartTypes().then(json => dispatch(refPartTypesReceive(json)));
+        return Api.rules.rulesListPartTypes().then(({data}) => dispatch(refPartTypesReceive(data)));
     };
 }
 

@@ -33,7 +33,6 @@ import cz.tacr.elza.controller.vo.ApScopeWithConnectedVO;
 import cz.tacr.elza.controller.vo.ApTypeVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
 import cz.tacr.elza.controller.vo.FileType;
-import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.ap.item.ApItemAccessPointRefVO;
 import cz.tacr.elza.controller.vo.ap.item.ApItemStringVO;
@@ -50,6 +49,7 @@ import cz.tacr.elza.test.controller.vo.CreatedPart;
 import cz.tacr.elza.test.controller.vo.DeleteAccessPointDetail;
 import cz.tacr.elza.test.controller.vo.Fund;
 import cz.tacr.elza.test.controller.vo.NodeBase;
+import cz.tacr.elza.test.controller.vo.PartType;
 import io.restassured.response.Response;
 
 /**
@@ -71,9 +71,9 @@ public class ApControllerTest extends AbstractControllerTest {
     public static final String BRIEF_DESC = "BRIEF_DESC";
     public static final String REL_ENTITY = "REL_ENTITY";
     public static final String RT_BROTHER = "RT_BROTHER";
-    private RulPartTypeVO ptName;
-    private RulPartTypeVO ptRel;
-    private RulPartTypeVO ptBody;
+    private PartType ptName;
+    private PartType ptRel;
+    private PartType ptBody;
 
     @BeforeAll
     public void initOnce() throws Exception {
@@ -99,7 +99,7 @@ public class ApControllerTest extends AbstractControllerTest {
     }
 
     private void preparePartType() {
-        Map<String, RulPartTypeVO> partTypes = findPartTypesMap();
+        Map<String, PartType> partTypes = findPartTypesMap();
 
         ptName = partTypes.get(PT_NAME);
         assertNotNull(ptName);
@@ -693,7 +693,7 @@ public class ApControllerTest extends AbstractControllerTest {
         return null;
     }
 
-    private ApPartVO getFirstPart(List<ApPartVO> parts, RulPartTypeVO partType) {
+    private ApPartVO getFirstPart(List<ApPartVO> parts, PartType partType) {
         for (ApPartVO p : parts) {
             if (p.getTypeId().equals(partType.getId())) {
                 return p;

@@ -25,7 +25,6 @@ import { ApPartFormVO } from '../api/ApPartFormVO';
 import { ApTypeVO } from '../api/ApTypeVO';
 import { RulDataTypeVO } from '../api/RulDataTypeVO';
 import { RulDescItemTypeExtVO } from '../api/RulDescItemTypeExtVO';
-import { RulPartTypeVO } from '../api/RulPartTypeVO';
 import { FilteredResultVO } from '../api/FilteredResultVO';
 import { ApSearchType } from '../typings/globals';
 import * as UrlBuilder from '../utils/UrlBuilder';
@@ -1029,10 +1028,6 @@ export class WebApiCls {
      */
     getApTypes(): Promise<ApTypeVO[]> {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/recordTypes');
-    }
-
-    findPartTypes(): Promise<RulPartTypeVO[]> {
-        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/part-type');
     }
 
     // End registry
