@@ -7,6 +7,7 @@ import {
     DialogSurface,
     DialogTitle,
     Spinner,
+    Tooltip,
     makeStyles,
     tokens,
 } from '@fluentui/react-components';
@@ -51,6 +52,15 @@ const useStyles = makeStyles({
     },
     line1: {
         fontWeight: tokens.fontWeightSemibold,
+        alignSelf: 'flex-start',
+    },
+    revisionIdTooltip: {
+        maxWidth: 'none',
+        whiteSpace: 'nowrap',
+    },
+    revisionIdValue: {
+        userSelect: 'all',
+        cursor: 'pointer',
     },
     line2: {
         fontSize: tokens.fontSizeBase200,
@@ -60,7 +70,8 @@ const useStyles = makeStyles({
 
 const messages = defineMessages({
     title:      { id: 'ap.binding.history.title',      defaultMessage: 'Historie revizí v externím systému' },
-    revision:   { id: 'ap.binding.history.revision',   defaultMessage: 'Revize {id}, {date}, odeslal: {sender}' },
+    revision:   { id: 'ap.binding.history.revision',   defaultMessage: '{date}, odeslal: {sender}' },
+    revisionId: { id: 'ap.binding.history.revisionId', defaultMessage: 'ID revize: <value>{id}</value>' },
     approval:   { id: 'ap.binding.history.approval',   defaultMessage: 'Schválil: {names}' },
     author:     { id: 'ap.binding.history.author',     defaultMessage: 'Autor: {names}' },
     incomplete: { id: 'ap.binding.history.incomplete', defaultMessage: 'Historie je neúplná – pro úplnou historii nahlédněte do zdrojového systému.' },
@@ -103,13 +114,27 @@ export function BindingHistoryDialog({ bindingId, open, onClose, testHistory }: 
 
         return (
             <div key={rev.bindingStateId} className={classes.revision}>
-                <div className={classes.line1}>
-                    {formatMessage(messages.revision, {
-                        id: rev.extRevision ?? '—',
-                        date: formatDateTime(rev.extCreatedAt ?? rev.createChangeAt),
-                        sender: rev.sender ?? formatMessage(messages.unknown),
-                    })}
-                </div>
+                <Tooltip
+                    relationship="label"
+                    appearance="inverted"
+                    withArrow
+                    positioning="below-start"
+                    showDelay={500}
+                    content={{
+                        className: classes.revisionIdTooltip,
+                        children: formatMessage(messages.revisionId, {
+                            id: rev.extRevision ?? '—',
+                            value: (chunks) => <span className={classes.revisionIdValue}>{chunks}</span>,
+                        }),
+                    }}
+                >
+                    <div className={classes.line1}>
+                        {formatMessage(messages.revision, {
+                            date: formatDateTime(rev.extCreatedAt ?? rev.createChangeAt),
+                            sender: rev.sender ?? formatMessage(messages.unknown),
+                        })}
+                    </div>
+                </Tooltip>
                 {approvals.length > 0 && (
                     <div className={classes.line2}>
                         {formatMessage(messages.approval, { names: approvalNames })}
