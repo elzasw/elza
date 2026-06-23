@@ -4,12 +4,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
@@ -27,8 +34,10 @@ import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
+import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.exception.codes.ErrorCode;
 import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.StructObjService;
@@ -227,15 +236,7 @@ public class WSHelper {
     }
 
     static public CoreServiceException prepareException(String msg, Exception e) {
-
-        String detail;
-        if (e != null) {
-            detail = e.getClass().getSimpleName() + ": " + e.getMessage();
-        } else {
-            detail = null;
-        }
-
-        return prepareException(msg, detail, e);
+        return prepareException(msg, detailOf(e), e);
     }
 
     /**
@@ -263,8 +264,171 @@ public class WSHelper {
         return ed;
     }
 
+    /**
+     * Build a human-readable fault detail describing the failure.
+     *
+     * CXF/Spring wrappers often carry a null or uninformative message, so the deepest
+     * cause is appended when it differs from the top exception. If any exception in the
+     * cause chain is an Elza {@link AbstractException}, its stable {@link ErrorCode} is
+     * prepended so clients can branch on the code instead of parsing the message text.
+     */
     static private String detailOf(Exception e) {
-        return e != null ? e.getClass().getSimpleName() + ": " + e.getMessage() : null;
+        if (e == null) {
+            return null;
+        }
+
+        Throwable root = e;
+        while (root.getCause() != null && root.getCause() != root) {
+            root = root.getCause();
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        String errorCode = findErrorCode(e);
+        if (errorCode != null) {
+            sb.append(errorCode).append(": ");
+        }
+
+        sb.append(e.getClass().getSimpleName());
+        if (e.getMessage() != null) {
+            sb.append(": ").append(e.getMessage());
+        }
+
+        if (root != e) {
+            sb.append(" | cause: ").append(root.getClass().getSimpleName());
+            if (root.getMessage() != null) {
+                sb.append(": ").append(root.getMessage());
+            }
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * Walk the cause chain and return the code of the first Elza {@link AbstractException}
+     * carrying an {@link ErrorCode}, or {@code null} if none is present.
+     */
+    static private String findErrorCode(Throwable t) {
+        while (t != null) {
+            if (t instanceof AbstractException) {
+                ErrorCode code = ((AbstractException) t).getErrorCode();
+                if (code != null) {
+                    return code.getCode();
+                }
+            }
+            if (t.getCause() == t) {
+                break;
+            }
+            t = t.getCause();
+        }
+        return null;
+    }
+
+    /**
+     * After a failure is logged with its full stack trace, the same failure recurring
+     * within this window is logged as a single line without the stack trace. Once the
+     * window elapses, the next occurrence is logged with the full stack again, so a
+     * persistent problem stays visible while a retrying client cannot flood the log.
+     */
+    private static final long FAILURE_DEDUP_WINDOW_MINUTES = 10;
+
+    /**
+     * Upper bound on distinct failure signatures tracked at once, to keep the dedup
+     * state bounded regardless of how many different failures occur.
+     */
+    private static final long MAX_TRACKED_FAILURES = 500;
+
+    private static final Cache<String, FailureOccurrence> RECENT_FAILURES = CacheBuilder.newBuilder()
+            .expireAfterWrite(FAILURE_DEDUP_WINDOW_MINUTES, TimeUnit.MINUTES)
+            .maximumSize(MAX_TRACKED_FAILURES)
+            .build();
+
+    private static final class FailureOccurrence {
+        private final long firstSeenMs;
+        private final AtomicLong count = new AtomicLong();
+
+        FailureOccurrence(long firstSeenMs) {
+            this.firstSeenMs = firstSeenMs;
+        }
+    }
+
+    /**
+     * Log a web service failure at WARN, deduplicating the stack trace of repeating failures.
+     *
+     * @see #logWsFailure(Logger, Level, String, String, Exception)
+     */
+    public static void logWsFailure(Logger logger, String operation, String context, Exception e) {
+        logWsFailure(logger, Level.WARN, operation, context, e);
+    }
+
+    /**
+     * Log a web service failure, deduplicating the stack trace of repeating failures.
+     *
+     * The first occurrence of a given failure (identified by operation and the exception
+     * summary, see {@link #detailOf(Exception)}) is logged at the given level with the full
+     * stack trace. Subsequent identical failures within {@link #FAILURE_DEDUP_WINDOW_MINUTES}
+     * are logged as a single line carrying the occurrence count, without the stack trace.
+     * The full stack trace is logged again on the first occurrence after the window elapses,
+     * so a persistent problem stays visible while a retrying client cannot flood the log.
+     *
+     * @param logger    logger of the calling web service endpoint
+     * @param level     level to log at (e.g. {@link Level#WARN} or {@link Level#ERROR})
+     * @param operation short description of the failed operation (e.g. "Failed to update fund")
+     * @param context   request context identifying the affected entity (e.g. "id: 5, uuid: ..."),
+     *                  may be {@code null} or blank
+     * @param e         the caught exception
+     */
+    public static void logWsFailure(Logger logger, Level level, String operation, String context, Exception e) {
+        String detail = detailOf(e);
+        String signature = operation + '|' + detail;
+        long now = System.currentTimeMillis();
+        String where = (context != null && !context.isBlank()) ? operation + " (" + context + ")" : operation;
+
+        FailureOccurrence occurrence;
+        try {
+            occurrence = RECENT_FAILURES.get(signature, () -> new FailureOccurrence(now));
+        } catch (ExecutionException ignored) {
+            // The loader cannot throw a checked exception; on the off chance the cache
+            // fails, fall back to logging the full stack trace.
+            logAtLevel(logger, level, "{}: {}", where, detail, e);
+            return;
+        }
+
+        long occurrenceCount = occurrence.count.incrementAndGet();
+        if (occurrenceCount == 1) {
+            logAtLevel(logger, level, "{}: {}", where, detail, e);
+        } else {
+            logAtLevel(logger, level, "{}: {} (repeated {}x within {}, stack trace suppressed)",
+                    where, detail, occurrenceCount, formatElapsed(now - occurrence.firstSeenMs));
+        }
+    }
+
+    private static void logAtLevel(Logger logger, Level level, String format, Object... args) {
+        switch (level) {
+        case ERROR:
+            logger.error(format, args);
+            break;
+        case WARN:
+            logger.warn(format, args);
+            break;
+        case INFO:
+            logger.info(format, args);
+            break;
+        case DEBUG:
+            logger.debug(format, args);
+            break;
+        case TRACE:
+            logger.trace(format, args);
+            break;
+        }
+    }
+
+    private static String formatElapsed(long elapsedMs) {
+        long seconds = elapsedMs / 1000;
+        if (seconds < 60) {
+            return seconds + "s";
+        }
+        return (seconds / 60) + "m" + (seconds % 60) + "s";
     }
 
     /**
