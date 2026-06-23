@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,7 +67,8 @@ public class DaoDigitizationServiceImpl implements DaoDigitizationService {
 
             logger.info("Finished operation digitizationRequestFinished");
         } catch (Exception e) {
-            logger.error("Fail operation digitizationRequestFinished", e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "Operation digitizationRequestFinished failed",
+                    "code: " + digitizationRequestResult.getIdentifier(), e);
             throw new CoreServiceException(e.getMessage(), e);
         }
     }
@@ -93,7 +95,8 @@ public class DaoDigitizationServiceImpl implements DaoDigitizationService {
                 logger.warn("Request for code=" + requestRevoked.getIdentifier() + " was not found." );
             }
         } catch (Exception e) {
-            logger.error("Fail operation digitizationRequestRevoked", e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "Operation digitizationRequestRevoked failed",
+                    "code: " + requestRevoked.getIdentifier(), e);
             throw new CoreServiceException(e.getMessage(), e);
         }
     }

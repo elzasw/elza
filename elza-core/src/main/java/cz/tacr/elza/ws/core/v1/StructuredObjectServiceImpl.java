@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,7 +71,8 @@ public class StructuredObjectServiceImpl implements StructuredObjectService {
             ArrStructuredObject structObj = findStructObj(deleteStructuredObj.getId(), deleteStructuredObj.getUuid());
             structObjService.deleteStructObj(structObj.getFundId(), Collections.singletonList(structObj));
         } catch (Exception e) {
-            logger.error("Failed to delete structured object: {}", e.getMessage(), e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "Failed to delete structured object",
+                    "id: " + deleteStructuredObj.getId() + ", uuid: " + deleteStructuredObj.getUuid(), e);
             throw prepareDeleteException("Failed to delete structured object.", deleteStructuredObj, e);
         }
     }
@@ -157,7 +159,8 @@ public class StructuredObjectServiceImpl implements StructuredObjectService {
 
             structObjService.updateStructObj(change, structObj, items);
         } catch (Exception e) {
-            logger.error("Failed to update structured object: {}", e.getMessage(), e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "Failed to update structured object",
+                    "id: " + updateStructuredObject.getId() + ", uuid: " + updateStructuredObject.getUuid(), e);
             throw prepareUpdateException("Failed to update structured object.", updateStructuredObject, e);
         }
 
