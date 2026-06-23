@@ -79,10 +79,10 @@ public class ItemSyncExportProcessor implements ItemSyncProcessor {
 				apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.ERROR, CamException.getApiExceptionInfo(e));
 				return true;
 			} catch (Exception e) {
-				// other exception -> retry later
+				// other exception -> stopping attempts to send this item
 				log.error("Failed to synchronize, queueItemId: {}, accessPointId: {}: {}",
 						queueItem.getExtSyncsQueueItemId(), queueItem.getAccessPointId(), e.getMessage(), e);
-				apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.EXPORT_NEW, e.getMessage());
+				apConnectService.setQueueItemStateTA(queueItem, ExtAsyncQueueState.ERROR, e.getMessage());
 				return false;
 			}
 			log.debug("Queue item was uploaded, id: {}, accessPointId: {}", queueItem.getExtSyncsQueueItemId(), queueItem.getAccessPointId());
