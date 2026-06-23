@@ -78,6 +78,7 @@ export function TextareaAutosize({ value, ...otherProps }: Props) {
           minWidth: "50px",
           maxWidth: "100%",
           flex: 1,
+          fontSize: "1em",
         },
         ref: fieldRef,
       }}

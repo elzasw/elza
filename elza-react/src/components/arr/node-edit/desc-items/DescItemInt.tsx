@@ -103,6 +103,7 @@ export function DescItemInt({
         style={{
           flex: 1,
           minWidth: "60px",
+          fontSize: "1em",
           textDecoration: item.inhibited ? "line-through" : undefined,
         }}
         onChange={handleInputChange}
@@ -114,7 +115,7 @@ export function DescItemInt({
         isDirty={isDirty}
         onResolve={resolveConflict}
       >
-        {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} />}
+        {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} style={{ fontSize: "1em" }} />}
       </ConflictValue>
       {isDirty && <EditStateDisplay />}
     </div>

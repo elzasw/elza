@@ -109,6 +109,7 @@ export function DescItemText({
         resize="vertical"
         style={{
           textDecoration: item.inhibited ? "line-through" : undefined,
+          fontSize: "1em",
         }}
       />
       <ConflictValue
