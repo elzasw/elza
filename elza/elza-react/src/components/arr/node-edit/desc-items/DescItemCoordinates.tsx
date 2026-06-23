@@ -186,7 +186,11 @@ export function DescItemCoordinates({
         size={compact ? "small" : "medium"}
         ref={inputRef}
         disabled={isDisabled || (value || "").length > COORDINATE_CROP_LENGTH}
-        style={{ flex: 1, minWidth: "60px" }}
+        style={{
+          flex: 1,
+          minWidth: "60px",
+          fontSize: "1em",
+        }}
         value={item.undefined
           ? formatMessage(commonMessages.undefined)
           : (value || "").substring(0, COORDINATE_CROP_LENGTH - 1)}
@@ -273,6 +277,7 @@ export function DescItemCoordinates({
           <Textarea
             size={compact ? "small" : "medium"}
             className={styles.conflictTextarea}
+            style={{ fontSize: "1em" }}
             value={conflictValue}
             readOnly={true}
           />

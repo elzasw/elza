@@ -132,6 +132,7 @@ export function DescItemFileRef({
         ref: fieldRef,
         style: {
           minWidth: "30px",
+          fontSize: "1em",
           textDecoration: item.inhibited ? "line-through" : undefined,
           flex: 1,
           flexBasis: `${(query || "").length + 3}ch`,

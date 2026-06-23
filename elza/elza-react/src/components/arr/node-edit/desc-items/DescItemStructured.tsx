@@ -228,6 +228,7 @@ export function DescItemStructured({
             input={{
               style: {
                 minWidth: "30px",
+                fontSize: "1em",
                 textDecoration: item.inhibited ? "line-through" : undefined,
                 flex: 1,
                 flexBasis: `${(query || "").length + 3}ch`,
@@ -276,7 +277,7 @@ export function DescItemStructured({
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              fontSize: compact ? tokens.fontSizeBase200 : tokens.fontSizeBase300,
+              fontSize: "1em",
             }}
           >
               <div className={styles.structureQueryHidden}>{query}</div>

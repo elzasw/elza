@@ -27,10 +27,12 @@ const useStyles = makeStyles({
         height: '10px',
         margin: '2px 0',
         opacity: 1,
+        // background: 'rgba(0, 200, 0, 0.3)', // TEMP debug
     },
     dropTargetHovered: {
         height: '32px',
         opacity: 1,
+        // background: 'rgba(0, 150, 0, 0.6)', // TEMP debug
         transition: 'height 500ms cubic-bezier(.19,1,.22,1) 200ms, opacity 500ms cubic-bezier(.19,1,.22,1), margin 500ms cubic-bezier(.19,1,.22,1)',
     },
     dropTargetArea: {
@@ -39,7 +41,7 @@ const useStyles = makeStyles({
         width: 'calc(100% + 18px)',
         marginLeft: '-18px',
         zIndex: 1000,
-        // background: 'blue',
+        // background: 'rgba(0, 0, 255, 0.2)', // TEMP debug
         top: '-5px',
         // transform: 'translateY(-50%)',
         height: '20px',
@@ -47,6 +49,7 @@ const useStyles = makeStyles({
     },
     dropTargetAreaHovered: {
         height: '42px',
+        // background: 'rgba(0, 0, 255, 0.4)', // TEMP debug
         transition: 'height 500ms cubic-bezier(.19,1,.22,1) 200ms, opacity 500ms cubic-bezier(.19,1,.22,1)',
     },
     draggerContainer: {
@@ -56,7 +59,7 @@ const useStyles = makeStyles({
     },
     draggerArea: {
         position: 'absolute',
-        // background: 'purple',
+        // background: 'rgba(128, 0, 128, 0.3)', // TEMP debug
         width: '10px',
         height: '100%',
         right: '0px',
@@ -66,7 +69,7 @@ const useStyles = makeStyles({
     },
     draggerAreaHovered: {
         width: '25px',
-
+        // background: 'rgba(128, 0, 128, 0.6)', // TEMP debug
     },
     dragger: {
         border: 'var(--primary-border)',
@@ -90,6 +93,7 @@ const useStyles = makeStyles({
     draggerHovered: {
         left: '-18px',
         opacity: 1,
+        // background: 'rgba(255, 165, 0, 0.8)', // TEMP debug
     }
 })
 
@@ -161,8 +165,13 @@ function Dragger({ index, isVisible, isActive, compact, onDragIndexChange }: Dra
     }
 
     function handleDragStart(e: React.DragEvent<HTMLDivElement>, index: number) {
-        e.dataTransfer.setDragImage(e.currentTarget.parentElement.parentElement, 0, 0);
-        onDragIndexChange(index);
+        const dragImage = e.currentTarget.parentElement.parentElement;
+        // Defer out of the dragstart tick: a synchronous re-render here can replace
+        // the source node mid-gesture, which cancels the drag.
+        e.dataTransfer.setDragImage(dragImage, 0, 0);
+        setTimeout(() => {
+            onDragIndexChange(index);
+        }, 0);
     }
 
     function handleMouseDown(index: number) {
@@ -198,9 +207,9 @@ function Dragger({ index, isVisible, isActive, compact, onDragIndexChange }: Dra
             draggable={true}
         />
         <div
-            onMouseDown={() => handleMouseDown(index)}
-            onDragStart={(e) => handleDragStart(e, index)}
-            onDragEnd={handleDragEnd}
+            //onMouseDown={() => handleMouseDown(index)}
+            //onDragStart={(e) => handleDragStart(e, index)}
+            //onDragEnd={handleDragEnd}
             className={mergeClasses(
                 styles.dragger,
                 isHovered && styles.draggerHovered,

@@ -46,6 +46,10 @@ export const useStyles = makeStyles({
     position: "absolute",
     right: "1px",
   },
+  noResults: {
+    padding: "8px 12px",
+    color: "var(--shade-6)",
+  },
   comboboxNoMinWidth: {
     minWidth: "unset",
     flex: 1,
