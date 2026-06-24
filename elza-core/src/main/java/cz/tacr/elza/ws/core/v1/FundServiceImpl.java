@@ -38,7 +38,10 @@ public class FundServiceImpl implements FundService {
             logger.debug("Finished createFund, fundId: {}", result.getId());
             return result;
         } catch (Exception e) {
-            logger.debug("Failed to create fund", e);
+            WSHelper.logWsFailure(logger, "Failed to create fund",
+                    String.format("institution: %s, fundNumber: %s, name: %s",
+                            fundInfo.getInstitutionIdentifier(), fundInfo.getFundNumber(), fundInfo.getFundName()),
+                    e);
             throw WSHelper.prepareCreateFundException("Failed to create fund", e);
         }
     }
@@ -52,7 +55,9 @@ public class FundServiceImpl implements FundService {
             fundServiceWsImpl.deleteFund(fundInfo);
             logger.debug("Finished deleteFund");
         } catch (Exception e) {
-            logger.debug("Failed to delete fund", e);
+            WSHelper.logWsFailure(logger, "Failed to delete fund",
+                    String.format("id: %s, uuid: %s", fundInfo.getId(), fundInfo.getUuid()),
+                    e);
             throw WSHelper.prepareDeleteFundException("Failed to delete fund", e);
         }
     }
@@ -69,7 +74,11 @@ public class FundServiceImpl implements FundService {
             fundServiceWsImpl.updateFund(fundUpdate);
             logger.debug("Finished updateFund");
         } catch (Exception e) {
-            logger.debug("Failed to update fund", e);
+            WSHelper.logWsFailure(logger, "Failed to update fund",
+                    String.format("id: %s, uuid: %s, institution: %s, fundNumber: %s",
+                            fundUpdate.getId(), fundUpdate.getUuid(),
+                            fundUpdate.getInstitutionIdentifier(), fundUpdate.getFundNumber()),
+                    e);
             throw WSHelper.prepareUpdateFundException("Failed to update fund", e);
         }
 

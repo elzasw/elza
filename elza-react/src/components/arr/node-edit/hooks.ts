@@ -365,10 +365,37 @@ export function useNodeFormData(
       setArrPerm(data.formData.arrPerm);
       setNodeData(data.node);
       setAddedFormItems((prevAddedFormItems) => {
-        return prevAddedFormItems.filter(({ localId }) => {
+        const survivingItems = prevAddedFormItems.filter(({ localId }) => {
           return !markedForClean.find(
             ({ localId: _localId }) => localId === _localId,
           );
+        });
+
+        // Recompute the position of each locally added empty item so it sits after
+        // the items currently known to the server (and any forced items) of the same
+        // type. Their stored position can otherwise go stale when background changes
+        // (copy from sibling, another user's edits) introduce new server items.
+        const otherItems = [
+          ...(data.formData.descItems || []),
+          ..._forcedDescItems,
+        ];
+        const maxPositionByType = new Map<number, number>();
+        for (const otherItem of otherItems) {
+          const currentMax = maxPositionByType.get(otherItem.itemTypeId) ?? 0;
+          maxPositionByType.set(
+            otherItem.itemTypeId,
+            Math.max(currentMax, otherItem.position),
+          );
+        }
+
+        return survivingItems.map((formItem) => {
+          const nextPosition =
+            (maxPositionByType.get(formItem.item.itemTypeId) ?? 0) + 1;
+          maxPositionByType.set(formItem.item.itemTypeId, nextPosition);
+          return {
+            ...formItem,
+            item: { ...formItem.item, position: nextPosition },
+          };
         });
       });
     },
