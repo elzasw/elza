@@ -496,6 +496,9 @@ public class ArrangementService {
      * @param fund
      * @param ruleSet
      * @param scopes
+     * @param userIds
+     * @param groupIds
+     * @param adminPermissionMode strategy for synchronizing the supplied admin users/groups
      * @return Upravená archivní pomůcka
      */
     @Transactional
@@ -504,7 +507,8 @@ public class ArrangementService {
 			                          final RulRuleSet ruleSet,
 			                          final List<ApScope> scopes,
 			                          final List<Integer> userIds,
-			                          final List<Integer> groupIds) {
+			                          final List<Integer> groupIds,
+			                          final AdminPermissionUpdateMode adminPermissionMode) {
         Validate.notNull(fund, "AS musí být vyplněn");
         Validate.notNull(ruleSet, "Pravidla musí být vyplněna");
 
@@ -544,11 +548,11 @@ public class ArrangementService {
         }
 
         if (userIds != null) {
-            syncUsers(originalFund, userIds);
+            syncUsers(originalFund, userIds, adminPermissionMode);
         }
 
         if (groupIds != null) {
-            syncGroups(originalFund, groupIds);
+            syncGroups(originalFund, groupIds, adminPermissionMode);
         }
 
         eventNotificationService
@@ -603,8 +607,10 @@ public class ArrangementService {
      *
      * @param fund
      * @param userIds
+     * @param adminPermissionMode whether to remove existing users not in the supplied list
      */
-    private void syncUsers(final ArrFund fund, final Collection<Integer> userIds) {
+    private void syncUsers(final ArrFund fund, final Collection<Integer> userIds,
+                           final AdminPermissionUpdateMode adminPermissionMode) {
         Validate.notNull(fund, "AS musí být vyplněn");
 
         List<UsrUser> users = userRepository.findByFund(fund);
@@ -620,7 +626,9 @@ public class ArrangementService {
             }
         }
 
-        usersById.values().forEach(u -> userService.deleteUserFundPermissions(u, fund.getFundId()));
+        if (adminPermissionMode == AdminPermissionUpdateMode.FULL_SYNC) {
+            usersById.values().forEach(u -> userService.deleteUserFundPermissions(u, fund.getFundId()));
+        }
     }
 
     /**
@@ -629,8 +637,10 @@ public class ArrangementService {
      *
      * @param fund
      * @param groupIds
+     * @param adminPermissionMode whether to remove existing groups not in the supplied list
      */
-    private void syncGroups(final ArrFund fund, final Collection<Integer> groupIds) {
+    private void syncGroups(final ArrFund fund, final Collection<Integer> groupIds,
+                            final AdminPermissionUpdateMode adminPermissionMode) {
         Validate.notNull(fund, "AS musí být vyplněn");
 
         List<UsrGroup> groups = groupRepository.findByFund(fund);
@@ -646,7 +656,9 @@ public class ArrangementService {
             }
         }
 
-        groupsById.values().forEach(g -> userService.deleteGroupFundPermissions(g, fund.getFundId()));
+        if (adminPermissionMode == AdminPermissionUpdateMode.FULL_SYNC) {
+            groupsById.values().forEach(g -> userService.deleteGroupFundPermissions(g, fund.getFundId()));
+        }
     }
 
     /**

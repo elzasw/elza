@@ -8,6 +8,7 @@ package cz.tacr.elza.ws.core.v1;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +42,7 @@ public class DaoCoreServiceImpl implements DaoService {
 
             logger.info("Finished operation daoImport");
         } catch (Exception e) {
-            logger.error("Fail operation daoImport", e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "DAO import failed", null, e);
             throw WSHelper.prepareException("DAO import failed", e);
         }
     }
@@ -57,7 +58,7 @@ public class DaoCoreServiceImpl implements DaoService {
             logger.info("Ending operation addPackage, result: {}", result);
             return result;
         } catch (Exception e) {
-            logger.error("Fail operation addPackage", e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "addPackage failed", null, e);
             throw WSHelper.prepareException("addPackage failed", e);
         }
     }
@@ -75,7 +76,8 @@ public class DaoCoreServiceImpl implements DaoService {
 
             logger.info("Ending operation removePackage");
         } catch (Exception e) {
-            logger.error("Fail operation removePackage", e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "removePackage failed",
+                    "packageIdentifier: " + packageIdentifier, e);
             throw WSHelper.prepareException("removePackage failed", e);
         }
     }
@@ -92,7 +94,7 @@ public class DaoCoreServiceImpl implements DaoService {
 
             logger.info("Ending operation link");
         } catch (Exception e) {
-            logger.error("Fail operation link", e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "link failed", null, e);
             throw WSHelper.prepareException("link failed", e);
         }
     }
@@ -109,7 +111,8 @@ public class DaoCoreServiceImpl implements DaoService {
 
             logger.info("Ending operation removeDao");
         } catch (Exception e) {
-            logger.error("Fail operation removeDao", e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "removeDao failed",
+                    "daoIdentifier: " + daoIdentifier, e);
             throw WSHelper.prepareException("RemoveDao failed", e);
         }
     }
@@ -126,7 +129,8 @@ public class DaoCoreServiceImpl implements DaoService {
             logger.info("Ending operation getDid");
             return result;
         } catch (Exception e) {
-            logger.error("Fail operation getDid", e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "getDid failed",
+                    "didIdentifier: " + didIdentifier, e);
             throw WSHelper.prepareException("getDid failed", e);
         }
     }

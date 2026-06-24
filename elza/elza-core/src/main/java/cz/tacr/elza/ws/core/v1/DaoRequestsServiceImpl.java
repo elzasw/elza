@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,7 +78,8 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
 
             logger.info("Ending operation destructionRequestRevoked");
         } catch (Exception e) {
-            logger.error("Fail operation destructionRequestRevoked", e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "Operation destructionRequestRevoked failed",
+                    "code: " + requestRevoked.getIdentifier(), e);
             throw new CoreServiceException(e.getMessage(), e);
         }
     }
@@ -102,7 +104,8 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
 
             logger.info("Ending operation transferRequestFinished");
         } catch (Exception e) {
-            logger.error("Fail operation transferRequestFinished", e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "Operation transferRequestFinished failed",
+                    "requestIdentifier: " + requestIdentifier, e);
             throw new CoreServiceException(e.getMessage(), e);
         }
     }
@@ -131,7 +134,8 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
 
             logger.info("Ending operation transferRequestRevoked");
         } catch (Exception e) {
-            logger.error("Fail operation transferRequestRevoked", e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "Operation transferRequestRevoked failed",
+                    "code: " + requestRevoked.getIdentifier(), e);
             throw new CoreServiceException(e.getMessage(), e);
         }
     }
@@ -157,7 +161,8 @@ public class DaoRequestsServiceImpl implements DaoRequestsService {
 
             logger.info("Ending operation destructionRequestFinished");
         } catch (Exception e) {
-            logger.error("Fail operation destructionRequestFinished", e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "Operation destructionRequestFinished failed",
+                    "requestIdentifier: " + requestIdentifier, e);
             throw new CoreServiceException(e.getMessage(), e);
         }
     }

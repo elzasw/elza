@@ -54,6 +54,15 @@ elza:
 #      - code: asd
 #        syncDelay: 100
 
+  webservice:
+    fonds:
+      # Chování při aktualizaci oprávnění správců fondu (uživatelé/skupiny) přes webovou službu.
+      # FULL_SYNC (výchozí): zaslaní správci se přidají a stávající správci, kteří nejsou
+      #   v požadavku, se odeberou (výsledek přesně odpovídá zaslanému seznamu).
+      # ADD_ONLY: zaslaní správci se pouze přidají, stávající oprávnění zůstanou zachována,
+      #   takže oprávnění přidaná administrátorem nejsou aktualizací přes webovou službu odebrána.
+      adminPermissionMode: FULL_SYNC
+
 #  hibernate:
 #    index:
 #      enabled: true

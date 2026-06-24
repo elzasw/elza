@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,8 +65,9 @@ public class UserServiceImpl implements UserService {
             }
             user = userService.changeActive(user, nextState);
         } catch (Exception e) {
-            logger.error("Failed to remove user: {}", e.toString(), e);
-            throw WSHelper.prepareException("Failed to remove user", e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "Failed to set user state",
+                    "username: " + setUserState.getUsername(), e);
+            throw WSHelper.prepareException("Failed to set user state", e);
         }
     }
 
@@ -91,7 +93,8 @@ public class UserServiceImpl implements UserService {
                 addPermissions(user, createUser.getPermList().getPerm());
             }
         } catch (Exception e) {
-            logger.error("Failed to create user: {}", e.toString(), e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "Failed to create user",
+                    "username: " + createUser.getUsername(), e);
             throw WSHelper.prepareException("Failed to create user", e);
         }
 
@@ -193,7 +196,8 @@ public class UserServiceImpl implements UserService {
 
             userService.addUserPermission(user, addPermissionsList, true);
         } catch (Exception e) {
-            logger.error("Failed to add permissions: {}", e.toString(), e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "Failed to add permissions",
+                    "username: " + addPermissions.getUsername(), e);
             throw WSHelper.prepareException("Failed to add permissions", e);
         }
 
@@ -235,7 +239,8 @@ public class UserServiceImpl implements UserService {
 
             userService.deleteUserPermission(user, removePermList);
         } catch (Exception e) {
-            logger.error("Failed to remove permissions: {}", e.toString(), e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "Failed to remove permissions",
+                    "username: " + removePermissions.getUsername(), e);
             throw WSHelper.prepareException("Failed to remove permissions", e);
         }
 
