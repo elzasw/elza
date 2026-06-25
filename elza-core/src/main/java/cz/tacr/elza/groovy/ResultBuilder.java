@@ -78,12 +78,17 @@ public class ResultBuilder {
 		if (item == null) {
 			return this;
 		}
-		
-		String itemString = item.getValue();
+		return appendWithLimit(item.getValue(), lengthLimit);
+	}
+
+	public ResultBuilder appendWithLimit(String itemString, int lengthLimit) {
+		if (itemString == null) {
+			return this;
+		}
 	    if (itemString.length() > (lengthLimit+3)) {
 	    	itemString = itemString.substring(0, lengthLimit) + "...";
 	    }
-		return append(itemString);		
+		return append(itemString);
 	}
 
 	public ResultBuilder appendItemWithSpecLabel(final String itemType, final String itemSpec) {

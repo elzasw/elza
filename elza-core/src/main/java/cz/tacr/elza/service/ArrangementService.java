@@ -454,7 +454,16 @@ public class ArrangementService {
     	ParInstitution institution = fund.getInstitution();
     	List<ArrDescItem> items = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(List.of(nodeId));
 
-    	return groovyService.getNodePlainText(fundVersion, institution, items);
+    	// parent levels ordered from the nearest parent up to the root
+    	List<Integer> parentNodeIds = levelTreeCacheService.getParentNodes(fundVersion, nodeId);
+    	Map<Integer, List<ArrDescItem>> parentItemsByNode = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(parentNodeIds)
+    			.stream()
+    			.collect(Collectors.groupingBy(ArrDescItem::getNodeId));
+    	List<List<ArrDescItem>> parentItemsByLevel = parentNodeIds.stream()
+    			.map(id -> parentItemsByNode.getOrDefault(id, Collections.emptyList()))
+    			.toList();
+
+    	return groovyService.getNodePlainText(fundVersion, institution, items, parentItemsByLevel);
 	}
 
     /**
