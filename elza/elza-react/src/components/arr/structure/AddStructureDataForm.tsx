@@ -7,6 +7,7 @@ import { FORM_ERROR } from 'final-form';
 import FormInputField from '../../shared/form/FormInputField';
 import { useAppThunkDispatch } from 'utils/hooks';
 import { useAppSelector } from 'utils/hooks/useAppSelector';
+import { Api } from 'api/api';
 import { WebApi } from 'actions';
 import { DataType } from 'elza-api';
 import { modalDialogHide } from 'actions/global/modalDialog';
@@ -52,7 +53,7 @@ function AddStructureDataForm({
     useEffect(() => {
         let cancelled = false;
         (async () => {
-            const data = await WebApi.createStructureData(fundVersionId, structureTypeCode, initialQuery);
+            const { data } = await Api.structure.sdoCreateObject(fundId, structureTypeCode, initialQuery);
             if (!cancelled) {
                 structureDataRef.current = data;
                 setStructureData(data);

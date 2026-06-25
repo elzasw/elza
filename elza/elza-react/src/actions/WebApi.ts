@@ -1985,6 +1985,10 @@ export class WebApiCls {
         return AjaxUtils.ajaxDelete(WebApiCls.registryUrl + '/external/syncs/' + itemId, null);
     }
 
+    /**
+     * Práce se strukturálními typy (staré API)
+     */
+
     findFundStructureExtension(fundVersionId, structureTypeCode) {
         return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/extension/' + fundVersionId + '/' + structureTypeCode);
     }
@@ -1999,10 +2003,6 @@ export class WebApiCls {
 
     findRulStructureTypes(fundVersionId) {
         return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/type', { fundVersionId });
-    }
-
-    getStructureData(fundVersionId, structureDataId) {
-        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureDataId);
     }
 
     findStructureData(
@@ -2024,17 +2024,6 @@ export class WebApiCls {
         );
     }
 
-    createStructureData(fundVersionId, structureTypeCode, value = null) {
-        // Kvůli JSON stringify musíme poslat pomocí RAW aby se nevytvořili '"' v body
-        return AjaxUtils.ajaxCallRaw(
-            WebApiCls.structureUrl + '/data/' + fundVersionId,
-            { value },
-            'POST',
-            structureTypeCode,
-            'application/json',
-        );
-    }
-
     duplicateStructureDataBatch(fundVersionId, structureDataId, data) {
         return AjaxUtils.ajaxPost(
             WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureDataId + '/batch',
@@ -2051,10 +2040,6 @@ export class WebApiCls {
 
     deleteStructureData(fundVersionId, structureDataId) {
         return AjaxUtils.ajaxDelete(WebApiCls.structureUrl + '/data/' + fundVersionId + '/' + structureDataId);
-    }
-
-    getFormStructureItems(fundVersionId, structureDataId) {
-        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/item/form/' + fundVersionId + '/' + structureDataId);
     }
 
     createStructureItem(fundVersionId, structureDataId, itemTypeId, data) {
