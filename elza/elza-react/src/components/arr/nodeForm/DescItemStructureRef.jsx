@@ -1,4 +1,3 @@
-import { Api } from 'api/api';
 import {WebApi} from 'actions';
 import {modalDialogShow} from 'actions/global/modalDialog';
 import classNames from 'classnames';
@@ -42,8 +41,8 @@ class DescItemStructureRef extends React.Component {
         } else if (props.cal) {
             // skip init - calc
         } else {
-            const {structureTypeCode, fundId} = props;
-            Api.structure.sdoCreateObject(fundId, structureTypeCode, this.findValue()).then(({ data: structureData }) => {
+            const {structureTypeCode, versionId} = props;
+            WebApi.createStructureData(versionId, structureTypeCode, this.findValue()).then(structureData => {
                 this.props.onChange({id: structureData.id});
                 props.dispatch(structureNodeFormSelectId(props.versionId, structureData.id));
             });

@@ -1,5 +1,5 @@
 import { Spinner } from '@fluentui/react-components';
-import { Api } from 'api/api';
+import { WebApi } from 'actions';
 import { StructureEdit } from 'components/arr/structure/StructureEdit';
 import { StructureView } from 'components/arr/structure/StructureView';
 import { DataStructureRef } from 'elza-api';
@@ -23,7 +23,7 @@ export function AnonymousStructure({ structureType, data, onCreate, readOnly }: 
       return;
     }
     (async function () {
-      const { data: structureData } = await Api.structure.sdoCreateObject(fundId, structureType.code);
+      const structureData = await WebApi.createStructureData(fundVersionId, structureType.code);
       setStructureObjectId(structureData.id);
       await onCreate(structureData.id);
     })();
