@@ -1,7 +1,7 @@
-import { Button } from "@fluentui/react-components";
+import { Button, useFocusFinders } from "@fluentui/react-components";
 import { AddRegular } from "@fluentui/react-icons";
 import { FormItemType } from "elza-api";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef } from "react";
 import { DescItemTypeRef } from "typings/store";
 import { useUserSettings } from "contexts/user";
 import { useStyles } from "./styles";
@@ -29,10 +29,12 @@ interface Props {
     isFirstNode: boolean;
     handleCopyFromPrev: (descItemTypeId: number) => void;
     handleCopyToggle: (descItemTypeId: number) => void;
-    addEmptyDescItem: (typeId: number, specId?: number, position?: number) => void;
+    addEmptyDescItem: (typeId: number, specId?: number, position?: number) => string | void;
     deleteDescItem: (item: any, localId: string) => Promise<void>;
     createDescItem: (item: any, localId: string) => Promise<any>;
     updateDescItem: (item: any, localId?: string) => void | Promise<void>;
+    autoFocusLocalId?: string;
+    onAutoFocusTaken?: () => void;
     hideCopyButtons?: boolean;
     renderExtraActions?: (typeRef: DescItemTypeRef) => ReactNode;
 }
@@ -53,12 +55,34 @@ export function DescItemTypeFields({
     deleteDescItem,
     createDescItem,
     updateDescItem,
+    autoFocusLocalId,
+    onAutoFocusTaken,
     hideCopyButtons = false,
     renderExtraActions,
 }: Props) {
     const { settings } = useUserSettings();
     const compact = settings.compact;
     const styles = useStyles();
+    const { findFirstFocusable } = useFocusFinders();
+
+    // Row containers keyed by localId; populated via ref callbacks so focusing a newly
+    // added field doesn't depend on re-renders.
+    const rowRefs = useRef(new Map<string, HTMLDivElement>());
+
+    // Focus a freshly added field once it has mounted in this instance. The target
+    // localId is owned by NodeEdit so both add paths work (per-type "+" button and the
+    // "add item type" modal, which add to different DescItemTypeFields instances).
+    useEffect(() => {
+        if (!autoFocusLocalId) {
+            return;
+        }
+        const row = rowRefs.current.get(autoFocusLocalId);
+        if (!row) {
+            return;
+        }
+        findFirstFocusable(row)?.focus();
+        onAutoFocusTaken?.();
+    }, [autoFocusLocalId, findFirstFocusable, onAutoFocusTaken]);
 
     function handleChangeOrder(index: number, newIndex: number) {
         const item = descItems[index].item;
@@ -109,7 +133,18 @@ export function DescItemTypeFields({
                 onChangeOrder={handleChangeOrder}
             >
                 {sortedDescItems.map(({ item, localId, forcedDisplayString }) => (
-                    <div key={localId} style={{ container: "desc-item-container" }}>
+                    <div
+                        key={localId}
+                        ref={(node) => {
+                            if (node) {
+                                rowRefs.current.set(localId, node);
+                            } else {
+                                rowRefs.current.delete(localId);
+                            }
+                        }}
+                        style={{ container: "desc-item-container" }}
+                    >
+
                         <div>
                             <DescItemField
                                 typeRef={typeRef}
