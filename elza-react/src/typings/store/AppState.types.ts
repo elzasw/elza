@@ -218,7 +218,7 @@ export interface FundTree {
 }
 
 export interface Fund {
-    activeVersion: unknown;
+    activeVersion: ActiveVersion;
     apScopes: unknown;
     bulkActions: unknown;
     closed: boolean | unknown;
@@ -427,6 +427,7 @@ export interface App {
 export interface ActiveVersion {
     config?: unknown;
     createDate?: string;
+    dateRange?: unknown;
     id: number;
     issues: unknown[];
     lockDate?: string | null;
