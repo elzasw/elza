@@ -11,6 +11,7 @@ import {
     AipsApi,
     ReportApi,
     NodeApi,
+    RulesApi,
     TasksApi,
     StructureApi,
     PublicationInternalApi,
@@ -211,6 +212,7 @@ export const Api: {
     descItems: DescitemsApi;
     aips: AipsApi;
     node: NodeApi;
+    rules: RulesApi;
     report: ReportApi;
     tasks: TasksApi;
     structure: StructureApi;
@@ -227,6 +229,7 @@ export const Api: {
     descItems: new DescitemsApi(undefined, basePath, axios),
     aips: new AipsApi(undefined, basePath, axios),
     node: new NodeApi(undefined, basePath, axios),
+    rules: new RulesApi(undefined, basePath, axios),
     report: new ReportApi(undefined, basePath, axios),
     tasks: new TasksApi(undefined, basePath, axios),
     structure: new StructureApi(undefined, basePath, axios),
