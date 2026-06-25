@@ -130,11 +130,6 @@ export const useStyles = makeStyles({
     marginRight: "4px",
     flexShrink: 0,
   },
-  toolbarColumnIcon: {
-    position: "relative",
-    display: "inline-flex",
-    alignItems: "center",
-  },
   toolbarOverflowButton: {
     flexShrink: 0,
     whiteSpace: "nowrap",
