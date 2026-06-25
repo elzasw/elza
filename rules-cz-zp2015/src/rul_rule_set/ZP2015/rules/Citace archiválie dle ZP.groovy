@@ -57,11 +57,14 @@ String generate(final GroovyGenCtx ctx) {
 
     // add title - při prázdné hodnotě na této úrovni se použije hodnota z nejbližší nadřazené úrovně
     GroovyItem title = ctx.getFirstItemByItemType("ZP2015_TITLE")
-    if (title == null || StringUtils.isEmpty(title.getValue())) {
-        title = ctx.getFirstParentItemByItemType("ZP2015_TITLE")
-    }
-    if (title != null) {
+    if (title != null && StringUtils.isNotEmpty(title.getValue())) {
         rb.appendWithLimit(title.getValue(), 100)
+    } else {
+        // hodnota převzatá z vyšší úrovně se pro odlišení vkládá do hranatých závorek
+        GroovyItem parentTitle = ctx.getFirstParentItemByItemType("ZP2015_TITLE")
+        if (parentTitle != null) {
+            rb.appendWithLimit(parentTitle.getValue(), 100, "[", "]")
+        }
     }
 
     // add date
