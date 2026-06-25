@@ -1,4 +1,4 @@
-import { WebApi } from "actions";
+import { Api } from 'api/api';
 import { AnonymousStructure } from "components/arr/node-edit/desc-items/AnonymousStructure";
 import { useActiveFund } from "components/arr/node-edit/hooks";
 import { DataStructureRef, DataType } from "elza-api";
@@ -35,9 +35,10 @@ export function DescItemStructured({ item, typeRef, nodeId }: DescItemProps) {
   useEffect(() => {
     if (data.structuredObjectId) {
       (async () => {
-        const _structure = await WebApi.getStructureData(
-          fundVersionId,
+        const { data: _structure } = await Api.structure.sdoGetObject(
+          fundId,
           data.structuredObjectId,
+          fundVersionId,
         );
         setStructure(_structure);
       })();

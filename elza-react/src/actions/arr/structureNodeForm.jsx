@@ -1,6 +1,6 @@
+import { Api } from 'api/api';
+import { indexById } from 'stores/app/utils';
 import * as types from 'actions/constants/ActionTypes';
-import {WebApi} from 'actions/index.jsx';
-import objectById from '../../shared/utils/objectById';
 
 export function isStructureNodeForm(action) {
     switch (action.type) {
@@ -65,7 +65,9 @@ export function structureNodeFormFetchIfNeeded(versionId, id) {
 
         if (storeArea.currentDataKey !== id) {
             dispatch(structureNodeFormRequest(versionId, id));
-            WebApi.getStructureData(versionId, id).then(json => {
+            const fundIndex = indexById(getState().arrRegion.funds, versionId, 'versionId');
+            const fundId = getState().arrRegion.funds[fundIndex].id;
+            Api.structure.sdoGetObject(fundId, id, versionId).then(({ data: json }) => {
                 const newStoreArea = _getArea(getState, id);
                 if (newStoreArea === null) {
                     return;
