@@ -327,8 +327,9 @@ export function useNodeFormData(
               ]?.map(({ itemTypeId }) => itemTypeId);
               pendingCallback((typeId, specId) => {
                   if (!existingTypeIds.includes(typeId)) {
-                      addEmptyDescItem(typeId, specId);
+                      return addEmptyDescItem(typeId, specId);
                   }
+                  return '';
               });
           }
       }
@@ -479,11 +480,13 @@ export function useNodeFormData(
 
   const ws = useWebsocket();
 
-  function addDescItem(item: NodeItem) {
-    setAddedFormItems((prev) => [...prev, { localId: getKey(), item }]);
+  function addDescItem(item: NodeItem): string {
+    const localId = getKey();
+    setAddedFormItems((prev) => [...prev, { localId, item }]);
+    return localId;
   }
 
-  function addEmptyDescItem(typeId: number, specId?: number, position: number = 1) {
+  function addEmptyDescItem(typeId: number, specId?: number, position: number = 1): string {
     const typeRef = itemTypeRefs[typeId];
     if (!typeRef) {
       throw `Could not find type ref for id: ${typeId}`;
@@ -495,7 +498,7 @@ export function useNodeFormData(
     if (nodeVersionId == undefined) {
       throw "'NodeVersionId' missing";
     }
-    addDescItem(
+    return addDescItem(
         {
             ...createEmptyDescItem(
                 typeRef.id,

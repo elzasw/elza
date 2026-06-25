@@ -61,12 +61,27 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
     addedFormItems,
     itemTypes,
     nodeData,
-    addEmptyDescItem,
+    addEmptyDescItem: addEmptyDescItemBase,
     deleteDescItem,
     createDescItem,
     updateDescItem,
     parent,
   } = nodeFormData;
+
+  // localId of a freshly added field that should receive focus once it has mounted.
+  // Tracked here (rather than in a single DescItemTypeFields) so both add paths work:
+  // the per-type "+" button and the "add item type" modal, which add to different
+  // DescItemTypeFields instances.
+  const [autoFocusLocalId, setAutoFocusLocalId] = useState<string>();
+
+  function addEmptyDescItem(typeId: number, specId?: number, position?: number) {
+    const localId = addEmptyDescItemBase(typeId, specId, position);
+    // When several types are added at once (the "add item type" modal allows a
+    // multi-select), keep the first one as the focus target so focus lands on the
+    // topmost new field rather than the last.
+    setAutoFocusLocalId((current) => current ?? localId);
+    return localId;
+  }
 
   useEffect(() => {
     if (nodeData?.id) {
@@ -195,6 +210,8 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent
                   deleteDescItem={deleteDescItem}
                   createDescItem={createDescItem}
                   updateDescItem={updateDescItem}
+                  autoFocusLocalId={autoFocusLocalId}
+                  onAutoFocusTaken={() => setAutoFocusLocalId(undefined)}
                 />
               ))}
             </FormItemGroup>
