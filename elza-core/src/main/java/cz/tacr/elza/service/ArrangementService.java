@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -141,6 +142,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermissionView;
@@ -199,6 +201,21 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 public class ArrangementService {
 
     private static final Pattern UUID_PATTERN = Pattern.compile("[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}");
+
+    /**
+     * Typ prvku popisu nesoucí pevné spojení na jinou jednotku popisu.
+     */
+    private static final String ITEM_LINK_TYPE_CODE = "ZP2015_ITEM_LINK";
+
+    /**
+     * Oddělovač mezi citací uzlu a citacemi odkazovaných uzlů.
+     */
+    private static final String LINKED_CITATION_SEPARATOR = " – viz ";
+
+    /**
+     * Oddělovač mezi citacemi více odkazovaných uzlů.
+     */
+    private static final String LINKED_CITATION_DELIMITER = ", ";
 
     final private static Logger logger = LoggerFactory.getLogger(ArrangementService.class);
 
@@ -450,8 +467,24 @@ public class ArrangementService {
      */
     public List<NodePlainTextRepresentation> getNodePlainText(@NotNull Integer fundVersionId, @NotNull Integer nodeId) {
     	ArrFundVersion fundVersion = getFundVersion(fundVersionId);
-    	ArrFund fund = fundVersion.getFund();
-    	ParInstitution institution = fund.getInstitution();
+    	ParInstitution institution = fundVersion.getFund().getInstitution();
+
+    	// uzly již zpracované v aktuálním řetězci pevných spojení (ochrana proti cyklům)
+    	Set<Integer> visitedNodeIds = new HashSet<>();
+    	visitedNodeIds.add(nodeId);
+    	return generateNodePlainText(fundVersion, institution, nodeId, visitedNodeIds);
+	}
+
+    /**
+     * Vygeneruje plain text (citaci) pro uzel. Pokud uzel obsahuje pevné spojení
+     * (prvek {@value #ITEM_LINK_TYPE_CODE} se schématem
+     * {@link DescItemFactory#ELZA_NODE}) na jiné uzly, připojí za jeho citaci
+     * i shodně vygenerované citace odkazovaných uzlů.
+     *
+     * @param visitedNodeIds uzly již zařazené do výstupu; zabraňuje zacyklení a duplicitám
+     */
+    private List<NodePlainTextRepresentation> generateNodePlainText(ArrFundVersion fundVersion,
+    		ParInstitution institution, Integer nodeId, Set<Integer> visitedNodeIds) {
     	List<ArrDescItem> items = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(List.of(nodeId));
 
     	// parent levels ordered from the nearest parent up to the root
@@ -463,8 +496,70 @@ public class ArrangementService {
     			.map(id -> parentItemsByNode.getOrDefault(id, Collections.emptyList()))
     			.toList();
 
-    	return groovyService.getNodePlainText(fundVersion, institution, items, parentItemsByLevel);
+    	List<NodePlainTextRepresentation> result = groovyService.getNodePlainText(fundVersion, institution, items, parentItemsByLevel);
+
+    	// pevná spojení (elza-node) na jiné uzly -> připojit jejich citace
+    	List<List<NodePlainTextRepresentation>> linkedResults = new ArrayList<>();
+    	for (Integer linkedNodeId : findLinkedNodeIds(items)) {
+    		// přeskočit již zařazené uzly (cyklus / duplicita)
+    		if (visitedNodeIds.add(linkedNodeId)) {
+    			linkedResults.add(generateNodePlainText(fundVersion, institution, linkedNodeId, visitedNodeIds));
+    		}
+    	}
+    	appendLinkedCitations(result, linkedResults);
+
+    	return result;
 	}
+
+    /**
+     * Najde cílové uzly pevných spojení (prvek {@value #ITEM_LINK_TYPE_CODE} se
+     * schématem {@link DescItemFactory#ELZA_NODE}) v pořadí prvků.
+     */
+    private List<Integer> findLinkedNodeIds(List<ArrDescItem> items) {
+    	ItemType linkItemType = staticDataService.getData().getItemTypeByCode(ITEM_LINK_TYPE_CODE);
+    	if (linkItemType == null) {
+    		return Collections.emptyList();
+    	}
+    	return items.stream()
+    			.filter(i -> linkItemType.getItemTypeId().equals(i.getItemTypeId()))
+    			.sorted(Comparator.comparing(ArrDescItem::getPosition, Comparator.nullsLast(Comparator.naturalOrder())))
+    			.map(i -> {
+    				ArrData data = HibernateUtils.unproxy(i.getData());
+    				return data instanceof ArrDataUriRef ? (ArrDataUriRef) data : null;
+    			})
+    			.filter(d -> d != null && DescItemFactory.ELZA_NODE.equals(d.getSchema()) && d.getNodeId() != null)
+    			.map(ArrDataUriRef::getNodeId)
+    			.toList();
+    }
+
+    /**
+     * Za každou citaci připojí citace odkazovaných uzlů. Reprezentace se párují
+     * podle kódu pravidla; citace více odkazovaných uzlů jsou navzájem odděleny
+     * čárkou a celý blok je od citace uzlu oddělen textem {@value #LINKED_CITATION_SEPARATOR}.
+     */
+    private void appendLinkedCitations(List<NodePlainTextRepresentation> result,
+    		List<List<NodePlainTextRepresentation>> linkedResults) {
+    	if (linkedResults.isEmpty()) {
+    		return;
+    	}
+    	for (NodePlainTextRepresentation rep : result) {
+    		String linked = linkedResults.stream()
+    				.map(lr -> findValueByCode(lr, rep.getCode()))
+    				.filter(StringUtils::isNotEmpty)
+    				.collect(Collectors.joining(LINKED_CITATION_DELIMITER));
+    		if (StringUtils.isNotEmpty(linked)) {
+    			rep.setValue(StringUtils.defaultString(rep.getValue()) + LINKED_CITATION_SEPARATOR + linked);
+    		}
+    	}
+    }
+
+    private String findValueByCode(List<NodePlainTextRepresentation> reps, String code) {
+    	return reps.stream()
+    			.filter(r -> Objects.equals(r.getCode(), code))
+    			.map(NodePlainTextRepresentation::getValue)
+    			.findFirst()
+    			.orElse(null);
+    }
 
     /**
      * Vytvoření archivního souboru.
