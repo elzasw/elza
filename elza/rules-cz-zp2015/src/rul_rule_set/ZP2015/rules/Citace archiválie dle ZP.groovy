@@ -55,8 +55,14 @@ String generate(final GroovyGenCtx ctx) {
       .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_ISMN")
       .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_MATRIXID")
 
-    // add title
-    rb.appendItemWithLimit("ZP2015_TITLE", 100)
+    // add title - při prázdné hodnotě na této úrovni se použije hodnota z nejbližší nadřazené úrovně
+    GroovyItem title = ctx.getFirstItemByItemType("ZP2015_TITLE")
+    if (title == null || StringUtils.isEmpty(title.getValue())) {
+        title = ctx.getFirstParentItemByItemType("ZP2015_TITLE")
+    }
+    if (title != null) {
+        rb.appendWithLimit(title.getValue(), 100)
+    }
 
     // add date
     GroovyItem unitdate = ctx.getFirstItemByItemType("ZP2015_UNIT_DATE")
