@@ -3,8 +3,6 @@
  */
 
 import { WebApi } from 'actions/index';
-import { Api } from 'api/api';
-import { indexById } from 'stores/app/utils';
 import { ItemFormActions, STRUCTURE_AREA } from './itemFormActions';
 
 export class StructureFormActions extends ItemFormActions {
@@ -18,20 +16,7 @@ export class StructureFormActions extends ItemFormActions {
     //@Override
     _getItemFormData(getState, dispatch, versionId, nodeId, routingKey) {
         // není podpora kešování
-        const fundIndex = indexById(getState().arrRegion.funds, versionId, 'versionId');
-        const fundId = getState().arrRegion.funds[fundIndex].id;
-        return Api.structure.sdoGetFormStructureItems(fundId, nodeId, versionId)
-            .then(({ data }) => ({
-                ...data,
-                // Adapt new StructuredObjectItems shape to the legacy subNodeForm reducer:
-                // itemTypeId/itemSpecId -> id, expected by getMapFromList/indexById.
-                itemTypes: (data.itemTypes ?? []).map(it => ({
-                    ...it,
-                    id: it.itemTypeId,
-                    specs: (it.specs ?? []).map(sp => ({ ...sp, id: sp.itemSpecId })),
-                })),
-                parent: { id: nodeId, version: 0 },
-            }));
+        return WebApi.getFormStructureItems(versionId, nodeId).then(i => ({...i, parent: {...i.parent, version: 0}}));
     }
 
     // @Override
