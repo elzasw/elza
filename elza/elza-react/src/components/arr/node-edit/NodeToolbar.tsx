@@ -1,14 +1,18 @@
 import {
   Menu,
   MenuButton,
+  MenuDivider,
+  MenuGroup,
+  MenuGroupHeader,
   MenuItem,
+  MenuItemCheckbox,
+  MenuItemRadio,
   MenuList,
   MenuPopover,
   MenuTrigger,
   Overflow,
   Toolbar,
   ToolbarButton,
-  ToolbarDivider,
   Tooltip,
 } from "@fluentui/react-components";
 import {
@@ -23,6 +27,7 @@ import {
   LayoutColumnThreeRegular,
   LayoutColumnFourRegular,
   LinkMultipleRegular,
+  OptionsRegular,
   PaddingDownRegular,
   PaddingTopRegular,
   SettingsCogMultipleRegular,
@@ -127,17 +132,17 @@ export const messages = defineMessages({
     id: "node_action_digitizationSync",
     defaultMessage: "Synchronizovat DAO",
   },
+  viewSettings: {
+    id: "node_action_viewSettings",
+    defaultMessage: "Nastavení zobrazení",
+  },
   toggleCompact: {
     id: "node_action_toggleCompact",
     defaultMessage: "Kompaktní zobrazení",
   },
-  addColumn: {
-    id: "node_action_addColumn",
-    defaultMessage: "Přidat sloupec skupin",
-  },
-  removeColumn: {
-    id: "node_action_removeColumn",
-    defaultMessage: "Odebrat sloupec skupin",
+  columnsHeader: {
+    id: "node_action_columnsHeader",
+    defaultMessage: "Počet sloupců skupin",
   },
 });
 
@@ -400,18 +405,9 @@ export const NodeToolbar = ({
     updateSettings({ compact: !settings.compact });
   }
 
-  function handleAddColumn() {
-    const current = settings.groupColumns || 1;
-    const next = current < 4 ? current + 1 : 0;
-    updateSettings({ groupColumns: next });
+  function handleSetColumns(columns: number) {
+    updateSettings({ groupColumns: columns });
   }
-
-  // function handleRemoveColumn() {
-  //   const current = settings.groupColumns || 1;
-  //   if (current > 1) {
-  //     updateSettings({ groupColumns: current - 1 });
-  //   }
-  // }
 
   function handleVisiblePolicy() {
     dispatch(
@@ -690,31 +686,54 @@ export const NodeToolbar = ({
           </Toolbar>
         </Overflow>
         </div>
-        {settings.showExperimentalFeatures && <Toolbar aria-label="View settings" size="small" className={styles.toolbarFlexShrink}>
-          <Tooltip appearance="inverted" relationship="label" content={formatMessage(messages.toggleCompact)}>
-            <ToolbarButton
-              appearance={"subtle"}
-              icon={settings.compact ? <PaddingTopRegular /> : <PaddingDownRegular />}
-              onClick={handleToggleCompact}
-            />
-          </Tooltip>
-          <ToolbarDivider />
-          <Tooltip appearance="inverted" relationship="label" content={`${formatMessage(messages.addColumn)} (${settings.groupColumns || 1})`}>
-            <ToolbarButton
-              appearance="subtle"
-              icon={<span className={styles.toolbarColumnIcon}>
-                {(() => {
-                  const cols = settings.groupColumns || 1;
-                  if (cols >= 4) return <LayoutColumnFourRegular />;
-                  if (cols === 3) return <LayoutColumnThreeRegular />;
-                  if (cols === 2) return <LayoutColumnTwoRegular />;
-                  return <ColumnRegular />;
-                })()}
-              </span>}
-              onClick={handleAddColumn}
-            />
-          </Tooltip>
-        </Toolbar>}
+        <Toolbar aria-label="View settings" size="small" className={styles.toolbarFlexShrink}>
+          <Menu
+            checkedValues={{
+              compact: settings.compact ? ["compact"] : [],
+              columns: [String(settings.groupColumns || 1)],
+            }}
+            onCheckedValueChange={(_e, { name, checkedItems }) => {
+              if (name === "compact") {
+                handleToggleCompact();
+              } else if (name === "columns") {
+                handleSetColumns(Number(checkedItems[0]));
+              }
+            }}
+          >
+            <MenuTrigger disableButtonEnhancement>
+              <Tooltip appearance="inverted" relationship="label" content={formatMessage(messages.viewSettings)}>
+                <ToolbarButton appearance="subtle" icon={<OptionsRegular />} />
+              </Tooltip>
+            </MenuTrigger>
+            <MenuPopover>
+              <MenuList>
+                <MenuItemCheckbox
+                  name="compact"
+                  value="compact"
+                  icon={settings.compact ? <PaddingTopRegular /> : <PaddingDownRegular />}
+                >
+                  {formatMessage(messages.toggleCompact)}
+                </MenuItemCheckbox>
+                <MenuDivider />
+                <MenuGroup>
+                  <MenuGroupHeader>{formatMessage(messages.columnsHeader)}</MenuGroupHeader>
+                  <MenuItemRadio name="columns" value="1" icon={<ColumnRegular />}>
+                    1
+                  </MenuItemRadio>
+                  <MenuItemRadio name="columns" value="2" icon={<LayoutColumnTwoRegular />}>
+                    2
+                  </MenuItemRadio>
+                  <MenuItemRadio name="columns" value="3" icon={<LayoutColumnThreeRegular />}>
+                    3
+                  </MenuItemRadio>
+                  <MenuItemRadio name="columns" value="4" icon={<LayoutColumnFourRegular />}>
+                    4
+                  </MenuItemRadio>
+                </MenuGroup>
+              </MenuList>
+            </MenuPopover>
+          </Menu>
+        </Toolbar>
       </div>
       {showSpecialCharactersWindow && (
         <TextFragmentsWindow
