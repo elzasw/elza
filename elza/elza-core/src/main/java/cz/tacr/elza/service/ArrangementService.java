@@ -467,24 +467,26 @@ public class ArrangementService {
      */
     public List<NodePlainTextRepresentation> getNodePlainText(@NotNull Integer fundVersionId, @NotNull Integer nodeId) {
     	ArrFundVersion fundVersion = getFundVersion(fundVersionId);
-    	ParInstitution institution = fundVersion.getFund().getInstitution();
 
     	// uzly již zpracované v aktuálním řetězci pevných spojení (ochrana proti cyklům)
     	Set<Integer> visitedNodeIds = new HashSet<>();
     	visitedNodeIds.add(nodeId);
-    	return generateNodePlainText(fundVersion, institution, nodeId, visitedNodeIds);
+    	return generateNodePlainText(fundVersion, nodeId, visitedNodeIds);
 	}
 
     /**
      * Vygeneruje plain text (citaci) pro uzel. Pokud uzel obsahuje pevné spojení
      * (prvek {@value #ITEM_LINK_TYPE_CODE} se schématem
      * {@link DescItemFactory#ELZA_NODE}) na jiné uzly, připojí za jeho citaci
-     * i shodně vygenerované citace odkazovaných uzlů.
+     * i shodně vygenerované citace odkazovaných uzlů. Odkazovaný uzel může ležet
+     * v jiném fondu, proto se jeho citace generuje ve verzi jeho vlastního fondu.
      *
+     * @param fundVersion verze fondu, ve které se uzel nachází
      * @param visitedNodeIds uzly již zařazené do výstupu; zabraňuje zacyklení a duplicitám
      */
     private List<NodePlainTextRepresentation> generateNodePlainText(ArrFundVersion fundVersion,
-    		ParInstitution institution, Integer nodeId, Set<Integer> visitedNodeIds) {
+    		Integer nodeId, Set<Integer> visitedNodeIds) {
+    	ParInstitution institution = fundVersion.getFund().getInstitution();
     	List<ArrDescItem> items = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(List.of(nodeId));
 
     	// parent levels ordered from the nearest parent up to the root
@@ -503,12 +505,38 @@ public class ArrangementService {
     	for (Integer linkedNodeId : findLinkedNodeIds(items)) {
     		// přeskočit již zařazené uzly (cyklus / duplicita)
     		if (visitedNodeIds.add(linkedNodeId)) {
-    			linkedResults.add(generateNodePlainText(fundVersion, institution, linkedNodeId, visitedNodeIds));
+    			ArrFundVersion linkedVersion = resolveNodeFundVersion(fundVersion, linkedNodeId);
+    			if (linkedVersion != null) {
+    				linkedResults.add(generateNodePlainText(linkedVersion, linkedNodeId, visitedNodeIds));
+    			}
     		}
     	}
     	appendLinkedCitations(result, linkedResults);
 
     	return result;
+	}
+
+    /**
+     * Vrátí verzi fondu, ve které leží odkazovaný uzel. Pro uzel ze stejného fondu
+     * použije aktuální verzi, pro uzel z jiného fondu jeho otevřenou verzi. Vrací
+     * {@code null}, pokud uzel nebo otevřená verze jeho fondu neexistuje (např.
+     * neplatný odkaz) - takový odkaz se do citace nepřipojí.
+     */
+    @Nullable
+    private ArrFundVersion resolveNodeFundVersion(ArrFundVersion currentVersion, Integer nodeId) {
+    	Integer fundId = nodeRepository.findById(nodeId).map(ArrNode::getFundId).orElse(null);
+    	if (fundId == null) {
+    		logger.warn("Pevné spojení odkazuje na neexistující uzel, nodeId={}", nodeId);
+    		return null;
+    	}
+    	if (fundId.equals(currentVersion.getFundId())) {
+    		return currentVersion;
+    	}
+    	ArrFundVersion linkedVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
+    	if (linkedVersion == null) {
+    		logger.warn("Fond odkazovaného uzlu nemá otevřenou verzi, nodeId={}, fundId={}", nodeId, fundId);
+    	}
+    	return linkedVersion;
 	}
 
     /**
