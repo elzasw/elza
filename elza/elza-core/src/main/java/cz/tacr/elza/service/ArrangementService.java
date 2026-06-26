@@ -468,10 +468,14 @@ public class ArrangementService {
     public List<NodePlainTextRepresentation> getNodePlainText(@NotNull Integer fundVersionId, @NotNull Integer nodeId) {
     	ArrFundVersion fundVersion = getFundVersion(fundVersionId);
 
+    	// referenční změna pro čtení hodnot: u uzamčené verze se citace generuje ze stavu
+    	// platného v okamžiku jejího uzamčení, u otevřené verze z aktuálního stavu (null)
+    	ArrChange refChange = fundVersion.getLockChange();
+
     	// uzly již zpracované v aktuálním řetězci pevných spojení (ochrana proti cyklům)
     	Set<Integer> visitedNodeIds = new HashSet<>();
     	visitedNodeIds.add(nodeId);
-    	return generateNodePlainText(fundVersion, nodeId, visitedNodeIds);
+    	return generateNodePlainText(fundVersion, refChange, nodeId, visitedNodeIds);
 	}
 
     /**
@@ -479,19 +483,21 @@ public class ArrangementService {
      * (prvek {@value #ITEM_LINK_TYPE_CODE} se schématem
      * {@link DescItemFactory#ELZA_NODE}) na jiné uzly, připojí za jeho citaci
      * i shodně vygenerované citace odkazovaných uzlů. Odkazovaný uzel může ležet
-     * v jiném fondu, proto se jeho citace generuje ve verzi jeho vlastního fondu.
+     * v jiném fondu; jeho citace se připojí jen tehdy, používá-li jeho fond stejná
+     * pravidla, aby se reprezentace daly spárovat podle kódu.
      *
      * @param fundVersion verze fondu, ve které se uzel nachází
+     * @param refChange referenční změna pro čtení hodnot ({@code null} = aktuální stav)
      * @param visitedNodeIds uzly již zařazené do výstupu; zabraňuje zacyklení a duplicitám
      */
     private List<NodePlainTextRepresentation> generateNodePlainText(ArrFundVersion fundVersion,
-    		Integer nodeId, Set<Integer> visitedNodeIds) {
+    		ArrChange refChange, Integer nodeId, Set<Integer> visitedNodeIds) {
     	ParInstitution institution = fundVersion.getFund().getInstitution();
-    	List<ArrDescItem> items = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(List.of(nodeId));
+    	List<ArrDescItem> items = loadDescItems(refChange, List.of(nodeId));
 
     	// parent levels ordered from the nearest parent up to the root
     	List<Integer> parentNodeIds = levelTreeCacheService.getParentNodes(fundVersion, nodeId);
-    	Map<Integer, List<ArrDescItem>> parentItemsByNode = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(parentNodeIds)
+    	Map<Integer, List<ArrDescItem>> parentItemsByNode = loadDescItems(refChange, parentNodeIds)
     			.stream()
     			.collect(Collectors.groupingBy(ArrDescItem::getNodeId));
     	List<List<ArrDescItem>> parentItemsByLevel = parentNodeIds.stream()
@@ -506,8 +512,10 @@ public class ArrangementService {
     		// přeskočit již zařazené uzly (cyklus / duplicita)
     		if (visitedNodeIds.add(linkedNodeId)) {
     			ArrFundVersion linkedVersion = resolveNodeFundVersion(fundVersion, linkedNodeId);
-    			if (linkedVersion != null) {
-    				linkedResults.add(generateNodePlainText(linkedVersion, linkedNodeId, visitedNodeIds));
+    			// citaci připojíme jen pro fond se stejnými pravidly; jinak se kódy
+    			// reprezentací nespárují a citace odkazovaného uzlu by stejně zůstala prázdná
+    			if (linkedVersion.getRuleSetId().equals(fundVersion.getRuleSetId())) {
+    				linkedResults.add(generateNodePlainText(linkedVersion, refChange, linkedNodeId, visitedNodeIds));
     			}
     		}
     	}
@@ -517,26 +525,50 @@ public class ArrangementService {
 	}
 
     /**
-     * Vrátí verzi fondu, ve které leží odkazovaný uzel. Pro uzel ze stejného fondu
-     * použije aktuální verzi, pro uzel z jiného fondu jeho otevřenou verzi. Vrací
-     * {@code null}, pokud uzel nebo otevřená verze jeho fondu neexistuje (např.
-     * neplatný odkaz) - takový odkaz se do citace nepřipojí.
+     * Vrátí verzi fondu, ze které se generuje citace odkazovaného uzlu. Pro uzel
+     * ze stejného fondu vrátí aktuální verzi, pro uzel z jiného fondu jeho otevřenou
+     * verzi; není-li fond otevřený (je uzamčen), použije jeho poslední verzi.
+     *
+     * @throws ObjectNotFoundException pokud odkazovaný uzel nebo verze jeho fondu
+     *             neexistuje - pevné spojení na neexistující data je nekonzistence
      */
-    @Nullable
     private ArrFundVersion resolveNodeFundVersion(ArrFundVersion currentVersion, Integer nodeId) {
-    	Integer fundId = nodeRepository.findById(nodeId).map(ArrNode::getFundId).orElse(null);
-    	if (fundId == null) {
-    		logger.warn("Pevné spojení odkazuje na neexistující uzel, nodeId={}", nodeId);
-    		return null;
-    	}
+    	ArrNode node = nodeRepository.findById(nodeId).orElseThrow(node(nodeId));
+    	Integer fundId = node.getFundId();
     	if (fundId.equals(currentVersion.getFundId())) {
     		return currentVersion;
     	}
     	ArrFundVersion linkedVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
-    	if (linkedVersion == null) {
-    		logger.warn("Fond odkazovaného uzlu nemá otevřenou verzi, nodeId={}, fundId={}", nodeId, fundId);
+    	if (linkedVersion != null) {
+    		return linkedVersion;
     	}
-    	return linkedVersion;
+    	Integer maxVersionId = fundVersionRepository.findMaxFundVersionIdByFundId(fundId);
+    	if (maxVersionId == null) {
+    		throw new ObjectNotFoundException("Fond odkazovaného uzlu nemá žádnou verzi: " + fundId, BaseCode.ID_NOT_EXIST)
+    				.setId(fundId);
+    	}
+    	return getFundVersionById(maxVersionId);
+	}
+
+    /**
+     * Načte hodnoty atributů zadaných uzlů ve stavu platném pro referenční změnu.
+     * Pro otevřenou verzi ({@code refChange == null}) vrací aktuální hodnoty, pro
+     * uzamčenou verzi hodnoty platné v okamžiku jejího uzamčení. Výsledek je seřazen
+     * shodně jako čtení aktuálního stavu, aby citace nezávisela na verzi.
+     */
+    private List<ArrDescItem> loadDescItems(ArrChange refChange, List<Integer> nodeIds) {
+    	if (nodeIds.isEmpty()) {
+    		return Collections.emptyList();
+    	}
+    	if (refChange == null) {
+    		return descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
+    	}
+    	return descriptionItemService.findByNodesAndDeleteChange(nodeIds, refChange).stream()
+    			.sorted(Comparator.comparing(ArrDescItem::getNodeId, Comparator.nullsLast(Comparator.naturalOrder()))
+    					.thenComparing(ArrDescItem::getItemTypeId, Comparator.nullsLast(Comparator.naturalOrder()))
+    					.thenComparing(ArrDescItem::getItemSpecId, Comparator.nullsLast(Comparator.naturalOrder()))
+    					.thenComparing(ArrDescItem::getPosition, Comparator.nullsLast(Comparator.naturalOrder())))
+    			.toList();
 	}
 
     /**
@@ -546,6 +578,7 @@ public class ArrangementService {
     private List<Integer> findLinkedNodeIds(List<ArrDescItem> items) {
     	ItemType linkItemType = staticDataService.getData().getItemTypeByCode(ITEM_LINK_TYPE_CODE);
     	if (linkItemType == null) {
+    		// pravidla neobsahují typ prvku pevného spojení -> uzel žádná spojení nemá
     		return Collections.emptyList();
     	}
     	return items.stream()
