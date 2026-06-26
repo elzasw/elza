@@ -10,6 +10,7 @@ import { DescItemGroup, DescItemTypeRef } from "typings/store";
 import { makeStyles, mergeClasses, Text, tokens } from "@fluentui/react-components";
 import { CheckmarkRegular, DismissRegular, InfoRegular } from "@fluentui/react-icons";
 import ListItem from "components/shared/tree-list/list-item/ListItem.jsx";
+import { resolveAvailableItemTypes, sortTypesByFormOrder } from "./addDescItemType.utils";
 import { getOneSettings } from "../ArrUtils";
 import { useInitialFocus } from "../search-funds-form/filters/utils";
 import { defineMessages, useIntl } from "react-intl";
@@ -190,26 +191,8 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
     }
   }
 
-  // Index of the group a type belongs to, in the group order used by the form (buildGroupsForm).
-  // Types without a group sort last so the composite (group, viewOrder) order matches the rendered form.
-  function groupIndexOfType(typeId: number) {
-    const index = descItemGroups.ids.findIndex((groupId) =>
-      descItemGroups[groupId].itemTypes.some((itemType) => itemType.id === typeId),
-    );
-    return index === -1 ? descItemGroups.ids.length : index;
-  }
-
-  // Submit in the final form order (group order, then viewOrder within a group) so the auto-focus,
-  // which targets the first submitted type, lands on the topmost new field.
-  function sortByFormOrder(types: DescItemTypeRef[]) {
-    return [...types].sort((a, b) => {
-      const groupDiff = groupIndexOfType(a.id) - groupIndexOfType(b.id);
-      return groupDiff !== 0 ? groupDiff : a.viewOrder - b.viewOrder;
-    });
-  }
-
   function handleSubmitChecked() {
-    const types = sortByFormOrder(queuedItemTypes);
+    const types = sortTypesByFormOrder(queuedItemTypes, descItemGroups);
     if (types.length === 0) {
       return;
     }
@@ -234,31 +217,14 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
     );
   }
 
-  // The server omits impossible types from itemTypes (impossible is the default state, so it isn't
-  // transferred). A type missing from itemTypes is therefore impossible for this node; in non-strict
-  // mode it is still offered, but only when its code belongs to the rule set (node-compatible types).
-  const modifiedItemTypes: Array<DescItemTypeRef & { className: string }> = descItemTypes
-    .filter((item) => {
-      const descItem = descItems.find(({ itemTypeId }) => itemTypeId === item.id);
-      if (descItem) {
-        return false;
-      }
-      const itemType = itemTypes.find(({ itemTypeId }) => itemTypeId === item.id);
-      if (itemType && itemType.type !== MandatoryType.Impossible) {
-        return true;
-      }
-      const isNodeCompatible = ruleSetItemTypeCodes?.includes(item.code) ?? false;
-      return !strictMode && isNodeCompatible;
-    })
-    .map((item) => {
-      const itemType = itemTypes.find(({ itemTypeId }) => itemTypeId === item.id);
-      const type = itemType ? itemType.type : MandatoryType.Impossible;
-      // The queued class is part of className (which ListItem compares in shouldComponentUpdate)
-      // so toggling the queue reliably re-renders the row and updates its checkmark.
-      const isQueued = queuedItemTypes.some(({ id }) => id === item.id);
-      const className = `type-${type.toLowerCase()}${isQueued ? " queued" : ""}`;
-      return { ...item, className };
-    });
+  const modifiedItemTypes = resolveAvailableItemTypes(
+    descItemTypes,
+    itemTypes,
+    descItems,
+    ruleSetItemTypeCodes,
+    strictMode,
+    queuedItemTypes.map(({ id }) => id),
+  );
 
   return (
     <ModalDialogWrapper className="dialog-lg" title={formatMessage(messages.addDescItemFormTitle)} onHide={onClose}>
