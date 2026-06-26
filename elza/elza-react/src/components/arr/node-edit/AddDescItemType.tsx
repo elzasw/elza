@@ -8,7 +8,8 @@ import { FormItemType, MandatoryType } from "elza-api";
 import { EditItem } from "./types";
 import { DescItemGroup, DescItemTypeRef } from "typings/store";
 import { makeStyles, mergeClasses, Text, tokens } from "@fluentui/react-components";
-import { DismissRegular, InfoRegular } from "@fluentui/react-icons";
+import { CheckmarkRegular, DismissRegular, InfoRegular } from "@fluentui/react-icons";
+import ListItem from "components/shared/tree-list/list-item/ListItem.jsx";
 import { getOneSettings } from "../ArrUtils";
 import { useInitialFocus } from "../search-funds-form/filters/utils";
 import { defineMessages, useIntl } from "react-intl";
@@ -27,6 +28,7 @@ const useStyles = makeStyles({
   addLink: {
     backgroundColor: "var(--shade-2)",
     color: "var(--fg-color)",
+    textDecoration: "none",
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
@@ -35,6 +37,8 @@ const useStyles = makeStyles({
     borderRadius: "3px",
     ":hover": {
       backgroundColor: "var(--shade-5)",
+      color: "var(--fg-color)",
+      textDecoration: "none",
     },
   },
   queued: {
@@ -42,6 +46,7 @@ const useStyles = makeStyles({
     color: "var(--accent-color-fg)",
     ":hover": {
       backgroundColor: "var(--accent-color)",
+      color: "var(--accent-color-fg)",
     },
   },
   queuedImpossible: {
@@ -53,6 +58,17 @@ const useStyles = makeStyles({
   dismissIcon: {
     marginLeft: "4px",
   },
+  itemName: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "4px",
+  },
+  queuedCheck: {
+    color: "var(--fg-color)",
+  },
+  queuedCheckHidden: {
+    visibility: "hidden",
+  },
 });
 
 const messages = defineMessages({
@@ -62,7 +78,7 @@ const messages = defineMessages({
   },
   multiAddHint: {
     id: "add_desc_item_form_multi_hint",
-    defaultMessage: "Tip: vyberte z pole pro přidání do seznamu (Enter na prázdném poli potvrdí), nebo podržte Ctrl a klikněte / vyberte mezerníkem.",
+    defaultMessage: "Tip: použijte CTRL pro výběr více prvků z nabídky, nebo vyberte prvek z pole našeptávače (ENTER na prázdném poli potvrdí výběr)",
   },
 });
 
@@ -174,13 +190,48 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
     }
   }
 
+  // Index of the group a type belongs to, in the group order used by the form (buildGroupsForm).
+  // Types without a group sort last so the composite (group, viewOrder) order matches the rendered form.
+  function groupIndexOfType(typeId: number) {
+    const index = descItemGroups.ids.findIndex((groupId) =>
+      descItemGroups[groupId].itemTypes.some((itemType) => itemType.id === typeId),
+    );
+    return index === -1 ? descItemGroups.ids.length : index;
+  }
+
+  // Submit in the final form order (group order, then viewOrder within a group) so the auto-focus,
+  // which targets the first submitted type, lands on the topmost new field.
+  function sortByFormOrder(types: DescItemTypeRef[]) {
+    return [...types].sort((a, b) => {
+      const groupDiff = groupIndexOfType(a.id) - groupIndexOfType(b.id);
+      return groupDiff !== 0 ? groupDiff : a.viewOrder - b.viewOrder;
+    });
+  }
+
   function handleSubmitChecked() {
-    const types = [...queuedItemTypes];
+    const types = sortByFormOrder(queuedItemTypes);
     if (types.length === 0) {
       return;
     }
     onSubmit(types);
     onClose();
+  }
+
+  // Render autocomplete rows via the default ListItem, marking queued types with a checkmark so
+  // they stay visible and show their selected state instead of disappearing from the list.
+  function renderItem(itemProps: { item?: DescItemTypeRef }) {
+    const isQueued = !!itemProps.item && queuedItemTypes.some(({ id }) => id === itemProps.item!.id);
+    return (
+      <ListItem
+        {...itemProps}
+        renderName={(item: DescItemTypeRef) => (
+          <span className={styles.itemName}>
+            <CheckmarkRegular className={mergeClasses(styles.queuedCheck, !isQueued && styles.queuedCheckHidden)} />
+            {item.name}
+          </span>
+        )}
+      />
+    );
   }
 
   // The server omits impossible types from itemTypes (impossible is the default state, so it isn't
@@ -202,7 +253,11 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
     .map((item) => {
       const itemType = itemTypes.find(({ itemTypeId }) => itemTypeId === item.id);
       const type = itemType ? itemType.type : MandatoryType.Impossible;
-      return { ...item, className: `type-${type.toLowerCase()}` };
+      // The queued class is part of className (which ListItem compares in shouldComponentUpdate)
+      // so toggling the queue reliably re-renders the row and updates its checkmark.
+      const isQueued = queuedItemTypes.some(({ id }) => id === item.id);
+      const className = `type-${type.toLowerCase()}${isQueued ? " queued" : ""}`;
+      return { ...item, className };
     });
 
   return (
@@ -236,9 +291,10 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
             <ItemTypeField
               ref={inputRef}
               descItemTypes={modifiedItemTypes}
-              // @ts-expect-error ItemTypeField's Props omit onChange/value, which it forwards to Autocomplete.
+              // @ts-expect-error ItemTypeField's Props omit onChange/value/renderItem, which it forwards to Autocomplete.
               onChange={handleChange}
               value={selectedItemType}
+              renderItem={renderItem}
             />
           </div>
           <div>
@@ -252,13 +308,13 @@ export function AddDescItemTypeForm({ itemTypes, descItems, onSubmit, onClose }:
                     const isImpossible = !serverType || serverType.type === MandatoryType.Impossible;
                     return (
                       <Button
+                        variant="link"
                         className={mergeClasses(
                           styles.addLink,
                           isQueued && styles.queued,
                           isQueued && isImpossible && styles.queuedImpossible,
                         )}
                         key={itemType.id}
-                        active={isQueued}
                         onClick={(e) => handleItemClick(e, itemType)}
                         onKeyDown={(e) => handleItemKeyDown(e, itemType)}
                       >
