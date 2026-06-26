@@ -688,6 +688,7 @@ export const NodeToolbar = ({
         </div>
         <Toolbar aria-label="View settings" size="small" className={styles.toolbarFlexShrink}>
           <Menu
+            positioning={{ align: "end" }}
             checkedValues={{
               compact: settings.compact ? ["compact"] : [],
               columns: [String(settings.groupColumns || 1)],
