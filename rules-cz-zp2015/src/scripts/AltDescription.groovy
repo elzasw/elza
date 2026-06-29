@@ -25,8 +25,8 @@ void generate()
     // Fixed prefix
     appendValue(valueBuilder, "ZP2015_LANGUAGE");
     appendValue(sortValueBuilder, "ZP2015_LANGUAGE");
-    appendValue(valueBuilder, "ZP2015_TITLE");
-    appendValue(sortValueBuilder, "ZP2015_TITLE");
+    appendValue(valueBuilder, "ZP2015_NAME");
+    appendValue(sortValueBuilder, "ZP2015_NAME");
         
     // Prepare complement
     StringBuilder complementBuilder = new StringBuilder();

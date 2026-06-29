@@ -510,6 +510,8 @@
   <#local accessrestrict=[]>
   <#local relations=[]>
   <#local existingcopies=[]>
+  <#local scopeContents=[]>
+  <#local unitContents=[]>
   <#list node.items as item>
     <#switch item.type.code>
     <#case "ZP2015_POSITION">
@@ -527,14 +529,23 @@
     <#case "ZP2015_UNIT_ARR">
       <#lt>  <ead:arrangement><ead:p>${item.serializedValue}</ead:p></ead:arrangement>
       <#break>
+    <#case "ZP2015_CONTENT">
+      <#local scopeContents = scopeContents + [item.serializedValue]>
+      <#break>
     <#case "ZP2015_UNIT_CONTENT">
-      <#lt>  <ead:scopecontent><ead:p>${item.serializedValue}</ead:p></ead:scopecontent>
+      <#local unitContents = unitContents + [item.serializedValue]>
       <#break>
     <#case "ZP2015_ALTERNATIVE_DESCRIPTION_INLINE">
       <#-- Alternativni popis -->
       <#assign altStruct = item.getValue() >
-      <#if altStruct.hasItem("ZP2015_ARCHDESC_LANG") && altStruct.hasItem("ZP2015_UNIT_CONTENT") >
-        <#lt>  <ead:scopecontent lang="${altStruct.getSingleItem("ZP2015_ARCHDESC_LANG").specification.code?substring(4)}"><ead:p>${altStruct.getSingleItem("ZP2015_UNIT_CONTENT").serializedValue}</ead:p></ead:scopecontent>
+      <#if altStruct.hasItem("ZP2015_ARCHDESC_LANG") && (altStruct.hasItem("ZP2015_CONTENT") || altStruct.hasItem("ZP2015_UNIT_CONTENT")) >
+        <#local altScopeText="">
+        <#if altStruct.hasItem("ZP2015_CONTENT")><#local altScopeText=altStruct.getSingleItem("ZP2015_CONTENT").serializedValue></#if>
+        <#if altStruct.hasItem("ZP2015_UNIT_CONTENT")>
+          <#if (altScopeText?length>0)><#local altScopeText=altScopeText+'\n'></#if>
+          <#local altScopeText=altScopeText+altStruct.getSingleItem("ZP2015_UNIT_CONTENT").serializedValue>
+        </#if>
+        <#lt>  <ead:scopecontent lang="${altStruct.getSingleItem("ZP2015_ARCHDESC_LANG").specification.code?substring(4)}"><ead:p>${altScopeText}</ead:p></ead:scopecontent>
       </#if>
       <#break>      
     <#case "ZP2015_UNIT_SOURCE">
@@ -575,6 +586,17 @@
       <#break>
     </#switch>
   </#list>
+  <#-- Obsah, tematický popis (ZP2015_CONTENT) a Tematický popis (ZP2015_UNIT_CONTENT)
+       se ukládají do scopecontent; pokud jsou oba, spojí se novým řádkem -->
+  <#local scopeContentParts = scopeContents + unitContents>
+  <#if (scopeContentParts?size>0)>
+    <#local scopeContentText="">
+    <#list scopeContentParts as t>
+      <#if (scopeContentText?length>0)><#local scopeContentText=scopeContentText+'\n'></#if>
+      <#local scopeContentText=scopeContentText+t>
+    </#list>
+    <#lt>  <ead:scopecontent><ead:p>${scopeContentText}</ead:p></ead:scopecontent>
+  </#if>
   <#-- Omezeni pristupnosti -->
   <#if (accessrestrict?size>0)>
     <#local accessrestrictText="">
@@ -676,10 +698,10 @@
         <#lt>  <ead:unitid localtype="${otherIdTypeMapping[item.specification.code]}" label="${otherIdLabelMapping[otherIdTypeMapping[item.specification.code]]}">${item.serializedValue}</ead:unitid>
         </#if>
         <#break>        
-      <#case "ZP2015_TITLE">
+      <#case "ZP2015_NAME">
         <#local unitTitles=unitTitles+[item]>
         <#break>
-      <#case "ZP2015_TITLE_PUBLIC">
+      <#case "ZP2015_NAME_PUBLIC">
         <#local unitPublicTitles=unitPublicTitles+[item]>
         <#break>
       <#case "ZP2015_FORMAL_TITLE">
@@ -846,8 +868,8 @@
   <#if (altDescr?size>0)>
     <#list altDescr as singleAltDescr>
       <#assign altStruct = singleAltDescr.getValue() >
-      <#if altStruct.hasItem("ZP2015_ARCHDESC_LANG") && altStruct.hasItem("ZP2015_TITLE") >
-        <#lt>  <ead:unittitle lang="${altStruct.getSingleItem("ZP2015_ARCHDESC_LANG").specification.code?substring(4)}">${altStruct.getSingleItem("ZP2015_TITLE").serializedValue}</ead:unittitle>
+      <#if altStruct.hasItem("ZP2015_ARCHDESC_LANG") && altStruct.hasItem("ZP2015_NAME") >
+        <#lt>  <ead:unittitle lang="${altStruct.getSingleItem("ZP2015_ARCHDESC_LANG").specification.code?substring(4)}">${altStruct.getSingleItem("ZP2015_NAME").serializedValue}</ead:unittitle>
       </#if>
     </#list>
   </#if>
@@ -1218,8 +1240,8 @@
 
 <#macro writeNoteStmt items>
   <#-- Test if item type exists -->
-  <#local processedTypes = ["ZP2015_UNIT_HIST", "ZP2015_UNIT_ARR", 
-                            "ZP2015_UNIT_CONTENT", "ZP2015_UNIT_SOURCE",
+  <#local processedTypes = ["ZP2015_UNIT_HIST", "ZP2015_UNIT_ARR",
+                            "ZP2015_CONTENT", "ZP2015_UNIT_CONTENT", "ZP2015_UNIT_SOURCE",
                             "ZP2015_FUTURE_UNITS",  "ZP2015_UNIT_CURRENT_STATUS",
                             "ZP2015_ARRANGE_RULES"
                             ] >
@@ -1236,6 +1258,10 @@
       <!-- Způsob uspořádání jednotky popisu --> 
       <ead:controlnote localtype="UNITS_ARRANGEMENT"><ead:p>${item.serializedValue}</ead:p></ead:controlnote>
       </#list>      
+      <#list items?filter(item -> item.type.code=="ZP2015_CONTENT") as item>
+      <!-- Obsah, tematický popis -->
+      <ead:controlnote localtype="UNITS_CONTENT_SUMMARY"><ead:p>${item.serializedValue}</ead:p></ead:controlnote>
+      </#list>
       <#list items?filter(item -> item.type.code=="ZP2015_UNIT_CONTENT") as item>
       <!-- Tematický popis jednotky popisu --> 
       <ead:controlnote localtype="UNITS_CONTENT_SUMMARY"><ead:p>${item.serializedValue}</ead:p></ead:controlnote>

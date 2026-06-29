@@ -123,7 +123,7 @@
 
 <xsl:template match="ap:nadpisIS">
     <desc-item-string>
-  <xsl:attribute name="desc-item-type-code">ZP2015_TITLE</xsl:attribute>
+  <xsl:attribute name="desc-item-type-code">ZP2015_NAME</xsl:attribute>
   <position>1</position>
   <value><xsl:value-of select=".//ap:obsah"/></value>
     </desc-item-string>
@@ -136,7 +136,7 @@
 
 <xsl:template match="ap:obsah">
     <desc-item-string>
-  <xsl:attribute name="desc-item-type-code">ZP2015_TITLE</xsl:attribute>
+  <xsl:attribute name="desc-item-type-code">ZP2015_NAME</xsl:attribute>
   <position>1</position>
   <value><xsl:value-of select="."/></value>
     </desc-item-string>

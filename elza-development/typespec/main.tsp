@@ -323,6 +323,8 @@ model ExportParams {
     exportFilter?: string;
     includeUUID?: boolean = true;
     includeAccessPoints?: boolean = true;
+    /** zahrnout do exportu připojené digitální archivní objekty (DAO) */
+    includeDaos?: boolean = true;
 }
 
 /**
@@ -2482,6 +2484,159 @@ namespace ElzaAPI.fund {
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
     };
+}
+
+/**
+ * Hromadná akce, kterou lze spustit nad fondem.
+ */
+model BulkAction {
+    /** Kód akce */
+    code: string;
+    /** Název akce */
+    name: string;
+    /** Popis akce */
+    description?: string;
+    /** Příznak rychlé akce */
+    fastAction: boolean;
+}
+
+/**
+ * Stav běhu hromadné akce.
+ */
+enum BulkActionRunState {
+    WAITING,
+    PLANNED,
+    RUNNING,
+    FINISHED,
+    ERROR,
+    INTERRUPTED,
+    OUTDATED,
+}
+
+/**
+ * Požadavek na seskupení vybraných fondů podle pravidel pro spuštění hromadné akce nad více fondy.
+ * Vyplní se buď `fundIds` (explicitní výběr, má přednost), nebo `search` (všechny fondy odpovídající filtru).
+ */
+model FundsActionGroupRequest {
+    /** Identifikátory vybraných fondů */
+    fundIds?: integer[];
+    /** Filtr pro výběr všech odpovídajících fondů */
+    search?: string;
+}
+
+/**
+ * Přeskočený fond při přípravě nebo spuštění hromadné akce nad více fondy.
+ */
+model FundsActionSkipped {
+    /** Identifikátor fondu (při seskupení) nebo verze fondu (při spuštění) */
+    id: integer;
+    /** Důvod přeskočení (např. NO_OPEN_VERSION, ACTION_NOT_IN_RULESET) */
+    reason: string;
+}
+
+/**
+ * Skupina fondů sdílejících stejná pravidla spolu s dostupnými hromadnými akcemi.
+ */
+model FundsActionGroup {
+    /** Identifikátor pravidel */
+    ruleSetId: integer;
+    /** Kód pravidel */
+    ruleSetCode: string;
+    /** Název pravidel */
+    ruleSetName: string;
+    /** Počet fondů ve skupině */
+    fundCount: integer;
+    /** Identifikátory otevřených verzí fondů ve skupině */
+    fundVersionIds: integer[];
+    /** Hromadné akce dostupné pro tato pravidla ve vícefondovém režimu */
+    actions: BulkAction[];
+}
+
+/**
+ * Výsledek seskupení vybraných fondů pro spuštění hromadné akce nad více fondy.
+ */
+model FundsActionGroupResult {
+    /** Skupiny fondů podle pravidel */
+    groups: FundsActionGroup[];
+    /** Přeskočené fondy */
+    skipped: FundsActionSkipped[];
+}
+
+/**
+ * Požadavek na spuštění hromadné akce nad více fondy najednou.
+ */
+model MultiFundActionRequest {
+    /** Identifikátory otevřených verzí fondů */
+    fundVersionIds: integer[];
+    /** Kód hromadné akce */
+    code: string;
+}
+
+/**
+ * Výsledek spuštění hromadné akce nad více fondy.
+ */
+model MultiFundActionResult {
+    /** Identifikátor seskupení (arr_funds_change); chybí, pokud nebyl spuštěn žádný běh */
+    fundsChangeId?: integer;
+    /** Počet naplánovaných běhů */
+    queuedCount: integer;
+    /** Přeskočené fondy */
+    skipped: FundsActionSkipped[];
+}
+
+/**
+ * Stav jednoho per-fond běhu v rámci vícefondového seskupení (pro sledování průběhu).
+ */
+model FundsChangeRun {
+    /** Identifikátor běhu */
+    id: integer;
+    /** Identifikátor verze fondu */
+    fundVersionId: integer;
+    /** Kód hromadné akce */
+    code: string;
+    /** Stav běhu */
+    state: BulkActionRunState;
+    /** Čas naplánování */
+    datePlanned?: offsetDateTime;
+    /** Čas zahájení */
+    dateStarted?: offsetDateTime;
+    /** Čas dokončení */
+    dateFinished?: offsetDateTime;
+    /** Chybové hlášení */
+    error?: string;
+}
+
+/**
+ * Hromadné akce nad více archivními soubory najednou (pouze pro administrátory, oprávnění FUND_BA_ALL).
+ */
+@tag("funds")
+@route("/action")
+namespace ElzaAPI.BulkAction {
+    /**
+     * Rozdělí vybrané fondy podle pravidel a vrátí dostupné hromadné akce pro každou skupinu.
+     * Vstupem je buď explicitní seznam fondů, nebo filtr (výběr všech odpovídajících fondů).
+     */
+    @route("/funds/group")
+    @post op groupFundsByRuleSet(
+        @body body: FundsActionGroupRequest;
+    ): FundsActionGroupResult;
+
+    /**
+     * Spustí hromadnou akci nad více fondy najednou. Pro každý platný fond naplánuje
+     * samostatný běh; fondy mimo daná pravidla jsou přeskočeny a vráceny ve výsledku.
+     */
+    @route("/queue-multi")
+    @post op queueMultiFundAction(
+        @body body: MultiFundActionRequest;
+    ): MultiFundActionResult;
+
+    /**
+     * Vrátí jednotlivé per-fond běhy patřící do jednoho vícefondového seskupení (sledování průběhu).
+     */
+    @route("/funds-change/{fundsChangeId}")
+    @get op getFundsChangeRuns(
+        @path fundsChangeId: integer;
+    ): FundsChangeRun[];
 }
 
 @tag("descitems")

@@ -13,7 +13,7 @@
                 <item>
                     <type code="ZP2015_NAME"/>
                     <type code="ZP2015_FORMAL_TITLE"/>
-                    <type code="ZP2015_TITLE"/>
+                    <type code="ZP2015_CONTENT"/>
                 </item>
                 <item type="ZP2015_UNIT_DATE" />
                 <item type="ZP2015_OTHER_ID" max-count="2">
@@ -29,7 +29,7 @@
                 <item>
                     <type code="ZP2015_NAME"/>
                     <type code="ZP2015_FORMAL_TITLE"/>
-                    <type code="ZP2015_TITLE"/>
+                    <type code="ZP2015_CONTENT"/>
                 </item>
                 <item type="ZP2015_UNIT_DATE" />
                 <item type="ZP2015_OTHER_ID" max-count="2">
@@ -129,10 +129,10 @@
                 <name>Hlavní popis jednotky</name>
                 <type code="ZP2015_NAME" width="0"/>
                 <type code="ZP2015_NAME_PUBLIC" width="0"/>
-                <type code="ZP2015_TITLE" width="0"/>
-                <type code="ZP2015_TITLE_PUBLIC" width="0"/>
                 <!-- 4.2.4 Formální název jednotky popisu -->
                 <type code="ZP2015_FORMAL_TITLE" width="0"/>
+                <type code="ZP2015_CONTENT" width="0"/>
+                <type code="ZP2015_CONTENT_PUBLIC" width="0"/>
                 <type code="ZP2015_UNIT_DATE" width="1"/>
                 <type code="ZP2015_UNIT_DATE_BULK" width="1"/>
                 <type code="ZP2015_UNIT_DATE_TEXT" width="2"/>
@@ -352,7 +352,7 @@
             <width>250</width>
         </ns6:item-type>
         <!-- Obsah, regest -->
-        <ns6:item-type code="ZP2015_TITLE">
+        <ns6:item-type code="ZP2015_CONTENT">
             <show-default>true</show-default>
             <width>250</width>
         </ns6:item-type>

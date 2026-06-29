@@ -451,7 +451,7 @@
 		<expression><![CDATA[$F{node}.getSingleItem( "ZP2015_UNIT_DATE_TEXT") == null ? $F{node}.getSingleItemValue( "ZP2015_UNIT_DATE" ) : $F{node}.getSingleItemValue( "ZP2015_UNIT_DATE_TEXT" )]]></expression>
 	</variable>
 	<variable name="levelName" class="java.lang.String">
-		<expression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0 ? $P{fund}.getName() : $F{node}.hasItem("ZP2015_NAME")?$F{node}.getSingleItemValue("ZP2015_NAME"): $F{node}.getSingleItemValue("ZP2015_TITLE")]]></expression>
+		<expression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0 ? $P{fund}.getName() : $F{node}.hasItem("ZP2015_NAME")?$F{node}.getSingleItemValue("ZP2015_NAME"): $F{node}.getSingleItemValue("ZP2015_CONTENT")]]></expression>
 	</variable>
 	<variable name="refNumber" class="java.lang.String">
 		<expression><![CDATA[$V{isRoot} ? $V{rootRef} : 
@@ -613,9 +613,9 @@ $P{rootShortDetailFormatter}.format($F{node})]]></expression>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 		</band>
 		<band height="13">
-			<printWhenExpression><![CDATA[$F{node}.hasItem( "ZP2015_TITLE" ) && $F{node}.hasItem( "ZP2015_NAME" )]]></printWhenExpression>
+			<printWhenExpression><![CDATA[$F{node}.hasItem( "ZP2015_CONTENT" ) && $F{node}.hasItem( "ZP2015_NAME" )]]></printWhenExpression>
 			<element kind="textField" uuid="c690dfc9-3d3b-463a-a811-21c5eaf963f1" key="" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="13" backcolor="#FF00CC" markup="html" pdfEncoding="Cp1250" textAdjust="StretchHeight" pattern="" removeLineWhenBlank="true" style="Item">
-				<expression><![CDATA[$F{node}.getSingleItemValue( "ZP2015_TITLE" )]]></expression>
+				<expression><![CDATA[$F{node}.getSingleItemValue( "ZP2015_CONTENT" )]]></expression>
 				<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			</element>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>

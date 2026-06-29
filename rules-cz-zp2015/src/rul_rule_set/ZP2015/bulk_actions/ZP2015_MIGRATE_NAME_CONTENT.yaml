@@ -1,0 +1,18 @@
+!ContentMigration
+name: Migrace na Název / Obsah, tematický popis
+rules:
+  # Obsah, tematický popis -> Název (pouze krátké jednořádkové hodnoty; TEXT -> STRING)
+  - source: ZP2015_CONTENT
+    target: ZP2015_NAME
+    conditions:
+      - itemType: ZP2015_CONTENT
+        maxLength: 250
+  # Obsah, tematický popis (veřejný) -> Název (veřejný)
+  - source: ZP2015_CONTENT_PUBLIC
+    target: ZP2015_NAME_PUBLIC
+    conditions:
+      - itemType: ZP2015_CONTENT_PUBLIC
+        maxLength: 250
+  # Tematický popis -> Obsah, tematický popis (jen pokud je cíl prázdný – implicitní guard)
+  - source: ZP2015_UNIT_CONTENT
+    target: ZP2015_CONTENT

@@ -56,12 +56,12 @@ String generate(final GroovyGenCtx ctx) {
       .appendItemWithSpecLabel(ZP2015_OTHER_ID, "ZP2015_OTHERID_MATRIXID")
 
     // add title - při prázdné hodnotě na této úrovni se použije hodnota z nejbližší nadřazené úrovně
-    GroovyItem title = ctx.getFirstItemByItemType("ZP2015_TITLE")
+    GroovyItem title = ctx.getFirstItemByItemType("ZP2015_NAME")
     if (title != null && StringUtils.isNotEmpty(title.getValue())) {
         rb.appendWithLimit(title.getValue(), 100)
     } else {
         // hodnota převzatá z vyšší úrovně se pro odlišení vkládá do hranatých závorek
-        GroovyItem parentTitle = ctx.getFirstParentItemByItemType("ZP2015_TITLE")
+        GroovyItem parentTitle = ctx.getFirstParentItemByItemType("ZP2015_NAME")
         if (parentTitle != null) {
             rb.appendWithLimit(parentTitle.getValue(), 100, "[", "]")
         }
