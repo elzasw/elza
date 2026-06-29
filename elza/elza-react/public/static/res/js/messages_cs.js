@@ -1733,6 +1733,7 @@ var messages = {
     "export.exportFilter": "Exportní filtr",
     "export.includeAccessPoints": "Exportovat entity",
     "export.includeUUID": "Exportovat UUID",
+    "export.includeDaos": "Exportovat digitální archivní objekty (DAO)",
     "export.generating": "Generování exportu...",
     "export.fail": "Soubor nelze stáhnout",
     "export.success": "Soubor úspěšně vygenerován",

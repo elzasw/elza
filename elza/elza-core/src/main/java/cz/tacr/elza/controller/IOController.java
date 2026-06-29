@@ -75,6 +75,7 @@ public class IOController implements IoApi {
         deExportParams.setExportFilter(exportParams.getExportFilter());
         deExportParams.setIncludeUUID(exportParams.getIncludeUUID());
         deExportParams.setIncludeAccessPoints(exportParams.getIncludeAccessPoints());
+        deExportParams.setIncludeDaos(exportParams.getIncludeDaos());
 
         String fileName = null;
 

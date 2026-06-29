@@ -41,6 +41,8 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
 
     private final boolean includeUuid;
 
+    private final boolean includeDaos;
+
     /**
      * descItemObjectIds of desc items dropped by the export filter on each processed node.
      * Populated only when {@link #includeAccessPoints} is false.
@@ -57,12 +59,14 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
                            final int batchSize,
                            final NodeCacheService nodeCacheService,
                            final boolean includeAccessPoints,
-                           final boolean includeUuid) {
+                           final boolean includeUuid,
+                           final boolean includeDaos) {
         super(batchSize);
         this.daoLoader = new DaoLoader(em, batchSize);
         this.nodeCacheService = nodeCacheService;
         this.includeAccessPoints = includeAccessPoints;
         this.includeUuid = includeUuid;
+        this.includeDaos = includeDaos;
     }
 
     @Override
@@ -70,8 +74,8 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
         List<Integer> nodeIds = getNodeIds(entries);
         Map<Integer, RestoredNode> cachedNodes = nodeCacheService.getNodes(nodeIds);
 
-        // fetch connected daos
-        Map<Integer, ArrDao> daoMap = loadDaos(cachedNodes);
+        // fetch connected daos (only when requested)
+        Map<Integer, ArrDao> daoMap = includeDaos ? loadDaos(cachedNodes) : new HashMap<>();
 
         for (int i = 0; i < entries.size(); i++) {
             BatchEntry entry = entries.get(i);
@@ -186,14 +190,16 @@ public class LevelInfoLoader extends AbstractBatchLoader<ArrLevel, LevelInfoImpl
             }
         }
 
-        // add daos
-        List<ArrDaoLink> daoLinks = cachedNode.getDaoLinks();
-        if (daoLinks != null) {
-            daoLinks.forEach(daoLink -> {
-                ArrDao dao = daoMap.get(daoLink.getDaoId());
-                Objects.requireNonNull(dao, "Missing dao: " + daoLink.getDaoId());
-                levelInfo.addDao(dao);
-            });
+        // add daos (only when requested)
+        if (includeDaos) {
+            List<ArrDaoLink> daoLinks = cachedNode.getDaoLinks();
+            if (daoLinks != null) {
+                daoLinks.forEach(daoLink -> {
+                    ArrDao dao = daoMap.get(daoLink.getDaoId());
+                    Objects.requireNonNull(dao, "Missing dao: " + daoLink.getDaoId());
+                    levelInfo.addDao(dao);
+                });
+            }
         }
 
         return levelInfo;

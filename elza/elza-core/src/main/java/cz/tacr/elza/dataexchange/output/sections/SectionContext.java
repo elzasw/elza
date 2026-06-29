@@ -61,7 +61,7 @@ public class SectionContext {
                    DataService dataService) {
         this.context = Objects.requireNonNull(ctx);
         this.staticData = ctx.getStaticData();
-        this.levelInfoLoader = new LevelInfoLoader(em, ctx.getBatchSize(), nodeCacheService, ctx.isIncludeAccessPoints(), ctx.isIncludeUUID());
+        this.levelInfoLoader = new LevelInfoLoader(em, ctx.getBatchSize(), nodeCacheService, ctx.isIncludeAccessPoints(), ctx.isIncludeUUID(), ctx.isIncludeDaos());
         this.structObjLoader = new StructObjectInfoLoader(em, ctx.getBatchSize(), this.staticData, dataService);
         this.dmsFileLoader = new DmsFileLoader(em, ctx.getBatchSize(), resourceResolver);
         this.fundVersion = Objects.requireNonNull(fundVersion);
