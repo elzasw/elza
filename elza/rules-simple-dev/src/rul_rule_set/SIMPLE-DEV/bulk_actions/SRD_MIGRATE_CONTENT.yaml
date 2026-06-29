@@ -1,0 +1,12 @@
+!ContentMigration
+name: Migrace obsahu (test)
+rules:
+  # Obsah, regest -> Název (short single-line values only; TEXT -> STRING)
+  - source: SRD_TITLE
+    target: SRD_NAME
+    conditions:
+      - itemType: SRD_TITLE
+        maxLength: 250
+  # Tematický popis -> Obsah, regest (only when Obsah is empty; no merge is implicit)
+  - source: SRD_UNIT_CONTENT
+    target: SRD_TITLE

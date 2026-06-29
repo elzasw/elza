@@ -334,7 +334,7 @@ when
     $activeLevel : ActiveLevel( $ownDescItems: ownDescItems)
     $l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES")) from $ownDescItems
     // check if string in DescItem is longer then 250 characters
-    $di: DescItem( type in ("ZP2015_TITLE", "ZP2015_TITLE_PUBLIC") && $label: string ) from $ownDescItems
+    $di: DescItem( type in ("ZP2015_CONTENT", "ZP2015_CONTENT_PUBLIC") && $label: string ) from $ownDescItems
     eval( $label.length()> 250)
 then
     dvResults.createError($di.getDescItemId(), "Obsah (budoucí Název) na úrovni série přesahuje délku 250 znaků, délka: "+$di.getString().length()+".", "ZP2015_POL_BASIC");
@@ -345,9 +345,9 @@ rule "Kontrola přípustných znaků v nadpisu na sérii"
 when
     $activeLevel : ActiveLevel( $ownDescItems: ownDescItems)
     $l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES")) from $ownDescItems
-    $di: DescItem( type in ("ZP2015_TITLE", "ZP2015_TITLE_PUBLIC") && $label: string ) from $ownDescItems
+    $di: DescItem( type in ("ZP2015_CONTENT", "ZP2015_CONTENT_PUBLIC") && $label: string ) from $ownDescItems
     eval( $label.contains("\n"))
-    // $di: DescItem( type=="ZP2015_TITLE" && string matches ".*\\n.*") from $ownDescItems
+    // $di: DescItem( type=="ZP2015_CONTENT" && string matches ".*\\n.*") from $ownDescItems
 then
     dvResults.createError($di.getDescItemId(), "Obsah (budoucí Název) na úrovni série je na více samostatných řádcích.", "ZP2015_POL_BASIC");
 end
@@ -359,7 +359,7 @@ when
 	$l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART")) from $ownDescItems
     // check if string in DescItem is longer then 250 characters
     DescItem(type=="ZP2015_UNIT_CONTENT") from $ownDescItems
-    $di: DescItem( type=="ZP2015_TITLE" && $label: string ) from $ownDescItems
+    $di: DescItem( type=="ZP2015_CONTENT" && $label: string ) from $ownDescItems
     eval( $label.length()> 250)    
 then
     dvResults.createError($di.getDescItemId(), "Obsah (budoucí Název) na složce, jednotlivosti nebo její části přesahuje délku 250 znaků při současném uvedení prvku Tematický popis, délka: "+$di.getString().length()+".", "ZP2015_POL_BASIC");
@@ -370,9 +370,9 @@ when
     $activeLevel : ActiveLevel( $items: descItems, $ownDescItems: ownDescItems)
 	$l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART")) from $ownDescItems
 	DescItem(type=="ZP2015_UNIT_CONTENT") from $ownDescItems
-    $di: DescItem( type=="ZP2015_TITLE" && $label: string ) from $ownDescItems
+    $di: DescItem( type=="ZP2015_CONTENT" && $label: string ) from $ownDescItems
     eval( $label.contains("\n"))
-//    $di: DescItem( type=="ZP2015_TITLE" && string matches ".*\\n.*") from $ownDescItems
+//    $di: DescItem( type=="ZP2015_CONTENT" && string matches ".*\\n.*") from $ownDescItems
 then
     dvResults.createError($di.getDescItemId(), "Obsah (budoucí Název) na složce, jednotlivosti nebo její části je na více samostatných řádcích při současném uvedení prvku Tematický popis.", "ZP2015_POL_BASIC");
 end
@@ -385,7 +385,7 @@ when
 	$l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART")) from $ownDescItems
     not DescItem(type=="ZP2015_UNIT_CONTENT") from $ownDescItems
 	// check if string in DescItem is longer then 250 characters
-	$di: DescItem( type=="ZP2015_TITLE" && $label: string ) from $ownDescItems
+	$di: DescItem( type=="ZP2015_CONTENT" && $label: string ) from $ownDescItems
     eval( $label.length()> 250)    
 then
     dvResults.createError($di.getDescItemId(), "Obsah (budoucí Název) přesahuje doporučenou délku 250 znaků, délka: "+$di.getString().length()
@@ -398,9 +398,9 @@ when
 	$arrType: DescItem(type=="ZP2015_ARRANGEMENT_TYPE" ) from $items
 	$l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART")) from $ownDescItems
     not DescItem(type=="ZP2015_UNIT_CONTENT") from $ownDescItems
-	$di: DescItem( type=="ZP2015_TITLE" && $label: string ) from $ownDescItems
+	$di: DescItem( type=="ZP2015_CONTENT" && $label: string ) from $ownDescItems
     eval( $label.contains("\n"))
-//    $di: DescItem( type=="ZP2015_TITLE" && string matches ".*\\n.*") from $ownDescItems
+//    $di: DescItem( type=="ZP2015_CONTENT" && string matches ".*\\n.*") from $ownDescItems
 then
     dvResults.createError($di.getDescItemId(), "Obsah (budoucí Název) je na více samostatných řádcích"
 				+ ", způsob pořádání: "+$arrType.getSpecName()+".", "ZP2015_POL_EXTENDED");
@@ -413,7 +413,7 @@ when
 	$arrType: DescItem(type=="ZP2015_ARRANGEMENT_TYPE" ) from $items    
 	$l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART")) from $ownDescItems
     // check if string in DescItem is longer then 250 characters
-	$di: DescItem( type=="ZP2015_TITLE_PUBLIC" && $label: string ) from $ownDescItems
+	$di: DescItem( type=="ZP2015_CONTENT_PUBLIC" && $label: string ) from $ownDescItems
     eval( $label.length()> 250)    
 then
     dvResults.createError($di.getDescItemId(), "Obsah s omezením přístupnosti (budoucí Název) přesahuje doporučenou délku 250 znaků, délka: "+$di.getString().length()
@@ -425,9 +425,9 @@ when
     $activeLevel : ActiveLevel( $items: descItems, $ownDescItems: ownDescItems)
 	$arrType: DescItem(type=="ZP2015_ARRANGEMENT_TYPE" ) from $items
 	$l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART")) from $ownDescItems
-    $di: DescItem( type=="ZP2015_TITLE_PUBLIC" && $label: string ) from $ownDescItems
+    $di: DescItem( type=="ZP2015_CONTENT_PUBLIC" && $label: string ) from $ownDescItems
     eval( $label.contains("\n"))
-//    $di: DescItem( type=="ZP2015_TITLE" && string matches ".*\\n.*") from $ownDescItems
+//    $di: DescItem( type=="ZP2015_CONTENT" && string matches ".*\\n.*") from $ownDescItems
 then
     dvResults.createError($di.getDescItemId(), "Obsah s omezením přístupnosti (budoucí Název) je na více samostatných řádcích"
 				+ ", způsob pořádání: "+$arrType.getSpecName()+".", "ZP2015_POL_EXTENDED");

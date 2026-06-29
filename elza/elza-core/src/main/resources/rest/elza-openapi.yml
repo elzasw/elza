@@ -823,6 +823,71 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - accesspoints
+  /action/funds-change/{fundsChangeId}:
+    get:
+      operationId: BulkAction_getFundsChangeRuns
+      description: Vrátí jednotlivé per-fond běhy patřící do jednoho vícefondového seskupení (sledování průběhu).
+      parameters:
+        - name: fundsChangeId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FundsChangeRun'
+      tags:
+        - funds
+  /action/funds/group:
+    post:
+      operationId: BulkAction_groupFundsByRuleSet
+      description: |-
+        Rozdělí vybrané fondy podle pravidel a vrátí dostupné hromadné akce pro každou skupinu.
+        Vstupem je buď explicitní seznam fondů, nebo filtr (výběr všech odpovídajících fondů).
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FundsActionGroupResult'
+      tags:
+        - funds
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FundsActionGroupRequest'
+  /action/queue-multi:
+    post:
+      operationId: BulkAction_queueMultiFundAction
+      description: |-
+        Spustí hromadnou akci nad více fondy najednou. Pro každý platný fond naplánuje
+        samostatný běh; fondy mimo daná pravidla jsou přeskočeny a vráceny ve výsledku.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultiFundActionResult'
+      tags:
+        - funds
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MultiFundActionRequest'
   /admin/arrangement/missing-cached-nodes:
     get:
       operationId: Admin_syncNodeCache
@@ -4696,6 +4761,37 @@ components:
           allOf:
             - $ref: '#/components/schemas/ItemData'
           description: item data
+    BulkAction:
+      type: object
+      required:
+        - code
+        - name
+        - fastAction
+      properties:
+        code:
+          type: string
+          description: Kód akce
+        name:
+          type: string
+          description: Název akce
+        description:
+          type: string
+          description: Popis akce
+        fastAction:
+          type: boolean
+          description: Příznak rychlé akce
+      description: Hromadná akce, kterou lze spustit nad fondem.
+    BulkActionRunState:
+      type: string
+      enum:
+        - WAITING
+        - PLANNED
+        - RUNNING
+        - FINISHED
+        - ERROR
+        - INTERRUPTED
+        - OUTDATED
+      description: Stav běhu hromadné akce.
     ConnectionType:
       type: string
       enum:
@@ -5310,6 +5406,10 @@ components:
         includeAccessPoints:
           type: boolean
           default: true
+        includeDaos:
+          type: boolean
+          default: true
+          description: zahrnout do exportu připojené digitální archivní objekty (DAO)
       description: Parameters of archive file export
     ExportRequestStatus:
       type: object
@@ -5855,6 +5955,120 @@ components:
           items:
             type: integer
       description: Specifies multiple sections for fund version
+    FundsActionGroup:
+      type: object
+      required:
+        - ruleSetId
+        - ruleSetCode
+        - ruleSetName
+        - fundCount
+        - fundVersionIds
+        - actions
+      properties:
+        ruleSetId:
+          type: integer
+          description: Identifikátor pravidel
+        ruleSetCode:
+          type: string
+          description: Kód pravidel
+        ruleSetName:
+          type: string
+          description: Název pravidel
+        fundCount:
+          type: integer
+          description: Počet fondů ve skupině
+        fundVersionIds:
+          type: array
+          items:
+            type: integer
+          description: Identifikátory otevřených verzí fondů ve skupině
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkAction'
+          description: Hromadné akce dostupné pro tato pravidla ve vícefondovém režimu
+      description: Skupina fondů sdílejících stejná pravidla spolu s dostupnými hromadnými akcemi.
+    FundsActionGroupRequest:
+      type: object
+      properties:
+        fundIds:
+          type: array
+          items:
+            type: integer
+          description: Identifikátory vybraných fondů
+        search:
+          type: string
+          description: Filtr pro výběr všech odpovídajících fondů
+      description: |-
+        Požadavek na seskupení vybraných fondů podle pravidel pro spuštění hromadné akce nad více fondy.
+        Vyplní se buď `fundIds` (explicitní výběr, má přednost), nebo `search` (všechny fondy odpovídající filtru).
+    FundsActionGroupResult:
+      type: object
+      required:
+        - groups
+        - skipped
+      properties:
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundsActionGroup'
+          description: Skupiny fondů podle pravidel
+        skipped:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundsActionSkipped'
+          description: Přeskočené fondy
+      description: Výsledek seskupení vybraných fondů pro spuštění hromadné akce nad více fondy.
+    FundsActionSkipped:
+      type: object
+      required:
+        - id
+        - reason
+      properties:
+        id:
+          type: integer
+          description: Identifikátor fondu (při seskupení) nebo verze fondu (při spuštění)
+        reason:
+          type: string
+          description: Důvod přeskočení (např. NO_OPEN_VERSION, ACTION_NOT_IN_RULESET)
+      description: Přeskočený fond při přípravě nebo spuštění hromadné akce nad více fondy.
+    FundsChangeRun:
+      type: object
+      required:
+        - id
+        - fundVersionId
+        - code
+        - state
+      properties:
+        id:
+          type: integer
+          description: Identifikátor běhu
+        fundVersionId:
+          type: integer
+          description: Identifikátor verze fondu
+        code:
+          type: string
+          description: Kód hromadné akce
+        state:
+          allOf:
+            - $ref: '#/components/schemas/BulkActionRunState'
+          description: Stav běhu
+        datePlanned:
+          type: string
+          format: date-time
+          description: Čas naplánování
+        dateStarted:
+          type: string
+          format: date-time
+          description: Čas zahájení
+        dateFinished:
+          type: string
+          format: date-time
+          description: Čas dokončení
+        error:
+          type: string
+          description: Chybové hlášení
+      description: Stav jednoho per-fond běhu v rámci vícefondového seskupení (pro sledování průběhu).
     ImportFundData:
       type: object
       properties:
@@ -6186,6 +6400,39 @@ components:
         - POSSIBLE
         - IMPOSSIBLE
       description: Item mandatory type
+    MultiFundActionRequest:
+      type: object
+      required:
+        - fundVersionIds
+        - code
+      properties:
+        fundVersionIds:
+          type: array
+          items:
+            type: integer
+          description: Identifikátory otevřených verzí fondů
+        code:
+          type: string
+          description: Kód hromadné akce
+      description: Požadavek na spuštění hromadné akce nad více fondy najednou.
+    MultiFundActionResult:
+      type: object
+      required:
+        - queuedCount
+        - skipped
+      properties:
+        fundsChangeId:
+          type: integer
+          description: Identifikátor seskupení (arr_funds_change); chybí, pokud nebyl spuštěn žádný běh
+        queuedCount:
+          type: integer
+          description: Počet naplánovaných běhů
+        skipped:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundsActionSkipped'
+          description: Přeskočené fondy
+      description: Výsledek spuštění hromadné akce nad více fondy.
     MultimatchContainsFilter:
       type: object
       required:

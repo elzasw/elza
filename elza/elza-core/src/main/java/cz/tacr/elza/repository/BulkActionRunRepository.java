@@ -44,6 +44,15 @@ public interface BulkActionRunRepository extends JpaRepository<ArrBulkActionRun,
     List<ArrBulkActionRun> findByFundVersionIdAndBulkActionCode(@Param(value = "fundVersionId") final Integer fundVersionId,
                                                                 @Param(value = "code") final String code);
 
+    /**
+     * Vrátí všechny per-fond běhy patřící do jednoho vícefondového seskupení (arr_funds_change).
+     *
+     * @param fundsChangeId id seskupení
+     * @return list běhů hromadné akce seřazený podle id
+     */
+    @Query(value = "SELECT ba FROM arr_bulk_action_run ba WHERE ba.fundsChange.fundsChangeId = :fundsChangeId ORDER BY ba.bulkActionRunId ASC")
+    List<ArrBulkActionRun> findByFundsChangeId(@Param(value = "fundsChangeId") final Integer fundsChangeId);
+
     @Query(value = "SELECT ba.bulkActionRunId from arr_bulk_action_run ba WHERE ba.state = :state GROUP BY ba.fundVersion,ba.bulkActionRunId ORDER BY ba.bulkActionRunId ASC")
     List<Integer> findIdByStateGroupByFundOrderById(@Param(value = "state") final State state);
 

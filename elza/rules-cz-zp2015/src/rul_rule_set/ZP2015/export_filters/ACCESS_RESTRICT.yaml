@@ -306,13 +306,19 @@ defs:
         itemSpec: ZP2015_RESTRICTION_ABSTRACT
     result:
       hiddenItems:
-        - itemType: ZP2015_TITLE
-        - itemType: ZP2015_TITLE_PUBLIC
+        - itemType: ZP2015_NAME
+        - itemType: ZP2015_NAME_PUBLIC
+        - itemType: ZP2015_CONTENT
+        - itemType: ZP2015_CONTENT_PUBLIC
       replaceItems:
         - source:
-            itemType: ZP2015_TITLE_PUBLIC
+            itemType: ZP2015_NAME_PUBLIC
           target:
-            itemType: ZP2015_TITLE
+            itemType: ZP2015_NAME
+        - source:
+            itemType: ZP2015_CONTENT_PUBLIC
+          target:
+            itemType: ZP2015_CONTENT
       addItemsOnChange:
         - itemType: ZP2015_APPLIED_RESTRICTION
           itemSpec: ZP2015_APPLIED_RESTRICTION_ABSTRACT
@@ -324,13 +330,19 @@ defs:
        itemSpec: ZP2015_RESTRICTION_LIMITED
     result:
       hiddenItems:
-        - itemType: ZP2015_TITLE
-        - itemType: ZP2015_TITLE_PUBLIC
+        - itemType: ZP2015_NAME
+        - itemType: ZP2015_NAME_PUBLIC
+        - itemType: ZP2015_CONTENT
+        - itemType: ZP2015_CONTENT_PUBLIC
       replaceItems:
-        - source: 
-            itemType: ZP2015_TITLE_PUBLIC
+        - source:
+            itemType: ZP2015_NAME_PUBLIC
           target:
-            itemType: ZP2015_TITLE
+            itemType: ZP2015_NAME
+        - source:
+            itemType: ZP2015_CONTENT_PUBLIC
+          target:
+            itemType: ZP2015_CONTENT
       addItemsOnChange:
         - itemType: ZP2015_APPLIED_RESTRICTION
           itemSpec: ZP2015_APPLIED_RESTRICTION_LIMITED

@@ -12,10 +12,12 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import jakarta.transaction.Transactional;
@@ -38,10 +40,17 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.BulkActionRunState;
 import cz.tacr.elza.controller.vo.CreateFund;
+import cz.tacr.elza.controller.vo.FundsActionGroupRequest;
+import cz.tacr.elza.controller.vo.FundsActionGroupResult;
+import cz.tacr.elza.controller.vo.FundsChangeRun;
+import cz.tacr.elza.controller.vo.MultiFundActionRequest;
+import cz.tacr.elza.controller.vo.MultiFundActionResult;
 import cz.tacr.elza.controller.vo.FindFundsResult;
 import cz.tacr.elza.controller.vo.FsItem;
 import cz.tacr.elza.controller.vo.FsItemType;
@@ -58,6 +67,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.dataexchange.output.IOExportFundsCsv;
 import cz.tacr.elza.dataexchange.output.IOExportWorker;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDigitalRepository;
@@ -127,6 +137,9 @@ public class FundController implements FundsApi {
     @Autowired
     private FundLevelService fundLevelService;
 
+    @Autowired
+    private BulkActionService bulkActionService;
+
     // POST /fund
     @Override
     @Transactional
@@ -185,6 +198,49 @@ public class FundController implements FundsApi {
 
         int id = ioExportWorker.enqueue(requestId -> new IOExportFundsCsv(userId, requestId, downloadFileName, searchParams));
         return ResponseEntity.ok(id);
+    }
+
+    // POST /action/funds/group
+    @Override
+    @Transactional
+    public ResponseEntity<FundsActionGroupResult> bulkActionGroupFundsByRuleSet(@RequestBody FundsActionGroupRequest request) {
+        boolean hasFundIds = request.getFundIds() != null && !request.getFundIds().isEmpty();
+        Validate.isTrue(hasFundIds || request.getSearch() != null, "Musí být vyplněn seznam fondů nebo filtr");
+        return ResponseEntity.ok(bulkActionService.groupFundsByRuleSet(request.getFundIds(), request.getSearch()));
+    }
+
+    // POST /action/queue-multi
+    @Override
+    @Transactional
+    public ResponseEntity<MultiFundActionResult> bulkActionQueueMultiFundAction(@RequestBody MultiFundActionRequest request) {
+        Validate.isTrue(StringUtils.isNotBlank(request.getCode()), "Kód musí být vyplněn");
+        Validate.notEmpty(request.getFundVersionIds(), "Musí být vybrán alespoň jeden archivní soubor");
+        UsrUser user = userService.getLoggedUser();
+        Integer userId = user == null ? null : user.getUserId();
+        return ResponseEntity.ok(bulkActionService.queueMulti(userId, request.getCode(), request.getFundVersionIds()));
+    }
+
+    // GET /action/funds-change/{fundsChangeId}
+    @Override
+    @Transactional
+    public ResponseEntity<List<FundsChangeRun>> bulkActionGetFundsChangeRuns(@PathVariable("fundsChangeId") Integer fundsChangeId) {
+        List<FundsChangeRun> runs = bulkActionService.getRunsByFundsChange(fundsChangeId).stream()
+                .map(run -> toFundsChangeRun(run))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(runs);
+    }
+
+    private FundsChangeRun toFundsChangeRun(final ArrBulkActionRun run) {
+        return new FundsChangeRun(run.getBulkActionRunId(), run.getFundVersionId(), run.getBulkActionCode(),
+                BulkActionRunState.fromValue(run.getState().name()))
+                .datePlanned(toOffsetDateTime(run.getDatePlanned()))
+                .dateStarted(toOffsetDateTime(run.getDateStarted()))
+                .dateFinished(toOffsetDateTime(run.getDateFinished()))
+                .error(run.getError());
+    }
+
+    private static OffsetDateTime toOffsetDateTime(final Date date) {
+        return date == null ? null : date.toInstant().atOffset(ZoneOffset.UTC);
     }
 
     // GET /fund/{id}

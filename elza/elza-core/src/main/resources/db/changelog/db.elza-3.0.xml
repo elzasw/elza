@@ -1274,4 +1274,51 @@
                       columnDataType="${type.text}"/>
     </changeSet>
 
+    <changeSet id="20260626120000" author="ppy">
+        <!-- PP Název jednotky popisu: přejmenování kódů prvků popisu
+             ZP2015_TITLE -> ZP2015_CONTENT a ZP2015_TITLE_PUBLIC -> ZP2015_CONTENT_PUBLIC.
+             Import balíčku páruje typy podle kódu, proto musí být kód v DB přejmenován
+             ještě před autoimportem balíčku (Liquibase běží dříve než StartupService).
+             item_type_id zůstává, navázaná data (arr_item/ap_item) se nemění. -->
+        <sql dbms="postgresql">UPDATE rul_item_type SET code = 'ZP2015_CONTENT' WHERE code = 'ZP2015_TITLE'</sql>
+        <sql dbms="postgresql">UPDATE rul_item_type SET code = 'ZP2015_CONTENT_PUBLIC' WHERE code = 'ZP2015_TITLE_PUBLIC'</sql>
+    </changeSet>
+
+    <changeSet id="20260628120000" author="ppy">
+        <!-- Grouping for operations that span multiple funds. A single multi-fund bulk
+             action creates one arr_funds_change row referenced by the per-fund
+             arr_bulk_action_run records, so the whole batch can be tracked together.
+             Generic by design (change_type) so future cross-fund operations can reuse it. -->
+        <createTable tableName="arr_funds_change">
+            <column name="funds_change_id" type="int">
+                <constraints primaryKey="true" primaryKeyName="pk_arr_funds_change" nullable="false"/>
+            </column>
+            <column name="change_type" type="nvarchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="int">
+                <constraints nullable="true"/>
+            </column>
+            <column name="create_date" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Nullable: ordinary single-fund runs leave it null; set only for runs that are
+             part of a multi-fund batch. -->
+        <addColumn tableName="arr_bulk_action_run">
+            <column name="funds_change_id" type="int">
+                <constraints nullable="true"
+                             foreignKeyName="fk_arr_bulk_action_run_funds_change"
+                             referencedTableName="arr_funds_change"
+                             referencedColumnNames="funds_change_id"/>
+            </column>
+        </addColumn>
+
+        <insert tableName="db_hibernate_sequences">
+            <column name="sequence_name" value="arr_funds_change|funds_change_id"/>
+            <column name="next_val" value="0"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>
