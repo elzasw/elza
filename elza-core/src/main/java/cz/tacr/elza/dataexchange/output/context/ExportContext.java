@@ -32,6 +32,8 @@ public class ExportContext {
 
     private boolean includeUUID;
 
+    private boolean includeDaos;
+
     public ExportContext(ExportBuilder builder, StaticDataProvider staticData, int batchSize) {
         this.builder = Validate.notNull(builder);
         this.staticData = Validate.notNull(staticData);
@@ -98,5 +100,13 @@ public class ExportContext {
 
     public void setIncludeAccessPoints(boolean includeAccessPoints) {
         this.includeAccessPoints = includeAccessPoints;
+    }
+
+    public boolean isIncludeDaos() {
+        return includeDaos;
+    }
+
+    public void setIncludeDaos(boolean includeDaos) {
+        this.includeDaos = includeDaos;
     }
 }

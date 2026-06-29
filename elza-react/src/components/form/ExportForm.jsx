@@ -82,6 +82,12 @@ class ExportForm extends AbstractReactComponent {
                                     type="checkbox"
                                     label={i18n('export.includeAccessPoints')}
                                 />
+                                <Field
+                                    name="includeDaos"
+                                    component={FormInputField}
+                                    type="checkbox"
+                                    label={i18n('export.includeDaos')}
+                                />
                             </>
                     )}
                 </Modal.Body>

@@ -237,9 +237,10 @@ public class DEExportService {
             context.setExportFilter(expFilter);
         }
 
-        // set flags include AP && UUID
+        // set flags include AP && UUID && DAOs
         context.setIncludeAccessPoints(params.isIncludeAccessPoints());
         context.setIncludeUUID(params.isIncludeUUID());
+        context.setIncludeDaos(params.isIncludeDaos());
 
         // call all readers
         for (ExportPhase phase : ExportPhase.values()) {
