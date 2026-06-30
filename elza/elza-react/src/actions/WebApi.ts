@@ -1,5 +1,6 @@
 // @ts-ignore
 import AjaxUtils from '../components/AjaxUtils';
+import { Api } from '../api';
 import { CoordinateFileType, DEFAULT_LIST_SIZE, JAVA_ATTR_CLASS } from '../constants';
 import {
     ArrRefTemplateEditVO,
@@ -24,12 +25,11 @@ import { ApPartFormVO } from '../api/ApPartFormVO';
 import { ApTypeVO } from '../api/ApTypeVO';
 import { RulDataTypeVO } from '../api/RulDataTypeVO';
 import { RulDescItemTypeExtVO } from '../api/RulDescItemTypeExtVO';
-import { RulPartTypeVO } from '../api/RulPartTypeVO';
 import { FilteredResultVO } from '../api/FilteredResultVO';
 import { ApSearchType } from '../typings/globals';
 import * as UrlBuilder from '../utils/UrlBuilder';
 import { ArchiveEntityResultListVO } from '../api/ArchiveEntityResultListVO';
-import { SearchFilterVO } from 'api/SearchFilterVO';
+import type { ApAdvanceSearchFilter } from 'elza-api';
 import { SyncsFilterVO } from '../api/SyncsFilterVO';
 import { ExtSyncsQueueResultListVO } from '../api/ExtSyncsQueueResultListVO';
 import { ApViewSettings } from '../api/ApViewSettings';
@@ -118,10 +118,6 @@ export class WebApiCls {
             luceneQuery: luceneQuery,
         };
         return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/fulltext', null, data);
-    }
-
-    selectNode(nodeUuid) {
-        return AjaxUtils.ajaxGet(WebApiCls.arrangementUrl + '/selectNode/' + nodeUuid);
     }
 
     getDaDaoListByAipId(id) {
@@ -710,28 +706,27 @@ export class WebApiCls {
         searchTypeName?: ApSearchType,
         searchTypeUsername?: ApSearchType,
         revState = null,
-        searchFilter?: SearchFilterVO,
+        searchFilter?: ApAdvanceSearchFilter,
     ): Promise<FilteredResultVO<ApAccessPointVO>> {
-        return AjaxUtils.ajaxPost(
-            WebApiCls.registryUrl + '/search',
-            {
-                search,
-                from,
-                count,
-                itemTypeId,
-                itemSpecId,
-                parentRecordId: registryParent,
-                apTypeId,
-                versionId,
-                scopeId,
-                excludeInvalid,
-                state,
-                searchTypeName,
-                searchTypeUsername,
-                revState,
-            },
-            searchFilter,
-        );
+        // parentRecordId / excludeInvalid are not honored by the new /accesspoint/search endpoint
+        // (they were unused legacy parameters that never reached the backend filter pipeline).
+        return Api.accesspoints
+            .accessPointSearch({
+                search: search ?? undefined,
+                from: from ?? undefined,
+                count: count ?? undefined,
+                apTypeId: apTypeId ?? undefined,
+                versionId: versionId ?? undefined,
+                itemTypeId: itemTypeId ?? undefined,
+                itemSpecId: itemSpecId ?? undefined,
+                scopeId: scopeId ?? undefined,
+                state: state ?? undefined,
+                revState: revState ?? undefined,
+                searchTypeName: searchTypeName as any,
+                searchTypeUsername: searchTypeUsername as any,
+                searchFilter: searchFilter as any,
+            })
+            .then(resp => ({ count: resp.data.count, rows: resp.data.rows ?? [] } as FilteredResultVO<ApAccessPointVO>));
     }
 
     /**
@@ -751,7 +746,7 @@ export class WebApiCls {
         max: number,
         itemTypeId: number,
         itemSpecId: number,
-        filter: SearchFilterVO,
+        filter: ApAdvanceSearchFilter,
         scopeId?: number,
     ): Promise<ArchiveEntityResultListVO> {
         return AjaxUtils.ajaxPost(
@@ -780,7 +775,7 @@ export class WebApiCls {
         from: number,
         max: number,
         externalSystemCode: string,
-        filter: SearchFilterVO,
+        filter: ApAdvanceSearchFilter,
     ): Promise<ArchiveEntityResultListVO> {
         return AjaxUtils.ajaxPost(WebApiCls.registryUrl + '/external/search', { from, max, externalSystemCode }, filter);
     }
@@ -1035,10 +1030,6 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.registryUrl + '/recordTypes');
     }
 
-    findPartTypes(): Promise<RulPartTypeVO[]> {
-        return AjaxUtils.ajaxGet(WebApiCls.structureUrl + '/part-type');
-    }
-
     // End registry
 
     getFundNodeForm(versionId, nodeId) {
@@ -1258,23 +1249,6 @@ export class WebApiCls {
             daAipIdList: aipIds,
             daLevelViewId: daLevelViewId
         }, null);
-    }
-
-
-    getNodeData(fundVersionId, nodeParam, resultParam: any | object = {}) {
-        const data = {
-            fundVersionId: fundVersionId,
-            nodeId: nodeParam.nodeId,
-            nodeIndex: nodeParam.nodeIndex,
-            parentNodeId: nodeParam.parentNodeId,
-            formData: resultParam.formData,
-            siblingsFrom: resultParam.siblingsFrom,
-            siblingsMaxCount: resultParam.siblingsMaxCount,
-            siblingsFilter: resultParam.siblingsFilter,
-            parents: resultParam.parents,
-            children: resultParam.children,
-        };
-        return AjaxUtils.ajaxPost(WebApiCls.arrangementUrl + '/nodeData', null, data);
     }
 
     getFundTreeNodes(versionId, nodeIds) {
@@ -1927,8 +1901,8 @@ export class WebApiCls {
         return AjaxUtils.ajaxGet(WebApiCls.attachmentUrl + '/mimeTypes', null);
     }
 
-    findFundFiles(fundId, searchText, count = 20) {
-        return AjaxUtils.ajaxGet(WebApiCls.dmsUrl + '/fund/' + fundId, { count: count, search: searchText });
+    findFundFiles(fundId, searchText, count = 20, from = 0) {
+        return AjaxUtils.ajaxGet(WebApiCls.dmsUrl + '/fund/' + fundId, { count: count, search: searchText, from });
     }
 
     getEditableFundFile(fundId, fileId) {

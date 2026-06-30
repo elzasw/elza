@@ -48,6 +48,7 @@ import cz.tacr.elza.controller.vo.DataUriRef;
 import cz.tacr.elza.controller.vo.ItemData;
 import cz.tacr.elza.controller.vo.NodeItem;
 import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
+import cz.tacr.elza.controller.vo.StructuredObjectItem;
 import cz.tacr.elza.controller.vo.UISettingsVO;
 import cz.tacr.elza.controller.vo.UpdateFund;
 import cz.tacr.elza.controller.vo.UsrPermissionVO;
@@ -352,6 +353,74 @@ public class ClientFactoryDO {
     	return data;
     }
 
+    /**
+     * Vytvoření hodnoty strukt. položky z OpenAPI {@link StructuredObjectItem}.
+     *
+     * @param soItem      OpenAPI hodnota atributu
+     * @param itemTypeId  identifikátor typu hodnoty atributu
+     * @return doménová entita připravená k uložení
+     */
+    public ArrStructuredItem createStructureItem(final StructuredObjectItem soItem, final Integer itemTypeId) {
+        ArrStructuredItem structureItem = new ArrStructuredItem();
+
+        var sdp = staticDataService.getData();
+        var itemType = sdp.getItemTypeById(itemTypeId);
+        if (itemType == null) {
+            throw new BusinessException("Failed to get item type, itemTypeId: " + itemTypeId, BaseCode.ID_NOT_EXIST);
+        }
+        structureItem.setItemType(itemType.getEntity());
+
+        if (soItem.getItemSpecId() != null) {
+            var itemSpec = itemType.getItemSpecById(soItem.getItemSpecId());
+            if (itemSpec == null) {
+                throw new BusinessException("Failed to get item specification, itemTypeId: " + itemTypeId 
+                		+ ", itemSpecId: " + soItem.getItemSpecId(), BaseCode.ID_NOT_EXIST);
+            }
+            structureItem.setItemSpec(itemSpec);
+        }
+
+        if (!Boolean.TRUE.equals(soItem.getUndefined())) {
+            structureItem.setData(createArrData(soItem.getData()));
+        }
+
+        return structureItem;
+    }
+
+    /**
+     * Vytvoření hodnoty strukt. položky z OpenAPI {@link StructuredObjectItem} (varianta pro update).
+     * 
+     * @param soItem    OpenAPI hodnota atributu
+     * @return doménová entita připravená k uložení
+     */
+    public ArrStructuredItem createStructureItem(final StructuredObjectItem soItem) {
+        ArrStructuredItem structureItem = new ArrStructuredItem();
+        structureItem.setItemId(soItem.getId());
+        structureItem.setDescItemObjectId(soItem.getItemObjectId());
+        structureItem.setPosition(soItem.getPosition());
+
+        var sdp = staticDataService.getData();
+        var itemType = sdp.getItemTypeById(soItem.getItemTypeId());
+        if (itemType == null) {
+            throw new BusinessException("Failed to get item type, itemTypeId: " + soItem.getItemTypeId(), BaseCode.ID_NOT_EXIST);
+        }
+        structureItem.setItemType(itemType.getEntity());
+
+        if (soItem.getItemSpecId() != null) {
+            var itemSpec = itemType.getItemSpecById(soItem.getItemSpecId());
+            if (itemSpec == null) {
+                throw new BusinessException("Failed to get item spec, itemTypeId: " + soItem.getItemTypeId()
+                        + ", itemSpecId: " + soItem.getItemSpecId(), BaseCode.ID_NOT_EXIST);
+            }
+            structureItem.setItemSpec(itemSpec);
+        }
+
+        if (!Boolean.TRUE.equals(soItem.getUndefined())) {
+            structureItem.setData(createArrData(soItem.getData()));
+        }
+        return structureItem;
+    }
+
+    @Deprecated
     public ArrStructuredItem createStructureItem(final ArrItemVO itemVO, final Integer itemTypeId) {
         ArrData data = itemVO.createDataEntity(em);
         ArrStructuredItem structureItem = new ArrStructuredItem();
@@ -360,8 +429,7 @@ public class ClientFactoryDO {
         var sdp = staticDataService.getData();
         var itemType = sdp.getItemTypeById(itemTypeId);
         if(itemType==null) {
-        	throw new BusinessException("Failed to get item type, itemTypeId: " + itemTypeId,
-        			 BaseCode.ID_NOT_EXIST);
+        	throw new BusinessException("Failed to get item type, itemTypeId: " + itemTypeId, BaseCode.ID_NOT_EXIST);
         }
         structureItem.setItemType(itemType.getEntity());
 
@@ -369,8 +437,7 @@ public class ClientFactoryDO {
         	var itemSpec = itemType.getItemSpecById(itemVO.getDescItemSpecId());
         	if(itemSpec==null) {
             	throw new BusinessException("Failed to get item specification, itemTypeId: " + itemTypeId
-            			+", itemSpecId: " + itemVO.getDescItemSpecId(),
-           			 BaseCode.ID_NOT_EXIST);        		
+            			+", itemSpecId: " + itemVO.getDescItemSpecId(), BaseCode.ID_NOT_EXIST);        		
         	}
             structureItem.setItemSpec(itemSpec);
         }
@@ -378,6 +445,7 @@ public class ClientFactoryDO {
         return structureItem;
     }
 
+    @Deprecated    
     public ArrStructuredItem createStructureItem(final ArrItemVO descItemVO) {        
         ArrStructuredItem structureItem = new ArrStructuredItem();        
         structureItem.setItemId(descItemVO.getId());
@@ -409,6 +477,7 @@ public class ClientFactoryDO {
         return structureItem;
     }
 
+    @Deprecated
     public List<ArrStructuredItem> createStructureItem(final Map<Integer, List<ArrItemVO>> descItemVO) {
         List<ArrStructuredItem> result = new ArrayList<>();
         for (Map.Entry<Integer, List<ArrItemVO>> entry : descItemVO.entrySet()) {

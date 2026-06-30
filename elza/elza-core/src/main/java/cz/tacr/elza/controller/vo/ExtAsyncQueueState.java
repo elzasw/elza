@@ -5,11 +5,15 @@ public enum ExtAsyncQueueState {
 
     UPDATE("Aktualizováno"),
 
+    UPDATE_DEFERRED("Odloženo (čeká na náhradu)"),
+
     IMPORT_NEW("Ke stažení"),
 
     IMPORT_OK("Staženo"), // předchozí OK
 
     EXPORT_NEW("K odeslání"),
+
+    EXPORT_NEED_CONFIRM("Čeká na potvrzení"),
 
     EXPORT_OK("Odesláno"),
 
@@ -37,6 +41,8 @@ public enum ExtAsyncQueueState {
             return ERROR;
         case UPDATE:
             return UPDATE;
+        case UPDATE_DEFERRED:
+            return UPDATE_DEFERRED;
         case EXPORT_OK:
             return EXPORT_OK;
         case EXPORT_CANCELLED:
@@ -44,8 +50,11 @@ public enum ExtAsyncQueueState {
         case EXPORT_NEW:
             return EXPORT_NEW;
         case EXPORT_START:
-            // state is not propagated to the client
+        case EXPORT_PROCESSING:
+            // transient upload states are not propagated to the client
             return EXPORT_NEW;
+        case EXPORT_NEED_CONFIRM:
+            return EXPORT_NEED_CONFIRM;
         case IMPORT_NEW:
             return IMPORT_NEW;
         case IMPORT_OK:

@@ -5,13 +5,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import cz.tacr.elza.controller.vo.SysExternalSystemVO;
-import cz.tacr.elza.repository.vo.DataResult;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -23,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,18 +35,28 @@ import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.cam.BindingSyncInfo;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.controller.vo.ExtHistory;
+import cz.tacr.elza.controller.vo.ExtIssue;
+import cz.tacr.elza.controller.vo.ExtIssueSeverity;
+import cz.tacr.elza.controller.vo.ExtIssueStatus;
+import cz.tacr.elza.controller.vo.ExtParticipant;
+import cz.tacr.elza.controller.vo.ExtParticipantRole;
+import cz.tacr.elza.controller.vo.ExtRevision;
 import cz.tacr.elza.controller.vo.ExtSystemProperty;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingIssue;
 import cz.tacr.elza.domain.ApBindingItem;
+import cz.tacr.elza.domain.ApBindingParticipant;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApBindingSync;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
 import cz.tacr.elza.domain.ApPart;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
@@ -63,11 +75,14 @@ import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.repository.ApBindingIssueRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
+import cz.tacr.elza.repository.ApBindingParticipantRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApBindingSyncRepository;
 import cz.tacr.elza.repository.ApExternalSystemRepository;
+import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.DigitizationFrontdeskRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
@@ -91,7 +106,7 @@ public class ExternalSystemService {
     static private final Logger log = LoggerFactory.getLogger(ExternalSystemService.class);
 
     @Autowired
-    ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
+    private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
 
     @Autowired
     private ExternalSystemRepository externalSystemRepository;
@@ -115,6 +130,9 @@ public class ExternalSystemService {
     private IEventNotificationService eventNotificationService;
 
     @Autowired
+    private ApStateRepository stateRepository;
+
+    @Autowired
     private ApBindingRepository bindingRepository;
 
     @Autowired
@@ -125,6 +143,12 @@ public class ExternalSystemService {
 
     @Autowired
     private ApBindingItemRepository bindingItemRepository;
+
+    @Autowired
+    private ApBindingIssueRepository bindingIssueRepository;
+
+    @Autowired
+    private ApBindingParticipantRepository bindingParticipantRepository;
 
     @Autowired
     private StaticDataService staticDataService;
@@ -384,39 +408,41 @@ public class ExternalSystemService {
     /**
      * Upravení externího systému.
      *
-     * @param externalSystem
+     * @param newExternalSystem
      *            upravovaný externí systém
      * @return upravený externí systém
      */
     @AuthMethod(permission = UsrPermission.Permission.ADMIN)
-    public SysExternalSystem update(final SysExternalSystem externalSystem) {
+    public SysExternalSystem update(final SysExternalSystem newExternalSystem) {
         staticDataService.reloadOnCommit();
 
-        SysExternalSystem original = externalSystemRepository.getOneCheckExist(externalSystem.getExternalSystemId());
+        SysExternalSystem original = externalSystemRepository.getOneCheckExist(newExternalSystem.getExternalSystemId());
 
         // if type changed in ApExternalSystem
-        if (externalSystem instanceof ApExternalSystem extSys 
-        		&& original instanceof ApExternalSystem origExtSys
-        		&& origExtSys.getType() != extSys.getType()) {
-        	
-        	ApExternalSystemType extSysType = extSys.getType();
-        	ApExternalSystemType origExtSysType = origExtSys.getType();
+        if (original instanceof ApExternalSystem origExtSys 
+        		&& newExternalSystem instanceof ApExternalSystem newExtSys) {
+        	if (origExtSys.getType() != newExtSys.getType()) {
 
-        	// if it's a switch between versions
-        	if (!extSysType.isSameType(origExtSysType)) {
-                throw new SystemException("Změna typu Externího Systému není možná", BaseCode.INVALID_STATE)
-	                .set("extSystemId", origExtSys.getExternalSystemId())
-	                .set("extSystemType", origExtSysType)
-	            	.set("newExtSystemType", extSysType);
+        	    ApExternalSystemType newExtSysType = newExtSys.getType();
+        	    ApExternalSystemType origExtSysType = origExtSys.getType();
+
+                // if it's a switch between versions
+                if (!newExtSysType.isSameType(origExtSysType)) {
+                    throw new SystemException("Změna typu Externího Systému není možná", BaseCode.INVALID_STATE)
+                        .set("extSystemId", origExtSys.getExternalSystemId())
+                        .set("extSystemType", origExtSysType)
+                        .set("newExtSystemType", newExtSysType);
+                }
         	}
-
-        	eventPublisher.publishEvent(new ApExternalSystemEvent(this, origExtSys));
+            // any ApExternalSystem update may have changed url/apiKey -
+            // notify listeners so cached connector instances get invalidated
+            eventPublisher.publishEvent(new ApExternalSystemEvent(this, origExtSys));
         }
 
-        validateExternalSystem(externalSystem, false);
-        sendUpdateExternalSystemNotification(externalSystem.getExternalSystemId());
+        validateExternalSystem(newExternalSystem, false);
+        sendUpdateExternalSystemNotification(newExternalSystem.getExternalSystemId());
 
-        return externalSystemRepository.save(externalSystem);
+        return externalSystemRepository.save(newExternalSystem);
     }
 
     /**
@@ -754,6 +780,191 @@ public class ExternalSystemService {
     }
 
     /**
+     * Return CAM-side issues attached to a binding, mapped to the
+     * wire VO. The list is not versioned — only the current snapshot
+     * from the last CAM sync is returned.
+     *
+     * @param bindingId id of the binding
+     * @return issues for the binding (empty list when none)
+     * @throws ObjectNotFoundException when no binding with the given id exists
+     */
+	public List<ExtIssue> findBindingIssues(Integer bindingId) {
+	    ApBinding binding = bindingRepository.findById(bindingId)
+	    		.orElseThrow(() -> new ObjectNotFoundException("Binding not found", BaseCode.ID_NOT_EXIST).setId(bindingId));
+
+	    // access control by binding
+	    checkBindingReadAccess(binding);
+
+	    return bindingIssueRepository.findByBindingIdFetchRelated(bindingId).stream()
+	            .map(ExternalSystemService::toExtIssue)
+	            .toList();
+    }
+
+	/**
+	 * Access control via binding
+	 *  
+	 * @param binding
+	 */
+	private void checkBindingReadAccess(ApBinding binding) {
+	    UserDetail userDetail = userService.getLoggedUserDetail();
+	    if (userDetail == null) {
+	        throw new AccessDeniedException("User not authorized.", Collections.emptyList());
+	    }
+	    // fast path — global reader doesn't need a scope at all
+	    if (userDetail.hasPermission(Permission.AP_SCOPE_RD_ALL)) {
+	        return;
+	    }
+	    Integer scopeId = null;
+	    ApBindingState activeState = bindingStateRepository.findActiveByBinding(binding).orElse(null);
+	    if (activeState != null) {
+	        ApState lastState = stateRepository.findLastByAccessPointId(activeState.getAccessPointId());
+	        if (lastState != null) {
+	            scopeId = lastState.getScopeId();
+	        }
+	    }
+	    AuthorizationRequest authRequest = AuthorizationRequest
+	    		.hasPermission(Permission.AP_SCOPE_RD_ALL)
+	            .or(Permission.AP_SCOPE_RD, scopeId);
+	    if (!authRequest.matches(userDetail)) {
+	        throw new AccessDeniedException("Read permission required for binding issues", authRequest.getPermissions());
+	    }
+	}
+
+	private static ExtIssue toExtIssue(final ApBindingIssue bi) {
+	    ExtIssue ei = new ExtIssue();
+	    ei.setId(bi.getBindingIssueId());
+	    ei.setUuid(bi.getUuid());
+	    ei.setSeverity(ExtIssueSeverity.valueOf(bi.getSeverity().name()));
+	    if (bi.getStatus() != null) {
+	        ei.setStatus(ExtIssueStatus.valueOf(bi.getStatus().name()));
+	    }
+	    ei.setRuleCode(bi.getRuleCode());
+	    ei.setIssueCode(bi.getIssueCode());
+	    ei.setMessage(bi.getMessage());
+	    ei.setSource(bi.getSource());
+	    ei.setDetail(bi.getDetail());
+	    ei.setNote(bi.getNote());
+	    ei.setIssueFrom(bi.getIssueFrom());
+	    ei.setExtFromRev(bi.getExtFromRev());
+	    ei.setPartId(bi.getPartId());
+	    ei.setItemId(bi.getItemId());
+	    ei.setRelatedBindingId(bi.getRelatedBindingId());
+	    if (bi.getRelatedBinding() != null) {
+	        ei.setRelatedBindingExtValue(bi.getRelatedBinding().getValue());
+	    }
+	    return ei;
+	}
+
+	private static final int HISTORY_MAX_LIMIT = 100;
+
+	/**
+	 * Paginated revision history of a binding, newest first, with embedded
+	 * participants. Returns {@code totalCount} (all revisions for the binding)
+	 * and {@code incomplete} flag — true when the extPrevRevision chain points
+	 * to a revision Elza does not have.
+	 *
+	 * @param bindingId id of the binding
+	 * @param offset    page offset; null or negative coerced to 0
+	 * @param limit     page size; null or non-positive coerced to {@value #HISTORY_MAX_LIMIT}, capped at the same value
+	 * @throws ObjectNotFoundException when no binding with the given id exists
+	 */
+	public ExtHistory findBindingHistory(final Integer bindingId,
+	                                     final Integer offset,
+	                                     final Integer limit) {
+	    ApBinding binding = bindingRepository.findById(bindingId)
+	    		.orElseThrow(() -> new ObjectNotFoundException("Binding not found", BaseCode.ID_NOT_EXIST).setId(bindingId));
+
+	    // access control by binding
+	    checkBindingReadAccess(binding);
+
+	    int effOffset = (offset == null || offset < 0) ? 0 : offset;
+	    int effLimit = (limit == null || limit <= 0) ? HISTORY_MAX_LIMIT : Math.min(limit, HISTORY_MAX_LIMIT);
+
+	    long totalCount = bindingStateRepository.countByBindingId(bindingId);
+
+	    // Spring Data Pageable is page-index based — convert offset.
+	    // Non-aligned offsets are uncommon for UI pagination; we still
+	    // produce a correct slice by adjusting the page index, accepting
+	    // that the returned slice is aligned to the next lower page.
+	    Pageable pageable = PageRequest.of(effOffset / effLimit, effLimit);
+
+	    List<ApBindingState> states = bindingStateRepository.findRevisionsByBindingId(bindingId, pageable);
+
+	    Map<Integer, List<ApBindingParticipant>> participantsByState;
+	    if (states.isEmpty()) {
+	        participantsByState = Map.of();
+	    } else {
+	        List<Integer> stateIds = states.stream()
+	                .map(ApBindingState::getBindingStateId)
+	                .toList();
+	        participantsByState = bindingParticipantRepository
+	                .findByBindingStateIdInOrderByLastChange(stateIds).stream()
+	                .collect(Collectors.groupingBy(ApBindingParticipant::getBindingStateId));
+	    }
+
+	    boolean incomplete = isHistoryIncomplete(bindingId);
+
+	    ExtHistory result = new ExtHistory();
+	    result.setRevisions(states.stream()
+	            .map(s -> toExtRevision(s,
+	                    participantsByState.getOrDefault(s.getBindingStateId(), List.of())))
+	            .toList());
+	    result.setTotalCount(Math.toIntExact(totalCount));
+	    result.setIncomplete(incomplete);
+	    return result;
+	}
+
+	private boolean isHistoryIncomplete(final Integer bindingId) {
+	    List<Object[]> links = bindingStateRepository.findRevisionLinksByBindingId(bindingId);
+	    Set<String> knownExtRevisions = new HashSet<>();
+	    List<String> prevRefs = new ArrayList<>();
+	    for (Object[] row : links) {
+	        String extRev = (String) row[0];
+	        String extPrev = (String) row[1];
+	        if (extRev != null) {
+	            knownExtRevisions.add(extRev);
+	        }
+	        if (extPrev != null) {
+	            prevRefs.add(extPrev);
+	        }
+	    }
+	    for (String prev : prevRefs) {
+	        if (!knownExtRevisions.contains(prev)) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
+
+	private static ExtRevision toExtRevision(final ApBindingState bs, final List<ApBindingParticipant> participants) {
+	    ExtRevision er = new ExtRevision();
+	    er.setBindingStateId(bs.getBindingStateId());
+	    er.setExtRevision(bs.getExtRevision());
+	    er.setExtPrevRevision(bs.getExtPrevRevision());
+	    er.setExtMetadataRevision(bs.getExtMetadataRevision());
+	    er.setExtCreatedAt(bs.getExtCreatedAt());
+	    if (bs.getExtCreatedAt() == null && bs.getCreateChange() != null) {
+	        er.setCreateChangeAt(bs.getCreateChange().getChangeDate());
+	    }
+	    er.setSender(bs.getExtUser());
+	    er.setParticipants(participants.stream()
+	            .sorted(Comparator.comparing(ApBindingParticipant::getLastChange))
+	            .map(ExternalSystemService::toExtParticipant)
+	            .toList());
+	    return er;
+	}
+
+	private static ExtParticipant toExtParticipant(final ApBindingParticipant bp) {
+	    ExtParticipant ep = new ExtParticipant();
+	    ep.setId(bp.getBindingParticipantId());
+	    ep.setRole(ExtParticipantRole.valueOf(bp.getRole().name()));
+	    ep.setName(bp.getName());
+	    ep.setInstitutionCode(bp.getInstitutionCode());
+	    ep.setLastChange(bp.getLastChange());
+	    return ep;
+	}
+
+    /**
      * Vytvoření záznamu ve frontě zpracování
      *
      * @param accessPoint
@@ -893,6 +1104,90 @@ public class ExternalSystemService {
             throw new EntityNotFoundException("ArrDigitalRepository not found, code: " + code);
         } else {
             return digitalRepository;
+        }
+    }
+
+    /**
+     * Mirror the CAM-side issues of a single revision into {@code ap_binding_issue}.
+     *
+     * CAM issues typically persist unchanged across many revisions, so instead of
+     * rewriting the whole set on every sync the stored issues are merged against
+     * the incoming ones by their {@code uuid}:
+     * <ul>
+     *   <li>matched issue (same uuid) — kept; its CAM-derived state is refreshed
+     *       in place, preserving the row id (and the local {@code note}),</li>
+     *   <li>incoming issue with no matching uuid — inserted,</li>
+     *   <li>stored issue whose uuid is absent from the revision — deleted.</li>
+     * </ul>
+     * Matched rows are only written back when a field actually changed, thanks to
+     * Hibernate dirty checking on the managed entities loaded here.
+     */
+    @Transactional
+    public void syncBindingIssues(ApBinding binding, List<ApBindingIssue> newIssues) {
+        List<ApBindingIssue> existing = bindingIssueRepository.findByBindingId(binding.getBindingId());
+
+        // Index stored issues by their CAM uuid. An issue without a uuid (or a
+        // duplicate uuid) cannot be matched against a revision and is dropped.
+        Map<String, ApBindingIssue> existingByUuid = new HashMap<>();
+        List<ApBindingIssue> toDelete = new ArrayList<>();
+        for (ApBindingIssue issue : existing) {
+            if (issue.getUuid() == null || existingByUuid.putIfAbsent(issue.getUuid(), issue) != null) {
+                toDelete.add(issue);
+            }
+        }
+
+        List<ApBindingIssue> toSave = new ArrayList<>();
+        Set<String> incomingUuids = new HashSet<>();
+        for (ApBindingIssue incoming : newIssues) {
+            String uuid = incoming.getUuid();
+            ApBindingIssue match = (uuid != null) ? existingByUuid.get(uuid) : null;
+            if (match != null) {
+                incomingUuids.add(uuid);
+                updateBindingIssueState(match, incoming);
+                toSave.add(match);
+            } else {
+                toSave.add(incoming);
+            }
+        }
+
+        // stored issues whose uuid is no longer reported by CAM
+        for (Map.Entry<String, ApBindingIssue> entry : existingByUuid.entrySet()) {
+            if (!incomingUuids.contains(entry.getKey())) {
+                toDelete.add(entry.getValue());
+            }
+        }
+
+        if (!toDelete.isEmpty()) {
+            bindingIssueRepository.deleteAll(toDelete);
+        }
+        if (!toSave.isEmpty()) {
+            bindingIssueRepository.saveAll(toSave);
+        }
+    }
+
+    /**
+     * Copy the CAM-derived fields of {@code source} onto the kept {@code target}.
+     * The row id and the local {@code note} are intentionally left untouched.
+     */
+    private static void updateBindingIssueState(ApBindingIssue target, ApBindingIssue source) {
+        target.setSeverity(source.getSeverity());
+        target.setStatus(source.getStatus());
+        target.setRuleCode(source.getRuleCode());
+        target.setIssueCode(source.getIssueCode());
+        target.setMessage(source.getMessage());
+        target.setSource(source.getSource());
+        target.setDetail(source.getDetail());
+        target.setIssueFrom(source.getIssueFrom());
+        target.setExtFromRev(source.getExtFromRev());
+        target.setPart(source.getPart());
+        target.setItem(source.getItem());
+        target.setRelatedBinding(source.getRelatedBinding());
+    }
+
+    @Transactional
+    public void saveBindingStateParticipants(List<ApBindingParticipant> participants) {
+        if (!participants.isEmpty()) {
+            bindingParticipantRepository.saveAll(participants);
         }
     }
 }

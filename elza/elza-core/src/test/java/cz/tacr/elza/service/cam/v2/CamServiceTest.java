@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -120,7 +120,7 @@ public class CamServiceTest extends AbstractControllerTest {
 
 		ent.setRevision(new RevisionInfoXml(new UuidXml(uuid), null, null,
 				new UserInfoXml(new CodeXml("user"), null, new LongStringXml("user"), null, null, null),
-				new DateTimeXml(LocalDateTime.now()), null));
+				new DateTimeXml(OffsetDateTime.now()), null));
 		return ent;
 	}
 

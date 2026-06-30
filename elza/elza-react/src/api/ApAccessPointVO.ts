@@ -1,5 +1,5 @@
 import { ApStateVO } from "./ApStateVO";
-import { ApBindingVO } from "./ApBindingVO";
+import { ExtEntityBinding } from "elza-api";
 import { ApPartVO } from "./ApPartVO";
 import { StateApproval } from "./StateApproval";
 import { UserVO } from "./UserVO";
@@ -64,7 +64,7 @@ export interface ApAccessPointVO {
     /**
      * Externí identifikátory rejstříkového hesla.
      */
-    bindings: ApBindingVO[];
+    bindings: ExtEntityBinding[];
 
     /**
      * Kód pravidla pro AP.

@@ -5,7 +5,7 @@ import static cz.tacr.elza.groovy.GroovyResult.DISPLAY_NAME_LOWER;
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApPart;
@@ -45,15 +45,15 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 	        final Root<UsrUser> user,
 	        final Integer excludedGroupId,
 	        final CriteriaQuery<T> query,
-            final SearchType searchTypeName,
-            final SearchType searchTypeUsername) {
+            final ApSearchType searchTypeName,
+            final ApSearchType searchTypeUsername) {
 
 		List<Predicate> conditions = new ArrayList<>();
 
         Path<String> accessPointName = null;
         Path<String> userName = null;
 
-        if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
+        if (searchTypeName == ApSearchType.FULLTEXT || searchTypeName == ApSearchType.RIGHT_SIDE_LIKE) {
             Join<UsrUser, ApAccessPoint> apJoin = user.join(UsrUser.FIELD_ACCESS_POINT, JoinType.INNER);
             Predicate apFkCond = builder.equal(user.get(UsrUser.FIELD_ACCESS_POINT_ID), apJoin.get(ApAccessPoint.FIELD_ACCESS_POINT_ID));
             Join<ApAccessPoint, ApPart> nameJoin = apJoin.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.INNER);
@@ -67,7 +67,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         Predicate nameLikeCond = null;
         Predicate usernameLikeCond = null;
 
-        if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
+        if (searchTypeName == ApSearchType.FULLTEXT || searchTypeName == ApSearchType.RIGHT_SIDE_LIKE) {
             String searchNameExp = org.apache.commons.lang3.StringUtils.trimToNull(search);
             if (searchNameExp != null) {
                 switch (searchTypeName) {
@@ -92,7 +92,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         }
 
 		// Search
-        if (searchTypeUsername == SearchType.FULLTEXT || searchTypeUsername == SearchType.RIGHT_SIDE_LIKE) {
+        if (searchTypeUsername == ApSearchType.FULLTEXT || searchTypeUsername == ApSearchType.RIGHT_SIDE_LIKE) {
             String searchUsernameExp = org.apache.commons.lang3.StringUtils.trimToNull(search);
             if (searchUsernameExp != null) {
                 switch (searchTypeUsername) {
@@ -202,18 +202,18 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
             final CriteriaQuery<T> query,
 	        final int userId,
 	        final boolean includeUser,
-            @Nullable SearchType searchTypeName,
-            @Nullable SearchType searchTypeUsername) {
+            @Nullable ApSearchType searchTypeName,
+            @Nullable ApSearchType searchTypeUsername) {
 
-        searchTypeName = searchTypeName != null ? searchTypeName : SearchType.DISABLED;
-        searchTypeUsername = searchTypeUsername != null ? searchTypeUsername : SearchType.FULLTEXT;
+        searchTypeName = searchTypeName != null ? searchTypeName : ApSearchType.DISABLED;
+        searchTypeUsername = searchTypeUsername != null ? searchTypeUsername : ApSearchType.FULLTEXT;
 
         List<Predicate> conditions = new ArrayList<>();
 
         Path<String> accessPointName = null;
         Path<String> userName = null;
 
-        if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
+        if (searchTypeName == ApSearchType.FULLTEXT || searchTypeName == ApSearchType.RIGHT_SIDE_LIKE) {
             Join<UsrUser, ApAccessPoint> apJoin = user.join(UsrUser.FIELD_ACCESS_POINT, JoinType.INNER);
             Join<ApAccessPoint, ApPart> nameJoin = apJoin.join(ApAccessPoint.FIELD_PREFFERED_PART, JoinType.INNER);
             Predicate nameFkCond = builder.equal(apJoin.get(ApAccessPoint.FIELD_PREFFERED_PART_ID),
@@ -227,7 +227,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         Predicate nameLikeCond = null;
         Predicate usernameLikeCond = null;
 
-        if (searchTypeName == SearchType.FULLTEXT || searchTypeName == SearchType.RIGHT_SIDE_LIKE) {
+        if (searchTypeName == ApSearchType.FULLTEXT || searchTypeName == ApSearchType.RIGHT_SIDE_LIKE) {
             String searchNameExp = org.apache.commons.lang3.StringUtils.trimToNull(search);
             if (searchNameExp != null) {
                 switch (searchTypeName) {
@@ -252,7 +252,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
         }
 
         // Search
-        if (searchTypeUsername == SearchType.FULLTEXT || searchTypeUsername == SearchType.RIGHT_SIDE_LIKE) {
+        if (searchTypeUsername == ApSearchType.FULLTEXT || searchTypeUsername == ApSearchType.RIGHT_SIDE_LIKE) {
             String searchUsernameExp = org.apache.commons.lang3.StringUtils.trimToNull(search);
             if (searchUsernameExp != null) {
                 switch (searchTypeUsername) {
@@ -347,7 +347,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
 
 	@Override
 	public FilteredResult<UsrUser> findUserByText(String search, boolean active, boolean disabled,
-                                                  int firstResult, int maxResults, Integer excludedGroupId, SearchType searchTypeName, SearchType searchTypeUsername ) {
+                                                  int firstResult, int maxResults, Integer excludedGroupId, ApSearchType searchTypeName, ApSearchType searchTypeUsername ) {
 		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<UsrUser> query = builder.createQuery(UsrUser.class);
@@ -393,7 +393,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                                                                final int maxResults,
                                                                final Integer excludedGroupId,
                                                                final int userId,
-                                                               final boolean includeUser, SearchType searchTypeName, SearchType searchTypeUsername
+                                                               final boolean includeUser, ApSearchType searchTypeName, ApSearchType searchTypeUsername
                                                                ) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 

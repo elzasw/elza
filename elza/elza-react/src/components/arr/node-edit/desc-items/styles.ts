@@ -1,0 +1,152 @@
+import { makeStyles } from '@fluentui/react-components';
+
+export const useStyles = makeStyles({
+  dataPillWrapper: {
+    margin: '0 -2px',
+    display: 'flex',
+  },
+  dataPill: {
+    background: 'var(--shade-4)',
+    padding: '0px 4px',
+    borderRadius: '4px',
+    display: 'inline-block',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: '250px',
+    margin: '2px',
+  },
+  descItemContainer: {
+    display: "flex",
+    flex: 1,
+    position: "relative",
+    flexDirection: "column",
+  },
+  descItemContainerWithWidth: {
+    display: "flex",
+    flex: 1,
+    position: "relative",
+    flexDirection: "column",
+    width: "100%",
+  },
+  comboboxWrapper: {
+    position: "relative",
+    display: "inline-flex",
+    flex: 1,
+    alignItems: "center",
+    width: "100%",
+  },
+  comboboxWrapperNoWidth: {
+    position: "relative",
+    display: "inline-flex",
+    flex: 1,
+    alignItems: "center",
+  },
+  comboboxActionButton: {
+    position: "absolute",
+    right: "1px",
+  },
+  noResults: {
+    padding: "8px 12px",
+    color: "var(--shade-6)",
+  },
+  comboboxNoMinWidth: {
+    minWidth: "unset",
+    flex: 1,
+    flexGrow: 5,
+  },
+  comboboxSpecWrapper: {
+    minWidth: "unset",
+    flex: 1,
+  },
+  comboboxUriRef: {
+    minWidth: "unset",
+    flex: 1,
+    flexGrow: 1,
+  },
+  itemActions: {
+    display: "flex",
+    alignItems: "flex-start",
+  },
+  savingOverlay: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    background: "var(--shade-0)",
+    opacity: "0.8",
+  },
+  editStateDisplay: {
+    position: "absolute",
+    top: "-18px",
+    right: "4px",
+    height: "20px",
+    lineHeight: "1em",
+    margin: "2px",
+    padding: "2px",
+    background: "var(--shade-0)",
+    color: "var(--shade-7)",
+    borderRadius: "4px",
+    border: "1px solid var(--shade-6)",
+    display: "flex",
+    alignItems: "center",
+  },
+  conflictOuter: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  conflictActions: {
+    marginTop: "4px",
+    display: "flex",
+    justifyContent: "flex-end",
+  },
+  conflictLabel: {
+    color: "var(--color-red)",
+  },
+  conflictTextarea: {
+    borderTopColor: "var(--color-red)",
+    borderRightColor: "var(--color-red)",
+    borderBottomColor: "var(--color-red)",
+    borderLeftColor: "var(--color-red)",
+  },
+  conflictTextareaWithMinWidth: {
+    borderTopColor: "var(--color-red)",
+    borderRightColor: "var(--color-red)",
+    borderBottomColor: "var(--color-red)",
+    borderLeftColor: "var(--color-red)",
+    minWidth: "100px",
+  },
+  validationMessage: {
+    color: "var(--color-red)",
+  },
+  columnFlex: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  columnFlexRelative: {
+    display: "flex",
+    flexDirection: "column",
+    position: "relative",
+  },
+  structureQueryHidden: {
+    visibility: "hidden",
+    background: "red",
+    marginRight: "8px",
+    flex: 0,
+  },
+  structureComplement: {
+    flex: 1,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+  descItemFieldRow: {
+    marginTop: "2px",
+    marginBottom: "2px",
+    position: "relative",
+    flex: 1,
+    // alignItems: "center",
+    alignItems: "flex-start",
+  },
+});

@@ -39,6 +39,7 @@ import cz.tacr.elza.cam.ItemSyncProcessor;
 import cz.tacr.elza.cam.v2.ApIssue;
 import cz.tacr.elza.cam.v2.ItemSyncExportConfirmProcessor;
 import cz.tacr.elza.cam.v2.ItemSyncExportProcessor;
+import cz.tacr.elza.cam.v2.UploadMapping;
 import cz.tacr.elza.cam.v2.UuidMapping;
 import cz.tacr.elza.controller.AbstractControllerTest;
 import cz.tacr.elza.controller.vo.ApExternalSystemVO;
@@ -47,6 +48,7 @@ import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
 import cz.tacr.elza.domain.ApBindingItem;
+import cz.tacr.elza.domain.ApBindingParticipant;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
@@ -58,6 +60,7 @@ import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
+import cz.tacr.elza.repository.ApBindingParticipantRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
@@ -159,6 +162,9 @@ public class CamServiceExportTest extends AbstractControllerTest {
 
     @Autowired
     private ApBindingItemRepository bindingItemRepository;
+
+    @Autowired
+    private ApBindingParticipantRepository bindingParticipantRepository;
 
     @Autowired
     private ExtSyncsQueueItemRepository extSyncsQueueItemRepository;
@@ -481,21 +487,21 @@ public class CamServiceExportTest extends AbstractControllerTest {
         UUID batchUuid = UUID.randomUUID();
         camMock.stubPostBatch(batchUuid);
 
-        // --- when: upload → uuid_map persisted on queue item --------------
+        // --- when: upload → upload_map persisted on queue item --------------
         accessPointConnectorService.nextItemSyncProcessor(1).process();
 
         ExtSyncsQueueItem afterUpload = reload(queueItem);
-        String uuidMapJson = afterUpload.getUuidMap();
-        assertNotNull(uuidMapJson, "uuid_map must be persisted at upload time");
+        String uploadMapJson = afterUpload.getUploadMap();
+        assertNotNull(uploadMapJson, "upload_map must be persisted at upload time");
 
         // Pick one part/uuid pair that the uploader generated — this is what CAM
         // would echo back in a warning's partRef. For this AP (SIMPLE-DEV) the
         // uploader creates new bindings for every part, so the map is non-empty.
-        List<UuidMapping> entries = UuidMapping.deserialize(uuidMapJson);
+        List<UuidMapping> entries = UploadMapping.deserialize(uploadMapJson).getUuidMappings();
         UuidMapping partEntry = entries.stream()
                 .filter(e -> e.getPartId() != null)
                 .findFirst()
-                .orElseThrow(() -> new AssertionError("uuid_map has no part entries; cannot test partRef resolution"));
+                .orElseThrow(() -> new AssertionError("upload_map has no part entries; cannot test partRef resolution"));
 
         // --- given: CAM returns a warning referencing that partUuid -------
         camMock.stubBatchStatus(batchUuid, RequestProcessState.FINISHED);
@@ -517,7 +523,7 @@ public class CamServiceExportTest extends AbstractControllerTest {
         assertEquals(1, issues.size());
         ApIssue resolvedIssue = issues.get(0);
         assertEquals(partEntry.getPartId(), resolvedIssue.getPartId(),
-                "Resolver should have mapped the CAM partUuid back to the ELZA partId via the uuid_map");
+                "Resolver should have mapped the CAM partUuid back to the ELZA partId via the upload_map");
         assertNull(resolvedIssue.getItemId(), "No itemRef on this warning");
         assertNull(resolvedIssue.getEntityId(), "No entityRef on this warning");
         // Phase 2a — name resolution via CachedAccessPoint; at minimum the part type
@@ -526,17 +532,17 @@ public class CamServiceExportTest extends AbstractControllerTest {
         assertNotNull(resolvedIssue.getPartName(),
                 "partName should be resolved from the AP cache (DISPLAY_NAME or part-type description)");
 
-        // uuid_map is still present in NEED_CONFIRM — needed for a subsequent force re-send
-        assertNotNull(afterConfirm.getUuidMap(), "uuid_map must survive the NEED_CONFIRM transition");
+        // upload_map is still present in NEED_CONFIRM — needed for a subsequent force re-send
+        assertNotNull(afterConfirm.getUploadMap(), "upload_map must survive the NEED_CONFIRM transition");
 
         // --- when: user cancels → queue transitions to terminal state ------
         accessPointConnectorService.exportForceOrNo(queueItem.getExtSyncsQueueItemId(), false);
 
-        // --- then: uuid_map is cleared on EXPORT_CANCELLED -----------------
+        // --- then: upload_map is cleared on EXPORT_CANCELLED -----------------
         ExtSyncsQueueItem afterCancel = reload(queueItem);
         assertEquals(ExtAsyncQueueState.EXPORT_CANCELLED, afterCancel.getState());
-        assertNull(afterCancel.getUuidMap(),
-                "uuid_map must be cleared when the queue item reaches a terminal state");
+        assertNull(afterCancel.getUploadMap(),
+                "upload_map must be cleared when the queue item reaches a terminal state");
     }
 
     /**
@@ -609,6 +615,95 @@ public class CamServiceExportTest extends AbstractControllerTest {
                    "At least one participant must carry role EDITOR; body was:\n" + body);
         assertTrue(body.contains("<id>" + editorUserId + "</id>"),
                    "The seeded editor's userId should appear as a UserInfoXml id; body was:\n" + body);
+    }
+
+    /**
+     * The participants sent to CAM in the batch must be mirrored locally into
+     * {@code ap_binding_participant} once CAM confirms storage, tied to the new
+     * binding state revision. Seeds an editor exactly as
+     * {@link #participantActivity_editorIsEmittedFromApChangeHistory} does, then
+     * drives the full upload + confirm flow and asserts the row is persisted as
+     * an AUTHOR with the user-info name that went on the wire.
+     */
+    @Test
+    void exportSuccess_persistsApBindingParticipants() {
+        // --- given ---------------------------------------------------------
+        camMock = new CamV2MockHelper(wireMockServer);
+        systemCode = "CAM_V2_EXPORT_" + UUID.randomUUID();
+        int externalSystemId = createExternalSystemForWireMock(systemCode);
+
+        ApAccessPoint ap = accessPointRepository.findAccessPointByUuid(AP_UUID);
+        assertNotNull(ap, "SIMPLE-DEV package did not load the expected AP");
+        testApId = ap.getAccessPointId();
+
+        // Seed an active user recorded as the last editor of one of the AP's parts.
+        String editorUsername = "participant-editor-" + UUID.randomUUID();
+        Integer editorUserId = new TransactionTemplate(transactionManager).execute(tx -> {
+            ApAccessPoint reloaded = accessPointRepository.findById(testApId).orElseThrow();
+
+            UsrUser editor = new UsrUser();
+            editor.setUsername(editorUsername);
+            editor.setActive(true);
+            editor.setAccessPoint(reloaded);
+            editor = userRepository.save(editor);
+
+            ApChange editChange = new ApChange();
+            editChange.setChangeDate(OffsetDateTime.now());
+            editChange.setUser(editor);
+            editChange.setType(ApChange.Type.AP_UPDATE);
+            editChange = apChangeRepository.save(editChange);
+
+            List<ApPart> parts = apPartRepository.findValidPartByAccessPoint(reloaded);
+            assertFalse(parts.isEmpty(), "Test AP should have at least one part");
+            ApPart part = parts.get(0);
+            part.setLastChange(editChange);
+            apPartRepository.save(part);
+
+            return editor.getUserId();
+        });
+        assertNotNull(editorUserId);
+
+        ExtSyncsQueueItem queueItem = enqueueExportFor(ap.getAccessPointId(), externalSystemId);
+
+        UUID batchUuid = UUID.randomUUID();
+        camMock.stubPostBatch(batchUuid);
+
+        // --- when: upload step --------------------------------------------
+        accessPointConnectorService.nextItemSyncProcessor(1).process();
+        assertEquals(ExtAsyncQueueState.EXPORT_PROCESSING, reload(queueItem).getState());
+
+        // --- given: CAM confirms the batch was stored ----------------------
+        long assignedEntityId = 55_000L;
+        String revisionUuid = UUID.randomUUID().toString();
+        camMock.stubBatchStatus(batchUuid, RequestProcessState.FINISHED);
+        camMock.stubBatchResultSuccess(batchUuid, assignedEntityId,
+                UUID.randomUUID().toString(), "l1", revisionUuid);
+
+        // --- when: confirm step -------------------------------------------
+        accessPointConnectorService.nextItemSyncProcessor(1).process();
+
+        // --- then: binding state created and the editor mirrored locally ---
+        assertEquals(ExtAsyncQueueState.EXPORT_OK, reload(queueItem).getState());
+
+        ApExternalSystem extSystem = externalSystemService.findApExternalSystemByCode(systemCode);
+        ApBindingState bindingState = bindingStateRepository
+                .findByAccessPointAndExternalSystem(reloadAp(ap), extSystem);
+        assertNotNull(bindingState, "Binding state should have been created on success");
+
+        List<ApBindingParticipant> participants = bindingParticipantRepository
+                .findByBindingStateIdInOrderByLastChange(List.of(bindingState.getBindingStateId()));
+        // Find the seeded editor specifically — the AP may also carry approver
+        // participants from its own history, so do not assert an exact count.
+        ApBindingParticipant editorParticipant = participants.stream()
+                .filter(p -> editorUsername.equals(p.getName()))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError(
+                        "Seeded editor was not mirrored into ap_binding_participant; participants: " + participants));
+
+        assertEquals(ApBindingParticipant.Role.AUTHOR, editorParticipant.getRole(),
+                     "A CAM EDITOR participant must be stored locally as AUTHOR");
+        assertEquals(bindingState.getBindingStateId(), editorParticipant.getBindingStateId(),
+                     "Participant must be tied to the new binding state revision");
     }
 
     // ------------------------------------------------------------------

@@ -1,545 +1,454 @@
 package cz.tacr.elza.controller;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
-import jakarta.transaction.Transactional;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
-import cz.tacr.elza.controller.vo.ArrStructureDataVO;
-import cz.tacr.elza.controller.vo.FilteredResultVO;
-import cz.tacr.elza.controller.vo.RulPartTypeVO;
-import cz.tacr.elza.controller.vo.RulStructureTypeVO;
-import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
-import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.controller.vo.SdoBatchUpdateParam;
+import cz.tacr.elza.controller.vo.SdoCopyObjectParam;
+import cz.tacr.elza.controller.vo.SdoExtensionFund;
+import cz.tacr.elza.controller.vo.SdoFindResult;
+import cz.tacr.elza.controller.vo.SdoItemResult;
+import cz.tacr.elza.controller.vo.SdoType;
+import cz.tacr.elza.controller.vo.StructuredObject;
+import cz.tacr.elza.controller.vo.StructuredObjectItem;
+import cz.tacr.elza.controller.vo.StructuredObjectItems;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrStructuredItem;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.RulItemTypeExt;
-import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.RulStructuredType;
 import cz.tacr.elza.domain.RulStructuredTypeExtension;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.FilteredResult;
-import cz.tacr.elza.service.ArrangementService;
+import cz.tacr.elza.service.ArrangementInternalService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.StructObjService;
+import jakarta.transaction.Transactional;
 
-
-/**
- * Controller pro správu strukturovaných datových typů a jejich hodnot.
- *
- * @since 10.11.2017
- */
 @RestController
-@RequestMapping(value = "/api/structure",
-        consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
-public class StructureController {
+@RequestMapping("/api/v1")
+public class StructureController implements StructureApi {
 
-    private final StructObjService structureService;
-    private final ArrangementService arrangementService;
-    private final RuleService ruleService;
-    private final ClientFactoryDO factoryDO;
-    private final ClientFactoryVO factoryVO;
+	@Autowired
+	private ArrangementInternalService arrangementInternalService;
 
-    @Autowired
-    public StructureController(final StructObjService structureService,
-                               final ArrangementService arrangementService,
-                               final RuleService ruleService,
-                               final ClientFactoryDO factoryDO,
-                               final ClientFactoryVO factoryVO) {
-        this.structureService = structureService;
-        this.arrangementService = arrangementService;
-        this.ruleService = ruleService;
-        this.factoryDO = factoryDO;
-        this.factoryVO = factoryVO;
+	@Autowired
+	private RuleService ruleService;
+
+	@Autowired
+    private StructObjService structureService;
+
+	@Autowired
+    private ClientFactoryDO factoryDO;
+
+	@Autowired
+    private ClientFactoryVO factoryVO;
+
+    /**
+     * POST /funds/sdo/{fundId}
+     * Creating object of the structured data type
+     *
+     * @param fundId fund id (required)
+     * @param body structured data type code (required)
+     * @param value value for the structured data (optional)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+	@Transactional
+	public ResponseEntity<StructuredObject> sdoCreateObject(Integer fundId, @RequestBody String structureTypeCode, @Nullable String value) {
+	    ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+	    RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
+	    ArrStructuredObject structuredObject = structureService.createStructObj(fundVersion.getFund(), structureType, ArrStructuredObject.State.TEMP);
+	    if (value != null) {
+	        structureService.addItemsFromValue(structuredObject, value);
+	    }
+	    return ResponseEntity.ok(factoryVO.createStructuredObject(structuredObject));
     }
 
     /**
-     * Vytvoření hodnoty strukturovaného datového typu.
+     * POST /funds/sdo/{fundId}/{structuredObjectId}/copy
+     * Creating duplicates of a structured data type and an auto-increment field
      *
-     * @param structureTypeCode kód strukturovaného datového typu
-     * @param fundVersionId     identifikátor verze AS
-     * @return vytvořená dočasná entita
+     * @param fundId fund id (required)
+     * @param structuredObjectId structure data id (required)
+     * @param sdoCopyObjectParam batch of data to create (required)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
      */
-    @Transactional
-    @RequestMapping(value = "/data/{fundVersionId}", method = RequestMethod.POST)
-    public ArrStructureDataVO createStructureData(@RequestBody final String structureTypeCode,
-                                                  @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                  @RequestParam(value = "value", required = false) final String value) {
+	@Override
+	@Transactional
+	public ResponseEntity<Void> sdoCopyObject(Integer fundId, Integer structuredObjectId, @RequestBody SdoCopyObjectParam sdoCopyObjectParam) {
+	    Integer count = sdoCopyObjectParam.getCount();
+	    Objects.requireNonNull(count, "Počet položek musí být vyplněn");
 
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
-        ArrStructuredObject createStructureData = structureService.createStructObj(fundVersion.getFund(), structureType, ArrStructuredObject.State.TEMP);
-        if (StringUtils.isNotEmpty(value)) {
-            structureService.addItemsFromValue(createStructureData, value);
-        }
-        return ArrStructureDataVO.newInstance(createStructureData);
+	    List<Integer> incrementedTypeIds = sdoCopyObjectParam.getIncrementedTypeIds();
+	    if (CollectionUtils.isEmpty(incrementedTypeIds)) {
+	        throw new IllegalArgumentException("Autoincrementující typ musí být alespoň jeden");
+	    }
+
+	    ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+	    ArrStructuredObject structuredObject = structureService.getStructObjById(structuredObjectId);
+	    structureService.duplicateStructureDataBatch(fundVersion, structuredObject, count, incrementedTypeIds);
+
+	    return ResponseEntity.ok().build();
     }
 
     /**
-     * Založení duplikátů strukturovaného datového typu a autoinkrementační.
-     * Předloha musí být ve stavu {@link ArrStructuredObject.State#TEMP}.
+     * POST /funds/sdo/{fundId}/batchUpdate/{structureTypeCode}
+     * Bulk update of items/values of a structural type
      *
-     * @param structureDataId    identifikátor předlohy hodnoty strukturovaného datového typu
-     * @param fundVersionId      identifikátor verze AS
-     * @param structureDataBatch data pro hromadné vytvoření hodnot
+     * @param fundId fund id (required)
+     * @param structureTypeCode structure type code (required)
+     * @param sdoBatchUpdateParam batch of data to update (required)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
      */
-    @Transactional
-    @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}/batch", method = RequestMethod.POST)
-    public void duplicateStructureDataBatch(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                            @PathVariable(value = "structureDataId") final Integer structureDataId,
-                                            @RequestBody StructureDataBatch structureDataBatch) {
-        Integer count = structureDataBatch.getCount();
-        Validate.notNull(count, "Počet položek musí být vyplněn");
+	@Override
+	@Transactional
+	public ResponseEntity<Void> sdoUpdateObjects(Integer fundId, String structureTypeCode, @RequestBody SdoBatchUpdateParam sdoBatchUpdateParam) {
+	    Objects.requireNonNull(sdoBatchUpdateParam.getAutoincrementItemTypeIds(), "Identifikátory typů atributu pro autoincrement nesmí být null");
+	    Objects.requireNonNull(sdoBatchUpdateParam.getDeleteItemTypeIds(), "Identifikátory typů atributu pro odstranění nesmí být null");
+	    Objects.requireNonNull(sdoBatchUpdateParam.getItems(), "Položky nesmí být null");
+	    if (CollectionUtils.isEmpty(sdoBatchUpdateParam.getIds())) {
+	    	throw new IllegalArgumentException("Musí být vyplněn alespoň jeden identifikátor hodnoty strukt. typu");
+	    }
 
-        List<Integer> incrementedTypeIds = structureDataBatch.getIncrementedTypeIds();
-        Validate.notEmpty(incrementedTypeIds, "Autoincrementující typ musí být alespoň jeden");
+	    ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+	    RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
 
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructuredObject structureData = structureService.getStructObjById(structureDataId);
-        structureService.duplicateStructureDataBatch(fundVersion, structureData, count,
-                                                     incrementedTypeIds);
+	    List<ArrStructuredItem> structureItems = sdoBatchUpdateParam.getItems().stream()
+	            .map(factoryDO::createStructureItem)
+	            .collect(Collectors.toList());
+
+	    structureService.updateStructObjBatch(fundVersion,
+	            structureType,
+	            sdoBatchUpdateParam.getIds(),
+	            structureItems,
+	            sdoBatchUpdateParam.getAutoincrementItemTypeIds(),
+	            sdoBatchUpdateParam.getDeleteItemTypeIds());
+
+	    return ResponseEntity.ok().build();
     }
 
     /**
-     * Hromadná úprava položek/hodnot strukt. typu.
+     * POST /funds/sdo/{fundId}/{structuredObjectId}/confirm
+     * Confirms the value of a structured data type. Sets the value
      *
-     * @param fundVersionId            identifikátor verze AS
-     * @param structureTypeCode        kód strukturovaného datového typu
-     * @param structureDataBatchUpdate data pro hromadnou úpravu hodnot
+     * @param fundId fund id (required)
+     * @param structuredObjectId structure data id (required)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
      */
-    @Transactional
-    @RequestMapping(value = "/data/{fundVersionId}/{structureTypeCode}/batchUpdate", method = RequestMethod.POST)
-    public void updateStructureDataBatch(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                         @PathVariable(value = "structureTypeCode") final String structureTypeCode,
-                                         @RequestBody final StructureDataBatchUpdate structureDataBatchUpdate) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
+	@Override
+	@Transactional
+	public ResponseEntity<StructuredObject> sdoConfirm(Integer fundId, Integer structuredObjectId) {
+		ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+        ArrStructuredObject structureObject = structureService.getStructObjById(structuredObjectId);
+        ArrStructuredObject confirmedStructureObject = structureService.confirmStructureData(fundVersion.getFund(), structureObject);
 
-        Assert.notNull(structureDataBatchUpdate.autoincrementItemTypeIds, "Identifikátory typů atributu pro autoincrement nesmí být null");
-        Assert.notNull(structureDataBatchUpdate.deleteItemTypeIds, "Identifikátory typů atributu pro odstranění nesmí být null");
-        Assert.notNull(structureDataBatchUpdate.items, "Položky nesmí být null");
-        Assert.notEmpty(structureDataBatchUpdate.structureDataIds, "Musí být vyplněn alespoň jeden identifikátor hodnoty strukt. typu");
-
-        List<ArrStructuredItem> structureItems = factoryDO.createStructureItem(structureDataBatchUpdate.getItems());
-        structureService.updateStructObjBatch(fundVersion,
-                structureType,
-                structureDataBatchUpdate.getStructureDataIds(),
-                structureItems,
-                structureDataBatchUpdate.getAutoincrementItemTypeIds(),
-                structureDataBatchUpdate.getDeleteItemTypeIds());
-    }
+        return ResponseEntity.ok(factoryVO.createStructuredObject(confirmedStructureObject));
+	}
 
     /**
-     * Potvrzení hodnoty strukturovaného datového typu. Provede nastavení hodnoty.
+     * POST /funds/sdo/{fundId}/assignable/{assignable}
+     * Assignability settings.
      *
-     * @param fundVersionId   identifikátor verze AS
-     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-     * @return potvrzená entita
+     * @param fundId fund id (required)
+     * @param assignable assignable value (required)
+     * @param requestBody value ids for a structured data type (required)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
      */
-    @Transactional
-    @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}/confirm", method = RequestMethod.POST)
-    public ArrStructureDataVO confirmStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                   @PathVariable(value = "structureDataId") final Integer structureDataId) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructuredObject structureData = structureService.getStructObjById(structureDataId);
-        ArrStructuredObject createStructureData = structureService.confirmStructureData(fundVersion.getFund(), structureData);
-        return ArrStructureDataVO.newInstance(createStructureData);
-    }
-
-    /**
-     * Nastavení přiřaditelnosti.
-     *
-     * @param fundVersionId    identifikátor verze AS
-     * @param assignable       přiřaditelný
-     * @param structureDataIds identifikátory hodnot strukturovaného datového typu
-     */
-    @Transactional
-    @RequestMapping(value = "/data/{fundVersionId}/assignable/{assignable}", method = RequestMethod.POST)
-    public void setAssignableStructObjList(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                               @PathVariable(value = "assignable") final Boolean assignable,
-                                               @RequestBody List<Integer> structureDataIds) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
+	@Override
+	@Transactional
+	public ResponseEntity<Void> sdoSetDataAssignable(Integer fundId, Boolean assignable, @RequestBody List<Integer> structureDataIds) {
+		ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
         List<ArrStructuredObject> structureDataList = structureService.getStructObjByIds(structureDataIds);
         structureService.setAssignableStructureDataList(fundVersion.getFund(), structureDataList, assignable);
-    }
+
+	    return ResponseEntity.ok().build();
+	}
 
     /**
-     * Smazání hodnoty strukturovaného datového typu.
+     * GET /funds/sdo/{fundId}/{structuredObjectId}
+     * Getting the value of a structured data type
      *
-     * @param fundVersionId   identifikátor verze AS
-     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-     * @return smazaná entita
+     * @param fundId fund id (required)
+     * @param structuredObjectId structure data id (required)
+     * @param fundVersionId fund version id (optional)
+     * @return The request has succeeded. (status code 200)
+     *         or The server cannot find the requested resource. (status code 404)
      */
-    @Deprecated
-    @Transactional
-    @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}", method = RequestMethod.DELETE)
-    public ArrStructureDataVO deleteStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                  @PathVariable(value = "structureDataId") final Integer structureDataId) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructuredObject structObj = structureService.getStructObjById(structureDataId);
-        structureService.deleteStructObj(fundVersion.getFundId(), Collections.singletonList(structObj));
-        return ArrStructureDataVO.newInstance(structObj);
-    }
+	@Override
+	@Transactional
+	public ResponseEntity<StructuredObject> sdoGetObject(Integer fundId, Integer structuredObjectId, @Nullable Integer fundVersionId) {
+	    ArrFundVersion fundVersion = fundVersionId != null ? 
+	    		arrangementInternalService.getFundVersionById(fundVersionId) : 
+	    			arrangementInternalService.getOpenVersionByFundId(fundId);
+
+	    ArrStructuredObject structuredObject = structureService.getStructObjById(structuredObjectId, fundVersion);
+
+        return ResponseEntity.ok(factoryVO.createStructuredObject(structuredObject));
+	}
 
     /**
-     * Získání hodnoty strukturovaného datového typu.
+     * DELETE /funds/sdo/{fundId}
+     * Deleting a value(s) of a structured data type
      *
-     * @param fundVersionId   identifikátor verze AS
-     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-     * @return nalezená entita
+     * @param fundId fund id (required)
+     * @param requestBody list of id value(s) of structured data type (required)
+     * @param fundVersionId fund version id (optional)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
+     *         or The server cannot find the requested resource. (status code 404)
      */
-    @Transactional
-    @RequestMapping(value = "/data/{fundVersionId}/{structureDataId}", method = RequestMethod.GET)
-    public ArrStructureDataVO getStructureData(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                               @PathVariable(value = "structureDataId") final Integer structureDataId) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        return ArrStructureDataVO.newInstance(structureService.getStructObjById(structureDataId, fundVersion));
-    }
+	@Override
+	@Transactional
+	public ResponseEntity<Void> sdoDeleteObjects(Integer fundId, @RequestBody List<Integer> structureObjectIds, @Nullable Integer fundVersionId) {
+	    ArrFundVersion fundVersion = fundVersionId != null ? 
+	    		arrangementInternalService.getFundVersionById(fundVersionId) : 
+	    			arrangementInternalService.getOpenVersionByFundId(fundId);
+        List<ArrStructuredObject> structObjList = structureService.getStructObjByIds(structureObjectIds);
+        structureService.deleteStructObj(fundVersion.getFundId(), structObjList);
+
+        return ResponseEntity.ok().build();
+	}
 
     /**
-     * Vyhledání hodnot strukturovaného datového typu.
+     * GET /funds/sdo/{fundId}/item/{structuredObjectId}
+     * GET Getting data for a structured data type form: getFormStructureItems()
      *
-     * @param structureTypeCode kód typu strukturovaného datového
-     * @param fundVersionId     identifikátor verze AS
-     * @param search            text pro filtrování (nepovinné)
-     * @param assignable        přiřaditelnost
-     * @param from              od položky
-     * @param count             maximální počet položek
-     * @return nalezené položky
+     * @param fundId fund id (required)
+     * @param structuredObjectId structured object id (required)
+     * @param fundVersionId fund version id (optional)
+     * @return The request has succeeded. (status code 200)
      */
-    @Transactional
-    @RequestMapping(value = "/data/{fundVersionId}/{structureTypeCode}/search", method = RequestMethod.GET)
-    public FilteredResultVO<ArrStructureDataVO> findStructObj(@PathVariable("fundVersionId") final Integer fundVersionId,
-                                                                  @PathVariable("structureTypeCode") final String structureTypeCode,
-                                                                  @RequestParam(value = "search", required = false) final String search,
-                                                                  @RequestParam(value = "assignable", required = false) final Boolean assignable,
-                                                                  @RequestParam(value = "from", required = false, defaultValue = "0") final Integer from,
-                                                                  @RequestParam(value = "count", required = false, defaultValue = "200") final Integer count) {
-        if (from < 0) {
-            throw new SystemException("Hodnota nesmí být záporná", BaseCode.PROPERTY_IS_INVALID).set("property", "from");
-        }
-        if (count <= 0) {
-            throw new SystemException("Hodnota musí být kladná", BaseCode.PROPERTY_IS_INVALID).set("property", "count");
-        }
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
-        FilteredResult<ArrStructuredObject> filteredResult = structureService.findStructureData(structureType, fundVersion.getFund(), search, assignable, from, count);
-        return new FilteredResultVO<>(filteredResult.getList(), ArrStructureDataVO::newInstance,
-                filteredResult.getTotalCount());
+	@Override
+	@Transactional
+	public ResponseEntity<StructuredObjectItems> sdoGetFormStructureItems(Integer fundId, Integer structuredObjectId, @Nullable Integer fundVersionId) {
+	    ArrFundVersion fundVersion = fundVersionId != null ? 
+	    		arrangementInternalService.getFundVersionById(fundVersionId) : 
+	    			arrangementInternalService.getOpenVersionByFundId(fundId);
+
+	    ArrStructuredObject structuredObject = structureService.getStructObjById(structuredObjectId);
+
+	    List<ArrStructuredItem> structureItems = structureService.findStructureItems(structuredObject);
+	    List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypes(structuredObject.getStructuredTypeId(),
+	                                                                                fundVersion, structureItems);
+
+	    String ruleCode = fundVersion.getRuleSet().getCode();
+
+	    StructuredObjectItems result = new StructuredObjectItems();
+	    result.setParent(factoryVO.createStructuredObject(structuredObject));
+	    result.setItems(structureItems.stream()
+	            .map(factoryVO::createStructuredObjectItem)
+	            .collect(Collectors.toList()));
+	    result.setItemTypes(factoryVO.createFormItemTypes(ruleCode, fundId, structureItemTypes));
+
+	    return ResponseEntity.ok(result);
     }
 
     /**
-     * Vytvoření položky k hodnotě strukt. datového typu.
+     * POST /funds/sdo/{fundId}/item/{structuredObjectId}
+     * Create item value of a structured data type
      *
-     * @param itemVO          položka
-     * @param fundVersionId   identifikátor verze AS
-     * @param itemTypeId      identifikátor typu atributu
-     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-     * @return vytvořená entita
+     * @param fundId fund id (required)
+     * @param structuredObjectId structure data id (required)
+     * @param nodeItem node item (required)
+     * @return The request has succeeded. (status code 200)
      */
-    @Transactional
-    @RequestMapping(value = "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create", method = RequestMethod.POST)
-    public StructureItemResult createStructureItem(@RequestBody final ArrItemVO itemVO,
-                                                   @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                   @PathVariable(value = "itemTypeId") final Integer itemTypeId,
-                                                   @PathVariable(value = "structureDataId") final Integer structureDataId) {
-        ArrStructuredItem structureItem = factoryDO.createStructureItem(itemVO, itemTypeId);
-        ArrStructuredItem createStructureItem = structureService.createStructureItem(structureItem, structureDataId, fundVersionId);
-        StructureItemResult result = new StructureItemResult();
-        result.setItem(factoryVO.createItem(createStructureItem));
-        result.setParent(ArrStructureDataVO.newInstance(createStructureItem.getStructuredObject()));
-        return result;
-    }
+	@Override
+	@Transactional
+	public ResponseEntity<SdoItemResult> sdoCreateItem(Integer fundId, Integer structuredObjectId, StructuredObjectItem structuredObjectItem) {
+		ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+	    ArrStructuredItem structureItem = factoryDO.createStructureItem(structuredObjectItem, structuredObjectItem.getItemTypeId());
+	    ArrStructuredItem created = structureService.createStructureItem(structureItem, structuredObjectId, fundVersion.getFundVersionId());
+
+	    SdoItemResult result = new SdoItemResult();
+	    result.setItem(factoryVO.createStructuredObjectItem(created));
+	    result.setParent(factoryVO.createStructuredObject(created.getStructuredObject()));
+	    return ResponseEntity.ok(result);
+	}
 
     /**
-     * Upravení položky k hodnotě strukt. datového typu.
+     * PUT /funds/sdo/{fundId}/item/{structuredObjectId}/{createNewVersion}
+     * Update item value of a structured data type
      *
-     * @param itemVO           položka
-     * @param fundVersionId    identifikátor verze AS
-     * @param createNewVersion provést verzovanou změnu
-     * @return upravená entita
+     * @param fundId fund id (required)
+     * @param structuredObjectId structure data id (required)
+     * @param createNewVersion create a new version (required)
+     * @param structuredObjectItem node item (required)
+     * @return The request has succeeded. (status code 200)
+     *         or The server cannot find the requested resource. (status code 404)
      */
-    @Transactional
-    @RequestMapping(value = "/item/{fundVersionId}/update/{createNewVersion}", method = RequestMethod.PUT)
-    public StructureItemResult updateStructureItem(@RequestBody final ArrItemVO itemVO,
-                                                   @PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                   @PathVariable(value = "createNewVersion") final Boolean createNewVersion) {
-        ArrStructuredItem structureItem = factoryDO.createStructureItem(itemVO);
-        ArrStructuredItem updateStructureItem = structureService.updateStructureItem(structureItem, fundVersionId, createNewVersion);
-        StructureItemResult result = new StructureItemResult();
-        result.setItem(factoryVO.createItem(updateStructureItem));
-        result.setParent(ArrStructureDataVO.newInstance(updateStructureItem.getStructuredObject()));
-        return result;
-    }
+	@Override
+	@Transactional
+	public ResponseEntity<SdoItemResult> sdoUpdateItem(Integer fundId, Integer structuredObjectId, Boolean createNewVersion, StructuredObjectItem structuredObjectItem) {
+		ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+        ArrStructuredItem structureItem = factoryDO.createStructureItem(structuredObjectItem);
+        ArrStructuredItem updated = structureService.updateStructureItem(structureItem, fundVersion.getFundVersionId(), createNewVersion);
+
+        SdoItemResult result = new SdoItemResult();
+	    result.setItem(factoryVO.createStructuredObjectItem(updated));
+	    result.setParent(factoryVO.createStructuredObject(updated.getStructuredObject()));
+	    return ResponseEntity.ok(result);
+	}
 
     /**
-     * Odstranení položky k hodnotě strukt. datového typu.
+     * DELETE /funds/sdo/{fundId}/item/{structuredObjectId}/{itemObjectId}
+     * Delete item value of a structured data type
      *
-     * @param itemVO        položka
-     * @param fundVersionId identifikátor verze AS
-     * @return smazaná entita
+     * @param fundId fund id (required)
+     * @param structuredObjectId structured object id (required)
+     * @param itemObjectId item object id (required)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
+     *         or The server cannot find the requested resource. (status code 404)
      */
-    @Transactional
-    @RequestMapping(value = "/item/{fundVersionId}/delete", method = RequestMethod.POST)
-    public StructureItemResult deleteStructureItem(@RequestBody final ArrItemVO itemVO,
-                                                   @PathVariable(value = "fundVersionId") final Integer fundVersionId) {
-        ArrStructuredItem deleteStructureItem = structureService.deleteStructureItem(itemVO.getDescItemObjectId(), fundVersionId);
-        StructureItemResult result = new StructureItemResult();
-        result.setItem(factoryVO.createItem(deleteStructureItem));
-        result.setParent(ArrStructureDataVO.newInstance(deleteStructureItem.getStructuredObject()));
-        return result;
-    }
+	@Override
+	@Transactional
+	public ResponseEntity<Void> sdoDeleteItem(Integer fundId, Integer structuredObjectId, Integer itemObjectId) {
+		ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+        structureService.deleteStructureItem(itemObjectId, structuredObjectId, fundVersion.getFundVersionId());
+
+	    return ResponseEntity.ok().build();
+	}
 
     /**
-     * Odstranení položek k hodnotě strukt. datového typu podle typu atributu.
-     * @param fundVersionId   identifikátor verze AS
-     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-     * @param itemTypeId      identifikátor typu atributu
-     * @return smazaná entita
-     */
-    @Transactional
-    @RequestMapping(value = "/item/{fundVersionId}/{structureDataId}/{itemTypeId}", method = RequestMethod.DELETE)
-    public StructureItemResult deleteStructureItemsByType(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                          @PathVariable(value = "structureDataId") final Integer structureDataId,
-                                                          @PathVariable(value = "itemTypeId") final Integer itemTypeId) {
-        ArrStructuredObject structureData = structureService.deleteStructureItemsByType(fundVersionId, structureDataId, itemTypeId);
-        StructureItemResult result = new StructureItemResult();
-        result.setItem(null);
-        result.setParent(ArrStructureDataVO.newInstance(structureData));
-        return result;
-    }
-
-    /**
-     * Vyhledá možné typy strukt. datových typů, které lze v AS používat.
+     * DELETE /funds/sdo/{fundId}/item/{structuredObjectId}/by-type/{itemTypeId}
+     * Delete items based on the value of a data type structure by attribute type
      *
-     * @return nalezené entity
+     * @param fundId fund id (required)
+     * @param structuredObjectId structured object id (required)
+     * @param itemTypeId item type id (required)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
+     *         or The server cannot find the requested resource. (status code 404)
      */
-    @Transactional
-    @RequestMapping(value = "/type", method = RequestMethod.GET)
-    public List<RulStructureTypeVO> findStructureTypes(@RequestParam(value = "fundVersionId", required = false) final Integer fundVersionId) {
-        List<RulStructuredType> structureTypes;
-        if (fundVersionId == null) {
-            structureTypes = structureService.findStructureTypes();
-        } else {
-            ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-            structureTypes = structureService.findStructureTypes(fundVersion);
-        }
-        return structureTypes.stream().map(i -> RulStructureTypeVO.newInstance(i)).collect(Collectors.toList());
-    }
+	@Override
+	@Transactional
+	public ResponseEntity<Void> sdoDeleteItemsByType(Integer fundId, Integer structuredObjectId, Integer itemTypeId) {
+		ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+		structureService.deleteStructureItemsByType(fundVersion.getFundVersionId(), structuredObjectId, itemTypeId);
 
-    @Transactional
-    @RequestMapping(value = "/part-type", method = RequestMethod.GET)
-    public List<RulPartTypeVO> findPartTypes() {
-        List<RulPartType> partTypes = structureService.findPartTypes();
-        return partTypes.stream().map(i -> RulPartTypeVO.newInstance(i)).collect(Collectors.toList());
+	    return ResponseEntity.ok().build();
+	}
+
+    /**
+     * GET /funds/sdo/{fundId}/search/{structureTypeCode}
+     * GET Searching for values of a structured data type: findStructObj()
+     *
+     * @param fundId fund id (required)
+     * @param structureTypeCode structure type code (required)
+     * @param search text for filtering (optional) (optional)
+     * @param assignable assignable value (optional)
+     * @param from from default &#x3D; 0 (optional, default to 0)
+     * @param count max number of items (optional, default to 200)
+     * @param fundVersionId fund version id (optional)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+	@Transactional
+    public ResponseEntity<SdoFindResult> sdoFindStructObj(Integer fundId,
+                                                          String structureTypeCode,
+                                                          @Nullable String search,
+                                                          @Nullable Boolean assignable,
+                                                          Integer from,
+                                                          Integer count,
+                                                          @Nullable Integer fundVersionId) {
+	    if (from < 0) {
+	        throw new SystemException("Hodnota nesmí být záporná", 
+	        		BaseCode.PROPERTY_IS_INVALID)
+	                .set("from", from);
+	    }
+	    if (count <= 0) {
+	        throw new SystemException("Hodnota musí být kladná", 
+	        		BaseCode.PROPERTY_IS_INVALID)
+	                .set("count", count);
+	    }
+
+	    ArrFundVersion fundVersion = fundVersionId != null ? 
+	    		arrangementInternalService.getFundVersionById(fundVersionId) : 
+	    			arrangementInternalService.getOpenVersionByFundId(fundId);
+
+	    RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
+	    FilteredResult<ArrStructuredObject> filteredResult = structureService.findStructureData(
+	            structureType, fundVersion.getFund(), search, assignable, from, count);
+
+	    SdoFindResult result = new SdoFindResult();
+	    result.setCount((long) filteredResult.getTotalCount());
+	    result.setRows(filteredResult.getList().stream()
+	            .map(factoryVO::createStructuredObject)
+	            .collect(Collectors.toList()));
+
+	    return ResponseEntity.ok(result);
     }
 
     /**
-     * Získání dat pro formulář strukt. datového typu.
+     * GET /funds/sdo/{fundId}/extension/{structureTypeCode}
+     * GET Finds available and enabled AS extensions: findFundStructureExtension()
      *
-     * @param fundVersionId   identifikátor verze AS
-     * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-     * @return data formuláře
+     * @param fundId fund id (required)
+     * @param structureTypeCode structure type code (required)
+     * @param fundVersionId fund version id (optional)
+     * @return The request has succeeded. (status code 200)
      */
-    @Transactional
-    @RequestMapping(value = "/item/form/{fundVersionId}/{structureDataId}", method = RequestMethod.GET)
-    public StructureDataFormDataVO getFormStructureItems(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                         @PathVariable(value = "structureDataId") final Integer structureDataId) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        ArrStructuredObject structureData = structureService.getStructObjById(structureDataId);
+	@Override
+	@Transactional
+    public ResponseEntity<List<SdoExtensionFund>> sdoFindFundStructureExtension(Integer fundId, String structureTypeCode, @Nullable Integer fundVersionId) {
+	    ArrFundVersion fundVersion = fundVersionId != null ? 
+	    		arrangementInternalService.getFundVersionById(fundVersionId) : 
+	    			arrangementInternalService.getOpenVersionByFundId(fundId);
 
-        List<ArrStructuredItem> structureItems = structureService.findStructureItems(structureData);
-        List<RulItemTypeExt> structureItemTypes = ruleService.getStructureItemTypes(structureData.getStructuredTypeId(),
-                                                                                    fundVersion, structureItems);
-
-        Integer fundId = fundVersion.getFund().getFundId();
-        String ruleCode = fundVersion.getRuleSet().getCode();
-
-        ArrStructureDataVO structureDataVO = ArrStructureDataVO.newInstance(structureData);
-        List<ArrItemVO> descItems = factoryVO.createItems(structureItems);
-        List<ItemTypeLiteVO> itemTypeLites = factoryVO.createItemTypes(ruleCode, fundId, structureItemTypes);
-        return new StructureDataFormDataVO(structureDataVO, descItems, itemTypeLites);
-    }
-
-    /**
-     * Vyhledá dostupná a aktivovaná rozšíření k AS.
-     *
-     * @param fundVersionId identifikátor verze AS
-     * @return nalezené entity
-     */
-    @Transactional
-    @RequestMapping(value = "/extension/{fundVersionId}/{structureTypeCode}", method = RequestMethod.GET)
-    public List<StructureExtensionFundVO> findFundStructureExtension(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                                                     @PathVariable(value = "structureTypeCode") final String structureTypeCode) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
+	    RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
         List<RulStructuredTypeExtension> allStructureExtensions = structureService.findAllStructureExtensions(structureType);
         List<RulStructuredTypeExtension> structureExtensions = structureService.findStructureExtensions(fundVersion.getFund(), structureType);
-        return factoryVO.createStructureExtensionFund(allStructureExtensions, structureExtensions);
-    }
+
+        return ResponseEntity.ok(factoryVO.createStructureExtensionFund(allStructureExtensions, structureExtensions));		
+	}
 
     /**
-     * Nastaví konkrétní rozšíření na AS.
+     * PUT /funds/sdo/{fundId}/extension/{structureTypeCode}
+     * PUT Sets a specific extension on the AS: setFundStructureExtensions()
      *
-     * @param fundVersionId           identifikátor verze AS
-     * @param structureExtensionCodes seznam kódů rozšíření, které mají být aktivovány na AS
+     * @param fundId fund id (required)
+     * @param structureTypeCode structure type code (required)
+     * @param requestBody structure ext codes (required)
+     * @return There is no content to send for this request, but the headers may be useful.  (status code 204)
      */
-    @Transactional
-    @RequestMapping(value = "/extension/{fundVersionId}/{structureTypeCode}", method = RequestMethod.PUT)
-    public void setFundStructureExtensions(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
-                                           @PathVariable(value = "structureTypeCode") final String structureTypeCode,
-                                           @RequestBody final List<String> structureExtensionCodes) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
+	@Override
+	@Transactional
+	public ResponseEntity<Void> sdoSetFundStructureExtensions(Integer fundId, String structureTypeCode, @RequestBody List<String> structureExtensionCodes) {
+	    ArrFundVersion fundVersion = arrangementInternalService.getOpenVersionByFundId(fundId);
+	    RulStructuredType structureType = structureService.getStructureTypeByCode(structureTypeCode);
         List<RulStructuredTypeExtension> structureExtensions = structureService.findStructureExtensionByCodes(structureExtensionCodes);
         structureService.setFundStructureExtensions(fundVersion, structureType, structureExtensions);
-    }
 
-    public static class StructureDataFormDataVO extends ArrangementController.FormDataNewVO<ArrStructureDataVO> {
-        private ArrStructureDataVO parent;
+	    return ResponseEntity.ok().build();
+	}
 
-        public StructureDataFormDataVO() {
-        }
+    /**
+     * GET /funds/sdo/type
+     * GET Lists the possible data types that can be used in AS: findStructureTypes()
+     *
+     * @param fundVersionId fund version id (optional)
+     * @return The request has succeeded. (status code 200)
+     */	
+	@Override
+	public ResponseEntity<List<SdoType>> sdoFindStructureTypes(@Nullable Integer fundVersionId) {
+		List<RulStructuredType> structuredTypes;
+		if (fundVersionId == null) {
+			structuredTypes = structureService.findStructureTypes();
+		} else {
+			ArrFundVersion fundVersion = arrangementInternalService.getFundVersionById(fundVersionId);
+			structuredTypes = structureService.findStructureTypes(fundVersion);
+		}
+		return ResponseEntity.ok(structureService.structuredTypeToSdoType(structuredTypes));
+	}
 
-        public StructureDataFormDataVO(final ArrStructureDataVO parent, final List<ArrItemVO> descItems, final List<ItemTypeLiteVO> itemTypeLites) {
-            super(parent, descItems, itemTypeLites);
-            this.parent = parent;
-        }
-
-        @Override
-        public ArrStructureDataVO getParent() {
-            return parent;
-        }
-
-        @Override
-        public void setParent(final ArrStructureDataVO parent) {
-            this.parent = parent;
-        }
-    }
-
-    public static class StructureItemResult extends ArrangementController.ItemResult<ArrStructureDataVO> {
-        private ArrStructureDataVO parent;
-
-        @Override
-        public ArrStructureDataVO getParent() {
-            return parent;
-        }
-
-        @Override
-        public void setParent(final ArrStructureDataVO parent) {
-            this.parent = parent;
-        }
-    }
-
-    public static class StructureDataBatchUpdate {
-
-        /**
-         * Identifikátory hodnot strukt. typu, pro které se bude provádět úprava.
-         */
-        private List<Integer> structureDataIds;
-
-        /**
-         * Identifikátory číselných typů atributu, které se budou incrementovat.
-         */
-        private List<Integer> autoincrementItemTypeIds;
-
-        /**
-         * Identifikátory typů atributu, které se mají smazat.
-         */
-        private List<Integer> deleteItemTypeIds;
-
-        /**
-         * Identifikátor typu atributu -> položky, které se mají nastavit na hodnotách strukt. typu.
-         */
-        private Map<Integer, List<ArrItemVO>> items;
-
-        public List<Integer> getStructureDataIds() {
-            return structureDataIds;
-        }
-
-        public void setStructureDataIds(final List<Integer> structureDataIds) {
-            this.structureDataIds = structureDataIds;
-        }
-
-        public List<Integer> getAutoincrementItemTypeIds() {
-            return autoincrementItemTypeIds;
-        }
-
-        public void setAutoincrementItemTypeIds(final List<Integer> autoincrementItemTypeIds) {
-            this.autoincrementItemTypeIds = autoincrementItemTypeIds;
-        }
-
-        public List<Integer> getDeleteItemTypeIds() {
-            return deleteItemTypeIds;
-        }
-
-        public void setDeleteItemTypeIds(final List<Integer> deleteItemTypeIds) {
-            this.deleteItemTypeIds = deleteItemTypeIds;
-        }
-
-        public Map<Integer, List<ArrItemVO>> getItems() {
-            return items;
-        }
-
-        public void setItems(final Map<Integer, List<ArrItemVO>> items) {
-            this.items = items;
-        }
-    }
-
-    public static class StructureDataBatch {
-
-        /**
-         * Počet položek, které se budou budou vytvářet (včetně zdrojové hodnoty strukt. typu).
-         */
-        private Integer count;
-
-        /**
-         * Identifikátory číselných typů atributu, které se budou incrementovat.
-         */
-        private List<Integer> incrementedTypeIds;
-
-        public StructureDataBatch() {
-        }
-
-        public StructureDataBatch(final Integer count, final List<Integer> itemTypeIds) {
-            this.count = count;
-            this.incrementedTypeIds = itemTypeIds;
-        }
-
-        public Integer getCount() {
-            return count;
-        }
-
-        public void setCount(final Integer count) {
-            this.count = count;
-        }
-
-        public List<Integer> getIncrementedTypeIds() {
-            return incrementedTypeIds;
-        }
-
-        public void setIncrementedTypeIds(final List<Integer> itemTypeIds) {
-            this.incrementedTypeIds = itemTypeIds;
-        }
-    }
 }

@@ -83,16 +83,3 @@ when
 then
 	results.add(RelatedNodeDirection.DESCENDANTS);
 end
-
-
-/*
-
-rule "Pokud v SaveDescriptionItems provedu smazání hodnoty ZP2015_TITLE, tak dopady jsou Node+Descendants"
-when
-    descItem : DescItem(type == "ZP2015_LEVEL_TYPE", change == DescItemChange.DELETE)
-	eval( nodeTypeOperation.equals(NodeTypeOperation.SAVE_DESC_ITEM) )
-then
-	results.add(RelatedNodeDirection.NODE);
-	results.add(RelatedNodeDirection.DESCENDANTS);
-end
-*/

@@ -9,6 +9,7 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.repository.UserRepository;
+import cz.tacr.elza.service.AdminPermissionUpdateMode;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.ws.core.v1.CreateFundException;
 import cz.tacr.elza.ws.core.v1.DeleteFundException;
@@ -59,6 +61,15 @@ public class FundServiceWsImpl {
 
     @Autowired
     WSHelper wsHelper;
+
+    /**
+     * Strategy for updating fonds administrator permissions received over the web service.
+     * Defaults to {@link AdminPermissionUpdateMode#FULL_SYNC} (existing permissions not in
+     * the request are removed); set to {@code ADD_ONLY} to keep administrator-granted
+     * permissions untouched and only add the supplied ones.
+     */
+    @Value("${elza.webservice.fonds.adminPermissionMode:FULL_SYNC}")
+    private AdminPermissionUpdateMode adminPermissionMode;
 
     @Transactional
     public FundIdentifiers createFund(Fund fundInfo) {
@@ -158,7 +169,7 @@ public class FundServiceWsImpl {
         List<Integer> userIds = getUserIds(fundUpdate.getAdminUsers());
         List<Integer> groupIds = getGroupIds(fundUpdate.getAdminGroups());
 
-        arrangementService.updateFund(fund, ruleSet.getEntity(), scopes, userIds, groupIds);
+        arrangementService.updateFund(fund, ruleSet.getEntity(), scopes, userIds, groupIds, adminPermissionMode);
     }
 
     /**
@@ -191,7 +202,9 @@ public class FundServiceWsImpl {
                 } else {
                     scopes = scopeRepository.findByCodes(strings);
                 }
-                Validate.isTrue(strings.size() == scopes.size(), "Nebyly nalezeny všechny ApScope");
+                Validate.isTrue(strings.size() == scopes.size(),
+                        "Nebyly nalezeny všechny ApScope. Požadované: %s, nalezené: %s (pozor, kódy jsou citlivé na velikost písmen)",
+                        strings, scopes.stream().map(ApScope::getCode).collect(Collectors.toList()));
                 return scopes;
             }
         }

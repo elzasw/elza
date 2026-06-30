@@ -346,4 +346,22 @@ public class ArrangementInternalService {
         reindexDescItems.forEach(descItem -> indexingPlan.addOrUpdate(descItem));
         reindexCachedNodes.forEach(cachedNode -> indexingPlan.addOrUpdate(cachedNode));
     }
+
+    /**
+     * Remove ArrDescItem entries from the Hibernate Search index by id.
+     *
+     * Use this after bulk SQL deletes that bypass Hibernate's entity lifecycle
+     * (and therefore the automatic Hibernate Search hooks).
+     *
+     * @param descItemIds ids of ArrDescItem entries to purge from the index
+     */
+    public void purgeArrDescItemFromIndex(Collection<Integer> descItemIds) {
+        Objects.requireNonNull(descItemIds);
+        if (descItemIds.isEmpty()) {
+            return;
+        }
+        SearchSession searchSession = Search.session(em);
+        SearchIndexingPlan indexingPlan = searchSession.indexingPlan();
+        descItemIds.forEach(id -> indexingPlan.purge(ArrDescItem.class, id, null));
+    }
 }

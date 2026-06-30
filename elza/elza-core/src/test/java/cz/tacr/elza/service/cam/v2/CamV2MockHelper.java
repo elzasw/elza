@@ -1,7 +1,7 @@
 package cz.tacr.elza.service.cam.v2;
 
 import java.io.StringWriter;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -170,7 +170,7 @@ public class CamV2MockHelper {
                 xml.setPartRef(new PartRefXml(new UuidXml(partUuid), partType));
             }
             // `from` is required by the schema — any point in time works for tests
-            xml.setFrom(new DateTimeXml(LocalDateTime.now()));
+            xml.setFrom(new DateTimeXml(OffsetDateTime.now()));
             return xml;
         }
     }

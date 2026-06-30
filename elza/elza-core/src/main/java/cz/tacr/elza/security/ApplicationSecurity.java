@@ -210,7 +210,10 @@ public class ApplicationSecurity {
         }
         ap.add(new PasswordAutheticationProvider(userService, txManager, siemAuditLogger));
 
-        return new ProviderManager(ap);
+        // Wrap the chain so a single provider failing (e.g. Kerberos validation for a
+        // local-password user) is logged according to the overall outcome instead of
+        // flooding the log with an ERROR stack trace on every successful login.
+        return new DeferredFailureAuthenticationManager(new ProviderManager(ap));
     }
 
     // ?

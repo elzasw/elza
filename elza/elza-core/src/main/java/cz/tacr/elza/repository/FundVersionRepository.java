@@ -64,4 +64,20 @@ public interface FundVersionRepository extends ElzaJpaRepository<ArrFundVersion,
     @Query("SELECT fv FROM arr_fund_version fv JOIN FETCH fv.fund f WHERE fv.lockChange IS NULL AND f IN (SELECT n.fund FROM arr_node n WHERE n.nodeId IN :nodeIds)")
     List<ArrFundVersion> findVersionsByNodeIds(@Param("nodeIds") Collection<Integer> nodeIds);
 
+    /**
+     * Highest fundVersionId for a fund whose createChange is strictly older
+     * than the given change id. Used to locate the most recent version that
+     * existed before a node's level was deleted.
+     */
+    @Query("SELECT MAX(v.fundVersionId) FROM arr_fund_version v WHERE v.fund.fundId = :fundId AND v.createChange.changeId < :changeId")
+    Integer findMaxFundVersionIdByFundIdAndCreateChangeBefore(@Param("fundId") Integer fundId,
+                                                              @Param("changeId") Integer changeId);
+
+    /**
+     * Highest fundVersionId for a fund — used as fallback when an active node
+     * lives in a fund that has no open version.
+     */
+    @Query("SELECT MAX(v.fundVersionId) FROM arr_fund_version v WHERE v.fund.fundId = :fundId")
+    Integer findMaxFundVersionIdByFundId(@Param("fundId") Integer fundId);
+
 }

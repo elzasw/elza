@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import React, { FC } from 'react';
 import i18n from '../../../i18n';
 import './DetailPart.scss';
-import { SyncState } from '../../../../api/SyncState';
+import { SyncState } from 'elza-api';
 import { SyncIcon } from "../sync-icon";
 
 export const PartName:FC<{
@@ -39,8 +39,8 @@ export const PartName:FC<{
                 <SyncIcon
                     syncState={
                     binding ?
-                        SyncState.SYNC_OK :
-                        SyncState.LOCAL_CHANGE
+                        SyncState.SyncOk :
+                        SyncState.LocalChange
                 }
                     />
             )}

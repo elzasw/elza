@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import cz.tacr.elza.common.db.HibernateUtils;
+import cz.tacr.elza.controller.vo.SdoType;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -539,17 +541,27 @@ public class StructObjService {
      * Smazání položky k hodnotě strukt. datového typu.
      *
      * @param itemObjectId položka
+     * @param structuredObjectId pro kontrolu
      * @param fundVersionId identifikátor verze AS
      * @return smazaná položka
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrStructuredItem deleteStructureItem(final Integer itemObjectId,
+    		                                     final Integer structuredObjectId,
                                                  @AuthParam(type = AuthParam.Type.FUND_VERSION) final Integer fundVersionId) {
 
         ArrStructuredItem structureItemDB = findOpenItemFetchData(itemObjectId);
         if (structureItemDB == null) {
             throw new ObjectNotFoundException("Neexistuje položka s OID: " + itemObjectId, BaseCode.ID_NOT_EXIST)
             	.setId(itemObjectId);
+        }
+
+        if (structuredObjectId != null) {
+        	if (!structureItemDB.getStructuredObjectId().equals(structuredObjectId)) {
+        		throw new BusinessException("Neshoda zadaného ID s ID mazaného objektu", BaseCode.INVALID_STATE)
+        			.set("structuredObjectId", structuredObjectId)
+        			.set("structuredObjectId mazaného objektu", structureItemDB.getStructuredObjectId());
+        	}
         }
 
         ArrStructuredObject structObj = structureItemDB.getStructuredObject();
@@ -774,14 +786,14 @@ public class StructObjService {
     /**
      * Potvrzení hodnoty strukt. datového typu.
      *
-     * @param fund          archivní soubor
-     * @param structureData hodnota struktovaného datového typu
+     * @param fund            archivní soubor
+     * @param structureObject hodnota struktovaného datového typu
      * @return entita
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public ArrStructuredObject confirmStructureData(@AuthParam(type = AuthParam.Type.FUND) final ArrFund fund,
-                                                    final ArrStructuredObject structureData) {
-        return confirmInternal(fund, structureData);
+                                                    final ArrStructuredObject structureObject) {
+        return confirmInternal(fund, structureObject);
     }
 
     /**
@@ -791,19 +803,16 @@ public class StructObjService {
      * @param structureData hodnota struktovaného datového typu
      * @return entita
      */
-    private ArrStructuredObject confirmInternal(final ArrFund fund,
-                                                     final ArrStructuredObject structureData) {
+    private ArrStructuredObject confirmInternal(final ArrFund fund, final ArrStructuredObject structureData) {
         if (structureData.getDeleteChange() != null) {
             throw new BusinessException("Nelze potvrdit smazaná strukturovaná data", BaseCode.INVALID_STATE);
         }
         if (!structureData.getState().equals(ArrStructuredObject.State.TEMP)) {
             throw new BusinessException("Strukturovaná data nemají dočasný stav", BaseCode.INVALID_STATE);
         }
-        int itemCount = structureItemRepository
-                .countItemsByStructuredObjectAndDeleteChangeIsNull(structureData);
+        int itemCount = structureItemRepository.countItemsByStructuredObjectAndDeleteChangeIsNull(structureData);
         if (itemCount == 0) {
-            throw new BusinessException("Structured object without items cannot be confirmed.",
-                    StructObjCode.NO_VALID_ITEMS)
+            throw new BusinessException("Structured object without items cannot be confirmed.", StructObjCode.NO_VALID_ITEMS)
                             .set("structObjId", structureData.getStructuredObjectId());
         }
         // reset temporary value -> final have to be calculated
@@ -1334,8 +1343,16 @@ public class StructObjService {
         }
     }
 
-    public Map<Integer, Map<Integer, ArrStructuredObject>> groupStructuredObjectByChange(Integer fundId, List<Integer> changeIdList) {
+    public List<SdoType> structuredTypeToSdoType(List<RulStructuredType> types) {
+    	List<SdoType> result = new ArrayList<>(types.size());
+    	types.forEach(t -> {
+    		SdoType type = new SdoType(t.getStructuredTypeId(), t.getName(), t.getCode(), t.getAnonymous());
+    		result.add(type);
+    	});
+    	return result;
+    }
 
+    public Map<Integer, Map<Integer, ArrStructuredObject>> groupStructuredObjectByChange(Integer fundId, List<Integer> changeIdList) {
         if (changeIdList.isEmpty()) {
             return Collections.emptyMap();
         }

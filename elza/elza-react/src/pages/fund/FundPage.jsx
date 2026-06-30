@@ -24,6 +24,7 @@ import {
 } from '../../actions/fund/fund';
 import { modalDialogShow } from '../../actions/global/modalDialog';
 import { WebApi } from '../../actions/index';
+import { Api } from '../../api';
 import { refInstitutionsFetchIfNeeded } from '../../actions/refTables/institutions';
 import { refRuleSetFetchIfNeeded } from '../../actions/refTables/ruleSet';
 import { scopesDirty } from '../../actions/refTables/scopesData';
@@ -38,11 +39,12 @@ import { objectById } from '../../shared/utils';
 import { indexById } from '../../stores/app/utils';
 import PageLayout from '../shared/layout/PageLayout';
 import './FundPage.scss';
-import { Button, DrawerBody, DrawerHeader, DrawerHeaderTitle, InlineDrawer, Menu, MenuButton, MenuItem, MenuList, MenuPopover, MenuTrigger } from '@fluentui/react-components';
+import { Button, Checkbox, DrawerBody, DrawerHeader, DrawerHeaderTitle, InlineDrawer, Menu, MenuButton, MenuItem, MenuList, MenuPopover, MenuTrigger } from '@fluentui/react-components';
 import { Dismiss24Regular, ArrowDownloadRegular } from "@fluentui/react-icons"
 import { FundFilters } from 'components/fund/filters/FundFilters';
 import { FundPageRibbon } from 'components/fund/FundPageRibbon';
 import { FundPager } from 'components/fund/FundPager';
+import MultiFundActionDialog from 'components/fund/MultiFundActionDialog';
 import { defineMessages, FormattedMessage } from 'react-intl';
 
 const OUTPUT_MAX_NUMBER = 10;
@@ -71,6 +73,9 @@ class FundPage extends AbstractReactComponent {
     state = {
         institutions: [],
         sidebarOpen: false,
+        selectionMode: false,
+        selectedFundIds: [],
+        selectAllMatching: false,
     };
 
     constructor(props) {
@@ -163,10 +168,11 @@ class FundPage extends AbstractReactComponent {
                     fund={true}
                     initialValues={{
                         includeUUID: true,
-                        includeAccessPoints: true
+                        includeAccessPoints: true,
+                        includeDaos: true
                     }}
-                    onSubmitForm={({ exportFilter, includeUUID, includeAccessPoints }) => {
-                        return dispatch(exportFund(fundDetail.versionId, { exportFilter, includeUUID, includeAccessPoints }));
+                    onSubmitForm={({ exportFilter, includeUUID, includeAccessPoints, includeDaos }) => {
+                        return dispatch(exportFund(fundDetail.versionId, { exportFilter, includeUUID, includeAccessPoints, includeDaos }));
                     }}
                 />,
             ),
@@ -346,7 +352,7 @@ class FundPage extends AbstractReactComponent {
 
     renderListItem(props) {
         const { institutionsAll, userDetail } = this.props;
-        const { institutions } = this.state;
+        const { institutions, selectionMode, selectedFundIds, selectAllMatching } = this.state;
         const { item } = props;
         // hide institution name, when only one is used for funds
         const institution = institutions?.length > 1 ? institutionsAll.items.find(({ code }) => code == item.institutionIdentifier) : undefined;
@@ -431,11 +437,27 @@ class FundPage extends AbstractReactComponent {
             }
         }
         return <>
+            {selectionMode && item.id !== null &&
+                <div
+                    style={{ display: "flex", alignItems: "center", paddingRight: "8px", flexShrink: 0 }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <Checkbox
+                        checked={selectAllMatching || selectedFundIds.includes(item.id)}
+                        disabled={selectAllMatching}
+                        onChange={(_e, d) => this.handleToggleFundCheck(item.id, !!d.checked)}
+                    />
+                </div>
+            }
             <div style={{ flexGrow: 1, flexShrink: 1, overflow: "hidden" }}>
                 <div className="item-row" key={item.id}>
-                    <Link className="name main link" title={item.name} key={`fund-${item.id}`} to={urlFundTree(item.id)} onMouseDown={(e) => e.stopPropagation()}>
-                        {item.name}
-                    </Link>
+                    {selectionMode
+                        ? <span className="name main" title={item.name} key={`fund-${item.id}`}>{item.name}</span>
+                        : <Link className="name main link" title={item.name} key={`fund-${item.id}`} to={urlFundTree(item.id)} onMouseDown={(e) => e.stopPropagation()}>
+                            {item.name}
+                        </Link>
+                    }
                     <div style={{ flexGrow: 1 }}></div>
                 </div>
                 <div className="item-row desc" key={item.id + '-x'}>
@@ -488,12 +510,70 @@ class FundPage extends AbstractReactComponent {
 
     handleSelect(item) {
         const { history, dispatch } = this.props;
+        const { selectionMode, selectAllMatching, selectedFundIds } = this.state;
+
+        if (selectionMode) {
+            if (item.id != null && !selectAllMatching) {
+                this.handleToggleFundCheck(item.id, !selectedFundIds.includes(item.id));
+            }
+            return;
+        }
 
         this.handleToggleDrawer(true)
 
         history.push(urlFund(item.id));
         dispatch(fundsSelectFund(item.id));
     }
+
+    handleEnterSelectionMode = () => {
+        this.setState({ selectionMode: true, selectedFundIds: [], selectAllMatching: false });
+    };
+
+    handleCancelSelection = () => {
+        this.setState({ selectionMode: false, selectedFundIds: [], selectAllMatching: false });
+    };
+
+    handleToggleFundCheck = (fundId, checked) => {
+        this.setState(({ selectedFundIds }) => {
+            const set = new Set(selectedFundIds);
+            if (checked) {
+                set.add(fundId);
+            } else {
+                set.delete(fundId);
+            }
+            return { selectedFundIds: [...set] };
+        });
+    };
+
+    handleToggleSelectAllMatching = (checked) => {
+        this.setState({ selectAllMatching: checked });
+    };
+
+    handleRunMultiFund = async () => {
+        const { dispatch, fundRegion } = this.props;
+        const { selectAllMatching, selectedFundIds } = this.state;
+
+        let fundIds;
+        if (selectAllMatching) {
+            // Resolve all funds matching the current filter (across pages) into explicit ids.
+            const filters = fundRegion.filter.filter?.map((f) => f.getFilterValue(f));
+            const { data } = await Api.funds.fundSearchFunds({
+                filters,
+                size: fundRegion.fundsCount || DEFAULT_FUND_LIST_MAX_SIZE,
+                offset: 0,
+            });
+            fundIds = (data.funds || []).map((f) => f.id);
+        } else {
+            fundIds = selectedFundIds;
+        }
+
+        if (!fundIds || fundIds.length === 0) {
+            return;
+        }
+
+        this.setState({ selectionMode: false });
+        dispatch(modalDialogShow(this, 'Hromadná akce nad fondy', <MultiFundActionDialog fundIds={fundIds} />));
+    };
 
     // handleSearch({fulltext}) {
     //     const {filter} = this.props.fundRegion;
@@ -551,8 +631,8 @@ class FundPage extends AbstractReactComponent {
     }
 
     render() {
-        const { splitter, fundRegion, maxSize, ruleSet } = this.props;
-        const { sidebarOpen } = this.state;
+        const { splitter, fundRegion, maxSize, ruleSet, userDetail } = this.props;
+        const { sidebarOpen, selectionMode, selectedFundIds, selectAllMatching } = this.state;
 
         let activeIndex;
         if (fundRegion.fundDetail.id !== null) {
@@ -578,7 +658,33 @@ class FundPage extends AbstractReactComponent {
                             <FormattedMessage {...messages.fundPageExportResults} />
                         </Button>
                     </div>
+                    {userDetail.hasOne(perms.FUND_BA_ALL) && !selectionMode &&
+                        <div style={{ margin: "5px", flexShrink: 0 }}>
+                            <Button onClick={this.handleEnterSelectionMode}>Hromadná akce nad fondy</Button>
+                        </div>
+                    }
                 </div>
+                {selectionMode &&
+                    <div className="filter-container" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <span style={{ flexShrink: 0 }}>
+                            Vybráno: {selectAllMatching ? fundRegion.fundsCount : selectedFundIds.length}
+                        </span>
+                        <Checkbox
+                            label={`Vybrat vše odpovídající filtru (${fundRegion.fundsCount})`}
+                            checked={selectAllMatching}
+                            onChange={(_e, d) => this.handleToggleSelectAllMatching(!!d.checked)}
+                        />
+                        <div style={{ flexGrow: 1 }} />
+                        <Button
+                            appearance="primary"
+                            disabled={!selectAllMatching && selectedFundIds.length === 0}
+                            onClick={this.handleRunMultiFund}
+                        >
+                            Spustit akci
+                        </Button>
+                        <Button onClick={this.handleCancelSelection}>Zrušit</Button>
+                    </div>
+                }
                 <div style={{ position: "relative", display: "flex", flexGrow: 1, flexShrink: 1, height: "400px" }}>
                     <div style={{ display: "flex", flexDirection: "column", flexGrow: 1, overflow: "hidden" }}>
                         <ListBox

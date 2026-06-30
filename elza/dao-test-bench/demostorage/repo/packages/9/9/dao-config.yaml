@@ -10,11 +10,11 @@ items:
     itemSpec: ZP2015_LEVEL_ITEM
     readOnly: true
   - !!cz.tacr.elza.dao.bo.resource.ItemStringConfig
-    itemType: ZP2015_TITLE
-    value: "Hodnota pro obsah/regest"
+    itemType: ZP2015_NAME
+    value: "Hodnota pro nazev"
   - !!cz.tacr.elza.dao.bo.resource.ItemStringConfig
     itemType: _ELZA_SCENARIO
     value: "Scenar 2"
   - !!cz.tacr.elza.dao.bo.resource.ItemStringConfig
-    itemType: ZP2015_TITLE
-    value: "Jina hodnota pro obsah/regest"
+    itemType: ZP2015_NAME
+    value: "Jina hodnota pro nazev"

@@ -102,7 +102,7 @@ public class EntityXmlBuilder extends CamXmlBuilder {
         revInfo.setRev(new UuidXml(UUID.randomUUID().toString()));
 
         ApChange createChange = apState.getCreateChange();
-        revInfo.setCreatedAt(new DateTimeXml(createChange.getChangeDate().toLocalDateTime()));
+        revInfo.setCreatedAt(new DateTimeXml(createChange.getChangeDate()));
 
         // User info
         String usr = "system";

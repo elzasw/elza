@@ -7,5 +7,5 @@ items:
     itemSpec: ZP2015_LEVEL_ITEM
     readOnly: true
   - !!cz.tacr.elza.dao.bo.resource.ItemStringConfig
-    itemType: ZP2015_TITLE
+    itemType: ZP2015_NAME
     value: "Vybrané veduty"

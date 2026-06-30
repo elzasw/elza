@@ -16,7 +16,7 @@ export const DEFAULT_REGISTRY_LIST_MAX_SIZE = DEFAULT_LIST_SIZE;
 export const AREA_REGISTRY_LIST = 'registryList';
 export const AREA_REGISTRY_LAYER_LIST = 'registryLayerList';
 
-const createFilter = values => {
+export const createFilter = values => {
     const extFilters = values.extFilters
         ? values.extFilters.map(f => {
               return {
@@ -100,8 +100,6 @@ export function registryListInvalidate() {
 export const AREA_REGISTRY_DETAIL = 'registryDetail';
 
 export function goToAe(history, id, force = false, redirect = true, revisionActive = false, replaceUrl = false) {
-    const historyFn = replaceUrl ? history.replace : history.push;
-
     return dispatch => {
         if(id == undefined){throw Error("No entity id specified.")}
         const result = dispatch(registryDetailFetchIfNeeded(id, force))
@@ -109,7 +107,14 @@ export function goToAe(history, id, force = false, redirect = true, revisionActi
         // je RegistryPage v rezimu modalu ( vyber entity
         // pomoci tlacitka v RegistryField )
         if (redirect) {
-            historyFn(revisionActive ? urlEntityRevision(id) : urlEntity(id));
+            const targetUrl = revisionActive ? urlEntityRevision(id) : urlEntity(id);
+            const currentUrl = history.location.pathname + history.location.search + history.location.hash;
+            // Skip when already at target — avoids duplicate history entries
+            // on PUSH and redundant REPLACE dispatches from the reducer chain.
+            if (currentUrl !== targetUrl) {
+                const historyFn = replaceUrl ? history.replace : history.push;
+                historyFn(targetUrl);
+            }
         }
         return result;
     };

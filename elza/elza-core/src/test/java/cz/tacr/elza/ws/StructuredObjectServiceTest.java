@@ -11,10 +11,11 @@ import org.junit.jupiter.api.Test;
 import io.restassured.RestAssured;
 
 import cz.tacr.elza.controller.AbstractControllerTest;
-import cz.tacr.elza.controller.StructureController.StructureDataFormDataVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
-import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
+import cz.tacr.elza.test.controller.vo.DataText;
+import cz.tacr.elza.test.controller.vo.DataType;
+import cz.tacr.elza.test.controller.vo.ItemData;
+import cz.tacr.elza.test.controller.vo.StructuredObjectItem;
+import cz.tacr.elza.test.controller.vo.StructuredObjectItems;
 import cz.tacr.elza.ws.core.v1.FundService;
 import cz.tacr.elza.ws.core.v1.StructuredObjectService;
 import cz.tacr.elza.ws.types.v1.Fund;
@@ -31,8 +32,7 @@ public class StructuredObjectServiceTest extends AbstractControllerTest {
 	@Test
     public void structObjTest() {
 
-        String addressFundService = RestAssured.baseURI + ":" + RestAssured.port + "/services"
-                + WebServiceConfig.FUND_SERVICE_URL;
+        String addressFundService = RestAssured.baseURI + ":" + RestAssured.port + "/services" + WebServiceConfig.FUND_SERVICE_URL;
         FundService fundServiceClient = WebServiceClientFactory.createFundService(addressFundService, "admin", "admin");
 
         Fund fundCreate = new Fund();
@@ -44,7 +44,6 @@ public class StructuredObjectServiceTest extends AbstractControllerTest {
 
         cz.tacr.elza.test.controller.vo.Fund fundVO = new cz.tacr.elza.test.controller.vo.Fund();
         fundVO.setId(Integer.valueOf(fundIdents.getId()));
-        ArrFundVersionVO fundVersionVO = getOpenVersion(fundVO);
 
         String addressSOService = RestAssured.baseURI + ":" + RestAssured.port
                 + "/services"
@@ -68,19 +67,19 @@ public class StructuredObjectServiceTest extends AbstractControllerTest {
         StructuredObject updateStructuredObject = createPacket(fundIdents, "v3");
         updateStructuredObject.setUuid(createStructuredObject2.getUuid());
         structObjServiceClient.updateStructuredObject(updateStructuredObject);
+
         // check existence of updated item
-        StructureDataFormDataVO structDataVo = getFormStructureItems(fundVersionVO.getId(), Integer.valueOf(sois2
-                .getId()));
+        StructuredObjectItems structureDataForm = structureApi.sdoGetFormStructureItems(fundVO.getId(), Integer.valueOf(sois2.getId()), null);
         boolean itemFound = false;
-        assertTrue(structDataVo.getDescItems().size()==4);
-        for(ArrItemVO item: structDataVo.getDescItems()) {
-            if(item instanceof ArrItemTextVO) {
-                ArrItemTextVO textVo = (ArrItemTextVO)item;
-                if (textVo.getValue().equals("v3")) {
-                    itemFound = true;
-                    break;
-                }
-            }
+        assertTrue(structureDataForm.getItems().size() == 4);
+        for (StructuredObjectItem item : structureDataForm.getItems()) {
+        	ItemData data = item.getData();
+        	if (data.getDataType() == DataType.TEXT) {
+        		if (((DataText)data).getTextValue().equals("v3")) {
+                  itemFound = true;
+                  break;
+        		}
+        	}
         }
         assertTrue(itemFound);
 

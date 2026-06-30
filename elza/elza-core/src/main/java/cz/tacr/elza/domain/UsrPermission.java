@@ -617,6 +617,27 @@ public class UsrPermission {
         },
 
         /**
+         * publikování vybrané AS
+         * - možnost publikování archivního popisu do napojeného publikačního systému
+         *   pro přiřazený AS
+         */
+        FUND_PUBLISH(PermissionType.FUND),
+
+        /**
+         * publikování všech AS
+         * - obdobně jako výše ale pro všechny AS
+         */
+        FUND_PUBLISH_ALL {
+            @Override
+            public boolean isEqualOrHigher(Permission permission) {
+                if (permission == FUND_PUBLISH_ALL || permission == FUND_PUBLISH) {
+                    return true;
+                }
+                return false;
+            }
+        },
+
+        /**
          * správa oprávnění a uživatelů
          * - zatím neřešíme
          */
@@ -737,6 +758,7 @@ public class UsrPermission {
             fundAllPerms.add(UsrPermission.Permission.FUND_RD_ALL);
             fundAllPerms.add(UsrPermission.Permission.FUND_BA_ALL);
             fundAllPerms.add(UsrPermission.Permission.FUND_EXPORT_ALL);
+            fundAllPerms.add(UsrPermission.Permission.FUND_PUBLISH_ALL);
             fundAllPerms.add(UsrPermission.Permission.FUND_CL_VER_WR_ALL);
             fundAllPerms.add(UsrPermission.Permission.FUND_ISSUE_ADMIN_ALL);
         }

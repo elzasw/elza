@@ -740,7 +740,7 @@ abstract public class CamXmlBuilder {
         ItemLinkXml itemLink = new ItemLinkXml();
         itemLink.setUrl(new StringXml(dataUriRef.getUriRefValue()));
         if(StringUtils.isNotEmpty(dataUriRef.getDescription())) {
-        	itemLink.setName(null);
+        	itemLink.setName(new StringXml(dataUriRef.getDescription()));
         }
         itemLink.setType(itemTypeCode);
         itemLink.setSpec(itemSpecCode);

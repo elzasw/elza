@@ -149,18 +149,18 @@
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_TITLE" data-type="TEXT">
-        <name>Obsah, regest</name>
+    <item-type code="ZP2015_CONTENT" data-type="TEXT">
+        <name>Obsah, tematický popis</name>
         <shortcut>Obsah</shortcut>
-        <description>ZP4.2.3 Obsah, regest</description>
+        <description>ZP4.2.3 Obsah, tematický popis</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
-    <item-type code="ZP2015_TITLE_PUBLIC" data-type="TEXT">
-        <name>Obsah s omezením přístupnosti</name>
+    <item-type code="ZP2015_CONTENT_PUBLIC" data-type="TEXT">
+        <name>Obsah, tematický popis s omezením přístupnosti</name>
         <shortcut>Obsah s omezením</shortcut>
-        <description>ZP4.2.3 Obsah, regest s omezením přístupnosti (určený pro publikaci namísto prvku Obsah)</description>
+        <description>ZP4.2.3 Obsah, tematický popis s omezením přístupnosti (určený pro publikaci namísto prvku Obsah)</description>
         <is-value-unique>false</is-value-unique>
         <can-be-ordered>true</can-be-ordered>
         <use-specification>false</use-specification>
@@ -261,6 +261,7 @@
         <can-be-ordered>false</can-be-ordered>
         <use-specification>false</use-specification>
     </item-type>
+    <!-- Obsolete: prvek se nadále nenabízí, ponechán pouze pro migraci dat a zachování stávajících hodnot (PP Tematický popis -> Obsah, tematický popis) -->
     <item-type code="ZP2015_UNIT_CONTENT" data-type="TEXT">
         <name>Tematický popis jednotky popisu</name>
         <shortcut>Tematický popis jednotky popisu</shortcut>

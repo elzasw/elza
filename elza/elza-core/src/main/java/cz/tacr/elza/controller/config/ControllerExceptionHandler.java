@@ -14,6 +14,7 @@ import static cz.tacr.elza.common.ResponseFactory.headerContentTypeJson;
 import cz.tacr.elza.exception.AbstractException;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
+import cz.tacr.elza.exception.ConflictException;
 import cz.tacr.elza.exception.ExceptionResponse;
 import cz.tacr.elza.exception.ExceptionResponseBuilder;
 import cz.tacr.elza.exception.ObjectNotFoundException;
@@ -54,6 +55,15 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
         builder.logError(logger);
 
         return new ResponseEntity<>(builder.build(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler({ConflictException.class})
+    @ResponseBody
+    public ResponseEntity<ExceptionResponse> conflictException(final ConflictException exception) {
+        ExceptionResponseBuilder builder = ExceptionResponseBuilder.createFrom(exception);
+        builder.logError(logger);
+
+        return new ResponseEntity<>(builder.build(), headerContentTypeJson(), HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler({AbstractException.class})

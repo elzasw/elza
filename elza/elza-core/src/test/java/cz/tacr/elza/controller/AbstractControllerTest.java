@@ -59,7 +59,6 @@ import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandler;
 import org.springframework.messaging.simp.stomp.StompSession.Receiptable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
@@ -108,10 +107,8 @@ import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
-import cz.tacr.elza.controller.vo.RulStructureTypeVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
@@ -164,13 +161,14 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemUriRefVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.FundLevelService;
 import cz.tacr.elza.service.vo.ChangesResult;
 import cz.tacr.elza.test.ApiClient;
+import cz.tacr.elza.test.controller.AccesspointInternalApi;
 import cz.tacr.elza.test.controller.AccesspointsApi;
 import cz.tacr.elza.test.controller.AdminApi;
 import cz.tacr.elza.test.controller.DaosApi;
@@ -178,8 +176,12 @@ import cz.tacr.elza.test.controller.DescitemsApi;
 import cz.tacr.elza.test.controller.FundsApi;
 import cz.tacr.elza.test.controller.IoApi;
 import cz.tacr.elza.test.controller.NodeApi;
+import cz.tacr.elza.test.controller.PublicationInternalApi;
+import cz.tacr.elza.test.controller.PublicationApi;
 import cz.tacr.elza.test.controller.ReportApi;
+import cz.tacr.elza.test.controller.RulesApi;
 import cz.tacr.elza.test.controller.SearchApi;
+import cz.tacr.elza.test.controller.StructureApi;
 import cz.tacr.elza.test.controller.vo.ApStateUpdate;
 import cz.tacr.elza.test.controller.vo.CreateFund;
 import cz.tacr.elza.test.controller.vo.CreatedPart;
@@ -200,6 +202,8 @@ import cz.tacr.elza.test.controller.vo.ItemDataResult;
 import cz.tacr.elza.test.controller.vo.NodeBase;
 import cz.tacr.elza.test.controller.vo.NodeDataParam;
 import cz.tacr.elza.test.controller.vo.NodeItem;
+import cz.tacr.elza.test.controller.vo.PartType;
+import cz.tacr.elza.test.controller.vo.StructuredObjectItem;
 import cz.tacr.elza.test.controller.vo.DataText;
 import cz.tacr.elza.test.controller.vo.DataType;
 import cz.tacr.elza.test.controller.vo.DataUnitdate;
@@ -262,39 +266,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String CREATE_EXTERNAL_SYSTEM = EXTERNAL_SYSTEMS;
 	protected static final String UPDATE_EXTERNAL_SYSTEM = EXTERNAL_SYSTEMS + "/{externalSystemId}";
 	protected static final String DELETE_EXTERNAL_SYSTEM = EXTERNAL_SYSTEMS + "/{externalSystemId}";
-
-	// STRUCTURE
-	protected static final String CREATE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL + "/data/{fundVersionId}";
-	protected static final String CONFIRM_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL
-			+ "/data/{fundVersionId}/{structureDataId}/confirm";
-	protected static final String SET_ASSIGNABLE_STRUCTURE_DATA_LIST = STRUCTURE_CONTROLLER_URL
-			+ "/data/{fundVersionId}/assignable/{assignable}";
-	@Deprecated
-	protected static final String DELETE_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL
-			+ "/data/{fundVersionId}/{structureDataId}";
-	protected static final String FIND_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL
-			+ "/data/{fundVersionId}/{structureTypeCode}/search";
-	protected static final String GET_STRUCTURE_DATA = STRUCTURE_CONTROLLER_URL
-			+ "/data/{fundVersionId}/{structureDataId}";
-	protected static final String FIND_STRUCTURE_TYPES = STRUCTURE_CONTROLLER_URL + "/type";
-	protected static final String FIND_PART_TYPES = STRUCTURE_CONTROLLER_URL + "/part-type";
-	protected static final String FIND_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL
-			+ "/extension/{fundVersionId}/{structureTypeCode}";
-	protected static final String SET_FUND_STRUCTURE_EXTENSION = STRUCTURE_CONTROLLER_URL
-			+ "/extension/{fundVersionId}/{structureTypeCode}";
-	protected static final String CREATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL
-			+ "/item/{fundVersionId}/{structureDataId}/{itemTypeId}/create";
-	protected static final String UPDATE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL
-			+ "/item/{fundVersionId}/update/{createNewVersion}";
-	protected static final String DELETE_STRUCTURE_ITEM = STRUCTURE_CONTROLLER_URL + "/item/{fundVersionId}/delete";
-	protected static final String DELETE_STRUCTURE_ITEMS_BY_TYPE = STRUCTURE_CONTROLLER_URL
-			+ "/item/{fundVersionId}/{structureDataId}/{itemTypeId}";
-	protected static final String GET_FORM_STRUCTURE_ITEMS = STRUCTURE_CONTROLLER_URL
-			+ "/item/form/{fundVersionId}/{structureDataId}";
-	protected static final String DUPLICATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL
-			+ "/data/{fundVersionId}/{structureDataId}/batch";
-	protected static final String UPDATE_STRUCTURE_DATA_BATCH = STRUCTURE_CONTROLLER_URL
-			+ "/data/{fundVersionId}/{structureTypeCode}/batchUpdate";
 
 	// ARRANGEMENT
 	protected static final String FUND = ARRANGEMENT_CONTROLLER_URL + "/getFund/{fundId}";
@@ -389,7 +360,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String ALL_SCOPES = AP_CONTROLLER_URL + "/scopes";
 	protected static final String RECORD_TYPES = AP_CONTROLLER_URL + "/recordTypes";
 
-	protected static final String FIND_RECORD = AP_CONTROLLER_URL + "/search";
 	protected static final String GET_RECORD = AP_CONTROLLER_URL + "/{recordId}";
 	protected static final String CREATE_ACCESS_POINT = AP_CONTROLLER_URL + "/";
 	protected static final String UPDATE_RECORD = AP_CONTROLLER_URL + "/{recordId}";
@@ -486,11 +456,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String UPDATE_COMMENT = ISSUE_CONTROLLER_URL + "/comments/{commentId}";
 	protected static final String EXPORT_ISSUE_LIST = ISSUE_CONTROLLER_URL + "/issue_lists/{issueListId}/export";
 
-	// FUND
-	protected static final String FUND_V1 = FUND_CONTROLLER_URL + "/fund/{id}";
-	protected static final String FUNDS_V1 = FUND_CONTROLLER_URL + "/fund";
-	protected static final String FUND_DELETE_STRUCTURE_DATA = FUND_CONTROLLER_URL + "/fund/{id}/structuredObject";
-
 	// ACCESSPOINTS
 	protected static final String DELETE_ACCESSPOINTS_ID = FUND_CONTROLLER_URL + "/accesspoints/{id}";
 
@@ -540,6 +505,16 @@ public abstract class AbstractControllerTest extends AbstractTest {
 
 	protected NodeApi nodeApi;
 
+	protected StructureApi structureApi;
+
+	protected RulesApi rulesApi;
+
+	protected PublicationApi publicationApi;
+
+	protected PublicationInternalApi publicationIntApi;
+
+	protected AccesspointInternalApi accesspointIntApi;
+	
 	protected static Map<String, String> cookies = null;
 
 	@Override
@@ -565,6 +540,11 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		descitemsApi = new cz.tacr.elza.test.controller.DescitemsApi(elzaApiClient);
 		reportApi = new cz.tacr.elza.test.controller.ReportApi(elzaApiClient);
 		nodeApi = new cz.tacr.elza.test.controller.NodeApi(elzaApiClient);
+		structureApi = new cz.tacr.elza.test.controller.StructureApi(elzaApiClient);
+		rulesApi = new cz.tacr.elza.test.controller.RulesApi(elzaApiClient);
+		publicationApi = new cz.tacr.elza.test.controller.PublicationApi(elzaApiClient);
+		publicationIntApi = new cz.tacr.elza.test.controller.PublicationInternalApi(elzaApiClient);
+		accesspointIntApi = new cz.tacr.elza.test.controller.AccesspointInternalApi(elzaApiClient);
 
 		loginAsAdmin();
 
@@ -1226,8 +1206,12 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @return vytvořený object hodnoty atributu
 	 */
 	@Deprecated
-	protected ArrItemVO buildDescItem(final String typeCode, final String specCode, final Object value,
-			final Integer position, final Integer descItemObjectId, final Boolean undefined) {
+	protected ArrItemVO buildDescItem(final String typeCode, 
+			                          final String specCode, 
+			                          final Object value,
+			                          final Integer position,
+			                          final Integer descItemObjectId,
+			                          final Boolean undefined) {
 		org.springframework.util.Assert.notNull(typeCode, "Musí být vyplněn kód typu atributu");
 
 		RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
@@ -1353,6 +1337,56 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		descItem.setUndefined(undefined);
 
 		return descItem;
+	}
+
+	/**
+	 * Vytvoření objektu pro hodnotu atributu.
+	 *
+	 * @param typeCode         kód typu atributu
+	 * @param specCode         kód specifikace atributu
+	 * @param value            hodnota
+	 * @param position         pozice
+	 * @param descItemObjectId identifikátor hodnoty atributu
+	 * @param undefined        nezjištěný (bez hodnoty)
+	 * @return vytvořený objekt hodnoty atributu (OpenAPI {@link StructuredObjectItem})
+	 */
+	protected StructuredObjectItem buildStructuredObjectItem(@Nonnull final String typeCode,
+                                     		                 @Nullable final String specCode,
+                                     		                 @Nullable final Object value,
+                                     		                 @Nullable final Integer position,
+                                     		                 @Nullable final Integer itemObjectId,
+                                     		                 @Nullable final Boolean undefined) {
+	    Validate.notNull(typeCode, "Musí být vyplněn kód typu atributu");
+
+	    RulDescItemTypeExtVO type = findDescItemTypeByCode(typeCode);
+	    Validate.notNull(type, "Typ atributu neexistuje -> CODE: " + typeCode);
+
+	    Integer specId = null;
+	    if (specCode != null) {
+	        RulDescItemSpecExtVO spec = findDescItemSpecByCode(specCode, type);
+	        Validate.notNull(spec, "Specifikace atributu neexistuje -> CODE: " + specCode);
+	        specId = spec.getId();
+	    }
+
+	    RulDataTypeVO rulDataType = findDataType(type.getDataTypeId());
+	    DataType dataType = DataType.valueOf(rulDataType.getCode());
+
+	    if (dataType == DataType.ENUM && BooleanUtils.isNotTrue(type.getUseSpecification())) {
+	        throw new IllegalStateException(
+	                "Specifikace u typu musí být povinná pro ENUM -> CODE: " + type.getCode());
+	    }
+
+	    StructuredObjectItem soItem = new StructuredObjectItem();
+	    soItem.setItemTypeId(type.getId());
+	    soItem.setItemSpecId(specId);
+	    soItem.setPosition(position);
+	    soItem.setItemObjectId(itemObjectId);
+	    soItem.setUndefined(undefined);
+	    if (!Boolean.TRUE.equals(undefined)) {
+	        soItem.setData(createItemDataByDataTypeAndValue(dataType, value));
+	    }
+
+	    return soItem;
 	}
 
 	/**
@@ -2270,22 +2304,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 */
 	protected List<ApAccessPointVO> findRecord(final String search, final Integer from, final Integer count,
 			final Integer apTypeId, final Integer versionId) {
-		HashMap<String, Object> params = new HashMap<>();
-
-		if (search != null) {
-			params.put("search", search);
-		}
-		if (versionId != null) {
-			params.put("versionId", versionId);
-		}
-		if (apTypeId != null) {
-			params.put("apTypeId", apTypeId);
-		}
-		params.put("from", from != null ? from : 0);
-		params.put("count", count != null ? count : 20);
-		params.put("excludeInvalid", true);
-
-		return post(spec -> spec.queryParams(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
+		return findRecord(search, from, count, apTypeId, versionId, null);
 	}
 
 	/**
@@ -2299,27 +2318,31 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	 * @return List nalezených záznamů
 	 */
 	protected List<ApAccessPointVO> findRecord(final String search, final Integer from, final Integer count,
-			final Integer apTypeId, final Integer versionId, final SearchType searchType) {
-		HashMap<String, Object> params = new HashMap<>();
-
-		if (search != null) {
-			params.put("search", search);
-		}
-		if (versionId != null) {
-			params.put("versionId", versionId);
-		}
-		if (apTypeId != null) {
-			params.put("apTypeId", apTypeId);
-		}
+			final Integer apTypeId, final Integer versionId, final ApSearchType searchType) {
+		cz.tacr.elza.test.controller.vo.AccessPointSearchParams params =
+				new cz.tacr.elza.test.controller.vo.AccessPointSearchParams()
+				.search(search)
+				.versionId(versionId)
+				.apTypeId(apTypeId)
+				.from(from != null ? from : 0)
+				.count(count != null ? count : 20);
 		if (searchType != null) {
-			params.put("searchType", searchType);
+			// Test-client ApSearchType is a separate enum from the one used by callers; the value names match.
+			params.setSearchTypeName(cz.tacr.elza.test.controller.vo.ApSearchType.valueOf(searchType.name()));
 		}
-		params.put("from", from != null ? from : 0);
-		params.put("count", count != null ? count : 20);
-		params.put("excludeInvalid", true);
-
-		return post(spec -> spec.queryParams(params), FIND_RECORD).getBody().as(FilteredResultVO.class).getRows();
+		cz.tacr.elza.test.controller.vo.ApAccessPointSearchResult result = accesspointsApi.accessPointSearch(params);
+		if (result == null || result.getRows() == null) {
+			return new ArrayList<>();
+		}
+		// rows arrive as Object (Map<String,Object>) — the ApAccessPointVO schema is stubbed in the contract.
+		return result.getRows().stream()
+				.map(row -> ROW_MAPPER.convertValue(row, ApAccessPointVO.class))
+				.collect(Collectors.toList());
 	}
+
+	private static final com.fasterxml.jackson.databind.ObjectMapper ROW_MAPPER =
+			new com.fasterxml.jackson.databind.ObjectMapper()
+					.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 	/**
 	 * Smazání variantního hesla
@@ -3184,233 +3207,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		put(spec -> spec.pathParam("outputId", outputId).body(settings), UPDATE_OUTPUT_SETTINGS);
 	}
 
-	/**
-	 * Vytvoření hodnoty strukturovaného datového typu.
-	 *
-	 * @param structureTypeCode kód strukturovaného datového typu
-	 * @param fundVersionId     identifikátor verze AS
-	 * @return vytvořená dočasná entita
-	 */
-	protected ArrStructureDataVO createStructureData(final String structureTypeCode, final Integer fundVersionId) {
-		return post(spec -> spec.body(structureTypeCode).pathParam("fundVersionId", fundVersionId),
-				CREATE_STRUCTURE_DATA).as(ArrStructureDataVO.class);
-	}
-
-	/**
-	 * Potvrzení hodnoty strukturovaného datového typu. Provede nastavení hodnoty.
-	 *
-	 * @param fundVersionId   identifikátor verze AS
-	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-	 * @return potvrzená entita
-	 */
-	protected ArrStructureDataVO confirmStructureData(final Integer fundVersionId, final Integer structureDataId) {
-		return post(
-				spec -> spec.pathParam("structureDataId", structureDataId).pathParam("fundVersionId", fundVersionId),
-				CONFIRM_STRUCTURE_DATA).as(ArrStructureDataVO.class);
-	}
-
-	/**
-	 * Smazání hodnoty strukturovaného datového typu.
-	 *
-	 * @param fundVersionId    identifikátor verze AS
-	 * @param structureDataIds seznam identifikátorů hodnot strukturovaného datového
-	 *                         typu
-	 * @return seznam identifikátorů smazaných entit
-	 */
-	protected List<Integer> deleteStructureData(final Integer fundVersionId, final List<Integer> structureDataIds) {
-		return delete(spec -> spec.pathParams("id", fundVersionId).body(structureDataIds), FUND_DELETE_STRUCTURE_DATA)
-				.as(ArrayList.class);
-	}
-
-	/**
-	 * Vyhledání hodnot strukturovaného datového typu.
-	 *
-	 * @param structureTypeCode kód typu strukturovaného datového
-	 * @param fundVersionId     identifikátor verze AS
-	 * @param search            text pro filtrování (nepovinné)
-	 * @param assignable        přiřaditelnost
-	 * @param from              od položky
-	 * @param count             maximální počet položek
-	 * @return nalezené položky
-	 */
-	protected FilteredResultVO<ArrStructureDataVO> findStructureData(final String structureTypeCode,
-			final Integer fundVersionId, final String search, final Boolean assignable, final Integer from,
-			final Integer count) {
-		return get(spec -> spec.pathParam("structureTypeCode", structureTypeCode)
-				.pathParam("fundVersionId", fundVersionId).queryParam("search", search)
-				.queryParam("assignable", assignable).queryParam("from", from).queryParam("count", count),
-				FIND_STRUCTURE_DATA).as(FilteredResultVO.class);
-	}
-
-	/**
-	 * Vyhledá možné typy strukt. datových typů, které lze v AS používat.
-	 *
-	 * @return nalezené entity
-	 */
-	protected List<RulStructureTypeVO> findStructureTypes() {
-		return Arrays.asList(get(spec -> spec, FIND_STRUCTURE_TYPES).as(RulStructureTypeVO[].class));
-	}
-
-	/**
-	 * Vyhledá možné typy partů.
-	 *
-	 * @return nalezené entity
-	 */
-	protected List<RulPartTypeVO> findPartTypes() {
-		return Arrays.asList(get(spec -> spec, FIND_PART_TYPES).as(RulPartTypeVO[].class));
-	}
-
-	protected Map<String, RulPartTypeVO> findPartTypesMap() {
-		return findPartTypes().stream().collect(Collectors.toMap(RulPartTypeVO::getCode, Function.identity()));
-	}
-
-	/**
-	 * Vyhledá dostupná a aktivovaná rozšíření k AS.
-	 *
-	 * @param fundVersionId identifikátor verze AS
-	 * @return nalezené entity
-	 */
-	protected List<StructureExtensionFundVO> findFundStructureExtension(final Integer fundVersionId,
-			final String structureTypeCode) {
-		return Arrays.asList(get(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureTypeCode",
-				structureTypeCode), FIND_FUND_STRUCTURE_EXTENSION).as(StructureExtensionFundVO[].class));
-	}
-
-	/**
-	 * Nastaví konkrétní rozšíření na AS.
-	 *
-	 * @param fundVersionId           identifikátor verze AS
-	 * @param structureTypeCode       kód strukturovaného datového typu
-	 * @param structureExtensionCodes seznam kódů rozšíření, které mají být
-	 *                                aktivovány na AS
-	 */
-	protected void setFundStructureExtensions(final Integer fundVersionId, final String structureTypeCode,
-			final List<String> structureExtensionCodes) {
-		put(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureTypeCode", structureTypeCode)
-				.body(structureExtensionCodes), SET_FUND_STRUCTURE_EXTENSION);
-	}
-
-	/**
-	 * Vytvoření položky k hodnotě strukt. datového typu.
-	 *
-	 * @param itemVO          položka
-	 * @param fundVersionId   identifikátor verze AS
-	 * @param itemTypeId      identifikátor typu atributu
-	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-	 * @return vytvořená entita
-	 */
-	protected StructureController.StructureItemResult createStructureItem(final ArrItemVO itemVO,
-			final Integer fundVersionId, final Integer itemTypeId, final Integer structureDataId) {
-		return post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("itemTypeId", itemTypeId)
-				.pathParam("structureDataId", structureDataId).body(itemVO), CREATE_STRUCTURE_ITEM)
-				.as(StructureController.StructureItemResult.class);
-	}
-
-	/**
-	 * Upravení položky k hodnotě strukt. datového typu.
-	 *
-	 * @param itemVO           položka
-	 * @param fundVersionId    identifikátor verze AS
-	 * @param createNewVersion provést verzovanou změnu
-	 * @return upravená entita
-	 */
-	protected StructureController.StructureItemResult updateStructureItem(final ArrItemVO itemVO,
-			final Integer fundVersionId, final Boolean createNewVersion) {
-		return put(spec -> spec.pathParam("fundVersionId", fundVersionId)
-				.pathParam("createNewVersion", createNewVersion).body(itemVO), UPDATE_STRUCTURE_ITEM)
-				.as(StructureController.StructureItemResult.class);
-	}
-
-	/**
-	 * Odstranení položky k hodnotě strukt. datového typu.
-	 *
-	 * @param itemVO        položka
-	 * @param fundVersionId identifikátor verze AS
-	 * @return smazaná entita
-	 */
-	protected StructureController.StructureItemResult deleteStructureItem(final ArrItemVO itemVO, final Integer fundVersionId) {
-		return post(spec -> spec.pathParam("fundVersionId", fundVersionId).body(itemVO), DELETE_STRUCTURE_ITEM)
-				.as(StructureController.StructureItemResult.class);
-	}
-
-	/**
-	 * Odstranení položek k hodnotě strukt. datového typu podle typu atributu.
-	 *
-	 * @param fundVersionId   identifikátor verze AS
-	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-	 * @param itemTypeId      identifikátor typu atributu
-	 */
-	protected StructureController.StructureItemResult deleteStructureItemsByType(final Integer fundVersionId,
-			final Integer structureDataId, final Integer itemTypeId) {
-		return delete(spec -> spec.pathParam("fundVersionId", fundVersionId)
-				.pathParam("structureDataId", structureDataId).pathParam("itemTypeId", itemTypeId),
-				DELETE_STRUCTURE_ITEMS_BY_TYPE).as(StructureController.StructureItemResult.class);
-	}
-
-	/**
-	 * Získání dat pro formulář strukt. datového typu.
-	 *
-	 * @param fundVersionId   identifikátor verze AS
-	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-	 * @return data formuláře
-	 */
-	protected StructureController.StructureDataFormDataVO getFormStructureItems(final Integer fundVersionId, final Integer structureDataId) {
-		return get(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureDataId", structureDataId),
-				GET_FORM_STRUCTURE_ITEMS).as(StructureController.StructureDataFormDataVO.class);
-	}
-
-	/**
-	 * Založení duplikátů strukturovaného datového typu a autoinkrementační.
-	 * Předloha musí být ve stavu {@link ArrStructuredObject.State#TEMP}.
-	 *
-	 * @param structureDataId identifikátor předlohy hodnoty strukturovaného
-	 *                        datového typu
-	 * @param fundVersionId   identifikátor verze AS
-	 * @param count           počet položek, které se budou budou vytvářet
-	 * @param itemTypeIds     identifikátory číselných typů atributu, které se budou
-	 *                        incrementovat
-	 */
-	protected void duplicateStructureDataBatch(final Integer fundVersionId, final Integer structureDataId,
-			final Integer count, final List<Integer> itemTypeIds) {
-		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureDataId", structureDataId)
-				.body(new StructureController.StructureDataBatch(count, itemTypeIds)), DUPLICATE_STRUCTURE_DATA_BATCH);
-	}
-
-	/**
-	 * Získání hodnoty strukturovaného datového typu.
-	 *
-	 * @param fundVersionId   identifikátor verze AS
-	 * @param structureDataId identifikátor hodnoty strukturovaného datového typu
-	 * @return nalezená entita
-	 */
-	protected ArrStructureDataVO getStructureData(final Integer fundVersionId, final Integer structureDataId) {
-		return get(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureDataId", structureDataId),
-				GET_STRUCTURE_DATA).as(ArrStructureDataVO.class);
-	}
-
-	/**
-	 * Nastavení přiřaditelnosti.
-	 *
-	 * @param fundVersionId    identifikátor verze AS
-	 * @param assignable       přiřaditelný
-	 * @param structureDataIds identifikátory hodnoty strukturovaného datového typu
-	 */
-	protected void setAssignableStructureData(final Integer fundVersionId, final boolean assignable, List<Integer> structureDataIds) {
-		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("assignable", assignable)
-				.body(structureDataIds), SET_ASSIGNABLE_STRUCTURE_DATA_LIST);
-	}
-
-	/**
-	 * Hromadná úprava položek/hodnot strukt. typu.
-	 *
-	 * @param fundVersionId            identifikátor verze AS
-	 * @param structureTypeCode        kód strukturovaného datového typu
-	 * @param structureDataBatchUpdate data pro hromadnou úpravu hodnot
-	 */
-	protected void updateStructureDataBatch(final Integer fundVersionId, final String structureTypeCode,
-			final StructureController.StructureDataBatchUpdate structureDataBatchUpdate) {
-		post(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("structureTypeCode", structureTypeCode)
-				.body(structureDataBatchUpdate), UPDATE_STRUCTURE_DATA_BATCH);
+	protected Map<String, PartType> findPartTypesMap() {
+		List<PartType> partTypes = rulesApi.rulesListPartTypes();
+		return partTypes.stream().collect(Collectors.toMap(PartType::getCode, Function.identity()));
 	}
 
 	/**

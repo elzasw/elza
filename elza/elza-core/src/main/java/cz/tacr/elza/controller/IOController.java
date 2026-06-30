@@ -26,6 +26,7 @@ import cz.tacr.elza.controller.vo.RequestProcessState;
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.dataexchange.output.DEExportParams;
 import cz.tacr.elza.dataexchange.output.DEExportParams.FundSections;
+import cz.tacr.elza.dataexchange.output.IOExportFundXmlRequest;
 import cz.tacr.elza.dataexchange.output.IOExportRequest;
 import cz.tacr.elza.dataexchange.output.IOExportWorker;
 import cz.tacr.elza.domain.ArrFund;
@@ -57,6 +58,13 @@ public class IOController implements IoApi {
     @Autowired
     private ResourcePathResolver resourcePathResolver;
 
+    /**
+     * POST /io/export
+     * Create export file of funds or access points
+     *
+     * @param exportParams Export request parameters (required)
+     * @return The request has succeeded. (status code 200)
+     */
     @Override
     @Transactional
     public ResponseEntity<Integer> ioExportRequest(@RequestBody ExportParams exportParams) {
@@ -67,6 +75,7 @@ public class IOController implements IoApi {
         deExportParams.setExportFilter(exportParams.getExportFilter());
         deExportParams.setIncludeUUID(exportParams.getIncludeUUID());
         deExportParams.setIncludeAccessPoints(exportParams.getIncludeAccessPoints());
+        deExportParams.setIncludeDaos(exportParams.getIncludeDaos());
 
         String fileName = null;
 
@@ -98,7 +107,9 @@ public class IOController implements IoApi {
 
         Integer userId = (user == null ? null : user.getUserId());
 
-        int id = ioExportWorker.addExportRequest(userId, fileName, deExportParams);
+        final String dlFileName = fileName;
+        final DEExportParams deParams = deExportParams;
+        int id = ioExportWorker.enqueue(requestId -> new IOExportFundXmlRequest(userId, requestId, dlFileName, deParams));
         return ResponseEntity.ok(id);
     }
 
@@ -126,6 +137,15 @@ public class IOController implements IoApi {
         return fileName;
     }
 
+    /**
+     * GET /io/export-status/{requestId}
+     * Getting the export status by request id
+     *
+     * @param requestId  (required)
+     * @return The request has succeeded. (status code 200)
+     *         or The server cannot find the requested resource. (status code 404)
+     *         or Server error (status code 500)
+     */
     @Override
     public ResponseEntity ioGetExportStatus(@PathVariable Integer requestId) {
 
@@ -144,10 +164,10 @@ public class IOController implements IoApi {
             body = ResponseFactory.createExportRequestStatus(RequestProcessState.PENDING);
             break;
         case PROCESSING:
-            body = ResponseFactory.createExportRequestStatus(RequestProcessState.PROCESSING);
+            body = ResponseFactory.createExportRequestStatus(RequestProcessState.PROCESSING, result.getProgress());
             break;
         case FINISHED:
-            body = ResponseFactory.createExportRequestStatus(RequestProcessState.FINISHED);
+            body = ResponseFactory.createExportRequestStatus(RequestProcessState.FINISHED, result.getProgress());
             break;
         case ERROR:
             status = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -166,6 +186,16 @@ public class IOController implements IoApi {
         return ret;
     }
 
+    /**
+     * GET /io/file/{requestId}
+     * Getting the generated file by request id
+     *
+     * @param requestId  (required)
+     * @return Informational (status code 102)
+     *         or The request has succeeded. (status code 200)
+     *         or The server cannot find the requested resource. (status code 404)
+     *         or Server error (status code 500)
+     */
     @Override
     public ResponseEntity<Resource> ioGetExportFile(@PathVariable Integer requestId) {
 

@@ -1,41 +1,60 @@
 import {fundsSelectFund} from "../actions/fund/fund";
-import {createFundRoot, getFundFromFundAndVersion} from "../components/arr/ArrUtils";
-import {selectFundTab} from "../actions/arr/fund";
-import {routerNavigate} from "../actions/router";
+import {createFundRoot} from "../components/arr/ArrUtils";
 import {fundSelectSubNode} from "../actions/arr/node";
+import {Api} from "../api";
 
-export const processNodeNavigation = (data, versionId) => 
+export {fetchNodeInfo} from "./fetchNodeInfo";
+
+/**
+ * Drive node selection after a node identifier has been resolved to NodeInfo.
+ *
+ * The caller is expected to have loaded the fund detail (e.g. via
+ * ArrParentPage.resolveUrlsRaw) so that arrRegion.funds[active] is populated
+ * with the right version. This function only handles selecting the node
+ * inside that fund — it fetches the parent chain via getNodeData, picks the
+ * immediate parent, and dispatches fundSelectSubNode.
+ */
+export const processNodeNavigation = (nodeInfo) =>
     (dispatch, getState) => {
-        const fund = data.fund;
-        dispatch(fundsSelectFund(fund.id));
-        const fundVersion = fund.versions.find(v => versionId != null ? v.id === versionId : !v.lockDate);
-        const fundObj = getFundFromFundAndVersion(fund, fundVersion);
-        dispatch(selectFundTab(fundObj));
-        let { arrRegion } = getState();
+        dispatch(fundsSelectFund(nodeInfo.fundId));
 
         waitForLoadAS(() => {
-            dispatch((dispatch, getState) => {
-                arrRegion = getState().arrRegion; // aktuální stav ve store
-            });
-
+            const { arrRegion } = getState();
             const selectFund = arrRegion.funds[arrRegion.activeIndex];
 
-            if (selectFund.fundTree.fetched) {
-                // čekáme na načtení stromu, potom můžeme vybrat JP
-                const nodeWithParent = data.nodeWithParent;
-                const node = nodeWithParent.node;
-                let parentNode = nodeWithParent.parentNode;
-                if (parentNode == null) {
-                    // root
-                    parentNode = createFundRoot(selectFund);
-                }
-                dispatch(fundSelectSubNode(fundVersion.id, node.id, parentNode, false, null, false, undefined, undefined, true));
-                return false;
-            } else {
+            if (!selectFund?.fundTree?.fetched) {
                 return true;
+            }
+
+            const targetVersionId = selectFund.versionId;
+
+            void (async () => {
+                try {
+                    const { data: nodeData } = await Api.node.nodeGetNodeData({
+                        fundVersionId: targetVersionId,
+                        nodeId: nodeInfo.id,
+                        formData: false,
+                        parents: true,
+                        children: false,
+                        siblingsMaxCount: 0,
+                        nodeStatus: false,
+                    });
+                    const parents = nodeData.parents ?? [];
+                    const parentNode = parents.length > 0
+                        ? parents[parents.length - 1]
+                        : createFundRoot(selectFund);
+
+                    dispatch(fundSelectSubNode(
+                        targetVersionId, nodeInfo.id, parentNode,
+                        false, null, false, undefined, undefined, true,
+                    ));
+                } catch (e) {
+                    console.error("Failed to navigate to node", nodeInfo, e);
                 }
+            })();
+            return false;
         });
-    }
+    };
 
 export const waitForLoadAS = fce => {
     const next = fce();

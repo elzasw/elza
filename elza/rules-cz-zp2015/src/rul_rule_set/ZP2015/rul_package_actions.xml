@@ -64,4 +64,6 @@
     <!-- Generování ukládacích jednotek -->
     <package-action filename="GENEROVANI_UKL_JEDNOTEK.yaml" />
     <package-action filename="MAZANI_UKL_JEDNOTEK.yaml" />
+    <!-- Migrace prvků popisu na PP Název / Obsah, tematický popis -->
+    <package-action filename="ZP2015_MIGRATE_NAME_CONTENT.yaml" />
 </package-actions>

@@ -43,7 +43,7 @@ import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.ApAccessPointCreateVO;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ApAttributesInfoVO;
-import cz.tacr.elza.controller.vo.ApBindingVO;
+import cz.tacr.elza.controller.vo.ExtEntityBinding;
 import cz.tacr.elza.controller.vo.ApCreateTypeVO;
 import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
@@ -59,13 +59,13 @@ import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.LanguageVO;
 import cz.tacr.elza.controller.vo.MapLayerVO;
 import cz.tacr.elza.controller.vo.RequiredType;
-import cz.tacr.elza.controller.vo.SearchFilterVO;
-import cz.tacr.elza.controller.vo.SyncProgressVO;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
+import cz.tacr.elza.controller.vo.SyncProgress;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.ap.ApViewSettings;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -179,123 +179,6 @@ public class ApController {
     private ApBindingStateRepository bindingStateRepository;
 
     /**
-     * Nalezne takové záznamy rejstříku, které mají daný typ a jejich textová pole (heslo, popis, poznámka),
-     * nebo pole variantního záznamu obsahují hledaný řetězec. V případě, že hledaný řetězec je null, nevyhodnocuje se.
-     *
-     * @param search            hledaný řetězec, může být null či prázdný (pak vrací vše)
-     * @param from              index prvního záznamu, začíná od 0
-     * @param count             počet výsledků k vrácení
-     * @param apTypeId          IDčka typu záznamu, může být null
-     * @param versionId         id verze, podle které se budou filtrovat třídy rejstříků, null - výchozí třídy
-     * @param itemSpecId        id specifikace
-     * @param itemTypeId
-     * @param state             stav schválení přístupového bodu
-     * @param scopeId           id scope, pokud je vyplněn vrací se jen rejstříky s tímto scope
-     * @param lastRecordNr
-     * @param searchTypeName
-     * @param searchTypeUsername
-     * @param revState
-     * @param searchFilter
-     * @return                  vybrané záznamy dle popisu seřazené za text hesla, nebo prázdná množina
-     */
-	@Transactional
-    @RequestMapping(value = "/search", method = RequestMethod.POST)
-    public FilteredResultVO<ApAccessPointVO> findAccessPoint(@RequestParam(required = false) @Nullable final String search,
-                                                             @RequestParam final Integer from,
-                                                             @RequestParam final Integer count,
-                                                             @RequestParam(required = false) @Nullable final Integer apTypeId,
-                                                             @RequestParam(required = false) @Nullable final Integer versionId,
-                                                             @RequestParam(required = false) @Nullable final Integer itemSpecId,
-                                                             @RequestParam(required = false) @Nullable final Integer itemTypeId,
-                                                             @RequestParam(required = false) @Nullable final ApState.StateApproval state,
-                                                             @RequestParam(required = false) @Nullable final Integer scopeId,
-                                                             @RequestParam(required = false) @Nullable final Integer lastRecordNr,
-                                                             @RequestParam(required = false) @Nullable final SearchType searchTypeName,
-                                                             @RequestParam(required = false) @Nullable final SearchType searchTypeUsername,
-                                                             @RequestParam(required = false) @Nullable final RevStateApproval revState,
-                                                             @RequestBody(required = false)@Nullable final SearchFilterVO searchFilter) {
-        StaticDataProvider sdp = staticDataService.getData();
-
-        ArrFund fund;
-        if (versionId == null) {
-            fund = null;
-        } else {
-            ArrFundVersion version = fundVersionRepository.getOneCheckExist(versionId);
-            fund = version.getFund();
-        }
-
-        // TODO: Use StaticDataProvider
-        //
-        Set<Integer> apTypeIds = new HashSet<>();
-        if (apTypeId != null) {
-            apTypeIds.add(apTypeId);
-        }
-        apTypeIds = apTypeRepository.findSubtreeIds(apTypeIds);
-
-        if (itemSpecId != null) {
-            RulItemSpec spec = sdp.getItemSpecById(itemSpecId);
-            if (spec == null) {
-                throw new ObjectNotFoundException("Specification not found", ArrangementCode.ITEM_SPEC_NOT_FOUND)
-                        .setId(itemSpecId);
-            }
-            List<Integer> extraApTypeLimit = itemAptypeRepository.findApTypeIdsByItemSpec(spec);
-            if (extraApTypeLimit.size() == 0) {
-                logger.error("Specification has no associated classes, itemSpecId={}", itemSpecId);
-                throw new SystemException("Configuration error, specification without associated classes",
-                        BaseCode.SYSTEM_ERROR).set("itemSpecId", itemSpecId);
-            }
-            apTypeIds = applyApTypeFilter(sdp, apTypeIds, extraApTypeLimit);
-        } else if (itemTypeId != null) {
-            ItemType itemType = sdp.getItemTypeById(itemTypeId);
-            if (itemType == null) {
-                throw new ObjectNotFoundException("Item type not found", ArrangementCode.ITEM_TYPE_NOT_FOUND)
-                        .setId(itemTypeId);
-            }
-            if (itemType.hasSpecifications()) {
-                throw new BusinessException("Item type requires specification", BaseCode.PROPERTY_NOT_EXIST)
-                        .set("itemTypeId", itemTypeId)
-                        .set("itemTypeCode", itemType.getCode());
-            }
-            List<Integer> extraApTypeLimit = itemAptypeRepository.findApTypeIdsByItemType(itemType.getEntity());
-            if (extraApTypeLimit.size() == 0) {
-                logger.error("Item type has no associated classes, itemTypeId={}", itemTypeId);
-                throw new SystemException("Configuration error, item type without associated classes",
-                        BaseCode.SYSTEM_ERROR).set("itemTypeId", itemTypeId);
-            }
-            apTypeIds = applyApTypeFilter(sdp, apTypeIds, extraApTypeLimit);
-        }
-
-        if (StringUtils.isNotEmpty(search)) {
-        	return accessPointService.findUseLuceneQueries(search, searchFilter, fund, apTypeIds, scopeId, state, revState, from, count, sdp);
-        }
-        return accessPointService.findUseCriteriaQuery(search, searchFilter,
-        										       searchTypeName, searchTypeUsername,
-        										       fund, apTypeIds, scopeId, state, revState,
-        										       from, count, sdp);
-    }
-
-    private Set<Integer> applyApTypeFilter(StaticDataProvider sdp, Set<Integer> apTypeIdTree, List<Integer> extraApTypeLimit) {
-        if (CollectionUtils.isEmpty(extraApTypeLimit)) {
-            return apTypeIdTree;
-        }
-        // TODO: use StaticDataProvider
-        Set<Integer> extraSubTree = apTypeRepository.findSubtreeIds(extraApTypeLimit);
-        if (CollectionUtils.isEmpty(apTypeIdTree)) {
-            // no limits till now -> apply this subtree
-            return extraSubTree;
-        } else {
-            // remove all except data in extraSubTree
-            Set<Integer> result = new HashSet<>(apTypeIdTree);
-            for (Integer val : new ArrayList<Integer>(apTypeIdTree)) {
-                if (!extraSubTree.contains(val)) {
-                    result.remove(val);
-                }
-            }
-            return result;
-        }
-    }
-
-    /**
      * Vytvoření přístupového bodu.
      *
      * @param accessPoint zakládaný přístupový bod
@@ -358,17 +241,15 @@ public class ApController {
         // read status of data in export/import queue
         if (CollectionUtils.isNotEmpty(vo.getBindings())) {
             // read upload settings
-            for (ApBindingVO b : vo.getBindings()) {
+            for (ExtEntityBinding b : vo.getBindings()) {
                 List<ExtSyncsQueueItem> queueItems = externalSystemService.getQueueItems(apState.getAccessPointId(), b
                         .getExternalSystemId(), ExtAsyncQueueState.EXPORT_NEW, ExtAsyncQueueState.EXPORT_START);
                 // expecting zero or one item
                 for (ExtSyncsQueueItem queueItem : queueItems) {
                     if (queueItem.getState() == ExtAsyncQueueState.EXPORT_NEW) {
-                        b.setSyncProgress(SyncProgressVO.UPLOAD_PENDING);
-                        b.setSyncLastUploadError(queueItem.getStateMessage());
+                        b.setSyncProgress(SyncProgress.UPLOAD_PENDING);
                     } else if (queueItem.getState() == ExtAsyncQueueState.EXPORT_START) {
-                        b.setSyncProgress(SyncProgressVO.UPLOAD_STARTED);
-                        b.setSyncLastUploadError(queueItem.getStateMessage());
+                        b.setSyncProgress(SyncProgress.UPLOAD_STARTED);
                     }
                 }
             }
@@ -702,7 +583,7 @@ public class ApController {
                                                            @RequestParam(name = "itemTypeId", required = false) final Integer itemTypeId,
                                                            @RequestParam(name = "itemSpecId", required = false) final Integer itemSpecId,
                                                            @RequestParam(name = "scopeId", required = false) final Integer scopeId,
-                                                           @RequestBody final SearchFilterVO filter) {
+                                                           @RequestBody final ApAdvanceSearchFilter filter) {
         if (from < 0) {
             throw new SystemException("Parametr from musí být >=0", BaseCode.PROPERTY_IS_INVALID);
         }
@@ -823,7 +704,7 @@ public class ApController {
     public ArchiveEntityResultListVO findArchiveEntitiesInExternalSystem(@RequestParam(name = "from", defaultValue = "0", required = false) final Integer from,
                                                                          @RequestParam(name = "max", defaultValue = "50", required = false) final Integer max,
                                                                          @RequestParam(name = "externalSystemCode") final String externalSystemCode,
-                                                                         @RequestBody final SearchFilterVO filter) {
+                                                                         @RequestBody final ApAdvanceSearchFilter filter) {
         if (from < 0) {
             throw new SystemException("Parametr from musí být >=0", BaseCode.PROPERTY_IS_INVALID);
         }
@@ -832,7 +713,8 @@ public class ApController {
         ApExternalSystem apExternalSystem = externalSystemService.findApExternalSystemByCode(externalSystemCode);
         ApiCamConnector connector = apConnectorService.getConnector(apExternalSystem);
 
-        return connector.search(fromPage + 1, max, filter, apExternalSystem);
+        // fromPage is a 0-based page index; the connector converts it to the API's 1-based page number
+        return connector.search(fromPage, max, filter, apExternalSystem);
     }
 
     /**

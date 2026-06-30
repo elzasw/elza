@@ -5,12 +5,14 @@ import {
   ItemDataResult,
   NodeItem,
 } from "elza-api";
+import { EditItem } from "../types";
 import { useState } from "react";
 import { DescItemTypeRef } from "typings/store";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import {
   DescItemBit,
   DescItemCoordinates,
+  DescItemDate,
   DescItemDecimal,
   DescItemEnum,
   DescItemFileRef,
@@ -28,8 +30,9 @@ import { ErrorDisplay } from "./ErrorDisplay";
 import { ItemActions } from "./ItemActions";
 import { SavingDisplay } from "./SavingDisplay";
 import { createEmptyDescItem } from "./utils";
-import { makeStyles } from "@fluentui/react-components";
+import { Input, makeStyles, mergeClasses } from "@fluentui/react-components";
 import { useUserSettings } from "contexts/user";
+import { useStyles as useDescItemStyles } from "./styles";
 
 const useStyles = makeStyles({
   descItem: {
@@ -60,16 +63,17 @@ const useStyles = makeStyles({
 })
 
 interface Props {
-  item: NodeItem;
+  item: EditItem;
   typeRef: DescItemTypeRef;
-  typeForm: FormItemType;
+  typeForm?: FormItemType;
   typeWidth?: number;
-  fondsVersionId: number;
-  nodeId: number;
-  nodeVersionId: number;
-  onDelete?: (item: NodeItem) => Promise<void>;
-  onCreate: (item: NodeItem) => Promise<ItemDataResult>;
-  onUpdate: (item: NodeItem) => Promise<void>;
+  forcedDisplayString?: string;
+  fondsVersionId?: number;
+  nodeId?: number;
+  nodeVersionId?: number;
+  onDelete?: (item: EditItem) => Promise<void>;
+  onCreate: (item: EditItem) => Promise<ItemDataResult>;
+  onUpdate: (item: EditItem) => Promise<void>;
 }
 
 const dataTypeComponentMap = {
@@ -80,6 +84,7 @@ const dataTypeComponentMap = {
   [DataType.String]: DescItemString,
   [DataType.Unitid]: DescItemUnitid,
   [DataType.Unitdate]: DescItemUnitdate,
+  [DataType.Date]: DescItemDate,
   [DataType.RecordRef]: DescItemRecordRef,
   [DataType.Structured]: DescItemStructured,
   [DataType.Coordinates]: DescItemCoordinates,
@@ -92,6 +97,7 @@ export function DescItemField({
   item,
   typeRef,
   typeForm,
+  forcedDisplayString,
   fondsVersionId,
   nodeId,
   onDelete,
@@ -105,6 +111,7 @@ export function DescItemField({
   const compact = settings.compact;
 
   const styles = useStyles();
+  const descItemStyles = useDescItemStyles();
 
   const { data } = item;
 
@@ -183,16 +190,22 @@ export function DescItemField({
   // }, [selectedSpec?.id]);
   // console.log("#dif - render", item);
 
+  if (forcedDisplayString != undefined) {
+    return (
+      <div className={mergeClasses(styles.descItem, descItemStyles.descItemFieldRow)}>
+        <Input
+          size={compact ? "small" : "medium"}
+          disabled={true}
+          value={forcedDisplayString}
+          style={{ flex: 1, minWidth: "60px" }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div
-      className={styles.descItem}
-      style={{
-        margin: "2px 0",
-        position: "relative",
-        flex: 1,
-        // alignItems: "center",
-        alignItems: "flex-start",
-      }}
+      className={mergeClasses(styles.descItem, descItemStyles.descItemFieldRow)}
     >
       {(item.itemSpecId || typeRef.useSpecification) && !isEnum && (
         <DescItemSpec

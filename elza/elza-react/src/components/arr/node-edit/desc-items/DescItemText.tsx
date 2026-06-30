@@ -8,6 +8,7 @@ import { useValueManager } from "./utils";
 import { useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
 import { useTextFragmentsContext } from "components/arr/text-fragments";
+import { useStyles } from "./styles";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemText) => Promise<void>;
@@ -29,6 +30,7 @@ export function DescItemText({
   }
 
   const { formatMessage } = useIntl();
+  const styles = useStyles();
   const textFragments = useTextFragmentsContext();
   const isInherited = item.nodeId !== nodeId;
   const isDisabled =
@@ -96,14 +98,7 @@ export function DescItemText({
     }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flex: 1,
-        position: "relative",
-        flexDirection: "column",
-      }}
-    >
+    <div className={styles.descItemContainer}>
       <TextareaAutosize
         size={compact ? "small" : "medium"}
         disabled={isDisabled}
@@ -114,6 +109,7 @@ export function DescItemText({
         resize="vertical"
         style={{
           textDecoration: item.inhibited ? "line-through" : undefined,
+          fontSize: "1em",
         }}
       />
       <ConflictValue
@@ -125,7 +121,7 @@ export function DescItemText({
         {(conflictValue) => (
           <Textarea
             size={compact ? "small" : "medium"}
-            style={{ borderColor: "var(--color-red)" }}
+            className={styles.conflictTextarea}
             value={conflictValue}
             readOnly={true}
           />

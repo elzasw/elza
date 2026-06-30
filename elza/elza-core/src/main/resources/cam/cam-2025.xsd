@@ -6,7 +6,8 @@
 Změny:
 	- 24.2.2025 - nová verze API 2
 	- 31.8.2025 - přidání odkazu na entitu ze zjištění, přepracování atributů elementu TimeInterval (odstranění zkratek, volitenlé atributy pro odhad), doplnění dokumentace
-	- 17.10.2025 - oprava pojmenování atributu v BatchEntityRecordRev (entityUuid)</xs:documentation>
+	- 17.10.2025 - oprava pojmenování atributu v BatchEntityRecordRev (entityUuid)
+	- 14.5.2026 - uvádění času včetně časové zóny s přesností na sekundy</xs:documentation>
 	</xs:annotation>
 	<xs:element name="batchChangeFailure" type="s1:BatchChangeFailure">
 		<xs:annotation>
@@ -80,7 +81,9 @@ Změny:
 		<xs:annotation>
 			<xs:documentation>Čas a datum. Používá se pro informaci o času změny apod.</xs:documentation>
 		</xs:annotation>
-		<xs:restriction base="xs:dateTime"/>
+		<xs:restriction base="xs:dateTime">
+			<xs:pattern value="\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(Z|[+\-]\d{2}:\d{2})"/>
+		</xs:restriction>
 	</xs:simpleType>
 	<xs:simpleType name="EntityId">
 		<xs:annotation>

@@ -1,6 +1,6 @@
-import {DependencyList, EffectCallback, useEffect, useRef} from "react";
+import {DependencyList, EffectCallback, useEffect, useLayoutEffect, useRef} from "react";
 
-export const useDebouncedEffect = (
+export const useThrottledEffect = (
     effect: EffectCallback,
     delay: number,
     deps: DependencyList = [],
@@ -24,6 +24,39 @@ export const useDebouncedEffect = (
             } else {
                 effect();
             }
+        },
+        [delay, ...deps],
+    );
+};
+
+export const useDebouncedEffect = (
+    effect: EffectCallback,
+    delay: number,
+    deps: DependencyList = [],
+) => {
+    useEffect(
+        () => {
+            const handler = setTimeout(effect, delay);
+            return () => clearTimeout(handler);
+        },
+        [delay, ...deps],
+    );
+};
+
+export const useDebouncedLayoutEffect = (
+    effect: EffectCallback,
+    delay: number,
+    deps: DependencyList = [],
+    force?: boolean
+) => {
+    useLayoutEffect(
+        () => {
+            if (force) {
+                effect();
+                return;
+            }
+            const handler = setTimeout(effect, delay);
+            return () => clearTimeout(handler);
         },
         [delay, ...deps],
     );

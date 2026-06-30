@@ -78,13 +78,15 @@ public class ExtSyncsQueueItem {
     private String data;
 
     /**
-     * JSON mapping of ELZA part/item ids to the CAM UUIDs generated for the in-flight
-     * upload. Populated when the batch is posted to CAM; consulted by the confirm
-     * processor to resolve {@code IssueXml.partRef}/{@code itemRef} back to ELZA ids.
-     * Cleared on terminal states (EXPORT_OK, EXPORT_CANCELLED, ERROR).
+     * Transient JSON payload for the in-flight upload. Holds the ELZA part/item id ↔
+     * CAM UUID map (so the confirm processor can resolve {@code IssueXml.partRef}/
+     * {@code itemRef} back to ELZA ids) and the participants sent in the batch (so
+     * they can be persisted as {@code ap_binding_participant} once CAM confirms).
+     * Populated when the batch is posted to CAM; cleared on terminal states
+     * (EXPORT_OK, EXPORT_CANCELLED, ERROR).
      */
-    @Column(name = "uuid_map", length = Length.LONG32, nullable = true)
-    private String uuidMap;
+    @Column(name = "upload_map", length = Length.LONG32, nullable = true)
+    private String uploadMap;
 
     public Integer getExtSyncsQueueItemId() {
         return extSyncsQueueItemId;
@@ -194,17 +196,19 @@ public class ExtSyncsQueueItem {
 		this.data = data;
 	}
 
-	public String getUuidMap() {
-		return uuidMap;
+	public String getUploadMap() {
+		return uploadMap;
 	}
 
-	public void setUuidMap(String uuidMap) {
-		this.uuidMap = uuidMap;
+	public void setUploadMap(String uploadMap) {
+		this.uploadMap = uploadMap;
 	}
 
 	public enum ExtAsyncQueueState {
 
         UPDATE("K aktualizaci"),
+
+        UPDATE_DEFERRED("Odloženo (čeká na náhradu)"),
 
         IMPORT_NEW("Ke stažení"),
 

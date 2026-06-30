@@ -28,7 +28,7 @@ import {
     urlFundGrid,
     urlFundAb,
     urlFundMovements,
-    urlFundOutputs, urlFundRequests, urlFundTree, urlFund, URL_FUND_GRID_PATH, GRID, URL_AIP,
+    urlFundOutputs, urlFundRequests, urlFundTree, urlFund, URL_FUND_GRID_PATH, GRID, URL_AIP, urlFundPublication, PUBLICATION,
     AIP
 } from "../../constants";
 import { extSystemListFetchIfNeeded } from 'actions/admin/extSystem.jsx';
@@ -42,6 +42,10 @@ const messages = defineMessages({
     reports: {
         id: 'ribbon_action_admin_reports',
         defaultMessage: 'Přehledy',
+    },
+    publication: {
+        id: 'ribbon.action.publication',
+        defaultMessage: 'Publikace',
     },
 });
 
@@ -285,6 +289,16 @@ class Ribbon extends AbstractReactComponent {
                 );
             }
 
+            if (userDetail.hasRdPage(fundId)) {
+                arrParts.push(
+                    <LinkContainer key="ribbon-btn-arr-publication" to={urlFundPublication(fundId, versionId)}>
+                        <Button variant={'default'}>
+                            <Icon glyph="fa-newspaper-o" />
+                            <span className="btnText"><FormattedMessage {...messages.publication} /></span>
+                        </Button>
+                    </LinkContainer>,
+                );
+            }
             if (userDetail.hasRdPage(fundId)) {
                 // právo na hromadné akce
                 arrParts.push(

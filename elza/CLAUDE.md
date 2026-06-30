@@ -95,6 +95,14 @@ mvn exec:exec -Pfrontend-dev-legacy
 mvn -Prelease install
 ```
 
+## Testing
+
+- **Frontend** (`elza-react/`): Vitest + React Testing Library + MSW (HTTP) + a custom `FakeStompClient` for STOMP. Tests colocated as `*.test.ts(x)`.
+  - Run directly: `npm test` (or `npm run test:watch` / `npm run test:coverage`).
+  - Run via Maven: tied to the `test` phase, so `mvn test` / `mvn install` run them. Skip with `-DskipTests` or `-Pskiptest`.
+  - Shared helpers in `elza-react/src/test/` — `renderWithProviders` wraps Redux, `IntlProvider`, and `MemoryRouter`.
+  - Architecture plan and "how to write a test" snippets: `elza-react/refactoring.md`.
+
 ## Configuration
 
 - Main config file: `elza.yaml` (in elza-web/config/)
@@ -120,7 +128,7 @@ ELZA is an archival management system used by Czech archives. Key domain concept
 
 - Source code: English (variable names, class names).
 - UI strings: Czech.
-- Commit messages: use Czech if the surrounding context is Czech, otherwise English.
+- Commit messages and comments: use Czech if the surrounding context is Czech, otherwise English.
 - Developers are non-native English speakers. When they write English — in code, comments, commit messages, or chat — gently correct grammar/phrasing mistakes and briefly explain the preferred wording so they can learn.
 
 ## Comments

@@ -64,7 +64,7 @@ import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.FilteredResultVO;
 import cz.tacr.elza.controller.vo.InvalidatedEntities;
 import cz.tacr.elza.controller.vo.PartValidationIssues;
-import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
 import cz.tacr.elza.controller.vo.SyncsFilterVO;
 import cz.tacr.elza.controller.vo.SysExternalSystemVO;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
@@ -74,7 +74,7 @@ import cz.tacr.elza.controller.vo.usage.NodeVO;
 import cz.tacr.elza.controller.vo.usage.OccurrenceType;
 import cz.tacr.elza.controller.vo.usage.OccurrenceVO;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
-import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -359,8 +359,8 @@ public class AccessPointService {
                                                         @Nullable final ArrFund fund,
                                                         @Nullable final Integer scopeId,
                                                         @Nullable final Collection<StateApproval> approvalStates,
-                                                        @Nullable SearchType searchTypeName,
-                                                        @Nullable SearchType searchTypeUsername) {
+                                                        @Nullable ApSearchType searchTypeName,
+                                                        @Nullable ApSearchType searchTypeUsername) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId, false);
 
@@ -385,8 +385,8 @@ public class AccessPointService {
                                                     @Nullable final ArrFund fund,
                                                     @Nullable final Integer scopeId,
                                                     @Nullable final Collection<StateApproval> approvalStates,
-                                                    @Nullable SearchType searchTypeName,
-                                                    @Nullable SearchType searchTypeUsername) {
+                                                    @Nullable ApSearchType searchTypeName,
+                                                    @Nullable ApSearchType searchTypeUsername) {
 
         Set<Integer> scopeIdsForSearch = getScopeIdsForSearch(fund, scopeId, false);
 
@@ -574,6 +574,23 @@ public class AccessPointService {
      */
     public FilteredResult<ApAccessPoint> findAccessPointsByText(String text, Integer from, Integer count) {
         return accessPointRepository.findAccessPointsByText(text, from, count);
+    }
+
+    /**
+     * Zjištění, jestli je přístupový bod používán v navázaných tabulkách
+     * (instituce nebo jednotky popisu) a nelze ho tedy smazat/zneplatnit.
+     *
+     * Na rozdíl od {@link #checkDeletion(ApAccessPoint)} nic neloguje ani
+     * nevyhazuje výjimku - je určeno pro opakované dotazy (např. synchronizace).
+     *
+     * @param accessPoint přístupový bod
+     * @return true pokud je přístupový bod používán
+     */
+    public boolean isAccessPointUsed(final ApAccessPoint accessPoint) {
+        if (institutionRepository.existsByAccessPointId(accessPoint.getAccessPointId())) {
+            return true;
+        }
+        return CollectionUtils.isNotEmpty(descItemRepository.findArrItemByRecord(accessPoint));
     }
 
     /**
@@ -2133,7 +2150,7 @@ public class AccessPointService {
      * @return
      */
 	public FilteredResultVO<ApAccessPointVO> findUseLuceneQueries(String search,
-																  SearchFilterVO searchFilter,
+																  ApAdvanceSearchFilter searchFilter,
 																  ArrFund fund,
 																  Set<Integer> apTypeIds,
 																  Integer scopeId,
@@ -2158,9 +2175,9 @@ public class AccessPointService {
 	}
 
 	public FilteredResultVO<ApAccessPointVO> findUseCriteriaQuery(String search,
-															      SearchFilterVO searchFilter,
-															      SearchType searchTypeName,
-															      SearchType searchTypeUsername,
+															      ApAdvanceSearchFilter searchFilter,
+															      ApSearchType searchTypeName,
+															      ApSearchType searchTypeUsername,
 			  													  ArrFund fund,
 			  													  Set<Integer> apTypeIds,
 			  													  Integer scopeId,
@@ -2173,8 +2190,8 @@ public class AccessPointService {
 
         if (searchFilter == null && revState == null) {
 	        Set<ApState.StateApproval> states = state != null ? EnumSet.of(state) : null;
-	        SearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : SearchType.FULLTEXT;
-	        SearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : SearchType.DISABLED;
+	        ApSearchType searchTypeNameFinal = searchTypeName != null ? searchTypeName : ApSearchType.FULLTEXT;
+	        ApSearchType searchTypeUsernameFinal = searchTypeUsername != null ? searchTypeUsername : ApSearchType.DISABLED;
 
 	        foundRecordsCount = findApAccessPointByTextAndTypeCount(search, apTypeIds, fund, scopeId, states,
 	        														searchTypeNameFinal, searchTypeUsernameFinal);
@@ -3324,7 +3341,7 @@ public class AccessPointService {
 
     @AuthMethod(permission = {UsrPermission.Permission.AP_SCOPE_RD_ALL, UsrPermission.Permission.AP_SCOPE_RD})
     public ArchiveEntityResultListVO findAccessPointsForRel(Integer from, Integer max,
-                                                            @AuthParam(type = AuthParam.Type.SCOPE) Integer scopeId, SearchFilterVO filter) {
+                                                            @AuthParam(type = AuthParam.Type.SCOPE) Integer scopeId, ApAdvanceSearchFilter filter) {
         searchFilterFactory.completeApTypesTreeInFilter(filter);
         Set<Integer> scopeList = new HashSet<>();
         scopeList.add(scopeId);
@@ -3680,7 +3697,7 @@ public class AccessPointService {
     }
 
 
-    public Page<ApState> findApAccessPointBySearchFilter(SearchFilterVO searchFilter, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
+    public Page<ApState> findApAccessPointBySearchFilter(ApAdvanceSearchFilter searchFilter, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
                                                          StateApproval state, RevStateApproval revState, Integer from, Integer count, StaticDataProvider sdp) {
         int page = from / count;
         PageRequest pageRequest = PageRequest.of(page, count);
@@ -3697,6 +3714,58 @@ public class AccessPointService {
         ApStateSpecification specification = new ApStateSpecification(searchFilter, apTypeIdTree, scopeIds,
                                                                       state, revState, sdp, preResolvedStateIds);
         return stateRepository.findAll(specification, pageRequest);
+    }
+
+    /**
+     * Page size used while collecting all matching access-point ids via the criteria path.
+     * Each page issues one JPA query; the page is then iterated and entities are detached
+     * before the next page is fetched, keeping the persistence context small for bulk runs.
+     */
+    private static final int FIND_ALL_IDS_PAGE_SIZE = 1000;
+
+    /**
+     * Collect access-point ids matching the same predicate as {@link #findUseCriteriaQuery}
+     * uses when {@code searchFilter} or {@code revState} is set. Pages through the criteria
+     * query so a backing collection of any size is supported, clears the persistence context
+     * between pages, and returns the ids sorted ascending.
+     *
+     * Intended for bulk operations (CSV export) that need the same exact match set the
+     * registry list shows for filters whose semantics differ between the Lucene cache and
+     * the SQL criteria query (e.g. {@code assignedTo}, which the criteria path resolves
+     * against live {@code wf_task} state instead of the cached snapshot).
+     */
+    @Transactional(TxType.SUPPORTS)
+    public List<Integer> findAllIdsBySearchFilter(ApAdvanceSearchFilter searchFilter,
+                                                  Set<Integer> apTypeIdTree,
+                                                  Set<Integer> scopeIds,
+                                                  StateApproval state,
+                                                  RevStateApproval revState) {
+        Collection<Integer> preResolvedStateIds = null;
+        if (searchFilter != null && searchFilter.getAssignedTo() != null) {
+            preResolvedStateIds = resolveStateIdsForAssignee(searchFilter.getAssignedTo());
+            if (preResolvedStateIds.isEmpty()) {
+                return Collections.emptyList();
+            }
+        }
+        StaticDataProvider sdp = staticDataService.getData();
+        ApStateSpecification specification = new ApStateSpecification(searchFilter, apTypeIdTree, scopeIds,
+                                                                      state, revState, sdp, preResolvedStateIds);
+        List<Integer> ids = new ArrayList<>();
+        int page = 0;
+        Page<ApState> result;
+        do {
+            PageRequest pageRequest = PageRequest.of(page, FIND_ALL_IDS_PAGE_SIZE);
+            result = stateRepository.findAll(specification, pageRequest);
+            for (ApState s : result.getContent()) {
+                ids.add(s.getAccessPointId());
+            }
+            // Detach the just-loaded ApState entities so the persistence context doesn't
+            // accumulate across pages on large exports.
+            em.clear();
+            page++;
+        } while (result.hasNext());
+        Collections.sort(ids);
+        return ids;
     }
 
     /**
@@ -3732,7 +3801,7 @@ public class AccessPointService {
      */
     private static final int ASSIGNED_TO_STATE_ID_CAP = 10_000;
 
-    public boolean isQueryComplex(SearchFilterVO searchFilter) {
+    public boolean isQueryComplex(ApAdvanceSearchFilter searchFilter) {
         //todo fantiš definovat příliš složitý dotaz
         return false;
     }

@@ -15,11 +15,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,9 +41,11 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.ResourcePathResolver;
+import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -59,12 +64,16 @@ import cz.tacr.elza.dataexchange.output.filters.conditions.PartCondition;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.RevStateApproval;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulExportFilter;
+import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.exception.AccessDeniedException;
 import cz.tacr.elza.exception.BusinessException;
@@ -72,9 +81,11 @@ import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.exception.codes.RegistryCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
 import cz.tacr.elza.repository.ItemRepository;
@@ -83,6 +94,7 @@ import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.security.UserDetail;
+import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.RuleService;
@@ -115,6 +127,10 @@ public class DEExportService {
 
     private final ApItemRepository apItemRepository;
 
+    private final ApBindingStateRepository bindingStateRepository;
+
+    private final DataStringRepository dataStringRepository;
+
     private final ScopeRepository scopeRepository;
 
     private final ItemRepository itemRepository;
@@ -122,6 +138,8 @@ public class DEExportService {
     private final NodeRepository nodeRepository;
     
     private final RuleService ruleService;
+
+    private final AccessPointService accessPointService;
 
     private final ElzaLocale elzaLocale;
 
@@ -140,10 +158,13 @@ public class DEExportService {
                            final ItemRepository itemRepository,
                            final ApStateRepository stateRepository,
                            final ApItemRepository apItemRepository,
+                           final ApBindingStateRepository bindingStateRepository,
+                           final DataStringRepository dataStringRepository,
                            final ApIndexRepository indexRepository,
                            final InstitutionRepository institutionRepository,
                            final ScopeRepository scopeRepository,
                            final RuleService ruleService,
+                           final AccessPointService accessPointService,
                            final ElzaLocale elzaLocale,
                            final AccessPointCacheService apcService) {
         this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, apRepository,
@@ -152,6 +173,8 @@ public class DEExportService {
                 dataService, apcService);
         this.institutionRepository = institutionRepository;
         this.apItemRepository = apItemRepository;
+        this.bindingStateRepository = bindingStateRepository;
+        this.dataStringRepository = dataStringRepository;
         this.stateRepository = stateRepository;
         this.indexRepository = indexRepository;
         this.scopeRepository = scopeRepository;
@@ -160,6 +183,7 @@ public class DEExportService {
         this.arrangementService = arrangementService;
         this.staticDataService = staticDataService;
         this.ruleService = ruleService;
+        this.accessPointService = accessPointService;
         this.elzaLocale = elzaLocale;
     }
 
@@ -213,9 +237,10 @@ public class DEExportService {
             context.setExportFilter(expFilter);
         }
 
-        // set flags include AP && UUID
+        // set flags include AP && UUID && DAOs
         context.setIncludeAccessPoints(params.isIncludeAccessPoints());
         context.setIncludeUUID(params.isIncludeUUID());
+        context.setIncludeDaos(params.isIncludeDaos());
 
         // call all readers
         for (ExportPhase phase : ExportPhase.values()) {
@@ -407,6 +432,205 @@ public class DEExportService {
             log.error("Failed to export data", e);
             throw e;
         }
+    }
+
+    private static final int ACCESS_POINT_EXPORT_BATCH_SIZE = 500;
+
+    private static final List<String> ACCESS_POINT_EXPORT_SECTION_PART_TYPE_CODES = List.of("PT_CRE", "PT_EXT", "PT_BODY");
+
+    /**
+     * Stream-export access points matching the given Lucene query to CSV.
+     *
+     * The implementation pages through the search to assemble all matching ids, then iterates them
+     * sorted ascending in fixed-size batches. Each batch loads exactly the projection rows needed
+     * for one CSV row group, writes them to the printer, and clears the persistence context so the
+     * heap stays bounded even for very large result sets (hundreds of thousands of entities).
+     *
+     * The CSV is UTF-8 with a BOM so Czech diacritics open correctly in Excel.
+     *
+     * @param progressSink receives a 0..100 percentage after each batch; may not be {@code null}
+     */
+    @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
+    public void exportAccessPointsCsv(ApAdvanceSearchFilter searchFilter,
+                                      Collection<Integer> apTypeIds,
+                                      Collection<Integer> scopeIds,
+                                      ApState.StateApproval state,
+                                      RevStateApproval revState,
+                                      Path csvFile,
+                                      IntConsumer progressSink) throws IOException {
+        StaticDataProvider sdp = staticDataService.getData();
+        AccessPointCacheService apcService = initHelper.getApCacheService();
+        ApAccessPointRepository apRepository = initHelper.getApRepository();
+        EntityManager em = initHelper.getEm();
+
+        // Match the bifurcation used by the search endpoint (see AccessPointService.findUseCriteriaQuery):
+        //   - When there's no full-text search but a searchFilter/revState is present, the criteria
+        //     query is the source of truth — it resolves filters like assignedTo against live
+        //     wf_task state, which the Lucene cache may not reflect promptly.
+        //   - Otherwise the Lucene cache is fine (and faster for large result sets).
+        String searchText = searchFilter != null ? searchFilter.getSearch() : null;
+        boolean hasSearchText = searchText != null && !searchText.isBlank();
+        boolean useCriteria = !hasSearchText && (searchFilter != null || revState != null);
+
+        final List<Integer> allIds;
+        if (useCriteria) {
+            Set<Integer> apTypeIdSet = apTypeIds == null ? Collections.emptySet() : new HashSet<>(apTypeIds);
+            Set<Integer> scopeIdSet = scopeIds == null ? Collections.emptySet() : new HashSet<>(scopeIds);
+            allIds = accessPointService.findAllIdsBySearchFilter(searchFilter, apTypeIdSet, scopeIdSet, state, revState);
+        } else {
+            allIds = apcService.searchAllIds(searchFilter, apTypeIds, scopeIds,
+                                             state, revState, sdp,
+                                             AccessPointCacheService.DEFAULT_SEARCH_ALL_PAGE_SIZE);
+        }
+        final int total = allIds.size();
+
+        ItemType nmMainType = sdp.getItemTypeByCode("NM_MAIN");
+        ItemType nmMinorType = sdp.getItemTypeByCode("NM_MINOR");
+        Integer nmMainItemTypeId = nmMainType != null ? nmMainType.getEntity().getItemTypeId() : null;
+        Integer nmMinorItemTypeId = nmMinorType != null ? nmMinorType.getEntity().getItemTypeId() : null;
+        List<RulItemType> nameItemTypes = new ArrayList<>(2);
+        if (nmMainType != null) {
+            nameItemTypes.add(nmMainType.getEntity());
+        }
+        if (nmMinorType != null) {
+            nameItemTypes.add(nmMinorType.getEntity());
+        }
+
+        try (OutputStream os = Files.newOutputStream(csvFile, StandardOpenOption.WRITE)) {
+            // UTF-8 BOM for Excel compatibility (Czech diacritics)
+            os.write(0xEF);
+            os.write(0xBB);
+            os.write(0xBF);
+
+            try (OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8);
+                 CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT)) {
+
+                csvPrinter.printRecord(
+                        "accessPointId", "uuid", "externalId",
+                        "scope", "apType", "state",
+                        "prefDisplayName", "nmMain", "nmMinor",
+                        "ptCre", "ptExt", "ptBody");
+
+                if (total == 0) {
+                    csvPrinter.flush();
+                    progressSink.accept(100);
+                    return;
+                }
+
+                int processed = 0;
+                for (int from = 0; from < total; from += ACCESS_POINT_EXPORT_BATCH_SIZE) {
+                    int to = Math.min(from + ACCESS_POINT_EXPORT_BATCH_SIZE, total);
+                    List<Integer> batch = allIds.subList(from, to);
+
+                    writeAccessPointBatch(csvPrinter, batch, apRepository,
+                                          nameItemTypes, nmMainItemTypeId, nmMinorItemTypeId);
+
+                    csvPrinter.flush();
+                    em.clear();
+
+                    processed += batch.size();
+                    progressSink.accept((int) ((long) processed * 100L / total));
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to export access points", e);
+            throw e;
+        }
+    }
+
+    private void writeAccessPointBatch(CSVPrinter out,
+                                       List<Integer> ids,
+                                       ApAccessPointRepository apRepository,
+                                       List<RulItemType> nameItemTypes,
+                                       Integer nmMainItemTypeId,
+                                       Integer nmMinorItemTypeId) throws IOException {
+        List<ApAccessPoint> aps = apRepository.findAllById(ids);
+        Map<Integer, ApAccessPoint> apMap = aps.stream()
+                .collect(Collectors.toMap(ApAccessPoint::getAccessPointId, Function.identity()));
+
+        List<ApState> states = stateRepository.findLastByAccessPointIdsFetchScopeAndApType(ids);
+        Map<Integer, ApState> stateMap = states.stream()
+                .collect(Collectors.toMap(ApState::getAccessPointId, Function.identity(), (a, b) -> a));
+
+        List<ApBindingState> bindings = bindingStateRepository.findActiveByAccessPointIdIn(ids);
+        Map<Integer, String> externalIdMap = bindings.stream()
+                .collect(Collectors.toMap(ApBindingState::getAccessPointId,
+                                          b -> b.getBinding().getValue(),
+                                          (a, b) -> a));
+
+        List<ApIndex> prefIndexes = indexRepository
+                .findPreferredPartIndexByAccessPointIdsAndIndexType(ids, DISPLAY_NAME);
+        Map<Integer, String> prefDisplayMap = prefIndexes.stream()
+                .collect(Collectors.toMap(idx -> idx.getPart().getAccessPointId(),
+                                          ApIndex::getIndexValue,
+                                          (a, b) -> a));
+
+        List<ApIndex> sectionIndexes = indexRepository
+                .findIndexByAccessPointIdsAndPartTypeCodesAndIndexType(ids,
+                        ACCESS_POINT_EXPORT_SECTION_PART_TYPE_CODES, DISPLAY_NAME);
+        Map<Integer, Map<String, String>> sectionMap = new HashMap<>();
+        for (ApIndex idx : sectionIndexes) {
+            int apId = idx.getPart().getAccessPointId();
+            String code = idx.getPart().getPartType().getCode();
+            sectionMap.computeIfAbsent(apId, k -> new HashMap<>()).put(code, idx.getIndexValue());
+        }
+
+        Map<Integer, Map<Integer, String>> nameMap = new HashMap<>();
+        if (!nameItemTypes.isEmpty()) {
+            List<PreferredPartNameItem> items = apItemRepository
+                    .findPreferredPartNameItemsByAccessPointIdsAndItemTypes(ids, nameItemTypes);
+            if (!items.isEmpty()) {
+                List<Integer> dataIds = items.stream()
+                        .map(PreferredPartNameItem::getDataId)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+                Map<Integer, String> dataValueMap;
+                if (dataIds.isEmpty()) {
+                    dataValueMap = Collections.emptyMap();
+                } else {
+                    dataValueMap = dataStringRepository.findValuesByDataIdIn(dataIds).stream()
+                            .collect(Collectors.toMap(DataStringRepository.OnlyValues::getDataId,
+                                                      DataStringRepository.OnlyValues::getStringValue,
+                                                      (a, b) -> a));
+                }
+                for (PreferredPartNameItem item : items) {
+                    String value = item.getDataId() != null ? dataValueMap.get(item.getDataId()) : null;
+                    nameMap.computeIfAbsent(item.getAccessPointId(), k -> new HashMap<>())
+                           .put(item.getItemTypeId(), value);
+                }
+            }
+        }
+
+        for (Integer apId : ids) {
+            ApAccessPoint ap = apMap.get(apId);
+            ApState st = stateMap.get(apId);
+            Map<String, String> sections = sectionMap.getOrDefault(apId, Collections.emptyMap());
+            Map<Integer, String> names = nameMap.getOrDefault(apId, Collections.emptyMap());
+
+            String uuid = ap != null && ap.getUuid() != null ? ap.getUuid() : "";
+            String scopeCode = (st != null && st.getScope() != null) ? st.getScope().getCode() : "";
+            String apTypeCode = (st != null && st.getApType() != null) ? st.getApType().getCode() : "";
+            String stateName = (st != null && st.getStateApproval() != null) ? st.getStateApproval().name() : "";
+
+            out.printRecord(
+                    apId,
+                    uuid,
+                    externalIdMap.getOrDefault(apId, ""),
+                    scopeCode,
+                    apTypeCode,
+                    stateName,
+                    prefDisplayMap.getOrDefault(apId, ""),
+                    nmMainItemTypeId != null ? nullToEmpty(names.get(nmMainItemTypeId)) : "",
+                    nmMinorItemTypeId != null ? nullToEmpty(names.get(nmMinorItemTypeId)) : "",
+                    sections.getOrDefault("PT_CRE", ""),
+                    sections.getOrDefault("PT_EXT", ""),
+                    sections.getOrDefault("PT_BODY", "")
+            );
+        }
+    }
+
+    private static String nullToEmpty(String s) {
+        return s == null ? "" : s;
     }
 
     /**

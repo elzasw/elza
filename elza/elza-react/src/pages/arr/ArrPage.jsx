@@ -46,7 +46,7 @@ import './ArrPage.scss';
 import defaultKeymap from './ArrPageKeymap';
 import ArrPageRibbon from './ArrPageRibbon';
 import ArrParentPage from './ArrParentPage';
-import {processNodeNavigation} from "../../utils/ArrShared";
+import {fetchNodeInfo, processNodeNavigation} from "../../utils/ArrShared";
 
 const AREA = "ARR";
 
@@ -127,8 +127,8 @@ class ArrPage extends ArrParentPage {
             if(!match.params.nodeId){
                 throw "chybi node id"
             }
-            selectedNodeInfo = await WebApi.selectNode(match.params.nodeId);
-            urlFundId = selectedNodeInfo.fund.id;
+            selectedNodeInfo = await fetchNodeInfo(match.params.nodeId);
+            urlFundId = selectedNodeInfo.fundId;
         } else {
             urlFundId = parseInt(match.params.id);
         }
@@ -151,7 +151,7 @@ class ArrPage extends ArrParentPage {
 
         if(selectedNodeInfo){
             // directly select node with info
-            dispatch(processNodeNavigation(selectedNodeInfo, urlVersionId));
+            dispatch(processNodeNavigation(selectedNodeInfo));
         } else {
             this.selectNodeFromUrl(activeNode, urlNodeId, urlVersionId);
         }
@@ -195,8 +195,8 @@ class ArrPage extends ArrParentPage {
         if (nodeId != null) {
             // select node from url only when it is not already selected (url inserted into address bar)
             if(activeNode?.selectedSubNodeId.toString() !== nodeId){
-                const data = await WebApi.selectNode(nodeId);
-                dispatch(processNodeNavigation(data, versionId));
+                const info = await fetchNodeInfo(nodeId);
+                dispatch(processNodeNavigation(info));
             }
         }
     }
@@ -727,7 +727,9 @@ class ArrPage extends ArrParentPage {
         const rows = [];
         if (!node) {
             return <div className="developer-panel">Je potřeba vybrat jednotku popisu.</div>;
-        } else if (node.subNodeForm.fetched) {
+        } else if (node.subNodeForm.fetched && node.subNodeForm.infoGroups) {
+            // infoGroups is null for NODE area since the new endpoint flow doesn't populate
+            // legacy derived state. Other areas (OUTPUT, STRUCTURE) still build it.
             node.subNodeForm.infoGroups.forEach(group => {
                 const types = [];
                 group.types.forEach(type => {

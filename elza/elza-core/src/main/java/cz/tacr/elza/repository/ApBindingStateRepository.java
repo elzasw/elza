@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,6 +26,9 @@ public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingSta
 
     @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding b JOIN FETCH b.apExternalSystem WHERE bis.accessPoint IN :accessPoints AND bis.deleteChangeId IS NULL")
     List<ApBindingState> findByAccessPoints(@Param("accessPoints") Collection<ApAccessPoint> accessPoints);
+
+    @Query("SELECT bis FROM ap_binding_state bis JOIN FETCH bis.binding b WHERE bis.accessPointId IN :accessPointIds AND bis.deleteChangeId IS NULL")
+    List<ApBindingState> findActiveByAccessPointIdIn(@Param("accessPointIds") Collection<Integer> accessPointIds);
 
     @Query("SELECT bis FROM ap_binding_state bis WHERE bis.binding = :binding AND bis.deleteChangeId IS NULL")
     Optional<ApBindingState> findActiveByBinding(@Param("binding") ApBinding binding);
@@ -75,6 +79,29 @@ public interface ApBindingStateRepository extends ElzaJpaRepository<ApBindingSta
 
     @Query("SELECT bs.bindingId FROM ap_binding_state bs WHERE bs.accessPointId IN :apIds")
     List<Integer> findAllBindingIdByAccessPointIdIn(@Param("apIds") Collection<Integer> apIds);
+
+    /**
+     * Page of revisions (binding states) for a binding, newest first. Active
+     * and superseded states are both returned — history must show the full
+     * chain including replaced revisions.
+     */
+    @Query("SELECT bs FROM ap_binding_state bs " +
+           "LEFT JOIN FETCH bs.createChange c " +
+           "WHERE bs.bindingId = :bindingId " +
+           "ORDER BY bs.bindingStateId DESC")
+    List<ApBindingState> findRevisionsByBindingId(@Param("bindingId") Integer bindingId, Pageable pageable);
+
+    @Query("SELECT COUNT(bs) FROM ap_binding_state bs WHERE bs.bindingId = :bindingId")
+    long countByBindingId(@Param("bindingId") Integer bindingId);
+
+    /**
+     * Pairs of (extRevision, extPrevRevision) for every state of the binding.
+     * Used to detect chain gaps (extPrevRevision pointing to a revision Elza
+     * does not have).
+     */
+    @Query("SELECT bs.extRevision, bs.extPrevRevision FROM ap_binding_state bs " +
+           "WHERE bs.bindingId = :bindingId")
+    List<Object[]> findRevisionLinksByBindingId(@Param("bindingId") Integer bindingId);    
 
     @Modifying
     void deleteByBinding(ApBinding binding);

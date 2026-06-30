@@ -15,6 +15,9 @@ class PageLayout extends React.Component {
         ribbonOpened: true,
     };
 
+    _pendingLeftSize = null;
+    _pendingRightSize = null;
+
     handleRibbonShowHide = opened => {
         this.setState({ribbonOpened: opened});
     };
@@ -44,8 +47,16 @@ class PageLayout extends React.Component {
                     <Splitter
                         leftSize={splitter.leftWidth}
                         rightSize={splitter.rightWidth}
-                        onChange={({ leftSize, rightSize }) => {
-                            this.props.dispatch(splitterResize(leftSize, rightSize, area));
+                        onChange={({leftSize, rightSize}) => {
+                            this._pendingLeftSize = leftSize;
+                            this._pendingRightSize = rightSize;
+                        }}
+                        onDragFinished={() => {
+                            if (this._pendingLeftSize !== null || this._pendingRightSize !== null) {
+                                this.props.dispatch(splitterResize(this._pendingLeftSize ?? splitter.leftWidth, this._pendingRightSize ?? splitter.rightWidth, area));
+                                this._pendingLeftSize = null;
+                                this._pendingRightSize = null;
+                            }
                         }}
                         left={leftPanel}
                         center={centerPanel}

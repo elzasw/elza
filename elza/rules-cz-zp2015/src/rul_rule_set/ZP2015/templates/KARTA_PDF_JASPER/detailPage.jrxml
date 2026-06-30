@@ -30,7 +30,7 @@
 	<parameter name="parentNameFormatter" forPrompting="false" class="cz.tacr.elza.print.format.Formatter">
 		<defaultValueExpression><![CDATA[new cz.tacr.elza.print.format.Formatter()
     .setItemSeparator(" / ")
-	.addValue("ZP2015_TITLE")]]></defaultValueExpression>
+	.addValue("ZP2015_NAME")]]></defaultValueExpression>
 	</parameter>
 	<query language="sql"><![CDATA[]]></query>
 	<field name="depth" class="java.lang.Integer">
@@ -57,7 +57,7 @@
 		<expression><![CDATA[$P{storageFormatter}.format($F{node})]]></expression>
 	</variable>
 	<variable name="levelName" class="java.lang.String">
-		<expression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0 ? $P{fund}.getName() : $F{node}.getSingleItemValue("ZP2015_TITLE")]]></expression>
+		<expression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0 ? $P{fund}.getName() : ($F{node}.hasItem("ZP2015_NAME") ? $F{node}.getSingleItemValue("ZP2015_NAME") : $F{node}.getSingleItemValue("ZP2015_CONTENT"))]]></expression>
 	</variable>
 	<variable name="titleList" class="java.lang.Iterable">
 		<expression><![CDATA[org.apache.commons.collections4.IterableUtils.chainedIterable(
@@ -263,7 +263,7 @@
 			</element>
 			<element kind="textField" uuid="104aa2bf-1c24-4a34-bf07-c3b7b0b4a3ef" x="0" y="33" width="543" height="27" fontName="DejaVu Sans" fontSize="12.0" pdfEncoding="Cp1250" textAdjust="StretchHeight" bold="true">
 				<printWhenExpression><![CDATA[$F{node}.getParent()!=null]]></printWhenExpression>
-				<expression><![CDATA[$P{parentNameFormatter}.format( com.google.common.collect.Lists.newArrayList(com.google.common.collect.Iterables.concat( $F{node}.getParentNode().getItemsFromParent(java.util.Collections.singletonList("ZP2015_TITLE")) )) )]]></expression>
+				<expression><![CDATA[$P{parentNameFormatter}.format( com.google.common.collect.Lists.newArrayList(com.google.common.collect.Iterables.concat( $F{node}.getParentNode().getItemsFromParent(java.util.Collections.singletonList("ZP2015_NAME")) )) )]]></expression>
 			</element>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 		</band>

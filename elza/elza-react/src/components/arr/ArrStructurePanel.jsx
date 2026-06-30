@@ -17,12 +17,11 @@ import storeFromArea from '../../shared/utils/storeFromArea';
 import './ArrStructurePanel.scss';
 import {modalDialogHide, modalDialogShow} from '../../actions/global/modalDialog';
 import AddStructureDataForm from './structure/AddStructureDataForm';
-import UpdateStructureDataForm from './structure/UpdateStrucutreDataForm';
+import {UpdateStructureDataForm} from './structure/UpdateStructureDataForm';
+import {UpdateMultipleStructureDataForm} from './structure/UpdateMultipleStructureDataForm';
 import StructureExtensionsForm from './structure/StructureExtensionsForm';
 import PropTypes from 'prop-types';
-import UpdateMultipleSub from './structure/UpdateMultipleSub';
 import {addToastrWarning} from '../shared/toastr/ToastrActions';
-import DescItemFactory from 'components/arr/nodeForm/DescItemFactory.jsx';
 import ListPager from 'components/shared/listPager/ListPager';
 import { Api } from 'api';
 
@@ -112,7 +111,6 @@ class ArrStructurePanel extends AbstractReactComponent {
                     fundId={fundId}
                     fundVersionId={fundVersionId}
                     structureTypeCode={code}
-                    descItemFactory={DescItemFactory}
                 />,
             ),
         );
@@ -129,7 +127,6 @@ class ArrStructurePanel extends AbstractReactComponent {
                     fundId={fundId}
                     fundVersionId={fundVersionId}
                     structureTypeCode={code}
-                    descItemFactory={DescItemFactory}
                 />,
             ),
         );
@@ -184,11 +181,10 @@ class ArrStructurePanel extends AbstractReactComponent {
                     this,
                     title,
                     <UpdateStructureDataForm
-                        descItemFactory={DescItemFactory}
                         fundId={fundId}
                         readMode={readMode}
                         fundVersionId={fundVersionId}
-                        id={structureDataIds[0]}
+                        structureObjectId={structureDataIds[0]}
                     />,
                 ),
             );
@@ -197,22 +193,11 @@ class ArrStructurePanel extends AbstractReactComponent {
                 modalDialogShow(
                     this,
                     title,
-                    <UpdateMultipleSub
-                        descItemFactory={DescItemFactory}
-                        onSubmit={data => WebApi.updateStructureDataBatch(fundVersionId, code, data)}
-                        onSubmitSuccess={() => {
-                            this.props.dispatch(modalDialogHide());
-                            this.props.dispatch(structureTypeInvalidate());
-                        }}
+                    <UpdateMultipleStructureDataForm
                         fundId={fundId}
                         fundVersionId={fundVersionId}
-                        initialValues={{
-                            autoincrementItemTypeIds: [],
-                            deleteItemTypeIds: [],
-                            items: {},
-                            structureDataIds,
-                        }}
-                        id={structureDataIds[0]}
+                        structureTypeCode={code}
+                        structureObjectIds={structureDataIds}
                     />,
                 ),
             );
@@ -266,10 +251,10 @@ class ArrStructurePanel extends AbstractReactComponent {
     };
 
     handleDelete = async (clickItem) => {
-        const {fundVersionId} = this.props;
+        const {fundId, fundVersionId} = this.props;
         const ids = this.getActiveSelection(clickItem) || [clickItem.id];
 
-        await Api.funds.fundDeleteStructureData(fundVersionId, ids);
+        await Api.structure.sdoDeleteObjects(fundId, ids, fundVersionId);
 
         this.closeContextMenu();
     };

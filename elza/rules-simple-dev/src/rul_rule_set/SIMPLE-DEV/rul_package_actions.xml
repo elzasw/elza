@@ -32,4 +32,7 @@
             <action-recommended output-type="SRD_ADHOC" />
         </action-recommendeds>
     </package-action>
+
+    <!-- Migrace prvků popisu na Název / Obsah (test ContentMigration) -->
+    <package-action filename="SRD_MIGRATE_CONTENT.yaml" />
 </package-actions>

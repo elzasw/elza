@@ -24,18 +24,19 @@ export function downloadFile(url) {
 }
 
 /**
- *  Downloads binary file
- *  @param file {String} binary file
- *  @param name {String} name of the file
+ *  Downloads a Blob as a file.
+ *  @param blob {Blob} blob to download
+ *  @param name {String} filename
  */
-export function downloadBlob(file, name) {
-    const blob = new Blob([file]);
-    var link = document.createElement('a');
-    link.href = window.URL.createObjectURL(blob);
+export function downloadBlob(blob, name) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
     link.download = name;
     document.body.appendChild(link);
     link.click();
-    link.parentElement.removeChild(link);
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }
 
 /**

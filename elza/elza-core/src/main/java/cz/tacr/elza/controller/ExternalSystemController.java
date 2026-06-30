@@ -39,7 +39,7 @@ public class ExternalSystemController implements ExternalsystemsApi {
     public ResponseEntity<Void> externalSystemExternalSystemResync(String id) {
     	ApExternalSystem extSys = extSystemService.findExternalSystemByCodeOrId(id);
     	// pokud systém nebyl nalezen nebo jeho typ neodpovídá CAM_COMPLETE(_V2)
-    	if (extSys == null 
+    	if (extSys == null
     			|| (extSys.getType() != ApExternalSystemType.CAM_COMPLETE
     			&& extSys.getType() != ApExternalSystemType.CAM_COMPLETE_V2)) {
     		return ResponseEntity.notFound().build();

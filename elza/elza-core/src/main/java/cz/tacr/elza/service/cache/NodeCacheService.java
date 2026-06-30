@@ -56,6 +56,7 @@ import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.ArrangementCode;
+import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.ApAccessPointRepository;
 import cz.tacr.elza.repository.ArrRefTemplateRepository;
 import cz.tacr.elza.repository.CachedNodeRepository;
@@ -96,8 +97,8 @@ import jakarta.transaction.Transactional.TxType;
  *
  * <h3>Lifecycle</h3>
  * <ul>
- *   <li>{@link #createEmptyNode}/{@link #createEmptyNodes} — create an empty
- *       cache row when a node first joins the tree.</li>
+ *   <li>{@link #addNodeToCache}/{@link #addNodesToCache} — add a node to the cache
+ *       as a new, empty entry when it first joins the tree.</li>
  *   <li>{@link #syncNodes} — rebuild the serialized JSON from current DB state
  *       after item-level changes. Automatically creates missing rows for
  *       active nodes, so callers like
@@ -481,18 +482,20 @@ public class NodeCacheService {
         if (!uncachedActive.isEmpty()) {
             logger.debug("Re-creating cache rows for {} active node(s) without cache", uncachedActive.size());
             List<ArrNode> nodesToCreate = nodeRepository.findAllById(uncachedActive);
-            createEmptyNodes(nodesToCreate);
+            addNodesToCache(nodesToCreate);
         }
 
         List<ArrCachedNode> cachedNodes = cachedNodeRepository.findByNodeIdIn(nodeIds);
+        if (cachedNodes.isEmpty()) {
+            return;
+        }
 
         logger.debug("Synchronizace požadovaných JP: {}", cachedNodes.size());
         int i = 0;
         for (List<ArrCachedNode> partCachedNodes : Lists.partition(cachedNodes, SYNC_BATCH_NODE_SIZE)) {
             i++;
             logger.debug("Sestavuji JP " + ((i - 1) * SYNC_BATCH_NODE_SIZE + 1) + "-" + ((i * SYNC_BATCH_NODE_SIZE) < nodeIds.size() ? (i * SYNC_BATCH_NODE_SIZE) : nodeIds.size()));
-			List<ArrCachedNode> updatedNodes = updateCachedNodes(partCachedNodes);
-			cachedNodeRepository.saveAll(updatedNodes);
+            cachedNodeRepository.saveAll(updateCachedNodes(partCachedNodes));
         }
     }
 
@@ -734,6 +737,55 @@ public class NodeCacheService {
 		logger.info("Všechny JP jsou synchronizovány");
     }
 
+	/**
+	 * Safety guard for the cache row-existence invariant: every node written to
+	 * the cache must have at least one active {@code arr_level}
+	 * ({@code deleteChange IS NULL}).
+	 *
+	 * <p>
+	 * Fails fast if any requested node has no active level, so a call path that
+	 * wrongly tries to cache an invalid node is surfaced immediately rather than
+	 * silently leaking the node into the Lucene index. The offending node IDs are
+	 * logged together with the originating {@code context} to make the violating
+	 * path easy to identify.
+	 *
+	 * @param context short identifier of the calling write path (for diagnostics)
+	 * @param nodeIds nodes about to be written to the cache
+	 */
+	private void assertNodesHaveActiveLevel(final String context, final Collection<Integer> nodeIds) {
+		if (nodeIds.isEmpty()) {
+			return;
+		}
+		assertNodesHaveActiveLevel(context, nodeIds, levelRepository.findNodeIdsWithActiveLevel(nodeIds));
+	}
+
+	/**
+	 * Variant reusing an already-fetched set of active node IDs, avoiding a second
+	 * query when the caller has computed it (see {@link #createCachedNodes}).
+	 *
+	 * @param context       short identifier of the calling write path (for diagnostics)
+	 * @param nodeIds       nodes about to be written to the cache
+	 * @param activeNodeIds subset of {@code nodeIds} that have an active level
+	 */
+	private void assertNodesHaveActiveLevel(final String context,
+	                                        final Collection<Integer> nodeIds,
+	                                        final Set<Integer> activeNodeIds) {
+		if (nodeIds.isEmpty() || activeNodeIds.containsAll(nodeIds)) {
+			return;
+		}
+		List<Integer> invalidNodeIds = nodeIds.stream()
+				.filter(id -> !activeNodeIds.contains(id))
+				.distinct()
+				.collect(Collectors.toList());
+		logger.error("[{}] Refusing to cache {} node(s) without any active arr_level "
+				+ "(deleteChange IS NULL). The cache row-existence invariant requires every "
+				+ "cached node to have at least one active level (see NodeCacheService class "
+				+ "documentation). Invalid nodeIds: {}", context, invalidNodeIds.size(), invalidNodeIds);
+		throw new SystemException("Cannot cache node(s) without an active level", BaseCode.INVALID_STATE)
+				.set("context", context)
+				.set("invalidNodeIds", invalidNodeIds);
+	}
+
 	private void processNewNodes(List<Integer> nodeIds) {
 		List<ArrCachedNode> cachedNodes = createCachedNodes(nodeIds);
 		cachedNodeRepository.saveAll(cachedNodes);
@@ -752,12 +804,11 @@ public class NodeCacheService {
         List<ArrCachedNode> result = new ArrayList<>(nodeIds.size());
 
         List<ArrNode> nodes = nodeRepository.findAllById(nodeIds);
-        // Items are only populated for nodes with at least one active arr_level.
-        // Defence-in-depth: a row for an invalid node is expected to be removed
-        // by the after-commit hook in FundLevelService (or by startup cleanup
-        // as a fallback), but keeping the content empty ensures such a row
-        // cannot leak into fulltext search during that brief window.
-        Collection<Integer> activeNodeIds = levelRepository.findNodeIdsWithActiveLevel(nodeIds);
+        // Enforce the cache row-existence invariant: a cache row must never be built
+        // for a node without an active arr_level, otherwise it would leak into the
+        // Lucene index. Fails fast to surface any call path that violates this.
+        Set<Integer> activeNodeIds = levelRepository.findNodeIdsWithActiveLevel(nodeIds);
+        assertNodesHaveActiveLevel("createCachedNodes", nodeIds, activeNodeIds);
         Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(activeNodeIds);
         Map<Integer, List<ArrInhibitedItem>> nodeIdInhibitedItems = createNodeInhibitedItemMap(activeNodeIds);
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(activeNodeIds);
@@ -785,9 +836,14 @@ public class NodeCacheService {
     }
 
     /**
+     * Refreshes the serialized content of the given cache rows from the current DB state.
      *
-     * @param cachedNodes
-     * @return
+     * Only rows whose node still has an active level are refreshed and returned. A node
+     * that lost its last active level keeps its (now stale) row until the caller deletes
+     * it (e.g. FundLevelService's after-commit delete), so it is skipped here rather than
+     * refreshed — refreshing it would leak the node into the Lucene index.
+     *
+     * @return the subset of {@code cachedNodes} that was refreshed (nodes with an active level)
      */
     private List<ArrCachedNode> updateCachedNodes(final List<ArrCachedNode> cachedNodes) {
         Map<Integer, ArrCachedNode> nodeCachedNodes = new HashMap<>();
@@ -795,22 +851,21 @@ public class NodeCacheService {
             nodeCachedNodes.put(cachedNode.getNodeId(), cachedNode);
         }
 
-        Set<Integer> nodeIds = nodeCachedNodes.keySet();
-        List<ArrNode> nodes = nodeRepository.findAllById(nodeIds);
-        if(nodeIds.size() != nodes.size()) {
-            logger.error("Number of nodes for update does not match the number of found nodes in DB! nodeIds: {}, found nodes: {}", nodeIds.size(), nodes.size());
+        Set<Integer> activeNodeIds = levelRepository.findNodeIdsWithActiveLevel(nodeCachedNodes.keySet());
+
+        List<ArrNode> nodes = nodeRepository.findAllById(activeNodeIds);
+        if (activeNodeIds.size() != nodes.size()) {
+            logger.error("Number of active nodes for update does not match the number of found nodes in DB! activeNodeIds: {}, found nodes: {}", activeNodeIds.size(), nodes.size());
             throw new SystemException("Number of nodes for update does not match the number of found nodes in DB!")
-                    .set("nodeIdsSize", nodeIds.size())
+                    .set("activeNodeIdsSize", activeNodeIds.size())
                     .set("foundNodesSize", nodes.size());
         }
-        // Items are only populated for nodes with at least one active arr_level;
-        // see createCachedNodes for the rationale.
-        Collection<Integer> activeNodeIds = levelRepository.findNodeIdsWithActiveLevel(nodeIds);
         Map<Integer, List<ArrDescItem>> nodeIdItems = createNodeDescItemMap(activeNodeIds);
         Map<Integer, List<ArrInhibitedItem>> nodeIdInhibitedItems = createNodeInhibitedItemMap(activeNodeIds);
         Map<Integer, List<ArrDaoLink>> nodeIdDaoLinks = createNodeDaoLinkMap(activeNodeIds);
         Map<Integer, List<ArrNodeExtension>> nodeIdNodeExtension = createNodeExtensionMap(activeNodeIds);
 
+        List<ArrCachedNode> refreshed = new ArrayList<>(nodes.size());
         for (ArrNode node : nodes) {
             Integer nodeId = node.getNodeId();
 
@@ -820,12 +875,12 @@ public class NodeCacheService {
             cn.setDaoLinks(nodeIdDaoLinks.get(nodeId));
             cn.setNodeExtensions(nodeIdNodeExtension.get(nodeId));
 
-            String nodeData = serialize(cn);
             ArrCachedNode cachedNode = nodeCachedNodes.get(nodeId);
-            cachedNode.setData(nodeData);
+            cachedNode.setData(serialize(cn));
+            refreshed.add(cachedNode);
         }
 
-        return cachedNodes;
+        return refreshed;
     }
 
     private Map<Integer, List<ArrNodeExtension>> createNodeExtensionMap(final Collection<Integer> nodeIds) {
@@ -1104,26 +1159,39 @@ public class NodeCacheService {
     }
 
 	/**
-	 * Create empty node in cache
+	 * Registers a node in the cache as a new, empty entry.
 	 *
-	 * Node is created without any data
+	 * See {@link #addNodesToCache(Collection)} for the precondition and contract.
 	 *
-	 * @param node
+	 * @param node existing node (with an active level) to register in the cache
 	 */
 	@Transactional(value = TxType.MANDATORY)
-	public void createEmptyNode(ArrNode node) {
-        createEmptyNodes(Collections.singletonList(node));
+	public void addNodeToCache(ArrNode node) {
+        addNodesToCache(Collections.singletonList(node));
 	}
 
 	/**
-	 * Založení nových záznamů v cache pro JP.
+	 * Registers nodes in the cache as new, empty entries.
 	 *
-	 * @param nodes seznam zakládaných objektů
+	 * <p>
+	 * Precondition: each node must already have an active {@code arr_level}
+	 * ({@code deleteChange IS NULL}). This is enforced by
+	 * {@link #assertNodesHaveActiveLevel} — callers must register a node only
+	 * after its level has been created. The entries carry no content; items are
+	 * filled in later via {@link #syncNodes}.
+	 *
+	 * @param nodes existing nodes (each with an active level) to register in the cache
+	 * @return the created cache records
 	 */
     @Transactional(value = TxType.MANDATORY)
-    public List<ArrCachedNode> createEmptyNodes(final Collection<ArrNode> nodes) {
+    public List<ArrCachedNode> addNodesToCache(final Collection<ArrNode> nodes) {
         readLock.lock();
         try {
+            List<Integer> nodeIds = nodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList());
+            // All callers register a node in the cache only after its level exists,
+            // so the row-existence invariant must hold here.
+            assertNodesHaveActiveLevel("addNodesToCache", nodeIds);
+
             List<ArrCachedNode> records = new ArrayList<>(nodes.size());
 
             for (ArrNode node : nodes) {
@@ -1141,7 +1209,6 @@ public class NodeCacheService {
             List<ArrCachedNode> result = cachedNodeRepository.saveAll(records);
 
             if (logger.isDebugEnabled()) {
-                List<Integer> nodeIds = nodes.stream().map(ArrNode::getNodeId).collect(Collectors.toList());
                 logger.debug("created nodes in cache - empty, ids: {}", nodeIds);
             }
             return result;

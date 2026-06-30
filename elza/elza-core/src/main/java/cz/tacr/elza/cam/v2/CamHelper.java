@@ -32,13 +32,32 @@ public class CamHelper {
      * @return {@link UserInfoXml#getName()} value, or {@code null} if {@code externalUser} is {@code null}
      */
     public static String getExternalUserName(Object externalUser) {
+        UserInfoXml userInfo = resolveUserInfo(externalUser);
+        if (userInfo == null) {
+            return null;
+        }
+        if (userInfo.getName() == null || userInfo.getName().getValue() == null) {
+            log.error("UserInfoXml is missing required name: id={}", userInfo.getId());
+            throw new SystemException("UserInfoXml is missing required name", BaseCode.INVALID_STATE);
+        }
+        return userInfo.getName().getValue();
+    }
+
+    /**
+     * Resolve the {@code ExternalUser} choice ({@link UserInfoXml} or
+     * {@link UserRefXml} IDREF) into its {@link UserInfoXml}.
+     *
+     * @param externalUser value returned by {@code getExternalUser()}; may be {@code null}
+     * @return the resolved {@link UserInfoXml}, or {@code null} if {@code externalUser} is {@code null}
+     */
+    public static UserInfoXml resolveUserInfo(Object externalUser) {
         if (externalUser == null) {
             return null;
         }
-        UserInfoXml userInfo;
         if (externalUser instanceof UserInfoXml info) {
-            userInfo = info;
-        } else if (externalUser instanceof UserRefXml ref) {
+            return info;
+        }
+        if (externalUser instanceof UserRefXml ref) {
             // @XmlIDREF: JAXB resolves the ref to the target UserInfoXml during unmarshal
             Object target = ref.getValue();
             if (!(target instanceof UserInfoXml resolved)) {
@@ -46,17 +65,11 @@ public class CamHelper {
                 throw new SystemException("UserRefXml IDREF did not resolve to UserInfoXml", BaseCode.INVALID_STATE)
                         .set("targetType", target == null ? null : target.getClass().getName());
             }
-            userInfo = resolved;
-        } else {
-            log.error("Unexpected externalUser type: {}", externalUser.getClass().getName());
-            throw new SystemException("Unexpected externalUser type", BaseCode.INVALID_STATE)
-                    .set("type", externalUser.getClass().getName());
+            return resolved;
         }
-        if (userInfo.getName() == null || userInfo.getName().getValue() == null) {
-            log.error("UserInfoXml is missing required name: id={}", userInfo.getId());
-            throw new SystemException("UserInfoXml is missing required name", BaseCode.INVALID_STATE);
-        }
-        return userInfo.getName().getValue();
+        log.error("Unexpected externalUser type: {}", externalUser.getClass().getName());
+        throw new SystemException("Unexpected externalUser type", BaseCode.INVALID_STATE)
+                .set("type", externalUser.getClass().getName());
     }
 
     /**

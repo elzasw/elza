@@ -1,4 +1,4 @@
-<!-- Created with Jaspersoft Studio version 7.0.3.final using JasperReports Library version 7.0.3-41034ca841d452f3305ba55b9042260aaa1ab5dd  -->
+<!-- Created with Jaspersoft Studio version 7.0.6.final using JasperReports Library version 7.0.6-5d2a603fdc6b3db8f842a83383e594f41891534d  -->
 <jasperReport name="contentPage" language="java" pageWidth="595" pageHeight="842" columnWidth="455" leftMargin="70" rightMargin="70" topMargin="28" bottomMargin="28" uuid="71cc9236-0f65-4a0a-bb66-bbfe841a66c1">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
@@ -24,7 +24,7 @@
 		<box topPadding="1" bottomPadding="0" style="Item">
 			<pen lineColor="#EEEEEE"/>
 		</box>
-		<paragraph lineSpacingSize="1.0" spacingBefore="0" style="Item"/>
+		<paragraph lineSpacingSize="1.0" spacingBefore="0"/>
 		<conditionalStyle fontSize="11.0" bold="true" italic="false" underline="false" strikeThrough="false">
 			<conditionExpression><![CDATA[$V{isSection} || $V{isRoot}]]></conditionExpression>
 		</conditionalStyle>
@@ -37,7 +37,7 @@
 			<leftPen lineWidth="0.0" lineColor="#CCCCCC"/>
 		</box>
 		<conditionalStyle>
-			<box leftPadding="10" style="OuterFrame">
+			<box leftPadding="10">
 				<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#CCCCCC"/>
 				<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -53,21 +53,21 @@
 			<leftPen lineColor="#EEEEEE"/>
 		</box>
 		<conditionalStyle fontSize="14.0" bold="true" italic="false" underline="false" strikeThrough="false">
-			<box style="ItemIds">
+			<box>
 				<pen lineWidth="0.0"/>
 				<leftPen lineWidth="2.0" lineColor="#0033FF"/>
 			</box>
 			<conditionExpression><![CDATA[false && $V{isSection} || false && $V{isRoot}]]></conditionExpression>
 		</conditionalStyle>
 		<conditionalStyle mode="Transparent" fontSize="14.0" italic="true">
-			<box style="ItemIds">
+			<box>
 				<leftPen lineWidth="2.0" lineColor="#FFCC00"/>
 				<bottomPen lineColor="#FFCC00"/>
 			</box>
 			<conditionExpression><![CDATA[false && $V{isFolder}]]></conditionExpression>
 		</conditionalStyle>
 		<conditionalStyle fontSize="14.0" bold="true" italic="false" underline="false" strikeThrough="false">
-			<box style="ItemIds">
+			<box>
 				<leftPen lineWidth="2.0" lineColor="#0099FF"/>
 				<bottomPen lineWidth="0.0" lineColor="#0099FF"/>
 			</box>
@@ -77,14 +77,14 @@
 			<conditionExpression><![CDATA[$P{templateVariant} == "B"]]></conditionExpression>
 		</conditionalStyle>
 		<conditionalStyle>
-			<box style="ItemIds">
+			<box>
 				<topPen lineWidth="1.0" lineColor="#DDDDDD"/>
 				<bottomPen lineWidth="1.0" lineColor="#F1F1F1"/>
 			</box>
 			<conditionExpression><![CDATA[$P{templateVariant} == "C"]]></conditionExpression>
 		</conditionalStyle>
 		<conditionalStyle>
-			<box padding="0" style="ItemIds"/>
+			<box padding="0"/>
 			<conditionExpression><![CDATA[$P{templateVariant} == "A"]]></conditionExpression>
 		</conditionalStyle>
 	</style>
@@ -451,7 +451,7 @@
 		<expression><![CDATA[$F{node}.getSingleItem( "ZP2015_UNIT_DATE_TEXT") == null ? $F{node}.getSingleItemValue( "ZP2015_UNIT_DATE" ) : $F{node}.getSingleItemValue( "ZP2015_UNIT_DATE_TEXT" )]]></expression>
 	</variable>
 	<variable name="levelName" class="java.lang.String">
-		<expression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0 ? $P{fund}.getName() : $F{node}.getSingleItemValue("ZP2015_TITLE")]]></expression>
+		<expression><![CDATA[$F{node}.getItemsWithSpec("ZP2015_LEVEL_TYPE","ZP2015_LEVEL_ROOT").size() > 0 ? $P{fund}.getName() : $F{node}.hasItem("ZP2015_NAME")?$F{node}.getSingleItemValue("ZP2015_NAME"): $F{node}.getSingleItemValue("ZP2015_CONTENT")]]></expression>
 	</variable>
 	<variable name="refNumber" class="java.lang.String">
 		<expression><![CDATA[$V{isRoot} ? $V{rootRef} : 
@@ -610,6 +610,14 @@ $P{rootShortDetailFormatter}.format($F{node})]]></expression>
 				</component>
 			</element>
 			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+		</band>
+		<band height="13">
+			<printWhenExpression><![CDATA[$F{node}.hasItem( "ZP2015_CONTENT" ) && $F{node}.hasItem( "ZP2015_NAME" )]]></printWhenExpression>
+			<element kind="textField" uuid="c690dfc9-3d3b-463a-a811-21c5eaf963f1" key="" positionType="Float" mode="Transparent" x="0" y="0" width="455" height="13" backcolor="#FF00CC" markup="html" pdfEncoding="Cp1250" textAdjust="StretchHeight" pattern="" removeLineWhenBlank="true" style="Item">
+				<expression><![CDATA[$F{node}.getSingleItemValue( "ZP2015_CONTENT" )]]></expression>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			</element>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 		</band>
 		<band height="13">
