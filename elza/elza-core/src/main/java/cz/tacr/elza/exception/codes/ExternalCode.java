@@ -29,4 +29,9 @@ public enum ExternalCode implements ErrorCode {
      * Synchronizace s CAM není možná
      */
     SYNC_IMPOSSIBLE,
+
+    /**
+     * Synchronizace s CAM byla odložena (čeká na splnění předpokladu, např. stažení nahrazující entity)
+     */
+    SYNC_DEFERRED,
 }

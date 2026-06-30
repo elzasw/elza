@@ -49,6 +49,7 @@ import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.SyncState;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.DeferSyncException;
 import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -279,6 +280,24 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
     }
 
     /**
+     * Checks whether the entity replacing this one (CAM {@code reid}) is already
+     * available locally, i.e. has a binding with a binding state in the given
+     * external system. Only then can the reference migration to the replacement
+     * be performed.
+     */
+    private boolean isReplacementAvailable(final EntityXml entity, final ApExternalSystem extSystem) {
+        if (entity.getReplacedBy() == null) {
+            return false;
+        }
+        String extReplacedBy = Long.toString(entity.getReplacedBy().getEntityId().getValue());
+        ApBinding binding = bindingRepository.findByValueAndExternalSystem(extReplacedBy, extSystem);
+        if (binding == null) {
+            return false;
+        }
+        return externalSystemService.getBindingState(binding).isPresent();
+    }
+
+    /**
      * Run existing AP sync
      *
      * @param procCtx
@@ -332,6 +351,22 @@ public class EntityDBDispatcher extends AbstractEntityDBDispatcher {
                     // -> sync failed
                     syncFailed = true;
                 }
+            }
+
+            // entity replaced in CAM: the references in description units must be migrated
+            // to the replacing entity before this access point can be invalidated. This
+            // requires the replacing entity to be present locally. If it has not been
+            // downloaded yet and the access point is still used, defer the item and retry
+            // once the replacement becomes available.
+            if (!syncFailed && entity.getState() == EntityRecordStateXml.ERS_REPLACED
+                    && accessPointService.isAccessPointUsed(accessPoint)
+                    && !isReplacementAvailable(entity, procCtx.getApExternalSystem())) {
+                String extReplacedBy = (entity.getReplacedBy() != null)
+                        ? Long.toString(entity.getReplacedBy().getEntityId().getValue()) : null;
+                log.info("Replacing entity is not available yet, deferring sync. accessPointId: {}, extReplacedBy: {}",
+                         accessPoint.getAccessPointId(), extReplacedBy);
+                throw new DeferSyncException("Replacing entity (extId: " + extReplacedBy
+                        + ") has not been downloaded yet, accessPointId: " + accessPoint.getAccessPointId());
             }
 
             if (syncFailed) {

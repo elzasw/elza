@@ -36,6 +36,11 @@ public interface ExtSyncsQueueItemRepository extends ElzaJpaRepository<ExtSyncsQ
     int countByAccesPointAndExternalSystemAndState(@Param("accessPoint") ApAccessPoint accessPoint, @Param("extSystem") ApExternalSystem extSystem, @Param("state") ExtSyncsQueueItem.ExtAsyncQueueState state);
 
     @Modifying
+    @Query("UPDATE ext_syncs_queue_item i SET i.state = cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState.UPDATE"
+            + " WHERE i.state = cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState.UPDATE_DEFERRED")
+    int reactivateDeferredItems();
+
+    @Modifying
     int deleteByAccessPoint(ApAccessPoint accessPoint);
 
     @Modifying

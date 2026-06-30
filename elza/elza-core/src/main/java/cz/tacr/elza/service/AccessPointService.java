@@ -577,6 +577,23 @@ public class AccessPointService {
     }
 
     /**
+     * Zjištění, jestli je přístupový bod používán v navázaných tabulkách
+     * (instituce nebo jednotky popisu) a nelze ho tedy smazat/zneplatnit.
+     *
+     * Na rozdíl od {@link #checkDeletion(ApAccessPoint)} nic neloguje ani
+     * nevyhazuje výjimku - je určeno pro opakované dotazy (např. synchronizace).
+     *
+     * @param accessPoint přístupový bod
+     * @return true pokud je přístupový bod používán
+     */
+    public boolean isAccessPointUsed(final ApAccessPoint accessPoint) {
+        if (institutionRepository.existsByAccessPointId(accessPoint.getAccessPointId())) {
+            return true;
+        }
+        return CollectionUtils.isNotEmpty(descItemRepository.findArrItemByRecord(accessPoint));
+    }
+
+    /**
      * Kontrola, jestli je používán přístupový bod v navázaných tabulkách.
      *
      * @param accessPoint přístupový bod

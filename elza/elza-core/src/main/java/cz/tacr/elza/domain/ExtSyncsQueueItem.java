@@ -208,6 +208,8 @@ public class ExtSyncsQueueItem {
 
         UPDATE("K aktualizaci"),
 
+        UPDATE_DEFERRED("Odloženo (čeká na náhradu)"),
+
         IMPORT_NEW("Ke stažení"),
 
         IMPORT_OK("Aktualizováno/Staženo"), // předchozí OK

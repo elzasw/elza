@@ -2,6 +2,7 @@ import {ExtAsyncQueueState} from "../../../../api/ExtAsyncQueueState";
 
 export function getValues(): ExtAsyncQueueState[] {
     return [ExtAsyncQueueState.UPDATE,
+        ExtAsyncQueueState.UPDATE_DEFERRED,
         ExtAsyncQueueState.IMPORT_NEW,
         ExtAsyncQueueState.IMPORT_OK,
         ExtAsyncQueueState.EXPORT_NEW,
@@ -15,6 +16,8 @@ export function getName(state: ExtAsyncQueueState): string {
     switch (state) {
         case ExtAsyncQueueState.UPDATE:
             return 'K aktualizaci';
+        case ExtAsyncQueueState.UPDATE_DEFERRED:
+            return 'Odloženo (čeká na náhradu)';
         case ExtAsyncQueueState.EXPORT_NEW:
             return 'K odeslání';
         case ExtAsyncQueueState.EXPORT_NEED_CONFIRM:
