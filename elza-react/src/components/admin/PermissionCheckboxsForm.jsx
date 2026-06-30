@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import React from 'react';
 import {Form} from 'react-bootstrap';
+import {Spinner} from '@fluentui/react-components';
 import {AbstractReactComponent, i18n, Icon} from 'components/shared';
 import getMapFromList from '../../shared/utils/getMapFromList';
 import './PermissionCheckboxsForm.scss';
@@ -30,12 +31,14 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
         permissionAllTitle: PropTypes.string, // odkaz do resource textů jak se jmenuje zdroj all persmission
         groups: PropTypes.array, // seznam přiřazených skupin
         fundId: PropTypes.number,
+        disabled: PropTypes.bool,
     };
 
     constructor(props) {
         super(props);
         this.state = {
             nodes: [],
+            pendingPermCodes: new Set(),
         };
     }
 
@@ -45,6 +48,14 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
 
     UNSAFE_componentWillReceiveProps(nextProps, nextState) {
         if (nextProps.fundId !== this.props.fundId || nextProps.permission !== this.props.permission) {
+            if (
+                nextProps.fundId == null
+                    || nextProps.permission?.id == null
+                    || nextProps.permission.id.toString() !== nextProps.fundId.toString()
+            ){
+                this.setState({nodes: []});
+                return;
+            }
             this.fetch(nextProps);
         }
     }
@@ -106,8 +117,26 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
         );
     };
 
+    handleChangePermission = (e, permCode) => {
+        const {onChangePermission} = this.props;
+        this.setState(({pendingPermCodes}) => ({
+            pendingPermCodes: new Set([...pendingPermCodes, permCode]),
+        }));
+        const promise = onChangePermission(e, permCode);
+        if (promise) {
+            promise.finally(() => {
+                this.setState(({pendingPermCodes}) => {
+                    const next = new Set(pendingPermCodes);
+                    next.delete(permCode);
+                    return {pendingPermCodes: next};
+                });
+            });
+        }
+    };
+
     render() {
-        const {permissionAllTitle, groups, permission, labelPrefix, onChangePermission, permCodes} = this.props;
+        const {permissionAllTitle, groups, permission, labelPrefix, permCodes, disabled} = this.props;
+        const {pendingPermCodes} = this.state;
         const groupMap = groups ? getMapFromList(groups) : {};
 
         return (
@@ -126,7 +155,9 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
 
                         let infoIcon;
                         let infoMessage;
-                        if (Object.keys(obj.groupIds).length > 0 || checked || allChecked) {
+                        if (pendingPermCodes.has(permCode)) {
+                            infoIcon = <Spinner style={{marginRight: "10px"}} size="tiny" />;
+                        } else if (Object.keys(obj.groupIds).length > 0 || checked || allChecked) {
                             const groupNames = Object.keys(obj.groupIds).map(id =>
                                 groupMap[id] ? groupMap[id].name : '',
                             );
@@ -152,7 +183,7 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
 
                         if (infoMessage) {
                             infoIcon = (
-                                <TooltipTrigger key="info" content={infoMessage} placement="left" showDelay={1}>
+                                <TooltipTrigger style={{width: "auto"}} key="info" content={infoMessage} placement="left" showDelay={1}>
                                     {infoIcon}
                                 </TooltipTrigger>
                             );
@@ -160,12 +191,13 @@ class PermissionCheckboxsForm extends AbstractReactComponent {
 
                         return (
                             <div className="item-row" key={permCode}>
-                                {infoIcon}
+                                <div className="icon-wrapper">{infoIcon}</div>
                                 <Form.Check
                                     type="checkbox"
                                     inline
                                     checked={checked}
-                                    onChange={e => onChangePermission(e, permCode)}
+                                    disabled={disabled || pendingPermCodes.size > 0}
+                                    onChange={e => this.handleChangePermission(e, permCode)}
                                     label={i18n(`${labelPrefix}${permCode}`)}
                                 />
                             </div>

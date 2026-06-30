@@ -1,12 +1,22 @@
 import { Popover, PopoverSurface, Spinner } from "@fluentui/react-components";
 import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
 import { WebApi } from "actions";
+import { FormItemType, MandatoryType } from "elza-api";
 import { useEffect, useMemo } from "react";
+import { defineMessages, FormattedMessage } from "react-intl";
 import { useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
-import { useActiveFund, useActiveParent, useNodeFormData } from "./hooks";
+import { useActiveFund, useActiveParent, useNodeFormData, useStrictMode } from "./hooks";
 import { NodeFormContext } from "./NodeFormContext";
 import { DescItemTypeFields } from "./DescItemTypeFields";
+import { useStyles } from "./styles";
+
+const messages = defineMessages({
+    notAllowed: {
+        id: "arr.fundDataGrid.cellForm.notAllowed",
+        defaultMessage: "Tento prvek popisu není možné přidat k jednotce popisu.",
+    },
+});
 
 interface Props {
     fondsVersionId: number;
@@ -21,12 +31,14 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
     const dispatch = useAppThunkDispatch();
     const activeParent = useActiveParent();
     const activeFund = useActiveFund();
+    const styles = useStyles();
 
     const itemTypeRefs = useAppSelector(({ refTables }) => refTables.descItemTypes.itemsMap);
     const groupRefs = useAppSelector(({ refTables }) => refTables.groups.data);
     const nodeSetting = useAppSelector(({ arrRegion }) =>
         arrRegion.nodeSettings.nodes.find(({ id }) => id === activeParent?.id),
     );
+    const strictMode = useStrictMode();
 
     const nodeFormData = useNodeFormData(fondsVersionId, nodeId, nodeVersionId);
     const {
@@ -34,6 +46,7 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
         forcedFormItems,
         addedFormItems,
         itemTypes,
+        isLoading,
         addEmptyDescItem,
         deleteDescItem,
         createDescItem: createDescItemBase,
@@ -58,12 +71,31 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
         }
     }
 
-    const descItemTypeEntry = useMemo(() => {
-        if (!formItems || !groupRefs || !itemTypeRefs) { return null; }
+    const typeRef = itemTypeRefs?.[descItemTypeId];
 
-        const typeRef = itemTypeRefs[descItemTypeId];
-        const typeForm = itemTypes?.find(({ itemTypeId }) => itemTypeId === descItemTypeId);
-        if (!typeRef || !typeForm) { return null; }
+    // The server omits IMPOSSIBLE types from itemTypes (IMPOSSIBLE is the default state, so it isn't
+    // transferred). A type missing from itemTypes is therefore IMPOSSIBLE for this node, and in
+    // strict mode such a type may not be edited.
+    const serverTypeForm = itemTypes?.find(({ itemTypeId }) => itemTypeId === descItemTypeId);
+    const notAllowed = !isLoading && !serverTypeForm && strictMode;
+
+    const descItemTypeEntry = useMemo(() => {
+        if (!formItems || !groupRefs || !typeRef || notAllowed) { return null; }
+
+        // Reconstruct a minimal IMPOSSIBLE FormItemType from the ref tables for a missing type so the
+        // cell can still be edited (adding a value transitions it away from IMPOSSIBLE).
+        const typeForm: FormItemType = serverTypeForm ?? {
+            itemTypeId: descItemTypeId,
+            type: MandatoryType.Impossible,
+            repeatable: false,
+            undefinable: false,
+            specs: typeRef.descItemSpecs.map(({ id }) => ({
+                itemSpecId: id,
+                type: MandatoryType.Impossible,
+                repeatable: false,
+            })),
+            favoriteSpecIds: [],
+        };
 
         let typeWidth: number | undefined;
         for (const id of groupRefs.ids) {
@@ -76,7 +108,7 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
         const descItems = allItems.filter(({ item }) => item.itemTypeId === descItemTypeId);
 
         return { typeRef, typeForm, typeWidth, descItems };
-    }, [formItems, forcedFormItems, addedFormItems, itemTypes, groupRefs, itemTypeRefs, descItemTypeId]);
+    }, [formItems, forcedFormItems, addedFormItems, serverTypeForm, notAllowed, groupRefs, typeRef, descItemTypeId]);
 
     useEffect(() => {
         if (descItemTypeEntry && descItemTypeEntry.descItems.length === 0) {
@@ -113,8 +145,12 @@ export function FundDataGridCellForm({ fondsVersionId, nodeId, nodeVersionId, de
                 // overflowBoundary: "viewport"
             }}
         >
-            <PopoverSurface style={{ minWidth: "300px", maxWidth: "600px", padding: "8px" }}>
-                {!descItemTypeEntry ? <Spinner /> : (
+            <PopoverSurface className={styles.fundDataGridPopover}>
+                {isLoading || !descItemTypeEntry && !notAllowed ? (
+                    <Spinner />
+                ) : notAllowed ? (
+                    <FormattedMessage {...messages.notAllowed} />
+                ) : (
                     <NodeFormContext.Provider value={nodeFormData}>
                         <DescItemTypeFields
                             typeRef={descItemTypeEntry.typeRef}

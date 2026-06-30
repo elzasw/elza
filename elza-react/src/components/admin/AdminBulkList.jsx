@@ -12,39 +12,24 @@ import i18n from "../i18n";
 import Loading from "../shared/loading/Loading";
 
 class AdminBulkList extends AbstractReactComponent {
-    constructor(props) {
-        super(props);
-        this.stop = false;
-        this.state = {
-            fetched: false,
-            asyncRequest: []
-        };
-    }
+    state = {
+        fetched: false,
+        asyncRequest: []
+    };
 
     componentDidMount() {
         this.refresh();
     }
 
     componentWillUnmount() {
-        this.stop = true;
+        clearTimeout(this.timer);
     }
 
     refresh = () => {
-        if (this.stop) {
-            return;
-        }
-
-        WebApi.getAsyncRequestInfo().then(
-            newData => {
-                this.setState({
-                    ...this.state,
-                    fetched: true,
-                    asyncRequest: newData
-                }, () => {
-                    setTimeout(this.refresh, 10000);
-                });
-            }
-        )
+        WebApi.getAsyncRequestInfo().then(newData => {
+            this.setState({fetched: true, asyncRequest: newData});
+            this.timer = setTimeout(this.refresh, 10000);
+        });
     }
 
     render() {

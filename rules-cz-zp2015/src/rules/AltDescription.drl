@@ -20,7 +20,7 @@ when
   $itemType : RulItemTypeExt(code in ( // nastaveni pro ulozeni
         "ZP2015_ARCHDESC_LANG", 
         "ZP2015_NAME",
-        "ZP2015_TITLE",
+        "ZP2015_CONTENT",
 		"ZP2015_FORMAL_TITLE",
         "ZP2015_UNIT_DATE_TEXT",
         "ZP2015_UNIT_HIST",
@@ -60,7 +60,7 @@ rule "Doporučené prvky popisu"
 no-loop
 when
     $itemType : RulItemTypeExt(code in (
-		"ZP2015_TITLE"))
+		"ZP2015_NAME"))
 then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
@@ -70,6 +70,7 @@ no-loop
 when
     $itemType : RulItemTypeExt(code in (
         "ZP2015_NAME",
+        "ZP2015_CONTENT",
 		"ZP2015_FORMAL_TITLE",
         "ZP2015_UNIT_DATE_TEXT",
         "ZP2015_UNIT_HIST",

@@ -57,7 +57,7 @@ public abstract class JaxbUtils {
             jaxbMarshaller.marshal(body, result);
             return result.toString(StandardCharsets.UTF_8);
         } catch (Exception e) {
-            throw new IllegalStateException("Problém při konverzi xml objektu do xml string", e);
+            throw new IllegalStateException("Failed to convert XML object to XML string", e);
         }
     }
 

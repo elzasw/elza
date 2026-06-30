@@ -16,7 +16,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import cz.tacr.cam.v2.schema.cam.EntityXml;
 import cz.tacr.cam.v2.schema.cam.FoundEntityInfoXml;
+import cz.tacr.cam.v2.schema.cam.ItemStringXml;
+import cz.tacr.cam.v2.schema.cam.PartXml;
 import cz.tacr.cam.v2.schema.cam.ResultLookupXml;
 import cz.tacr.cam.v2.schema.cam.HightlightPosXml;
 import cz.tacr.cam.v2.client.controller.vo.QueryAndDef;
@@ -28,17 +31,15 @@ import cz.tacr.cam.v2.client.controller.vo.QueryPartCondDef;
 import cz.tacr.cam.v2.client.controller.vo.QueryPartType;
 import cz.tacr.cam.v2.client.controller.vo.QueryValueCondDef;
 import cz.tacr.cam.v2.client.controller.vo.QueryParamsDef;
-import cz.tacr.cam.v2.client.controller.vo.RecordState;
 import cz.tacr.cam.v2.schema.cam.QueryResultXml;
-import cz.tacr.elza.controller.vo.AeState;
 import cz.tacr.elza.controller.vo.ArchiveEntityResultListVO;
 import cz.tacr.elza.controller.vo.ArchiveEntityVO;
-import cz.tacr.elza.controller.vo.Area;
-import cz.tacr.elza.controller.vo.ExtensionFilterVO;
+import cz.tacr.elza.controller.vo.ApSearchArea;
+import cz.tacr.elza.controller.vo.ApSearchByItemWithValue;
 import cz.tacr.elza.controller.vo.HighlightVO;
-import cz.tacr.elza.controller.vo.RelationFilterVO;
+import cz.tacr.elza.controller.vo.ApSearchByRelation;
 import cz.tacr.elza.controller.vo.ResultLookupVO;
-import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
@@ -58,10 +59,9 @@ public class SearchFilterFactory {
     @Autowired
     private StaticDataService staticDataService;
 
-    public QueryParamsDef createQueryParamsDef(SearchFilterVO filter) {
+    public QueryParamsDef createQueryParamsDef(ApAdvanceSearchFilter filter) {
         QueryParamsDef queryParamsDef = new QueryParamsDef();
         queryParamsDef.setTypes(createTypeList(filter.getAeTypeIds()));
-        queryParamsDef.setState(createStateList(filter.getAeStates()));
         queryParamsDef.setCond(createQueryBaseCondDef(filter));
         queryParamsDef.setUserName(filter.getUser());
         //queryParamsDef.setUserRoles();
@@ -75,6 +75,62 @@ public class SearchFilterFactory {
         archiveEntityVOListResult.setData(createArchiveEntityVoList(queryResult.getList().getEntityInfo()));
         return archiveEntityVOListResult;
 	}
+
+    /**
+     * Empty result, used when an entity requested by its identifier does not exist.
+     */
+    public ArchiveEntityResultListVO createEmptyResult() {
+        ArchiveEntityResultListVO result = new ArchiveEntityResultListVO();
+        result.setTotal(0);
+        result.setData(new ArrayList<>());
+        return result;
+    }
+
+    /**
+     * Wrap a single entity fetched by its identifier as a one-item search result.
+     */
+    public ArchiveEntityResultListVO createSingleEntityResult(EntityXml entity) {
+        ArchiveEntityResultListVO result = new ArchiveEntityResultListVO();
+        List<ArchiveEntityVO> data = new ArrayList<>();
+        data.add(createArchiveEntityVO(entity));
+        result.setData(data);
+        result.setTotal(1);
+        return result;
+    }
+
+    private ArchiveEntityVO createArchiveEntityVO(EntityXml entity) {
+        StaticDataProvider sdp = staticDataService.getData();
+        ArchiveEntityVO archiveEntityVO = new ArchiveEntityVO();
+        archiveEntityVO.setId((int) entity.getEntityId().getValue());
+        archiveEntityVO.setAeTypeId(sdp.getApTypeByCode(entity.getEntityType().getValue()).getApTypeId());
+        archiveEntityVO.setName(findDisplayName(entity));
+        return archiveEntityVO;
+    }
+
+    /**
+     * Display name of an entity: the DISPLAY_NAME index of the first PT_NAME part.
+     * Indexes are carried in the part's {@code eits} collection as string items
+     * whose type holds the index name.
+     */
+    private String findDisplayName(EntityXml entity) {
+        if (entity.getParts() == null) {
+            return null;
+        }
+        for (PartXml part : entity.getParts().getPart()) {
+            if (!StaticDataProvider.DEFAULT_PART_TYPE.equals(part.getType().value()) || part.getEits() == null) {
+                continue;
+            }
+            for (Object index : part.getEits().getItems()) {
+                if (index instanceof ItemStringXml) {
+                    ItemStringXml stringIndex = (ItemStringXml) index;
+                    if (DISPLAY_NAME.equals(stringIndex.getType().getValue()) && stringIndex.getValue() != null) {
+                        return stringIndex.getValue().getValue();
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
     private List<ArchiveEntityVO> createArchiveEntityVoList(List<FoundEntityInfoXml> foundEntityInfoList) {
         List<ArchiveEntityVO> archiveEntityVOList = new ArrayList<>();
@@ -142,53 +198,23 @@ public class SearchFilterFactory {
     }
 
     /**
-     * Převod setu AeStateEnum na list RecordState
-     *
-     * @param aeStates Set AeStateEnum
-     * @return List of RecordState
-     */
-    private List<RecordState> createStateList(Collection<AeState> aeStates) {
-        List<RecordState> stateEnumList = null;
-        if (aeStates != null) {
-            stateEnumList = new ArrayList<>();
-            for (AeState aeStateEnum : aeStates) {
-                switch (aeStateEnum) {
-                    case APS_NEW:
-                        stateEnumList.add(RecordState.RS_NEW);
-                        break;
-                    case APS_APPROVED:
-                        stateEnumList.add(RecordState.RS_APPROVED);
-                        break;
-                    case APS_INVALID:
-                        stateEnumList.add(RecordState.RS_INVALID);
-                        break;
-                    case APS_REPLACED:
-                        stateEnumList.add(RecordState.RS_REPLACED);
-                        break;
-                }
-            }
-        }
-        return stateEnumList;
-    }
-
-    /**
      * Vytvoření podmínky z parametrů filtru
      *
      * @param filter GlobalSearchFilterVO
      * @return podmínka QueryBaseCondDef
      */
-    private QueryBaseCondDef createQueryBaseCondDef(SearchFilterVO filter) {
+    private QueryBaseCondDef createQueryBaseCondDef(ApAdvanceSearchFilter filter) {
         QueryBaseCondDef queryBaseCondDef = null;
         String search = filter.getSearch();
-        Area area = filter.getArea();
-        if (area != Area.ENTITY_CODE) {
+        ApSearchArea area = filter.getArea();
+        if (area != ApSearchArea.ENTITY_CODE) {
             List<QueryBaseCondDef> andCondDefList = new ArrayList<>();
 
             if (StringUtils.isNotEmpty(search)) {
                 List<String> keyWords = getKeyWordsFromSearch(search);
                 for (String keyWord : keyWords) {
                     QueryBaseCondDef cond;
-                    if (filter.getOnlyMainPart() && !area.equals(Area.ALL_PARTS)) {
+                    if (filter.getOnlyMainPart() && !area.equals(ApSearchArea.ALL_PARTS)) {
                         cond = createQueryValueCondDef(NM_MAIN, null, QueryComparator.CT_CONTAINS, keyWord);
                     } else {
                         cond = createQueryIndexCondDef(keyWord);
@@ -212,13 +238,13 @@ public class SearchFilterFactory {
                 }
             }
             if (CollectionUtils.isNotEmpty(filter.getExtFilters())) {
-                for (ExtensionFilterVO ext : filter.getExtFilters()) {
+                for (ApSearchByItemWithValue ext : filter.getExtFilters()) {
                     QueryValueCondDef valueCondDef = createQueryValueCondDef(ext.getItemTypeId(), ext.getItemSpecId(), QueryComparator.CT_CONTAINS, String.valueOf(ext.getValue()));
                     andCondDefList.add(createQueryPartCondDef(valueCondDef, QueryPartType.fromValue(ext.getPartTypeCode())));
                 }
             }
             if (CollectionUtils.isNotEmpty(filter.getRelFilters())) {
-                for (RelationFilterVO rel : filter.getRelFilters()) {
+                for (ApSearchByRelation rel : filter.getRelFilters()) {
                     if (rel.getCode() != null) {
                         andCondDefList.add(createQueryValueCondDef(rel.getRelTypeId(), rel.getRelSpecId(), QueryComparator.CT_EQ, String.valueOf(rel.getCode())));
                     }

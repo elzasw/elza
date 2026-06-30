@@ -10,7 +10,7 @@ import ValidationResultIcon from "../../../ValidationResultIcon";
 import { DetailPartInfo } from "./DetailPartInfo";
 import "./DetailRelatedPart.scss";
 import { SyncIcon } from "../sync-icon";
-import { SyncState } from '../../../../api/SyncState';
+import { SyncState } from 'elza-api';
 import { PartName } from "./PartName";
 import { RevisionPart, RevisionDisplay, getRevisionItems } from '../../revision';
 
@@ -100,7 +100,7 @@ const DetailRelatedPart: FC<Props> = ({
 
                 <div className="actions">
                     {hasBinding && 
-                        <SyncIcon syncState={!hasLocalChange ? SyncState.SYNC_OK : SyncState.LOCAL_CHANGE}/>
+                        <SyncIcon syncState={!hasLocalChange ? SyncState.SyncOk : SyncState.LocalChange}/>
                     }
                     {showValidationError()}
                 </div>

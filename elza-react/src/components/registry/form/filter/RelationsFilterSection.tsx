@@ -13,7 +13,7 @@ import {RulDescItemTypeExtVO} from "../../../../api/RulDescItemTypeExtVO";
 import {RulDescItemSpecExtVO} from "../../../../api/RulDescItemSpecExtVO";
 import {Col, Row} from "react-bootstrap";
 import RelationFilterModal from "../../modal/RelationFilterModal";
-import {Area} from "../../../../api/Area";
+import {ApSearchArea} from 'elza-api';
 import {ArchiveEntityResultListVO} from "../../../../api/ArchiveEntityResultListVO";
 import {FilteredResultVO} from "../../../../api/FilteredResultVO";
 import {ApAccessPointVO} from "../../../../api/ApAccessPointVO";
@@ -100,7 +100,7 @@ const RelFilters: React.FC<RelFilterFieldProps> = ({
                         i18n('ap.ext-search.section.relations.title'),
                         <RelationFilterModal
                             initialValues={{
-                                area: Area.ALLNAMES,
+                                area: ApSearchArea.AllNames,
                                 onlyMainPart: false,
                                 scopeId,
                                 itemType: {id: null, name: i18n('ap.ext-search.input.select.all')}

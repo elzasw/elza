@@ -6,6 +6,15 @@ import { MemoryRouter } from 'react-router-dom';
 import { applyMiddleware, createStore, Store } from 'redux';
 import thunk from 'redux-thunk';
 
+// Warm up the module graph BEFORE importing rootReducer. The reducer tree has
+// a latent circular dependency (stores/app/fund/fundDetail.jsx →
+// stores/app/arr/fundTree.jsx → components/shared → ...) that webpack hides
+// but Vitest's ESM loader exposes. Importing AppStore first mirrors the
+// production load order: it imports components/Utils.jsx and a side-effect
+// action module before reducers.jsx, which is enough to resolve the cycle.
+// See the circular-dependency finding in refactoring.md.
+import '../stores/AppStore';
+
 import rootReducer from '../stores/reducers';
 
 export type TestStore = Store;
@@ -29,22 +38,24 @@ export type RenderWithProvidersOptions = Omit<RenderOptions, 'wrapper'> & {
 export function renderWithProviders(
     ui: ReactElement,
     {
-        store = createTestStore(),
+        store,
+        preloadedState,
         route = '/',
         locale = 'cs',
         messages = {},
         ...renderOptions
     }: RenderWithProvidersOptions = {},
 ): RenderResult & { store: TestStore } {
+    const resolvedStore = store ?? createTestStore(preloadedState);
     const Wrapper: React.FC<PropsWithChildren> = ({ children }) => (
-        <Provider store={store}>
+        <Provider store={resolvedStore}>
             <IntlProvider locale={locale} messages={messages}>
                 <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
             </IntlProvider>
         </Provider>
     );
 
-    return { store, ...render(ui, { wrapper: Wrapper, ...renderOptions }) };
+    return { store: resolvedStore, ...render(ui, { wrapper: Wrapper, ...renderOptions }) };
 }
 
 export * from '@testing-library/react';

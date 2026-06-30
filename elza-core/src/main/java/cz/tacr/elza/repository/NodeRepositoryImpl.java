@@ -327,7 +327,14 @@ public class NodeRepositoryImpl implements NodeRepositoryCustom {
     @Override
     public ScrollableResults<Integer> findUncachedNodes() {
         // přepsáno z NOT IN z důvodu optimalizace na LEFT JOIN
-		String hql = "SELECT n.nodeId FROM arr_node n LEFT JOIN arr_cached_node cn ON cn.nodeId = n.nodeId WHERE cn IS NULL";
+        // Only nodes with at least one active arr_level (deleteChange IS NULL) are
+        // returned. The cache row-existence invariant forbids caching a node with
+        // no active level, so the full sync must not feed such nodes to the cache
+        // builders (which reject them); pre-existing invalid rows are removed by
+        // NodeCacheService.clearInvalidCachedNodes() at startup.
+		String hql = "SELECT n.nodeId FROM arr_node n LEFT JOIN arr_cached_node cn ON cn.nodeId = n.nodeId "
+		        + "WHERE cn IS NULL "
+		        + "AND EXISTS (SELECT 1 FROM arr_level l WHERE l.node = n AND l.deleteChange IS NULL)";
 
 		// get Hibernate session
 		Session session = entityManager.unwrap(Session.class);

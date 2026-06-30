@@ -18,13 +18,14 @@ const richTextValues = {
 
 export interface Props extends PropsWithChildren {
   typeRef: DescItemTypeRef;
-  typeForm: FormItemType;
+  typeForm?: FormItemType;
   typeWidth: number;
   nodeSettings: NodeSettings;
   handleCopyFromPrev: (id: number) => void;
   canCopyFromPrev: boolean;
   handleCopyToggle: (id: number) => void;
   hideCopyButtons?: boolean;
+  extraActions?: ReactNode;
 }
 
 export function DescItemTypeHeader({
@@ -37,6 +38,7 @@ export function DescItemTypeHeader({
   handleCopyToggle,
   canCopyFromPrev,
   hideCopyButtons = false,
+  extraActions,
 }: Props) {
   const styles = useStyles();
   const [isHovered, setIsHovered] = useState(false);
@@ -85,7 +87,7 @@ export function DescItemTypeHeader({
           // opacity: typeWidth ? 1 - (4 - typeWidth) / 6 : 1,
           // fontSize: `${1 + (typeWidth ? typeWidth * 0.1 : 0.4)}em`,
           // fontSize: '0.8em',
-          fontSize: compact ? '0.85em' : undefined,
+          fontSize: compact ? '0.95em' : undefined,
           lineHeight: '1.3em',
           // opacity: 0.6,
           // textTransform: 'uppercase',
@@ -98,7 +100,8 @@ export function DescItemTypeHeader({
         >
           <div>{typeRef.shortcut}</div>
         </Tooltip>
-        <DescItemTypeDebugInfo typeForm={typeForm} />
+        <DescItemTypeDebugInfo typeRef={typeRef} typeForm={typeForm} />
+        {extraActions}
         {!hideCopyButtons && (
           <div className="actions" >
             <Tooltip

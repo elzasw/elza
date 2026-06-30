@@ -41,10 +41,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import cz.tacr.elza.common.db.QueryResults;
-import cz.tacr.elza.controller.vo.Area;
-import cz.tacr.elza.controller.vo.ExtensionFilterVO;
-import cz.tacr.elza.controller.vo.RelationFilterVO;
-import cz.tacr.elza.controller.vo.SearchFilterVO;
+import cz.tacr.elza.controller.vo.ApSearchArea;
+import cz.tacr.elza.controller.vo.ApSearchByItemWithValue;
+import cz.tacr.elza.controller.vo.ApSearchByRelation;
+import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApCachedAccessPoint;
@@ -86,7 +86,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
     @Override
     public QueryResults<ApCachedAccessPoint> findApCachedAccessPointisByQuery(String search,
-                                                                              SearchFilterVO searchFilter,
+                                                                              ApAdvanceSearchFilter searchFilter,
                                                                               Collection<Integer> apTypeIdTree,
                                                                               Collection<Integer> scopeIds,
                                                                               ApState.StateApproval state,
@@ -150,7 +150,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 
     private SearchPredicate buildQueryFromParams(SearchPredicateFactory factory, 
     											 String search,
-    											 SearchFilterVO searchFilter,
+    											 ApAdvanceSearchFilter searchFilter,
     											 Collection<Integer> apTypeIdTree,
     											 Collection<Integer> scopeIds,
     											 ApState.StateApproval state,
@@ -174,7 +174,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 			if (searchFilter.getValidationResult() != null) {
 				bool.must(factory.match().field(VALIDATION_RESULT).matching(searchFilter.getValidationResult()));
 			}
-			if (searchFilter.getArea() != Area.ENTITY_CODE) {
+			if (searchFilter.getArea() != ApSearchArea.ENTITY_CODE) {
 				SearchPredicate sp = process(factory, searchFilter);
 				if (sp != null) {
 					bool.must(sp);
@@ -233,12 +233,12 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
      * @return null if BooleanPredicateClausesStep has no Clause
      */
     @Nullable
-    private SearchPredicate process(SearchPredicateFactory factory, SearchFilterVO searchFilterVO) {
+    private SearchPredicate process(SearchPredicateFactory factory, ApAdvanceSearchFilter searchFilterVO) {
     	StaticDataProvider sdp = staticDataService.getData();
     	String search = searchFilterVO.getSearch();
-    	Area area = searchFilterVO.getArea();
+    	ApSearchArea area = searchFilterVO.getArea();
     	if (area == null) {
-    		area = Area.ALL_NAMES;
+    		area = ApSearchArea.ALL_NAMES;
     	}
     	BooleanPredicateClausesStep<?> bool = factory.bool();
 
@@ -264,7 +264,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                       throw new NotImplementedException("Neimplementovaný stav oblasti: " + area);
     			}
     			if (onlyMainPart) {
-    				bool.must(processValueCondDef(factory, keyWord, sdp.getItemType(NM_MAIN.toUpperCase()), null, area == Area.PREFER_NAMES));
+    				bool.must(processValueCondDef(factory, keyWord, sdp.getItemType(NM_MAIN.toUpperCase()), null, area == ApSearchArea.PREFER_NAMES));
     			} else {
     				bool.must(processIndexCondDef(factory, keyWord, partTypeCode));
     			}
@@ -275,7 +275,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     		}
     	}
     	if (CollectionUtils.isNotEmpty(searchFilterVO.getExtFilters())) {
-    		for (ExtensionFilterVO ext : searchFilterVO.getExtFilters()) {
+    		for (ApSearchByItemWithValue ext : searchFilterVO.getExtFilters()) {
     			Objects.requireNonNull(ext.getItemTypeId());
     			RulItemType itemType = sdp.getItemType(ext.getItemTypeId());
     			RulItemSpec itemSpec;
@@ -302,7 +302,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
     		}
     	}
     	if (CollectionUtils.isNotEmpty(searchFilterVO.getRelFilters())) {
-    		for (RelationFilterVO rel : searchFilterVO.getRelFilters()) {
+    		for (ApSearchByRelation rel : searchFilterVO.getRelFilters()) {
     			if (rel.getCode() != null) {
     				BooleanPredicateClausesStep<?> relPred = factory.bool();
     				if (rel.getRelTypeId() != null) {

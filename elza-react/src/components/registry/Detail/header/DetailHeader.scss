@@ -19,6 +19,10 @@
             margin: 4px;
             transition: background-color 200ms ease-in 200ms, color 200ms ease-in 200ms;
 
+            .entity-id {
+                user-select: all;
+            }
+
             &.revision {
                 background-color: $color-orange;
                 color: $fg-shade-4;
@@ -95,12 +99,6 @@
             }
         }
 
-        .collapse-button {
-            background: transparent;
-            position: absolute;
-            right: 0;
-            bottom: 0;
-        }
     }
 
     .detail-descriptions-item-button {
@@ -145,11 +143,18 @@
                 .system {
                     margin-right: 5px;
                 }
+                .binding-id {
+                    margin-right: 5px;
+                }
+                .binding-value {
+                    user-select: all;
+                }
             }
             .action {
                 padding-left: 10px;
                 display: flex;
                 align-items: center;
+                gap: 6px;
 
                 .disabled {
                     color: #A7A7A7;

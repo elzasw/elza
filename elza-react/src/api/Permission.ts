@@ -140,6 +140,19 @@ export enum Permission {
     FUND_EXPORT_ALL = 'FUND_EXPORT_ALL',
 
     /**
+     * publikování vybrané AS
+     * - možnost publikování archivního popisu do napojeného publikačního systému
+     *   pro přiřazený AS
+     */
+    FUND_PUBLISH = 'FUND_PUBLISH',
+
+    /**
+     * publikování všech AS
+     * - obdobně jako výše ale pro všechny AS
+     */
+    FUND_PUBLISH_ALL = 'FUND_PUBLISH_ALL',
+
+    /**
      * správa oprávnění a uživatelů
      * - zatím neřešíme
      */

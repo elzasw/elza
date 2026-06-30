@@ -294,7 +294,7 @@ public class GroovyService {
         return groovyScriptService.process(groovyAe, groovyFilePath, accessPointCacheService);
     }
 
-    public List<NodePlainTextRepresentation> getNodePlainText(@NotNull final ArrFundVersion fundVersion, ParInstitution institution, List<ArrDescItem> items) {
+    public List<NodePlainTextRepresentation> getNodePlainText(@NotNull final ArrFundVersion fundVersion, ParInstitution institution, List<ArrDescItem> items, List<List<ArrDescItem>> parentItemsByLevel) {
 		List<NodePlainTextRepresentation> result = new ArrayList<>();
 
 		CachedAccessPoint apInstitution = accessPointCacheService.findCachedAccessPoint(institution.getAccessPointId());
@@ -309,7 +309,15 @@ public class GroovyService {
         	groovyItems.add(item);
         });
 
-		GroovyGenCtx genCtx = new GroovyGenCtx(groovyFund, groovyAe, groovyItems);
+        // convert parent levels (ordered from the nearest parent up to the root)
+        List<List<GroovyItem>> parentGroovyItems = new ArrayList<>(parentItemsByLevel.size());
+        for (List<ArrDescItem> levelItems : parentItemsByLevel) {
+        	List<GroovyItem> levelGroovyItems = new ArrayList<>(levelItems.size());
+        	levelItems.forEach(i -> levelGroovyItems.add(convertItem(i, sdp)));
+        	parentGroovyItems.add(levelGroovyItems);
+        }
+
+		GroovyGenCtx genCtx = new GroovyGenCtx(groovyFund, groovyAe, groovyItems, parentGroovyItems);
 
 		List<RulArrangementRule> arrangementRules = arrangementRuleRepository.findByRuleSetIdAndRuleTypeOrderByPriority(fundVersion.getRuleSetId(), RuleType.PLAIN_TEXT_GENERATOR);
 

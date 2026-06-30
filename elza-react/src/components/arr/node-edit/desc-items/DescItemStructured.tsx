@@ -9,9 +9,10 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { DocumentAddRegular } from "@fluentui/react-icons";
-import { WebApi } from "actions";
+import { Api } from "api/api";
 import { DataStructureRef, DataType, NodeItem } from "elza-api";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useDebouncedEffect } from "utils/hooks/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { useActiveFund } from "../hooks";
 import { FIELD_HEIGHT } from "../../../../constants";
@@ -21,8 +22,8 @@ import { i18n } from "components";
 import AddStructureDataForm from "components/arr/structure/AddStructureDataForm";
 import { modalDialogShow } from "actions/global/modalDialog";
 import { useAppThunkDispatch } from "utils/hooks";
-import DescItemFactory from "components/arr/nodeForm/DescItemFactory";
 import { FormattedMessage, defineMessages } from "react-intl";
+import { useStyles } from "./styles";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemStructureRef) => Promise<void>;
@@ -84,7 +85,11 @@ export function DescItemStructured({
       while (!cancelled) {
         setIsLoading(true);
 
-        const result = await WebApi.getStructureData(fundVersionId, data.structuredObjectId);
+        const { data: result } = await Api.structure.sdoGetObject(
+          fundId,
+          data.structuredObjectId,
+          fundVersionId,
+        );
         if (cancelled) return;
 
         if (result.value != null) {
@@ -99,20 +104,25 @@ export function DescItemStructured({
     })();
 
     return () => { cancelled = true; setIsLoading(false); };
-  }, [fundVersionId, data.structuredObjectId, structureType?.anonymous]);
+  }, [fundId, fundVersionId, data.structuredObjectId, structureType?.anonymous]);
 
   const loadStructures = useCallback(
     async (_query: string) => {
       if (structureType?.code && !structureType.anonymous) {
-        const _structures = await WebApi.findStructureData(
-          fundVersionId,
-          structureType?.code,
+        const { data: _structures } = await Api.structure.sdoFindStructObj(
+          fundId,
+          structureType.code,
           _query === structure?.value ? "" : _query,
+          true,
+          undefined,
+          undefined,
+          fundVersionId,
         );
         setStructures(_structures.rows);
       }
     },
     [
+      fundId,
       fundVersionId,
       structureType?.code,
       structureType?.anonymous,
@@ -120,11 +130,13 @@ export function DescItemStructured({
     ],
   );
 
-  async function handleQueryChange(e: ChangeEvent<HTMLInputElement>) {
-    const _query = e.currentTarget.value;
-    loadStructures(_query);
-    setQuery(_query);
+  function handleQueryChange(e: ChangeEvent<HTMLInputElement>) {
+    setQuery(e.currentTarget.value);
   }
+
+  useDebouncedEffect(() => {
+    loadStructures(query);
+  }, 300, [query, loadStructures]);
 
   async function handleSelect(_e: SelectionEvents, _data: OptionOnSelectData) {
     setQuery(_data.optionText);
@@ -158,16 +170,11 @@ export function DescItemStructured({
           fundVersionId={fundVersionId}
           structureTypeCode={structureType.code}
           initialQuery={query}
-          descItemFactory={DescItemFactory}
           onConfirm={(structureId) => handleChange(structureId)}
         />,
       ),
     );
   }
-
-  useEffect(() => {
-    loadStructures(query);
-  }, [query, loadStructures]);
 
   async function handleCreateAnonymousStructure(_structureObjectId: number) {
     await onChange({
@@ -189,6 +196,7 @@ export function DescItemStructured({
     );
   }
 
+  const styles = useStyles();
   const isInherited = item.nodeId != nodeId;
   const isDisabled =
     item.undefined ||
@@ -198,14 +206,7 @@ export function DescItemStructured({
     _isDisabled;
 
   return (
-    <div
-      style={{
-        position: "relative",
-        display: "inline-flex",
-        flex: 1,
-        alignItems: "center",
-      }}
-    >
+    <div className={styles.comboboxWrapperNoWidth}>
       {!structureType.anonymous && (
         // <Input
         //   style={{ flex: 1, minWidth: "60px" }}
@@ -234,6 +235,7 @@ export function DescItemStructured({
             input={{
               style: {
                 minWidth: "30px",
+                fontSize: "1em",
                 textDecoration: item.inhibited ? "line-through" : undefined,
                 flex: 1,
                 flexBasis: `${(query || "").length + 3}ch`,
@@ -282,25 +284,15 @@ export function DescItemStructured({
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              fontSize: compact ? tokens.fontSizeBase200 : tokens.fontSizeBase300,
+              fontSize: "1em",
             }}
           >
-              <div style={{
-                  visibility: "hidden",
-                  background: "red",
-                  marginRight: "8px",
-                  flex: 0,
-              }}>{query}</div>
-              <div style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }} >
+              <div className={styles.structureQueryHidden}>{query}</div>
+              <div className={styles.structureComplement}>
                   {structure?.complement}
               </div>
           </div>
-          <div
-            style={{
-              position: "absolute",
-              right: "1px",
-            }}
-          >
+          <div className={styles.comboboxActionButton}>
             <Tooltip
               relationship="label"
               appearance="inverted"

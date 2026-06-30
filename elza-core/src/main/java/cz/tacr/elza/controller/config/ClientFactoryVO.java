@@ -29,7 +29,6 @@ import cz.tacr.elza.domain.*;
 import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
-import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.domain.DaDaoFile;
 import cz.tacr.elza.domain.DaDaoFileFolder;
 import cz.tacr.elza.repository.*;
@@ -55,75 +54,6 @@ import cz.tacr.elza.config.rules.ViewConfiguration;
 import cz.tacr.elza.config.view.ViewTitles;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.factory.WfFactory;
-import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.ApExternalSystemVO;
-import cz.tacr.elza.controller.vo.ApScopeVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileGroupVO;
-import cz.tacr.elza.controller.vo.ArrDaoFileVO;
-import cz.tacr.elza.controller.vo.ArrDaoLinkRequestVO;
-import cz.tacr.elza.controller.vo.ArrDaoLinkVO;
-import cz.tacr.elza.controller.vo.ArrDaoPackageVO;
-import cz.tacr.elza.controller.vo.ArrDaoRequestVO;
-import cz.tacr.elza.controller.vo.ArrDaoVO;
-import cz.tacr.elza.controller.vo.ArrDigitalRepositorySimpleVO;
-import cz.tacr.elza.controller.vo.ArrDigitalRepositoryVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskSimpleVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationFrontdeskVO;
-import cz.tacr.elza.controller.vo.ArrDigitizationRequestVO;
-import cz.tacr.elza.controller.vo.ArrFundVO;
-import cz.tacr.elza.controller.vo.ArrFundVersionVO;
-import cz.tacr.elza.controller.vo.ArrOutputVO;
-import cz.tacr.elza.controller.vo.ArrRequestQueueItemVO;
-import cz.tacr.elza.controller.vo.ArrRequestVO;
-import cz.tacr.elza.controller.vo.BulkActionRunVO;
-import cz.tacr.elza.controller.vo.BulkActionVO;
-import cz.tacr.elza.controller.vo.DataBit;
-import cz.tacr.elza.controller.vo.DataCoordinates;
-import cz.tacr.elza.controller.vo.DataDate;
-import cz.tacr.elza.controller.vo.DataDecimal;
-import cz.tacr.elza.controller.vo.DataEnum;
-import cz.tacr.elza.controller.vo.DataFileRef;
-import cz.tacr.elza.controller.vo.DataFormattedText;
-import cz.tacr.elza.controller.vo.DataInteger;
-import cz.tacr.elza.controller.vo.DataJsonTable;
-import cz.tacr.elza.controller.vo.DataRecordRef;
-import cz.tacr.elza.controller.vo.DataString;
-import cz.tacr.elza.controller.vo.DataStructureRef;
-import cz.tacr.elza.controller.vo.DataText;
-import cz.tacr.elza.controller.vo.DataUnitdate;
-import cz.tacr.elza.controller.vo.DataUnitid;
-import cz.tacr.elza.controller.vo.DataUriRef;
-import cz.tacr.elza.controller.vo.FormItemSpec;
-import cz.tacr.elza.controller.vo.FormItemType;
-import cz.tacr.elza.controller.vo.DataType;
-import cz.tacr.elza.controller.vo.Fund;
-import cz.tacr.elza.controller.vo.FundDetail;
-import cz.tacr.elza.controller.vo.GisExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.GisExternalSystemVO;
-import cz.tacr.elza.controller.vo.NodeConformityVO;
-import cz.tacr.elza.controller.vo.ItemData;
-import cz.tacr.elza.controller.vo.ItemTypeGroup;
-import cz.tacr.elza.controller.vo.MandatoryType;
-import cz.tacr.elza.controller.vo.NodeItem;
-import cz.tacr.elza.controller.vo.ParInstitutionVO;
-import cz.tacr.elza.controller.vo.RulDataTypeVO;
-import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
-import cz.tacr.elza.controller.vo.RulExportFilterVO;
-import cz.tacr.elza.controller.vo.RulOutputFilterVO;
-import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
-import cz.tacr.elza.controller.vo.RulTemplateVO;
-import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.StructureExtensionFundVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemSimpleVO;
-import cz.tacr.elza.controller.vo.SysExternalSystemVO;
-import cz.tacr.elza.controller.vo.TreeItemSpecsItem;
-import cz.tacr.elza.controller.vo.TreeNodeVO;
-import cz.tacr.elza.controller.vo.UISettingsVO;
-import cz.tacr.elza.controller.vo.UsrGroupVO;
-import cz.tacr.elza.controller.vo.UsrPermissionVO;
-import cz.tacr.elza.controller.vo.UsrUserVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeDescItemsLiteVO;
 import cz.tacr.elza.controller.vo.nodes.ItemTypeLiteVO;
@@ -153,7 +83,6 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
-import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrDao;
@@ -184,10 +113,7 @@ import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrDigitizationFrontdesk;
 import cz.tacr.elza.domain.ArrDigitizationRequest;
 import cz.tacr.elza.domain.ArrDigitizationRequestNode;
-import cz.tacr.elza.domain.ArrFund;
-import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
-import cz.tacr.elza.domain.ArrItemFormattedText;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ArrNodeConformityExt;
 import cz.tacr.elza.domain.ArrNodeOutput;
@@ -882,6 +808,45 @@ public class ClientFactoryVO {
      * @param item hodnota atributu
      * @return VO hodnota atributu
      */
+    public <T extends ArrItem> StructuredObjectItem createStructuredObjectItem(final T item) {
+        Assert.notNull(item, "Hodnota musí být vyplněna");
+
+        StructuredObjectItem soItem = new StructuredObjectItem();
+        soItem.setId(item.getItemId());
+        soItem.setItemTypeId(item.getItemTypeId());
+        soItem.setItemSpecId(item.getItemSpecId());
+        soItem.setItemObjectId(item.getDescItemObjectId());
+        soItem.setPosition(item.getPosition());
+        soItem.setReadOnly(item.getReadOnly());
+
+//        ArrNode node = item.getNode();
+//        if (node != null) {
+//            soItem.setNodeId(item.getNodeId());
+//            soItem.setNodeVersion(node.getVersion());
+//        }
+
+        ArrData arrData = HibernateUtils.unproxy(item.getData());
+        if (arrData == null) {
+            soItem.setUndefined(true);
+        } else {
+            StaticDataProvider sdp = staticDataService.getData();
+            RulItemType itemType = sdp.getItemType(item.getItemTypeId());
+            cz.tacr.elza.core.data.DataType dataType = cz.tacr.elza.core.data.DataType.fromId(itemType.getDataTypeId());
+            Function<ArrData, ItemData> dataConvertor = dataConvertors.get(dataType);
+            Objects.requireNonNull(dataConvertor);
+            ItemData data = dataConvertor.apply(arrData);
+            soItem.setData(data);
+        }
+
+        return soItem;
+    }
+
+    /**
+     * Vytvoření hodnoty atributu (nová).
+     *
+     * @param item hodnota atributu
+     * @return VO hodnota atributu
+     */
     public <T extends ArrItem> NodeItem createNodeItem(final T item) {
         Assert.notNull(item, "Hodnota musí být vyplněna");
 
@@ -889,24 +854,28 @@ public class ClientFactoryVO {
         nodeItem.setId(item.getItemId());
         nodeItem.setItemTypeId(item.getItemTypeId());
         nodeItem.setItemSpecId(item.getItemSpecId());
-        nodeItem.setNodeId(item.getNodeId());
-        nodeItem.setNodeVersion(item.getNode().getVersion());
         nodeItem.setItemObjectId(item.getDescItemObjectId());
         nodeItem.setPosition(item.getPosition());
         nodeItem.setReadOnly(item.getReadOnly());
 
+        ArrNode node = item.getNode();
+        if (node != null) {
+            nodeItem.setNodeId(item.getNodeId());
+            nodeItem.setNodeVersion(node.getVersion());
+        }
+
         ArrData arrData = HibernateUtils.unproxy(item.getData());
         if (arrData == null) {
-        	nodeItem.setUndefined(true);
+            nodeItem.setUndefined(true);
         } else {
-        	StaticDataProvider sdp = staticDataService.getData();
-        	RulItemType itemType = sdp.getItemType(item.getItemTypeId());
-        	cz.tacr.elza.core.data.DataType dataType = cz.tacr.elza.core.data.DataType.fromId(itemType.getDataTypeId());
-        	Function<ArrData, ItemData> dataConvertor = dataConvertors.get(dataType);
-        	Objects.requireNonNull(dataConvertor);
-        	ItemData data = dataConvertor.apply(arrData);
-        	nodeItem.setData(data);
-        }		
+            StaticDataProvider sdp = staticDataService.getData();
+            RulItemType itemType = sdp.getItemType(item.getItemTypeId());
+            cz.tacr.elza.core.data.DataType dataType = cz.tacr.elza.core.data.DataType.fromId(itemType.getDataTypeId());
+            Function<ArrData, ItemData> dataConvertor = dataConvertors.get(dataType);
+            Objects.requireNonNull(dataConvertor);
+            ItemData data = dataConvertor.apply(arrData);
+            nodeItem.setData(data);
+        }
 
         return nodeItem;
     }
@@ -959,6 +928,20 @@ public class ClientFactoryVO {
         Collections.sort(result, (o1, o2) -> o1.getPosition() - o2.getPosition());
 
         return result;
+    }
+
+    public StructuredObject createStructuredObject(final ArrStructuredObject aso) {
+    	StructuredObject so = new StructuredObject();
+        so.setId(aso.getStructuredObjectId());
+        so.setTypeCode(aso.getStructuredType().getCode());
+        so.setValue(aso.getValue());
+        so.setComplement(aso.getComplement());
+        so.setErrorDescription(aso.getErrorDescription());
+        so.setAssignable(aso.getAssignable());
+        if (aso.getState() != null) {
+            so.setState(StructuredObject.StateEnum.valueOf(aso.getState().name()));
+        }
+        return so;
     }
 
     /**
@@ -1270,9 +1253,9 @@ public class ClientFactoryVO {
 
         // remove empty groups and return result
         return formItemTypes.stream()
-                //.filter(s -> s.getType() > 0) // ignorují se nemožné TODO
+                .filter(s -> s.getType() != MandatoryType.IMPOSSIBLE) // ignorují se nemožné
                 .collect(Collectors.toList());
-    }    
+    }
 
     /**
      * Vytvoření seznamu rozšířených typů, ignoruje nemožné typy.
@@ -2374,7 +2357,22 @@ public class ClientFactoryVO {
         return vo;
     }
 
-    public List<StructureExtensionFundVO> createStructureExtensionFund(final List<RulStructuredTypeExtension> allStructureExtensions,
+    public List<SdoExtensionFund> createStructureExtensionFund(final List<RulStructuredTypeExtension> allStructureExtensions,
+                                                               final List<RulStructuredTypeExtension> structureExtensions) {
+        List<SdoExtensionFund> result = new ArrayList<>(allStructureExtensions.size());
+        allStructureExtensions.forEach(se -> {
+        	SdoExtensionFund sdoExtensionFund = new SdoExtensionFund();
+        	sdoExtensionFund.setId(se.getStructuredTypeExtensionId());
+        	sdoExtensionFund.setCode(se.getCode());
+        	sdoExtensionFund.setName(se.getName());
+        	sdoExtensionFund.setActive(structureExtensions.contains(se));
+            result.add(sdoExtensionFund);
+        });
+        return result;
+    }
+
+    @Deprecated
+    public List<StructureExtensionFundVO> createStructureExtensionFundDeprecated(final List<RulStructuredTypeExtension> allStructureExtensions,
                                                                        final List<RulStructuredTypeExtension> structureExtensions) {
         List<StructureExtensionFundVO> result = new ArrayList<>(allStructureExtensions.size());
         allStructureExtensions.forEach(se -> {
@@ -2385,6 +2383,7 @@ public class ClientFactoryVO {
         return result;
     }
 
+    @Deprecated
     private StructureExtensionFundVO createStructureExtensionFund(final RulStructuredTypeExtension structureExtension) {
         StructureExtensionFundVO structureExtensionFundVO = new StructureExtensionFundVO();
         structureExtensionFundVO.setId(structureExtension.getStructuredTypeExtensionId());

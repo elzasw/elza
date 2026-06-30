@@ -12,10 +12,12 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import jakarta.transaction.Transactional;
@@ -38,10 +40,17 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import cz.tacr.elza.bulkaction.BulkActionService;
 import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.BulkActionRunState;
 import cz.tacr.elza.controller.vo.CreateFund;
+import cz.tacr.elza.controller.vo.FundsActionGroupRequest;
+import cz.tacr.elza.controller.vo.FundsActionGroupResult;
+import cz.tacr.elza.controller.vo.FundsChangeRun;
+import cz.tacr.elza.controller.vo.MultiFundActionRequest;
+import cz.tacr.elza.controller.vo.MultiFundActionResult;
 import cz.tacr.elza.controller.vo.FindFundsResult;
 import cz.tacr.elza.controller.vo.FsItem;
 import cz.tacr.elza.controller.vo.FsItemType;
@@ -55,15 +64,16 @@ import cz.tacr.elza.controller.vo.UsedItemType;
 import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.dataexchange.output.IOExportFundsCsv;
 import cz.tacr.elza.dataexchange.output.IOExportWorker;
 import cz.tacr.elza.domain.ApScope;
+import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrDaoLink;
 import cz.tacr.elza.domain.ArrDigitalRepository;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
-import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UsrUser;
@@ -73,12 +83,12 @@ import cz.tacr.elza.exception.codes.BaseCode;
 import cz.tacr.elza.repository.RuleSetRepository;
 import cz.tacr.elza.repository.ScopeRepository;
 import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.AdminPermissionUpdateMode;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.ArrangementService.FindFundVersionsResult;
 import cz.tacr.elza.service.DaoService;
 import cz.tacr.elza.service.ExternalSystemService;
 import cz.tacr.elza.service.FundLevelService;
-import cz.tacr.elza.service.StructObjService;
 import cz.tacr.elza.service.UserService;
 import cz.tacr.elza.service.dao.FileSystemRepoService;
 
@@ -116,9 +126,6 @@ public class FundController implements FundsApi {
     private ScopeRepository scopeRepository;
 
     @Autowired
-    private StructObjService structureService;
-
-    @Autowired
     private FileSystemRepoService fileSystemRepoService;
 
     @Autowired
@@ -129,6 +136,9 @@ public class FundController implements FundsApi {
 
     @Autowired
     private FundLevelService fundLevelService;
+
+    @Autowired
+    private BulkActionService bulkActionService;
 
     // POST /fund
     @Override
@@ -168,76 +178,6 @@ public class FundController implements FundsApi {
         return ResponseEntity.ok(factoryVo.createFund(fundVersion.getFund(), rootNode.getUuid()));
     }
 
-//    @Deprecated
-//    @Override
-//    public ResponseEntity<FindFundsResult> fundFindFunds(@RequestParam(value = "fulltext", required = false) String fulltext,
-//                                                     @RequestParam(value = "institutionIdentifier", required = false) String institutionIdentifier,
-//                                                     @RequestParam(value = "max", required = false, defaultValue = "200") Integer max,
-//                                                     @RequestParam(value = "from", required = false, defaultValue = "0") Integer from) {
-//        //UserDetail userDetail = userService.getLoggedUserDetail();
-//        //FilteredResult<ArrFund> funds;
-//    	FieldValueFilter institutionIdFilter = null;
-//        if (institutionIdentifier != null && !institutionIdentifier.isEmpty()) {
-//            ParInstitution institution = arrangementService.getInstitution(institutionIdentifier);
-//            if (institution != null) {
-//                Integer institutionId = institution.getInstitutionId();
-//                institutionIdFilter = new FieldValueFilter()
-//                		                    .field(FondsFilterField.INSTITUTION_ID)
-//                		                    .value(institutionId.toString())
-//                							.operation(OperationCompareType.EQ);
-//            } else {
-//                return ResponseEntity.ok(new FindFundsResult());
-//            }
-//        }
-//
-//        FieldValueFilter nameFilter = new FieldValueFilter().field(FondsFilterField.NAME).value(fulltext)
-//        		.operation(OperationCompareType.CONTAINS);
-//
-//        FieldValueFilter internalCodeFilter = new FieldValueFilter().field(FondsFilterField.INTERNAL_CODE).value(fulltext)
-//        		.operation(OperationCompareType.CONTAINS);
-//        
-//        FieldValueFilter fundNumberFilter = new FieldValueFilter().field(FondsFilterField.FUND_NUMBER).value(fulltext)
-//        		.operation(OperationCompareType.CONTAINS);
-//
-//        FieldValueFilter markFilter = new FieldValueFilter().field(FondsFilterField.MARK).value(fulltext)
-//        		.operation(OperationCompareType.CONTAINS);
-//
-//        SearchParams searchParams = new SearchParams()
-//        		.addFiltersItem(nameFilter)
-//        		.addFiltersItem(internalCodeFilter)
-//        		.addFiltersItem(fundNumberFilter)
-//        		.addFiltersItem(markFilter)
-//        		.offset(from)
-//        		.size(max);
-//
-//        if (institutionIdFilter != null) {
-//        	searchParams.addFiltersItem(institutionIdFilter);
-//        }
-//
-//        FindFundVersionsResult fundVersionsResult = arrangementService.findFundsBySearchParams(searchParams);
-//        List<Fund> funds = fundVersionsResult.getFundVersionList().stream().map(fv -> factoryVo.createFund(fv)).toList();
-//
-////        if (userDetail.hasPermission(UsrPermission.Permission.FUND_RD_ALL)) {
-////            // read all funds
-////            funds = fundRepository.findFunds(fulltext, institutionId, from, max);
-////
-////        } else {
-////            Integer userId = userDetail.getId();
-////            funds = fundRepository.findFundsWithPermissions(fulltext, institutionId, from, max, userId);
-////        }
-////
-////        List<ArrFund> fundList = funds.getList();
-////        FindFundsResult fundsResult = new FindFundsResult();
-////        fundsResult.setTotalCount(funds.getTotalCount());
-////        fundList.forEach(f -> {
-////            Fund fund = factoryVo.createFund(f.getFund(), "TODO: uuid");
-////            fundsResult.addFundsItem(fund);
-////        });
-//
-////        return ResponseEntity.ok(fundsResult);
-//        return ResponseEntity.ok(new FindFundsResult(funds, fundVersionsResult.getTotalCount()));
-//    }
-
     // POST /fund/search
     @Override
     public ResponseEntity<FindFundsResult> fundSearchFunds(@RequestBody SearchParams searchParams) {
@@ -256,8 +196,51 @@ public class FundController implements FundsApi {
         Integer userId = (user == null ? null : user.getUserId());
         String downloadFileName = "funds_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss")) + ".csv";
 
-        int id = ioExportWorker.addExportRequest(userId, downloadFileName, searchParams);
+        int id = ioExportWorker.enqueue(requestId -> new IOExportFundsCsv(userId, requestId, downloadFileName, searchParams));
         return ResponseEntity.ok(id);
+    }
+
+    // POST /action/funds/group
+    @Override
+    @Transactional
+    public ResponseEntity<FundsActionGroupResult> bulkActionGroupFundsByRuleSet(@RequestBody FundsActionGroupRequest request) {
+        boolean hasFundIds = request.getFundIds() != null && !request.getFundIds().isEmpty();
+        Validate.isTrue(hasFundIds || request.getSearch() != null, "Musí být vyplněn seznam fondů nebo filtr");
+        return ResponseEntity.ok(bulkActionService.groupFundsByRuleSet(request.getFundIds(), request.getSearch()));
+    }
+
+    // POST /action/queue-multi
+    @Override
+    @Transactional
+    public ResponseEntity<MultiFundActionResult> bulkActionQueueMultiFundAction(@RequestBody MultiFundActionRequest request) {
+        Validate.isTrue(StringUtils.isNotBlank(request.getCode()), "Kód musí být vyplněn");
+        Validate.notEmpty(request.getFundVersionIds(), "Musí být vybrán alespoň jeden archivní soubor");
+        UsrUser user = userService.getLoggedUser();
+        Integer userId = user == null ? null : user.getUserId();
+        return ResponseEntity.ok(bulkActionService.queueMulti(userId, request.getCode(), request.getFundVersionIds()));
+    }
+
+    // GET /action/funds-change/{fundsChangeId}
+    @Override
+    @Transactional
+    public ResponseEntity<List<FundsChangeRun>> bulkActionGetFundsChangeRuns(@PathVariable("fundsChangeId") Integer fundsChangeId) {
+        List<FundsChangeRun> runs = bulkActionService.getRunsByFundsChange(fundsChangeId).stream()
+                .map(run -> toFundsChangeRun(run))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(runs);
+    }
+
+    private FundsChangeRun toFundsChangeRun(final ArrBulkActionRun run) {
+        return new FundsChangeRun(run.getBulkActionRunId(), run.getFundVersionId(), run.getBulkActionCode(),
+                BulkActionRunState.fromValue(run.getState().name()))
+                .datePlanned(toOffsetDateTime(run.getDatePlanned()))
+                .dateStarted(toOffsetDateTime(run.getDateStarted()))
+                .dateFinished(toOffsetDateTime(run.getDateFinished()))
+                .error(run.getError());
+    }
+
+    private static OffsetDateTime toOffsetDateTime(final Date date) {
+        return date == null ? null : date.toInstant().atOffset(ZoneOffset.UTC);
     }
 
     // GET /fund/{id}
@@ -311,27 +294,11 @@ public class FundController implements FundsApi {
         RulRuleSet ruleSet = ruleSetRepository.findByCode(updateFund.getRuleSetCode());
         Objects.requireNonNull(ruleSet);
 
-        ArrFundVersion fundVersion = arrangementService.updateFund(arrFund, ruleSet, apScopes, null, null);
+        ArrFundVersion fundVersion = arrangementService.updateFund(arrFund, ruleSet, apScopes, null, null,
+                AdminPermissionUpdateMode.FULL_SYNC);
         ArrNode rootNode = fundVersion.getRootNode();
 
         return ResponseEntity.ok(factoryVo.createFundDetail(fundVersion.getFund(), rootNode.getUuid()));
-    }
-
-    /**
-     * Smazání hodnot strukturovaného datového typu.
-     *
-     * @param fundVersionId    identifikátor verze AS
-     * @param structureDataIds identifikátory hodnot strukturovaného datového typu
-     * @return smazané entity
-     */
-    @Override
-    @Transactional
-    public ResponseEntity<List<Integer>> fundDeleteStructureData(final Integer fundVersionId, final List<Integer> structureDataIds) {
-        ArrFundVersion fundVersion = arrangementService.getFundVersionById(fundVersionId);
-        List<ArrStructuredObject> structObjList = structureService.getStructObjByIds(structureDataIds);
-        List<Integer> deletedIds = structureService.deleteStructObj(fundVersion.getFundId(), structObjList);
-
-        return ResponseEntity.ok(deletedIds);
     }
 
     @Override

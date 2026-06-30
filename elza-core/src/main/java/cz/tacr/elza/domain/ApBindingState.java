@@ -1,5 +1,7 @@
 package cz.tacr.elza.domain;
 
+import java.time.OffsetDateTime;
+
 import jakarta.persistence.Access;
 import jakarta.persistence.AccessType;
 import jakarta.persistence.Column;
@@ -78,6 +80,14 @@ public class ApBindingState implements AccessPointCacheSerializable {
 
     @Column(length = StringLength.LENGTH_50)
     private String extReplacedBy;
+
+    @Column(length = StringLength.LENGTH_50)
+    private String extMetadataRevision;
+
+    @Column(length = StringLength.LENGTH_50)
+    private String extPrevRevision;
+
+    private OffsetDateTime extCreatedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(length = StringLength.LENGTH_ENUM)
@@ -223,6 +233,30 @@ public class ApBindingState implements AccessPointCacheSerializable {
 
     public void setExtReplacedBy(String extReplacedBy) {
         this.extReplacedBy = extReplacedBy;
+    }
+
+    public String getExtMetadataRevision() {
+        return extMetadataRevision;
+    }
+
+    public void setExtMetadataRevision(String extMetadataRevision) {
+        this.extMetadataRevision = extMetadataRevision;
+    }
+
+    public String getExtPrevRevision() {
+        return extPrevRevision;
+    }
+
+    public void setExtPrevRevision(String extPrevRevision) {
+        this.extPrevRevision = extPrevRevision;
+    }
+
+    public OffsetDateTime getExtCreatedAt() {
+        return extCreatedAt;
+    }
+
+    public void setExtCreatedAt(OffsetDateTime extCreatedAt) {
+        this.extCreatedAt = extCreatedAt;
     }
 
     public SyncState getSyncOk() {

@@ -6,10 +6,10 @@ import {
   FormItemType,
   ItemDataResult,
   MandatoryType,
-  NodeAccordionData,
   NodeData,
   NodeFormData,
   NodeItem,
+  NodeStatus,
 } from "elza-api";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DescItemTypeRef } from "typings/store";
@@ -19,6 +19,7 @@ import { useAppSelector } from "utils/hooks/useAppSelector";
 import { getOneSettings } from "../ArrUtils";
 import { createEmptyDescItem } from "./desc-items/utils";
 import { consumePendingTemplateCallback } from "./pendingTemplateItems";
+import { EditItem } from "./types";
 
 export function useStrictMode() {
   const strictMode: boolean = useAppSelector(({ userDetail, arrRegion }) => {
@@ -187,6 +188,13 @@ export function getForcedItemTypes(
           });
         }
       });
+
+      // Required/Recommended: if no specs qualified for processing, still add an empty item
+      if (isRequiredOrRecommended && specsToProcess.length === 0 && existingItemCount === 0) {
+        forcedDescItems.push(
+          createEmptyDescItem(itemTypeId, nodeId, nodeVersionId, existingItemCount, dataType.code),
+        );
+      }
     } else {
       const typeHasValue = existingItemsOfType.length > 0;
       const allTypeItemsInheritedAndInhibited =
@@ -210,8 +218,10 @@ export function getForcedItemTypes(
 }
 
 export interface FormItem {
-  item: NodeItem;
+  item: EditItem;
   localId: string;
+  // When set, the field renders this string read-only instead of the item's value.
+  forcedDisplayString?: string;
 }
 
 function convertToFormItems(
@@ -244,7 +254,20 @@ export function useNodeFormData(
   fondsVersionId: number,
   nodeId: number,
   nodeVersionId?: number,
-  options?: { skipForcedItems: boolean },
+  options?: {
+    skipForcedItems?: boolean;
+    /**
+     * If true, the hook skips its own initial fetch and waits for `seedFormData`/`seedNodeStatus`
+     * to arrive via props from the parent. Refresh events (websocket NODES_CHANGE / VISIBLE_POLICY_CHANGE)
+     * call `onRefresh` instead of fetching directly, so the parent can re-fetch and re-seed
+     * (keeps accordion titles in sync with form edits).
+     */
+    seedFromParent?: boolean;
+    seedFormData?: NodeFormData;
+    seedNodeStatus?: NodeStatus;
+    /** Called when seed mode requests a refresh. Parent should re-fetch and pass updated seed back. */
+    onRefresh?: () => void;
+  },
 ) {
   const itemTypeRefs = useAppSelector(
     ({ refTables }) => refTables.descItemTypes.itemsMap,
@@ -263,8 +286,13 @@ export function useNodeFormData(
   const [addedFormItems, setAddedFormItems] = useState<FormItem[]>([]);
   const [arrPerm, setArrPerm] = useState<boolean>(false);
   const [itemTypes, setItemTypes] = useState<FormItemType[]>([]);
-  const [nodeData, setNodeData] = useState<NodeAccordionData>();
-  const [reloadData, setReloadData] = useState<boolean>(true);
+  const [nodeData, setNodeData] = useState<NodeStatus>();
+  const seedFromParent = !!options?.seedFromParent;
+  const seedFormData = options?.seedFormData;
+  const seedNodeStatus = options?.seedNodeStatus;
+  const onRefresh = options?.onRefresh;
+  // Skip the initial fetch when the parent will seed the data.
+  const [reloadData, setReloadData] = useState<boolean>(!seedFromParent);
   const [markedForClean, setMarkedForClean] = useState<
     { id: number; localId: string }[]
   >([]);
@@ -299,8 +327,9 @@ export function useNodeFormData(
               ]?.map(({ itemTypeId }) => itemTypeId);
               pendingCallback((typeId, specId) => {
                   if (!existingTypeIds.includes(typeId)) {
-                      addEmptyDescItem(typeId, specId);
+                      return addEmptyDescItem(typeId, specId);
                   }
+                  return '';
               });
           }
       }
@@ -337,10 +366,37 @@ export function useNodeFormData(
       setArrPerm(data.formData.arrPerm);
       setNodeData(data.node);
       setAddedFormItems((prevAddedFormItems) => {
-        return prevAddedFormItems.filter(({ localId }) => {
+        const survivingItems = prevAddedFormItems.filter(({ localId }) => {
           return !markedForClean.find(
             ({ localId: _localId }) => localId === _localId,
           );
+        });
+
+        // Recompute the position of each locally added empty item so it sits after
+        // the items currently known to the server (and any forced items) of the same
+        // type. Their stored position can otherwise go stale when background changes
+        // (copy from sibling, another user's edits) introduce new server items.
+        const otherItems = [
+          ...(data.formData.descItems || []),
+          ..._forcedDescItems,
+        ];
+        const maxPositionByType = new Map<number, number>();
+        for (const otherItem of otherItems) {
+          const currentMax = maxPositionByType.get(otherItem.itemTypeId) ?? 0;
+          maxPositionByType.set(
+            otherItem.itemTypeId,
+            Math.max(currentMax, otherItem.position),
+          );
+        }
+
+        return survivingItems.map((formItem) => {
+          const nextPosition =
+            (maxPositionByType.get(formItem.item.itemTypeId) ?? 0) + 1;
+          maxPositionByType.set(formItem.item.itemTypeId, nextPosition);
+          return {
+            ...formItem,
+            item: { ...formItem.item, position: nextPosition },
+          };
         });
       });
     },
@@ -365,6 +421,7 @@ export function useNodeFormData(
         parents: false,
         children: false,
         siblingsMaxCount: 10,
+        nodeStatus: true,
       });
       setStoredData(data);
     },
@@ -376,11 +433,26 @@ export function useNodeFormData(
   }, [nodeId]);
 
   useEffect(() => {
-    if (reloadData) {
+    if (reloadData && !seedFromParent) {
       fetchAndStoreData();
       setReloadData(false);
     }
-  }, [fondsVersionId, nodeId, reloadData, fetchAndStoreData]);
+  }, [fondsVersionId, nodeId, reloadData, seedFromParent, fetchAndStoreData]);
+
+  // Apply parent-provided seed when it arrives (and matches the current nodeId).
+  // Routes through setStoredData → the existing isSaving/storedData sync effect handles the rest.
+  useEffect(() => {
+    if (!seedFromParent || !seedFormData) {
+      return;
+    }
+    if (seedFormData.parent?.id !== nodeId) {
+      return; // stale seed for a different node — wait for matching seed
+    }
+    setStoredData({
+      formData: seedFormData,
+      node: seedNodeStatus,
+    } as NodeData);
+  }, [seedFromParent, seedFormData, seedNodeStatus, nodeId]);
 
   useEffect(() => {
     // Serves for synchronizing desc item Create request with NODES_CHANGE event from websocket
@@ -396,16 +468,25 @@ export function useNodeFormData(
   }, [isSaving, storedData, applyStoredData]);
 
   useWSNodeChanges(nodeId, () => {
-    fetchAndStoreData();
+    // In seed mode the parent owns the data lifecycle so it can also refresh accordion titles
+    // that depend on the same response. Delegate to the parent's refresh; the new seed will
+    // re-enter via the seedFormData/seedNodeStatus props.
+    if (seedFromParent) {
+      onRefresh?.();
+    } else {
+      fetchAndStoreData();
+    }
   });
 
   const ws = useWebsocket();
 
-  function addDescItem(item: NodeItem) {
-    setAddedFormItems((prev) => [...prev, { localId: getKey(), item }]);
+  function addDescItem(item: NodeItem): string {
+    const localId = getKey();
+    setAddedFormItems((prev) => [...prev, { localId, item }]);
+    return localId;
   }
 
-  function addEmptyDescItem(typeId: number, specId?: number, position: number = 1) {
+  function addEmptyDescItem(typeId: number, specId?: number, position: number = 1): string {
     const typeRef = itemTypeRefs[typeId];
     if (!typeRef) {
       throw `Could not find type ref for id: ${typeId}`;
@@ -417,7 +498,7 @@ export function useNodeFormData(
     if (nodeVersionId == undefined) {
       throw "'NodeVersionId' missing";
     }
-    addDescItem(
+    return addDescItem(
         {
             ...createEmptyDescItem(
                 typeRef.id,
@@ -524,6 +605,13 @@ export function useNodeFormData(
     });
   }
 
+  // Loading state — true while waiting for the parent's seed to arrive (or to match the current nodeId).
+  // In fetch mode (no parent seed), `formData` toggles from undefined to populated on the API response;
+  // we treat that as loading too so the consumer can show a spinner uniformly.
+  const isLoading = seedFromParent
+    ? !formData || formData.parent?.id !== nodeId
+    : !formData;
+
   return {
     formData,
     formItems,
@@ -532,6 +620,7 @@ export function useNodeFormData(
     itemTypes,
     arrPerm,
     nodeData,
+    isLoading,
     addDescItem,
     addEmptyDescItem,
     deleteDescItem,

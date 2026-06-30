@@ -23,12 +23,13 @@ interface Props {
 }
 
 export function ErrorDisplay({ itemObjectId }: Props) {
-  const { nodeData } = useNodeFormContext();
+  const nodeData = useNodeFormContext()?.nodeData;
   const { settings } = useUserSettings();
   const size = settings.compact ? FIELD_HEIGHT.small : FIELD_HEIGHT.medium;
   const nodeConformity = nodeData?.nodeConformity;
   const styles = useStyles();
 
+  // Findings without a policyTypeId always render (defensive — in practice every finding has one).
   const visibleErrors = (nodeConformity?.errorList ?? []).filter(
     ({ descItemObjectId, policyTypeId }) =>
       descItemObjectId === itemObjectId &&

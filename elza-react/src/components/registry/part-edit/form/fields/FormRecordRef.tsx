@@ -1,6 +1,6 @@
 import { ApAccessPointVO } from 'api';
 import { ApCreateTypeVO } from 'api/ApCreateTypeVO';
-import { Area } from 'api/Area';
+import { ApSearchArea } from 'elza-api';
 import { RulDescItemSpecExtVO } from 'api/RulDescItemSpecExtVO';
 import { RulDescItemTypeExtVO } from 'api/RulDescItemTypeExtVO';
 import React, { FC } from 'react';
@@ -23,7 +23,7 @@ type ThunkAction<R> = (dispatch: ThunkDispatch<AppState, void, AnyAction>, getSt
 const useThunkDispatch = <State,>():ThunkDispatch<State, void, AnyAction> => useDispatch()
 interface RelationPartItemEditModalFormFields {
     onlyMainPart: boolean,
-    area?: Area,
+    area?: ApSearchArea,
     specId?: string,
     codeObj: {
         id: number,
@@ -176,7 +176,7 @@ const handleSelectAccessPointRef = (
 const getInitialValues = (item: ApItemAccessPointRefVO):Partial<RelationPartItemEditModalFormFields> => {
     return {
         onlyMainPart: false,
-        area: Area.ALLNAMES,
+        area: ApSearchArea.AllNames,
         specId: item.specId?.toString(),
         codeObj: item.value != null ? {
             id: item.value,

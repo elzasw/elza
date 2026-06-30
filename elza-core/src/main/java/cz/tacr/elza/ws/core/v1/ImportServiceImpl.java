@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -130,7 +131,8 @@ public class ImportServiceImpl implements ImportService {
                 throw new IllegalStateException("Unrecognized import format");
             }
         } catch (Exception e) {
-            logger.error("Failed to import", e);
+            WSHelper.logWsFailure(logger, Level.ERROR, "Failed to import data",
+                    "externalSystem: " + request.getExternalSystem() + ", requestId: " + request.getRequestId(), e);
             if (e instanceof CoreServiceException) {
                 throw (CoreServiceException) e;
             }

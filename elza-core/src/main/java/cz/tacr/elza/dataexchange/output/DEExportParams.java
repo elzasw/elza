@@ -20,6 +20,8 @@ public class DEExportParams {
 
     private boolean includeUUID = true;
 
+    private boolean includeDaos = true;
+
     public Collection<Integer> getApIds() {
         return apIds;
     }
@@ -65,6 +67,14 @@ public class DEExportParams {
 
     public void setIncludeAccessPoints(boolean includeAccessPoints) {
         this.includeAccessPoints = includeAccessPoints;
+    }
+
+    public boolean isIncludeDaos() {
+        return includeDaos;
+    }
+
+    public void setIncludeDaos(boolean includeDaos) {
+        this.includeDaos = includeDaos;
     }
 
     /**

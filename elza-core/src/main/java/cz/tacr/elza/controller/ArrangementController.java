@@ -93,7 +93,6 @@ import cz.tacr.elza.controller.vo.NodeUpdateItem;
 import cz.tacr.elza.controller.vo.OutputSettingsVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
 import cz.tacr.elza.controller.vo.ScenarioOfNewLevelVO;
-import cz.tacr.elza.controller.vo.SelectNodeResult;
 import cz.tacr.elza.controller.vo.TreeData;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
@@ -179,7 +178,6 @@ import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import cz.tacr.elza.service.output.OutputData;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
-import cz.tacr.elza.service.vo.UpdateDescItemsParam;
 
 
 /**
@@ -335,72 +333,6 @@ public class ArrangementController {
         final List<ArrDaoPackage> arrDaoList = daoService.findDaoPackages(fundVersion, search, unassigned, maxResults);
 
         return factoryVo.createDaoPackageList(arrDaoList, unassigned);
-    }
-
-    /**
-     * Získání potřebných dat pro vybrání JP podle UUID nebo ID v klientovi.
-     *
-     * @param nodeUuid
-     *            unikátní identifikátor JP
-     * @return data pro vybranou JP
-     */
-    @RequestMapping(value = "/selectNode/{nodeUuid}",
-            method = RequestMethod.GET,
-            consumes = MediaType.APPLICATION_JSON_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    @Transactional
-    public SelectNodeResult selectNode(@PathVariable(value = "nodeUuid") final String nodeUuid) {
-        ArrNode node;
-        if (nodeUuid.length() == 36) {
-            node = arrangementInternalService.findNodeByUuid(nodeUuid);
-            if (node == null) {
-                throw new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST)
-                        .setId(nodeUuid);
-            }
-        } else {
-            try {
-                final Integer nodeId = Integer.parseInt(nodeUuid);
-                node = nodeRepository.findById(nodeId)
-                        .orElseThrow(() -> new ObjectNotFoundException("JP neexistuje", BaseCode.ID_NOT_EXIST)
-                                .setId(nodeId));
-            } catch (NumberFormatException nfe) {
-                throw new SystemException("Unrecognized ID format")
-                        .set("ID", nodeUuid);
-            }
-        }
-
-
-        ArrFundVO fund = getFund(node.getFundId());
-
-        ArrFundVersionVO fundVersion = fund.getVersions().stream()
-                .filter(v -> v.getLockDate() == null)
-                .findFirst().orElse(null);
-
-        if (fundVersion == null) {
-            throw new ObjectNotFoundException("AS nemá otevřenou verzi", BaseCode.ID_NOT_EXIST)
-                    .setId(fund.getId());
-        }
-
-        ArrLevel level = fundLevelService.findLevelByNode(node);
-        if (level == null) {
-            throw new ObjectNotFoundException("JP nebylo dohledáno zařazení v hierarchii AS", BaseCode.ID_NOT_EXIST)
-                    .setId(fund.getId());
-        }
-
-        TreeNodeVO parentNode = null;
-        if (level.getNodeParent() != null) {
-            Collection<TreeNodeVO> parentNodes = levelTreeCacheService
-                    .getNodesByIds(Collections.singletonList(level.getNodeParent().getNodeId()), fundVersion.getId());
-            Assert.notEmpty(parentNodes, "Kolekce JP nesmí být prázdná");
-            parentNode = parentNodes.iterator().next();
-        }
-
-        NodeWithParent nodeWithParent = new NodeWithParent(NodeBaseMapper.valueOf(node), parentNode);
-
-        SelectNodeResult result = new SelectNodeResult();
-        result.setFund(fund);
-        result.setNodeWithParent(nodeWithParent);
-        return result;
     }
 
     /**
@@ -1653,15 +1585,15 @@ public class ArrangementController {
             @RequestBody final ArrNodeVO nodeVO) {
 
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
-        RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
+        RulItemType rulItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
 
         ArrNode node = factoryDO.createNode(nodeVO);
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
         ArrLevel level = arrangementService.lockNode(node, fundVersion, change);
 
-        List<ArrDescItem> newDescItems = arrangementService.copyOlderSiblingAttribute(fundVersion, descItemType, level, change);
+        List<ArrDescItem> newDescItems = arrangementService.copyOlderSiblingAttribute(fundVersion, rulItemType, level, change);
 
-        RulDescItemTypeDescItemsVO descItemTypeVO = factoryVo.createDescItemTypeVO(descItemType);
+        RulDescItemTypeDescItemsVO descItemTypeVO = factoryVo.createDescItemTypeVO(rulItemType);
         descItemTypeVO.setDescItems(factoryVo.createItems(newDescItems));
 
         ArrNodeVO resultNode = ArrNodeVO.valueOf(level.getNode());

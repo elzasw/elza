@@ -1,5 +1,6 @@
 import {
     AccesspointsApi,
+    AccesspointInternalApi,
     AdminApi,
     DaosApi,
     FundsApi,
@@ -10,7 +11,10 @@ import {
     AipsApi,
     ReportApi,
     NodeApi,
+    RulesApi,
     TasksApi,
+    StructureApi,
+    PublicationInternalApi,
 } from 'elza-api';
 import globalAxios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import i18n from '../components/i18n';
@@ -198,6 +202,7 @@ try {
 
 export const Api: {
     accesspoints: AccesspointsApi;
+    accesspointInternal: AccesspointInternalApi;
     admin: AdminApi;
     funds: FundsApi;
     daos: DaosApi;
@@ -207,10 +212,14 @@ export const Api: {
     descItems: DescitemsApi;
     aips: AipsApi;
     node: NodeApi;
+    rules: RulesApi;
     report: ReportApi;
     tasks: TasksApi;
+    structure: StructureApi;
+    publication: PublicationInternalApi;
 } = {
     accesspoints: new AccesspointsApi(undefined, basePath, axios),
+    accesspointInternal: new AccesspointInternalApi(undefined, basePath, axios),
     admin: new AdminApi(undefined, basePath, axios),
     funds: new FundsApi(undefined, basePath, axios),
     daos: new DaosApi(undefined, basePath, axios),
@@ -220,6 +229,9 @@ export const Api: {
     descItems: new DescitemsApi(undefined, basePath, axios),
     aips: new AipsApi(undefined, basePath, axios),
     node: new NodeApi(undefined, basePath, axios),
+    rules: new RulesApi(undefined, basePath, axios),
     report: new ReportApi(undefined, basePath, axios),
     tasks: new TasksApi(undefined, basePath, axios),
+    structure: new StructureApi(undefined, basePath, axios),
+    publication: new PublicationInternalApi(undefined, basePath, axios),
 };

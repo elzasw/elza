@@ -180,8 +180,6 @@ export function fund(state, action) {
     }
 
     if (
-        false ||
-        nodeFormActions.isSubNodeFormCacheAction(action, 'NODE') ||
         isSubNodeInfoAction(action) ||
         isNodeInfoAction(action) ||
         isNodeAction(action) ||

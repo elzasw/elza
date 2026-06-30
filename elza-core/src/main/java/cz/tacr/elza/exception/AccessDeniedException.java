@@ -22,4 +22,8 @@ public class AccessDeniedException extends AbstractException {
         super(message, BaseCode.INSUFFICIENT_PERMISSIONS);
         set("permission", userPermission);
 	}
+
+	public AccessDeniedException(final String message) {
+	    super(message, BaseCode.INSUFFICIENT_PERMISSIONS);
+	}	
 }

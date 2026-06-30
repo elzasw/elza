@@ -4,7 +4,7 @@ import { UserDetail } from "./UserDetail.types";
 import { ModalDialogState } from "./ModalDialog.types";
 import { DetailStoreState } from "types";
 import { ApValidationErrorsVO } from "api/ApValidationErrorsVO";
-import { SubNodeForm, SubNodeFormCache } from "./SubNodeForm.types";
+import { SubNodeForm } from "./SubNodeForm.types";
 import { FundOutput } from "./Outputs.types";
 import { FundDataGrid } from "./DataGrid.types";
 import { AipFilterCriteria } from "components/aip/filter/forms/EnumAipFilterCriteria.ts";
@@ -204,7 +204,6 @@ export interface Node extends NodeBase {
     selectedSubNodeId?: number;
     subNodeDaos?: unknown;
     subNodeForm?: SubNodeForm;
-    subNodeFormCache?: SubNodeFormCache;
     subNodeInfo?: unknown;
     viewStartIndex: number;
 }
@@ -219,7 +218,7 @@ export interface FundTree {
 }
 
 export interface Fund {
-    activeVersion: unknown;
+    activeVersion: ActiveVersion;
     apScopes: unknown;
     bulkActions: unknown;
     closed: boolean | unknown;
@@ -428,6 +427,7 @@ export interface App {
 export interface ActiveVersion {
     config?: unknown;
     createDate?: string;
+    dateRange?: unknown;
     id: number;
     issues: unknown[];
     lockDate?: string | null;

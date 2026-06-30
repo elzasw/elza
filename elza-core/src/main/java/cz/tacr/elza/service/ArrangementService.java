@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -89,6 +90,7 @@ import cz.tacr.elza.controller.vo.FileType;
 import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.controller.vo.NodeBase;
+import cz.tacr.elza.controller.vo.NodeInfo;
 import cz.tacr.elza.controller.vo.NodeItemWithParent;
 import cz.tacr.elza.controller.vo.NodePlainTextRepresentation;
 import cz.tacr.elza.controller.vo.OperationCompareType;
@@ -101,7 +103,7 @@ import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.NodeBaseMapper;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.ItemType;
-import cz.tacr.elza.core.data.SearchType;
+import cz.tacr.elza.controller.vo.ApSearchType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.security.AuthMethod;
@@ -140,6 +142,7 @@ import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulRuleSet;
 import cz.tacr.elza.domain.UIVisiblePolicy;
+import cz.tacr.elza.domain.factory.DescItemFactory;
 import cz.tacr.elza.domain.UsrGroup;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrPermissionView;
@@ -149,6 +152,7 @@ import cz.tacr.elza.domain.vo.NodeTypeOperation;
 import cz.tacr.elza.domain.vo.ScenarioOfNewLevel;
 import cz.tacr.elza.drools.DirectionLevel;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.ConflictException;
 import cz.tacr.elza.exception.ConcurrentUpdateException;
 import cz.tacr.elza.exception.InvalidQueryException;
 import cz.tacr.elza.exception.LockVersionChangeException;
@@ -197,6 +201,21 @@ import cz.tacr.elza.service.eventnotification.events.EventType;
 public class ArrangementService {
 
     private static final Pattern UUID_PATTERN = Pattern.compile("[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}");
+
+    /**
+     * Typ prvku popisu nesoucí pevné spojení na jinou jednotku popisu.
+     */
+    private static final String ITEM_LINK_TYPE_CODE = "ZP2015_ITEM_LINK";
+
+    /**
+     * Oddělovač mezi citací uzlu a citacemi odkazovaných uzlů.
+     */
+    private static final String LINKED_CITATION_SEPARATOR = " – viz ";
+
+    /**
+     * Oddělovač mezi citacemi více odkazovaných uzlů.
+     */
+    private static final String LINKED_CITATION_DELIMITER = ", ";
 
     final private static Logger logger = LoggerFactory.getLogger(ArrangementService.class);
 
@@ -316,6 +335,72 @@ public class ArrangementService {
     }
 
     /**
+     * Build a {@link NodeInfo} for the given node — id/version/uuid, fund placement,
+     * and deletion state relative to the most recent fund version that contained it.
+     *
+     * Permission is checked against {@code fundId} (FUND_RD on the owning fund).
+     *
+     * Algorithm:
+     *   1. Load all levels of the node (active + historical).
+     *   2. More than one active level (deleteChange = null) → {@link ConflictException} (HTTP 409).
+     *   3. If exactly one level is active, the node is alive: report the open fund version
+     *      (or the latest version if the fund has no open one). {@code deleteChangeId} is null.
+     *   4. Otherwise every level has been deleted. Take MAX_DEL = max(deleteChange.changeId)
+     *      across all levels; {@code fundVersionId} is the highest fundVersionId whose
+     *      createChange is strictly less than MAX_DEL (i.e. the version was created before
+     *      the level was deleted, so the level was alive at its start). {@code deleteChangeId}
+     *      is MAX_DEL.
+     *
+     * @param fundId fund the node belongs to (must equal {@code node.getFundId()})
+     * @param node   the resolved node entity
+     * @return basic node info
+     */
+    @AuthMethod(permission = { UsrPermission.Permission.FUND_ADMIN,
+            UsrPermission.Permission.FUND_RD_ALL, UsrPermission.Permission.FUND_RD })
+    public NodeInfo getNodeInfo(@AuthParam(type = AuthParam.Type.FUND) @NotNull final Integer fundId,
+                                @NotNull final ArrNode node) {
+        Validate.isTrue(fundId.equals(node.getFundId()), "fundId does not match node.fundId");
+
+        List<ArrLevel> levels = levelRepository.findByNodeOrderByCreateChangeAsc(node);
+        if (levels.isEmpty()) {
+            throw new ObjectNotFoundException("JP nemá žádnou úroveň", BaseCode.ID_NOT_EXIST)
+                    .setId(node.getNodeId());
+        }
+
+        long activeCount = levels.stream().filter(l -> l.getDeleteChange() == null).count();
+        if (activeCount > 1) {
+            throw new ConflictException("JP je zařazena pod více aktivními rodiči", BaseCode.TOO_MANY_RESULTS)
+                    .set("nodeId", node.getNodeId());
+        }
+
+        Integer fundVersionId;
+        Integer deleteChangeId;
+        if (activeCount == 1) {
+            ArrFundVersion openVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
+            fundVersionId = openVersion != null
+                    ? openVersion.getFundVersionId()
+                    : fundVersionRepository.findMaxFundVersionIdByFundId(fundId);
+            deleteChangeId = null;
+        } else {
+            int maxDel = levels.stream()
+                    .map(ArrLevel::getDeleteChange)
+                    .mapToInt(ArrChange::getChangeId)
+                    .max()
+                    .getAsInt();
+            fundVersionId = fundVersionRepository.findMaxFundVersionIdByFundIdAndCreateChangeBefore(fundId, maxDel);
+            if (fundVersionId == null) {
+                throw new ObjectNotFoundException("JP nebyla dostupná v žádné verzi AS", BaseCode.ID_NOT_EXIST)
+                        .setId(node.getNodeId());
+            }
+            deleteChangeId = maxDel;
+        }
+
+        return new NodeInfo(node.getNodeId(), node.getVersion(), node.getUuid(),
+                            fundId, fundVersionId)
+                .deleteChangeId(deleteChangeId);
+    }
+
+    /**
      * Načtení záznamy o potlačení dědictví na zaklade descItemObjectId.
      *
      * @param nodeId
@@ -382,12 +467,160 @@ public class ArrangementService {
      */
     public List<NodePlainTextRepresentation> getNodePlainText(@NotNull Integer fundVersionId, @NotNull Integer nodeId) {
     	ArrFundVersion fundVersion = getFundVersion(fundVersionId);
-    	ArrFund fund = fundVersion.getFund();
-    	ParInstitution institution = fund.getInstitution();
-    	List<ArrDescItem> items = descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(List.of(nodeId));
 
-    	return groovyService.getNodePlainText(fundVersion, institution, items);
+    	// referenční změna pro čtení hodnot: u uzamčené verze se citace generuje ze stavu
+    	// platného v okamžiku jejího uzamčení, u otevřené verze z aktuálního stavu (null)
+    	ArrChange refChange = fundVersion.getLockChange();
+
+    	// uzly již zpracované v aktuálním řetězci pevných spojení (ochrana proti cyklům)
+    	Set<Integer> visitedNodeIds = new HashSet<>();
+    	visitedNodeIds.add(nodeId);
+    	return generateNodePlainText(fundVersion, refChange, nodeId, visitedNodeIds);
 	}
+
+    /**
+     * Vygeneruje plain text (citaci) pro uzel. Pokud uzel obsahuje pevné spojení
+     * (prvek {@value #ITEM_LINK_TYPE_CODE} se schématem
+     * {@link DescItemFactory#ELZA_NODE}) na jiné uzly, připojí za jeho citaci
+     * i shodně vygenerované citace odkazovaných uzlů. Odkazovaný uzel může ležet
+     * v jiném fondu; jeho citace se připojí jen tehdy, používá-li jeho fond stejná
+     * pravidla, aby se reprezentace daly spárovat podle kódu.
+     *
+     * @param fundVersion verze fondu, ve které se uzel nachází
+     * @param refChange referenční změna pro čtení hodnot ({@code null} = aktuální stav)
+     * @param visitedNodeIds uzly již zařazené do výstupu; zabraňuje zacyklení a duplicitám
+     */
+    private List<NodePlainTextRepresentation> generateNodePlainText(ArrFundVersion fundVersion,
+    		ArrChange refChange, Integer nodeId, Set<Integer> visitedNodeIds) {
+    	ParInstitution institution = fundVersion.getFund().getInstitution();
+    	List<ArrDescItem> items = loadDescItems(refChange, List.of(nodeId));
+
+    	// parent levels ordered from the nearest parent up to the root
+    	List<Integer> parentNodeIds = levelTreeCacheService.getParentNodes(fundVersion, nodeId);
+    	Map<Integer, List<ArrDescItem>> parentItemsByNode = loadDescItems(refChange, parentNodeIds)
+    			.stream()
+    			.collect(Collectors.groupingBy(ArrDescItem::getNodeId));
+    	List<List<ArrDescItem>> parentItemsByLevel = parentNodeIds.stream()
+    			.map(id -> parentItemsByNode.getOrDefault(id, Collections.emptyList()))
+    			.toList();
+
+    	List<NodePlainTextRepresentation> result = groovyService.getNodePlainText(fundVersion, institution, items, parentItemsByLevel);
+
+    	// pevná spojení (elza-node) na jiné uzly -> připojit jejich citace
+    	List<List<NodePlainTextRepresentation>> linkedResults = new ArrayList<>();
+    	for (Integer linkedNodeId : findLinkedNodeIds(items)) {
+    		// přeskočit již zařazené uzly (cyklus / duplicita)
+    		if (visitedNodeIds.add(linkedNodeId)) {
+    			ArrFundVersion linkedVersion = resolveNodeFundVersion(fundVersion, linkedNodeId);
+    			// citaci připojíme jen pro fond se stejnými pravidly; jinak se kódy
+    			// reprezentací nespárují a citace odkazovaného uzlu by stejně zůstala prázdná
+    			if (linkedVersion.getRuleSetId().equals(fundVersion.getRuleSetId())) {
+    				linkedResults.add(generateNodePlainText(linkedVersion, refChange, linkedNodeId, visitedNodeIds));
+    			}
+    		}
+    	}
+    	appendLinkedCitations(result, linkedResults);
+
+    	return result;
+	}
+
+    /**
+     * Vrátí verzi fondu, ze které se generuje citace odkazovaného uzlu. Pro uzel
+     * ze stejného fondu vrátí aktuální verzi, pro uzel z jiného fondu jeho otevřenou
+     * verzi; není-li fond otevřený (je uzamčen), použije jeho poslední verzi.
+     *
+     * @throws ObjectNotFoundException pokud odkazovaný uzel nebo verze jeho fondu
+     *             neexistuje - pevné spojení na neexistující data je nekonzistence
+     */
+    private ArrFundVersion resolveNodeFundVersion(ArrFundVersion currentVersion, Integer nodeId) {
+    	ArrNode node = nodeRepository.findById(nodeId).orElseThrow(node(nodeId));
+    	Integer fundId = node.getFundId();
+    	if (fundId.equals(currentVersion.getFundId())) {
+    		return currentVersion;
+    	}
+    	ArrFundVersion linkedVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
+    	if (linkedVersion != null) {
+    		return linkedVersion;
+    	}
+    	Integer maxVersionId = fundVersionRepository.findMaxFundVersionIdByFundId(fundId);
+    	if (maxVersionId == null) {
+    		throw new ObjectNotFoundException("Fond odkazovaného uzlu nemá žádnou verzi: " + fundId, BaseCode.ID_NOT_EXIST)
+    				.setId(fundId);
+    	}
+    	return getFundVersionById(maxVersionId);
+	}
+
+    /**
+     * Načte hodnoty atributů zadaných uzlů ve stavu platném pro referenční změnu.
+     * Pro otevřenou verzi ({@code refChange == null}) vrací aktuální hodnoty, pro
+     * uzamčenou verzi hodnoty platné v okamžiku jejího uzamčení. Výsledek je seřazen
+     * shodně jako čtení aktuálního stavu, aby citace nezávisela na verzi.
+     */
+    private List<ArrDescItem> loadDescItems(ArrChange refChange, List<Integer> nodeIds) {
+    	if (nodeIds.isEmpty()) {
+    		return Collections.emptyList();
+    	}
+    	if (refChange == null) {
+    		return descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(nodeIds);
+    	}
+    	return descriptionItemService.findByNodesAndDeleteChange(nodeIds, refChange).stream()
+    			.sorted(Comparator.comparing(ArrDescItem::getNodeId, Comparator.nullsLast(Comparator.naturalOrder()))
+    					.thenComparing(ArrDescItem::getItemTypeId, Comparator.nullsLast(Comparator.naturalOrder()))
+    					.thenComparing(ArrDescItem::getItemSpecId, Comparator.nullsLast(Comparator.naturalOrder()))
+    					.thenComparing(ArrDescItem::getPosition, Comparator.nullsLast(Comparator.naturalOrder())))
+    			.toList();
+	}
+
+    /**
+     * Najde cílové uzly pevných spojení (prvek {@value #ITEM_LINK_TYPE_CODE} se
+     * schématem {@link DescItemFactory#ELZA_NODE}) v pořadí prvků.
+     */
+    private List<Integer> findLinkedNodeIds(List<ArrDescItem> items) {
+    	ItemType linkItemType = staticDataService.getData().getItemTypeByCode(ITEM_LINK_TYPE_CODE);
+    	if (linkItemType == null) {
+    		// pravidla neobsahují typ prvku pevného spojení -> uzel žádná spojení nemá
+    		return Collections.emptyList();
+    	}
+    	return items.stream()
+    			.filter(i -> linkItemType.getItemTypeId().equals(i.getItemTypeId()))
+    			.sorted(Comparator.comparing(ArrDescItem::getPosition, Comparator.nullsLast(Comparator.naturalOrder())))
+    			.map(i -> {
+    				ArrData data = HibernateUtils.unproxy(i.getData());
+    				return data instanceof ArrDataUriRef ? (ArrDataUriRef) data : null;
+    			})
+    			.filter(d -> d != null && DescItemFactory.ELZA_NODE.equals(d.getSchema()) && d.getNodeId() != null)
+    			.map(ArrDataUriRef::getNodeId)
+    			.toList();
+    }
+
+    /**
+     * Za každou citaci připojí citace odkazovaných uzlů. Reprezentace se párují
+     * podle kódu pravidla; citace více odkazovaných uzlů jsou navzájem odděleny
+     * čárkou a celý blok je od citace uzlu oddělen textem {@value #LINKED_CITATION_SEPARATOR}.
+     */
+    private void appendLinkedCitations(List<NodePlainTextRepresentation> result,
+    		List<List<NodePlainTextRepresentation>> linkedResults) {
+    	if (linkedResults.isEmpty()) {
+    		return;
+    	}
+    	for (NodePlainTextRepresentation rep : result) {
+    		String linked = linkedResults.stream()
+    				.map(lr -> findValueByCode(lr, rep.getCode()))
+    				.filter(StringUtils::isNotEmpty)
+    				.collect(Collectors.joining(LINKED_CITATION_DELIMITER));
+    		if (StringUtils.isNotEmpty(linked)) {
+    			rep.setValue(StringUtils.defaultString(rep.getValue()) + LINKED_CITATION_SEPARATOR + linked);
+    		}
+    	}
+    }
+
+    private String findValueByCode(List<NodePlainTextRepresentation> reps, String code) {
+    	return reps.stream()
+    			.filter(r -> Objects.equals(r.getCode(), code))
+    			.map(NodePlainTextRepresentation::getValue)
+    			.findFirst()
+    			.orElse(null);
+    }
 
     /**
      * Vytvoření archivního souboru.
@@ -428,6 +661,9 @@ public class ArrangementService {
      * @param fund
      * @param ruleSet
      * @param scopes
+     * @param userIds
+     * @param groupIds
+     * @param adminPermissionMode strategy for synchronizing the supplied admin users/groups
      * @return Upravená archivní pomůcka
      */
     @Transactional
@@ -436,7 +672,8 @@ public class ArrangementService {
 			                          final RulRuleSet ruleSet,
 			                          final List<ApScope> scopes,
 			                          final List<Integer> userIds,
-			                          final List<Integer> groupIds) {
+			                          final List<Integer> groupIds,
+			                          final AdminPermissionUpdateMode adminPermissionMode) {
         Validate.notNull(fund, "AS musí být vyplněn");
         Validate.notNull(ruleSet, "Pravidla musí být vyplněna");
 
@@ -476,11 +713,11 @@ public class ArrangementService {
         }
 
         if (userIds != null) {
-            syncUsers(originalFund, userIds);
+            syncUsers(originalFund, userIds, adminPermissionMode);
         }
 
         if (groupIds != null) {
-            syncGroups(originalFund, groupIds);
+            syncGroups(originalFund, groupIds, adminPermissionMode);
         }
 
         eventNotificationService
@@ -535,8 +772,10 @@ public class ArrangementService {
      *
      * @param fund
      * @param userIds
+     * @param adminPermissionMode whether to remove existing users not in the supplied list
      */
-    private void syncUsers(final ArrFund fund, final Collection<Integer> userIds) {
+    private void syncUsers(final ArrFund fund, final Collection<Integer> userIds,
+                           final AdminPermissionUpdateMode adminPermissionMode) {
         Validate.notNull(fund, "AS musí být vyplněn");
 
         List<UsrUser> users = userRepository.findByFund(fund);
@@ -552,7 +791,9 @@ public class ArrangementService {
             }
         }
 
-        usersById.values().forEach(u -> userService.deleteUserFundPermissions(u, fund.getFundId()));
+        if (adminPermissionMode == AdminPermissionUpdateMode.FULL_SYNC) {
+            usersById.values().forEach(u -> userService.deleteUserFundPermissions(u, fund.getFundId()));
+        }
     }
 
     /**
@@ -561,8 +802,10 @@ public class ArrangementService {
      *
      * @param fund
      * @param groupIds
+     * @param adminPermissionMode whether to remove existing groups not in the supplied list
      */
-    private void syncGroups(final ArrFund fund, final Collection<Integer> groupIds) {
+    private void syncGroups(final ArrFund fund, final Collection<Integer> groupIds,
+                            final AdminPermissionUpdateMode adminPermissionMode) {
         Validate.notNull(fund, "AS musí být vyplněn");
 
         List<UsrGroup> groups = groupRepository.findByFund(fund);
@@ -578,7 +821,9 @@ public class ArrangementService {
             }
         }
 
-        groupsById.values().forEach(g -> userService.deleteGroupFundPermissions(g, fund.getFundId()));
+        if (adminPermissionMode == AdminPermissionUpdateMode.FULL_SYNC) {
+            groupsById.values().forEach(g -> userService.deleteGroupFundPermissions(g, fund.getFundId()));
+        }
     }
 
     /**
@@ -630,7 +875,7 @@ public class ArrangementService {
             // pokud není admin, musí zadat je uživatele, kteří mají oprávnění (i zděděné) na zakládání nových AS
             if (userIds != null && !userIds.isEmpty()) {
                 // TODO: Remove stream and user more direct query
-                final Set<Integer> userFundCreateIds = userService.findUserWithFundCreate(null, 0, -1, SearchType.DISABLED, SearchType.FULLTEXT).getList().stream()
+                final Set<Integer> userFundCreateIds = userService.findUserWithFundCreate(null, 0, -1, ApSearchType.DISABLED, ApSearchType.FULLTEXT).getList().stream()
                         .map(x -> x.getUserId())
                         .collect(toSet());
                 userIds.forEach(u -> {
@@ -744,7 +989,11 @@ public class ArrangementService {
         level.setCreateChange(createChange);
         level.setNodeParent(null);
         level.setNode(createNode(fund, uuid, createChange));
-        return levelRepository.saveAndFlush(level);
+        level = levelRepository.saveAndFlush(level);
+        // The root node now has an active level, so create its cache record here
+        // rather than ahead of the level.
+        nodeCacheService.addNodeToCache(level.getNode());
+        return level;
     }
 
     /**
@@ -754,12 +1003,6 @@ public class ArrangementService {
      */
     public String generateUuid() {
         return UUID.randomUUID().toString();
-    }
-
-    public ArrNode createNode(final ArrFund fund, final String uuid, final ArrChange createChange) {
-        ArrNode node = createNodeSimple(fund, uuid, createChange);
-        nodeCacheService.createEmptyNode(node);
-        return node;
     }
 
     /**
@@ -785,7 +1028,7 @@ public class ArrangementService {
         return node;
     }
 
-    public ArrNode createNodeSimple(final ArrFund fund, final String uuid, final ArrChange createChange) {
+    public ArrNode createNode(final ArrFund fund, final String uuid, final ArrChange createChange) {
         ArrNode node = createNodeObject(fund, uuid, createChange);
 
         return nodeRepository.save(node);
@@ -919,41 +1162,41 @@ public class ArrangementService {
      * Provede zkopírování atributu daného typu ze staršího bratra uzlu.
      *
      * @param versionId      id verze stromu
-     * @param descItemTypeId typ atributu, který chceme zkopírovat
+     * @param rulItemTypeId  typ atributu, který chceme zkopírovat
      * @param nodeBase       uzel, na který nastavíme hodnoty ze staršího bratra
      * @return vytvořené hodnoty
      */
-	public List<ArrDescItem> copyOlderSiblingAttribute(Integer versionId, Integer descItemTypeId, NodeBase nodeBase) {
+	public List<ArrDescItem> copyOlderSiblingAttribute(Integer versionId, Integer rulItemTypeId, NodeBase nodeBase) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(versionId);
-        RulItemType descItemType = itemTypeRepository.getOneCheckExist(descItemTypeId);
+        RulItemType rulItemType = itemTypeRepository.getOneCheckExist(rulItemTypeId);
 
         ArrNode node = NodeBaseMapper.createEntity(nodeBase);
         ArrChange change = arrangementInternalService.createChange(ArrChange.Type.ADD_DESC_ITEM, node);
         ArrLevel level = lockNode(node, fundVersion, change);
 
-		return copyOlderSiblingAttribute(fundVersion, descItemType, level, change);
+		return copyOlderSiblingAttribute(fundVersion, rulItemType, level, change);
 	}
 
     /**
      * Provede zkopírování atributu daného typu ze staršího bratra uzlu.
      *
      * @param version      verze stromu
-     * @param descItemType typ atributu, který chceme zkopírovat
+     * @param rulItemType  typ atributu, který chceme zkopírovat
      * @param level        uzel, na který nastavíme hodnoty ze staršího bratra
      * @return vytvořené hodnoty
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_ARR_ALL, UsrPermission.Permission.FUND_ARR})
     public List<ArrDescItem> copyOlderSiblingAttribute(@AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion version,
-                                                       final RulItemType descItemType,
+                                                       final RulItemType rulItemType,
                                                        final ArrLevel level,
                                                        final ArrChange change) {
         Validate.notNull(version, "Verze AS musí být vyplněna");
-        Validate.notNull(descItemType, "Typ atributu musí být vyplněn");
+        Validate.notNull(rulItemType, "Typ atributu musí být vyplněn");
         Validate.notNull(level, "Musí být vyplněno");
 
         isValidAndOpenVersion(version);
         Set<RulItemType> typeSet = new HashSet<>();
-        typeSet.add(descItemType);
+        typeSet.add(rulItemType);
 
         ArrLevel olderSibling = levelRepository.findOlderSibling(level, version.getLockChange());
         if (olderSibling == null) {
@@ -963,6 +1206,11 @@ public class ArrangementService {
         // Read source data
         List<ArrDescItem> siblingDescItems = descriptionItemService.findOpenByNodeAndTypes(olderSibling.getNode(), typeSet);
 
+        // If previous description element has no values
+        if (CollectionUtils.isEmpty(siblingDescItems)) {
+        	throw new BusinessException("Previous description element (PP) has no value(s)", BaseCode.INVALID_STATE);
+        }
+
         MultipleItemChangeContext changeContext = descriptionItemService.createChangeContext(version.getFundVersionId());
 
         // Delete old values for these items
@@ -970,12 +1218,10 @@ public class ArrangementService {
         List<ArrDescItem> nodeDescItems = descriptionItemService.findOpenByNodeAndTypes(level.getNode(), typeSet);
         if (CollectionUtils.isNotEmpty(nodeDescItems)) {
             for (ArrDescItem descItem : nodeDescItems) {
-                if (descItem.getReadOnly()!=null&&descItem.getReadOnly()) {
+                if (descItem.getReadOnly() !=null && descItem.getReadOnly()) {
                     throw new SystemException("Attribute changes prohibited", BaseCode.INVALID_STATE);
                 }
-
-                descriptionItemService.deleteDescriptionItem(descItem, version,
-                        change, false, changeContext);
+                descriptionItemService.deleteDescriptionItem(descItem, version, change, false, changeContext);
             }
         }
 

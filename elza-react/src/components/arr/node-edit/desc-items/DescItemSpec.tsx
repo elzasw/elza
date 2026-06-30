@@ -14,6 +14,7 @@ import { DescItemTypeRef } from "typings/store";
 import { useStrictMode } from "../hooks";
 import { findInSources } from "./utils";
 import { RulDescItemSpecExtVO } from "api/RulDescItemSpecExtVO";
+import { useStyles } from "./styles";
 
 const mandatoryTypeMessages = defineMessages({
   [MandatoryType.Required]: { id: "mandatoryType.required", defaultMessage: "Povinný" },
@@ -62,7 +63,7 @@ interface Props {
   isUndefined?: boolean;
   onChange: (specId: number) => void;
   typeRef: DescItemTypeRef;
-  typeForm: FormItemType;
+  typeForm?: FormItemType;
   autoSize?: boolean;
   isSpec?: boolean;
   labelSource?: "shortcut" | "name";
@@ -83,9 +84,10 @@ export function DescItemSpec({
   compact,
 }: Props) {
   const { formatMessage } = useIntl();
+  const styles = useStyles();
   const strictMode = useStrictMode();
 
-  const formSpecs = typeForm.specs;
+  const formSpecs = typeForm?.specs ?? [];
   const refSpecs = typeRef.descItemSpecs;
 
   function getLabel(spec: {form:FormItemSpec, rule: RulDescItemSpecExtVO}){
@@ -246,14 +248,12 @@ export function DescItemSpec({
         }}
         onOptionSelect={handleOptionSelect}
         multiselect={false}
-        style={{
-          minWidth: "unset",
-          flex: 1,
-        }}
+        className={styles.comboboxSpecWrapper}
         input={{
           ref: fieldRef,
           style: {
             minWidth: "30px",
+            fontSize: "1em",
             textDecoration: isInhibited ? "line-through" : undefined,
           },
         }}

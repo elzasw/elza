@@ -181,7 +181,7 @@ const ExtSyncsModal: FC<Props> = ({
 
     const renderResultItem = (item: ExtSyncsQueueItemVO, index: number) => {
         const date = utcToDateTime(item.date);
-        const exception = item.stateMessage && item.state !== ExtAsyncQueueState.EXPORT_OK && item.state !== ExtAsyncQueueState.IMPORT_OK;
+        const exception = item.stateMessage && item.state !== ExtAsyncQueueState.EXPORT_OK && item.state !== ExtAsyncQueueState.IMPORT_OK && item.state !== ExtAsyncQueueState.UPDATE_DEFERRED;
         return <Row key={index} className="result-item">
             <Col>
                 <Row>

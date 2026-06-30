@@ -34,7 +34,7 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.cam.ApiCamConnector;
 import cz.tacr.elza.common.ObjectListIterator;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
-import cz.tacr.elza.controller.vo.ApBindingVO;
+import cz.tacr.elza.controller.vo.ExtEntityBinding;
 import cz.tacr.elza.controller.vo.ApChangeVO;
 import cz.tacr.elza.controller.vo.ApEidTypeVO;
 import cz.tacr.elza.controller.vo.ApPartVO;
@@ -70,6 +70,7 @@ import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.AccessPointItem;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBinding;
+import cz.tacr.elza.domain.ApBindingIssue;
 import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApChange;
@@ -97,6 +98,7 @@ import cz.tacr.elza.domain.projection.ApStateInfo;
 import cz.tacr.elza.packageimport.xml.SettingItemTypes;
 import cz.tacr.elza.packageimport.xml.SettingPartsOrder;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBindingIssueRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApChangeRepository;
@@ -124,6 +126,8 @@ public class ApFactory {
     private final ApBindingStateRepository bindingStateRepository;
 
     private final ApBindingItemRepository bindingItemRepository;
+
+    private final ApBindingIssueRepository bindingIssueRepository;
 
     private final ScopeRepository scopeRepository;
 
@@ -157,6 +161,7 @@ public class ApFactory {
                      final ApPartRepository partRepository,
                      final ApBindingStateRepository bindingStateRepository,
                      final ApBindingItemRepository bindingItemRepository,
+                     final ApBindingIssueRepository bindingIssueRepository,
                      final ApIndexRepository indexRepository,
                      final ApTypeRepository apTypeRepository,
                      final ApChangeRepository changeRepository,
@@ -173,6 +178,7 @@ public class ApFactory {
         this.partRepository = partRepository;
         this.bindingStateRepository = bindingStateRepository;
         this.bindingItemRepository = bindingItemRepository;
+        this.bindingIssueRepository = bindingIssueRepository;
         this.indexRepository = indexRepository;
         this.apTypeRepository = apTypeRepository;
         this.changeRepository = changeRepository;
@@ -355,7 +361,7 @@ public class ApFactory {
             }
             ApChange lastChange = changeRepository.findById(lastChangeId).get();
 
-            List<ApBindingVO> bindingsVO;
+            List<ExtEntityBinding> bindingsVO;
             if (bindingStates != null) {
             	Map<Integer, List<ApBindingItem>> bindingItemsMap = new HashMap<>();
                 if (MapUtils.isNotEmpty(bindings)) {
@@ -368,7 +374,7 @@ public class ApFactory {
             		// check existence of nonbinded items
             		List<ApBindingItem> bindedItems = bindingItemsMap.get(bindingState.getBindingId());
 
-                    ApBindingVO bivo = ApBindingVO.newInstance(bindingState, state, bindedItems, parts, items,
+                    ExtEntityBinding bivo = ExtEntityBindingFactory.newInstance(bindingState, state, bindedItems, parts, items,
                                                                lastChange);
             		bindingsVO.add(bivo);
             	}
@@ -377,6 +383,7 @@ public class ApFactory {
             }
             apVO.setBindings(bindingsVO);
             fillBindingUrls(bindingsVO);
+            fillIssueSummaries(bindingsVO);
 
             apVO.setParts(createVO(parts, items, indices));
             apVO.setComments(comments);
@@ -396,11 +403,11 @@ public class ApFactory {
         ApChange lastChange = lastChangeId != null ? changeRepository.findById(lastChangeId).get() : null;
 
         // prepare bindings
-        List<ApBindingVO> bindingsVO;
+        List<ExtEntityBinding> bindingsVO;
         if (cachedAccessPoint.getBindings() != null) {
             bindingsVO = new ArrayList<>(cachedAccessPoint.getBindings().size());
 			for(CachedBinding binding: cachedAccessPoint.getBindings()) {
-                ApBindingVO bindingVo = ApBindingVO.newInstance(binding, cachedAccessPoint, lastChange);
+                ExtEntityBinding bindingVo = ExtEntityBindingFactory.newInstance(binding, cachedAccessPoint, lastChange);
             	bindingsVO.add(bindingVo);
             }
         } else {
@@ -408,6 +415,7 @@ public class ApFactory {
         }
         apVO.setBindings(bindingsVO);
         fillBindingUrls(bindingsVO);
+        fillIssueSummaries(bindingsVO);
 
         apVO.setParts(createPartsVO(cachedAccessPoint.getParts()));
         apVO.setPreferredPart(cachedAccessPoint.getPreferredPartId());
@@ -490,18 +498,33 @@ public class ApFactory {
         return vo;
     }
 
-    private void fillBindingUrls(final List<ApBindingVO> bindings) {
+    /**
+     * Fill the issue badge ({@link ExtEntityBinding#getIssueSummary()}) for each binding.
+     * Issues live in {@code ap_binding_issue} (not the AP cache), so they are loaded here
+     * by binding id in a single batch and aggregated per binding.
+     */
+    private void fillIssueSummaries(final List<ExtEntityBinding> bindings) {
+        if (CollectionUtils.isEmpty(bindings)) {
+            return;
+        }
+        List<Integer> bindingIds = bindings.stream()
+                .map(ExtEntityBinding::getId)
+                .collect(Collectors.toList());
+        Map<Integer, List<ApBindingIssue>> issuesByBinding = bindingIssueRepository.findByBindingIdIn(bindingIds)
+                .stream()
+                .collect(Collectors.groupingBy(ApBindingIssue::getBindingId));
+        for (ExtEntityBinding binding : bindings) {
+            binding.setIssueSummary(ExtEntityBindingFactory.issueSummary(issuesByBinding.get(binding.getId())));
+        }
+    }
+
+    private void fillBindingUrls(final List<ExtEntityBinding> bindings) {
         StaticDataProvider sdp = staticDataService.getData();
         if (CollectionUtils.isNotEmpty(bindings)) {
-            for (ApBindingVO binding : bindings) {
+            for (ExtEntityBinding binding : bindings) {
                 ApExternalSystem externalSystem = sdp.getApExternalSystemById(binding.getExternalSystemId());
                 ApiCamConnector connector = accessPointConnectorService.getConnector(externalSystem);
                 if (connector != null) {
-                    String value = binding.getValue();
-                    if (StringUtils.isNotEmpty(value)) {
-                        String url = connector.getDetailUrl(externalSystem) + value;
-                        binding.setDetailUrl(url);
-                    }
                     String extReplacedBy = binding.getExtReplacedBy();
                     if (StringUtils.isNotEmpty(extReplacedBy)) {
                         String url = connector.getDetailUrl(externalSystem) + extReplacedBy;

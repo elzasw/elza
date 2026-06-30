@@ -22,7 +22,10 @@ import './MapPage.scss';
 import { getServerContextPath } from 'api';
 
 export const MAP_URL = `/map`;
-export const MAP_URL_WITH_CONTEXT = `${getServerContextPath()}${MAP_URL}`;
+// Deferred lookup: getServerContextPath() depends on the `api` module being
+// fully evaluated, so we can't safely call it at module top-level (transitive
+// importers may load this file before `api.ts` finishes binding its exports).
+export const getMapUrlWithContext = () => `${getServerContextPath()}${MAP_URL}`;
 export const DEFAULT_SYSTEM_LAYER = {name: i18n('global.action.systemLayerOSM'), type: LayerType.OSM};
 
 /**

@@ -13,6 +13,7 @@ import {
     ProhibitedRegular,
 } from '@fluentui/react-icons';
 import { FormItemType, MandatoryType, NodeItem } from 'elza-api';
+import { DescItemTypeRef } from 'typings/store/RefTables.types';
 import { useUserSettings } from 'contexts/user';
 
 const mandatoryTypeIndicator: Record<string, { icon: typeof CircleFilled; color: string; bg: string }> = {
@@ -151,10 +152,11 @@ export function DescItemTypeFlags({ repeatable, undefinable }: DescItemTypeFlags
 }
 
 interface DescItemTypeDebugInfoProps {
-    typeForm: FormItemType;
+    typeRef: DescItemTypeRef;
+    typeForm?: FormItemType;
 }
 
-export function DescItemTypeDebugInfo({ typeForm }: DescItemTypeDebugInfoProps) {
+export function DescItemTypeDebugInfo({ typeRef, typeForm }: DescItemTypeDebugInfoProps) {
     const styles = useStyles();
     const { settings } = useUserSettings();
 
@@ -162,17 +164,22 @@ export function DescItemTypeDebugInfo({ typeForm }: DescItemTypeDebugInfoProps) 
         return null;
     }
 
+    const type = (typeForm?.type ?? MandatoryType.Impossible) as MandatoryType;
+    const id = typeForm?.itemTypeId ?? typeRef.id;
+    const repeatable = typeForm?.repeatable ?? false;
+    const undefinable = typeForm?.undefinable ?? false;
+
     return (
         <div className={styles.root} style={{margin: "0 4px"}}>
-            <MandatoryTypeIndicator type={typeForm.type} id={typeForm.itemTypeId} />
-            <DescItemTypeFlags repeatable={typeForm.repeatable} undefinable={typeForm.undefinable} />
+            <MandatoryTypeIndicator type={type} id={id} />
+            <DescItemTypeFlags repeatable={repeatable} undefinable={undefinable} />
         </div>
     );
 }
 
 interface DescItemInfoProps {
     item: NodeItem;
-    typeForm: FormItemType;
+    typeForm?: FormItemType;
     localId: string | number;
     nodeId: number;
 }
@@ -185,7 +192,7 @@ export function DescItemInfo({ item, typeForm, localId, nodeId }: DescItemInfoPr
         return null;
     }
 
-    const spec = typeForm.specs?.find(({ itemSpecId }) => itemSpecId === item.itemSpecId);
+    const spec = typeForm?.specs?.find(({ itemSpecId }) => itemSpecId === item.itemSpecId);
 
     return (
         <div className={styles.root}>

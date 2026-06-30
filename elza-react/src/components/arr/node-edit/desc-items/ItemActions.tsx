@@ -6,18 +6,20 @@ import {
   DeleteRegular,
 } from "@fluentui/react-icons";
 import { WebApi } from "actions";
-import { FormItemType, MandatoryType, NodeItem } from "elza-api";
+import { FormItemType, MandatoryType } from "elza-api";
+import { EditItem } from "../types";
 import { FormattedMessage, defineMessages } from "react-intl";
 import { DescItemTypeRef } from "typings/store";
 import { useUserSettings } from "contexts/user";
+import { useStyles } from "./styles";
 
 interface Props {
-  item: NodeItem;
-  nodeId: number;
+  item: EditItem;
+  nodeId?: number;
   specId?: number;
   onDelete: () => void;
   onSetUndefined: () => void;
-  typeForm: FormItemType;
+  typeForm?: FormItemType;
   typeRef: DescItemTypeRef;
 }
 
@@ -54,12 +56,12 @@ export function ItemActions({
   const compact = settings.compact;
   const isInherited = item.nodeId != nodeId;
   const hasValue = item.data?.dataId != undefined || item.undefined;
-  const canSetUndefined = typeForm.undefinable;
+  const canSetUndefined = typeForm?.undefinable;
   const isOptional =
-    typeForm.type === MandatoryType.Possible ||
-    typeForm.type === MandatoryType.Impossible;
+    typeForm?.type === MandatoryType.Possible ||
+    typeForm?.type === MandatoryType.Impossible;
 
-  const spec = typeForm.specs.find(({ itemSpecId }) => itemSpecId === specId);
+  const spec = typeForm?.specs?.find(({ itemSpecId }) => itemSpecId === specId);
   const isSpecOptional =
     (typeRef.useSpecification && !spec) ||
     spec?.type === MandatoryType.Possible ||
@@ -73,10 +75,11 @@ export function ItemActions({
     }
   }
 
+  const styles = useStyles();
   return (
-    <div style={{ display: "flex", alignItems: "flex-start" }}>
+    <div className={styles.itemActions}>
       {!isInherited &&
-        (hasValue || isOptional || (typeForm.repeatable && isSpecOptional)) && !item.readOnly && (
+        (hasValue || isOptional || (typeForm?.repeatable && isSpecOptional)) && !item.readOnly && (
           <Tooltip
             relationship="label"
             appearance="inverted"

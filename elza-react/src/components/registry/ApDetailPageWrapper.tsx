@@ -34,11 +34,11 @@ import { RouteComponentProps, useHistory, withRouter } from "react-router";
 import { RevStateApproval } from 'api/RevStateApproval';
 import Icon from 'components/shared/icon/FontIcon';
 import { useWebsocket } from 'components/shared/web-socket/WebsocketProvider';
-import { SyncProgress } from 'api/ApBindingVO';
+import { SyncProgress } from 'elza-api';
 import { WebsocketEventType } from 'components/shared/web-socket/enums';
 import { addToastrDanger } from 'components/shared/toastr/ToastrActions';
 import { WaitingOverlay } from 'components/shared/waiting-overlay';
-import { useThunkDispatch } from 'utils/hooks';
+import { useThunkDispatch, useLocalStorageState } from 'utils/hooks';
 
 function createBindings(accessPoint: ApAccessPointVO | undefined) {
     const bindingsMaps: Bindings = {
@@ -148,32 +148,18 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     const apTypeId = detail.fetched && detail.data ? detail.data.typeId : 0;
 
     const [collapsed, setCollapsed] = useState<boolean>(false);
+    const [localGlobalCollapsed, setLocalGlobalCollapsed] = useLocalStorageState<boolean>('apDetail-globalCollapsed', true);
     const [exportState, setExportState] = useState<ExportState>(ExportState.COMPLETED);
     const [exportMessage, setExportMessage] = useState<string>(null);
     const [itemQueueId, setItemQueueId] = useState<number>(-1);
     const [revisionActive, setRevisionActive] = useState<boolean>(revisionActiveUrl);
     const autoEnabledForEntity = useRef<number | null>(null);
 
-    useEffect(() => {
-        setRevisionActive(revisionActiveUrl);
-    }, [revisionActiveUrl]);
-
-    // Auto-enable revision view when the current user is the assignee of the
-    // loaded entity. Runs once per entity load; a later manual toggle-off is
-    // preserved because the ref remembers we've already applied the default.
-    useEffect(() => {
-        if (select) { return; }
-        if (!detail.fetched || !detail.data) { return; }
-        const entityId = detail.data.id;
-        if (autoEnabledForEntity.current === entityId) { return; }
-
-        const hasRevision = !!detail.data.revStateApproval;
-        const isAssignee = currentUserId != null && detail.data.assignedTo === currentUserId;
-        if (hasRevision && isAssignee && !revisionActive) {
-            setRevisionActive(true);
-        }
-        autoEnabledForEntity.current = entityId;
-    }, [detail, currentUserId, select]);
+    const detailFetched = detail.fetched;
+    const detailIsFetching = detail.isFetching;
+    const detailHasRevision = !!detail.data?.revStateApproval;
+    const loadedEntityId = detailFetched ? detail.data?.id : undefined;
+    const loadedAssignedTo = detail.data?.assignedTo;
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -182,26 +168,55 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     const dispatch = useThunkDispatch();
     const history = useHistory();
 
+    // URL is the source of truth for revisionActive; keep local state in sync
+    // when navigation (back/forward, external link, other effects) changes it.
+    useEffect(() => {
+        setRevisionActive(revisionActiveUrl);
+    }, [revisionActiveUrl]);
+
+    // Auto-enable revision view when the current user is the assignee of the
+    // loaded entity. Runs once per entity load; a later manual toggle-off is
+    // preserved because the ref remembers we've already applied the default.
+    useEffect(() => {
+        if (select || loadedEntityId == null) { return; }
+        if (autoEnabledForEntity.current === loadedEntityId) { return; }
+
+        const isAssignee = currentUserId != null && loadedAssignedTo === currentUserId;
+        if (detailHasRevision && isAssignee) {
+            setRevisionActive(true);
+        }
+        autoEnabledForEntity.current = loadedEntityId;
+    }, [loadedEntityId, loadedAssignedTo, detailHasRevision, currentUserId, select]);
+
     useEffect(() => {
         if (id) {
             refreshDetail(id, false, false, revisionActive);
         }
-    }, [id, refreshDetail]);
+    }, [id]);
 
-    // pri neexistenci revize dojde k zobrazeni samotne entity
+    // Strip /revision from the URL when the loaded entity has no revision.
+    // Reacts to URL state, not local toggle state, so back/forward navigation
+    // can't ping-pong against a stale local value.
     useEffect(() => {
-        if (select || detail.isFetching) { return; }
-
-        const entityHasNoRevision = detail.fetched && !detail.data?.revStateApproval;
-        if (entityHasNoRevision && revisionActiveUrl) {
+        if (select || detailIsFetching || !detailFetched) { return; }
+        if (!detailHasRevision && revisionActiveUrl) {
             dispatch(goToAe(history, id, false, !select, false, true));
-            return;
         }
+    }, [revisionActiveUrl, select, detailFetched, detailIsFetching, detailHasRevision, id])
 
+    // Push local toggle/auto-enable changes into the URL. Skips URL-driven
+    // changes (those are handled by the sync-down effect above), so back/forward
+    // navigation doesn't trigger a counter-redirect.
+    const prevRevisionActiveUrl = useRef(revisionActiveUrl);
+    useEffect(() => {
+        const urlJustChanged = prevRevisionActiveUrl.current !== revisionActiveUrl;
+        prevRevisionActiveUrl.current = revisionActiveUrl;
+        if (urlJustChanged) { return; }
+        if (select) { return; }
         if (revisionActive !== revisionActiveUrl) {
             dispatch(goToAe(history, id, false, !select, revisionActive, true));
         }
-    }, [revisionActive, revisionActiveUrl, select, detail, id, dispatch, history])
+    }, [revisionActive, revisionActiveUrl, select, id])
 
     // Scrolls a part into view by its data-part-id attribute; silent no-op if the
     // part is not currently rendered (e.g. user navigated away between dialog open
@@ -293,8 +308,8 @@ const ApDetailPageWrapper: React.FC<Props> = ({
     // show accesspoint export message on bindings state
     useEffect(() => {
         const stateMap = {
-            [SyncProgress.UPLOAD_PENDING]: ExportState.PENDING,
-            [SyncProgress.UPLOAD_STARTED]: ExportState.STARTED,
+            [SyncProgress.UploadPending]: ExportState.PENDING,
+            [SyncProgress.UploadStarted]: ExportState.STARTED,
         }
         bindings.forEach(({ syncProgress }) => {
             const state = stateMap[syncProgress];
@@ -476,7 +491,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
             if (updatedPart) { updatedParentIds.push(updatedPart.id) }
         })
 
-        console.log(allRevisionParts, parentParts, parentIds, updatedParentIds)
+        // console.log(allRevisionParts, parentParts, parentIds, updatedParentIds)
 
         return allRevisionParts
             .filter(value =>
@@ -540,7 +555,9 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                     item={detail.data!}
                     id={detail.data!.id}
                     collapsed={collapsed}
+                    globalCollapsed={localGlobalCollapsed}
                     onToggleCollapsed={() => setCollapsed(!collapsed)}
+                    onToggleGlobalCollapsed={() => setLocalGlobalCollapsed(!localGlobalCollapsed)}
                     onToggleRevision={() => {
                         setRevisionActive(!revisionActive);
                         refreshValidation(id, !revisionActive);
@@ -627,7 +644,7 @@ const ApDetailPageWrapper: React.FC<Props> = ({
                                     newPreferred={detail.data && revisionActive ? detail.data.newPreferredPart : undefined}
                                     revPreferred={detail.data && revisionActive ? detail.data.revPreferredPart : undefined}
                                     revision={detail.data ? !!detail.data.revStateApproval && revisionActive : false}
-                                    globalCollapsed={globalCollapsed}
+                                    globalCollapsed={localGlobalCollapsed}
                                     onSetPreferred={handleSetPreferred}
                                     onEdit={handleEdit}
                                     onDelete={handleDelete}

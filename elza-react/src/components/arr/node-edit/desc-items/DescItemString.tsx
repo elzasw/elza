@@ -9,6 +9,7 @@ import { isMaskViewDefinition, maskString, unmaskString } from "./maskUtils";
 import { useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
 import { useTextFragmentsContext } from "components/arr/text-fragments";
+import { useStyles } from "./styles";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemString) => Promise<void>;
@@ -32,6 +33,7 @@ export function DescItemString({
   }
 
   const { formatMessage } = useIntl();
+  const styles = useStyles();
   const textFragments = useTextFragmentsContext();
   const isInherited = item.nodeId !== nodeId;
   const isDisabled =
@@ -112,15 +114,7 @@ export function DescItemString({
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flex: 1,
-        position: "relative",
-        flexDirection: "column",
-        width: "100%",
-      }}
-    >
+    <div className={styles.descItemContainerWithWidth}>
       {typeWidth === 0 ? (
         <TextareaAutosize
           resize="none"
@@ -133,6 +127,7 @@ export function DescItemString({
           style={{
             flex: 1,
             minWidth: "60px",
+            fontSize: "1em",
             textDecoration: item.inhibited ? "line-through" : undefined,
           }}
         />
@@ -147,6 +142,7 @@ export function DescItemString({
           style={{
             flex: 1,
             minWidth: "60px",
+            fontSize: "1em",
             textDecoration: item.inhibited ? "line-through" : undefined,
           }}
         />
@@ -157,7 +153,7 @@ export function DescItemString({
         isDirty={isDirty}
         onResolve={resolveConflict}
       >
-        {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} />}
+        {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} style={{ fontSize: "1em" }} />}
       </ConflictValue>
       {isDirty && <EditStateDisplay />}
     </div>

@@ -142,12 +142,13 @@ export function deleteFundHistory(fundId) {
 }
 
 // Export fondu, využití metod na získání id export requestu, zjistění stavu a adresy pro stažení
-export function exportFund(fundId, { exportFilter, includeUUID, includeAccessPoints }) {
+export function exportFund(fundId, { exportFilter, includeUUID, includeAccessPoints, includeDaos }) {
     let requestData = {
         fundsSections: [{fundVersionId: fundId}],
         exportFilter,
         includeUUID,
         includeAccessPoints,
+        includeDaos,
     };
 
     return async (dispatch) => {

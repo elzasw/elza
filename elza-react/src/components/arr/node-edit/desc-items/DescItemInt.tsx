@@ -7,6 +7,7 @@ import { useValueManager } from "./utils";
 import { fromDuration, normalizeDuration, normalizeDurationLength, toDuration } from "components/validate";
 import { useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
+import { useStyles } from "./styles";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemInt) => Promise<void>;
@@ -29,6 +30,7 @@ export function DescItemInt({
   }
 
   const { formatMessage } = useIntl();
+  const styles = useStyles();
   const isInherited = item.nodeId !== nodeId;
   const isDisabled =
     item.undefined ||
@@ -93,15 +95,7 @@ export function DescItemInt({
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flex: 1,
-        position: "relative",
-        flexDirection: "column",
-        width: "100%",
-      }}
-    >
+    <div className={styles.descItemContainerWithWidth}>
       <Input
         size={compact ? "small" : "medium"}
         disabled={isDisabled}
@@ -109,6 +103,7 @@ export function DescItemInt({
         style={{
           flex: 1,
           minWidth: "60px",
+          fontSize: "1em",
           textDecoration: item.inhibited ? "line-through" : undefined,
         }}
         onChange={handleInputChange}
@@ -120,7 +115,7 @@ export function DescItemInt({
         isDirty={isDirty}
         onResolve={resolveConflict}
       >
-        {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} />}
+        {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} style={{ fontSize: "1em" }} />}
       </ConflictValue>
       {isDirty && <EditStateDisplay />}
     </div>

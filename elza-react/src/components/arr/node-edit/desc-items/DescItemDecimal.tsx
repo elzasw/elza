@@ -1,11 +1,13 @@
 import { Input } from "@fluentui/react-components";
 import { DataDecimal, DataType, NodeItem } from "elza-api";
+import { useMemo } from "react";
 import { ConflictValue } from "./ConflictValue";
 import { EditStateDisplay } from "./EditStateDisplay";
 import { DescItemProps } from "./types";
 import { useValueManager } from "./utils";
 import { useIntl } from "react-intl";
 import { messages as commonMessages } from "./commonMessages";
+import { useStyles } from "./styles";
 
 interface Props extends DescItemProps {
   onChange: (item: NodeItemDecimal) => Promise<void>;
@@ -26,7 +28,8 @@ export function DescItemDecimal({
     throw "Incorrect data type";
   }
 
-  const { formatMessage } = useIntl();
+  const { formatMessage, formatNumber, locale } = useIntl();
+  const styles = useStyles();
   const isInherited = item.nodeId !== nodeId;
   const isDisabled =
     item.undefined ||
@@ -36,6 +39,17 @@ export function DescItemDecimal({
     _isDisabled;
   const data = item.data as DataDecimal;
 
+  // The locale's decimal separator (e.g. "." for en, "," for cs).
+  const decimalSeparator = useMemo(
+    () => new Intl.NumberFormat(locale).formatToParts(1.1).find(({ type }) => type === "decimal")?.value ?? ".",
+    [locale],
+  );
+
+  function formatValue(numericValue: number) {
+    return formatNumber(numericValue, { maximumFractionDigits: 20, useGrouping: false });
+  }
+
+  // State holds the locale-formatted display string; conversion to a number happens only on save.
   const {
     value,
     setValue,
@@ -44,13 +58,24 @@ export function DescItemDecimal({
     initialValue,
     resetConflict,
     finishChange,
-  } = useValueManager<number | string>(data?.value, item);
+  } = useValueManager<string>(data?.value != null ? formatValue(data.value) : null, item);
+
+  function toNumber(displayValue: string) {
+    return parseFloat(displayValue.split(decimalSeparator).join("."));
+  }
 
   async function handleChange(force?: boolean) {
-    if (value && initialValue !== value && (!conflictValue || force)) {
-      const decimalValue = parseFloat(value.toString());
+    if (value != null && value !== "" && initialValue !== value && (!conflictValue || force)) {
+      const decimalValue = toNumber(value);
       if (isNaN(decimalValue)) {
         return;
+      }
+
+      // Normalize to the canonical formatted form (e.g. "0,20" -> "0,2") so it matches the
+      // value the server returns, avoiding a spurious dirty/conflict state.
+      const normalized = formatValue(decimalValue);
+      if (normalized !== value) {
+        setValue(normalized);
       }
 
       await onChange({
@@ -71,40 +96,28 @@ export function DescItemDecimal({
   function handleInputChange({
     currentTarget,
   }: React.ChangeEvent<HTMLInputElement>) {
-    const normalizedValue = currentTarget.value.replace(",", ".");
-
-    const skipParse = normalizedValue.endsWith(".");
-    if (skipParse) {
-      setValue(normalizedValue);
+    // Accept a dot as the decimal separator too, normalizing it to the locale one for display.
+    const input = decimalSeparator === "." ? currentTarget.value : currentTarget.value.replace(".", decimalSeparator);
+    // Allow only a partial decimal in the locale notation: optional leading '-',
+    // digits, and at most one decimal separator.
+    const separator = decimalSeparator.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(`^-?\\d*(${separator}\\d*)?$`);
+    if (input !== "" && !pattern.test(input)) {
       return;
     }
-
-    const decimal = parseFloat(normalizedValue);
-    if (isNaN(decimal) && currentTarget.value !== "") {
-      return;
-    }
-
-    const _decimal = isNaN(decimal) ? null : decimal;
-    setValue(_decimal);
+    setValue(input);
   }
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flex: 1,
-        position: "relative",
-        flexDirection: "column",
-        width: "100%",
-      }}
-    >
+    <div className={styles.descItemContainerWithWidth}>
       <Input
         size={compact ? "small" : "medium"}
         disabled={isDisabled}
-        value={item.undefined ? formatMessage(commonMessages.undefined) : (value || "").toString()}
+        value={item.undefined ? formatMessage(commonMessages.undefined) : (value ?? "")}
         style={{
           flex: 1,
           minWidth: "60px",
+          fontSize: "1em",
           textDecoration: item.inhibited ? "line-through" : undefined,
         }}
         onChange={handleInputChange}
@@ -116,7 +129,7 @@ export function DescItemDecimal({
         isDirty={isDirty}
         onResolve={resolveConflict}
       >
-        {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} />}
+        {(conflictValue) => <Input size={compact ? "small" : "medium"} value={conflictValue} readOnly={true} style={{ fontSize: "1em" }} />}
       </ConflictValue>
       {isDirty && <EditStateDisplay />}
     </div>

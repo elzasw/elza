@@ -1,4 +1,5 @@
 import { DataDecimal, DataType } from "elza-api";
+import { FormattedNumber } from "react-intl";
 import { DescItemProps } from "./types";
 
 export function DescItemDecimal({ item, nodeId }: DescItemProps) {
@@ -17,7 +18,11 @@ export function DescItemDecimal({ item, nodeId }: DescItemProps) {
         opacity: isInherited ? 0.5 : undefined,
       }}
     >
-      {item.undefined ? "Výjimka" : data.value}
+      {item.undefined ? (
+        "Výjimka"
+      ) : data.value != null ? (
+        <FormattedNumber value={data.value} maximumFractionDigits={20} useGrouping={false} />
+      ) : null}
     </div>
   );
 }

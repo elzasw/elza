@@ -1,18 +1,18 @@
-import {Area} from "../../../../api/Area";
+import {ApSearchArea} from 'elza-api';
 
-export function getValues(): Area[] {
-    return [Area.ALLNAMES, Area.ALLPARTS, Area.PREFERNAMES]
+export function getValues(): ApSearchArea[] {
+    return [ApSearchArea.AllNames, ApSearchArea.AllParts, ApSearchArea.PreferNames]
 }
 
-export function getName(area: Area): string {
+export function getName(area: ApSearchArea): string {
     switch (area) {
-        case Area.PREFERNAMES:
+        case ApSearchArea.PreferNames:
             return 'Pouze preferovaná označení';
-        case Area.ALLPARTS:
+        case ApSearchArea.AllParts:
             return 'Všechny části popisu';
-        case Area.ALLNAMES:
+        case ApSearchArea.AllNames:
             return 'Všechna označení';
-        case Area.ENTITYCODE:
+        case ApSearchArea.EntityCode:
             return 'Podle kódu entity';
         default:
             return 'Neznámá oblast ' + area;

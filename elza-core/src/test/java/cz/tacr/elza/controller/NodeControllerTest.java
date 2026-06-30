@@ -2,16 +2,23 @@ package cz.tacr.elza.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.web.client.HttpClientErrorException;
 
 import cz.tacr.elza.controller.ArrangementController.DescFormDataNewVO;
+import cz.tacr.elza.controller.ArrangementController;
 import cz.tacr.elza.controller.vo.ApAccessPointVO;
 import cz.tacr.elza.controller.vo.ArrFundVersionVO;
+import cz.tacr.elza.controller.vo.TreeData;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.controller.vo.nodes.ArrNodeVO;
 import cz.tacr.elza.controller.vo.nodes.RulDescItemTypeExtVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemTextVO;
@@ -32,6 +39,7 @@ import cz.tacr.elza.test.controller.vo.NodeData;
 import cz.tacr.elza.test.controller.vo.NodeDataParam;
 import cz.tacr.elza.test.controller.vo.NodeField;
 import cz.tacr.elza.test.controller.vo.NodeFieldName;
+import cz.tacr.elza.test.controller.vo.NodeInfo;
 import cz.tacr.elza.test.controller.vo.NodeItem;
 import cz.tacr.elza.test.controller.vo.NodeSearchResult;
 import cz.tacr.elza.test.controller.vo.NodeTreeData;
@@ -268,36 +276,50 @@ public class NodeControllerTest extends AbstractControllerTest {
         return searchResult;
     }
 
-	@Test
+    @Test
     public void nodeGetNodeDataTest() {
-    	Fund fund = createFund("fund1", "internalCode");
-    	assertNotNull(fund);
-
-    	// create levels (nodes)
+        Fund fund = createFund("fund1", "internalCode");
         ArrFundVersionVO fundVersion = getOpenVersion(fund);
         List<ArrNodeVO> nodes = createLevels(fundVersion);
-        ArrNodeVO node = nodes.get(0);
+        ArrNodeVO focusNode = nodes.get(0);
 
-        // create item by SRD_TITLE
-        NodeItem nodeItem = buildNodeItem(SRD_TITLE, null, DataType.TEXT, "value", node, null);
-        descitemsApi.descItemCreateDescItem(fundVersion.getId(), nodeItem);
+        // attach a desc item so the form has content to return
+        descitemsApi.descItemCreateDescItem(fundVersion.getId(),
+                buildNodeItem(SRD_TITLE, null, DataType.TEXT, "value", focusNode, null));
 
-        // create NodeDataParam
+        // nodeStatus=true → response.node populated with id + version
+        NodeData withStatus = fetchNodeData(fundVersion, focusNode, true);
+        assertNotNull(withStatus.getFormData());
+        assertNotNull(withStatus.getNode());
+        assertEquals(focusNode.getId(), withStatus.getNode().getId());
+        assertNotNull(withStatus.getNode().getVersion());
+        assertTrue(!withStatus.getChildren().isEmpty());
+        assertTrue(withStatus.getParents().isEmpty());
+        assertTrue(withStatus.getSiblings().isEmpty());
+
+        // nodeStatus=false → focus-node block is skipped, response.node is null
+        NodeData withoutStatus = fetchNodeData(fundVersion, focusNode, false);
+        assertNull(withoutStatus.getNode());
+        // toggling the flag must not affect the rest of the payload
+        assertNotNull(withoutStatus.getFormData());
+    }
+
+    /**
+     * Fetch node data with a common parameter set, varying only the {@code nodeStatus} flag.
+     */
+    private NodeData fetchNodeData(ArrFundVersionVO fundVersion, ArrNodeVO node, boolean nodeStatus) {
         NodeDataParam param = new NodeDataParam();
         param.setFundVersionId(fundVersion.getId());
-        param.setNodeId(nodes.get(0).getId());
+        param.setNodeId(node.getId());
         param.setSiblingsMaxCount(100);
         param.setFormData(true);
         param.setParents(true);
         param.setChildren(true);
+        param.setNodeStatus(nodeStatus);
 
-        NodeData nodeData = nodeApi.nodeGetNodeData(param);
-        assertNotNull(nodeData);
-        assertNotNull(nodeData.getFormData());
-        assertNotNull(nodeData.getNode());
-        assertTrue(!nodeData.getChildren().isEmpty());
-        assertTrue(nodeData.getParents().isEmpty());
-        assertTrue(nodeData.getSiblings().isEmpty());
+        NodeData data = nodeApi.nodeGetNodeData(param);
+        assertNotNull(data);
+        return data;
     }
 
 	@Test
@@ -330,4 +352,102 @@ public class NodeControllerTest extends AbstractControllerTest {
 	    ArrItemTextVO textVo = (ArrItemTextVO) result;
 	    assertTrue(textVo.getValue().equals("value"));
 	}
+
+    /**
+     * Covers all observable paths of GET /node/info/id/{nodeId} and
+     * GET /node/info/uuid/{nodeUuid} on a single Spring context:
+     *   - alive node, lookup by numeric ID and by UUID
+     *   - deleted node — fundVersionId points to the version created before deletion,
+     *     deleteChangeId is populated
+     *   - fund with no open version (after approve) — alive node returns the new
+     *     open version that was opened automatically
+     *   - unknown ID and unknown UUID → 404
+     */
+    @Test
+    public void nodeGetNodeInfoTest() {
+        // unknown-identifier paths first — no fund setup required
+        HttpClientErrorException unknownId = assertThrows(HttpClientErrorException.class,
+                () -> nodeApi.nodeGetNodeInfoById(Integer.MAX_VALUE));
+        assertEquals(404, unknownId.getStatusCode().value());
+
+        HttpClientErrorException unknownUuid = assertThrows(HttpClientErrorException.class,
+                () -> nodeApi.nodeGetNodeInfoByUuid("00000000-0000-0000-0000-000000000000"));
+        assertEquals(404, unknownUuid.getStatusCode().value());
+
+        Fund fund = createFund("fund-info", "ic-info");
+        ArrFundVersionVO openV1 = getOpenVersion(fund);
+        List<ArrNodeVO> nodes = createLevels(openV1);
+        // createLevels returns 4 children directly under root, in tree order
+        ArrNodeVO aliveNode = nodes.get(0);
+        ArrNodeVO toDelete = nodes.get(1);
+
+        // alive node — lookup by numeric ID
+        NodeInfo byId = nodeApi.nodeGetNodeInfoById(aliveNode.getId());
+        assertNotNull(byId);
+        assertEquals(aliveNode.getId(), byId.getId());
+        assertEquals(fund.getId(), byId.getFundId());
+        assertEquals(openV1.getId(), byId.getFundVersionId());
+        assertNull(byId.getDeleteChangeId());
+        assertNotNull(byId.getVersion());
+        // the legacy ArrNodeVO from createLevels has no uuid, so use the server's
+        assertNotNull(byId.getUuid(), "server must return the node's uuid");
+
+        // same node, looked up by UUID — should round-trip to identical NodeInfo
+        NodeInfo byUuid = nodeApi.nodeGetNodeInfoByUuid(byId.getUuid());
+        assertEquals(byId.getId(), byUuid.getId());
+        assertEquals(byId.getFundVersionId(), byUuid.getFundVersionId());
+        assertNull(byUuid.getDeleteChangeId());
+
+        // delete a different node and verify deletion is reflected
+        HelperParentLookup parent = findParentOf(openV1, toDelete);
+        deleteLevel(openV1, toDelete, parent.parentNode);
+
+        NodeInfo deletedInfo = nodeApi.nodeGetNodeInfoById(toDelete.getId());
+        assertNotNull(deletedInfo);
+        assertEquals(toDelete.getId(), deletedInfo.getId());
+        assertEquals(fund.getId(), deletedInfo.getFundId());
+        // openV1 was created before the deletion, so it is still the latest qualifying version
+        assertEquals(openV1.getId(), deletedInfo.getFundVersionId());
+        assertNotNull(deletedInfo.getDeleteChangeId(),
+                "deleteChangeId must be set when the node's level has been deleted");
+
+        // approve the current open version — Elza opens a fresh one automatically
+        approveVersion(openV1);
+        ArrFundVersionVO openV2 = getOpenVersion(fund);
+        assertNotNull(openV2, "a new open version should be opened after approve");
+        assertTrue(openV2.getId() > openV1.getId(),
+                "the new open version must have a higher id than the previously open one");
+
+        // alive node now lives in openV2; deleted node still points at openV1
+        NodeInfo aliveAfterApprove = nodeApi.nodeGetNodeInfoById(aliveNode.getId());
+        assertEquals(openV2.getId(), aliveAfterApprove.getFundVersionId());
+        assertNull(aliveAfterApprove.getDeleteChangeId());
+
+        NodeInfo deletedAfterApprove = nodeApi.nodeGetNodeInfoById(toDelete.getId());
+        assertEquals(openV1.getId(), deletedAfterApprove.getFundVersionId());
+        assertNotNull(deletedAfterApprove.getDeleteChangeId());
+    }
+
+    /** Resolves the parent of a node in the fund tree (needed by {@link #deleteLevel}). */
+    private HelperParentLookup findParentOf(final ArrFundVersionVO fundVersion, final ArrNodeVO node) {
+        ArrangementController.FaTreeParam input = new ArrangementController.FaTreeParam();
+        input.setVersionId(fundVersion.getId());
+        TreeData treeData = getFundTree(input);
+        TreeNodeVO root = treeData.getNodes().iterator().next();
+        HelperParentLookup r = new HelperParentLookup();
+        r.parentNode = convertTreeNodeToArrNodeVO(root);
+        return r;
+    }
+
+    /** Tiny carrier so the helper can grow without bloating the signature. */
+    private static class HelperParentLookup {
+        ArrNodeVO parentNode;
+    }
+
+    private ArrNodeVO convertTreeNodeToArrNodeVO(final TreeNodeVO tn) {
+        ArrNodeVO n = new ArrNodeVO();
+        n.setId(tn.getId());
+        n.setVersion(tn.getVersion());
+        return n;
+    }
 }

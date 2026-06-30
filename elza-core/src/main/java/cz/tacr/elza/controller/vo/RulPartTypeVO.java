@@ -2,6 +2,7 @@ package cz.tacr.elza.controller.vo;
 
 import cz.tacr.elza.domain.RulPartType;
 
+@Deprecated
 public class RulPartTypeVO extends BaseCodeVo {
 
     private Integer childPartId;

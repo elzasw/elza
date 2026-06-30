@@ -2,10 +2,12 @@ import { Spinner } from "@fluentui/react-components";
 import { WebApi } from "actions";
 import { copyDescItemType, nocopyDescItemType } from "actions/arr/nodeSetting";
 import { useEffect, useMemo, useState } from "react";
+import { NodeFormData, NodeStatus } from "elza-api";
 import { ArrDaoVO } from "typings/dao";
 import { useAppThunkDispatch } from "utils/hooks";
 import { useAppSelector } from "utils/hooks/useAppSelector";
 import { FormItemGroup } from "./FormItemGroup";
+import { GroupColumns } from "./GroupColumns";
 import { NodeToolbar } from "./NodeToolbar";
 import { DescItemTypeFields } from "./DescItemTypeFields";
 import { useActiveFund, useActiveParent, useNodeFormData } from "./hooks";
@@ -14,14 +16,21 @@ import { TextFragmentsProvider } from "../text-fragments";
 import { useUserSettings } from "contexts/user";
 import { buildGroupsForm } from "./utils";
 import { useStyles } from "./styles";
+import DaoLinkDetail from "components/aip/DaoLinkDetail";
 
 interface Props {
   fondsVersionId: number;
   nodeId: number;
   nodeVersionId: number;
+  /** When provided, NodeEdit waits for `seedFormData`/`seedNodeStatus` from parent instead of fetching. */
+  seedFromParent?: boolean;
+  seedFormData?: NodeFormData;
+  seedNodeStatus?: NodeStatus;
+  /** Called when the form requests a refresh (e.g. websocket NODES_CHANGE). Parent re-fetches and re-seeds. */
+  onRefresh?: () => void;
 }
 
-export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
+export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId, seedFromParent, seedFormData, seedNodeStatus, onRefresh }: Props) {
   const dispatch = useAppThunkDispatch();
   const activeParent = useActiveParent(); // TODO use different way of getting active parent node
   const activeFund = useActiveFund();
@@ -39,7 +48,12 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     arrRegion.nodeSettings.nodes.find(({ id }) => id === activeParent?.id),
   );
 
-  const nodeFormData = useNodeFormData(fondsVersionId, nodeId, nodeVersionId);
+  const nodeFormData = useNodeFormData(fondsVersionId, nodeId, nodeVersionId, {
+    seedFromParent,
+    seedFormData,
+    seedNodeStatus,
+    onRefresh,
+  });
   const {
     formData,
     formItems,
@@ -47,12 +61,27 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
     addedFormItems,
     itemTypes,
     nodeData,
-    addEmptyDescItem,
+    addEmptyDescItem: addEmptyDescItemBase,
     deleteDescItem,
     createDescItem,
     updateDescItem,
     parent,
   } = nodeFormData;
+
+  // localId of a freshly added field that should receive focus once it has mounted.
+  // Tracked here (rather than in a single DescItemTypeFields) so both add paths work:
+  // the per-type "+" button and the "add item type" modal, which add to different
+  // DescItemTypeFields instances.
+  const [autoFocusLocalId, setAutoFocusLocalId] = useState<string>();
+
+  function addEmptyDescItem(typeId: number, specId?: number, position?: number) {
+    const localId = addEmptyDescItemBase(typeId, specId, position);
+    // When several types are added at once (the "add item type" modal allows a
+    // multi-select), keep the first one as the focus target so focus lands on the
+    // topmost new field rather than the last.
+    setAutoFocusLocalId((current) => current ?? localId);
+    return localId;
+  }
 
   useEffect(() => {
     if (nodeData?.id) {
@@ -119,14 +148,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
   return (
     <TextFragmentsProvider>
     <NodeFormContext.Provider value={nodeFormData}>
-    <div
-      style={{
-        background: "var(--shade-1)",
-        containerName: "form-container",
-        containerType: "inline-size",
-        position: "relative",
-      }}
-    >
+    <div className={styles.nodeEditForm}>
       <NodeToolbar
         formData={formData}
         formItems={[...formItems, ...forcedFormItems, ...addedFormItems]}
@@ -136,6 +158,7 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
         onAddDescItem={addEmptyDescItem}
         daos={daos}
       />
+      <DaoLinkDetail nodeId={nodeId} />
       {/* <div
         style={{
           position: "fixed",
@@ -160,15 +183,15 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
           });
         })}
       </div> */}
-      <div style={{ padding: compact ? "4px 8px" : "8px", columns: `350px ${settings.groupColumns || 1}` }}>
+      <div style={{ padding: compact ? "4px 8px" : "8px" }}>
         {viewDescItemGroupsLocal.length === 0 && (
-          <div style={{ padding: "50px" }}>
+          <div className={styles.spinnerPadding}>
             <Spinner />
           </div>
         )}
-        {viewDescItemGroupsLocal.map(({ group, descItemTypes }) => {
-          return (
-            <FormItemGroup group={group}>
+        <GroupColumns groups={viewDescItemGroupsLocal} columnCount={settings.groupColumns || 1}>
+          {({ group, descItemTypes }) => (
+            <FormItemGroup key={group.code} group={group}>
               {descItemTypes.map(({ typeRef, typeForm, typeWidth, descItems }) => (
                 <DescItemTypeFields
                   key={typeRef.id}
@@ -187,11 +210,13 @@ export function NodeEdit({ fondsVersionId, nodeId, nodeVersionId }: Props) {
                   deleteDescItem={deleteDescItem}
                   createDescItem={createDescItem}
                   updateDescItem={updateDescItem}
+                  autoFocusLocalId={autoFocusLocalId}
+                  onAutoFocusTaken={() => setAutoFocusLocalId(undefined)}
                 />
               ))}
             </FormItemGroup>
-          );
-        })}
+          )}
+        </GroupColumns>
       </div>
     </div>
     </NodeFormContext.Provider>

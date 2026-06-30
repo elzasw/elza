@@ -72,6 +72,14 @@ public class ArrBulkActionRun {
     @JoinColumn(name = FIELD_CHANGE_ID, nullable = false)
     private ArrChange change;
 
+    @ManyToOne(fetch = FetchType.LAZY, targetEntity = ArrFundsChange.class)
+    @JoinColumn(name = "funds_change_id", nullable = true)
+    private ArrFundsChange fundsChange;
+
+    @Column(name = "funds_change_id", insertable = false, updatable = false)
+    @ReadOnlyProperty
+    private Integer fundsChangeId;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 16, nullable = false)
     private State state = State.WAITING;
@@ -187,6 +195,28 @@ public class ArrBulkActionRun {
      */
     public void setChange(final ArrChange change) {
         this.change = change;
+    }
+
+    /**
+     * Vrací seskupení vícefondové akce, do které tato hromadná akce patří.
+     *
+     * @return seskupení vícefondové akce, nebo {@code null} pro samostatně spuštěnou akci
+     */
+    public ArrFundsChange getFundsChange() {
+        return fundsChange;
+    }
+
+    /**
+     * Nastavuje seskupení vícefondové akce.
+     *
+     * @param fundsChange seskupení vícefondové akce
+     */
+    public void setFundsChange(final ArrFundsChange fundsChange) {
+        this.fundsChange = fundsChange;
+    }
+
+    public Integer getFundsChangeId() {
+        return fundsChangeId;
     }
 
     /**

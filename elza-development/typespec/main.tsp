@@ -4,6 +4,7 @@ import "@typespec/openapi3";
 
 using TypeSpec.Http;
 using TypeSpec.Rest;
+using TypeSpec.OpenAPI;
 
 /**
  * Basic statistics about Elza instance
@@ -20,7 +21,8 @@ model AdminInfo {
     /** Number of logged users */
     loggedUsers: int32;
 }
-  /** Model DaoVireRequest */
+
+/** Model DaoVireRequest */
 model DaoViewRequestVO {
     /** Identifikátor aipu - aip.code */
     daoId: string;
@@ -53,26 +55,26 @@ model LoggedUsers {
 }
 
 /**
- * Archivní soubor
+ * Archival fonds described by basic information
  */
 model Fund {
-    /** Identifikátor */
+    /** Fonds identifier */
     id: integer;
-    /** UUID - identifikátor AS */
+    /** Fonds UUID */
     uuid: string;
-    /** Název */
+    /** Fonds name */
     name: string;
-    /** Identifikátor instituce (vždy kód instituce) */
+    /** Archival institution identifier */
     institutionIdentifier: string;
-    /** Interní kód */
+    /** Internal organization fonds code */
     internalCode?: string;
-    /** Datum založení */
+    /** Creation fonds date */
     createDate?: offsetDateTime;
-    /** Číslo archivního souboru */
+    /** Archival fonds number */
     fundNumber?: integer;
-    /** Datace */
+    /** Date range for the fonds */
     unitdate?: string;
-    /** Značka archivního souboru */
+    /** Fonds mark */
     mark?: string;
 }
 
@@ -99,29 +101,13 @@ model NodeSearchResult {
 }
 
 /**
- * Zakládaný archivní souboru
+ * Details about archival funds
  */
-model FundDetail {
-    /** Identifikátor */
-    id: integer;
-    /** UUID - identifikátor AS */
-    uuid: string;
-    /** Název */
-    name: string;
-    /** Identifikátor instituce (vždy kód instituce) */
-    institutionIdentifier: string;
-    /** Interní kód */
-    internalCode?: string;
-    /** Datum založení */
-    createDate?: offsetDateTime;
-    /** Číslo archivního souboru */
-    fundNumber?: integer;
-    /** Datace */
-    unitdate?: string;
-    /** Značka archivního souboru */
-    mark?: string;
+model FundDetail extends Fund {
     /** Seznam oblastí entit */
     scopes: string[];
+    /** Active funds version */
+    fundVersionId: integer;
 }
 
 /**
@@ -337,6 +323,8 @@ model ExportParams {
     exportFilter?: string;
     includeUUID?: boolean = true;
     includeAccessPoints?: boolean = true;
+    /** zahrnout do exportu připojené digitální archivní objekty (DAO) */
+    includeDaos?: boolean = true;
 }
 
 /**
@@ -586,7 +574,7 @@ model ItemDataResult {
 }
 
 /**
- * Náhrada za třídu `ArrNodeVO`
+ * Node information without item values, used for parent and sibling nodes in NodeData
  */
 model NodeBase {
     /** id of node */
@@ -595,6 +583,37 @@ model NodeBase {
     version: integer;
     /** node uuid */
     uuid: string;
+}
+
+/**
+ * Basic information about a node — its identifiers, fund placement,
+ * and deletion state relative to the most recent version that contained it.
+ *
+ * Lightweight alternative to the full node-data load for clients that
+ * only need to resolve a node identifier to fund/version context.
+ */
+model NodeInfo {
+    /** Node ID */
+    id: integer;
+    /** Node DB row version (for optimistic concurrency on subsequent writes) */
+    version: integer;
+    /** Node UUID */
+    uuid: string;
+    /** Fund ID the node belongs to */
+    fundId: integer;
+    /**
+     * ID of the most recent fund version in which the node was available
+     * (i.e. had an active level). Not necessarily the open version —
+     * if the node has been deleted in the open version, this points to
+     * the latest version that still contained it.
+     */
+    fundVersionId: integer;
+    /**
+     * ID of the ArrChange that deleted the node's level after `fundVersionId`
+     * was locked. Absent if the node's level is still active in `fundVersionId`
+     * (i.e. the node is still reachable in that version).
+     */
+    deleteChangeId?: integer;
 }
 
 /**
@@ -616,10 +635,7 @@ model NodeUpdateItem {
     item: NodeItem;
 }
 
-/**
- * Náhrada za třídu `ArrItemVO`
- */
-model NodeItem {
+model BaseItem {
     /** id of item */
     id?: integer;
     /** id value of item */
@@ -634,14 +650,23 @@ model NodeItem {
     itemSpecId?: integer;
     /** value cannot be changed */
     readOnly?: boolean;
+    /** item data */
+    data?: ItemData;
+}
+
+/**
+ * Náhrada za třídu `ArrItemVO`
+ */
+model NodeItem extends BaseItem {
     /** id node */
     nodeId?: integer;
     /** node version */
     nodeVersion?: integer;
     /** if inheritance is prohibited - true */
     inhibited?: boolean;
-    /** item data */
-    data?: ItemData;
+}
+
+model StructuredObjectItem extends BaseItem {
 }
 
 /**
@@ -936,7 +961,7 @@ model ParInstitutionGen {
      */
     institutionType: BaseCode;
     /**
-     * Id {@ApAccessPoint}
+     * Id ApAccessPoint
      */
     accessPointId: integer;
     /**
@@ -1377,6 +1402,140 @@ model FormItemType {
 }
 
 /**
+ * Display hint for items of `dataType == INT`.
+ */
+enum ItemDisplayType {
+    NUMBER,
+    DURATION,
+}
+
+/**
+ * Column definition for items of `dataType == JSON_TABLE`.
+ */
+model ItemTableColumn {
+    /** Column code. */
+    code: string;
+    /** Human-readable column name (localized). */
+    name: string;
+    /** Column data type — limited subset; see ELZA package XSD. */
+    dataType: string;
+    /** Suggested column width. */
+    width?: integer;
+}
+
+/**
+ * Optional rendering hints for an `ItemType`.
+ *
+ * Discriminated by `dataType`. Item types whose data type has no rendering
+ * hint (DATE, COORDINATES, RECORD_REF, …) simply omit `viewDefinition` on
+ * `ItemType`.
+ */
+@discriminator("dataType")
+model ItemViewDefinition {
+    dataType: DataType;
+}
+
+/**
+ * Display hint for INT items: numeric vs. duration formatting.
+ */
+model IntViewDefinition extends ItemViewDefinition {
+    @invisible(Lifecycle)
+    dataType: DataType.INT;
+    displayType: ItemDisplayType;
+}
+
+/**
+ * Input mask for STRING items (e.g. "###-##"). `#` denotes a value
+ * character, `*` denotes a variable-length run, other characters are
+ * literals automatically inserted by the UI.
+ */
+model StringViewDefinition extends ItemViewDefinition {
+    @invisible(Lifecycle)
+    dataType: DataType.STRING;
+    mask: string;
+}
+
+/**
+ * Column definitions for JSON_TABLE items.
+ */
+model JsonTableViewDefinition extends ItemViewDefinition {
+    @invisible(Lifecycle)
+    dataType: DataType.JSON_TABLE;
+    tableColumns: ItemTableColumn[];
+}
+
+/**
+ * A specification (enumerated value) of an item type.
+ * Display order is given by the order of the parent `specs[]` array.
+ */
+model ItemTypeSpec {
+    /** Database identifier of the underlying `rul_item_spec` row. Not stable across deployments — use `code` for cross-system references. */
+    id: integer;
+    /** Stable public code. */
+    code: string;
+    /** Human-readable name (localized). */
+    name: string;
+    /** Short label for compact UI (localized). */
+    shortcut: string;
+    /** Longer description (localized). */
+    description?: string;
+}
+
+/**
+ * Definition of one item type registered in the rules.
+ *
+ * Replaces the legacy `RulDescItemTypeExtVO` exposed via
+ * `GET /api/rule/descItemTypes`. Display order is given by the order of
+ * the response `itemTypes[]` array.
+ *
+ * Per-form behaviour (whether the item is required/recommended, whether it
+ * is repeatable in a given context, etc.) is **not** part of this registry
+ * — that information lives in `FormItemType` / `FormItemSpec`, returned by
+ * the node-form endpoints.
+ */
+model ItemType {
+    /** Database identifier of the underlying `rul_item_type` row. Not stable across deployments — use `code` for cross-system references. */
+    id: integer;
+    /** Stable public code (e.g. "ZP2015_UNIT_ID"). */
+    code: string;
+    /** Human-readable name (localized). */
+    name: string;
+    /** Short label for compact UI such as column headers (localized). */
+    shortcut: string;
+    /** Longer description (localized). */
+    description?: string;
+    /** Underlying value type. */
+    dataType: DataType;
+    /** Whether items of this type can be used as a sort key. */
+    sortable: boolean;
+    /**
+     * For `dataType == STRUCTURED` only: code of the structure type whose
+     * template defines this item's nested fields.
+     */
+    structureTypeCode?: string;
+    /** Optional rendering hints; variant determined by `dataType`. */
+    viewDefinition?: ItemViewDefinition;
+    /** Available specifications, in display order. Empty/omitted ⇒ no specifications. */
+    specs?: ItemTypeSpec[];
+}
+
+/**
+ * Response payload for `GET /itemTypes`.
+ */
+model ItemTypeList {
+    /** Item types defined across all loaded rule sets, in display order. */
+    itemTypes: ItemType[];
+}
+
+/*
+ * Náhrada 'RulPartTypeVO'
+ */
+model PartType extends BaseCode {
+    childPartId: integer;
+    repeatable: boolean;
+}
+
+/**
  * Náhrada `DescFormDataNewVO`
  */
 model NodeFormData {
@@ -1509,11 +1668,12 @@ model WfSimpleIssue {
 }
 
 /**
- * Struktura pro položky v accordionu.
+ * Brief view of a description unit — id, version, accordion-row presentation fields, and per-node status indicators.
+ * Used wherever a list of nodes is presented (e.g. siblings).
  *
  * Náhrada `AccordionNodeVO`
  */
-model NodeAccordionData {
+model NodeBrief {
     /** nodeid uzlu */
     id: integer;
     /** popis levé části accordionu */
@@ -1533,6 +1693,21 @@ model NodeAccordionData {
 }
 
 /**
+ * Status information about a single description unit (the node referenced by request.nodeId).
+ * Returned in response.node when the request flag `nodeStatus` is true.
+ *
+ * Designed to be additive-only: new optional fields may be appended without breaking clients.
+ */
+model NodeStatus {
+    /** Node identifier — echoes request.nodeId for self-describing responses. */
+    id: integer;
+    /** DB version of the node, for optimistic concurrency on subsequent writes. */
+    version: integer;
+    /** Validation conformity (errors, missing items, visible policy types). Absent if no conformity record exists for this node. */
+    nodeConformity?: NodeConformity;
+}
+
+/**
  * Received data of the unit of description
  *
  * Náhrada `NodeDataVO`
@@ -1540,14 +1715,14 @@ model NodeAccordionData {
 model NodeData {
     /** data formuláře požadované JP */
     formData: NodeFormData;
-    /** node data */
-    node: NodeAccordionData;
-    /** požadovaní rodiče ke kořeni */
-    parents: NodeTreeData[];
-    /** požadovaní přímí potomci */
-    children: NodeTreeData[];
-    /** požadovaní sourozenci */
-    siblings?: NodeAccordionData[];
+    /** Status of the focus node. Returned only when request.nodeStatus is true. */
+    node?: NodeStatus;
+    /** Parents chain up to the root. Returned only when request.parents is true. */
+    parents?: NodeTreeData[];
+    /** Direct children. Returned only when request.children is true. */
+    children?: NodeTreeData[];
+    /** Siblings window. Returned only when request.siblingsFrom is set. */
+    siblings?: NodeBrief[];
     /** index požadované JP */
     nodeIndex: integer;
     /** celkový počet JP v úrovni požadované JP */
@@ -1574,6 +1749,8 @@ model NodeDataParam {
     parents: boolean;
     /** Load children description units? */
     children: boolean;
+    /** Load focus-node status (response.node)? Default false. */
+    nodeStatus?: boolean;
 }
 
 /**
@@ -1785,18 +1962,198 @@ model ResultEntityRef {
 }
 
 /**
+ * Reference to a user account.
+ *
+ * Carries enough information for the client to display the user
+ * (name, username) without an extra lookup, while still keeping the
+ * stable identifier.
+ */
+model UserRef {
+    /** User identifier */
+    userId: integer;
+    /** Full display name */
+    name: string;
+    /** Username (login) */
+    username: string;
+}
+
+/**
  * Entity processor (user)
  */
-model Participant {
-    userId: integer;
-    name: string;
-    username: string;
+model Participant extends UserRef {
     /** if user has ability to save and modify new entity */
     canWrite: boolean;
     /** if user has ability to approve entity */
     canConfirm: boolean;
     /** if user has ability to change approved entity */
     canEditConfirmed: boolean;
+}
+
+// =============================================================================
+// CAMv2 — external entity binding (issues, revisions, participants)
+// =============================================================================
+
+/** Binding of one part or item of an access point to an external entity. */
+model ExtItemBinding {
+    partId?: integer;
+    itemId?: integer;
+    sync: boolean;
+}
+
+/**
+ * One binding of an access point to an external system. Represents the
+ * entity's identity in that system together with sync/state metadata and
+ * (since CAMv2) per-revision metadata and issue summary.
+ */
+model ExtEntityBinding {
+    id: integer;
+    externalSystemId: integer;
+    /**
+     * Code of the external system. Marked deprecated on the Java VO, but
+     * still load-bearing for several action calls — kept until the callers
+     * migrate to externalSystemId.
+     */
+    externalSystemCode: string;
+    /** Identifier of the entity in the external system. */
+    value: string;
+    extState?: string;
+    extRevision?: string;
+    extUser?: string;
+    extReplacedBy?: string;
+    detailUrlExtReplacedBy?: string;
+    syncState?: SyncState;
+    syncProgress?: SyncProgress;
+    bindingItemList?: ExtItemBinding[];
+
+    // CAMv2 additions
+    extMetadataRevision?: string;
+    extPrevRevision?: string;
+    /** Creation time of this revision in the external system. */
+    extCreatedAt?: utcDateTime;
+    /** Pre-computed badge for the warning icon. Absent = no issues. */
+    issueSummary?: ExtIssueSummary;
+}
+
+/** Severity of a CAM-side issue attached to an entity binding. */
+enum ExtIssueSeverity {
+    WARNING,
+    ERROR,
+}
+
+/**
+ * Resolution state of an issue. Absent on the wire = new issue not yet
+ * evaluated by the user.
+ */
+enum ExtIssueStatus {
+    IR_ALL_REVISIONS_OK,
+    IR_FIX_NEEDED,
+    IR_REVISION_OK,
+}
+
+/**
+ * Aggregated badge state computed by the server from all issues on a binding.
+ *
+ *   NONE      no issues
+ *   NEUTRAL   only WARNING issues with status IR_ALL_REVISIONS_OK / IR_REVISION_OK
+ *   NEW       at least one WARNING with status absent
+ *   ATTENTION any ERROR, or any status = IR_FIX_NEEDED — single most prominent icon
+ */
+enum ExtIssueIconState {
+    NONE,
+    NEUTRAL,
+    NEW,
+    ATTENTION,
+}
+
+/**
+ * Pre-computed badge for a binding, embedded in ExtEntityBinding so the client
+ * renders the warning icon without a second round-trip.
+ */
+model ExtIssueSummary {
+    /** total number of issues attached to the binding */
+    count: integer;
+    iconState: ExtIssueIconState;
+}
+
+/**
+ * One issue/finding reported by CAM about an entity binding. Issues are not
+ * versioned in Elza — only the current state synced from CAM is kept. Issue
+ * references never cross external systems: relatedBindingId always points to
+ * a binding within the same external system as this entity.
+ */
+model ExtIssue {
+    /** binding_issue_id */
+    id: integer;
+    /** stable identifier from CAM, when provided */
+    uuid?: string;
+    severity: ExtIssueSeverity;
+    status?: ExtIssueStatus;
+    ruleCode?: string;
+    issueCode?: string;
+    message?: string;
+    source?: string;
+    detail?: string;
+    note?: string;
+    /** valid-from timestamp from CAM */
+    issueFrom?: utcDateTime;
+    /** external revision in which the issue first appeared */
+    extFromRev?: string;
+    /** referenced part of the AP, when applicable */
+    partId?: integer;
+    /** referenced item of the AP, when applicable */
+    itemId?: integer;
+    /** related binding within the same external system, when applicable */
+    relatedBindingId?: integer;
+    /** value of the related binding in the external system */
+    relatedBindingExtValue?: string;
+}
+
+/** Role of a participant on an entity revision. */
+enum ExtParticipantRole {
+    AUTHOR,
+    APPROVAL,
+}
+
+/** One person who participated on a binding revision. */
+model ExtParticipant {
+    /** binding_participant_id */
+    id: integer;
+    role: ExtParticipantRole;
+    name: string;
+    institutionCode?: string;
+    lastChange: utcDateTime;
+}
+
+/**
+ * One revision in the binding's history, assembled from ap_binding_state with
+ * embedded participants from ap_binding_participant. Participants are returned
+ * ordered by lastChange (ascending).
+ */
+model ExtRevision {
+    /** binding_state_id */
+    bindingStateId: integer;
+    extRevision?: string;
+    extPrevRevision?: string;
+    extMetadataRevision?: string;
+    /** time of revision creation in the external system */
+    extCreatedAt?: utcDateTime;
+    /** fallback timestamp from arr_change when extCreatedAt is missing */
+    createChangeAt?: utcDateTime;
+    /** sender of the revision — value of ApBindingState.extUser */
+    sender?: string;
+    participants: ExtParticipant[];
+}
+
+/** Paginated history of a binding, newest revision first. */
+model ExtHistory {
+    revisions: ExtRevision[];
+    /** total number of revisions known to Elza for this binding */
+    totalCount: integer;
+    /**
+     * True when the chain has gaps (some extPrevRevision points to a revision
+     * Elza does not have). The UI then suggests consulting the source system.
+     */
+    incomplete: boolean;
 }
 
 /**
@@ -2050,17 +2407,6 @@ namespace ElzaAPI.fund {
     };
 
     /**
-     * Smazání seznamu hodnot strukturovaného datového typu
-     */
-    @route("/{id}/structuredObject")
-    @delete op deleteStructureData(
-        /** Identifikátor AS */
-        @path id: integer;
-        /** Seznam id hodnot strukturovaného datového typu */
-        @body data: integer[];
-    ): integer[];
-
-    /**
      * Return list of item type id & count
      */
     @route("{fundId}/usedItemtypes/{fundVersionId}")
@@ -2140,6 +2486,159 @@ namespace ElzaAPI.fund {
     };
 }
 
+/**
+ * Hromadná akce, kterou lze spustit nad fondem.
+ */
+model BulkAction {
+    /** Kód akce */
+    code: string;
+    /** Název akce */
+    name: string;
+    /** Popis akce */
+    description?: string;
+    /** Příznak rychlé akce */
+    fastAction: boolean;
+}
+
+/**
+ * Stav běhu hromadné akce.
+ */
+enum BulkActionRunState {
+    WAITING,
+    PLANNED,
+    RUNNING,
+    FINISHED,
+    ERROR,
+    INTERRUPTED,
+    OUTDATED,
+}
+
+/**
+ * Požadavek na seskupení vybraných fondů podle pravidel pro spuštění hromadné akce nad více fondy.
+ * Vyplní se buď `fundIds` (explicitní výběr, má přednost), nebo `search` (všechny fondy odpovídající filtru).
+ */
+model FundsActionGroupRequest {
+    /** Identifikátory vybraných fondů */
+    fundIds?: integer[];
+    /** Filtr pro výběr všech odpovídajících fondů */
+    search?: string;
+}
+
+/**
+ * Přeskočený fond při přípravě nebo spuštění hromadné akce nad více fondy.
+ */
+model FundsActionSkipped {
+    /** Identifikátor fondu (při seskupení) nebo verze fondu (při spuštění) */
+    id: integer;
+    /** Důvod přeskočení (např. NO_OPEN_VERSION, ACTION_NOT_IN_RULESET) */
+    reason: string;
+}
+
+/**
+ * Skupina fondů sdílejících stejná pravidla spolu s dostupnými hromadnými akcemi.
+ */
+model FundsActionGroup {
+    /** Identifikátor pravidel */
+    ruleSetId: integer;
+    /** Kód pravidel */
+    ruleSetCode: string;
+    /** Název pravidel */
+    ruleSetName: string;
+    /** Počet fondů ve skupině */
+    fundCount: integer;
+    /** Identifikátory otevřených verzí fondů ve skupině */
+    fundVersionIds: integer[];
+    /** Hromadné akce dostupné pro tato pravidla ve vícefondovém režimu */
+    actions: BulkAction[];
+}
+
+/**
+ * Výsledek seskupení vybraných fondů pro spuštění hromadné akce nad více fondy.
+ */
+model FundsActionGroupResult {
+    /** Skupiny fondů podle pravidel */
+    groups: FundsActionGroup[];
+    /** Přeskočené fondy */
+    skipped: FundsActionSkipped[];
+}
+
+/**
+ * Požadavek na spuštění hromadné akce nad více fondy najednou.
+ */
+model MultiFundActionRequest {
+    /** Identifikátory otevřených verzí fondů */
+    fundVersionIds: integer[];
+    /** Kód hromadné akce */
+    code: string;
+}
+
+/**
+ * Výsledek spuštění hromadné akce nad více fondy.
+ */
+model MultiFundActionResult {
+    /** Identifikátor seskupení (arr_funds_change); chybí, pokud nebyl spuštěn žádný běh */
+    fundsChangeId?: integer;
+    /** Počet naplánovaných běhů */
+    queuedCount: integer;
+    /** Přeskočené fondy */
+    skipped: FundsActionSkipped[];
+}
+
+/**
+ * Stav jednoho per-fond běhu v rámci vícefondového seskupení (pro sledování průběhu).
+ */
+model FundsChangeRun {
+    /** Identifikátor běhu */
+    id: integer;
+    /** Identifikátor verze fondu */
+    fundVersionId: integer;
+    /** Kód hromadné akce */
+    code: string;
+    /** Stav běhu */
+    state: BulkActionRunState;
+    /** Čas naplánování */
+    datePlanned?: offsetDateTime;
+    /** Čas zahájení */
+    dateStarted?: offsetDateTime;
+    /** Čas dokončení */
+    dateFinished?: offsetDateTime;
+    /** Chybové hlášení */
+    error?: string;
+}
+
+/**
+ * Hromadné akce nad více archivními soubory najednou (pouze pro administrátory, oprávnění FUND_BA_ALL).
+ */
+@tag("funds")
+@route("/action")
+namespace ElzaAPI.BulkAction {
+    /**
+     * Rozdělí vybrané fondy podle pravidel a vrátí dostupné hromadné akce pro každou skupinu.
+     * Vstupem je buď explicitní seznam fondů, nebo filtr (výběr všech odpovídajících fondů).
+     */
+    @route("/funds/group")
+    @post op groupFundsByRuleSet(
+        @body body: FundsActionGroupRequest;
+    ): FundsActionGroupResult;
+
+    /**
+     * Spustí hromadnou akci nad více fondy najednou. Pro každý platný fond naplánuje
+     * samostatný běh; fondy mimo daná pravidla jsou přeskočeny a vráceny ve výsledku.
+     */
+    @route("/queue-multi")
+    @post op queueMultiFundAction(
+        @body body: MultiFundActionRequest;
+    ): MultiFundActionResult;
+
+    /**
+     * Vrátí jednotlivé per-fond běhy patřící do jednoho vícefondového seskupení (sledování průběhu).
+     */
+    @route("/funds-change/{fundsChangeId}")
+    @get op getFundsChangeRuns(
+        @path fundsChangeId: integer;
+    ): FundsChangeRun[];
+}
+
 @tag("descitems")
 @route("/descItems")
 namespace ElzaAPI.DescItem {
@@ -2187,9 +2686,236 @@ namespace ElzaAPI.DescItem {
     };
 }
 
+/**
+ * Public API for archival description rules — item types, their
+ * specifications and (in the future) data types, rule sets and policy
+ * types.
+ *
+ * Endpoints live under `/rules` within `/api/v1` (the `/api/v1` prefix is
+ * applied by the Spring controller; see `PublicationController` for the
+ * same pattern). The legacy `RuleController` at `/api/rule/*` remains
+ * available during migration.
+ */
+@tag("rules")
+@route("/rules")
+namespace ElzaAPI.Rules {
+    /**
+     * Returns all item types defined across loaded rule sets, together with
+     * their specifications and rendering hints.
+     *
+     * Public URL: `GET /api/v1/rules/itemTypes`.
+     *
+     * Localized strings (`name`, `shortcut`, `description` on `ItemType` and
+     * `ItemTypeSpec`, plus `name` on `ItemTableColumn`) honour the
+     * `Accept-Language` request header when provided; otherwise the server
+     * default language is used.
+     *
+     * Replaces the legacy `GET /api/rule/descItemTypes`.
+     */
+    @route("/itemTypes")
+    @get op listItemTypes(
+        /** Preferred language for localized strings (e.g. "cs", "en"). */
+        @header("Accept-Language") acceptLanguage?: string
+    ): ItemTypeList;
+
+    /**
+     * Returns all types of parts.
+     * 
+     * Public URL: `GET /api/v1/rules/partTypes`.
+     * 
+     * Replaces the legacy `GET /api/structure/part-type`.
+     */
+    @route("/partTypes")
+    @get op listPartTypes(): PartType[];
+}
+
+/**
+ * Area in which the access-point search runs.
+ */
+enum ApSearchArea {
+    PREFER_NAMES,
+    ALL_NAMES,
+    ALL_PARTS,
+    ENTITY_CODE,
+}
+
+/**
+ * Filter for searching by a relation (item type, specification, target AP id).
+ */
+model ApSearchByRelation {
+    relTypeId?: integer;
+    relSpecId?: integer;
+    /** Access-point id the relation must point to */
+    code?: integer;
+}
+
+/**
+ * Filter for searching by an item with a specific value.
+ * The {@code value} is free-form — its interpretation depends on the item type.
+ */
+model ApSearchByItemWithValue {
+    partTypeCode?: string;
+    itemTypeId?: integer;
+    itemSpecId?: integer;
+    value?: unknown;
+}
+
+/**
+ * Advanced filter for access-point search; used as the request body of /accesspoint/search.
+ */
+model ApAdvanceSearchFilter {
+    search?: string;
+    area?: ApSearchArea;
+    onlyMainPart?: boolean;
+    aeTypeIds?: integer[];
+    /** Identifier of a concrete access point */
+    code?: string;
+    user?: string;
+    /** Id of user the access point is assigned to */
+    assignedTo?: integer;
+    /** Validation result: ok | error */
+    validationResult?: string;
+    creation?: string;
+    extinction?: string;
+    relFilters?: ApSearchByRelation[];
+    extFilters?: ApSearchByItemWithValue[];
+    syncState?: SyncState;
+    /** List of access-point ids to exclude from the result */
+    excludeAps?: integer[];
+}
+
+/**
+ * Search strategy for criteria-based access-point queries (name / username fields).
+ */
+enum ApSearchType {
+    DISABLED,
+    JOIN,
+    FULLTEXT,
+    RIGHT_SIDE_LIKE,
+}
+
+/**
+ * Access-point view object returned by /accesspoint/search.
+ * Externally provided (see cz.tacr.elza.controller.vo.ApAccessPointVO) — kept opaque in
+ * the contract (the canonical yml emits `format: ap-access-point-vo` so the OpenAPI generator
+ * maps it to the hand-coded Java + TS class).
+ */
+model ApAccessPointVO {}
+
+/**
+ * Paginated access-point search result returned by /accesspoint/search.
+ */
+model ApAccessPointSearchResult {
+    /** Total number of matches (before pagination) */
+    count: int64;
+    /** One page of results */
+    rows: ApAccessPointVO[];
+}
+
+/**
+ * Body of POST /accesspoint/search.
+ */
+model AccessPointSearchParams {
+    /** Full-text search */
+    search?: string;
+    /** Offset (zero-based) of the first result to return */
+    from?: integer;
+    /** Maximum number of rows to return */
+    count?: integer;
+    /** Single AP-type id; subtree-expanded on the backend */
+    apTypeId?: integer;
+    /** Fund version id (used to resolve scope context, optional) */
+    versionId?: integer;
+    /** Scope id; expanded on the backend */
+    scopeId?: integer;
+    /** Restrict to AP types referenced from this item type */
+    itemTypeId?: integer;
+    /** Restrict to AP types referenced from this item specification */
+    itemSpecId?: integer;
+    /** Filter by access-point state */
+    state?: ApStateApproval;
+    /** Filter by revision state */
+    revState?: RevisionState;
+    /** Search strategy applied to access-point name (criteria-query path) */
+    searchTypeName?: ApSearchType;
+    /** Search strategy applied to user / username (criteria-query path) */
+    searchTypeUsername?: ApSearchType;
+    /** Advanced filter; same precedence rule as AccessPointBatchExportParams */
+    searchFilter?: ApAdvanceSearchFilter;
+}
+
+/**
+ * Body of POST /accesspoint/export.
+ *
+ * Mirrors the scalar parameters of /accesspoint/search and accepts the same advanced filter
+ * via {@link AccessPointBatchExportParams.searchFilter}. Top-level scalar fields win when
+ * they conflict with fields inside searchFilter (e.g. top-level search vs. searchFilter.search).
+ */
+model AccessPointBatchExportParams {
+    /** Full-text search */
+    search?: string;
+    /** Single AP-type id; subtree-expanded on the backend to include descendant types */
+    apTypeId?: integer;
+    /** Fund version id (used to resolve scope context, optional) */
+    versionId?: integer;
+    /** Scope id; expanded on the backend for the resolved fund + user-visible scopes */
+    scopeId?: integer;
+    /** Restrict to AP types referenced from this item type */
+    itemTypeId?: integer;
+    /** Restrict to AP types referenced from this item specification */
+    itemSpecId?: integer;
+    /** Filter by access-point state */
+    state?: ApStateApproval;
+    /** Filter by revision state */
+    revState?: RevisionState;
+    /** Advanced filter (mirrors the body of /accesspoint/search) */
+    searchFilter?: ApAdvanceSearchFilter;
+}
+
 @tag("accesspoints")
 @route("/accesspoint")
 namespace ElzaAPI.AccessPoint {
+    /**
+     * Search for access points.
+     * Accepts the same filter inputs as /accesspoint/export (scalar fields + ApAdvanceSearchFilter)
+     * plus pagination (from, count) and the criteria-query SearchType selectors.
+     */
+    @route("/search")
+    @post op search(
+        /** filter selecting the access points to search for */
+        @body params: AccessPointSearchParams
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: ApAccessPointSearchResult;
+    };
+
+    /**
+     * Asynchronously export access points matching the given filter to CSV.
+     *
+     * Returns the request id; poll /io/export-status/{id} and download the result via /io/file/{id}.
+     * Results are ordered by accessPointId ascending. Empty body / null fields means
+     * "all access points visible to the user".
+     */
+    @route("/export")
+    @post op batchExport(
+        /** filter selecting the access points to export */
+        @body params: AccessPointBatchExportParams
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/json";
+        @body data: integer;
+    } | {
+        @Http.statusCode statusCode: 400;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 401;
+        @body data: BaseException;
+    } | {
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    };
+
     /**
      * Invalidation of access points
      */
@@ -2613,6 +3339,672 @@ namespace ElzaAPI.Io {
     } | {
         /** Failed to export requested data */
         @Http.statusCode statusCode: 500;
+        @body data: BaseException;
+    };
+}
+
+// ---------------------------------------------------------------------------
+// Publications — public integration API for an external publication system.
+//
+// Elza's internal publication states (NEW, PREPARE_ERROR, INVALIDATED) are
+// not part of the public contract. The client never observes them: /available
+// does not return such records, and /download collapses them into the more
+// general "file not available" responses.
+// ---------------------------------------------------------------------------
+
+/**
+ * Entry in the list of prepared exports.
+ *
+ * The archival institution code and NAD are not part of this header — they
+ * are contained in the XML.
+ */
+model AvailablePublication {
+    /** Publication identifier (ARR_EXPORT.export_id). */
+    publicationId: integer;
+
+    /** Archival fund identifier. */
+    fundId: integer;
+
+    /** Identifier of the fund version the export was created from. */
+    fundVersionId: integer;
+
+    /** Time the publication request was created. */
+    createdTime: offsetDateTime;
+
+    /**
+     * ID of the last fund change included in the export (reference to
+     * arr_change). May be null if the originating change has been removed
+     * from arr_change — the XML content itself is not affected.
+     */
+    lastChangeId?: integer;
+
+    /**
+     * Export data format expressed as the URI of the target XSD namespace.
+     * The client should pick the schema to parse the XML with according to
+     * this value; unknown values should be ignored.
+     *
+     * Known values:
+     *  - `http://elza.tacr.cz/schema/v2` — Elza native XML schema, version 2.
+     *
+     * The field is intentionally typed as a free-form string (not an enum)
+     * so that new formats can be introduced without a TypeSpec change.
+     */
+    publicationType: string;
+}
+
+/**
+ * Page of prepared exports for a given target system.
+ *
+ * The caller remembers the `nextTransaction` value from the response and
+ * sends it back in the next request as `lastTransaction`. The value is an
+ * opaque key from the caller's perspective — its internal structure may
+ * change in the future and must not be parsed by the caller.
+ */
+model AvailablePublications {
+    /**
+     * Transaction identifier the caller should send in the next request as
+     * `lastTransaction`. When `items` is empty, the same value as the
+     * input is returned.
+     */
+    nextTransaction: string;
+
+    /**
+     * List of prepared exports after `lastTransaction` (exclusive),
+     * ordered ascending by internal transaction.
+     *
+     * At most 100 records are returned. If multiple prepared exports exist
+     * for the same fund with the same export parameters (target system
+     * and filter), only the most recent one is returned — superseded
+     * entries are suppressed so the recipient does not have to download
+     * already-obsolete versions.
+     *
+     * Records that do not currently have a downloadable file (e.g. removed
+     * by retention or invalidated) are not returned.
+     */
+    items: AvailablePublication[];
+}
+
+/**
+ * Outcome reported back to Elza by the publication system.
+ */
+enum PublicationReportStatus {
+    /** Publication succeeded. */
+    OK,
+    /** Publication failed. */
+    ERROR,
+}
+
+/**
+ * Body of `POST /publications/status/{id}`.
+ */
+model PublicationStatusReport {
+    /** Publication outcome. */
+    status: PublicationReportStatus;
+
+    /**
+     * Time at which publication succeeded or failed, as reported by the
+     * publication system.
+     */
+    publishedAt: offsetDateTime;
+
+    /** Error message. Filled only when status = ERROR. */
+    errorMessage?: string;
+}
+
+/**
+ * Public API for the publication system.
+ *
+ * Endpoints live under `/publications` within `/api/v1` and exchange data
+ * between Elza and an external publication system:
+ *
+ *  - Elza offers the list of prepared exports,
+ *  - the publication system downloads the prepared XML,
+ *  - the publication system reports the publication outcome back.
+ *
+ * A dedicated technical account with restricted permissions is recommended
+ * for deployment.
+ *
+ * Error codes returned in `BaseException.code`:
+ *
+ *  - `PUBLICATION_TYPE_NOT_FOUND` — no publication type with the given code
+ *    exists
+ *  - `PUBLICATION_TYPE_INACTIVE`  — the publication type has been
+ *    deactivated and no longer accepts publication traffic
+ *  - `PUBLICATION_NOT_FOUND`     — the publication ID is unknown or is in
+ *    an internal state that is not exposed to the client
+ *  - `PUBLICATION_FILE_GONE`     — the XML file is no longer available
+ *    (publication was invalidated or removed by retention)
+ */
+@tag("publication")
+@route("/publications")
+namespace ElzaAPI.Publication {
+    /**
+     * Get the list of prepared XML exports for a given target system.
+     *
+     * On the first call `lastTransaction` is omitted. The response carries
+     * `nextTransaction`, which the caller stores and sends in the next
+     * request as `lastTransaction`. This way only new exports since the
+     * previous call are returned.
+     *
+     * At most 100 records are returned. If multiple prepared exports exist
+     * for the same fund, only the most recent one is included.
+     *
+     * If the publication type (target system) is inactive, the call returns
+     * 403 — information about prepared exports is not exposed in that case.
+     *
+     * @param targetSystem Publication type code (ARR_EXPORT_TYPE.code),
+     *   which also identifies the target system.
+     * @param lastTransaction Opaque key of the last already-processed
+     *   transaction. Omitted on the first call. The caller must not parse
+     *   the key — Elza reserves the right to change its format in the
+     *   future.
+     */
+    @route("/available/{targetSystem}")
+    @get op getAvailablePublications(
+        @path targetSystem: string,
+        @query lastTransaction?: string,
+    ): AvailablePublications | {
+        /** `PUBLICATION_TYPE_NOT_FOUND` — no publication type with this code exists. */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** `PUBLICATION_TYPE_INACTIVE` — the publication type is inactive. */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    };
+
+    /**
+     * Download the prepared XML.
+     *
+     * The client should only call this with an ID it received from
+     * `/available`. The download succeeds as long as the XML file is
+     * physically present on the server; each successful download updates
+     * the internal audit trail of the last fetch.
+     *
+     * The file is returned as `application/xml` with header
+     * `Content-Disposition: attachment; filename="{mark}-{fundNumber}-{publicationId}.xml"`.
+     * If the fund has neither `mark` nor `fundNumber` set, the fallback
+     * `fundId-{fundId}-{publicationId}.xml` is used.
+     *
+     * HTTP responses:
+     *  - 200 + XML — the file is available
+     *  - 403       — the publication type has been deactivated
+     *  - 404       — unknown ID, or an ID in an internal state that is not
+     *                exposed to the client (e.g. preparation in progress —
+     *                such IDs are never returned by `/available` and the
+     *                client should not encounter them)
+     *  - 410       — the file is permanently unavailable to the client
+     *                (publication invalidated by the user, or retention
+     *                expired)
+     *
+     * @param id Publication identifier (ARR_EXPORT.export_id).
+     */
+    @route("/download/{id}")
+    @get op downloadPublication(
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/xml";
+        @body data: bytes;
+    } | {
+        /** `PUBLICATION_TYPE_INACTIVE` — the publication type is inactive. */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    } | {
+        /** `PUBLICATION_NOT_FOUND` — the publication ID is not available to the client. */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** `PUBLICATION_FILE_GONE` — XML file is no longer available (invalidation or retention). */
+        @Http.statusCode statusCode: 410;
+        @body data: BaseException;
+    };
+
+    /**
+     * Report the publication outcome from the publication system.
+     *
+     * The client reports the outcome of a publication it has been
+     * working with — typically after a successful `/download/{id}`,
+     * but a report from a publication that was prepared and not yet
+     * marked as fetched is also accepted (e.g. when the download
+     * response was lost in transit but the publication system still
+     * processed the file).
+     *
+     *  - status OK    — publication succeeded
+     *  - status ERROR — publication failed
+     *
+     * The call is last-writer-wins: a publication system that gets
+     * resynchronised may report the same publication any number of
+     * times — identical replays are no-ops, new values silently
+     * overwrite. Rate-limiting / conflict detection may be added in
+     * a later revision.
+     *
+     * @param id Publication identifier (ARR_EXPORT.export_id).
+     */
+    @route("/status/{id}")
+    @post op reportPublicationStatus(
+        @path id: integer,
+        @body report: PublicationStatusReport,
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
+        /** `PUBLICATION_NOT_FOUND` — the publication ID is not available to the client. */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+}
+
+// ---------------------------------------------------------------------------
+// Internal publication API — consumed only by the Elza web UI.
+//
+// Served under /api/internal (separate Spring controller). Not intended for
+// external integration; backwards compatibility is not guaranteed.
+//
+// All seven internal states are exposed here so that admins/users can see
+// the operational state of every record they manage. Compare to the public
+// API, which deliberately hides NEW / PREPARE_ERROR / INVALIDATED.
+// ---------------------------------------------------------------------------
+
+/**
+ * Internal-only view of a publication's life-cycle state. Mirrors
+ * {@code ARR_EXPORT.state} 1-to-1.
+ */
+enum PublicationStateInternal {
+    NEW,
+    PREPARED,
+    FETCHED,
+    PUBLISHED,
+    PREPARE_ERROR,
+    PUBLISH_ERROR,
+    INVALIDATED,
+}
+
+/**
+ * Kind of target environment a publication type connects to.
+ */
+enum ConnectionType {
+    DEVELOPMENT,
+    TEST,
+    PRODUCTION,
+}
+
+/**
+ * Publication type — target-system configuration.
+ *
+ * Used as both the read shape (responses) and the write shape (create / update
+ * request bodies). The `id` is server-assigned and is absent on create or
+ * update requests — on `PUT /{id}` the path parameter is authoritative; any
+ * `id` carried in the body is ignored.
+ *
+ * Changing `code` on an existing type is permitted by the API but will break
+ * the cursor for any publication system bound to the old code. The UI
+ * surfaces a warning (or disables the field) to prevent accidental changes.
+ */
+model PublicationType {
+    /** Server-assigned identifier. Absent on create / update request bodies. */
+    id?: integer;
+
+    /** Human-readable name shown in the UI. */
+    name: string;
+
+    /**
+     * Stable code identifying the target system; also used as
+     * {@code targetSystem} in the public `/publications/available` endpoint.
+     */
+    code: string;
+
+    /** When false, the type accepts neither new publications nor downloads. */
+    active?: boolean = true;
+
+    /**
+     * Code of {@code rul_export_filter}. Null means no filter
+     * (the entire fund is exported).
+     */
+    exportFilterCode?: string;
+
+    /**
+     * Number of most recent exports retained on disk per type. 0 means
+     * unlimited; 1 keeps only the latest; default is 5.
+     */
+    @minValue(0)
+    retentionCount?: integer = 5;
+
+    /** Users holding the FUND_EXPORT permission may publish into this type. */
+    allowPermExport: boolean;
+
+    /** Users holding the FUND_PUBLISH permission may publish into this type. */
+    allowPermPublication: boolean;
+
+    /** Target environment kind (development / test / production). */
+    connectionType: ConnectionType;
+}
+
+/**
+ * One publication record as shown in the UI.
+ */
+model PublicationDetail {
+    /** Publication identifier (ARR_EXPORT.export_id). */
+    id: integer;
+
+    /** Publication type ID. */
+    typeId: integer;
+
+    /** Publication type code (target system). */
+    typeCode: string;
+
+    /** Publication type name (display). */
+    typeName: string;
+
+    /** Fund version the export was created from. */
+    fundVersionId: integer;
+
+    /** Current life-cycle state. */
+    state: PublicationStateInternal;
+
+    /** User who created the publication request. */
+    createdBy: UserRef;
+
+    /** Time the publication request was created. */
+    createdAt: offsetDateTime;
+
+    /** Time XML preparation finished. Null until PREPARED. */
+    preparedAt?: offsetDateTime;
+
+    /** Time of the last fetch by the publication system. */
+    lastFetchedAt?: offsetDateTime;
+
+    /** Time the publication reported completion. */
+    publishedAt?: offsetDateTime;
+
+    /** Time the record entered an error state. */
+    errorAt?: offsetDateTime;
+
+    /** Time the record was invalidated by a user. */
+    invalidatedAt?: offsetDateTime;
+
+    /**
+     * ID of the last fund change included in the export snapshot. Null
+     * when the originating change has been purged (the XML itself is
+     * not affected).
+     */
+    lastChangeId?: integer;
+
+    /** Error description for PREPARE_ERROR / PUBLISH_ERROR. */
+    errorMessage?: string;
+
+    /** Whether a downloadable XML file is currently available on the server. */
+    hasDownloadableFile: boolean;
+}
+
+/**
+ * Paginated list of publications for a fund.
+ */
+model PublicationList {
+    items: PublicationDetail[];
+    /** Total number of publications matching the query, not just on this page. */
+    totalCount: integer;
+}
+
+/**
+ * Body of POST /fund/{fundId}/publication — request to enqueue a new
+ * publication for the current open version of the fund.
+ */
+model CreatePublication {
+    /** Identifier of the publication type to publish into. */
+    publicationTypeId: integer;
+}
+
+/**
+ * Body of POST /fund/{fundId}/publication/{publicationId}/copy — copy an
+ * existing prepared export into another target system. The target type
+ * must have a compatible filter setting.
+ */
+model CopyPublication {
+    /** Identifier of the publication type to copy the export into. */
+    targetPublicationTypeId: integer;
+}
+
+/**
+ * Path parameter for publication ID inside fund-scoped routes.
+ */
+model PublicationIdParameter {
+    /** Publication ID (ARR_EXPORT.export_id). */
+    @path
+    publicationId: integer;
+}
+
+/**
+ * Publication type management (admin dialog "Správa typů publikace").
+ *
+ * Requires administrator permission. Type configuration changes do not
+ * affect already-issued publications — each export keeps a snapshot of
+ * the filter that was active when it was created.
+ */
+@tag("publication-internal")
+@route("/publication/types")
+namespace ElzaAPI.Internal.PublicationTypeAdmin {
+    /** Return all publication types, including inactive ones. */
+    @get op listPublicationTypes(): PublicationType[];
+
+    /** Create a new publication type. */
+    @post op createPublicationType(
+        @body body: PublicationType,
+    ): PublicationType | {
+        /** Code already used by another type. */
+        @Http.statusCode statusCode: 409;
+        @body data: BaseException;
+    };
+
+    /** Update an existing publication type. */
+    @route("/{id}")
+    @put op updatePublicationType(
+        @path id: integer,
+        @body body: PublicationType,
+    ): PublicationType | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Code conflicts with another existing type. */
+        @Http.statusCode statusCode: 409;
+        @body data: BaseException;
+    };
+
+    /**
+     * Remove a publication type.
+     *
+     * Deactivating via {@code active=false} is preferred so the history of
+     * already-issued exports is preserved. A hard delete is rejected when
+     * any record in `arr_export` still references this type.
+     */
+    @route("/{id}")
+    @delete op deletePublicationType(
+        @path id: integer,
+    ): {
+        @Http.statusCode statusCode: 204;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Cannot delete — exports still reference this type. */
+        @Http.statusCode statusCode: 409;
+        @body data: BaseException;
+    };
+}
+
+/**
+ * Fund-scoped publication operations (UI page "Publikace" on a fund).
+ *
+ * Visible to users holding FUND_PUBLISH for the fund (or FUND_PUBLISH_ALL).
+ * Enforcement is wired in alongside the service implementation.
+ */
+@tag("publication-internal")
+@route("/fund")
+namespace ElzaAPI.Internal.FundPublication {
+    /**
+     * Return the publications for a fund, newest first.
+     *
+     * The UI must paginate — the list can grow large.
+     */
+    @route("/{fundId}/publication")
+    @get op listFundPublications(
+        ...FundIdParameter,
+        /** Optional filter on publication type. */
+        @query publicationTypeId?: integer,
+        /** Offset for pagination. */
+        @query offset?: integer = 0,
+        /** Page size. */
+        @query @minValue(1) @maxValue(200) limit?: integer = 50,
+    ): PublicationList;
+
+    /**
+     * Enqueue a new publication for the current open version of the fund.
+     *
+     * Rejected with 409 if the current fund version already has a
+     * publication of the same type in {@link PublicationStateInternal.NEW}
+     * state — we avoid racing two identical async generations. A previous
+     * publication in {@link PublicationStateInternal.PREPARED} (or later)
+     * does NOT block: the fund may have changed and a fresh publication
+     * carries different content.
+     */
+    @route("/{fundId}/publication")
+    @post op createFundPublication(
+        ...FundIdParameter,
+        @body body: CreatePublication,
+    ): PublicationDetail | {
+        /** Publication type or fund not found. */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Publication type is inactive. */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    } | {
+        /** An identical publication is already pending or prepared. */
+        @Http.statusCode statusCode: 409;
+        @body data: BaseException;
+    };
+
+    /**
+     * Download the prepared XML from the UI.
+     *
+     * Unlike the public {@code /publications/download/{id}}, this UI call
+     * does not advance the publication's state and does not touch
+     * {@code last_fetched_at} — it is for human inspection.
+     */
+    @route("/{fundId}/publication/{publicationId}/download")
+    @get op downloadFundPublication(
+        ...FundIdParameter,
+        ...PublicationIdParameter,
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "application/xml";
+        @body data: bytes;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** File is not available (INVALIDATED or removed by retention). */
+        @Http.statusCode statusCode: 410;
+        @body data: BaseException;
+    };
+
+    /**
+     * Invalidate a publication.
+     *
+     * The associated DMS file is deleted from disk; the
+     * {@code arr_export} row is preserved as an audit trail and its
+     * state transitions to {@link PublicationStateInternal.INVALIDATED}.
+     *
+     * A regular user can only invalidate publications they created that
+     * have not yet been fetched (state PREPARED). Administrators can
+     * invalidate at any time.
+     */
+    @route("/{fundId}/publication/{publicationId}")
+    @delete op invalidateFundPublication(
+        ...FundIdParameter,
+        ...PublicationIdParameter,
+    ): {
+        @Http.statusCode statusCode: 204;
+    } | {
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Caller is not allowed to invalidate this publication. */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    };
+
+    /**
+     * Copy an existing publication into another target system.
+     *
+     * The target publication type must have a compatible filter setting
+     * (same {@code rul_export_filter} or both unfiltered). A new
+     * {@code arr_export} row is created with its own life cycle; the
+     * source row is unchanged.
+     */
+    @route("/{fundId}/publication/{publicationId}/copy")
+    @post op copyFundPublication(
+        ...FundIdParameter,
+        ...PublicationIdParameter,
+        @body body: CopyPublication,
+    ): PublicationDetail | {
+        /** Source publication, target publication type, or fund not found. */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Target publication type is inactive. */
+        @Http.statusCode statusCode: 403;
+        @body data: BaseException;
+    } | {
+        /** Target type has an incompatible filter setting. */
+        @Http.statusCode statusCode: 409;
+        @body data: BaseException;
+    };
+}
+
+// ---------------------------------------------------------------------------
+// Internal access-point binding API — consumed only by the Elza web UI.
+//
+// Served from the same Spring prefix as other UI-only endpoints
+// (currently /api/v1, mounted on a separate AccessPointBindingInternalController).
+// Not intended for external integration; backwards compatibility is not
+// guaranteed.
+//
+// Surfaces CAMv2 metadata that arrives alongside each entity revision:
+// warnings/issues and per-revision participant history.
+// ---------------------------------------------------------------------------
+
+@tag("accesspoint-internal")
+@route("/binding")
+namespace ElzaAPI.Internal.AccessPointBinding {
+    /**
+     * List CAM-side issues attached to a binding.
+     */
+    @route("/{bindingId}/issues")
+    @get op getBindingIssues(
+        /** id of binding */
+        @path bindingId: integer,
+    ): ExtIssue[] | {
+        /** binding not found */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Paginated history of binding revisions, newest first, built from
+     * ap_binding_state and ap_binding_participant. Participants within each
+     * revision are ordered by lastChange (ascending).
+     */
+    @route("/{bindingId}/history")
+    @get op getBindingHistory(
+        /** id of binding */
+        @path bindingId: integer,
+        @query offset?: integer = 0,
+        /** server caps at 100 */
+        @query limit?: integer = 100,
+    ): ExtHistory | {
+        /** binding not found */
+        @Http.statusCode statusCode: 404;
         @body data: BaseException;
     };
 }
@@ -3058,7 +4450,7 @@ namespace ElzaAPI.Aip {
          /** DaAip ID */
          @query daAipId: integer;
          /** DaDao ID List */
-        @query({format: "multi"}) daDaoIdList: integer[];
+        @query daDaoIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -3078,7 +4470,7 @@ namespace ElzaAPI.Aip {
          /** DaAip ID */
          @query daAipId: integer;
          /** DaDao ID List */
-        @query({format: "multi"}) daDaoIdList: integer[];
+        @query daDaoIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -3098,7 +4490,7 @@ namespace ElzaAPI.Aip {
          /** DaAip ID */
          @query daAipId: integer;
          /** DaDao ID List */
-        @query({format: "multi"}) daDaoIdList: integer[];
+        @query daDaoIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -3118,7 +4510,7 @@ namespace ElzaAPI.Aip {
          /** DaAip ID */
          @query daAipId: integer;
          /** DaDao ID List */
-        @query({format: "multi"}) daDaoIdList: integer[];
+        @query daDaoIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -3136,7 +4528,7 @@ namespace ElzaAPI.Aip {
          /** ArrNode ID */
          @query arrNodeId: integer;
          /** DaAip ID list */
-         @query({format: "multi"}) daAipIdList: integer[];
+         @query daAipIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -3154,7 +4546,7 @@ namespace ElzaAPI.Aip {
          /** ArrNode ID */
          @query arrNodeId: integer;
          /** DaAip ID list */
-         @query({format: "multi"}) daAipIdList: integer[];
+         @query daAipIdList: integer[];
       ) : {
           /** Dao link successfully created */
           @Http.statusCode statusCode: 200;
@@ -3172,7 +4564,7 @@ namespace ElzaAPI.Aip {
          /** ArrNode ID */
          @query arrNodeId: integer;
          /** DaAip ID list */
-         @query({format: "multi"}) daAipIdList: integer[];
+         @query daAipIdList: integer[];
          /** DaLevelView ID */
          @query daLevelViewId: integer;
       ) : {
@@ -3192,7 +4584,7 @@ namespace ElzaAPI.Aip {
          /** ArrNode ID */
          @query arrNodeId: integer;
          /** DaAip ID list */
-         @query({format: "multi"}) daAipIdList: integer[];
+         @query daAipIdList: integer[];
          /** DaLevelView ID */
          @query daLevelViewId: integer;
       ) : {
@@ -3342,6 +4734,39 @@ namespace ElzaAPI.Node {
     }
 
     /**
+     * Get basic information about a node by its numeric ID.
+     */
+    @route("/info/id/{nodeId}")
+    @get op getNodeInfoById(
+        ...NodeIdParameter;
+    ): NodeInfo | {
+        /** Node not found */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Node found in more than one active level — ambiguous request */
+        @Http.statusCode statusCode: 409;
+        @body data: BaseException;
+    };
+
+    /**
+     * Get basic information about a node by its UUID.
+     */
+    @route("/info/uuid/{nodeUuid}")
+    @get op getNodeInfoByUuid(
+        /** Node UUID (36 characters) */
+        @path nodeUuid: string;
+    ): NodeInfo | {
+        /** Node not found */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    } | {
+        /** Node found in more than one active level — ambiguous request */
+        @Http.statusCode statusCode: 409;
+        @body data: BaseException;
+    };
+
+    /**
      * Get quote by fundVersionId & nodeId
      */
 	@route("/plain-text/{fundVersionId}/{nodeId}")
@@ -3420,6 +4845,326 @@ namespace ElzaAPI.Node {
     };
 }
 
+/**
+ * Value of a structured type
+ */
+model StructuredObject {
+    id: integer;
+    value: string;
+    typeCode: string;
+    complement: string;
+    state: "OK" | "ERROR" | "TEMP";
+    assignable: boolean;
+    errorDescription?: string;
+}
+
+/**
+ * Form data
+ */
+model StructuredObjectItems {
+    parent: StructuredObject;
+    items: StructuredObjectItem[];
+    itemTypes: FormItemType[];
+}
+
+/**
+ * 
+ */
+@tag("structure")
+@route("/funds/sdo")
+namespace ElzaAPI.Sdo {
+
+    /**
+     * Data for bulk value creation
+     */
+    model CopyObjectParam {
+        count: integer;
+        incrementedTypeIds: integer[];
+    }
+
+    /**
+     * Data for bulk value update
+     */
+    model BatchUpdateParam {
+        ids: integer[];
+        autoincrementItemTypeIds: integer[];
+        deleteItemTypeIds: integer[];
+        items: StructuredObjectItem[];
+    }
+
+    /**
+     * Status of a structured data type
+     */
+    model ItemResult {
+        parent: StructuredObject;
+        item: StructuredObjectItem;
+    }
+
+    /**
+     * Result found
+     */
+    model FindResult {
+        count: int64;
+        rows: StructuredObject[];
+    }
+
+    /**
+     * Structure type
+     */
+    model Type {
+        id: integer;
+        name: string;
+        code: string;
+        anonymous: boolean;
+    }
+
+    /**
+     * Extention fund
+     */
+    model ExtensionFund {
+        id: integer;
+        name: string;
+        code: string;
+        active: boolean;
+    }
+
+    /**
+     * Creating object of the structured data type
+     */
+    @route("/{fundId}")
+    @post op createObject(
+        /** structured data type code */
+        @body body: string;
+        /** fund id */
+        @path fundId: integer;
+        /** value for the structured data */
+        @query value?: string;
+    ): StructuredObject;
+
+    /**
+     * Creating duplicates of a structured data type and an auto-increment field
+     */
+    @route("/{fundId}/{structuredObjectId}/copy")
+    @post op copyObject(
+        /** batch of data to create */
+        @body body: CopyObjectParam;
+        /** fund id */
+        @path fundId: integer;
+        /** structure data id */
+        @path structuredObjectId: integer;
+    ): void;
+
+    /**
+     * Bulk update of items/values of a structural type
+     */
+    @route("/{fundId}/batchUpdate/{structureTypeCode}")
+    @post op updateObjects(
+        /** batch of data to update */
+        @body body: BatchUpdateParam;
+        /** fund id */
+        @path fundId: integer;
+        /** structure type code */
+        @path structureTypeCode: string;
+    ): void;
+
+    /**
+     * Confirms the value of a structured data type. Sets the value
+     */
+    @route("/{fundId}/{structuredObjectId}/confirm")
+    @post op confirm(
+        /** fund id */
+        @path fundId: integer;
+        /** structure data id */
+        @path structuredObjectId: integer;
+    ): StructuredObject | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Assignability settings.
+     */
+    @route("/{fundId}/assignable/{assignable}")
+    @post op setDataAssignable(
+        /** value ids for a structured data type */
+        @body body: integer[];
+        /** fund id */
+        @path fundId: integer;
+        /** assignable value */
+        @path assignable: boolean;
+    ): void;
+
+    /**
+     * Getting the value of a structured data type
+     */
+    @route("/{fundId}/{structuredObjectId}")
+    @get op getObject(
+        /** fund id */
+        @path fundId: integer;
+        /** structure data id */
+        @path structuredObjectId: integer;
+        /** fund version id */
+        @query fundVersionId?: integer;
+    ): StructuredObject | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Deleting a value(s) of a structured data type
+     */
+    @route("/{fundId}")
+    @delete op deleteObjects(
+        /** fund id */
+        @path fundId: integer;
+        /** fund version id */
+        @query fundVersionId?: integer;
+        /** list of id value(s) of structured data type */
+        @body data: integer[];
+    ): void | {
+        /** ID does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Create item value of a structured data type
+     */
+    @route("/{fundId}/item/{structuredObjectId}")
+    @post op createItem(
+        /** node item */
+        @body body: StructuredObjectItem;
+        /** fund id */
+        @path fundId: integer;
+        /** structure data id */
+        @path structuredObjectId: integer;
+    ): ItemResult;
+
+    /**
+     * Update item value of a structured data type
+     */
+    @route("/{fundId}/item/{structuredObjectId}/{createNewVersion}")
+    @put op updateItem(
+        /** node item */
+        @body body: StructuredObjectItem;
+        /** fund id */
+        @path fundId: integer;
+        /** structure data id */
+        @path structuredObjectId: integer;
+        /** create a new version */
+        @path createNewVersion: boolean;
+    ): ItemResult | {
+        /** item does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Delete item value of a structured data type
+     */
+    @route("/{fundId}/item/{structuredObjectId}/{itemObjectId}")
+    @delete op deleteItem(
+        /** fund id */
+        @path fundId: integer;
+        /** structured object id */
+        @path structuredObjectId: integer;
+        /** item object id */
+        @path itemObjectId: integer;
+    ): void | {
+        /** item does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Delete items based on the value of a data type structure by attribute type
+     */
+    @route("/{fundId}/item/{structuredObjectId}/by-type/{itemTypeId}")
+    @delete op deleteItemsByType(
+        /** fund id */
+        @path fundId: integer;
+        /** structured object id */
+        @path structuredObjectId: integer;
+        /** item type id */
+        @path itemTypeId: integer;
+    ): void | {
+        /** item does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * GET Searching for values of a structured data type: findStructObj()
+     */
+    @route("/{fundId}/search/{structureTypeCode}")
+    @get op findStructObj(
+        /** fund id */
+        @path fundId: integer;
+        /** structure type code */
+        @path structureTypeCode: string;
+        /** text for filtering (optional) */
+        @query search?: string;
+        /** assignable value */
+        @query assignable?: boolean;
+        /** from default = 0 */
+        @query from?: integer = 0;
+        /** max number of items */
+        @query count?: integer = 200;
+        /** fund version id */
+        @query fundVersionId?: integer;
+    ): FindResult;
+
+    /**
+     * GET Lists the possible data types that can be used in AS: findStructureTypes()
+     */
+    @route("/type")
+    @get op findStructureTypes(
+        /** fund version id */
+        @query fundVersionId?: integer;
+    ): Type[];
+
+    /**
+     * GET Getting data for a structured data type form: getFormStructureItems()
+     */
+    @route("/{fundId}/item/{structuredObjectId}")
+    @get op getFormStructureItems(
+        /** fund id */
+        @path fundId: integer;
+        /** structured object id */
+        @path structuredObjectId: integer;
+        /** fund version id */
+        @query fundVersionId?: integer;
+    ): StructuredObjectItems;
+
+    /**
+     * GET Finds available and enabled AS extensions: findFundStructureExtension()
+     */
+    @route("/{fundId}/extension/{structureTypeCode}")
+    @get op findFundStructureExtension(
+        /** fund id */
+        @path fundId: integer;
+        /** structure type code */
+        @path structureTypeCode: string;
+        /** fund version id */
+        @query fundVersionId?: integer;
+    ): ExtensionFund[];
+
+    /**
+     * PUT Sets a specific extension on the AS: setFundStructureExtensions()
+     */
+    @route("/{fundId}/extension/{structureTypeCode}")
+    @put op setFundStructureExtensions(
+        /** fund id */
+        @path fundId: integer;
+        /** structure type code */
+        @path structureTypeCode: string;
+        /** structure ext codes */
+        @body body: string[];
+    ): void;
+}
+
 @tag("search")
 namespace ElzaAPI.Search {
     /**
@@ -3464,6 +5209,7 @@ namespace ElzaAPI.Search {
         @body data: BaseException;
     };
 }
+
 
 /**
  * Processing tasks
@@ -3519,11 +5265,32 @@ namespace ElzaAPI.Tasks {
 @service(#{
     title: "ELZA API",
 })
+@info(#{
+    version: "1.0.0",
+})
+@tagMetadata("admin", #{description: "Administrativní funkce"})
+@tagMetadata("daos", #{description: "Digitální archivní objekty"})
+@tagMetadata("externalsystems", #{description: "Externí systémy"})
+@tagMetadata("funds", #{description: "Archivní soubory"})
+@tagMetadata("descitems", #{description: "Záznamy v archivních fondech"})
+@tagMetadata("accesspoints", #{description: "Přístupové body a archivní entity"})
+@tagMetadata("io", #{description: "Vstup a výstup informací"})
+@tagMetadata("aips", #{description: "aips"})
+@tagMetadata("report", #{description: "Statistické zprávy"})
+@tagMetadata("node", #{description: "Práce s úrovněmi a uzly"})
+@tagMetadata("structure", #{description: "structure"})
+@tagMetadata("search", #{description: "Vyhledávání"})
+@tagMetadata("tasks", #{description: "Úkoly"})
+@tagMetadata("publication", #{description: "Public API for the publication system"})
+@tagMetadata("publication-internal", #{description: "Publication API used by the Elza UI"})
+@tagMetadata("accesspoint-internal", #{description: "Access-point API used by the Elza UI"})
+@tagMetadata("rules", #{description: "Pravidla popisu archiválií (typy atributů, datové typy, …)"})
 namespace ElzaAPI {
     // add models not used in operations
     union __Types {
         a: NodeUpdateItem,
-        b: ItemTypeGroup
+        b: ItemTypeGroup,
+        c: ExtEntityBinding
     }
     @route("/__types") @get
     op __typeRegistry(): __Types;

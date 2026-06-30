@@ -24,13 +24,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.RulPackage;
 import cz.tacr.elza.packageimport.PackageService;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.ApBindingIssueRepository;
 import cz.tacr.elza.repository.ApBindingItemRepository;
+import cz.tacr.elza.repository.ApBindingParticipantRepository;
 import cz.tacr.elza.repository.ApBindingRepository;
 import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApCachedAccessPointRepository;
@@ -66,6 +67,8 @@ import cz.tacr.elza.repository.DataRepository;
 import cz.tacr.elza.repository.DataTypeRepository;
 import cz.tacr.elza.repository.DescItemRepository;
 import cz.tacr.elza.repository.DigitizationRequestRepository;
+import cz.tacr.elza.repository.ExportRepository;
+import cz.tacr.elza.repository.ExportTypeRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.FundRegisterScopeRepository;
 import cz.tacr.elza.repository.FundRepository;
@@ -258,7 +261,14 @@ public class HelperTestService {
 	private WfTaskApStateRepository wfTaskApStateRepository;
 	@Autowired
 	private WfTaskApRevStateRepository wfTaskApRevStateRepository;
-
+    @Autowired
+    private ExportTypeRepository exportTypeRepository;
+    @Autowired
+    private ExportRepository exportRepository;
+    @Autowired
+    private ApBindingIssueRepository bindingIssueRepository;
+    @Autowired
+    private ApBindingParticipantRepository bindingParticipantRepository;
     @Autowired
     private PackageService packageService;
 
@@ -273,9 +283,6 @@ public class HelperTestService {
 
     @Autowired
 	private SessionFactory sessionFactory;
-
-    @Autowired
-    private PlatformTransactionManager transactionManager;
 
     public List<RulPackage> getPackages() {
         return packageService.getPackages();
@@ -362,11 +369,18 @@ public class HelperTestService {
         bulkActionNodeRepository.deleteAll();
         faBulkActionRepository.deleteAll();
         indexRepository.deleteAll();
+        // must precede apItem/part/binding cleanup — ap_binding_issue FKs them
+        bindingIssueRepository.deleteAll();
         bindingItemRepository.deleteAll();
+        bindingParticipantRepository.deleteAll();
         bindingStateRepository.deleteAll();
         apItemRepository.deleteAll();
         partRepository.deleteAll();
         keyValueRepository.deleteAll();
+
+        exportRepository.deleteAll();
+        exportTypeRepository.deleteAll();
+
         fundVersionRepository.deleteAll();
         fundRegisterScopeRepository.deleteAll();
         levelRepository.deleteAll();

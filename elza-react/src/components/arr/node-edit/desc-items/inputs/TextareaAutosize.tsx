@@ -1,8 +1,9 @@
 import { Textarea, TextareaProps } from "@fluentui/react-components";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { FIELD_HEIGHT } from "../../../../../constants";
+import { useDebouncedLayoutEffect } from "../../../../../utils/hooks/hooks";
 
-interface Props extends TextareaProps {}
+interface Props extends TextareaProps { }
 
 export function TextareaAutosize({ value, ...otherProps }: Props) {
   const fieldRef = useRef<HTMLTextAreaElement>(null);
@@ -15,11 +16,15 @@ export function TextareaAutosize({ value, ...otherProps }: Props) {
   const fieldHeight = otherProps.size === "small" ? FIELD_HEIGHT.small : FIELD_HEIGHT.medium;
   const contentAreaMin = innerMinHeight - verticalPadding - defaultPadBottom;
 
-  useLayoutEffect(() => {
+  function resizeTextarea(fieldHeight: number, contentAreaMin: number) {
     let wrapperPadding = 0;
     if (wrapperRef.current) {
       const computed = getComputedStyle(wrapperRef.current);
-      wrapperPadding = parseFloat(computed.paddingTop) + parseFloat(computed.paddingBottom) + parseFloat(computed.borderTopWidth) + parseFloat(computed.borderBottomWidth);
+      wrapperPadding =
+        parseFloat(computed.paddingTop) +
+        parseFloat(computed.paddingBottom) +
+        parseFloat(computed.borderTopWidth) +
+        parseFloat(computed.borderBottomWidth);
     }
     const computedInnerMinHeight = fieldHeight - wrapperPadding;
     setInnerMinHeight(computedInnerMinHeight);
@@ -46,7 +51,15 @@ export function TextareaAutosize({ value, ...otherProps }: Props) {
     textarea.style.paddingBottom = prevPaddingBottom;
     textarea.style.minHeight = `${contentAreaMin}px`;
     setTextAreaHeight(scrollHeight);
-  }, [value, otherProps.size, fieldHeight, contentAreaMin]);
+  }
+
+  useDebouncedLayoutEffect(
+    () => {
+      resizeTextarea(fieldHeight, contentAreaMin);
+    },
+    50,
+    [value, otherProps.size, fieldHeight, contentAreaMin],
+  );
 
   const contentAreaHeight = Math.max(textAreaHeight, contentAreaMin);
 
@@ -65,6 +78,7 @@ export function TextareaAutosize({ value, ...otherProps }: Props) {
           minWidth: "50px",
           maxWidth: "100%",
           flex: 1,
+          fontSize: "1em",
         },
         ref: fieldRef,
       }}

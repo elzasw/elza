@@ -6,7 +6,7 @@ export interface DescItemProps {
   nodeId: number;
   onChange: (item: NodeItem, specId?: number) => Promise<void>;
   isDisabled?: boolean;
-  typeForm: FormItemType;
+  typeForm?: FormItemType;
   typeRef: DescItemTypeRef;
   selectedSpecId?: number;
   typeWidth?: number;

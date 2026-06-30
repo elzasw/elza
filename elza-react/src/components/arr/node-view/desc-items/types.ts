@@ -5,7 +5,7 @@ export interface DescItemProps {
   item: NodeItem;
   nodeId: number;
   // isDisabled?: boolean;
-  typeForm: FormItemType;
+  typeForm?: FormItemType;
   typeRef: DescItemTypeRef;
   selectedSpecId?: number;
 }

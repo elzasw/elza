@@ -1,14 +1,18 @@
 import {
   Menu,
   MenuButton,
+  MenuDivider,
+  MenuGroup,
+  MenuGroupHeader,
   MenuItem,
+  MenuItemCheckbox,
+  MenuItemRadio,
   MenuList,
   MenuPopover,
   MenuTrigger,
   Overflow,
   Toolbar,
   ToolbarButton,
-  ToolbarDivider,
   Tooltip,
 } from "@fluentui/react-components";
 import {
@@ -23,6 +27,7 @@ import {
   LayoutColumnThreeRegular,
   LayoutColumnFourRegular,
   LinkMultipleRegular,
+  OptionsRegular,
   PaddingDownRegular,
   PaddingTopRegular,
   SettingsCogMultipleRegular,
@@ -42,9 +47,9 @@ import { showConfirmDialog } from "components/shared/dialog";
 import ConfirmForm from "components/shared/form/ConfirmForm";
 import {
   FormItemType,
-  NodeAccordionData,
   NodeBase,
   NodeFormData,
+  NodeStatus,
 } from "elza-api";
 import { useState } from "react";
 import { FormattedMessage, defineMessages, useIntl } from "react-intl";
@@ -60,6 +65,7 @@ import { isFundRootId } from "../ArrUtils";
 import SyncNodes from "../SyncNodes";
 import { NodeSettingsModal } from "../node-settings-form";
 import { QuoteModal, messages as quoteMessages } from "../quote";
+import { messages as nodeEditMessages } from "./messages";
 import { TextFragmentsWindow } from "../text-fragments";
 import { AddDescItemTypeForm } from "./AddDescItemType";
 import {
@@ -71,12 +77,9 @@ import {
 import { FormItem, useActiveFund, useActiveParent } from "./hooks";
 import { useTemplates } from "./templates/templates";
 import { useUserSettings } from "contexts/user";
+import { useStyles } from "./styles";
 
 export const messages = defineMessages({
-  addDescItem: {
-    id: "node_action_addDescItem",
-    defaultMessage: "Prvek popisu",
-  },
   toggleCopyFromPrevious: {
     id: "node_action_toggleCopyFromPrevious",
     defaultMessage: "Nastavení opakovaného kopírování všech hodnot PP",
@@ -129,17 +132,17 @@ export const messages = defineMessages({
     id: "node_action_digitizationSync",
     defaultMessage: "Synchronizovat DAO",
   },
+  viewSettings: {
+    id: "node_action_viewSettings",
+    defaultMessage: "Nastavení zobrazení",
+  },
   toggleCompact: {
     id: "node_action_toggleCompact",
     defaultMessage: "Kompaktní zobrazení",
   },
-  addColumn: {
-    id: "node_action_addColumn",
-    defaultMessage: "Přidat sloupec skupin",
-  },
-  removeColumn: {
-    id: "node_action_removeColumn",
-    defaultMessage: "Odebrat sloupec skupin",
+  columnsHeader: {
+    id: "node_action_columnsHeader",
+    defaultMessage: "Počet sloupců skupin",
   },
 });
 
@@ -148,7 +151,7 @@ export interface Props {
   itemTypes?: FormItemType[];
   formItems?: FormItem[];
   parent?: NodeBase;
-  nodeData?: NodeAccordionData;
+  nodeData?: NodeStatus;
   onAddDescItem: (itemTypeId: number, itemSpecId?: number) => void;
   daos?: ArrDaoVO[];
 }
@@ -162,6 +165,7 @@ export const NodeToolbar = ({
   daos = [],
 }: Props) => {
   const descItems = formItems.map(({ item }) => item);
+  const styles = useStyles();
 
   const [showSpecialCharactersWindow, setShowSpecialCharactersWindow] =
     useState<boolean>(false);
@@ -191,9 +195,8 @@ export const NodeToolbar = ({
   function handleAddDescItem() {
     dispatch(
       modalDialogShow(this, undefined, ({ onClose }) => {
-        function handleSubmit(item: DescItemTypeRef) {
-          onAddDescItem(item.id);
-          onClose();
+        function handleSubmit(items: DescItemTypeRef[]) {
+          items.forEach((item) => onAddDescItem(item.id));
         }
         return (
           <AddDescItemTypeForm
@@ -258,12 +261,9 @@ export const NodeToolbar = ({
             }
           }
           console.log("#nt", activeParent.childNodes, nodeId);
-          // const data = await WebApi.selectNode(nodeId);
-          // console.log("#nt - after select", data);
           dispatch(
             routerNavigate(urlFundNode(activeFund.id, undefined, nodeId)),
           );
-          // dispatch(processNodeNavigation(data, activeFund.versionId));
         }),
       );
     }
@@ -405,18 +405,9 @@ export const NodeToolbar = ({
     updateSettings({ compact: !settings.compact });
   }
 
-  function handleAddColumn() {
-    const current = settings.groupColumns || 1;
-    const next = current < 4 ? current + 1 : 0;
-    updateSettings({ groupColumns: next });
+  function handleSetColumns(columns: number) {
+    updateSettings({ groupColumns: columns });
   }
-
-  // function handleRemoveColumn() {
-  //   const current = settings.groupColumns || 1;
-  //   if (current > 1) {
-  //     updateSettings({ groupColumns: current - 1 });
-  //   }
-  // }
 
   function handleVisiblePolicy() {
     dispatch(
@@ -439,7 +430,7 @@ export const NodeToolbar = ({
       groupId: "1",
       items: [
         {
-          label: formatMessage(messages.addDescItem),
+          label: formatMessage(nodeEditMessages.addDescItem),
           showLabel: true,
           icon: <AddRegular />,
           appearance: "primary",
@@ -631,18 +622,8 @@ export const NodeToolbar = ({
 
   return (
     <>
-      <div
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-          padding: "8px",
-          background: "var(--shade-1)",
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ flex: 1, minWidth: 0, overflow: "hidden", paddingRight: "8px" }}>
+      <div className={styles.toolbarSticky}>
+        <div className={styles.toolbarMain}>
         <Overflow padding={20}>
           <Toolbar aria-label="Overflow" size="small">
             {/*<Button>test</Button>*/}
@@ -652,11 +633,7 @@ export const NodeToolbar = ({
                   <MenuButton
                     size="small"
                     title={i18n("subNodeDao.dao.action.changeScenario")}
-                    style={{
-                      whiteSpace: "nowrap",
-                      marginRight: "4px",
-                      flexShrink: 0,
-                    }}
+                    className={styles.toolbarScenarioButton}
                     icon={<LinkMultipleRegular />}
                   >
                     {/*{i18n("subNodeDao.dao.action.changeScenario")}*/}
@@ -709,31 +686,55 @@ export const NodeToolbar = ({
           </Toolbar>
         </Overflow>
         </div>
-        {settings.showExperimentalFeatures && <Toolbar aria-label="View settings" size="small" style={{ flexShrink: 0 }}>
-          <Tooltip appearance="inverted" relationship="label" content={formatMessage(messages.toggleCompact)}>
-            <ToolbarButton
-              appearance={"subtle"}
-              icon={settings.compact ? <PaddingTopRegular /> : <PaddingDownRegular />}
-              onClick={handleToggleCompact}
-            />
-          </Tooltip>
-          <ToolbarDivider />
-          <Tooltip appearance="inverted" relationship="label" content={`${formatMessage(messages.addColumn)} (${settings.groupColumns || 1})`}>
-            <ToolbarButton
-              appearance="subtle"
-              icon={<span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-                {(() => {
-                  const cols = settings.groupColumns || 1;
-                  if (cols >= 4) return <LayoutColumnFourRegular />;
-                  if (cols === 3) return <LayoutColumnThreeRegular />;
-                  if (cols === 2) return <LayoutColumnTwoRegular />;
-                  return <ColumnRegular />;
-                })()}
-              </span>}
-              onClick={handleAddColumn}
-            />
-          </Tooltip>
-        </Toolbar>}
+        <Toolbar aria-label="View settings" size="small" className={styles.toolbarFlexShrink}>
+          <Menu
+            positioning={{ align: "end" }}
+            checkedValues={{
+              compact: settings.compact ? ["compact"] : [],
+              columns: [String(settings.groupColumns || 1)],
+            }}
+            onCheckedValueChange={(_e, { name, checkedItems }) => {
+              if (name === "compact") {
+                handleToggleCompact();
+              } else if (name === "columns") {
+                handleSetColumns(Number(checkedItems[0]));
+              }
+            }}
+          >
+            <MenuTrigger disableButtonEnhancement>
+              <Tooltip appearance="inverted" relationship="label" content={formatMessage(messages.viewSettings)}>
+                <ToolbarButton appearance="subtle" icon={<OptionsRegular />} />
+              </Tooltip>
+            </MenuTrigger>
+            <MenuPopover>
+              <MenuList>
+                <MenuItemCheckbox
+                  name="compact"
+                  value="compact"
+                  icon={settings.compact ? <PaddingTopRegular /> : <PaddingDownRegular />}
+                >
+                  {formatMessage(messages.toggleCompact)}
+                </MenuItemCheckbox>
+                <MenuDivider />
+                <MenuGroup>
+                  <MenuGroupHeader>{formatMessage(messages.columnsHeader)}</MenuGroupHeader>
+                  <MenuItemRadio name="columns" value="1" icon={<ColumnRegular />}>
+                    1
+                  </MenuItemRadio>
+                  <MenuItemRadio name="columns" value="2" icon={<LayoutColumnTwoRegular />}>
+                    2
+                  </MenuItemRadio>
+                  <MenuItemRadio name="columns" value="3" icon={<LayoutColumnThreeRegular />}>
+                    3
+                  </MenuItemRadio>
+                  <MenuItemRadio name="columns" value="4" icon={<LayoutColumnFourRegular />}>
+                    4
+                  </MenuItemRadio>
+                </MenuGroup>
+              </MenuList>
+            </MenuPopover>
+          </Menu>
+        </Toolbar>
       </div>
       {showSpecialCharactersWindow && (
         <TextFragmentsWindow
