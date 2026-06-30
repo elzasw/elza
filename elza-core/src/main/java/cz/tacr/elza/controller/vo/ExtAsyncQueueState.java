@@ -5,6 +5,8 @@ public enum ExtAsyncQueueState {
 
     UPDATE("Aktualizováno"),
 
+    UPDATE_DEFERRED("Odloženo (čeká na náhradu)"),
+
     IMPORT_NEW("Ke stažení"),
 
     IMPORT_OK("Staženo"), // předchozí OK
@@ -39,6 +41,8 @@ public enum ExtAsyncQueueState {
             return ERROR;
         case UPDATE:
             return UPDATE;
+        case UPDATE_DEFERRED:
+            return UPDATE_DEFERRED;
         case EXPORT_OK:
             return EXPORT_OK;
         case EXPORT_CANCELLED:

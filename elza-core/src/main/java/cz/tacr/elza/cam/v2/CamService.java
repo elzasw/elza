@@ -78,6 +78,7 @@ import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.domain.ApState.StateApproval;
 import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 import cz.tacr.elza.exception.BusinessException;
+import cz.tacr.elza.exception.DeferSyncException;
 import cz.tacr.elza.exception.SyncImpossibleException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -1004,6 +1005,12 @@ public class CamService {
                 apConnectService.setQueueItemState(queueItem,
                                                    ExtAsyncQueueState.ERROR,
                                                    "Error: synchronized impossible: ES -> ELZA, " + e.getMessage());
+            } catch (DeferSyncException e) {
+                // a precondition is not met yet (e.g. the replacing entity has not been
+                // downloaded) -> defer the item; it is retried once the queue goes idle
+                log.info("Synchronization deferred, accessPointId: {}, camId: {}, queueItemId: {}: {}", queueItem.getAccessPointId(),
+                          binding.getValue(), queueItem.getExtSyncsQueueItemId(), e.getMessage());
+                apConnectService.deferQueueItem(queueItem, "Deferred: " + e.getMessage());
             }
         }
     }

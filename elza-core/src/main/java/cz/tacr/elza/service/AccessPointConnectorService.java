@@ -4,6 +4,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -46,6 +47,13 @@ import jakarta.transaction.Transactional;
 public class AccessPointConnectorService {
 
     static private final Logger log = LoggerFactory.getLogger(AccessPointConnectorService.class);
+
+    /**
+     * Set whenever a queue item is deferred; signals that deferred items should be
+     * reactivated once the queue drains. Initialized to {@code true} so that items
+     * left in {@code UPDATE_DEFERRED} by a previous run are reactivated after startup.
+     */
+    private final AtomicBoolean deferredItemsPending = new AtomicBoolean(true);
 
     @Autowired
     private AccessPointCacheService accessPointCacheService;
@@ -236,6 +244,37 @@ public class AccessPointConnectorService {
         }
 
         return null;
+    }
+
+    /**
+     * Marks a queue item as deferred (its precondition is not met yet, e.g. the replacing
+     * entity has not been downloaded) and records that a reactivation will be needed.
+     */
+    public void deferQueueItem(ExtSyncsQueueItem queueItem, String message) {
+        setQueueItemState(queueItem, ExtAsyncQueueState.UPDATE_DEFERRED, message);
+        deferredItemsPending.set(true);
+    }
+
+    /**
+     * Re-activates deferred queue items by moving them back to {@link ExtAsyncQueueState#UPDATE}
+     * so they are retried by the regular download flow. Intended to be called when the queue is
+     * otherwise idle, which paces the retries to the processor's wake-up interval.
+     *
+     * Does nothing unless an item has been deferred since the last reactivation, so it is cheap
+     * to call on every idle cycle.
+     *
+     * @return number of re-activated items
+     */
+    @Transactional
+    public int promoteDeferredItems() {
+        if (!deferredItemsPending.compareAndSet(true, false)) {
+            return 0;
+        }
+        int count = extSyncsQueueItemRepository.reactivateDeferredItems();
+        if (count > 0) {
+            log.debug("Re-activated {} deferred queue item(s) for retry.", count);
+        }
+        return count;
     }
 
     private ItemSyncProcessor createDownloadProcessor(Iterable<ExtSyncsQueueItem> itemPage) {

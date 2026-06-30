@@ -88,6 +88,9 @@ public class ExtSyncsProcessor implements Runnable {
                             }
                         } else {
                         	logger.trace("ExtSyncsProcessor - no item to process.");
+                            // queue is idle -> re-activate deferred items so they are retried
+                            // on a following cycle (paced by the wake-up interval below)
+                            apConnectorService.promoteDeferredItems();
                         }
                     } catch (Exception ex) {
                         logger.error("Failed to process item. ", ex);
