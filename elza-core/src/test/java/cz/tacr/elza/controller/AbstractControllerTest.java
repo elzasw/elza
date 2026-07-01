@@ -104,7 +104,6 @@ import cz.tacr.elza.controller.vo.RulDescItemSpecVO;
 import cz.tacr.elza.controller.vo.RulExportFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputFilterVO;
 import cz.tacr.elza.controller.vo.RulOutputTypeVO;
-import cz.tacr.elza.controller.vo.RulPartTypeVO;
 import cz.tacr.elza.controller.vo.RulPolicyTypeVO;
 import cz.tacr.elza.controller.vo.RulRuleSetVO;
 import cz.tacr.elza.controller.vo.RulTemplateVO;
@@ -162,7 +161,6 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ArrItemVO;
 import cz.tacr.elza.controller.vo.nodes.descitems.UpdateOp;
 import cz.tacr.elza.controller.vo.usage.RecordUsageVO;
 import cz.tacr.elza.controller.vo.ApSearchType;
-import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.UsrAuthentication;
 import cz.tacr.elza.domain.table.ElzaTable;
 import cz.tacr.elza.service.FundLevelService;
@@ -176,6 +174,7 @@ import cz.tacr.elza.test.controller.DescitemsApi;
 import cz.tacr.elza.test.controller.FundsApi;
 import cz.tacr.elza.test.controller.IoApi;
 import cz.tacr.elza.test.controller.NodeApi;
+import cz.tacr.elza.test.controller.OutputApi;
 import cz.tacr.elza.test.controller.PublicationInternalApi;
 import cz.tacr.elza.test.controller.PublicationApi;
 import cz.tacr.elza.test.controller.ReportApi;
@@ -284,9 +283,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String DESC_ITEM_CSV_EXPORT = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/csv/export";
 	protected static final String DELETE_DESC_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}";
 	protected static final String DELETE_OUTPUT_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}";
-	protected static final String CREATE_OUTPUT_ITEM = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}/create";
-	protected static final String UPDATE_OUTPUT_ITEM = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputVersion}/update/{createNewVersion}";
-	protected static final String DELETE_OUTPUT_ITEM = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputVersion}/delete";
 	protected static final String FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fulltext";
 	protected static final String FUND_FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fundFulltext";
 	protected static final String FUND_FULLTEXT_LIST = ARRANGEMENT_CONTROLLER_URL + "/fundFulltext/{fundId}";
@@ -295,7 +291,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String FA_TREE_NODES = ARRANGEMENT_CONTROLLER_URL + "/fundTree/nodes";
 	protected static final String NODE_DATA = ARRANGEMENT_CONTROLLER_URL + "/nodeData";
 	protected static final String NODE_FORM_DATA = ARRANGEMENT_CONTROLLER_URL + "/nodes/{nodeId}/{versionId}/form";
-	protected static final String OUTPUT_FORM_DATA = ARRANGEMENT_CONTROLLER_URL + "/output/{outputId}/{versionId}/form";
 	protected static final String NODE_FORMS_DATA = ARRANGEMENT_CONTROLLER_URL + "/nodes/{versionId}/forms";
 	protected static final String NODE_FORMS_DATA_AROUND = ARRANGEMENT_CONTROLLER_URL + "/nodes/{versionId}/{nodeId}/{around}/forms";
 	protected static final String NODES = ARRANGEMENT_CONTROLLER_URL + "/nodes";
@@ -514,7 +509,9 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected PublicationInternalApi publicationIntApi;
 
 	protected AccesspointInternalApi accesspointIntApi;
-	
+
+	protected OutputApi outputApi;
+
 	protected static Map<String, String> cookies = null;
 
 	@Override
@@ -545,6 +542,7 @@ public abstract class AbstractControllerTest extends AbstractTest {
 		publicationApi = new cz.tacr.elza.test.controller.PublicationApi(elzaApiClient);
 		publicationIntApi = new cz.tacr.elza.test.controller.PublicationInternalApi(elzaApiClient);
 		accesspointIntApi = new cz.tacr.elza.test.controller.AccesspointInternalApi(elzaApiClient);
+		outputApi = new cz.tacr.elza.test.controller.OutputApi(elzaApiClient);
 
 		loginAsAdmin();
 
@@ -1139,37 +1137,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected List<String> getItemTypeCodesByRuleSet(RulRuleSetVO rulRuleSetVO) {
 		Response response = get(spec -> spec.pathParam("ruleSetId", rulRuleSetVO.getId()), ITEM_TYPE_CODES);
 		return Arrays.asList(response.getBody().as(String[].class));
-	}
-
-	protected ArrangementController.OutputItemResult createOutputItem(final ArrItemVO outputItemVO,
-			final Integer fundVersionId, final Integer itemTypeId, final Integer outputId,
-			final Integer outputVersion) {
-		assertNotNull(outputItemVO);
-		assertNotNull(fundVersionId);
-		assertNotNull(itemTypeId);
-		assertNotNull(outputId);
-		assertNotNull(outputVersion);
-
-		Response response = put(spec -> spec.body(outputItemVO).pathParam("fundVersionId", fundVersionId)
-				.pathParam("itemTypeId", itemTypeId).pathParam("outputId", outputId)
-				.pathParam("outputVersion", outputVersion), CREATE_OUTPUT_ITEM);
-		return response.getBody().as(ArrangementController.OutputItemResult.class);
-	}
-
-	protected ArrangementController.OutputItemResult updateOutputItem(final ArrItemVO outputItemVO,
-			final Integer fundVersionId, final Integer outputVersion, final Boolean createNewVersion) {
-		Response response = put(
-				spec -> spec.body(outputItemVO).pathParam("fundVersionId", fundVersionId)
-						.pathParam("createNewVersion", createNewVersion).pathParam("outputVersion", outputVersion),
-				UPDATE_OUTPUT_ITEM);
-		return response.getBody().as(ArrangementController.OutputItemResult.class);
-	}
-
-	public ArrangementController.OutputItemResult deleteOutputItem(final Integer outputItemId,
-			final Integer fundVersionId, final Integer outputVersion) {
-		Response response = post(spec -> spec.body(outputItemId).pathParam("fundVersionId", fundVersionId)
-				.pathParam("outputVersion", outputVersion), DELETE_OUTPUT_ITEM);
-		return response.getBody().as(ArrangementController.OutputItemResult.class);
 	}
 
 	protected InputStream descItemCsvExport(final Integer fundVersionId, final Integer descItemObjectId) {
@@ -1991,19 +1958,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected ArrangementController.DescFormDataNewVO getNodeFormData(final Integer nodeId, final Integer versionId) {
 		return get(spec -> spec.pathParam("nodeId", nodeId).pathParam("versionId", versionId), NODE_FORM_DATA).getBody()
 				.as(ArrangementController.DescFormDataNewVO.class);
-	}
-
-	/**
-	 * Získání dat pro formulář.
-	 *
-	 * @param outputId  identfikátor outputu
-	 * @param versionId id verze stromu
-	 * @return formulář
-	 */
-	protected ArrangementController.OutputFormDataNewVO getOutputFormData(final Integer outputId,
-			final Integer versionId) {
-		return get(spec -> spec.pathParam("outputId", outputId).pathParam("versionId", versionId), OUTPUT_FORM_DATA)
-				.getBody().as(ArrangementController.OutputFormDataNewVO.class);
 	}
 
 	/**

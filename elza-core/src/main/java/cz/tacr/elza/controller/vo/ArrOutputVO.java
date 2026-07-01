@@ -13,6 +13,7 @@ import cz.tacr.elza.domain.ArrOutput.OutputState;
  *
  * @since 14.04.2016
  */
+@Deprecated
 public class ArrOutputVO {
 
     // --- fields ---

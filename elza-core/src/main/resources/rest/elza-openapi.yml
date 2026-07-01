@@ -3,6 +3,8 @@ info:
   title: ELZA API
   version: 1.0.0
 tags:
+  - name: output
+    description: Výstupy archivních souborů
   - name: rules
     description: Pravidla popisu archiválií (typy atributů, datové typy, …)
   - name: accesspoint-internal
@@ -2643,6 +2645,174 @@ paths:
             schema:
               $ref: '#/components/schemas/ImportFundData'
         description: Doplnění způsobu importu
+  /funds/out/item/{fundVersionId}/{outputVersion}/update:
+    put:
+      operationId: Output_updateOutputItem
+      description: Update output item
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: outputVersion
+          in: path
+          required: true
+          description: output version
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.ItemRes'
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OutputItem'
+        description: body output item
+  /funds/out/item/{fundVersionId}/{outputVersion}/{outputItemId}:
+    delete:
+      operationId: Output_deleteOutputItem
+      description: Delete output item
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: outputVersion
+          in: path
+          required: true
+          description: output version
+          schema:
+            type: integer
+        - name: outputItemId
+          in: path
+          required: true
+          description: output item id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.ItemRes'
+      tags:
+        - output
+  /funds/out/item/{outputId}/{fundVersionId}/{outputVersion}/create:
+    post:
+      operationId: Output_createOutputItem
+      description: Create output item
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: outputVersion
+          in: path
+          required: true
+          description: output version
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.ItemRes'
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OutputItem'
+        description: body output item
+  /funds/out/{outputId}/{fundVersionId}/form:
+    get:
+      operationId: Output_getOutputFormData
+      description: Getting data for the form
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.FormData'
+      tags:
+        - output
+  /funds/out/{outputId}/{fundVersionId}/{itemTypeId}/switch:
+    post:
+      operationId: Output_switchOutputCalculating
+      description: Switch between automatic and user-defined attribute type editing
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: itemTypeId
+          in: path
+          required: true
+          description: item type id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            text/plain:
+              schema:
+                type: boolean
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - output
   /funds/sdo/type:
     get:
       operationId: Sdo_findStructureTypes
@@ -6781,7 +6951,7 @@ components:
           description: if inheritance is prohibited - true
       allOf:
         - $ref: '#/components/schemas/BaseItem'
-      description: Náhrada za třídu `ArrItemVO`
+      description: Náhrada za `ArrItemVO`
     NodeSearchResult:
       type: object
       required:
@@ -6901,6 +7071,112 @@ components:
         - AND
         - OR
       description: Operation type for LogicalFilter
+    Output.Def:
+      type: object
+      required:
+        - id
+        - internalCode
+        - name
+        - state
+        - outputTypeId
+        - generatedDate
+        - version
+        - outputSettings
+        - createDate
+      properties:
+        id:
+          type: integer
+        internalCode:
+          type: string
+        name:
+          type: string
+        state:
+          $ref: '#/components/schemas/Output.State'
+        error:
+          type: string
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeTreeData'
+        outputTypeId:
+          type: integer
+        templateIds:
+          type: array
+          items:
+            type: integer
+        outputResultIds:
+          type: array
+          items:
+            type: integer
+        generatedDate:
+          type: string
+          format: date-time
+        version:
+          type: integer
+        outputSettings:
+          type: string
+        createDate:
+          type: string
+          format: date-time
+        deleteDate:
+          type: string
+          format: date-time
+        scopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Scope'
+        anonymizedAp:
+          $ref: '#/components/schemas/ApAccessPointVO'
+        outputFilterId:
+          type: integer
+      description: Náhrada za `ArrOutputVO`
+    Output.FormData:
+      type: object
+      required:
+        - parent
+        - items
+        - itemTypes
+        - unusedItemTypeIds
+      properties:
+        parent:
+          $ref: '#/components/schemas/Output.Def'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OutputItem'
+        itemTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormItemType'
+        unusedItemTypeIds:
+          type: array
+          items:
+            type: integer
+      description: Náhrada za `OutputFormDataNewVO`
+    Output.ItemRes:
+      type: object
+      required:
+        - parent
+        - item
+      properties:
+        parent:
+          $ref: '#/components/schemas/Output.Def'
+        item:
+          $ref: '#/components/schemas/OutputItem'
+      description: Náhrada za `OutputItemResult`
+    Output.State:
+      type: string
+      enum:
+        - OPEN
+        - COMPUTING
+        - GENERATING
+        - FINISHED
+        - OUTDATED
+      description: Output state
+    OutputItem:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/BaseItem'
     ParInstitutionGen:
       type: object
       required:
@@ -7478,6 +7754,19 @@ components:
         - TO_APPROVE
         - TO_AMEND
       description: States of ApRevState
+    Scope:
+      type: object
+      required:
+        - language
+        - ruleSetCode
+      properties:
+        language:
+          type: string
+        ruleSetCode:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/BaseCode'
+      description: Náhrada za `ApScopeVO`
     Sdo.BatchUpdateParam:
       type: object
       required:
