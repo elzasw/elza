@@ -133,10 +133,13 @@ export function useSearchNodeFilters(fundId: number) {
     return [value, setValue] as const;
 }
 
+export type Language = 'cs' | 'en';
+
 export interface UserSettingsData {
     compact?: boolean;
     darkMode?: boolean;
     groupColumns?: number;
+    language?: Language;
     showDebugInfo?: boolean;
     showExperimentalFeatures?: boolean;
 }

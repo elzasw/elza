@@ -1,43 +1,31 @@
-import { Button } from "@fluentui/react-components";
 import { serverContextPath } from "api";
+import { useUserSettings } from "contexts/user";
 import { PropsWithChildren, useEffect, useState } from "react";
 import { IntlProvider } from "react-intl";
-// import { messages } from "./lang.cs.ts";
 
-interface Props {
-  test?: string;
-}
-
-const locales = ["cs", "en"]
-
-export function LangProvider({ children }: PropsWithChildren<Props>) {
+export function LangProvider({ children }: PropsWithChildren) {
+  const { settings } = useUserSettings();
+  // The language selector is an experimental feature; without it enabled there is no way to switch
+  // back, so a non-default language only applies while experimental features are on.
+  const locale = settings.showExperimentalFeatures ? settings.language ?? "cs" : "cs";
   const [messages, setMessages] = useState<Record<string, string>>({});
-  const [locale, setLocale] = useState<string>("cs");
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       const response = await fetch(`${serverContextPath}/static/res/locale/${locale}.json`);
-      const _messages: Record<string, string> = await response.json();
-
-      console.log("#### _messages", _messages);
-      setMessages(_messages);
-    })()
-  }, [locale])
-
-  function handleLocaleChange() {
-    const selectedLocaleIndex = locales.indexOf(locale);
-    if (selectedLocaleIndex + 1 < locales.length) {
-      setLocale(locales[selectedLocaleIndex + 1]);
-    } else {
-      setLocale(locales[0]);
-    }
-  }
-
-  console.log("#### messages", messages, children);
+      const loadedMessages: Record<string, string> = await response.json();
+      if (!cancelled) {
+        setMessages(loadedMessages);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [locale]);
 
   return (
     <IntlProvider messages={messages} defaultLocale="cs" locale={locale}>
-      <Button style={{ display: "none" }} onClick={handleLocaleChange}>{locale}</Button>
       {children}
     </IntlProvider>
   );
