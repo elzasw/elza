@@ -431,6 +431,7 @@ public class StructureOldController {
         structureService.setFundStructureExtensions(fundVersion, structureType, structureExtensions);
     }
 
+    @Deprecated
     public static class StructureDataFormDataVO extends ArrangementController.FormDataNewVO<ArrStructureDataVO> {
         private ArrStructureDataVO parent;
 
