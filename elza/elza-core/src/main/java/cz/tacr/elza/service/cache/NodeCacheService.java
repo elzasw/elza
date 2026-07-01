@@ -595,7 +595,9 @@ public class NodeCacheService {
         // insert via saveAll during cascade cleanup in deleteDaoPackageWithCascade).
         // deleteAll(entities) queues em.remove calls; the actual SQL is emitted
         // at the next flush/commit, without forcing a session-wide flush now.
-        List<ArrCachedNode> entities = cachedNodeRepository.findByNodeIdsInNoFetch(nodeIds);
+        //
+        // Load in batches.
+        List<ArrCachedNode> entities = ObjectListIterator.findIterable(nodeIds, cachedNodeRepository::findByNodeIdsInNoFetch);
         if (!entities.isEmpty()) {
             cachedNodeRepository.deleteAll(entities);
         }
