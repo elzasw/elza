@@ -117,6 +117,10 @@ import cz.tacr.elza.test.controller.vo.ItemDataResult;
 import cz.tacr.elza.test.controller.vo.NodeBase;
 import cz.tacr.elza.test.controller.vo.NodeDataParam;
 import cz.tacr.elza.test.controller.vo.NodeItem;
+import cz.tacr.elza.test.controller.vo.OutputDef;
+import cz.tacr.elza.test.controller.vo.OutputFormData;
+import cz.tacr.elza.test.controller.vo.OutputItem;
+import cz.tacr.elza.test.controller.vo.OutputItemRes;
 import cz.tacr.elza.utils.CsvUtils;
 import io.restassured.response.Response;
 
@@ -477,68 +481,55 @@ public class ArrangementControllerTest extends AbstractControllerTest {
             output3 = outputs.get(0);
         }
 
-        ArrItemTextVO item = new ArrItemTextVO();
-        item.setValue("test1");
         RulDescItemTypeExtVO typeVo = findDescItemTypeByCode("SRD_SCALE");
-        ArrangementController.OutputItemResult outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), output3.getId(), output3.getVersion());
-        ArrItemVO itemCreated = outputItem.getItem();
+        OutputItem item = new OutputItem();
+        item.setItemTypeId(typeVo.getId());
+        DataText textData = new DataText();
+        textData.setTextValue("test1");
+        item.setData(textData);
+
+        OutputItemRes outputItem = outputApi.outputCreateOutputItem(output3.getId(), fundVersion.getId(), output3.getVersion(), item);
+        OutputItem itemCreated = outputItem.getItem();
         assertNotNull(itemCreated);
-        assertNotNull(itemCreated.getDescItemObjectId());
+        assertNotNull(itemCreated.getItemObjectId());
         assertNotNull(itemCreated.getPosition());
-        assertTrue(itemCreated instanceof ArrItemTextVO);
-        ArrItemTextVO itemCreatedText = (ArrItemTextVO) itemCreated;
-        assertTrue(itemCreatedText.getValue().equals(item.getValue()));
+        assertTrue(itemCreated.getData() instanceof DataText);
+        DataText itemCreatedText = (DataText) itemCreated.getData();
+        assertEquals("test1", itemCreatedText.getTextValue());
 
-        itemCreatedText.setValue("xxx");
-        outputItem = updateOutputItem(itemCreated, fundVersion.getId(), outputItem.getParent().getVersion(), true);
+        itemCreatedText.setTextValue("xxx");
+        itemCreated.setData(itemCreatedText);
+        outputItem = outputApi.outputUpdateOutputItem(fundVersion.getId(), outputItem.getParent().getVersion(), itemCreated);
 
-        ArrItemVO itemUpdated = outputItem.getItem();
+        OutputItem itemUpdated = outputItem.getItem();
         assertNotNull(itemUpdated);
-        assertNotNull(itemUpdated.getDescItemObjectId());
+        assertNotNull(itemUpdated.getItemObjectId());
         assertNotNull(itemUpdated.getPosition());
-        assertTrue(itemUpdated instanceof ArrItemTextVO);
-        assertTrue(((ArrItemTextVO) itemUpdated).getValue().equals(itemCreatedText.getValue()));
+        assertTrue(itemUpdated.getData() instanceof DataText);
+        assertEquals("xxx", ((DataText) itemUpdated.getData()).getTextValue());
 
-        ArrangementController.OutputFormDataNewVO outputFormData = getOutputFormData(outputItem.getParent().getId(), fundVersion.getId());
-
+        OutputFormData outputFormData = outputApi.outputGetOutputFormData(outputItem.getParent().getId(), fundVersion.getId());
         assertNotNull(outputFormData.getParent());
 
-        outputItem = deleteOutputItem(itemCreated.getDescItemObjectId(), fundVersion.getId(), outputItem.getParent().getVersion());
-        ArrOutputVO parent = outputItem.getParent();
+        outputItem = outputApi.outputDeleteOutputItem(fundVersion.getId(), outputItem.getParent().getVersion(), itemCreated.getItemObjectId());
+        OutputDef parent = outputItem.getParent();
 
-        ArrItemVO itemDeleted = outputItem.getItem();
-        Assertions.assertNull(itemDeleted);
+        OutputItem itemDeleted = outputItem.getItem();
+        assertNotNull(itemDeleted);
 
-        item = new ArrItemTextVO();
-        item.setValue("test1");
-        outputItem = createOutputItem(item, fundVersion.getId(), typeVo.getId(), output3.getId(), parent.getVersion());
+        item = new OutputItem();
+        item.setItemTypeId(typeVo.getId());
+        DataText textData2 = new DataText();
+        textData2.setTextValue("test1");
+        item.setData(textData2);
+        outputItem = outputApi.outputCreateOutputItem(
+                output3.getId(), fundVersion.getId(), parent.getVersion(), item);
         parent = outputItem.getParent();
         itemCreated = outputItem.getItem();
 
         ArrangementController.OutputItemResult outputItemResult = deleteOutputItemsByType(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId());
-        parent = outputItemResult.getParent();
 
-        // docasne zakazano - bude vraceno zpet pri prechodu na vyvojarska pravidla
-        /*outputItemResult = setNotIdentifiedOutputItem(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId(), null, null);
-        parent = outputItemResult.getParent();
-        // Návratová struktura nesmí být prázdná
-        assertNotNull(outputItemResult);
-        // Hodnota atributu nesmí být prázdná
-        assertNotNull(outputItemResult.getItem());
-        ArrItemTextVO textVO = (ArrItemTextVO) outputItemResult.getItem();
-        // Hodnota Nezjištěno musí být true
-        assertTrue(textVO.getUndefined());
-        // Identifikátor nesmí být prázdný
-        assertNotNull(textVO.getDescItemObjectId());
-        // Hodnota musí být prázdná
-        Assertions.assertNull(textVO.getValue());
-
-        outputItemResult = unsetNotIdentifiedOutputItem(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId(), null, textVO.getDescItemObjectId());
-        parent = outputItemResult.getParent();
-        // Návratová struktura nesmí být prázdná
-        assertNotNull(outputItemResult);
         // Hodnota atributu musí být prázdná
-        Assertions.assertNull(outputItemResult.getItem());*/
         OutputSettingsVO outputSettings = new OutputSettingsVO();
         outputSettings.setEvenPageOffsetX(42);
         outputSettings.setEvenPageOffsetY(42);

@@ -6,7 +6,6 @@ import static java.util.stream.Collectors.toSet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -26,7 +25,6 @@ import cz.tacr.elza.common.FactoryUtils;
 import cz.tacr.elza.controller.factory.ApFactory;
 import cz.tacr.elza.controller.vo.*;
 import cz.tacr.elza.domain.*;
-import cz.tacr.elza.domain.DaDao;
 import cz.tacr.elza.repository.*;
 import cz.tacr.elza.service.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -178,7 +176,6 @@ import cz.tacr.elza.service.importnodes.vo.ValidateResult;
 import cz.tacr.elza.service.output.OutputData;
 import cz.tacr.elza.service.output.OutputRequestStatus;
 import cz.tacr.elza.service.vo.ChangesResult;
-
 
 /**
  * Kontroler pro pořádání.
@@ -950,6 +947,7 @@ public class ArrangementController {
         }, targetFundVersion, targetStaticNode, targetStaticParentNode, copyNodesParams.getSelectedDirection());
     }
 
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/outputItems/{fundVersionId}/{outputVersion}/delete",
             method = RequestMethod.POST,
@@ -972,6 +970,7 @@ public class ArrangementController {
         return outputItemResult;
     }
 
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}/create",
             method = RequestMethod.PUT,
@@ -1000,6 +999,7 @@ public class ArrangementController {
         return outputItemResult;
     }
 
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/outputItems/{fundVersionId}/{outputVersion}/update/{createNewVersion}",
             method = RequestMethod.PUT,
@@ -1032,6 +1032,7 @@ public class ArrangementController {
      * @param fundVersionId identfikátor verze AS
      * @param itemTypeId    identfikátor typu hodnoty atributu
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/output/{outputId}/{fundVersionId}/{itemTypeId}/switch", method = RequestMethod.POST)
     public boolean switchOutputCalculating(@PathVariable(value = "outputId") final Integer outputId,
@@ -1053,6 +1054,7 @@ public class ArrangementController {
      * @param fundVersionId id verze stromu
      * @return formulář
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/output/{outputId}/{fundVersionId}/form", method = RequestMethod.GET)
     public OutputFormDataNewVO getOutputFormData(@PathVariable(value = "outputId") final Integer outputId,
@@ -2849,6 +2851,7 @@ public class ArrangementController {
      *
      * @param <T> typ nadřazené entity, např. ArrNodeVO nebo output atp.
      */
+    @Deprecated
     public static abstract class FormDataNewVO<T> {
 
         /**
@@ -2903,6 +2906,7 @@ public class ArrangementController {
         }
     }
 
+    @Deprecated
     public static class DescFormDataNewVO extends FormDataNewVO<ArrNodeVO> {
         private ArrNodeVO parent;
 
@@ -2941,6 +2945,7 @@ public class ArrangementController {
         }
     }
 
+    @Deprecated
     public static class OutputFormDataNewVO extends FormDataNewVO<ArrOutputVO> {
         private ArrOutputVO parent;
 
@@ -3107,6 +3112,7 @@ public class ArrangementController {
         }
     }
 
+    @Deprecated
     public static class OutputItemResult extends ItemResult<ArrOutputVO> {
         private ArrOutputVO parent;
 
