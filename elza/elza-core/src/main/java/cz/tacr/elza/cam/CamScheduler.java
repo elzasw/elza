@@ -15,6 +15,7 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.cam.SyncConfig.SynchronizationInfo;
+import cz.tacr.elza.metrics.ElzaMonitoringMetrics;
 import cz.tacr.elza.service.AccessPointConnectorService;
 
 /**
@@ -30,6 +31,9 @@ public class CamScheduler implements SchedulingConfigurer {
 
     @Autowired
     private SyncConfig syncConfig;
+
+    @Autowired
+    private ElzaMonitoringMetrics monitoringMetrics;
 
     private boolean enabled = false;
 
@@ -66,6 +70,8 @@ public class CamScheduler implements SchedulingConfigurer {
         if (enabled) {
             log.debug("Accesspoint synchronization started.");
             apConnectService.getConnector(extSysCode).synchronizeAccessPointsForExternalSystem(extSysCode);
+            // Poll completed without error (including "nothing changed") — record successful CAM communication.
+            monitoringMetrics.recordCamPollSuccess(extSysCode);
             log.debug("Accesspoint synchronization finished.");
         }
     }
