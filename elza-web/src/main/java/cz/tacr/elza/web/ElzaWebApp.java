@@ -1,6 +1,8 @@
 package cz.tacr.elza.web;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import org.h2.server.web.JakartaWebServlet;
 import org.slf4j.Logger;
@@ -58,7 +60,27 @@ public class ElzaWebApp {
     public static void main(final String[] args) {
         ElzaCore.configure();
         //System.setProperty("spring.config.location", "classpath:/elza-ui.yaml");
-        SpringApplication.run(ElzaWebApp.class, args);
+        SpringApplication application = new SpringApplication(ElzaWebApp.class);
+        application.setDefaultProperties(actuatorDefaults());
+        application.run(args);
+    }
+
+    /**
+     * Baseline Actuator configuration applied as default properties (the lowest
+     * precedence source), so the health and Prometheus endpoints are available on
+     * every deployment regardless of how the external elza.yaml is located. The
+     * management endpoints are bound to loopback only; they serve the local CSC
+     * reporting client and are not meant for public exposure. Any value can be
+     * overridden from elza.yaml or the environment (e.g. MANAGEMENT_SERVER_PORT).
+     */
+    private static Map<String, Object> actuatorDefaults() {
+        Map<String, Object> defaults = new HashMap<>();
+        defaults.put("management.server.port", 8081);
+        defaults.put("management.server.address", "127.0.0.1");
+        defaults.put("management.endpoints.web.exposure.include", "health,prometheus");
+        defaults.put("management.endpoint.health.probes.enabled", true);
+        defaults.put("management.endpoint.health.show-details", "always");
+        return defaults;
     }
 
     @Bean

@@ -86,6 +86,13 @@
             <artifactId>spring-security-messaging</artifactId>
         </dependency>
 
+        <!-- Micrometer metrics API for the monitoring gauges. The Prometheus registry and the
+             Actuator endpoints exposing them are provided at runtime by elza-web. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
