@@ -16,4 +16,4 @@ export {
     useUserSettings,
     useTheme,
 } from './useSettings';
-export type { UserSettingsData } from './useSettings';
+export type { Language, UserSettingsData } from './useSettings';
