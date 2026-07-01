@@ -655,7 +655,7 @@ model BaseItem {
 }
 
 /**
- * Náhrada za třídu `ArrItemVO`
+ * Náhrada za `ArrItemVO`
  */
 model NodeItem extends BaseItem {
     /** id node */
@@ -667,6 +667,9 @@ model NodeItem extends BaseItem {
 }
 
 model StructuredObjectItem extends BaseItem {
+}
+
+model OutputItem extends BaseItem {
 }
 
 /**
@@ -990,6 +993,14 @@ model BaseCode {
      * Název
      */
     name: string;
+}
+
+/**
+ * Náhrada za `ApScopeVO`
+ */
+model Scope extends BaseCode {
+    language: string;
+    ruleSetCode: string;
 }
 
 /**
@@ -4868,7 +4879,7 @@ model StructuredObjectItems {
 }
 
 /**
- * 
+ * Operations on Structured Data
  */
 @tag("structure")
 @route("/funds/sdo")
@@ -5165,6 +5176,139 @@ namespace ElzaAPI.Sdo {
     ): void;
 }
 
+/**
+ * Operations on the printed forms of archive files
+ */
+@tag("output")
+@route("/funds/out")
+namespace ElzaAPI.Output {
+    /**
+     * Output state
+     */
+    enum State {
+        /**Rozpracovaný */
+        OPEN,
+        /** Běží hromadná akce */
+        COMPUTING,
+        /** Generování */
+        GENERATING,
+        /** Vygenerovaný */
+        FINISHED,
+        /** Vygenerovaný neaktuální */
+        OUTDATED
+    }
+
+    /**
+     * Náhrada za `OutputFormDataNewVO`
+     */
+    model FormData {
+        parent: Def;
+        items: OutputItem[];
+        itemTypes: FormItemType[];
+        unusedItemTypeIds: integer[];
+    }
+
+    /**
+     * Náhrada za `ArrOutputVO`
+     */
+    model Def {
+        id: integer;
+        internalCode: string;
+        name: string;
+        state: State;
+        error?: string;
+        nodes?: NodeTreeData[];
+        outputTypeId: integer;
+        templateIds?: integer[];
+        outputResultIds?: integer[];
+        generatedDate: offsetDateTime;
+        version: integer;
+        outputSettings: string;
+        createDate: offsetDateTime;
+        deleteDate?: offsetDateTime;
+        scopes?: Scope[]; // ?
+        anonymizedAp?: ApAccessPointVO; // ?
+        outputFilterId?: integer;
+    }
+
+    /**
+     * Náhrada za `OutputItemResult`
+     */
+    model ItemRes {
+        parent: Def;
+        item: OutputItem;
+    }
+
+    /**
+     * Create output item
+     */
+    @route("/item/{outputId}/{fundVersionId}/{outputVersion}/create")
+    @post op createOutputItem(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output version */
+        @path outputVersion: integer;
+        /** body output item */
+        @body outputItem: OutputItem;
+    ): ItemRes;
+
+    /**
+     * Update output item
+     */
+    @route("/item/{fundVersionId}/{outputVersion}/update")
+    @put op updateOutputItem(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output version */
+        @path outputVersion: integer;
+        /** body output item */
+        @body outputItem: OutputItem;
+    ): ItemRes;
+
+    /**
+     * Delete output item
+     */
+    @route("/item/{fundVersionId}/{outputVersion}/{outputItemId}")
+    @delete op deleteOutputItem(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output version */
+        @path outputVersion: integer;
+        /** output item id */
+        @path outputItemId: integer;
+    ): ItemRes;
+
+    /**
+     * Getting data for the form
+     */
+    @route("/{outputId}/{fundVersionId}/form")
+    @get op getOutputFormData(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+    ): FormData;
+
+    /**
+     * Switch between automatic and user-defined attribute type editing
+     */
+    @route("/{outputId}/{fundVersionId}/{itemTypeId}/switch")
+    @post op switchOutputCalculating(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** item type id */
+        @path itemTypeId: integer;
+    ): boolean | {
+        /** Not found */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+}
+
 @tag("search")
 namespace ElzaAPI.Search {
     /**
@@ -5285,6 +5429,7 @@ namespace ElzaAPI.Tasks {
 @tagMetadata("publication-internal", #{description: "Publication API used by the Elza UI"})
 @tagMetadata("accesspoint-internal", #{description: "Access-point API used by the Elza UI"})
 @tagMetadata("rules", #{description: "Pravidla popisu archiválií (typy atributů, datové typy, …)"})
+@tagMetadata("output", #{description: "Výstupy archivních souborů"})
 namespace ElzaAPI {
     // add models not used in operations
     union __Types {
