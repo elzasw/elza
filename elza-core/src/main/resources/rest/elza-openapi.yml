@@ -1723,6 +1723,209 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - aips
+  /aiprovider/conversation:
+    post:
+      operationId: AiProvider_createConversation
+      description: |-
+        Starts a new AI conversation: creates the thread, stores and submits its
+        first exchange to the configured provider. State changes are then
+        announced over the WebSocket (event AI_REQUEST carrying conversation and
+        request ids + new state); the client refetches the conversation detail.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiConversationDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiConversationCreate'
+    get:
+      operationId: AiProvider_listConversations
+      description: |-
+        Lists the current user's conversations, newest activity first;
+        optionally filtered by context.
+      parameters:
+        - name: contextType
+          in: query
+          required: false
+          description: context type code filter
+          schema:
+            type: string
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AiConversation'
+      tags:
+        - aiprovider
+  /aiprovider/conversation/{id}:
+    get:
+      operationId: AiProvider_getConversation
+      description: |-
+        Full refresh of one conversation: the thread with all its exchanges,
+        states and render-ready blocks.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: conversation id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiConversationDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
+  /aiprovider/conversation/{id}/request:
+    post:
+      operationId: AiProvider_createRequest
+      description: |-
+        Submits a follow-up exchange into an existing conversation (continues
+        the provider-side conversation context).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: conversation id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiConversationDetail'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiRequestCreate'
+  /aiprovider/request/{id}/cancel:
+    post:
+      operationId: AiProvider_cancelRequest
+      description: Cancels a running exchange (best effort; usage already incurred is kept).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: request id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiRequest'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
+  /aiprovider/request/{id}/event:
+    get:
+      operationId: AiProvider_listRequestEvents
+      description: |-
+        The exchange log of one request — each step with its payload (what
+        exactly was sent to the provider / what came back).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: request id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AiRequestEvent'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
+  /aiprovider/{id}/info:
+    get:
+      operationId: AiProvider_getInfo
+      description: |-
+        Reads the AI provider's service info (protocol version, supported task
+        types, profiles, limits) via the provider's GET /info. Doubles as the
+        connection test of the configured AI external system. The response is
+        the provider's info document passed through as-is.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: AI external system ID or CODE
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
   /binding/{bindingId}/history:
     get:
       operationId: AccessPointBinding_getBindingHistory
@@ -2088,37 +2291,6 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - externalsystems
-  /aiprovider/{id}/info:
-    get:
-      operationId: AiProvider_getInfo
-      description: |-
-        Reads the AI provider's service info (protocol version, supported task
-        types, profiles, limits) via the provider's GET /info. Doubles as the
-        connection test of the configured AI external system. The response is
-        the provider's info document passed through as-is.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: AI external system ID or CODE
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-      tags:
-        - aiprovider
   /fund:
     post:
       operationId: fund_createFund
@@ -4439,6 +4611,220 @@ components:
           format: int32
           description: Number of logged users
       description: Basic statistics about Elza instance
+    AiConversation:
+      type: object
+      required:
+        - id
+        - externalSystemCode
+        - title
+        - createDate
+        - lastChangeDate
+      properties:
+        id:
+          type: integer
+        externalSystemCode:
+          type: string
+          description: Code of the AI external system the conversation runs against.
+        title:
+          type: string
+        contextType:
+          type: string
+          description: 'Context type code: `fund-version`, `fund-list`, `access-point`, …'
+        context:
+          type: string
+          description: Context detail (JSON string); shape depends on contextType.
+        createDate:
+          type: string
+          format: date-time
+        lastChangeDate:
+          type: string
+          format: date-time
+      description: One AI conversation (topic/thread) as shown in the panel history.
+    AiConversationCreate:
+      type: object
+      required:
+        - externalSystemCode
+        - taskType
+      properties:
+        externalSystemCode:
+          type: string
+          description: Code of the AI external system to use.
+        taskType:
+          type: string
+          description: Task type, e.g. `elza.echo`, `elza.revision`.
+        title:
+          type: string
+          description: Thread title; when omitted the server derives it from the instructions.
+        contextType:
+          type: string
+        context:
+          type: string
+          description: Context detail (JSON string).
+        userInstructions:
+          type: string
+          description: The user's message.
+        parameters:
+          type: string
+          description: Structured task parameters (JSON string), shape depends on taskType.
+      description: 'Starts a conversation: creates the thread and submits its first exchange.'
+    AiConversationDetail:
+      type: object
+      required:
+        - conversation
+        - requests
+      properties:
+        conversation:
+          $ref: '#/components/schemas/AiConversation'
+        requests:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiRequest'
+      description: 'Full conversation detail: the thread = requests in create order.'
+    AiDisplayBlock:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          description: 'Block type discriminator: `markdown` | `table` (open set).'
+        content:
+          type: string
+          description: '`markdown` only: CommonMark + GFM tables source; no raw HTML.'
+        caption:
+          type: string
+          description: '`table` only: optional caption above the table.'
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiTableColumn'
+          description: '`table` only: ordered column definitions.'
+        rows:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+          description: '`table` only: rows as objects keyed by column `key`; values are plain text.'
+      description: |-
+        One display block of an AI response — THE RENDERING CONTRACT between the
+        server and the client. The server (per task type) transforms the provider's
+        schema-validated output into an ordered list of blocks; the client renders
+        each block solely by its `type`:
+
+        - `markdown` — `content` holds CommonMark + GFM tables. The server MUST NOT
+        emit raw HTML; the client MUST render through a sanitizing Markdown
+        renderer (raw HTML is never interpreted). Use for free-text answers,
+        explanations, drafts.
+        - `table` — structured tabular data: `columns` define order, keys and
+        labels; `rows` hold one object per row keyed by column key, cell values
+        are plain text (no markup). The client renders a native table widget.
+        Use whenever the data IS tabular — never serialize tables into markdown
+        when the server can emit this block instead.
+
+        Evolution is additive: new block types may appear (e.g. `findings`). A
+        client MUST tolerate an unknown `type` by rendering a generic "unsupported
+        content" placeholder (never dropping the block silently). Server-side
+        fallback rule: a task output with no block mapper is rendered as one
+        `markdown` block containing the output JSON in a fenced code block.
+    AiRequest:
+      type: object
+      required:
+        - id
+        - taskType
+        - state
+        - createDate
+      properties:
+        id:
+          type: integer
+        taskType:
+          type: string
+        state:
+          type: string
+        userInstructions:
+          type: string
+          description: The user's message of this exchange.
+        blocks:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiDisplayBlock'
+          description: Render-ready response (present when state = done).
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+        promptVersion:
+          type: string
+        usage:
+          $ref: '#/components/schemas/AiUsage'
+        createDate:
+          type: string
+          format: date-time
+        finishDate:
+          type: string
+          format: date-time
+      description: |-
+        One exchange with the AI provider within a conversation. `state` is an open
+        set (`queued`, `running`, `awaiting_tools`, `done`, `error`, `cancelled`);
+        a client MUST treat an unknown state as "in progress". `blocks` is present
+        when `done` (see AiDisplayBlock for the rendering contract).
+    AiRequestCreate:
+      type: object
+      properties:
+        userInstructions:
+          type: string
+        parameters:
+          type: string
+          description: Structured task parameters (JSON string).
+      description: Follow-up exchange submitted into an existing conversation.
+    AiRequestEvent:
+      type: object
+      required:
+        - id
+        - eventType
+        - createDate
+      properties:
+        id:
+          type: integer
+        eventType:
+          type: string
+          description: SUBMIT | TOOL_CALLS | TOOL_RESULTS | OUTPUT | ERROR | CANCEL (open set).
+        data:
+          type: string
+          description: Event payload (JSON string); shape depends on eventType.
+        createDate:
+          type: string
+          format: date-time
+      description: One step of an exchange's log — the transparency view ("what was sent/received").
+    AiTableColumn:
+      type: object
+      required:
+        - key
+        - label
+      properties:
+        key:
+          type: string
+          description: Key of the column in `rows` objects.
+        label:
+          type: string
+          description: Column header shown to the user.
+    AiUsage:
+      type: object
+      required:
+        - inputTokens
+        - outputTokens
+        - costUnits
+      properties:
+        inputTokens:
+          type: integer
+          format: int64
+        outputTokens:
+          type: integer
+          format: int64
+        costUnits:
+          type: number
+          format: double
+      description: Metered usage of one exchange (informative; costUnits is the billable quantity).
     AipDetailFilteredResult:
       type: object
       required:

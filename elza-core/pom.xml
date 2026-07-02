@@ -725,6 +725,21 @@
                             <schemaMappings>
                                 <schemaMapping>ApAccessPointVO=cz.tacr.elza.controller.vo.ApAccessPointVO</schemaMapping>
                             </schemaMappings>
+                            <!-- Contract schemas carry clean names (no VO suffix — a Java-only
+                                 convention); the generated Java classes get the package's usual
+                                 VO suffix, which also avoids clashes with same-named domain
+                                 entities (AiConversation, AiRequest, ...). -->
+                            <modelNameMappings>
+                                <modelNameMapping>AiConversation=AiConversationVO</modelNameMapping>
+                                <modelNameMapping>AiConversationDetail=AiConversationDetailVO</modelNameMapping>
+                                <modelNameMapping>AiConversationCreate=AiConversationCreateVO</modelNameMapping>
+                                <modelNameMapping>AiRequest=AiRequestVO</modelNameMapping>
+                                <modelNameMapping>AiRequestCreate=AiRequestCreateVO</modelNameMapping>
+                                <modelNameMapping>AiRequestEvent=AiRequestEventVO</modelNameMapping>
+                                <modelNameMapping>AiDisplayBlock=AiDisplayBlockVO</modelNameMapping>
+                                <modelNameMapping>AiTableColumn=AiTableColumnVO</modelNameMapping>
+                                <modelNameMapping>AiUsage=AiUsageVO</modelNameMapping>
+                            </modelNameMappings>
                             <typeMappings>
                                 <typeMapping>object+partform=ApPartFormVO</typeMapping>
                                 <typeMapping>object+ap-access-point-vo=ApAccessPointVO</typeMapping>
