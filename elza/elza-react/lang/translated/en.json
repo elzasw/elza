@@ -15,6 +15,18 @@
     "defaultMessage": "ApiKey - value",
     "srcHash": "oRAn41A0cbCo"
   },
+  "admin.extSystemDetail.aiTestConnection": {
+    "defaultMessage": "Test connection",
+    "srcHash": "w5X1eztA8_ox"
+  },
+  "admin.extSystemDetail.aiTestConnectionFailed": {
+    "defaultMessage": "Connection failed",
+    "srcHash": "KlTQGbEOxjJD"
+  },
+  "admin.extSystemDetail.aiTestConnectionOk": {
+    "defaultMessage": "Connection works — {provider} (protocol {version})",
+    "srcHash": "Ej_cusKYW2W_"
+  },
   "admin_packages_label_action": {
     "defaultMessage": "Action",
     "srcHash": "zI4C_P1sVn28"
