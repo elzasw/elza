@@ -35,6 +35,8 @@ tags:
     description: Archivní soubory
   - name: externalsystems
     description: Externí systémy
+  - name: aiprovider
+    description: Externí AI systémy (poskytovatelé AI služeb)
   - name: daos
     description: Digitální archivní objekty
   - name: admin
@@ -2086,6 +2088,37 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - externalsystems
+  /aiprovider/{id}/info:
+    get:
+      operationId: AiProvider_getInfo
+      description: |-
+        Reads the AI provider's service info (protocol version, supported task
+        types, profiles, limits) via the provider's GET /info. Doubles as the
+        connection test of the configured AI external system. The response is
+        the provider's info document passed through as-is.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: AI external system ID or CODE
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
   /fund:
     post:
       operationId: fund_createFund

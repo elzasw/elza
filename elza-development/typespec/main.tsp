@@ -2301,6 +2301,30 @@ namespace ElzaAPI.ExternalSystem {
     };
 }
 
+@tag("aiprovider")
+@route("/aiprovider")
+namespace ElzaAPI.AiProvider {
+    /**
+     * Reads the AI provider's service info (protocol version, supported task
+     * types, profiles, limits) via the provider's GET /info. Doubles as the
+     * connection test of the configured AI external system. The response is
+     * the provider's info document passed through as-is.
+     */
+    @route("/{id}/info")
+    @get op getInfo(
+        /** AI external system ID or CODE */
+        @path id: string;
+    ): {
+        /** The provider's info document */
+        @Http.statusCode statusCode: 200;
+        @body data: Record<unknown>;
+    } | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+}
+
 @tag("funds")
 @route("/fund")
 namespace ElzaAPI.fund {
@@ -5415,6 +5439,7 @@ namespace ElzaAPI.Tasks {
 @tagMetadata("admin", #{description: "Administrativní funkce"})
 @tagMetadata("daos", #{description: "Digitální archivní objekty"})
 @tagMetadata("externalsystems", #{description: "Externí systémy"})
+@tagMetadata("aiprovider", #{description: "Externí AI systémy (poskytovatelé AI služeb)"})
 @tagMetadata("funds", #{description: "Archivní soubory"})
 @tagMetadata("descitems", #{description: "Záznamy v archivních fondech"})
 @tagMetadata("accesspoints", #{description: "Přístupové body a archivní entity"})
