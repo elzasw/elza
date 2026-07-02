@@ -3,6 +3,7 @@ import { http, HttpResponse } from 'msw';
 
 import { renderWithProviders, screen, fireEvent } from 'test/test-utils';
 import { server } from 'test/mocks/server';
+import { FilterType, type MultimatchContainsFilter } from 'elza-api';
 import { MultiFundActionDialog } from './MultiFundActionDialog';
 
 /**
@@ -11,24 +12,25 @@ import { MultiFundActionDialog } from './MultiFundActionDialog';
  */
 describe('MultiFundActionDialog', () => {
     it('groups, lets the user pick an action and queues it for the whole group', async () => {
+        let groupBody: any = null;
         let queueBody: any = null;
 
         server.use(
-            http.post('/api/v1/action/funds/group', () =>
-                HttpResponse.json({
+            http.post('/api/v1/action/funds/group', async ({ request }) => {
+                groupBody = await request.json();
+                return HttpResponse.json({
                     groups: [
                         {
                             ruleSetId: 1,
                             ruleSetCode: 'ZP2015',
                             ruleSetName: 'Pravidla ZP2015',
                             fundCount: 3,
-                            fundVersionIds: [10, 20, 30],
                             actions: [{ code: 'ContentMigration', name: 'Migrace obsahu', fastAction: false }],
                         },
                     ],
                     skipped: [],
-                }),
-            ),
+                });
+            }),
             http.post('/api/v1/action/queue-multi', async ({ request }) => {
                 queueBody = await request.json();
                 return HttpResponse.json({ fundsChangeId: 99, queuedCount: 3, skipped: [] });
@@ -48,7 +50,48 @@ describe('MultiFundActionDialog', () => {
         // result step exposes "Zavřít" once the queue call resolved
         await screen.findByRole('button', { name: 'Zavřít' });
 
-        expect(queueBody).toEqual({ fundVersionIds: [10, 20, 30], code: 'ContentMigration' });
+        expect(groupBody).toEqual({ fundIds: [1, 2, 3] });
+        // queue references the same selection + the chosen rule set — never version ids
+        expect(queueBody).toEqual({ code: 'ContentMigration', ruleSetId: 1, fundIds: [1, 2, 3] });
+    });
+
+    it('passes the active filter to both group and queue instead of downloading fund ids', async () => {
+        const filters: MultimatchContainsFilter[] = [{ filterType: FilterType.Contains, value: 'abc' }];
+        let groupBody: any = null;
+        let queueBody: any = null;
+
+        server.use(
+            http.post('/api/v1/action/funds/group', async ({ request }) => {
+                groupBody = await request.json();
+                return HttpResponse.json({
+                    groups: [
+                        {
+                            ruleSetId: 5,
+                            ruleSetCode: 'ZP2015',
+                            ruleSetName: 'Pravidla ZP2015',
+                            fundCount: 10000,
+                            actions: [{ code: 'ContentMigration', name: 'Migrace obsahu', fastAction: false }],
+                        },
+                    ],
+                    skipped: [],
+                });
+            }),
+            http.post('/api/v1/action/queue-multi', async ({ request }) => {
+                queueBody = await request.json();
+                return HttpResponse.json({ fundsChangeId: 7, queuedCount: 10000, skipped: [] });
+            }),
+        );
+
+        renderWithProviders(<MultiFundActionDialog filters={filters} />);
+
+        fireEvent.click(await screen.findByRole('combobox'));
+        fireEvent.click(await screen.findByRole('option', { name: 'Migrace obsahu' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Pokračovat' }));
+        fireEvent.click(await screen.findByRole('button', { name: 'Spustit' }));
+        await screen.findByRole('button', { name: 'Zavřít' });
+
+        expect(groupBody).toEqual({ filters });
+        expect(queueBody).toEqual({ code: 'ContentMigration', ruleSetId: 5, filters });
     });
 
     it('shows the rule-set chooser with fund counts when funds span multiple rule sets', async () => {
@@ -61,7 +104,6 @@ describe('MultiFundActionDialog', () => {
                             ruleSetCode: 'A',
                             ruleSetName: 'Pravidla A',
                             fundCount: 2,
-                            fundVersionIds: [10, 20],
                             actions: [{ code: 'X', name: 'Akce X', fastAction: false }],
                         },
                         {
@@ -69,7 +111,6 @@ describe('MultiFundActionDialog', () => {
                             ruleSetCode: 'B',
                             ruleSetName: 'Pravidla B',
                             fundCount: 1,
-                            fundVersionIds: [30],
                             actions: [{ code: 'Y', name: 'Akce Y', fastAction: false }],
                         },
                     ],
