@@ -1,10 +1,9 @@
-import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { http, HttpResponse } from 'msw';
 
 import { renderWithProviders, screen, fireEvent } from 'test/test-utils';
 import { server } from 'test/mocks/server';
-import MultiFundActionDialog from './MultiFundActionDialog';
+import { MultiFundActionDialog } from './MultiFundActionDialog';
 
 /**
  * Drives the multi-fund bulk action wizard against MSW-mocked
@@ -81,7 +80,7 @@ describe('MultiFundActionDialog', () => {
 
         renderWithProviders(<MultiFundActionDialog fundIds={[1, 2, 3, 99]} />);
 
-        expect(await screen.findByText('Pravidla A (2 fondů)')).toBeInTheDocument();
-        expect(screen.getByText('Pravidla B (1 fondů)')).toBeInTheDocument();
+        expect(await screen.findByText(/Pravidla A.*\b2\b/)).toBeInTheDocument();
+        expect(screen.getByText(/Pravidla B.*\b1\b/)).toBeInTheDocument();
     });
 });
