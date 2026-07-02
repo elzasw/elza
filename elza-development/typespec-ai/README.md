@@ -20,6 +20,7 @@ together with its first client (Elza) and first provider implementation.
 | `main.tsp` | The contract (compiles to OpenAPI 3). |
 | `security.md` | Authoritative definition of the `ELZA-AI-HMAC-SHA256` request signing, incl. test vectors and a reference client. |
 | `tspconfig.yaml` | Emitter config — output goes **directly into elza-core resources**: `elza-core/src/main/resources/ai/elza-ai-provider.openapi.yaml` (the single committed copy; elza-core's build generates the Java client `cz.tacr.elza.aiprovider.client.*` from it — execution `openapi-ai-provider-client` in `elza-core/pom.xml`). |
+| `tasks/` | Per-task-type contracts (Elza-owned input format + output schema + Elza-side mapping); first: [tasks/elza-revision.md](tasks/elza-revision.md). |
 
 ## Build
 
