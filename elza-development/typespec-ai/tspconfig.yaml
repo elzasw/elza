@@ -1,0 +1,8 @@
+# Emits straight into elza-core resources — the single committed copy of the
+# OpenAPI document, consumed by elza-core's openapi-generator (client) build.
+emit:
+  - "@typespec/openapi3"
+options:
+  "@typespec/openapi3":
+    emitter-output-dir: "{project-root}/../../elza-core/src/main/resources/ai"
+    output-file: "elza-ai-provider.openapi.yaml"
