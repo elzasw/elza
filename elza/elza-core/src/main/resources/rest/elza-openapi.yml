@@ -874,8 +874,8 @@ paths:
     post:
       operationId: BulkAction_queueMultiFundAction
       description: |-
-        Spustí hromadnou akci nad více fondy najednou. Pro každý platný fond naplánuje
-        samostatný běh; fondy mimo daná pravidla jsou přeskočeny a vráceny ve výsledku.
+        Spustí hromadnou akci nad více fondy najednou. Pro každý fond zvolené skupiny
+        pravidel naplánuje samostatný běh; fondy jiných pravidel se nespouští.
       parameters: []
       responses:
         '200':
@@ -6165,7 +6165,6 @@ components:
         - ruleSetCode
         - ruleSetName
         - fundCount
-        - fundVersionIds
         - actions
       properties:
         ruleSetId:
@@ -6180,11 +6179,6 @@ components:
         fundCount:
           type: integer
           description: Počet fondů ve skupině
-        fundVersionIds:
-          type: array
-          items:
-            type: integer
-          description: Identifikátory otevřených verzí fondů ve skupině
         actions:
           type: array
           items:
@@ -6199,12 +6193,16 @@ components:
           items:
             type: integer
           description: Identifikátory vybraných fondů
-        search:
-          type: string
-          description: Filtr pro výběr všech odpovídajících fondů
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/AbstractFilter'
+          description: Filtr pro výběr všech odpovídajících fondů (stejný jako u `/fund/search`)
       description: |-
         Požadavek na seskupení vybraných fondů podle pravidel pro spuštění hromadné akce nad více fondy.
-        Vyplní se buď `fundIds` (explicitní výběr, má přednost), nebo `search` (všechny fondy odpovídající filtru).
+        Vyplní se buď `fundIds` (explicitní výběr, má přednost), nebo `filters` (všechny fondy
+        odpovídající filtru — stejný filtr jako `/fund/search`; prázdný filtr znamená všechny fondy).
+        Fondy se na klienta nikdy nestahují — filtr se vyhodnocuje až na serveru.
     FundsActionGroupResult:
       type: object
       required:
@@ -6230,10 +6228,10 @@ components:
       properties:
         id:
           type: integer
-          description: Identifikátor fondu (při seskupení) nebo verze fondu (při spuštění)
+          description: Identifikátor fondu
         reason:
           type: string
-          description: Důvod přeskočení (např. NO_OPEN_VERSION, ACTION_NOT_IN_RULESET)
+          description: Důvod přeskočení (např. NO_OPEN_VERSION)
       description: Přeskočený fond při přípravě nebo spuštění hromadné akce nad více fondy.
     FundsChangeRun:
       type: object
@@ -6606,18 +6604,30 @@ components:
     MultiFundActionRequest:
       type: object
       required:
-        - fundVersionIds
         - code
+        - ruleSetId
       properties:
-        fundVersionIds:
-          type: array
-          items:
-            type: integer
-          description: Identifikátory otevřených verzí fondů
         code:
           type: string
           description: Kód hromadné akce
-      description: Požadavek na spuštění hromadné akce nad více fondy najednou.
+        ruleSetId:
+          type: integer
+          description: Identifikátor pravidel zvolené skupiny
+        fundIds:
+          type: array
+          items:
+            type: integer
+          description: Identifikátory vybraných fondů
+        filters:
+          type: array
+          items:
+            $ref: '#/components/schemas/AbstractFilter'
+          description: Filtr pro výběr všech odpovídajících fondů (stejný jako u `/fund/search`)
+      description: |-
+        Požadavek na spuštění hromadné akce nad více fondy najednou.
+        Výběr fondů se předává stejně jako u seskupení: buď `fundIds`, nebo `filters`
+        (vyhodnocuje se znovu na serveru v okamžiku spuštění). Akce se spustí jen nad fondy,
+        jejichž otevřená verze používá pravidla `ruleSetId` (skupina zvolená v dialogu).
     MultiFundActionResult:
       type: object
       required:
