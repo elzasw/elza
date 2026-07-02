@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { defineMessages, useIntl } from 'react-intl';
 import { Button, Combobox, Option, Radio, RadioGroup, Spinner, makeStyles, tokens } from '@fluentui/react-components';
 import { Api } from '../../api';
-import type { BulkAction, FundsActionGroup, FundsActionGroupResult, MultiFundActionResult } from 'elza-api';
+import type { AbstractFilter, BulkAction, FundsActionGroup, FundsActionGroupResult, MultiFundActionResult } from 'elza-api';
 import { modalDialogHide } from '../../actions/global/modalDialog';
 import { useAppThunkDispatch } from 'utils/hooks';
 
@@ -87,13 +87,18 @@ const useStyles = makeStyles({
 type Stage = 'loading' | 'empty' | 'chooseRuleSet' | 'chooseAction' | 'confirm' | 'submitting' | 'done';
 
 interface Props {
-    /** Identifikátory vybraných fondů. */
-    fundIds: number[];
+    /** Identifikátory vybraných fondů (explicitní výběr). */
+    fundIds?: number[];
+    /**
+     * Aktivní filtr fondů (stejný jako u vyhledávání fondů). Použije se, když nejsou
+     * vybrány konkrétní fondy — vyhodnocuje se až na serveru, id fondů se nestahují.
+     */
+    filters?: AbstractFilter[];
 }
 
 export type MultiFundActionDialogProps = Props;
 
-function MultiFundActionDialog({ fundIds }: Props) {
+function MultiFundActionDialog({ fundIds, filters }: Props) {
     const intl = useIntl();
     const dispatch = useAppThunkDispatch();
     const styles = useStyles();
@@ -112,7 +117,7 @@ function MultiFundActionDialog({ fundIds }: Props) {
         let cancelled = false;
         const loadGroups = async () => {
             try {
-                const { data } = await Api.funds.bulkActionGroupFundsByRuleSet({ fundIds });
+                const { data } = await Api.funds.bulkActionGroupFundsByRuleSet({ fundIds, filters });
                 if (cancelled) {
                     return;
                 }
@@ -137,7 +142,7 @@ function MultiFundActionDialog({ fundIds }: Props) {
             cancelled = true;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [fundIds]);
+    }, [fundIds, filters]);
 
     const selectedGroup = (): FundsActionGroup | undefined =>
         groupResult?.groups?.find(group => group.ruleSetId === selectedRuleSetId);
@@ -153,9 +158,12 @@ function MultiFundActionDialog({ fundIds }: Props) {
         }
         setStage('submitting');
         try {
+            // stejný výběr (fondy/filtr) jako u seskupení — server ho vyhodnotí znovu
             const { data } = await Api.funds.bulkActionQueueMultiFundAction({
-                fundVersionIds: group.fundVersionIds,
                 code: action.code,
+                ruleSetId: group.ruleSetId,
+                fundIds,
+                filters,
             });
             setQueueResult(data);
             setStage('done');

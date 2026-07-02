@@ -24,7 +24,6 @@ import {
 } from '../../actions/fund/fund';
 import { modalDialogShow } from '../../actions/global/modalDialog';
 import { WebApi } from '../../actions/index';
-import { Api } from '../../api';
 import { refInstitutionsFetchIfNeeded } from '../../actions/refTables/institutions';
 import { refRuleSetFetchIfNeeded } from '../../actions/refTables/ruleSet';
 import { scopesDirty } from '../../actions/refTables/scopesData';
@@ -573,26 +572,20 @@ class FundPage extends AbstractReactComponent {
         this.setState({ selectAllMatching: checked });
     };
 
-    handleRunMultiFund = async () => {
+    handleRunMultiFund = () => {
         const { dispatch, fundRegion, intl } = this.props;
         const { selectAllMatching, selectedFundIds } = this.state;
 
-        let fundIds;
+        // Při výběru "vše odpovídající filtru" se předává aktivní filtr — fondy se
+        // vyhodnocují až na serveru, jejich id se na klienta nikdy nestahují.
+        let dialogProps;
         if (selectAllMatching) {
-            // Resolve all funds matching the current filter (across pages) into explicit ids.
-            const filters = fundRegion.filter.filter?.map((f) => f.getFilterValue(f));
-            const { data } = await Api.funds.fundSearchFunds({
-                filters,
-                size: fundRegion.fundsCount || DEFAULT_FUND_LIST_MAX_SIZE,
-                offset: 0,
-            });
-            fundIds = (data.funds || []).map((f) => f.id);
+            dialogProps = { filters: fundRegion.filter.filter?.map((f) => f.getFilterValue(f)) ?? [] };
         } else {
-            fundIds = selectedFundIds;
-        }
-
-        if (!fundIds || fundIds.length === 0) {
-            return;
+            if (selectedFundIds.length === 0) {
+                return;
+            }
+            dialogProps = { fundIds: selectedFundIds };
         }
 
         this.setState({ selectionMode: false });
@@ -600,7 +593,7 @@ class FundPage extends AbstractReactComponent {
             modalDialogShow(
                 this,
                 intl.formatMessage(messages.fundPageMultiActionTitle),
-                <MultiFundActionDialog fundIds={fundIds} />,
+                <MultiFundActionDialog {...dialogProps} />,
             ),
         );
     };
