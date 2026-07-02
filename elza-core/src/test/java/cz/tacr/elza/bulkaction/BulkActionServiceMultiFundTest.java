@@ -1,8 +1,8 @@
 package cz.tacr.elza.bulkaction;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -24,6 +24,7 @@ import org.mockito.quality.Strictness;
 
 import cz.tacr.elza.controller.vo.FundsActionGroupResult;
 import cz.tacr.elza.controller.vo.MultiFundActionResult;
+import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrChange;
 import cz.tacr.elza.domain.ArrFund;
@@ -32,14 +33,15 @@ import cz.tacr.elza.domain.ArrFundsChange;
 import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.RulAction;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.repository.ActionRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.FundsChangeRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.service.ArrangementInternalService;
+import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.UserService;
 
@@ -68,6 +70,8 @@ class BulkActionServiceMultiFundTest {
     private BulkActionRunRepository bulkActionRepository;
     @Mock
     private ArrangementInternalService arrangementInternalService;
+    @Mock
+    private ArrangementService arrangementService;
     @Mock
     private AsyncRequestService asyncRequestService;
     @Mock
@@ -133,7 +137,6 @@ class BulkActionServiceMultiFundTest {
         assertThat(result.getGroups()).hasSize(1);
         assertThat(result.getGroups().get(0).getRuleSetCode()).isEqualTo("ZP2015");
         assertThat(result.getGroups().get(0).getFundCount()).isEqualTo(2);
-        assertThat(result.getGroups().get(0).getFundVersionIds()).containsExactly(10, 20);
         // persistent sort requires run-time config -> excluded in multi-fund mode
         assertThat(result.getGroups().get(0).getActions()).hasSize(1);
         assertThat(result.getGroups().get(0).getActions().get(0).getCode()).isEqualTo(ACTION_CODE);
@@ -144,51 +147,57 @@ class BulkActionServiceMultiFundTest {
     }
 
     @Test
-    void groupFundsByRuleSet_byFilter_resolvesFundsFromSearch() {
+    void groupFundsByRuleSet_byFilter_resolvesFundsOnServer() {
         RulRuleSet rsA = ruleSet(100, "ZP2015", "Pravidla ZP2015");
         RulAction actionMig = action(ACTION_CODE);
         BulkActionConfig configMig = config(ACTION_CODE);
-        ArrFund fund = new ArrFund();
-        fund.setFundId(7);
-        FilteredResult<ArrFund> filtered = new FilteredResult<>(0, 10, 1, List.of(fund));
 
-        when(userService.findFundsWithPermissions(eq("abc"), eq(0), any())).thenReturn(filtered);
-        when(fundVersionRepository.findByFundIdsAndLockChangeIsNull(any()))
-                .thenReturn(List.of(openVersion(7, 70, rsA)));
+        // the filter is evaluated on the server via the same search as /fund/search
+        when(arrangementService.findFundsBySearchParams(any(SearchParams.class)))
+                .thenReturn(new ArrangementService.FindFundVersionsResult(List.of(openVersion(7, 70, rsA)), 1));
         when(actionRepository.findByRuleSet(rsA)).thenReturn(List.of(actionMig));
         when(bulkActionConfigManager.get(ACTION_CODE)).thenReturn(configMig);
 
-        FundsActionGroupResult result = service.groupFundsByRuleSet(null, "abc");
+        FundsActionGroupResult result = service.groupFundsByRuleSet(null, List.of());
 
         assertThat(result.getGroups()).hasSize(1);
-        assertThat(result.getGroups().get(0).getFundVersionIds()).containsExactly(70);
+        assertThat(result.getGroups().get(0).getRuleSetId()).isEqualTo(100);
+        assertThat(result.getGroups().get(0).getFundCount()).isEqualTo(1);
+        assertThat(result.getSkipped()).isEmpty();
     }
 
     @Test
-    void queueMulti_allInvalid_createsNoFundsChangeAndReportsSkips() {
+    void queueMulti_noFundOfChosenRuleSet_createsNoFundsChangeAndReportsSkips() {
         RulRuleSet rsOther = ruleSet(200, "OTHER", "Jiná pravidla");
-        RulAction otherAction = action("SomethingElse");
 
-        // version 10 has no open version (absent from the batch load); version 20 is in a
-        // rule set that does not contain the action
-        when(fundVersionRepository.findAllById(any())).thenReturn(List.of(openVersion(20, 20, rsOther)));
-        when(actionRepository.findByRuleSet(rsOther)).thenReturn(List.of(otherAction));
+        // fund 10 has no open version (absent from the batch load); fund 20 uses
+        // a different rule set than the one chosen in the dialog
+        when(fundVersionRepository.findByFundIdsAndLockChangeIsNull(any()))
+                .thenReturn(List.of(openVersion(20, 20, rsOther)));
 
-        MultiFundActionResult result = service.queueMulti(1, ACTION_CODE, Arrays.asList(10, 20));
+        MultiFundActionResult result = service.queueMulti(1, ACTION_CODE, 100, Arrays.asList(10, 20), null);
 
         assertThat(result.getQueuedCount()).isEqualTo(0);
         assertThat(result.getFundsChangeId()).isNull();
-        assertThat(result.getSkipped()).hasSize(2);
-        assertThat(result.getSkipped()).anySatisfy(s -> {
-            assertThat(s.getId()).isEqualTo(10);
-            assertThat(s.getReason()).isEqualTo(BulkActionService.SKIP_NO_OPEN_VERSION);
-        });
-        assertThat(result.getSkipped()).anySatisfy(s -> {
-            assertThat(s.getId()).isEqualTo(20);
-            assertThat(s.getReason()).isEqualTo(BulkActionService.SKIP_ACTION_NOT_IN_RULESET);
-        });
+        assertThat(result.getSkipped()).hasSize(1);
+        assertThat(result.getSkipped().get(0).getId()).isEqualTo(10);
+        assertThat(result.getSkipped().get(0).getReason()).isEqualTo(BulkActionService.SKIP_NO_OPEN_VERSION);
         verify(fundsChangeRepository, never()).save(any());
         verify(asyncRequestService, never()).enqueue(any(ArrFundVersion.class), any(ArrBulkActionRun.class));
+    }
+
+    @Test
+    void queueMulti_actionNotInChosenRuleSet_throws() {
+        RulRuleSet rs = ruleSet(100, "ZP2015", "Pravidla ZP2015");
+        RulAction otherAction = action("SomethingElse");
+
+        when(fundVersionRepository.findByFundIdsAndLockChangeIsNull(any()))
+                .thenReturn(List.of(openVersion(10, 10, rs)));
+        when(actionRepository.findByRuleSet(rs)).thenReturn(List.of(otherAction));
+
+        assertThatThrownBy(() -> service.queueMulti(1, ACTION_CODE, 100, List.of(10), null))
+                .isInstanceOf(BusinessException.class);
+        verify(fundsChangeRepository, never()).save(any());
     }
 
     @Test
@@ -199,7 +208,7 @@ class BulkActionServiceMultiFundTest {
         ArrFundVersion v10 = openVersion(10, 10, rs);
         ArrFundVersion v20 = openVersion(20, 20, rs);
 
-        when(fundVersionRepository.findAllById(any())).thenReturn(Arrays.asList(v10, v20));
+        when(fundVersionRepository.findByFundIdsAndLockChangeIsNull(any())).thenReturn(Arrays.asList(v10, v20));
         when(fundVersionRepository.findById(10)).thenReturn(Optional.of(v10));
         when(fundVersionRepository.findById(20)).thenReturn(Optional.of(v20));
         when(fundVersionRepository.getOneCheckExist(10)).thenReturn(v10);
@@ -219,7 +228,7 @@ class BulkActionServiceMultiFundTest {
             return fc;
         });
 
-        MultiFundActionResult result = service.queueMulti(1, ACTION_CODE, Arrays.asList(10, 20));
+        MultiFundActionResult result = service.queueMulti(1, ACTION_CODE, 100, Arrays.asList(10, 20), null);
 
         assertThat(result.getQueuedCount()).isEqualTo(2);
         assertThat(result.getFundsChangeId()).isEqualTo(99);

@@ -23,8 +23,6 @@ import jakarta.transaction.Transactional.TxType;
 
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
@@ -38,18 +36,19 @@ import org.springframework.util.CollectionUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cz.tacr.elza.controller.vo.AbstractFilter;
 import cz.tacr.elza.controller.vo.BulkAction;
 import cz.tacr.elza.controller.vo.FundsActionGroup;
 import cz.tacr.elza.controller.vo.FundsActionGroupResult;
 import cz.tacr.elza.controller.vo.FundsActionSkipped;
 import cz.tacr.elza.controller.vo.MultiFundActionResult;
+import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.core.security.AuthParam;
 import cz.tacr.elza.domain.ArrBulkActionNode;
 import cz.tacr.elza.domain.ArrBulkActionRun;
 import cz.tacr.elza.domain.ArrBulkActionRun.State;
 import cz.tacr.elza.domain.ArrChange;
-import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrFundsChange;
 import cz.tacr.elza.domain.FundsChangeType;
@@ -66,12 +65,12 @@ import cz.tacr.elza.exception.codes.PackageCode;
 import cz.tacr.elza.repository.ActionRepository;
 import cz.tacr.elza.repository.BulkActionNodeRepository;
 import cz.tacr.elza.repository.BulkActionRunRepository;
-import cz.tacr.elza.repository.FilteredResult;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.FundsChangeRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.security.UserDetail;
 import cz.tacr.elza.service.ArrangementInternalService;
+import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.AsyncRequestService;
 import cz.tacr.elza.service.RuleService;
 import cz.tacr.elza.service.UserService;
@@ -90,21 +89,11 @@ public class BulkActionService {
 
     public static final String PERSISTENT_SORT_CODE = "PERZISTENTNI_RAZENI";
 
-    /**
-     * Horní mez počtu fondů zpracovaných při výběru "všechny odpovídající filtru".
-     */
-    public static final int MAX_MULTI_FUND_FUNDS = 5000;
-
     /** Důvod přeskočení: fond nemá otevřenou verzi. */
     public static final String SKIP_NO_OPEN_VERSION = "NO_OPEN_VERSION";
 
-    /** Důvod přeskočení: akce nepatří do pravidel fondu. */
-    public static final String SKIP_ACTION_NOT_IN_RULESET = "ACTION_NOT_IN_RULESET";
-
     /** Velikost bloku pro dávkové načítání fondů/verzí přes IN (ochrana před obřím IN i N+1). */
     public static final int FUND_BATCH_SIZE = 1000;
-
-    private final static Logger logger = LoggerFactory.getLogger(BulkActionService.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -143,6 +132,9 @@ public class BulkActionService {
 
     @Autowired
     private FundsChangeRepository fundsChangeRepository;
+
+    @Autowired
+    private ArrangementService arrangementService;
 
     /**
      * Uložení hromadné akce z klienta
@@ -241,52 +233,50 @@ public class BulkActionService {
     /**
      * Spustí (zařadí) hromadnou akci nad více archivními soubory najednou.
      *
-     * Vytvoří jedno seskupení {@link ArrFundsChange} a pro každou platnou verzi fondu
-     * naplánuje samostatný běh {@link ArrBulkActionRun} (přes existující asynchronní frontu).
-     * Akce běží vždy nad celým fondem (kořenový uzel). Fondy, do jejichž pravidel akce
-     * nepatří nebo které nemají otevřenou verzi, jsou přeskočeny a vráceny ve výsledku.
+     * Výběr fondů se předává buď explicitně ({@code fundIds}), nebo filtrem ({@code filters}),
+     * který se vyhodnocuje až zde na serveru — na klienta se identifikátory fondů nikdy
+     * nestahují. Akce se spustí jen nad fondy, jejichž otevřená verze používá pravidla
+     * {@code ruleSetId} (skupina zvolená v dialogu); fondy jiných pravidel se nespouští.
+     *
+     * Vytvoří jedno seskupení {@link ArrFundsChange} a pro každý fond naplánuje samostatný
+     * běh {@link ArrBulkActionRun} (přes existující asynchronní frontu). Akce běží vždy
+     * nad celým fondem (kořenový uzel).
      *
      * @param userId         uživatel spouštějící akci
      * @param bulkActionCode kód hromadné akce
-     * @param fundVersionIds identifikátory otevřených verzí fondů
+     * @param ruleSetId      identifikátor pravidel zvolené skupiny
+     * @param fundIds        identifikátory vybraných fondů, nebo {@code null}
+     * @param filters        filtr fondů (stejný jako u /fund/search), použije se bez {@code fundIds}
      * @return výsledek se seskupením a přeskočenými fondy
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL})
     public MultiFundActionResult queueMulti(final Integer userId,
                                             final String bulkActionCode,
-                                            final List<Integer> fundVersionIds) {
+                                            final Integer ruleSetId,
+                                            final List<Integer> fundIds,
+                                            final List<AbstractFilter> filters) {
         Assert.isTrue(StringUtils.isNotBlank(bulkActionCode), "Musí být vyplněn kód hromadné akce");
-        Assert.notEmpty(fundVersionIds, "Musí být vybrán alespoň jeden archivní soubor");
+        Assert.notNull(ruleSetId, "Musí být vyplněn identifikátor pravidel");
 
-        // Validace předem (jen čtení), aby přeskočené fondy nevytvářely žádné záznamy.
-        // Verze se načítají dávkově (IN po blocích), aby výběr nad mnoha fondy negeneroval N+1 dotazů.
-        Map<Integer, ArrFundVersion> versionsById = new HashMap<>();
-        for (List<Integer> chunk : ListUtils.partition(fundVersionIds, FUND_BATCH_SIZE)) {
-            for (ArrFundVersion version : fundVersionRepository.findAllById(chunk)) {
-                versionsById.put(version.getFundVersionId(), version);
-            }
-        }
-
-        // Příslušnost akce k pravidlům se vyhodnotí jen jednou pro každá pravidla.
-        Map<Integer, Boolean> actionInRuleSet = new HashMap<>();
-        List<ArrFundVersion> validVersions = new ArrayList<>();
         List<FundsActionSkipped> skipped = new ArrayList<>();
-        for (Integer fundVersionId : fundVersionIds) {
-            ArrFundVersion version = versionsById.get(fundVersionId);
-            if (version == null) {
-                skipped.add(new FundsActionSkipped(fundVersionId, SKIP_NO_OPEN_VERSION));
-            } else if (!actionInRuleSet.computeIfAbsent(version.getRuleSet().getRuleSetId(),
-                    id -> isActionInRuleSet(version.getRuleSet(), bulkActionCode))) {
-                skipped.add(new FundsActionSkipped(fundVersionId, SKIP_ACTION_NOT_IN_RULESET));
-            } else {
-                validVersions.add(version);
-            }
-        }
+        List<ArrFundVersion> versions = resolveOpenVersions(fundIds, filters, skipped);
+
+        // fondy jiných pravidel nejsou chyba — uživatel v dialogu zvolil jednu skupinu
+        List<ArrFundVersion> validVersions = versions.stream()
+                .filter(version -> ruleSetId.equals(version.getRuleSet().getRuleSetId()))
+                .collect(Collectors.toList());
 
         MultiFundActionResult result = new MultiFundActionResult(validVersions.size(), skipped);
 
         if (validVersions.isEmpty()) {
             return result;
+        }
+
+        RulRuleSet ruleSet = validVersions.get(0).getRuleSet();
+        if (!isActionInRuleSet(ruleSet, bulkActionCode)) {
+            throw new BusinessException("Hromadná akce nepatří do zvolených pravidel.", PackageCode.OTHER_PACKAGE)
+                    .set("code", bulkActionCode)
+                    .set("ruleSet", ruleSet.getCode());
         }
 
         ArrFundsChange fundsChange = fundsChangeRepository
@@ -305,64 +295,86 @@ public class BulkActionService {
      * Rozdělí vybrané archivní soubory podle pravidel (rule set) a ke každé skupině přidá
      * seznam hromadných akcí, které je nad ní možné spustit ve vícefondovém režimu.
      *
+     * Vrací pouze počty fondů ve skupinách — identifikátory se na klienta nepředávají,
+     * spuštění akce se odkazuje na stejný výběr ({@code fundIds}/{@code filters}).
+     *
      * @param fundIds explicitně vybrané fondy (mají přednost), nebo {@code null}
-     * @param search  filtr pro výběr všech odpovídajících fondů (pokud nejsou zadány {@code fundIds})
+     * @param filters filtr fondů (stejný jako u /fund/search); prázdný znamená všechny fondy
      * @return skupiny fondů podle pravidel a přeskočené fondy
      */
     @AuthMethod(permission = {UsrPermission.Permission.FUND_BA_ALL})
-    public FundsActionGroupResult groupFundsByRuleSet(final List<Integer> fundIds, final String search) {
-        List<Integer> targetFundIds;
-        if (!CollectionUtils.isEmpty(fundIds)) {
-            targetFundIds = new ArrayList<>(new LinkedHashSet<>(fundIds));
-        } else {
-            FilteredResult<ArrFund> funds = userService.findFundsWithPermissions(search, 0, MAX_MULTI_FUND_FUNDS);
-            if (funds.getTotalCount() > funds.getList().size()) {
-                logger.warn("Vícefondová akce: filtru odpovídá {} fondů, použito jen {} (limit {}).",
-                        funds.getTotalCount(), funds.getList().size(), MAX_MULTI_FUND_FUNDS);
-            }
-            targetFundIds = funds.getList().stream().map(fund -> fund.getFundId()).collect(Collectors.toList());
-        }
-
-        // Otevřené verze se načítají dávkově (IN po blocích), aby výběr nad mnoha fondy
-        // negeneroval N+1 dotazů ani jeden obří IN.
-        List<ArrFundVersion> versions = new ArrayList<>();
-        for (List<Integer> chunk : ListUtils.partition(targetFundIds, FUND_BATCH_SIZE)) {
-            versions.addAll(fundVersionRepository.findByFundIdsAndLockChangeIsNull(chunk));
-        }
+    public FundsActionGroupResult groupFundsByRuleSet(final List<Integer> fundIds, final List<AbstractFilter> filters) {
+        List<FundsActionSkipped> skipped = new ArrayList<>();
+        List<ArrFundVersion> versions = resolveOpenVersions(fundIds, filters, skipped);
 
         Map<Integer, FundsActionGroup> groupsByRuleSet = new LinkedHashMap<>();
         Map<Integer, RulRuleSet> ruleSetById = new HashMap<>();
-        Set<Integer> resolvedFundIds = new HashSet<>();
+        Map<Integer, Integer> fundCounts = new HashMap<>();
 
         for (ArrFundVersion version : versions) {
-            resolvedFundIds.add(version.getFundId());
             RulRuleSet ruleSet = version.getRuleSet();
             ruleSetById.putIfAbsent(ruleSet.getRuleSetId(), ruleSet);
-            FundsActionGroup group = groupsByRuleSet.computeIfAbsent(ruleSet.getRuleSetId(), id ->
+            fundCounts.merge(ruleSet.getRuleSetId(), 1, Integer::sum);
+            groupsByRuleSet.computeIfAbsent(ruleSet.getRuleSetId(), id ->
                     new FundsActionGroup()
                             .ruleSetId(ruleSet.getRuleSetId())
                             .ruleSetCode(ruleSet.getCode())
                             .ruleSetName(ruleSet.getName())
                             .fundCount(0)
-                            .fundVersionIds(new ArrayList<>())
                             .actions(new ArrayList<>()));
-            group.getFundVersionIds().add(version.getFundVersionId());
         }
 
         for (FundsActionGroup group : groupsByRuleSet.values()) {
-            group.setFundCount(group.getFundVersionIds().size());
+            group.setFundCount(fundCounts.get(group.getRuleSetId()));
             group.setActions(getMultiFundActions(ruleSetById.get(group.getRuleSetId())));
         }
 
-        // Fondy bez otevřené verze (nevrácené dávkovým dotazem) jsou přeskočeny.
-        List<FundsActionSkipped> skipped = new ArrayList<>();
-        for (Integer fundId : targetFundIds) {
-            if (!resolvedFundIds.contains(fundId)) {
-                skipped.add(new FundsActionSkipped(fundId, SKIP_NO_OPEN_VERSION));
+        return new FundsActionGroupResult(new ArrayList<>(groupsByRuleSet.values()), skipped);
+    }
+
+    /**
+     * Vyhodnotí výběr fondů na otevřené verze. Buď podle explicitních identifikátorů
+     * (dávkové IN po blocích), nebo podle filtru vyhodnoceného na serveru (stránkovaně,
+     * aby dotaz nikdy nepřekročil limity databáze ani nevyžadoval stažení id na klienta).
+     * Fondy bez otevřené verze jsou u explicitního výběru hlášeny v {@code skipped};
+     * filtr je nevrací vůbec (hledá jen v otevřených verzích).
+     */
+    private List<ArrFundVersion> resolveOpenVersions(final List<Integer> fundIds,
+                                                     final List<AbstractFilter> filters,
+                                                     final List<FundsActionSkipped> skipped) {
+        if (!CollectionUtils.isEmpty(fundIds)) {
+            List<Integer> targetFundIds = new ArrayList<>(new LinkedHashSet<>(fundIds));
+            List<ArrFundVersion> versions = new ArrayList<>();
+            for (List<Integer> chunk : ListUtils.partition(targetFundIds, FUND_BATCH_SIZE)) {
+                versions.addAll(fundVersionRepository.findByFundIdsAndLockChangeIsNull(chunk));
             }
+            Set<Integer> resolvedFundIds = new HashSet<>();
+            for (ArrFundVersion version : versions) {
+                resolvedFundIds.add(version.getFundId());
+            }
+            for (Integer fundId : targetFundIds) {
+                if (!resolvedFundIds.contains(fundId)) {
+                    skipped.add(new FundsActionSkipped(fundId, SKIP_NO_OPEN_VERSION));
+                }
+            }
+            return versions;
         }
 
-        return new FundsActionGroupResult(new ArrayList<>(groupsByRuleSet.values()), skipped);
+        List<ArrFundVersion> versions = new ArrayList<>();
+        int offset = 0;
+        while (true) {
+            SearchParams searchParams = new SearchParams();
+            searchParams.setFilters(filters != null ? filters : Collections.emptyList());
+            searchParams.setOffset(offset);
+            searchParams.setSize(FUND_BATCH_SIZE);
+            List<ArrFundVersion> page = arrangementService.findFundsBySearchParams(searchParams)
+                    .getFundVersionList();
+            versions.addAll(page);
+            if (page.size() < FUND_BATCH_SIZE) {
+                return versions;
+            }
+            offset += FUND_BATCH_SIZE;
+        }
     }
 
     /**

@@ -2550,22 +2550,24 @@ enum BulkActionRunState {
 
 /**
  * Požadavek na seskupení vybraných fondů podle pravidel pro spuštění hromadné akce nad více fondy.
- * Vyplní se buď `fundIds` (explicitní výběr, má přednost), nebo `search` (všechny fondy odpovídající filtru).
+ * Vyplní se buď `fundIds` (explicitní výběr, má přednost), nebo `filters` (všechny fondy
+ * odpovídající filtru — stejný filtr jako `/fund/search`; prázdný filtr znamená všechny fondy).
+ * Fondy se na klienta nikdy nestahují — filtr se vyhodnocuje až na serveru.
  */
 model FundsActionGroupRequest {
     /** Identifikátory vybraných fondů */
     fundIds?: integer[];
-    /** Filtr pro výběr všech odpovídajících fondů */
-    search?: string;
+    /** Filtr pro výběr všech odpovídajících fondů (stejný jako u `/fund/search`) */
+    filters?: AbstractFilter[];
 }
 
 /**
  * Přeskočený fond při přípravě nebo spuštění hromadné akce nad více fondy.
  */
 model FundsActionSkipped {
-    /** Identifikátor fondu (při seskupení) nebo verze fondu (při spuštění) */
+    /** Identifikátor fondu */
     id: integer;
-    /** Důvod přeskočení (např. NO_OPEN_VERSION, ACTION_NOT_IN_RULESET) */
+    /** Důvod přeskočení (např. NO_OPEN_VERSION) */
     reason: string;
 }
 
@@ -2581,8 +2583,6 @@ model FundsActionGroup {
     ruleSetName: string;
     /** Počet fondů ve skupině */
     fundCount: integer;
-    /** Identifikátory otevřených verzí fondů ve skupině */
-    fundVersionIds: integer[];
     /** Hromadné akce dostupné pro tato pravidla ve vícefondovém režimu */
     actions: BulkAction[];
 }
@@ -2599,12 +2599,19 @@ model FundsActionGroupResult {
 
 /**
  * Požadavek na spuštění hromadné akce nad více fondy najednou.
+ * Výběr fondů se předává stejně jako u seskupení: buď `fundIds`, nebo `filters`
+ * (vyhodnocuje se znovu na serveru v okamžiku spuštění). Akce se spustí jen nad fondy,
+ * jejichž otevřená verze používá pravidla `ruleSetId` (skupina zvolená v dialogu).
  */
 model MultiFundActionRequest {
-    /** Identifikátory otevřených verzí fondů */
-    fundVersionIds: integer[];
     /** Kód hromadné akce */
     code: string;
+    /** Identifikátor pravidel zvolené skupiny */
+    ruleSetId: integer;
+    /** Identifikátory vybraných fondů */
+    fundIds?: integer[];
+    /** Filtr pro výběr všech odpovídajících fondů (stejný jako u `/fund/search`) */
+    filters?: AbstractFilter[];
 }
 
 /**
@@ -2657,8 +2664,8 @@ namespace ElzaAPI.BulkAction {
     ): FundsActionGroupResult;
 
     /**
-     * Spustí hromadnou akci nad více fondy najednou. Pro každý platný fond naplánuje
-     * samostatný běh; fondy mimo daná pravidla jsou přeskočeny a vráceny ve výsledku.
+     * Spustí hromadnou akci nad více fondy najednou. Pro každý fond zvolené skupiny
+     * pravidel naplánuje samostatný běh; fondy jiných pravidel se nespouští.
      */
     @route("/queue-multi")
     @post op queueMultiFundAction(

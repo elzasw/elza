@@ -204,9 +204,8 @@ public class FundController implements FundsApi {
     @Override
     @Transactional
     public ResponseEntity<FundsActionGroupResult> bulkActionGroupFundsByRuleSet(@RequestBody FundsActionGroupRequest request) {
-        boolean hasFundIds = request.getFundIds() != null && !request.getFundIds().isEmpty();
-        Validate.isTrue(hasFundIds || request.getSearch() != null, "Musí být vyplněn seznam fondů nebo filtr");
-        return ResponseEntity.ok(bulkActionService.groupFundsByRuleSet(request.getFundIds(), request.getSearch()));
+        // bez fundIds se použije filtr; prázdný filtr znamená všechny fondy
+        return ResponseEntity.ok(bulkActionService.groupFundsByRuleSet(request.getFundIds(), request.getFilters()));
     }
 
     // POST /action/queue-multi
@@ -214,10 +213,11 @@ public class FundController implements FundsApi {
     @Transactional
     public ResponseEntity<MultiFundActionResult> bulkActionQueueMultiFundAction(@RequestBody MultiFundActionRequest request) {
         Validate.isTrue(StringUtils.isNotBlank(request.getCode()), "Kód musí být vyplněn");
-        Validate.notEmpty(request.getFundVersionIds(), "Musí být vybrán alespoň jeden archivní soubor");
+        Validate.notNull(request.getRuleSetId(), "Musí být vyplněn identifikátor pravidel");
         UsrUser user = userService.getLoggedUser();
         Integer userId = user == null ? null : user.getUserId();
-        return ResponseEntity.ok(bulkActionService.queueMulti(userId, request.getCode(), request.getFundVersionIds()));
+        return ResponseEntity.ok(bulkActionService.queueMulti(userId, request.getCode(), request.getRuleSetId(),
+                request.getFundIds(), request.getFilters()));
     }
 
     // GET /action/funds-change/{fundsChangeId}
