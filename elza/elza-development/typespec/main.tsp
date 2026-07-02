@@ -2301,6 +2301,131 @@ namespace ElzaAPI.ExternalSystem {
     };
 }
 
+/**
+ * One display block of an AI response — THE RENDERING CONTRACT between the
+ * server and the client. The server (per task type) transforms the provider's
+ * schema-validated output into an ordered list of blocks; the client renders
+ * each block solely by its `type`:
+ *
+ * - `markdown` — `content` holds CommonMark + GFM tables. The server MUST NOT
+ *   emit raw HTML; the client MUST render through a sanitizing Markdown
+ *   renderer (raw HTML is never interpreted). Use for free-text answers,
+ *   explanations, drafts.
+ * - `table` — structured tabular data: `columns` define order, keys and
+ *   labels; `rows` hold one object per row keyed by column key, cell values
+ *   are plain text (no markup). The client renders a native table widget.
+ *   Use whenever the data IS tabular — never serialize tables into markdown
+ *   when the server can emit this block instead.
+ *
+ * Evolution is additive: new block types may appear (e.g. `findings`). A
+ * client MUST tolerate an unknown `type` by rendering a generic "unsupported
+ * content" placeholder (never dropping the block silently). Server-side
+ * fallback rule: a task output with no block mapper is rendered as one
+ * `markdown` block containing the output JSON in a fenced code block.
+ */
+model AiDisplayBlock {
+    /** Block type discriminator: `markdown` | `table` (open set). */
+    type: string;
+    /** `markdown` only: CommonMark + GFM tables source; no raw HTML. */
+    content?: string;
+    /** `table` only: optional caption above the table. */
+    caption?: string;
+    /** `table` only: ordered column definitions. */
+    columns?: AiTableColumn[];
+    /** `table` only: rows as objects keyed by column `key`; values are plain text. */
+    rows?: Record<string>[];
+}
+
+model AiTableColumn {
+    /** Key of the column in `rows` objects. */
+    key: string;
+    /** Column header shown to the user. */
+    label: string;
+}
+
+/** Metered usage of one exchange (informative; costUnits is the billable quantity). */
+model AiUsage {
+    inputTokens: int64;
+    outputTokens: int64;
+    costUnits: float64;
+}
+
+/**
+ * One exchange with the AI provider within a conversation. `state` is an open
+ * set (`queued`, `running`, `awaiting_tools`, `done`, `error`, `cancelled`);
+ * a client MUST treat an unknown state as "in progress". `blocks` is present
+ * when `done` (see AiDisplayBlock for the rendering contract).
+ */
+model AiRequest {
+    id: integer;
+    taskType: string;
+    state: string;
+    /** The user's message of this exchange. */
+    userInstructions?: string;
+    /** Render-ready response (present when state = done). */
+    blocks?: AiDisplayBlock[];
+    errorCode?: string;
+    errorMessage?: string;
+    promptVersion?: string;
+    usage?: AiUsage;
+    createDate: utcDateTime;
+    finishDate?: utcDateTime;
+}
+
+/** One AI conversation (topic/thread) as shown in the panel history. */
+model AiConversation {
+    id: integer;
+    /** Code of the AI external system the conversation runs against. */
+    externalSystemCode: string;
+    title: string;
+    /** Context type code: `fund-version`, `fund-list`, `access-point`, … */
+    contextType?: string;
+    /** Context detail (JSON string); shape depends on contextType. */
+    context?: string;
+    createDate: utcDateTime;
+    lastChangeDate: utcDateTime;
+}
+
+/** Full conversation detail: the thread = requests in create order. */
+model AiConversationDetail {
+    conversation: AiConversation;
+    requests: AiRequest[];
+}
+
+/** Starts a conversation: creates the thread and submits its first exchange. */
+model AiConversationCreate {
+    /** Code of the AI external system to use. */
+    externalSystemCode: string;
+    /** Task type, e.g. `elza.echo`, `elza.revision`. */
+    taskType: string;
+    /** Thread title; when omitted the server derives it from the instructions. */
+    title?: string;
+    contextType?: string;
+    /** Context detail (JSON string). */
+    context?: string;
+    /** The user's message. */
+    userInstructions?: string;
+    /** Structured task parameters (JSON string), shape depends on taskType. */
+    parameters?: string;
+}
+
+/** Follow-up exchange submitted into an existing conversation. */
+model AiRequestCreate {
+    userInstructions?: string;
+    /** Structured task parameters (JSON string). */
+    parameters?: string;
+}
+
+/** One step of an exchange's log — the transparency view ("what was sent/received"). */
+model AiRequestEvent {
+    id: integer;
+    /** SUBMIT | TOOL_CALLS | TOOL_RESULTS | OUTPUT | ERROR | CANCEL (open set). */
+    eventType: string;
+    /** Event payload (JSON string); shape depends on eventType. */
+    data?: string;
+    createDate: utcDateTime;
+}
+
 @tag("aiprovider")
 @route("/aiprovider")
 namespace ElzaAPI.AiProvider {
@@ -2319,6 +2444,87 @@ namespace ElzaAPI.AiProvider {
         @Http.statusCode statusCode: 200;
         @body data: Record<unknown>;
     } | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Starts a new AI conversation: creates the thread, stores and submits its
+     * first exchange to the configured provider. State changes are then
+     * announced over the WebSocket (event AI_REQUEST carrying conversation and
+     * request ids + new state); the client refetches the conversation detail.
+     */
+    @route("/conversation")
+    @post op createConversation(
+        @body body: AiConversationCreate;
+    ): AiConversationDetail | {
+        /** External system or task type does not exist */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Full refresh of one conversation: the thread with all its exchanges,
+     * states and render-ready blocks.
+     */
+    @route("/conversation/{id}")
+    @get op getConversation(
+        /** conversation id */
+        @path id: integer;
+    ): AiConversationDetail | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Lists the current user's conversations, newest activity first;
+     * optionally filtered by context.
+     */
+    @route("/conversation")
+    @get op listConversations(
+        /** context type code filter */
+        @query contextType?: string;
+    ): AiConversation[];
+
+    /**
+     * Submits a follow-up exchange into an existing conversation (continues
+     * the provider-side conversation context).
+     */
+    @route("/conversation/{id}/request")
+    @post op createRequest(
+        /** conversation id */
+        @path id: integer;
+        @body body: AiRequestCreate;
+    ): AiConversationDetail | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Cancels a running exchange (best effort; usage already incurred is kept).
+     */
+    @route("/request/{id}/cancel")
+    @post op cancelRequest(
+        /** request id */
+        @path id: integer;
+    ): AiRequest | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * The exchange log of one request — each step with its payload (what
+     * exactly was sent to the provider / what came back).
+     */
+    @route("/request/{id}/event")
+    @get op listRequestEvents(
+        /** request id */
+        @path id: integer;
+    ): AiRequestEvent[] | {
         /** Id does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
