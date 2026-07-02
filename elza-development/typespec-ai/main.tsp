@@ -57,10 +57,11 @@ using TypeSpec.OpenAPI;
  *
  * Authentication is request signing (`ELZA-AI-HMAC-SHA256`) with keys issued by
  * the provider, scoped either to the whole installation/organization or to a
- * single named user. See `SignatureAuth` and the companion `security.md`.
+ * single named user. Every operation is signed except the liveness probe
+ * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.1.0" })
+@info(#{ version: "0.2.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -384,6 +385,19 @@ model Task {
 // Service info
 // ---------------------------------------------------------------------------
 
+/** Liveness probe response. */
+model PingResponse {
+  /** Always `ok` — a `200` with this body proves the endpoint is alive. */
+  status: "ok";
+
+  /**
+   * Current server time (UTC). Compare with the local clock to diagnose
+   * signature failures caused by clock skew — `X-AI-Date` must be within
+   * ±2 minutes of this value for signed requests to be accepted.
+   */
+  serverTime: utcDateTime;
+}
+
 /** A task type supported by this provider. */
 model TaskTypeInfo {
   /** The task type code, e.g. `elza.revision`. */
@@ -502,6 +516,20 @@ model ServiceError {
 // ---------------------------------------------------------------------------
 // Operations
 // ---------------------------------------------------------------------------
+
+/**
+ * Liveness probe — the only **unauthenticated** operation (requests to it are
+ * not signed). Answers two questions the signed operations cannot separate:
+ * is the endpoint URL right and the service up (vs. bad credentials), and
+ * what is the server's clock (a client whose `X-AI-Date` falls outside the
+ * ±2 min window can detect its own skew from `serverTime`). Returns no
+ * provider information beyond liveness; for the full connection test
+ * (auth + subscription) use `GET /info`.
+ */
+@route("/ping")
+@get
+@useAuth(NoAuth)
+op ping(): PingResponse;
 
 /**
  * Describe this provider: protocol version, supported task types, profiles,
