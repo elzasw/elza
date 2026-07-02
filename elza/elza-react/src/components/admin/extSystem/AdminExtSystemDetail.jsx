@@ -16,6 +16,7 @@ import {
 } from './ExtSystemForm';
 import { Api } from 'api';
 import { Button } from '@fluentui/react-components';
+import { FormattedMessage } from 'react-intl';
 
 /**
  * Komponenta detailu osoby
@@ -70,6 +71,49 @@ class AdminExtSystemDetail extends AbstractReactComponent {
     handleResyncExtSystem = () => {
         const { extSystemDetail: {id}, } = this.props;
         Api.externalSystems.externalSystemExternalSystemResync(id);
+    }
+
+    handleTestAiConnection = () => {
+        const { extSystemDetail: {id}, } = this.props;
+        this.setState({aiTestState: 'pending', aiTestInfo: null});
+        Api.aiprovider
+            .aiProviderGetInfo(String(id))
+            .then(response => {
+                this.setState({aiTestState: 'ok', aiTestInfo: response.data});
+            })
+            .catch(() => {
+                this.setState({aiTestState: 'failed', aiTestInfo: null});
+            });
+    }
+
+    renderAiTestResult = () => {
+        const aiTestState = this.state?.aiTestState;
+        if (aiTestState === 'ok') {
+            const info = this.state?.aiTestInfo || {};
+            return (
+                <span>
+                    <FormattedMessage
+                        id="admin.extSystemDetail.aiTestConnectionOk"
+                        defaultMessage="Připojení funguje — {provider} (protokol {version})"
+                        values={{
+                            provider: info.providerName || '?',
+                            version: info.protocolVersion || '?',
+                        }}
+                    />
+                </span>
+            );
+        }
+        if (aiTestState === 'failed') {
+            return (
+                <span>
+                    <FormattedMessage
+                        id="admin.extSystemDetail.aiTestConnectionFailed"
+                        defaultMessage="Připojení selhalo"
+                    />
+                </span>
+            );
+        }
+        return null;
     }
 
     render() {
@@ -138,6 +182,12 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                             <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]}</span>
                         </div>
                     )}
+                    {classJ === EXT_SYSTEM_CLASS.AiExternalSystem && (
+                        <div>
+                            <h4>{i18n('admin.extSystem.class')}</h4>
+                            <span>{EXT_SYSTEM_CLASS_LABEL[EXT_SYSTEM_CLASS.AiExternalSystem]}</span>
+                        </div>
+                    )}
                     <div>
                         {this.renderValue(extSystem, 'name')}
                         {this.renderValue(extSystem, 'code')}
@@ -160,6 +210,20 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                         && <div style={{margin: "8px 0"}}>
                         <Button onClick={this.handleResyncExtSystem}>{i18n('admin.extSystem.synchronize')}</Button>
                     </div>}
+                    {classJ === EXT_SYSTEM_CLASS.AiExternalSystem && (
+                        <div style={{margin: "8px 0"}}>
+                            <Button
+                                onClick={this.handleTestAiConnection}
+                                disabled={this.state?.aiTestState === 'pending'}
+                            >
+                                <FormattedMessage
+                                    id="admin.extSystemDetail.aiTestConnection"
+                                    defaultMessage="Vyzkoušet připojení"
+                                />
+                            </Button>
+                            {this.renderAiTestResult()}
+                        </div>
+                    )}
                 </div>
             );
         }

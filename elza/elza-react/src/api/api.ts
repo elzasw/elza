@@ -2,6 +2,7 @@ import {
     AccesspointsApi,
     AccesspointInternalApi,
     AdminApi,
+    AiproviderApi,
     DaosApi,
     FundsApi,
     DefaultApi,
@@ -204,6 +205,7 @@ export const Api: {
     accesspoints: AccesspointsApi;
     accesspointInternal: AccesspointInternalApi;
     admin: AdminApi;
+    aiprovider: AiproviderApi;
     funds: FundsApi;
     daos: DaosApi;
     default: DefaultApi;
@@ -221,6 +223,7 @@ export const Api: {
     accesspoints: new AccesspointsApi(undefined, basePath, axios),
     accesspointInternal: new AccesspointInternalApi(undefined, basePath, axios),
     admin: new AdminApi(undefined, basePath, axios),
+    aiprovider: new AiproviderApi(undefined, basePath, axios),
     funds: new FundsApi(undefined, basePath, axios),
     daos: new DaosApi(undefined, basePath, axios),
     default: new DefaultApi(undefined, basePath, axios),
