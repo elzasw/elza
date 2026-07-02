@@ -469,6 +469,30 @@
     "defaultMessage": "Unsaved",
     "srcHash": "evoAyt3cLDJM"
   },
+  "fundPage.multiAction.cancel": {
+    "defaultMessage": "Cancel",
+    "srcHash": "bHfYpLCt8F6P"
+  },
+  "fundPage.multiAction.run": {
+    "defaultMessage": "Run action",
+    "srcHash": "hvWR6vxVXGEu"
+  },
+  "fundPage.multiAction.selectAll": {
+    "defaultMessage": "Select all matching the filter ({count})",
+    "srcHash": "igQm19R4pj5c"
+  },
+  "fundPage.multiAction.selected": {
+    "defaultMessage": "Selected: {count}",
+    "srcHash": "7GUXxnPp2Qk5"
+  },
+  "fundPage.multiAction.start": {
+    "defaultMessage": "Bulk action over funds",
+    "srcHash": "-ZzS3DKvVe1y"
+  },
+  "fundPage.multiAction.title": {
+    "defaultMessage": "Bulk action over funds",
+    "srcHash": "-ZzS3DKvVe1y"
+  },
   "fundPage_export_results": {
     "defaultMessage": "Download CSV",
     "srcHash": "1LaqY8gF6JE1"
@@ -612,6 +636,78 @@
   "mandatoryType.required": {
     "defaultMessage": "Required",
     "srcHash": "CzYWcREqOQQ0"
+  },
+  "multiFundAction.actionLabel": {
+    "defaultMessage": "Bulk action",
+    "srcHash": "H4YtXzzX2gDT"
+  },
+  "multiFundAction.actionPlaceholder": {
+    "defaultMessage": "Select an action…",
+    "srcHash": "MF_ttYZxn3Fo"
+  },
+  "multiFundAction.cancel": {
+    "defaultMessage": "Cancel",
+    "srcHash": "bHfYpLCt8F6P"
+  },
+  "multiFundAction.chooseAction": {
+    "defaultMessage": "The action will run over {count, plural, one {# fund} other {# funds}} (rules {ruleSet}). Select an action:",
+    "srcHash": "KLZvppi4PKjQ"
+  },
+  "multiFundAction.chooseRuleSet": {
+    "defaultMessage": "The selected funds use multiple rule sets. Choose which group to run the action for:",
+    "srcHash": "Y7yBO_O9micb"
+  },
+  "multiFundAction.close": {
+    "defaultMessage": "Close",
+    "srcHash": "0r4EKpo4ZhJv"
+  },
+  "multiFundAction.confirm": {
+    "defaultMessage": "The action <b>{action}</b> will run over <b>{count, plural, one {# fund} other {# funds}}</b>. The action writes to the funds' data and each fund gets its own run. Continue?",
+    "srcHash": "czsL1FVz7qA4"
+  },
+  "multiFundAction.continue": {
+    "defaultMessage": "Continue",
+    "srcHash": "xGnq7PtrG9AV"
+  },
+  "multiFundAction.doneHint": {
+    "defaultMessage": "The progress of individual runs can be tracked in task management.",
+    "srcHash": "iXNmq6nj88En"
+  },
+  "multiFundAction.doneQueued": {
+    "defaultMessage": "The bulk action has been queued for <b>{count, plural, one {# fund} other {# funds}}</b>.",
+    "srcHash": "ETomyJveZsIB"
+  },
+  "multiFundAction.doneSkipped": {
+    "defaultMessage": " Skipped {count, plural, one {# fund} other {# funds}}.",
+    "srcHash": "cvlp1UhlIdjz"
+  },
+  "multiFundAction.empty": {
+    "defaultMessage": "No applicable bulk action is available for the selected funds.",
+    "srcHash": "uH_uf79GiJgN"
+  },
+  "multiFundAction.noActions": {
+    "defaultMessage": "No bulk action is available for these rules.",
+    "srcHash": "cOG6w4n8KzW_"
+  },
+  "multiFundAction.ruleSetOption": {
+    "defaultMessage": "{name} ({count, plural, one {# fund} other {# funds}})",
+    "srcHash": "eipsU0rnrB2p"
+  },
+  "multiFundAction.run": {
+    "defaultMessage": "Run",
+    "srcHash": "vxF0us80z5om"
+  },
+  "multiFundAction.skipped": {
+    "defaultMessage": "Skipped {count, plural, one {# fund} other {# funds}} (no open version or the action does not belong to their rules).",
+    "srcHash": "WcobK1TbISC2"
+  },
+  "multiFundAction.stage.loading": {
+    "defaultMessage": "Loading funds…",
+    "srcHash": "wIER71004yv5"
+  },
+  "multiFundAction.stage.submitting": {
+    "defaultMessage": "Running action…",
+    "srcHash": "62_V1ae3mzQ9"
   },
   "nodeSubNodeForm_quote_title": {
     "defaultMessage": "Citation",
