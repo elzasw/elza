@@ -61,7 +61,9 @@ repository.
 - **Auth = HMAC request signing** (`ELZA-AI-HMAC-SHA256`): stateless, the secret
   never travels, replay bounded by a ±2 min window. The provider issues keys
   scoped to the whole installation or to a named user (per-user attribution and
-  quotas). See `security.md`.
+  quotas). See `security.md`. The single unauthenticated operation is
+  `GET /ping` — a liveness probe that also returns the server time, so a client
+  can tell a wrong endpoint from bad credentials and detect its own clock skew.
 - **Metering built in**: every task reports `usage` (tokens informative,
   `costUnits` billable per the provider's price list); `402` signals a missing
   subscription or exhausted quota.
