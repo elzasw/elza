@@ -469,6 +469,34 @@
     "defaultMessage": "Unsaved",
     "srcHash": "evoAyt3cLDJM"
   },
+  "fundPage.drawer.allOutputs": {
+    "defaultMessage": "All outputs...",
+    "srcHash": "HnjxhpdDvqnt"
+  },
+  "fundPage.drawer.close": {
+    "defaultMessage": "Close",
+    "srcHash": "0r4EKpo4ZhJv"
+  },
+  "fundPage.drawer.currentVersion": {
+    "defaultMessage": "Current version",
+    "srcHash": "0u9juJv4hc8n"
+  },
+  "fundPage.drawer.entityScopes": {
+    "defaultMessage": "Entity scopes",
+    "srcHash": "3-OKfmKJZsWr"
+  },
+  "fundPage.drawer.outputs": {
+    "defaultMessage": "Outputs",
+    "srcHash": "irSQ8aME65Fz"
+  },
+  "fundPage.drawer.rules": {
+    "defaultMessage": "Rules",
+    "srcHash": "7JaVp6F-k6KT"
+  },
+  "fundPage.drawer.versions": {
+    "defaultMessage": "Versions",
+    "srcHash": "Cml1nacv6hJG"
+  },
   "fundPage.multiAction.cancel": {
     "defaultMessage": "Cancel",
     "srcHash": "bHfYpLCt8F6P"
