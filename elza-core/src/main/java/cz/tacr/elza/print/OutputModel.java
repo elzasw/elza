@@ -220,6 +220,12 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
 	private AccessPointCacheService apCacheService;
 
+    /**
+     * Shared access point provider for the whole output - keeps referenced entities cached
+     * across nodes so they are not reloaded and deserialized for every reference.
+     */
+    private AccessPointCacheProvider apCacheProvider;
+
     public OutputModel(final OutputContext outputContext,
                        final StaticDataService staticDataService,
                        final ElzaLocale elzaLocale,
@@ -259,6 +265,7 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
         this.structObjService = structObjService;
         this.soiLoader = new StructObjectInfoLoader(em, 1, staticDataService.getData(), dataService);
         this.apCacheService = apCacheService;
+        this.apCacheProvider = new AccessPointCacheProvider(apCacheService);
     }
 
     public boolean isInitialized() {
@@ -594,6 +601,9 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
 
         ApplyFilter filter = new ApplyFilter();
 
+        // non-structured restriction items all share the same context (the node's own items),
+        // so that context is evaluated only once regardless of how many such items are present
+        boolean ownItemsProcessed = false;
         for (ArrItem restrictionItem : restrictionItems) {
             cz.tacr.elza.core.data.ItemType itemType = sdp.getItemTypeById(restrictionItem.getItemTypeId());
 
@@ -608,11 +618,14 @@ public class OutputModel implements Output, NodeLoader, ItemConvertorContext {
                 StructObjectInfo soi = readSoiFromDB(restrictionId);
                 soiItems = soi.getItems();
             } else {
+                if (ownItemsProcessed) {
+                    continue;
+                }
+                ownItemsProcessed = true;
                 soiItems = node.getDescItems();
             }
 
-            AccessPointCacheProvider apcProvider = new AccessPointCacheProvider(this.apCacheService);
-            FilterRuleContext filterRuleContext = new FilterRuleContext(soiItems, apcProvider, sdp);
+            FilterRuleContext filterRuleContext = new FilterRuleContext(soiItems, apCacheProvider, sdp);
             for (FilterRule rule : filterRules.getFilterRules()) {
                 FilterRuleResultType result = processRule(nodeId, rule, filterRuleContext, itemsByType, filter);
                 if (result == FilterRuleResultType.RESULT_BREAK) {
