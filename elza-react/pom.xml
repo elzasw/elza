@@ -133,7 +133,26 @@
                             <executable>npm</executable>
                             <arguments>
                                 <argument>run</argument>
-                                <argument>extract</argument>
+                                <argument>locale:extract</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm-locale-merge</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>run</argument>
+                                <argument>locale:merge</argument>
+                                <argument>--</argument>
+                                <argument>--source</argument>
+                                <argument>cs</argument>
+                                <argument>cs</argument>
+                                <argument>en</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -147,7 +166,7 @@
                             <executable>npm</executable>
                             <arguments>
                                 <argument>run</argument>
-                                <argument>compile-extracted</argument>
+                                <argument>locale:compile</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -269,8 +288,7 @@
                         <configuration>
                             <executable>npm</executable>
                             <arguments>
-                                <argument>run</argument>
-                                <argument>dev</argument>
+                                <argument>start</argument>
                             </arguments>
                         </configuration>
                         <executions>

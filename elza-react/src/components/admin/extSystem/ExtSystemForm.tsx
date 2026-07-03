@@ -14,6 +14,7 @@ export const EXT_SYSTEM_CLASS = {
     ArrDigitalRepository: '.ArrDigitalRepositoryVO',
     ArrDigitizationFrontdesk: '.ArrDigitizationFrontdeskVO',
     GisExternalSystem: '.GisExternalSystemVO',
+    AiExternalSystem: '.AiExternalSystemVO',
 } as const;
 
 type ExtSystemClassValue = typeof EXT_SYSTEM_CLASS[keyof typeof EXT_SYSTEM_CLASS];
@@ -23,6 +24,7 @@ export const EXT_SYSTEM_CLASS_LABEL: Record<ExtSystemClassValue, string> = {
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: i18n('admin.extSystem.class.ArrDigitalRepositoryVO'),
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: i18n('admin.extSystem.class.ArrDigitizationFrontdeskVO'),
     [EXT_SYSTEM_CLASS.GisExternalSystem]: i18n('admin.extSystem.class.GisExternalSystemVO'),
+    [EXT_SYSTEM_CLASS.AiExternalSystem]: i18n('admin.extSystem.class.AiExternalSystemVO'),
 };
 
 export const AP_EXT_SYSTEM_LABEL: Record<string, string> = {
@@ -82,6 +84,7 @@ const REQUIRED_FIELDS = {
     [EXT_SYSTEM_CLASS.ArrDigitalRepository]: ['digitalRepositoryType', 'sendNotification'] as string[],
     [EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]: [] as string[],
     [EXT_SYSTEM_CLASS.GisExternalSystem]: ['type', 'url'] as string[],
+    [EXT_SYSTEM_CLASS.AiExternalSystem]: ['url', 'apiKeyId', 'apiKeyValue'] as string[],
 };
 
 function validate(values: ExtSystemFormValues) {
@@ -96,6 +99,8 @@ function validate(values: ExtSystemFormValues) {
         requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.ArrDigitizationFrontdesk]);
     } else if (classJ === EXT_SYSTEM_CLASS.GisExternalSystem) {
         requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.GisExternalSystem]);
+    } else if (classJ === EXT_SYSTEM_CLASS.AiExternalSystem) {
+        requiredFields = requiredFields.concat(REQUIRED_FIELDS[EXT_SYSTEM_CLASS.AiExternalSystem]);
     }
 
     return requiredFields.reduce((errors: Record<string, string>, name) => {
@@ -261,7 +266,9 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                     />
                 </>
             )}
-            {classJ !== EXT_SYSTEM_CLASS.ApExternalSystem && classJ !== EXT_SYSTEM_CLASS.GisExternalSystem && (
+            {classJ !== EXT_SYSTEM_CLASS.ApExternalSystem &&
+                classJ !== EXT_SYSTEM_CLASS.GisExternalSystem &&
+                classJ !== EXT_SYSTEM_CLASS.AiExternalSystem && (
                 <Field
                     name="elzaCode"
                     type="text"
@@ -269,7 +276,9 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                     label={i18n('admin.extSystem.elzaCode')}
                 />
             )}
-            {(classJ === EXT_SYSTEM_CLASS.ApExternalSystem || classJ === EXT_SYSTEM_CLASS.GisExternalSystem) && (
+            {(classJ === EXT_SYSTEM_CLASS.ApExternalSystem ||
+                classJ === EXT_SYSTEM_CLASS.GisExternalSystem ||
+                classJ === EXT_SYSTEM_CLASS.AiExternalSystem) && (
                 <>
                     <Field
                         name="apiKeyId"

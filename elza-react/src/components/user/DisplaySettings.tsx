@@ -1,8 +1,17 @@
 import { Col, Form, Row } from 'react-bootstrap';
 import { defineMessages, useIntl } from 'react-intl';
-import { useUserSettings } from 'contexts/user';
+import { Language, useUserSettings } from 'contexts/user';
+
+const languageOptions: Array<{ value: Language; nativeName: string }> = [
+    { value: 'cs', nativeName: 'Čeština' },
+    { value: 'en', nativeName: 'English' },
+];
 
 const messages = defineMessages({
+    language: {
+        id: 'userSettings.display.language',
+        defaultMessage: 'Jazyk',
+    },
     darkMode: {
         id: 'userSettings.display.darkMode',
         defaultMessage: 'Tmavý režim',
@@ -21,10 +30,27 @@ export default function DisplaySettings() {
     const { settings, update } = useUserSettings();
     const { formatMessage } = useIntl();
 
+    const experimentalFeaturesEnabled = !!settings.showExperimentalFeatures;
+
     return (
         <Row>
             <Col xs={12}>
                 <div style={{ padding: '10px 0' }}>
+                    {experimentalFeaturesEnabled && (
+                        <Form.Group controlId="language" className="mb-3">
+                            <Form.Label>{formatMessage(messages.language)}</Form.Label>
+                            <Form.Select
+                                value={settings.language ?? 'cs'}
+                                onChange={(e) => update({ language: e.target.value as Language })}
+                            >
+                                {languageOptions.map(({ value, nativeName }) => (
+                                    <option key={value} value={value}>
+                                        {nativeName}
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        </Form.Group>
+                    )}
                     <Form.Check
                         type="checkbox"
                         id="darkMode"

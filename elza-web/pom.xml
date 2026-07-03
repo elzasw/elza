@@ -27,6 +27,15 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-messaging</artifactId>
         </dependency>
+        <!-- Actuator: health + Prometheus metrics scraped locally by the CSC reporting client. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
         <!-- END - Spring boot dependencies -->
 		<dependency>
 		    <groupId>jakarta.servlet</groupId>

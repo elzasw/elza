@@ -75,6 +75,12 @@ Path prefix: `elza-react/src/`
 
 - `elza-react/src/api/generated/` is auto-generated from `elza-core/src/main/resources/rest/elza-openapi.yml` by OpenAPI Generator. Never edit these files manually.
 - SOAP stubs in `elza-ws-api/` are generated from WSDL files.
+- The **AI provider client** (`cz.tacr.elza.aiprovider.client.*`) is generated in the
+  elza-core build from `elza-core/src/main/resources/ai/elza-ai-provider.openapi.yaml`.
+  That OpenAPI file is itself emitted from TypeSpec — the source of truth is
+  `elza-development/typespec-ai/main.tsp` (`npm run build` there writes straight into
+  elza-core resources). Never edit the YAML by hand; auth scheme + design background:
+  `elza-development/typespec-ai/security.md` and `AI-INTEGRATION-PROPOSAL.md`.
 
 ## Build Commands
 

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://csc.lightcomp.com/schema/metrics-profile/v1.json",
+  "schemaVersion": "1.0",
+  "product": "elza",
+  "defaultLanguage": "en",
+  "appliesFromVersion": "3.4.0",
+  "metrics": [
+    {
+      "key": "elza.cam.last_success_age_seconds",
+      "name": { "en": "Time since last successful CAM communication", "cs": "Čas od poslední úspěšné komunikace s CAM" },
+      "description": {
+        "en": "Seconds since the last successful poll of a CAM external system, taken as the worst (oldest) across all configured systems. A poll that finds nothing changed still counts as a successful communication. The primary 'is CAM reachable' signal; -1 when no CAM external system is configured.",
+        "cs": "Počet sekund od poslední úspěšné komunikace (dotazu na změny) s externím systémem CAM, brané jako nejhorší (nejstarší) hodnota přes všechny nakonfigurované systémy. I dotaz, který nenajde žádnou změnu, se počítá jako úspěšná komunikace. Hlavní ukazatel dostupnosti CAM; -1 když není nakonfigurován žádný externí systém CAM."
+      },
+      "unit": "s",
+      "type": "gauge",
+      "monitored": true,
+      "threshold": { "direction": "above", "level": 7200 },
+      "source": { "metric": "elza_cam_last_success_age_seconds" }
+    },
+    {
+      "key": "elza.cam.error_count",
+      "name": { "en": "CAM sync items in error", "cs": "Chybné položky synchronizace CAM" },
+      "description": {
+        "en": "Number of CAM synchronization items in the ERROR state (failed dispatch/upload to CAM, e.g. an invalid XML representation), summed across all external systems.",
+        "cs": "Počet položek synchronizace CAM ve stavu ERROR (nezdařené odeslání/nahrání do CAM, např. neplatná XML reprezentace), sečteno přes všechny externí systémy."
+      },
+      "unit": "count",
+      "type": "gauge",
+      "monitored": true,
+      "threshold": { "direction": "above", "level": 0 },
+      "source": { "metric": "elza_cam_error_count" }
+    },
+    {
+      "key": "elza.cam.oldest_error_age_seconds",
+      "name": { "en": "Oldest CAM error age", "cs": "Stáří nejstarší chyby CAM" },
+      "description": {
+        "en": "Seconds since the oldest CAM synchronization item in the ERROR state last changed state; -1 when there is none. Gives severity to error_count and avoids alert flapping on transient failures.",
+        "cs": "Počet sekund od poslední změny stavu nejstarší chybové položky synchronizace CAM; -1 když žádná není. Určuje závažnost k error_count a zabraňuje blikání alertů u přechodných chyb."
+      },
+      "unit": "s",
+      "type": "gauge",
+      "monitored": true,
+      "threshold": { "direction": "above", "level": 3600 },
+      "source": { "metric": "elza_cam_oldest_error_age_seconds" }
+    },
+    {
+      "key": "elza.cam.deferred_oldest_age_seconds",
+      "name": { "en": "Oldest deferred CAM item age", "cs": "Stáří nejstarší odložené položky CAM" },
+      "description": {
+        "en": "Seconds since the oldest deferred CAM synchronization item (e.g. a REPLACEMENT whose replacing entity is not yet available locally) last changed state; -1 when there is none. A deferred item is normally transient and self-resolves, so only a long-stuck one should alert.",
+        "cs": "Počet sekund od poslední změny stavu nejstarší odložené položky synchronizace CAM (např. NÁHRADA, jejíž nahrazující entita ještě není lokálně k dispozici); -1 když žádná není. Odložená položka je obvykle přechodná a vyřeší se sama, takže alertovat by měla jen dlouhodobě uvízlá."
+      },
+      "unit": "s",
+      "type": "gauge",
+      "monitored": true,
+      "threshold": { "direction": "above", "level": 86400 },
+      "source": { "metric": "elza_cam_deferred_oldest_age_seconds" }
+    },
+    {
+      "key": "elza.users.connected",
+      "name": { "en": "Connected users", "cs": "Připojení uživatelé" },
+      "description": {
+        "en": "Currently connected users (active WebSocket client sessions). Informational, not alerted.",
+        "cs": "Aktuálně připojení uživatelé (aktivní WebSocket relace klientů). Informativní, bez alertu."
+      },
+      "unit": "count",
+      "type": "gauge",
+      "monitored": false,
+      "source": { "metric": "elza_users_connected" }
+    }
+  ]
+}

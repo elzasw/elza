@@ -47,6 +47,7 @@ import cz.tacr.elza.controller.vo.DataUnitid;
 import cz.tacr.elza.controller.vo.DataUriRef;
 import cz.tacr.elza.controller.vo.ItemData;
 import cz.tacr.elza.controller.vo.NodeItem;
+import cz.tacr.elza.controller.vo.OutputItem;
 import cz.tacr.elza.controller.vo.PersistentSortConfigVO;
 import cz.tacr.elza.controller.vo.StructuredObjectItem;
 import cz.tacr.elza.controller.vo.UISettingsVO;
@@ -124,8 +125,6 @@ import cz.tacr.elza.filter.condition.UndefinedDescItemCondition;
 import cz.tacr.elza.filter.condition.UnselectedSpecificationsDescItemEnumCondition;
 import cz.tacr.elza.filter.condition.UnselectedValuesDescItemEnumCondition;
 import cz.tacr.elza.repository.InstitutionRepository;
-import cz.tacr.elza.repository.ItemSpecRepository;
-import cz.tacr.elza.repository.ItemTypeRepository;
 import jakarta.persistence.EntityManager;
 
 /**
@@ -1061,6 +1060,7 @@ public class ClientFactoryDO {
     	return specIds;
     }
 
+    @Deprecated
     public ArrOutputItem createOutputItem(final ArrItemVO outputItemVO, final Integer itemTypeId) {
 
         ArrOutputItem outputItem = new ArrOutputItem();
@@ -1083,6 +1083,7 @@ public class ClientFactoryDO {
         return outputItem;
     }
 
+    @Deprecated
     public ArrOutputItem createOutputItem(final ArrItemVO itemVO) {
         ArrOutputItem outputItem = new ArrOutputItem();
         

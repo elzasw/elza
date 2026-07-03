@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -19,10 +20,12 @@ import cz.tacr.elza.domain.ExtSyncsQueueItem.ExtAsyncQueueState;
 @Repository
 public interface ExtSyncsQueueItemRepository extends ElzaJpaRepository<ExtSyncsQueueItem, Integer>, ExtSyncsQueueItemRepositoryCustom{
 
-    /*
     @Query("SELECT COUNT(i) FROM ext_syncs_queue_item i WHERE i.state = :state")
-    int countByState(@Param("state") ExtSyncsQueueItem.ExtAsyncQueueState state);
-    */
+    int countByState(@Param("state") ExtAsyncQueueState state);
+
+    /** Oldest (minimal) state-change time among items in the given state, or {@code null} when there are none. */
+    @Query("SELECT MIN(i.date) FROM ext_syncs_queue_item i WHERE i.state = :state")
+    OffsetDateTime findOldestDateByState(@Param("state") ExtAsyncQueueState state);
 
     ExtSyncsQueueItem findFirstByStateOrderByExtSyncsQueueItemId(ExtAsyncQueueState state);
 

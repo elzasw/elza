@@ -655,7 +655,7 @@ model BaseItem {
 }
 
 /**
- * Náhrada za třídu `ArrItemVO`
+ * Náhrada za `ArrItemVO`
  */
 model NodeItem extends BaseItem {
     /** id node */
@@ -667,6 +667,9 @@ model NodeItem extends BaseItem {
 }
 
 model StructuredObjectItem extends BaseItem {
+}
+
+model OutputItem extends BaseItem {
 }
 
 /**
@@ -990,6 +993,14 @@ model BaseCode {
      * Název
      */
     name: string;
+}
+
+/**
+ * Náhrada za `ApScopeVO`
+ */
+model Scope extends BaseCode {
+    language: string;
+    ruleSetCode: string;
 }
 
 /**
@@ -2290,6 +2301,236 @@ namespace ElzaAPI.ExternalSystem {
     };
 }
 
+/**
+ * One display block of an AI response — THE RENDERING CONTRACT between the
+ * server and the client. The server (per task type) transforms the provider's
+ * schema-validated output into an ordered list of blocks; the client renders
+ * each block solely by its `type`:
+ *
+ * - `markdown` — `content` holds CommonMark + GFM tables. The server MUST NOT
+ *   emit raw HTML; the client MUST render through a sanitizing Markdown
+ *   renderer (raw HTML is never interpreted). Use for free-text answers,
+ *   explanations, drafts.
+ * - `table` — structured tabular data: `columns` define order, keys and
+ *   labels; `rows` hold one object per row keyed by column key, cell values
+ *   are plain text (no markup). The client renders a native table widget.
+ *   Use whenever the data IS tabular — never serialize tables into markdown
+ *   when the server can emit this block instead.
+ *
+ * Evolution is additive: new block types may appear (e.g. `findings`). A
+ * client MUST tolerate an unknown `type` by rendering a generic "unsupported
+ * content" placeholder (never dropping the block silently). Server-side
+ * fallback rule: a task output with no block mapper is rendered as one
+ * `markdown` block containing the output JSON in a fenced code block.
+ */
+model AiDisplayBlock {
+    /** Block type discriminator: `markdown` | `table` (open set). */
+    type: string;
+    /** `markdown` only: CommonMark + GFM tables source; no raw HTML. */
+    content?: string;
+    /** `table` only: optional caption above the table. */
+    caption?: string;
+    /** `table` only: ordered column definitions. */
+    columns?: AiTableColumn[];
+    /** `table` only: rows as objects keyed by column `key`; values are plain text. */
+    rows?: Record<string>[];
+}
+
+model AiTableColumn {
+    /** Key of the column in `rows` objects. */
+    key: string;
+    /** Column header shown to the user. */
+    label: string;
+}
+
+/** Metered usage of one exchange (informative; costUnits is the billable quantity). */
+model AiUsage {
+    inputTokens: int64;
+    outputTokens: int64;
+    costUnits: float64;
+}
+
+/**
+ * One exchange with the AI provider within a conversation. `state` is an open
+ * set (`queued`, `running`, `awaiting_tools`, `done`, `error`, `cancelled`);
+ * a client MUST treat an unknown state as "in progress". `blocks` is present
+ * when `done` (see AiDisplayBlock for the rendering contract).
+ */
+model AiRequest {
+    id: integer;
+    taskType: string;
+    state: string;
+    /** The user's message of this exchange. */
+    userInstructions?: string;
+    /** Render-ready response (present when state = done). */
+    blocks?: AiDisplayBlock[];
+    errorCode?: string;
+    errorMessage?: string;
+    promptVersion?: string;
+    usage?: AiUsage;
+    createDate: utcDateTime;
+    finishDate?: utcDateTime;
+}
+
+/** One AI conversation (topic/thread) as shown in the panel history. */
+model AiConversation {
+    id: integer;
+    /** Code of the AI external system the conversation runs against. */
+    externalSystemCode: string;
+    title: string;
+    /** Context type code: `fund-version`, `fund-list`, `access-point`, … */
+    contextType?: string;
+    /** Context detail (JSON string); shape depends on contextType. */
+    context?: string;
+    createDate: utcDateTime;
+    lastChangeDate: utcDateTime;
+}
+
+/** Full conversation detail: the thread = requests in create order. */
+model AiConversationDetail {
+    conversation: AiConversation;
+    requests: AiRequest[];
+}
+
+/** Starts a conversation: creates the thread and submits its first exchange. */
+model AiConversationCreate {
+    /** Code of the AI external system to use. */
+    externalSystemCode: string;
+    /** Task type, e.g. `elza.echo`, `elza.revision`. */
+    taskType: string;
+    /** Thread title; when omitted the server derives it from the instructions. */
+    title?: string;
+    contextType?: string;
+    /** Context detail (JSON string). */
+    context?: string;
+    /** The user's message. */
+    userInstructions?: string;
+    /** Structured task parameters (JSON string), shape depends on taskType. */
+    parameters?: string;
+}
+
+/** Follow-up exchange submitted into an existing conversation. */
+model AiRequestCreate {
+    userInstructions?: string;
+    /** Structured task parameters (JSON string). */
+    parameters?: string;
+}
+
+/** One step of an exchange's log — the transparency view ("what was sent/received"). */
+model AiRequestEvent {
+    id: integer;
+    /** SUBMIT | TOOL_CALLS | TOOL_RESULTS | OUTPUT | ERROR | CANCEL (open set). */
+    eventType: string;
+    /** Event payload (JSON string); shape depends on eventType. */
+    data?: string;
+    createDate: utcDateTime;
+}
+
+@tag("aiprovider")
+@route("/aiprovider")
+namespace ElzaAPI.AiProvider {
+    /**
+     * Reads the AI provider's service info (protocol version, supported task
+     * types, profiles, limits) via the provider's GET /info. Doubles as the
+     * connection test of the configured AI external system. The response is
+     * the provider's info document passed through as-is.
+     */
+    @route("/{id}/info")
+    @get op getInfo(
+        /** AI external system ID or CODE */
+        @path id: string;
+    ): {
+        /** The provider's info document */
+        @Http.statusCode statusCode: 200;
+        @body data: Record<unknown>;
+    } | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Starts a new AI conversation: creates the thread, stores and submits its
+     * first exchange to the configured provider. State changes are then
+     * announced over the WebSocket (event AI_REQUEST carrying conversation and
+     * request ids + new state); the client refetches the conversation detail.
+     */
+    @route("/conversation")
+    @post op createConversation(
+        @body body: AiConversationCreate;
+    ): AiConversationDetail | {
+        /** External system or task type does not exist */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Full refresh of one conversation: the thread with all its exchanges,
+     * states and render-ready blocks.
+     */
+    @route("/conversation/{id}")
+    @get op getConversation(
+        /** conversation id */
+        @path id: integer;
+    ): AiConversationDetail | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Lists the current user's conversations, newest activity first;
+     * optionally filtered by context.
+     */
+    @route("/conversation")
+    @get op listConversations(
+        /** context type code filter */
+        @query contextType?: string;
+    ): AiConversation[];
+
+    /**
+     * Submits a follow-up exchange into an existing conversation (continues
+     * the provider-side conversation context).
+     */
+    @route("/conversation/{id}/request")
+    @post op createRequest(
+        /** conversation id */
+        @path id: integer;
+        @body body: AiRequestCreate;
+    ): AiConversationDetail | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Cancels a running exchange (best effort; usage already incurred is kept).
+     */
+    @route("/request/{id}/cancel")
+    @post op cancelRequest(
+        /** request id */
+        @path id: integer;
+    ): AiRequest | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * The exchange log of one request — each step with its payload (what
+     * exactly was sent to the provider / what came back).
+     */
+    @route("/request/{id}/event")
+    @get op listRequestEvents(
+        /** request id */
+        @path id: integer;
+    ): AiRequestEvent[] | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+}
+
 @tag("funds")
 @route("/fund")
 namespace ElzaAPI.fund {
@@ -2515,22 +2756,24 @@ enum BulkActionRunState {
 
 /**
  * Požadavek na seskupení vybraných fondů podle pravidel pro spuštění hromadné akce nad více fondy.
- * Vyplní se buď `fundIds` (explicitní výběr, má přednost), nebo `search` (všechny fondy odpovídající filtru).
+ * Vyplní se buď `fundIds` (explicitní výběr, má přednost), nebo `filters` (všechny fondy
+ * odpovídající filtru — stejný filtr jako `/fund/search`; prázdný filtr znamená všechny fondy).
+ * Fondy se na klienta nikdy nestahují — filtr se vyhodnocuje až na serveru.
  */
 model FundsActionGroupRequest {
     /** Identifikátory vybraných fondů */
     fundIds?: integer[];
-    /** Filtr pro výběr všech odpovídajících fondů */
-    search?: string;
+    /** Filtr pro výběr všech odpovídajících fondů (stejný jako u `/fund/search`) */
+    filters?: AbstractFilter[];
 }
 
 /**
  * Přeskočený fond při přípravě nebo spuštění hromadné akce nad více fondy.
  */
 model FundsActionSkipped {
-    /** Identifikátor fondu (při seskupení) nebo verze fondu (při spuštění) */
+    /** Identifikátor fondu */
     id: integer;
-    /** Důvod přeskočení (např. NO_OPEN_VERSION, ACTION_NOT_IN_RULESET) */
+    /** Důvod přeskočení (např. NO_OPEN_VERSION) */
     reason: string;
 }
 
@@ -2546,8 +2789,6 @@ model FundsActionGroup {
     ruleSetName: string;
     /** Počet fondů ve skupině */
     fundCount: integer;
-    /** Identifikátory otevřených verzí fondů ve skupině */
-    fundVersionIds: integer[];
     /** Hromadné akce dostupné pro tato pravidla ve vícefondovém režimu */
     actions: BulkAction[];
 }
@@ -2564,12 +2805,19 @@ model FundsActionGroupResult {
 
 /**
  * Požadavek na spuštění hromadné akce nad více fondy najednou.
+ * Výběr fondů se předává stejně jako u seskupení: buď `fundIds`, nebo `filters`
+ * (vyhodnocuje se znovu na serveru v okamžiku spuštění). Akce se spustí jen nad fondy,
+ * jejichž otevřená verze používá pravidla `ruleSetId` (skupina zvolená v dialogu).
  */
 model MultiFundActionRequest {
-    /** Identifikátory otevřených verzí fondů */
-    fundVersionIds: integer[];
     /** Kód hromadné akce */
     code: string;
+    /** Identifikátor pravidel zvolené skupiny */
+    ruleSetId: integer;
+    /** Identifikátory vybraných fondů */
+    fundIds?: integer[];
+    /** Filtr pro výběr všech odpovídajících fondů (stejný jako u `/fund/search`) */
+    filters?: AbstractFilter[];
 }
 
 /**
@@ -2622,8 +2870,8 @@ namespace ElzaAPI.BulkAction {
     ): FundsActionGroupResult;
 
     /**
-     * Spustí hromadnou akci nad více fondy najednou. Pro každý platný fond naplánuje
-     * samostatný běh; fondy mimo daná pravidla jsou přeskočeny a vráceny ve výsledku.
+     * Spustí hromadnou akci nad více fondy najednou. Pro každý fond zvolené skupiny
+     * pravidel naplánuje samostatný běh; fondy jiných pravidel se nespouští.
      */
     @route("/queue-multi")
     @post op queueMultiFundAction(
@@ -4868,7 +5116,7 @@ model StructuredObjectItems {
 }
 
 /**
- * 
+ * Operations on Structured Data
  */
 @tag("structure")
 @route("/funds/sdo")
@@ -5165,6 +5413,139 @@ namespace ElzaAPI.Sdo {
     ): void;
 }
 
+/**
+ * Operations on the printed forms of archive files
+ */
+@tag("output")
+@route("/funds/out")
+namespace ElzaAPI.Output {
+    /**
+     * Output state
+     */
+    enum State {
+        /**Rozpracovaný */
+        OPEN,
+        /** Běží hromadná akce */
+        COMPUTING,
+        /** Generování */
+        GENERATING,
+        /** Vygenerovaný */
+        FINISHED,
+        /** Vygenerovaný neaktuální */
+        OUTDATED
+    }
+
+    /**
+     * Náhrada za `OutputFormDataNewVO`
+     */
+    model FormData {
+        parent: Def;
+        items: OutputItem[];
+        itemTypes: FormItemType[];
+        unusedItemTypeIds: integer[];
+    }
+
+    /**
+     * Náhrada za `ArrOutputVO`
+     */
+    model Def {
+        id: integer;
+        internalCode: string;
+        name: string;
+        state: State;
+        error?: string;
+        nodes?: NodeTreeData[];
+        outputTypeId: integer;
+        templateIds?: integer[];
+        outputResultIds?: integer[];
+        generatedDate: offsetDateTime;
+        version: integer;
+        outputSettings: string;
+        createDate: offsetDateTime;
+        deleteDate?: offsetDateTime;
+        scopes?: Scope[]; // ?
+        anonymizedAp?: ApAccessPointVO; // ?
+        outputFilterId?: integer;
+    }
+
+    /**
+     * Náhrada za `OutputItemResult`
+     */
+    model ItemRes {
+        parent: Def;
+        item: OutputItem;
+    }
+
+    /**
+     * Create output item
+     */
+    @route("/item/{outputId}/{fundVersionId}/{outputVersion}/create")
+    @post op createOutputItem(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output version */
+        @path outputVersion: integer;
+        /** body output item */
+        @body outputItem: OutputItem;
+    ): ItemRes;
+
+    /**
+     * Update output item
+     */
+    @route("/item/{fundVersionId}/{outputVersion}/update")
+    @put op updateOutputItem(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output version */
+        @path outputVersion: integer;
+        /** body output item */
+        @body outputItem: OutputItem;
+    ): ItemRes;
+
+    /**
+     * Delete output item
+     */
+    @route("/item/{fundVersionId}/{outputVersion}/{outputItemId}")
+    @delete op deleteOutputItem(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output version */
+        @path outputVersion: integer;
+        /** output item id */
+        @path outputItemId: integer;
+    ): ItemRes;
+
+    /**
+     * Getting data for the form
+     */
+    @route("/{outputId}/{fundVersionId}/form")
+    @get op getOutputFormData(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+    ): FormData;
+
+    /**
+     * Switch between automatic and user-defined attribute type editing
+     */
+    @route("/{outputId}/{fundVersionId}/{itemTypeId}/switch")
+    @post op switchOutputCalculating(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** item type id */
+        @path itemTypeId: integer;
+    ): boolean | {
+        /** Not found */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+}
+
 @tag("search")
 namespace ElzaAPI.Search {
     /**
@@ -5271,6 +5652,7 @@ namespace ElzaAPI.Tasks {
 @tagMetadata("admin", #{description: "Administrativní funkce"})
 @tagMetadata("daos", #{description: "Digitální archivní objekty"})
 @tagMetadata("externalsystems", #{description: "Externí systémy"})
+@tagMetadata("aiprovider", #{description: "Externí AI systémy (poskytovatelé AI služeb)"})
 @tagMetadata("funds", #{description: "Archivní soubory"})
 @tagMetadata("descitems", #{description: "Záznamy v archivních fondech"})
 @tagMetadata("accesspoints", #{description: "Přístupové body a archivní entity"})
@@ -5285,6 +5667,7 @@ namespace ElzaAPI.Tasks {
 @tagMetadata("publication-internal", #{description: "Publication API used by the Elza UI"})
 @tagMetadata("accesspoint-internal", #{description: "Access-point API used by the Elza UI"})
 @tagMetadata("rules", #{description: "Pravidla popisu archiválií (typy atributů, datové typy, …)"})
+@tagMetadata("output", #{description: "Výstupy archivních souborů"})
 namespace ElzaAPI {
     // add models not used in operations
     union __Types {

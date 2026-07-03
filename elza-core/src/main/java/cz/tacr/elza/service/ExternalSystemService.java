@@ -52,6 +52,7 @@ import cz.tacr.elza.domain.ApBindingItem;
 import cz.tacr.elza.domain.ApBindingParticipant;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApBindingSync;
+import cz.tacr.elza.domain.AiExternalSystem;
 import cz.tacr.elza.domain.ApChange;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApItem;
@@ -85,6 +86,7 @@ import cz.tacr.elza.repository.ApExternalSystemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
 import cz.tacr.elza.repository.DigitalRepositoryRepository;
 import cz.tacr.elza.repository.DigitizationFrontdeskRepository;
+import cz.tacr.elza.repository.AiExternalSystemRepository;
 import cz.tacr.elza.repository.ExtSyncsQueueItemRepository;
 import cz.tacr.elza.repository.ExternalSystemRepository;
 import cz.tacr.elza.repository.GisExternalSystemRepository;
@@ -116,6 +118,9 @@ public class ExternalSystemService {
 
     @Autowired
     private GisExternalSystemRepository gisExternalSystemRepository;
+
+    @Autowired
+    private AiExternalSystemRepository aiExternalSystemRepository;
 
     @Autowired
     private DigitizationFrontdeskRepository digitizationFrontdeskRepository;
@@ -202,6 +207,11 @@ public class ExternalSystemService {
 				GisExternalSystem ges = (GisExternalSystem)ses;
 				var gesCopy = new GisExternalSystem(ges);
 				copy = gesCopy;
+			} else
+			if(ses instanceof AiExternalSystem) {
+				AiExternalSystem aies = (AiExternalSystem)ses;
+				var aiesCopy = new AiExternalSystem(aies);
+				copy = aiesCopy;
 			} else {
 				throw new SystemException("Unknown external system type: "+es.getClass().getName());
 			}
@@ -232,6 +242,16 @@ public class ExternalSystemService {
     @Transactional
     public List<GisExternalSystem> findAllGisSystem() {
         return gisExternalSystemRepository.findAll();
+    }
+
+    /**
+     * Finds all AI provider external systems.
+     *
+     * @return list of external systems
+     */
+    @Transactional
+    public List<AiExternalSystem> findAllAiSystem() {
+        return aiExternalSystemRepository.findAll();
     }
 
     /**

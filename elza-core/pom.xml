@@ -86,6 +86,13 @@
             <artifactId>spring-security-messaging</artifactId>
         </dependency>
 
+        <!-- Micrometer metrics API for the monitoring gauges. The Prometheus registry and the
+             Actuator endpoints exposing them are provided at runtime by elza-web. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -718,6 +725,21 @@
                             <schemaMappings>
                                 <schemaMapping>ApAccessPointVO=cz.tacr.elza.controller.vo.ApAccessPointVO</schemaMapping>
                             </schemaMappings>
+                            <!-- Contract schemas carry clean names (no VO suffix — a Java-only
+                                 convention); the generated Java classes get the package's usual
+                                 VO suffix, which also avoids clashes with same-named domain
+                                 entities (AiConversation, AiRequest, ...). -->
+                            <modelNameMappings>
+                                <modelNameMapping>AiConversation=AiConversationVO</modelNameMapping>
+                                <modelNameMapping>AiConversationDetail=AiConversationDetailVO</modelNameMapping>
+                                <modelNameMapping>AiConversationCreate=AiConversationCreateVO</modelNameMapping>
+                                <modelNameMapping>AiRequest=AiRequestVO</modelNameMapping>
+                                <modelNameMapping>AiRequestCreate=AiRequestCreateVO</modelNameMapping>
+                                <modelNameMapping>AiRequestEvent=AiRequestEventVO</modelNameMapping>
+                                <modelNameMapping>AiDisplayBlock=AiDisplayBlockVO</modelNameMapping>
+                                <modelNameMapping>AiTableColumn=AiTableColumnVO</modelNameMapping>
+                                <modelNameMapping>AiUsage=AiUsageVO</modelNameMapping>
+                            </modelNameMappings>
                             <typeMappings>
                                 <typeMapping>object+partform=ApPartFormVO</typeMapping>
                                 <typeMapping>object+ap-access-point-vo=ApAccessPointVO</typeMapping>
@@ -754,6 +776,28 @@
                             <output>${project.build.directory}/generated-sources/api/da/rest-client</output>
                             <apiPackage>cz.tacr.da.controller</apiPackage>
                             <modelPackage>cz.tacr.da.controller.vo</modelPackage>
+                            <generateApiTests>false</generateApiTests>
+                            <configOptions>
+                                <useJakartaEe>true</useJakartaEe>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                    <!-- Klient pro AI providera (protokol "Elza AI Provider API").
+                         Zdrojem je TypeSpec v elza-development/typespec-ai; jeho build
+                         emituje OpenAPI primo do src/main/resources/ai (jedina
+                         commitovana kopie). -->
+                    <execution>
+                        <id>openapi-ai-provider-client</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatorName>java</generatorName>
+                            <inputSpec>${project.basedir}/src/main/resources/ai/elza-ai-provider.openapi.yaml</inputSpec>
+                            <output>${project.build.directory}/generated-sources/api/ai/rest-client</output>
+                            <apiPackage>cz.tacr.elza.aiprovider.client</apiPackage>
+                            <modelPackage>cz.tacr.elza.aiprovider.client.vo</modelPackage>
                             <generateApiTests>false</generateApiTests>
                             <configOptions>
                                 <useJakartaEe>true</useJakartaEe>

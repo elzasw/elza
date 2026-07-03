@@ -5,19 +5,20 @@
   "description": "Elza UI",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit --watch --preserveWatchOutput --pretty",
-    "start": "concurrently -n VITE,TS -c 'green,blue' 'npm run dev' 'npm run typecheck'",
-    "extract": "formatjs extract 'src/**/*.{ts,tsx,js,jsx}' --ignore 'src/**/*.{d,test}.{ts,tsx}' --out-file lang/extracted/cs.json",
-    "compile-folder": "formatjs compile-folder lang/translated public/static/res/locale",
-    "compile-extracted": "formatjs compile lang/extracted/cs.json --out-file public/static/res/locale/cs.json",
-    "extract-compile": "formatjs extract 'src/**/*.{ts,tsx,js,jsx}' --ignore 'src/**/*.{d,test}.{ts,tsx}' --out-file temp.json && formatjs compile 'temp.json' --out-file public/static/res/locale/cs.json && rm temp.json",
+    "start": "concurrently -n VITE,TS -c \"green,blue\" \"npm run dev\" \"npm run typecheck\"",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "locale:extract": "formatjs extract 'src/**/*.{ts,tsx,js,jsx}' --ignore 'src/**/*.{d,test}.{ts,tsx}' --out-file lang/translated/cs.json",
+    "locale:merge": "node scripts/locale-merge.ts",
+    "locale:compile": "formatjs compile-folder lang/translated public/static/res/locale",
+    "locale:check": "node scripts/locale-check.ts",
+    "locale:sync": "npm run locale:extract && npm run locale:merge -- --source cs cs en"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.51.1",
