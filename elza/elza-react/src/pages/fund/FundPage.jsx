@@ -24,7 +24,6 @@ import {
 } from '../../actions/fund/fund';
 import { modalDialogShow } from '../../actions/global/modalDialog';
 import { WebApi } from '../../actions/index';
-import { Api } from '../../api';
 import { refInstitutionsFetchIfNeeded } from '../../actions/refTables/institutions';
 import { refRuleSetFetchIfNeeded } from '../../actions/refTables/ruleSet';
 import { scopesDirty } from '../../actions/refTables/scopesData';
@@ -44,8 +43,8 @@ import { Dismiss24Regular, ArrowDownloadRegular } from "@fluentui/react-icons"
 import { FundFilters } from 'components/fund/filters/FundFilters';
 import { FundPageRibbon } from 'components/fund/FundPageRibbon';
 import { FundPager } from 'components/fund/FundPager';
-import MultiFundActionDialog from 'components/fund/MultiFundActionDialog';
-import { defineMessages, FormattedMessage } from 'react-intl';
+import { MultiFundActionDialog } from 'components/fund/MultiFundActionDialog';
+import { defineMessages, FormattedMessage, injectIntl } from 'react-intl';
 
 const OUTPUT_MAX_NUMBER = 10;
 
@@ -53,7 +52,59 @@ const messages = defineMessages({
     fundPageExportResults: {
         id: "fundPage_export_results",
         defaultMessage: "Stáhnout CSV",
-    }
+    },
+    fundPageMultiActionTitle: {
+        id: "fundPage.multiAction.title",
+        defaultMessage: "Hromadná akce nad fondy",
+    },
+    fundPageMultiActionStart: {
+        id: "fundPage.multiAction.start",
+        defaultMessage: "Hromadná akce nad fondy",
+    },
+    fundPageMultiActionSelected: {
+        id: "fundPage.multiAction.selected",
+        defaultMessage: "Vybráno: {count}",
+    },
+    fundPageMultiActionSelectAll: {
+        id: "fundPage.multiAction.selectAll",
+        defaultMessage: "Vybrat vše odpovídající filtru ({count})",
+    },
+    fundPageMultiActionRun: {
+        id: "fundPage.multiAction.run",
+        defaultMessage: "Spustit akci",
+    },
+    fundPageMultiActionCancel: {
+        id: "fundPage.multiAction.cancel",
+        defaultMessage: "Zrušit",
+    },
+    fundPageDrawerClose: {
+        id: "fundPage.drawer.close",
+        defaultMessage: "Zavřít",
+    },
+    fundPageDrawerRules: {
+        id: "fundPage.drawer.rules",
+        defaultMessage: "Pravidla",
+    },
+    fundPageDrawerOutputs: {
+        id: "fundPage.drawer.outputs",
+        defaultMessage: "Výstupy",
+    },
+    fundPageDrawerAllOutputs: {
+        id: "fundPage.drawer.allOutputs",
+        defaultMessage: "Všechny výstupy...",
+    },
+    fundPageDrawerVersions: {
+        id: "fundPage.drawer.versions",
+        defaultMessage: "Verze",
+    },
+    fundPageDrawerCurrentVersion: {
+        id: "fundPage.drawer.currentVersion",
+        defaultMessage: "Aktuální verze",
+    },
+    fundPageDrawerEntityScopes: {
+        id: "fundPage.drawer.entityScopes",
+        defaultMessage: "Oblasti entit",
+    },
 })
 
 
@@ -549,30 +600,30 @@ class FundPage extends AbstractReactComponent {
         this.setState({ selectAllMatching: checked });
     };
 
-    handleRunMultiFund = async () => {
-        const { dispatch, fundRegion } = this.props;
+    handleRunMultiFund = () => {
+        const { dispatch, fundRegion, intl } = this.props;
         const { selectAllMatching, selectedFundIds } = this.state;
 
-        let fundIds;
+        // Při výběru "vše odpovídající filtru" se předává aktivní filtr — fondy se
+        // vyhodnocují až na serveru, jejich id se na klienta nikdy nestahují.
+        let dialogProps;
         if (selectAllMatching) {
-            // Resolve all funds matching the current filter (across pages) into explicit ids.
-            const filters = fundRegion.filter.filter?.map((f) => f.getFilterValue(f));
-            const { data } = await Api.funds.fundSearchFunds({
-                filters,
-                size: fundRegion.fundsCount || DEFAULT_FUND_LIST_MAX_SIZE,
-                offset: 0,
-            });
-            fundIds = (data.funds || []).map((f) => f.id);
+            dialogProps = { filters: fundRegion.filter.filter?.map((f) => f.getFilterValue(f)) ?? [] };
         } else {
-            fundIds = selectedFundIds;
-        }
-
-        if (!fundIds || fundIds.length === 0) {
-            return;
+            if (selectedFundIds.length === 0) {
+                return;
+            }
+            dialogProps = { fundIds: selectedFundIds };
         }
 
         this.setState({ selectionMode: false });
-        dispatch(modalDialogShow(this, 'Hromadná akce nad fondy', <MultiFundActionDialog fundIds={fundIds} />));
+        dispatch(
+            modalDialogShow(
+                this,
+                intl.formatMessage(messages.fundPageMultiActionTitle),
+                <MultiFundActionDialog {...dialogProps} />,
+            ),
+        );
     };
 
     // handleSearch({fulltext}) {
@@ -631,7 +682,7 @@ class FundPage extends AbstractReactComponent {
     }
 
     render() {
-        const { splitter, fundRegion, maxSize, ruleSet, userDetail } = this.props;
+        const { splitter, fundRegion, maxSize, ruleSet, userDetail, intl } = this.props;
         const { sidebarOpen, selectionMode, selectedFundIds, selectAllMatching } = this.state;
 
         let activeIndex;
@@ -660,17 +711,24 @@ class FundPage extends AbstractReactComponent {
                     </div>
                     {userDetail.hasOne(perms.FUND_BA_ALL) && !selectionMode &&
                         <div style={{ margin: "5px", flexShrink: 0 }}>
-                            <Button onClick={this.handleEnterSelectionMode}>Hromadná akce nad fondy</Button>
+                            <Button onClick={this.handleEnterSelectionMode}>
+                                <FormattedMessage {...messages.fundPageMultiActionStart} />
+                            </Button>
                         </div>
                     }
                 </div>
                 {selectionMode &&
                     <div className="filter-container" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <span style={{ flexShrink: 0 }}>
-                            Vybráno: {selectAllMatching ? fundRegion.fundsCount : selectedFundIds.length}
+                            <FormattedMessage
+                                {...messages.fundPageMultiActionSelected}
+                                values={{ count: selectAllMatching ? fundRegion.fundsCount : selectedFundIds.length }}
+                            />
                         </span>
                         <Checkbox
-                            label={`Vybrat vše odpovídající filtru (${fundRegion.fundsCount})`}
+                            label={intl.formatMessage(messages.fundPageMultiActionSelectAll, {
+                                count: fundRegion.fundsCount,
+                            })}
                             checked={selectAllMatching}
                             onChange={(_e, d) => this.handleToggleSelectAllMatching(!!d.checked)}
                         />
@@ -680,9 +738,11 @@ class FundPage extends AbstractReactComponent {
                             disabled={!selectAllMatching && selectedFundIds.length === 0}
                             onClick={this.handleRunMultiFund}
                         >
-                            Spustit akci
+                            <FormattedMessage {...messages.fundPageMultiActionRun} />
                         </Button>
-                        <Button onClick={this.handleCancelSelection}>Zrušit</Button>
+                        <Button onClick={this.handleCancelSelection}>
+                            <FormattedMessage {...messages.fundPageMultiActionCancel} />
+                        </Button>
                     </div>
                 }
                 <div style={{ position: "relative", display: "flex", flexGrow: 1, flexShrink: 1, height: "400px" }}>
@@ -703,7 +763,7 @@ class FundPage extends AbstractReactComponent {
                                 action={
                                     <Button
                                         appearance="subtle"
-                                        aria-label="Close"
+                                        aria-label={intl.formatMessage(messages.fundPageDrawerClose)}
                                         icon={<Dismiss24Regular />}
                                         onClick={() => this.handleToggleDrawer(false)}
                                     />
@@ -723,10 +783,10 @@ class FundPage extends AbstractReactComponent {
                         <DrawerBody style={{ overflow: "auto" }}>
                             <div style={{ marginBottom: "10px" }}>
                                 {activeRuleSet && <>
-                                    <div><b>Pravidla</b></div>
+                                    <div><b><FormattedMessage {...messages.fundPageDrawerRules} /></b></div>
                                     {activeRuleSet?.name}
                                 </>}
-                                <div><b>Výstupy</b></div>
+                                <div><b><FormattedMessage {...messages.fundPageDrawerOutputs} /></b></div>
                                 {/* <div style={{overflow: "auto"}}> */}
                                 {fundRegion.fundDetail.validNamedOutputs?.slice(0, OUTPUT_MAX_NUMBER).sort((a, b) => new Date(b.generatedDate) - new Date(a.generatedDate)).map(({ name, id, generatedDate }) => {
                                     return <div key={id} style={{ marginBottom: "5px" }}>
@@ -742,13 +802,13 @@ class FundPage extends AbstractReactComponent {
                                 })}
                                 <div>
                                     <Link to={urlFundOutputs(fundRegion.fundDetail.id)}>
-                                        Všechny výstupy...
+                                        <FormattedMessage {...messages.fundPageDrawerAllOutputs} />
                                     </Link>
                                 </div>
                                 {/* </div> */}
                             </div>
                             <div style={{ marginBottom: "10px" }}>
-                                <div><b>Verze</b></div>
+                                <div><b><FormattedMessage {...messages.fundPageDrawerVersions} /></b></div>
                                 {fundRegion.fundDetail.versions?.map(({ lockDate, id }) => {
                                     return <div key={id} style={{ fontWeight: fundRegion.fundDetail.versionId === id ? "bold" : undefined }}>
                                         <Link to={urlFundTree(fundRegion.fundDetail.id, lockDate ? id : undefined)}>
@@ -757,14 +817,14 @@ class FundPage extends AbstractReactComponent {
                                                 {", "}
                                                 {new Date(lockDate).toLocaleTimeString()}
                                             </> : <>
-                                                Aktuální verze
+                                                <FormattedMessage {...messages.fundPageDrawerCurrentVersion} />
                                             </>}
                                         </Link>
                                     </div>
                                 })}
                             </div>
                             <div style={{ marginBottom: "10px" }}>
-                                <div><b>Oblasti entit</b></div>
+                                <div><b><FormattedMessage {...messages.fundPageDrawerEntityScopes} /></b></div>
                                 {fundRegion.fundDetail.apScopes?.map(({ name }) => {
                                     return <div key={name}>
                                         {name}
@@ -812,4 +872,4 @@ function mapStateToProps(state) {
     };
 }
 
-export default withRouter(connect(mapStateToProps)(FundPage));
+export default withRouter(connect(mapStateToProps)(injectIntl(FundPage)));

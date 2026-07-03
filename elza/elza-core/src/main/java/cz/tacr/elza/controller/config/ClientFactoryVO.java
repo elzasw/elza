@@ -81,6 +81,7 @@ import cz.tacr.elza.controller.vo.nodes.descitems.ItemTypeGroupVO;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApAccessPoint;
+import cz.tacr.elza.domain.AiExternalSystem;
 import cz.tacr.elza.domain.ApExternalSystem;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ArrBulkActionRun;
@@ -713,6 +714,7 @@ public class ClientFactoryVO {
      * @param outputData DO
      * @return VO
      */
+    @Deprecated
     public ArrOutputVO createOutput(final ArrOutput output) {
         Validate.notNull(output, "Výstup musí být vyplněn");
 
@@ -878,6 +880,44 @@ public class ClientFactoryVO {
         }
 
         return nodeItem;
+    }
+
+    public ItemData convertData(final ArrData arrData, final cz.tacr.elza.core.data.DataType dataType) {
+        Function<ArrData, ItemData> dataConvertor = dataConvertors.get(dataType);
+        Objects.requireNonNull(dataConvertor);
+        return dataConvertor.apply(arrData);
+    }    
+
+    /**
+     * Vytvoření OpenAPI hodnoty výstupního prvku z doménové entity.
+     *
+     * @param item hodnota atributu
+     * @return OpenAPI hodnota atributu
+     */
+    public <T extends ArrItem> OutputItem createOutputItem(final T item) {
+        Assert.notNull(item, "Hodnota musí být vyplněna");
+
+        OutputItem outputItem = new OutputItem();
+        outputItem.setId(item.getItemId());
+        outputItem.setItemTypeId(item.getItemTypeId());
+        outputItem.setItemSpecId(item.getItemSpecId());
+        outputItem.setItemObjectId(item.getDescItemObjectId());
+        outputItem.setPosition(item.getPosition());
+        outputItem.setReadOnly(item.getReadOnly());
+
+        ArrData arrData = HibernateUtils.unproxy(item.getData());
+        if (arrData == null) {
+            outputItem.setUndefined(true);
+        } else {
+            StaticDataProvider sdp = staticDataService.getData();
+            RulItemType itemType = sdp.getItemType(item.getItemTypeId());
+            cz.tacr.elza.core.data.DataType dataType = cz.tacr.elza.core.data.DataType.fromId(itemType.getDataTypeId());
+            Function<ArrData, ItemData> dataConvertor = dataConvertors.get(dataType);
+            Objects.requireNonNull(dataConvertor);
+            ItemData data = dataConvertor.apply(arrData);
+            outputItem.setData(data);
+        }
+        return outputItem;
     }
 
     /**
@@ -2401,6 +2441,9 @@ public class ClientFactoryVO {
         if (extSystem instanceof GisExternalSystem) {
             return GisExternalSystemVO.newInstance((GisExternalSystem) extSystem);
         }
+        if (extSystem instanceof AiExternalSystem) {
+            return AiExternalSystemVO.newInstance((AiExternalSystem) extSystem);
+        }
         if (extSystem instanceof ArrDigitalRepository) {
         	return ArrDigitalRepositoryVO.newInstance((ArrDigitalRepository) extSystem);
         }
@@ -2418,6 +2461,9 @@ public class ClientFactoryVO {
         }
         if (extSystem instanceof GisExternalSystem) {
             return GisExternalSystemSimpleVO.newInstance((GisExternalSystem) extSystem);
+        }
+        if (extSystem instanceof AiExternalSystem) {
+            return AiExternalSystemSimpleVO.newInstance((AiExternalSystem) extSystem);
         }
         if (extSystem instanceof ArrDigitizationFrontdesk) {
             return ArrDigitizationFrontdeskSimpleVO.newInstance((ArrDigitizationFrontdesk) extSystem);

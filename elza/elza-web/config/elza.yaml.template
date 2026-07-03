@@ -90,3 +90,21 @@ spring:
         #dialect: org.hibernate.dialect.SQLServer2008Dialect
 
 multipart.maxFileSize: 10000000
+
+# Actuator (health + Prometheus metrics for the local CSC reporting client).
+# The application already applies these defaults in code; uncomment only to
+# override. The endpoints are bound to loopback (127.0.0.1) and must not be
+# exposed on a public interface.
+#management:
+#  server:
+#    port: 8081
+#    address: 127.0.0.1
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health,prometheus
+#  endpoint:
+#    health:
+#      probes:
+#        enabled: true
+#      show-details: always

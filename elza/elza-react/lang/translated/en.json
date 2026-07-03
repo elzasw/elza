@@ -1,0 +1,1104 @@
+{
+  "add_desc_item_form_multi_hint": {
+    "defaultMessage": "Tip: use CTRL to select multiple elements from the menu, or pick an element from the autocomplete field (ENTER on an empty field confirms the selection)",
+    "srcHash": "pfHmpablPa6K"
+  },
+  "add_desc_item_form_title": {
+    "defaultMessage": "Add description element",
+    "srcHash": "ckU6Xf-Ze6l2"
+  },
+  "admin.extSystem.apiKeyId": {
+    "defaultMessage": "ApiKey - ID",
+    "srcHash": "kvGkHecV93wA"
+  },
+  "admin.extSystem.apiKeyValue": {
+    "defaultMessage": "ApiKey - value",
+    "srcHash": "oRAn41A0cbCo"
+  },
+  "admin.extSystemDetail.aiTestConnection": {
+    "defaultMessage": "Test connection",
+    "srcHash": "w5X1eztA8_ox"
+  },
+  "admin.extSystemDetail.aiTestConnectionFailed": {
+    "defaultMessage": "Connection failed",
+    "srcHash": "KlTQGbEOxjJD"
+  },
+  "admin.extSystemDetail.aiTestConnectionOk": {
+    "defaultMessage": "Connection works — {provider} (protocol {version})",
+    "srcHash": "Ej_cusKYW2W_"
+  },
+  "admin_packages_label_action": {
+    "defaultMessage": "Action",
+    "srcHash": "zI4C_P1sVn28"
+  },
+  "admin_packages_label_code": {
+    "defaultMessage": "Code",
+    "srcHash": "lHt70Q2si8jP"
+  },
+  "admin_packages_label_dependencies": {
+    "defaultMessage": "Required packages (minimum/current version)",
+    "description": "Balicky, na kterych zavisi zobrazeny balicek",
+    "srcHash": "g7K8RNhtv_IX"
+  },
+  "admin_packages_label_dependenciesBy": {
+    "defaultMessage": "Dependent packages",
+    "srcHash": "2GZuSECYn2VS"
+  },
+  "admin_packages_label_description": {
+    "defaultMessage": "Description",
+    "description": "Popis balicku",
+    "srcHash": "rx7qx-MBKenQ"
+  },
+  "admin_packages_label_name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "admin_packages_label_version": {
+    "defaultMessage": "Version",
+    "srcHash": "Cml1nacv6hJG"
+  },
+  "admin_reports_download_csv": {
+    "defaultMessage": "Download CSV",
+    "srcHash": "1LaqY8gF6JE1"
+  },
+  "admin_reports_form_category_ARRANGEMENT": {
+    "defaultMessage": "Archival processing",
+    "srcHash": "5RU1cfgKb_F5"
+  },
+  "admin_reports_form_category_ENTITY": {
+    "defaultMessage": "Archival entities",
+    "srcHash": "MgSyrZoDfhbs"
+  },
+  "admin_reports_form_category_OUTPUT": {
+    "defaultMessage": "Outputs",
+    "srcHash": "irSQ8aME65Fz"
+  },
+  "admin_reports_form_property_DATE": {
+    "defaultMessage": "Date",
+    "srcHash": "kTWILTI82Dml"
+  },
+  "admin_reports_form_property_DATE_FROM": {
+    "defaultMessage": "Date from",
+    "srcHash": "zpVJTYRVYoNP"
+  },
+  "admin_reports_form_property_DATE_TO": {
+    "defaultMessage": "Date to",
+    "srcHash": "LusUJVH3zW9s"
+  },
+  "admin_reports_form_property_INSTITUCE": {
+    "defaultMessage": "Institution",
+    "srcHash": "AMtLLUW_r1z7"
+  },
+  "admin_reports_form_reportDefinition": {
+    "defaultMessage": "Report",
+    "srcHash": "fU4IOIokG1H2"
+  },
+  "admin_reports_form_report_SYS_EXT_SYSTEM_COUNT": {
+    "defaultMessage": "Availability in external system",
+    "srcHash": "wRgrRJV9d7YV"
+  },
+  "admin_reports_form_report_SYS_INSTITUTION_COUNT": {
+    "defaultMessage": "Archival description in institutions",
+    "srcHash": "RhCxZz5Zp_2F"
+  },
+  "admin_reports_form_report_SYS_MONTH_USER_COUNT": {
+    "defaultMessage": "User activity",
+    "srcHash": "bFlKyGdNXOQc"
+  },
+  "admin_reports_form_report_SYS_OUTPUT_COUNT": {
+    "defaultMessage": "Institutions and archival files",
+    "srcHash": "vH6U4YVjMlfb"
+  },
+  "admin_reports_form_report_SYS_TOTAL_COUNT": {
+    "defaultMessage": "Current summary information",
+    "srcHash": "PTHT-L636OMm"
+  },
+  "admin_reports_form_reset": {
+    "defaultMessage": "Reset",
+    "srcHash": "2u52BrM588M5"
+  },
+  "admin_reports_form_show": {
+    "defaultMessage": "Show",
+    "srcHash": "sipeZrVinjX9"
+  },
+  "admin_reports_generation_time": {
+    "defaultMessage": "Report generation time: {date} at {time}",
+    "srcHash": "Cfsmfir4R02U"
+  },
+  "admin_reports_header_AE_CNT": {
+    "defaultMessage": "Number of archival entities",
+    "srcHash": "maGL0btWw_af"
+  },
+  "admin_reports_header_AE_DELETE": {
+    "defaultMessage": "Deleted arch. entities",
+    "srcHash": "tFMk_sIRmZNx"
+  },
+  "admin_reports_header_AE_NEW": {
+    "defaultMessage": "New arch. entities",
+    "srcHash": "mdDO88Eu6HzE"
+  },
+  "admin_reports_header_AE_REPLACE": {
+    "defaultMessage": "Replaced arch. entities",
+    "srcHash": "dXJp-bRsG3b7"
+  },
+  "admin_reports_header_AE_UPDATE": {
+    "defaultMessage": "Changed arch. entities",
+    "srcHash": "68Mo1jEIwFqX"
+  },
+  "admin_reports_header_APUSG_CNT": {
+    "defaultMessage": "Number of access point links",
+    "srcHash": "U7a4oCARqweX"
+  },
+  "admin_reports_header_APUSG_DELETE": {
+    "defaultMessage": "Removed access point links",
+    "srcHash": "WDD33XXgPhv3"
+  },
+  "admin_reports_header_APUSG_NEW": {
+    "defaultMessage": "New access point links",
+    "srcHash": "ynTo87BvL1zm"
+  },
+  "admin_reports_header_AP_CNT": {
+    "defaultMessage": "Number of access points",
+    "srcHash": "ycqHG76s8O1i"
+  },
+  "admin_reports_header_DATE_MONTH": {
+    "defaultMessage": "Month",
+    "srcHash": "bNaRRzxpGalS"
+  },
+  "admin_reports_header_DATE_YEAR": {
+    "defaultMessage": "Year",
+    "srcHash": "2Du9wr_OkYz9"
+  },
+  "admin_reports_header_EXTERNAL_SYSTEM_NAME": {
+    "defaultMessage": "External system name",
+    "srcHash": "VLF-uh1TD6iY"
+  },
+  "admin_reports_header_FA_DATE": {
+    "defaultMessage": "Finding aid date",
+    "srcHash": "IfzdAh9Weo24"
+  },
+  "admin_reports_header_FA_NUMBER": {
+    "defaultMessage": "Finding aid number",
+    "srcHash": "gzFSnxp3Wh9a"
+  },
+  "admin_reports_header_FA_TYPE": {
+    "defaultMessage": "Finding aid type",
+    "srcHash": "Tia9fZf728Ys"
+  },
+  "admin_reports_header_FA_UNIT_COUNT": {
+    "defaultMessage": "Sum of description units",
+    "srcHash": "uSypQ9xNGY8G"
+  },
+  "admin_reports_header_FONDS_CNT": {
+    "defaultMessage": "Number of archival files",
+    "srcHash": "gRjlDQOaDWKH"
+  },
+  "admin_reports_header_FONDS_NAME": {
+    "defaultMessage": "Archival file name",
+    "srcHash": "MmvVglL2LPRq"
+  },
+  "admin_reports_header_FONDS_NUMBER": {
+    "defaultMessage": "Archival file number",
+    "srcHash": "1hTM8088aRU2"
+  },
+  "admin_reports_header_INST_CODE": {
+    "defaultMessage": "Institution number",
+    "srcHash": "1R0tePz0QMWJ"
+  },
+  "admin_reports_header_INST_NAME": {
+    "defaultMessage": "Institution",
+    "srcHash": "AMtLLUW_r1z7"
+  },
+  "admin_reports_header_ITEMS_CNT": {
+    "defaultMessage": "Number of description elements",
+    "srcHash": "V5MfsxWv1-VC"
+  },
+  "admin_reports_header_ITEM_DELETE": {
+    "defaultMessage": "Deleted description elements",
+    "srcHash": "Fjk_I5nvXKt3"
+  },
+  "admin_reports_header_ITEM_NEW": {
+    "defaultMessage": "New description elements",
+    "srcHash": "8nx5SA2aJJHz"
+  },
+  "admin_reports_header_ITEM_UPDATE": {
+    "defaultMessage": "Changed description elements",
+    "srcHash": "4MHCaSTYjev3"
+  },
+  "admin_reports_header_LEVELS_CNT": {
+    "defaultMessage": "Number of description units",
+    "srcHash": "6-ueB3tfafDD"
+  },
+  "admin_reports_header_LEVEL_DELETE": {
+    "defaultMessage": "Deleted description units",
+    "srcHash": "LcrnnXWUSTex"
+  },
+  "admin_reports_header_LEVEL_NEW": {
+    "defaultMessage": "New description units",
+    "srcHash": "sztNbk2bZEY3"
+  },
+  "admin_reports_header_OUTPUT_DATE": {
+    "defaultMessage": "Output generation time",
+    "srcHash": "LrroEkazfcoh"
+  },
+  "admin_reports_header_OUTPUT_NAME": {
+    "defaultMessage": "Output name",
+    "srcHash": "8uMyaFpXAcJK"
+  },
+  "admin_reports_header_OUTPUT_TYPE": {
+    "defaultMessage": "Output type",
+    "srcHash": "hD5bBOE7z9eZ"
+  },
+  "admin_reports_header_TEMPL_NAME": {
+    "defaultMessage": "Template",
+    "srcHash": "BqmENbGuMyV1"
+  },
+  "admin_reports_header_USERNAME": {
+    "defaultMessage": "User",
+    "srcHash": "sfdZSYORoLV9"
+  },
+  "admin_reports_no_report_data": {
+    "defaultMessage": "No data",
+    "srcHash": "MraA-K-LqgD0"
+  },
+  "admin_reports_select_report": {
+    "defaultMessage": "Select a report...",
+    "srcHash": "ecrUhpCIacEx"
+  },
+  "aip.filter.columns": {
+    "defaultMessage": "Columns",
+    "srcHash": "nkGHuHwAI1Yf"
+  },
+  "ap.binding.action.history": {
+    "defaultMessage": "Revision history",
+    "srcHash": "0ig3oH3A4qzi"
+  },
+  "ap.binding.history.approval": {
+    "defaultMessage": "Approved by: {names}",
+    "srcHash": "ru7EBVZP9152"
+  },
+  "ap.binding.history.author": {
+    "defaultMessage": "Author: {names}",
+    "srcHash": "b7W6gVJuQ9a7"
+  },
+  "ap.binding.history.close": {
+    "defaultMessage": "Close",
+    "srcHash": "0r4EKpo4ZhJv"
+  },
+  "ap.binding.history.empty": {
+    "defaultMessage": "No history is available.",
+    "srcHash": "TRmoD5K9HMPW"
+  },
+  "ap.binding.history.incomplete": {
+    "defaultMessage": "The history is incomplete – consult the source system for the complete history.",
+    "srcHash": "u2_9JYUlg41q"
+  },
+  "ap.binding.history.revision": {
+    "defaultMessage": "{date}, sent by: {sender}",
+    "srcHash": "C-JOEFVcxp3t"
+  },
+  "ap.binding.history.revisionId": {
+    "defaultMessage": "Revision ID: <value>{id}</value>",
+    "srcHash": "PqVsAtJm3_cb"
+  },
+  "ap.binding.history.title": {
+    "defaultMessage": "Revision history in external system",
+    "srcHash": "HXnfy6IFkQ_I"
+  },
+  "ap.binding.history.unknown": {
+    "defaultMessage": "unknown",
+    "srcHash": "eZYKNqYuXiNu"
+  },
+  "ap.ext-syncs.ext-system": {
+    "defaultMessage": "External system",
+    "srcHash": "oGs4SFZv0yF2"
+  },
+  "arr.fundDataGrid.cellForm.notAllowed": {
+    "defaultMessage": "This description element cannot be added to the description unit.",
+    "srcHash": "1vJCdzTLLaix"
+  },
+  "arr.structure.modal.increment": {
+    "defaultMessage": "Increment",
+    "srcHash": "pcWzMwLcSI6r"
+  },
+  "arr.structure.modal.updateMultiple.delete": {
+    "defaultMessage": "Delete value",
+    "srcHash": "tH4dfBQAKvtd"
+  },
+  "arr.structure.modal.updateMultiple.deletedValue": {
+    "defaultMessage": "Deleted value",
+    "srcHash": "cANJaxuXdZsC"
+  },
+  "arr.structure.modal.updateMultiple.lock": {
+    "defaultMessage": "Edit value",
+    "srcHash": "C-zjtzMpbuxB"
+  },
+  "arr.structure.modal.updateMultiple.originalValue": {
+    "defaultMessage": "Original value",
+    "srcHash": "w5jT-SEB2Gek"
+  },
+  "arr.structure.modal.updateMultiple.unlock": {
+    "defaultMessage": "Keep original value",
+    "srcHash": "La8cCc4r_IK2"
+  },
+  "confirmPopover.no": {
+    "defaultMessage": "Cancel",
+    "srcHash": "bHfYpLCt8F6P"
+  },
+  "confirmPopover.yes": {
+    "defaultMessage": "Confirm",
+    "srcHash": "k0lmE6n_VVk_"
+  },
+  "dataGridColumns_add": {
+    "defaultMessage": "Add",
+    "srcHash": "TBGrI8bgrjgj"
+  },
+  "dataGridColumns_addUsed": {
+    "defaultMessage": "Add used",
+    "srcHash": "5hpGDpH7AaMh"
+  },
+  "dataGridColumns_available": {
+    "defaultMessage": "Available",
+    "srcHash": "IQacVfkdU63H"
+  },
+  "dataGridColumns_remove": {
+    "defaultMessage": "Remove",
+    "srcHash": "Ofs6avvgqpQw"
+  },
+  "dataGridColumns_visible": {
+    "defaultMessage": "Selected",
+    "srcHash": "9q6A943QDsD6"
+  },
+  "dataType.COORDINATES.format": {
+    "defaultMessage": "<p><b>Loading coordinates from a file</b> in KML, GML or WKT format</p><p><b>WGS84 system</b> (e.g. Mapy.cz)</p><p><i>example: 49.5765442N, 14.3965617E</i></p><p><b>WKT markup language</b></p><p><i>examples: POINT (14.3965617 49.5765442)</i></p><p><i>LINESTRING (14.3965528 49.5765909,14.4172300 49.5551484)</i></p><p><i>POLYGON ((14.3828494 49.5976066,14.3829031 49.5971094,14.3842817 49.5971546,14.3842281 49.5976379,14.3828494 49.5976066))</i></p>",
+    "srcHash": "M0pT0njvr6H0"
+  },
+  "dataType.UNITDATE.format": {
+    "defaultMessage": "<p><b>Date format</b></p><p>Century: 20. st. <i>or</i> 20.st. <i>or</i> 20st</p><p>Year: 1968</p><p>Month: 8.1968</p><p>Day: 21.8.1968</p><p>Hours, minutes, seconds: 21.8.1968 2:43 <i>or</i> 21.8.1968 8:23:31</p><p><b>Intervals</b></p><p>Years: 1968-1969</p><p>Combination: 8.1968-1969 <i>or</i> 21.8.1968 2:43-27.6.1989</p><p><b>Estimate</b></p><p>Defined by enclosing the value in round or square brackets:</p><p>E.g.: [16.8.1977] <i>or</i> [1990]-1992</p><p>When the '/' character is used to separate an interval, both from and to are treated as an estimate:</p><p>E.g.: 1985/1990</p>",
+    "srcHash": "eW59aBerEcN3"
+  },
+  "deleted_entity_table_column_deleteDate": {
+    "defaultMessage": "Deletion date",
+    "srcHash": "h-p2CKxKE-Vf"
+  },
+  "deleted_entity_table_column_description": {
+    "defaultMessage": "Brief description",
+    "srcHash": "LkxRptweuTXx"
+  },
+  "deleted_entity_table_column_extSystem": {
+    "defaultMessage": "Ext. system",
+    "srcHash": "-OIEQCBRSj_I"
+  },
+  "deleted_entity_table_column_id": {
+    "defaultMessage": "Id",
+    "srcHash": "EhVukhvbYIXM"
+  },
+  "deleted_entity_table_column_name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "deleted_entity_table_column_replacedBy": {
+    "defaultMessage": "Replacing entity",
+    "srcHash": "zI-X8eoeEy51"
+  },
+  "desc_item_action_allow": {
+    "defaultMessage": "Allow inherited value",
+    "srcHash": "M479XnBvnMtQ"
+  },
+  "desc_item_action_copyFromPrev": {
+    "defaultMessage": "Copy description element values from the previous description unit",
+    "srcHash": "9VjTPHPymTyu"
+  },
+  "desc_item_action_copyToggle": {
+    "defaultMessage": "Repeated copying of description element values",
+    "srcHash": "BEs6lduWwDtp"
+  },
+  "desc_item_action_delete": {
+    "defaultMessage": "Remove value",
+    "srcHash": "s3ymWNT4aZ22"
+  },
+  "desc_item_action_inhibit": {
+    "defaultMessage": "Suppress inherited value",
+    "srcHash": "OQyymADgEvEo"
+  },
+  "desc_item_action_set_undefined": {
+    "defaultMessage": "Set the value to 'exception' due to it not being ascertained, not existing, or not being stated based on a rules exception",
+    "srcHash": "I1TvJx22iC0Y"
+  },
+  "desc_item_coordinates_action_showInMap": {
+    "defaultMessage": "Show on map",
+    "srcHash": "3dFzZlmKhOwe"
+  },
+  "desc_item_coordinates_export": {
+    "defaultMessage": "Export",
+    "srcHash": "4x5Fw-eTIoUs"
+  },
+  "desc_item_coordinates_import": {
+    "defaultMessage": "Import",
+    "srcHash": "yTA6PZurxTjn"
+  },
+  "desc_item_record_ref_action_openInAccessPoints": {
+    "defaultMessage": "Open in archival entities",
+    "srcHash": "kUkqR58MWhzJ"
+  },
+  "desc_item_record_ref_no_results": {
+    "defaultMessage": "No results",
+    "srcHash": "oc4Ghrr84kQ7"
+  },
+  "desc_item_record_ref_start_typing": {
+    "defaultMessage": "Start typing to search",
+    "srcHash": "1sL2Z7ehmlnS"
+  },
+  "desc_item_structure_action_addNewStructure": {
+    "defaultMessage": "Add",
+    "srcHash": "5L0IaEkXdddR"
+  },
+  "desc_item_undefined": {
+    "defaultMessage": "Exception",
+    "srcHash": "fZLA7qG_TjqY"
+  },
+  "desc_item_uri_ref_description": {
+    "defaultMessage": "Label",
+    "srcHash": "cc7IqIIUNBbl"
+  },
+  "desc_item_uri_ref_fundSearch": {
+    "defaultMessage": "Search in archival files",
+    "srcHash": "HLs5mDt-e0rZ"
+  },
+  "desc_item_uri_ref_goToUri": {
+    "defaultMessage": "Go to link",
+    "srcHash": "NGBj_CQpRWmQ"
+  },
+  "desc_item_uri_ref_refTemplate": {
+    "defaultMessage": "Synchronization template",
+    "srcHash": "x8fOpquJ_SVY"
+  },
+  "desc_item_uri_ref_uri": {
+    "defaultMessage": "Link",
+    "srcHash": "Qhbg776bTQzH"
+  },
+  "edit_state_unsaved": {
+    "defaultMessage": "Unsaved",
+    "srcHash": "evoAyt3cLDJM"
+  },
+  "fundPage.drawer.allOutputs": {
+    "defaultMessage": "All outputs...",
+    "srcHash": "HnjxhpdDvqnt"
+  },
+  "fundPage.drawer.close": {
+    "defaultMessage": "Close",
+    "srcHash": "0r4EKpo4ZhJv"
+  },
+  "fundPage.drawer.currentVersion": {
+    "defaultMessage": "Current version",
+    "srcHash": "0u9juJv4hc8n"
+  },
+  "fundPage.drawer.entityScopes": {
+    "defaultMessage": "Entity scopes",
+    "srcHash": "3-OKfmKJZsWr"
+  },
+  "fundPage.drawer.outputs": {
+    "defaultMessage": "Outputs",
+    "srcHash": "irSQ8aME65Fz"
+  },
+  "fundPage.drawer.rules": {
+    "defaultMessage": "Rules",
+    "srcHash": "7JaVp6F-k6KT"
+  },
+  "fundPage.drawer.versions": {
+    "defaultMessage": "Versions",
+    "srcHash": "Cml1nacv6hJG"
+  },
+  "fundPage.multiAction.cancel": {
+    "defaultMessage": "Cancel",
+    "srcHash": "bHfYpLCt8F6P"
+  },
+  "fundPage.multiAction.run": {
+    "defaultMessage": "Run action",
+    "srcHash": "hvWR6vxVXGEu"
+  },
+  "fundPage.multiAction.selectAll": {
+    "defaultMessage": "Select all matching the filter ({count})",
+    "srcHash": "igQm19R4pj5c"
+  },
+  "fundPage.multiAction.selected": {
+    "defaultMessage": "Selected: {count}",
+    "srcHash": "7GUXxnPp2Qk5"
+  },
+  "fundPage.multiAction.start": {
+    "defaultMessage": "Bulk action over funds",
+    "srcHash": "-ZzS3DKvVe1y"
+  },
+  "fundPage.multiAction.title": {
+    "defaultMessage": "Bulk action over funds",
+    "srcHash": "-ZzS3DKvVe1y"
+  },
+  "fundPage_export_results": {
+    "defaultMessage": "Download CSV",
+    "srcHash": "1LaqY8gF6JE1"
+  },
+  "fund_filter_add_value": {
+    "defaultMessage": "Or",
+    "srcHash": "ETTHdeuMONkn"
+  },
+  "fund_filter_confirm": {
+    "defaultMessage": "Confirm",
+    "srcHash": "k0lmE6n_VVk_"
+  },
+  "fund_filter_fundNumber": {
+    "defaultMessage": "AF number",
+    "srcHash": "SMHLXZnMpuSq"
+  },
+  "fund_filter_institutionId": {
+    "defaultMessage": "Institution",
+    "srcHash": "AMtLLUW_r1z7"
+  },
+  "fund_filter_internalCode": {
+    "defaultMessage": "Internal code",
+    "srcHash": "p2eSz8FK6c9N"
+  },
+  "fund_filter_mark": {
+    "defaultMessage": "AF mark",
+    "srcHash": "F1lsMRkImlQ5"
+  },
+  "fund_filter_name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "fund_filter_operation_contains": {
+    "defaultMessage": "Contains",
+    "srcHash": "wGVYx0iW1rvw"
+  },
+  "fund_filter_operation_eq": {
+    "defaultMessage": "Is",
+    "srcHash": "PTrzVtvvFnZy"
+  },
+  "fund_filter_operation_greater_than": {
+    "defaultMessage": "Greater than",
+    "srcHash": "lEwFnMTlsMmV"
+  },
+  "fund_filter_operation_greater_than_equal": {
+    "defaultMessage": "Greater than or equal",
+    "srcHash": "ZQ8myAOTCSTN"
+  },
+  "fund_filter_operation_intersect": {
+    "defaultMessage": "Partially falls within",
+    "srcHash": "45DTdA5rajXS"
+  },
+  "fund_filter_operation_is_in": {
+    "defaultMessage": "Fully falls within",
+    "srcHash": "PMu4bajGTzQu"
+  },
+  "fund_filter_operation_is_null": {
+    "defaultMessage": "Not filled in",
+    "srcHash": "0kLnGL1_1QlH"
+  },
+  "fund_filter_operation_lower_than": {
+    "defaultMessage": "Less than",
+    "srcHash": "MoNGElDDSncV"
+  },
+  "fund_filter_operation_lower_than_equal": {
+    "defaultMessage": "Less than or equal",
+    "srcHash": "CbdS9RsTWfXi"
+  },
+  "fund_filter_operation_neq": {
+    "defaultMessage": "Is not",
+    "srcHash": "zq94nnE8Opfv"
+  },
+  "fund_filter_operation_not_null": {
+    "defaultMessage": "Filled in",
+    "srcHash": "MqZ2GkrDDQ51"
+  },
+  "fund_filter_or": {
+    "defaultMessage": "OR",
+    "srcHash": "xSmsgIt1bLvs"
+  },
+  "global.action.cancel": {
+    "defaultMessage": "Cancel",
+    "srcHash": "bHfYpLCt8F6P"
+  },
+  "global.action.close": {
+    "defaultMessage": "Close",
+    "srcHash": "0r4EKpo4ZhJv"
+  },
+  "global.action.update": {
+    "defaultMessage": "Save",
+    "srcHash": "eKX-T2uH2Zl7"
+  },
+  "global_cancel": {
+    "defaultMessage": "Cancel",
+    "srcHash": "ABDFIc1OzdTP"
+  },
+  "global_copyToClipboard": {
+    "defaultMessage": "Copy to clipboard",
+    "srcHash": "QRr86ammtCD5"
+  },
+  "global_copyToClipboard_finished": {
+    "defaultMessage": "Copied to clipboard",
+    "srcHash": "APFyMCzeV0tp"
+  },
+  "global_copyToClipboard_unavailable": {
+    "defaultMessage": "Copying to clipboard is not available. The application is probably not running in secure mode (https).",
+    "srcHash": "tvxg4i5XBgIq"
+  },
+  "global_no": {
+    "defaultMessage": "No",
+    "srcHash": "OM6_SDapGMta"
+  },
+  "global_ok": {
+    "defaultMessage": "Ok",
+    "srcHash": "hDrAEUnM7Xhd"
+  },
+  "global_undefined": {
+    "defaultMessage": "Exception",
+    "srcHash": "fZLA7qG_TjqY"
+  },
+  "global_yes": {
+    "defaultMessage": "Yes",
+    "srcHash": "HFtwBBU9Smvu"
+  },
+  "invalidated_entities": {
+    "defaultMessage": "Invalidated entities",
+    "srcHash": "anb_5TqFryuh"
+  },
+  "mandatoryType.impossible": {
+    "defaultMessage": "Impossible",
+    "srcHash": "tF8XT_kWW1X_"
+  },
+  "mandatoryType.possible": {
+    "defaultMessage": "Possible",
+    "srcHash": "sJgFYqbzckqQ"
+  },
+  "mandatoryType.recommended": {
+    "defaultMessage": "Recommended",
+    "srcHash": "n1CaWeFwY5pO"
+  },
+  "mandatoryType.required": {
+    "defaultMessage": "Required",
+    "srcHash": "CzYWcREqOQQ0"
+  },
+  "multiFundAction.actionLabel": {
+    "defaultMessage": "Bulk action",
+    "srcHash": "H4YtXzzX2gDT"
+  },
+  "multiFundAction.actionPlaceholder": {
+    "defaultMessage": "Select an action…",
+    "srcHash": "MF_ttYZxn3Fo"
+  },
+  "multiFundAction.cancel": {
+    "defaultMessage": "Cancel",
+    "srcHash": "bHfYpLCt8F6P"
+  },
+  "multiFundAction.chooseAction": {
+    "defaultMessage": "The action will run over {count, plural, one {# fund} other {# funds}} (rules {ruleSet}). Select an action:",
+    "srcHash": "KLZvppi4PKjQ"
+  },
+  "multiFundAction.chooseRuleSet": {
+    "defaultMessage": "The selected funds use multiple rule sets. Choose which group to run the action for:",
+    "srcHash": "Y7yBO_O9micb"
+  },
+  "multiFundAction.close": {
+    "defaultMessage": "Close",
+    "srcHash": "0r4EKpo4ZhJv"
+  },
+  "multiFundAction.confirm": {
+    "defaultMessage": "The action <b>{action}</b> will run over <b>{count, plural, one {# fund} other {# funds}}</b>. The action writes to the funds' data and each fund gets its own run. Continue?",
+    "srcHash": "czsL1FVz7qA4"
+  },
+  "multiFundAction.continue": {
+    "defaultMessage": "Continue",
+    "srcHash": "xGnq7PtrG9AV"
+  },
+  "multiFundAction.doneHint": {
+    "defaultMessage": "The progress of individual runs can be tracked in task management.",
+    "srcHash": "iXNmq6nj88En"
+  },
+  "multiFundAction.doneQueued": {
+    "defaultMessage": "The bulk action has been queued for <b>{count, plural, one {# fund} other {# funds}}</b>.",
+    "srcHash": "ETomyJveZsIB"
+  },
+  "multiFundAction.doneSkipped": {
+    "defaultMessage": " Skipped {count, plural, one {# fund} other {# funds}}.",
+    "srcHash": "cvlp1UhlIdjz"
+  },
+  "multiFundAction.empty": {
+    "defaultMessage": "No applicable bulk action is available for the selected funds.",
+    "srcHash": "uH_uf79GiJgN"
+  },
+  "multiFundAction.noActions": {
+    "defaultMessage": "No bulk action is available for these rules.",
+    "srcHash": "cOG6w4n8KzW_"
+  },
+  "multiFundAction.ruleSetOption": {
+    "defaultMessage": "{name} ({count, plural, one {# fund} other {# funds}})",
+    "srcHash": "eipsU0rnrB2p"
+  },
+  "multiFundAction.run": {
+    "defaultMessage": "Run",
+    "srcHash": "vxF0us80z5om"
+  },
+  "multiFundAction.skipped": {
+    "defaultMessage": "Skipped {count, plural, one {# fund} other {# funds}} (no open version or the action does not belong to their rules).",
+    "srcHash": "WcobK1TbISC2"
+  },
+  "multiFundAction.stage.loading": {
+    "defaultMessage": "Loading funds…",
+    "srcHash": "wIER71004yv5"
+  },
+  "multiFundAction.stage.submitting": {
+    "defaultMessage": "Running action…",
+    "srcHash": "62_V1ae3mzQ9"
+  },
+  "nodeSubNodeForm_quote_title": {
+    "defaultMessage": "Citation",
+    "srcHash": "bh8ur2NU3QpS"
+  },
+  "node_action_addComment": {
+    "defaultMessage": "Add comment",
+    "srcHash": "-kjNLiuQf5Rv"
+  },
+  "node_action_addDescItem": {
+    "defaultMessage": "Description element",
+    "srcHash": "XiZVb4j65GrQ"
+  },
+  "node_action_applyTemplate": {
+    "defaultMessage": "Apply template",
+    "srcHash": "cqu19XIzCfZc"
+  },
+  "node_action_columnsHeader": {
+    "defaultMessage": "Number of group columns",
+    "srcHash": "XiuvaPuvBtg4"
+  },
+  "node_action_copyUUID": {
+    "defaultMessage": "Copy description unit UUID",
+    "srcHash": "9iC2NPANcFVB"
+  },
+  "node_action_createTemplate": {
+    "defaultMessage": "Create template",
+    "srcHash": "wbFGWAmPvM9Q"
+  },
+  "node_action_deleteNode": {
+    "defaultMessage": "Delete description unit",
+    "srcHash": "1bLOeqMxS0Ma"
+  },
+  "node_action_digitizationRequest": {
+    "defaultMessage": "Digitization request",
+    "srcHash": "BiGhw1AqrZm-"
+  },
+  "node_action_digitizationSync": {
+    "defaultMessage": "Synchronize DAO",
+    "srcHash": "xK9UoAWwUJuW"
+  },
+  "node_action_showHistory": {
+    "defaultMessage": "History",
+    "srcHash": "TqqAaJnMyj2q"
+  },
+  "node_action_showQuotes": {
+    "defaultMessage": "Citation",
+    "srcHash": "bh8ur2NU3QpS"
+  },
+  "node_action_showSymbols": {
+    "defaultMessage": "Symbols",
+    "srcHash": "vNVCE2cZclt5"
+  },
+  "node_action_syncNode": {
+    "defaultMessage": "Synchronize description unit from source archival files",
+    "srcHash": "lDBZSb4lV8-b"
+  },
+  "node_action_toggleCompact": {
+    "defaultMessage": "Compact view",
+    "srcHash": "MpVO-8CXDUa4"
+  },
+  "node_action_toggleCopyFromPrevious": {
+    "defaultMessage": "Repeated copying of all description element values",
+    "srcHash": "v6o6QVF_w-8U"
+  },
+  "node_action_viewSettings": {
+    "defaultMessage": "View settings",
+    "srcHash": "UblYRYJ_20Pq"
+  },
+  "node_action_visiblePolicy": {
+    "defaultMessage": "Validation rules",
+    "srcHash": "CJUhnRChHrzm"
+  },
+  "publication.btn.confirmPublish": {
+    "defaultMessage": "Really publish to {name}?",
+    "srcHash": "4AeOIMi-yoAD"
+  },
+  "publication.btn.confirmPublishBtn": {
+    "defaultMessage": "Publish",
+    "srcHash": "N89arf2DWokM"
+  },
+  "publication.btn.publish": {
+    "defaultMessage": "Publish: {name}",
+    "srcHash": "YJnGgHJoDmIm"
+  },
+  "publication.btn.publishOther": {
+    "defaultMessage": "Publish: ...",
+    "srcHash": "4qCj0dMz8hUy"
+  },
+  "publication.col.createdAt": {
+    "defaultMessage": "Created",
+    "srcHash": "8zCOe8eH59_V"
+  },
+  "publication.col.createdBy": {
+    "defaultMessage": "User",
+    "srcHash": "sfdZSYORoLV9"
+  },
+  "publication.col.errorAt": {
+    "defaultMessage": "Error time",
+    "srcHash": "AdeMiE5pEe1c"
+  },
+  "publication.col.errorMessage": {
+    "defaultMessage": "Error message",
+    "srcHash": "LsvOIxfwdqnc"
+  },
+  "publication.col.invalidatedAt": {
+    "defaultMessage": "Invalidated",
+    "srcHash": "aLXhR23z3XMH"
+  },
+  "publication.col.lastFetchedAt": {
+    "defaultMessage": "Fetched",
+    "srcHash": "iLKfcRfhSZfo"
+  },
+  "publication.col.preparedAt": {
+    "defaultMessage": "Prepared",
+    "srcHash": "YyB-uHjnEPaG"
+  },
+  "publication.col.publishedAt": {
+    "defaultMessage": "Published",
+    "srcHash": "kDCEXCuax3EJ"
+  },
+  "publication.col.state": {
+    "defaultMessage": "State",
+    "srcHash": "1sRUDB31F_YQ"
+  },
+  "publication.col.typeName": {
+    "defaultMessage": "System",
+    "srcHash": "YXO4Du8RKZTK"
+  },
+  "publication.state.FETCHED": {
+    "defaultMessage": "Fetched",
+    "srcHash": "Kfq47bGGJOHQ"
+  },
+  "publication.state.INVALIDATED": {
+    "defaultMessage": "Invalidated",
+    "srcHash": "A88JPeoL7lCQ"
+  },
+  "publication.state.NEW": {
+    "defaultMessage": "New",
+    "srcHash": "FzR-6REK3Bz4"
+  },
+  "publication.state.PREPARED": {
+    "defaultMessage": "Prepared",
+    "srcHash": "EZEyGxZZQnga"
+  },
+  "publication.state.PREPARE_ERROR": {
+    "defaultMessage": "Preparation error",
+    "srcHash": "mmeSvCJZA_B9"
+  },
+  "publication.state.PUBLISHED": {
+    "defaultMessage": "Published",
+    "srcHash": "jR6k9II88w7I"
+  },
+  "publication.state.PUBLISH_ERROR": {
+    "defaultMessage": "Publication error",
+    "srcHash": "kB9duVH8zy0d"
+  },
+  "publication.system.btn.activate": {
+    "defaultMessage": "Activate",
+    "srcHash": "1T7f3yz_d3bq"
+  },
+  "publication.system.btn.confirmDeactivate": {
+    "defaultMessage": "Really deactivate this type?",
+    "srcHash": "jJycz0UZ-Tyj"
+  },
+  "publication.system.btn.confirmRemove": {
+    "defaultMessage": "Really remove this type?",
+    "srcHash": "3XsM_LpHuK_V"
+  },
+  "publication.system.btn.deactivate": {
+    "defaultMessage": "Deactivate",
+    "srcHash": "BarNfashThfo"
+  },
+  "publication.system.btn.remove": {
+    "defaultMessage": "Remove",
+    "srcHash": "Ofs6avvgqpQw"
+  },
+  "publication.system.btn.reset": {
+    "defaultMessage": "Restore",
+    "srcHash": "YsuU5HF0yj5p"
+  },
+  "publication.system.btn.save": {
+    "defaultMessage": "Save",
+    "srcHash": "eKX-T2uH2Zl7"
+  },
+  "publication.system.connectionType.DEVELOPMENT": {
+    "defaultMessage": "Development",
+    "srcHash": "aerITXOalid2"
+  },
+  "publication.system.connectionType.PRODUCTION": {
+    "defaultMessage": "Production",
+    "srcHash": "L_riAol12zLg"
+  },
+  "publication.system.connectionType.TEST": {
+    "defaultMessage": "Test",
+    "srcHash": "Uy6qvZV0iA2_"
+  },
+  "publication.system.label.code": {
+    "defaultMessage": "Code",
+    "srcHash": "lHt70Q2si8jP"
+  },
+  "publication.system.label.connectionType": {
+    "defaultMessage": "Connection type",
+    "srcHash": "h2ovnd-4RAAv"
+  },
+  "publication.system.label.filter": {
+    "defaultMessage": "Filter",
+    "srcHash": "ANJpmCaoHHmC"
+  },
+  "publication.system.label.name": {
+    "defaultMessage": "Name",
+    "srcHash": "EQAs0dy3Z5es"
+  },
+  "publication.system.label.permExport": {
+    "defaultMessage": "Export permission",
+    "srcHash": "3_sdb1qHY7x-"
+  },
+  "publication.system.label.permPublication": {
+    "defaultMessage": "Publication permission",
+    "srcHash": "Kuut2mrHYbOT"
+  },
+  "publication.system.label.storedCount": {
+    "defaultMessage": "Number of stored exports",
+    "srcHash": "v3GPVe7VPJSe"
+  },
+  "publication.system.section.permissions": {
+    "defaultMessage": "Required permission",
+    "srcHash": "AKQVCTH2-p7q"
+  },
+  "publication.system.section.storage": {
+    "defaultMessage": "Storing exports",
+    "srcHash": "Tz_W5kCpNNTC"
+  },
+  "publication.systems.dialog.add": {
+    "defaultMessage": "Add",
+    "srcHash": "5L0IaEkXdddR"
+  },
+  "publication.systems.dialog.close": {
+    "defaultMessage": "Close",
+    "srcHash": "0r4EKpo4ZhJv"
+  },
+  "publication.systems.dialog.title": {
+    "defaultMessage": "Publication systems management",
+    "srcHash": "3R1qxdjYgTmM"
+  },
+  "publication.systems.new": {
+    "defaultMessage": "New publication system",
+    "srcHash": "Iq-OuY10Pc1a"
+  },
+  "publication.table.menu.copy": {
+    "defaultMessage": "Copy to...",
+    "srcHash": "TrAUJO6JN4TZ"
+  },
+  "publication.table.menu.delete": {
+    "defaultMessage": "Remove",
+    "srcHash": "eQTkknH2OPF1"
+  },
+  "publication.table.menu.download": {
+    "defaultMessage": "Download",
+    "srcHash": "xxAzjqAuIzkG"
+  },
+  "ribbon.action.arr.fund.publicationSystems": {
+    "defaultMessage": "Publication systems management",
+    "srcHash": "3R1qxdjYgTmM"
+  },
+  "ribbon.action.publication": {
+    "defaultMessage": "Publication",
+    "srcHash": "zSDsDTqzNIUA"
+  },
+  "ribbon_action_admin_reports": {
+    "defaultMessage": "Reports",
+    "srcHash": "rF9MELIDW5fD"
+  },
+  "search_funds_form_conformity_error": {
+    "defaultMessage": "Error",
+    "srcHash": "tiLo1toEkOGZ"
+  },
+  "search_funds_form_conformity_missing": {
+    "defaultMessage": "Missing element",
+    "srcHash": "vt_PASqD64XF"
+  },
+  "search_funds_form_desc_item": {
+    "defaultMessage": "Description element",
+    "srcHash": "XiZVb4j65GrQ"
+  },
+  "search_funds_form_fonds": {
+    "defaultMessage": "Archival file",
+    "srcHash": "cgFgSW7aSs8l"
+  },
+  "search_funds_form_institution": {
+    "defaultMessage": "Institution",
+    "srcHash": "AMtLLUW_r1z7"
+  },
+  "search_funds_form_uuid": {
+    "defaultMessage": "UUID",
+    "srcHash": "KomLyYqvbJby"
+  },
+  "subNodeForm.descItemType.spec.all": {
+    "defaultMessage": "All",
+    "srcHash": "5C_lbtoov7Gn"
+  },
+  "subNodeForm.descItemType.spec.favorite": {
+    "defaultMessage": "Favorites",
+    "srcHash": "i4s39EsnIrTA"
+  },
+  "subNodeForm.descItemType.title.add": {
+    "defaultMessage": "Add description element",
+    "srcHash": "ckU6Xf-Ze6l2"
+  },
+  "userSettings.apiKeys.delete.confirm.message": {
+    "defaultMessage": "Do you want to delete the configured API key for external system {name}?",
+    "srcHash": "LaFPksPT0mrC"
+  },
+  "userSettings.apiKeys.item.id": {
+    "defaultMessage": "id",
+    "srcHash": "pWFFJwzms769"
+  },
+  "userSettings.apiKeys.item.value": {
+    "defaultMessage": "value",
+    "srcHash": "rSTBAYOCejSv"
+  },
+  "userSettings.apiKeys.noItems": {
+    "defaultMessage": "No saved personal API keys",
+    "srcHash": "2W5rVrV6xL6c"
+  },
+  "userSettings.apiKeys.save": {
+    "defaultMessage": "Save",
+    "srcHash": "eKX-T2uH2Zl7"
+  },
+  "userSettings.category.ApiKeys": {
+    "defaultMessage": "API Keys",
+    "srcHash": "lg2gnlERUjor"
+  },
+  "userSettings.category.Display": {
+    "defaultMessage": "Display",
+    "srcHash": "d_FVmqRjYyP4"
+  },
+  "userSettings.display.darkMode": {
+    "defaultMessage": "Dark mode",
+    "srcHash": "sVhLOkzRwp0f"
+  },
+  "userSettings.display.language": {
+    "defaultMessage": "Language",
+    "srcHash": "ARpdV1qvwAV4"
+  },
+  "userSettings.display.showDebugInfo": {
+    "defaultMessage": "Show debug information",
+    "srcHash": "_EDjKMPt3jcW"
+  },
+  "userSettings.display.showExperimentalFeatures": {
+    "defaultMessage": "Show experimental features",
+    "srcHash": "3gowqNfmWIKX"
+  }
+}
