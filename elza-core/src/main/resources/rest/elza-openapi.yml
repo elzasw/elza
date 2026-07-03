@@ -4824,6 +4824,13 @@ components:
         costUnits:
           type: number
           format: double
+        chargedCredits:
+          type: number
+          format: double
+          description: >-
+            Credits charged to the account the signing key selects (costUnits ×
+            the account's multiplier — a shared organizational account may burn
+            credits faster). What the user sees as the price of the exchange.
       description: Metered usage of one exchange (informative; costUnits is the billable quantity).
     AipDetailFilteredResult:
       type: object

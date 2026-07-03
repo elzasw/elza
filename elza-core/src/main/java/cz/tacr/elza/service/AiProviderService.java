@@ -64,6 +64,11 @@ public class AiProviderService {
         }
     }
 
+    /** Signed API client for the given provider (see {@link ApiClientAiProvider}). */
+    public ElzaAiApi createApi(final AiExternalSystem extSystem) {
+        return new ElzaAiApi(createClient(extSystem));
+    }
+
     private ApiClientAiProvider createClient(final AiExternalSystem extSystem) {
         return new ApiClientAiProvider(extSystem.getUrl(), extSystem.getApiKeyId(),
                 extSystem.getApiKeyValue());

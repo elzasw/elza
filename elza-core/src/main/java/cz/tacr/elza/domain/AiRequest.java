@@ -92,6 +92,14 @@ public class AiRequest {
     @Column(name = "cost_units", nullable = false)
     private double costUnits;
 
+    /**
+     * Credits charged to the account the signing key selects
+     * ({@code costUnits × multiplier} — a shared organizational account may
+     * burn credits faster). What the user sees as the price of the exchange.
+     */
+    @Column(name = "charged_credits", nullable = false)
+    private double chargedCredits;
+
     @Column(name = "create_date", nullable = false)
     private Date createDate;
 
@@ -216,6 +224,14 @@ public class AiRequest {
 
     public void setCostUnits(double costUnits) {
         this.costUnits = costUnits;
+    }
+
+    public double getChargedCredits() {
+        return chargedCredits;
+    }
+
+    public void setChargedCredits(double chargedCredits) {
+        this.chargedCredits = chargedCredits;
     }
 
     public Date getCreateDate() {

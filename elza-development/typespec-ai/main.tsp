@@ -61,7 +61,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.2.0" })
+@info(#{ version: "0.3.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -327,6 +327,14 @@ model Usage {
 
   /** Billable cost units per the provider's price list. */
   costUnits: float64;
+
+  /**
+   * Credits charged to the caller's account for this task, when the provider
+   * bills in credits: `costUnits × account multiplier` (a shared/organization
+   * account may burn credits faster than a personal one). Absent when the
+   * provider does not use credit accounting.
+   */
+  chargedCredits?: float64;
 }
 
 /** A task and its current state — the poll response. */
@@ -379,6 +387,67 @@ model Task {
 
   /** Metered usage so far (running totals; final once the state is terminal). */
   usage?: Usage;
+}
+
+// ---------------------------------------------------------------------------
+// Usage / credit state
+// ---------------------------------------------------------------------------
+
+/**
+ * Credit state of the account the signing key selects — the caller's personal
+ * account (user-scoped key) or the organization's shared account
+ * (installation-wide key). All values are provider-computed; the client only
+ * displays them (typically as relative consumption:
+ * `spentCredits / allowanceCredits`).
+ */
+model AccountUsageInfo {
+  /** Kind of account, e.g. `personal` or `shared` (open set). */
+  accountType?: string;
+
+  /** Plan label, e.g. `basic`; informational. */
+  plan?: string;
+
+  /** Credit allowance for the current period; absent = no per-account cap. */
+  allowanceCredits?: float64;
+
+  /** Credits charged to this account in the current period. */
+  spentCredits: float64;
+
+  /** Start of the current accounting period (UTC). */
+  periodStart: utcDateTime;
+
+  /** End of the current accounting period — when the allowance resets. */
+  periodEnd?: utcDateTime;
+}
+
+/** Subscriber-level (whole organization) usage state — the outer budget cap. */
+model CustomerUsageInfo {
+  /** Subscriber budget for the current period; absent = no cap. */
+  budgetCredits?: float64;
+
+  /** Credits spent by the whole subscriber in the current period. */
+  spentCredits: float64;
+
+  /** Start of the current accounting period (UTC). */
+  periodStart: utcDateTime;
+}
+
+/**
+ * The caller's usage/credit balance — the data behind "how much have I spent".
+ * Served from the same (cached) state the provider's submit-time budget check
+ * uses, so the displayed balance never disagrees with a `402` refusal. Both
+ * members are optional: a provider without credit accounting may return an
+ * empty object (a `200` still proves auth + subscription).
+ */
+model UsageInfo {
+  /** Credit state of the account the signing key selects. */
+  account?: AccountUsageInfo;
+
+  /** Subscriber-level usage state (the outer cap). */
+  customer?: CustomerUsageInfo;
+
+  /** Additional, additively-introduced usage facts. */
+  ...Record<unknown>;
 }
 
 // ---------------------------------------------------------------------------
@@ -498,9 +567,11 @@ model TaskAccepted {
 /**
  * Standard error payload. Notable statuses: `402` — no active subscription or
  * quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
- * `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
- * (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
- * retry later.
+ * `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+ * signing key's account allowance; the set may grow, treat an unknown code
+ * generically per status); `409` — the operation does not fit the task's
+ * current state (e.g. tool results for a task not in `awaiting_tools`);
+ * `429` — rate limited, retry later.
  */
 @error
 model ServiceError {
@@ -538,6 +609,15 @@ op ping(): PingResponse;
 @route("/info")
 @get
 op getInfo(...SignedRequest): AiServiceInfo | ServiceError;
+
+/**
+ * The caller's usage/credit balance — how much of the account's allowance is
+ * spent this period, plus the subscriber-level state. For user display; see
+ * `UsageInfo`.
+ */
+@route("/usage")
+@get
+op getUsage(...SignedRequest): UsageInfo | ServiceError;
 
 /** Submit a task. Idempotent on `requestId`. */
 @route("/tasks")
