@@ -117,7 +117,10 @@ public class AiRequestPoller {
                 }
                 Task task;
                 try {
-                    ElzaAiApi api = aiProviderService.createApi(target.externalSystem);
+                    // The conversation owner's key (task visibility at the
+                    // provider is per subscriber, but the owner's personal key
+                    // may be the only one configured).
+                    ElzaAiApi api = aiProviderService.createApi(target.externalSystem, target.userId);
                     task = api.getTask(java.time.OffsetDateTime.now(), target.taskUid, WAIT_SECONDS);
                 } catch (Exception e) {
                     logger.warn("Polling of AI request {} failed: {}", aiRequestId, e.getMessage());
@@ -152,7 +155,8 @@ public class AiRequestPoller {
                 return null;
             }
             return new PollTarget(request.getTaskUid(), request.getState(),
-                    request.getCostUnits(), conversation.getAiConversationId(), externalSystem);
+                    request.getCostUnits(), conversation.getAiConversationId(),
+                    conversation.getUserId(), externalSystem);
         });
     }
 
@@ -234,6 +238,6 @@ public class AiRequestPoller {
     }
 
     private record PollTarget(String taskUid, String state, double costUnits,
-            Integer conversationId, AiExternalSystem externalSystem) {
+            Integer conversationId, Integer userId, AiExternalSystem externalSystem) {
     }
 }

@@ -739,6 +739,8 @@
                                 <modelNameMapping>AiDisplayBlock=AiDisplayBlockVO</modelNameMapping>
                                 <modelNameMapping>AiTableColumn=AiTableColumnVO</modelNameMapping>
                                 <modelNameMapping>AiUsage=AiUsageVO</modelNameMapping>
+                                <modelNameMapping>AiMyKey=AiMyKeyVO</modelNameMapping>
+                                <modelNameMapping>AiMyKeyUpdate=AiMyKeyUpdateVO</modelNameMapping>
                             </modelNameMappings>
                             <typeMappings>
                                 <typeMapping>object+partform=ApPartFormVO</typeMapping>

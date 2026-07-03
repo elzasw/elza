@@ -174,7 +174,7 @@ public class AiConversationService {
 
         if (request.getTaskUid() != null && !isTerminal(request.getState())) {
             try {
-                aiProviderService.createApi(externalSystem)
+                aiProviderService.createApi(externalSystem, conversation.getUserId())
                         .cancelTask(OffsetDateTime.now(), request.getTaskUid());
             } catch (Exception e) {
                 // best effort: the poller picks the final state up either way
@@ -245,7 +245,9 @@ public class AiConversationService {
         addEvent(request, AiRequestEvent.TYPE_SUBMIT, toJson(submitTask));
 
         try {
-            TaskAccepted accepted = aiProviderService.createApi(externalSystem)
+            // Bill to the conversation owner's account: their personal key
+            // when stored, else the instance-wide key (shared account).
+            TaskAccepted accepted = aiProviderService.createApi(externalSystem, conversation.getUserId())
                     .submitTask(OffsetDateTime.now(), submitTask);
             request.setTaskUid(accepted.getTaskId());
             aiRequestRepository.save(request);
