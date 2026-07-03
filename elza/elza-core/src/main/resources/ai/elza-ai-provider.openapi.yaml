@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Elza AI Provider API
-  version: 0.2.0
+  version: 0.3.0
   description: |-
     Elza AI Provider API.
 
@@ -79,9 +79,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -90,9 +92,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -101,9 +105,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -112,9 +118,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -123,9 +131,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -134,9 +144,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -145,9 +157,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -156,9 +170,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -205,9 +221,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -216,9 +234,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -227,9 +247,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -238,9 +260,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -249,9 +273,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -260,9 +286,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -271,9 +299,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -282,9 +312,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -332,9 +364,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -343,9 +377,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -354,9 +390,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -365,9 +403,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -376,9 +416,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -387,9 +429,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -398,9 +442,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -409,9 +455,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -444,9 +492,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -455,9 +505,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -466,9 +518,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -477,9 +531,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -488,9 +544,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -499,9 +557,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -510,9 +570,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -521,9 +583,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -557,9 +621,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -568,9 +634,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -579,9 +647,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -590,9 +660,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -601,9 +673,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -612,9 +686,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -623,9 +699,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -634,9 +712,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -657,6 +737,128 @@ paths:
                   description: One result per pending tool call.
               required:
                 - results
+  /usage:
+    get:
+      operationId: getUsage
+      description: |-
+        The caller's usage/credit balance — how much of the account's allowance is
+        spent this period, plus the subscriber-level state. For user display; see
+        `UsageInfo`.
+      parameters:
+        - $ref: '#/components/parameters/SignedRequest'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageInfo'
+        '400':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '401':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '402':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '403':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '404':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '409':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '429':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '500':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+      tags:
+        - ElzaAi
 security:
   - SignatureAuth: []
 components:
@@ -672,6 +874,40 @@ components:
         type: string
         format: date-time
   schemas:
+    AccountUsageInfo:
+      type: object
+      required:
+        - spentCredits
+        - periodStart
+      properties:
+        accountType:
+          type: string
+          description: Kind of account, e.g. `personal` or `shared` (open set).
+        plan:
+          type: string
+          description: Plan label, e.g. `basic`; informational.
+        allowanceCredits:
+          type: number
+          format: double
+          description: Credit allowance for the current period; absent = no per-account cap.
+        spentCredits:
+          type: number
+          format: double
+          description: Credits charged to this account in the current period.
+        periodStart:
+          type: string
+          format: date-time
+          description: Start of the current accounting period (UTC).
+        periodEnd:
+          type: string
+          format: date-time
+          description: End of the current accounting period — when the allowance resets.
+      description: |-
+        Credit state of the account the signing key selects — the caller's personal
+        account (user-scoped key) or the organization's shared account
+        (installation-wide key). All values are provider-computed; the client only
+        displays them (typically as relative consumption:
+        `spentCredits / allowanceCredits`).
     AiServiceInfo:
       type: object
       required:
@@ -706,6 +942,25 @@ components:
       description: |-
         Capabilities of this provider. Also serves as the "test connection" call:
         a `200` proves reachability, authentication and an active subscription.
+    CustomerUsageInfo:
+      type: object
+      required:
+        - spentCredits
+        - periodStart
+      properties:
+        budgetCredits:
+          type: number
+          format: double
+          description: Subscriber budget for the current period; absent = no cap.
+        spentCredits:
+          type: number
+          format: double
+          description: Credits spent by the whole subscriber in the current period.
+        periodStart:
+          type: string
+          format: date-time
+          description: Start of the current accounting period (UTC).
+      description: Subscriber-level (whole organization) usage state — the outer budget cap.
     Limits:
       type: object
       properties:
@@ -789,9 +1044,11 @@ components:
       description: |-
         Standard error payload. Notable statuses: `402` — no active subscription or
         quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-        `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-        (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-        retry later.
+        `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+        signing key's account allowance; the set may grow, treat an unknown code
+        generically per status); `409` — the operation does not fit the task's
+        current state (e.g. tool results for a task not in `awaiting_tools`);
+        `429` — rate limited, retry later.
     SignatureAuth:
       type: object
       required:
@@ -1128,12 +1385,38 @@ components:
           type: number
           format: double
           description: Billable cost units per the provider's price list.
+        chargedCredits:
+          type: number
+          format: double
+          description: |-
+            Credits charged to the caller's account for this task, when the provider
+            bills in credits: `costUnits × account multiplier` (a shared/organization
+            account may burn credits faster than a personal one). Absent when the
+            provider does not use credit accounting.
       description: |-
         Metered usage of a task so far — running totals, present from the first model
         call onward (also on failed tasks: incurred usage counts). `costUnits` is the
         billable quantity: a model-independent unit defined by the provider's price
         list, so model changes on the provider side never change the unit the
         subscriber sees.
+    UsageInfo:
+      type: object
+      properties:
+        account:
+          allOf:
+            - $ref: '#/components/schemas/AccountUsageInfo'
+          description: Credit state of the account the signing key selects.
+        customer:
+          allOf:
+            - $ref: '#/components/schemas/CustomerUsageInfo'
+          description: Subscriber-level usage state (the outer cap).
+      additionalProperties: {}
+      description: |-
+        The caller's usage/credit balance — the data behind "how much have I spent".
+        Served from the same (cached) state the provider's submit-time budget check
+        uses, so the displayed balance never disagrees with a `402` refusal. Both
+        members are optional: a provider without credit accounting may return an
+        empty object (a `200` still proves auth + subscription).
   securitySchemes:
     SignatureAuth:
       type: apiKey
