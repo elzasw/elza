@@ -80,7 +80,9 @@ Path prefix: `elza-react/src/`
   That OpenAPI file is itself emitted from TypeSpec — the source of truth is
   `elza-development/typespec-ai/main.tsp` (`npm run build` there writes straight into
   elza-core resources). Never edit the YAML by hand; auth scheme + design background:
-  `elza-development/typespec-ai/security.md` and `AI-INTEGRATION-PROPOSAL.md`.
+  `elza-development/typespec-ai/security.md` and `doc/AI-INTEGRATION-PROPOSAL.md`
+  in `elza-ai-provider.git` (the internal design record lives there, not in
+  this open-source repo).
 
 ## Build Commands
 

@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +64,8 @@ import cz.tacr.elza.service.UserService;
  */
 @Service
 public class AiConversationService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AiConversationService.class);
 
     /** Permissive output schema of panel exchanges (v1). */
     private static final Map<String, Object> OPEN_OBJECT_SCHEMA = Map.of("type", "object");
@@ -178,6 +182,8 @@ public class AiConversationService {
                         .cancelTask(OffsetDateTime.now(), request.getTaskUid());
             } catch (Exception e) {
                 // best effort: the poller picks the final state up either way
+                logger.debug("Best-effort cancel of AI task {} failed: {}",
+                        request.getTaskUid(), e.getMessage());
             }
             addEvent(request, AiRequestEvent.TYPE_CANCEL, null);
         }
@@ -252,6 +258,14 @@ public class AiConversationService {
             request.setTaskUid(accepted.getTaskId());
             aiRequestRepository.save(request);
         } catch (Exception e) {
+            // The exchange is not lost: it is stored in state "error" so the user
+            // sees the failure in the thread. e.getMessage() of the generated
+            // ApiException includes the HTTP status, response body and headers.
+            logger.warn("AI task submit failed for conversation {} (request {}, taskType {},"
+                    + " provider {} at {}): {}",
+                    conversation.getAiConversationId(), request.getRequestId(), taskType,
+                    externalSystem.getCode(), externalSystem.getUrl(), e.getMessage());
+            logger.debug("AI task submit failure detail (request {})", request.getRequestId(), e);
             request.setState("error");
             request.setErrorCode("SUBMIT_FAILED");
             request.setErrorMessage(e.getMessage());
