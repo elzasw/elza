@@ -13,6 +13,8 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.tacr.elza.aiprovider.ApiClient;
 import cz.tacr.elza.exception.SystemException;
@@ -33,6 +35,8 @@ import okio.Buffer;
  */
 public class ApiClientAiProvider extends ApiClient {
 
+    private static final Logger logger = LoggerFactory.getLogger(ApiClientAiProvider.class);
+
     public static final String SCHEME = "ELZA-AI-HMAC-SHA256";
 
     public static final String DATE_HEADER = "X-AI-Date";
@@ -41,6 +45,9 @@ public class ApiClientAiProvider extends ApiClient {
     private static final long READ_TIMEOUT_MS = 90_000;
 
     private static final long CONNECT_TIMEOUT_MS = 10_000;
+
+    /** Response-body bytes copied into the log of a failed call (peeked, never consumed). */
+    private static final long ERROR_BODY_LOG_LIMIT = 4096;
 
     public ApiClientAiProvider(final String url, final String keyId, final String secret) {
         super();
@@ -64,7 +71,41 @@ public class ApiClientAiProvider extends ApiClient {
                                 .header("Authorization",
                                         SCHEME + " KeyId=" + keyId + ",Signature=" + signature)
                                 .build();
-                        return chain.proceed(signed);
+                        // The Authorization header carries only the KeyId and the
+                        // per-request signature (never the secret), so logging the
+                        // request line and auth identity here is safe.
+                        logger.debug("AI provider request: {} {} (KeyId={}, {}={})",
+                                signed.method(), signed.url(), keyId, DATE_HEADER, date);
+
+                        long startNanos = System.nanoTime();
+                        Response response;
+                        try {
+                            response = chain.proceed(signed);
+                        } catch (IOException | RuntimeException e) {
+                            // No HTTP response at all (connect refused, timeout, TLS…):
+                            // name the target so the failure is not a bare stack trace.
+                            logger.warn("AI provider request failed (no response): {} {} (KeyId={}): {}",
+                                    signed.method(), signed.url(), keyId, e.toString());
+                            throw e;
+                        }
+                        long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
+
+                        if (response.isSuccessful()) {
+                            logger.debug("AI provider response: {} {} -> {} in {} ms",
+                                    signed.method(), signed.url(), response.code(), elapsedMs);
+                        } else {
+                            // A non-2xx (e.g. 501 Not Implemented) may come from the
+                            // provider or a proxy in front of it — the Server header and
+                            // body snippet tell which, and the URL/method tell what was
+                            // rejected.
+                            logger.warn("AI provider response: {} {} -> {} {} in {} ms"
+                                    + " (Server={}, Content-Type={}); body: {}",
+                                    signed.method(), signed.url(), response.code(),
+                                    StringUtils.defaultIfEmpty(response.message(), "?"), elapsedMs,
+                                    response.header("Server"), response.header("Content-Type"),
+                                    peekBody(response));
+                        }
+                        return response;
                     }
                 })
                 .build();
@@ -85,6 +126,19 @@ public class ApiClientAiProvider extends ApiClient {
                 StringUtils.defaultString(url.encodedQuery()),
                 date,
                 sha256Hex(bodyBytes(request.body())));
+    }
+
+    /**
+     * Best-effort copy of a failed response's body for logging. Uses
+     * {@code peekBody}, so the real body stream stays intact for the generated
+     * client to read; the copy is capped at {@link #ERROR_BODY_LOG_LIMIT} bytes.
+     */
+    private static String peekBody(Response response) {
+        try {
+            return response.peekBody(ERROR_BODY_LOG_LIMIT).string();
+        } catch (IOException e) {
+            return "<unreadable: " + e.getMessage() + ">";
+        }
     }
 
     private static byte[] bodyBytes(RequestBody body) throws IOException {
