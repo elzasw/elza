@@ -1,7 +1,5 @@
 package cz.tacr.elza.controller;
 
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,10 +8,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import cz.tacr.elza.aiprovider.client.vo.AiServiceInfo;
+import cz.tacr.elza.aiprovider.client.vo.ProfileInfo;
+import cz.tacr.elza.aiprovider.client.vo.TaskParameterInfo;
+import cz.tacr.elza.aiprovider.client.vo.TaskTypeInfo;
 import cz.tacr.elza.controller.vo.AiConversationCreateVO;
 import cz.tacr.elza.controller.vo.AiConversationDetailVO;
 import cz.tacr.elza.controller.vo.AiConversationVO;
@@ -22,6 +20,10 @@ import cz.tacr.elza.controller.vo.AiMyKeyVO;
 import cz.tacr.elza.controller.vo.AiRequestCreateVO;
 import cz.tacr.elza.controller.vo.AiRequestEventVO;
 import cz.tacr.elza.controller.vo.AiRequestVO;
+import cz.tacr.elza.controller.vo.AiProfileVO;
+import cz.tacr.elza.controller.vo.AiProviderInfoVO;
+import cz.tacr.elza.controller.vo.AiTaskParameterVO;
+import cz.tacr.elza.controller.vo.AiTaskTypeVO;
 import cz.tacr.elza.domain.AiExternalSystem;
 import cz.tacr.elza.service.AiProviderService;
 import cz.tacr.elza.service.ai.AiConversationService;
@@ -40,17 +42,53 @@ public class AiProviderController implements AiproviderApi {
     @Autowired
     private AiConversationService aiConversationService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @Override
     @Transactional
-    public ResponseEntity<Map<String, Object>> aiProviderGetInfo(String id) {
+    public ResponseEntity<AiProviderInfoVO> aiProviderGetInfo(String id) {
         AiExternalSystem extSystem = aiProviderService.findAiSystemByCodeOrId(id);
-        AiServiceInfo info = aiProviderService.getInfo(extSystem);
-        Map<String, Object> body = objectMapper.convertValue(info, new TypeReference<Map<String, Object>>() {
-        });
-        return ResponseEntity.ok(body);
+        return ResponseEntity.ok(toVO(aiProviderService.getInfo(extSystem)));
+    }
+
+    /** Maps the provider's /info document to the client's typed task catalog. */
+    private AiProviderInfoVO toVO(final AiServiceInfo info) {
+        AiProviderInfoVO vo = new AiProviderInfoVO()
+                .protocolVersion(info.getProtocolVersion())
+                .providerName(info.getProviderName());
+        if (info.getTaskTypes() != null) {
+            for (TaskTypeInfo taskType : info.getTaskTypes()) {
+                vo.addTaskTypesItem(toVO(taskType));
+            }
+        }
+        if (info.getProfiles() != null) {
+            for (ProfileInfo profile : info.getProfiles()) {
+                vo.addProfilesItem(new AiProfileVO()
+                        .code(profile.getCode())
+                        .name(profile.getName())
+                        .description(profile.getDescription())
+                        ._default(profile.getDefault()));
+            }
+        }
+        return vo;
+    }
+
+    private AiTaskTypeVO toVO(final TaskTypeInfo taskType) {
+        AiTaskTypeVO vo = new AiTaskTypeVO()
+                .code(taskType.getCode())
+                .name(taskType.getName())
+                .description(taskType.getDescription());
+        if (taskType.getResultTypes() != null) {
+            taskType.getResultTypes().forEach(vo::addResultTypesItem);
+        }
+        if (taskType.getParameters() != null) {
+            for (TaskParameterInfo param : taskType.getParameters()) {
+                vo.addParametersItem(new AiTaskParameterVO()
+                        .name(param.getName())
+                        .type(param.getType())
+                        .description(param.getDescription())
+                        .required(param.getRequired()));
+            }
+        }
+        return vo;
     }
 
     @Override

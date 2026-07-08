@@ -741,6 +741,10 @@
                                 <modelNameMapping>AiUsage=AiUsageVO</modelNameMapping>
                                 <modelNameMapping>AiMyKey=AiMyKeyVO</modelNameMapping>
                                 <modelNameMapping>AiMyKeyUpdate=AiMyKeyUpdateVO</modelNameMapping>
+                                <modelNameMapping>AiProviderInfo=AiProviderInfoVO</modelNameMapping>
+                                <modelNameMapping>AiTaskType=AiTaskTypeVO</modelNameMapping>
+                                <modelNameMapping>AiTaskParameter=AiTaskParameterVO</modelNameMapping>
+                                <modelNameMapping>AiProfile=AiProfileVO</modelNameMapping>
                             </modelNameMappings>
                             <typeMappings>
                                 <typeMapping>object+partform=ApPartFormVO</typeMapping>

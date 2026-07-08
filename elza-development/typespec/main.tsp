@@ -2452,6 +2452,55 @@ model AiMyKeyUpdate {
     secret: string;
 }
 
+/**
+ * The AI provider's capabilities — the client's typed view of the provider's
+ * `/info` catalog. Drives the panel: which tasks to offer and, per task, which
+ * typed parameters to gather. Grows additively (new task types, new object
+ * types); a client tolerates unknown parameter/result `type` codes.
+ */
+model AiProviderInfo {
+    /** Protocol version reported by the provider (`major.minor`). */
+    protocolVersion: string;
+    /** Human-readable provider/service name. */
+    providerName?: string;
+    /** Task types the provider currently offers. */
+    taskTypes: AiTaskType[];
+    /** Quality/cost tiers the provider offers. */
+    profiles: AiProfile[];
+}
+
+/** One AI task the provider offers, with the typed parameters it declares. */
+model AiTaskType {
+    /** Task type code, e.g. `elza.chat`, `elza.echo`, `elza.revision`. */
+    code: string;
+    name?: string;
+    description?: string;
+    /** Typed parameters the task declares; the client fills these from context. */
+    parameters: AiTaskParameter[];
+    /** Object type codes the task's result may contain (client rendering readiness). */
+    resultTypes: string[];
+}
+
+/** One typed parameter a task declares. */
+model AiTaskParameter {
+    /** Parameter name — the key under which the client supplies its value. */
+    name: string;
+    /** Object type code of the value, e.g. `elza.text`, `elza.archivalDescription`. */
+    type: string;
+    description?: string;
+    /** Whether the caller must supply it. */
+    required?: boolean;
+}
+
+/** A quality/cost tier the provider offers. */
+model AiProfile {
+    code: string;
+    name?: string;
+    description?: string;
+    /** True for the tier used when a submission names none. */
+    default?: boolean;
+}
+
 @tag("aiprovider")
 @route("/aiprovider")
 namespace ElzaAPI.AiProvider {
@@ -2465,11 +2514,7 @@ namespace ElzaAPI.AiProvider {
     @get op getInfo(
         /** AI external system ID or CODE */
         @path id: string;
-    ): {
-        /** The provider's info document */
-        @Http.statusCode statusCode: 200;
-        @body data: Record<unknown>;
-    } | {
+    ): AiProviderInfo | {
         /** Id does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
