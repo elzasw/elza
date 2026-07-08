@@ -5,7 +5,7 @@
   "type": "module",
   "description": "TypeSpec definition of the Elza AI Provider API (vendor-neutral protocol for AI services over archival description); emits OpenAPI 3.",
   "scripts": {
-    "build": "tsp compile .",
+    "build": "tsp compile . && node scripts/normalize-openapi.mjs",
     "watch": "tsp compile . --watch",
     "format": "tsp format \"**/*.tsp\"",
     "check": "tsp compile . --no-emit"
