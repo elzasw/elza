@@ -985,10 +985,6 @@ components:
         - objectType
         - data
       properties:
-        objectType:
-          type: string
-          enum:
-            - elza.archivalDescription
         data:
           $ref: '#/components/schemas/ArchivalDescription'
       allOf:
@@ -1006,10 +1002,6 @@ components:
         - objectType
         - data
       properties:
-        objectType:
-          type: string
-          enum:
-            - elza.archivalEntity
         data:
           $ref: '#/components/schemas/ArchivalEntity'
       allOf:
@@ -1069,10 +1061,6 @@ components:
         - objectType
         - data
       properties:
-        objectType:
-          type: string
-          enum:
-            - elza.fundInfo
         data:
           $ref: '#/components/schemas/FundInfo'
       allOf:
@@ -1125,10 +1113,6 @@ components:
         - objectType
         - data
       properties:
-        objectType:
-          type: string
-          enum:
-            - elza.markdown
         data:
           $ref: '#/components/schemas/MarkdownPayload'
       allOf:
@@ -1218,10 +1202,6 @@ components:
         - objectType
         - data
       properties:
-        objectType:
-          type: string
-          enum:
-            - elza.revisionFindings
         data:
           $ref: '#/components/schemas/RevisionFindings'
       allOf:
@@ -1573,10 +1553,6 @@ components:
         - objectType
         - data
       properties:
-        objectType:
-          type: string
-          enum:
-            - elza.text
         data:
           $ref: '#/components/schemas/TextPayload'
       allOf:
