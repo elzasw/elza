@@ -934,6 +934,7 @@ components:
           elza.archivalEntity: '#/components/schemas/ArchivalEntityObject'
           elza.archivalDescription: '#/components/schemas/ArchivalDescriptionObject'
           elza.revisionFindings: '#/components/schemas/RevisionFindingsObject'
+          elza.docCitations: '#/components/schemas/DocCitationsObject'
       description: |-
         A typed object: an `objectType` tag plus the `data` payload for that type. The
         polymorphic carrier for every typed value on the wire — task parameters,
@@ -1026,6 +1027,62 @@ components:
           format: date-time
           description: Start of the current accounting period (UTC).
       description: Subscriber-level (whole organization) usage state — the outer budget cap.
+    DocCitation:
+      type: object
+      required:
+        - fragment
+      properties:
+        fragment:
+          type: string
+          description: |-
+            Stable corpus citation id of the cited section (e.g.
+            `zp2015/04-prvky-popisu/ukladaci-jednotka`) — the provider's internal address
+            for the section, unique within a corpus version. Always present, even when no
+            public URL is known.
+        url:
+          type: string
+          description: |-
+            Full web URL of the cited section in the published source document, when the
+            provider can resolve one: a deep link to the section where the source exposes
+            an anchor, otherwise the document page. Absent when the source has no published
+            home or the section could not be located.
+        title:
+          type: string
+          description: Human-readable title of the cited section.
+        source:
+          type: string
+          description: Human-readable name of the source document the section belongs to.
+        sourceId:
+          type: string
+          description: |-
+            Id prefix identifying the source document (the part of `fragment` before the
+            first `/`, e.g. `zp2015`) — lets a client group citations by source.
+      description: |-
+        One document citation: a knowledge/documentation section an answer relied on,
+        carrying a resolvable web URL when the provider knows one. Distinct from a
+        citation of an archival record (a future object type).
+    DocCitationsObject:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/AiObject'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/DocCitationsPayload'
+      description: Document-citations object — the sources an answer relied on.
+    DocCitationsPayload:
+      type: object
+      required:
+        - citations
+      properties:
+        citations:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocCitation'
+          description: The cited sections, in the order first referenced by the answer.
+      description: Payload of `elza.docCitations`.
     FundInfo:
       type: object
       required:
@@ -1153,6 +1210,11 @@ components:
         Payload fields are introduced as real tasks need them.
         - `elza.revisionFindings` — result of `elza.revision`. Payload fields are
         introduced as the task's result shape is finalized.
+        - `elza.docCitations` — the knowledge/documentation sources an answer relied on
+        (payload `DocCitationsPayload`): each cited section as a stable citation id and,
+        when the provider can resolve one, a full web URL. Returned alongside the text
+        answer of an assistant-style task. Distinct from citing an archival record,
+        which will get its own object type.
     PingResponse:
       type: object
       required:

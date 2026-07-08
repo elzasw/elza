@@ -143,6 +143,11 @@ model SignedRequest {
  *   Payload fields are introduced as real tasks need them.
  * - `elza.revisionFindings` — result of `elza.revision`. Payload fields are
  *   introduced as the task's result shape is finalized.
+ * - `elza.docCitations` — the knowledge/documentation sources an answer relied on
+ *   (payload `DocCitationsPayload`): each cited section as a stable citation id and,
+ *   when the provider can resolve one, a full web URL. Returned alongside the text
+ *   answer of an assistant-style task. Distinct from citing an archival record,
+ *   which will get its own object type.
  */
 scalar ObjectType extends string;
 
@@ -262,6 +267,53 @@ model RevisionFindings {
 model RevisionFindingsObject extends AiObject {
   objectType: "elza.revisionFindings";
   data: RevisionFindings;
+}
+
+/**
+ * One document citation: a knowledge/documentation section an answer relied on,
+ * carrying a resolvable web URL when the provider knows one. Distinct from a
+ * citation of an archival record (a future object type).
+ */
+model DocCitation {
+  /**
+   * Stable corpus citation id of the cited section (e.g.
+   * `zp2015/04-prvky-popisu/ukladaci-jednotka`) — the provider's internal address
+   * for the section, unique within a corpus version. Always present, even when no
+   * public URL is known.
+   */
+  fragment: string;
+
+  /**
+   * Full web URL of the cited section in the published source document, when the
+   * provider can resolve one: a deep link to the section where the source exposes
+   * an anchor, otherwise the document page. Absent when the source has no published
+   * home or the section could not be located.
+   */
+  url?: string;
+
+  /** Human-readable title of the cited section. */
+  title?: string;
+
+  /** Human-readable name of the source document the section belongs to. */
+  source?: string;
+
+  /**
+   * Id prefix identifying the source document (the part of `fragment` before the
+   * first `/`, e.g. `zp2015`) — lets a client group citations by source.
+   */
+  sourceId?: string;
+}
+
+/** Payload of `elza.docCitations`. */
+model DocCitationsPayload {
+  /** The cited sections, in the order first referenced by the answer. */
+  citations: DocCitation[];
+}
+
+/** Document-citations object — the sources an answer relied on. */
+model DocCitationsObject extends AiObject {
+  objectType: "elza.docCitations";
+  data: DocCitationsPayload;
 }
 
 // ---------------------------------------------------------------------------
