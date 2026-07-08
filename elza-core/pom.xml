@@ -738,6 +738,7 @@
                                 <modelNameMapping>AiRequestEvent=AiRequestEventVO</modelNameMapping>
                                 <modelNameMapping>AiDisplayBlock=AiDisplayBlockVO</modelNameMapping>
                                 <modelNameMapping>AiTableColumn=AiTableColumnVO</modelNameMapping>
+                                <modelNameMapping>AiCitation=AiCitationVO</modelNameMapping>
                                 <modelNameMapping>AiUsage=AiUsageVO</modelNameMapping>
                                 <modelNameMapping>AiMyKey=AiMyKeyVO</modelNameMapping>
                                 <modelNameMapping>AiMyKeyUpdate=AiMyKeyUpdateVO</modelNameMapping>

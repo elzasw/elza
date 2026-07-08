@@ -2316,6 +2316,11 @@ namespace ElzaAPI.ExternalSystem {
  *   are plain text (no markup). The client renders a native table widget.
  *   Use whenever the data IS tabular — never serialize tables into markdown
  *   when the server can emit this block instead.
+ * - `citations` — the knowledge/documentation sources the answer relied on:
+ *   `citations` holds one entry per cited section (title, source document and,
+ *   when the provider resolved one, a web URL). The server emits NO label text;
+ *   the client renders a "Sources" list and supplies the heading itself, in the
+ *   user's language. Use instead of appending sources as markdown.
  *
  * Evolution is additive: new block types may appear (e.g. `findings`). A
  * client MUST tolerate an unknown `type` by rendering a generic "unsupported
@@ -2324,7 +2329,7 @@ namespace ElzaAPI.ExternalSystem {
  * `markdown` block containing the output JSON in a fenced code block.
  */
 model AiDisplayBlock {
-    /** Block type discriminator: `markdown` | `table` (open set). */
+    /** Block type discriminator: `markdown` | `table` | `citations` (open set). */
     type: string;
     /** `markdown` only: CommonMark + GFM tables source; no raw HTML. */
     content?: string;
@@ -2334,6 +2339,8 @@ model AiDisplayBlock {
     columns?: AiTableColumn[];
     /** `table` only: rows as objects keyed by column `key`; values are plain text. */
     rows?: Record<string>[];
+    /** `citations` only: the cited sources, in first-referenced order. */
+    citations?: AiCitation[];
 }
 
 model AiTableColumn {
@@ -2341,6 +2348,27 @@ model AiTableColumn {
     key: string;
     /** Column header shown to the user. */
     label: string;
+}
+
+/**
+ * One cited source in a `citations` display block. Carries only data — the
+ * client owns all human-readable chrome (the "Sources" heading, the localized
+ * label when a field is absent).
+ */
+model AiCitation {
+    /**
+     * Stable citation id of the cited section — the client's list key and the
+     * fallback label shown when no `title` is known.
+     */
+    fragment: string;
+    /** Deep link to the cited section in the published source, when resolvable. */
+    url?: string;
+    /** Human-readable title of the cited section (the primary label). */
+    title?: string;
+    /** Human-readable name of the source document the section belongs to. */
+    source?: string;
+    /** Id of the source document — lets the client group citations by source. */
+    sourceId?: string;
 }
 
 /** Metered usage of one exchange (informative; costUnits is the billable quantity). */
