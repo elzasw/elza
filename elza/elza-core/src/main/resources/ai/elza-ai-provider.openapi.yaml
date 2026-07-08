@@ -981,14 +981,14 @@ components:
         real tasks need them; open for additive growth.
     ArchivalDescriptionObject:
       type: object
-      required:
-        - objectType
-        - data
-      properties:
-        data:
-          $ref: '#/components/schemas/ArchivalDescription'
       allOf:
         - $ref: '#/components/schemas/AiObject'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/ArchivalDescription'
       description: Archival description object.
     ArchivalEntity:
       type: object
@@ -998,14 +998,14 @@ components:
         open for additive growth.
     ArchivalEntityObject:
       type: object
-      required:
-        - objectType
-        - data
-      properties:
-        data:
-          $ref: '#/components/schemas/ArchivalEntity'
       allOf:
         - $ref: '#/components/schemas/AiObject'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/ArchivalEntity'
       description: Archival entity object.
     CustomerUsageInfo:
       type: object
@@ -1057,14 +1057,14 @@ components:
         the full arrangement. Mirrors `ArrFund`.
     FundInfoObject:
       type: object
-      required:
-        - objectType
-        - data
-      properties:
-        data:
-          $ref: '#/components/schemas/FundInfo'
       allOf:
         - $ref: '#/components/schemas/AiObject'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/FundInfo'
       description: Fund information object.
     InstitutionInfo:
       type: object
@@ -1109,14 +1109,14 @@ components:
       description: Operational limits of this provider. Advisory for clients; enforced server-side.
     MarkdownObject:
       type: object
-      required:
-        - objectType
-        - data
-      properties:
-        data:
-          $ref: '#/components/schemas/MarkdownPayload'
       allOf:
         - $ref: '#/components/schemas/AiObject'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/MarkdownPayload'
       description: Markdown text object — a formatted text block the client renders.
     MarkdownPayload:
       type: object
@@ -1198,14 +1198,14 @@ components:
         is finalized; open for additive growth.
     RevisionFindingsObject:
       type: object
-      required:
-        - objectType
-        - data
-      properties:
-        data:
-          $ref: '#/components/schemas/RevisionFindings'
       allOf:
         - $ref: '#/components/schemas/AiObject'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/RevisionFindings'
       description: Revision findings object.
     ServiceError:
       type: object
@@ -1549,14 +1549,14 @@ components:
       description: A task type supported by this provider.
     TextObject:
       type: object
-      required:
-        - objectType
-        - data
-      properties:
-        data:
-          $ref: '#/components/schemas/TextPayload'
       allOf:
         - $ref: '#/components/schemas/AiObject'
+        - type: object
+          required:
+            - data
+          properties:
+            data:
+              $ref: '#/components/schemas/TextPayload'
       description: Free text object.
     TextPayload:
       type: object
