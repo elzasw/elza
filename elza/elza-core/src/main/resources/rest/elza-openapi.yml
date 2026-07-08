@@ -1899,10 +1899,10 @@ paths:
     get:
       operationId: AiProvider_getInfo
       description: |-
-        Reads the AI provider's service info (protocol version, supported task
-        types, profiles, limits) via the provider's GET /info. Doubles as the
-        connection test of the configured AI external system. The response is
-        the provider's info document passed through as-is.
+        Reads the AI provider's service info (protocol version, provider name,
+        supported task types with their declared parameters and result types,
+        and profiles) via the provider's GET /info. Doubles as the connection
+        test of the configured AI external system.
       parameters:
         - name: id
           in: path
@@ -1916,8 +1916,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: {}
+                $ref: '#/components/schemas/AiProviderInfo'
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -4880,6 +4879,92 @@ components:
           format: int32
           description: Number of logged users
       description: Basic statistics about Elza instance
+    AiProviderInfo:
+      type: object
+      required:
+        - protocolVersion
+        - taskTypes
+        - profiles
+      properties:
+        protocolVersion:
+          type: string
+          description: Protocol version reported by the provider (`major.minor`).
+        providerName:
+          type: string
+          description: Human-readable provider/service name.
+        taskTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiTaskType'
+          description: Task types the provider currently offers.
+        profiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiProfile'
+          description: Quality/cost tiers the provider offers.
+      description: |-
+        The AI provider's capabilities — the client's typed view of the provider's
+        `/info` catalog. Drives the panel: which tasks to offer and, per task, which
+        typed parameters to gather. Grows additively (new task types, new object
+        types); a client tolerates unknown parameter/result `type` codes.
+    AiTaskType:
+      type: object
+      required:
+        - code
+        - parameters
+        - resultTypes
+      properties:
+        code:
+          type: string
+          description: Task type code, e.g. `elza.chat`, `elza.echo`, `elza.revision`.
+        name:
+          type: string
+        description:
+          type: string
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiTaskParameter'
+          description: Typed parameters the task declares; the client fills these from context.
+        resultTypes:
+          type: array
+          items:
+            type: string
+          description: Object type codes the task's result may contain (client rendering readiness).
+      description: One AI task the provider offers, with the typed parameters it declares.
+    AiTaskParameter:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: string
+          description: Parameter name — the key under which the client supplies its value.
+        type:
+          type: string
+          description: Object type code of the value, e.g. `elza.text`, `elza.archivalDescription`.
+        description:
+          type: string
+        required:
+          type: boolean
+          description: Whether the caller must supply it.
+      description: One typed parameter a task declares.
+    AiProfile:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        default:
+          type: boolean
+          description: True for the tier used when a submission names none.
+      description: A quality/cost tier the provider offers.
     AiConversation:
       type: object
       required:
