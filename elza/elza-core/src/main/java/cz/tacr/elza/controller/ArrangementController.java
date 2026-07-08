@@ -587,6 +587,7 @@ public class ArrangementController {
      * @param outputVersion verze výstupu
      * @param itemTypeId    identfikátor typu hodnoty atributu
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}",
             method = RequestMethod.DELETE,
@@ -653,10 +654,11 @@ public class ArrangementController {
      * @param descItemObjectId object id atributu
      * @throws IOException
      */
+    @Deprecated
+    @Transactional
     @RequestMapping(value = "/outputItems/{fundVersionId}/csv/export",
             method = RequestMethod.GET,
             produces = "text/csv")
-    @Transactional
     public void outputItemCsvExport(
             final HttpServletResponse response,
             @PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -689,7 +691,6 @@ public class ArrangementController {
      * @param importFile     soubor soubor pro import
      * @throws IOException chyba
      */
-    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/csv/import",
             method = RequestMethod.POST,
@@ -724,6 +725,7 @@ public class ArrangementController {
      * @param importFile     soubor soubor pro import
      * @throws IOException chyba
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/outputItems/{fundVersionId}/csv/import",
             method = RequestMethod.POST,
@@ -759,7 +761,6 @@ public class ArrangementController {
      * @param descItemObjectId identifikátor existující hodnoty atributu
      * @return upravená hodnota atributu nastavená na nezjištěno
      */
-    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/set",
             method = RequestMethod.PUT,
@@ -792,7 +793,6 @@ public class ArrangementController {
      * @param descItemObjectId identifikátor existující hodnoty atributu
      * @return odstraněný atribut
      */
-    @Deprecated
     @Transactional
     @RequestMapping(value = "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/unset",
             method = RequestMethod.PUT,
@@ -823,6 +823,7 @@ public class ArrangementController {
      * @param outputItemObjectId identifikátor existující hodnoty atributu
      * @return upravená hodnota atributu nastavená na nezjištěno
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/notUndefined/set",
             method = RequestMethod.PUT,
@@ -854,6 +855,7 @@ public class ArrangementController {
      * @param outputItemObjectId identifikátor existující hodnoty atributu
      * @return odstraněný atribut
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/notUndefined/unset",
             method = RequestMethod.PUT,
