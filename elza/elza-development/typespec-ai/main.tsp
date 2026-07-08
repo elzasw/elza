@@ -16,8 +16,8 @@ using TypeSpec.OpenAPI;
  *
  * The provider is a gateway to actual AI models: it holds the model/vendor
  * credentials, selects and renders the prompt for each task type, calls the
- * model, enforces the client-supplied output schema, and meters usage for its
- * own accounting/billing.
+ * model, enforces the result type's shape, and meters usage for its own
+ * accounting/billing.
  *
  * ## Interaction model
  *
@@ -25,7 +25,8 @@ using TypeSpec.OpenAPI;
  * internet, so **every connection is client → provider**; the provider never
  * calls the client. The protocol is therefore an asynchronous task loop:
  *
- *   1. `POST /tasks` — submit a task (type, input, output schema, optional tools).
+ *   1. `POST /tasks` — submit a task (type, typed parameters, optional tools
+ *      and context).
  *   2. `GET /tasks/{taskId}?wait=…` — long-poll for state, progress and result.
  *   3. If the task needs data only the client can provide, it enters state
  *      `awaiting_tools` and lists `toolCalls` drawn from the tools the client
@@ -41,19 +42,25 @@ using TypeSpec.OpenAPI;
  *
  * ## Contract ownership
  *
- * The *client* owns the task contract: the `taskType`, the shape of `input`, and
- * the `outputSchema` the result must validate against (they change only with a
- * client release). The *provider* owns the prompt for each task type and may
- * improve it at any time; every result reports the `promptVersion` used. Prompt
- * wording can never break a client, because the provider guarantees the output
- * validates against the submitted schema.
+ * Three things are owned separately. **This contract** owns the typed object
+ * shapes: every `ObjectType` — used for task parameters, context and results —
+ * has its payload defined here, so client and provider generate the same models
+ * and cannot drift; the vocabulary grows additively, only with a release. The
+ * **provider** owns the task catalog — which `taskType`s exist and are currently
+ * available, the parameters each declares (`GET /info`), and the prompt for each,
+ * which it may improve at any time (every result reports the `promptVersion`
+ * used). The **client** owns marshalling its domain data into these typed
+ * objects, choosing which task to run, and supplying the parameters the task
+ * declares. Prompt wording can never break a client, because the provider
+ * guarantees each result block conforms to the shape defined for its object type.
  *
  * ## Evolution
  *
- * The contract grows **additively only**: new task types, new task states, new
- * optional fields. Clients must ignore unknown fields and treat unknown task
- * states as "still in progress, keep polling". `GET /info` reports the protocol
- * version and the capabilities of the provider.
+ * The contract grows **additively only**: new task types, new object types, new
+ * task states, new optional fields. Clients must ignore unknown fields, unknown
+ * object types, and treat unknown task states as "still in progress, keep
+ * polling". `GET /info` reports the protocol version and the capabilities of the
+ * provider.
  *
  * Authentication is request signing (`ELZA-AI-HMAC-SHA256`) with keys issued by
  * the provider, scoped either to the whole installation/organization or to a
@@ -61,7 +68,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.3.0" })
+@info(#{ version: "0.4.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -109,6 +116,155 @@ model SignedRequest {
 }
 
 // ---------------------------------------------------------------------------
+// Typed objects
+// ---------------------------------------------------------------------------
+
+/**
+ * Object type — names a typed payload defined by this contract. An **open**,
+ * namespaced set of string codes (like `TaskType`; a plain string on the wire,
+ * so code generators produce a simple type): new object types are added
+ * additively with a client release, never dynamically. Each code has a payload
+ * shape defined below, so client and provider generate the *same* model from
+ * this spec and their representations cannot drift. It is used three ways: the
+ * discriminator of `AiObject`, a parameter's declared `type` in the task catalog
+ * (`TaskParameterInfo`), and the result block types a task declares
+ * (`TaskTypeInfo.resultTypes`). Defined codes:
+ *
+ * - `elza.text` — free text (payload `TextPayload`); the input and result of
+ *   `elza.echo`.
+ * - `elza.markdown` — formatted text (CommonMark + GFM, no raw HTML), a common
+ *   result block the client renders; payload `MarkdownPayload`.
+ * - `elza.fundInfo` — basic descriptive information about an archival fund and
+ *   its holding institution (payload `FundInfo`); typically supplied as
+ *   `context`.
+ * - `elza.archivalEntity` — a CAM access point / entity. Payload fields are
+ *   introduced as real tasks need them.
+ * - `elza.archivalDescription` — a description unit (node) and its related data.
+ *   Payload fields are introduced as real tasks need them.
+ * - `elza.revisionFindings` — result of `elza.revision`. Payload fields are
+ *   introduced as the task's result shape is finalized.
+ */
+scalar ObjectType extends string;
+
+/**
+ * A typed object: an `objectType` tag plus the `data` payload for that type. The
+ * polymorphic carrier for every typed value on the wire — task parameters,
+ * supplementary context, and results. New concrete types are added as subtypes
+ * below; a client ignores an object whose `objectType` it does not implement.
+ */
+@discriminator("objectType")
+model AiObject {
+  /** Selects the payload shape; one of the defined `ObjectType` codes. */
+  objectType: ObjectType;
+}
+
+/** Payload of `elza.text`. */
+model TextPayload {
+  /** The text. */
+  text: string;
+}
+
+/** Free text object. */
+model TextObject extends AiObject {
+  objectType: "elza.text";
+  data: TextPayload;
+}
+
+/** Payload of `elza.markdown`. */
+model MarkdownPayload {
+  /** Formatted text as CommonMark + GFM (no raw HTML); the client renders it. */
+  markdown: string;
+}
+
+/** Markdown text object — a formatted text block the client renders. */
+model MarkdownObject extends AiObject {
+  objectType: "elza.markdown";
+  data: MarkdownPayload;
+}
+
+/** Holding archival institution of a fund. */
+model InstitutionInfo {
+  /** Institution code (`ParInstitution.internalCode`). */
+  code?: string;
+
+  /** Institution name — the preferred name of its access point. */
+  name?: string;
+}
+
+/**
+ * Basic descriptive information about an archival fund and its holding
+ * institution — enough for a task to know which fund it operates within, without
+ * the full arrangement. Mirrors `ArrFund`.
+ */
+model FundInfo {
+  /** Fund name (`ArrFund.name`). */
+  name: string;
+
+  /** Internal (evidence) code of the fund, if set. */
+  internalCode?: string;
+
+  /** Fund number, if set. */
+  fundNumber?: int32;
+
+  /** Fund mark / signature, if set. */
+  mark?: string;
+
+  /** Dating of the fund (free text), if set. */
+  unitDate?: string;
+
+  /** Holding institution. */
+  institution?: InstitutionInfo;
+}
+
+/** Fund information object. */
+model FundInfoObject extends AiObject {
+  objectType: "elza.fundInfo";
+  data: FundInfo;
+}
+
+/**
+ * A CAM access point / entity. Payload fields are added as real tasks need them;
+ * open for additive growth.
+ */
+model ArchivalEntity {
+  ...Record<unknown>;
+}
+
+/** Archival entity object. */
+model ArchivalEntityObject extends AiObject {
+  objectType: "elza.archivalEntity";
+  data: ArchivalEntity;
+}
+
+/**
+ * A description unit (node) and its related data. Payload fields are added as
+ * real tasks need them; open for additive growth.
+ */
+model ArchivalDescription {
+  ...Record<unknown>;
+}
+
+/** Archival description object. */
+model ArchivalDescriptionObject extends AiObject {
+  objectType: "elza.archivalDescription";
+  data: ArchivalDescription;
+}
+
+/**
+ * Result of `elza.revision`. Payload fields are added as the task's result shape
+ * is finalized; open for additive growth.
+ */
+model RevisionFindings {
+  ...Record<unknown>;
+}
+
+/** Revision findings object. */
+model RevisionFindingsObject extends AiObject {
+  objectType: "elza.revisionFindings";
+  data: RevisionFindings;
+}
+
+// ---------------------------------------------------------------------------
 // Task model
 // ---------------------------------------------------------------------------
 
@@ -120,14 +276,15 @@ model SignedRequest {
  * advertises the types it supports via `GET /info`. Namespaced by client
  * product (`elza.…`). Defined types:
  *
- * - `elza.echo` — integration-test task: the model restates `input` according
- *   to the output schema. No archival semantics — exists so both sides can
- *   validate the full protocol loop (auth, submit, poll, schema-enforced
- *   output, usage metering) cheaply before any real scenario.
+ * - `elza.echo` — integration-test task: takes one `elza.text` parameter and
+ *   returns it as an `elza.text` result. No archival semantics — exists so both
+ *   sides can validate the full protocol loop (auth, submit, poll, typed output,
+ *   usage metering) cheaply before any real scenario.
  * - `elza.revision` — advisory revision of archival description units: finds
  *   logical inconsistencies, dating mismatches, terminology problems and other
  *   issues that formal (rule-based) validation cannot catch. Read-only;
- *   findings are returned per node. The first production scenario.
+ *   findings are returned as `elza.revisionFindings`. The first production
+ *   scenario.
  */
 scalar TaskType extends string;
 
@@ -151,7 +308,7 @@ enum TaskState {
    */
   awaiting_tools,
 
-  /** Finished successfully; `output` is present and validates against the submitted schema. */
+  /** Finished successfully; `output` is present and conforms to the task's `resultType`. */
   done,
 
   /** Failed; `error` is present. Usage already incurred is still reported. */
@@ -203,8 +360,9 @@ model ToolResult {
 }
 
 /**
- * Client-supplied context of a task. Not interpreted by the AI; used for audit,
- * support and the provider's reporting. Open for additive growth.
+ * Audit/attribution facts about a task — who ran it and from which application.
+ * Not interpreted by the AI and not task data (the data travels in `parameters`
+ * and `context`); used only for the provider's support and usage reporting.
  */
 model TaskMetadata {
   /** Identifier of the client instance the task originates from, e.g. `PROD`. */
@@ -222,12 +380,6 @@ model TaskMetadata {
    * key this should match the key's user.
    */
   requestedBy?: string;
-
-  /** Identifier of the archival fund concerned, if any (UUID). */
-  fundUuid?: string;
-
-  /** Additional client-specific context. */
-  ...Record<unknown>;
 }
 
 /** Task submission. */
@@ -255,19 +407,26 @@ model SubmitTask {
    */
   userInstructions?: string;
 
-  /** Task-type-specific input payload (the data to work on). */
-  input: unknown;
+  /**
+   * The task's declared parameters, keyed by the parameter `name` the provider
+   * advertises in `TaskTypeInfo.parameters`. Each value is an `AiObject` whose
+   * `objectType` matches the declared parameter `type`. Every parameter the task
+   * marks `required` must be present.
+   */
+  parameters: Record<AiObject>;
 
   /**
-   * JSON Schema the `output` must validate against. Owned by the client (it is
-   * what the client's code parses); the provider guarantees conformance of
-   * `output`.
+   * Supplementary context — an open list of typed objects that may improve the
+   * result (e.g. the archival units the user recently worked with, or the
+   * `elza.fundInfo` of the fund in scope). Not part of the task's declared
+   * parameters; the provider uses what it understands and ignores the rest.
    */
-  outputSchema: Record<unknown>;
+  context?: AiObject[];
 
   /**
    * Tools the client offers for this task. If present, the task may enter
-   * `awaiting_tools` and request calls; if absent, the task runs on `input` alone.
+   * `awaiting_tools` and request calls; if absent, the task runs on `parameters`
+   * (and `context`) alone.
    */
   tools?: ToolDefinition[];
 
@@ -279,7 +438,7 @@ model SubmitTask {
    */
   parentTaskId?: string;
 
-  /** Client-supplied context for audit and reporting. */
+  /** Audit/attribution facts about the task; not task data (see `parameters` and `context`). */
   metadata?: TaskMetadata;
 }
 
@@ -302,8 +461,9 @@ model TaskError {
   /**
    * Machine-readable code. Defined codes (the set may grow): `MODEL_ERROR`
    * (upstream model failure after retries), `SCHEMA_ERROR` (model could not
-   * produce schema-valid output), `TOOL_TIMEOUT` (client did not return tool
-   * results in time), `INPUT_TOO_LARGE`, `UNSUPPORTED_TASK_TYPE`, `INTERNAL`.
+   * produce output conforming to the task's declared result types), `TOOL_TIMEOUT` (client did
+   * not return tool results in time), `INPUT_TOO_LARGE`, `UNSUPPORTED_TASK_TYPE`,
+   * `INTERNAL`.
    */
   code: string;
 
@@ -370,10 +530,12 @@ model Task {
   toolCalls?: ToolCall[];
 
   /**
-   * The result; present when `done`. Validates against the submitted
-   * `outputSchema` — guaranteed by the server.
+   * The result; present when `done`. An ordered list of typed blocks — the task
+   * type fixes which block types may appear (`TaskTypeInfo.resultTypes`), not the
+   * caller. Each block's `data` conforms to its `objectType`'s payload shape,
+   * guaranteed by the server.
    */
-  output?: unknown;
+  output?: AiObject[];
 
   /** Failure description; present when `error`. */
   error?: TaskError;
@@ -467,6 +629,29 @@ model PingResponse {
   serverTime: utcDateTime;
 }
 
+/**
+ * A typed parameter a task type declares in the catalog. Names one of the task's
+ * inputs and the `ObjectType` its value must have; the client supplies it under
+ * this `name` in `SubmitTask.parameters`.
+ */
+model TaskParameterInfo {
+  /** Parameter name, unique within the task (the key under `SubmitTask.parameters`). */
+  @pattern("^[A-Za-z][A-Za-z0-9_]*$")
+  name: string;
+
+  /** The parameter's object type (an `ObjectType` code). */
+  type: ObjectType;
+
+  /** Human-readable description for the client UI. */
+  description?: string;
+
+  /**
+   * Whether the caller must supply it. A task cannot be invoked unless all its
+   * required parameters are present.
+   */
+  required?: boolean;
+}
+
 /** A task type supported by this provider. */
 model TaskTypeInfo {
   /** The task type code, e.g. `elza.revision`. */
@@ -477,6 +662,20 @@ model TaskTypeInfo {
 
   /** What the task does. */
   description?: string;
+
+  /**
+   * The typed parameters this task declares. A client can offer the task only if
+   * its build implements every parameter `type` (and every `resultTypes` entry),
+   * and only when it can supply the parameters the task marks `required`.
+   */
+  parameters?: TaskParameterInfo[];
+
+  /**
+   * The object types the task's result may contain — an ordered set of output
+   * blocks (e.g. a text summary plus a structured findings object). Fixed by the
+   * task, not chosen by the caller; the client must be able to handle each type.
+   */
+  resultTypes?: ObjectType[];
 }
 
 /** A quality/cost tier offered by this provider. */
@@ -603,8 +802,9 @@ model ServiceError {
 op ping(): PingResponse;
 
 /**
- * Describe this provider: protocol version, supported task types, profiles,
- * limits. Doubles as the connection test (auth + subscription check).
+ * Describe this provider: protocol version, supported task types (with their
+ * declared parameters and result types), profiles, limits. Doubles as the
+ * connection test (auth + subscription check).
  */
 @route("/info")
 @get
