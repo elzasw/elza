@@ -5549,6 +5549,20 @@ namespace ElzaAPI.Output {
     }
 
     /**
+     * Data for CSV import into outputItem
+     */
+    model OutputItemCsvImportData {
+        /** output version */
+        outputVersion: HttpPart<integer>;
+        /** output id */
+        outputId: HttpPart<integer>;
+        /** desc item type id */
+        descItemTypeId: HttpPart<integer>;
+        /** CSV file */
+        file: HttpPart<bytes>;
+    }
+
+    /**
      * Create output item
      */
     @route("/item/{outputId}/{fundVersionId}/{outputVersion}/create")
@@ -5588,6 +5602,81 @@ namespace ElzaAPI.Output {
         /** output item id */
         @path outputItemId: integer;
     ): ItemRes;
+
+    /**
+     * Deleting attribute values ​​by type
+     */
+    @route("/item/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}")
+    @delete op deleteOutputItemsByType(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
+        /** output version */
+        @path outputVersion: integer;
+        /** item type id */
+        @path itemTypeId: integer;
+    ): ItemRes;
+
+    /**
+     * Set the attribute to "Undefined"
+     */
+    @route("/item/{fundVersionId}/{outputId}/{outputVersion}/undefined/set")
+    @put op setNotIdentifiedOutputItem(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
+        /** output version */
+        @path outputVersion: integer;
+        /** output item type id */
+        @query outputItemTypeId: integer;
+        /** output item spec id */
+        @query outputItemSpecId?: integer;
+        /** output item object id */
+        @query outputItemObjectId?: integer;
+    ): ItemRes;
+
+    /**
+     * Reset the attribute setting to "Undefined"
+     */
+    @route("/item/{fundVersionId}/{outputVersion}/{outputItemObjectId}/undefined/unset")
+    @put op unsetNotIdentifiedOutputItem(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output version */
+        @path outputVersion: integer;
+        /** output item object id */
+        @path outputItemObjectId: integer;
+    ): ItemRes;
+
+    /**
+     * Import a CSV file; a new entry will be created with the file's contents
+     */
+    @route("/item/{fundVersionId}/csv/import")
+    @post op outputItemCsvImport(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** multipart body */
+        @multipartBody body: OutputItemCsvImportData;
+        /** header */
+        @header contentType: "multipart/form-data";
+    ): ItemRes;
+
+    /**
+     * Downloading a CSV file from an attribute value
+     */
+    @route("/item/{fundVersionId}/csv/export")
+    @get op outputItemCsvExport(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** desc item object id */
+        @query descItemObjectId: integer;
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "text/csv";
+        @body data: bytes;
+    };
 
     /**
      * Getting data for the form

@@ -2934,6 +2934,159 @@ paths:
             schema:
               $ref: '#/components/schemas/ImportFundData'
         description: Doplnění způsobu importu
+  /funds/out/item/{fundVersionId}/csv/export:
+    get:
+      operationId: Output_outputItemCsvExport
+      description: Downloading a CSV file from an attribute value
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: descItemObjectId
+          in: query
+          required: true
+          description: desc item object id
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+      tags:
+        - output
+  /funds/out/item/{fundVersionId}/csv/import:
+    post:
+      operationId: Output_outputItemCsvImport
+      description: Import a CSV file; a new entry will be created with the file's contents
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.ItemRes'
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Output.OutputItemCsvImportData'
+            encoding:
+              outputVersion:
+                contentType: text/plain
+              outputId:
+                contentType: text/plain
+              descItemTypeId:
+                contentType: text/plain
+        description: multipart body
+  /funds/out/item/{fundVersionId}/{outputId}/{outputVersion}/undefined/set:
+    put:
+      operationId: Output_setNotIdentifiedOutputItem
+      description: Set the attribute to "Undefined"
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: outputVersion
+          in: path
+          required: true
+          description: output version
+          schema:
+            type: integer
+        - name: outputItemTypeId
+          in: query
+          required: true
+          description: output item type id
+          schema:
+            type: integer
+          explode: false
+        - name: outputItemSpecId
+          in: query
+          required: false
+          description: output item spec id
+          schema:
+            type: integer
+          explode: false
+        - name: outputItemObjectId
+          in: query
+          required: false
+          description: output item object id
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.ItemRes'
+      tags:
+        - output
+  /funds/out/item/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}:
+    delete:
+      operationId: Output_deleteOutputItemsByType
+      description: Deleting attribute values ​​by type
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: outputVersion
+          in: path
+          required: true
+          description: output version
+          schema:
+            type: integer
+        - name: itemTypeId
+          in: path
+          required: true
+          description: item type id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.ItemRes'
+      tags:
+        - output
   /funds/out/item/{fundVersionId}/{outputVersion}/update:
     put:
       operationId: Output_updateOutputItem
@@ -2988,6 +3141,38 @@ paths:
           in: path
           required: true
           description: output item id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.ItemRes'
+      tags:
+        - output
+  /funds/out/item/{fundVersionId}/{outputVersion}/{outputItemObjectId}/undefined/unset:
+    put:
+      operationId: Output_unsetNotIdentifiedOutputItem
+      description: Reset the attribute setting to "Undefined"
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: outputVersion
+          in: path
+          required: true
+          description: output version
+          schema:
+            type: integer
+        - name: outputItemObjectId
+          in: path
+          required: true
+          description: output item object id
           schema:
             type: integer
       responses:
@@ -6112,8 +6297,8 @@ components:
           default: true
         includeDaos:
           type: boolean
-          default: true
           description: zahrnout do exportu připojené digitální archivní objekty (DAO)
+          default: true
       description: Parameters of archive file export
     ExportRequestStatus:
       type: object
@@ -7708,6 +7893,27 @@ components:
         item:
           $ref: '#/components/schemas/OutputItem'
       description: Náhrada za `OutputItemResult`
+    Output.OutputItemCsvImportData:
+      type: object
+      properties:
+        outputVersion:
+          type: integer
+          description: output version
+        outputId:
+          type: integer
+          description: output id
+        descItemTypeId:
+          type: integer
+          description: desc item type id
+        file:
+          type: string
+          format: binary
+          description: CSV file
+      required:
+        - outputVersion
+        - outputId
+        - descItemTypeId
+        - file
     Output.State:
       type: string
       enum:

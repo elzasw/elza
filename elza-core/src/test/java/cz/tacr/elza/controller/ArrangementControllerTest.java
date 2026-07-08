@@ -527,7 +527,7 @@ public class ArrangementControllerTest extends AbstractControllerTest {
         parent = outputItem.getParent();
         itemCreated = outputItem.getItem();
 
-        ArrangementController.OutputItemResult outputItemResult = deleteOutputItemsByType(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId());
+        OutputItemRes outputItemResult = outputApi.outputDeleteOutputItemsByType(fundVersion.getId(), parent.getId(), parent.getVersion(), typeVo.getId());
 
         // Hodnota atributu musí být prázdná
         OutputSettingsVO outputSettings = new OutputSettingsVO();
