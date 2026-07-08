@@ -9,8 +9,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  * One exchange with an AI provider (one submitted task) within an
@@ -59,24 +61,24 @@ public class AiRequest {
     private String promptVersion;
 
     /** The user's message of this exchange (rendered in the thread). */
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "user_instructions")
     private String userInstructions;
 
     /** Structured task parameters (JSON) — checks, node ids; not the full payload. */
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "parameters")
     private String parameters;
 
     /** Task output (JSON) as returned by the provider; what the user saw. */
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "output")
     private String output;
 
     @Column(name = "error_code", length = StringLength.LENGTH_50)
     private String errorCode;
 
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "error_message")
     private String errorMessage;
 

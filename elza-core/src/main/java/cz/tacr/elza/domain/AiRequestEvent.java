@@ -9,8 +9,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  * One step of an {@link AiRequest} lifecycle with its payload — the exchange
@@ -47,7 +49,7 @@ public class AiRequestEvent {
     private String eventType;
 
     /** Event payload (JSON); shape depends on the event type. */
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "data")
     private String data;
 

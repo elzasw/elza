@@ -9,8 +9,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  * One AI topic as the user sees it in the UI: a thread with a context (fund
@@ -45,7 +47,7 @@ public class AiConversation {
     private String contextType;
 
     /** Context detail (JSON): ids, filter, selection — shape depends on contextType. */
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "context")
     private String context;
 
