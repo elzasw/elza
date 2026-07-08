@@ -23,9 +23,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Value;
 
+import cz.tacr.elza.aiprovider.client.vo.AiObject;
 import cz.tacr.elza.aiprovider.client.vo.SubmitTask;
 import cz.tacr.elza.aiprovider.client.vo.TaskAccepted;
 import cz.tacr.elza.aiprovider.client.vo.TaskMetadata;
+import cz.tacr.elza.aiprovider.client.vo.TextObject;
+import cz.tacr.elza.aiprovider.client.vo.TextPayload;
 import cz.tacr.elza.controller.vo.AiConversationCreateVO;
 import cz.tacr.elza.controller.vo.AiConversationDetailVO;
 import cz.tacr.elza.controller.vo.AiConversationVO;
@@ -56,19 +59,16 @@ import cz.tacr.elza.service.UserService;
  * communication runs over the signed client ({@link AiProviderService}) and
  * state changes are observed by {@link AiRequestPoller}.
  *
- * <p>Task input building (v1): the {@code parameters} JSON of the exchange is
- * sent as the provider task input when present; otherwise the input is
- * {@code {"message": userInstructions}}. The output schema is permissive
- * ({@code {"type":"object"}}) — panel task types with a fixed contract (e.g.
- * the revision action) will supply their own input builders and schemas.
+ * <p>Task parameters: the exchange is submitted with the provider's typed
+ * parameters (see {@link #buildParameters}). The echo integration task takes
+ * the user's text as its {@code elza.text} input; the chat assistant runs on
+ * {@code userInstructions} alone. Task types whose parameter object types Elza
+ * cannot yet marshal are simply not offered.
  */
 @Service
 public class AiConversationService {
 
     private static final Logger logger = LoggerFactory.getLogger(AiConversationService.class);
-
-    /** Permissive output schema of panel exchanges (v1). */
-    private static final Map<String, Object> OPEN_OBJECT_SCHEMA = Map.of("type", "object");
 
     @Autowired
     private AiConversationRepository aiConversationRepository;
@@ -244,8 +244,7 @@ public class AiConversationService {
                 .requestId(request.getRequestId())
                 .taskType(taskType)
                 .userInstructions(userInstructions)
-                .input(buildInput(userInstructions, parameters))
-                .outputSchema(new HashMap<>(OPEN_OBJECT_SCHEMA))
+                .parameters(buildParameters(taskType, userInstructions))
                 .parentTaskId(parentTaskUid)
                 .metadata(metadata);
         addEvent(request, AiRequestEvent.TYPE_SUBMIT, toJson(submitTask));
@@ -285,15 +284,22 @@ public class AiConversationService {
         });
     }
 
-    private Object buildInput(final String userInstructions, final String parameters) {
-        if (StringUtils.isNotBlank(parameters)) {
-            try {
-                return objectMapper.readValue(parameters, Map.class);
-            } catch (Exception e) {
-                throw new BusinessException("Parameters are not valid JSON", BaseCode.PROPERTY_IS_INVALID);
-            }
+    /**
+     * Builds the provider's typed task parameters. The echo integration task
+     * takes the user's text as its {@code elza.text} {@code input}; the chat
+     * assistant needs none (it runs on {@code userInstructions}). Task types
+     * whose parameter object types are not yet marshalled contribute nothing —
+     * they are only offered once Elza can fill their required parameters.
+     */
+    private Map<String, AiObject> buildParameters(final String taskType, final String userInstructions) {
+        Map<String, AiObject> parameters = new HashMap<>();
+        if ("elza.echo".equals(taskType)) {
+            TextObject input = new TextObject();
+            input.setObjectType("elza.text");
+            input.setData(new TextPayload().text(StringUtils.defaultString(userInstructions)));
+            parameters.put("input", input);
         }
-        return Map.of("message", StringUtils.defaultString(userInstructions));
+        return parameters;
     }
 
     // -----------------------------------------------------------------------
@@ -335,7 +341,7 @@ public class AiConversationService {
                 .createDate(toOffset(request.getCreateDate()))
                 .finishDate(toOffset(request.getFinishDate()));
         if ("done".equals(request.getState()) && request.getOutput() != null) {
-            vo.setBlocks(blockMapperRegistry.map(request.getTaskType(), request.getOutput()));
+            vo.setBlocks(blockMapperRegistry.map(request.getOutput()));
         }
         if (request.getFinishDate() != null || !"queued".equals(request.getState())) {
             vo.setUsage(new AiUsageVO()
