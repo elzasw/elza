@@ -736,7 +736,12 @@
                                 <modelNameMapping>AiRequest=AiRequestVO</modelNameMapping>
                                 <modelNameMapping>AiRequestCreate=AiRequestCreateVO</modelNameMapping>
                                 <modelNameMapping>AiRequestEvent=AiRequestEventVO</modelNameMapping>
+                                <modelNameMapping>AiDisplayBlockType=AiDisplayBlockTypeVO</modelNameMapping>
                                 <modelNameMapping>AiDisplayBlock=AiDisplayBlockVO</modelNameMapping>
+                                <modelNameMapping>AiTextBlock=AiTextBlockVO</modelNameMapping>
+                                <modelNameMapping>AiMarkdownBlock=AiMarkdownBlockVO</modelNameMapping>
+                                <modelNameMapping>AiTableBlock=AiTableBlockVO</modelNameMapping>
+                                <modelNameMapping>AiDocCitationsBlock=AiDocCitationsBlockVO</modelNameMapping>
                                 <modelNameMapping>AiTableColumn=AiTableColumnVO</modelNameMapping>
                                 <modelNameMapping>AiCitation=AiCitationVO</modelNameMapping>
                                 <modelNameMapping>AiUsage=AiUsageVO</modelNameMapping>

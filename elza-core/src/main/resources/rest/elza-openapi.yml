@@ -5493,63 +5493,110 @@ components:
         One cited source in a `citations` display block. Carries only data — the
         client owns all human-readable chrome (the "Sources" heading, the localized
         label when a field is absent).
+    AiDisplayBlockType:
+      type: string
+      enum:
+        - TEXT
+        - MARKDOWN
+        - TABLE
+        - DOC_CITATIONS
+      description: |-
+        Display block type — the discriminator of `AiDisplayBlock`. The client renders
+        each block by this code, reading the fields of the matching subtype. Additive:
+        new types may appear; a client MUST tolerate an unknown type by rendering a
+        generic "unsupported content" placeholder (never dropping the block silently).
     AiDisplayBlock:
       type: object
       required:
         - type
       properties:
         type:
-          type: string
-          description: 'Block type discriminator: `markdown` | `table` | `citations` (open set).'
+          allOf:
+            - $ref: '#/components/schemas/AiDisplayBlockType'
+          description: Selects the block shape; one of the defined `AiDisplayBlockType` codes.
+      discriminator:
+        propertyName: type
+        mapping:
+          TEXT: '#/components/schemas/AiTextBlock'
+          MARKDOWN: '#/components/schemas/AiMarkdownBlock'
+          TABLE: '#/components/schemas/AiTableBlock'
+          DOC_CITATIONS: '#/components/schemas/AiDocCitationsBlock'
+      description: |-
+        One display block of an AI response — THE RENDERING CONTRACT between the
+        server and the client. The server (per task type) transforms the provider's
+        schema-validated output into an ordered list of blocks; the client renders
+        each block by its `type` (see `AiDisplayBlockType`), reading the fields of the
+        matching subtype below.
+
+        Evolution is additive: new block types may appear. A client MUST tolerate an
+        unknown `type` by rendering a generic "unsupported content" placeholder (never
+        dropping the block silently). Server-side fallback rule: a task output whose
+        object type has no block mapper is rendered as one `MARKDOWN` block containing
+        the output JSON in a fenced code block.
+    AiTextBlock:
+      type: object
+      required:
+        - content
+      properties:
         content:
           type: string
-          description: '`markdown` only: CommonMark + GFM tables source; no raw HTML.'
+          description: The text, rendered as-is.
+      allOf:
+        - $ref: '#/components/schemas/AiDisplayBlock'
+      description: Plain-text answer — `content` is rendered verbatim, never parsed as markdown.
+    AiMarkdownBlock:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          description: CommonMark + GFM source; the client renders through a sanitizing renderer.
+      allOf:
+        - $ref: '#/components/schemas/AiDisplayBlock'
+      description: Free-text answer as CommonMark + GFM tables; the server MUST NOT emit raw HTML.
+    AiTableBlock:
+      type: object
+      required:
+        - columns
+        - rows
+      properties:
         caption:
           type: string
-          description: '`table` only: optional caption above the table.'
+          description: Optional caption above the table.
         columns:
           type: array
           items:
             $ref: '#/components/schemas/AiTableColumn'
-          description: '`table` only: ordered column definitions.'
+          description: Ordered column definitions (order, key and label).
         rows:
           type: array
           items:
             type: object
             additionalProperties:
               type: string
-          description: '`table` only: rows as objects keyed by column `key`; values are plain text.'
+          description: Rows as objects keyed by column `key`; cell values are plain text (no markup).
+      allOf:
+        - $ref: '#/components/schemas/AiDisplayBlock'
+      description: |-
+        Structured tabular data — the client renders a native table widget. Use
+        whenever the data IS tabular, never serialized into markdown.
+    AiDocCitationsBlock:
+      type: object
+      required:
+        - citations
+      properties:
         citations:
           type: array
           items:
             $ref: '#/components/schemas/AiCitation'
-          description: '`citations` only: the cited sources, in first-referenced order.'
+          description: The cited sources, in first-referenced order.
+      allOf:
+        - $ref: '#/components/schemas/AiDisplayBlock'
       description: |-
-        One display block of an AI response — THE RENDERING CONTRACT between the
-        server and the client. The server (per task type) transforms the provider's
-        schema-validated output into an ordered list of blocks; the client renders
-        each block solely by its `type`:
-
-        - `markdown` — `content` holds CommonMark + GFM tables. The server MUST NOT
-        emit raw HTML; the client MUST render through a sanitizing Markdown
-        renderer (raw HTML is never interpreted). Use for free-text answers,
-        explanations, drafts.
-        - `table` — structured tabular data: `columns` define order, keys and
-        labels; `rows` hold one object per row keyed by column key, cell values
-        are plain text (no markup). The client renders a native table widget.
-        Use whenever the data IS tabular — never serialize tables into markdown
-        when the server can emit this block instead.
-        - `citations` — the knowledge/documentation sources the answer relied on:
-        `citations` holds one entry per cited section (title, source document and,
-        when the provider resolved one, a web URL). The server emits NO label text;
-        the client renders a "Sources" list and supplies the heading itself, in the
-        user's language. Use instead of appending sources as markdown.
-
-        Evolution is additive: new block types may appear (e.g. `findings`). A
-        client MUST tolerate an unknown `type` by rendering a generic "unsupported
-        content" placeholder (never dropping the block silently). Server-side
-        fallback rule: a task output with no block mapper is rendered as one
-        `markdown` block containing the output JSON in a fenced code block.
+        The knowledge/documentation sources the answer relied on. The server emits no
+        label text; the client renders a "Sources" list and supplies the heading
+        itself, in the user's language.
     AiMyKey:
       type: object
       properties:

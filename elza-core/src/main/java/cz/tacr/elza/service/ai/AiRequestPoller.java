@@ -17,9 +17,11 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.aiprovider.client.ElzaAiApi;
+import cz.tacr.elza.aiprovider.client.vo.AiObject;
 import cz.tacr.elza.aiprovider.client.vo.Task;
 import cz.tacr.elza.domain.AiConversation;
 import cz.tacr.elza.domain.AiExternalSystem;
@@ -191,7 +193,7 @@ public class AiRequestPoller {
             }
             request.setPromptVersion(task.getPromptVersion());
             if ("done".equals(newState)) {
-                String outputJson = toJson(task.getOutput());
+                String outputJson = toJsonOutput(task.getOutput());
                 request.setOutput(outputJson);
                 request.setFinishDate(new Date());
                 addEvent(request, AiRequestEvent.TYPE_OUTPUT, outputJson);
@@ -236,6 +238,23 @@ public class AiRequestPoller {
             return objectMapper.writeValueAsString(value);
         } catch (Exception e) {
             return String.valueOf(value);
+        }
+    }
+
+    /**
+     * Serializes the provider output with the element type so Jackson writes each
+     * block's {@code objectType} discriminator; a raw {@code List<AiObject>} loses
+     * it to generic erasure (elements would serialize as their bare concrete type),
+     * leaving the stored blocks unmappable.
+     */
+    private String toJsonOutput(final List<AiObject> output) {
+        if (output == null) {
+            return null;
+        }
+        try {
+            return objectMapper.writerFor(new TypeReference<List<AiObject>>() { }).writeValueAsString(output);
+        } catch (Exception e) {
+            return String.valueOf(output);
         }
     }
 

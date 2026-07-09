@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.vo.AiDisplayBlockVO;
+import cz.tacr.elza.controller.vo.AiMarkdownBlockVO;
 
 /**
  * Turns a provider task output — a flat JSON array of typed result blocks
@@ -72,9 +73,6 @@ public class AiBlockMapperRegistry {
         } catch (Exception e) {
             pretty = String.valueOf(value);
         }
-        AiDisplayBlockVO block = new AiDisplayBlockVO();
-        block.setType("markdown");
-        block.setContent("```json\n" + pretty + "\n```");
-        return block;
+        return new AiMarkdownBlockVO().content("```json\n" + pretty + "\n```");
     }
 }

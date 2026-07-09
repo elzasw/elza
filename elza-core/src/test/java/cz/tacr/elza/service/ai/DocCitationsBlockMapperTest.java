@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.controller.vo.AiCitationVO;
 import cz.tacr.elza.controller.vo.AiDisplayBlockVO;
+import cz.tacr.elza.controller.vo.AiDocCitationsBlockVO;
 
 /** Mapping of {@code elza.docCitations} payloads into a structured citations display block. */
 public class DocCitationsBlockMapperTest {
@@ -39,9 +40,9 @@ public class DocCitationsBlockMapperTest {
         List<AiDisplayBlockVO> blocks = mapper.map(data);
 
         assertEquals(1, blocks.size());
-        AiDisplayBlockVO block = blocks.get(0);
-        assertEquals("citations", block.getType());
-        assertNull(block.getContent(), "no prose/label is emitted server-side");
+        AiDisplayBlockVO raw = blocks.get(0);
+        assertTrue(raw instanceof AiDocCitationsBlockVO, "elza.docCitations maps to a DOC_CITATIONS block");
+        AiDocCitationsBlockVO block = (AiDocCitationsBlockVO) raw;
 
         List<AiCitationVO> citations = block.getCitations();
         assertEquals(2, citations.size());
