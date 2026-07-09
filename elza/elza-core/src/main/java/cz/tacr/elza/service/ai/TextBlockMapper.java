@@ -8,10 +8,12 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import cz.tacr.elza.controller.vo.AiDisplayBlockVO;
+import cz.tacr.elza.controller.vo.AiTextBlockVO;
 
 /**
- * Renders an {@code elza.text} result block as a markdown display block (plain
- * text is valid CommonMark). Used by the {@code elza.echo} integration task.
+ * Renders an {@code elza.text} result block as a plain-text display block —
+ * rendered verbatim, never parsed as markdown. Used by the {@code elza.echo}
+ * integration task.
  */
 @Component
 public class TextBlockMapper implements AiBlockMapper {
@@ -23,9 +25,7 @@ public class TextBlockMapper implements AiBlockMapper {
 
     @Override
     public List<AiDisplayBlockVO> map(final JsonNode data) {
-        AiDisplayBlockVO block = new AiDisplayBlockVO();
-        block.setType("markdown");
-        block.setContent(data.path("text").asText(""));
+        AiDisplayBlockVO block = new AiTextBlockVO().content(data.path("text").asText(""));
         return List.of(block);
     }
 }

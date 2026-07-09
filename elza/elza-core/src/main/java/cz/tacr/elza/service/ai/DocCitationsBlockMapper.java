@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import cz.tacr.elza.controller.vo.AiCitationVO;
 import cz.tacr.elza.controller.vo.AiDisplayBlockVO;
+import cz.tacr.elza.controller.vo.AiDocCitationsBlockVO;
 
 /**
  * Renders an {@code elza.docCitations} result block — the knowledge/documentation
@@ -44,9 +45,7 @@ public class DocCitationsBlockMapper implements AiBlockMapper {
                     .sourceId(text(citation, "sourceId")));
         }
 
-        AiDisplayBlockVO block = new AiDisplayBlockVO();
-        block.setType("citations");
-        block.setCitations(items);
+        AiDisplayBlockVO block = new AiDocCitationsBlockVO().citations(items);
         return List.of(block);
     }
 

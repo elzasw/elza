@@ -2308,38 +2308,82 @@ namespace ElzaAPI.ExternalSystem {
 }
 
 /**
+ * Display block type — the discriminator of `AiDisplayBlock`. The client renders
+ * each block by this code, reading the fields of the matching subtype. Additive:
+ * new types may appear; a client MUST tolerate an unknown type by rendering a
+ * generic "unsupported content" placeholder (never dropping the block silently).
+ */
+enum AiDisplayBlockType {
+    /** Plain text, rendered verbatim (never parsed as markdown). */
+    TEXT,
+    /** CommonMark + GFM (no raw HTML), rendered through a sanitizing renderer. */
+    MARKDOWN,
+    /** Structured tabular data, rendered as a native table widget. */
+    TABLE,
+    /** The knowledge/documentation sources the answer relied on. */
+    DOC_CITATIONS,
+}
+
+/**
  * One display block of an AI response — THE RENDERING CONTRACT between the
  * server and the client. The server (per task type) transforms the provider's
  * schema-validated output into an ordered list of blocks; the client renders
- * each block solely by its `type`:
+ * each block by its `type` (see `AiDisplayBlockType`), reading the fields of the
+ * matching subtype below.
  *
- * - `markdown` — `content` holds CommonMark + GFM tables. The server MUST NOT
- *   emit raw HTML; the client MUST render through a sanitizing Markdown
- *   renderer (raw HTML is never interpreted). Use for free-text answers,
- *   explanations, drafts.
- * - `table` — structured tabular data: `columns` define order, keys and
- *   labels; `rows` hold one object per row keyed by column key, cell values
- *   are plain text (no markup). The client renders a native table widget.
- *   Use whenever the data IS tabular — never serialize tables into markdown
- *   when the server can emit this block instead.
- *
- * Evolution is additive: new block types may appear (e.g. `findings`). A
- * client MUST tolerate an unknown `type` by rendering a generic "unsupported
- * content" placeholder (never dropping the block silently). Server-side
- * fallback rule: a task output with no block mapper is rendered as one
- * `markdown` block containing the output JSON in a fenced code block.
+ * Evolution is additive: new block types may appear. A client MUST tolerate an
+ * unknown `type` by rendering a generic "unsupported content" placeholder (never
+ * dropping the block silently). Server-side fallback rule: a task output whose
+ * object type has no block mapper is rendered as one `MARKDOWN` block containing
+ * the output JSON in a fenced code block.
  */
+@discriminator("type")
 model AiDisplayBlock {
-    /** Block type discriminator: `markdown` | `table` (open set). */
-    type: string;
-    /** `markdown` only: CommonMark + GFM tables source; no raw HTML. */
-    content?: string;
-    /** `table` only: optional caption above the table. */
+    /** Selects the block shape; one of the defined `AiDisplayBlockType` codes. */
+    type: AiDisplayBlockType;
+}
+
+/** Plain-text answer — `content` is rendered verbatim, never parsed as markdown. */
+model AiTextBlock extends AiDisplayBlock {
+    @invisible(Lifecycle)
+    type: AiDisplayBlockType.TEXT;
+    /** The text, rendered as-is. */
+    content: string;
+}
+
+/** Free-text answer as CommonMark + GFM tables; the server MUST NOT emit raw HTML. */
+model AiMarkdownBlock extends AiDisplayBlock {
+    @invisible(Lifecycle)
+    type: AiDisplayBlockType.MARKDOWN;
+    /** CommonMark + GFM source; the client renders through a sanitizing renderer. */
+    content: string;
+}
+
+/**
+ * Structured tabular data — the client renders a native table widget. Use
+ * whenever the data IS tabular, never serialized into markdown.
+ */
+model AiTableBlock extends AiDisplayBlock {
+    @invisible(Lifecycle)
+    type: AiDisplayBlockType.TABLE;
+    /** Optional caption above the table. */
     caption?: string;
-    /** `table` only: ordered column definitions. */
-    columns?: AiTableColumn[];
-    /** `table` only: rows as objects keyed by column `key`; values are plain text. */
-    rows?: Record<string>[];
+    /** Ordered column definitions (order, key and label). */
+    columns: AiTableColumn[];
+    /** Rows as objects keyed by column `key`; cell values are plain text (no markup). */
+    rows: Record<string>[];
+}
+
+/**
+ * The knowledge/documentation sources the answer relied on. The server emits no
+ * label text; the client renders a "Sources" list and supplies the heading
+ * itself, in the user's language.
+ */
+model AiDocCitationsBlock extends AiDisplayBlock {
+    @invisible(Lifecycle)
+    type: AiDisplayBlockType.DOC_CITATIONS;
+    /** The cited sources, in first-referenced order. */
+    citations: AiCitation[];
 }
 
 model AiTableColumn {
@@ -2347,6 +2391,27 @@ model AiTableColumn {
     key: string;
     /** Column header shown to the user. */
     label: string;
+}
+
+/**
+ * One cited source in a `DOC_CITATIONS` display block. Carries only data — the
+ * client owns all human-readable chrome (the "Sources" heading, the localized
+ * label when a field is absent).
+ */
+model AiCitation {
+    /**
+     * Stable citation id of the cited section — the client's list key and the
+     * fallback label shown when no `title` is known.
+     */
+    fragment: string;
+    /** Deep link to the cited section in the published source, when resolvable. */
+    url?: string;
+    /** Human-readable title of the cited section (the primary label). */
+    title?: string;
+    /** Human-readable name of the source document the section belongs to. */
+    source?: string;
+    /** Id of the source document — lets the client group citations by source. */
+    sourceId?: string;
 }
 
 /** Metered usage of one exchange (informative; costUnits is the billable quantity). */
@@ -2464,6 +2529,55 @@ model AiMyKeyUpdate {
     secret: string;
 }
 
+/**
+ * The AI provider's capabilities — the client's typed view of the provider's
+ * `/info` catalog. Drives the panel: which tasks to offer and, per task, which
+ * typed parameters to gather. Grows additively (new task types, new object
+ * types); a client tolerates unknown parameter/result `type` codes.
+ */
+model AiProviderInfo {
+    /** Protocol version reported by the provider (`major.minor`). */
+    protocolVersion: string;
+    /** Human-readable provider/service name. */
+    providerName?: string;
+    /** Task types the provider currently offers. */
+    taskTypes: AiTaskType[];
+    /** Quality/cost tiers the provider offers. */
+    profiles: AiProfile[];
+}
+
+/** One AI task the provider offers, with the typed parameters it declares. */
+model AiTaskType {
+    /** Task type code, e.g. `elza.chat`, `elza.echo`, `elza.revision`. */
+    code: string;
+    name?: string;
+    description?: string;
+    /** Typed parameters the task declares; the client fills these from context. */
+    parameters: AiTaskParameter[];
+    /** Object type codes the task's result may contain (client rendering readiness). */
+    resultTypes: string[];
+}
+
+/** One typed parameter a task declares. */
+model AiTaskParameter {
+    /** Parameter name — the key under which the client supplies its value. */
+    name: string;
+    /** Object type code of the value, e.g. `elza.text`, `elza.archivalDescription`. */
+    type: string;
+    description?: string;
+    /** Whether the caller must supply it. */
+    required?: boolean;
+}
+
+/** A quality/cost tier the provider offers. */
+model AiProfile {
+    code: string;
+    name?: string;
+    description?: string;
+    /** True for the tier used when a submission names none. */
+    default?: boolean;
+}
+
 @tag("aiprovider")
 @route("/aiprovider")
 namespace ElzaAPI.AiProvider {
@@ -2477,11 +2591,7 @@ namespace ElzaAPI.AiProvider {
     @get op getInfo(
         /** AI external system ID or CODE */
         @path id: string;
-    ): {
-        /** The provider's info document */
-        @Http.statusCode statusCode: 200;
-        @body data: Record<unknown>;
-    } | {
+    ): AiProviderInfo | {
         /** Id does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
