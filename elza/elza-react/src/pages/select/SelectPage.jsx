@@ -38,6 +38,7 @@ class SelectPage extends AbstractReactComponent {
     }
 
     buildRibbonParts() {
+        const {readOnly} = this.props;
         return {
             altActions: [],
             itemActions: [],
@@ -46,9 +47,11 @@ class SelectPage extends AbstractReactComponent {
                     <Button onClick={this.handleClose} className="cancel">
                         <Icon glyph="fa-times-circle" />
                     </Button>
-                    <Button onClick={this.handleConfirm} className="confirm">
-                        <Icon glyph="fa-check-circle" />
-                    </Button>
+                    {!readOnly && (
+                        <Button onClick={this.handleConfirm} className="confirm">
+                            <Icon glyph="fa-check-circle" />
+                        </Button>
+                    )}
                 </RibbonGroup>,
             ],
         };

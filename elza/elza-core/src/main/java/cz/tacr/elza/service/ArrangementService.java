@@ -711,13 +711,11 @@ public class ArrangementService {
         if (scopes != null) {
             syncApScopes(originalFund, scopes);
         }
-
-        if (userIds != null) {
+        
+        // Synchronize permissions; if not denied
+        if(adminPermissionMode!=null && AdminPermissionUpdateMode.NO_SYNC != adminPermissionMode) {        
             syncUsers(originalFund, userIds, adminPermissionMode);
-        }
-
-        if (groupIds != null) {
-            syncGroups(originalFund, groupIds, adminPermissionMode);
+            syncGroups(originalFund, groupIds, adminPermissionMode);            
         }
 
         eventNotificationService
@@ -782,13 +780,16 @@ public class ArrangementService {
         Map<Integer, UsrUser> usersById = users
                 .stream().collect(Collectors.toMap(u -> u.getUserId(), u -> u));
 
-        for (Integer userId : userIds) {
-            UsrUser user = usersById.get(userId);
-            if (user == null) {
-                userService.addFundAdminPermissions(userId, null, fund);
-            } else {
-                usersById.remove(userId);
-            }
+        if(userIds!=null) {
+        	// add permissions to userIds
+			for (Integer userId : userIds) {
+				UsrUser user = usersById.get(userId);
+				if (user == null) {
+					userService.addFundAdminPermissions(userId, null, fund);
+				} else {
+					usersById.remove(userId);
+				}
+			}
         }
 
         if (adminPermissionMode == AdminPermissionUpdateMode.FULL_SYNC) {
@@ -812,13 +813,16 @@ public class ArrangementService {
         Map<Integer, UsrGroup> groupsById = groups
                 .stream().collect(Collectors.toMap(g -> g.getGroupId(), g -> g));
 
-        for (Integer groupId : groupIds) {
-            UsrGroup group = groupsById.get(groupId);
-            if (group == null) {
-                userService.addFundAdminPermissions(null, groupId, fund);
-            } else {
-                groupsById.remove(groupId);
-            }
+        if(groupIds!=null) {
+        	// add permissions to groups
+			for (Integer groupId : groupIds) {
+				UsrGroup group = groupsById.get(groupId);
+				if (group == null) {
+					userService.addFundAdminPermissions(null, groupId, fund);
+				} else {
+					groupsById.remove(groupId);
+				}
+			}
         }
 
         if (adminPermissionMode == AdminPermissionUpdateMode.FULL_SYNC) {
