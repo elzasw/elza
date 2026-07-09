@@ -259,7 +259,7 @@ public class AiConversationService {
         } catch (Exception e) {
             // The exchange is not lost: it is stored in state "error" so the user
             // sees the failure in the thread. e.getMessage() of the generated
-            // ApiException includes the HTTP status, response body and headers.
+            // client's RestClientResponseException includes the HTTP status and body.
             logger.warn("AI task submit failed for conversation {} (request {}, taskType {},"
                     + " provider {} at {}): {}",
                     conversation.getAiConversationId(), request.getRequestId(), taskType,
@@ -294,9 +294,8 @@ public class AiConversationService {
     private Map<String, AiObject> buildParameters(final String taskType, final String userInstructions) {
         Map<String, AiObject> parameters = new HashMap<>();
         if ("elza.echo".equals(taskType)) {
-            TextObject input = new TextObject();
-            input.setObjectType("elza.text");
-            input.setData(new TextPayload().text(StringUtils.defaultString(userInstructions)));
+            TextObject input = new TextObject()
+                    .data(new TextPayload().text(StringUtils.defaultString(userInstructions)));
             parameters.put("input", input);
         }
         return parameters;

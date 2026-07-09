@@ -1,13 +1,14 @@
 package cz.tacr.elza.connector;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
-import java.util.concurrent.TimeUnit;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -15,16 +16,16 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.client.ClientHttpRequestExecution;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestClient;
 
 import cz.tacr.elza.aiprovider.ApiClient;
 import cz.tacr.elza.exception.SystemException;
-import okhttp3.HttpUrl;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okio.Buffer;
 
 /**
  * HTTP client for an AI provider (protocol "Elza AI Provider API"), signing
@@ -42,112 +43,109 @@ public class ApiClientAiProvider extends ApiClient {
     public static final String DATE_HEADER = "X-AI-Date";
 
     /** Long-poll friendly read timeout (protocol wait is capped at 60 s). */
-    private static final long READ_TIMEOUT_MS = 90_000;
+    private static final Duration READ_TIMEOUT = Duration.ofMillis(90_000);
 
-    private static final long CONNECT_TIMEOUT_MS = 10_000;
-
-    /** Response-body bytes copied into the log of a failed call (peeked, never consumed). */
-    private static final long ERROR_BODY_LOG_LIMIT = 4096;
+    private static final Duration CONNECT_TIMEOUT = Duration.ofMillis(10_000);
 
     public ApiClientAiProvider(final String url, final String keyId, final String secret) {
-        super();
+        super(buildRestClient(keyId, secret));
         setBasePath(StringUtils.removeEnd(url, "/"));
-
-        OkHttpClient httpClient = new OkHttpClient.Builder()
-                .connectTimeout(CONNECT_TIMEOUT_MS, TimeUnit.MILLISECONDS)
-                .readTimeout(READ_TIMEOUT_MS, TimeUnit.MILLISECONDS)
-                .writeTimeout(READ_TIMEOUT_MS, TimeUnit.MILLISECONDS)
-                .addInterceptor(new Interceptor() {
-                    @Override
-                    public Response intercept(Chain chain) throws IOException {
-                        Request request = chain.request();
-                        String date = Instant.now().truncatedTo(ChronoUnit.SECONDS).toString();
-                        String stringToSign = stringToSign(request, date);
-                        String signature = sign(secret, stringToSign);
-                        Request signed = request.newBuilder()
-                                // header() replaces any value set by the generated code,
-                                // so the signed date is always the transmitted one
-                                .header(DATE_HEADER, date)
-                                .header("Authorization",
-                                        SCHEME + " KeyId=" + keyId + ",Signature=" + signature)
-                                .build();
-                        // The Authorization header carries only the KeyId and the
-                        // per-request signature (never the secret), so logging the
-                        // request line and auth identity here is safe.
-                        logger.debug("AI provider request: {} {} (KeyId={}, {}={})",
-                                signed.method(), signed.url(), keyId, DATE_HEADER, date);
-
-                        long startNanos = System.nanoTime();
-                        Response response;
-                        try {
-                            response = chain.proceed(signed);
-                        } catch (IOException | RuntimeException e) {
-                            // No HTTP response at all (connect refused, timeout, TLS…):
-                            // name the target so the failure is not a bare stack trace.
-                            logger.warn("AI provider request failed (no response): {} {} (KeyId={}): {}",
-                                    signed.method(), signed.url(), keyId, e.toString());
-                            throw e;
-                        }
-                        long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
-
-                        if (response.isSuccessful()) {
-                            logger.debug("AI provider response: {} {} -> {} in {} ms",
-                                    signed.method(), signed.url(), response.code(), elapsedMs);
-                        } else {
-                            // A non-2xx (e.g. 501 Not Implemented) may come from the
-                            // provider or a proxy in front of it — the Server header and
-                            // body snippet tell which, and the URL/method tell what was
-                            // rejected.
-                            logger.warn("AI provider response: {} {} -> {} {} in {} ms"
-                                    + " (Server={}, Content-Type={}); body: {}",
-                                    signed.method(), signed.url(), response.code(),
-                                    StringUtils.defaultIfEmpty(response.message(), "?"), elapsedMs,
-                                    response.header("Server"), response.header("Content-Type"),
-                                    peekBody(response));
-                        }
-                        return response;
-                    }
-                })
-                .build();
-        setHttpClient(httpClient);
     }
 
-    /** The six-line canonical string (LF-joined, no trailing newline). */
-    private static String stringToSign(Request request, String date) throws IOException {
-        HttpUrl url = request.url();
-        String host = url.host();
-        if (url.port() != HttpUrl.defaultPort(url.scheme())) {
-            host = host + ":" + url.port();
-        }
-        return String.join("\n",
-                request.method(),
-                host,
-                url.encodedPath(),
-                StringUtils.defaultString(url.encodedQuery()),
-                date,
-                sha256Hex(bodyBytes(request.body())));
+    private static RestClient buildRestClient(final String keyId, final String secret) {
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(CONNECT_TIMEOUT);
+        requestFactory.setReadTimeout(READ_TIMEOUT);
+
+        // buildRestClientBuilder registers the Jackson converter with the same
+        // ObjectMapper config the generated client uses (typed AiObject subtypes).
+        return buildRestClientBuilder(createDefaultObjectMapper(null))
+                .requestFactory(requestFactory)
+                .requestInterceptor(new SigningInterceptor(keyId, secret))
+                .build();
     }
 
     /**
-     * Best-effort copy of a failed response's body for logging. Uses
-     * {@code peekBody}, so the real body stream stays intact for the generated
-     * client to read; the copy is capped at {@link #ERROR_BODY_LOG_LIMIT} bytes.
+     * Signs each outgoing request and logs its outcome. Because interceptors run
+     * after the body is serialized, {@code body} is the exact bytes hashed into
+     * the canonical string, and the (mutable) headers are the ones transmitted —
+     * so the signed {@code X-AI-Date} is always the one sent.
      */
-    private static String peekBody(Response response) {
-        try {
-            return response.peekBody(ERROR_BODY_LOG_LIMIT).string();
-        } catch (IOException e) {
-            return "<unreadable: " + e.getMessage() + ">";
+    private static final class SigningInterceptor implements ClientHttpRequestInterceptor {
+
+        private final String keyId;
+        private final String secret;
+
+        SigningInterceptor(final String keyId, final String secret) {
+            this.keyId = keyId;
+            this.secret = secret;
+        }
+
+        @Override
+        public ClientHttpResponse intercept(HttpRequest request, byte[] body,
+                                            ClientHttpRequestExecution execution) throws IOException {
+            String date = Instant.now().truncatedTo(ChronoUnit.SECONDS).toString();
+            String signature = sign(secret, stringToSign(request, body, date));
+
+            HttpHeaders headers = request.getHeaders();
+            headers.set(DATE_HEADER, date);
+            headers.set(HttpHeaders.AUTHORIZATION,
+                    SCHEME + " KeyId=" + keyId + ",Signature=" + signature);
+
+            // The Authorization header carries only the KeyId and the per-request
+            // signature (never the secret), so logging the request line and auth
+            // identity here is safe.
+            logger.debug("AI provider request: {} {} (KeyId={}, {}={})",
+                    request.getMethod(), request.getURI(), keyId, DATE_HEADER, date);
+
+            long startNanos = System.nanoTime();
+            ClientHttpResponse response;
+            try {
+                response = execution.execute(request, body);
+            } catch (IOException | RuntimeException e) {
+                // No HTTP response at all (connect refused, timeout, TLS…):
+                // name the target so the failure is not a bare stack trace.
+                logger.warn("AI provider request failed (no response): {} {} (KeyId={}): {}",
+                        request.getMethod(), request.getURI(), keyId, e.toString());
+                throw e;
+            }
+            long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000;
+
+            // Reading status/headers does not consume the body stream, so the
+            // generated client can still read it (or a RestClientResponseException
+            // can still carry it on a non-2xx status).
+            if (response.getStatusCode().is2xxSuccessful()) {
+                logger.debug("AI provider response: {} {} -> {} in {} ms",
+                        request.getMethod(), request.getURI(), response.getStatusCode().value(), elapsedMs);
+            } else {
+                HttpHeaders responseHeaders = response.getHeaders();
+                logger.warn("AI provider response: {} {} -> {} in {} ms (Server={}, Content-Type={})",
+                        request.getMethod(), request.getURI(), response.getStatusCode().value(), elapsedMs,
+                        responseHeaders.getFirst("Server"), responseHeaders.getFirst("Content-Type"));
+            }
+            return response;
         }
     }
 
-    private static byte[] bodyBytes(RequestBody body) throws IOException {
-        if (body == null) {
-            return new byte[0];
+    /** The six-line canonical string (LF-joined, no trailing newline). */
+    private static String stringToSign(HttpRequest request, byte[] body, String date) {
+        URI uri = request.getURI();
+        String host = uri.getHost();
+        int port = uri.getPort();
+        if (port != -1 && port != defaultPort(uri.getScheme())) {
+            host = host + ":" + port;
         }
-        Buffer buffer = new Buffer();
-        body.writeTo(buffer);
-        return buffer.readByteArray();
+        return String.join("\n",
+                request.getMethod().name(),
+                host,
+                StringUtils.defaultString(uri.getRawPath()),
+                StringUtils.defaultString(uri.getRawQuery()),
+                date,
+                sha256Hex(body == null ? new byte[0] : body));
+    }
+
+    private static int defaultPort(String scheme) {
+        return "https".equalsIgnoreCase(scheme) ? 443 : 80;
     }
 
     private static String sha256Hex(byte[] body) {

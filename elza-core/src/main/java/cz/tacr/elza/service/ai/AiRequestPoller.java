@@ -123,8 +123,8 @@ public class AiRequestPoller {
                     ElzaAiApi api = aiProviderService.createApi(target.externalSystem, target.userId);
                     task = api.getTask(java.time.OffsetDateTime.now(), target.taskUid, WAIT_SECONDS);
                 } catch (Exception e) {
-                    // e.getMessage() of the generated ApiException already carries
-                    // the HTTP status, response body and headers; the full stack
+                    // e.getMessage() of the generated client's RestClientResponseException
+                    // already carries the HTTP status and response body; the full stack
                     // (incl. the request context) is at DEBUG.
                     logger.warn("Polling of AI request {} (task {}, provider {} at {}) failed: {}",
                                 aiRequestId, target.taskUid, target.externalSystem.getCode(),

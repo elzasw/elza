@@ -808,6 +808,7 @@
                             <generateApiTests>false</generateApiTests>
                             <configOptions>
                                 <useJakartaEe>true</useJakartaEe>
+                                <library>restclient</library>
                             </configOptions>
                         </configuration>
                     </execution>

@@ -8,8 +8,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
-import cz.tacr.elza.aiprovider.ApiException;
 import cz.tacr.elza.aiprovider.client.ElzaAiApi;
 import cz.tacr.elza.aiprovider.client.vo.AiServiceInfo;
 import cz.tacr.elza.connector.ApiClientAiProvider;
@@ -87,11 +88,15 @@ public class AiProviderService {
         ElzaAiApi api = new ElzaAiApi(createClient(extSystem));
         try {
             return api.getInfo(OffsetDateTime.now());
-        } catch (ApiException e) {
-            throw new SystemException("AI provider call failed: HTTP " + e.getCode(), e,
+        } catch (RestClientResponseException e) {
+            throw new SystemException("AI provider call failed: HTTP " + e.getStatusCode().value(), e,
                     ExternalCode.EXTERNAL_SYSTEM_ERROR)
                             .set("externalSystem", extSystem.getCode())
-                            .set("responseBody", e.getResponseBody());
+                            .set("responseBody", e.getResponseBodyAsString());
+        } catch (RestClientException e) {
+            throw new SystemException("AI provider call failed: " + e.getMessage(), e,
+                    ExternalCode.EXTERNAL_SYSTEM_ERROR)
+                            .set("externalSystem", extSystem.getCode());
         }
     }
 
