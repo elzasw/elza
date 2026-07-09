@@ -1486,4 +1486,14 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20260709120000" author="ppy">
+        <!-- Profile/model selected for the exchange (an AiProfile.code advertised
+             by the provider's GET /info); null = the provider's default. Passed
+             through to SubmitTask.profile so the user can choose which model the
+             provider uses. -->
+        <addColumn tableName="ai_request">
+            <column name="profile" type="nvarchar(250)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

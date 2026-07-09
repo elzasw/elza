@@ -5006,6 +5006,9 @@ components:
         taskType:
           type: string
           description: Task type, e.g. `elza.echo`, `elza.revision`.
+        profile:
+          type: string
+          description: Profile/model to use (an `AiProfile.code` from GET /info); omitted = provider default.
         title:
           type: string
           description: Thread title; when omitted the server derives it from the instructions.
@@ -5169,6 +5172,9 @@ components:
           type: string
         promptVersion:
           type: string
+        profile:
+          type: string
+          description: Profile/model used for this exchange (an `AiProfile.code`); absent = provider default.
         usage:
           $ref: '#/components/schemas/AiUsage'
         createDate:
@@ -5185,6 +5191,9 @@ components:
     AiRequestCreate:
       type: object
       properties:
+        profile:
+          type: string
+          description: Profile/model for this exchange (an `AiProfile.code`); omitted = reuse the conversation's last.
         userInstructions:
           type: string
         parameters:
