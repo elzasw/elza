@@ -2042,6 +2042,7 @@ public class ArrangementController {
         return policyService.getTreePolicy(fundVersion);
     }
 
+    @Deprecated
     @RequestMapping(value = "/output/types/{versionId}", method = RequestMethod.GET)
     public List<RulOutputTypeVO> getOutputTypes(@PathVariable("versionId") final Integer versionId) {
         List<RulOutputType> outputTypes = outputService.getOutputTypes(versionId);
@@ -2055,6 +2056,7 @@ public class ArrangementController {
      * @param fundVersionId identfikátor verze AS
      * @return seznam outputů
      */
+    @Deprecated
     @RequestMapping(value = "/output/{fundVersionId}", method = RequestMethod.GET)
     @Transactional
     public List<ArrOutputVO> getOutputs(@PathVariable(value = "fundVersionId") final Integer fundVersionId, @RequestParam(value = "state", required = false) final OutputState state) {
@@ -2070,8 +2072,9 @@ public class ArrangementController {
      * @param outputId      identifikátor výstupu
      * @return output
      */
-    @RequestMapping(value = "/output/{fundVersionId}/{outputId}", method = RequestMethod.GET)
+    @Deprecated
     @Transactional
+    @RequestMapping(value = "/output/{fundVersionId}/{outputId}", method = RequestMethod.GET)
     public ArrOutputVO getOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
                                  @PathVariable(value = "outputId") final Integer outputId) {
         ArrFundVersion fundVersion = fundVersionRepository.getOneCheckExist(fundVersionId);
@@ -2085,6 +2088,7 @@ public class ArrangementController {
      *
      * @param outputId identifikátor výstupů
      */
+    @Deprecated
     @RequestMapping(value = "/output/{outputId}/settings", method = RequestMethod.PUT)
     public void updateOutputSettings(@PathVariable(value = "outputId") final Integer outputId,
                                      @RequestBody final OutputSettingsVO outputSettings) throws JsonProcessingException {
@@ -2092,6 +2096,7 @@ public class ArrangementController {
         outputService.setOutputSettings(outputSettings, outputId);
     }
 
+    @Deprecated
     @RequestMapping(value = "/output/generate/{outputId}", method = RequestMethod.GET)
     @Transactional
     public GenerateOutputResult generateOutput(@PathVariable(value = "outputId") int outputId,
@@ -2110,6 +2115,7 @@ public class ArrangementController {
         return generateOutputResult;
     }
 
+    @Deprecated
     @RequestMapping(value = "/output/send/{outputId}", method = RequestMethod.GET)
     @Transactional
     public void sendOutput(@PathVariable(value = "outputId") int outputId) {
@@ -2125,6 +2131,7 @@ public class ArrangementController {
      * @param param         vstupní parametry pro vytvoření outputu
      * @return vytvořený výstup
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}", method = RequestMethod.PUT)
     public ArrOutputVO createNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -2151,6 +2158,7 @@ public class ArrangementController {
      * @param outputId      identifikátor výstupu
      * @param nodeIds       seznam přidáváných identifikátorů uzlů
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}/add", method = RequestMethod.POST)
     public void addNodesNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -2168,6 +2176,7 @@ public class ArrangementController {
      * @param outputId      identifikátor výstupu
      * @param nodeIds       seznam odebíraných identifikátorů uzlů
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}/remove", method = RequestMethod.POST)
     public void removeNodesNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -2184,6 +2193,7 @@ public class ArrangementController {
      * @param fundVersionId identfikátor verze AS
      * @param outputId      identifikátor výstupu
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}", method = RequestMethod.DELETE)
     public void deleteNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -2199,6 +2209,7 @@ public class ArrangementController {
      * @param fundVersionId identfikátor verze AS
      * @param outputId      identifikátor výstupu
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}/revert", method = RequestMethod.POST)
     public void revertToOpenState(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -2215,6 +2226,7 @@ public class ArrangementController {
      * @param outputId      identifikátor výstupu
      * @return kopie výstupu
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}/clone", method = RequestMethod.POST)
     public ArrOutputVO cloneOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -2234,6 +2246,7 @@ public class ArrangementController {
      * @param outputId      identfikátor výstupu
      * @param param         vstupní parametry pro úpravu outputu
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/output/{fundVersionId}/{outputId}/update", method = RequestMethod.POST)
     public void updateNamedOutput(@PathVariable(value = "fundVersionId") final Integer fundVersionId,
@@ -2251,6 +2264,7 @@ public class ArrangementController {
      * @param outputId identifikátor výstupu
      * @param scopeId identifikátor rejstříku
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/output/{outputId}/restrict/{scopeId}", method = RequestMethod.PUT)
     public ArrOutputRestrictionScopeVO addRestrictedScope(@PathVariable(value = "outputId") final Integer outputId,
@@ -2264,6 +2278,7 @@ public class ArrangementController {
      * @param outputId identifikátor výstupu
      * @param scopeId identifikátor rejstříku
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/output/{outputId}/restrict/{scopeId}", method = RequestMethod.DELETE)
     public void deleteRestrictedScope(@PathVariable(value = "outputId") final Integer outputId,
@@ -2277,6 +2292,7 @@ public class ArrangementController {
      * @param outputId identifikátor výstupu
      * @param templateId identifikátor šablony
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/output/{outputId}/template/{templateId}", method = RequestMethod.PUT)
     public ArrOutputTemplateVO addOutputTemplate(@PathVariable(value = "outputId") final Integer outputId,
@@ -2291,6 +2307,7 @@ public class ArrangementController {
      * @param outputId identifikátor výstupu
      * @param templateId identifikátor šablony
      */
+    @Deprecated
     @Transactional
     @RequestMapping(value = "/output/{outputId}/template/{templateId}", method = RequestMethod.DELETE)
     public void deleteOutputTemplate(@PathVariable(value = "outputId") final Integer outputId,
@@ -3623,6 +3640,7 @@ public class ArrangementController {
     /**
      * Pomocná třídat pro parametry vytvoření pojmenovaného výstupu.
      */
+    @Deprecated
     public static class OutputNameParam {
 
         /**

@@ -33,10 +33,10 @@ tags:
     description: Záznamy v archivních fondech
   - name: funds
     description: Archivní soubory
-  - name: externalsystems
-    description: Externí systémy
   - name: aiprovider
     description: Externí AI systémy (poskytovatelé AI služeb)
+  - name: externalsystems
+    description: Externí systémy
   - name: daos
     description: Digitální archivní objekty
   - name: admin
@@ -3222,6 +3222,323 @@ paths:
             schema:
               $ref: '#/components/schemas/OutputItem'
         description: body output item
+  /funds/out/types/{fundVersionId}:
+    get:
+      operationId: Output_getOutputTypes
+      description: Getting output types
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OutputType'
+      tags:
+        - output
+  /funds/out/{fundVersionId}:
+    get:
+      operationId: Output_getOutputs
+      description: Getting list of outputs – an output object linked to a named output object
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: state
+          in: query
+          required: false
+          description: output state
+          schema:
+            $ref: '#/components/schemas/Output.State'
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Output.Def'
+      tags:
+        - output
+  /funds/out/{fundVersionId}/create:
+    put:
+      operationId: Output_createNamedOutput
+      description: Creating a new named output
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.Def'
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Output.NameParam'
+        description: output parameters
+  /funds/out/{fundVersionId}/{outputId}:
+    get:
+      operationId: Output_getOutput
+      description: 'Getting output details: an output object linked to a named output, with a list of connected nodes.'
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.Def'
+      tags:
+        - output
+  /funds/out/{outputId}/generate:
+    get:
+      operationId: Output_generateOutput
+      description: Generate output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: forced
+          in: query
+          required: true
+          description: forced
+          schema:
+            type: boolean
+            default: false
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.RequestStatus'
+      tags:
+        - output
+  /funds/out/{outputId}/restrict/{scopeId}:
+    post:
+      operationId: Output_addRestrictedScope
+      description: Adding limiting register to output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: scopeId
+          in: path
+          required: true
+          description: scope id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.RestrictionScope'
+      tags:
+        - output
+    delete:
+      operationId: Output_deleteRestrictedScope
+      description: Deleting limiting register from output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: scopeId
+          in: path
+          required: true
+          description: scope id
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - output
+  /funds/out/{outputId}/send:
+    get:
+      operationId: Output_sendOutput
+      description: Send output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.RequestStatus'
+      tags:
+        - output
+  /funds/out/{outputId}/settings:
+    put:
+      operationId: Output_updateOutputSettings
+      description: Configuration of generated outputs
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Output.Settings'
+        description: body
+  /funds/out/{outputId}/template/{templateId}:
+    post:
+      operationId: Output_addOutputTemplate
+      description: Adding template to output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: templateId
+          in: path
+          required: true
+          description: template id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.Template'
+      tags:
+        - output
+    delete:
+      operationId: Output_deleteOutputTemplate
+      description: Deleting template from output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: templateId
+          in: path
+          required: true
+          description: template id
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - output
+  /funds/out/{outputId}/{fundVersionId}:
+    delete:
+      operationId: Output_deleteNamedOutput
+      description: Deleting named output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - output
+  /funds/out/{outputId}/{fundVersionId}/clone:
+    post:
+      operationId: Output_cloneOutput
+      description: Creating copy of output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.Def'
+      tags:
+        - output
   /funds/out/{outputId}/{fundVersionId}/form:
     get:
       operationId: Output_getOutputFormData
@@ -3248,6 +3565,119 @@ paths:
                 $ref: '#/components/schemas/Output.FormData'
       tags:
         - output
+  /funds/out/{outputId}/{fundVersionId}/nodes/add:
+    post:
+      operationId: Output_addNodesNamedOutput
+      description: Adding nodes to output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+        description: list of node ids
+  /funds/out/{outputId}/{fundVersionId}/nodes/remove:
+    delete:
+      operationId: Output_removeNodesNamedOutput
+      description: Removing nodes from output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+        description: list of node ids
+  /funds/out/{outputId}/{fundVersionId}/revert:
+    post:
+      operationId: Output_revertToOpenState
+      description: Reset status of a named output to "Open"
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - output
+  /funds/out/{outputId}/{fundVersionId}/update:
+    put:
+      operationId: Output_updateNamedOutput
+      description: Update output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Output.NameParam'
+        description: output parameters
   /funds/out/{outputId}/{fundVersionId}/{itemTypeId}/switch:
     post:
       operationId: Output_switchOutputCalculating
@@ -8023,6 +8453,39 @@ components:
         item:
           $ref: '#/components/schemas/OutputItem'
       description: Náhrada za `OutputItemResult`
+    Output.NameParam:
+      type: object
+      required:
+        - name
+        - internalCode
+        - outputTypeId
+        - templateId
+        - templateIds
+        - anonymizedAp
+        - outputFilterId
+      properties:
+        name:
+          type: string
+          description: Name output
+        internalCode:
+          type: string
+          description: Output code
+        outputTypeId:
+          type: integer
+          description: Rul Output Type ID
+        templateId:
+          type: integer
+          description: Template id
+        templateIds:
+          type: array
+          items:
+            type: integer
+          description: List of templates
+        anonymizedAp:
+          $ref: '#/components/schemas/ApAccessPointVO'
+        outputFilterId:
+          type: integer
+      description: Náhrada za `OutputNameParam`
     Output.OutputItemCsvImportData:
       type: object
       properties:
@@ -8044,6 +8507,44 @@ components:
         - outputId
         - descItemTypeId
         - file
+    Output.RequestStatus:
+      type: string
+      enum:
+        - OK
+        - DETECT_CHANGE
+        - RECOMMENDED_ACTION_NOT_RUN
+      description: Generator startup status
+    Output.RestrictionScope:
+      type: object
+      required:
+        - id
+        - outputId
+        - scopeId
+      properties:
+        id:
+          type: integer
+        outputId:
+          type: integer
+        scopeId:
+          type: integer
+      description: Náhrada za `ArrOutputRestrictionScopeVO`
+    Output.Settings:
+      type: object
+      required:
+        - evenPageOffsetX
+        - evenPageOffsetY
+        - oddPageOffsetX
+        - oddPageOffsetY
+      properties:
+        evenPageOffsetX:
+          type: integer
+        evenPageOffsetY:
+          type: integer
+        oddPageOffsetX:
+          type: integer
+        oddPageOffsetY:
+          type: integer
+      description: Náhrada za `OutputSettingsVO`
     Output.State:
       type: string
       enum:
@@ -8053,10 +8554,29 @@ components:
         - FINISHED
         - OUTDATED
       description: Output state
+    Output.Template:
+      type: object
+      required:
+        - id
+        - outputId
+        - templateId
+      properties:
+        id:
+          type: integer
+        outputId:
+          type: integer
+        templateId:
+          type: integer
+      description: Náhrada za `ArrOutputTemplateVO`
     OutputItem:
       type: object
       allOf:
         - $ref: '#/components/schemas/BaseItem'
+    OutputType:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/BaseCode'
+      description: Náhrada 'RulOutputTypeVO'
     ParInstitutionGen:
       type: object
       required:

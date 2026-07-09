@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+@Deprecated
 public class ArrOutputTemplateVO {
 
     private Integer id;

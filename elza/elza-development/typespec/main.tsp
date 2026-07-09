@@ -1547,6 +1547,12 @@ model PartType extends BaseCode {
 }
 
 /**
+ * Náhrada 'RulOutputTypeVO'
+ */
+model OutputType extends BaseCode {
+}
+
+/**
  * Náhrada `DescFormDataNewVO`
  */
 model NodeFormData {
@@ -2316,11 +2322,6 @@ namespace ElzaAPI.ExternalSystem {
  *   are plain text (no markup). The client renders a native table widget.
  *   Use whenever the data IS tabular — never serialize tables into markdown
  *   when the server can emit this block instead.
- * - `citations` — the knowledge/documentation sources the answer relied on:
- *   `citations` holds one entry per cited section (title, source document and,
- *   when the provider resolved one, a web URL). The server emits NO label text;
- *   the client renders a "Sources" list and supplies the heading itself, in the
- *   user's language. Use instead of appending sources as markdown.
  *
  * Evolution is additive: new block types may appear (e.g. `findings`). A
  * client MUST tolerate an unknown `type` by rendering a generic "unsupported
@@ -2329,7 +2330,7 @@ namespace ElzaAPI.ExternalSystem {
  * `markdown` block containing the output JSON in a fenced code block.
  */
 model AiDisplayBlock {
-    /** Block type discriminator: `markdown` | `table` | `citations` (open set). */
+    /** Block type discriminator: `markdown` | `table` (open set). */
     type: string;
     /** `markdown` only: CommonMark + GFM tables source; no raw HTML. */
     content?: string;
@@ -2339,8 +2340,6 @@ model AiDisplayBlock {
     columns?: AiTableColumn[];
     /** `table` only: rows as objects keyed by column `key`; values are plain text. */
     rows?: Record<string>[];
-    /** `citations` only: the cited sources, in first-referenced order. */
-    citations?: AiCitation[];
 }
 
 model AiTableColumn {
@@ -2348,27 +2347,6 @@ model AiTableColumn {
     key: string;
     /** Column header shown to the user. */
     label: string;
-}
-
-/**
- * One cited source in a `citations` display block. Carries only data — the
- * client owns all human-readable chrome (the "Sources" heading, the localized
- * label when a field is absent).
- */
-model AiCitation {
-    /**
-     * Stable citation id of the cited section — the client's list key and the
-     * fallback label shown when no `title` is known.
-     */
-    fragment: string;
-    /** Deep link to the cited section in the published source, when resolvable. */
-    url?: string;
-    /** Human-readable title of the cited section (the primary label). */
-    title?: string;
-    /** Human-readable name of the source document the section belongs to. */
-    source?: string;
-    /** Id of the source document — lets the client group citations by source. */
-    sourceId?: string;
 }
 
 /** Metered usage of one exchange (informative; costUnits is the billable quantity). */
@@ -2486,55 +2464,6 @@ model AiMyKeyUpdate {
     secret: string;
 }
 
-/**
- * The AI provider's capabilities — the client's typed view of the provider's
- * `/info` catalog. Drives the panel: which tasks to offer and, per task, which
- * typed parameters to gather. Grows additively (new task types, new object
- * types); a client tolerates unknown parameter/result `type` codes.
- */
-model AiProviderInfo {
-    /** Protocol version reported by the provider (`major.minor`). */
-    protocolVersion: string;
-    /** Human-readable provider/service name. */
-    providerName?: string;
-    /** Task types the provider currently offers. */
-    taskTypes: AiTaskType[];
-    /** Quality/cost tiers the provider offers. */
-    profiles: AiProfile[];
-}
-
-/** One AI task the provider offers, with the typed parameters it declares. */
-model AiTaskType {
-    /** Task type code, e.g. `elza.chat`, `elza.echo`, `elza.revision`. */
-    code: string;
-    name?: string;
-    description?: string;
-    /** Typed parameters the task declares; the client fills these from context. */
-    parameters: AiTaskParameter[];
-    /** Object type codes the task's result may contain (client rendering readiness). */
-    resultTypes: string[];
-}
-
-/** One typed parameter a task declares. */
-model AiTaskParameter {
-    /** Parameter name — the key under which the client supplies its value. */
-    name: string;
-    /** Object type code of the value, e.g. `elza.text`, `elza.archivalDescription`. */
-    type: string;
-    description?: string;
-    /** Whether the caller must supply it. */
-    required?: boolean;
-}
-
-/** A quality/cost tier the provider offers. */
-model AiProfile {
-    code: string;
-    name?: string;
-    description?: string;
-    /** True for the tier used when a submission names none. */
-    default?: boolean;
-}
-
 @tag("aiprovider")
 @route("/aiprovider")
 namespace ElzaAPI.AiProvider {
@@ -2548,7 +2477,11 @@ namespace ElzaAPI.AiProvider {
     @get op getInfo(
         /** AI external system ID or CODE */
         @path id: string;
-    ): AiProviderInfo | {
+    ): {
+        /** The provider's info document */
+        @Http.statusCode statusCode: 200;
+        @body data: Record<unknown>;
+    } | {
         /** Id does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
@@ -5628,6 +5561,16 @@ namespace ElzaAPI.Output {
     }
 
     /**
+     * Náhrada za `OutputSettingsVO`
+     */
+    model Settings {
+        evenPageOffsetX: integer;
+        evenPageOffsetY: integer;
+        oddPageOffsetX: integer;
+        oddPageOffsetY: integer;
+    }
+
+    /**
      * Data for CSV import into outputItem
      */
     model OutputItemCsvImportData {
@@ -5639,6 +5582,67 @@ namespace ElzaAPI.Output {
         descItemTypeId: HttpPart<integer>;
         /** CSV file */
         file: HttpPart<bytes>;
+    }
+
+    /** 
+     * Generator startup status
+     */
+    enum RequestStatus {
+        OK,
+        /**
+         * Changes in the arrangement were detected
+         */
+        DETECT_CHANGE,
+        /**
+         * Not all recommended actions were launched
+         */
+        RECOMMENDED_ACTION_NOT_RUN
+    }
+
+    /** 
+     * Náhrada za `OutputNameParam`
+     */
+    model NameParam {
+        /**
+         * Name output
+         */
+        name: string;
+        /**
+         * Output code
+         */
+        internalCode: string;
+        /**
+         * Rul Output Type ID
+         */
+        outputTypeId: integer;
+        /**
+         * Template id
+         */
+        templateId: integer;
+        /**
+         * List of templates
+         */
+        templateIds: integer[];
+        anonymizedAp: ApAccessPointVO;
+        outputFilterId: integer;
+    }
+
+    /**
+     * Náhrada za `ArrOutputRestrictionScopeVO`
+     */
+    model RestrictionScope {
+        id: integer;
+        outputId: integer;
+        scopeId: integer;
+    }
+
+    /**
+     * Náhrada za `ArrOutputTemplateVO`
+     */
+    model Template {
+        id: integer;
+        outputId: integer;
+        templateId: integer;
     }
 
     /**
@@ -5784,6 +5788,195 @@ namespace ElzaAPI.Output {
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
     };
+
+    /**
+     * Getting output types
+     */
+    @route("/types/{fundVersionId}")
+    @get op getOutputTypes(
+        /** fund version id */
+        @path fundVersionId: integer;
+    ): OutputType[];
+
+    /**
+     * Getting list of outputs – an output object linked to a named output object
+     */
+    @route("/{fundVersionId}")
+    @get op getOutputs(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output state */
+        @query state?: State;
+    ): Def[];
+
+    /**
+     * Getting output details: an output object linked to a named output, with a list of connected nodes.
+     */
+    @route("/{fundVersionId}/{outputId}")
+    @get op getOutput(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
+    ): Def;
+
+    /**
+     * Configuration of generated outputs
+     */
+    @route("/{outputId}/settings")
+    @put op updateOutputSettings(
+        /** output id */
+        @path outputId: integer;
+        /** body  */
+        @body outputSettings: Settings;
+    ): void;
+
+    /**
+     * Generate output
+     */
+    @route("/{outputId}/generate")
+    @get op generateOutput(
+        /** output id */
+        @path outputId: integer;
+        /** forced */
+        @query forced: boolean = false;
+    ): RequestStatus;
+
+    /**
+     * Send output 
+     */
+    @route("/{outputId}/send")
+    @get op sendOutput(
+        /** output id */
+        @path outputId: integer;
+    ): RequestStatus;
+
+    /**
+     * Creating a new named output
+     */
+    @route("/{fundVersionId}/create")
+    @put op createNamedOutput(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output parameters */
+        @body param: NameParam;
+    ): Def;
+
+    /**
+     * Adding nodes to output
+     */
+    @route("/{outputId}/{fundVersionId}/nodes/add")
+    @post op addNodesNamedOutput(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** list of node ids */
+        @body nodeIds: integer[];
+    ): void;
+
+    /**
+     * Removing nodes from output
+     */
+    @route("/{outputId}/{fundVersionId}/nodes/remove")
+    @delete op removeNodesNamedOutput(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** list of node ids */
+        @body nodeIds: integer[];
+    ): void;
+
+    /**
+     * Deleting named output
+     */
+    @route("/{outputId}/{fundVersionId}")
+    @delete op deleteNamedOutput(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+    ): void;
+
+    /**
+     * Reset status of a named output to "Open"
+     */
+    @route("/{outputId}/{fundVersionId}/revert")
+    @post op revertToOpenState(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+    ): void;
+
+    /**
+     * Creating copy of output
+     */
+    @route("/{outputId}/{fundVersionId}/clone")
+    @post op cloneOutput(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+    ): Def;
+
+    /**
+     * Update output
+     */
+    @route("/{outputId}/{fundVersionId}/update")
+    @put op updateNamedOutput(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output parameters */
+        @body param: NameParam;
+    ): void;
+
+    /**
+     * Adding limiting register to output
+     */
+    @route("/{outputId}/restrict/{scopeId}")
+    @post op addRestrictedScope(
+        /** output id */
+        @path outputId: integer;
+        /** scope id */
+        @path scopeId: integer;
+    ): RestrictionScope;
+
+    /**
+     * Deleting limiting register from output
+     */
+    @route("/{outputId}/restrict/{scopeId}")
+    @delete op deleteRestrictedScope(
+        /** output id */
+        @path outputId: integer;
+        /** scope id */
+        @path scopeId: integer;
+    ): void;
+
+    /**
+     * Adding template to output
+     */
+    @route("{outputId}/template/{templateId}")
+    @post op addOutputTemplate(
+        /** output id */
+        @path outputId: integer;
+        /** template id */
+        @path templateId: integer;
+    ): Template;
+
+    /**
+     * Deleting template from output
+     */
+    @route("{outputId}/template/{templateId}")
+    @delete op deleteOutputTemplate(
+        /** output id */
+        @path outputId: integer;
+        /** template id */
+        @path templateId: integer;
+    ): void;
 }
 
 @tag("search")
