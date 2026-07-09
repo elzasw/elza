@@ -299,6 +299,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String PLACE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/placeDataValues/{versionId}";
 	protected static final String DELETE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/deleteDataValues/{versionId}";
 	protected static final String FILTER_UNIQUE_VALUES = ARRANGEMENT_CONTROLLER_URL + "/filterUniqueValues/{versionId}";
+
+	// output
 	protected static final String OUTPUTS = ARRANGEMENT_CONTROLLER_URL + "/output";
 	protected static final String OUTPUT_TYPES = OUTPUTS + "/types/{versionId}";
 	protected static final String GET_OUTPUTS = OUTPUTS + "/{fundVersionId}";
@@ -309,6 +311,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String DELETE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}";
 	protected static final String UPDATE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/update";
 	protected static final String UPDATE_OUTPUT_SETTINGS = OUTPUTS + "/{outputId}/settings";
+	//
+
 	protected static final String FILTER_NODES = ARRANGEMENT_CONTROLLER_URL + "/filterNodes/{versionId}";
 	protected static final String FILTERED_NODES = ARRANGEMENT_CONTROLLER_URL + "/getFilterNodes/{versionId}";
 	protected static final String FILTERED_FULLTEXT_NODES = ARRANGEMENT_CONTROLLER_URL
