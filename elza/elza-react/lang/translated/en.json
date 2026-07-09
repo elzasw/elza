@@ -514,8 +514,8 @@
     "srcHash": "bHfYpLCt8F6P"
   },
   "fundPage.multiAction.run": {
-    "defaultMessage": "Run action",
-    "srcHash": "hvWR6vxVXGEu"
+    "defaultMessage": "Select action",
+    "srcHash": "-NGhx2kRVdh2"
   },
   "fundPage.multiAction.selectAll": {
     "defaultMessage": "Select all matching the filter ({count})",
