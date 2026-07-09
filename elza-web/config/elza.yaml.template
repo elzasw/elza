@@ -108,3 +108,13 @@ multipart.maxFileSize: 10000000
 #      probes:
 #        enabled: true
 #      show-details: always
+
+# Task scheduler observability (see the elza.scheduler.* / elza.cam.pending_* metrics).
+# A pool size > 1 keeps one stuck scheduled task from freezing all the others; the watchdog
+# logs the stack trace of a task that runs longer than the stuck threshold. Defaults shown.
+#elza:
+#  monitoring:
+#    scheduler:
+#      poolSize: 4
+#      heartbeatMs: 30000
+#      stuckThresholdSeconds: 1800

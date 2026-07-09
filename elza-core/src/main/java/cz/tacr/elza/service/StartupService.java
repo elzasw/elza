@@ -184,6 +184,9 @@ public class StartupService implements SmartLifecycle {
     @Autowired
     private StructObjValueService structureDataService;
 
+    @Autowired
+    private cz.tacr.elza.metrics.InFlightTaskRegistry inFlightTaskRegistry;
+
     /**
      * Default service start method
      */
@@ -266,6 +269,10 @@ public class StartupService implements SmartLifecycle {
             logger.error("Error cleanup folder {}", exportTrasnformDir, e);
         }
 
+        // Application is fully started (scheduler enabled, sync worker running): steady-state
+        // scheduler/queue monitoring becomes meaningful from here.
+        inFlightTaskRegistry.activate();
+
         running = true;
         logger.info("Elza startup finished in {} ms", System.currentTimeMillis() - startTime);
     }
@@ -273,6 +280,8 @@ public class StartupService implements SmartLifecycle {
     @Override
     public void stop() {
         logger.info("Elza stopping ...");
+        // Silence steady-state monitoring first, so the shutdown sequence raises no false alarms.
+        inFlightTaskRegistry.deactivate();
         camScheduler.stop();
         daScheduler.stop();
         asyncRequestService.stop();
