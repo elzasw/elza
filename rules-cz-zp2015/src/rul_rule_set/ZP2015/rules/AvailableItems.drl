@@ -1531,7 +1531,7 @@ when
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_SERIES") ) from $activeLevel.ownDescItems
     $itemType : RulItemTypeExt(code in ( "ZP2015_TITLE" ) )
 then
-    $itemType.setType(RulItemType.Type.POSSIBLE);
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
 rule "Ideální popis - jednotlivost"
