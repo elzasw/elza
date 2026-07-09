@@ -1525,7 +1525,7 @@ then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
-rule "Obsah/regest - možný pro sérii (vždy)"
+rule "Obsah/regest - doporučený pro sérii (vždy)"
 when
     $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_SERIES") ) from $activeLevel.ownDescItems
