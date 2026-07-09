@@ -1526,6 +1526,14 @@ then
     $itemType.setType(RulItemType.Type.REQUIRED);
 end
 
+rule "Obsah - možný pro sérii (vždy)"
+when
+    $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_SERIES") ) from $activeLevel.ownDescItems
+    $itemType : RulItemTypeExt(code in ( "ZP2015_CONTENT" ) )
+then
+    $itemType.setType(RulItemType.Type.POSSIBLE);
+end
 
 rule "Ideální popis - jednotlivost"
 no-loop
