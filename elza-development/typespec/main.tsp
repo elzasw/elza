@@ -2402,6 +2402,8 @@ model AiRequest {
     errorCode?: string;
     errorMessage?: string;
     promptVersion?: string;
+    /** Profile/model used for this exchange (an `AiProfile.code`); absent = provider default. */
+    profile?: string;
     usage?: AiUsage;
     createDate: utcDateTime;
     finishDate?: utcDateTime;
@@ -2433,6 +2435,8 @@ model AiConversationCreate {
     externalSystemCode: string;
     /** Task type, e.g. `elza.echo`, `elza.revision`. */
     taskType: string;
+    /** Profile/model to use (an `AiProfile.code` from GET /info); omitted = provider default. */
+    profile?: string;
     /** Thread title; when omitted the server derives it from the instructions. */
     title?: string;
     contextType?: string;
@@ -2446,6 +2450,8 @@ model AiConversationCreate {
 
 /** Follow-up exchange submitted into an existing conversation. */
 model AiRequestCreate {
+    /** Profile/model for this exchange (an `AiProfile.code`); omitted = reuse the conversation's last. */
+    profile?: string;
     userInstructions?: string;
     /** Structured task parameters (JSON string). */
     parameters?: string;

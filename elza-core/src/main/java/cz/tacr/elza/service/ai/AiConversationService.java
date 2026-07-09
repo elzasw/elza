@@ -121,7 +121,7 @@ public class AiConversationService {
         conversation.setLastChangeDate(now);
         aiConversationRepository.save(conversation);
 
-        submitExchange(conversation, externalSystem, vo.getTaskType(),
+        submitExchange(conversation, externalSystem, vo.getTaskType(), vo.getProfile(),
                        vo.getUserInstructions(), vo.getParameters(), null);
         return getDetail(conversation, externalSystem);
     }
@@ -144,7 +144,8 @@ public class AiConversationService {
         conversation.setLastChangeDate(new Date());
         aiConversationRepository.save(conversation);
 
-        submitExchange(conversation, externalSystem, last.getTaskType(),
+        String profile = vo.getProfile() != null ? vo.getProfile() : last.getProfile();
+        submitExchange(conversation, externalSystem, last.getTaskType(), profile,
                        vo.getUserInstructions(), vo.getParameters(), last.getTaskUid());
         return getDetail(conversation, externalSystem);
     }
@@ -219,12 +220,13 @@ public class AiConversationService {
      * user sees the failure in the thread.
      */
     private void submitExchange(final AiConversation conversation, final AiExternalSystem externalSystem,
-                                final String taskType, final String userInstructions,
+                                final String taskType, final String profile, final String userInstructions,
                                 final String parameters, final String parentTaskUid) {
         AiRequest request = new AiRequest();
         request.setAiConversationId(conversation.getAiConversationId());
         request.setRequestId(UUID.randomUUID().toString());
         request.setTaskType(taskType);
+        request.setProfile(profile);
         request.setState("queued");
         request.setUserInstructions(userInstructions);
         request.setParameters(parameters);
@@ -243,6 +245,7 @@ public class AiConversationService {
         SubmitTask submitTask = new SubmitTask()
                 .requestId(request.getRequestId())
                 .taskType(taskType)
+                .profile(profile)
                 .userInstructions(userInstructions)
                 .parameters(buildParameters(taskType, userInstructions))
                 .parentTaskId(parentTaskUid)
@@ -337,6 +340,7 @@ public class AiConversationService {
                 .errorCode(request.getErrorCode())
                 .errorMessage(request.getErrorMessage())
                 .promptVersion(request.getPromptVersion())
+                .profile(request.getProfile())
                 .createDate(toOffset(request.getCreateDate()))
                 .finishDate(toOffset(request.getFinishDate()));
         if ("done".equals(request.getState()) && request.getOutput() != null) {

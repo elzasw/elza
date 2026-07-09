@@ -60,6 +60,10 @@ public class AiRequest {
     @Column(name = "prompt_version", length = StringLength.LENGTH_250)
     private String promptVersion;
 
+    /** Profile/model requested for this exchange (an {@code AiProfile.code}); null = provider default. */
+    @Column(name = "profile", length = StringLength.LENGTH_250)
+    private String profile;
+
     /** The user's message of this exchange (rendered in the thread). */
     @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "user_instructions")
@@ -162,6 +166,14 @@ public class AiRequest {
 
     public void setPromptVersion(String promptVersion) {
         this.promptVersion = promptVersion;
+    }
+
+    public String getProfile() {
+        return profile;
+    }
+
+    public void setProfile(String profile) {
+        this.profile = profile;
     }
 
     public String getUserInstructions() {
