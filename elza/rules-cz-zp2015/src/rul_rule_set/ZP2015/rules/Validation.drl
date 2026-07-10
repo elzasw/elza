@@ -332,7 +332,7 @@ end
 rule "Kontrola délky nadpisu na sérii"
 when
     $activeLevel : ActiveLevel( $ownDescItems: ownDescItems)
-    $l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES")) from $ownDescItems
+    $l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES")) from $ownDescItems
 	not DescItem(type=="ZP2015_NAME") from $ownDescItems
     // check if string in DescItem is longer then 250 characters
     $di: DescItem( type in ("ZP2015_CONTENT", "ZP2015_CONTENT_PUBLIC") && $label: string ) from $ownDescItems
@@ -345,7 +345,7 @@ end
 rule "Kontrola přípustných znaků v nadpisu na sérii"
 when
     $activeLevel : ActiveLevel( $ownDescItems: ownDescItems)
-    $l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES")) from $ownDescItems
+    $l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES")) from $ownDescItems
 	not DescItem(type=="ZP2015_NAME") from $ownDescItems
     $di: DescItem( type in ("ZP2015_CONTENT", "ZP2015_CONTENT_PUBLIC") && $label: string ) from $ownDescItems
     eval( $label.contains("\n"))
