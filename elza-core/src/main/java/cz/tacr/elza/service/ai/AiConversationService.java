@@ -19,16 +19,21 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.beans.factory.annotation.Value;
 
 import cz.tacr.elza.aiprovider.client.vo.AiObject;
+import cz.tacr.elza.aiprovider.client.vo.AiServiceInfo;
 import cz.tacr.elza.aiprovider.client.vo.SubmitTask;
 import cz.tacr.elza.aiprovider.client.vo.TaskAccepted;
 import cz.tacr.elza.aiprovider.client.vo.TaskMetadata;
+import cz.tacr.elza.aiprovider.client.vo.TaskParameterInfo;
+import cz.tacr.elza.aiprovider.client.vo.TaskTypeInfo;
 import cz.tacr.elza.aiprovider.client.vo.TextObject;
 import cz.tacr.elza.aiprovider.client.vo.TextPayload;
+import cz.tacr.elza.controller.vo.AiContextObjectVO;
 import cz.tacr.elza.controller.vo.AiConversationCreateVO;
 import cz.tacr.elza.controller.vo.AiConversationDetailVO;
 import cz.tacr.elza.controller.vo.AiConversationVO;
@@ -97,6 +102,9 @@ public class AiConversationService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private AiContextResolver contextResolver;
+
     /** Application version, reported in task metadata (audit at the provider/CSC). */
     @Value("${version:0.0.0}")
     private String appVersion;
@@ -114,15 +122,15 @@ public class AiConversationService {
         conversation.setExternalSystemId(externalSystem.getExternalSystemId());
         conversation.setUserId(userId);
         conversation.setTitle(deriveTitle(vo));
-        conversation.setContextType(vo.getContextType());
-        conversation.setContext(vo.getContext());
+        conversation.setContextType(primaryContextType(vo.getContext()));
+        conversation.setContext(serializeContext(vo.getContext()));
         Date now = new Date();
         conversation.setCreateDate(now);
         conversation.setLastChangeDate(now);
         aiConversationRepository.save(conversation);
 
         submitExchange(conversation, externalSystem, vo.getTaskType(), vo.getProfile(),
-                       vo.getUserInstructions(), vo.getParameters(), null);
+                       vo.getUserInstructions(), vo.getParameters(), vo.getContext(), null);
         return getDetail(conversation, externalSystem);
     }
 
@@ -141,12 +149,22 @@ public class AiConversationService {
             throw new BusinessException("Previous exchange is not finished", BaseCode.INVALID_STATE);
         }
 
+        // A follow-up may move the user's context; when it carries one, it
+        // replaces the conversation's stored context, otherwise the stored one
+        // is reused for this exchange.
+        List<AiContextObjectVO> context = vo.getContext();
+        if (context != null) {
+            conversation.setContextType(primaryContextType(context));
+            conversation.setContext(serializeContext(context));
+        } else {
+            context = deserializeContext(conversation.getContext());
+        }
         conversation.setLastChangeDate(new Date());
         aiConversationRepository.save(conversation);
 
         String profile = vo.getProfile() != null ? vo.getProfile() : last.getProfile();
         submitExchange(conversation, externalSystem, last.getTaskType(), profile,
-                       vo.getUserInstructions(), vo.getParameters(), last.getTaskUid());
+                       vo.getUserInstructions(), vo.getParameters(), context, last.getTaskUid());
         return getDetail(conversation, externalSystem);
     }
 
@@ -221,7 +239,8 @@ public class AiConversationService {
      */
     private void submitExchange(final AiConversation conversation, final AiExternalSystem externalSystem,
                                 final String taskType, final String profile, final String userInstructions,
-                                final String parameters, final String parentTaskUid) {
+                                final List<AiContextObjectVO> parameters, final List<AiContextObjectVO> context,
+                                final String parentTaskUid) {
         AiRequest request = new AiRequest();
         request.setAiConversationId(conversation.getAiConversationId());
         request.setRequestId(UUID.randomUUID().toString());
@@ -229,7 +248,7 @@ public class AiConversationService {
         request.setProfile(profile);
         request.setState("queued");
         request.setUserInstructions(userInstructions);
-        request.setParameters(parameters);
+        request.setParameters(serializeContext(parameters));
         request.setCreateDate(new Date());
         aiRequestRepository.save(request);
 
@@ -247,7 +266,8 @@ public class AiConversationService {
                 .taskType(taskType)
                 .profile(profile)
                 .userInstructions(userInstructions)
-                .parameters(buildParameters(taskType, userInstructions))
+                .parameters(buildParameters(taskType, userInstructions, parameters, externalSystem))
+                .context(contextResolver.resolveAll(context))
                 .parentTaskId(parentTaskUid)
                 .metadata(metadata);
         addEvent(request, AiRequestEvent.TYPE_SUBMIT, toJson(submitTask));
@@ -288,20 +308,90 @@ public class AiConversationService {
     }
 
     /**
-     * Builds the provider's typed task parameters. The echo integration task
-     * takes the user's text as its {@code elza.text} {@code input}; the chat
-     * assistant needs none (it runs on {@code userInstructions}). Task types
-     * whose parameter object types are not yet marshalled contribute nothing —
-     * they are only offered once Elza can fill their required parameters.
+     * Builds the provider's typed task parameters (a name→object map). The echo
+     * integration task takes the user's text as its {@code elza.text} {@code input}.
+     * On top of that, each context object the UI supplied under {@code parameters}
+     * is resolved to a provider object and assigned to the task's declared
+     * parameter whose object type matches (looked up from the provider's
+     * {@code GET /info}); a resolved object with no matching declared parameter is
+     * skipped.
      */
-    private Map<String, AiObject> buildParameters(final String taskType, final String userInstructions) {
+    private Map<String, AiObject> buildParameters(final String taskType, final String userInstructions,
+                                                  final List<AiContextObjectVO> parameterContext,
+                                                  final AiExternalSystem externalSystem) {
         Map<String, AiObject> parameters = new HashMap<>();
         if ("elza.echo".equals(taskType)) {
             TextObject input = new TextObject()
                     .data(new TextPayload().text(StringUtils.defaultString(userInstructions)));
             parameters.put("input", input);
         }
+        List<AiObject> resolved = contextResolver.resolveAll(parameterContext);
+        if (!resolved.isEmpty()) {
+            List<TaskParameterInfo> declared = declaredParameters(externalSystem, taskType);
+            for (AiObject object : resolved) {
+                declared.stream()
+                        .filter(p -> object.getObjectType().equals(p.getType()))
+                        .findFirst()
+                        .ifPresentOrElse(
+                                p -> parameters.put(p.getName(), object),
+                                () -> logger.info("Task {} declares no parameter of type {}; context object skipped",
+                                        taskType, object.getObjectType()));
+            }
+        }
         return parameters;
+    }
+
+    /** The task's declared parameters from the provider's catalog; empty when unavailable. */
+    private List<TaskParameterInfo> declaredParameters(final AiExternalSystem externalSystem, final String taskType) {
+        try {
+            AiServiceInfo info = aiProviderService.fetchServiceInfo(externalSystem);
+            if (info.getTaskTypes() != null) {
+                for (TaskTypeInfo type : info.getTaskTypes()) {
+                    if (taskType.equals(type.getCode()) && type.getParameters() != null) {
+                        return type.getParameters();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Could not read AI provider info to match parameters for task {}: {}",
+                    taskType, e.getMessage());
+        }
+        return List.of();
+    }
+
+    /** Serializes context objects to JSON with the element type so the discriminator is kept. */
+    private String serializeContext(final List<AiContextObjectVO> context) {
+        if (context == null || context.isEmpty()) {
+            return null;
+        }
+        try {
+            return objectMapper.writerFor(new TypeReference<List<AiContextObjectVO>>() { })
+                    .writeValueAsString(context);
+        } catch (Exception e) {
+            logger.warn("Failed to serialize AI context objects: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /** Reads stored context JSON back into typed objects; null/blank yields null. */
+    private List<AiContextObjectVO> deserializeContext(final String json) {
+        if (StringUtils.isBlank(json)) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(json, new TypeReference<List<AiContextObjectVO>>() { });
+        } catch (Exception e) {
+            logger.warn("Failed to deserialize AI context objects: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /** {@code AiContextType} of the first context object (for conversation list filtering), or null. */
+    private String primaryContextType(final List<AiContextObjectVO> context) {
+        if (context == null || context.isEmpty() || context.get(0).getType() == null) {
+            return null;
+        }
+        return context.get(0).getType().getValue();
     }
 
     // -----------------------------------------------------------------------
@@ -326,7 +416,7 @@ public class AiConversationService {
                 .externalSystemCode(externalSystem.getCode())
                 .title(conversation.getTitle())
                 .contextType(conversation.getContextType())
-                .context(conversation.getContext())
+                .context(deserializeContext(conversation.getContext()))
                 .createDate(toOffset(conversation.getCreateDate()))
                 .lastChangeDate(toOffset(conversation.getLastChangeDate()));
     }

@@ -85,6 +85,15 @@ public class AiProviderService {
     @AuthMethod(permission = { UsrPermission.Permission.ADMIN })
     @Transactional
     public AiServiceInfo getInfo(final AiExternalSystem extSystem) {
+        return fetchServiceInfo(extSystem);
+    }
+
+    /**
+     * Reads the provider's service info without the admin permission check, for
+     * internal use during a user's task submission (matching the task's declared
+     * parameters). Uses the instance-wide signing key, like {@link #getInfo}.
+     */
+    public AiServiceInfo fetchServiceInfo(final AiExternalSystem extSystem) {
         ElzaAiApi api = new ElzaAiApi(createClient(extSystem));
         try {
             return api.getInfo(OffsetDateTime.now());
