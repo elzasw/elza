@@ -333,6 +333,7 @@ rule "Kontrola délky nadpisu na sérii"
 when
     $activeLevel : ActiveLevel( $ownDescItems: ownDescItems)
     $l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES")) from $ownDescItems
+	not DescItem(type=="ZP2015_NAME") from $ownDescItems
     // check if string in DescItem is longer then 250 characters
     $di: DescItem( type in ("ZP2015_CONTENT", "ZP2015_CONTENT_PUBLIC") && $label: string ) from $ownDescItems
     eval( $label.length()> 250)
@@ -345,6 +346,7 @@ rule "Kontrola přípustných znaků v nadpisu na sérii"
 when
     $activeLevel : ActiveLevel( $ownDescItems: ownDescItems)
     $l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_ROOT", "ZP2015_LEVEL_SECTION", "ZP2015_LEVEL_SERIES")) from $ownDescItems
+	not DescItem(type=="ZP2015_NAME") from $ownDescItems
     $di: DescItem( type in ("ZP2015_CONTENT", "ZP2015_CONTENT_PUBLIC") && $label: string ) from $ownDescItems
     eval( $label.contains("\n"))
     // $di: DescItem( type=="ZP2015_CONTENT" && string matches ".*\\n.*") from $ownDescItems
@@ -384,6 +386,7 @@ when
 	$arrType: DescItem(type=="ZP2015_ARRANGEMENT_TYPE" ) from $items    
 	$l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART")) from $ownDescItems
     not DescItem(type=="ZP2015_UNIT_CONTENT") from $ownDescItems
+	not DescItem(type=="ZP2015_NAME") from $ownDescItems
 	// check if string in DescItem is longer then 250 characters
 	$di: DescItem( type=="ZP2015_CONTENT" && $label: string ) from $ownDescItems
     eval( $label.length()> 250)    
@@ -398,6 +401,7 @@ when
 	$arrType: DescItem(type=="ZP2015_ARRANGEMENT_TYPE" ) from $items
 	$l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART")) from $ownDescItems
     not DescItem(type=="ZP2015_UNIT_CONTENT") from $ownDescItems
+	not DescItem(type=="ZP2015_NAME") from $ownDescItems
 	$di: DescItem( type=="ZP2015_CONTENT" && $label: string ) from $ownDescItems
     eval( $label.contains("\n"))
 //    $di: DescItem( type=="ZP2015_CONTENT" && string matches ".*\\n.*") from $ownDescItems
@@ -412,6 +416,7 @@ when
     $activeLevel : ActiveLevel( $items: descItems, $ownDescItems: ownDescItems)
 	$arrType: DescItem(type=="ZP2015_ARRANGEMENT_TYPE" ) from $items    
 	$l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART")) from $ownDescItems
+	not DescItem(type=="ZP2015_NAME_PUBLIC") from $ownDescItems
     // check if string in DescItem is longer then 250 characters
 	$di: DescItem( type=="ZP2015_CONTENT_PUBLIC" && $label: string ) from $ownDescItems
     eval( $label.length()> 250)    
@@ -425,6 +430,7 @@ when
     $activeLevel : ActiveLevel( $items: descItems, $ownDescItems: ownDescItems)
 	$arrType: DescItem(type=="ZP2015_ARRANGEMENT_TYPE" ) from $items
 	$l: DescItem( type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART")) from $ownDescItems
+	not DescItem(type=="ZP2015_NAME_PUBLIC") from $ownDescItems	
     $di: DescItem( type=="ZP2015_CONTENT_PUBLIC" && $label: string ) from $ownDescItems
     eval( $label.contains("\n"))
 //    $di: DescItem( type=="ZP2015_CONTENT" && string matches ".*\\n.*") from $ownDescItems
