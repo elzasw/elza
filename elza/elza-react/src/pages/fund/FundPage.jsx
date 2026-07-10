@@ -55,11 +55,11 @@ const messages = defineMessages({
     },
     fundPageMultiActionTitle: {
         id: "fundPage.multiAction.title",
-        defaultMessage: "Hromadná akce nad fondy",
+        defaultMessage: "Hromadné akce nad AS",
     },
     fundPageMultiActionStart: {
         id: "fundPage.multiAction.start",
-        defaultMessage: "Hromadná akce nad fondy",
+        defaultMessage: "Hromadné akce nad AS",
     },
     fundPageMultiActionSelected: {
         id: "fundPage.multiAction.selected",
