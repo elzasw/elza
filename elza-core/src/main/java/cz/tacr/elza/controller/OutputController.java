@@ -315,28 +315,29 @@ public class OutputController implements OutputApi {
                 hiddenItemTypes.stream().map(RulItemTypeExt::getItemTypeId).collect(toList())));
 	}
 
-	/**
-     * POST /funds/out/{outputId}/{fundVersionId}/{itemTypeId}/switch
-     * Switch between automatic and user-defined attribute type editing
+    /**
+     * PUT /funds/out/{outputId}/{fundVersionId}/{itemTypeId}/{manual}
+     * Set user-defined/automatic attribute type editing
      *
      * @param outputId output id (required)
      * @param fundVersionId fund version id (required)
      * @param itemTypeId item type id (required)
-     * @param strict fund version id (optional)
+     * @param manual true/false — manual (user-defined)/automatic (required)
      * @return The request has succeeded. (status code 200)
      *         or The server cannot find the requested resource. (status code 404)
      */
 	@Override
     @Transactional
-    public ResponseEntity<Boolean> outputSwitchOutputCalculating(@PathVariable("outputId") Integer outputId,
-                                                                 @PathVariable("fundVersionId") Integer fundVersionId,
-                                                                 @PathVariable("itemTypeId") Integer itemTypeId) {
+    public ResponseEntity<Void> outputSetOutputItemMode(@PathVariable("outputId") Integer outputId,
+                                                           @PathVariable("fundVersionId") Integer fundVersionId,
+                                                           @PathVariable("itemTypeId") Integer itemTypeId,
+                                                           @PathVariable("manual") Boolean manual) {
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
         RulItemType itemType = itemTypeRepository.findById(itemTypeId)
                 .orElseThrow(() -> new ObjectNotFoundException("Typ atributu neexistuje", BaseCode.ID_NOT_EXIST).setId(itemTypeId));
+        outputService.setOutputItemMode(output, fundVersion, itemType, manual);
 
-        // FIXME strict was a query param in the legacy endpoint (default false) — see issue #9902
-        return ResponseEntity.ok(outputService.switchOutputCalculating(output, fundVersion, itemType, true));
+        return ResponseEntity.ok().build();
     }
 }

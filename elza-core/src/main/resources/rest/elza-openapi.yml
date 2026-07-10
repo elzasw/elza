@@ -1899,10 +1899,10 @@ paths:
     get:
       operationId: AiProvider_getInfo
       description: |-
-        Reads the AI provider's service info (protocol version, provider name,
-        supported task types with their declared parameters and result types,
-        and profiles) via the provider's GET /info. Doubles as the connection
-        test of the configured AI external system.
+        Reads the AI provider's service info (protocol version, supported task
+        types, profiles, limits) via the provider's GET /info. Doubles as the
+        connection test of the configured AI external system. The response is
+        the provider's info document passed through as-is.
       parameters:
         - name: id
           in: path
@@ -3397,8 +3397,8 @@ paths:
           schema:
             type: integer
       responses:
-        '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
+        '200':
+          description: The request has succeeded.
       tags:
         - output
   /funds/out/{outputId}/send:
@@ -3433,8 +3433,8 @@ paths:
           schema:
             type: integer
       responses:
-        '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
+        '200':
+          description: The request has succeeded.
       tags:
         - output
       requestBody:
@@ -3487,8 +3487,8 @@ paths:
           schema:
             type: integer
       responses:
-        '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
+        '200':
+          description: The request has succeeded.
       tags:
         - output
   /funds/out/{outputId}/{fundVersionId}:
@@ -3509,8 +3509,8 @@ paths:
           schema:
             type: integer
       responses:
-        '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
+        '200':
+          description: The request has succeeded.
       tags:
         - output
   /funds/out/{outputId}/{fundVersionId}/clone:
@@ -3583,8 +3583,8 @@ paths:
           schema:
             type: integer
       responses:
-        '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
+        '200':
+          description: The request has succeeded.
       tags:
         - output
       requestBody:
@@ -3614,8 +3614,8 @@ paths:
           schema:
             type: integer
       responses:
-        '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
+        '200':
+          description: The request has succeeded.
       tags:
         - output
       requestBody:
@@ -3645,8 +3645,8 @@ paths:
           schema:
             type: integer
       responses:
-        '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
+        '200':
+          description: The request has succeeded.
       tags:
         - output
   /funds/out/{outputId}/{fundVersionId}/update:
@@ -3667,8 +3667,8 @@ paths:
           schema:
             type: integer
       responses:
-        '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
+        '200':
+          description: The request has succeeded.
       tags:
         - output
       requestBody:
@@ -3678,10 +3678,10 @@ paths:
             schema:
               $ref: '#/components/schemas/Output.NameParam'
         description: output parameters
-  /funds/out/{outputId}/{fundVersionId}/{itemTypeId}/switch:
-    post:
-      operationId: Output_switchOutputCalculating
-      description: Switch between automatic and user-defined attribute type editing
+  /funds/out/{outputId}/{fundVersionId}/{itemTypeId}/{manual}:
+    put:
+      operationId: Output_setOutputItemMode
+      description: Set user-defined/automatic attribute type editing
       parameters:
         - name: outputId
           in: path
@@ -3701,13 +3701,15 @@ paths:
           description: item type id
           schema:
             type: integer
+        - name: manual
+          in: path
+          required: true
+          description: true/false — manual (user-defined)/automatic
+          schema:
+            type: boolean
       responses:
         '200':
           description: The request has succeeded.
-          content:
-            text/plain:
-              schema:
-                type: boolean
         '404':
           description: The server cannot find the requested resource.
           content:

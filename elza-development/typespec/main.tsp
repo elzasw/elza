@@ -5883,17 +5883,21 @@ namespace ElzaAPI.Output {
     ): FormData;
 
     /**
-     * Switch between automatic and user-defined attribute type editing
+     * Set user-defined/automatic attribute type editing
      */
-    @route("/{outputId}/{fundVersionId}/{itemTypeId}/switch")
-    @post op switchOutputCalculating(
+    @route("/{outputId}/{fundVersionId}/{itemTypeId}/{manual}")
+    @put op setOutputItemMode(
         /** output id */
         @path outputId: integer;
         /** fund version id */
         @path fundVersionId: integer;
         /** item type id */
         @path itemTypeId: integer;
-    ): boolean | {
+        /** true/false — manual (user-defined)/automatic */
+        @path manual: boolean;
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
         /** Not found */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
@@ -5939,7 +5943,9 @@ namespace ElzaAPI.Output {
         @path outputId: integer;
         /** body  */
         @body outputSettings: Settings;
-    ): void;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
 
     /**
      * Generate output
@@ -5983,7 +5989,9 @@ namespace ElzaAPI.Output {
         @path fundVersionId: integer;
         /** list of node ids */
         @body nodeIds: integer[];
-    ): void;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
 
     /**
      * Removing nodes from output
@@ -5996,7 +6004,9 @@ namespace ElzaAPI.Output {
         @path fundVersionId: integer;
         /** list of node ids */
         @body nodeIds: integer[];
-    ): void;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
 
     /**
      * Deleting named output
@@ -6007,7 +6017,9 @@ namespace ElzaAPI.Output {
         @path outputId: integer;
         /** fund version id */
         @path fundVersionId: integer;
-    ): void;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
 
     /**
      * Reset status of a named output to "Open"
@@ -6018,7 +6030,9 @@ namespace ElzaAPI.Output {
         @path outputId: integer;
         /** fund version id */
         @path fundVersionId: integer;
-    ): void;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
 
     /**
      * Creating copy of output
@@ -6042,7 +6056,9 @@ namespace ElzaAPI.Output {
         @path fundVersionId: integer;
         /** output parameters */
         @body param: NameParam;
-    ): void;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
 
     /**
      * Adding limiting register to output
@@ -6064,7 +6080,9 @@ namespace ElzaAPI.Output {
         @path outputId: integer;
         /** scope id */
         @path scopeId: integer;
-    ): void;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
 
     /**
      * Adding template to output
@@ -6086,7 +6104,9 @@ namespace ElzaAPI.Output {
         @path outputId: integer;
         /** template id */
         @path templateId: integer;
-    ): void;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
 }
 
 @tag("search")
