@@ -1516,7 +1516,7 @@ then
     $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
-rule "Název - povinný pro sérii"
+rule "Název - povinný pro sérii (pokud neexistuje Obsah, tematický popis)"
 when
     $activeLevel: ActiveLevel( )
     $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_SERIES") ) from $activeLevel.ownDescItems
@@ -1524,6 +1524,24 @@ when
     not DescItem(type=="ZP2015_CONTENT") from $activeLevel.ownDescItems
 then
     $itemType.setType(RulItemType.Type.REQUIRED);
+end
+
+rule "Název - doporučený pro sérii (vždy)"
+when
+    $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_SERIES") ) from $activeLevel.ownDescItems
+    $itemType : RulItemTypeExt(code in ( "ZP2015_NAME" ) )
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
+end
+
+rule "Obsah - doporučený pro složku a níže (vždy)"
+when
+    $activeLevel: ActiveLevel( )
+    $descItem : DescItem(type=="ZP2015_LEVEL_TYPE" && specCode in ("ZP2015_LEVEL_FOLDER", "ZP2015_LEVEL_ITEM", "ZP2015_LEVEL_PART") ) from $activeLevel.descItems
+    $itemType : RulItemTypeExt(code in ( "ZP2015_CONTENT" ) )
+then
+    $itemType.setType(RulItemType.Type.RECOMMENDED);
 end
 
 rule "Obsah - možný pro sérii (vždy)"
