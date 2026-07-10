@@ -21,7 +21,7 @@ interface UserSettingCategoryConfig {
 
 const UserSettingCategory: Record<UserSettingCategoryKey, UserSettingCategoryConfig> = {
     [UserSettingCategoryKey.Display]: { key: UserSettingCategoryKey.Display },
-    [UserSettingCategoryKey.ApiKeys]: { key: UserSettingCategoryKey.ApiKeys, permission: perms.AP_EXTERNAL_WR },
+    [UserSettingCategoryKey.ApiKeys]: { key: UserSettingCategoryKey.ApiKeys },
 };
 
 const messages = defineMessages({
