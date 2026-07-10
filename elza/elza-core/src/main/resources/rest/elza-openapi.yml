@@ -5490,7 +5490,7 @@ components:
           type: string
           description: Id of the source document — lets the client group citations by source.
       description: |-
-        One cited source in a `citations` display block. Carries only data — the
+        One cited source in a `DOC_CITATIONS` display block. Carries only data — the
         client owns all human-readable chrome (the "Sources" heading, the localized
         label when a field is absent).
     AiDisplayBlockType:
