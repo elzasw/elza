@@ -92,7 +92,6 @@
                             <executable>npm</executable>
                             <arguments>
                                 <argument>ci</argument>
-                                <argument>--legacy-peer-deps</argument>
                             </arguments>
                         </configuration>
                     </execution>
@@ -223,7 +222,6 @@
                                     <executable>npm</executable>
                                     <arguments>
                                         <argument>install</argument>
-                                        <argument>--legacy-peer-deps</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -348,7 +346,6 @@
                                 <argument>install</argument>
                                 <argument>--no-save</argument>
                                 <!-- Till the old REACT dependencies will be replaced. -->
-                                <argument>--legacy-peer-deps</argument>
                             </arguments>
                         </configuration>
                         <executions>
