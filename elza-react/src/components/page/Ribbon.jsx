@@ -34,6 +34,8 @@ import {
 import { extSystemListFetchIfNeeded } from 'actions/admin/extSystem.jsx';
 import { EXT_SYSTEM_CLASS } from 'components/admin/extSystem/ExtSystemForm';
 import UserSettingsModal from 'components/user/UserSettingsModal';
+import { AiAssistantRibbonButton } from 'components/ai-assistant/AiAssistantRibbonButton';
+import { ExperimentalFeature } from 'components/shared/ExperimentalFeature';
 
 // Nacteni globalni promenne ze <script> v <head>
 const displayUserInfo = window.displayUserInfo !== undefined ? window.displayUserInfo : true;
@@ -435,6 +437,10 @@ class Ribbon extends AbstractReactComponent {
                 </RibbonMenu>
                 {_showUser && (
                     <div className="user-menu-container">
+                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', height: '50%' }}>
+                        <ExperimentalFeature>
+                          <AiAssistantRibbonButton />
+                        </ExperimentalFeature>
                         <Dropdown className="user-menu" id={'user-menu'} align="end">
                             <Dropdown.Toggle key="user-menu" id="user-menu">
                                 {userDetail.username} <Icon glyph="fa-user" />
@@ -464,6 +470,7 @@ class Ribbon extends AbstractReactComponent {
                                 </Dropdown.Item>
                             </Dropdown.Menu>
                         </Dropdown>
+                        </div>
                         {saveCounter > 0 && (
                             <div className="save-msg-container">
                                 <span className="save-msg">
