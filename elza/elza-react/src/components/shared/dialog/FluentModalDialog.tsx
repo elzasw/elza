@@ -1,9 +1,21 @@
-import { Button, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle } from "@fluentui/react-components";
-import { DismissRegular, ChevronUpRegular, ChevronDownRegular } from "@fluentui/react-icons";
+import { Button, Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, DialogTitle, tokens } from "@fluentui/react-components";
+import { DismissRegular, ChevronUpRegular, ChevronDownRegular, PinRegular, PinOffRegular } from "@fluentui/react-icons";
 import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { DraggableWindow } from "..";
 import SearchFundsForm from "components/arr/search-funds-form/SearchFundsForm";
-import { DraggableWindowDragger } from "../draggable-window";
+import { DraggableWindowContext, DraggableWindowDragger } from "../draggable-window";
+
+function PinBottomButton() {
+  const { enablePinBottom, pinnedBottom, togglePinBottom } = useContext(DraggableWindowContext);
+  if (!enablePinBottom) return null;
+  return (
+    <Button
+      icon={pinnedBottom ? <PinOffRegular /> : <PinRegular />}
+      onClick={togglePinBottom}
+      appearance="subtle"
+    />
+  );
+}
 
 interface DialogProps<R, D> {
   handleResult: (result: R, data?: D) => void;
@@ -131,6 +143,7 @@ interface CollapsibleDragWindowProps {
   title: string;
   initialWidth?: number;
   initialHeight?: number;
+  enablePinBottom?: boolean;
 }
 
 export function CollapsibleDragWindow({
@@ -139,12 +152,47 @@ export function CollapsibleDragWindow({
   children,
   initialWidth = 650,
   initialHeight = 700,
+  enablePinBottom = false,
 }: PropsWithChildren<CollapsibleDragWindowProps>) {
   const initialPosition = { x: window.innerWidth / 2 - initialWidth / 2, y: window.innerHeight / 2 - initialHeight / 2 };
 
+  return <DraggableWindow initialPosition={initialPosition} enablePinBottom={enablePinBottom}>
+    <CollapsibleWindowBody
+      title={title}
+      onClose={onClose}
+      initialWidth={initialWidth}
+      initialHeight={initialHeight}
+    >
+      {children}
+    </CollapsibleWindowBody>
+  </DraggableWindow>
+}
+
+interface CollapsibleWindowBodyProps {
+  title: string;
+  onClose: () => void;
+  initialWidth: number;
+  initialHeight: number;
+}
+
+function CollapsibleWindowBody({
+  title,
+  onClose,
+  initialWidth,
+  initialHeight,
+  children,
+}: PropsWithChildren<CollapsibleWindowBodyProps>) {
+  const { pinnedBottom } = useContext(DraggableWindowContext);
+  const PINNED_COLLAPSED_WIDTH = 260;
+
   const [open, setOpen] = useState(true);
-  const [height, setHeight] = useState(initialHeight)
-  const [lastHeight, setLastHeight] = useState(initialHeight)
+  const [height, setHeight] = useState(initialHeight);
+  const [lastHeight, setLastHeight] = useState(initialHeight);
+  const [width, setWidth] = useState(initialWidth);
+
+  const collapsedPinned = pinnedBottom && !open;
+  const collapsedPinnedRef = useRef(collapsedPinned);
+  collapsedPinnedRef.current = collapsedPinned;
 
   const handleCollapse = () => {
     if (open) {
@@ -159,34 +207,74 @@ export function CollapsibleDragWindow({
   const measuredRef = useCallback((node: HTMLDivElement) => {
     if (node !== null) {
       const resizeObserver = new ResizeObserver(() => {
-        setHeight(node.getBoundingClientRect().height);
+        if (collapsedPinnedRef.current) return;
+        const rect = node.getBoundingClientRect();
+        setHeight(rect.height);
+        setWidth(rect.width);
       });
       resizeObserver.observe(node);
     }
   }, []);
 
-  return <DraggableWindow initialPosition={initialPosition}>
+  // When pinned the bottom and right edges are fixed, so the native bottom-right
+  // resize handle is useless; a custom top-left handle grows the window up and left.
+  const handleCornerDrag = useCallback((event: React.MouseEvent) => {
+    event.preventDefault();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startWidth = width;
+    const startHeight = height;
+
+    const onMove = (moveEvent: MouseEvent) => {
+      setWidth(Math.max(300, startWidth + (startX - moveEvent.clientX)));
+      setHeight(Math.max(300, startHeight + (startY - moveEvent.clientY)));
+    };
+    const onUp = () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  }, [width, height]);
+
+  return (
     <div
       ref={measuredRef}
       style={{
         background: "var(--shade-0)",
-        // border: "var(--primary-border)",
-        minWidth: "300px",
-        width: initialWidth,
+        border: `1px solid ${tokens.colorNeutralStroke2}`,
+        position: "relative",
+        minWidth: collapsedPinned ? undefined : "300px",
+        width: collapsedPinned ? PINNED_COLLAPSED_WIDTH : width,
         minHeight: open ? "300px" : undefined,
         height: open ? height : "auto",
         zIndex: 10000,
-        borderRadius: "8px",
+        borderRadius: pinnedBottom ? "8px 8px 0 0" : "8px",
         boxShadow: "5px 5px 30px 5px rgba(0, 0, 0, 0.2)",
         overflow: "hidden",
-        resize: open ? "both" : "horizontal",
+        resize: pinnedBottom ? "none" : (open ? "both" : "horizontal"),
         display: "flex",
         flexDirection: "column",
       }}
     >
+      {pinnedBottom && open && (
+        <div
+          onMouseDown={handleCornerDrag}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "14px",
+            height: "14px",
+            cursor: "nwse-resize",
+            zIndex: 10001,
+          }}
+        />
+      )}
       <DraggableWindowDragger style={{ display: "flex", padding: "5px", alignItems: "center" }}>
         <div>&nbsp;{title}</div>
         <div style={{ flexGrow: 1 }}></div>
+        <PinBottomButton />
         <Button
           icon={open ? <ChevronUpRegular /> : <ChevronDownRegular />}
           onClick={handleCollapse}
@@ -208,7 +296,7 @@ export function CollapsibleDragWindow({
         {children}
       </div>
     </div>
-  </DraggableWindow>
+  );
 }
 
 export function useSearchFundsModal() {

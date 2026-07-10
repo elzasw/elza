@@ -142,6 +142,7 @@ export interface UserSettingsData {
     language?: Language;
     showDebugInfo?: boolean;
     showExperimentalFeatures?: boolean;
+    aiFullWidth?: boolean;
 }
 
 const LOCAL_STORAGE_KEY = 'ELZA-USER-SETTINGS';
