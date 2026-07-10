@@ -59,12 +59,11 @@ public class ExternalSystemController implements ExternalsystemsApi {
             throw new AccessDeniedException("Not logged", reqPermissions);
         }
         if (!loggedDetail.hasPermission(UsrPermission.Permission.ADMIN)) {
-            if (!loggedDetail.hasPermission(UsrPermission.Permission.AP_EXTERNAL_WR)) {
-                throw new AccessDeniedException("Cannot list externernal system properties", reqPermissions);
-            }
             if (userId == null) {
                 // without admin perms only own properties might be listed
                 userId = loggedDetail.getId();
+            } else if (!userId.equals(loggedDetail.getId())) {
+                throw new AccessDeniedException("User can list properties only for himself.", reqPermissions);
             }
         }
 
