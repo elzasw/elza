@@ -736,6 +736,11 @@
                                 <modelNameMapping>AiRequest=AiRequestVO</modelNameMapping>
                                 <modelNameMapping>AiRequestCreate=AiRequestCreateVO</modelNameMapping>
                                 <modelNameMapping>AiRequestEvent=AiRequestEventVO</modelNameMapping>
+                                <modelNameMapping>AiContextType=AiContextTypeVO</modelNameMapping>
+                                <modelNameMapping>AiContextObject=AiContextObjectVO</modelNameMapping>
+                                <modelNameMapping>AiContextFund=AiContextFundVO</modelNameMapping>
+                                <modelNameMapping>AiContextNode=AiContextNodeVO</modelNameMapping>
+                                <modelNameMapping>AiContextAccesspoint=AiContextAccesspointVO</modelNameMapping>
                                 <modelNameMapping>AiDisplayBlockType=AiDisplayBlockTypeVO</modelNameMapping>
                                 <modelNameMapping>AiDisplayBlock=AiDisplayBlockVO</modelNameMapping>
                                 <modelNameMapping>AiTextBlock=AiTextBlockVO</modelNameMapping>

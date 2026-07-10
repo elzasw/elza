@@ -2452,16 +2452,61 @@ model AiRequest {
     finishDate?: utcDateTime;
 }
 
+/**
+ * Type of a UI context object — the discriminator of `AiContextObject`. Names
+ * what part of the application the user is working in when an AI request is sent.
+ */
+enum AiContextType {
+    FUND,
+    NODE,
+    ACCESSPOINT,
+}
+
+/**
+ * A typed piece of the UI's current context, sent with an AI request. Elza
+ * resolves each into the provider's typed objects (e.g. a fund into an
+ * `elza.fundInfo` object read from the DB) before submitting the task.
+ */
+@discriminator("type")
+model AiContextObject {
+    /** Selects the context shape; one of the defined `AiContextType` codes. */
+    type: AiContextType;
+}
+
+/** The archival fund the user is working in. */
+model AiContextFund extends AiContextObject {
+    @invisible(Lifecycle)
+    type: AiContextType.FUND;
+    /** `ArrFund.fundId`. */
+    fundId: int32;
+}
+
+/** A description unit (node) within a fund. */
+model AiContextNode extends AiContextObject {
+    @invisible(Lifecycle)
+    type: AiContextType.NODE;
+    fundId: int32;
+    fundVersionId?: int32;
+    nodeId: int32;
+}
+
+/** An access point / entity from the registry. */
+model AiContextAccesspoint extends AiContextObject {
+    @invisible(Lifecycle)
+    type: AiContextType.ACCESSPOINT;
+    accessPointId: int32;
+}
+
 /** One AI conversation (topic/thread) as shown in the panel history. */
 model AiConversation {
     id: integer;
     /** Code of the AI external system the conversation runs against. */
     externalSystemCode: string;
     title: string;
-    /** Context type code: `fund-version`, `fund-list`, `access-point`, … */
+    /** `AiContextType` of the conversation's primary context object, for list filtering. */
     contextType?: string;
-    /** Context detail (JSON string); shape depends on contextType. */
-    context?: string;
+    /** The conversation's current context objects. */
+    context?: AiContextObject[];
     createDate: utcDateTime;
     lastChangeDate: utcDateTime;
 }
@@ -2482,13 +2527,12 @@ model AiConversationCreate {
     profile?: string;
     /** Thread title; when omitted the server derives it from the instructions. */
     title?: string;
-    contextType?: string;
-    /** Context detail (JSON string). */
-    context?: string;
     /** The user's message. */
     userInstructions?: string;
-    /** Structured task parameters (JSON string), shape depends on taskType. */
-    parameters?: string;
+    /** Task parameters as typed context objects; Elza resolves each and matches it to the task's declared parameter by object type. */
+    parameters?: AiContextObject[];
+    /** Supplementary context objects; Elza resolves them into the provider's `context`. */
+    context?: AiContextObject[];
 }
 
 /** Follow-up exchange submitted into an existing conversation. */
@@ -2496,8 +2540,10 @@ model AiRequestCreate {
     /** Profile/model for this exchange (an `AiProfile.code`); omitted = reuse the conversation's last. */
     profile?: string;
     userInstructions?: string;
-    /** Structured task parameters (JSON string). */
-    parameters?: string;
+    /** Task parameters as typed context objects (see `AiConversationCreate.parameters`). */
+    parameters?: AiContextObject[];
+    /** Supplementary context objects (see `AiConversationCreate.context`). */
+    context?: AiContextObject[];
 }
 
 /** One step of an exchange's log — the transparency view ("what was sent/received"). */

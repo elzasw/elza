@@ -5397,6 +5397,75 @@ components:
           type: boolean
           description: True for the tier used when a submission names none.
       description: A quality/cost tier the provider offers.
+    AiContextType:
+      type: string
+      enum:
+        - FUND
+        - NODE
+        - ACCESSPOINT
+      description: |-
+        Type of a UI context object — the discriminator of `AiContextObject`. Names
+        what part of the application the user is working in when an AI request is sent.
+    AiContextObject:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          allOf:
+            - $ref: '#/components/schemas/AiContextType'
+          description: Selects the context shape; one of the defined `AiContextType` codes.
+      discriminator:
+        propertyName: type
+        mapping:
+          FUND: '#/components/schemas/AiContextFund'
+          NODE: '#/components/schemas/AiContextNode'
+          ACCESSPOINT: '#/components/schemas/AiContextAccesspoint'
+      description: |-
+        A typed piece of the UI's current context, sent with an AI request. Elza
+        resolves each into the provider's typed objects (e.g. a fund into an
+        `elza.fundInfo` object read from the DB) before submitting the task.
+    AiContextFund:
+      type: object
+      required:
+        - fundId
+      properties:
+        fundId:
+          type: integer
+          format: int32
+          description: '`ArrFund.fundId`.'
+      allOf:
+        - $ref: '#/components/schemas/AiContextObject'
+      description: The archival fund the user is working in.
+    AiContextNode:
+      type: object
+      required:
+        - fundId
+        - nodeId
+      properties:
+        fundId:
+          type: integer
+          format: int32
+        fundVersionId:
+          type: integer
+          format: int32
+        nodeId:
+          type: integer
+          format: int32
+      allOf:
+        - $ref: '#/components/schemas/AiContextObject'
+      description: A description unit (node) within a fund.
+    AiContextAccesspoint:
+      type: object
+      required:
+        - accessPointId
+      properties:
+        accessPointId:
+          type: integer
+          format: int32
+      allOf:
+        - $ref: '#/components/schemas/AiContextObject'
+      description: An access point / entity from the registry.
     AiConversation:
       type: object
       required:
@@ -5415,10 +5484,12 @@ components:
           type: string
         contextType:
           type: string
-          description: 'Context type code: `fund-version`, `fund-list`, `access-point`, …'
+          description: "`AiContextType` of the conversation's primary context object, for list filtering."
         context:
-          type: string
-          description: Context detail (JSON string); shape depends on contextType.
+          type: array
+          items:
+            $ref: '#/components/schemas/AiContextObject'
+          description: The conversation's current context objects.
         createDate:
           type: string
           format: date-time
@@ -5444,17 +5515,19 @@ components:
         title:
           type: string
           description: Thread title; when omitted the server derives it from the instructions.
-        contextType:
-          type: string
-        context:
-          type: string
-          description: Context detail (JSON string).
         userInstructions:
           type: string
           description: The user's message.
         parameters:
-          type: string
-          description: Structured task parameters (JSON string), shape depends on taskType.
+          type: array
+          items:
+            $ref: '#/components/schemas/AiContextObject'
+          description: Task parameters as typed context objects; Elza resolves each and matches it to the task's declared parameter by object type.
+        context:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiContextObject'
+          description: Supplementary context objects; Elza resolves them into the provider's `context`.
       description: 'Starts a conversation: creates the thread and submits its first exchange.'
     AiConversationDetail:
       type: object
@@ -5676,8 +5749,15 @@ components:
         userInstructions:
           type: string
         parameters:
-          type: string
-          description: Structured task parameters (JSON string).
+          type: array
+          items:
+            $ref: '#/components/schemas/AiContextObject'
+          description: Task parameters as typed context objects (see `AiConversationCreate.parameters`).
+        context:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiContextObject'
+          description: Supplementary context objects (see `AiConversationCreate.context`).
       description: Follow-up exchange submitted into an existing conversation.
     AiRequestEvent:
       type: object
