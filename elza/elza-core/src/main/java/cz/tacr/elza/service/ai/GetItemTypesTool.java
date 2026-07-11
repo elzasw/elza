@@ -1,7 +1,6 @@
 package cz.tacr.elza.service.ai;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -12,6 +11,7 @@ import cz.tacr.elza.aiprovider.client.vo.GetItemTypesParams;
 import cz.tacr.elza.aiprovider.client.vo.ItemTypeDictionary;
 import cz.tacr.elza.aiprovider.client.vo.ItemTypeInfo;
 import cz.tacr.elza.aiprovider.client.vo.ItemTypeSpecInfo;
+import cz.tacr.elza.aiprovider.client.vo.StandardToolName;
 import cz.tacr.elza.domain.RulItemTypeExt;
 import cz.tacr.elza.service.RuleService;
 
@@ -31,28 +31,8 @@ public class GetItemTypesTool implements AiTool {
     private ObjectMapper objectMapper;
 
     @Override
-    public String name() {
-        return "getItemTypes";
-    }
-
-    @Override
-    public String description() {
-        return "Resolve a rule set's item-type dictionary: for the given ruleSetCode, returns each"
-                + " item type's code, name, data type and enumerated specifications (code + name)."
-                + " Use it to turn the bare type/spec codes in elza.archivalDescription into their"
-                + " human-readable meaning.";
-    }
-
-    @Override
-    public Map<String, Object> inputSchema() {
-        return Map.of(
-                "type", "object",
-                "required", List.of("ruleSetCode"),
-                "properties", Map.of(
-                        "ruleSetCode", Map.of(
-                                "type", "string",
-                                "description",
-                                "Rule set whose item types to return (RulRuleSet.code), e.g. ZP2015.")));
+    public StandardToolName name() {
+        return StandardToolName.GET_ITEM_TYPES;
     }
 
     @Override

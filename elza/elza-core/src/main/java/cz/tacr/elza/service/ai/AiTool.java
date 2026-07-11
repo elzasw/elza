@@ -1,31 +1,20 @@
 package cz.tacr.elza.service.ai;
 
-import java.util.Map;
+import cz.tacr.elza.aiprovider.client.vo.StandardToolName;
 
 /**
- * A tool Elza executes locally on the provider's request during the
- * {@code awaiting_tools} loop. Each standard tool has a well-known name and a
- * typed argument/result shape defined by the AI provider contract (typespec-ai);
- * on the wire the generic {@code ToolDefinition} / {@code ToolCall} /
- * {@code ToolResult} envelope carries them.
- *
- * <p>Implementations are Spring beans; {@link AiToolRegistry} collects them by
- * {@link #name()}.
+ * A standard tool Elza executes locally on the provider's request during the
+ * {@code awaiting_tools} loop. The tool's name and its typed argument/result
+ * shape are defined by the AI provider contract (typespec-ai); this interface is
+ * just the executor. The provider owns the tool's model-facing prompt and derives
+ * the argument schema from the contract, so Elza only advertises the name and
+ * runs the call. Implementations are Spring beans, collected by
+ * {@link AiToolRegistry}.
  */
 public interface AiTool {
 
-    /** Well-known tool name, e.g. {@code getItemTypes}. */
-    String name();
-
-    /** What the tool does and when to use it — written for the model. */
-    String description();
-
-    /**
-     * JSON Schema of the tool's arguments, declared to the provider as
-     * {@code ToolDefinition.inputSchema}; matches the contract's {@code …Params}
-     * model.
-     */
-    Map<String, Object> inputSchema();
+    /** The contract tool this bean implements. */
+    StandardToolName name();
 
     /**
      * Executes the call and returns the result payload (a contract result
@@ -33,7 +22,7 @@ public interface AiTool {
      * Throwing turns into a {@code ToolResult.error}.
      *
      * @param arguments the call's {@code arguments} object (as received from the
-     *                  provider); convert it to the tool's {@code …Params} model.
+     *                  provider); convert it to the tool's argument model.
      */
     Object execute(Object arguments);
 }

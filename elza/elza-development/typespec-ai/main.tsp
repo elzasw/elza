@@ -469,20 +469,25 @@ enum TaskState {
 }
 
 /**
- * A tool the client offers for this task — something the *client* can execute
- * locally on the provider's request (a search over the client's index, a record
- * lookup, …). Mirrors the tool-definition shape of AI model APIs.
+ * Standard tools — the **closed, contract-owned** set of tools a client can
+ * execute locally on the provider's request during `awaiting_tools`. The set is
+ * versioned with the client: a new tool ships in a client release (its executor
+ * is client code), so tools are *not* dynamically declared. This contract owns
+ * each tool's **interface** — its name here plus the typed argument and result
+ * models below; the client advertises which tools it supports in
+ * `SubmitTask.tools`, and the **provider** owns the tool's model-facing
+ * prompt/description and derives the model's argument schema from the argument
+ * model. Defined tools:
+ *
+ * - `getItemTypes` — resolve the rule-set dictionary. Arguments
+ *   `GetItemTypesParams`, result `ItemTypeDictionary`: the client sends
+ *   `elza.archivalDescription` items as bare type/spec codes (compact,
+ *   documentation-aligned) and the provider calls this tool once per
+ *   `FundInfo.ruleSetCode` to turn those codes into names, data types and the
+ *   enumerated spec lists, then caches it.
  */
-model ToolDefinition {
-  /** Tool name, unique within the task, e.g. `searchNodes`. */
-  @pattern("^[A-Za-z][A-Za-z0-9_]*$")
-  name: string;
-
-  /** What the tool does and when to use it — written for the model. */
-  description: string;
-
-  /** JSON Schema of the tool's arguments object. */
-  inputSchema: Record<unknown>;
+enum StandardToolName {
+  getItemTypes,
 }
 
 /** A pending call of a client-declared tool (present while `awaiting_tools`). */
@@ -490,10 +495,10 @@ model ToolCall {
   /** Server-assigned id of this call; echo it back in the matching `ToolResult`. */
   callId: string;
 
-  /** Name of the tool to execute (one of the task's declared tools). */
-  tool: string;
+  /** The tool to execute — one the client declared in `SubmitTask.tools`. */
+  tool: StandardToolName;
 
-  /** Arguments object; conforms to the tool's declared `inputSchema`. */
+  /** Arguments object; conforms to the tool's argument model (e.g. `GetItemTypesParams`). */
   arguments: unknown;
 }
 
@@ -510,22 +515,9 @@ model ToolResult {
 }
 
 // ---------------------------------------------------------------------------
-// Standard tools
-//
-// Tools this contract defines by name, with a typed argument and result shape,
-// so the client and provider generate the *same* models instead of hand-rolling
-// JSON against a prose description. On the wire they use the generic
-// ToolDefinition / ToolCall / ToolResult envelope: a client that offers a
-// standard tool declares it under its well-known `name` with the matching
-// `…Params` model as `inputSchema`; the provider calls it and receives the
-// matching result model as `ToolResult.result`. Defined standard tools:
-//
-//   - getItemTypes — resolve the rule-set dictionary. Arguments
-//     `GetItemTypesParams`, result `ItemTypeDictionary`. The client sends
-//     `elza.archivalDescription` items as bare type/spec codes (compact,
-//     documentation-aligned); the provider calls this tool once per
-//     `FundInfo.ruleSetCode` to turn those codes into names, data types and the
-//     enumerated spec lists, then caches it.
+// Standard tool payloads — the typed argument/result models named by
+// `StandardToolName` (see its doc for the tool catalog). Carried inside the
+// generic `ToolCall.arguments` / `ToolResult.result` envelope.
 // ---------------------------------------------------------------------------
 
 /** Arguments of the `getItemTypes` tool. */
@@ -635,11 +627,13 @@ model SubmitTask {
   context?: AiObject[];
 
   /**
-   * Tools the client offers for this task. If present, the task may enter
-   * `awaiting_tools` and request calls; if absent, the task runs on `parameters`
-   * (and `context`) alone.
+   * Standard tools the client offers for this task, by name (see
+   * `StandardToolName`). If present, the task may enter `awaiting_tools` and
+   * request calls; if absent, the task runs on `parameters` (and `context`)
+   * alone. The client sends names only — the provider knows each tool's argument
+   * schema and result shape from the contract.
    */
-  tools?: ToolDefinition[];
+  tools?: StandardToolName[];
 
   /**
    * Id of a finished task whose conversation this task continues (a follow-up /

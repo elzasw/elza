@@ -269,7 +269,7 @@ public class AiConversationService {
                 .userInstructions(userInstructions)
                 .parameters(buildParameters(taskType, parameters, externalSystem))
                 .context(contextResolver.resolveAll(context))
-                .tools(toolRegistry.toolDefinitions())
+                .tools(toolRegistry.toolNames())
                 .parentTaskId(parentTaskUid)
                 .metadata(metadata);
         addEvent(request, AiRequestEvent.TYPE_SUBMIT, toJson(submitTask));
