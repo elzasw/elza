@@ -16,6 +16,7 @@ import cz.tacr.elza.aiprovider.client.vo.AiServiceInfo;
 import cz.tacr.elza.connector.ApiClientAiProvider;
 import cz.tacr.elza.controller.vo.AiMyKeyUpdateVO;
 import cz.tacr.elza.controller.vo.AiMyKeyVO;
+import cz.tacr.elza.core.ElzaLocale;
 import cz.tacr.elza.core.security.AuthMethod;
 import cz.tacr.elza.domain.AiExternalSystem;
 import cz.tacr.elza.domain.SysExternalSystemProperty;
@@ -63,6 +64,9 @@ public class AiProviderService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ElzaLocale elzaLocale;
+
     /**
      * Finds an AI provider external system by numeric id or code.
      */
@@ -96,7 +100,7 @@ public class AiProviderService {
     public AiServiceInfo fetchServiceInfo(final AiExternalSystem extSystem) {
         ElzaAiApi api = new ElzaAiApi(createClient(extSystem));
         try {
-            return api.getInfo(OffsetDateTime.now());
+            return api.getInfo(OffsetDateTime.now(), acceptLanguage());
         } catch (RestClientResponseException e) {
             throw new SystemException("AI provider call failed: HTTP " + e.getStatusCode().value(), e,
                     ExternalCode.EXTERNAL_SYSTEM_ERROR)
@@ -219,6 +223,18 @@ public class AiProviderService {
             throw new BusinessException("User not logged in", BaseCode.INSUFFICIENT_PERMISSIONS);
         }
         return user;
+    }
+
+    /**
+     * The deployment-wide locale as a BCP-47 {@code Accept-Language} value, so the
+     * provider localizes the human-readable catalog labels (task-type and profile
+     * names/descriptions). Elza has no per-user server locale — the client renders
+     * its own UI chrome — so the single {@code elza.locale} is the best hint
+     * available. Returns {@code null} for an undefined locale (header omitted).
+     */
+    private String acceptLanguage() {
+        String tag = elzaLocale.getLocale().toLanguageTag();
+        return StringUtils.isBlank(tag) || "und".equals(tag) ? null : tag;
     }
 
     private ApiClientAiProvider createClient(final AiExternalSystem extSystem) {
