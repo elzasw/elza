@@ -1,5 +1,6 @@
 package cz.tacr.elza.service.ai;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -22,7 +23,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import cz.tacr.elza.aiprovider.client.ElzaAiApi;
 import cz.tacr.elza.aiprovider.client.vo.AiObject;
+import cz.tacr.elza.aiprovider.client.vo.SubmitToolResultsRequest;
 import cz.tacr.elza.aiprovider.client.vo.Task;
+import cz.tacr.elza.aiprovider.client.vo.ToolCall;
+import cz.tacr.elza.aiprovider.client.vo.ToolResult;
 import cz.tacr.elza.domain.AiConversation;
 import cz.tacr.elza.domain.AiExternalSystem;
 import cz.tacr.elza.domain.AiRequest;
@@ -82,6 +86,9 @@ public class AiRequestPoller {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private AiToolRegistry toolRegistry;
+
     private final Set<Integer> active = ConcurrentHashMap.newKeySet();
 
     private final ExecutorService executor = Executors.newFixedThreadPool(4, runnable -> {
@@ -118,11 +125,12 @@ public class AiRequestPoller {
                     return; // terminal, deleted or never submitted
                 }
                 Task task;
+                ElzaAiApi api;
                 try {
                     // The conversation owner's key (task visibility at the
                     // provider is per subscriber, but the owner's personal key
                     // may be the only one configured).
-                    ElzaAiApi api = aiProviderService.createApi(target.externalSystem, target.userId);
+                    api = aiProviderService.createApi(target.externalSystem, target.userId);
                     task = api.getTask(java.time.OffsetDateTime.now(), target.taskUid, WAIT_SECONDS);
                 } catch (Exception e) {
                     // e.getMessage() of the generated client's RestClientResponseException
@@ -133,6 +141,12 @@ public class AiRequestPoller {
                                 target.externalSystem.getUrl(), e.getMessage());
                     logger.debug("Polling failure detail for AI request {}", aiRequestId, e);
                     Thread.sleep(RETRY_PAUSE_MS);
+                    continue;
+                }
+                // The task paused for client-side tools: execute them, return the
+                // results, and keep polling the resumed task.
+                if ("awaiting_tools".equals(task.getState().getValue())) {
+                    handleToolCalls(aiRequestId, target, task, api);
                     continue;
                 }
                 applyChange(aiRequestId, target, task);
@@ -216,6 +230,71 @@ public class AiRequestPoller {
                 aiConversationRepository.save(conversation);
             }
 
+            eventNotificationService.publishEvent(
+                    new EventId(EventType.AI_REQUEST_CHANGE, target.conversationId));
+        });
+    }
+
+    /**
+     * Executes the pending tool calls of an {@code awaiting_tools} task and
+     * returns the results to the provider so it can resume. Each call is
+     * dispatched to the matching {@link AiTool}; a missing tool or a failing
+     * execution becomes a {@code ToolResult.error} (the model decides how to
+     * proceed). The calls and the results are recorded as request events for the
+     * transparency log. Submitting is retry-safe, so a failure here simply lets
+     * the next poll re-observe {@code awaiting_tools} and try again.
+     */
+    private void handleToolCalls(final Integer aiRequestId, final PollTarget target,
+                                 final Task task, final ElzaAiApi api) throws InterruptedException {
+        List<ToolCall> calls = task.getToolCalls();
+        if (calls == null || calls.isEmpty()) {
+            // awaiting_tools without any calls — nothing to answer; back off so
+            // the loop does not spin until the provider advances the task.
+            Thread.sleep(RETRY_PAUSE_MS);
+            return;
+        }
+        recordToolEvent(aiRequestId, target, AiRequestEvent.TYPE_TOOL_CALLS, toJson(calls));
+        List<ToolResult> results = new ArrayList<>(calls.size());
+        for (ToolCall call : calls) {
+            results.add(executeToolCall(call));
+        }
+        recordToolEvent(aiRequestId, target, AiRequestEvent.TYPE_TOOL_RESULTS, toJson(results));
+        try {
+            api.submitToolResults(java.time.OffsetDateTime.now(), target.taskUid,
+                    new SubmitToolResultsRequest().results(results));
+        } catch (Exception e) {
+            logger.warn("Submitting tool results for AI request {} (task {}, provider {}) failed: {}",
+                        aiRequestId, target.taskUid, target.externalSystem.getCode(), e.getMessage());
+            logger.debug("Tool-results submit failure detail for AI request {}", aiRequestId, e);
+            Thread.sleep(RETRY_PAUSE_MS);
+        }
+    }
+
+    /** Runs one tool call, capturing success as {@code result} or failure as {@code error}. */
+    private ToolResult executeToolCall(final ToolCall call) {
+        ToolResult result = new ToolResult().callId(call.getCallId());
+        AiTool tool = toolRegistry.get(call.getTool());
+        if (tool == null) {
+            return result.error("Unknown tool: " + call.getTool());
+        }
+        try {
+            return result.result(tool.execute(call.getArguments()));
+        } catch (Exception e) {
+            logger.warn("AI tool {} failed (call {}): {}", call.getTool(), call.getCallId(), e.getMessage());
+            logger.debug("AI tool {} failure detail", call.getTool(), e);
+            return result.error(e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
+        }
+    }
+
+    /** Persists a tool event and notifies the client (transparency-log update). */
+    private void recordToolEvent(final Integer aiRequestId, final PollTarget target,
+                                 final String eventType, final String data) {
+        transactionTemplate.executeWithoutResult(status -> {
+            AiRequest request = aiRequestRepository.findById(aiRequestId).orElse(null);
+            if (request == null) {
+                return;
+            }
+            addEvent(request, eventType, data);
             eventNotificationService.publishEvent(
                     new EventId(EventType.AI_REQUEST_CHANGE, target.conversationId));
         });
