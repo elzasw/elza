@@ -20,8 +20,10 @@ import cz.tacr.elza.controller.vo.AiContextNodeVO;
 import cz.tacr.elza.controller.vo.AiContextObjectVO;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ArrFund;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.repository.FundRepository;
+import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.service.AccessPointService;
 
 /**
@@ -42,6 +44,9 @@ public class AiContextResolver {
 
     @Autowired
     private FundRepository fundRepository;
+
+    @Autowired
+    private FundVersionRepository fundVersionRepository;
 
     @Autowired
     private AccessPointService accessPointService;
@@ -95,6 +100,10 @@ public class AiContextResolver {
                 .fundNumber(fund.getFundNumber())
                 .mark(fund.getMark())
                 .unitDate(fund.getUnitdate());
+        ArrFundVersion openVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId());
+        if (openVersion != null && openVersion.getRuleSet() != null) {
+            info.ruleSetCode(openVersion.getRuleSet().getCode());
+        }
         if (fund.getInstitution() != null) {
             info.institution(toInstitutionInfo(fund.getInstitution()));
         }
