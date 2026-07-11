@@ -320,7 +320,14 @@ public class AiConversationService {
                                                   final List<AiContextObjectVO> parameterContext,
                                                   final AiExternalSystem externalSystem) {
         Map<String, AiObject> parameters = new HashMap<>();
-        List<AiObject> resolved = contextResolver.resolveAll(parameterContext);
+        // A parameter is one object per supplied context; resolvePrimary yields
+        // the single primary object (a node → its own level, no ancestors/fund).
+        List<AiObject> resolved = new ArrayList<>();
+        if (parameterContext != null) {
+            for (AiContextObjectVO ctx : parameterContext) {
+                contextResolver.resolvePrimary(ctx).ifPresent(resolved::add);
+            }
+        }
         if (!resolved.isEmpty()) {
             List<TaskParameterInfo> declared = declaredParameters(externalSystem, taskType);
             for (AiObject object : resolved) {
