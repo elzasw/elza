@@ -233,6 +233,13 @@ model FundInfo {
   /** Internal (evidence) code of the fund, if set. */
   internalCode?: string;
 
+  /**
+   * Rule set the fund uses, e.g. `ZP2015` (`RulRuleSet.code`) — selects the
+   * dictionary that resolves the item-type/spec codes used in
+   * `elza.archivalDescription`.
+   */
+  ruleSetCode?: string;
+
   /** Fund number, if set. */
   fundNumber?: int32;
 
@@ -271,11 +278,67 @@ model ArchivalEntityObject extends AiObject {
 }
 
 /**
- * A description unit (node) and its related data. Payload fields are added as
- * real tasks need them; open for additive growth.
+ * One description item (attribute) of a level, as stable codes plus its value.
+ * The human-readable names of `type`/`spec` are resolved by the provider from
+ * the rule-set dictionary (keyed by `FundInfo.ruleSetCode`), not repeated here —
+ * the codes are the canonical, documented identifiers.
+ */
+model DescriptionItem {
+  /** Stable item-type code, e.g. `ZP2015_TITLE` (`RulItemType.code`). */
+  type: string;
+
+  /**
+   * Stable specification code for enumerated item types, e.g.
+   * `ZP2015_UNIT_TYPE_UKN` (`RulItemSpec.code`); absent for non-enumerated types.
+   */
+  spec?: string;
+
+  /**
+   * The item's value in text form for non-enumerated types; absent when the
+   * meaning is fully carried by `spec`, or the item is value-less.
+   */
+  value?: string;
+}
+
+/**
+ * A description unit (level / node): its identity, its place in the arrangement
+ * and its description items as codes. Self-contained given the accompanying
+ * `elza.fundInfo`, whose `ruleSetCode` resolves the item codes.
  */
 model ArchivalDescription {
-  ...Record<unknown>;
+  /**
+   * Client-local level id (`ArrNode.nodeId`); echo-only — the provider returns
+   * it (e.g. in findings), never interprets it.
+   */
+  nodeId: int32;
+
+  /** Stable level UUID (`ArrNode.uuid`), for durable cross-request identity. */
+  uuid?: string;
+
+  /** Parent level id (`ArrNode.nodeId`); echo-only, absent at a fund root. */
+  parentId?: int32;
+
+  /**
+   * Reference designation from the fund root, e.g. `["1", "2", "3"]` — the
+   * archival "signatura" path.
+   */
+  referenceMark?: string[];
+
+  /** Depth in the arrangement tree; a fund root is depth 0. */
+  depth?: int32;
+
+  /** Whether the level has child levels (for reasoning about aggregation). */
+  hasChildren?: boolean;
+
+  /**
+   * True for the level the user is on (the "active" level); absent or false for
+   * supporting levels (ancestors) sent only to give hierarchy. Lets a task tell
+   * the focus level from its context when several are sent together.
+   */
+  focus?: boolean;
+
+  /** The level's description items, in display order. */
+  items: DescriptionItem[];
 }
 
 /** Archival description object. */

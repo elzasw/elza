@@ -987,10 +987,52 @@ components:
         a `200` proves reachability, authentication and an active subscription.
     ArchivalDescription:
       type: object
-      additionalProperties: {}
+      required:
+        - nodeId
+        - items
+      properties:
+        nodeId:
+          type: integer
+          format: int32
+          description: |-
+            Client-local level id (`ArrNode.nodeId`); echo-only — the provider returns
+            it (e.g. in findings), never interprets it.
+        uuid:
+          type: string
+          description: Stable level UUID (`ArrNode.uuid`), for durable cross-request identity.
+        parentId:
+          type: integer
+          format: int32
+          description: Parent level id (`ArrNode.nodeId`); echo-only, absent at a fund root.
+        referenceMark:
+          type: array
+          items:
+            type: string
+          description: |-
+            Reference designation from the fund root, e.g. `["1", "2", "3"]` — the
+            archival "signatura" path.
+        depth:
+          type: integer
+          format: int32
+          description: Depth in the arrangement tree; a fund root is depth 0.
+        hasChildren:
+          type: boolean
+          description: Whether the level has child levels (for reasoning about aggregation).
+        focus:
+          type: boolean
+          description: |-
+            True for the level the user is on (the "active" level); absent or false for
+            supporting levels (ancestors) sent only to give hierarchy. Lets a task tell
+            the focus level from its context when several are sent together.
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DescriptionItem'
+          description: The level's description items, in display order.
       description: |-
-        A description unit (node) and its related data. Payload fields are added as
-        real tasks need them; open for additive growth.
+        A description unit (level / node): its identity, its place in the arrangement
+        and its description items as codes. Self-contained given the accompanying
+        `elza.fundInfo`, whose `ruleSetCode` resolves the item codes.
     ArchivalDescriptionObject:
       type: object
       required:
@@ -1036,6 +1078,29 @@ components:
           format: date-time
           description: Start of the current accounting period (UTC).
       description: Subscriber-level (whole organization) usage state — the outer budget cap.
+    DescriptionItem:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          description: Stable item-type code, e.g. `ZP2015_TITLE` (`RulItemType.code`).
+        spec:
+          type: string
+          description: |-
+            Stable specification code for enumerated item types, e.g.
+            `ZP2015_UNIT_TYPE_UKN` (`RulItemSpec.code`); absent for non-enumerated types.
+        value:
+          type: string
+          description: |-
+            The item's value in text form for non-enumerated types; absent when the
+            meaning is fully carried by `spec`, or the item is value-less.
+      description: |-
+        One description item (attribute) of a level, as stable codes plus its value.
+        The human-readable names of `type`/`spec` are resolved by the provider from
+        the rule-set dictionary (keyed by `FundInfo.ruleSetCode`), not repeated here —
+        the codes are the canonical, documented identifiers.
     DocCitation:
       type: object
       required:
@@ -1102,6 +1167,12 @@ components:
         internalCode:
           type: string
           description: Internal (evidence) code of the fund, if set.
+        ruleSetCode:
+          type: string
+          description: |-
+            Rule set the fund uses, e.g. `ZP2015` (`RulRuleSet.code`) — selects the
+            dictionary that resolves the item-type/spec codes used in
+            `elza.archivalDescription`.
         fundNumber:
           type: integer
           format: int32
