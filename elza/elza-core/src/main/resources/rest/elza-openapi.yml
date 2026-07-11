@@ -4973,8 +4973,9 @@ paths:
     get:
       operationId: Rules_listItemTypes
       description: |-
-        Returns all item types defined across loaded rule sets, together with
-        their specifications and rendering hints.
+        Returns item types together with their specifications and rendering hints.
+        By default all item types across loaded rule sets; when `ruleSetCode` is
+        given, only the item types available in that rule set.
 
         Public URL: `GET /api/v1/rules/itemTypes`.
 
@@ -4985,6 +4986,12 @@ paths:
 
         Replaces the legacy `GET /api/rule/descItemTypes`.
       parameters:
+        - name: ruleSetCode
+          in: query
+          required: false
+          description: When set, return only the item types available in this rule set (`RulRuleSet.code`); otherwise all loaded rule sets.
+          schema:
+            type: string
         - name: Accept-Language
           in: header
           required: false

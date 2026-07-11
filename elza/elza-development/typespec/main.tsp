@@ -3188,8 +3188,9 @@ namespace ElzaAPI.DescItem {
 @route("/rules")
 namespace ElzaAPI.Rules {
     /**
-     * Returns all item types defined across loaded rule sets, together with
-     * their specifications and rendering hints.
+     * Returns item types together with their specifications and rendering hints.
+     * By default all item types across loaded rule sets; when `ruleSetCode` is
+     * given, only the item types available in that rule set.
      *
      * Public URL: `GET /api/v1/rules/itemTypes`.
      *
@@ -3202,6 +3203,9 @@ namespace ElzaAPI.Rules {
      */
     @route("/itemTypes")
     @get op listItemTypes(
+        /** When set, return only the item types available in this rule set (`RulRuleSet.code`); otherwise all loaded rule sets. */
+        @query ruleSetCode?: string,
+
         /** Preferred language for localized strings (e.g. "cs", "en"). */
         @header("Accept-Language") acceptLanguage?: string
     ): ItemTypeList;
