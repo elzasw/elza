@@ -31,8 +31,6 @@ import cz.tacr.elza.aiprovider.client.vo.TaskAccepted;
 import cz.tacr.elza.aiprovider.client.vo.TaskMetadata;
 import cz.tacr.elza.aiprovider.client.vo.TaskParameterInfo;
 import cz.tacr.elza.aiprovider.client.vo.TaskTypeInfo;
-import cz.tacr.elza.aiprovider.client.vo.TextObject;
-import cz.tacr.elza.aiprovider.client.vo.TextPayload;
 import cz.tacr.elza.controller.vo.AiContextObjectVO;
 import cz.tacr.elza.controller.vo.AiConversationCreateVO;
 import cz.tacr.elza.controller.vo.AiConversationDetailVO;
@@ -65,10 +63,10 @@ import cz.tacr.elza.service.UserService;
  * state changes are observed by {@link AiRequestPoller}.
  *
  * <p>Task parameters: the exchange is submitted with the provider's typed
- * parameters (see {@link #buildParameters}). The echo integration task takes
- * the user's text as its {@code elza.text} input; the chat assistant runs on
- * {@code userInstructions} alone. Task types whose parameter object types Elza
- * cannot yet marshal are simply not offered.
+ * parameters (see {@link #buildParameters}), built from the context objects the
+ * UI supplies; the user's free-form text travels in {@code userInstructions}.
+ * Task types whose parameter object types Elza cannot yet marshal are simply
+ * not offered.
  */
 @Service
 public class AiConversationService {
@@ -266,7 +264,7 @@ public class AiConversationService {
                 .taskType(taskType)
                 .profile(profile)
                 .userInstructions(userInstructions)
-                .parameters(buildParameters(taskType, userInstructions, parameters, externalSystem))
+                .parameters(buildParameters(taskType, parameters, externalSystem))
                 .context(contextResolver.resolveAll(context))
                 .parentTaskId(parentTaskUid)
                 .metadata(metadata);
@@ -308,23 +306,16 @@ public class AiConversationService {
     }
 
     /**
-     * Builds the provider's typed task parameters (a name→object map). The echo
-     * integration task takes the user's text as its {@code elza.text} {@code input}.
-     * On top of that, each context object the UI supplied under {@code parameters}
-     * is resolved to a provider object and assigned to the task's declared
-     * parameter whose object type matches (looked up from the provider's
-     * {@code GET /info}); a resolved object with no matching declared parameter is
-     * skipped.
+     * Builds the provider's typed task parameters (a name→object map). Each
+     * context object the UI supplied under {@code parameters} is resolved to a
+     * provider object and assigned to the task's declared parameter whose object
+     * type matches (looked up from the provider's {@code GET /info}); a resolved
+     * object with no matching declared parameter is skipped.
      */
-    private Map<String, AiObject> buildParameters(final String taskType, final String userInstructions,
+    private Map<String, AiObject> buildParameters(final String taskType,
                                                   final List<AiContextObjectVO> parameterContext,
                                                   final AiExternalSystem externalSystem) {
         Map<String, AiObject> parameters = new HashMap<>();
-        if ("elza.echo".equals(taskType)) {
-            TextObject input = new TextObject()
-                    .data(new TextPayload().text(StringUtils.defaultString(userInstructions)));
-            parameters.put("input", input);
-        }
         List<AiObject> resolved = contextResolver.resolveAll(parameterContext);
         if (!resolved.isEmpty()) {
             List<TaskParameterInfo> declared = declaredParameters(externalSystem, taskType);
