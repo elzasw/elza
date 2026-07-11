@@ -1,9 +1,14 @@
 package cz.tacr.elza.service.ai;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import cz.tacr.elza.aiprovider.client.vo.AiObject;
+import cz.tacr.elza.aiprovider.client.vo.ArchivalDescription;
+import cz.tacr.elza.aiprovider.client.vo.ArchivalDescriptionObject;
+import cz.tacr.elza.aiprovider.client.vo.DescriptionItem;
 import cz.tacr.elza.aiprovider.client.vo.FundInfo;
 import cz.tacr.elza.aiprovider.client.vo.FundInfoObject;
 import cz.tacr.elza.aiprovider.client.vo.InstitutionInfo;
@@ -18,24 +26,50 @@ import cz.tacr.elza.aiprovider.client.vo.ObjectType;
 import cz.tacr.elza.controller.vo.AiContextFundVO;
 import cz.tacr.elza.controller.vo.AiContextNodeVO;
 import cz.tacr.elza.controller.vo.AiContextObjectVO;
+import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataProvider;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
+import cz.tacr.elza.domain.ArrNode;
 import cz.tacr.elza.domain.ParInstitution;
+import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.NodeRepository;
+import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.AccessPointService;
+import cz.tacr.elza.service.DescriptionItemService;
+import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.UserService;
 
 /**
  * Resolves the UI's typed context objects ({@code AiContextObject}) into the
- * provider's typed objects ({@code AiObject}) that travel with a task. It reads
- * the referenced domain data from the DB — e.g. an {@code AiContextFund} becomes
- * an {@code elza.fundInfo} object built from its {@link ArrFund}. An
- * {@code AiContextNode} contributes the same {@code elza.fundInfo} for its fund,
- * so the provider always has self-contained fund context for the active level;
- * fund info is sent once per fund. Context that still has no provider payload
- * (an access point, and a node's own level data) resolves to nothing (logged);
- * the request still goes out with whatever could be resolved.
+ * provider's typed objects ({@code AiObject}) that travel with a task, reading
+ * the referenced domain data from the DB.
+ *
+ * <ul>
+ *   <li>{@code AiContextFund} → an {@code elza.fundInfo} (built from {@link ArrFund}
+ *       plus the fund's rule-set code).</li>
+ *   <li>{@code AiContextNode} → an {@code elza.archivalDescription} of the level
+ *       (its items as stable codes + display text, reference mark, depth, parent,
+ *       …) plus, for the {@code context} role, its ancestors up to the root and
+ *       the fund's {@code elza.fundInfo}.</li>
+ * </ul>
+ *
+ * <p>Two entry points serve the two roles: {@link #resolvePrimary} yields the one
+ * object a task parameter expects, {@link #resolveAll} yields the primary object
+ * plus supporting context (ancestors, fund), deduplicated. Read permission
+ * ({@code FUND_RD}) on the target fund is enforced; anything the user cannot read
+ * or that cannot be mapped is skipped (logged), and the request goes out with
+ * whatever could be resolved.
+ *
+ * <p>v1 resolves against the fund's <b>open</b> version; {@code fundVersionId} on
+ * a node context is reserved for later locked-version support.
  */
 @Service
 public class AiContextResolver {
@@ -49,12 +83,28 @@ public class AiContextResolver {
     private FundVersionRepository fundVersionRepository;
 
     @Autowired
+    private NodeRepository nodeRepository;
+
+    @Autowired
     private AccessPointService accessPointService;
 
+    @Autowired
+    private DescriptionItemService descriptionItemService;
+
+    @Autowired
+    private LevelTreeCacheService levelTreeCacheService;
+
+    @Autowired
+    private StaticDataService staticDataService;
+
+    @Autowired
+    private UserService userService;
+
     /**
-     * Resolves the context objects into provider objects, dropping the ones that
-     * cannot be mapped yet. Fund info is sent once per fund: several context
-     * objects (the fund itself and any nodes within it) resolve to the same fund.
+     * Resolves the context objects into provider objects for the {@code context}
+     * role: each fund/node plus its supporting objects (a node contributes its
+     * level, its ancestors, and its fund). Fund info is sent once per fund and a
+     * level once per node.
      */
     public List<AiObject> resolveAll(final List<AiContextObjectVO> contextObjects) {
         List<AiObject> resolved = new ArrayList<>();
@@ -62,14 +112,12 @@ public class AiContextResolver {
             return resolved;
         }
         Set<Integer> fundInfoAdded = new HashSet<>();
+        Set<Integer> levelAdded = new HashSet<>();
         for (AiContextObjectVO ctx : contextObjects) {
             if (ctx instanceof AiContextFundVO fund) {
                 addFundInfo(resolved, fundInfoAdded, fund.getFundId());
             } else if (ctx instanceof AiContextNodeVO node) {
-                // A node carries no provider payload of its own yet, but its fund
-                // is self-contained context for the active level; send the fund
-                // info derived from the node.
-                addFundInfo(resolved, fundInfoAdded, node.getFundId());
+                addNode(resolved, fundInfoAdded, levelAdded, node);
             } else {
                 logger.info("AI context object {} is not resolvable to a provider object yet",
                         ctx == null ? null : ctx.getClass().getSimpleName());
@@ -79,38 +127,203 @@ public class AiContextResolver {
     }
 
     /**
+     * Resolves one context object to its single primary provider object — a fund
+     * to its {@code elza.fundInfo}, a node to its own {@code elza.archivalDescription}
+     * (no ancestors, no fund). Used to match a supplied parameter to the task's
+     * declared parameter by object type.
+     */
+    public Optional<AiObject> resolvePrimary(final AiContextObjectVO ctx) {
+        if (ctx instanceof AiContextFundVO fund) {
+            return resolveFundInfo(fund.getFundId());
+        }
+        if (ctx instanceof AiContextNodeVO node) {
+            ArrFundVersion version = resolveReadableOpenVersion(node.getFundId());
+            if (version == null || node.getNodeId() == null) {
+                return Optional.empty();
+            }
+            return Optional.ofNullable(buildArchivalDescription(version, node.getNodeId(), true));
+        }
+        logger.info("AI context object {} is not resolvable to a provider object yet",
+                ctx == null ? null : ctx.getClass().getSimpleName());
+        return Optional.empty();
+    }
+
+    /** Adds a node's level, its ancestors (root-ward) and its fund, deduplicated. */
+    private void addNode(final List<AiObject> resolved, final Set<Integer> fundInfoAdded,
+                         final Set<Integer> levelAdded, final AiContextNodeVO node) {
+        ArrFundVersion version = resolveReadableOpenVersion(node.getFundId());
+        if (version == null || node.getNodeId() == null) {
+            return;
+        }
+        Map<Integer, TreeNode> treeMap = levelTreeCacheService.getVersionTreeCache(version);
+        if (treeMap.get(node.getNodeId()) == null) {
+            logger.info("AI context node {} not found in fund {} open version; skipped",
+                    node.getNodeId(), node.getFundId());
+            return;
+        }
+        // The active level plus its ancestors up to the root, skipping levels
+        // already added by an earlier context object.
+        List<Integer> chain = new ArrayList<>();
+        chain.add(node.getNodeId());
+        chain.addAll(levelTreeCacheService.getParentNodes(version, node.getNodeId()));
+        List<Integer> toBuild = chain.stream().filter(levelAdded::add).toList();
+
+        if (!toBuild.isEmpty()) {
+            StaticDataProvider sdp = staticDataService.getData();
+            Map<Integer, List<ArrDescItem>> itemsByNode = loadItems(version, toBuild);
+            Map<Integer, ArrNode> nodesById = nodeRepository.findAllById(toBuild).stream()
+                    .collect(Collectors.toMap(ArrNode::getNodeId, n -> n));
+            for (Integer nodeId : toBuild) {
+                AiObject level = buildArchivalDescription(nodeId, nodeId.equals(node.getNodeId()),
+                        nodesById.get(nodeId), treeMap.get(nodeId),
+                        itemsByNode.getOrDefault(nodeId, List.of()), sdp);
+                if (level != null) {
+                    resolved.add(level);
+                }
+            }
+        }
+        addFundInfo(resolved, fundInfoAdded, node.getFundId());
+    }
+
+    /** Builds one level's {@code elza.archivalDescription}, loading its own pieces. */
+    private AiObject buildArchivalDescription(final ArrFundVersion version, final Integer nodeId,
+                                              final boolean focus) {
+        TreeNode treeNode = levelTreeCacheService.getVersionTreeCache(version).get(nodeId);
+        if (treeNode == null) {
+            logger.info("AI context node {} not found in fund {} open version; skipped",
+                    nodeId, version.getFundId());
+            return null;
+        }
+        ArrNode node = nodeRepository.findById(nodeId).orElse(null);
+        List<ArrDescItem> items = loadItems(version, List.of(nodeId)).getOrDefault(nodeId, List.of());
+        return buildArchivalDescription(nodeId, focus, node, treeNode, items, staticDataService.getData());
+    }
+
+    /** Maps a level's already-loaded pieces to an {@code elza.archivalDescription} object. */
+    private AiObject buildArchivalDescription(final Integer nodeId, final boolean focus,
+                                              final ArrNode node, final TreeNode treeNode,
+                                              final List<ArrDescItem> items, final StaticDataProvider sdp) {
+        ArchivalDescription data = new ArchivalDescription().nodeId(nodeId);
+        if (focus) {
+            data.focus(true);
+        }
+        if (node != null) {
+            data.uuid(node.getUuid());
+        }
+        if (treeNode != null) {
+            data.depth(treeNode.getDepth());
+            if (treeNode.getParent() != null) {
+                data.parentId(treeNode.getParent().getId());
+            }
+            data.hasChildren(!treeNode.getChildren().isEmpty());
+            data.referenceMark(toReferenceMark(treeNode.getReferenceMark()));
+        }
+        data.items(items.stream()
+                .map(item -> toDescriptionItem(item, sdp))
+                .filter(Objects::nonNull)
+                .toList());
+        return new ArchivalDescriptionObject()
+                .objectType(ObjectType.ELZA_ARCHIVAL_DESCRIPTION)
+                .data(data);
+    }
+
+    /** Maps one description item to stable codes plus its display text. */
+    private DescriptionItem toDescriptionItem(final ArrDescItem item, final StaticDataProvider sdp) {
+        ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
+        if (itemType == null) {
+            return null;
+        }
+        DescriptionItem out = new DescriptionItem().type(itemType.getCode());
+        if (item.getItemSpecId() != null) {
+            RulItemSpec spec = sdp.getItemSpecById(item.getItemSpecId());
+            if (spec != null) {
+                out.spec(spec.getCode());
+            }
+        }
+        // Same renderer fulltext indexing uses: enum → spec name, record-ref →
+        // entity name, structured → rendered value; null for coordinates/tables.
+        String value = item.getFulltextValue();
+        if (value != null && !value.isEmpty()) {
+            out.value(value);
+        }
+        return out;
+    }
+
+    private List<String> toReferenceMark(final Integer[] referenceMark) {
+        if (referenceMark == null) {
+            return null;
+        }
+        return Arrays.stream(referenceMark).map(String::valueOf).toList();
+    }
+
+    /** Loads the description items (with values) of the given nodes in the open version. */
+    private Map<Integer, List<ArrDescItem>> loadItems(final ArrFundVersion version, final List<Integer> nodeIds) {
+        return descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(nodeIds).stream()
+                .collect(Collectors.groupingBy(ArrDescItem::getNodeId));
+    }
+
+    /**
      * Adds an {@code elza.fundInfo} object for the given fund, unless one for that
-     * fund was already added. A missing {@code fundId} or an unknown fund is
-     * skipped (the latter logged).
+     * fund was already added. A missing, unreadable or unknown fund is skipped.
      */
     private void addFundInfo(final List<AiObject> resolved, final Set<Integer> fundInfoAdded,
                              final Integer fundId) {
         if (fundId == null || !fundInfoAdded.add(fundId)) {
             return;
         }
-        fundRepository.findById(fundId).ifPresentOrElse(
-                fund -> resolved.add(toFundInfoObject(fund)),
-                () -> logger.info("AI context fund {} not found; skipped", fundId));
+        resolveFundInfo(fundId).ifPresent(resolved::add);
     }
 
-    private AiObject toFundInfoObject(final ArrFund fund) {
+    /** Builds the {@code elza.fundInfo} for a fund, enforcing read permission. */
+    private Optional<AiObject> resolveFundInfo(final Integer fundId) {
+        if (fundId == null) {
+            return Optional.empty();
+        }
+        ArrFund fund = fundRepository.findById(fundId).orElse(null);
+        ArrFundVersion version = fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
+        if (fund == null || version == null) {
+            logger.info("AI context fund {} not found; skipped", fundId);
+            return Optional.empty();
+        }
+        if (!canRead(version)) {
+            logger.info("AI context fund {} not readable by user; skipped", fundId);
+            return Optional.empty();
+        }
         FundInfo info = new FundInfo()
                 .name(fund.getName())
                 .internalCode(fund.getInternalCode())
+                .ruleSetCode(version.getRuleSet() != null ? version.getRuleSet().getCode() : null)
                 .fundNumber(fund.getFundNumber())
                 .mark(fund.getMark())
                 .unitDate(fund.getUnitdate());
-        ArrFundVersion openVersion = fundVersionRepository.findByFundIdAndLockChangeIsNull(fund.getFundId());
-        if (openVersion != null && openVersion.getRuleSet() != null) {
-            info.ruleSetCode(openVersion.getRuleSet().getCode());
-        }
         if (fund.getInstitution() != null) {
             info.institution(toInstitutionInfo(fund.getInstitution()));
         }
-        // objectType is set explicitly for in-memory use (e.g. matching against a
-        // task's declared parameter types); on the wire Jackson writes it from the
-        // type, and the field is @JsonIgnoreProperties-ignored on serialize.
-        return new FundInfoObject().objectType(ObjectType.ELZA_FUND_INFO).data(info);
+        return Optional.of(new FundInfoObject().objectType(ObjectType.ELZA_FUND_INFO).data(info));
+    }
+
+    /** Resolves a fund's open version, or {@code null} when missing or not readable. */
+    private ArrFundVersion resolveReadableOpenVersion(final Integer fundId) {
+        if (fundId == null) {
+            return null;
+        }
+        ArrFundVersion version = fundVersionRepository.findByFundIdAndLockChangeIsNull(fundId);
+        if (version == null) {
+            logger.info("AI context fund {} has no open version; skipped", fundId);
+            return null;
+        }
+        if (!canRead(version)) {
+            logger.info("AI context fund {} not readable by user; skipped", fundId);
+            return null;
+        }
+        return version;
+    }
+
+    private boolean canRead(final ArrFundVersion version) {
+        return AuthorizationRequest.hasPermission(Permission.ADMIN)
+                .or(Permission.FUND_RD_ALL)
+                .or(Permission.FUND_RD, version)
+                .matches(userService.getLoggedUserDetail());
     }
 
     private InstitutionInfo toInstitutionInfo(final ParInstitution institution) {
