@@ -68,7 +68,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.4.0" })
+@info(#{ version: "0.5.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -130,8 +130,7 @@ model SignedRequest {
  * (`TaskParameterInfo`), and the result block types a task declares
  * (`TaskTypeInfo.resultTypes`). Defined codes:
  *
- * - `elza.text` — free text (payload `TextPayload`); the input and result of
- *   `elza.echo`.
+ * - `elza.text` — free text (payload `TextPayload`); the result of `elza.echo`.
  * - `elza.markdown` — formatted text (CommonMark + GFM, no raw HTML), a common
  *   result block the client renders; payload `MarkdownPayload`.
  * - `elza.fundInfo` — basic descriptive information about an archival fund and
@@ -328,10 +327,10 @@ model DocCitationsObject extends AiObject {
  * advertises the types it supports via `GET /info`. Namespaced by client
  * product (`elza.…`). Defined types:
  *
- * - `elza.echo` — integration-test task: takes one `elza.text` parameter and
- *   returns it as an `elza.text` result. No archival semantics — exists so both
- *   sides can validate the full protocol loop (auth, submit, poll, typed output,
- *   usage metering) cheaply before any real scenario.
+ * - `elza.echo` — integration-test task: echoes the submitted `userInstructions`
+ *   back as an `elza.text` result; declares no parameters. No archival semantics —
+ *   exists so both sides can validate the full protocol loop (auth, submit, poll,
+ *   typed output, usage metering) cheaply before any real scenario.
  * - `elza.revision` — advisory revision of archival description units: finds
  *   logical inconsistencies, dating mismatches, terminology problems and other
  *   issues that formal (rule-based) validation cannot catch. Read-only;
@@ -860,7 +859,18 @@ op ping(): PingResponse;
  */
 @route("/info")
 @get
-op getInfo(...SignedRequest): AiServiceInfo | ServiceError;
+op getInfo(
+  ...SignedRequest,
+
+  /**
+   * Preferred language(s) for the human-readable labels in the response
+   * (task-type and profile names/descriptions), as a standard BCP-47
+   * `Accept-Language` value — e.g. `cs` or `cs-CZ, en;q=0.8`. Advisory: the
+   * provider returns the best match it has, falling back to its default
+   * language; it never affects machine-readable fields (codes, object types).
+   */
+  @header("Accept-Language") acceptLanguage?: string,
+): AiServiceInfo | ServiceError;
 
 /**
  * The caller's usage/credit balance — how much of the account's allowance is
