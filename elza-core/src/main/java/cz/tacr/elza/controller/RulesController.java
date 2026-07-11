@@ -41,18 +41,20 @@ public class RulesController implements RulesApi {
 
     /**
      * GET /rules/itemTypes
-     * Returns all item types defined across loaded rule sets, together with their specifications and rendering hints.  
+     * Returns item types together with their specifications and rendering hints;
+     * all loaded rule sets by default, or only one when {@code ruleSetCode} is set.
      *
+     * @param ruleSetCode When set, return only the item types available in this rule set (`RulRuleSet.code`). (optional)
      * @param acceptLanguage Preferred language for localized strings (e.g. "cs", "en"). (optional)
      * @return The request has succeeded. (status code 200)
      */
     @Override
-    public ResponseEntity<ItemTypeList> rulesListItemTypes(String acceptLanguage) {
+    public ResponseEntity<ItemTypeList> rulesListItemTypes(String ruleSetCode, String acceptLanguage) {
         // TODO(localization): Accept-Language is currently accepted but
         //  ignored. rul_item_type / rul_item_spec store name/shortcut/
         //  description in the single language set at package-import time.
         //  A translation layer is required before this header has any effect.
-        List<RulItemTypeExt> source = ruleService.getAllDescriptionItemTypes();
+        List<RulItemTypeExt> source = ruleService.getDescriptionItemTypesByRuleSet(ruleSetCode);
         return ResponseEntity.ok(mapper.toItemTypeList(source));
     }
 
