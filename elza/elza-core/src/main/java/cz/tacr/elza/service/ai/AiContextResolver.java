@@ -13,6 +13,7 @@ import cz.tacr.elza.aiprovider.client.vo.AiObject;
 import cz.tacr.elza.aiprovider.client.vo.FundInfo;
 import cz.tacr.elza.aiprovider.client.vo.FundInfoObject;
 import cz.tacr.elza.aiprovider.client.vo.InstitutionInfo;
+import cz.tacr.elza.aiprovider.client.vo.ObjectType;
 import cz.tacr.elza.controller.vo.AiContextFundVO;
 import cz.tacr.elza.controller.vo.AiContextObjectVO;
 import cz.tacr.elza.domain.ApIndex;
@@ -86,7 +87,7 @@ public class AiContextResolver {
         // objectType is set explicitly for in-memory use (e.g. matching against a
         // task's declared parameter types); on the wire Jackson writes it from the
         // type, and the field is @JsonIgnoreProperties-ignored on serialize.
-        return new FundInfoObject().objectType("elza.fundInfo").data(info);
+        return new FundInfoObject().objectType(ObjectType.ELZA_FUND_INFO).data(info);
     }
 
     private InstitutionInfo toInstitutionInfo(final ParInstitution institution) {

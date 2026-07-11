@@ -993,14 +993,13 @@ components:
         real tasks need them; open for additive growth.
     ArchivalDescriptionObject:
       type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/ArchivalDescription'
       allOf:
         - $ref: '#/components/schemas/AiObject'
-        - type: object
-          required:
-            - data
-          properties:
-            data:
-              $ref: '#/components/schemas/ArchivalDescription'
       description: Archival description object.
     ArchivalEntity:
       type: object
@@ -1010,14 +1009,13 @@ components:
         open for additive growth.
     ArchivalEntityObject:
       type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/ArchivalEntity'
       allOf:
         - $ref: '#/components/schemas/AiObject'
-        - type: object
-          required:
-            - data
-          properties:
-            data:
-              $ref: '#/components/schemas/ArchivalEntity'
       description: Archival entity object.
     CustomerUsageInfo:
       type: object
@@ -1074,14 +1072,13 @@ components:
         citation of an archival record (a future object type).
     DocCitationsObject:
       type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/DocCitationsPayload'
       allOf:
         - $ref: '#/components/schemas/AiObject'
-        - type: object
-          required:
-            - data
-          properties:
-            data:
-              $ref: '#/components/schemas/DocCitationsPayload'
       description: Document-citations object — the sources an answer relied on.
     DocCitationsPayload:
       type: object
@@ -1125,14 +1122,13 @@ components:
         the full arrangement. Mirrors `ArrFund`.
     FundInfoObject:
       type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/FundInfo'
       allOf:
         - $ref: '#/components/schemas/AiObject'
-        - type: object
-          required:
-            - data
-          properties:
-            data:
-              $ref: '#/components/schemas/FundInfo'
       description: Fund information object.
     InstitutionInfo:
       type: object
@@ -1177,14 +1173,13 @@ components:
       description: Operational limits of this provider. Advisory for clients; enforced server-side.
     MarkdownObject:
       type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/MarkdownPayload'
       allOf:
         - $ref: '#/components/schemas/AiObject'
-        - type: object
-          required:
-            - data
-          properties:
-            data:
-              $ref: '#/components/schemas/MarkdownPayload'
       description: Markdown text object — a formatted text block the client renders.
     MarkdownPayload:
       type: object
@@ -1197,15 +1192,24 @@ components:
       description: Payload of `elza.markdown`.
     ObjectType:
       type: string
+      enum:
+        - elza.text
+        - elza.markdown
+        - elza.fundInfo
+        - elza.archivalEntity
+        - elza.archivalDescription
+        - elza.revisionFindings
+        - elza.docCitations
       description: |-
-        Object type — names a typed payload defined by this contract. An **open**,
-        namespaced set of string codes (like `TaskType`; a plain string on the wire,
-        so code generators produce a simple type): new object types are added
-        additively with a client release, never dynamically. Each code has a payload
-        shape defined below, so client and provider generate the *same* model from
-        this spec and their representations cannot drift. It is used three ways: the
-        discriminator of `AiObject`, a parameter's declared `type` in the task catalog
-        (`TaskParameterInfo`), and the result block types a task declares
+        Object type — names a typed payload defined by this contract. A **closed**,
+        namespaced set of string codes modelled as an `enum`, so code generators
+        produce a real enumerated type and `AiObject` a clean discriminated union —
+        straightforward to emit as OpenAPI and to process on the Java side. The set
+        grows additively with a client release, never dynamically. Each code has a
+        payload shape defined below, so client and provider generate the *same* model
+        from this spec and their representations cannot drift. It is used three ways:
+        the discriminator of `AiObject`, a parameter's declared `type` in the task
+        catalog (`TaskParameterInfo`), and the result block types a task declares
         (`TaskTypeInfo.resultTypes`). Defined codes:
 
         - `elza.text` — free text (payload `TextPayload`); the result of `elza.echo`.
@@ -1270,14 +1274,13 @@ components:
         is finalized; open for additive growth.
     RevisionFindingsObject:
       type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/RevisionFindings'
       allOf:
         - $ref: '#/components/schemas/AiObject'
-        - type: object
-          required:
-            - data
-          properties:
-            data:
-              $ref: '#/components/schemas/RevisionFindings'
       description: Revision findings object.
     ServiceError:
       type: object
@@ -1621,14 +1624,13 @@ components:
       description: A task type supported by this provider.
     TextObject:
       type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/TextPayload'
       allOf:
         - $ref: '#/components/schemas/AiObject'
-        - type: object
-          required:
-            - data
-          properties:
-            data:
-              $ref: '#/components/schemas/TextPayload'
       description: Free text object.
     TextPayload:
       type: object

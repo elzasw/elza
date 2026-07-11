@@ -77,13 +77,13 @@ public class AiProviderController implements AiproviderApi {
                 .name(taskType.getName())
                 .description(taskType.getDescription());
         if (taskType.getResultTypes() != null) {
-            taskType.getResultTypes().forEach(vo::addResultTypesItem);
+            taskType.getResultTypes().forEach(rt -> vo.addResultTypesItem(rt.getValue()));
         }
         if (taskType.getParameters() != null) {
             for (TaskParameterInfo param : taskType.getParameters()) {
                 vo.addParametersItem(new AiTaskParameterVO()
                         .name(param.getName())
-                        .type(param.getType())
+                        .type(param.getType() == null ? null : param.getType().getValue())
                         .description(param.getDescription())
                         .required(param.getRequired()));
             }
