@@ -1457,6 +1457,27 @@ components:
             - Authorization
           description: name of the API key
       description: ELZA-AI-HMAC-SHA256 request signature carried in the `Authorization` header (the secret is never sent). See the API description and security.md for the canonical string and KeyId scoping.
+    StandardToolName:
+      type: string
+      enum:
+        - getItemTypes
+      description: |-
+        Standard tools — the **closed, contract-owned** set of tools a client can
+        execute locally on the provider's request during `awaiting_tools`. The set is
+        versioned with the client: a new tool ships in a client release (its executor
+        is client code), so tools are *not* dynamically declared. This contract owns
+        each tool's **interface** — its name here plus the typed argument and result
+        models below; the client advertises which tools it supports in
+        `SubmitTask.tools`, and the **provider** owns the tool's model-facing
+        prompt/description and derives the model's argument schema from the argument
+        model. Defined tools:
+
+        - `getItemTypes` — resolve the rule-set dictionary. Arguments
+        `GetItemTypesParams`, result `ItemTypeDictionary`: the client sends
+        `elza.archivalDescription` items as bare type/spec codes (compact,
+        documentation-aligned) and the provider calls this tool once per
+        `FundInfo.ruleSetCode` to turn those codes into names, data types and the
+        enumerated spec lists, then caches it.
     SubmitTask:
       type: object
       required:
@@ -1506,11 +1527,13 @@ components:
         tools:
           type: array
           items:
-            $ref: '#/components/schemas/ToolDefinition'
+            $ref: '#/components/schemas/StandardToolName'
           description: |-
-            Tools the client offers for this task. If present, the task may enter
-            `awaiting_tools` and request calls; if absent, the task runs on `parameters`
-            (and `context`) alone.
+            Standard tools the client offers for this task, by name (see
+            `StandardToolName`). If present, the task may enter `awaiting_tools` and
+            request calls; if absent, the task runs on `parameters` (and `context`)
+            alone. The client sends names only — the provider knows each tool's argument
+            schema and result shape from the contract.
         parentTaskId:
           type: string
           description: |-
@@ -1784,33 +1807,12 @@ components:
           type: string
           description: Server-assigned id of this call; echo it back in the matching `ToolResult`.
         tool:
-          type: string
-          description: Name of the tool to execute (one of the task's declared tools).
+          allOf:
+            - $ref: '#/components/schemas/StandardToolName'
+          description: The tool to execute — one the client declared in `SubmitTask.tools`.
         arguments:
-          description: Arguments object; conforms to the tool's declared `inputSchema`.
+          description: Arguments object; conforms to the tool's argument model (e.g. `GetItemTypesParams`).
       description: A pending call of a client-declared tool (present while `awaiting_tools`).
-    ToolDefinition:
-      type: object
-      required:
-        - name
-        - description
-        - inputSchema
-      properties:
-        name:
-          type: string
-          pattern: ^[A-Za-z][A-Za-z0-9_]*$
-          description: Tool name, unique within the task, e.g. `searchNodes`.
-        description:
-          type: string
-          description: What the tool does and when to use it — written for the model.
-        inputSchema:
-          type: object
-          additionalProperties: {}
-          description: JSON Schema of the tool's arguments object.
-      description: |-
-        A tool the client offers for this task — something the *client* can execute
-        locally on the provider's request (a search over the client's index, a record
-        lookup, …). Mirrors the tool-definition shape of AI model APIs.
     ToolResult:
       type: object
       required:
