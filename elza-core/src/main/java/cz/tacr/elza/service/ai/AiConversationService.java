@@ -103,6 +103,9 @@ public class AiConversationService {
     @Autowired
     private AiContextResolver contextResolver;
 
+    @Autowired
+    private AiToolRegistry toolRegistry;
+
     /** Application version, reported in task metadata (audit at the provider/CSC). */
     @Value("${version:0.0.0}")
     private String appVersion;
@@ -266,6 +269,7 @@ public class AiConversationService {
                 .userInstructions(userInstructions)
                 .parameters(buildParameters(taskType, parameters, externalSystem))
                 .context(contextResolver.resolveAll(context))
+                .tools(toolRegistry.toolDefinitions())
                 .parentTaskId(parentTaskUid)
                 .metadata(metadata);
         addEvent(request, AiRequestEvent.TYPE_SUBMIT, toJson(submitTask));

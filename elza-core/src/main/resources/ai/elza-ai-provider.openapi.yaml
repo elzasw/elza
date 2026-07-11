@@ -1201,6 +1201,15 @@ components:
       allOf:
         - $ref: '#/components/schemas/AiObject'
       description: Fund information object.
+    GetItemTypesParams:
+      type: object
+      required:
+        - ruleSetCode
+      properties:
+        ruleSetCode:
+          type: string
+          description: Rule set whose item types to return (`RulRuleSet.code`), e.g. `ZP2015`.
+      description: Arguments of the `getItemTypes` tool.
     InstitutionInfo:
       type: object
       properties:
@@ -1211,6 +1220,58 @@ components:
           type: string
           description: Institution name — the preferred name of its access point.
       description: Holding archival institution of a fund.
+    ItemTypeDictionary:
+      type: object
+      required:
+        - ruleSetCode
+        - itemTypes
+      properties:
+        ruleSetCode:
+          type: string
+          description: Rule set the dictionary is for; echoes `GetItemTypesParams.ruleSetCode`.
+        itemTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemTypeInfo'
+          description: The rule set's item types, resolving the codes used in `elza.archivalDescription`.
+      description: Result of the `getItemTypes` tool — the item-type dictionary of one rule set.
+    ItemTypeInfo:
+      type: object
+      required:
+        - code
+        - name
+        - dataType
+      properties:
+        code:
+          type: string
+          description: Stable item-type code, e.g. `ZP2015_TITLE` (`RulItemType.code`).
+        name:
+          type: string
+          description: Human-readable name, e.g. `Obsah`.
+        dataType:
+          type: string
+          description: Underlying value type, e.g. `STRING`, `UNITDATE`, `ENUM` (`RulItemType.dataType`).
+        specs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemTypeSpecInfo'
+          description: |-
+            Specifications for enumerated item types (`dataType == ENUM`), in display
+            order; absent for non-enumerated types.
+      description: One item type in the dictionary — the meaning behind a `DescriptionItem.type` code.
+    ItemTypeSpecInfo:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          description: Stable spec code, e.g. `ZP2015_UNIT_TYPE_UKN` (`RulItemSpec.code`).
+        name:
+          type: string
+          description: Human-readable name in the rule set's language, e.g. `úřední kniha`.
+      description: One specification (enumerated value) of an item type in the dictionary.
     Limits:
       type: object
       properties:

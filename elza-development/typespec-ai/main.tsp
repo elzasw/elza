@@ -509,6 +509,67 @@ model ToolResult {
   error?: string;
 }
 
+// ---------------------------------------------------------------------------
+// Standard tools
+//
+// Tools this contract defines by name, with a typed argument and result shape,
+// so the client and provider generate the *same* models instead of hand-rolling
+// JSON against a prose description. On the wire they use the generic
+// ToolDefinition / ToolCall / ToolResult envelope: a client that offers a
+// standard tool declares it under its well-known `name` with the matching
+// `…Params` model as `inputSchema`; the provider calls it and receives the
+// matching result model as `ToolResult.result`. Defined standard tools:
+//
+//   - getItemTypes — resolve the rule-set dictionary. Arguments
+//     `GetItemTypesParams`, result `ItemTypeDictionary`. The client sends
+//     `elza.archivalDescription` items as bare type/spec codes (compact,
+//     documentation-aligned); the provider calls this tool once per
+//     `FundInfo.ruleSetCode` to turn those codes into names, data types and the
+//     enumerated spec lists, then caches it.
+// ---------------------------------------------------------------------------
+
+/** Arguments of the `getItemTypes` tool. */
+model GetItemTypesParams {
+  /** Rule set whose item types to return (`RulRuleSet.code`), e.g. `ZP2015`. */
+  ruleSetCode: string;
+}
+
+/** One specification (enumerated value) of an item type in the dictionary. */
+model ItemTypeSpecInfo {
+  /** Stable spec code, e.g. `ZP2015_UNIT_TYPE_UKN` (`RulItemSpec.code`). */
+  code: string;
+
+  /** Human-readable name in the rule set's language, e.g. `úřední kniha`. */
+  name: string;
+}
+
+/** One item type in the dictionary — the meaning behind a `DescriptionItem.type` code. */
+model ItemTypeInfo {
+  /** Stable item-type code, e.g. `ZP2015_TITLE` (`RulItemType.code`). */
+  code: string;
+
+  /** Human-readable name, e.g. `Obsah`. */
+  name: string;
+
+  /** Underlying value type, e.g. `STRING`, `UNITDATE`, `ENUM` (`RulItemType.dataType`). */
+  dataType: string;
+
+  /**
+   * Specifications for enumerated item types (`dataType == ENUM`), in display
+   * order; absent for non-enumerated types.
+   */
+  specs?: ItemTypeSpecInfo[];
+}
+
+/** Result of the `getItemTypes` tool — the item-type dictionary of one rule set. */
+model ItemTypeDictionary {
+  /** Rule set the dictionary is for; echoes `GetItemTypesParams.ruleSetCode`. */
+  ruleSetCode: string;
+
+  /** The rule set's item types, resolving the codes used in `elza.archivalDescription`. */
+  itemTypes: ItemTypeInfo[];
+}
+
 /**
  * Audit/attribution facts about a task — who ran it and from which application.
  * Not interpreted by the AI and not task data (the data travels in `parameters`
