@@ -120,14 +120,15 @@ model SignedRequest {
 // ---------------------------------------------------------------------------
 
 /**
- * Object type — names a typed payload defined by this contract. An **open**,
- * namespaced set of string codes (like `TaskType`; a plain string on the wire,
- * so code generators produce a simple type): new object types are added
- * additively with a client release, never dynamically. Each code has a payload
- * shape defined below, so client and provider generate the *same* model from
- * this spec and their representations cannot drift. It is used three ways: the
- * discriminator of `AiObject`, a parameter's declared `type` in the task catalog
- * (`TaskParameterInfo`), and the result block types a task declares
+ * Object type — names a typed payload defined by this contract. A **closed**,
+ * namespaced set of string codes modelled as an `enum`, so code generators
+ * produce a real enumerated type and `AiObject` a clean discriminated union —
+ * straightforward to emit as OpenAPI and to process on the Java side. The set
+ * grows additively with a client release, never dynamically. Each code has a
+ * payload shape defined below, so client and provider generate the *same* model
+ * from this spec and their representations cannot drift. It is used three ways:
+ * the discriminator of `AiObject`, a parameter's declared `type` in the task
+ * catalog (`TaskParameterInfo`), and the result block types a task declares
  * (`TaskTypeInfo.resultTypes`). Defined codes:
  *
  * - `elza.text` — free text (payload `TextPayload`); the result of `elza.echo`.
@@ -148,7 +149,28 @@ model SignedRequest {
  *   answer of an assistant-style task. Distinct from citing an archival record,
  *   which will get its own object type.
  */
-scalar ObjectType extends string;
+enum ObjectType {
+  /** Free text; payload `TextPayload`. */
+  text: "elza.text",
+
+  /** Formatted text (CommonMark + GFM, no raw HTML); payload `MarkdownPayload`. */
+  markdown: "elza.markdown",
+
+  /** Basic descriptive information about a fund and its institution; payload `FundInfo`. */
+  fundInfo: "elza.fundInfo",
+
+  /** A CAM access point / entity; payload `ArchivalEntity`. */
+  archivalEntity: "elza.archivalEntity",
+
+  /** A description unit (node) and its related data; payload `ArchivalDescription`. */
+  archivalDescription: "elza.archivalDescription",
+
+  /** Result of `elza.revision`; payload `RevisionFindings`. */
+  revisionFindings: "elza.revisionFindings",
+
+  /** The knowledge/documentation sources an answer relied on; payload `DocCitationsPayload`. */
+  docCitations: "elza.docCitations",
+}
 
 /**
  * A typed object: an `objectType` tag plus the `data` payload for that type. The
@@ -170,7 +192,9 @@ model TextPayload {
 
 /** Free text object. */
 model TextObject extends AiObject {
-  objectType: "elza.text";
+  @invisible(Lifecycle)
+  objectType: ObjectType.text;
+
   data: TextPayload;
 }
 
@@ -182,7 +206,9 @@ model MarkdownPayload {
 
 /** Markdown text object — a formatted text block the client renders. */
 model MarkdownObject extends AiObject {
-  objectType: "elza.markdown";
+  @invisible(Lifecycle)
+  objectType: ObjectType.markdown;
+
   data: MarkdownPayload;
 }
 
@@ -222,7 +248,9 @@ model FundInfo {
 
 /** Fund information object. */
 model FundInfoObject extends AiObject {
-  objectType: "elza.fundInfo";
+  @invisible(Lifecycle)
+  objectType: ObjectType.fundInfo;
+
   data: FundInfo;
 }
 
@@ -236,7 +264,9 @@ model ArchivalEntity {
 
 /** Archival entity object. */
 model ArchivalEntityObject extends AiObject {
-  objectType: "elza.archivalEntity";
+  @invisible(Lifecycle)
+  objectType: ObjectType.archivalEntity;
+
   data: ArchivalEntity;
 }
 
@@ -250,7 +280,9 @@ model ArchivalDescription {
 
 /** Archival description object. */
 model ArchivalDescriptionObject extends AiObject {
-  objectType: "elza.archivalDescription";
+  @invisible(Lifecycle)
+  objectType: ObjectType.archivalDescription;
+
   data: ArchivalDescription;
 }
 
@@ -264,7 +296,9 @@ model RevisionFindings {
 
 /** Revision findings object. */
 model RevisionFindingsObject extends AiObject {
-  objectType: "elza.revisionFindings";
+  @invisible(Lifecycle)
+  objectType: ObjectType.revisionFindings;
+
   data: RevisionFindings;
 }
 
@@ -311,7 +345,9 @@ model DocCitationsPayload {
 
 /** Document-citations object — the sources an answer relied on. */
 model DocCitationsObject extends AiObject {
-  objectType: "elza.docCitations";
+  @invisible(Lifecycle)
+  objectType: ObjectType.docCitations;
+
   data: DocCitationsPayload;
 }
 
