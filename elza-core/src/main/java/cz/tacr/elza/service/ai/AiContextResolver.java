@@ -2,6 +2,7 @@ package cz.tacr.elza.service.ai;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,28 +19,41 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.aiprovider.client.vo.AiObject;
 import cz.tacr.elza.aiprovider.client.vo.ArchivalDescription;
 import cz.tacr.elza.aiprovider.client.vo.ArchivalDescriptionObject;
+import cz.tacr.elza.aiprovider.client.vo.DataType;
 import cz.tacr.elza.aiprovider.client.vo.DescriptionItem;
 import cz.tacr.elza.aiprovider.client.vo.FundInfo;
 import cz.tacr.elza.aiprovider.client.vo.FundInfoObject;
 import cz.tacr.elza.aiprovider.client.vo.InstitutionInfo;
+import cz.tacr.elza.aiprovider.client.vo.NodeIssue;
+import cz.tacr.elza.aiprovider.client.vo.NodeIssueKind;
 import cz.tacr.elza.aiprovider.client.vo.ObjectType;
 import cz.tacr.elza.controller.vo.AiContextFundVO;
 import cz.tacr.elza.controller.vo.AiContextNodeVO;
 import cz.tacr.elza.controller.vo.AiContextObjectVO;
 import cz.tacr.elza.controller.vo.TreeNode;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.data.ItemType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrDataRecordRef;
+import cz.tacr.elza.domain.ArrDataStructureRef;
 import cz.tacr.elza.domain.ArrDescItem;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrNode;
+import cz.tacr.elza.domain.ArrNodeConformity;
+import cz.tacr.elza.domain.ArrNodeConformityError;
+import cz.tacr.elza.domain.ArrNodeConformityMissing;
+import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemSpec;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
+import cz.tacr.elza.repository.NodeConformityRepository;
 import cz.tacr.elza.repository.NodeRepository;
 import cz.tacr.elza.security.AuthorizationRequest;
 import cz.tacr.elza.service.AccessPointService;
@@ -84,6 +98,9 @@ public class AiContextResolver {
 
     @Autowired
     private NodeRepository nodeRepository;
+
+    @Autowired
+    private NodeConformityRepository nodeConformityRepository;
 
     @Autowired
     private AccessPointService accessPointService;
@@ -173,10 +190,13 @@ public class AiContextResolver {
             Map<Integer, List<ArrDescItem>> itemsByNode = loadItems(version, toBuild);
             Map<Integer, ArrNode> nodesById = nodeRepository.findAllById(toBuild).stream()
                     .collect(Collectors.toMap(ArrNode::getNodeId, n -> n));
+            Map<Integer, String> titlesByNode = loadTitles(version, toBuild);
+            Map<Integer, List<NodeIssue>> issuesByNode = loadIssues(version, toBuild, sdp);
             for (Integer nodeId : toBuild) {
                 AiObject level = buildArchivalDescription(nodeId, nodeId.equals(node.getNodeId()),
                         nodesById.get(nodeId), treeMap.get(nodeId),
-                        itemsByNode.getOrDefault(nodeId, List.of()), sdp);
+                        itemsByNode.getOrDefault(nodeId, List.of()), sdp,
+                        titlesByNode.get(nodeId), issuesByNode.getOrDefault(nodeId, List.of()));
                 if (level != null) {
                     resolved.add(level);
                 }
@@ -195,14 +215,18 @@ public class AiContextResolver {
             return null;
         }
         ArrNode node = nodeRepository.findById(nodeId).orElse(null);
+        StaticDataProvider sdp = staticDataService.getData();
         List<ArrDescItem> items = loadItems(version, List.of(nodeId)).getOrDefault(nodeId, List.of());
-        return buildArchivalDescription(nodeId, focus, node, treeNode, items, staticDataService.getData());
+        String title = loadTitles(version, List.of(nodeId)).get(nodeId);
+        List<NodeIssue> issues = loadIssues(version, List.of(nodeId), sdp).getOrDefault(nodeId, List.of());
+        return buildArchivalDescription(nodeId, focus, node, treeNode, items, sdp, title, issues);
     }
 
     /** Maps a level's already-loaded pieces to an {@code elza.archivalDescription} object. */
     private AiObject buildArchivalDescription(final Integer nodeId, final boolean focus,
                                               final ArrNode node, final TreeNode treeNode,
-                                              final List<ArrDescItem> items, final StaticDataProvider sdp) {
+                                              final List<ArrDescItem> items, final StaticDataProvider sdp,
+                                              final String title, final List<NodeIssue> issues) {
         ArchivalDescription data = new ArchivalDescription().nodeId(nodeId);
         if (focus) {
             data.focus(true);
@@ -217,6 +241,12 @@ public class AiContextResolver {
             }
             data.hasChildren(!treeNode.getChildren().isEmpty());
             data.referenceMark(toReferenceMark(treeNode.getReferenceMark()));
+        }
+        if (title != null && !title.isEmpty()) {
+            data.title(title);
+        }
+        if (issues != null && !issues.isEmpty()) {
+            data.issues(issues);
         }
         data.items(items.stream()
                 .map(item -> toDescriptionItem(item, sdp))
@@ -234,6 +264,9 @@ public class AiContextResolver {
             return null;
         }
         DescriptionItem out = new DescriptionItem().type(itemType.getCode());
+        if (itemType.getDataType() != null) {
+            out.dataType(DataType.fromValue(itemType.getDataType().getCode()));
+        }
         if (item.getItemSpecId() != null) {
             RulItemSpec spec = sdp.getItemSpecById(item.getItemSpecId());
             if (spec != null) {
@@ -245,6 +278,24 @@ public class AiContextResolver {
         String value = item.getFulltextValue();
         if (value != null && !value.isEmpty()) {
             out.value(value);
+        }
+        // Reference items carry a machine-readable id alongside the display value.
+        ArrData data = item.getData();
+        if (data instanceof ArrDataRecordRef recordRef) {
+            out.accessPointId(recordRef.getRecordId());
+        } else if (data instanceof ArrDataStructureRef structRef) {
+            out.structuredObjectId(structRef.getStructuredObjectId());
+            ArrStructuredObject structObj = structRef.getStructuredObject();
+            if (structObj != null) {
+                StructType structType = sdp.getStructuredTypeById(structObj.getStructuredTypeId());
+                if (structType != null) {
+                    out.structuredObjectType(structType.getCode());
+                }
+                String complement = structObj.getComplement();
+                if (complement != null && !complement.isEmpty()) {
+                    out.complement(complement);
+                }
+            }
         }
         return out;
     }
@@ -260,6 +311,90 @@ public class AiContextResolver {
     private Map<Integer, List<ArrDescItem>> loadItems(final ArrFundVersion version, final List<Integer> nodeIds) {
         return descriptionItemService.findByNodeIdsAndDeleteChangeIsNull(nodeIds).stream()
                 .collect(Collectors.groupingBy(ArrDescItem::getNodeId));
+    }
+
+    /**
+     * Loads the tree display title of each node — the same value shown in the
+     * arrangement tree (built from the fund's configured title items).
+     */
+    private Map<Integer, String> loadTitles(final ArrFundVersion version, final List<Integer> nodeIds) {
+        Map<Integer, String> titles = new HashMap<>();
+        for (TreeNodeVO treeNode : levelTreeCacheService.getNodesByIds(nodeIds, version)) {
+            if (treeNode.getName() != null) {
+                titles.put(treeNode.getId(), treeNode.getName());
+            }
+        }
+        return titles;
+    }
+
+    /**
+     * Loads the problems found by automatic checks (node conformity) for the given
+     * nodes in the open version, grouped by node id. Only levels in the error state
+     * contribute; a valid or not-yet-validated level has no entry.
+     */
+    private Map<Integer, List<NodeIssue>> loadIssues(final ArrFundVersion version, final List<Integer> nodeIds,
+                                                     final StaticDataProvider sdp) {
+        List<ArrNodeConformity> conformities = nodeConformityRepository.findByNodeIdsAndFundVersion(nodeIds, version);
+        if (conformities.isEmpty()) {
+            return Map.of();
+        }
+        conformities = nodeConformityRepository.fetchErrorAndMissingConformity(conformities, version,
+                ArrNodeConformity.State.ERR);
+        Map<Integer, List<NodeIssue>> result = new HashMap<>();
+        for (ArrNodeConformity conformity : conformities) {
+            List<NodeIssue> issues = toIssues(conformity, sdp);
+            if (!issues.isEmpty()) {
+                result.put(conformity.getNodeId(), issues);
+            }
+        }
+        return result;
+    }
+
+    /** Maps one level's conformity errors and missing items to {@link NodeIssue}s. */
+    private List<NodeIssue> toIssues(final ArrNodeConformity conformity, final StaticDataProvider sdp) {
+        List<NodeIssue> issues = new ArrayList<>();
+        for (ArrNodeConformityError error : conformity.getErrorConformity()) {
+            NodeIssue issue = new NodeIssue().kind(NodeIssueKind.INVALID_VALUE)
+                    .description(error.getDescription());
+            if (error.getPolicyType() != null) {
+                issue.policyType(error.getPolicyType().getCode());
+            }
+            // The item type/spec of the invalid value, so the AI can tie it to an item.
+            ArrDescItem descItem = error.getDescItem();
+            if (descItem != null) {
+                ItemType itemType = sdp.getItemTypeById(descItem.getItemTypeId());
+                if (itemType != null) {
+                    issue.itemType(itemType.getCode());
+                }
+                setSpecCode(issue, descItem.getItemSpecId(), sdp);
+            }
+            issues.add(issue);
+        }
+        for (ArrNodeConformityMissing missing : conformity.getMissingConformity()) {
+            NodeIssue issue = new NodeIssue().kind(NodeIssueKind.MISSING)
+                    .description(missing.getDescription());
+            if (missing.getPolicyType() != null) {
+                issue.policyType(missing.getPolicyType().getCode());
+            }
+            ItemType itemType = sdp.getItemTypeById(missing.getItemTypeId());
+            if (itemType != null) {
+                issue.itemType(itemType.getCode());
+            }
+            setSpecCode(issue, missing.getItemSpecId(), sdp);
+            issues.add(issue);
+        }
+        return issues;
+    }
+
+    /** Sets the issue's spec code from a spec id, when the id resolves to a spec. */
+    private void setSpecCode(final NodeIssue issue, final Integer itemSpecId, final StaticDataProvider sdp) {
+        if (itemSpecId == null) {
+            return;
+        }
+        RulItemSpec spec = sdp.getItemSpecById(itemSpecId);
+        if (spec != null) {
+            issue.spec(spec.getCode());
+        }
     }
 
     /**

@@ -14,7 +14,15 @@ When the user works on a level, the frontend sends an `AiContextNode`; Elza's
 
 - an `elza.archivalDescription` of the level — its description items as **bare
   stable codes** (`type` / `spec`) plus display text, with
-  `nodeId`/`uuid`, `referenceMark`, `depth`, `parentId`, `hasChildren`, `focus`;
+  `nodeId`/`uuid`, `referenceMark`, `depth`, `parentId`, `hasChildren`, `focus`,
+  the level's tree `title`, and its `issues` (problems already found by automatic
+  checks). Each item states its `dataType` (same vocabulary as the dictionary's
+  `ItemTypeInfo.dataType`), so a block is self-describing without a dictionary
+  join. A reference item also carries its machine-readable target: an
+  access-point item (`RECORD_REF`) adds `accessPointId`; a structured-object item
+  (`STRUCTURED`) adds `structuredObjectType` / `structuredObjectId` (+ optional
+  `complement`), with `value` holding the entity's preferred name or the object's
+  serialized name;
 - for the `context` role, the level's **ancestors** up to the root and the
   fund's `elza.fundInfo` (which carries the fund's `ruleSetCode`).
 
@@ -39,9 +47,12 @@ frontend as `GET /rules/itemTypes?ruleSetCode=…` — both backed by one servic
 | Piece | Where |
 |-------|-------|
 | `elza.archivalDescription` + `DescriptionItem`; `FundInfo.ruleSetCode` | `main.tsp` |
+| level `title` + `issues` (`NodeIssue` / `NodeIssueKind`) | `main.tsp` |
+| per-item `dataType`; structured item values — `accessPointId`, `structuredObjectType`/`structuredObjectId`, `complement` | `main.tsp` |
 | `getItemTypes` standard tool; typed tool catalog `StandardToolName` | `main.tsp` |
 | `GET /rules/itemTypes?ruleSetCode` filter | `typespec/main.tsp` + `elza-openapi.yml`; `RulesController` / `RuleService` |
 | node & fund context → provider objects (roles, ancestors, `FUND_RD`) | `AiContextResolver` |
+| tree title (`getNodesByIds`), issues (node conformity), reference-item ids | `AiContextResolver` |
 | tool loop (`awaiting_tools` → execute → tool-results) | `AiRequestPoller`; `AiTool` / `AiToolRegistry` / `GetItemTypesTool` |
 
 ## Future work
@@ -56,8 +67,10 @@ frontend as `GET /rules/itemTypes?ruleSetCode=…` — both backed by one servic
 - **Multiple funds in one request** — a single active level ⇒ one fund; if
   levels from several funds are ever sent together, add a fund reference on the
   level to disambiguate against its `elza.fundInfo`.
-- **Access-restriction filtering** ("omezení přístupnosti") and an
-  `excludeItemTypes` filter (technical/storage identifiers), aligning with the
-  revision task.
+- **Access-restriction filtering** — structured items such as "omezení
+  přístupnosti" are now *represented* (`structuredObjectType`/`structuredObjectId`),
+  but *filtering* restricted content out of what the AI sees, plus an
+  `excludeItemTypes` filter (technical/storage identifiers), is still open and
+  aligns with the revision task.
 - **`elza.revision` alignment** — fold its input onto the shared
   `DescriptionItem` + `getItemTypes` dictionary instead of a bespoke blob.

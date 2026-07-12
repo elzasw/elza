@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import cz.tacr.elza.aiprovider.client.vo.DataType;
 import cz.tacr.elza.aiprovider.client.vo.GetItemTypesParams;
 import cz.tacr.elza.aiprovider.client.vo.ItemTypeDictionary;
 import cz.tacr.elza.aiprovider.client.vo.ItemTypeInfo;
@@ -51,7 +52,7 @@ public class GetItemTypesTool implements AiTool {
         ItemTypeInfo info = new ItemTypeInfo()
                 .code(src.getCode())
                 .name(src.getName())
-                .dataType(src.getDataType().getCode());
+                .dataType(DataType.fromValue(src.getDataType().getCode()));
         if (src.getRulItemSpecList() != null && !src.getRulItemSpecList().isEmpty()) {
             info.specs(src.getRulItemSpecList().stream()
                     .map(spec -> new ItemTypeSpecInfo().code(spec.getCode()).name(spec.getName()))
