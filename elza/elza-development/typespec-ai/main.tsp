@@ -68,7 +68,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.5.0" })
+@info(#{ version: "0.6.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -278,6 +278,72 @@ model ArchivalEntityObject extends AiObject {
 }
 
 /**
+ * Data type of a description item's value — Elza's closed set of value kinds
+ * (`RulItemType.dataType`). It tells a reader how to interpret an item without a
+ * dictionary lookup: which reference fields are present and how the text `value`
+ * is produced. Stable and closed; the set may grow additively, and a reader
+ * treats an unknown type as plain text carried in `value`.
+ */
+enum DataType {
+  /** Whole number; `value` holds its text form. */
+  INT: "INT",
+
+  /** Short string; `value` holds it. */
+  STRING: "STRING",
+
+  /** Long / multi-line text; `value` holds it. */
+  TEXT: "TEXT",
+
+  /** Formatted (rich) text; `value` holds the plain-text rendering. */
+  FORMATTED_TEXT: "FORMATTED_TEXT",
+
+  /** Archival dating; `value` holds the normalized dating text. */
+  UNITDATE: "UNITDATE",
+
+  /** Unit identifier (e.g. inventory number); `value` holds it. */
+  UNITID: "UNITID",
+
+  /** Decimal number; `value` holds its text form. */
+  DECIMAL: "DECIMAL",
+
+  /** Calendar date; `value` holds its text form. */
+  DATE: "DATE",
+
+  /** Boolean flag; `value` holds its text form. */
+  BIT: "BIT",
+
+  /**
+   * Enumerated value — the meaning is carried by `spec`; `value` may hold the
+   * spec's name.
+   */
+  ENUM: "ENUM",
+
+  /**
+   * Reference to an access point; `accessPointId` is set and `value` holds its
+   * preferred name.
+   */
+  RECORD_REF: "RECORD_REF",
+
+  /**
+   * Reference to a structured object; `structuredObjectType` / `structuredObjectId`
+   * are set (with optional `complement`) and `value` holds its serialized name.
+   */
+  STRUCTURED: "STRUCTURED",
+
+  /** Reference to a file; `value` holds the file name when available. */
+  FILE_REF: "FILE_REF",
+
+  /** External URI reference; `value` holds the URI or its label. */
+  URI_REF: "URI_REF",
+
+  /** Geographic coordinates; `value` may be absent (not rendered as text). */
+  COORDINATES: "COORDINATES",
+
+  /** Structured JSON table; `value` may be absent (not rendered as text). */
+  JSON_TABLE: "JSON_TABLE",
+}
+
+/**
  * One description item (attribute) of a level, as stable codes plus its value.
  * The human-readable names of `type`/`spec` are resolved by the provider from
  * the rule-set dictionary (keyed by `FundInfo.ruleSetCode`), not repeated here —
@@ -288,6 +354,16 @@ model DescriptionItem {
   type: string;
 
   /**
+   * The value's data type — the same value the `getItemTypes` dictionary reports
+   * for this item type (`ItemTypeInfo.dataType`), denormalized here so a block is
+   * self-describing without the dictionary: it says how to read the value and which
+   * reference fields are present, e.g. `RECORD_REF` (→ `accessPointId`),
+   * `STRUCTURED` (→ `structuredObjectType`/`structuredObjectId`), `ENUM` (→ `spec`),
+   * or a text/number/date type (→ `value`).
+   */
+  dataType?: DataType;
+
+  /**
    * Stable specification code for enumerated item types, e.g.
    * `ZP2015_UNIT_TYPE_UKN` (`RulItemSpec.code`); absent for non-enumerated types.
    */
@@ -295,9 +371,89 @@ model DescriptionItem {
 
   /**
    * The item's value in text form for non-enumerated types; absent when the
-   * meaning is fully carried by `spec`, or the item is value-less.
+   * meaning is fully carried by `spec`, or the item is value-less. For an
+   * access-point or structured-object item it holds the human-readable value —
+   * the entity's preferred name or the object's serialized name — while the
+   * fields below add the machine-readable reference.
    */
   value?: string;
+
+  /**
+   * For an access-point item (`RECORD_REF`): the referenced access point's id
+   * (`ApAccessPoint.accessPointId`). `value` holds its preferred name. Absent for
+   * other item types.
+   */
+  accessPointId?: int32;
+
+  /**
+   * For a structured-object item (`STRUCTURED`, e.g. a storage unit or an
+   * accessibility restriction): the structured type code
+   * (`RulStructuredType.code`). Absent for other item types.
+   */
+  structuredObjectType?: string;
+
+  /**
+   * For a structured-object item (`STRUCTURED`): the structured object's id
+   * (`ArrStructuredObject.structuredObjectId`). `value` holds its serialized
+   * name. Absent for other item types.
+   */
+  structuredObjectId?: int32;
+
+  /**
+   * For a structured-object item (`STRUCTURED`): the object's optional complement
+   * (`ArrStructuredObject.complement`) — a supplementary qualifier of the value.
+   * Absent when the object has none.
+   */
+  complement?: string;
+}
+
+/**
+ * Kind of a problem found by Elza's automatic (rule-based) checks on a level.
+ * The set may grow additively; a client treats an unknown kind as a generic
+ * problem.
+ */
+enum NodeIssueKind {
+  /** A description item has an invalid value (an `ArrNodeConformityError`). */
+  invalidValue: "invalid_value",
+
+  /** A required description item is missing (an `ArrNodeConformityMissing`). */
+  missing: "missing",
+}
+
+/**
+ * One problem found by Elza's automatic checks on a level — the kind of formal
+ * (rule-based) validation that runs continuously while a fund is arranged.
+ * Advisory context for a task: it lets the AI see what formal validation already
+ * flagged, complementing the logical/semantic issues an AI task looks for.
+ */
+model NodeIssue {
+  /** Whether an item has an invalid value or a required item is missing. */
+  kind: NodeIssueKind;
+
+  /**
+   * Human-readable description of the problem, as authored by the check. In the
+   * rule set's language (data, not UI chrome — the client adds no wrapping here).
+   */
+  description?: string;
+
+  /**
+   * Code of the check (policy) that raised the problem (`RulPolicyType.code`);
+   * absent when the check declares none.
+   */
+  policyType?: string;
+
+  /**
+   * Item-type code the problem relates to (`RulItemType.code`) — the type of the
+   * invalid item, or of the missing required item. Lets the AI tie the problem to
+   * an entry in `items`.
+   */
+  itemType?: string;
+
+  /**
+   * Specification code the problem relates to (`RulItemSpec.code`), when the
+   * check is spec-specific; absent otherwise.
+   */
+  spec?: string;
 }
 
 /**
@@ -336,6 +492,19 @@ model ArchivalDescription {
    * the focus level from its context when several are sent together.
    */
   focus?: boolean;
+
+  /**
+   * Human-readable title of the level, exactly as shown in the arrangement tree
+   * (built from the fund's configured title items) — a quick summary of what the
+   * level is, before reading its individual items.
+   */
+  title?: string;
+
+  /**
+   * Problems found by Elza's automatic checks on this level (0..n); empty or
+   * absent when the level is valid or has not been validated.
+   */
+  issues?: NodeIssue[];
 
   /** The level's description items, in display order. */
   items: DescriptionItem[];
@@ -544,7 +713,7 @@ model ItemTypeInfo {
   name: string;
 
   /** Underlying value type, e.g. `STRING`, `UNITDATE`, `ENUM` (`RulItemType.dataType`). */
-  dataType: string;
+  dataType: DataType;
 
   /**
    * Specifications for enumerated item types (`dataType == ENUM`), in display

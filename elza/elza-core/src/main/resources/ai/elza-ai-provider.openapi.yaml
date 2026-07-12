@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Elza AI Provider API
-  version: 0.5.0
+  version: 0.6.0
   description: |-
     Elza AI Provider API.
 
@@ -1024,6 +1024,19 @@ components:
             True for the level the user is on (the "active" level); absent or false for
             supporting levels (ancestors) sent only to give hierarchy. Lets a task tell
             the focus level from its context when several are sent together.
+        title:
+          type: string
+          description: |-
+            Human-readable title of the level, exactly as shown in the arrangement tree
+            (built from the fund's configured title items) — a quick summary of what the
+            level is, before reading its individual items.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeIssue'
+          description: |-
+            Problems found by Elza's automatic checks on this level (0..n); empty or
+            absent when the level is valid or has not been validated.
         items:
           type: array
           items:
@@ -1078,6 +1091,31 @@ components:
           format: date-time
           description: Start of the current accounting period (UTC).
       description: Subscriber-level (whole organization) usage state — the outer budget cap.
+    DataType:
+      type: string
+      enum:
+        - INT
+        - STRING
+        - TEXT
+        - FORMATTED_TEXT
+        - UNITDATE
+        - UNITID
+        - DECIMAL
+        - DATE
+        - BIT
+        - ENUM
+        - RECORD_REF
+        - STRUCTURED
+        - FILE_REF
+        - URI_REF
+        - COORDINATES
+        - JSON_TABLE
+      description: |-
+        Data type of a description item's value — Elza's closed set of value kinds
+        (`RulItemType.dataType`). It tells a reader how to interpret an item without a
+        dictionary lookup: which reference fields are present and how the text `value`
+        is produced. Stable and closed; the set may grow additively, and a reader
+        treats an unknown type as plain text carried in `value`.
     DescriptionItem:
       type: object
       required:
@@ -1086,6 +1124,16 @@ components:
         type:
           type: string
           description: Stable item-type code, e.g. `ZP2015_TITLE` (`RulItemType.code`).
+        dataType:
+          allOf:
+            - $ref: '#/components/schemas/DataType'
+          description: |-
+            The value's data type — the same value the `getItemTypes` dictionary reports
+            for this item type (`ItemTypeInfo.dataType`), denormalized here so a block is
+            self-describing without the dictionary: it says how to read the value and which
+            reference fields are present, e.g. `RECORD_REF` (→ `accessPointId`),
+            `STRUCTURED` (→ `structuredObjectType`/`structuredObjectId`), `ENUM` (→ `spec`),
+            or a text/number/date type (→ `value`).
         spec:
           type: string
           description: |-
@@ -1095,7 +1143,36 @@ components:
           type: string
           description: |-
             The item's value in text form for non-enumerated types; absent when the
-            meaning is fully carried by `spec`, or the item is value-less.
+            meaning is fully carried by `spec`, or the item is value-less. For an
+            access-point or structured-object item it holds the human-readable value —
+            the entity's preferred name or the object's serialized name — while the
+            fields below add the machine-readable reference.
+        accessPointId:
+          type: integer
+          format: int32
+          description: |-
+            For an access-point item (`RECORD_REF`): the referenced access point's id
+            (`ApAccessPoint.accessPointId`). `value` holds its preferred name. Absent for
+            other item types.
+        structuredObjectType:
+          type: string
+          description: |-
+            For a structured-object item (`STRUCTURED`, e.g. a storage unit or an
+            accessibility restriction): the structured type code
+            (`RulStructuredType.code`). Absent for other item types.
+        structuredObjectId:
+          type: integer
+          format: int32
+          description: |-
+            For a structured-object item (`STRUCTURED`): the structured object's id
+            (`ArrStructuredObject.structuredObjectId`). `value` holds its serialized
+            name. Absent for other item types.
+        complement:
+          type: string
+          description: |-
+            For a structured-object item (`STRUCTURED`): the object's optional complement
+            (`ArrStructuredObject.complement`) — a supplementary qualifier of the value.
+            Absent when the object has none.
       description: |-
         One description item (attribute) of a level, as stable codes plus its value.
         The human-readable names of `type`/`spec` are resolved by the provider from
@@ -1249,7 +1326,8 @@ components:
           type: string
           description: Human-readable name, e.g. `Obsah`.
         dataType:
-          type: string
+          allOf:
+            - $ref: '#/components/schemas/DataType'
           description: Underlying value type, e.g. `STRING`, `UNITDATE`, `ENUM` (`RulItemType.dataType`).
         specs:
           type: array
@@ -1322,6 +1400,50 @@ components:
           type: string
           description: Formatted text as CommonMark + GFM (no raw HTML); the client renders it.
       description: Payload of `elza.markdown`.
+    NodeIssue:
+      type: object
+      required:
+        - kind
+      properties:
+        kind:
+          allOf:
+            - $ref: '#/components/schemas/NodeIssueKind'
+          description: Whether an item has an invalid value or a required item is missing.
+        description:
+          type: string
+          description: |-
+            Human-readable description of the problem, as authored by the check. In the
+            rule set's language (data, not UI chrome — the client adds no wrapping here).
+        policyType:
+          type: string
+          description: |-
+            Code of the check (policy) that raised the problem (`RulPolicyType.code`);
+            absent when the check declares none.
+        itemType:
+          type: string
+          description: |-
+            Item-type code the problem relates to (`RulItemType.code`) — the type of the
+            invalid item, or of the missing required item. Lets the AI tie the problem to
+            an entry in `items`.
+        spec:
+          type: string
+          description: |-
+            Specification code the problem relates to (`RulItemSpec.code`), when the
+            check is spec-specific; absent otherwise.
+      description: |-
+        One problem found by Elza's automatic checks on a level — the kind of formal
+        (rule-based) validation that runs continuously while a fund is arranged.
+        Advisory context for a task: it lets the AI see what formal validation already
+        flagged, complementing the logical/semantic issues an AI task looks for.
+    NodeIssueKind:
+      type: string
+      enum:
+        - invalid_value
+        - missing
+      description: |-
+        Kind of a problem found by Elza's automatic (rule-based) checks on a level.
+        The set may grow additively; a client treats an unknown kind as a generic
+        problem.
     ObjectType:
       type: string
       enum:
