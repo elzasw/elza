@@ -36,7 +36,10 @@ public class ApExternalSystem extends SysExternalSystem {
 
     @Column(nullable = true)
     private Boolean publishOnlyApproved;
-    
+
+    @Column(nullable = true)
+    private Integer syncDelay;    
+
     public ApExternalSystem() {
     	
     }
@@ -48,6 +51,7 @@ public class ApExternalSystem extends SysExternalSystem {
 		this.scopeId = aes.getScopeId();
 		this.userInfo = aes.getUserInfo();
 		this.publishOnlyApproved = aes.getPublishOnlyApproved();
+		this.syncDelay = aes.getSyncDelay();
 	}
 
 	public ApExternalSystemType getType() {
@@ -91,7 +95,15 @@ public class ApExternalSystem extends SysExternalSystem {
         this.userInfo = userInfo;
     }
 
-    @Override
+    public Integer getSyncDelay() {
+		return syncDelay;
+	}
+
+	public void setSyncDelay(Integer syncDelay) {
+		this.syncDelay = syncDelay;
+	}
+
+	@Override
     public String toString() {
         return "ApExternalSystem pk=" + getExternalSystemId();
     }

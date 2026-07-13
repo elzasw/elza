@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Form, Modal } from 'react-bootstrap';
+import { Form, Modal, Col, Row } from 'react-bootstrap';
 import { Form as FinalForm, Field, useFormState } from 'react-final-form';
 import { Button } from 'components/ui';
 import { i18n } from 'components';
@@ -140,7 +140,6 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                     </option>
                 ))}
             </Field>
-
             {classJ === EXT_SYSTEM_CLASS.ApExternalSystem && (
                 <div>
                     <Field
@@ -157,19 +156,32 @@ const ExtSystemFormFields = ({ isUpdate, defaultScopes }: { isUpdate: boolean; d
                             </option>
                         ))}
                     </Field>
-                    <Field
-                        name="scope"
-                        type="select"
-                        component={FormInputField}
-                        label={i18n('admin.extSystem.sysScope')}
-                    >
-                        <option key={null} />
-                        {defaultScopes.map((i, index) => (
-                            <option key={index} value={i.id}>
-                                {i.name}
-                            </option>
-                        ))}
-                    </Field>
+                    <Row>
+                        <Col xs={6}>
+                            <Field
+                                name="scope"
+                                type="select"
+                                component={FormInputField}
+                                label={i18n('admin.extSystem.sysScope')}
+                            >
+                                <option key={null} />
+                                {defaultScopes.map((i, index) => (
+                                    <option key={index} value={i.id}>
+                                        {i.name}
+                                    </option>
+                                ))}
+                            </Field>
+                        </Col>
+                        <Col xs={6}>
+                            <Field
+                                name="syncDelay"
+                                type="number"
+                                component={FormInputField}
+                                label={i18n('admin.extSystem.syncDelay')}
+                                parse={(v) => (v === '' || v == null ? undefined : Number(v))}
+                            />
+                        </Col>
+                    </Row>
                 </div>
             )}
             {classJ === EXT_SYSTEM_CLASS.GisExternalSystem && (

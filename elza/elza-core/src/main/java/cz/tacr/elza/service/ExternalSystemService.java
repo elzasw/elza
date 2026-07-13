@@ -353,6 +353,11 @@ public class ExternalSystemService {
         externalSystemRepository.save(externalSystem);
         sendCreateExternalSystemNotification(externalSystem.getExternalSystemId());
 
+        // Notify listeners (CamScheduler, cache invalidators) that a new AP external system exists.
+        if (externalSystem instanceof ApExternalSystem extSys) {
+            eventPublisher.publishEvent(new ApExternalSystemEvent(this, extSys));
+        }
+
         staticDataService.reloadOnCommit();
         return externalSystem;
     }

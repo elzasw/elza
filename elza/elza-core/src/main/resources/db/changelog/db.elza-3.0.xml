@@ -1496,4 +1496,11 @@
         </addColumn>
     </changeSet>
 
+	<changeSet id="20260710145000" author="sergey.iryupin">
+	    <addColumn tableName="ap_external_system">
+	        <column name="sync_delay" type="int"/>
+	    </addColumn>
+	    <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20260710145000"/>
+    </changeSet>
+
 </databaseChangeLog>
