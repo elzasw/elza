@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 
 import cz.tacr.elza.core.ResourcePathResolver;
 import cz.tacr.elza.repository.ApAccessPointRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.LevelRepository;
 import cz.tacr.elza.service.DataService;
@@ -23,6 +24,8 @@ public class ExportInitHelper {
 
     private final ApAccessPointRepository apRepository;
 
+    private final DaoLinkRepository daoLinkRepository;
+
     private final FundVersionRepository fundVersionRepository;
 
     private final ResourcePathResolver resourcePathResolver;
@@ -36,6 +39,7 @@ public class ExportInitHelper {
                             final LevelRepository levelRepository,
                             final NodeCacheService nodeCacheService,
                             final ApAccessPointRepository apRepository,
+                            final DaoLinkRepository daoLinkRepository,
                             final FundVersionRepository fundVersionRepository,
                             final ResourcePathResolver resourcePathResolver,
                             final DataService dataService,
@@ -45,6 +49,7 @@ public class ExportInitHelper {
         this.levelRepository = levelRepository;
         this.nodeCacheService = nodeCacheService;
         this.apRepository = apRepository;
+        this.daoLinkRepository = daoLinkRepository;
         this.fundVersionRepository = fundVersionRepository;
         this.resourcePathResolver = resourcePathResolver;
         this.dataService = dataService;
@@ -73,6 +78,10 @@ public class ExportInitHelper {
 
     public ApAccessPointRepository getApRepository() {
         return apRepository;
+    }
+
+    public DaoLinkRepository getDaoLinkRepository() {
+        return daoLinkRepository;
     }
 
     public FundVersionRepository getFundVersionRepository() {

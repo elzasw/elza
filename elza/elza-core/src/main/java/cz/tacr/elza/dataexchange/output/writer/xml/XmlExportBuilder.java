@@ -15,15 +15,20 @@ import org.apache.commons.lang3.Validate;
 import com.ctc.wstx.api.WstxInputProperties;
 import com.sun.xml.txw2.output.IndentingXMLStreamWriter;
 
+import jakarta.xml.bind.JAXBElement;
+
+import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.dataexchange.output.context.ExportContext;
 import cz.tacr.elza.dataexchange.output.sections.SectionContext;
 import cz.tacr.elza.dataexchange.output.writer.ApOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.InternalNode;
+import cz.tacr.elza.dataexchange.output.writer.xml.nodes.JaxbNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.RootNode.ChildNodeType;
 import cz.tacr.elza.exception.SystemException;
+import cz.tacr.elza.schema.v2.SourceApp;
 
 /**
  * XML export builder.
@@ -33,6 +38,15 @@ public class XmlExportBuilder implements ExportBuilder {
     private final Path tempDirectory = createTempDirectory();
 
     private final RootNode rootNode = new RootNode();
+
+    /**
+     * Sets the source application info written as the root {@code info} element.
+     */
+    public void setSourceApp(SourceApp sourceApp) {
+        Validate.notNull(sourceApp);
+        JAXBElement<SourceApp> element = XmlUtils.wrapElement(XmlNameConsts.INFO, sourceApp);
+        rootNode.setNode(ChildNodeType.INFO, new JaxbNode(element));
+    }
 
     @Override
     public SectionOutputStream openSectionOutputStream(SectionContext sectionContext) {
