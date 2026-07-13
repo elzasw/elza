@@ -1475,7 +1475,7 @@ var messages = {
     "admin.extSystem.userInfo.title": "Šablona pro označení uživatele, které je předáváno do externího systému, jako osoby zodpovědné za provedení a zaslání změny.\nStandardně obsahuje 'název instituce: jméno uživatele', pro vyplnění jména lze použít proměnné:\n%u - uživatelské jméno\n%i - ID uživatele\n%n - preferované označení osoby uživatele\n%s - zkrácené označení osoby uživatele",
     "admin.extSystem.type": "Typ",
     "admin.extSystem.sysScope": "Oblast entit",
-    "admin.extSystem.syncDelay": "Interval synchronizace",
+    "admin.extSystem.syncDelay": "Interval synchronizace (s)",
     "admin.extSystem.sysDigitalRepository": "Uložiště digitalizátů",
     "admin.extSystem.viewDaoUrl": "DaoURL",
     "admin.extSystem.viewFileUrl": "FileURL",
