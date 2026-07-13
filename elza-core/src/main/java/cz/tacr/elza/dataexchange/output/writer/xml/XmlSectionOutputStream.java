@@ -23,6 +23,7 @@ import cz.tacr.elza.dataexchange.output.items.ItemConvertor;
 import cz.tacr.elza.dataexchange.output.items.ItemDataConvertorFactory;
 import cz.tacr.elza.dataexchange.output.items.StructObjRefConvertor;
 import cz.tacr.elza.dataexchange.output.sections.SectionContext;
+import cz.tacr.elza.dataexchange.output.writer.DaoInfo;
 import cz.tacr.elza.dataexchange.output.writer.FileInfo;
 import cz.tacr.elza.dataexchange.output.writer.LevelInfo;
 import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
@@ -30,7 +31,6 @@ import cz.tacr.elza.dataexchange.output.writer.StructObjectInfo;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.FileNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.InternalNode;
 import cz.tacr.elza.dataexchange.output.writer.xml.nodes.JaxbNode;
-import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataFileRef;
 import cz.tacr.elza.domain.ArrDataRecordRef;
@@ -113,16 +113,23 @@ class XmlSectionOutputStream implements SectionOutputStream {
         }
     }
 
-    private void convertDaos(Collection<ArrDao> daos, Level level) {
+    private void convertDaos(Collection<DaoInfo> daos, Level level) {
         if (daos == null || daos.size() == 0) {
             return;
         }
         Validate.isTrue(level.getDaos() == null, "Level already have some DAOs");
 
         DigitalArchivalObjects xmlDaos = EdxOutputHelper.getObjectFactory().createDigitalArchivalObjects();
-        for (ArrDao dao : daos) {
+        for (DaoInfo daoInfo : daos) {
             DigitalArchivalObject xmlDao = EdxOutputHelper.getObjectFactory().createDigitalArchivalObject();
-            xmlDao.setDoid(dao.getCode());
+            // repository code where the digital object is stored
+            xmlDao.setRep(daoInfo.getRepositoryCode());
+            // id of the object in the repository
+            xmlDao.setDoid(daoInfo.getObjectId());
+            // optional link to the relevant part of the digital object
+            if (daoInfo.getPart() != null) {
+                xmlDao.setPart(daoInfo.getPart());
+            }
             xmlDaos.getDao().add(xmlDao);
         }
 

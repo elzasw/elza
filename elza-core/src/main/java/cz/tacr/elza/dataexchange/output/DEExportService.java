@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,6 +42,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import cz.tacr.elza.common.ObjectListIterator;
+import cz.tacr.elza.common.XmlUtils;
 import cz.tacr.elza.controller.vo.ApAdvanceSearchFilter;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.core.ElzaLocale;
@@ -63,6 +65,7 @@ import cz.tacr.elza.dataexchange.output.filters.conditions.Not;
 import cz.tacr.elza.dataexchange.output.filters.conditions.PartCondition;
 import cz.tacr.elza.dataexchange.output.writer.ExportBuilder;
 import cz.tacr.elza.dataexchange.output.writer.xml.XmlExportBuilder;
+import cz.tacr.elza.schema.v2.SourceApp;
 import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ApBindingState;
 import cz.tacr.elza.domain.ApIndex;
@@ -85,6 +88,7 @@ import cz.tacr.elza.repository.ApBindingStateRepository;
 import cz.tacr.elza.repository.ApIndexRepository;
 import cz.tacr.elza.repository.ApItemRepository;
 import cz.tacr.elza.repository.ApStateRepository;
+import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.repository.DataStringRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.InstitutionRepository;
@@ -112,6 +116,9 @@ import jakarta.persistence.EntityManager;
 public class DEExportService {
 
     private final static Logger log = LoggerFactory.getLogger(DEExportService.class);
+
+    /** Application name reported in the native XML export ({@code info/@app}). */
+    private final static String APP_NAME = "ELZA";
 
     private final ExportInitHelper initHelper;
 
@@ -149,6 +156,7 @@ public class DEExportService {
             		       LevelRepository levelRepository,
             		       NodeCacheService nodeCacheService,
             		       ApAccessPointRepository apRepository,
+            		       DaoLinkRepository daoLinkRepository,
             		       FundVersionRepository fundVersionRepository,
             		       ResourcePathResolver resourcePathResolver,
                            final DataService dataService,
@@ -168,6 +176,7 @@ public class DEExportService {
                            final ElzaLocale elzaLocale,
                            final AccessPointCacheService apcService) {
         this.initHelper = new ExportInitHelper(em, userService, levelRepository, nodeCacheService, apRepository,
+                daoLinkRepository,
                 fundVersionRepository,
                 resourcePathResolver,
                 dataService, apcService);
@@ -252,6 +261,11 @@ public class DEExportService {
         try {
             log.debug("Building export file");
 
+            // add source application info to the native elza XML output
+            if (builder instanceof XmlExportBuilder xmlBuilder) {
+                xmlBuilder.setSourceApp(createSourceApp());
+            }
+
             builder.build(os);
         } catch (Exception e) {
             log.error("Failed to prepare export", e);
@@ -265,6 +279,24 @@ public class DEExportService {
             }
         }
         log.debug("Export is done.");
+    }
+
+    /**
+     * Creates the source application info describing who and when generated the output.
+     *
+     * @return populated {@link SourceApp}
+     */
+    private SourceApp createSourceApp() {
+        SourceApp sourceApp = new SourceApp();
+        sourceApp.setApp(APP_NAME);
+        sourceApp.setV(staticDataService.getAppVersion());
+        sourceApp.setCre(XmlUtils.convertDate(LocalDateTime.now()));
+
+        UserDetail userDetail = initHelper.getUserService().getLoggedUserDetail();
+        if (userDetail != null) {
+            sourceApp.setUsr(userDetail.getUsername());
+        }
+        return sourceApp;
     }
 
     /**

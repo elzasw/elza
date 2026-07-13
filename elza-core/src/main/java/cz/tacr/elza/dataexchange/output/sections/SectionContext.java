@@ -17,6 +17,7 @@ import cz.tacr.elza.dataexchange.output.writer.SectionOutputStream;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrLevel;
 import cz.tacr.elza.domain.RulRuleSet;
+import cz.tacr.elza.repository.DaoLinkRepository;
 import cz.tacr.elza.service.DataService;
 import cz.tacr.elza.service.cache.NodeCacheService;
 
@@ -56,12 +57,13 @@ public class SectionContext {
                    boolean multipleSections,
                    LevelInfoListener levelInfoListener,
                    NodeCacheService nodeCacheService,
+                   DaoLinkRepository daoLinkRepository,
                    EntityManager em,
                    ResourcePathResolver resourceResolver,
                    DataService dataService) {
         this.context = Objects.requireNonNull(ctx);
         this.staticData = ctx.getStaticData();
-        this.levelInfoLoader = new LevelInfoLoader(em, ctx.getBatchSize(), nodeCacheService, ctx.isIncludeAccessPoints(), ctx.isIncludeUUID(), ctx.isIncludeDaos());
+        this.levelInfoLoader = new LevelInfoLoader(em, ctx.getBatchSize(), nodeCacheService, daoLinkRepository, ctx.isIncludeAccessPoints(), ctx.isIncludeUUID(), ctx.isIncludeDaos());
         this.structObjLoader = new StructObjectInfoLoader(em, ctx.getBatchSize(), this.staticData, dataService);
         this.dmsFileLoader = new DmsFileLoader(em, ctx.getBatchSize(), resourceResolver);
         this.fundVersion = Objects.requireNonNull(fundVersion);
