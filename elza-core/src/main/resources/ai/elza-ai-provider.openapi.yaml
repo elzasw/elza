@@ -942,6 +942,7 @@ components:
           elza.text: '#/components/schemas/TextObject'
           elza.markdown: '#/components/schemas/MarkdownObject'
           elza.fundInfo: '#/components/schemas/FundInfoObject'
+          elza.archivalEntityInfo: '#/components/schemas/ArchivalEntityInfoObject'
           elza.archivalEntity: '#/components/schemas/ArchivalEntityObject'
           elza.archivalDescription: '#/components/schemas/ArchivalDescriptionObject'
           elza.revisionFindings: '#/components/schemas/RevisionFindingsObject'
@@ -1058,10 +1059,119 @@ components:
       description: Archival description object.
     ArchivalEntity:
       type: object
-      additionalProperties: {}
+      required:
+        - accessPointId
+      properties:
+        accessPointId:
+          type: integer
+          format: int32
+          description: |-
+            Access point id (`ApAccessPoint.accessPointId`); echo-only — the provider
+            never interprets it, but tools and results can reference the entity by it.
+        uuid:
+          type: string
+          description: Stable access point UUID (`ApAccessPoint.uuid`), for durable cross-request identity.
+        className:
+          type: string
+          description: |-
+            Name of the entity class — the top of the type hierarchy, e.g.
+            "osoba / bytost" (the root, read-only `ApType.name`).
+        classCode:
+          type: string
+          description: Stable code of the entity class (root `ApType.code`), e.g. `PERSON`.
+        typeName:
+          type: string
+          description: |-
+            Name of the entity type (its subclass) — the access point's own type, e.g.
+            "fyzická osoba" or "bytost" (`ApType.name`).
+        typeCode:
+          type: string
+          description: Stable code of the entity type (`ApType.code`), e.g. `PERSON_INDIVIDUAL`.
+        externalSystemCode:
+          type: string
+          description: |-
+            Code of the external system the entity is bound to (`ApExternalSystem.code`),
+            when it originates from or is synchronized with one (e.g. a CAM instance);
+            absent for a purely local entity. An entity is bound to at most one system.
+        externalId:
+          type: string
+          description: |-
+            The entity's identifier within that external system (`ApBinding.value`);
+            present together with `externalSystemCode`.
+        parts:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntityPart'
+          description: |-
+            Top-level parts of the entity, in display order — the roots of the part tree;
+            each part's sub-parts nest under its own `parts`.
       description: |-
-        A CAM access point / entity. Payload fields are added as real tasks need them;
-        open for additive growth.
+        A CAM access point / archival entity in full: its identity and classification
+        plus its complete structured description as a tree of parts. Sent as context
+        when the user is working on an entity. The name is not repeated at the top
+        level — it is the `value` of the part marked `preferred`.
+    ArchivalEntityInfo:
+      type: object
+      required:
+        - accessPointId
+      properties:
+        accessPointId:
+          type: integer
+          format: int32
+          description: |-
+            Access point id (`ApAccessPoint.accessPointId`); echo-only — the provider
+            never interprets it, but tools and results can reference the entity by it.
+        uuid:
+          type: string
+          description: Stable access point UUID (`ApAccessPoint.uuid`), for durable cross-request identity.
+        className:
+          type: string
+          description: |-
+            Name of the entity class — the top of the type hierarchy, e.g.
+            "osoba / bytost" (the root, read-only `ApType.name`).
+        classCode:
+          type: string
+          description: Stable code of the entity class (root `ApType.code`), e.g. `PERSON`.
+        typeName:
+          type: string
+          description: |-
+            Name of the entity type (its subclass) — the access point's own type, e.g.
+            "fyzická osoba" or "bytost" (`ApType.name`).
+        typeCode:
+          type: string
+          description: Stable code of the entity type (`ApType.code`), e.g. `PERSON_INDIVIDUAL`.
+        externalSystemCode:
+          type: string
+          description: |-
+            Code of the external system the entity is bound to (`ApExternalSystem.code`),
+            when it originates from or is synchronized with one (e.g. a CAM instance);
+            absent for a purely local entity. An entity is bound to at most one system.
+        externalId:
+          type: string
+          description: |-
+            The entity's identifier within that external system (`ApBinding.value`);
+            present together with `externalSystemCode`.
+        preferredName:
+          type: string
+          description: |-
+            Preferred (display) name of the entity — the display-name index of its
+            preferred part (`ApIndex` of type `DISPLAY_NAME`).
+      description: |-
+        Lightweight reference to a CAM access point / archival entity — its identity,
+        classification and preferred name, without the full structured description.
+        Sent on its own as `elza.archivalEntityInfo`, and nested in a `RECORD_REF`
+        description item (`DescriptionItem.entity`) to name what a reference points at.
+        Having no parts, it carries the preferred name directly.
+    ArchivalEntityInfoObject:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/ArchivalEntityInfo'
+      allOf:
+        - $ref: '#/components/schemas/AiObject'
+      description: Lightweight archival entity object — a reference by identity, without the parts.
     ArchivalEntityObject:
       type: object
       required:
@@ -1071,7 +1181,7 @@ components:
           $ref: '#/components/schemas/ArchivalEntity'
       allOf:
         - $ref: '#/components/schemas/AiObject'
-      description: Archival entity object.
+      description: Archival entity object — the full entity with its parts.
     CustomerUsageInfo:
       type: object
       required:
@@ -1131,8 +1241,8 @@ components:
             The value's data type — the same value the `getItemTypes` dictionary reports
             for this item type (`ItemTypeInfo.dataType`), denormalized here so a block is
             self-describing without the dictionary: it says how to read the value and which
-            reference fields are present, e.g. `RECORD_REF` (→ `accessPointId`),
-            `STRUCTURED` (→ `structuredObjectType`/`structuredObjectId`), `ENUM` (→ `spec`),
+            reference field is present, e.g. `RECORD_REF` (→ `entity`),
+            `STRUCTURED` (→ `structuredObject`), `ENUM` (→ `spec`),
             or a text/number/date type (→ `value`).
         spec:
           type: string
@@ -1145,34 +1255,22 @@ components:
             The item's value in text form for non-enumerated types; absent when the
             meaning is fully carried by `spec`, or the item is value-less. For an
             access-point or structured-object item it holds the human-readable value —
-            the entity's preferred name or the object's serialized name — while the
-            fields below add the machine-readable reference.
-        accessPointId:
-          type: integer
-          format: int32
+            the entity's preferred name or the object's serialized name — while
+            `entity` / `structuredObject` below add the machine-readable reference.
+        entity:
+          allOf:
+            - $ref: '#/components/schemas/ArchivalEntityInfo'
           description: |-
-            For an access-point item (`RECORD_REF`): the referenced access point's id
-            (`ApAccessPoint.accessPointId`). `value` holds its preferred name. Absent for
-            other item types.
-        structuredObjectType:
-          type: string
+            For an access-point item (`RECORD_REF`): the referenced entity as a
+            lightweight `ArchivalEntityInfo` (its id, preferred name and classification).
+            `value` also holds the entity's preferred name. Absent for other item types.
+        structuredObject:
+          allOf:
+            - $ref: '#/components/schemas/StructuredObjectInfo'
           description: |-
             For a structured-object item (`STRUCTURED`, e.g. a storage unit or an
-            accessibility restriction): the structured type code
-            (`RulStructuredType.code`). Absent for other item types.
-        structuredObjectId:
-          type: integer
-          format: int32
-          description: |-
-            For a structured-object item (`STRUCTURED`): the structured object's id
-            (`ArrStructuredObject.structuredObjectId`). `value` holds its serialized
-            name. Absent for other item types.
-        complement:
-          type: string
-          description: |-
-            For a structured-object item (`STRUCTURED`): the object's optional complement
-            (`ArrStructuredObject.complement`) — a supplementary qualifier of the value.
-            Absent when the object has none.
+            accessibility restriction): the referenced object as a `StructuredObjectInfo`.
+            `value` holds the object's serialized name. Absent for other item types.
       description: |-
         One description item (attribute) of a level, as stable codes plus its value.
         The human-readable names of `type`/`spec` are resolved by the provider from
@@ -1233,6 +1331,53 @@ components:
             $ref: '#/components/schemas/DocCitation'
           description: The cited sections, in the order first referenced by the answer.
       description: Payload of `elza.docCitations`.
+    EntityPart:
+      type: object
+      required:
+        - partType
+      properties:
+        partId:
+          type: integer
+          format: int32
+          description: |-
+            Part id (`ApPart.partId`); echo-only — stable within the entity, so items and
+            sub-parts can be tied back to their part.
+        partType:
+          type: string
+          description: Stable part-type code (`RulPartType.code`), e.g. `PT_NAME`, `PT_BODY`.
+        partTypeName:
+          type: string
+          description: Name of the part type (`RulPartType.name`) — its display label.
+        preferred:
+          type: boolean
+          description: |-
+            True for the entity's preferred part — the one whose text is the entity's
+            preferred (display) name (`ApAccessPoint.preferredPart`). Absent or false for
+            the others. Lets a reader identify the entity's name without a naming
+            convention, since `ArchivalEntity` carries no separate `preferredName`.
+        value:
+          type: string
+          description: |-
+            Text representation of the part — its display-name index (`ApIndex` of type
+            `DISPLAY_NAME`), the same text Elza renders for the part. This is how the
+            entity reads in text form. Absent when the part has no rendered display name.
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DescriptionItem'
+          description: |-
+            The part's description items, in display order — the same `DescriptionItem`
+            shape used for a level's items (item codes resolved through the rule-set
+            dictionary, references carried as nested objects).
+        parts:
+          description: Nested sub-parts of this part (e.g. the name parts under a body part).
+          type: array
+          items:
+            $ref: '#/components/schemas/EntityPart'
+      description: |-
+        One part of an archival entity — a block of its structured description
+        (`ApPart`, e.g. a name or a body of description). A part has a type, a text
+        representation, its own description items and, recursively, nested sub-parts.
     FundHits:
       type: object
       required:
@@ -1550,6 +1695,7 @@ components:
         - elza.markdown
         - elza.fundInfo
         - elza.archivalEntity
+        - elza.archivalEntityInfo
         - elza.archivalDescription
         - elza.revisionFindings
         - elza.docCitations
@@ -1571,8 +1717,11 @@ components:
         - `elza.fundInfo` — basic descriptive information about an archival fund and
         its holding institution (payload `FundInfo`); typically supplied as
         `context`.
-        - `elza.archivalEntity` — a CAM access point / entity. Payload fields are
-        introduced as real tasks need them.
+        - `elza.archivalEntity` — a CAM access point / entity in full (payload
+        `ArchivalEntity`): its identity and classification plus the whole tree of parts.
+        - `elza.archivalEntityInfo` — the lightweight identity of an entity (payload
+        `ArchivalEntityInfo`): names, classification and external-system identity,
+        without the parts.
         - `elza.archivalDescription` — a description unit (node) and its related data.
         Payload fields are introduced as real tasks need them.
         - `elza.revisionFindings` — result of `elza.revision`. Payload fields are
@@ -1765,6 +1914,28 @@ components:
         for records the client did not send (full text and/or item conditions);
         the client executes the search under the requesting user's read
         permissions and returns a capped hit list grouped by fund.
+    StructuredObjectInfo:
+      type: object
+      required:
+        - structuredObjectId
+      properties:
+        structuredObjectId:
+          type: integer
+          format: int32
+          description: Structured object id (`ArrStructuredObject.structuredObjectId`).
+        structuredType:
+          type: string
+          description: Stable structured-type code (`RulStructuredType.code`).
+        complement:
+          type: string
+          description: |-
+            The object's optional complement (`ArrStructuredObject.complement`) — a
+            supplementary qualifier of the value; absent when the object has none.
+      description: |-
+        Reference to a structured object (`ArrStructuredObject`) — a composite value
+        such as a storage unit or an accessibility restriction. Carried by a
+        `STRUCTURED` description item; the item's `value` holds the object's serialized
+        (human-readable) name, this model its machine-readable identity.
     SubmitTask:
       type: object
       required:

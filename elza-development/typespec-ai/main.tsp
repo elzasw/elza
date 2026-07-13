@@ -137,8 +137,11 @@ model SignedRequest {
  * - `elza.fundInfo` — basic descriptive information about an archival fund and
  *   its holding institution (payload `FundInfo`); typically supplied as
  *   `context`.
- * - `elza.archivalEntity` — a CAM access point / entity. Payload fields are
- *   introduced as real tasks need them.
+ * - `elza.archivalEntity` — a CAM access point / entity in full (payload
+ *   `ArchivalEntity`): its identity and classification plus the whole tree of parts.
+ * - `elza.archivalEntityInfo` — the lightweight identity of an entity (payload
+ *   `ArchivalEntityInfo`): names, classification and external-system identity,
+ *   without the parts.
  * - `elza.archivalDescription` — a description unit (node) and its related data.
  *   Payload fields are introduced as real tasks need them.
  * - `elza.revisionFindings` — result of `elza.revision`. Payload fields are
@@ -159,8 +162,11 @@ enum ObjectType {
   /** Basic descriptive information about a fund and its institution; payload `FundInfo`. */
   fundInfo: "elza.fundInfo",
 
-  /** A CAM access point / entity; payload `ArchivalEntity`. */
+  /** A CAM access point / entity in full; payload `ArchivalEntity`. */
   archivalEntity: "elza.archivalEntity",
+
+  /** Lightweight identity of a CAM access point / entity; payload `ArchivalEntityInfo`. */
+  archivalEntityInfo: "elza.archivalEntityInfo",
 
   /** A description unit (node) and its related data; payload `ArchivalDescription`. */
   archivalDescription: "elza.archivalDescription",
@@ -268,14 +274,145 @@ model FundInfoObject extends AiObject {
 }
 
 /**
- * A CAM access point / entity. Payload fields are added as real tasks need them;
- * open for additive growth.
+ * Shared identity and classification of a CAM access point / archival entity —
+ * the fields common to a lightweight `ArchivalEntityInfo` reference and a full
+ * `ArchivalEntity`. Spread into both, so **neither type is built from the other**;
+ * both independently carry an entity's identity.
+ *
+ * Classification follows Elza's access-point type hierarchy (`ApType`): the
+ * entity's own type is the leaf (the *subclass*, e.g. "fyzická osoba"); its class
+ * is the root of that hierarchy (the read-only super-type, e.g. "osoba / bytost").
+ * Names are the localized display strings — self-explanatory for a model to reason
+ * over — while the codes give stable, language-independent identity.
  */
-model ArchivalEntity {
-  ...Record<unknown>;
+alias ArchivalEntityIdentity = {
+  /**
+   * Access point id (`ApAccessPoint.accessPointId`); echo-only — the provider
+   * never interprets it, but tools and results can reference the entity by it.
+   */
+  accessPointId: int32;
+
+  /** Stable access point UUID (`ApAccessPoint.uuid`), for durable cross-request identity. */
+  uuid?: string;
+
+  /**
+   * Name of the entity class — the top of the type hierarchy, e.g.
+   * "osoba / bytost" (the root, read-only `ApType.name`).
+   */
+  className?: string;
+
+  /** Stable code of the entity class (root `ApType.code`), e.g. `PERSON`. */
+  classCode?: string;
+
+  /**
+   * Name of the entity type (its subclass) — the access point's own type, e.g.
+   * "fyzická osoba" or "bytost" (`ApType.name`).
+   */
+  typeName?: string;
+
+  /** Stable code of the entity type (`ApType.code`), e.g. `PERSON_INDIVIDUAL`. */
+  typeCode?: string;
+
+  /**
+   * Code of the external system the entity is bound to (`ApExternalSystem.code`),
+   * when it originates from or is synchronized with one (e.g. a CAM instance);
+   * absent for a purely local entity. An entity is bound to at most one system.
+   */
+  externalSystemCode?: string;
+
+  /**
+   * The entity's identifier within that external system (`ApBinding.value`);
+   * present together with `externalSystemCode`.
+   */
+  externalId?: string;
+};
+
+/**
+ * Lightweight reference to a CAM access point / archival entity — its identity,
+ * classification and preferred name, without the full structured description.
+ * Sent on its own as `elza.archivalEntityInfo`, and nested in a `RECORD_REF`
+ * description item (`DescriptionItem.entity`) to name what a reference points at.
+ * Having no parts, it carries the preferred name directly.
+ */
+model ArchivalEntityInfo {
+  ...ArchivalEntityIdentity;
+
+  /**
+   * Preferred (display) name of the entity — the display-name index of its
+   * preferred part (`ApIndex` of type `DISPLAY_NAME`).
+   */
+  preferredName?: string;
 }
 
-/** Archival entity object. */
+/** Lightweight archival entity object — a reference by identity, without the parts. */
+model ArchivalEntityInfoObject extends AiObject {
+  @invisible(Lifecycle)
+  objectType: ObjectType.archivalEntityInfo;
+
+  data: ArchivalEntityInfo;
+}
+
+/**
+ * One part of an archival entity — a block of its structured description
+ * (`ApPart`, e.g. a name or a body of description). A part has a type, a text
+ * representation, its own description items and, recursively, nested sub-parts.
+ */
+model EntityPart {
+  /**
+   * Part id (`ApPart.partId`); echo-only — stable within the entity, so items and
+   * sub-parts can be tied back to their part.
+   */
+  partId?: int32;
+
+  /** Stable part-type code (`RulPartType.code`), e.g. `PT_NAME`, `PT_BODY`. */
+  partType: string;
+
+  /** Name of the part type (`RulPartType.name`) — its display label. */
+  partTypeName?: string;
+
+  /**
+   * True for the entity's preferred part — the one whose text is the entity's
+   * preferred (display) name (`ApAccessPoint.preferredPart`). Absent or false for
+   * the others. Lets a reader identify the entity's name without a naming
+   * convention, since `ArchivalEntity` carries no separate `preferredName`.
+   */
+  preferred?: boolean;
+
+  /**
+   * Text representation of the part — its display-name index (`ApIndex` of type
+   * `DISPLAY_NAME`), the same text Elza renders for the part. This is how the
+   * entity reads in text form. Absent when the part has no rendered display name.
+   */
+  value?: string;
+
+  /**
+   * The part's description items, in display order — the same `DescriptionItem`
+   * shape used for a level's items (item codes resolved through the rule-set
+   * dictionary, references carried as nested objects).
+   */
+  items?: DescriptionItem[];
+
+  /** Nested sub-parts of this part (e.g. the name parts under a body part). */
+  parts?: EntityPart[];
+}
+
+/**
+ * A CAM access point / archival entity in full: its identity and classification
+ * plus its complete structured description as a tree of parts. Sent as context
+ * when the user is working on an entity. The name is not repeated at the top
+ * level — it is the `value` of the part marked `preferred`.
+ */
+model ArchivalEntity {
+  ...ArchivalEntityIdentity;
+
+  /**
+   * Top-level parts of the entity, in display order — the roots of the part tree;
+   * each part's sub-parts nest under its own `parts`.
+   */
+  parts?: EntityPart[];
+}
+
+/** Archival entity object — the full entity with its parts. */
 model ArchivalEntityObject extends AiObject {
   @invisible(Lifecycle)
   objectType: ObjectType.archivalEntity;
@@ -363,8 +500,8 @@ model DescriptionItem {
    * The value's data type — the same value the `getItemTypes` dictionary reports
    * for this item type (`ItemTypeInfo.dataType`), denormalized here so a block is
    * self-describing without the dictionary: it says how to read the value and which
-   * reference fields are present, e.g. `RECORD_REF` (→ `accessPointId`),
-   * `STRUCTURED` (→ `structuredObjectType`/`structuredObjectId`), `ENUM` (→ `spec`),
+   * reference field is present, e.g. `RECORD_REF` (→ `entity`),
+   * `STRUCTURED` (→ `structuredObject`), `ENUM` (→ `spec`),
    * or a text/number/date type (→ `value`).
    */
   dataType?: DataType;
@@ -379,36 +516,42 @@ model DescriptionItem {
    * The item's value in text form for non-enumerated types; absent when the
    * meaning is fully carried by `spec`, or the item is value-less. For an
    * access-point or structured-object item it holds the human-readable value —
-   * the entity's preferred name or the object's serialized name — while the
-   * fields below add the machine-readable reference.
+   * the entity's preferred name or the object's serialized name — while
+   * `entity` / `structuredObject` below add the machine-readable reference.
    */
   value?: string;
 
   /**
-   * For an access-point item (`RECORD_REF`): the referenced access point's id
-   * (`ApAccessPoint.accessPointId`). `value` holds its preferred name. Absent for
-   * other item types.
+   * For an access-point item (`RECORD_REF`): the referenced entity as a
+   * lightweight `ArchivalEntityInfo` (its id, preferred name and classification).
+   * `value` also holds the entity's preferred name. Absent for other item types.
    */
-  accessPointId?: int32;
+  entity?: ArchivalEntityInfo;
 
   /**
    * For a structured-object item (`STRUCTURED`, e.g. a storage unit or an
-   * accessibility restriction): the structured type code
-   * (`RulStructuredType.code`). Absent for other item types.
+   * accessibility restriction): the referenced object as a `StructuredObjectInfo`.
+   * `value` holds the object's serialized name. Absent for other item types.
    */
-  structuredObjectType?: string;
+  structuredObject?: StructuredObjectInfo;
+}
+
+/**
+ * Reference to a structured object (`ArrStructuredObject`) — a composite value
+ * such as a storage unit or an accessibility restriction. Carried by a
+ * `STRUCTURED` description item; the item's `value` holds the object's serialized
+ * (human-readable) name, this model its machine-readable identity.
+ */
+model StructuredObjectInfo {
+  /** Structured object id (`ArrStructuredObject.structuredObjectId`). */
+  structuredObjectId: int32;
+
+  /** Stable structured-type code (`RulStructuredType.code`). */
+  structuredType?: string;
 
   /**
-   * For a structured-object item (`STRUCTURED`): the structured object's id
-   * (`ArrStructuredObject.structuredObjectId`). `value` holds its serialized
-   * name. Absent for other item types.
-   */
-  structuredObjectId?: int32;
-
-  /**
-   * For a structured-object item (`STRUCTURED`): the object's optional complement
-   * (`ArrStructuredObject.complement`) — a supplementary qualifier of the value.
-   * Absent when the object has none.
+   * The object's optional complement (`ArrStructuredObject.complement`) — a
+   * supplementary qualifier of the value; absent when the object has none.
    */
   complement?: string;
 }

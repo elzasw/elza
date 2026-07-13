@@ -19,14 +19,20 @@ import org.springframework.stereotype.Service;
 import cz.tacr.elza.aiprovider.client.vo.AiObject;
 import cz.tacr.elza.aiprovider.client.vo.ArchivalDescription;
 import cz.tacr.elza.aiprovider.client.vo.ArchivalDescriptionObject;
+import cz.tacr.elza.aiprovider.client.vo.ArchivalEntity;
+import cz.tacr.elza.aiprovider.client.vo.ArchivalEntityInfo;
+import cz.tacr.elza.aiprovider.client.vo.ArchivalEntityObject;
 import cz.tacr.elza.aiprovider.client.vo.DataType;
 import cz.tacr.elza.aiprovider.client.vo.DescriptionItem;
+import cz.tacr.elza.aiprovider.client.vo.EntityPart;
 import cz.tacr.elza.aiprovider.client.vo.FundInfo;
 import cz.tacr.elza.aiprovider.client.vo.FundInfoObject;
 import cz.tacr.elza.aiprovider.client.vo.InstitutionInfo;
 import cz.tacr.elza.aiprovider.client.vo.NodeIssue;
 import cz.tacr.elza.aiprovider.client.vo.NodeIssueKind;
 import cz.tacr.elza.aiprovider.client.vo.ObjectType;
+import cz.tacr.elza.aiprovider.client.vo.StructuredObjectInfo;
+import cz.tacr.elza.controller.vo.AiContextAccesspointVO;
 import cz.tacr.elza.controller.vo.AiContextFundVO;
 import cz.tacr.elza.controller.vo.AiContextNodeVO;
 import cz.tacr.elza.controller.vo.AiContextObjectVO;
@@ -37,6 +43,9 @@ import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.domain.ApIndex;
+import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApState;
+import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrData;
 import cz.tacr.elza.domain.ArrDataRecordRef;
 import cz.tacr.elza.domain.ArrDataStructureRef;
@@ -50,7 +59,9 @@ import cz.tacr.elza.domain.ArrNodeConformityMissing;
 import cz.tacr.elza.domain.ArrStructuredObject;
 import cz.tacr.elza.domain.ParInstitution;
 import cz.tacr.elza.domain.RulItemSpec;
+import cz.tacr.elza.domain.RulPartType;
 import cz.tacr.elza.domain.UsrPermission.Permission;
+import cz.tacr.elza.groovy.GroovyResult;
 import cz.tacr.elza.repository.FundRepository;
 import cz.tacr.elza.repository.FundVersionRepository;
 import cz.tacr.elza.repository.NodeConformityRepository;
@@ -60,6 +71,10 @@ import cz.tacr.elza.service.AccessPointService;
 import cz.tacr.elza.service.DescriptionItemService;
 import cz.tacr.elza.service.LevelTreeCacheService;
 import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.cache.AccessPointCacheService;
+import cz.tacr.elza.service.cache.CachedAccessPoint;
+import cz.tacr.elza.service.cache.CachedBinding;
+import cz.tacr.elza.service.cache.CachedPart;
 
 /**
  * Resolves the UI's typed context objects ({@code AiContextObject}) into the
@@ -73,14 +88,18 @@ import cz.tacr.elza.service.UserService;
  *       (its items as stable codes + display text, reference mark, depth, parent,
  *       …) plus, for the {@code context} role, its ancestors up to the root and
  *       the fund's {@code elza.fundInfo}.</li>
+ *   <li>{@code AiContextAccesspoint} → an {@code elza.archivalEntity} (built from
+ *       the access-point cache): identity, classification (its {@link ApType} as
+ *       subclass, the type-hierarchy root as class), external-system identity, and
+ *       the tree of parts — each part's display text and items.</li>
  * </ul>
  *
  * <p>Two entry points serve the two roles: {@link #resolvePrimary} yields the one
  * object a task parameter expects, {@link #resolveAll} yields the primary object
- * plus supporting context (ancestors, fund), deduplicated. Read permission
- * ({@code FUND_RD}) on the target fund is enforced; anything the user cannot read
- * or that cannot be mapped is skipped (logged), and the request goes out with
- * whatever could be resolved.
+ * plus supporting context (ancestors, fund), deduplicated. Read permission is
+ * enforced — {@code FUND_RD} on a target fund, {@code AP_SCOPE_RD} on an access
+ * point's scope; anything the user cannot read or that cannot be mapped is skipped
+ * (logged), and the request goes out with whatever could be resolved.
  *
  * <p>v1 resolves against the fund's <b>open</b> version; {@code fundVersionId} on
  * a node context is reserved for later locked-version support.
@@ -117,6 +136,9 @@ public class AiContextResolver {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private AccessPointCacheService accessPointCacheService;
+
     /**
      * Resolves the context objects into provider objects for the {@code context}
      * role: each fund/node plus its supporting objects (a node contributes its
@@ -135,11 +157,14 @@ public class AiContextResolver {
                 addFundInfo(resolved, fundInfoAdded, fund.getFundId());
             } else if (ctx instanceof AiContextNodeVO node) {
                 addNode(resolved, fundInfoAdded, levelAdded, node);
+            } else if (ctx instanceof AiContextAccesspointVO accessPoint) {
+                resolveArchivalEntity(accessPoint.getAccessPointId()).ifPresent(resolved::add);
             } else {
                 logger.info("AI context object {} is not resolvable to a provider object yet",
                         ctx == null ? null : ctx.getClass().getSimpleName());
             }
         }
+        enrichEntityRefs(resolved);
         return resolved;
     }
 
@@ -150,6 +175,12 @@ public class AiContextResolver {
      * declared parameter by object type.
      */
     public Optional<AiObject> resolvePrimary(final AiContextObjectVO ctx) {
+        Optional<AiObject> resolved = resolvePrimaryObject(ctx);
+        resolved.ifPresent(object -> enrichEntityRefs(List.of(object)));
+        return resolved;
+    }
+
+    private Optional<AiObject> resolvePrimaryObject(final AiContextObjectVO ctx) {
         if (ctx instanceof AiContextFundVO fund) {
             return resolveFundInfo(fund.getFundId());
         }
@@ -159,6 +190,9 @@ public class AiContextResolver {
                 return Optional.empty();
             }
             return Optional.ofNullable(buildArchivalDescription(version, node.getNodeId(), true));
+        }
+        if (ctx instanceof AiContextAccesspointVO accessPoint) {
+            return resolveArchivalEntity(accessPoint.getAccessPointId());
         }
         logger.info("AI context object {} is not resolvable to a provider object yet",
                 ctx == null ? null : ctx.getClass().getSimpleName());
@@ -257,9 +291,34 @@ public class AiContextResolver {
                 .data(data);
     }
 
-    /** Maps one description item to stable codes plus its display text. */
+    /** Maps a level's description item to stable codes plus its display text. */
     private DescriptionItem toDescriptionItem(final ArrDescItem item, final StaticDataProvider sdp) {
-        ItemType itemType = sdp.getItemTypeById(item.getItemTypeId());
+        return buildItem(item.getItemTypeId(), item.getItemSpecId(), item.getData(),
+                item.getFulltextValue(), sdp);
+    }
+
+    /** Maps an access-point item (a part's item) to the same {@link DescriptionItem} shape. */
+    private DescriptionItem toDescriptionItem(final ApItem item, final StaticDataProvider sdp) {
+        ArrData data = item.getData();
+        // Cached item data carries scalar values inline, but a reference item's
+        // target (access point / structured object) is not loaded here — only its
+        // id — so its display text is resolved elsewhere, not via getFulltextValue.
+        String value = data == null || data instanceof ArrDataRecordRef || data instanceof ArrDataStructureRef
+                ? null
+                : data.getFulltextValue();
+        return buildItem(item.getItemTypeId(), item.getItemSpecId(), data, value, sdp);
+    }
+
+    /**
+     * Maps one description/access-point item to stable codes plus its display text.
+     * A reference item also carries its target as a nested object: an access-point
+     * reference ({@code RECORD_REF}) fills {@link DescriptionItem#getEntity()}, a
+     * structured-object reference ({@code STRUCTURED}) fills
+     * {@link DescriptionItem#getStructuredObject()}.
+     */
+    private DescriptionItem buildItem(final Integer itemTypeId, final Integer itemSpecId,
+                                      final ArrData data, final String value, final StaticDataProvider sdp) {
+        ItemType itemType = sdp.getItemTypeById(itemTypeId);
         if (itemType == null) {
             return null;
         }
@@ -267,37 +326,278 @@ public class AiContextResolver {
         if (itemType.getDataType() != null) {
             out.dataType(DataType.fromValue(itemType.getDataType().getCode()));
         }
-        if (item.getItemSpecId() != null) {
-            RulItemSpec spec = sdp.getItemSpecById(item.getItemSpecId());
+        if (itemSpecId != null) {
+            RulItemSpec spec = sdp.getItemSpecById(itemSpecId);
             if (spec != null) {
                 out.spec(spec.getCode());
             }
         }
         // Same renderer fulltext indexing uses: enum → spec name, record-ref →
         // entity name, structured → rendered value; null for coordinates/tables.
-        String value = item.getFulltextValue();
         if (value != null && !value.isEmpty()) {
             out.value(value);
         }
-        // Reference items carry a machine-readable id alongside the display value.
-        ArrData data = item.getData();
-        if (data instanceof ArrDataRecordRef recordRef) {
-            out.accessPointId(recordRef.getRecordId());
+        // Reference items carry a machine-readable reference alongside the display value.
+        if (data instanceof ArrDataRecordRef recordRef && recordRef.getRecordId() != null) {
+            // The referenced entity as a lightweight info; value already holds its
+            // preferred name. Classification and external identity are left to the
+            // entity resolver (filled in one batch to avoid a per-reference lookup).
+            ArchivalEntityInfo entity = new ArchivalEntityInfo().accessPointId(recordRef.getRecordId());
+            if (value != null && !value.isEmpty()) {
+                entity.preferredName(value);
+            }
+            out.entity(entity);
         } else if (data instanceof ArrDataStructureRef structRef) {
-            out.structuredObjectId(structRef.getStructuredObjectId());
+            StructuredObjectInfo structured = new StructuredObjectInfo()
+                    .structuredObjectId(structRef.getStructuredObjectId());
             ArrStructuredObject structObj = structRef.getStructuredObject();
             if (structObj != null) {
                 StructType structType = sdp.getStructuredTypeById(structObj.getStructuredTypeId());
                 if (structType != null) {
-                    out.structuredObjectType(structType.getCode());
+                    structured.structuredType(structType.getCode());
                 }
                 String complement = structObj.getComplement();
                 if (complement != null && !complement.isEmpty()) {
-                    out.complement(complement);
+                    structured.complement(complement);
+                }
+            }
+            out.structuredObject(structured);
+        }
+        return out;
+    }
+
+    // -----------------------------------------------------------------------
+    // Access point → elza.archivalEntity
+    // -----------------------------------------------------------------------
+
+    /**
+     * Resolves an access point to its full {@code elza.archivalEntity} — identity,
+     * classification and the tree of parts (each part's items + its display text),
+     * read from the access-point cache. Enforces scope read permission; a missing,
+     * unreadable or state-less access point is skipped (logged).
+     */
+    private Optional<AiObject> resolveArchivalEntity(final Integer accessPointId) {
+        if (accessPointId == null) {
+            return Optional.empty();
+        }
+        CachedAccessPoint cap = accessPointCacheService.findCachedAccessPoint(accessPointId);
+        if (cap == null || cap.getApState() == null) {
+            logger.info("AI context access point {} not found; skipped", accessPointId);
+            return Optional.empty();
+        }
+        ApState apState = cap.getApState();
+        if (!canReadScope(apState.getScopeId())) {
+            logger.info("AI context access point {} not readable by user; skipped", accessPointId);
+            return Optional.empty();
+        }
+        StaticDataProvider sdp = staticDataService.getData();
+        ArchivalEntity entity = new ArchivalEntity().accessPointId(accessPointId);
+        entity.uuid(cap.getUuid());
+        Classification classification = classify(apState.getApTypeId(), sdp);
+        if (classification != null) {
+            entity.classCode(classification.classCode()).className(classification.className())
+                    .typeCode(classification.typeCode()).typeName(classification.typeName());
+        }
+        applyExternalId(entity, cap.getBindings());
+
+        List<CachedPart> parts = cap.getParts();
+        if (parts != null && !parts.isEmpty()) {
+            Map<Integer, List<CachedPart>> childrenByParent = parts.stream()
+                    .filter(p -> p.getParentPartId() != null)
+                    .collect(Collectors.groupingBy(CachedPart::getParentPartId));
+            List<EntityPart> topParts = parts.stream()
+                    .filter(p -> p.getParentPartId() == null)
+                    .map(p -> buildEntityPart(p, childrenByParent, cap.getPreferredPartId(), sdp))
+                    .toList();
+            if (!topParts.isEmpty()) {
+                entity.parts(topParts);
+            }
+        }
+        return Optional.of(new ArchivalEntityObject()
+                .objectType(ObjectType.ELZA_ARCHIVAL_ENTITY)
+                .data(entity));
+    }
+
+    /** Builds one part (recursively, with its sub-parts) from a cached part. */
+    private EntityPart buildEntityPart(final CachedPart part,
+                                       final Map<Integer, List<CachedPart>> childrenByParent,
+                                       final Integer preferredPartId, final StaticDataProvider sdp) {
+        EntityPart out = new EntityPart().partType(part.getPartTypeCode());
+        out.partId(part.getPartId());
+        if (part.getPartTypeCode() != null) {
+            RulPartType partType = sdp.getPartTypeByCode(part.getPartTypeCode());
+            if (partType != null) {
+                out.partTypeName(partType.getName());
+            }
+        }
+        if (part.getPartId() != null && part.getPartId().equals(preferredPartId)) {
+            out.preferred(true);
+        }
+        String display = findDisplayName(part.getIndices());
+        if (display != null && !display.isEmpty()) {
+            out.value(display);
+        }
+        if (part.getItems() != null && !part.getItems().isEmpty()) {
+            List<DescriptionItem> items = part.getItems().stream()
+                    .map(item -> toDescriptionItem(item, sdp))
+                    .filter(Objects::nonNull)
+                    .toList();
+            if (!items.isEmpty()) {
+                out.items(items);
+            }
+        }
+        List<CachedPart> children = childrenByParent.getOrDefault(part.getPartId(), List.of());
+        if (!children.isEmpty()) {
+            out.parts(children.stream()
+                    .map(child -> buildEntityPart(child, childrenByParent, preferredPartId, sdp))
+                    .toList());
+        }
+        return out;
+    }
+
+    /** The part's display-name index value (its text representation), or {@code null}. */
+    private String findDisplayName(final List<ApIndex> indices) {
+        if (indices == null) {
+            return null;
+        }
+        for (ApIndex index : indices) {
+            if (GroovyResult.DISPLAY_NAME.equals(index.getIndexType())) {
+                return index.getIndexValue();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Classification of an entity from its {@link ApType}: the type itself is the
+     * subclass, the root of the type hierarchy is the class — both by code and by
+     * (localized) name. Resolved from the in-memory type cache (no query);
+     * {@code null} when the type is unknown.
+     */
+    private Classification classify(final Integer apTypeId, final StaticDataProvider sdp) {
+        if (apTypeId == null) {
+            return null;
+        }
+        ApType type = sdp.getApTypeById(apTypeId);
+        if (type == null) {
+            return null;
+        }
+        ApType root = type;
+        while (root.getParentApTypeId() != null) {
+            ApType parent = sdp.getApTypeById(root.getParentApTypeId());
+            if (parent == null) {
+                break;
+            }
+            root = parent;
+        }
+        return new Classification(root.getCode(), root.getName(), type.getCode(), type.getName());
+    }
+
+    /** An entity's class (type-hierarchy root) and type (leaf / subclass), by code and name. */
+    private record Classification(String classCode, String className, String typeCode, String typeName) {
+    }
+
+    /** Fills an entity's external-system identity from its single binding, if any. */
+    private void applyExternalId(final ArchivalEntity entity, final List<CachedBinding> bindings) {
+        if (bindings == null || bindings.isEmpty()) {
+            return;
+        }
+        CachedBinding binding = bindings.get(0);
+        entity.externalSystemCode(binding.getExternalSystemCode()).externalId(binding.getValue());
+    }
+
+    /** True when the logged user may read access points in the given scope. */
+    private boolean canReadScope(final Integer scopeId) {
+        return AuthorizationRequest.hasPermission(Permission.ADMIN)
+                .or(Permission.AP_SCOPE_RD_ALL)
+                .or(Permission.AP_SCOPE_RD, scopeId)
+                .matches(userService.getLoggedUserDetail());
+    }
+
+    /**
+     * Enriches the entity references carried by description items across the whole
+     * resolved set ({@code RECORD_REF} items point at other access points). In one
+     * batch — a single state load and a single preferred-name load for all
+     * referenced ids — each reference's classification is filled, and its preferred
+     * name when the item did not already carry it (the access-point-cache path does
+     * not). The referenced entity's name is already exposed as the item value, so
+     * this adds no more than the arrangement/registry UI already shows.
+     */
+    private void enrichEntityRefs(final List<AiObject> objects) {
+        List<ArchivalEntityInfo> refs = new ArrayList<>();
+        for (AiObject object : objects) {
+            collectEntityRefs(object, refs);
+        }
+        Set<Integer> ids = refs.stream()
+                .map(ArchivalEntityInfo::getAccessPointId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (ids.isEmpty()) {
+            return;
+        }
+        Map<Integer, ApState> stateById = accessPointService.groupStateByAccessPointId(new ArrayList<>(ids));
+        Set<Integer> missingName = refs.stream()
+                .filter(ref -> ref.getAccessPointId() != null
+                        && (ref.getPreferredName() == null || ref.getPreferredName().isEmpty()))
+                .map(ArchivalEntityInfo::getAccessPointId)
+                .collect(Collectors.toSet());
+        Map<Integer, ApIndex> nameById = missingName.isEmpty()
+                ? Map.of()
+                : accessPointService.findPreferredPartIndexMapByIds(missingName);
+
+        StaticDataProvider sdp = staticDataService.getData();
+        for (ArchivalEntityInfo ref : refs) {
+            Integer id = ref.getAccessPointId();
+            if (id == null) {
+                continue;
+            }
+            ApState state = stateById.get(id);
+            if (state != null) {
+                Classification classification = classify(state.getApTypeId(), sdp);
+                if (classification != null) {
+                    ref.classCode(classification.classCode()).className(classification.className())
+                            .typeCode(classification.typeCode()).typeName(classification.typeName());
+                }
+            }
+            if (ref.getPreferredName() == null || ref.getPreferredName().isEmpty()) {
+                ApIndex index = nameById.get(id);
+                if (index != null) {
+                    ref.preferredName(index.getIndexValue());
                 }
             }
         }
-        return out;
+    }
+
+    /** Collects the entity references nested in an object's description items. */
+    private void collectEntityRefs(final AiObject object, final List<ArchivalEntityInfo> acc) {
+        if (object instanceof ArchivalDescriptionObject description && description.getData() != null) {
+            collectFromItems(description.getData().getItems(), acc);
+        } else if (object instanceof ArchivalEntityObject entity && entity.getData() != null) {
+            collectFromParts(entity.getData().getParts(), acc);
+        }
+    }
+
+    /** Collects entity references from a tree of parts (items + nested sub-parts). */
+    private void collectFromParts(final List<EntityPart> parts, final List<ArchivalEntityInfo> acc) {
+        if (parts == null) {
+            return;
+        }
+        for (EntityPart part : parts) {
+            collectFromItems(part.getItems(), acc);
+            collectFromParts(part.getParts(), acc);
+        }
+    }
+
+    /** Collects the {@code entity} reference of each access-point item. */
+    private void collectFromItems(final List<DescriptionItem> items, final List<ArchivalEntityInfo> acc) {
+        if (items == null) {
+            return;
+        }
+        for (DescriptionItem item : items) {
+            if (item.getEntity() != null) {
+                acc.add(item.getEntity());
+            }
+        }
     }
 
     private List<String> toReferenceMark(final Integer[] referenceMark) {
