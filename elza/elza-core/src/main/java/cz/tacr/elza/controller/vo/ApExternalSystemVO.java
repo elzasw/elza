@@ -21,6 +21,8 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
 
 	private Boolean publishOnlyApproved;
 
+	private Integer syncDelay;	
+
     public ApExternalSystemType getType() {
         return type;
     }
@@ -55,6 +57,14 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
 		this.publishOnlyApproved = publishOnlyApproved;
 	}
 
+	public Integer getSyncDelay() {
+	    return syncDelay;
+	}
+
+	public void setSyncDelay(Integer syncDelay) {
+	    this.syncDelay = syncDelay;
+	}	
+
     public String getUserInfo() {
         return userInfo;
     }
@@ -71,6 +81,7 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
         entity.setScope(scope);
         entity.setUserInfo(userInfo);
         entity.setPublishOnlyApproved(publishOnlyApproved);
+        entity.setSyncDelay(syncDelay);
         this.fillEntity(entity);
         return entity;
     }
@@ -96,6 +107,7 @@ public class ApExternalSystemVO extends SysExternalSystemVO {
         vo.setScopeId(src.getScopeId());
         vo.setPublishOnlyApproved(src.getPublishOnlyApproved());
         vo.setUserInfo(src.getUserInfo());
+        vo.setSyncDelay(src.getSyncDelay());
         return vo;
     }
 }

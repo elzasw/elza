@@ -143,6 +143,7 @@ class AdminExtSystemDetail extends AbstractReactComponent {
                             <span>{AP_EXT_SYSTEM_LABEL[extSystem.type]}</span>
 
                             {this.scopeValue(extSystem.scope)}
+                            {this.renderValue(extSystem, 'syncDelay')}
                         </div>
                     )}
                     {classJ === EXT_SYSTEM_CLASS.GisExternalSystem && (
