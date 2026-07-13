@@ -1,5 +1,6 @@
 package cz.tacr.elza.controller.vo;
 
+@Deprecated
 public class ArrOutputRestrictionScopeVO {
 
     private Integer id;

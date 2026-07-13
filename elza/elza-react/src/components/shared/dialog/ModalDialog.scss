@@ -56,6 +56,28 @@
             }
         }
     }
+    &.dialog-fullscreen-inset {
+        padding: 32px;
+        .modal-dialog {
+            max-width: 100%;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            .modal-content {
+                height: 100%;
+                > div {
+                    height: 100%;
+                }
+                .modal-header {
+                    height: auto;
+                }
+                .modal-body-container {
+                    display: flex;
+                    flex-direction: column;
+                }
+            }
+        }
+    }
     .modal-header {
         .close {
             color: $fg-color;

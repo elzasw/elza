@@ -2,7 +2,6 @@ package cz.tacr.elza.dataexchange.output.writer;
 
 import java.util.Collection;
 
-import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrItem;
 
@@ -20,9 +19,9 @@ public interface LevelInfo {
 
     /**
      * List of connected DAOs
-     * 
+     *
      * @return List of connected daos
      */
-    Collection<ArrDao> getDaos();
+    Collection<DaoInfo> getDaos();
 
 }

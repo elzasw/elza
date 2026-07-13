@@ -885,6 +885,29 @@ public class RuleService {
     }
 
     /**
+     * Item types with their specifications, optionally scoped to one rule set.
+     * When {@code ruleSetCode} is {@code null} all loaded item types are
+     * returned; an unknown rule set yields an empty list. The scoping uses the
+     * rule set's availability rules, so it reflects the item types the rule set
+     * can use (POSSIBLE/REQUIRED), not necessarily every code ever stored.
+     */
+    @Transactional
+    public List<RulItemTypeExt> getDescriptionItemTypesByRuleSet(final String ruleSetCode) {
+        List<RulItemTypeExt> all = getAllDescriptionItemTypes();
+        if (ruleSetCode == null) {
+            return all;
+        }
+        RulRuleSet ruleSet = ruleSetRepository.findByCode(ruleSetCode);
+        if (ruleSet == null) {
+            return Collections.emptyList();
+        }
+        Set<String> codes = new HashSet<>(getItemTypeCodesByRuleSet(ruleSet));
+        return all.stream()
+                .filter(itemType -> codes.contains(itemType.getCode()))
+                .toList();
+    }
+
+    /**
 	 * Získání typů atributů se specifikacemi pro pravidla
 	 *
 	 * @return typy hodnot atributů

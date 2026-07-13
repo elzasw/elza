@@ -59,7 +59,7 @@ public class RulesControllerTest extends AbstractControllerTest {
 
     @Test
     public void listItemTypes_returnsAllRegisteredTypes() {
-        ItemTypeList response = rulesApi.rulesListItemTypes(null);
+        ItemTypeList response = rulesApi.rulesListItemTypes(null, null);
 
         assertNotNull(response);
         List<ItemType> items = response.getItemTypes();
@@ -155,12 +155,19 @@ public class RulesControllerTest extends AbstractControllerTest {
     public void listItemTypes_acceptLanguageHeaderAccepted() {
         // Until the translation layer lands, Accept-Language is a no-op but
         // must not cause the request to fail.
-        ItemTypeList response = rulesApi.rulesListItemTypes("cs");
+        ItemTypeList response = rulesApi.rulesListItemTypes(null, "cs");
         assertThat(response.getItemTypes()).isNotEmpty();
     }
 
+    @Test
+    public void listItemTypes_unknownRuleSetCode_returnsEmpty() {
+        // An unknown rule-set filter yields no item types (and never an error).
+        ItemTypeList response = rulesApi.rulesListItemTypes("__no_such_rule_set__", null);
+        assertThat(response.getItemTypes()).isEmpty();
+    }
+
     private ItemType findByCode(String code) {
-        ItemTypeList response = rulesApi.rulesListItemTypes(null);
+        ItemTypeList response = rulesApi.rulesListItemTypes(null, null);
         Optional<ItemType> found = response.getItemTypes().stream()
                 .filter(it -> code.equals(it.getCode()))
                 .findFirst();

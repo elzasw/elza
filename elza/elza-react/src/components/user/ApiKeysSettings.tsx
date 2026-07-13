@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { FormInputField, Icon } from 'components/shared';
 import { defineMessages, FormattedMessage, useIntl } from 'react-intl';
@@ -6,14 +6,19 @@ import { Button } from 'components/ui';
 import { Form as FinalForm, Field } from 'react-final-form';
 import { Api } from 'api';
 import { useSelector } from 'react-redux';
-import { AppState, ApExternalSystemSimpleVO } from 'typings/store';
+import { AppState, RefExternalSystemSimpleVO } from 'typings/store';
 import { useThunkDispatch } from 'utils/hooks';
-import { apExtSystemListFetchIfNeeded } from 'actions/registry/apExtSystemList';
 import { ExtSystemProperty } from 'elza-api';
 import { showConfirmDialog } from 'components/shared/dialog';
+import { refExternalSystemsFetchIfNeeded } from 'actions/refTables/externalSystems';
+import { usePermissions } from 'contexts/user';
+import * as perms from 'actions/user/Permission';
 
 const APIKEY_ID = 'apiKeyId';
 const APIKEY_VALUE = 'apiKeyValue';
+
+// External systems that support personal API keys (from the ref-tables simple list).
+const API_KEY_EXT_SYSTEM_CLASSES = ['.AiExternalSystemSimpleVO', '.ApExternalSystemSimpleVO'];
 
 interface ApiKeyValueFields {
     externalSystemId?: string | number;
@@ -63,10 +68,23 @@ const messages = defineMessages({
 });
 
 export default function ApiKeysSettings() {
-    const externalSystems = useSelector((appState: AppState) => appState.app.apExtSystemList.rows);
+    const allExternalSystems = useSelector(
+        (appState: AppState) => appState.refTables.externalSystems.items ?? []
+    );
+    const { hasOne } = usePermissions();
+    const canWriteApExtSystems = hasOne(perms.AP_EXTERNAL_WR);
+    const externalSystems = useMemo(
+        () => allExternalSystems.filter((system) => {
+            if (!API_KEY_EXT_SYSTEM_CLASSES.includes(system['@class'])) return false;
+            // AP external systems additionally require the ext-system write permission.
+            const isApExtSystem = system['@class'] === '.ApExternalSystemSimpleVO';
+            return !isApExtSystem || canWriteApExtSystems;
+        }),
+        [allExternalSystems, canWriteApExtSystems]
+    );
     const { id: userId } = useSelector((appState: AppState) => appState.userDetail);
     const [apiKeys, setApiKeys] = useState<ApiKeyValue[]>([]);
-    const [availableExternalSystems, setAvailableExternalSystems] = useState<ApExternalSystemSimpleVO[]>([]);
+    const [availableExternalSystems, setAvailableExternalSystems] = useState<RefExternalSystemSimpleVO[]>([]);
     const dispatch = useThunkDispatch();
     const { formatMessage } = useIntl();
 
@@ -104,7 +122,7 @@ export default function ApiKeysSettings() {
     }, [userId, externalSystems]);
 
     useEffect(() => {
-        dispatch(apExtSystemListFetchIfNeeded());
+        dispatch(refExternalSystemsFetchIfNeeded());
     }, [dispatch]);
 
     useEffect(() => {

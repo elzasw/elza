@@ -110,6 +110,10 @@ public enum EventType {
     EXTERNAL_SYSTEM_CREATE(EventId.class),
     EXTERNAL_SYSTEM_DELETE(EventId.class),
 
+    // AI request state changed; the id is the CONVERSATION id — the client
+    // refetches GET /aiprovider/conversation/{id} for data
+    AI_REQUEST_CHANGE(EventId.class),
+
     ISSUE_LIST_CREATE(EventId.class),
     ISSUE_LIST_UPDATE(EventId.class),
     ISSUE_CREATE(EventIdInIssueList.class),

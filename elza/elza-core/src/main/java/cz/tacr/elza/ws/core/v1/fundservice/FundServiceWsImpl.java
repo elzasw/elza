@@ -64,11 +64,11 @@ public class FundServiceWsImpl {
 
     /**
      * Strategy for updating fonds administrator permissions received over the web service.
-     * Defaults to {@link AdminPermissionUpdateMode#FULL_SYNC} (existing permissions not in
-     * the request are removed); set to {@code ADD_ONLY} to keep administrator-granted
-     * permissions untouched and only add the supplied ones.
+     * Defaults to {@link AdminPermissionUpdateMode#ADD_ONLY} (keep administrator-granted
+     * permissions untouched and only add the supplied ones); set to {@code FULL_SYNC} to 
+     * also removed perissions not provided in the call.
      */
-    @Value("${elza.webservice.fonds.adminPermissionMode:FULL_SYNC}")
+    @Value("${elza.webservice.fonds.adminPermissionMode:ADD_ONLY}")
     private AdminPermissionUpdateMode adminPermissionMode;
 
     @Transactional

@@ -36,7 +36,7 @@ const messages = defineMessages({
     chooseAction: {
         id: 'multiFundAction.chooseAction',
         defaultMessage:
-            'Akce bude spuštěna nad {count, plural, one {# fondem} few {# fondy} other {# fondy}} (pravidla {ruleSet}). Zvolte akci:',
+            'Akce bude spuštěna nad {count, plural, one {# archivním souborem} few {# archivními soubory} other {# archivními soubory}} (pravidla: {ruleSet}).',
     },
     noActions: {
         id: 'multiFundAction.noActions',
@@ -47,7 +47,7 @@ const messages = defineMessages({
     confirm: {
         id: 'multiFundAction.confirm',
         defaultMessage:
-            'Akce <b>{action}</b> bude spuštěna nad <b>{count, plural, one {# fondem} few {# fondy} other {# fondy}}</b>. Akce zapisuje do dat fondů a každý fond získá samostatný běh. Pokračovat?',
+            'Akce <b>{action}</b> bude spuštěna nad <b>{count, plural, one {# archivním souborem} few {# archivními soubory} other {# archivními soubory}}</b>. Akce zapisuje do dat archivních souborů a každý soubor získá samostatný běh. Pokračovat?',
     },
     doneQueued: {
         id: 'multiFundAction.doneQueued',

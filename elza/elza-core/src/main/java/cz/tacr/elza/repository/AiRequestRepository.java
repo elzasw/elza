@@ -1,5 +1,6 @@
 package cz.tacr.elza.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,4 +18,7 @@ public interface AiRequestRepository extends JpaRepository<AiRequest, Integer> {
     Optional<AiRequest> findByTaskUid(String taskUid);
 
     List<AiRequest> findByAiConversationIdOrderByCreateDateAsc(Integer aiConversationId);
+
+    /** Open requests to resume polling for after an application start. */
+    List<AiRequest> findByStateNotInAndTaskUidIsNotNull(Collection<String> states);
 }

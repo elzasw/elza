@@ -736,9 +736,26 @@
                                 <modelNameMapping>AiRequest=AiRequestVO</modelNameMapping>
                                 <modelNameMapping>AiRequestCreate=AiRequestCreateVO</modelNameMapping>
                                 <modelNameMapping>AiRequestEvent=AiRequestEventVO</modelNameMapping>
+                                <modelNameMapping>AiContextType=AiContextTypeVO</modelNameMapping>
+                                <modelNameMapping>AiContextObject=AiContextObjectVO</modelNameMapping>
+                                <modelNameMapping>AiContextFund=AiContextFundVO</modelNameMapping>
+                                <modelNameMapping>AiContextNode=AiContextNodeVO</modelNameMapping>
+                                <modelNameMapping>AiContextAccesspoint=AiContextAccesspointVO</modelNameMapping>
+                                <modelNameMapping>AiDisplayBlockType=AiDisplayBlockTypeVO</modelNameMapping>
                                 <modelNameMapping>AiDisplayBlock=AiDisplayBlockVO</modelNameMapping>
+                                <modelNameMapping>AiTextBlock=AiTextBlockVO</modelNameMapping>
+                                <modelNameMapping>AiMarkdownBlock=AiMarkdownBlockVO</modelNameMapping>
+                                <modelNameMapping>AiTableBlock=AiTableBlockVO</modelNameMapping>
+                                <modelNameMapping>AiDocCitationsBlock=AiDocCitationsBlockVO</modelNameMapping>
                                 <modelNameMapping>AiTableColumn=AiTableColumnVO</modelNameMapping>
+                                <modelNameMapping>AiCitation=AiCitationVO</modelNameMapping>
                                 <modelNameMapping>AiUsage=AiUsageVO</modelNameMapping>
+                                <modelNameMapping>AiMyKey=AiMyKeyVO</modelNameMapping>
+                                <modelNameMapping>AiMyKeyUpdate=AiMyKeyUpdateVO</modelNameMapping>
+                                <modelNameMapping>AiProviderInfo=AiProviderInfoVO</modelNameMapping>
+                                <modelNameMapping>AiTaskType=AiTaskTypeVO</modelNameMapping>
+                                <modelNameMapping>AiTaskParameter=AiTaskParameterVO</modelNameMapping>
+                                <modelNameMapping>AiProfile=AiProfileVO</modelNameMapping>
                             </modelNameMappings>
                             <typeMappings>
                                 <typeMapping>object+partform=ApPartFormVO</typeMapping>
@@ -801,6 +818,7 @@
                             <generateApiTests>false</generateApiTests>
                             <configOptions>
                                 <useJakartaEe>true</useJakartaEe>
+                                <library>restclient</library>
                             </configOptions>
                         </configuration>
                     </execution>

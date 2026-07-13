@@ -55,11 +55,11 @@ const messages = defineMessages({
     },
     fundPageMultiActionTitle: {
         id: "fundPage.multiAction.title",
-        defaultMessage: "Hromadná akce nad fondy",
+        defaultMessage: "Hromadné akce nad AS",
     },
     fundPageMultiActionStart: {
         id: "fundPage.multiAction.start",
-        defaultMessage: "Hromadná akce nad fondy",
+        defaultMessage: "Hromadné akce nad AS",
     },
     fundPageMultiActionSelected: {
         id: "fundPage.multiAction.selected",
@@ -71,7 +71,7 @@ const messages = defineMessages({
     },
     fundPageMultiActionRun: {
         id: "fundPage.multiAction.run",
-        defaultMessage: "Spustit akci",
+        defaultMessage: "Vybrat akci",
     },
     fundPageMultiActionCancel: {
         id: "fundPage.multiAction.cancel",
@@ -616,7 +616,6 @@ class FundPage extends AbstractReactComponent {
             dialogProps = { fundIds: selectedFundIds };
         }
 
-        this.setState({ selectionMode: false });
         dispatch(
             modalDialogShow(
                 this,

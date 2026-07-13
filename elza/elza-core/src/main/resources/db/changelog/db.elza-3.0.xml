@@ -1473,4 +1473,27 @@
         </insert>
     </changeSet>
 
+    <changeSet id="20260703120000" author="ppy">
+        <!-- Credits charged for the exchange by the provider (protocol 1.2:
+             chargedCredits = costUnits x the account's multiplier - a shared
+             organizational account may burn credits faster than a personal
+             one). Kept beside cost_units in the local usage ledger; what the
+             user sees as the price of the exchange. -->
+        <addColumn tableName="ai_request">
+            <column name="charged_credits" type="double" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20260709120000" author="ppy">
+        <!-- Profile/model selected for the exchange (an AiProfile.code advertised
+             by the provider's GET /info); null = the provider's default. Passed
+             through to SubmitTask.profile so the user can choose which model the
+             provider uses. -->
+        <addColumn tableName="ai_request">
+            <column name="profile" type="nvarchar(250)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

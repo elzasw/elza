@@ -20,6 +20,8 @@ public class XmlNameConsts {
 
     public static final QName ROOT = new QName(SCHEMA_URI, "edx", "ns2");
 
+    public static final String INFO = "info";
+
     public static final String SECTIONS = "fs";
 
     public static final String ACCESS_POINTS = "aps";

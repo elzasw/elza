@@ -1547,6 +1547,12 @@ model PartType extends BaseCode {
 }
 
 /**
+ * Náhrada 'RulOutputTypeVO'
+ */
+model OutputType extends BaseCode {
+}
+
+/**
  * Náhrada `DescFormDataNewVO`
  */
 model NodeFormData {
@@ -2302,38 +2308,82 @@ namespace ElzaAPI.ExternalSystem {
 }
 
 /**
+ * Display block type — the discriminator of `AiDisplayBlock`. The client renders
+ * each block by this code, reading the fields of the matching subtype. Additive:
+ * new types may appear; a client MUST tolerate an unknown type by rendering a
+ * generic "unsupported content" placeholder (never dropping the block silently).
+ */
+enum AiDisplayBlockType {
+    /** Plain text, rendered verbatim (never parsed as markdown). */
+    TEXT,
+    /** CommonMark + GFM (no raw HTML), rendered through a sanitizing renderer. */
+    MARKDOWN,
+    /** Structured tabular data, rendered as a native table widget. */
+    TABLE,
+    /** The knowledge/documentation sources the answer relied on. */
+    DOC_CITATIONS,
+}
+
+/**
  * One display block of an AI response — THE RENDERING CONTRACT between the
  * server and the client. The server (per task type) transforms the provider's
  * schema-validated output into an ordered list of blocks; the client renders
- * each block solely by its `type`:
+ * each block by its `type` (see `AiDisplayBlockType`), reading the fields of the
+ * matching subtype below.
  *
- * - `markdown` — `content` holds CommonMark + GFM tables. The server MUST NOT
- *   emit raw HTML; the client MUST render through a sanitizing Markdown
- *   renderer (raw HTML is never interpreted). Use for free-text answers,
- *   explanations, drafts.
- * - `table` — structured tabular data: `columns` define order, keys and
- *   labels; `rows` hold one object per row keyed by column key, cell values
- *   are plain text (no markup). The client renders a native table widget.
- *   Use whenever the data IS tabular — never serialize tables into markdown
- *   when the server can emit this block instead.
- *
- * Evolution is additive: new block types may appear (e.g. `findings`). A
- * client MUST tolerate an unknown `type` by rendering a generic "unsupported
- * content" placeholder (never dropping the block silently). Server-side
- * fallback rule: a task output with no block mapper is rendered as one
- * `markdown` block containing the output JSON in a fenced code block.
+ * Evolution is additive: new block types may appear. A client MUST tolerate an
+ * unknown `type` by rendering a generic "unsupported content" placeholder (never
+ * dropping the block silently). Server-side fallback rule: a task output whose
+ * object type has no block mapper is rendered as one `MARKDOWN` block containing
+ * the output JSON in a fenced code block.
  */
+@discriminator("type")
 model AiDisplayBlock {
-    /** Block type discriminator: `markdown` | `table` (open set). */
-    type: string;
-    /** `markdown` only: CommonMark + GFM tables source; no raw HTML. */
-    content?: string;
-    /** `table` only: optional caption above the table. */
+    /** Selects the block shape; one of the defined `AiDisplayBlockType` codes. */
+    type: AiDisplayBlockType;
+}
+
+/** Plain-text answer — `content` is rendered verbatim, never parsed as markdown. */
+model AiTextBlock extends AiDisplayBlock {
+    @invisible(Lifecycle)
+    type: AiDisplayBlockType.TEXT;
+    /** The text, rendered as-is. */
+    content: string;
+}
+
+/** Free-text answer as CommonMark + GFM tables; the server MUST NOT emit raw HTML. */
+model AiMarkdownBlock extends AiDisplayBlock {
+    @invisible(Lifecycle)
+    type: AiDisplayBlockType.MARKDOWN;
+    /** CommonMark + GFM source; the client renders through a sanitizing renderer. */
+    content: string;
+}
+
+/**
+ * Structured tabular data — the client renders a native table widget. Use
+ * whenever the data IS tabular, never serialized into markdown.
+ */
+model AiTableBlock extends AiDisplayBlock {
+    @invisible(Lifecycle)
+    type: AiDisplayBlockType.TABLE;
+    /** Optional caption above the table. */
     caption?: string;
-    /** `table` only: ordered column definitions. */
-    columns?: AiTableColumn[];
-    /** `table` only: rows as objects keyed by column `key`; values are plain text. */
-    rows?: Record<string>[];
+    /** Ordered column definitions (order, key and label). */
+    columns: AiTableColumn[];
+    /** Rows as objects keyed by column `key`; cell values are plain text (no markup). */
+    rows: Record<string>[];
+}
+
+/**
+ * The knowledge/documentation sources the answer relied on. The server emits no
+ * label text; the client renders a "Sources" list and supplies the heading
+ * itself, in the user's language.
+ */
+model AiDocCitationsBlock extends AiDisplayBlock {
+    @invisible(Lifecycle)
+    type: AiDisplayBlockType.DOC_CITATIONS;
+    /** The cited sources, in first-referenced order. */
+    citations: AiCitation[];
 }
 
 model AiTableColumn {
@@ -2343,11 +2393,39 @@ model AiTableColumn {
     label: string;
 }
 
+/**
+ * One cited source in a `DOC_CITATIONS` display block. Carries only data — the
+ * client owns all human-readable chrome (the "Sources" heading, the localized
+ * label when a field is absent).
+ */
+model AiCitation {
+    /**
+     * Stable citation id of the cited section — the client's list key and the
+     * fallback label shown when no `title` is known.
+     */
+    fragment: string;
+    /** Deep link to the cited section in the published source, when resolvable. */
+    url?: string;
+    /** Human-readable title of the cited section (the primary label). */
+    title?: string;
+    /** Human-readable name of the source document the section belongs to. */
+    source?: string;
+    /** Id of the source document — lets the client group citations by source. */
+    sourceId?: string;
+}
+
 /** Metered usage of one exchange (informative; costUnits is the billable quantity). */
 model AiUsage {
     inputTokens: int64;
     outputTokens: int64;
     costUnits: float64;
+
+    /**
+     * Credits charged to the account the signing key selects (costUnits ×
+     * the account's multiplier — a shared organizational account may burn
+     * credits faster). What the user sees as the price of the exchange.
+     */
+    chargedCredits?: float64;
 }
 
 /**
@@ -2367,9 +2445,56 @@ model AiRequest {
     errorCode?: string;
     errorMessage?: string;
     promptVersion?: string;
+    /** Profile/model used for this exchange (an `AiProfile.code`); absent = provider default. */
+    profile?: string;
     usage?: AiUsage;
     createDate: utcDateTime;
     finishDate?: utcDateTime;
+}
+
+/**
+ * Type of a UI context object — the discriminator of `AiContextObject`. Names
+ * what part of the application the user is working in when an AI request is sent.
+ */
+enum AiContextType {
+    FUND,
+    NODE,
+    ACCESSPOINT,
+}
+
+/**
+ * A typed piece of the UI's current context, sent with an AI request. Elza
+ * resolves each into the provider's typed objects (e.g. a fund into an
+ * `elza.fundInfo` object read from the DB) before submitting the task.
+ */
+@discriminator("type")
+model AiContextObject {
+    /** Selects the context shape; one of the defined `AiContextType` codes. */
+    type: AiContextType;
+}
+
+/** The archival fund the user is working in. */
+model AiContextFund extends AiContextObject {
+    @invisible(Lifecycle)
+    type: AiContextType.FUND;
+    /** `ArrFund.fundId`. */
+    fundId: int32;
+}
+
+/** A description unit (node) within a fund. */
+model AiContextNode extends AiContextObject {
+    @invisible(Lifecycle)
+    type: AiContextType.NODE;
+    fundId: int32;
+    fundVersionId?: int32;
+    nodeId: int32;
+}
+
+/** An access point / entity from the registry. */
+model AiContextAccesspoint extends AiContextObject {
+    @invisible(Lifecycle)
+    type: AiContextType.ACCESSPOINT;
+    accessPointId: int32;
 }
 
 /** One AI conversation (topic/thread) as shown in the panel history. */
@@ -2378,10 +2503,10 @@ model AiConversation {
     /** Code of the AI external system the conversation runs against. */
     externalSystemCode: string;
     title: string;
-    /** Context type code: `fund-version`, `fund-list`, `access-point`, … */
+    /** `AiContextType` of the conversation's primary context object, for list filtering. */
     contextType?: string;
-    /** Context detail (JSON string); shape depends on contextType. */
-    context?: string;
+    /** The conversation's current context objects. */
+    context?: AiContextObject[];
     createDate: utcDateTime;
     lastChangeDate: utcDateTime;
 }
@@ -2398,22 +2523,27 @@ model AiConversationCreate {
     externalSystemCode: string;
     /** Task type, e.g. `elza.echo`, `elza.revision`. */
     taskType: string;
+    /** Profile/model to use (an `AiProfile.code` from GET /info); omitted = provider default. */
+    profile?: string;
     /** Thread title; when omitted the server derives it from the instructions. */
     title?: string;
-    contextType?: string;
-    /** Context detail (JSON string). */
-    context?: string;
     /** The user's message. */
     userInstructions?: string;
-    /** Structured task parameters (JSON string), shape depends on taskType. */
-    parameters?: string;
+    /** Task parameters as typed context objects; Elza resolves each and matches it to the task's declared parameter by object type. */
+    parameters?: AiContextObject[];
+    /** Supplementary context objects; Elza resolves them into the provider's `context`. */
+    context?: AiContextObject[];
 }
 
 /** Follow-up exchange submitted into an existing conversation. */
 model AiRequestCreate {
+    /** Profile/model for this exchange (an `AiProfile.code`); omitted = reuse the conversation's last. */
+    profile?: string;
     userInstructions?: string;
-    /** Structured task parameters (JSON string). */
-    parameters?: string;
+    /** Task parameters as typed context objects (see `AiConversationCreate.parameters`). */
+    parameters?: AiContextObject[];
+    /** Supplementary context objects (see `AiConversationCreate.context`). */
+    context?: AiContextObject[];
 }
 
 /** One step of an exchange's log — the transparency view ("what was sent/received"). */
@@ -2424,6 +2554,74 @@ model AiRequestEvent {
     /** Event payload (JSON string); shape depends on eventType. */
     data?: string;
     createDate: utcDateTime;
+}
+
+/**
+ * The current user's personal AI signing key of one provider — presence only,
+ * the secret is never returned. With a personal key the user's tasks bill to
+ * their personal account (seat); without one the instance-wide key (the shared
+ * organizational account) is used.
+ */
+model AiMyKey {
+    /** KeyId of the personal key; absent = none set (the instance-wide key applies). */
+    keyId?: string;
+}
+
+/** Sets/replaces the current user's personal AI signing key. */
+model AiMyKeyUpdate {
+    /** KeyId issued by the provider's account authority (an opaque string). */
+    keyId: string;
+    /** The HMAC secret belonging to the KeyId (stored server-side, never returned). */
+    secret: string;
+}
+
+/**
+ * The AI provider's capabilities — the client's typed view of the provider's
+ * `/info` catalog. Drives the panel: which tasks to offer and, per task, which
+ * typed parameters to gather. Grows additively (new task types, new object
+ * types); a client tolerates unknown parameter/result `type` codes.
+ */
+model AiProviderInfo {
+    /** Protocol version reported by the provider (`major.minor`). */
+    protocolVersion: string;
+    /** Human-readable provider/service name. */
+    providerName?: string;
+    /** Task types the provider currently offers. */
+    taskTypes: AiTaskType[];
+    /** Quality/cost tiers the provider offers. */
+    profiles: AiProfile[];
+}
+
+/** One AI task the provider offers, with the typed parameters it declares. */
+model AiTaskType {
+    /** Task type code, e.g. `elza.chat`, `elza.echo`, `elza.revision`. */
+    code: string;
+    name?: string;
+    description?: string;
+    /** Typed parameters the task declares; the client fills these from context. */
+    parameters: AiTaskParameter[];
+    /** Object type codes the task's result may contain (client rendering readiness). */
+    resultTypes: string[];
+}
+
+/** One typed parameter a task declares. */
+model AiTaskParameter {
+    /** Parameter name — the key under which the client supplies its value. */
+    name: string;
+    /** Object type code of the value, e.g. `elza.text`, `elza.archivalDescription`. */
+    type: string;
+    description?: string;
+    /** Whether the caller must supply it. */
+    required?: boolean;
+}
+
+/** A quality/cost tier the provider offers. */
+model AiProfile {
+    code: string;
+    name?: string;
+    description?: string;
+    /** True for the tier used when a submission names none. */
+    default?: boolean;
 }
 
 @tag("aiprovider")
@@ -2439,11 +2637,7 @@ namespace ElzaAPI.AiProvider {
     @get op getInfo(
         /** AI external system ID or CODE */
         @path id: string;
-    ): {
-        /** The provider's info document */
-        @Http.statusCode statusCode: 200;
-        @body data: Record<unknown>;
-    } | {
+    ): AiProviderInfo | {
         /** Id does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
@@ -2511,6 +2705,52 @@ namespace ElzaAPI.AiProvider {
         /** request id */
         @path id: integer;
     ): AiRequest | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Reads whether the current user has a personal signing key for the
+     * provider (the secret is never returned).
+     */
+    @route("/{id}/my-key")
+    @get op getMyKey(
+        /** AI external system ID or CODE */
+        @path id: string;
+    ): AiMyKey | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Sets/replaces the current user's personal signing key for the provider.
+     * The user's subsequent tasks then bill to their personal account.
+     */
+    @route("/{id}/my-key")
+    @put op setMyKey(
+        /** AI external system ID or CODE */
+        @path id: string;
+        @body body: AiMyKeyUpdate;
+    ): AiMyKey | {
+        /** Id does not exists */
+        @Http.statusCode statusCode: 404;
+        @body data: BaseException;
+    };
+
+    /**
+     * Removes the current user's personal signing key; tasks fall back to the
+     * instance-wide key (the shared organizational account).
+     */
+    @route("/{id}/my-key")
+    @delete op deleteMyKey(
+        /** AI external system ID or CODE */
+        @path id: string;
+    ): {
+        /** Removed (or none was set) */
+        @Http.statusCode statusCode: 204;
+    } | {
         /** Id does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
@@ -2948,8 +3188,9 @@ namespace ElzaAPI.DescItem {
 @route("/rules")
 namespace ElzaAPI.Rules {
     /**
-     * Returns all item types defined across loaded rule sets, together with
-     * their specifications and rendering hints.
+     * Returns item types together with their specifications and rendering hints.
+     * By default all item types across loaded rule sets; when `ruleSetCode` is
+     * given, only the item types available in that rule set.
      *
      * Public URL: `GET /api/v1/rules/itemTypes`.
      *
@@ -2962,6 +3203,9 @@ namespace ElzaAPI.Rules {
      */
     @route("/itemTypes")
     @get op listItemTypes(
+        /** When set, return only the item types available in this rule set (`RulRuleSet.code`); otherwise all loaded rule sets. */
+        @query ruleSetCode?: string,
+
         /** Preferred language for localized strings (e.g. "cs", "en"). */
         @header("Accept-Language") acceptLanguage?: string
     ): ItemTypeList;
@@ -5477,6 +5721,91 @@ namespace ElzaAPI.Output {
     }
 
     /**
+     * Náhrada za `OutputSettingsVO`
+     */
+    model Settings {
+        evenPageOffsetX: integer;
+        evenPageOffsetY: integer;
+        oddPageOffsetX: integer;
+        oddPageOffsetY: integer;
+    }
+
+    /**
+     * Data for CSV import into outputItem
+     */
+    model OutputItemCsvImportData {
+        /** output version */
+        outputVersion: HttpPart<integer>;
+        /** output id */
+        outputId: HttpPart<integer>;
+        /** desc item type id */
+        descItemTypeId: HttpPart<integer>;
+        /** CSV file */
+        file: HttpPart<bytes>;
+    }
+
+    /** 
+     * Generator startup status
+     */
+    enum RequestStatus {
+        OK,
+        /**
+         * Changes in the arrangement were detected
+         */
+        DETECT_CHANGE,
+        /**
+         * Not all recommended actions were launched
+         */
+        RECOMMENDED_ACTION_NOT_RUN
+    }
+
+    /** 
+     * Náhrada za `OutputNameParam`
+     */
+    model NameParam {
+        /**
+         * Name output
+         */
+        name: string;
+        /**
+         * Output code
+         */
+        internalCode: string;
+        /**
+         * Rul Output Type ID
+         */
+        outputTypeId: integer;
+        /**
+         * Template id
+         */
+        templateId: integer;
+        /**
+         * List of templates
+         */
+        templateIds: integer[];
+        anonymizedAp: ApAccessPointVO;
+        outputFilterId: integer;
+    }
+
+    /**
+     * Náhrada za `ArrOutputRestrictionScopeVO`
+     */
+    model RestrictionScope {
+        id: integer;
+        outputId: integer;
+        scopeId: integer;
+    }
+
+    /**
+     * Náhrada za `ArrOutputTemplateVO`
+     */
+    model Template {
+        id: integer;
+        outputId: integer;
+        templateId: integer;
+    }
+
+    /**
      * Create output item
      */
     @route("/item/{outputId}/{fundVersionId}/{outputVersion}/create")
@@ -5518,6 +5847,81 @@ namespace ElzaAPI.Output {
     ): ItemRes;
 
     /**
+     * Deleting attribute values ​​by type
+     */
+    @route("/item/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}")
+    @delete op deleteOutputItemsByType(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
+        /** output version */
+        @path outputVersion: integer;
+        /** item type id */
+        @path itemTypeId: integer;
+    ): ItemRes;
+
+    /**
+     * Set the attribute to "Undefined"
+     */
+    @route("/item/{fundVersionId}/{outputId}/{outputVersion}/undefined/set")
+    @put op setNotIdentifiedOutputItem(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
+        /** output version */
+        @path outputVersion: integer;
+        /** output item type id */
+        @query outputItemTypeId: integer;
+        /** output item spec id */
+        @query outputItemSpecId?: integer;
+        /** output item object id */
+        @query outputItemObjectId?: integer;
+    ): ItemRes;
+
+    /**
+     * Reset the attribute setting to "Undefined"
+     */
+    @route("/item/{fundVersionId}/{outputVersion}/{outputItemObjectId}/undefined/unset")
+    @put op unsetNotIdentifiedOutputItem(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output version */
+        @path outputVersion: integer;
+        /** output item object id */
+        @path outputItemObjectId: integer;
+    ): ItemRes;
+
+    /**
+     * Import a CSV file; a new entry will be created with the file's contents
+     */
+    @route("/item/{fundVersionId}/csv/import")
+    @post op outputItemCsvImport(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** multipart body */
+        @multipartBody body: OutputItemCsvImportData;
+        /** header */
+        @header contentType: "multipart/form-data";
+    ): ItemRes;
+
+    /**
+     * Downloading a CSV file from an attribute value
+     */
+    @route("/item/{fundVersionId}/csv/export")
+    @get op outputItemCsvExport(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** desc item object id */
+        @query descItemObjectId: integer;
+    ): {
+        @Http.statusCode statusCode: 200;
+        @header contentType: "text/csv";
+        @body data: bytes;
+    };
+
+    /**
      * Getting data for the form
      */
     @route("/{outputId}/{fundVersionId}/form")
@@ -5529,20 +5933,229 @@ namespace ElzaAPI.Output {
     ): FormData;
 
     /**
-     * Switch between automatic and user-defined attribute type editing
+     * Set user-defined/automatic attribute type editing
      */
-    @route("/{outputId}/{fundVersionId}/{itemTypeId}/switch")
-    @post op switchOutputCalculating(
+    @route("/{outputId}/{fundVersionId}/{itemTypeId}/{manual}")
+    @put op setOutputItemMode(
         /** output id */
         @path outputId: integer;
         /** fund version id */
         @path fundVersionId: integer;
         /** item type id */
         @path itemTypeId: integer;
-    ): boolean | {
+        /** true/false — manual (user-defined)/automatic */
+        @path manual: boolean;
+    ): {
+        @Http.statusCode statusCode: 200;
+    } | {
         /** Not found */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
+    };
+
+    /**
+     * Getting output types
+     */
+    @route("/types/{fundVersionId}")
+    @get op getOutputTypes(
+        /** fund version id */
+        @path fundVersionId: integer;
+    ): OutputType[];
+
+    /**
+     * Getting list of outputs – an output object linked to a named output object
+     */
+    @route("/{fundVersionId}")
+    @get op getOutputs(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output state */
+        @query state?: State;
+    ): Def[];
+
+    /**
+     * Getting output details: an output object linked to a named output, with a list of connected nodes.
+     */
+    @route("/{fundVersionId}/{outputId}")
+    @get op getOutput(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output id */
+        @path outputId: integer;
+    ): Def;
+
+    /**
+     * Configuration of generated outputs
+     */
+    @route("/{outputId}/settings")
+    @put op updateOutputSettings(
+        /** output id */
+        @path outputId: integer;
+        /** body  */
+        @body outputSettings: Settings;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
+
+    /**
+     * Generate output
+     */
+    @route("/{outputId}/generate")
+    @get op generateOutput(
+        /** output id */
+        @path outputId: integer;
+        /** forced */
+        @query forced: boolean = false;
+    ): RequestStatus;
+
+    /**
+     * Send output 
+     */
+    @route("/{outputId}/send")
+    @get op sendOutput(
+        /** output id */
+        @path outputId: integer;
+    ): RequestStatus;
+
+    /**
+     * Creating a new named output
+     */
+    @route("/{fundVersionId}/create")
+    @put op createNamedOutput(
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output parameters */
+        @body param: NameParam;
+    ): Def;
+
+    /**
+     * Adding nodes to output
+     */
+    @route("/{outputId}/{fundVersionId}/nodes/add")
+    @post op addNodesNamedOutput(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** list of node ids */
+        @body nodeIds: integer[];
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
+
+    /**
+     * Removing nodes from output
+     */
+    @route("/{outputId}/{fundVersionId}/nodes/remove")
+    @delete op removeNodesNamedOutput(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** list of node ids */
+        @body nodeIds: integer[];
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
+
+    /**
+     * Deleting named output
+     */
+    @route("/{outputId}/{fundVersionId}")
+    @delete op deleteNamedOutput(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
+
+    /**
+     * Reset status of a named output to "Open"
+     */
+    @route("/{outputId}/{fundVersionId}/revert")
+    @post op revertToOpenState(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
+
+    /**
+     * Creating copy of output
+     */
+    @route("/{outputId}/{fundVersionId}/clone")
+    @post op cloneOutput(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+    ): Def;
+
+    /**
+     * Update output
+     */
+    @route("/{outputId}/{fundVersionId}/update")
+    @put op updateNamedOutput(
+        /** output id */
+        @path outputId: integer;
+        /** fund version id */
+        @path fundVersionId: integer;
+        /** output parameters */
+        @body param: NameParam;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
+
+    /**
+     * Adding limiting register to output
+     */
+    @route("/{outputId}/restrict/{scopeId}")
+    @post op addRestrictedScope(
+        /** output id */
+        @path outputId: integer;
+        /** scope id */
+        @path scopeId: integer;
+    ): RestrictionScope;
+
+    /**
+     * Deleting limiting register from output
+     */
+    @route("/{outputId}/restrict/{scopeId}")
+    @delete op deleteRestrictedScope(
+        /** output id */
+        @path outputId: integer;
+        /** scope id */
+        @path scopeId: integer;
+    ): {
+        @Http.statusCode statusCode: 200;
+    };
+
+    /**
+     * Adding template to output
+     */
+    @route("{outputId}/template/{templateId}")
+    @post op addOutputTemplate(
+        /** output id */
+        @path outputId: integer;
+        /** template id */
+        @path templateId: integer;
+    ): Template;
+
+    /**
+     * Deleting template from output
+     */
+    @route("{outputId}/template/{templateId}")
+    @delete op deleteOutputTemplate(
+        /** output id */
+        @path outputId: integer;
+        /** template id */
+        @path templateId: integer;
+    ): {
+        @Http.statusCode statusCode: 200;
     };
 }
 
