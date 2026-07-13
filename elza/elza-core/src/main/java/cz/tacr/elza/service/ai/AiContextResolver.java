@@ -425,6 +425,8 @@ public class AiContextResolver {
             return Optional.empty();
         }
         FundInfo info = new FundInfo()
+                // lets the model reference the fund in tools, e.g. searchNodes.fundIds
+                .fundId(fund.getFundId())
                 .name(fund.getName())
                 .internalCode(fund.getInternalCode())
                 .ruleSetCode(version.getRuleSet() != null ? version.getRuleSet().getCode() : null)

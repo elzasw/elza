@@ -254,9 +254,12 @@ public class AiRequestPoller {
             return;
         }
         recordToolEvent(aiRequestId, target, AiRequestEvent.TYPE_TOOL_CALLS, toJson(calls));
+        // Tools run as the conversation owner — permission-scoped tools (e.g.
+        // searchNodes) enforce that user's read permissions.
+        AiToolContext toolContext = new AiToolContext(target.userId);
         List<ToolResult> results = new ArrayList<>(calls.size());
         for (ToolCall call : calls) {
-            results.add(executeToolCall(call));
+            results.add(executeToolCall(call, toolContext));
         }
         recordToolEvent(aiRequestId, target, AiRequestEvent.TYPE_TOOL_RESULTS, toJson(results));
         try {
@@ -271,14 +274,14 @@ public class AiRequestPoller {
     }
 
     /** Runs one tool call, capturing success as {@code result} or failure as {@code error}. */
-    private ToolResult executeToolCall(final ToolCall call) {
+    private ToolResult executeToolCall(final ToolCall call, final AiToolContext toolContext) {
         ToolResult result = new ToolResult().callId(call.getCallId());
         AiTool tool = toolRegistry.get(call.getTool());
         if (tool == null) {
             return result.error("Unknown tool: " + call.getTool());
         }
         try {
-            return result.result(tool.execute(call.getArguments()));
+            return result.result(tool.execute(call.getArguments(), toolContext));
         } catch (Exception e) {
             logger.warn("AI tool {} failed (call {}): {}", call.getTool(), call.getCallId(), e.getMessage());
             logger.debug("AI tool {} failure detail", call.getTool(), e);

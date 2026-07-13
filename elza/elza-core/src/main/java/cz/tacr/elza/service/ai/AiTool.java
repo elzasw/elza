@@ -23,6 +23,10 @@ public interface AiTool {
      *
      * @param arguments the call's {@code arguments} object (as received from the
      *                  provider); convert it to the tool's argument model.
+     * @param context   on whose behalf the call runs — the poller executes tools
+     *                  outside the request security context, so a tool touching
+     *                  permission-scoped data enforces the user's permissions
+     *                  itself. Tools serving permission-free data ignore it.
      */
-    Object execute(Object arguments);
+    Object execute(Object arguments, AiToolContext context);
 }
