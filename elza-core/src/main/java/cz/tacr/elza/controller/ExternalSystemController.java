@@ -102,11 +102,6 @@ public class ExternalSystemController implements ExternalsystemsApi {
                         !extSystemProperty.getUserId().equals(loggedDetail.getId())) {
                     throw new AccessDeniedException("User can set properties only for himself.", reqPermissions);
                 }
-                // AP external systems additionally require the ext-system write permission
-                boolean isApSystem = extSystem instanceof ApExternalSystem;
-                if (isApSystem && !loggedDetail.hasPermission(UsrPermission.Permission.AP_EXTERNAL_WR)) {
-                    throw new AccessDeniedException("Cannot store external system properties", reqPermissions);
-                }
             }
 
             extSystemService.storeProperty(extSystem, user, extSystemProperty);
@@ -125,22 +120,14 @@ public class ExternalSystemController implements ExternalsystemsApi {
             throw new AccessDeniedException("Not logged", reqPermissions);
         }
         
-        // set flag if permission for each property should be checked
-        boolean checkPermsission = false;
-        if (!loggedDetail.hasPermission(UsrPermission.Permission.ADMIN)) {
-            if (!loggedDetail.hasPermission(UsrPermission.Permission.AP_EXTERNAL_WR)) {
-                throw new AccessDeniedException("Cannot change externernal system properties", reqPermissions);
-            } else {
-                checkPermsission = true;
-            }
-        }
+        boolean isAdmin = loggedDetail.hasPermission(UsrPermission.Permission.ADMIN);
 
         for (Integer extSysPropertyId : extSysPropertyIds) {
 
             SysExternalSystemProperty dbProp = extSystemService.getProperty(extSysPropertyId);
 
-            if (checkPermsission) {
-                // without admin perms only own properties might be set
+            if (!isAdmin) {
+                // without admin perms only own properties might be deleted
                 if (dbProp.getUserId() == null ||
                         !dbProp.getUserId().equals(loggedDetail.getId())) {
                     throw new AccessDeniedException("User has no permissions to delete this property.", reqPermissions);
