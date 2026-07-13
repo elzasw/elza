@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import cz.tacr.elza.api.ApExternalSystemType;
 import cz.tacr.elza.controller.vo.ExtSystemProperty;
 import cz.tacr.elza.domain.ApExternalSystem;
+import cz.tacr.elza.domain.SysExternalSystem;
 import cz.tacr.elza.domain.SysExternalSystemProperty;
 import cz.tacr.elza.domain.UsrPermission;
 import cz.tacr.elza.domain.UsrUser;
@@ -84,29 +85,29 @@ public class ExternalSystemController implements ExternalsystemsApi {
 
         Validate.notNull(extSystemProperties, "ExtSystemProperty shouldn't be null");
 
-        boolean checkPermsission = false;
-        if (!loggedDetail.hasPermission(UsrPermission.Permission.ADMIN)) {
-            if (!loggedDetail.hasPermission(UsrPermission.Permission.AP_EXTERNAL_WR)) {
-                throw new AccessDeniedException("Cannot list externernal system properties", reqPermissions);
-            }
-            checkPermsission = true;
-        }
+        boolean isAdmin = loggedDetail.hasPermission(UsrPermission.Permission.ADMIN);
 
         for (ExtSystemProperty extSystemProperty : extSystemProperties) {
-            if (checkPermsission) {
-                // without admin perms only own properties might be set
-                if (extSystemProperty.getUserId() == null ||
-                        !extSystemProperty.getUserId().equals(loggedDetail.getId())) {
-                    throw new AccessDeniedException("User can set permissions only for himself.", reqPermissions);
-                }
-            }
             Validate.notNull(extSystemProperty.getExtSystemId(),
                              "ExtSystemProperty.externalSystemId shouldn't be null");
             Validate.notNull(extSystemProperty.getName(), "ExtSystemProperty.name shouldn't be null");
             Validate.notNull(extSystemProperty.getValue(), "ExtSystemProperty.value shouldn't be null");
 
-            ApExternalSystem extSystem = extSystemService.findApExternalSystemById(extSystemProperty.getExtSystemId());
+            SysExternalSystem extSystem = extSystemService.findExternalSystemById(extSystemProperty.getExtSystemId());
             UsrUser user = userService.getUserInternal(extSystemProperty.getUserId());
+
+            if (!isAdmin) {
+                // without admin perms only own properties might be set
+                if (extSystemProperty.getUserId() == null ||
+                        !extSystemProperty.getUserId().equals(loggedDetail.getId())) {
+                    throw new AccessDeniedException("User can set properties only for himself.", reqPermissions);
+                }
+                // AP external systems additionally require the ext-system write permission
+                boolean isApSystem = extSystem instanceof ApExternalSystem;
+                if (isApSystem && !loggedDetail.hasPermission(UsrPermission.Permission.AP_EXTERNAL_WR)) {
+                    throw new AccessDeniedException("Cannot store external system properties", reqPermissions);
+                }
+            }
 
             extSystemService.storeProperty(extSystem, user, extSystemProperty);
         }

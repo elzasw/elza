@@ -315,6 +315,19 @@ public class ExternalSystemService {
     }
 
     /**
+     * Vyhledání externího systému libovolného typu podle id.
+     *
+     * @param id
+     *            identifikátor externího systému, který hledáme
+     * @return nalezený externí systém
+     */
+    public SysExternalSystem findExternalSystemById(final Integer id) {
+        return externalSystemRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("External system not found, id: " + id, BaseCode.ID_NOT_EXIST)
+                        .set("id", id));
+    }
+
+    /**
      * Vyhledání externího systému podle identifikátoru bez kontroly práv.
      *
      * @param id
@@ -1093,7 +1106,7 @@ public class ExternalSystemService {
      * @param extSystemProperty
      * @return
      */
-    public SysExternalSystemProperty storeProperty(ApExternalSystem extSystem, UsrUser user,
+    public SysExternalSystemProperty storeProperty(SysExternalSystem extSystem, UsrUser user,
                                                  ExtSystemProperty extSystemProperty) {
 		List<SysExternalSystemProperty> properties = sysExtSysPropertyRepository.findByExternalSystemAndUser(extSystem, user);
 		SysExternalSystemProperty property = null;
