@@ -265,6 +265,106 @@
     "defaultMessage": "Select a report...",
     "srcHash": "ecrUhpCIacEx"
   },
+  "aiAssistant.action.cancel": {
+    "defaultMessage": "Cancel",
+    "srcHash": "bHfYpLCt8F6P"
+  },
+  "aiAssistant.action.collapsePanel": {
+    "defaultMessage": "Collapse panel",
+    "srcHash": "hVRlVn5JBC8y"
+  },
+  "aiAssistant.action.expandPanel": {
+    "defaultMessage": "Expand panel",
+    "srcHash": "wPp1aA3CjF7g"
+  },
+  "aiAssistant.action.history": {
+    "defaultMessage": "Conversation history",
+    "srcHash": "A1txghTzcEz9"
+  },
+  "aiAssistant.action.newChat": {
+    "defaultMessage": "New conversation",
+    "srcHash": "7ajWenFvRbIr"
+  },
+  "aiAssistant.action.send": {
+    "defaultMessage": "Send",
+    "srcHash": "qmmhj7gqjJS4"
+  },
+  "aiAssistant.action.settings": {
+    "defaultMessage": "Settings",
+    "srcHash": "4BNW7MyPieeu"
+  },
+  "aiAssistant.block.citations": {
+    "defaultMessage": "Sources",
+    "srcHash": "BO_uQxVmyBkf"
+  },
+  "aiAssistant.block.unsupported": {
+    "defaultMessage": "Unsupported content type.",
+    "srcHash": "kqb8iHc_uQ8i"
+  },
+  "aiAssistant.context.accessPoint": {
+    "defaultMessage": "Access point",
+    "srcHash": "nd8syhKwGUOe"
+  },
+  "aiAssistant.context.fund": {
+    "defaultMessage": "Archival fund",
+    "srcHash": "cgFgSW7aSs8l"
+  },
+  "aiAssistant.context.module": {
+    "defaultMessage": "Module",
+    "srcHash": "EYhQiUZ3tIrB"
+  },
+  "aiAssistant.context.module.arrangement": {
+    "defaultMessage": "Arrangement",
+    "srcHash": "FGdc1B5n2Tq-"
+  },
+  "aiAssistant.context.module.registry": {
+    "defaultMessage": "Entity",
+    "srcHash": "LtO7YMmvBHdP"
+  },
+  "aiAssistant.context.node": {
+    "defaultMessage": "Description unit",
+    "srcHash": "Kv_uHCGYZGrD"
+  },
+  "aiAssistant.context.none": {
+    "defaultMessage": "No context",
+    "srcHash": "3rnpJ2P3Pg1s"
+  },
+  "aiAssistant.context.promptLabel": {
+    "defaultMessage": "Context:",
+    "srcHash": "g-NS7D1rL5QJ"
+  },
+  "aiAssistant.input.placeholder": {
+    "defaultMessage": "Type a message…",
+    "srcHash": "-Sb-aBO8zCrQ"
+  },
+  "aiAssistant.settings.fullWidthResponses": {
+    "defaultMessage": "Full-width responses",
+    "srcHash": "u04WWMytfMeS"
+  },
+  "aiAssistant.state.empty": {
+    "defaultMessage": "Ask the AI assistant anything.",
+    "srcHash": "BcptUl3qjaOL"
+  },
+  "aiAssistant.state.errorPrefix": {
+    "defaultMessage": "Error",
+    "srcHash": "tiLo1toEkOGZ"
+  },
+  "aiAssistant.state.thinking": {
+    "defaultMessage": "AI is thinking…",
+    "srcHash": "-N1FvyhY7A-b"
+  },
+  "aiAssistant.usage.detail": {
+    "defaultMessage": "Input tokens: {input}, output tokens: {output}, price: {cost}",
+    "srcHash": "13zp3tAZUt40"
+  },
+  "aiAssistant.usage.summary": {
+    "defaultMessage": "Usage",
+    "srcHash": "f3BkkgYRVNZx"
+  },
+  "aiAssistant.window.title": {
+    "defaultMessage": "AI assistant",
+    "srcHash": "63nbyiXmnORE"
+  },
   "aip.filter.columns": {
     "defaultMessage": "Columns",
     "srcHash": "nkGHuHwAI1Yf"
@@ -514,8 +614,8 @@
     "srcHash": "bHfYpLCt8F6P"
   },
   "fundPage.multiAction.run": {
-    "defaultMessage": "Run action",
-    "srcHash": "hvWR6vxVXGEu"
+    "defaultMessage": "Select action",
+    "srcHash": "-NGhx2kRVdh2"
   },
   "fundPage.multiAction.selectAll": {
     "defaultMessage": "Select all matching the filter ({count})",
@@ -526,12 +626,12 @@
     "srcHash": "7GUXxnPp2Qk5"
   },
   "fundPage.multiAction.start": {
-    "defaultMessage": "Bulk action over funds",
-    "srcHash": "-ZzS3DKvVe1y"
+    "defaultMessage": "Bulk actions over funds",
+    "srcHash": "aoI_CEDEySCV"
   },
   "fundPage.multiAction.title": {
-    "defaultMessage": "Bulk action over funds",
-    "srcHash": "-ZzS3DKvVe1y"
+    "defaultMessage": "Bulk actions over funds",
+    "srcHash": "aoI_CEDEySCV"
   },
   "fundPage_export_results": {
     "defaultMessage": "Download CSV",
@@ -690,8 +790,8 @@
     "srcHash": "bHfYpLCt8F6P"
   },
   "multiFundAction.chooseAction": {
-    "defaultMessage": "The action will run over {count, plural, one {# fund} other {# funds}} (rules {ruleSet}). Select an action:",
-    "srcHash": "KLZvppi4PKjQ"
+    "defaultMessage": "The action will run over {count, plural, one {# fund} other {# funds}} (rules: {ruleSet}).",
+    "srcHash": "_gZGO4b122U_"
   },
   "multiFundAction.chooseRuleSet": {
     "defaultMessage": "The selected funds use multiple rule sets. Choose which group to run the action for:",
@@ -703,7 +803,7 @@
   },
   "multiFundAction.confirm": {
     "defaultMessage": "The action <b>{action}</b> will run over <b>{count, plural, one {# fund} other {# funds}}</b>. The action writes to the funds' data and each fund gets its own run. Continue?",
-    "srcHash": "czsL1FVz7qA4"
+    "srcHash": "zLDUBdsNzn83"
   },
   "multiFundAction.continue": {
     "defaultMessage": "Continue",
@@ -1100,5 +1200,9 @@
   "userSettings.display.showExperimentalFeatures": {
     "defaultMessage": "Show experimental features",
     "srcHash": "3gowqNfmWIKX"
+  },
+  "userSettings.display.useInterFont": {
+    "defaultMessage": "Use alternative font",
+    "srcHash": "ao95n5GBnkn8"
   }
 }

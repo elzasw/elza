@@ -163,11 +163,62 @@ export interface DescItemGroup {
     name: string;
 }
 
+/**
+ * Simple external-system VO from the ref-tables list (backend
+ * `SysExternalSystemSimpleVO` hierarchy; `@class` = MINIMAL_CLASS discriminator).
+ * All subtypes carry `id`/`code`/`name`; only the AP one adds `scope`/`type`.
+ */
+export interface RefExternalSystemSimpleVOBase {
+    /**
+     * @deprecated LEGACY — the Jackson `@class` MINIMAL_CLASS discriminator leaked into
+     * the client. Used for now to distinguish external-system subtypes; should be replaced
+     * by a proper typed discriminator field (or generated API types) and removed.
+     */
+    '@class': string;
+    id?: number;
+    code?: string;
+    name?: string;
+}
+
+export interface RefApExternalSystemSimpleVO extends RefExternalSystemSimpleVOBase {
+    /** @deprecated LEGACY discriminator — see {@link RefExternalSystemSimpleVOBase}. */
+    '@class': '.ApExternalSystemSimpleVO';
+    scope?: number | null;
+    type?: string;
+}
+
+export interface RefAiExternalSystemSimpleVO extends RefExternalSystemSimpleVOBase {
+    /** @deprecated LEGACY discriminator — see {@link RefExternalSystemSimpleVOBase}. */
+    '@class': '.AiExternalSystemSimpleVO';
+}
+
+export interface RefGisExternalSystemSimpleVO extends RefExternalSystemSimpleVOBase {
+    /** @deprecated LEGACY discriminator — see {@link RefExternalSystemSimpleVOBase}. */
+    '@class': '.GisExternalSystemSimpleVO';
+}
+
+export interface RefArrDigitalRepositorySimpleVO extends RefExternalSystemSimpleVOBase {
+    /** @deprecated LEGACY discriminator — see {@link RefExternalSystemSimpleVOBase}. */
+    '@class': '.ArrDigitalRepositorySimpleVO';
+}
+
+export interface RefArrDigitizationFrontdeskSimpleVO extends RefExternalSystemSimpleVOBase {
+    /** @deprecated LEGACY discriminator — see {@link RefExternalSystemSimpleVOBase}. */
+    '@class': '.ArrDigitizationFrontdeskSimpleVO';
+}
+
+export type RefExternalSystemSimpleVO =
+    | RefApExternalSystemSimpleVO
+    | RefAiExternalSystemSimpleVO
+    | RefGisExternalSystemSimpleVO
+    | RefArrDigitalRepositorySimpleVO
+    | RefArrDigitizationFrontdeskSimpleVO;
+
 export interface RefTablesState {
     apTypes: BaseRefTableStore<ApTypeVO>;
     descItemTypes: BaseRefTableStore<DescItemTypeRef>;
     eidTypes: unknown;
-    externalSystems: unknown;
+    externalSystems: BaseRefTableStore<RefExternalSystemSimpleVO>;
     groups: RefTablesDataMapStore<DescItemGroup>;
     institutions: BaseRefTableStore<Institution>;
     issueStates: unknown;

@@ -27,6 +27,10 @@ public interface ExtSyncsQueueItemRepository extends ElzaJpaRepository<ExtSyncsQ
     @Query("SELECT MIN(i.date) FROM ext_syncs_queue_item i WHERE i.state = :state")
     OffsetDateTime findOldestDateByState(@Param("state") ExtAsyncQueueState state);
 
+    /** Oldest (minimal) state-change time among items in any of the given states, or {@code null} when there are none. */
+    @Query("SELECT MIN(i.date) FROM ext_syncs_queue_item i WHERE i.state IN :states")
+    OffsetDateTime findOldestDateByStates(@Param("states") Collection<ExtAsyncQueueState> states);
+
     ExtSyncsQueueItem findFirstByStateOrderByExtSyncsQueueItemId(ExtAsyncQueueState state);
 
     @Query("SELECT i FROM ext_syncs_queue_item i WHERE i.state = :state ORDER BY i.extSyncsQueueItemId")

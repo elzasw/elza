@@ -282,7 +282,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String DESC_ITEM_CSV_IMPORT = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/csv/import";
 	protected static final String DESC_ITEM_CSV_EXPORT = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/csv/export";
 	protected static final String DELETE_DESC_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL + "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/{descItemTypeId}";
-	protected static final String DELETE_OUTPUT_ITEM_BY_TYPE = ARRANGEMENT_CONTROLLER_URL + "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}";
 	protected static final String FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fulltext";
 	protected static final String FUND_FULLTEXT = ARRANGEMENT_CONTROLLER_URL + "/fundFulltext";
 	protected static final String FUND_FULLTEXT_LIST = ARRANGEMENT_CONTROLLER_URL + "/fundFulltext/{fundId}";
@@ -300,6 +299,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String PLACE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/placeDataValues/{versionId}";
 	protected static final String DELETE_DATA_VALUES = ARRANGEMENT_CONTROLLER_URL + "/deleteDataValues/{versionId}";
 	protected static final String FILTER_UNIQUE_VALUES = ARRANGEMENT_CONTROLLER_URL + "/filterUniqueValues/{versionId}";
+
+	// output
 	protected static final String OUTPUTS = ARRANGEMENT_CONTROLLER_URL + "/output";
 	protected static final String OUTPUT_TYPES = OUTPUTS + "/types/{versionId}";
 	protected static final String GET_OUTPUTS = OUTPUTS + "/{fundVersionId}";
@@ -310,6 +311,8 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	protected static final String DELETE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}";
 	protected static final String UPDATE_NAMED_OUTPUT = OUTPUTS + "/{fundVersionId}/{outputId}/update";
 	protected static final String UPDATE_OUTPUT_SETTINGS = OUTPUTS + "/{outputId}/settings";
+	//
+
 	protected static final String FILTER_NODES = ARRANGEMENT_CONTROLLER_URL + "/filterNodes/{versionId}";
 	protected static final String FILTERED_NODES = ARRANGEMENT_CONTROLLER_URL + "/getFilterNodes/{versionId}";
 	protected static final String FILTERED_FULLTEXT_NODES = ARRANGEMENT_CONTROLLER_URL
@@ -326,10 +329,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 			+ "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/set";
 	protected static final String UNSET_NOT_IDENTIFIED_DESCITEM = ARRANGEMENT_CONTROLLER_URL
 			+ "/descItems/{fundVersionId}/{nodeId}/{nodeVersion}/notUndefined/unset";
-	protected static final String SET_NOT_IDENTIFIED_OUTPUTITEM = ARRANGEMENT_CONTROLLER_URL
-			+ "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/notUndefined/set";
-	protected static final String UNSET_NOT_IDENTIFIED_OUTPUTITEM = ARRANGEMENT_CONTROLLER_URL
-			+ "/outputItems/{fundVersionId}/{outputId}/{outputVersion}/notUndefined/unset";
 	protected static final String COPY_LEVELS_VALIDATE = ARRANGEMENT_CONTROLLER_URL + "/levels/copy/validate";
 	protected static final String COPY_LEVELS = ARRANGEMENT_CONTROLLER_URL + "/levels/copy";
 	protected static final String NODE_INFO = ARRANGEMENT_CONTROLLER_URL + "/nodeInfo/{fundVersionId}/{nodeId}";
@@ -2025,22 +2024,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 	}
 
 	/**
-	 * Smazání hodnot atributu podle typu.
-	 *
-	 * @param fundVersionId identfikátor verze AP
-	 * @param outputId      identfikátor výstupu
-	 * @param outputVersion verze výstupu
-	 * @param itemTypeId    identfikátor typu hodnoty atributu
-	 */
-	protected ArrangementController.OutputItemResult deleteOutputItemsByType(final Integer fundVersionId,
-			final Integer outputId, final Integer outputVersion, final Integer itemTypeId) {
-		return delete(
-				spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("outputId", outputId)
-						.pathParam("outputVersion", outputVersion).pathParam("itemTypeId", itemTypeId),
-				DELETE_OUTPUT_ITEM_BY_TYPE).getBody().as(ArrangementController.OutputItemResult.class);
-	}
-
-	/**
 	 * Vyhledá scénáře pro možné archivní pomůcky
 	 *
 	 * @param param vstupní parametry
@@ -3106,47 +3089,6 @@ public abstract class AbstractControllerTest extends AbstractTest {
 						.pathParam("nodeVersion", nodeVersion).queryParam("descItemTypeId", descItemTypeId)
 						.queryParam("descItemSpecId", descItemSpecId).queryParam("descItemObjectId", descItemObjectId),
 				UNSET_NOT_IDENTIFIED_DESCITEM).as(ArrangementController.DescItemResult.class);
-	}
-
-	/**
-	 * Nastavení atributu na "Nezjištěno".
-	 *
-	 * @param fundVersionId      id archivního souboru
-	 * @param fundVersionId      id archivního souboru
-	 * @param outputId           identifikátor výstupu
-	 * @param outputVersion      verze výstupu
-	 * @param outputItemTypeId   dentfikátor typu hodnoty atributu
-	 * @param outputItemSpecId   identfikátor specifikace hodnoty atributu
-	 * @param outputItemObjectId identifikátor existující hodnoty atributu
-	 * @return upravená hodnota atributu nastavená na nezjištěno
-	 */
-	protected ArrangementController.OutputItemResult setNotIdentifiedOutputItem(final Integer fundVersionId,
-			final Integer outputId, final Integer outputVersion, final Integer outputItemTypeId,
-			final Integer outputItemSpecId, final Integer outputItemObjectId) {
-		return put(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("outputId", outputId)
-				.pathParam("outputVersion", outputVersion).queryParam("outputItemTypeId", outputItemTypeId)
-				.queryParam("outputItemSpecId", outputItemSpecId).queryParam("outputItemObjectId", outputItemObjectId),
-				SET_NOT_IDENTIFIED_OUTPUTITEM).as(ArrangementController.OutputItemResult.class);
-	}
-
-	/**
-	 * Zrušení nastavení atributu na "Nezjištěno".
-	 *
-	 * @param fundVersionId      id archivního souboru
-	 * @param outputId           identifikátor výstupu
-	 * @param outputVersion      verze výstupu
-	 * @param outputItemTypeId   dentfikátor typu hodnoty atributu
-	 * @param outputItemSpecId   identfikátor specifikace hodnoty atributu
-	 * @param outputItemObjectId identifikátor existující hodnoty atributu
-	 * @return odstraněný atribut
-	 */
-	protected ArrangementController.OutputItemResult unsetNotIdentifiedOutputItem(final Integer fundVersionId,
-			final Integer outputId, final Integer outputVersion, final Integer outputItemTypeId,
-			final Integer outputItemSpecId, final Integer outputItemObjectId) {
-		return put(spec -> spec.pathParam("fundVersionId", fundVersionId).pathParam("outputId", outputId)
-				.pathParam("outputVersion", outputVersion).queryParam("outputItemTypeId", outputItemTypeId)
-				.queryParam("outputItemSpecId", outputItemSpecId).queryParam("outputItemObjectId", outputItemObjectId),
-				UNSET_NOT_IDENTIFIED_OUTPUTITEM).as(ArrangementController.OutputItemResult.class);
 	}
 
 	protected CopyNodesValidateResult copyLevelsValidate(final CopyNodesValidate copyNodesValidate) {

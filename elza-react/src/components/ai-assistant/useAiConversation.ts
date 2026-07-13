@@ -1,0 +1,129 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Api } from 'api';
+import { AiConversationDetail, AiRequest } from 'elza-api';
+import { useWebsocket } from 'components/shared/web-socket/WebsocketProvider';
+import { EventType } from 'typings/websocket/EventType';
+import { AiContext } from './useCurrentAiContext';
+
+export function isRequestInProgress(request: AiRequest) {
+    // Unknown states are treated as in progress per the rendering contract.
+    const terminalStates = new Set(['done', 'error', 'cancelled']);
+    return !terminalStates.has(request.state);
+}
+
+interface AiRequestChangeEvent {
+    eventType: EventType.AI_REQUEST_CHANGE;
+    ids: number[];
+}
+
+function extractErrorMessage(error: unknown): string {
+    const response = (error as { response?: { status?: number; statusText?: string } })?.response;
+    if (response?.status) {
+        return `${response.status}${response.statusText ? ` ${response.statusText}` : ''}`;
+    }
+    const message = (error as { message?: string })?.message;
+    return typeof message === 'string' && message ? message : 'Neznámá chyba';
+}
+
+interface UseAiConversationOptions {
+    externalSystemCode: string;
+    getContext?: () => AiContext | null;
+}
+
+export function useAiConversation({ externalSystemCode, getContext }: UseAiConversationOptions) {
+    const websocket = useWebsocket();
+    const [detail, setDetail] = useState<AiConversationDetail | null>(null);
+    const [pending, setPending] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [activeConversationId, setActiveConversationId] = useState<number | null>(null);
+
+    const conversationIdRef = useRef<number | null>(null);
+
+    useEffect(() => {
+        conversationIdRef.current = detail?.conversation.id ?? null;
+        setActiveConversationId(detail?.conversation.id ?? null);
+    }, [detail]);
+
+    const openConversation = useCallback(async (id: number) => {
+        setError(null);
+        conversationIdRef.current = id;
+        try {
+            const { data: fresh } = await Api.aiprovider.aiProviderGetConversation(id);
+            setDetail(fresh);
+            setPending(fresh.requests.some((request) => isRequestInProgress(request)));
+        } catch (fetchError) {
+            setError(extractErrorMessage(fetchError));
+        }
+    }, []);
+
+    const newConversation = useCallback(() => {
+        conversationIdRef.current = null;
+        setDetail(null);
+        setPending(false);
+        setError(null);
+    }, []);
+
+    const refetch = useCallback(async () => {
+        const conversationId = conversationIdRef.current;
+        if (conversationId === null) return;
+        try {
+            const { data: fresh } = await Api.aiprovider.aiProviderGetConversation(conversationId);
+            setDetail(fresh);
+            const stillRunning = fresh.requests.some((request) => isRequestInProgress(request));
+            setPending(stillRunning);
+        } catch (fetchError) {
+            setError(extractErrorMessage(fetchError));
+        }
+    }, []);
+
+    useEffect(() => {
+        const listener = websocket.addListener((message: AiRequestChangeEvent) => {
+            const conversationId = conversationIdRef.current;
+            const isAiRequestChange = message.eventType === EventType.AI_REQUEST_CHANGE;
+            const isCurrentConversation = conversationId !== null && message.ids?.includes(conversationId);
+            if (isAiRequestChange && isCurrentConversation) {
+                refetch();
+            }
+        });
+        return () => websocket.removeListener(listener);
+    }, [websocket, refetch]);
+
+    const send = useCallback(
+        async (userInstructions: string, taskType?: string) => {
+            setError(null);
+            setPending(true);
+            const currentContext = getContext?.() ?? null;
+
+            try {
+                if (conversationIdRef.current === null) {
+                    if (!taskType) {
+                        setPending(false);
+                        return;
+                    }
+                    const { data: fresh } = await Api.aiprovider.aiProviderCreateConversation({
+                        externalSystemCode,
+                        taskType,
+                        userInstructions,
+                        context: currentContext?.objects,
+                    });
+                    conversationIdRef.current = fresh.conversation.id;
+                    setDetail(fresh);
+                    setPending(fresh.requests.some((request) => isRequestInProgress(request)));
+                } else {
+                    const { data: fresh } = await Api.aiprovider.aiProviderCreateRequest(
+                        conversationIdRef.current, { userInstructions });
+                    setDetail(fresh);
+                    setPending(fresh.requests.some((request) => isRequestInProgress(request)));
+                }
+            } catch (sendError) {
+                setError(extractErrorMessage(sendError));
+                setPending(false);
+            }
+        },
+        [externalSystemCode, getContext]
+    );
+
+    const requests = detail?.requests ?? [];
+
+    return { requests, pending, error, send, activeConversationId, openConversation, newConversation };
+}

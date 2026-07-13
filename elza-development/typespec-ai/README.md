@@ -81,4 +81,4 @@ repository.
    findings land as Elza issues). The first production scenario.
 
 Design background (use cases, architecture, provider-side considerations):
-`elza/AI-INTEGRATION-PROPOSAL.md`.
+`doc/AI-INTEGRATION-PROPOSAL.md` in `elza-ai-provider.git`.

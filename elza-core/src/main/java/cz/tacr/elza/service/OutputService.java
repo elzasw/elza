@@ -1315,12 +1315,76 @@ public class OutputService {
     }
 
     /**
+     * Nastaví režim výpočtu hodnot atributu — uživatelský (manual) nebo automatický.
+     *
+     * @param output      pojmenovaný výstup
+     * @param fundVersion verze AS
+     * @param itemType    typ atributu
+     * @param manual      true = přepnout na uživatelský (user-defined);
+     *                    false = přepnout zpět na automatický
+     */
+    @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
+    public void setOutputItemMode(final ArrOutput output,
+                                  @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,
+                                  final RulItemType itemType,
+                                  final boolean manual) {
+        Assert.notNull(output, "Neplatný výstup");
+        Assert.notNull(fundVersion, "Neplatná verze fondu");
+        Assert.notNull(itemType, "Neplatný typ atributu");
+
+        if (output.getState() != OutputState.OPEN) {
+            throw new BusinessException("Nelze upravit výstup, který není ve stavu otevřený", OutputCode.NOT_PROCESS_IN_STATE);
+        }
+
+        ArrItemSettings itemSettings = itemSettingsRepository.findOneByOutputAndItemType(output, itemType);
+
+        // to manual?
+        if (manual) {
+            if (itemSettings != null) {
+                return;
+            }
+
+            itemSettings = new ArrItemSettings();
+            itemSettings.setBlockActionResult(true);
+            itemSettings.setItemType(itemType);
+            itemSettings.setOutput(output);
+            itemSettingsRepository.save(itemSettings);
+
+            List<ArrOutputItem> items = outputItemRepository.findOpenOutputItemsByItemType(itemType.getItemTypeId(), output);
+            for (ArrOutputItem item : items) {
+                outputServiceInternal.publishOutputItemChanged(item, fundVersion.getFundVersionId());
+            }
+            return;
+        }
+
+        // to automatic
+        if (itemSettings == null) {
+            return;
+        }
+
+        ArrChange change = arrangementInternalService.createChange(null);
+        itemSettingsRepository.delete(itemSettings);
+        outputServiceInternal.deleteOutputItemsByType(fundVersion, output, itemType.getItemTypeId(), change);
+
+        List<ArrNodeOutput> nodes = nodeOutputRepository.findByOutputAndDeleteChangeIsNull(output);
+        if (!nodes.isEmpty()) {
+            List<Integer> nodeIds = nodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
+            OutputItemConnector connector = outputServiceInternal.createItemConnector(fundVersion, output);
+            connector.setChangeSupplier(() -> change);
+            connector.setItemTypeFilter(itemType.getItemTypeId());
+            storeResults(fundVersion, nodeIds, output, connector);
+        }
+    }
+
+    /**
      * Změnit typ kalkulace typu atributu - uživatelsky/automaticky.
      *
      * @param output pojmenovaný výstup
      * @param fundVersion verze AS
      * @param itemType typ atributu
+     * @param strict
      */
+    @Deprecated
     @AuthMethod(permission = {UsrPermission.Permission.FUND_OUTPUT_WR_ALL, UsrPermission.Permission.FUND_OUTPUT_WR})
     public boolean switchOutputCalculating(final ArrOutput output,
                                         @AuthParam(type = AuthParam.Type.FUND_VERSION) final ArrFundVersion fundVersion,

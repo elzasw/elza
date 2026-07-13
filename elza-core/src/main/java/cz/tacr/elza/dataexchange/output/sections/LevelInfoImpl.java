@@ -5,8 +5,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import cz.tacr.elza.dataexchange.output.writer.DaoInfo;
 import cz.tacr.elza.dataexchange.output.writer.LevelInfo;
-import cz.tacr.elza.domain.ArrDao;
 import cz.tacr.elza.domain.ArrInhibitedItem;
 import cz.tacr.elza.domain.ArrItem;
 
@@ -24,10 +24,10 @@ public class LevelInfoImpl implements LevelInfo {
 
     /**
      * Collection of DAOs
-     * 
+     *
      * Most levels are without DAOs
      */
-    private List<ArrDao> daos;
+    private List<DaoInfo> daos;
 
     public LevelInfoImpl(LevelInfoImpl source) {
         items.addAll(source.getItems());
@@ -92,11 +92,11 @@ public class LevelInfoImpl implements LevelInfo {
     }
 
 	@Override
-    public Collection<ArrDao> getDaos() {
+    public Collection<DaoInfo> getDaos() {
         return daos != null ? daos : Collections.emptyList();
     }
 
-    public void addDao(ArrDao dao) {
+    public void addDao(DaoInfo dao) {
         if (daos == null) {
             daos = new ArrayList<>();
         }

@@ -9,8 +9,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 /**
  * One exchange with an AI provider (one submitted task) within an
@@ -58,25 +60,29 @@ public class AiRequest {
     @Column(name = "prompt_version", length = StringLength.LENGTH_250)
     private String promptVersion;
 
+    /** Profile/model requested for this exchange (an {@code AiProfile.code}); null = provider default. */
+    @Column(name = "profile", length = StringLength.LENGTH_250)
+    private String profile;
+
     /** The user's message of this exchange (rendered in the thread). */
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "user_instructions")
     private String userInstructions;
 
     /** Structured task parameters (JSON) — checks, node ids; not the full payload. */
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "parameters")
     private String parameters;
 
     /** Task output (JSON) as returned by the provider; what the user saw. */
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "output")
     private String output;
 
     @Column(name = "error_code", length = StringLength.LENGTH_50)
     private String errorCode;
 
-    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     @Column(name = "error_message")
     private String errorMessage;
 
@@ -91,6 +97,14 @@ public class AiRequest {
     /** Billable cost units per the provider's price list. */
     @Column(name = "cost_units", nullable = false)
     private double costUnits;
+
+    /**
+     * Credits charged to the account the signing key selects
+     * ({@code costUnits × multiplier} — a shared organizational account may
+     * burn credits faster). What the user sees as the price of the exchange.
+     */
+    @Column(name = "charged_credits", nullable = false)
+    private double chargedCredits;
 
     @Column(name = "create_date", nullable = false)
     private Date createDate;
@@ -152,6 +166,14 @@ public class AiRequest {
 
     public void setPromptVersion(String promptVersion) {
         this.promptVersion = promptVersion;
+    }
+
+    public String getProfile() {
+        return profile;
+    }
+
+    public void setProfile(String profile) {
+        this.profile = profile;
     }
 
     public String getUserInstructions() {
@@ -216,6 +238,14 @@ public class AiRequest {
 
     public void setCostUnits(double costUnits) {
         this.costUnits = costUnits;
+    }
+
+    public double getChargedCredits() {
+        return chargedCredits;
+    }
+
+    public void setChargedCredits(double chargedCredits) {
+        this.chargedCredits = chargedCredits;
     }
 
     public Date getCreateDate() {

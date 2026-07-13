@@ -33,10 +33,10 @@ tags:
     description: Záznamy v archivních fondech
   - name: funds
     description: Archivní soubory
-  - name: externalsystems
-    description: Externí systémy
   - name: aiprovider
     description: Externí AI systémy (poskytovatelé AI služeb)
+  - name: externalsystems
+    description: Externí systémy
   - name: daos
     description: Digitální archivní objekty
   - name: admin
@@ -1916,8 +1916,91 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: {}
+                $ref: '#/components/schemas/AiProviderInfo'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
+  /aiprovider/{id}/my-key:
+    get:
+      operationId: AiProvider_getMyKey
+      description: |-
+        Reads whether the current user has a personal signing key for the
+        provider (the secret is never returned).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: AI external system ID or CODE
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiMyKey'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
+    put:
+      operationId: AiProvider_setMyKey
+      description: |-
+        Sets/replaces the current user's personal signing key for the provider.
+        The user's subsequent tasks then bill to their personal account.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: AI external system ID or CODE
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiMyKey'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseException'
+      tags:
+        - aiprovider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiMyKeyUpdate'
+    delete:
+      operationId: AiProvider_deleteMyKey
+      description: |-
+        Removes the current user's personal signing key; tasks fall back to the
+        instance-wide key (the shared organizational account).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: AI external system ID or CODE
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -2850,6 +2933,159 @@ paths:
             schema:
               $ref: '#/components/schemas/ImportFundData'
         description: Doplnění způsobu importu
+  /funds/out/item/{fundVersionId}/csv/export:
+    get:
+      operationId: Output_outputItemCsvExport
+      description: Downloading a CSV file from an attribute value
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: descItemObjectId
+          in: query
+          required: true
+          description: desc item object id
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+      tags:
+        - output
+  /funds/out/item/{fundVersionId}/csv/import:
+    post:
+      operationId: Output_outputItemCsvImport
+      description: Import a CSV file; a new entry will be created with the file's contents
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.ItemRes'
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Output.OutputItemCsvImportData'
+            encoding:
+              outputVersion:
+                contentType: text/plain
+              outputId:
+                contentType: text/plain
+              descItemTypeId:
+                contentType: text/plain
+        description: multipart body
+  /funds/out/item/{fundVersionId}/{outputId}/{outputVersion}/undefined/set:
+    put:
+      operationId: Output_setNotIdentifiedOutputItem
+      description: Set the attribute to "Undefined"
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: outputVersion
+          in: path
+          required: true
+          description: output version
+          schema:
+            type: integer
+        - name: outputItemTypeId
+          in: query
+          required: true
+          description: output item type id
+          schema:
+            type: integer
+          explode: false
+        - name: outputItemSpecId
+          in: query
+          required: false
+          description: output item spec id
+          schema:
+            type: integer
+          explode: false
+        - name: outputItemObjectId
+          in: query
+          required: false
+          description: output item object id
+          schema:
+            type: integer
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.ItemRes'
+      tags:
+        - output
+  /funds/out/item/{fundVersionId}/{outputId}/{outputVersion}/{itemTypeId}:
+    delete:
+      operationId: Output_deleteOutputItemsByType
+      description: Deleting attribute values ​​by type
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: outputVersion
+          in: path
+          required: true
+          description: output version
+          schema:
+            type: integer
+        - name: itemTypeId
+          in: path
+          required: true
+          description: item type id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.ItemRes'
+      tags:
+        - output
   /funds/out/item/{fundVersionId}/{outputVersion}/update:
     put:
       operationId: Output_updateOutputItem
@@ -2915,6 +3151,38 @@ paths:
                 $ref: '#/components/schemas/Output.ItemRes'
       tags:
         - output
+  /funds/out/item/{fundVersionId}/{outputVersion}/{outputItemObjectId}/undefined/unset:
+    put:
+      operationId: Output_unsetNotIdentifiedOutputItem
+      description: Reset the attribute setting to "Undefined"
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: outputVersion
+          in: path
+          required: true
+          description: output version
+          schema:
+            type: integer
+        - name: outputItemObjectId
+          in: path
+          required: true
+          description: output item object id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.ItemRes'
+      tags:
+        - output
   /funds/out/item/{outputId}/{fundVersionId}/{outputVersion}/create:
     post:
       operationId: Output_createOutputItem
@@ -2954,6 +3222,323 @@ paths:
             schema:
               $ref: '#/components/schemas/OutputItem'
         description: body output item
+  /funds/out/types/{fundVersionId}:
+    get:
+      operationId: Output_getOutputTypes
+      description: Getting output types
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OutputType'
+      tags:
+        - output
+  /funds/out/{fundVersionId}:
+    get:
+      operationId: Output_getOutputs
+      description: Getting list of outputs – an output object linked to a named output object
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: state
+          in: query
+          required: false
+          description: output state
+          schema:
+            $ref: '#/components/schemas/Output.State'
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Output.Def'
+      tags:
+        - output
+  /funds/out/{fundVersionId}/create:
+    put:
+      operationId: Output_createNamedOutput
+      description: Creating a new named output
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.Def'
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Output.NameParam'
+        description: output parameters
+  /funds/out/{fundVersionId}/{outputId}:
+    get:
+      operationId: Output_getOutput
+      description: 'Getting output details: an output object linked to a named output, with a list of connected nodes.'
+      parameters:
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.Def'
+      tags:
+        - output
+  /funds/out/{outputId}/generate:
+    get:
+      operationId: Output_generateOutput
+      description: Generate output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: forced
+          in: query
+          required: true
+          description: forced
+          schema:
+            type: boolean
+            default: false
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.RequestStatus'
+      tags:
+        - output
+  /funds/out/{outputId}/restrict/{scopeId}:
+    post:
+      operationId: Output_addRestrictedScope
+      description: Adding limiting register to output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: scopeId
+          in: path
+          required: true
+          description: scope id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.RestrictionScope'
+      tags:
+        - output
+    delete:
+      operationId: Output_deleteRestrictedScope
+      description: Deleting limiting register from output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: scopeId
+          in: path
+          required: true
+          description: scope id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
+  /funds/out/{outputId}/send:
+    get:
+      operationId: Output_sendOutput
+      description: Send output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.RequestStatus'
+      tags:
+        - output
+  /funds/out/{outputId}/settings:
+    put:
+      operationId: Output_updateOutputSettings
+      description: Configuration of generated outputs
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Output.Settings'
+        description: body
+  /funds/out/{outputId}/template/{templateId}:
+    post:
+      operationId: Output_addOutputTemplate
+      description: Adding template to output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: templateId
+          in: path
+          required: true
+          description: template id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.Template'
+      tags:
+        - output
+    delete:
+      operationId: Output_deleteOutputTemplate
+      description: Deleting template from output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: templateId
+          in: path
+          required: true
+          description: template id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
+  /funds/out/{outputId}/{fundVersionId}:
+    delete:
+      operationId: Output_deleteNamedOutput
+      description: Deleting named output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
+  /funds/out/{outputId}/{fundVersionId}/clone:
+    post:
+      operationId: Output_cloneOutput
+      description: Creating copy of output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output.Def'
+      tags:
+        - output
   /funds/out/{outputId}/{fundVersionId}/form:
     get:
       operationId: Output_getOutputFormData
@@ -2980,10 +3565,123 @@ paths:
                 $ref: '#/components/schemas/Output.FormData'
       tags:
         - output
-  /funds/out/{outputId}/{fundVersionId}/{itemTypeId}/switch:
+  /funds/out/{outputId}/{fundVersionId}/nodes/add:
     post:
-      operationId: Output_switchOutputCalculating
-      description: Switch between automatic and user-defined attribute type editing
+      operationId: Output_addNodesNamedOutput
+      description: Adding nodes to output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+        description: list of node ids
+  /funds/out/{outputId}/{fundVersionId}/nodes/remove:
+    delete:
+      operationId: Output_removeNodesNamedOutput
+      description: Removing nodes from output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: integer
+        description: list of node ids
+  /funds/out/{outputId}/{fundVersionId}/revert:
+    post:
+      operationId: Output_revertToOpenState
+      description: Reset status of a named output to "Open"
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
+  /funds/out/{outputId}/{fundVersionId}/update:
+    put:
+      operationId: Output_updateNamedOutput
+      description: Update output
+      parameters:
+        - name: outputId
+          in: path
+          required: true
+          description: output id
+          schema:
+            type: integer
+        - name: fundVersionId
+          in: path
+          required: true
+          description: fund version id
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The request has succeeded.
+      tags:
+        - output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Output.NameParam'
+        description: output parameters
+  /funds/out/{outputId}/{fundVersionId}/{itemTypeId}/{manual}:
+    put:
+      operationId: Output_setOutputItemMode
+      description: Set user-defined/automatic attribute type editing
       parameters:
         - name: outputId
           in: path
@@ -3003,13 +3701,15 @@ paths:
           description: item type id
           schema:
             type: integer
+        - name: manual
+          in: path
+          required: true
+          description: true/false — manual (user-defined)/automatic
+          schema:
+            type: boolean
       responses:
         '200':
           description: The request has succeeded.
-          content:
-            text/plain:
-              schema:
-                type: boolean
         '404':
           description: The server cannot find the requested resource.
           content:
@@ -4273,8 +4973,9 @@ paths:
     get:
       operationId: Rules_listItemTypes
       description: |-
-        Returns all item types defined across loaded rule sets, together with
-        their specifications and rendering hints.
+        Returns item types together with their specifications and rendering hints.
+        By default all item types across loaded rule sets; when `ruleSetCode` is
+        given, only the item types available in that rule set.
 
         Public URL: `GET /api/v1/rules/itemTypes`.
 
@@ -4285,6 +4986,12 @@ paths:
 
         Replaces the legacy `GET /api/rule/descItemTypes`.
       parameters:
+        - name: ruleSetCode
+          in: query
+          required: false
+          description: When set, return only the item types available in this rule set (`RulRuleSet.code`); otherwise all loaded rule sets.
+          schema:
+            type: string
         - name: Accept-Language
           in: header
           required: false
@@ -4611,6 +5318,161 @@ components:
           format: int32
           description: Number of logged users
       description: Basic statistics about Elza instance
+    AiProviderInfo:
+      type: object
+      required:
+        - protocolVersion
+        - taskTypes
+        - profiles
+      properties:
+        protocolVersion:
+          type: string
+          description: Protocol version reported by the provider (`major.minor`).
+        providerName:
+          type: string
+          description: Human-readable provider/service name.
+        taskTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiTaskType'
+          description: Task types the provider currently offers.
+        profiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiProfile'
+          description: Quality/cost tiers the provider offers.
+      description: |-
+        The AI provider's capabilities — the client's typed view of the provider's
+        `/info` catalog. Drives the panel: which tasks to offer and, per task, which
+        typed parameters to gather. Grows additively (new task types, new object
+        types); a client tolerates unknown parameter/result `type` codes.
+    AiTaskType:
+      type: object
+      required:
+        - code
+        - parameters
+        - resultTypes
+      properties:
+        code:
+          type: string
+          description: Task type code, e.g. `elza.chat`, `elza.echo`, `elza.revision`.
+        name:
+          type: string
+        description:
+          type: string
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiTaskParameter'
+          description: Typed parameters the task declares; the client fills these from context.
+        resultTypes:
+          type: array
+          items:
+            type: string
+          description: Object type codes the task's result may contain (client rendering readiness).
+      description: One AI task the provider offers, with the typed parameters it declares.
+    AiTaskParameter:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: string
+          description: Parameter name — the key under which the client supplies its value.
+        type:
+          type: string
+          description: Object type code of the value, e.g. `elza.text`, `elza.archivalDescription`.
+        description:
+          type: string
+        required:
+          type: boolean
+          description: Whether the caller must supply it.
+      description: One typed parameter a task declares.
+    AiProfile:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        default:
+          type: boolean
+          description: True for the tier used when a submission names none.
+      description: A quality/cost tier the provider offers.
+    AiContextType:
+      type: string
+      enum:
+        - FUND
+        - NODE
+        - ACCESSPOINT
+      description: |-
+        Type of a UI context object — the discriminator of `AiContextObject`. Names
+        what part of the application the user is working in when an AI request is sent.
+    AiContextObject:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          allOf:
+            - $ref: '#/components/schemas/AiContextType'
+          description: Selects the context shape; one of the defined `AiContextType` codes.
+      discriminator:
+        propertyName: type
+        mapping:
+          FUND: '#/components/schemas/AiContextFund'
+          NODE: '#/components/schemas/AiContextNode'
+          ACCESSPOINT: '#/components/schemas/AiContextAccesspoint'
+      description: |-
+        A typed piece of the UI's current context, sent with an AI request. Elza
+        resolves each into the provider's typed objects (e.g. a fund into an
+        `elza.fundInfo` object read from the DB) before submitting the task.
+    AiContextFund:
+      type: object
+      required:
+        - fundId
+      properties:
+        fundId:
+          type: integer
+          format: int32
+          description: '`ArrFund.fundId`.'
+      allOf:
+        - $ref: '#/components/schemas/AiContextObject'
+      description: The archival fund the user is working in.
+    AiContextNode:
+      type: object
+      required:
+        - fundId
+        - nodeId
+      properties:
+        fundId:
+          type: integer
+          format: int32
+        fundVersionId:
+          type: integer
+          format: int32
+        nodeId:
+          type: integer
+          format: int32
+      allOf:
+        - $ref: '#/components/schemas/AiContextObject'
+      description: A description unit (node) within a fund.
+    AiContextAccesspoint:
+      type: object
+      required:
+        - accessPointId
+      properties:
+        accessPointId:
+          type: integer
+          format: int32
+      allOf:
+        - $ref: '#/components/schemas/AiContextObject'
+      description: An access point / entity from the registry.
     AiConversation:
       type: object
       required:
@@ -4629,10 +5491,12 @@ components:
           type: string
         contextType:
           type: string
-          description: 'Context type code: `fund-version`, `fund-list`, `access-point`, …'
+          description: "`AiContextType` of the conversation's primary context object, for list filtering."
         context:
-          type: string
-          description: Context detail (JSON string); shape depends on contextType.
+          type: array
+          items:
+            $ref: '#/components/schemas/AiContextObject'
+          description: The conversation's current context objects.
         createDate:
           type: string
           format: date-time
@@ -4652,20 +5516,25 @@ components:
         taskType:
           type: string
           description: Task type, e.g. `elza.echo`, `elza.revision`.
+        profile:
+          type: string
+          description: Profile/model to use (an `AiProfile.code` from GET /info); omitted = provider default.
         title:
           type: string
           description: Thread title; when omitted the server derives it from the instructions.
-        contextType:
-          type: string
-        context:
-          type: string
-          description: Context detail (JSON string).
         userInstructions:
           type: string
           description: The user's message.
         parameters:
-          type: string
-          description: Structured task parameters (JSON string), shape depends on taskType.
+          type: array
+          items:
+            $ref: '#/components/schemas/AiContextObject'
+          description: Task parameters as typed context objects; Elza resolves each and matches it to the task's declared parameter by object type.
+        context:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiContextObject'
+          description: Supplementary context objects; Elza resolves them into the provider's `context`.
       description: 'Starts a conversation: creates the thread and submits its first exchange.'
     AiConversationDetail:
       type: object
@@ -4680,53 +5549,160 @@ components:
           items:
             $ref: '#/components/schemas/AiRequest'
       description: 'Full conversation detail: the thread = requests in create order.'
+    AiCitation:
+      type: object
+      required:
+        - fragment
+      properties:
+        fragment:
+          type: string
+          description: |-
+            Stable citation id of the cited section — the client's list key and the
+            fallback label shown when no `title` is known.
+        url:
+          type: string
+          description: Deep link to the cited section in the published source, when resolvable.
+        title:
+          type: string
+          description: Human-readable title of the cited section (the primary label).
+        source:
+          type: string
+          description: Human-readable name of the source document the section belongs to.
+        sourceId:
+          type: string
+          description: Id of the source document — lets the client group citations by source.
+      description: |-
+        One cited source in a `DOC_CITATIONS` display block. Carries only data — the
+        client owns all human-readable chrome (the "Sources" heading, the localized
+        label when a field is absent).
+    AiDisplayBlockType:
+      type: string
+      enum:
+        - TEXT
+        - MARKDOWN
+        - TABLE
+        - DOC_CITATIONS
+      description: |-
+        Display block type — the discriminator of `AiDisplayBlock`. The client renders
+        each block by this code, reading the fields of the matching subtype. Additive:
+        new types may appear; a client MUST tolerate an unknown type by rendering a
+        generic "unsupported content" placeholder (never dropping the block silently).
     AiDisplayBlock:
       type: object
       required:
         - type
       properties:
         type:
-          type: string
-          description: 'Block type discriminator: `markdown` | `table` (open set).'
+          allOf:
+            - $ref: '#/components/schemas/AiDisplayBlockType'
+          description: Selects the block shape; one of the defined `AiDisplayBlockType` codes.
+      discriminator:
+        propertyName: type
+        mapping:
+          TEXT: '#/components/schemas/AiTextBlock'
+          MARKDOWN: '#/components/schemas/AiMarkdownBlock'
+          TABLE: '#/components/schemas/AiTableBlock'
+          DOC_CITATIONS: '#/components/schemas/AiDocCitationsBlock'
+      description: |-
+        One display block of an AI response — THE RENDERING CONTRACT between the
+        server and the client. The server (per task type) transforms the provider's
+        schema-validated output into an ordered list of blocks; the client renders
+        each block by its `type` (see `AiDisplayBlockType`), reading the fields of the
+        matching subtype below.
+
+        Evolution is additive: new block types may appear. A client MUST tolerate an
+        unknown `type` by rendering a generic "unsupported content" placeholder (never
+        dropping the block silently). Server-side fallback rule: a task output whose
+        object type has no block mapper is rendered as one `MARKDOWN` block containing
+        the output JSON in a fenced code block.
+    AiTextBlock:
+      type: object
+      required:
+        - content
+      properties:
         content:
           type: string
-          description: '`markdown` only: CommonMark + GFM tables source; no raw HTML.'
+          description: The text, rendered as-is.
+      allOf:
+        - $ref: '#/components/schemas/AiDisplayBlock'
+      description: Plain-text answer — `content` is rendered verbatim, never parsed as markdown.
+    AiMarkdownBlock:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          description: CommonMark + GFM source; the client renders through a sanitizing renderer.
+      allOf:
+        - $ref: '#/components/schemas/AiDisplayBlock'
+      description: Free-text answer as CommonMark + GFM tables; the server MUST NOT emit raw HTML.
+    AiTableBlock:
+      type: object
+      required:
+        - columns
+        - rows
+      properties:
         caption:
           type: string
-          description: '`table` only: optional caption above the table.'
+          description: Optional caption above the table.
         columns:
           type: array
           items:
             $ref: '#/components/schemas/AiTableColumn'
-          description: '`table` only: ordered column definitions.'
+          description: Ordered column definitions (order, key and label).
         rows:
           type: array
           items:
             type: object
             additionalProperties:
               type: string
-          description: '`table` only: rows as objects keyed by column `key`; values are plain text.'
+          description: Rows as objects keyed by column `key`; cell values are plain text (no markup).
+      allOf:
+        - $ref: '#/components/schemas/AiDisplayBlock'
       description: |-
-        One display block of an AI response — THE RENDERING CONTRACT between the
-        server and the client. The server (per task type) transforms the provider's
-        schema-validated output into an ordered list of blocks; the client renders
-        each block solely by its `type`:
-
-        - `markdown` — `content` holds CommonMark + GFM tables. The server MUST NOT
-        emit raw HTML; the client MUST render through a sanitizing Markdown
-        renderer (raw HTML is never interpreted). Use for free-text answers,
-        explanations, drafts.
-        - `table` — structured tabular data: `columns` define order, keys and
-        labels; `rows` hold one object per row keyed by column key, cell values
-        are plain text (no markup). The client renders a native table widget.
-        Use whenever the data IS tabular — never serialize tables into markdown
-        when the server can emit this block instead.
-
-        Evolution is additive: new block types may appear (e.g. `findings`). A
-        client MUST tolerate an unknown `type` by rendering a generic "unsupported
-        content" placeholder (never dropping the block silently). Server-side
-        fallback rule: a task output with no block mapper is rendered as one
-        `markdown` block containing the output JSON in a fenced code block.
+        Structured tabular data — the client renders a native table widget. Use
+        whenever the data IS tabular, never serialized into markdown.
+    AiDocCitationsBlock:
+      type: object
+      required:
+        - citations
+      properties:
+        citations:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiCitation'
+          description: The cited sources, in first-referenced order.
+      allOf:
+        - $ref: '#/components/schemas/AiDisplayBlock'
+      description: |-
+        The knowledge/documentation sources the answer relied on. The server emits no
+        label text; the client renders a "Sources" list and supplies the heading
+        itself, in the user's language.
+    AiMyKey:
+      type: object
+      properties:
+        keyId:
+          type: string
+          description: KeyId of the personal key; absent = none set (the instance-wide key applies).
+      description: |-
+        The current user's personal AI signing key of one provider — presence only,
+        the secret is never returned. With a personal key the user's tasks bill to
+        their personal account (seat); without one the instance-wide key (the shared
+        organizational account) is used.
+    AiMyKeyUpdate:
+      type: object
+      required:
+        - keyId
+        - secret
+      properties:
+        keyId:
+          type: string
+          description: KeyId issued by the provider's account authority (an opaque string).
+        secret:
+          type: string
+          description: The HMAC secret belonging to the KeyId (stored server-side, never returned).
+      description: Sets/replaces the current user's personal AI signing key.
     AiRequest:
       type: object
       required:
@@ -4755,6 +5731,9 @@ components:
           type: string
         promptVersion:
           type: string
+        profile:
+          type: string
+          description: Profile/model used for this exchange (an `AiProfile.code`); absent = provider default.
         usage:
           $ref: '#/components/schemas/AiUsage'
         createDate:
@@ -4771,11 +5750,21 @@ components:
     AiRequestCreate:
       type: object
       properties:
+        profile:
+          type: string
+          description: Profile/model for this exchange (an `AiProfile.code`); omitted = reuse the conversation's last.
         userInstructions:
           type: string
         parameters:
-          type: string
-          description: Structured task parameters (JSON string).
+          type: array
+          items:
+            $ref: '#/components/schemas/AiContextObject'
+          description: Task parameters as typed context objects (see `AiConversationCreate.parameters`).
+        context:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiContextObject'
+          description: Supplementary context objects (see `AiConversationCreate.context`).
       description: Follow-up exchange submitted into an existing conversation.
     AiRequestEvent:
       type: object
@@ -4824,6 +5813,13 @@ components:
         costUnits:
           type: number
           format: double
+        chargedCredits:
+          type: number
+          format: double
+          description: |-
+            Credits charged to the account the signing key selects (costUnits ×
+            the account's multiplier — a shared organizational account may burn
+            credits faster). What the user sees as the price of the exchange.
       description: Metered usage of one exchange (informative; costUnits is the billable quantity).
     AipDetailFilteredResult:
       type: object
@@ -5997,8 +6993,8 @@ components:
           default: true
         includeDaos:
           type: boolean
-          default: true
           description: zahrnout do exportu připojené digitální archivní objekty (DAO)
+          default: true
       description: Parameters of archive file export
     ExportRequestStatus:
       type: object
@@ -7593,6 +8589,98 @@ components:
         item:
           $ref: '#/components/schemas/OutputItem'
       description: Náhrada za `OutputItemResult`
+    Output.NameParam:
+      type: object
+      required:
+        - name
+        - internalCode
+        - outputTypeId
+        - templateId
+        - templateIds
+        - anonymizedAp
+        - outputFilterId
+      properties:
+        name:
+          type: string
+          description: Name output
+        internalCode:
+          type: string
+          description: Output code
+        outputTypeId:
+          type: integer
+          description: Rul Output Type ID
+        templateId:
+          type: integer
+          description: Template id
+        templateIds:
+          type: array
+          items:
+            type: integer
+          description: List of templates
+        anonymizedAp:
+          $ref: '#/components/schemas/ApAccessPointVO'
+        outputFilterId:
+          type: integer
+      description: Náhrada za `OutputNameParam`
+    Output.OutputItemCsvImportData:
+      type: object
+      properties:
+        outputVersion:
+          type: integer
+          description: output version
+        outputId:
+          type: integer
+          description: output id
+        descItemTypeId:
+          type: integer
+          description: desc item type id
+        file:
+          type: string
+          format: binary
+          description: CSV file
+      required:
+        - outputVersion
+        - outputId
+        - descItemTypeId
+        - file
+    Output.RequestStatus:
+      type: string
+      enum:
+        - OK
+        - DETECT_CHANGE
+        - RECOMMENDED_ACTION_NOT_RUN
+      description: Generator startup status
+    Output.RestrictionScope:
+      type: object
+      required:
+        - id
+        - outputId
+        - scopeId
+      properties:
+        id:
+          type: integer
+        outputId:
+          type: integer
+        scopeId:
+          type: integer
+      description: Náhrada za `ArrOutputRestrictionScopeVO`
+    Output.Settings:
+      type: object
+      required:
+        - evenPageOffsetX
+        - evenPageOffsetY
+        - oddPageOffsetX
+        - oddPageOffsetY
+      properties:
+        evenPageOffsetX:
+          type: integer
+        evenPageOffsetY:
+          type: integer
+        oddPageOffsetX:
+          type: integer
+        oddPageOffsetY:
+          type: integer
+      description: Náhrada za `OutputSettingsVO`
     Output.State:
       type: string
       enum:
@@ -7602,10 +8690,29 @@ components:
         - FINISHED
         - OUTDATED
       description: Output state
+    Output.Template:
+      type: object
+      required:
+        - id
+        - outputId
+        - templateId
+      properties:
+        id:
+          type: integer
+        outputId:
+          type: integer
+        templateId:
+          type: integer
+      description: Náhrada za `ArrOutputTemplateVO`
     OutputItem:
       type: object
       allOf:
         - $ref: '#/components/schemas/BaseItem'
+    OutputType:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/BaseCode'
+      description: Náhrada 'RulOutputTypeVO'
     ParInstitutionGen:
       type: object
       required:

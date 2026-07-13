@@ -9,8 +9,8 @@
       "key": "elza.cam.last_success_age_seconds",
       "name": { "en": "Time since last successful CAM communication", "cs": "Čas od poslední úspěšné komunikace s CAM" },
       "description": {
-        "en": "Seconds since the last successful poll of a CAM external system, taken as the worst (oldest) across all configured systems. A poll that finds nothing changed still counts as a successful communication. The primary 'is CAM reachable' signal; -1 when no CAM external system is configured.",
-        "cs": "Počet sekund od poslední úspěšné komunikace (dotazu na změny) s externím systémem CAM, brané jako nejhorší (nejstarší) hodnota přes všechny nakonfigurované systémy. I dotaz, který nenajde žádnou změnu, se počítá jako úspěšná komunikace. Hlavní ukazatel dostupnosti CAM; -1 když není nakonfigurován žádný externí systém CAM."
+        "en": "Seconds since the last successful poll of a CAM external system, taken as the worst (oldest) across all configured systems. A poll that finds nothing changed still counts as a successful communication. The primary 'is CAM reachable' signal; -1 when no CAM external system is configured or the application is not fully started.",
+        "cs": "Počet sekund od poslední úspěšné komunikace (dotazu na změny) s externím systémem CAM, brané jako nejhorší (nejstarší) hodnota přes všechny nakonfigurované systémy. I dotaz, který nenajde žádnou změnu, se počítá jako úspěšná komunikace. Hlavní ukazatel dostupnosti CAM; -1 když není nakonfigurován žádný externí systém CAM nebo aplikace není plně spuštěna."
       },
       "unit": "s",
       "type": "gauge",
@@ -58,6 +58,19 @@
       "source": { "metric": "elza_cam_deferred_oldest_age_seconds" }
     },
     {
+      "key": "elza.cam.pending_oldest_age_seconds",
+      "name": { "en": "Oldest pending CAM item age", "cs": "Stáří nejstarší nezpracované položky CAM" },
+      "description": {
+        "en": "Seconds since the oldest not-yet-processed CAM synchronization item (waiting to be downloaded from or uploaded to CAM) entered its state; -1 when there is none. Grows when the sync worker stops draining the queue (e.g. its thread is stuck) or an item cannot be processed - a failure the 'last successful poll' signal cannot see.",
+        "cs": "Počet sekund od okamžiku, kdy nejstarší dosud nezpracovaná položka synchronizace CAM (čekající na stažení z CAM nebo odeslání do CAM) vstoupila do svého stavu; -1 když žádná není. Roste, když zpracovávající vlákno přestane vyprazdňovat frontu (např. je uvízlé) nebo položku nelze zpracovat - selhání, které ukazatel poslední úspěšné komunikace nezachytí."
+      },
+      "unit": "s",
+      "type": "gauge",
+      "monitored": true,
+      "threshold": { "direction": "above", "level": 3600 },
+      "source": { "metric": "elza_cam_pending_oldest_age_seconds" }
+    },
+    {
       "key": "elza.users.connected",
       "name": { "en": "Connected users", "cs": "Připojení uživatelé" },
       "description": {
@@ -68,6 +81,31 @@
       "type": "gauge",
       "monitored": false,
       "source": { "metric": "elza_users_connected" }
+    },
+    {
+      "key": "elza.scheduler.heartbeat_age_seconds",
+      "name": { "en": "Scheduler heartbeat age", "cs": "Stáří tepu plánovače úloh" },
+      "description": {
+        "en": "Seconds since the application task scheduler last ticked. Grows without bound once the scheduler stops running tasks - a thread stuck on an untimed wait (DB lock, external call) or a dead pool - which silently halts CAM synchronization and every other scheduled task until restart. The direct 'scheduler frozen' signal.",
+        "cs": "Počet sekund od posledního tiku plánovače úloh aplikace. Roste bez omezení, jakmile plánovač přestane spouštět úlohy - vlákno uvízlé na časově neomezeném čekání (zámek DB, externí volání) nebo mrtvý fond vláken - což tiše zastaví synchronizaci s CAM i veškeré další plánované úlohy až do restartu. Přímý ukazatel zamrznutí plánovače."
+      },
+      "unit": "s",
+      "type": "gauge",
+      "monitored": true,
+      "threshold": { "direction": "above", "level": 300 },
+      "source": { "metric": "elza_scheduler_heartbeat_age_seconds" }
+    },
+    {
+      "key": "elza.scheduler.longest_running_task_seconds",
+      "name": { "en": "Longest running scheduled task", "cs": "Nejdéle běžící plánovaná úloha" },
+      "description": {
+        "en": "Seconds the longest currently-running scheduled task has been executing; -1 when idle. Diagnostic for pinpointing which task is stuck (the server also logs that thread's stack trace); not alerted because a safe threshold depends on the deployment's longest legitimate task.",
+        "cs": "Počet sekund, po které běží nejdéle aktuálně prováděná plánovaná úloha; -1 když je plánovač nečinný. Diagnostika k určení, která úloha uvízla (server také zaloguje zásobník volání daného vlákna); bez alertu, protože bezpečný práh závisí na nejdéle legitimně běžící úloze dané instalace."
+      },
+      "unit": "s",
+      "type": "gauge",
+      "monitored": false,
+      "source": { "metric": "elza_scheduler_longest_running_task_seconds" }
     }
   ]
 }

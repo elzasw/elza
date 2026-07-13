@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Elza AI Provider API
-  version: 0.2.0
+  version: 0.6.0
   description: |-
     Elza AI Provider API.
 
@@ -14,8 +14,8 @@ info:
 
     The provider is a gateway to actual AI models: it holds the model/vendor
     credentials, selects and renders the prompt for each task type, calls the
-    model, enforces the client-supplied output schema, and meters usage for its
-    own accounting/billing.
+    model, enforces the result type's shape, and meters usage for its own
+    accounting/billing.
 
     ## Interaction model
 
@@ -23,7 +23,8 @@ info:
     internet, so **every connection is client → provider**; the provider never
     calls the client. The protocol is therefore an asynchronous task loop:
 
-    1. `POST /tasks` — submit a task (type, input, output schema, optional tools).
+    1. `POST /tasks` — submit a task (type, typed parameters, optional tools
+    and context).
     2. `GET /tasks/{taskId}?wait=…` — long-poll for state, progress and result.
     3. If the task needs data only the client can provide, it enters state
     `awaiting_tools` and lists `toolCalls` drawn from the tools the client
@@ -39,19 +40,25 @@ info:
 
     ## Contract ownership
 
-    The *client* owns the task contract: the `taskType`, the shape of `input`, and
-    the `outputSchema` the result must validate against (they change only with a
-    client release). The *provider* owns the prompt for each task type and may
-    improve it at any time; every result reports the `promptVersion` used. Prompt
-    wording can never break a client, because the provider guarantees the output
-    validates against the submitted schema.
+    Three things are owned separately. **This contract** owns the typed object
+    shapes: every `ObjectType` — used for task parameters, context and results —
+    has its payload defined here, so client and provider generate the same models
+    and cannot drift; the vocabulary grows additively, only with a release. The
+    **provider** owns the task catalog — which `taskType`s exist and are currently
+    available, the parameters each declares (`GET /info`), and the prompt for each,
+    which it may improve at any time (every result reports the `promptVersion`
+    used). The **client** owns marshalling its domain data into these typed
+    objects, choosing which task to run, and supplying the parameters the task
+    declares. Prompt wording can never break a client, because the provider
+    guarantees each result block conforms to the shape defined for its object type.
 
     ## Evolution
 
-    The contract grows **additively only**: new task types, new task states, new
-    optional fields. Clients must ignore unknown fields and treat unknown task
-    states as "still in progress, keep polling". `GET /info` reports the protocol
-    version and the capabilities of the provider.
+    The contract grows **additively only**: new task types, new object types, new
+    task states, new optional fields. Clients must ignore unknown fields, unknown
+    object types, and treat unknown task states as "still in progress, keep
+    polling". `GET /info` reports the protocol version and the capabilities of the
+    provider.
 
     Authentication is request signing (`ELZA-AI-HMAC-SHA256`) with keys issued by
     the provider, scoped either to the whole installation/organization or to a
@@ -64,10 +71,22 @@ paths:
     get:
       operationId: getInfo
       description: |-
-        Describe this provider: protocol version, supported task types, profiles,
-        limits. Doubles as the connection test (auth + subscription check).
+        Describe this provider: protocol version, supported task types (with their
+        declared parameters and result types), profiles, limits. Doubles as the
+        connection test (auth + subscription check).
       parameters:
         - $ref: '#/components/parameters/SignedRequest'
+        - name: Accept-Language
+          in: header
+          required: false
+          description: |-
+            Preferred language(s) for the human-readable labels in the response
+            (task-type and profile names/descriptions), as a standard BCP-47
+            `Accept-Language` value — e.g. `cs` or `cs-CZ, en;q=0.8`. Advisory: the
+            provider returns the best match it has, falling back to its default
+            language; it never affects machine-readable fields (codes, object types).
+          schema:
+            type: string
       responses:
         '200':
           description: The request has succeeded.
@@ -79,9 +98,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -90,9 +111,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -101,9 +124,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -112,9 +137,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -123,9 +150,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -134,9 +163,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -145,9 +176,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -156,9 +189,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -205,9 +240,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -216,9 +253,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -227,9 +266,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -238,9 +279,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -249,9 +292,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -260,9 +305,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -271,9 +318,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -282,9 +331,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -332,9 +383,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -343,9 +396,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -354,9 +409,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -365,9 +422,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -376,9 +435,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -387,9 +448,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -398,9 +461,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -409,9 +474,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -444,9 +511,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -455,9 +524,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -466,9 +537,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -477,9 +550,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -488,9 +563,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -499,9 +576,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -510,9 +589,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -521,9 +602,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -557,9 +640,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -568,9 +653,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -579,9 +666,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -590,9 +679,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -601,9 +692,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -612,9 +705,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -623,9 +718,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -634,9 +731,11 @@ paths:
           description: |-
             Standard error payload. Notable statuses: `402` — no active subscription or
             quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-            `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-            (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-            retry later.
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
           content:
             application/json:
               schema:
@@ -657,6 +756,128 @@ paths:
                   description: One result per pending tool call.
               required:
                 - results
+  /usage:
+    get:
+      operationId: getUsage
+      description: |-
+        The caller's usage/credit balance — how much of the account's allowance is
+        spent this period, plus the subscriber-level state. For user display; see
+        `UsageInfo`.
+      parameters:
+        - $ref: '#/components/parameters/SignedRequest'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageInfo'
+        '400':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '401':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '402':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '403':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '404':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '409':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '429':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+        '500':
+          description: |-
+            Standard error payload. Notable statuses: `402` — no active subscription or
+            quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
+            `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+            signing key's account allowance; the set may grow, treat an unknown code
+            generically per status); `409` — the operation does not fit the task's
+            current state (e.g. tool results for a task not in `awaiting_tools`);
+            `429` — rate limited, retry later.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceError'
+      tags:
+        - ElzaAi
 security:
   - SignatureAuth: []
 components:
@@ -672,6 +893,64 @@ components:
         type: string
         format: date-time
   schemas:
+    AccountUsageInfo:
+      type: object
+      required:
+        - spentCredits
+        - periodStart
+      properties:
+        accountType:
+          type: string
+          description: Kind of account, e.g. `personal` or `shared` (open set).
+        plan:
+          type: string
+          description: Plan label, e.g. `basic`; informational.
+        allowanceCredits:
+          type: number
+          format: double
+          description: Credit allowance for the current period; absent = no per-account cap.
+        spentCredits:
+          type: number
+          format: double
+          description: Credits charged to this account in the current period.
+        periodStart:
+          type: string
+          format: date-time
+          description: Start of the current accounting period (UTC).
+        periodEnd:
+          type: string
+          format: date-time
+          description: End of the current accounting period — when the allowance resets.
+      description: |-
+        Credit state of the account the signing key selects — the caller's personal
+        account (user-scoped key) or the organization's shared account
+        (installation-wide key). All values are provider-computed; the client only
+        displays them (typically as relative consumption:
+        `spentCredits / allowanceCredits`).
+    AiObject:
+      type: object
+      required:
+        - objectType
+      properties:
+        objectType:
+          allOf:
+            - $ref: '#/components/schemas/ObjectType'
+          description: Selects the payload shape; one of the defined `ObjectType` codes.
+      discriminator:
+        propertyName: objectType
+        mapping:
+          elza.text: '#/components/schemas/TextObject'
+          elza.markdown: '#/components/schemas/MarkdownObject'
+          elza.fundInfo: '#/components/schemas/FundInfoObject'
+          elza.archivalEntity: '#/components/schemas/ArchivalEntityObject'
+          elza.archivalDescription: '#/components/schemas/ArchivalDescriptionObject'
+          elza.revisionFindings: '#/components/schemas/RevisionFindingsObject'
+          elza.docCitations: '#/components/schemas/DocCitationsObject'
+      description: |-
+        A typed object: an `objectType` tag plus the `data` payload for that type. The
+        polymorphic carrier for every typed value on the wire — task parameters,
+        supplementary context, and results. New concrete types are added as subtypes
+        below; a client ignores an object whose `objectType` it does not implement.
     AiServiceInfo:
       type: object
       required:
@@ -706,6 +985,371 @@ components:
       description: |-
         Capabilities of this provider. Also serves as the "test connection" call:
         a `200` proves reachability, authentication and an active subscription.
+    ArchivalDescription:
+      type: object
+      required:
+        - nodeId
+        - items
+      properties:
+        nodeId:
+          type: integer
+          format: int32
+          description: |-
+            Client-local level id (`ArrNode.nodeId`); echo-only — the provider returns
+            it (e.g. in findings), never interprets it.
+        uuid:
+          type: string
+          description: Stable level UUID (`ArrNode.uuid`), for durable cross-request identity.
+        parentId:
+          type: integer
+          format: int32
+          description: Parent level id (`ArrNode.nodeId`); echo-only, absent at a fund root.
+        referenceMark:
+          type: array
+          items:
+            type: string
+          description: |-
+            Reference designation from the fund root, e.g. `["1", "2", "3"]` — the
+            archival "signatura" path.
+        depth:
+          type: integer
+          format: int32
+          description: Depth in the arrangement tree; a fund root is depth 0.
+        hasChildren:
+          type: boolean
+          description: Whether the level has child levels (for reasoning about aggregation).
+        focus:
+          type: boolean
+          description: |-
+            True for the level the user is on (the "active" level); absent or false for
+            supporting levels (ancestors) sent only to give hierarchy. Lets a task tell
+            the focus level from its context when several are sent together.
+        title:
+          type: string
+          description: |-
+            Human-readable title of the level, exactly as shown in the arrangement tree
+            (built from the fund's configured title items) — a quick summary of what the
+            level is, before reading its individual items.
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeIssue'
+          description: |-
+            Problems found by Elza's automatic checks on this level (0..n); empty or
+            absent when the level is valid or has not been validated.
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/DescriptionItem'
+          description: The level's description items, in display order.
+      description: |-
+        A description unit (level / node): its identity, its place in the arrangement
+        and its description items as codes. Self-contained given the accompanying
+        `elza.fundInfo`, whose `ruleSetCode` resolves the item codes.
+    ArchivalDescriptionObject:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/ArchivalDescription'
+      allOf:
+        - $ref: '#/components/schemas/AiObject'
+      description: Archival description object.
+    ArchivalEntity:
+      type: object
+      additionalProperties: {}
+      description: |-
+        A CAM access point / entity. Payload fields are added as real tasks need them;
+        open for additive growth.
+    ArchivalEntityObject:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/ArchivalEntity'
+      allOf:
+        - $ref: '#/components/schemas/AiObject'
+      description: Archival entity object.
+    CustomerUsageInfo:
+      type: object
+      required:
+        - spentCredits
+        - periodStart
+      properties:
+        budgetCredits:
+          type: number
+          format: double
+          description: Subscriber budget for the current period; absent = no cap.
+        spentCredits:
+          type: number
+          format: double
+          description: Credits spent by the whole subscriber in the current period.
+        periodStart:
+          type: string
+          format: date-time
+          description: Start of the current accounting period (UTC).
+      description: Subscriber-level (whole organization) usage state — the outer budget cap.
+    DataType:
+      type: string
+      enum:
+        - INT
+        - STRING
+        - TEXT
+        - FORMATTED_TEXT
+        - UNITDATE
+        - UNITID
+        - DECIMAL
+        - DATE
+        - BIT
+        - ENUM
+        - RECORD_REF
+        - STRUCTURED
+        - FILE_REF
+        - URI_REF
+        - COORDINATES
+        - JSON_TABLE
+      description: |-
+        Data type of a description item's value — Elza's closed set of value kinds
+        (`RulItemType.dataType`). It tells a reader how to interpret an item without a
+        dictionary lookup: which reference fields are present and how the text `value`
+        is produced. Stable and closed; the set may grow additively, and a reader
+        treats an unknown type as plain text carried in `value`.
+    DescriptionItem:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          description: Stable item-type code, e.g. `ZP2015_TITLE` (`RulItemType.code`).
+        dataType:
+          allOf:
+            - $ref: '#/components/schemas/DataType'
+          description: |-
+            The value's data type — the same value the `getItemTypes` dictionary reports
+            for this item type (`ItemTypeInfo.dataType`), denormalized here so a block is
+            self-describing without the dictionary: it says how to read the value and which
+            reference fields are present, e.g. `RECORD_REF` (→ `accessPointId`),
+            `STRUCTURED` (→ `structuredObjectType`/`structuredObjectId`), `ENUM` (→ `spec`),
+            or a text/number/date type (→ `value`).
+        spec:
+          type: string
+          description: |-
+            Stable specification code for enumerated item types, e.g.
+            `ZP2015_UNIT_TYPE_UKN` (`RulItemSpec.code`); absent for non-enumerated types.
+        value:
+          type: string
+          description: |-
+            The item's value in text form for non-enumerated types; absent when the
+            meaning is fully carried by `spec`, or the item is value-less. For an
+            access-point or structured-object item it holds the human-readable value —
+            the entity's preferred name or the object's serialized name — while the
+            fields below add the machine-readable reference.
+        accessPointId:
+          type: integer
+          format: int32
+          description: |-
+            For an access-point item (`RECORD_REF`): the referenced access point's id
+            (`ApAccessPoint.accessPointId`). `value` holds its preferred name. Absent for
+            other item types.
+        structuredObjectType:
+          type: string
+          description: |-
+            For a structured-object item (`STRUCTURED`, e.g. a storage unit or an
+            accessibility restriction): the structured type code
+            (`RulStructuredType.code`). Absent for other item types.
+        structuredObjectId:
+          type: integer
+          format: int32
+          description: |-
+            For a structured-object item (`STRUCTURED`): the structured object's id
+            (`ArrStructuredObject.structuredObjectId`). `value` holds its serialized
+            name. Absent for other item types.
+        complement:
+          type: string
+          description: |-
+            For a structured-object item (`STRUCTURED`): the object's optional complement
+            (`ArrStructuredObject.complement`) — a supplementary qualifier of the value.
+            Absent when the object has none.
+      description: |-
+        One description item (attribute) of a level, as stable codes plus its value.
+        The human-readable names of `type`/`spec` are resolved by the provider from
+        the rule-set dictionary (keyed by `FundInfo.ruleSetCode`), not repeated here —
+        the codes are the canonical, documented identifiers.
+    DocCitation:
+      type: object
+      required:
+        - fragment
+      properties:
+        fragment:
+          type: string
+          description: |-
+            Stable corpus citation id of the cited section (e.g.
+            `zp2015/04-prvky-popisu/ukladaci-jednotka`) — the provider's internal address
+            for the section, unique within a corpus version. Always present, even when no
+            public URL is known.
+        url:
+          type: string
+          description: |-
+            Full web URL of the cited section in the published source document, when the
+            provider can resolve one: a deep link to the section where the source exposes
+            an anchor, otherwise the document page. Absent when the source has no published
+            home or the section could not be located.
+        title:
+          type: string
+          description: Human-readable title of the cited section.
+        source:
+          type: string
+          description: Human-readable name of the source document the section belongs to.
+        sourceId:
+          type: string
+          description: |-
+            Id prefix identifying the source document (the part of `fragment` before the
+            first `/`, e.g. `zp2015`) — lets a client group citations by source.
+      description: |-
+        One document citation: a knowledge/documentation section an answer relied on,
+        carrying a resolvable web URL when the provider knows one. Distinct from a
+        citation of an archival record (a future object type).
+    DocCitationsObject:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/DocCitationsPayload'
+      allOf:
+        - $ref: '#/components/schemas/AiObject'
+      description: Document-citations object — the sources an answer relied on.
+    DocCitationsPayload:
+      type: object
+      required:
+        - citations
+      properties:
+        citations:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocCitation'
+          description: The cited sections, in the order first referenced by the answer.
+      description: Payload of `elza.docCitations`.
+    FundInfo:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Fund name (`ArrFund.name`).
+        internalCode:
+          type: string
+          description: Internal (evidence) code of the fund, if set.
+        ruleSetCode:
+          type: string
+          description: |-
+            Rule set the fund uses, e.g. `ZP2015` (`RulRuleSet.code`) — selects the
+            dictionary that resolves the item-type/spec codes used in
+            `elza.archivalDescription`.
+        fundNumber:
+          type: integer
+          format: int32
+          description: Fund number, if set.
+        mark:
+          type: string
+          description: Fund mark / signature, if set.
+        unitDate:
+          type: string
+          description: Dating of the fund (free text), if set.
+        institution:
+          allOf:
+            - $ref: '#/components/schemas/InstitutionInfo'
+          description: Holding institution.
+      description: |-
+        Basic descriptive information about an archival fund and its holding
+        institution — enough for a task to know which fund it operates within, without
+        the full arrangement. Mirrors `ArrFund`.
+    FundInfoObject:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/FundInfo'
+      allOf:
+        - $ref: '#/components/schemas/AiObject'
+      description: Fund information object.
+    GetItemTypesParams:
+      type: object
+      required:
+        - ruleSetCode
+      properties:
+        ruleSetCode:
+          type: string
+          description: Rule set whose item types to return (`RulRuleSet.code`), e.g. `ZP2015`.
+      description: Arguments of the `getItemTypes` tool.
+    InstitutionInfo:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Institution code (`ParInstitution.internalCode`).
+        name:
+          type: string
+          description: Institution name — the preferred name of its access point.
+      description: Holding archival institution of a fund.
+    ItemTypeDictionary:
+      type: object
+      required:
+        - ruleSetCode
+        - itemTypes
+      properties:
+        ruleSetCode:
+          type: string
+          description: Rule set the dictionary is for; echoes `GetItemTypesParams.ruleSetCode`.
+        itemTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemTypeInfo'
+          description: The rule set's item types, resolving the codes used in `elza.archivalDescription`.
+      description: Result of the `getItemTypes` tool — the item-type dictionary of one rule set.
+    ItemTypeInfo:
+      type: object
+      required:
+        - code
+        - name
+        - dataType
+      properties:
+        code:
+          type: string
+          description: Stable item-type code, e.g. `ZP2015_TITLE` (`RulItemType.code`).
+        name:
+          type: string
+          description: Human-readable name, e.g. `Obsah`.
+        dataType:
+          allOf:
+            - $ref: '#/components/schemas/DataType'
+          description: Underlying value type, e.g. `STRING`, `UNITDATE`, `ENUM` (`RulItemType.dataType`).
+        specs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemTypeSpecInfo'
+          description: |-
+            Specifications for enumerated item types (`dataType == ENUM`), in display
+            order; absent for non-enumerated types.
+      description: One item type in the dictionary — the meaning behind a `DescriptionItem.type` code.
+    ItemTypeSpecInfo:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          description: Stable spec code, e.g. `ZP2015_UNIT_TYPE_UKN` (`RulItemSpec.code`).
+        name:
+          type: string
+          description: Human-readable name in the rule set's language, e.g. `úřední kniha`.
+      description: One specification (enumerated value) of an item type in the dictionary.
     Limits:
       type: object
       properties:
@@ -737,6 +1381,108 @@ components:
             payloads are deleted after this window; only usage/accounting metadata is
             kept longer.
       description: Operational limits of this provider. Advisory for clients; enforced server-side.
+    MarkdownObject:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/MarkdownPayload'
+      allOf:
+        - $ref: '#/components/schemas/AiObject'
+      description: Markdown text object — a formatted text block the client renders.
+    MarkdownPayload:
+      type: object
+      required:
+        - markdown
+      properties:
+        markdown:
+          type: string
+          description: Formatted text as CommonMark + GFM (no raw HTML); the client renders it.
+      description: Payload of `elza.markdown`.
+    NodeIssue:
+      type: object
+      required:
+        - kind
+      properties:
+        kind:
+          allOf:
+            - $ref: '#/components/schemas/NodeIssueKind'
+          description: Whether an item has an invalid value or a required item is missing.
+        description:
+          type: string
+          description: |-
+            Human-readable description of the problem, as authored by the check. In the
+            rule set's language (data, not UI chrome — the client adds no wrapping here).
+        policyType:
+          type: string
+          description: |-
+            Code of the check (policy) that raised the problem (`RulPolicyType.code`);
+            absent when the check declares none.
+        itemType:
+          type: string
+          description: |-
+            Item-type code the problem relates to (`RulItemType.code`) — the type of the
+            invalid item, or of the missing required item. Lets the AI tie the problem to
+            an entry in `items`.
+        spec:
+          type: string
+          description: |-
+            Specification code the problem relates to (`RulItemSpec.code`), when the
+            check is spec-specific; absent otherwise.
+      description: |-
+        One problem found by Elza's automatic checks on a level — the kind of formal
+        (rule-based) validation that runs continuously while a fund is arranged.
+        Advisory context for a task: it lets the AI see what formal validation already
+        flagged, complementing the logical/semantic issues an AI task looks for.
+    NodeIssueKind:
+      type: string
+      enum:
+        - invalid_value
+        - missing
+      description: |-
+        Kind of a problem found by Elza's automatic (rule-based) checks on a level.
+        The set may grow additively; a client treats an unknown kind as a generic
+        problem.
+    ObjectType:
+      type: string
+      enum:
+        - elza.text
+        - elza.markdown
+        - elza.fundInfo
+        - elza.archivalEntity
+        - elza.archivalDescription
+        - elza.revisionFindings
+        - elza.docCitations
+      description: |-
+        Object type — names a typed payload defined by this contract. A **closed**,
+        namespaced set of string codes modelled as an `enum`, so code generators
+        produce a real enumerated type and `AiObject` a clean discriminated union —
+        straightforward to emit as OpenAPI and to process on the Java side. The set
+        grows additively with a client release, never dynamically. Each code has a
+        payload shape defined below, so client and provider generate the *same* model
+        from this spec and their representations cannot drift. It is used three ways:
+        the discriminator of `AiObject`, a parameter's declared `type` in the task
+        catalog (`TaskParameterInfo`), and the result block types a task declares
+        (`TaskTypeInfo.resultTypes`). Defined codes:
+
+        - `elza.text` — free text (payload `TextPayload`); the result of `elza.echo`.
+        - `elza.markdown` — formatted text (CommonMark + GFM, no raw HTML), a common
+        result block the client renders; payload `MarkdownPayload`.
+        - `elza.fundInfo` — basic descriptive information about an archival fund and
+        its holding institution (payload `FundInfo`); typically supplied as
+        `context`.
+        - `elza.archivalEntity` — a CAM access point / entity. Payload fields are
+        introduced as real tasks need them.
+        - `elza.archivalDescription` — a description unit (node) and its related data.
+        Payload fields are introduced as real tasks need them.
+        - `elza.revisionFindings` — result of `elza.revision`. Payload fields are
+        introduced as the task's result shape is finalized.
+        - `elza.docCitations` — the knowledge/documentation sources an answer relied on
+        (payload `DocCitationsPayload`): each cited section as a stable citation id and,
+        when the provider can resolve one, a full web URL. Returned alongside the text
+        answer of an assistant-style task. Distinct from citing an archival record,
+        which will get its own object type.
     PingResponse:
       type: object
       required:
@@ -774,6 +1520,22 @@ components:
           type: boolean
           description: True for the profile used when a submission names none.
       description: A quality/cost tier offered by this provider.
+    RevisionFindings:
+      type: object
+      additionalProperties: {}
+      description: |-
+        Result of `elza.revision`. Payload fields are added as the task's result shape
+        is finalized; open for additive growth.
+    RevisionFindingsObject:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/RevisionFindings'
+      allOf:
+        - $ref: '#/components/schemas/AiObject'
+      description: Revision findings object.
     ServiceError:
       type: object
       required:
@@ -789,9 +1551,11 @@ components:
       description: |-
         Standard error payload. Notable statuses: `402` — no active subscription or
         quota exhausted (the body's `code` distinguishes, e.g. `NO_SUBSCRIPTION`,
-        `QUOTA_EXCEEDED`); `409` — the operation does not fit the task's current state
-        (e.g. tool results for a task not in `awaiting_tools`); `429` — rate limited,
-        retry later.
+        `QUOTA_EXCEEDED` — the subscriber's budget, `ACCOUNT_QUOTA_EXCEEDED` — the
+        signing key's account allowance; the set may grow, treat an unknown code
+        generically per status); `409` — the operation does not fit the task's
+        current state (e.g. tool results for a task not in `awaiting_tools`);
+        `429` — rate limited, retry later.
     SignatureAuth:
       type: object
       required:
@@ -815,13 +1579,33 @@ components:
             - Authorization
           description: name of the API key
       description: ELZA-AI-HMAC-SHA256 request signature carried in the `Authorization` header (the secret is never sent). See the API description and security.md for the canonical string and KeyId scoping.
+    StandardToolName:
+      type: string
+      enum:
+        - getItemTypes
+      description: |-
+        Standard tools — the **closed, contract-owned** set of tools a client can
+        execute locally on the provider's request during `awaiting_tools`. The set is
+        versioned with the client: a new tool ships in a client release (its executor
+        is client code), so tools are *not* dynamically declared. This contract owns
+        each tool's **interface** — its name here plus the typed argument and result
+        models below; the client advertises which tools it supports in
+        `SubmitTask.tools`, and the **provider** owns the tool's model-facing
+        prompt/description and derives the model's argument schema from the argument
+        model. Defined tools:
+
+        - `getItemTypes` — resolve the rule-set dictionary. Arguments
+        `GetItemTypesParams`, result `ItemTypeDictionary`: the client sends
+        `elza.archivalDescription` items as bare type/spec codes (compact,
+        documentation-aligned) and the provider calls this tool once per
+        `FundInfo.ruleSetCode` to turn those codes into names, data types and the
+        enumerated spec lists, then caches it.
     SubmitTask:
       type: object
       required:
         - requestId
         - taskType
-        - input
-        - outputSchema
+        - parameters
       properties:
         requestId:
           type: string
@@ -844,22 +1628,34 @@ components:
             Free-form instructions from the *user* (not the integrating application) —
             e.g. the inquiry text, or how content should be reformatted. Composed by the
             provider with its own prompt for the task type.
-        input:
-          description: Task-type-specific input payload (the data to work on).
-        outputSchema:
+        parameters:
           type: object
-          additionalProperties: {}
+          additionalProperties:
+            $ref: '#/components/schemas/AiObject'
           description: |-
-            JSON Schema the `output` must validate against. Owned by the client (it is
-            what the client's code parses); the provider guarantees conformance of
-            `output`.
+            The task's declared parameters, keyed by the parameter `name` the provider
+            advertises in `TaskTypeInfo.parameters`. Each value is an `AiObject` whose
+            `objectType` matches the declared parameter `type`. Every parameter the task
+            marks `required` must be present.
+        context:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiObject'
+          description: |-
+            Supplementary context — an open list of typed objects that may improve the
+            result (e.g. the archival units the user recently worked with, or the
+            `elza.fundInfo` of the fund in scope). Not part of the task's declared
+            parameters; the provider uses what it understands and ignores the rest.
         tools:
           type: array
           items:
-            $ref: '#/components/schemas/ToolDefinition'
+            $ref: '#/components/schemas/StandardToolName'
           description: |-
-            Tools the client offers for this task. If present, the task may enter
-            `awaiting_tools` and request calls; if absent, the task runs on `input` alone.
+            Standard tools the client offers for this task, by name (see
+            `StandardToolName`). If present, the task may enter `awaiting_tools` and
+            request calls; if absent, the task runs on `parameters` (and `context`)
+            alone. The client sends names only — the provider knows each tool's argument
+            schema and result shape from the contract.
         parentTaskId:
           type: string
           description: |-
@@ -870,7 +1666,7 @@ components:
         metadata:
           allOf:
             - $ref: '#/components/schemas/TaskMetadata'
-          description: Client-supplied context for audit and reporting.
+          description: Audit/attribution facts about the task; not task data (see `parameters` and `context`).
       description: Task submission.
     Task:
       type: object
@@ -919,9 +1715,14 @@ components:
             Pending tool calls; present exactly while `awaiting_tools`. Answer all of
             them in one `POST …/tool-results`.
         output:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiObject'
           description: |-
-            The result; present when `done`. Validates against the submitted
-            `outputSchema` — guaranteed by the server.
+            The result; present when `done`. An ordered list of typed blocks — the task
+            type fixes which block types may appear (`TaskTypeInfo.resultTypes`), not the
+            caller. Each block's `data` conforms to its `objectType`'s payload shape,
+            guaranteed by the server.
         error:
           allOf:
             - $ref: '#/components/schemas/TaskError'
@@ -965,8 +1766,9 @@ components:
           description: |-
             Machine-readable code. Defined codes (the set may grow): `MODEL_ERROR`
             (upstream model failure after retries), `SCHEMA_ERROR` (model could not
-            produce schema-valid output), `TOOL_TIMEOUT` (client did not return tool
-            results in time), `INPUT_TOO_LARGE`, `UNSUPPORTED_TASK_TYPE`, `INTERNAL`.
+            produce output conforming to the task's declared result types), `TOOL_TIMEOUT` (client did
+            not return tool results in time), `INPUT_TOO_LARGE`, `UNSUPPORTED_TASK_TYPE`,
+            `INTERNAL`.
         message:
           type: string
           description: Human-readable message.
@@ -989,13 +1791,36 @@ components:
             User on whose behalf the task runs (e.g. the Elza username), for audit and
             attribution when the signing key is installation-wide. With a user-scoped
             key this should match the key's user.
-        fundUuid:
-          type: string
-          description: Identifier of the archival fund concerned, if any (UUID).
-      additionalProperties: {}
       description: |-
-        Client-supplied context of a task. Not interpreted by the AI; used for audit,
-        support and the provider's reporting. Open for additive growth.
+        Audit/attribution facts about a task — who ran it and from which application.
+        Not interpreted by the AI and not task data (the data travels in `parameters`
+        and `context`); used only for the provider's support and usage reporting.
+    TaskParameterInfo:
+      type: object
+      required:
+        - name
+        - type
+      properties:
+        name:
+          type: string
+          pattern: ^[A-Za-z][A-Za-z0-9_]*$
+          description: Parameter name, unique within the task (the key under `SubmitTask.parameters`).
+        type:
+          allOf:
+            - $ref: '#/components/schemas/ObjectType'
+          description: The parameter's object type (an `ObjectType` code).
+        description:
+          type: string
+          description: Human-readable description for the client UI.
+        required:
+          type: boolean
+          description: |-
+            Whether the caller must supply it. A task cannot be invoked unless all its
+            required parameters are present.
+      description: |-
+        A typed parameter a task type declares in the catalog. Names one of the task's
+        inputs and the `ObjectType` its value must have; the client supplies it under
+        this `name` in `SubmitTask.parameters`.
     TaskProgress:
       type: object
       properties:
@@ -1034,14 +1859,15 @@ components:
         advertises the types it supports via `GET /info`. Namespaced by client
         product (`elza.…`). Defined types:
 
-        - `elza.echo` — integration-test task: the model restates `input` according
-        to the output schema. No archival semantics — exists so both sides can
-        validate the full protocol loop (auth, submit, poll, schema-enforced
-        output, usage metering) cheaply before any real scenario.
+        - `elza.echo` — integration-test task: echoes the submitted `userInstructions`
+        back as an `elza.text` result; declares no parameters. No archival semantics —
+        exists so both sides can validate the full protocol loop (auth, submit, poll,
+        typed output, usage metering) cheaply before any real scenario.
         - `elza.revision` — advisory revision of archival description units: finds
         logical inconsistencies, dating mismatches, terminology problems and other
         issues that formal (rule-based) validation cannot catch. Read-only;
-        findings are returned per node. The first production scenario.
+        findings are returned as `elza.revisionFindings`. The first production
+        scenario.
     TaskTypeInfo:
       type: object
       required:
@@ -1056,7 +1882,42 @@ components:
         description:
           type: string
           description: What the task does.
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskParameterInfo'
+          description: |-
+            The typed parameters this task declares. A client can offer the task only if
+            its build implements every parameter `type` (and every `resultTypes` entry),
+            and only when it can supply the parameters the task marks `required`.
+        resultTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ObjectType'
+          description: |-
+            The object types the task's result may contain — an ordered set of output
+            blocks (e.g. a text summary plus a structured findings object). Fixed by the
+            task, not chosen by the caller; the client must be able to handle each type.
       description: A task type supported by this provider.
+    TextObject:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          $ref: '#/components/schemas/TextPayload'
+      allOf:
+        - $ref: '#/components/schemas/AiObject'
+      description: Free text object.
+    TextPayload:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          description: The text.
+      description: Payload of `elza.text`.
     ToolCall:
       type: object
       required:
@@ -1068,33 +1929,12 @@ components:
           type: string
           description: Server-assigned id of this call; echo it back in the matching `ToolResult`.
         tool:
-          type: string
-          description: Name of the tool to execute (one of the task's declared tools).
+          allOf:
+            - $ref: '#/components/schemas/StandardToolName'
+          description: The tool to execute — one the client declared in `SubmitTask.tools`.
         arguments:
-          description: Arguments object; conforms to the tool's declared `inputSchema`.
+          description: Arguments object; conforms to the tool's argument model (e.g. `GetItemTypesParams`).
       description: A pending call of a client-declared tool (present while `awaiting_tools`).
-    ToolDefinition:
-      type: object
-      required:
-        - name
-        - description
-        - inputSchema
-      properties:
-        name:
-          type: string
-          pattern: ^[A-Za-z][A-Za-z0-9_]*$
-          description: Tool name, unique within the task, e.g. `searchNodes`.
-        description:
-          type: string
-          description: What the tool does and when to use it — written for the model.
-        inputSchema:
-          type: object
-          additionalProperties: {}
-          description: JSON Schema of the tool's arguments object.
-      description: |-
-        A tool the client offers for this task — something the *client* can execute
-        locally on the provider's request (a search over the client's index, a record
-        lookup, …). Mirrors the tool-definition shape of AI model APIs.
     ToolResult:
       type: object
       required:
@@ -1128,12 +1968,38 @@ components:
           type: number
           format: double
           description: Billable cost units per the provider's price list.
+        chargedCredits:
+          type: number
+          format: double
+          description: |-
+            Credits charged to the caller's account for this task, when the provider
+            bills in credits: `costUnits × account multiplier` (a shared/organization
+            account may burn credits faster than a personal one). Absent when the
+            provider does not use credit accounting.
       description: |-
         Metered usage of a task so far — running totals, present from the first model
         call onward (also on failed tasks: incurred usage counts). `costUnits` is the
         billable quantity: a model-independent unit defined by the provider's price
         list, so model changes on the provider side never change the unit the
         subscriber sees.
+    UsageInfo:
+      type: object
+      properties:
+        account:
+          allOf:
+            - $ref: '#/components/schemas/AccountUsageInfo'
+          description: Credit state of the account the signing key selects.
+        customer:
+          allOf:
+            - $ref: '#/components/schemas/CustomerUsageInfo'
+          description: Subscriber-level usage state (the outer cap).
+      additionalProperties: {}
+      description: |-
+        The caller's usage/credit balance — the data behind "how much have I spent".
+        Served from the same (cached) state the provider's submit-time budget check
+        uses, so the displayed balance never disagrees with a `402` refusal. Both
+        members are optional: a provider without credit accounting may return an
+        empty object (a `200` still proves auth + subscription).
   securitySchemes:
     SignatureAuth:
       type: apiKey

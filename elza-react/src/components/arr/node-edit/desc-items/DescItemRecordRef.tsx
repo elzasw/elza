@@ -175,7 +175,7 @@ export function DescItemRecordRef({
     dispatch(refRecordTypesFetchIfNeeded());
   }, []);
 
-  function handleSelectModule() {
+  function handleSelectModule(readOnly = false) {
     // const {hasSpecification, descItem, registryList, fund, nodeName, itemName, specName, history, dispatch} = this.props;
     const oldFilter = { ...registryList.filter };
     const oldAccessPointId = registryDetail.id;
@@ -215,6 +215,7 @@ export function DescItemRecordRef({
             typeRef.name + (typeRef.useSpecification ? ": " + specName : ""),
           ]}
           fund={activeFund}
+          readOnly={readOnly}
           onSelect={(data: ApAccessPointVO) => {
             setQuery(data.name);
             onChange({
@@ -232,7 +233,7 @@ export function DescItemRecordRef({
           }}
         />,
         classNames(
-          MODAL_DIALOG_VARIANT.FULLSCREEN,
+          "dialog-fullscreen-inset",
           MODAL_DIALOG_VARIANT.NO_HEADER,
         ),
         () => {
@@ -297,7 +298,7 @@ export function DescItemRecordRef({
         }}
         listbox={{ style: { maxHeight: "400px", minWidth: "400px" } }}
         expandIcon={{
-          style: { height: "100%", position: "relative" },
+          style: { height: "100%", position: "relative", overflow: "hidden" },
           children: (
             <Tooltip
               relationship="label"
@@ -309,17 +310,17 @@ export function DescItemRecordRef({
                 appearance="subtle"
                 disabled={
                   (typeRef.useSpecification && item.itemSpecId == undefined && selectedSpecId == undefined) ||
-                    isDisabled
+                  (isDisabled && item.undefined)
                 }
                 style={{
-                  height: `calc( 100% - ${compact ? 4 : 2}px )`,
+                  height: "100%",
                 }}
                 icon={<DatabasePersonRegular />}
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
-                  handleSelectModule();
+                  handleSelectModule(isDisabled);
                 }}
                 tabIndex={-1}
               />

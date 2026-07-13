@@ -294,8 +294,7 @@ public class FundController implements FundsApi {
         RulRuleSet ruleSet = ruleSetRepository.findByCode(updateFund.getRuleSetCode());
         Objects.requireNonNull(ruleSet);
 
-        ArrFundVersion fundVersion = arrangementService.updateFund(arrFund, ruleSet, apScopes, null, null,
-                AdminPermissionUpdateMode.FULL_SYNC);
+        ArrFundVersion fundVersion = arrangementService.updateFund(arrFund, ruleSet, apScopes, null, null, AdminPermissionUpdateMode.NO_SYNC);
         ArrNode rootNode = fundVersion.getRootNode();
 
         return ResponseEntity.ok(factoryVo.createFundDetail(fundVersion.getFund(), rootNode.getUuid()));

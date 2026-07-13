@@ -72,6 +72,18 @@ elza:
   #          command: "\"c:\\Program Files (x86)\\LibreOffice 5\\program\\soffice.exe\" --headless --convert-to pdf {2}"
   #          outputFileName: "{0}.pdf"
 
+  # Task scheduler observability (the elza.scheduler.* and elza.cam.pending_* metrics).
+  # The values below are the built-in defaults, already applied in code — with no
+  # configuration the scheduler behaves exactly as shown, so leave this commented out for
+  # normal operation and uncomment only to override. A pool size > 1 keeps one stuck
+  # scheduled task from freezing the others; the watchdog logs the stack trace of a task
+  # that runs longer than stuckThresholdSeconds.
+  #monitoring:
+  #  scheduler:
+  #    poolSize: 4                  # scheduler threads (default 4)
+  #    heartbeatMs: 30000           # liveness heartbeat interval in ms (default 30000)
+  #    stuckThresholdSeconds: 1800  # watchdog stack-trace threshold in s (default 1800)
+
 spring:
   app:
     buildType: DEV

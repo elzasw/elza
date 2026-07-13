@@ -15,7 +15,7 @@ public class RootNode extends AbstractInternalNode {
 
     public enum ChildNodeType {
 
-        ACCESS_POINTS, PARTIES, INSTITUTIONS, RELATIONS, SECTIONS;
+        INFO, ACCESS_POINTS, PARTIES, INSTITUTIONS, RELATIONS, SECTIONS;
     }
 
     private final XmlNode[] childNodes = new XmlNode[ChildNodeType.values().length];
