@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Elza AI Provider API
-  version: 0.6.0
+  version: 0.7.0
   description: |-
     Elza AI Provider API.
 
@@ -1233,11 +1233,45 @@ components:
             $ref: '#/components/schemas/DocCitation'
           description: The cited sections, in the order first referenced by the answer.
       description: Payload of `elza.docCitations`.
+    FundHits:
+      type: object
+      required:
+        - fundId
+        - name
+        - count
+        - nodes
+      properties:
+        fundId:
+          type: integer
+          format: int32
+          description: Fund id (matches `FundInfo.fundId`).
+        name:
+          type: string
+          description: Fund name (`ArrFund.name`).
+        institution:
+          type: string
+          description: Holding institution name, when known.
+        count:
+          type: integer
+          format: int32
+          description: Total hits in this fund; may exceed `nodes.length` when capped.
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeHit'
+          description: The first hits, in arrangement-tree order.
+      description: The hits within one fund.
     FundInfo:
       type: object
       required:
         - name
       properties:
+        fundId:
+          type: integer
+          format: int32
+          description: |-
+            Fund id (`ArrFund.fundId`); echo-only — the provider never interprets it,
+            but tools can reference the fund by it, e.g. `SearchNodesParams.fundIds`.
         name:
           type: string
           description: Fund name (`ArrFund.name`).
@@ -1297,6 +1331,47 @@ components:
           type: string
           description: Institution name — the preferred name of its access point.
       description: Holding archival institution of a fund.
+    ItemCondition:
+      type: object
+      required:
+        - type
+        - operation
+      properties:
+        type:
+          type: string
+          description: Item-type code (`RulItemType.code`), e.g. `ZP2015_TITLE`.
+        spec:
+          type: string
+          description: |-
+            Specification code (`RulItemSpec.code`), when the condition targets one
+            specification of an enumerated item type.
+        operation:
+          allOf:
+            - $ref: '#/components/schemas/ItemConditionOperation'
+          description: How the item's value is compared with `value`.
+        value:
+          type: string
+          description: |-
+            The comparison value; absent for `NOT_NULL`. Dating items (`UNITDATE`)
+            use Elza's interval syntax, e.g. `1930-1939`.
+      description: |-
+        One condition on a description item, e.g. item `ZP2015_UNIT_DATE`
+        `INTERSECT` `1930-1939`.
+    ItemConditionOperation:
+      type: string
+      enum:
+        - EQ
+        - CONTAINS
+        - GT
+        - GTE
+        - LT
+        - LTE
+        - INTERSECT
+        - NOT_NULL
+      description: |-
+        Comparison operators of `ItemCondition` — a subset of Elza's search
+        operations; may grow additively. `INTERSECT` applies to dating items
+        (`UNITDATE`): true when the item's interval overlaps the queried one.
     ItemTypeDictionary:
       type: object
       required:
@@ -1400,6 +1475,30 @@ components:
           type: string
           description: Formatted text as CommonMark + GFM (no raw HTML); the client renders it.
       description: Payload of `elza.markdown`.
+    NodeHit:
+      type: object
+      required:
+        - nodeId
+      properties:
+        nodeId:
+          type: integer
+          format: int32
+          description: Level id (`ArrNode.nodeId`) — the same identity `elza.archivalDescription` uses.
+        uuid:
+          type: string
+          description: Stable level UUID (`ArrNode.uuid`).
+        title:
+          type: string
+          description: Tree title of the level, as in `ArchivalDescription.title`.
+        referenceMark:
+          type: array
+          items:
+            type: string
+          description: |-
+            Reference designation from the fund root, as in
+            `ArchivalDescription.referenceMark`; its length also tells the hit's depth
+            in the arrangement tree.
+      description: One matching description unit (level).
     NodeIssue:
       type: object
       required:
@@ -1536,6 +1635,66 @@ components:
       allOf:
         - $ref: '#/components/schemas/AiObject'
       description: Revision findings object.
+    SearchNodesParams:
+      type: object
+      properties:
+        fulltext:
+          type: string
+          description: |-
+            Full-text query matched against the whole description unit (all item
+            values). At least one of `fulltext` / `itemConditions` must be given.
+        itemConditions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemCondition'
+          description: |-
+            Conditions on individual description items; all must hold (AND). Item
+            types are named by their stable codes — the same vocabulary as
+            `DescriptionItem.type` and the `getItemTypes` dictionary.
+        fundIds:
+          type: array
+          items:
+            type: integer
+            format: int32
+          description: |-
+            Restrict the search to these funds (`FundInfo.fundId`). Omitted = every
+            fund the requesting user may read.
+        limit:
+          type: integer
+          format: int32
+          description: |-
+            Requested maximum number of hits in total; the client may cap it lower
+            (the result then reports `partial`). Omitted = the client's default.
+      description: |-
+        Arguments of the `searchNodes` tool. Deliberately flat (not Elza's internal
+        filter tree): a full-text query and/or ANDed item conditions, optionally
+        scoped to funds. Extensions grow additively.
+    SearchNodesResult:
+      type: object
+      required:
+        - funds
+        - totalCount
+        - partial
+      properties:
+        funds:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundHits'
+          description: Funds with hits, each carrying its first hits in tree order.
+        totalCount:
+          type: integer
+          format: int64
+          description: Total matching description units across all funds (before capping).
+        partial:
+          type: boolean
+          description: |-
+            True when the result is incomplete — a hit cap, a per-fund cap or the
+            search time limit was reached. The tool does not page: refine the query
+            (sharper terms, `fundIds` scoping) instead of re-asking for more.
+      description: |-
+        Result of the `searchNodes` tool. Hits are grouped by fund with the first
+        hits of each inlined, so the distribution (which funds, how many) is visible
+        even when the hit lists are capped.
     ServiceError:
       type: object
       required:
@@ -1583,6 +1742,7 @@ components:
       type: string
       enum:
         - getItemTypes
+        - searchNodes
       description: |-
         Standard tools — the **closed, contract-owned** set of tools a client can
         execute locally on the provider's request during `awaiting_tools`. The set is
@@ -1600,6 +1760,11 @@ components:
         documentation-aligned) and the provider calls this tool once per
         `FundInfo.ruleSetCode` to turn those codes into names, data types and the
         enumerated spec lists, then caches it.
+        - `searchNodes` — search description units across the archive's funds.
+        Arguments `SearchNodesParams`, result `SearchNodesResult`: the model asks
+        for records the client did not send (full text and/or item conditions);
+        the client executes the search under the requesting user's read
+        permissions and returns a capped hit list grouped by fund.
     SubmitTask:
       type: object
       required:

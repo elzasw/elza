@@ -68,7 +68,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.6.0" })
+@info(#{ version: "0.7.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -227,6 +227,12 @@ model InstitutionInfo {
  * the full arrangement. Mirrors `ArrFund`.
  */
 model FundInfo {
+  /**
+   * Fund id (`ArrFund.fundId`); echo-only — the provider never interprets it,
+   * but tools can reference the fund by it, e.g. `SearchNodesParams.fundIds`.
+   */
+  fundId?: int32;
+
   /** Fund name (`ArrFund.name`). */
   name: string;
 
@@ -654,9 +660,15 @@ enum TaskState {
  *   documentation-aligned) and the provider calls this tool once per
  *   `FundInfo.ruleSetCode` to turn those codes into names, data types and the
  *   enumerated spec lists, then caches it.
+ * - `searchNodes` — search description units across the archive's funds.
+ *   Arguments `SearchNodesParams`, result `SearchNodesResult`: the model asks
+ *   for records the client did not send (full text and/or item conditions);
+ *   the client executes the search under the requesting user's read
+ *   permissions and returns a capped hit list grouped by fund.
  */
 enum StandardToolName {
   getItemTypes,
+  searchNodes,
 }
 
 /** A pending call of a client-declared tool (present while `awaiting_tools`). */
@@ -729,6 +741,135 @@ model ItemTypeDictionary {
 
   /** The rule set's item types, resolving the codes used in `elza.archivalDescription`. */
   itemTypes: ItemTypeInfo[];
+}
+
+/**
+ * Arguments of the `searchNodes` tool. Deliberately flat (not Elza's internal
+ * filter tree): a full-text query and/or ANDed item conditions, optionally
+ * scoped to funds. Extensions grow additively.
+ */
+model SearchNodesParams {
+  /**
+   * Full-text query matched against the whole description unit (all item
+   * values). At least one of `fulltext` / `itemConditions` must be given.
+   */
+  fulltext?: string;
+
+  /**
+   * Conditions on individual description items; all must hold (AND). Item
+   * types are named by their stable codes — the same vocabulary as
+   * `DescriptionItem.type` and the `getItemTypes` dictionary.
+   */
+  itemConditions?: ItemCondition[];
+
+  /**
+   * Restrict the search to these funds (`FundInfo.fundId`). Omitted = every
+   * fund the requesting user may read.
+   */
+  fundIds?: int32[];
+
+  /**
+   * Requested maximum number of hits in total; the client may cap it lower
+   * (the result then reports `partial`). Omitted = the client's default.
+   */
+  limit?: int32;
+}
+
+/**
+ * One condition on a description item, e.g. item `ZP2015_UNIT_DATE`
+ * `INTERSECT` `1930-1939`.
+ */
+model ItemCondition {
+  /** Item-type code (`RulItemType.code`), e.g. `ZP2015_TITLE`. */
+  type: string;
+
+  /**
+   * Specification code (`RulItemSpec.code`), when the condition targets one
+   * specification of an enumerated item type.
+   */
+  spec?: string;
+
+  /** How the item's value is compared with `value`. */
+  operation: ItemConditionOperation;
+
+  /**
+   * The comparison value; absent for `NOT_NULL`. Dating items (`UNITDATE`)
+   * use Elza's interval syntax, e.g. `1930-1939`.
+   */
+  value?: string;
+}
+
+/**
+ * Comparison operators of `ItemCondition` — a subset of Elza's search
+ * operations; may grow additively. `INTERSECT` applies to dating items
+ * (`UNITDATE`): true when the item's interval overlaps the queried one.
+ */
+enum ItemConditionOperation {
+  EQ: "EQ",
+  CONTAINS: "CONTAINS",
+  GT: "GT",
+  GTE: "GTE",
+  LT: "LT",
+  LTE: "LTE",
+  INTERSECT: "INTERSECT",
+  NOT_NULL: "NOT_NULL",
+}
+
+/**
+ * Result of the `searchNodes` tool. Hits are grouped by fund with the first
+ * hits of each inlined, so the distribution (which funds, how many) is visible
+ * even when the hit lists are capped.
+ */
+model SearchNodesResult {
+  /** Funds with hits, each carrying its first hits in tree order. */
+  funds: FundHits[];
+
+  /** Total matching description units across all funds (before capping). */
+  totalCount: int64;
+
+  /**
+   * True when the result is incomplete — a hit cap, a per-fund cap or the
+   * search time limit was reached. The tool does not page: refine the query
+   * (sharper terms, `fundIds` scoping) instead of re-asking for more.
+   */
+  partial: boolean;
+}
+
+/** The hits within one fund. */
+model FundHits {
+  /** Fund id (matches `FundInfo.fundId`). */
+  fundId: int32;
+
+  /** Fund name (`ArrFund.name`). */
+  name: string;
+
+  /** Holding institution name, when known. */
+  institution?: string;
+
+  /** Total hits in this fund; may exceed `nodes.length` when capped. */
+  count: int32;
+
+  /** The first hits, in arrangement-tree order. */
+  nodes: NodeHit[];
+}
+
+/** One matching description unit (level). */
+model NodeHit {
+  /** Level id (`ArrNode.nodeId`) — the same identity `elza.archivalDescription` uses. */
+  nodeId: int32;
+
+  /** Stable level UUID (`ArrNode.uuid`). */
+  uuid?: string;
+
+  /** Tree title of the level, as in `ArchivalDescription.title`. */
+  title?: string;
+
+  /**
+   * Reference designation from the fund root, as in
+   * `ArchivalDescription.referenceMark`; its length also tells the hit's depth
+   * in the arrangement tree.
+   */
+  referenceMark?: string[];
 }
 
 /**
