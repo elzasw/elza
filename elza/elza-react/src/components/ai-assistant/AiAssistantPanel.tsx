@@ -186,8 +186,14 @@ const useStyles = makeStyles({
             backgroundColor: tokens.colorNeutralBackground1Hover,
         },
     },
+    userMessageRow: {
+        alignSelf: "center",
+        width: "100%",
+        maxWidth: "900px",
+        display: "flex",
+        justifyContent: "flex-end",
+    },
     userMessage: {
-        alignSelf: "flex-end",
         maxWidth: "85%",
         backgroundColor: tokens.colorBrandBackground2,
         borderRadius: tokens.borderRadiusLarge,
@@ -396,7 +402,9 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                     {requests.map(request => (
                         <div key={request.id} style={{ display: "contents" }}>
                             {request.userInstructions && (
-                                <div className={styles.userMessage}>{request.userInstructions}</div>
+                                <div className={mergeClasses(styles.userMessageRow, aiFullWidth && styles.aiMessageFull)}>
+                                    <div className={styles.userMessage}>{request.userInstructions}</div>
+                                </div>
                             )}
                             {request.state === "error" ? (
                                 <div className={styles.aiError}>
