@@ -18,9 +18,11 @@ When the user works on a level, the frontend sends an `AiContextNode`; Elza's
   the level's tree `title`, and its `issues` (problems already found by automatic
   checks). Each item states its `dataType` (same vocabulary as the dictionary's
   `ItemTypeInfo.dataType`), so a block is self-describing without a dictionary
-  join. A reference item also carries its machine-readable target: an
-  access-point item (`RECORD_REF`) adds `accessPointId`; a structured-object item
-  (`STRUCTURED`) adds `structuredObjectType` / `structuredObjectId` (+ optional
+  join. A reference item also carries its machine-readable target as a nested
+  object: an access-point item (`RECORD_REF`) adds `entity` (an
+  `ArchivalEntityInfo` — the referenced entity's id, preferred name and
+  classification); a structured-object item (`STRUCTURED`) adds `structuredObject`
+  (a `StructuredObjectInfo` — `structuredType` / `structuredObjectId` + optional
   `complement`), with `value` holding the entity's preferred name or the object's
   serialized name;
 - for the `context` role, the level's **ancestors** up to the root and the
@@ -48,7 +50,7 @@ frontend as `GET /rules/itemTypes?ruleSetCode=…` — both backed by one servic
 |-------|-------|
 | `elza.archivalDescription` + `DescriptionItem`; `FundInfo.ruleSetCode` | `main.tsp` |
 | level `title` + `issues` (`NodeIssue` / `NodeIssueKind`) | `main.tsp` |
-| per-item `dataType`; structured item values — `accessPointId`, `structuredObjectType`/`structuredObjectId`, `complement` | `main.tsp` |
+| per-item `dataType`; nested reference objects — `entity` (`ArchivalEntityInfo`), `structuredObject` (`StructuredObjectInfo`) | `main.tsp` |
 | `getItemTypes` standard tool; typed tool catalog `StandardToolName` | `main.tsp` |
 | `GET /rules/itemTypes?ruleSetCode` filter | `typespec/main.tsp` + `elza-openapi.yml`; `RulesController` / `RuleService` |
 | node & fund context → provider objects (roles, ancestors, `FUND_RD`) | `AiContextResolver` |
