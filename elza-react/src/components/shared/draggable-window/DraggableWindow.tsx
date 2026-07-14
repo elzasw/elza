@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef, useEffect, PropsWithChildren, createContext, useContext } from 'react';
+import { useCallback, useState, useRef, useEffect, useSyncExternalStore, PropsWithChildren, createContext, useContext } from 'react';
 import "./DraggableWindow.scss";
 import classNames from 'classnames';
 
@@ -8,6 +8,40 @@ export interface Position {
 }
 
 const PINNED_MARGIN = 8;
+
+// Windows sit above the toastr/context-menu layer (highest is toastr at 2001)
+// but below the modal/floating-menu layer (9999). Each window's z-index is its
+// position in this stack order, so the most recently focused window is on top.
+const BASE_Z_INDEX = 2100;
+
+let stackOrder: number[] = [];
+const stackListeners = new Set<() => void>();
+
+const emitStackChange = () => stackListeners.forEach(listener => listener());
+
+const registerWindow = (id: number) => {
+    stackOrder = [...stackOrder, id];
+    emitStackChange();
+};
+
+const unregisterWindow = (id: number) => {
+    stackOrder = stackOrder.filter(windowId => windowId !== id);
+    emitStackChange();
+};
+
+const raiseWindow = (id: number) => {
+    const alreadyOnTop = stackOrder[stackOrder.length - 1] === id;
+    if (alreadyOnTop) return;
+    stackOrder = [...stackOrder.filter(windowId => windowId !== id), id];
+    emitStackChange();
+};
+
+const subscribeStack = (listener: () => void) => {
+    stackListeners.add(listener);
+    return () => { stackListeners.delete(listener); };
+};
+
+let nextWindowId = 0;
 
 export interface Props extends PropsWithChildren {
     className?: string;
@@ -79,6 +113,21 @@ export const DraggableWindow = ({
     const _resizeHandlers = useRef<{ onResizeStart: () => ResizeInfo, onResize: (width: number, height: number) => void } | null>(null);
     const _isResizing = useRef(false);
     const [resizable, setResizable] = useState(false);
+    const _windowId = useRef<number | null>(null);
+    if (_windowId.current === null) {
+        _windowId.current = nextWindowId++;
+    }
+    const windowId = _windowId.current;
+
+    useEffect(() => {
+        registerWindow(windowId);
+        return () => unregisterWindow(windowId);
+    }, [windowId]);
+
+    const stackIndex = useSyncExternalStore(subscribeStack, () => stackOrder.indexOf(windowId));
+    const zIndex = BASE_Z_INDEX + Math.max(0, stackIndex);
+
+    const bringToFront = useCallback(() => raiseWindow(windowId), [windowId]);
 
     const dragDisabled = disableDrag || pinnedBottom;
 
@@ -247,14 +296,17 @@ export const DraggableWindow = ({
                     "drag-disable": dragDisabled,
                 }, className)}
                 ref={_window}
+                onMouseDownCapture={bringToFront}
                 style={pinnedBottom ? {
                     top: "auto",
                     bottom: 0,
                     left: "auto",
                     right: `${PINNED_MARGIN}px`,
+                    zIndex,
                 } : {
                     top: `${position.y}px`,
                     left: `${position.x}px`,
+                    zIndex,
                 }}
                 // draggable={useNativeDrag && !disableDrag}
                 onMouseDown={dragWholeWindow ? handleMouseDown : undefined}
