@@ -39,11 +39,13 @@ import cz.tacr.elza.controller.vo.AiContextObjectVO;
 import cz.tacr.elza.controller.vo.TreeNode;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.RuleSet;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.core.data.StructType;
 import cz.tacr.elza.domain.ApIndex;
 import cz.tacr.elza.domain.ApItem;
+import cz.tacr.elza.domain.ApScope;
 import cz.tacr.elza.domain.ApState;
 import cz.tacr.elza.domain.ApType;
 import cz.tacr.elza.domain.ArrData;
@@ -399,6 +401,7 @@ public class AiContextResolver {
                     .typeCode(classification.typeCode()).typeName(classification.typeName());
         }
         applyExternalId(entity, cap.getBindings());
+        entity.ruleSetCode(scopeRuleSetCode(apState, sdp));
 
         List<CachedPart> parts = cap.getParts();
         if (parts != null && !parts.isEmpty()) {
@@ -504,6 +507,22 @@ public class AiContextResolver {
         }
         CachedBinding binding = bindings.get(0);
         entity.externalSystemCode(binding.getExternalSystemCode()).externalId(binding.getValue());
+    }
+
+    /**
+     * The code of the rule set governing the entity's description, taken from the
+     * entity's scope ({@link ApScope#getRulRuleSet()}); {@code null} when the scope
+     * has no rule set. Selects the dictionary that resolves the item-type/spec codes
+     * carried by the parts' items — the same dictionary funds select via their own
+     * rule set.
+     */
+    private String scopeRuleSetCode(final ApState apState, final StaticDataProvider sdp) {
+        ApScope scope = apState.getScope();
+        if (scope == null || scope.getRuleSetId() == null) {
+            return null;
+        }
+        RuleSet ruleSet = sdp.getRuleSetById(scope.getRuleSetId());
+        return ruleSet != null ? ruleSet.getCode() : null;
     }
 
     /** True when the logged user may read access points in the given scope. */
