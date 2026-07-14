@@ -19,6 +19,32 @@ export interface Props extends PropsWithChildren {
     enablePinBottom?: boolean;
 }
 
+export interface ResizeInfo {
+    width: number;
+    height: number;
+    minWidth: number;
+    minHeight: number;
+}
+
+type ResizeEdge = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";
+
+const RESIZE_HANDLE_SIZE = 8;
+
+const RESIZE_EDGES: { edge: ResizeEdge, cursor: string, style: React.CSSProperties }[] = [
+    { edge: "n", cursor: "ns-resize", style: { top: 0, left: RESIZE_HANDLE_SIZE, right: RESIZE_HANDLE_SIZE, height: RESIZE_HANDLE_SIZE } },
+    { edge: "s", cursor: "ns-resize", style: { bottom: 0, left: RESIZE_HANDLE_SIZE, right: RESIZE_HANDLE_SIZE, height: RESIZE_HANDLE_SIZE } },
+    { edge: "e", cursor: "ew-resize", style: { top: RESIZE_HANDLE_SIZE, bottom: RESIZE_HANDLE_SIZE, right: 0, width: RESIZE_HANDLE_SIZE } },
+    { edge: "w", cursor: "ew-resize", style: { top: RESIZE_HANDLE_SIZE, bottom: RESIZE_HANDLE_SIZE, left: 0, width: RESIZE_HANDLE_SIZE } },
+    { edge: "ne", cursor: "nesw-resize", style: { top: 0, right: 0, width: RESIZE_HANDLE_SIZE, height: RESIZE_HANDLE_SIZE } },
+    { edge: "nw", cursor: "nwse-resize", style: { top: 0, left: 0, width: RESIZE_HANDLE_SIZE, height: RESIZE_HANDLE_SIZE } },
+    { edge: "se", cursor: "nwse-resize", style: { bottom: 0, right: 0, width: RESIZE_HANDLE_SIZE, height: RESIZE_HANDLE_SIZE } },
+    { edge: "sw", cursor: "nesw-resize", style: { bottom: 0, left: 0, width: RESIZE_HANDLE_SIZE, height: RESIZE_HANDLE_SIZE } },
+];
+
+// Pinned windows are anchored to the bottom-right, so only the top edge, left
+// edge, and top-left corner can resize them.
+const PINNED_RESIZE_EDGES: ResizeEdge[] = ["n", "w", "nw"];
+
 interface DraggableWindowContextType {
     handleMouseDown: (e: React.MouseEvent) => void,
     handleMouseMove: (e: MouseEvent) => void,
@@ -28,6 +54,8 @@ interface DraggableWindowContextType {
     enablePinBottom: boolean,
     pinnedBottom: boolean,
     togglePinBottom: () => void,
+    registerResizable: (handlers: { onResizeStart: () => ResizeInfo, onResize: (width: number, height: number) => void }) => void,
+    isResizingRef: React.MutableRefObject<boolean>,
 }
 
 export const DraggableWindowContext = createContext<DraggableWindowContextType>(null);
@@ -48,6 +76,9 @@ export const DraggableWindow = ({
     const [dragging, setDragging] = useState(false);
     const [pinnedBottom, setPinnedBottom] = useState(false);
     const _window = useRef<HTMLDivElement>(null);
+    const _resizeHandlers = useRef<{ onResizeStart: () => ResizeInfo, onResize: (width: number, height: number) => void } | null>(null);
+    const _isResizing = useRef(false);
+    const [resizable, setResizable] = useState(false);
 
     const dragDisabled = disableDrag || pinnedBottom;
 
@@ -76,6 +107,68 @@ export const DraggableWindow = ({
     const togglePinBottom = useCallback(() => {
         setPinnedBottom(pinned => !pinned);
     }, []);
+
+    const registerResizable = useCallback((handlers: { onResizeStart: () => ResizeInfo, onResize: (width: number, height: number) => void }) => {
+        _resizeHandlers.current = handlers;
+        setResizable(true);
+    }, []);
+
+    const handleResizeStart = useCallback((edge: ResizeEdge) => (event: React.MouseEvent) => {
+        if (!_resizeHandlers.current) return;
+        event.preventDefault();
+        event.stopPropagation();
+
+        // When pinned the bottom-right corner is fixed by CSS, so resizing the top
+        // or left edge only changes the size — the origin must not move.
+        const moveOrigin = !pinnedBottom;
+
+        _isResizing.current = true;
+        const { width: startWidth, height: startHeight, minWidth, minHeight } = _resizeHandlers.current.onResizeStart();
+        const startPosition = { ..._draggableWindowPosition.current };
+        const startX = event.clientX;
+        const startY = event.clientY;
+
+        const movesLeft = edge.includes("w");
+        const movesTop = edge.includes("n");
+        const changesWidth = edge.includes("w") || edge.includes("e");
+        const changesHeight = edge.includes("n") || edge.includes("s");
+
+        const onMove = (moveEvent: MouseEvent) => {
+            const deltaX = moveEvent.clientX - startX;
+            const deltaY = moveEvent.clientY - startY;
+
+            let newWidth = startWidth;
+            let newHeight = startHeight;
+            const newPosition = { ...startPosition };
+
+            if (changesWidth) {
+                newWidth = Math.max(minWidth, startWidth + (movesLeft ? -deltaX : deltaX));
+                if (movesLeft && moveOrigin) {
+                    newPosition.x = startPosition.x + (startWidth - newWidth);
+                }
+            }
+            if (changesHeight) {
+                newHeight = Math.max(minHeight, startHeight + (movesTop ? -deltaY : deltaY));
+                if (movesTop && moveOrigin) {
+                    newPosition.y = Math.max(0, startPosition.y + (startHeight - newHeight));
+                }
+            }
+
+            _resizeHandlers.current?.onResize(newWidth, newHeight);
+            _draggableWindowPosition.current = newPosition;
+            setPosition(newPosition);
+        };
+        const onUp = () => {
+            document.removeEventListener("mousemove", onMove);
+            document.removeEventListener("mouseup", onUp);
+            onDragStop(_draggableWindowPosition.current);
+            // Clear on the next frame so the ResizeObserver's trailing echo of the
+            // final size is still ignored instead of overwriting the state we set.
+            requestAnimationFrame(() => { _isResizing.current = false; });
+        };
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp);
+    }, [pinnedBottom, onDragStop]);
 
     const handleMove = useCallback((e: MouseEvent) => {
         if (/* useNativeDrag || */ dragDisabled) return;
@@ -144,6 +237,8 @@ export const DraggableWindow = ({
         enablePinBottom,
         pinnedBottom,
         togglePinBottom,
+        registerResizable,
+        isResizingRef: _isResizing,
     }}>
         <div>
             <div
@@ -166,7 +261,15 @@ export const DraggableWindow = ({
                 onDragStart={dragWholeWindow ? handleDragStart : undefined}
                 onDragEnd={dragWholeWindow ? handleDragEnd : undefined}
             >
-                {/* x:{_draggableWindowPosition.current.x} y:{_draggableWindowPosition.current.y} */}
+                {resizable && RESIZE_EDGES
+                    .filter(({ edge }) => !pinnedBottom || PINNED_RESIZE_EDGES.includes(edge))
+                    .map(({ edge, cursor, style }) => (
+                        <div
+                            key={edge}
+                            onMouseDown={handleResizeStart(edge)}
+                            style={{ position: "absolute", zIndex: 10002, cursor, ...style }}
+                        />
+                    ))}
                 {children}
             </div>
             {dragging && <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 1000 }} />}
