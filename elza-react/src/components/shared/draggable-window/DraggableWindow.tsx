@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef, PropsWithChildren, createContext, useContext } from 'react';
+import { useCallback, useState, useRef, useEffect, PropsWithChildren, createContext, useContext } from 'react';
 import "./DraggableWindow.scss";
 import classNames from 'classnames';
 
@@ -50,6 +50,28 @@ export const DraggableWindow = ({
     const _window = useRef<HTMLDivElement>(null);
 
     const dragDisabled = disableDrag || pinnedBottom;
+
+    const clampPosition = useCallback((pos: Position): Position => {
+        const width = _window.current?.offsetWidth || 0;
+        const height = _window.current?.offsetHeight || 0;
+        const maxX = Math.max(0, window.innerWidth - width);
+        const maxY = Math.max(0, window.innerHeight - height);
+        return {
+            x: Math.min(Math.max(0, pos.x), maxX),
+            y: Math.min(Math.max(0, pos.y), maxY),
+        };
+    }, []);
+
+    useEffect(() => {
+        const handleWindowResize = () => {
+            if (pinnedBottom) return;
+            const clamped = clampPosition(_draggableWindowPosition.current);
+            _draggableWindowPosition.current = clamped;
+            setPosition(clamped);
+        };
+        window.addEventListener("resize", handleWindowResize);
+        return () => window.removeEventListener("resize", handleWindowResize);
+    }, [clampPosition, pinnedBottom]);
 
     const togglePinBottom = useCallback(() => {
         setPinnedBottom(pinned => !pinned);

@@ -189,6 +189,13 @@ function CollapsibleWindowBody({
   const [height, setHeight] = useState(initialHeight);
   const [lastHeight, setLastHeight] = useState(initialHeight);
   const [width, setWidth] = useState(initialWidth);
+  const [viewport, setViewport] = useState({ width: window.innerWidth, height: window.innerHeight });
+
+  useEffect(() => {
+    const handleResize = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const collapsedPinned = pinnedBottom && !open;
   const collapsedPinnedRef = useRef(collapsedPinned);
@@ -209,8 +216,13 @@ function CollapsibleWindowBody({
       const resizeObserver = new ResizeObserver(() => {
         if (collapsedPinnedRef.current) return;
         const rect = node.getBoundingClientRect();
-        setHeight(rect.height);
-        setWidth(rect.width);
+        // Ignore sizes forced by the viewport cap (maxWidth/maxHeight); otherwise
+        // shrinking the viewport would overwrite the user's chosen size and it
+        // wouldn't grow back when the viewport does.
+        const cappedByViewportWidth = rect.width >= window.innerWidth;
+        const cappedByViewportHeight = rect.height >= window.innerHeight;
+        if (!cappedByViewportWidth) setWidth(rect.width);
+        if (!cappedByViewportHeight) setHeight(rect.height);
       });
       resizeObserver.observe(node);
     }
@@ -246,8 +258,10 @@ function CollapsibleWindowBody({
         position: "relative",
         minWidth: collapsedPinned ? undefined : "300px",
         width: collapsedPinned ? PINNED_COLLAPSED_WIDTH : width,
+        maxWidth: `${viewport.width}px`,
         minHeight: open ? "300px" : undefined,
         height: open ? height : "auto",
+        maxHeight: `${viewport.height}px`,
         zIndex: 10000,
         borderRadius: pinnedBottom ? "8px 8px 0 0" : "8px",
         boxShadow: "5px 5px 30px 5px rgba(0, 0, 0, 0.2)",
