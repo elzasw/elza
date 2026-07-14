@@ -35,11 +35,9 @@ import cz.tacr.elza.controller.vo.AiContextObjectVO;
 import cz.tacr.elza.controller.vo.AiConversationCreateVO;
 import cz.tacr.elza.controller.vo.AiConversationDetailVO;
 import cz.tacr.elza.controller.vo.AiConversationVO;
-import cz.tacr.elza.controller.vo.AiRequestActivityVO;
 import cz.tacr.elza.controller.vo.AiRequestCreateVO;
 import cz.tacr.elza.controller.vo.AiRequestEventVO;
 import cz.tacr.elza.controller.vo.AiRequestVO;
-import cz.tacr.elza.controller.vo.AiUsageVO;
 import cz.tacr.elza.domain.AiConversation;
 import cz.tacr.elza.domain.AiExternalSystem;
 import cz.tacr.elza.domain.AiRequest;
@@ -90,13 +88,13 @@ public class AiConversationService {
     private AiProviderService aiProviderService;
 
     @Autowired
-    private AiBlockMapperRegistry blockMapperRegistry;
-
-    @Autowired
-    private AiActivityMapper activityMapper;
+    private AiRequestViewMapper requestViewMapper;
 
     @Autowired
     private AiRequestPoller aiRequestPoller;
+
+    @Autowired
+    private AiEventPoller aiEventPoller;
 
     @Autowired
     private UserService userService;
@@ -211,9 +209,7 @@ public class AiConversationService {
             }
             addEvent(request, AiRequestEvent.TYPE_CANCEL, null);
         }
-        return toVO(request, aiRequestEventRepository
-                .findByAiRequestIdInOrderByCreateDateAscAiRequestEventIdAsc(
-                        List.of(request.getAiRequestId())));
+        return requestViewMapper.loadVO(request);
     }
 
     @Transactional
@@ -311,6 +307,7 @@ public class AiConversationService {
             @Override
             public void afterCommit() {
                 aiRequestPoller.ensurePolling(requestId);
+                aiEventPoller.ensurePolling(requestId);
             }
         });
     }
@@ -412,28 +409,15 @@ public class AiConversationService {
                                              final AiExternalSystem externalSystem) {
         List<AiRequest> stored = aiRequestRepository
                 .findByAiConversationIdOrderByCreateDateAsc(conversation.getAiConversationId());
-        Map<Integer, List<AiRequestEvent>> eventsByRequest = loadEvents(stored);
+        Map<Integer, List<AiRequestEvent>> eventsByRequest = requestViewMapper.loadEventsByRequest(stored);
         List<AiRequestVO> requests = new ArrayList<>();
         for (AiRequest request : stored) {
-            requests.add(toVO(request, eventsByRequest.getOrDefault(request.getAiRequestId(), List.of())));
+            requests.add(requestViewMapper.toVO(request,
+                    eventsByRequest.getOrDefault(request.getAiRequestId(), List.of())));
         }
         return new AiConversationDetailVO()
                 .conversation(toVO(conversation, externalSystem))
                 .requests(requests);
-    }
-
-    /** Event logs of the given requests (one query), grouped by request id in stable order. */
-    private Map<Integer, List<AiRequestEvent>> loadEvents(final List<AiRequest> requests) {
-        if (requests.isEmpty()) {
-            return Map.of();
-        }
-        List<Integer> ids = requests.stream().map(AiRequest::getAiRequestId).toList();
-        Map<Integer, List<AiRequestEvent>> byRequest = new HashMap<>();
-        for (AiRequestEvent event : aiRequestEventRepository
-                .findByAiRequestIdInOrderByCreateDateAscAiRequestEventIdAsc(ids)) {
-            byRequest.computeIfAbsent(event.getAiRequestId(), k -> new ArrayList<>()).add(event);
-        }
-        return byRequest;
     }
 
     private AiConversationVO toVO(final AiConversation conversation, final AiExternalSystem externalSystem) {
@@ -445,40 +429,6 @@ public class AiConversationService {
                 .context(deserializeContext(conversation.getContext()))
                 .createDate(toOffset(conversation.getCreateDate()))
                 .lastChangeDate(toOffset(conversation.getLastChangeDate()));
-    }
-
-    private AiRequestVO toVO(final AiRequest request, final List<AiRequestEvent> events) {
-        AiRequestVO vo = new AiRequestVO()
-                .id(request.getAiRequestId())
-                .taskType(request.getTaskType())
-                .state(request.getState())
-                .userInstructions(request.getUserInstructions())
-                .errorCode(request.getErrorCode())
-                .errorMessage(request.getErrorMessage())
-                .promptVersion(request.getPromptVersion())
-                .profile(request.getProfile())
-                .createDate(toOffset(request.getCreateDate()))
-                .finishDate(toOffset(request.getFinishDate()));
-        if (!isTerminal(request.getState())) {
-            vo.setProgressMessage(request.getProgressMessage());
-            vo.setProgressPercent(request.getProgressPercent() != null
-                    ? request.getProgressPercent().floatValue() : null);
-        }
-        List<AiRequestActivityVO> activities = activityMapper.map(events);
-        if (!activities.isEmpty()) {
-            vo.setActivities(activities);
-        }
-        if ("done".equals(request.getState()) && request.getOutput() != null) {
-            vo.setBlocks(blockMapperRegistry.map(request.getOutput()));
-        }
-        if (request.getFinishDate() != null || !"queued".equals(request.getState())) {
-            vo.setUsage(new AiUsageVO()
-                    .inputTokens(request.getInputTokens())
-                    .outputTokens(request.getOutputTokens())
-                    .costUnits(request.getCostUnits())
-                    .chargedCredits(request.getChargedCredits()));
-        }
-        return vo;
     }
 
     private AiConversation loadOwnConversation(final Integer conversationId) {

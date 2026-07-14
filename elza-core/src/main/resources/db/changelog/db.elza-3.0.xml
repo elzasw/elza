@@ -1515,4 +1515,17 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="20260714120000" author="ppy">
+        <!-- Cursor of the provider's task-event stream (protocol 0.8:
+             GET /tasks/{id}/events): the greatest TaskEvent.seq already
+             consumed and persisted into ai_request_event. The event poller
+             resumes from here after a restart, so no event is stored twice
+             (the provider stream is replayable). -->
+        <addColumn tableName="ai_request">
+            <column name="event_seq" type="bigint" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

@@ -5643,11 +5643,19 @@ components:
           minimum: 0
           maximum: 100
           description: Rough completion estimate 0–100 (advisory).
+        partialAnswer:
+          type: string
+          description: |-
+            Accumulated streamed answer text of a running request (provider protocol
+            0.8+, `answer_delta` events). Provisional: it may still be superseded by
+            the provider — the authoritative answer arrives in `blocks` when state =
+            done. Absent once terminal, when the provider streams nothing, or after a
+            server restart mid-exchange.
         activities:
           type: array
           items:
             $ref: '#/components/schemas/AiRequestActivity'
-          description: User-visible steps of the exchange (tool executions), oldest first.
+          description: User-visible steps of the exchange (tool executions, preparation steps), oldest first.
         promptVersion:
           type: string
         profile:
@@ -5666,6 +5674,12 @@ components:
         set (`queued`, `running`, `awaiting_tools`, `done`, `error`, `cancelled`);
         a client MUST treat an unknown state as "in progress". `blocks` is present
         when `done` (see AiDisplayBlock for the rendering contract).
+
+        Live updates: while an exchange runs, the server pushes this object to the
+        conversation owner's WebSocket user queue `/user/queue/ai-request` as
+        `{eventType: "AI_REQUEST_UPDATE", conversationId, request}`. Each message is
+        a complete snapshot — the client replaces the request by `id` (delivery is
+        best effort; the client refetches the conversation on reconnect).
     AiRequestActivity:
       type: object
       required:
@@ -5679,10 +5693,13 @@ components:
           description: Stable id of the step within the exchange (the provider's tool-call id).
         kind:
           type: string
-          description: TOOL_CALL (open set).
+          description: TOOL_CALL | PREPARATION (open set).
         tool:
           type: string
-          description: 'Tool name for TOOL_CALL: `searchNodes`, `getItemTypes`, …'
+          description: |-
+            Tool name for TOOL_CALL: a client tool Elza executed (`searchNodes`,
+            `getItemTypes`, …) or a provider-internal one (`search_knowledge`, …);
+            an unknown name renders as a generic step.
         state:
           type: string
           description: RUNNING | DONE | ERROR (open set).
@@ -5747,10 +5764,16 @@ components:
           type: integer
         eventType:
           type: string
-          description: SUBMIT | TOOL_CALLS | TOOL_RESULTS | OUTPUT | ERROR | CANCEL (open set).
+          description: |-
+            SUBMIT | TOOL_CALLS | TOOL_RESULTS | OUTPUT | ERROR | CANCEL (open set).
+            Lowercase codes (`phase`, `tool_call`, `tool_result`, `model_round`, …)
+            are events observed from the provider's task-event stream (protocol
+            0.8+), stored as received.
         data:
           type: string
-          description: Event payload (JSON string); shape depends on eventType.
+          description: |-
+            Event payload (JSON string); shape depends on eventType. For provider
+            wire codes this is the received `TaskEvent` object.
         createDate:
           type: string
           format: date-time

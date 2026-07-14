@@ -33,4 +33,17 @@ public class AiToolRegistry {
     public AiTool get(final StandardToolName name) {
         return byName.get(name);
     }
+
+    /** True when the wire tool name is a client tool Elza executes itself. */
+    public boolean isClientTool(final String wireName) {
+        if (wireName == null) {
+            return false;
+        }
+        for (StandardToolName name : byName.keySet()) {
+            if (wireName.equals(name.getValue())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

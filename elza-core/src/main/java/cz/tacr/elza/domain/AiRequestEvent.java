@@ -34,6 +34,19 @@ public class AiRequestEvent {
     public static final String TYPE_ERROR = "ERROR";
     public static final String TYPE_CANCEL = "CANCEL";
 
+    /**
+     * Provider task-event wire codes (protocol 0.8+), stored as received by
+     * {@code AiEventPoller} with {@code data} = the wire {@code TaskEvent}
+     * JSON. Lowercase distinguishes provider-observed events from Elza's own
+     * UPPERCASE codes in the same open set; further wire codes (lifecycle,
+     * {@code model_round}, …) are stored too and simply have no constant here.
+     */
+    public static final String TYPE_PROVIDER_TOOL_CALL = "tool_call";
+    public static final String TYPE_PROVIDER_TOOL_RESULT = "tool_result";
+    public static final String TYPE_PROVIDER_PREPARATION = "preparation";
+    public static final String TYPE_PROVIDER_PHASE = "phase";
+    public static final String TYPE_PROVIDER_ANSWER_DELTA = "answer_delta";
+
     @Id
     @GeneratedValue
     @Column(name = "ai_request_event_id")

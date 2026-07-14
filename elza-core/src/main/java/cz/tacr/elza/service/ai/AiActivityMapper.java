@@ -2,6 +2,7 @@ package cz.tacr.elza.service.ai;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -25,11 +26,24 @@ import cz.tacr.elza.domain.AiRequestEvent;
 
 /**
  * Derives the user-visible steps of an exchange ({@code AiRequest.activities})
- * from its stored transparency events: each tool call the model requested
- * (a {@code TOOL_CALLS} event entry) becomes one activity, completed by the
- * matching {@code TOOL_RESULTS} entry (paired by {@code callId}). The events
- * keep the full payloads; an activity carries only a render-ready summary —
- * the query, the result size and the touched objects as navigable links.
+ * from its stored transparency events, oldest first:
+ *
+ * <ul>
+ * <li><b>Client tools</b> — each tool call the model requested (a
+ * {@code TOOL_CALLS} event entry) becomes one activity, completed by the
+ * matching {@code TOOL_RESULTS} entry (paired by {@code callId}). Elza
+ * executed these itself, so the full arguments and results are available
+ * (query, result size, touched objects as navigable links).</li>
+ * <li><b>Provider-internal tools</b> — {@code tool_call}/{@code tool_result}
+ * wire events (protocol 0.8 task-event stream) of tools the provider ran
+ * itself ({@code search_knowledge}, …). Only a curated summary crosses the
+ * wire, so these activities carry the tool name, a best-effort query and an
+ * error flag. Wire tool events naming a <i>client</i> tool are skipped —
+ * Elza's own records above are strictly richer.</li>
+ * <li><b>Preparation steps</b> — {@code preparation} wire events (e.g.
+ * resolving rule-set dictionaries before the model turn).</li>
+ * </ul>
+ *
  * Best-effort: an unreadable event is skipped (logged), the raw event log
  * stays available for retrospection.
  */
@@ -40,6 +54,7 @@ public class AiActivityMapper {
 
     /** Activity kinds (open set on the wire). */
     public static final String KIND_TOOL_CALL = "TOOL_CALL";
+    public static final String KIND_PREPARATION = "PREPARATION";
 
     /** Activity states (open set on the wire; unknown = still running). */
     public static final String STATE_RUNNING = "RUNNING";
@@ -50,29 +65,53 @@ public class AiActivityMapper {
     private static final String TOOL_SEARCH_NODES = "searchNodes";
     private static final String TOOL_GET_ITEM_TYPES = "getItemTypes";
 
+    /** Detail keys tried for the query summary of a provider-internal tool call. */
+    private static final List<String> QUERY_KEYS = List.of("query", "fulltext", "q");
+
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private AiToolRegistry toolRegistry;
+
     /**
      * Maps a request's ordered event log to its activities, oldest first. Only
-     * tool events contribute; the other event types are covered by the request
-     * itself (instructions, blocks, error).
+     * tool and preparation events contribute; the other event types are covered
+     * by the request itself (instructions, progress, blocks, error).
      */
     public List<AiRequestActivityVO> map(final List<AiRequestEvent> events) {
-        Map<String, AiRequestActivityVO> byCallId = new LinkedHashMap<>();
+        Mapping mapping = new Mapping();
         for (AiRequestEvent event : events) {
             try {
-                if (AiRequestEvent.TYPE_TOOL_CALLS.equals(event.getEventType())) {
-                    addCalls(event, byCallId);
-                } else if (AiRequestEvent.TYPE_TOOL_RESULTS.equals(event.getEventType())) {
-                    applyResults(event, byCallId);
+                switch (event.getEventType()) {
+                    case AiRequestEvent.TYPE_TOOL_CALLS
+                        -> addCalls(event, mapping.byCallId);
+                    case AiRequestEvent.TYPE_TOOL_RESULTS
+                        -> applyResults(event, mapping.byCallId);
+                    case AiRequestEvent.TYPE_PROVIDER_TOOL_CALL
+                        -> addProviderCall(event, mapping);
+                    case AiRequestEvent.TYPE_PROVIDER_TOOL_RESULT
+                        -> applyProviderResult(event, mapping);
+                    case AiRequestEvent.TYPE_PROVIDER_PREPARATION
+                        -> addPreparation(event, mapping);
+                    default -> { /* not a user-visible step */ }
                 }
             } catch (Exception e) {
                 logger.warn("Unreadable AI request event {} ({}) skipped: {}",
                         event.getAiRequestEventId(), event.getEventType(), e.getMessage());
             }
         }
-        return new ArrayList<>(byCallId.values());
+        return new ArrayList<>(mapping.byCallId.values());
+    }
+
+    /** Working state of one mapping pass. */
+    private static class Mapping {
+
+        /** All activities in first-seen order, keyed by call id (or a synthetic key). */
+        final Map<String, AiRequestActivityVO> byCallId = new LinkedHashMap<>();
+
+        /** Provider-internal activities awaiting their result, per tool, oldest first. */
+        final Map<String, List<AiRequestActivityVO>> pendingByTool = new LinkedHashMap<>();
     }
 
     /** One activity per tool call of a {@code TOOL_CALLS} event. */
@@ -113,6 +152,128 @@ public class AiActivityMapper {
             activity.setState(STATE_DONE);
             summarizeResult(activity, result.path("result"));
         }
+    }
+
+    /**
+     * One activity per provider-internal {@code tool_call} wire event. Calls of
+     * <i>client</i> tools are skipped — the provider echoes them into the stream
+     * too, but Elza's own {@code TOOL_CALLS}/{@code TOOL_RESULTS} records carry
+     * the full payloads and produce the richer activity.
+     */
+    private void addProviderCall(final AiRequestEvent event, final Mapping mapping) throws Exception {
+        JsonNode wire = readObject(event.getData());
+        String tool = text(wire, "tool");
+        if (tool == null || toolRegistry.isClientTool(tool)) {
+            return;
+        }
+        JsonNode detail = wire.path("detail");
+        String callId = text(detail, "callId");
+        String key = callId != null ? callId : "e" + text(wire, "seq");
+        AiRequestActivityVO activity = new AiRequestActivityVO()
+                .id(key)
+                .kind(KIND_TOOL_CALL)
+                .tool(tool)
+                .state(STATE_RUNNING)
+                .query(extractProviderQuery(detail))
+                .startDate(wireDate(wire, event));
+        mapping.byCallId.put(key, activity);
+        mapping.pendingByTool.computeIfAbsent(tool, k -> new ArrayList<>()).add(activity);
+    }
+
+    /**
+     * Completes a provider-internal activity from a {@code tool_result} wire
+     * event: by {@code callId} when the provider sent one, else the oldest
+     * still-running call of the same tool (events arrive in emission order).
+     */
+    private void applyProviderResult(final AiRequestEvent event, final Mapping mapping) throws Exception {
+        JsonNode wire = readObject(event.getData());
+        String tool = text(wire, "tool");
+        JsonNode detail = wire.path("detail");
+        String callId = text(detail, "callId");
+        AiRequestActivityVO activity = callId != null ? mapping.byCallId.get(callId) : null;
+        if (activity == null && tool != null) {
+            List<AiRequestActivityVO> pending = mapping.pendingByTool.getOrDefault(tool, List.of());
+            activity = pending.stream()
+                    .filter(a -> STATE_RUNNING.equals(a.getState()))
+                    .findFirst().orElse(null);
+        }
+        if (activity == null) {
+            return;
+        }
+        activity.setEndDate(wireDate(wire, event));
+        String error = text(detail, "error");
+        if (error != null) {
+            activity.setState(STATE_ERROR);
+            activity.setError(error);
+        } else {
+            activity.setState(STATE_DONE);
+        }
+    }
+
+    /** A preparation step ({@code preparation} wire event) as one completed activity. */
+    private void addPreparation(final AiRequestEvent event, final Mapping mapping) throws Exception {
+        JsonNode wire = readObject(event.getData());
+        String key = "e" + text(wire, "seq");
+        OffsetDateTime at = wireDate(wire, event);
+        mapping.byCallId.put(key, new AiRequestActivityVO()
+                .id(key)
+                .kind(KIND_PREPARATION)
+                .state(STATE_DONE)
+                .query(text(wire, "message"))
+                .startDate(at)
+                .endDate(at));
+    }
+
+    /**
+     * Best-effort query summary of a provider-internal tool call. The wire
+     * {@code detail} is curated free JSON whose exact shape is provider-owned;
+     * common keys are tried (directly and under {@code arguments}), else null —
+     * the activity then renders as a plain step.
+     */
+    private static String extractProviderQuery(final JsonNode detail) {
+        if (detail == null || detail.isMissingNode() || detail.isNull()) {
+            return null;
+        }
+        if (detail.isTextual()) {
+            return StringUtils.trimToNull(detail.asText());
+        }
+        for (String queryKey : QUERY_KEYS) {
+            String value = text(detail, queryKey);
+            if (value != null) {
+                return value;
+            }
+        }
+        JsonNode arguments = detail.get("arguments");
+        if (arguments != null && arguments.isObject()) {
+            for (String queryKey : QUERY_KEYS) {
+                String value = text(arguments, queryKey);
+                if (value != null) {
+                    return value;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** The wire event's own timestamp; falls back to the local receive time. */
+    private static OffsetDateTime wireDate(final JsonNode wire, final AiRequestEvent event) {
+        String createdAt = text(wire, "createdAt");
+        if (createdAt != null) {
+            try {
+                return OffsetDateTime.parse(createdAt);
+            } catch (DateTimeParseException e) {
+                // fall through to the receive time
+            }
+        }
+        return toOffset(event.getCreateDate());
+    }
+
+    private JsonNode readObject(final String data) throws Exception {
+        if (StringUtils.isBlank(data)) {
+            return objectMapper.createObjectNode();
+        }
+        JsonNode root = objectMapper.readTree(data);
+        return root.isObject() ? root : objectMapper.createObjectNode();
     }
 
     /** The data-like input summary shown next to the step's title. */

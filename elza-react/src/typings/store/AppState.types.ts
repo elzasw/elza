@@ -483,6 +483,12 @@ export interface StructuresState {
     };
 }
 
+export interface WebSocketState {
+    connected: boolean;
+    loading: boolean;
+    disconnectedOnError: boolean;
+}
+
 export interface AppState {
     splitter: SplitterState;
     adminRegion: AdminRegionState;
@@ -503,5 +509,5 @@ export interface AppState {
     tab: unknown;
     toastr: unknown;
     userDetail: UserDetail;
-    webSocket: unknown;
+    webSocket: WebSocketState;
 }

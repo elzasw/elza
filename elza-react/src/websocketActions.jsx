@@ -187,6 +187,8 @@ export class websocket {
         console.info('#ws Websocket connected');
         store.dispatch(webSocketConnect());
         this.stompClient.subscribe('/topic/api/changes', this.onMessage);
+        // User destination - direct messages for the logged user only (AI request updates)
+        this.stompClient.subscribe('/user/queue/ai-request', this.onMessage);
     };
 
     // Handles websocket disconnects
@@ -333,6 +335,8 @@ let eventMap = {
     ISSUE_LIST_CREATE: issueListCreate,
     ISSUE_UPDATE: issueUpdate,
     ISSUE_CREATE: issueCreate,
+    // Handled by useAiConversation through websocket listeners
+    AI_REQUEST_UPDATE: () => { },
 };
 
 if (!window.ws) {
