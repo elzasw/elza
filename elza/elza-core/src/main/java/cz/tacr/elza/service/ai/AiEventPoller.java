@@ -29,12 +29,10 @@ import cz.tacr.elza.domain.AiConversation;
 import cz.tacr.elza.domain.AiExternalSystem;
 import cz.tacr.elza.domain.AiRequest;
 import cz.tacr.elza.domain.AiRequestEvent;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.AiConversationRepository;
 import cz.tacr.elza.repository.AiExternalSystemRepository;
 import cz.tacr.elza.repository.AiRequestEventRepository;
 import cz.tacr.elza.repository.AiRequestRepository;
-import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.service.AiProviderService;
 
 /**
@@ -46,7 +44,7 @@ import cz.tacr.elza.service.AiProviderService;
  * wire code, {@code data} = the wire event JSON), mirrors {@code phase} events
  * into the request's progress columns, accumulates {@code answer_delta} text
  * in the {@link AiAnswerBuffer}, and pushes the updated request snapshot to
- * the conversation owner ({@link AiRequestPushService}).
+ * the conversation owner ({@link cz.tacr.elza.websocket.UserEventPushService}).
  *
  * <p>Strictly an enhancement next to the authoritative task poll
  * ({@link AiRequestPoller}): the stream is advisory by contract — a provider
@@ -81,13 +79,10 @@ public class AiEventPoller {
     private AiProviderService aiProviderService;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private AiRequestViewMapper requestViewMapper;
 
     @Autowired
-    private AiRequestPushService pushService;
+    private cz.tacr.elza.websocket.UserEventPushService pushService;
 
     @Autowired
     private AiAnswerBuffer answerBuffer;
@@ -168,7 +163,7 @@ public class AiEventPoller {
                     continue;
                 }
                 AiRequestUpdateMessage message = applyBatch(aiRequestId, batch);
-                pushService.push(target.username, message);
+                pushService.push(target.userId(), message);
                 if (batch.getState() != null
                         && TERMINAL_STATES.contains(batch.getState().getValue())) {
                     // The final lifecycle event is delivered with the terminal state;
@@ -234,10 +229,8 @@ public class AiEventPoller {
             if (externalSystem == null) {
                 return null;
             }
-            UsrUser owner = userRepository.findById(conversation.getUserId()).orElse(null);
             return new PollTarget(request.getTaskUid(), request.getEventSeq(),
-                    conversation.getUserId(), owner != null ? owner.getUsername() : null,
-                    externalSystem);
+                    conversation.getUserId(), externalSystem);
         });
     }
 
@@ -304,7 +297,7 @@ public class AiEventPoller {
         }
     }
 
-    private record PollTarget(String taskUid, long eventSeq, Integer userId, String username,
+    private record PollTarget(String taskUid, long eventSeq, Integer userId,
             AiExternalSystem externalSystem) {
     }
 }

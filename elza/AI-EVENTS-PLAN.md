@@ -39,11 +39,30 @@ provider GET /tasks/{id}        provider GET /tasks/{id}/events
 1. **Task poll stays authoritative.** `AiRequestPoller` is unchanged as the
    state-machine driver. The event stream is advisory by contract (a provider
    may emit none — S1 serves an empty stream), so nothing may depend on it.
-2. **Per-user WebSocket push instead of notify+refetch.** The broker already
-   configures `setUserDestinationPrefix("/user")` and the STOMP handshake is
-   session-authenticated, so `convertAndSendToUser(username, "/queue/ai-request",
-   …)` reaches only that user's sessions (all tabs). The old broadcast
-   `AI_REQUEST_CHANGE` (id-only, whole-conversation refetch) is **replaced**.
+2. **Per-user WebSocket push instead of notify+refetch.** The server pushes to
+   a **generic** per-user topic `/topic/user/{userId}` (not AI-specific — any
+   user-targeted event can ride it, discriminated by `eventType`, exactly like
+   the shared `/topic/api/changes` broadcast). The owner's client subscribes to
+   its own topic; `UserTopicSubscriptionInterceptor` refuses a subscription to
+   anyone else's. `UserEventPushService` (websocket package) sends it; AI keeps
+   only its message type (`AiRequestUpdateMessage`, `eventType:
+   AI_REQUEST_UPDATE`). The old broadcast `AI_REQUEST_CHANGE` (id-only,
+   whole-conversation refetch) is **replaced**.
+
+   > **Why a plain topic, not a Spring user destination `/user/**`.** The first
+   > cut used `convertAndSendToUser(username, "/queue/ai-request", …)`. On the
+   > deployed server it delivered nothing: TRACE on
+   > `o.s.messaging.simp.user.UserDestinationMessageHandler` showed the outbound
+   > `/user/{name}/queue/ai-request` **was** translated to the session queue,
+   > but the client's SUBSCRIBE to `/user/queue/ai-request` was never registered
+   > by the `SimpleBrokerMessageHandler` (no `Processing SUBSCRIBE
+   > /queue/ai-request-user…` line, whereas `/topic/api/changes` logs one) — in
+   > this app's customized STOMP channel stack (per-session executor decorators
+   > on the in/outbound channels) the translated user-destination subscription
+   > is dropped, so sends resolve to a destination with no subscriber. Plain
+   > `/topic/**` subscriptions register and deliver reliably, so per-user updates
+   > use a plain per-user topic keyed by userId with a subscribe-authorization
+   > interceptor. Confirmed on the deployed server 2026-07-14.
 3. **Push whole snapshots, not deltas.** The message carries the complete
    render-ready `AiRequest` VO (state, progress, activities, partialAnswer,
    blocks when done). The simple broker is fire-and-forget and the client

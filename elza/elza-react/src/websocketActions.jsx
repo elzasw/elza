@@ -187,8 +187,16 @@ export class websocket {
         console.info('#ws Websocket connected');
         store.dispatch(webSocketConnect());
         this.stompClient.subscribe('/topic/api/changes', this.onMessage);
-        // User destination - direct messages for the logged user only (AI request updates)
-        this.stompClient.subscribe('/user/queue/ai-request', this.onMessage);
+        // Per-user channel: messages addressed to the logged user only (AI request
+        // updates today, other user-targeted events later), routed by eventType
+        // like the broadcast above. The server rejects a subscription to anyone
+        // else's topic (see UserTopicSubscriptionInterceptor).
+        const userId = store.getState().userDetail?.id;
+        if (userId != null) {
+            this.stompClient.subscribe('/topic/user/' + userId, this.onMessage);
+        } else {
+            console.warn('#ws per-user channel not subscribed - no logged user id yet');
+        }
     };
 
     // Handles websocket disconnects
