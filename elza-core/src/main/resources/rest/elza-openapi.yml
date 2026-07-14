@@ -5676,7 +5676,7 @@ components:
         when `done` (see AiDisplayBlock for the rendering contract).
 
         Live updates: while an exchange runs, the server pushes this object to the
-        conversation owner's WebSocket user queue `/user/queue/ai-request` as
+        conversation owner's per-user WebSocket topic `/topic/user/{userId}` as
         `{eventType: "AI_REQUEST_UPDATE", conversationId, request}`. Each message is
         a complete snapshot — the client replaces the request by `id` (delivery is
         best effort; the client refetches the conversation on reconnect).

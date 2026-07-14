@@ -3,10 +3,10 @@ package cz.tacr.elza.service.ai;
 import cz.tacr.elza.controller.vo.AiRequestVO;
 
 /**
- * WebSocket message pushed to the conversation owner's user queue
- * ({@link AiRequestPushService#AI_REQUEST_DESTINATION}) whenever an AI request
- * changes. Carries the complete render-ready request snapshot, so the client
- * simply replaces the request in its conversation state — messages are
+ * WebSocket message pushed to the conversation owner's per-user topic
+ * (see {@link cz.tacr.elza.websocket.UserEventPushService}) whenever an AI
+ * request changes. Carries the complete render-ready request snapshot, so the
+ * client simply replaces the request in its conversation state — messages are
  * idempotent and a lost one is corrected by the next (the client refetches the
  * conversation on reconnect).
  *

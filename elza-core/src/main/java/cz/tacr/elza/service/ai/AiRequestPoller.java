@@ -31,12 +31,10 @@ import cz.tacr.elza.domain.AiConversation;
 import cz.tacr.elza.domain.AiExternalSystem;
 import cz.tacr.elza.domain.AiRequest;
 import cz.tacr.elza.domain.AiRequestEvent;
-import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.AiConversationRepository;
 import cz.tacr.elza.repository.AiExternalSystemRepository;
 import cz.tacr.elza.repository.AiRequestEventRepository;
 import cz.tacr.elza.repository.AiRequestRepository;
-import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.service.AiProviderService;
 
 /**
@@ -44,7 +42,8 @@ import cz.tacr.elza.service.AiProviderService;
  * the provider (protocol {@code GET /tasks/{id}?wait=30}), persists every
  * observed change ({@code ai_request} state/output/usage + OUTPUT/ERROR
  * events) and pushes the updated request snapshot to the conversation owner's
- * WebSocket user queue ({@link AiRequestPushService}). Polling of open
+ * per-user WebSocket topic ({@link cz.tacr.elza.websocket.UserEventPushService}).
+ * Polling of open
  * requests resumes on application start, so a restart loses nothing.
  *
  * <p>This poll is the authoritative state machine of an exchange. The finer
@@ -78,13 +77,10 @@ public class AiRequestPoller {
     private AiProviderService aiProviderService;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private AiRequestViewMapper requestViewMapper;
 
     @Autowired
-    private AiRequestPushService pushService;
+    private cz.tacr.elza.websocket.UserEventPushService pushService;
 
     @Autowired
     private AiAnswerBuffer answerBuffer;
@@ -188,11 +184,9 @@ public class AiRequestPoller {
             if (externalSystem == null) {
                 return null;
             }
-            UsrUser owner = userRepository.findById(conversation.getUserId()).orElse(null);
             return new PollTarget(request.getTaskUid(), request.getState(),
                     request.getCostUnits(), request.getProgressMessage(), request.getProgressPercent(),
-                    conversation.getAiConversationId(), conversation.getUserId(),
-                    owner != null ? owner.getUsername() : null, externalSystem);
+                    conversation.getAiConversationId(), conversation.getUserId(), externalSystem);
         });
     }
 
@@ -263,7 +257,7 @@ public class AiRequestPoller {
             }
             return requestViewMapper.buildUpdateMessage(request);
         });
-        pushService.push(target.username, message);
+        pushService.push(target.userId(), message);
     }
 
     /**
@@ -331,7 +325,7 @@ public class AiRequestPoller {
             addEvent(request, eventType, data);
             return requestViewMapper.buildUpdateMessage(request);
         });
-        pushService.push(target.username, message);
+        pushService.push(target.userId(), message);
     }
 
     private void addEvent(final AiRequest request, final String eventType, final String data) {
@@ -377,7 +371,7 @@ public class AiRequestPoller {
 
     private record PollTarget(String taskUid, String state, double costUnits,
             String progressMessage, Double progressPercent,
-            Integer conversationId, Integer userId, String username,
+            Integer conversationId, Integer userId,
             AiExternalSystem externalSystem) {
     }
 }
