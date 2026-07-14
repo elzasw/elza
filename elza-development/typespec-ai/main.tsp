@@ -825,11 +825,26 @@ enum TaskState {
  *   description item (`RECORD_REF`) or from another entity's parts; the client
  *   resolves it under the requesting user's read permissions and returns its
  *   identity, classification, `ruleSetCode` and complete part tree.
+ * - `searchEntities` — search archival entities (access points). Arguments
+ *   `SearchEntitiesParams`, result `SearchEntitiesResult`: full text over
+ *   names/description, optionally constrained to an entity class/type or to
+ *   entities referencing a given entity (incoming relations); executed under
+ *   the requesting user's scope read permissions, capped hit list of
+ *   lightweight identities.
+ * - `getArchivalDescription` — fetch one description level in full and/or its
+ *   surroundings in the arrangement tree. Arguments
+ *   `GetArchivalDescriptionParams`, result `ArchivalDescriptionDetail`: the
+ *   level always comes with its complete description items (the round-trip
+ *   dominates the cost); ordered, windowed lists of its children and siblings
+ *   (designed for levels with thousands of nodes) and the parent chain are
+ *   opt-in. Executed under the requesting user's fund read permissions.
  */
 enum StandardToolName {
   getItemTypes,
   searchNodes,
   getArchivalEntity,
+  searchEntities,
+  getArchivalDescription,
 }
 
 /** A pending call of a client-declared tool (present while `awaiting_tools`). */
@@ -928,6 +943,15 @@ model SearchNodesParams {
    * fund the requesting user may read.
    */
   fundIds?: int32[];
+
+  /**
+   * Only description units with an item referencing this entity
+   * (`ApAccessPoint.accessPointId`), regardless of the item type — the
+   * description-side usage of an entity. For a type-specific reference match
+   * use an `ItemCondition` on the `RECORD_REF` item type with the id as
+   * `value` instead (a numeric value on a reference item matches by id).
+   */
+  referencesEntityId?: int32;
 
   /**
    * Requested maximum number of hits in total; the client may cap it lower
@@ -1047,6 +1071,173 @@ model GetArchivalEntityParams {
 
   /** Stable access point UUID (`ApAccessPoint.uuid`) — durable across installations. */
   uuid?: string;
+}
+
+/**
+ * Arguments of the `searchEntities` tool. At least one of `fulltext`,
+ * `typeCode`, `relatedTo` must be given (an unconstrained listing is refused).
+ */
+model SearchEntitiesParams {
+  /** Full-text query over entity names/description (`"…"` = exact phrase). */
+  fulltext?: string;
+
+  /**
+   * Where the full text matches: the preferred name only, every name part
+   * (the default), or the whole description.
+   */
+  area?: EntitySearchArea;
+
+  /**
+   * Restrict the full text to the main part of names (`NM_MAIN`) — e.g. a
+   * surname-only match for persons.
+   */
+  onlyMainPart?: boolean;
+
+  /**
+   * Restrict to one entity class or type (`ApType.code`, e.g. `PERSON` or
+   * `PERSON_INDIVIDUAL`); a non-leaf code includes all its subtypes.
+   */
+  typeCode?: string;
+
+  /**
+   * Only entities whose description references a given entity — the incoming
+   * relations of that entity (relations are stored one-way: son→father lives
+   * on the son, so "find X's children" = entities whose relation items point
+   * at X).
+   */
+  relatedTo?: EntityRelationFilter;
+
+  /**
+   * Requested maximum number of hits; the client may cap it lower (the result
+   * then reports `partial`). Omitted = the client's default.
+   */
+  limit?: int32;
+}
+
+/** Scope of the `searchEntities` full-text match. */
+enum EntitySearchArea {
+  /** The preferred (display) name only. */
+  preferNames,
+
+  /** Every name part (the default). */
+  allNames,
+
+  /** The whole structured description — all parts and items. */
+  allParts,
+}
+
+/** "Has a reference to entity X", optionally narrowed to one relation item type/spec. */
+model EntityRelationFilter {
+  /** The referenced entity (`ApAccessPoint.accessPointId`). */
+  accessPointId: int32;
+
+  /**
+   * Relation item type code (`RulItemType.code`) the reference must use;
+   * omitted = any reference anywhere in the description.
+   */
+  relationTypeCode?: string;
+
+  /** Specification code, when the relation type is enumerated (e.g. the kind of kinship). */
+  relationSpecCode?: string;
+}
+
+/** Result of the `searchEntities` tool. */
+model SearchEntitiesResult {
+  /** The matching entities as lightweight identities, best match first. */
+  entities: ArchivalEntityInfo[];
+
+  /** Total matching entities (before capping). */
+  totalCount: int64;
+
+  /**
+   * True when the result is incomplete (a hit cap was reached). The tool does
+   * not page: refine the query (sharper terms, `typeCode`, `onlyMainPart`)
+   * instead of re-asking with the same terms.
+   */
+  partial: boolean;
+}
+
+/** Arguments of the `getArchivalDescription` tool. Exactly one of the ids. */
+model GetArchivalDescriptionParams {
+  /** Level id (`ArrNode.nodeId`) — the same identity `elza.archivalDescription` and `NodeHit` use. */
+  nodeId?: int32;
+
+  /** Stable level UUID (`ArrNode.uuid`). */
+  uuid?: string;
+
+  /** Include a window of the direct child levels, in arrangement order (default false). */
+  withChildren?: boolean;
+
+  /** 0-based offset of the children window (default 0 = the first children). */
+  childrenFrom?: int32;
+
+  /**
+   * Include a window of the sibling levels (same parent), in arrangement order
+   * (default false). Without `siblingsFrom` the window is centered on the
+   * level itself — its neighborhood; the result reports the level's own index.
+   */
+  withSiblings?: boolean;
+
+  /** 0-based offset of the siblings window; omitted = centered on the level. */
+  siblingsFrom?: int32;
+
+  /** Include the parent chain, root first (default false). */
+  withParents?: boolean;
+
+  /** Requested maximum nodes per window (children / siblings); the client may cap it lower. */
+  limit?: int32;
+}
+
+/**
+ * Result of the `getArchivalDescription` tool: the level — always with its
+ * complete description items (the round-trip dominates the cost; the provider
+ * decides how much reaches the model) — plus the requested surroundings in the
+ * arrangement tree.
+ */
+model ArchivalDescriptionDetail {
+  /** The level itself, the same model the client sends as context, items included. */
+  node: ArchivalDescription;
+
+  /** Fund the level belongs to — scopes follow-up searches (`SearchNodesParams.fundIds`). */
+  fundId: int32;
+
+  /**
+   * Rule set of the fund (`RulRuleSet.code`) — resolves the items' type/spec
+   * codes, the same way `ArchivalEntity.ruleSetCode` does for a fetched entity.
+   */
+  ruleSetCode?: string;
+
+  /** Parent chain, root first (when `withParents`; never windowed — depth is small). */
+  parents?: NodeHit[];
+
+  /** Sibling window (when `withSiblings`). */
+  siblings?: NodeWindow;
+
+  /** Children window (when `withChildren`). */
+  children?: NodeWindow;
+}
+
+/**
+ * One window of an ordered node list. Self-describing — the slice, where it
+ * sits and how long the whole list is — because arrangement lists can be huge
+ * (thousands of units under one series) and, unlike search results, ordered
+ * lists page by design: the caller aims the next window instead of refining.
+ */
+model NodeWindow {
+  /** The window's nodes, in arrangement order. */
+  nodes: NodeHit[];
+
+  /** 0-based index of `nodes[0]` within the whole ordered list. */
+  from: int32;
+
+  /** Size of the whole ordered list. */
+  totalCount: int32;
+
+  /**
+   * Siblings only: the anchor level's own 0-based index within the whole list
+   * — its position among its siblings, and the aim point for a next window.
+   */
+  nodeIndex?: int32;
 }
 
 /**

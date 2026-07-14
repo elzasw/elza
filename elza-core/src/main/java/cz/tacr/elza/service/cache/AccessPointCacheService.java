@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1073,7 +1074,7 @@ public class AccessPointCacheService {
                                                   searchFilter,
                                                   apTypeIds,
                                                   scopeIds,
-                                                  state,
+                                                  state != null ? EnumSet.of(state) : null,
                                                   null,
                                                   from, count,
                                                   sdp);
@@ -1124,7 +1125,8 @@ public class AccessPointCacheService {
 
         QueryResults<ApCachedAccessPoint> firstPage = cachedAccessPointRepository
                 .findApCachedAccessPointisByQuery(searchText, searchFilter, apTypeIds, scopeIds,
-                                                  state, revState, 0, effectivePageSize, sdp);
+                                                  state != null ? EnumSet.of(state) : null,
+                                                  revState, 0, effectivePageSize, sdp);
         int total = firstPage.getRecordCount();
         if (total == 0) {
             return Collections.emptyList();
@@ -1137,7 +1139,8 @@ public class AccessPointCacheService {
             int offset = ids.size();
             QueryResults<ApCachedAccessPoint> page = cachedAccessPointRepository
                     .findApCachedAccessPointisByQuery(searchText, searchFilter, apTypeIds, scopeIds,
-                                                      state, revState, offset, effectivePageSize, sdp);
+                                                      state != null ? EnumSet.of(state) : null,
+                                                      revState, offset, effectivePageSize, sdp);
             if (CollectionUtils.isEmpty(page.getRecords())) {
                 // index produced fewer rows than the initial total reported — stop to avoid spinning
                 break;
