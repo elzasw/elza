@@ -387,13 +387,29 @@ public class AiContextResolver {
             logger.info("AI context access point {} not found; skipped", accessPointId);
             return Optional.empty();
         }
-        ApState apState = cap.getApState();
-        if (!canReadScope(apState.getScopeId())) {
+        if (!canReadScope(cap.getApState().getScopeId())) {
             logger.info("AI context access point {} not readable by user; skipped", accessPointId);
             return Optional.empty();
         }
+        return Optional.of(new ArchivalEntityObject()
+                .objectType(ObjectType.ELZA_ARCHIVAL_ENTITY)
+                .data(buildArchivalEntity(cap)));
+    }
+
+    /**
+     * Maps a cached access point to the full {@code ArchivalEntity} payload —
+     * identity, classification, {@code ruleSetCode} and the tree of parts (each
+     * part's items + its display text). Pure mapping: no permission check (the
+     * caller enforces scope read permission) and the entity references carried by
+     * the parts' items stay bare — enrich them via
+     * {@link #enrichEntityRefs(ArchivalEntity)}, unless the caller batches the
+     * enrichment over a larger object set. Also serves the {@code getArchivalEntity}
+     * tool, whose result is this same payload.
+     */
+    public ArchivalEntity buildArchivalEntity(final CachedAccessPoint cap) {
+        ApState apState = cap.getApState();
         StaticDataProvider sdp = staticDataService.getData();
-        ArchivalEntity entity = new ArchivalEntity().accessPointId(accessPointId);
+        ArchivalEntity entity = new ArchivalEntity().accessPointId(cap.getAccessPointId());
         entity.uuid(cap.getUuid());
         Classification classification = classify(apState.getApTypeId(), sdp);
         if (classification != null) {
@@ -416,9 +432,7 @@ public class AiContextResolver {
                 entity.parts(topParts);
             }
         }
-        return Optional.of(new ArchivalEntityObject()
-                .objectType(ObjectType.ELZA_ARCHIVAL_ENTITY)
-                .data(entity));
+        return entity;
     }
 
     /** Builds one part (recursively, with its sub-parts) from a cached part. */
@@ -535,18 +549,36 @@ public class AiContextResolver {
 
     /**
      * Enriches the entity references carried by description items across the whole
-     * resolved set ({@code RECORD_REF} items point at other access points). In one
-     * batch — a single state load and a single preferred-name load for all
-     * referenced ids — each reference's classification is filled, and its preferred
-     * name when the item did not already carry it (the access-point-cache path does
-     * not). The referenced entity's name is already exposed as the item value, so
-     * this adds no more than the arrangement/registry UI already shows.
+     * resolved set ({@code RECORD_REF} items point at other access points).
      */
     private void enrichEntityRefs(final List<AiObject> objects) {
         List<ArchivalEntityInfo> refs = new ArrayList<>();
         for (AiObject object : objects) {
             collectEntityRefs(object, refs);
         }
+        enrichRefs(refs);
+    }
+
+    /**
+     * Enriches the entity references carried by one entity's parts — the
+     * single-object variant used by the {@code getArchivalEntity} tool, which
+     * resolves an entity outside the context flow.
+     */
+    public void enrichEntityRefs(final ArchivalEntity entity) {
+        List<ArchivalEntityInfo> refs = new ArrayList<>();
+        collectFromParts(entity.getParts(), refs);
+        enrichRefs(refs);
+    }
+
+    /**
+     * Enriches collected entity references in one batch — a single state load and
+     * a single preferred-name load for all referenced ids — filling each
+     * reference's classification, and its preferred name when the item did not
+     * already carry it (the access-point-cache path does not). The referenced
+     * entity's name is already exposed as the item value, so this adds no more
+     * than the arrangement/registry UI already shows.
+     */
+    private void enrichRefs(final List<ArchivalEntityInfo> refs) {
         Set<Integer> ids = refs.stream()
                 .map(ArchivalEntityInfo::getAccessPointId)
                 .filter(Objects::nonNull)

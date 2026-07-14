@@ -818,10 +818,18 @@ enum TaskState {
  *   for records the client did not send (full text and/or item conditions);
  *   the client executes the search under the requesting user's read
  *   permissions and returns a capped hit list grouped by fund.
+ * - `getArchivalEntity` — fetch one archival entity (access point) in full.
+ *   Arguments `GetArchivalEntityParams`, result `ArchivalEntity` (the same
+ *   model the client sends as `elza.archivalEntity` context): the model asks
+ *   for an entity the client did not send — typically one referenced from a
+ *   description item (`RECORD_REF`) or from another entity's parts; the client
+ *   resolves it under the requesting user's read permissions and returns its
+ *   identity, classification, `ruleSetCode` and complete part tree.
  */
 enum StandardToolName {
   getItemTypes,
   searchNodes,
+  getArchivalEntity,
 }
 
 /** A pending call of a client-declared tool (present while `awaiting_tools`). */
@@ -1023,6 +1031,22 @@ model NodeHit {
    * in the arrangement tree.
    */
   referenceMark?: string[];
+}
+
+/**
+ * Arguments of the `getArchivalEntity` tool. Exactly one of the identifiers is
+ * given; the result is the referenced entity as a full `ArchivalEntity` —
+ * identity, classification, `ruleSetCode` and the complete part tree, the same
+ * payload the client sends as `elza.archivalEntity` context. An entity the
+ * requesting user may not read (or that does not exist) is answered with
+ * `ToolResult.error`.
+ */
+model GetArchivalEntityParams {
+  /** Access point id (`ApAccessPoint.accessPointId`) of the entity to fetch. */
+  accessPointId?: int32;
+
+  /** Stable access point UUID (`ApAccessPoint.uuid`) — durable across installations. */
+  uuid?: string;
 }
 
 /**
