@@ -86,6 +86,17 @@ public class AiRequest {
     @Column(name = "error_message")
     private String errorMessage;
 
+    /**
+     * Short human-readable phase of a running task, mirrored from the
+     * provider's advisory {@code Task.progress}; null once terminal.
+     */
+    @Column(name = "progress_message", length = StringLength.LENGTH_1000)
+    private String progressMessage;
+
+    /** Rough completion estimate 0–100 (advisory); null once terminal. */
+    @Column(name = "progress_percent")
+    private Double progressPercent;
+
     /** Model input tokens consumed (informative). */
     @Column(name = "input_tokens", nullable = false)
     private long inputTokens;
@@ -214,6 +225,22 @@ public class AiRequest {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public String getProgressMessage() {
+        return progressMessage;
+    }
+
+    public void setProgressMessage(String progressMessage) {
+        this.progressMessage = progressMessage;
+    }
+
+    public Double getProgressPercent() {
+        return progressPercent;
+    }
+
+    public void setProgressPercent(Double progressPercent) {
+        this.progressPercent = progressPercent;
     }
 
     public long getInputTokens() {

@@ -177,8 +177,8 @@ public class AiRequestPoller {
                 return null;
             }
             return new PollTarget(request.getTaskUid(), request.getState(),
-                    request.getCostUnits(), conversation.getAiConversationId(),
-                    conversation.getUserId(), externalSystem);
+                    request.getCostUnits(), request.getProgressMessage(), request.getProgressPercent(),
+                    conversation.getAiConversationId(), conversation.getUserId(), externalSystem);
         });
     }
 
@@ -187,7 +187,12 @@ public class AiRequestPoller {
         String newState = task.getState().getValue();
         double newCostUnits = task.getUsage() != null && task.getUsage().getCostUnits() != null
                 ? task.getUsage().getCostUnits() : 0;
-        if (Objects.equals(newState, target.state) && newCostUnits == target.costUnits) {
+        String newProgressMessage = task.getProgress() != null ? task.getProgress().getMessage() : null;
+        Double newProgressPercent = task.getProgress() != null && task.getProgress().getPercent() != null
+                ? task.getProgress().getPercent().doubleValue() : null;
+        if (Objects.equals(newState, target.state) && newCostUnits == target.costUnits
+                && Objects.equals(newProgressMessage, target.progressMessage)
+                && Objects.equals(newProgressPercent, target.progressPercent)) {
             return; // long poll expired without a change
         }
         transactionTemplate.executeWithoutResult(status -> {
@@ -196,6 +201,15 @@ public class AiRequestPoller {
                 return;
             }
             request.setState(newState);
+            // Advisory progress is display state of a running task; a finished
+            // exchange shows its result, not the last phase.
+            if (TERMINAL_STATES.contains(newState)) {
+                request.setProgressMessage(null);
+                request.setProgressPercent(null);
+            } else {
+                request.setProgressMessage(newProgressMessage);
+                request.setProgressPercent(newProgressPercent);
+            }
             if (task.getUsage() != null) {
                 request.setInputTokens(nvl(task.getUsage().getInputTokens()));
                 request.setOutputTokens(nvl(task.getUsage().getOutputTokens()));
@@ -345,6 +359,7 @@ public class AiRequestPoller {
     }
 
     private record PollTarget(String taskUid, String state, double costUnits,
+            String progressMessage, Double progressPercent,
             Integer conversationId, Integer userId, AiExternalSystem externalSystem) {
     }
 }

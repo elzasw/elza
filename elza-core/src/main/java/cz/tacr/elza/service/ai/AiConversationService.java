@@ -35,6 +35,7 @@ import cz.tacr.elza.controller.vo.AiContextObjectVO;
 import cz.tacr.elza.controller.vo.AiConversationCreateVO;
 import cz.tacr.elza.controller.vo.AiConversationDetailVO;
 import cz.tacr.elza.controller.vo.AiConversationVO;
+import cz.tacr.elza.controller.vo.AiRequestActivityVO;
 import cz.tacr.elza.controller.vo.AiRequestCreateVO;
 import cz.tacr.elza.controller.vo.AiRequestEventVO;
 import cz.tacr.elza.controller.vo.AiRequestVO;
@@ -90,6 +91,9 @@ public class AiConversationService {
 
     @Autowired
     private AiBlockMapperRegistry blockMapperRegistry;
+
+    @Autowired
+    private AiActivityMapper activityMapper;
 
     @Autowired
     private AiRequestPoller aiRequestPoller;
@@ -207,7 +211,9 @@ public class AiConversationService {
             }
             addEvent(request, AiRequestEvent.TYPE_CANCEL, null);
         }
-        return toVO(request);
+        return toVO(request, aiRequestEventRepository
+                .findByAiRequestIdInOrderByCreateDateAscAiRequestEventIdAsc(
+                        List.of(request.getAiRequestId())));
     }
 
     @Transactional
@@ -402,14 +408,30 @@ public class AiConversationService {
 
     private AiConversationDetailVO getDetail(final AiConversation conversation,
                                              final AiExternalSystem externalSystem) {
+        List<AiRequest> stored = aiRequestRepository
+                .findByAiConversationIdOrderByCreateDateAsc(conversation.getAiConversationId());
+        Map<Integer, List<AiRequestEvent>> eventsByRequest = loadEvents(stored);
         List<AiRequestVO> requests = new ArrayList<>();
-        for (AiRequest request : aiRequestRepository
-                .findByAiConversationIdOrderByCreateDateAsc(conversation.getAiConversationId())) {
-            requests.add(toVO(request));
+        for (AiRequest request : stored) {
+            requests.add(toVO(request, eventsByRequest.getOrDefault(request.getAiRequestId(), List.of())));
         }
         return new AiConversationDetailVO()
                 .conversation(toVO(conversation, externalSystem))
                 .requests(requests);
+    }
+
+    /** Event logs of the given requests (one query), grouped by request id in stable order. */
+    private Map<Integer, List<AiRequestEvent>> loadEvents(final List<AiRequest> requests) {
+        if (requests.isEmpty()) {
+            return Map.of();
+        }
+        List<Integer> ids = requests.stream().map(AiRequest::getAiRequestId).toList();
+        Map<Integer, List<AiRequestEvent>> byRequest = new HashMap<>();
+        for (AiRequestEvent event : aiRequestEventRepository
+                .findByAiRequestIdInOrderByCreateDateAscAiRequestEventIdAsc(ids)) {
+            byRequest.computeIfAbsent(event.getAiRequestId(), k -> new ArrayList<>()).add(event);
+        }
+        return byRequest;
     }
 
     private AiConversationVO toVO(final AiConversation conversation, final AiExternalSystem externalSystem) {
@@ -423,7 +445,7 @@ public class AiConversationService {
                 .lastChangeDate(toOffset(conversation.getLastChangeDate()));
     }
 
-    private AiRequestVO toVO(final AiRequest request) {
+    private AiRequestVO toVO(final AiRequest request, final List<AiRequestEvent> events) {
         AiRequestVO vo = new AiRequestVO()
                 .id(request.getAiRequestId())
                 .taskType(request.getTaskType())
@@ -435,6 +457,15 @@ public class AiConversationService {
                 .profile(request.getProfile())
                 .createDate(toOffset(request.getCreateDate()))
                 .finishDate(toOffset(request.getFinishDate()));
+        if (!isTerminal(request.getState())) {
+            vo.setProgressMessage(request.getProgressMessage());
+            vo.setProgressPercent(request.getProgressPercent() != null
+                    ? request.getProgressPercent().floatValue() : null);
+        }
+        List<AiRequestActivityVO> activities = activityMapper.map(events);
+        if (!activities.isEmpty()) {
+            vo.setActivities(activities);
+        }
         if ("done".equals(request.getState()) && request.getOutput() != null) {
             vo.setBlocks(blockMapperRegistry.map(request.getOutput()));
         }

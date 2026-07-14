@@ -101,6 +101,38 @@ export const aiAssistantMessages = defineMessages({
         id: "aiAssistant.context.accessPoint",
         defaultMessage: "Přístupový bod",
     },
+    steps: {
+        id: "aiAssistant.activity.steps",
+        defaultMessage: "Postup zpracování",
+    },
+    activityToolSearchNodes: {
+        id: "aiAssistant.activity.tool.searchNodes",
+        defaultMessage: "Vyhledávání v archivním popisu",
+    },
+    activityToolGetItemTypes: {
+        id: "aiAssistant.activity.tool.getItemTypes",
+        defaultMessage: "Načtení typů prvků popisu",
+    },
+    activityToolGeneric: {
+        id: "aiAssistant.activity.tool.generic",
+        defaultMessage: "Nástroj {tool}",
+    },
+    activityStepGeneric: {
+        id: "aiAssistant.activity.step.generic",
+        defaultMessage: "Krok zpracování",
+    },
+    activityResultCount: {
+        id: "aiAssistant.activity.resultCount",
+        defaultMessage: "{count, plural, one {# výsledek} few {# výsledky} other {# výsledků}}",
+    },
+    activityResultPartial: {
+        id: "aiAssistant.activity.resultPartial",
+        defaultMessage: "výsledek zkrácen",
+    },
+    activityMoreLinks: {
+        id: "aiAssistant.activity.moreLinks",
+        defaultMessage: "{count, plural, one {+# další} few {+# další} other {+# dalších}}",
+    },
 });
 
 export const aiContextSegmentLabels = {
