@@ -1925,90 +1925,6 @@ paths:
                 $ref: '#/components/schemas/BaseException'
       tags:
         - aiprovider
-  /aiprovider/{id}/my-key:
-    get:
-      operationId: AiProvider_getMyKey
-      description: |-
-        Reads whether the current user has a personal signing key for the
-        provider (the secret is never returned).
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: AI external system ID or CODE
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AiMyKey'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-      tags:
-        - aiprovider
-    put:
-      operationId: AiProvider_setMyKey
-      description: |-
-        Sets/replaces the current user's personal signing key for the provider.
-        The user's subsequent tasks then bill to their personal account.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: AI external system ID or CODE
-          schema:
-            type: string
-      responses:
-        '200':
-          description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AiMyKey'
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-      tags:
-        - aiprovider
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AiMyKeyUpdate'
-    delete:
-      operationId: AiProvider_deleteMyKey
-      description: |-
-        Removes the current user's personal signing key; tasks fall back to the
-        instance-wide key (the shared organizational account).
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: AI external system ID or CODE
-          schema:
-            type: string
-      responses:
-        '204':
-          description: 'There is no content to send for this request, but the headers may be useful. '
-        '404':
-          description: The server cannot find the requested resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BaseException'
-      tags:
-        - aiprovider
   /binding/{bindingId}/history:
     get:
       operationId: AccessPointBinding_getBindingHistory
@@ -5679,30 +5595,6 @@ components:
         The knowledge/documentation sources the answer relied on. The server emits no
         label text; the client renders a "Sources" list and supplies the heading
         itself, in the user's language.
-    AiMyKey:
-      type: object
-      properties:
-        keyId:
-          type: string
-          description: KeyId of the personal key; absent = none set (the instance-wide key applies).
-      description: |-
-        The current user's personal AI signing key of one provider — presence only,
-        the secret is never returned. With a personal key the user's tasks bill to
-        their personal account (seat); without one the instance-wide key (the shared
-        organizational account) is used.
-    AiMyKeyUpdate:
-      type: object
-      required:
-        - keyId
-        - secret
-      properties:
-        keyId:
-          type: string
-          description: KeyId issued by the provider's account authority (an opaque string).
-        secret:
-          type: string
-          description: The HMAC secret belonging to the KeyId (stored server-side, never returned).
-      description: Sets/replaces the current user's personal AI signing key.
     AiActivityLink:
       type: object
       required:

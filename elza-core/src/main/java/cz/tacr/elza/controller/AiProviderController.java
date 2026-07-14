@@ -15,8 +15,6 @@ import cz.tacr.elza.aiprovider.client.vo.TaskTypeInfo;
 import cz.tacr.elza.controller.vo.AiConversationCreateVO;
 import cz.tacr.elza.controller.vo.AiConversationDetailVO;
 import cz.tacr.elza.controller.vo.AiConversationVO;
-import cz.tacr.elza.controller.vo.AiMyKeyUpdateVO;
-import cz.tacr.elza.controller.vo.AiMyKeyVO;
 import cz.tacr.elza.controller.vo.AiRequestCreateVO;
 import cz.tacr.elza.controller.vo.AiRequestEventVO;
 import cz.tacr.elza.controller.vo.AiRequestVO;
@@ -121,24 +119,5 @@ public class AiProviderController implements AiproviderApi {
     @Override
     public ResponseEntity<List<AiRequestEventVO>> aiProviderListRequestEvents(Integer id) {
         return ResponseEntity.ok(aiConversationService.listRequestEvents(id));
-    }
-
-    @Override
-    public ResponseEntity<AiMyKeyVO> aiProviderGetMyKey(String id) {
-        AiExternalSystem extSystem = aiProviderService.findAiSystemByCodeOrId(id);
-        return ResponseEntity.ok(aiProviderService.getMyKey(extSystem));
-    }
-
-    @Override
-    public ResponseEntity<AiMyKeyVO> aiProviderSetMyKey(String id, AiMyKeyUpdateVO aiMyKeyUpdateVO) {
-        AiExternalSystem extSystem = aiProviderService.findAiSystemByCodeOrId(id);
-        return ResponseEntity.ok(aiProviderService.setMyKey(extSystem, aiMyKeyUpdateVO));
-    }
-
-    @Override
-    public ResponseEntity<Void> aiProviderDeleteMyKey(String id) {
-        AiExternalSystem extSystem = aiProviderService.findAiSystemByCodeOrId(id);
-        aiProviderService.deleteMyKey(extSystem);
-        return ResponseEntity.noContent().build();
     }
 }

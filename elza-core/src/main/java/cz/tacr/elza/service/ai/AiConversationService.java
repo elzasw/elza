@@ -273,7 +273,7 @@ public class AiConversationService {
                 .taskType(taskType)
                 .profile(profile)
                 .userInstructions(userInstructions)
-                .parameters(buildParameters(taskType, parameters, externalSystem))
+                .parameters(buildParameters(taskType, parameters, externalSystem, conversation.getUserId()))
                 .context(contextResolver.resolveAll(context))
                 .tools(toolRegistry.toolNames())
                 .parentTaskId(parentTaskUid)
@@ -324,7 +324,8 @@ public class AiConversationService {
      */
     private Map<String, AiObject> buildParameters(final String taskType,
                                                   final List<AiContextObjectVO> parameterContext,
-                                                  final AiExternalSystem externalSystem) {
+                                                  final AiExternalSystem externalSystem,
+                                                  final Integer userId) {
         Map<String, AiObject> parameters = new HashMap<>();
         // A parameter is one object per supplied context; resolvePrimary yields
         // the single primary object (a node → its own level, no ancestors/fund).
@@ -335,7 +336,7 @@ public class AiConversationService {
             }
         }
         if (!resolved.isEmpty()) {
-            List<TaskParameterInfo> declared = declaredParameters(externalSystem, taskType);
+            List<TaskParameterInfo> declared = declaredParameters(externalSystem, taskType, userId);
             for (AiObject object : resolved) {
                 declared.stream()
                         .filter(p -> object.getObjectType().equals(p.getType()))
@@ -350,9 +351,10 @@ public class AiConversationService {
     }
 
     /** The task's declared parameters from the provider's catalog; empty when unavailable. */
-    private List<TaskParameterInfo> declaredParameters(final AiExternalSystem externalSystem, final String taskType) {
+    private List<TaskParameterInfo> declaredParameters(final AiExternalSystem externalSystem, final String taskType,
+                                                       final Integer userId) {
         try {
-            AiServiceInfo info = aiProviderService.fetchServiceInfo(externalSystem);
+            AiServiceInfo info = aiProviderService.fetchServiceInfo(externalSystem, userId);
             if (info.getTaskTypes() != null) {
                 for (TaskTypeInfo type : info.getTaskTypes()) {
                     if (taskType.equals(type.getCode()) && type.getParameters() != null) {

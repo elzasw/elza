@@ -2614,25 +2614,6 @@ model AiRequestEvent {
 }
 
 /**
- * The current user's personal AI signing key of one provider — presence only,
- * the secret is never returned. With a personal key the user's tasks bill to
- * their personal account (seat); without one the instance-wide key (the shared
- * organizational account) is used.
- */
-model AiMyKey {
-    /** KeyId of the personal key; absent = none set (the instance-wide key applies). */
-    keyId?: string;
-}
-
-/** Sets/replaces the current user's personal AI signing key. */
-model AiMyKeyUpdate {
-    /** KeyId issued by the provider's account authority (an opaque string). */
-    keyId: string;
-    /** The HMAC secret belonging to the KeyId (stored server-side, never returned). */
-    secret: string;
-}
-
-/**
  * The AI provider's capabilities — the client's typed view of the provider's
  * `/info` catalog. Drives the panel: which tasks to offer and, per task, which
  * typed parameters to gather. Grows additively (new task types, new object
@@ -2762,52 +2743,6 @@ namespace ElzaAPI.AiProvider {
         /** request id */
         @path id: integer;
     ): AiRequest | {
-        /** Id does not exists */
-        @Http.statusCode statusCode: 404;
-        @body data: BaseException;
-    };
-
-    /**
-     * Reads whether the current user has a personal signing key for the
-     * provider (the secret is never returned).
-     */
-    @route("/{id}/my-key")
-    @get op getMyKey(
-        /** AI external system ID or CODE */
-        @path id: string;
-    ): AiMyKey | {
-        /** Id does not exists */
-        @Http.statusCode statusCode: 404;
-        @body data: BaseException;
-    };
-
-    /**
-     * Sets/replaces the current user's personal signing key for the provider.
-     * The user's subsequent tasks then bill to their personal account.
-     */
-    @route("/{id}/my-key")
-    @put op setMyKey(
-        /** AI external system ID or CODE */
-        @path id: string;
-        @body body: AiMyKeyUpdate;
-    ): AiMyKey | {
-        /** Id does not exists */
-        @Http.statusCode statusCode: 404;
-        @body data: BaseException;
-    };
-
-    /**
-     * Removes the current user's personal signing key; tasks fall back to the
-     * instance-wide key (the shared organizational account).
-     */
-    @route("/{id}/my-key")
-    @delete op deleteMyKey(
-        /** AI external system ID or CODE */
-        @path id: string;
-    ): {
-        /** Removed (or none was set) */
-        @Http.statusCode statusCode: 204;
-    } | {
         /** Id does not exists */
         @Http.statusCode statusCode: 404;
         @body data: BaseException;
