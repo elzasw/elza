@@ -11,6 +11,7 @@ import { aiAssistantMessages } from "./messages";
 const MAX_LINKS_SHOWN = 10;
 
 const KIND_TOOL_CALL = "TOOL_CALL";
+const KIND_PREPARATION = "PREPARATION";
 const STATE_DONE = "DONE";
 const STATE_ERROR = "ERROR";
 
@@ -27,11 +28,18 @@ export function activityTitle(activity: AiRequestActivity, intl: IntlShape): str
                 return intl.formatMessage(aiAssistantMessages.activityToolSearchNodes);
             case "getItemTypes":
                 return intl.formatMessage(aiAssistantMessages.activityToolGetItemTypes);
+            case "search_knowledge":
+                return intl.formatMessage(aiAssistantMessages.activityToolSearchKnowledge);
+            case "get_section":
+                return intl.formatMessage(aiAssistantMessages.activityToolGetSection);
             default:
                 if (activity.tool) {
                     return intl.formatMessage(aiAssistantMessages.activityToolGeneric, { tool: activity.tool });
                 }
         }
+    }
+    if (activity.kind === KIND_PREPARATION) {
+        return intl.formatMessage(aiAssistantMessages.activityPreparation);
     }
     return intl.formatMessage(aiAssistantMessages.activityStepGeneric);
 }

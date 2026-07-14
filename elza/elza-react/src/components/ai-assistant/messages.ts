@@ -133,9 +133,21 @@ export const aiAssistantMessages = defineMessages({
         id: "aiAssistant.activity.tool.getItemTypes",
         defaultMessage: "Načtení typů prvků popisu",
     },
+    activityToolSearchKnowledge: {
+        id: "aiAssistant.activity.tool.searchKnowledge",
+        defaultMessage: "Vyhledávání v poradně",
+    },
+    activityToolGetSection: {
+        id: "aiAssistant.activity.tool.getSection",
+        defaultMessage: "Čtení dokumentace",
+    },
     activityToolGeneric: {
         id: "aiAssistant.activity.tool.generic",
         defaultMessage: "Nástroj {tool}",
+    },
+    activityPreparation: {
+        id: "aiAssistant.activity.preparation",
+        defaultMessage: "Příprava zpracování",
     },
     activityStepGeneric: {
         id: "aiAssistant.activity.step.generic",

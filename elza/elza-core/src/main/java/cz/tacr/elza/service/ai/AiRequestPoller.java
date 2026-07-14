@@ -31,23 +31,26 @@ import cz.tacr.elza.domain.AiConversation;
 import cz.tacr.elza.domain.AiExternalSystem;
 import cz.tacr.elza.domain.AiRequest;
 import cz.tacr.elza.domain.AiRequestEvent;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.repository.AiConversationRepository;
 import cz.tacr.elza.repository.AiExternalSystemRepository;
 import cz.tacr.elza.repository.AiRequestEventRepository;
 import cz.tacr.elza.repository.AiRequestRepository;
+import cz.tacr.elza.repository.UserRepository;
 import cz.tacr.elza.service.AiProviderService;
-import cz.tacr.elza.service.IEventNotificationService;
-import cz.tacr.elza.service.eventnotification.events.EventId;
-import cz.tacr.elza.service.eventnotification.events.EventType;
 
 /**
  * Monitors open AI requests: one worker per non-terminal request long-polls
  * the provider (protocol {@code GET /tasks/{id}?wait=30}), persists every
  * observed change ({@code ai_request} state/output/usage + OUTPUT/ERROR
- * events) and announces it over the WebSocket as {@code AI_REQUEST_CHANGE}
- * with the conversation id — the client then refetches the conversation via
- * REST. Polling of open requests resumes on application start, so a restart
- * loses nothing.
+ * events) and pushes the updated request snapshot to the conversation owner's
+ * WebSocket user queue ({@link AiRequestPushService}). Polling of open
+ * requests resumes on application start, so a restart loses nothing.
+ *
+ * <p>This poll is the authoritative state machine of an exchange. The finer
+ * advisory activity (tool-by-tool events, streamed answer) is consumed
+ * separately by {@link AiEventPoller}; a provider that emits no events still
+ * works fully through this loop.
  */
 @Component
 public class AiRequestPoller {
@@ -75,7 +78,16 @@ public class AiRequestPoller {
     private AiProviderService aiProviderService;
 
     @Autowired
-    private IEventNotificationService eventNotificationService;
+    private UserRepository userRepository;
+
+    @Autowired
+    private AiRequestViewMapper requestViewMapper;
+
+    @Autowired
+    private AiRequestPushService pushService;
+
+    @Autowired
+    private AiAnswerBuffer answerBuffer;
 
     @Autowired
     private AiRequestEventRepository aiRequestEventRepository;
@@ -176,13 +188,15 @@ public class AiRequestPoller {
             if (externalSystem == null) {
                 return null;
             }
+            UsrUser owner = userRepository.findById(conversation.getUserId()).orElse(null);
             return new PollTarget(request.getTaskUid(), request.getState(),
                     request.getCostUnits(), request.getProgressMessage(), request.getProgressPercent(),
-                    conversation.getAiConversationId(), conversation.getUserId(), externalSystem);
+                    conversation.getAiConversationId(), conversation.getUserId(),
+                    owner != null ? owner.getUsername() : null, externalSystem);
         });
     }
 
-    /** Persists the observed task state and publishes the change notification. */
+    /** Persists the observed task state and pushes the updated snapshot to the owner. */
     private void applyChange(final Integer aiRequestId, final PollTarget target, final Task task) {
         String newState = task.getState().getValue();
         double newCostUnits = task.getUsage() != null && task.getUsage().getCostUnits() != null
@@ -195,10 +209,10 @@ public class AiRequestPoller {
                 && Objects.equals(newProgressPercent, target.progressPercent)) {
             return; // long poll expired without a change
         }
-        transactionTemplate.executeWithoutResult(status -> {
+        AiRequestUpdateMessage message = transactionTemplate.execute(status -> {
             AiRequest request = aiRequestRepository.findById(aiRequestId).orElse(null);
             if (request == null || TERMINAL_STATES.contains(request.getState())) {
-                return;
+                return null;
             }
             request.setState(newState);
             // Advisory progress is display state of a running task; a finished
@@ -244,9 +258,12 @@ public class AiRequestPoller {
                 aiConversationRepository.save(conversation);
             }
 
-            eventNotificationService.publishEvent(
-                    new EventId(EventType.AI_REQUEST_CHANGE, target.conversationId));
+            if (TERMINAL_STATES.contains(newState)) {
+                answerBuffer.clear(aiRequestId);
+            }
+            return requestViewMapper.buildUpdateMessage(request);
         });
+        pushService.push(target.username, message);
     }
 
     /**
@@ -303,18 +320,18 @@ public class AiRequestPoller {
         }
     }
 
-    /** Persists a tool event and notifies the client (transparency-log update). */
+    /** Persists a tool event and pushes the updated snapshot (transparency-log update). */
     private void recordToolEvent(final Integer aiRequestId, final PollTarget target,
                                  final String eventType, final String data) {
-        transactionTemplate.executeWithoutResult(status -> {
+        AiRequestUpdateMessage message = transactionTemplate.execute(status -> {
             AiRequest request = aiRequestRepository.findById(aiRequestId).orElse(null);
             if (request == null) {
-                return;
+                return null;
             }
             addEvent(request, eventType, data);
-            eventNotificationService.publishEvent(
-                    new EventId(EventType.AI_REQUEST_CHANGE, target.conversationId));
+            return requestViewMapper.buildUpdateMessage(request);
         });
+        pushService.push(target.username, message);
     }
 
     private void addEvent(final AiRequest request, final String eventType, final String data) {
@@ -360,6 +377,7 @@ public class AiRequestPoller {
 
     private record PollTarget(String taskUid, String state, double costUnits,
             String progressMessage, Double progressPercent,
-            Integer conversationId, Integer userId, AiExternalSystem externalSystem) {
+            Integer conversationId, Integer userId, String username,
+            AiExternalSystem externalSystem) {
     }
 }

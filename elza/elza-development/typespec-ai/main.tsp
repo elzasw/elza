@@ -40,6 +40,14 @@ using TypeSpec.OpenAPI;
  * accumulated context, and a completed task can be continued — refined with a
  * follow-up — by submitting a new task with `parentTaskId`.
  *
+ * The poll returns the task's state plus a single advisory `progress` line. A
+ * client that wants to show finer live activity — the phases, tool calls and
+ * (when the provider streams it) the answer as it is composed — may
+ * additionally long-poll `GET /tasks/{taskId}/events`, a cursor-based,
+ * replayable stream of execution events. It is **optional and advisory**:
+ * authoritative state, result and usage always come from `GET /tasks/{taskId}`,
+ * and a provider may emit no events at all.
+ *
  * ## Contract ownership
  *
  * Three things are owned separately. **This contract** owns the typed object
@@ -68,7 +76,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.7.0" })
+@info(#{ version: "0.8.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -1435,6 +1443,130 @@ model Task {
 }
 
 // ---------------------------------------------------------------------------
+// Task events (optional live activity stream)
+// ---------------------------------------------------------------------------
+
+/**
+ * Task event type — names one observable step in a task's execution. An **open**
+ * set of string codes (a plain string on the wire): the provider may introduce
+ * new event types without a contract change, and a client **ignores an event
+ * whose type it does not recognize** (just as it ignores an unknown object
+ * type). Whether any events are emitted at all — and at what granularity — is up
+ * to the provider; the stream is advisory, the point-in-time counterpart being
+ * `TaskProgress` on a `Task`. The vocabulary a provider may emit:
+ *
+ * Lifecycle (coarse; mirror the task's state changes):
+ * - `submitted` — the task was accepted.
+ * - `started` — processing began (`queued` → `running`).
+ * - `phase` — an advisory progress phase: `message` is display-ready and
+ *   `percent` a rough estimate (the streamed form of `TaskProgress`).
+ * - `awaiting_tools` — the task suspended for client tool calls; `detail` lists
+ *   the pending calls (`{callId, tool}`). The calls to execute still come from
+ *   `Task.toolCalls`.
+ * - `tools_resolved` — the client's tool results arrived and the task resumed.
+ * - `done` — the task finished successfully (its `output` is now readable via
+ *   `GET /tasks/{taskId}`).
+ * - `error` — the task failed; `detail` carries the error `{code}`.
+ * - `cancelled` — the task was cancelled.
+ *
+ * Turn internals (fine-grained; a provider may omit them entirely):
+ * - `preparation` — a preparatory step before the model turn (e.g. resolving
+ *   rule-set dictionaries), including any client tool round it drives.
+ * - `model_round` — one model request/response completed.
+ * - `tool_call` — the model requested a tool: `tool` names it, `detail` may
+ *   summarize the arguments. Covers both provider-internal tools and the client
+ *   tools of `StandardToolName`.
+ * - `tool_result` — a tool the provider ran internally produced a result
+ *   (a summary only — internal tool results never leave the provider).
+ * - `answer_delta` — a slice of the answer text as it is composed, in
+ *   `message`; batched, never per-token.
+ *
+ * A client drives the task with `GET /tasks/{taskId}` regardless; consuming this
+ * vocabulary only enriches what it can display.
+ */
+scalar TaskEventType extends string;
+
+/**
+ * One observable event in a task's execution — the streamed, append-only
+ * counterpart to the point-in-time `TaskProgress` on a `Task`. Advisory (a
+ * provider need emit none) and additive (an unknown `type` is ignored); an event
+ * never carries authoritative state — a task's state, output and usage always
+ * come from `GET /tasks/{taskId}`.
+ */
+model TaskEvent {
+  /**
+   * Monotonic per-task sequence number, strictly increasing in emission order.
+   * The resume cursor: pass the last value seen as `since` to receive only later
+   * events. Stable — an event keeps its `seq` across reads.
+   */
+  seq: int64;
+
+  /** What happened; a `TaskEventType` code (an unrecognized one is ignored). */
+  type: TaskEventType;
+
+  /** When the event was recorded (UTC). */
+  createdAt: utcDateTime;
+
+  /**
+   * Display-ready one-line message, when the event has one — e.g. a `phase`
+   * label or the text fragment of an `answer_delta`. In the task's language,
+   * suitable for direct display.
+   */
+  message?: string;
+
+  /**
+   * The tool a `tool_call` / `tool_result` event concerns — the provider's
+   * model-facing tool name. May be a client tool (a `StandardToolName` value) or
+   * a provider-internal tool the protocol otherwise never exposes; treat it as
+   * an opaque label. Absent on non-tool events.
+   */
+  tool?: string;
+
+  /** Rough completion estimate for a `phase` event, 0–100; absent otherwise. */
+  @minValue(0)
+  @maxValue(100)
+  percent?: float32;
+
+  /**
+   * Curated, event-specific detail as free JSON — e.g. the pending
+   * `{callId, tool}` list of an `awaiting_tools` event, an error `{code}`, or a
+   * short summary of a tool call's arguments. Never a full tool result or any
+   * knowledge-corpus content. Absent when the event needs none; a client may
+   * ignore it entirely.
+   */
+  detail?: unknown;
+}
+
+/**
+ * A batch of task events past a cursor — the `GET /tasks/{taskId}/events`
+ * response. Always safe to consume: `events` may be empty (a long poll that
+ * timed out with nothing new), and the current `state` is included so a client
+ * can stop polling once the task is terminal without a separate `GET /tasks`
+ * call.
+ */
+model TaskEvents {
+  /**
+   * Events with `seq` greater than the requested `since`, in ascending `seq`
+   * order. Empty when nothing new occurred within the wait.
+   */
+  events: TaskEvent[];
+
+  /**
+   * The task's current state — lets the client end its polling loop on a
+   * terminal state (`done` / `error` / `cancelled`). Authoritative state,
+   * output and usage still come from `GET /tasks/{taskId}`.
+   */
+  state: TaskState;
+
+  /**
+   * Cursor to pass as `since` on the next call: the greatest `seq` in `events`,
+   * or the requested `since` unchanged when `events` is empty. Monotonic, so a
+   * client always resumes from here without missing or repeating an event.
+   */
+  nextSince: int64;
+}
+
+// ---------------------------------------------------------------------------
 // Usage / credit state
 // ---------------------------------------------------------------------------
 
@@ -1738,6 +1870,49 @@ op getTask(
   @minValue(0)
   @query wait?: int32,
 ): Task | ServiceError;
+
+/**
+ * Stream a task's execution events (long poll) — an **optional** finer-grained
+ * companion to `GET /tasks/{taskId}`. Where the poll returns the task's current
+ * state and a single advisory `progress`, this returns the append-only sequence
+ * of what the task has been *doing* — phases, tool calls, and (when the provider
+ * streams it) the answer as it is composed — so a client can show live activity
+ * instead of one changing status line.
+ *
+ * Cursor-based and replayable: pass the `seq` of the last event seen as `since`
+ * (omit or `0` for the whole history), then use `TaskEvents.nextSince` for the
+ * next call. With `wait`, the server holds the request until new events exist or
+ * the timeout elapses, then returns whatever accrued (possibly none).
+ *
+ * Consuming this stream is never required: a client drives the task with
+ * `GET /tasks/{taskId}` as usual, and a provider may emit no events at all (an
+ * empty stream is conformant). Events are advisory — authoritative state,
+ * output, usage, and the `toolCalls` to execute all come from
+ * `GET /tasks/{taskId}`.
+ */
+@route("/tasks/{taskId}/events")
+@get
+op getTaskEvents(
+  ...SignedRequest,
+
+  /** Task id from `TaskAccepted`. */
+  @path taskId: string,
+
+  /**
+   * Return only events with `seq` greater than this cursor; omit or `0` for the
+   * full history. Use `TaskEvents.nextSince` from the previous call.
+   */
+  @minValue(0)
+  @query since?: int64,
+
+  /**
+   * Long-poll timeout in seconds; `0`/absent = answer immediately with whatever
+   * events already accrued. Capped by `Limits.maxWaitSeconds` (shared with
+   * `GET /tasks/{taskId}`).
+   */
+  @minValue(0)
+  @query wait?: int32,
+): TaskEvents | ServiceError;
 
 /**
  * Return the results of the pending tool calls of a task in `awaiting_tools`;

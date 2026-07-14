@@ -301,6 +301,10 @@
     "defaultMessage": "{count, plural, one {+# more} other {+# more}}",
     "srcHash": "1Z8ideBGxiey"
   },
+  "aiAssistant.activity.preparation": {
+    "defaultMessage": "Preparing the task",
+    "srcHash": "J9QeKEBcMdmp"
+  },
   "aiAssistant.activity.resultCount": {
     "defaultMessage": "{count, plural, one {# result} other {# results}}",
     "srcHash": "1rFMijS1rJun"
@@ -324,6 +328,14 @@
   "aiAssistant.activity.tool.getItemTypes": {
     "defaultMessage": "Loading description item types",
     "srcHash": "20zA-z4YQBJ5"
+  },
+  "aiAssistant.activity.tool.getSection": {
+    "defaultMessage": "Reading the documentation",
+    "srcHash": "j94O5GNCDzKh"
+  },
+  "aiAssistant.activity.tool.searchKnowledge": {
+    "defaultMessage": "Searching the knowledge base",
+    "srcHash": "B2g4dipaxCxD"
   },
   "aiAssistant.activity.tool.searchNodes": {
     "defaultMessage": "Searching the archival description",
@@ -1244,14 +1256,6 @@
   "userSettings.display.language": {
     "defaultMessage": "Language",
     "srcHash": "ARpdV1qvwAV4"
-  },
-  "userSettings.display.previewFont": {
-    "defaultMessage": "Font (preview)",
-    "srcHash": "gjUgcdlLghCr"
-  },
-  "userSettings.display.previewFont.default": {
-    "defaultMessage": "Default",
-    "srcHash": "ea14D4gXIsVV"
   },
   "userSettings.display.showDebugInfo": {
     "defaultMessage": "Show debug information",
