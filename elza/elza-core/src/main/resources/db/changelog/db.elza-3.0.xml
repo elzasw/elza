@@ -1503,4 +1503,16 @@
 	    <customChange class="cz.tacr.elza.dbchangelog.DbChangeset20260710145000"/>
     </changeSet>
 
+    <changeSet id="20260713100000" author="ppy">
+        <!-- Advisory live progress of a running exchange, mirrored from the
+             provider's Task.progress by the poller: a short human-readable
+             phase plus a rough percent estimate. Cosmetic display state -
+             overwritten on every observed change, cleared when the request
+             reaches a terminal state. -->
+        <addColumn tableName="ai_request">
+            <column name="progress_message" type="nvarchar(1000)"/>
+            <column name="progress_percent" type="double"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

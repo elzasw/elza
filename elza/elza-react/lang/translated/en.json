@@ -293,6 +293,38 @@
     "defaultMessage": "Settings",
     "srcHash": "4BNW7MyPieeu"
   },
+  "aiAssistant.activity.moreLinks": {
+    "defaultMessage": "{count, plural, one {+# more} other {+# more}}",
+    "srcHash": "1Z8ideBGxiey"
+  },
+  "aiAssistant.activity.resultCount": {
+    "defaultMessage": "{count, plural, one {# result} other {# results}}",
+    "srcHash": "1rFMijS1rJun"
+  },
+  "aiAssistant.activity.resultPartial": {
+    "defaultMessage": "result truncated",
+    "srcHash": "d04hb-CwvzrF"
+  },
+  "aiAssistant.activity.step.generic": {
+    "defaultMessage": "Processing step",
+    "srcHash": "-4EZv8D-pnLf"
+  },
+  "aiAssistant.activity.steps": {
+    "defaultMessage": "Processing steps",
+    "srcHash": "-4JJfdng1kcz"
+  },
+  "aiAssistant.activity.tool.generic": {
+    "defaultMessage": "Tool {tool}",
+    "srcHash": "7TypIFH6bh5t"
+  },
+  "aiAssistant.activity.tool.getItemTypes": {
+    "defaultMessage": "Loading description item types",
+    "srcHash": "20zA-z4YQBJ5"
+  },
+  "aiAssistant.activity.tool.searchNodes": {
+    "defaultMessage": "Searching the archival description",
+    "srcHash": "bvAJXkkvNNbf"
+  },
   "aiAssistant.block.citations": {
     "defaultMessage": "Sources",
     "srcHash": "BO_uQxVmyBkf"
@@ -1200,9 +1232,5 @@
   "userSettings.display.showExperimentalFeatures": {
     "defaultMessage": "Show experimental features",
     "srcHash": "3gowqNfmWIKX"
-  },
-  "userSettings.display.useInterFont": {
-    "defaultMessage": "Use alternative font",
-    "srcHash": "ao95n5GBnkn8"
   }
 }

@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, Textarea, Spinner, makeStyles, mergeClasses, tokens, Badge, Tooltip, Menu, MenuTrigger, MenuPopover, MenuList, MenuItemCheckbox } from "@fluentui/react-components";
+import { Button, Textarea, Spinner, ProgressBar, makeStyles, mergeClasses, tokens, Badge, Tooltip, Menu, MenuTrigger, MenuPopover, MenuList, MenuItemCheckbox } from "@fluentui/react-components";
 import { SendRegular, FolderRegular, DocumentRegular, PersonRegular, AppsRegular, AddRegular, SparkleRegular, HistoryRegular, ChevronLeftRegular, ChevronRightRegular, SettingsRegular } from "@fluentui/react-icons";
 import { useUserSettings } from "contexts/user";
 import type { AiContextSegmentLabel } from "./useCurrentAiContext";
 import { FormattedMessage, useIntl } from "react-intl";
 import { CollapsibleDragWindow } from "components/shared/dialog/FluentModalDialog";
 import { AiDisplayBlocks } from "./AiDisplayBlocks";
+import { AiRequestActivities, activityTitle, isActivityFinished } from "./AiRequestActivities";
 import { useAiConversation, isRequestInProgress } from "./useAiConversation";
 import { useAiConversationList } from "./useAiConversationList";
 import { useAiProviderInfo } from "./useAiProviderInfo";
@@ -216,6 +217,27 @@ const useStyles = makeStyles({
         alignSelf: "flex-start",
         color: tokens.colorPaletteRedForeground1,
     },
+    steps: {
+        marginBottom: tokens.spacingVerticalS,
+        fontSize: tokens.fontSizeBase200,
+        color: tokens.colorNeutralForeground3,
+    },
+    stepsSummary: {
+        cursor: "pointer",
+    },
+    stepsBody: {
+        marginTop: tokens.spacingVerticalXS,
+    },
+    progressBlock: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: tokens.spacingVerticalS,
+    },
+    progressBar: {
+        width: "100%",
+        maxWidth: "320px",
+    },
     usage: {
         marginTop: tokens.spacingVerticalS,
         fontSize: tokens.fontSizeBase200,
@@ -399,7 +421,26 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                             )}
                         </div>
                     )}
-                    {requests.map(request => (
+                    {requests.map(request => {
+                        const activities = request.activities ?? [];
+                        // Collapsed step log of a finished exchange ("how the answer was made").
+                        const finishedSteps = activities.length > 0 && (
+                            <details className={styles.steps}>
+                                <summary className={styles.stepsSummary}>
+                                    <FormattedMessage {...aiAssistantMessages.steps} />
+                                </summary>
+                                <div className={styles.stepsBody}>
+                                    <AiRequestActivities activities={activities} />
+                                </div>
+                            </details>
+                        );
+                        // Live status: a step Elza is executing right now wins over the
+                        // provider's advisory phase (that one is stale while tools run).
+                        const runningActivity = [...activities].reverse().find(activity => !isActivityFinished(activity));
+                        const statusLabel = runningActivity
+                            ? activityTitle(runningActivity, intl)
+                            : request.progressMessage || intl.formatMessage(aiAssistantMessages.thinking);
+                        return (
                         <div key={request.id} style={{ display: "contents" }}>
                             {request.userInstructions && (
                                 <div className={mergeClasses(styles.userMessageRow, aiFullWidth && styles.aiMessageFull)}>
@@ -407,15 +448,25 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                 </div>
                             )}
                             {request.state === "error" ? (
-                                <div className={styles.aiError}>
-                                    <FormattedMessage {...aiAssistantMessages.errorPrefix} />
-                                    {request.errorMessage ? `: ${request.errorMessage}` : ""}
+                                <div className={mergeClasses(styles.aiMessage, aiFullWidth && styles.aiMessageFull)}>
+                                    {finishedSteps}
+                                    <div className={styles.aiError}>
+                                        <FormattedMessage {...aiAssistantMessages.errorPrefix} />
+                                        {request.errorMessage ? `: ${request.errorMessage}` : ""}
+                                    </div>
                                 </div>
                             ) : isRequestInProgress(request) ? (
-                                <Spinner size="tiny" label={intl.formatMessage(aiAssistantMessages.thinking)} labelPosition="after" />
+                                <div className={mergeClasses(styles.aiMessage, styles.progressBlock, aiFullWidth && styles.aiMessageFull)}>
+                                    {activities.length > 0 && <AiRequestActivities activities={activities} />}
+                                    <Spinner size="tiny" label={statusLabel} labelPosition="after" />
+                                    {request.progressPercent != null && (
+                                        <ProgressBar className={styles.progressBar} value={request.progressPercent / 100} />
+                                    )}
+                                </div>
                             ) : (
                                 request.blocks && (
                                     <div className={mergeClasses(styles.aiMessage, aiFullWidth && styles.aiMessageFull)}>
+                                        {finishedSteps}
                                         <AiDisplayBlocks blocks={request.blocks} />
                                         {request.usage && (
                                             <details className={styles.usage}>
@@ -441,7 +492,8 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                 )
                             )}
                         </div>
-                    ))}
+                        );
+                    })}
                     {error && <div className={styles.aiError}>{error}</div>}
                     <div ref={messagesEndRef} />
                 </div>

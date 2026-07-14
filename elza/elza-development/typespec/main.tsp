@@ -2429,6 +2429,55 @@ model AiUsage {
 }
 
 /**
+ * One user-visible step of an exchange — a client-tool execution the model
+ * requested while working on the answer. `kind`, `tool` and `state` are open
+ * sets: the client renders an unknown kind/tool as a generic step and treats
+ * an unknown state as still running. Steps stay with the conversation
+ * permanently; a linked object may since have been deleted — the client
+ * handles a failed navigation gracefully.
+ */
+model AiRequestActivity {
+    /** Stable id of the step within the exchange (the provider's tool-call id). */
+    id: string;
+
+    /** TOOL_CALL (open set). */
+    kind: string;
+
+    /** Tool name for TOOL_CALL: `searchNodes`, `getItemTypes`, … */
+    tool?: string;
+
+    /** RUNNING | DONE | ERROR (open set). */
+    state: string;
+
+    /** Data-like input summary: the fulltext query / the rule-set code. */
+    query?: string;
+
+    /** Result size once DONE: search hits, dictionary entries. */
+    resultCount?: int64;
+
+    /** True when `links` holds only the first hits of a larger result. */
+    partial?: boolean;
+
+    /** Objects the step touched, as navigable links (search hits). */
+    links?: AiActivityLink[];
+
+    /** Failure description when state = ERROR. */
+    error?: string;
+
+    startDate: utcDateTime;
+    endDate?: utcDateTime;
+}
+
+/** One object an activity touched, renderable as a navigation link. */
+model AiActivityLink {
+    /** Display label — node title, reference designation or fund name. */
+    label?: string;
+
+    /** Navigation target — reuses the UI-context vocabulary (`AiContextType` codes). */
+    target: AiContextObject;
+}
+
+/**
  * One exchange with the AI provider within a conversation. `state` is an open
  * set (`queued`, `running`, `awaiting_tools`, `done`, `error`, `cancelled`);
  * a client MUST treat an unknown state as "in progress". `blocks` is present
@@ -2444,6 +2493,14 @@ model AiRequest {
     blocks?: AiDisplayBlock[];
     errorCode?: string;
     errorMessage?: string;
+    /** Short human-readable phase while the request runs (advisory, best-effort; absent once terminal). */
+    progressMessage?: string;
+    /** Rough completion estimate 0–100 (advisory). */
+    @minValue(0)
+    @maxValue(100)
+    progressPercent?: float32;
+    /** User-visible steps of the exchange (tool executions), oldest first. */
+    activities?: AiRequestActivity[];
     promptVersion?: string;
     /** Profile/model used for this exchange (an `AiProfile.code`); absent = provider default. */
     profile?: string;

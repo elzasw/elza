@@ -5703,6 +5703,19 @@ components:
           type: string
           description: The HMAC secret belonging to the KeyId (stored server-side, never returned).
       description: Sets/replaces the current user's personal AI signing key.
+    AiActivityLink:
+      type: object
+      required:
+        - target
+      properties:
+        label:
+          type: string
+          description: Display label — node title, reference designation or fund name.
+        target:
+          allOf:
+            - $ref: '#/components/schemas/AiContextObject'
+          description: Navigation target — reuses the UI-context vocabulary (`AiContextType` codes).
+      description: One object an activity touched, renderable as a navigation link.
     AiRequest:
       type: object
       required:
@@ -5729,6 +5742,20 @@ components:
           type: string
         errorMessage:
           type: string
+        progressMessage:
+          type: string
+          description: Short human-readable phase while the request runs (advisory, best-effort; absent once terminal).
+        progressPercent:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Rough completion estimate 0–100 (advisory).
+        activities:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiRequestActivity'
+          description: User-visible steps of the exchange (tool executions), oldest first.
         promptVersion:
           type: string
         profile:
@@ -5747,6 +5774,57 @@ components:
         set (`queued`, `running`, `awaiting_tools`, `done`, `error`, `cancelled`);
         a client MUST treat an unknown state as "in progress". `blocks` is present
         when `done` (see AiDisplayBlock for the rendering contract).
+    AiRequestActivity:
+      type: object
+      required:
+        - id
+        - kind
+        - state
+        - startDate
+      properties:
+        id:
+          type: string
+          description: Stable id of the step within the exchange (the provider's tool-call id).
+        kind:
+          type: string
+          description: TOOL_CALL (open set).
+        tool:
+          type: string
+          description: 'Tool name for TOOL_CALL: `searchNodes`, `getItemTypes`, …'
+        state:
+          type: string
+          description: RUNNING | DONE | ERROR (open set).
+        query:
+          type: string
+          description: 'Data-like input summary: the fulltext query / the rule-set code.'
+        resultCount:
+          type: integer
+          format: int64
+          description: 'Result size once DONE: search hits, dictionary entries.'
+        partial:
+          type: boolean
+          description: True when `links` holds only the first hits of a larger result.
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiActivityLink'
+          description: Objects the step touched, as navigable links (search hits).
+        error:
+          type: string
+          description: Failure description when state = ERROR.
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+      description: |-
+        One user-visible step of an exchange — a client-tool execution the model
+        requested while working on the answer. `kind`, `tool` and `state` are open
+        sets: the client renders an unknown kind/tool as a generic step and treats
+        an unknown state as still running. Steps stay with the conversation
+        permanently; a linked object may since have been deleted — the client
+        handles a failed navigation gracefully.
     AiRequestCreate:
       type: object
       properties:
