@@ -1,5 +1,5 @@
 import { Textarea, TextareaProps } from "@fluentui/react-components";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FIELD_HEIGHT } from "../../../../../constants";
 import { useDebouncedLayoutEffect } from "../../../../../utils/hooks/hooks";
 
@@ -11,10 +11,9 @@ export function TextareaAutosize({ value, ...otherProps }: Props) {
   const [textAreaHeight, setTextAreaHeight] = useState<number>(0);
   const [innerMinHeight, setInnerMinHeight] = useState<number>(0);
   const [verticalPadding, setVerticalPadding] = useState<number>(0);
-  const [defaultPadBottom, setDefaultPadBottom] = useState<number>(0);
 
   const fieldHeight = otherProps.size === "small" ? FIELD_HEIGHT.small : FIELD_HEIGHT.medium;
-  const contentAreaMin = innerMinHeight - verticalPadding - defaultPadBottom;
+  const contentAreaMin = innerMinHeight - Math.round(verticalPadding);
 
   function resizeTextarea(fieldHeight: number, contentAreaMin: number) {
     let wrapperPadding = 0;
@@ -35,7 +34,6 @@ export function TextareaAutosize({ value, ...otherProps }: Props) {
     const computed = getComputedStyle(textarea);
     const lineHeight = parseFloat(computed.lineHeight) || parseFloat(computed.fontSize) * 1.2;
     const paddingBottom = parseFloat(computed.paddingBottom);
-    setDefaultPadBottom(paddingBottom);
     const computedVerticalPadding = Math.max(0, (computedInnerMinHeight - lineHeight) / 2 - paddingBottom);
     setVerticalPadding(computedVerticalPadding);
 
@@ -45,7 +43,7 @@ export function TextareaAutosize({ value, ...otherProps }: Props) {
     textarea.style.paddingBottom = "0";
     textarea.style.minHeight = `${contentAreaMin}px`;
     textarea.style.height = "0";
-    const scrollHeight = textarea.scrollHeight + 2;
+    const scrollHeight = Math.floor(textarea.scrollHeight) + Math.round(computedVerticalPadding);
     textarea.style.height = `${scrollHeight}px`;
     textarea.style.paddingTop = prevPaddingTop;
     textarea.style.paddingBottom = prevPaddingBottom;
@@ -61,6 +59,43 @@ export function TextareaAutosize({ value, ...otherProps }: Props) {
     [value, otherProps.size, fieldHeight, contentAreaMin],
   );
 
+  const resizeRef = useRef(resizeTextarea);
+  resizeRef.current = resizeTextarea;
+
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    let lastWidth = wrapper.getBoundingClientRect().width;
+    let lastRun = 0;
+    let trailingTimer: ReturnType<typeof setTimeout> | undefined;
+    const throttleMs = 100;
+
+    function runResize() {
+      lastRun = performance.now();
+      resizeRef.current(fieldHeight, contentAreaMin);
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0].contentRect.width;
+      const widthChanged = width !== lastWidth;
+      if (!widthChanged) return;
+      lastWidth = width;
+
+      const elapsed = performance.now() - lastRun;
+      clearTimeout(trailingTimer);
+      if (elapsed >= throttleMs) {
+        runResize();
+      } else {
+        trailingTimer = setTimeout(runResize, throttleMs - elapsed);
+      }
+    });
+    observer.observe(wrapper);
+    return () => {
+      clearTimeout(trailingTimer);
+      observer.disconnect();
+    };
+  }, [fieldHeight, contentAreaMin]);
+
   const contentAreaHeight = Math.max(textAreaHeight, contentAreaMin);
 
   return (
@@ -73,7 +108,7 @@ export function TextareaAutosize({ value, ...otherProps }: Props) {
         style: {
           height: contentAreaHeight,
           minHeight: contentAreaMin,
-          paddingTop: verticalPadding,
+          paddingTop: Math.round(verticalPadding),
           paddingBottom: 0,
           minWidth: "50px",
           maxWidth: "100%",
