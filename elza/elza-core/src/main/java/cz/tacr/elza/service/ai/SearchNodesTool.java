@@ -27,10 +27,15 @@ import cz.tacr.elza.controller.vo.DescItemField;
 import cz.tacr.elza.controller.vo.FieldType;
 import cz.tacr.elza.controller.vo.FieldValueFilter;
 import cz.tacr.elza.controller.vo.FilterType;
+import cz.tacr.elza.controller.vo.LogicalFilter;
 import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.controller.vo.OperationCompareType;
+import cz.tacr.elza.controller.vo.OperationLogicalType;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.core.data.DataType;
+import cz.tacr.elza.core.data.ItemType;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission.Permission;
 import cz.tacr.elza.domain.vo.ArrFundToNodeList;
@@ -73,6 +78,7 @@ public class SearchNodesTool implements AiTool {
     private final NodeSearchService nodeSearchService;
     private final ArrangementInternalService arrangementInternalService;
     private final LevelTreeCacheService levelTreeCacheService;
+    private final StaticDataService staticDataService;
     private final TransactionTemplate transactionTemplate;
     private final ObjectMapper objectMapper;
 
@@ -80,12 +86,14 @@ public class SearchNodesTool implements AiTool {
                            final NodeSearchService nodeSearchService,
                            final ArrangementInternalService arrangementInternalService,
                            final LevelTreeCacheService levelTreeCacheService,
+                           final StaticDataService staticDataService,
                            final TransactionTemplate transactionTemplate,
                            final ObjectMapper objectMapper) {
         this.userService = userService;
         this.nodeSearchService = nodeSearchService;
         this.arrangementInternalService = arrangementInternalService;
         this.levelTreeCacheService = levelTreeCacheService;
+        this.staticDataService = staticDataService;
         this.transactionTemplate = transactionTemplate;
         this.objectMapper = objectMapper;
     }
@@ -100,9 +108,10 @@ public class SearchNodesTool implements AiTool {
         SearchNodesParams params = objectMapper.convertValue(arguments, SearchNodesParams.class);
         boolean hasFulltext = params != null && StringUtils.isNotBlank(params.getFulltext());
         boolean hasConditions = params != null && CollectionUtils.isNotEmpty(params.getItemConditions());
-        if (!hasFulltext && !hasConditions) {
+        boolean hasEntityRef = params != null && params.getReferencesEntityId() != null;
+        if (!hasFulltext && !hasConditions && !hasEntityRef) {
             throw new IllegalArgumentException(
-                    "searchNodes requires a fulltext query and/or itemConditions");
+                    "searchNodes requires at least one of: fulltext, itemConditions, referencesEntityId");
         }
 
         Collection<Integer> restriction = resolveRestriction(params.getFundIds(), context);
@@ -112,17 +121,58 @@ public class SearchNodesTool implements AiTool {
             return new SearchNodesResult().funds(List.of()).totalCount(0L).partial(false);
         }
 
-        SearchParams searchParams = toSearchParams(params);
         int totalLimit = params.getLimit() != null && params.getLimit() > 0
                 ? Math.min(params.getLimit(), MAX_TOTAL_HITS)
                 : MAX_TOTAL_HITS;
 
         // The poller thread has no transaction; the search (Hibernate Search +
-        // tree-cache reads with lazy entities) needs one.
+        // tree-cache reads with lazy entities) and the static-data lookups need one.
         return transactionTemplate.execute(status -> {
+            AbstractFilter entityRefFilter = null;
+            if (params.getReferencesEntityId() != null) {
+                entityRefFilter = createEntityRefFilter(params.getReferencesEntityId());
+                if (entityRefFilter == null) {
+                    // no reference item type exists — nothing can reference an entity
+                    return new SearchNodesResult().funds(List.of()).totalCount(0L).partial(false);
+                }
+            }
+            SearchParams searchParams = toSearchParams(params, entityRefFilter);
             NodeSearchData data = nodeSearchService.nodeSearchData(searchParams, restriction);
             return toResult(data, totalLimit);
         });
+    }
+
+    /**
+     * The condition "some item of the level references the entity" as an OR over
+     * every {@code RECORD_REF} item type — a reference item condition with a
+     * numeric value matches by entity id, so the existing search vocabulary
+     * covers the type-agnostic reference match without a dedicated field.
+     * {@code null} when the system defines no reference item type (nothing can
+     * match then).
+     */
+    private AbstractFilter createEntityRefFilter(final Integer accessPointId) {
+        List<AbstractFilter> refFilters = new ArrayList<>();
+        for (ItemType itemType : staticDataService.getData().getItemTypes()) {
+            if (itemType.getDataType() == DataType.RECORD_REF) {
+                DescItemField field = new DescItemField();
+                field.setFieldType(FieldType.DESC_ITEM);
+                field.setTypeCode(itemType.getCode());
+                FieldValueFilter filter = new FieldValueFilter();
+                filter.setFilterType(FilterType.FIELD_VALUE);
+                filter.setField(field);
+                filter.setOperation(OperationCompareType.EQ);
+                filter.setValue(String.valueOf(accessPointId));
+                refFilters.add(filter);
+            }
+        }
+        if (refFilters.isEmpty()) {
+            return null;
+        }
+        LogicalFilter anyReference = new LogicalFilter();
+        anyReference.setFilterType(FilterType.LOGICAL);
+        anyReference.setOperation(OperationLogicalType.OR);
+        anyReference.setFilters(refFilters);
+        return anyReference;
     }
 
     /**
@@ -161,8 +211,11 @@ public class SearchNodesTool implements AiTool {
     }
 
     /** The contract arguments as Elza search parameters (all conditions ANDed). */
-    private SearchParams toSearchParams(final SearchNodesParams params) {
+    private SearchParams toSearchParams(final SearchNodesParams params, final AbstractFilter entityRefFilter) {
         List<AbstractFilter> filters = new ArrayList<>();
+        if (entityRefFilter != null) {
+            filters.add(entityRefFilter);
+        }
         if (StringUtils.isNotBlank(params.getFulltext())) {
             MultimatchContainsFilter fulltext = new MultimatchContainsFilter();
             fulltext.setFilterType(FilterType.CONTAINS);

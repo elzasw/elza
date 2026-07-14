@@ -2161,7 +2161,9 @@ public class AccessPointService {
 		Set<Integer> scopeIds = getScopeIdsForSearch(fund, scopeId, false);
 
 		QueryResults<ApCachedAccessPoint> cachedAccessPointResult = cachedAccessPointRepository
-				.findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds, state, revState, from, count, sdp);
+				.findApCachedAccessPointisByQuery(search, searchFilter, apTypeIds, scopeIds,
+				                                  state != null ? EnumSet.of(state) : null,
+				                                  revState, from, count, sdp);
 
 		List<ApAccessPointVO> accessPointVOList = new ArrayList<>();
 		for (ApCachedAccessPoint cachedAccessPoint : cachedAccessPointResult.getRecords()) {
@@ -3699,6 +3701,17 @@ public class AccessPointService {
 
     public Page<ApState> findApAccessPointBySearchFilter(ApAdvanceSearchFilter searchFilter, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
                                                          StateApproval state, RevStateApproval revState, Integer from, Integer count, StaticDataProvider sdp) {
+        return findApAccessPointBySearchFilter(searchFilter, apTypeIdTree, scopeIds,
+                                               state != null ? EnumSet.of(state) : null,
+                                               revState, from, count, sdp);
+    }
+
+    /**
+     * @param states restriction to these states (any of them matches); null or
+     *               empty = no state restriction
+     */
+    public Page<ApState> findApAccessPointBySearchFilter(ApAdvanceSearchFilter searchFilter, Set<Integer> apTypeIdTree, Set<Integer> scopeIds,
+                                                         Collection<StateApproval> states, RevStateApproval revState, Integer from, Integer count, StaticDataProvider sdp) {
         int page = from / count;
         PageRequest pageRequest = PageRequest.of(page, count);
 
@@ -3712,7 +3725,7 @@ public class AccessPointService {
         }
 
         ApStateSpecification specification = new ApStateSpecification(searchFilter, apTypeIdTree, scopeIds,
-                                                                      state, revState, sdp, preResolvedStateIds);
+                                                                      states, revState, sdp, preResolvedStateIds);
         return stateRepository.findAll(specification, pageRequest);
     }
 

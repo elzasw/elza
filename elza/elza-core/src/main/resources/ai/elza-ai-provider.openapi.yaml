@@ -1047,6 +1047,43 @@ components:
         A description unit (level / node): its identity, its place in the arrangement
         and its description items as codes. Self-contained given the accompanying
         `elza.fundInfo`, whose `ruleSetCode` resolves the item codes.
+    ArchivalDescriptionDetail:
+      type: object
+      required:
+        - node
+        - fundId
+      properties:
+        node:
+          allOf:
+            - $ref: '#/components/schemas/ArchivalDescription'
+          description: The level itself, the same model the client sends as context, items included.
+        fundId:
+          type: integer
+          format: int32
+          description: Fund the level belongs to — scopes follow-up searches (`SearchNodesParams.fundIds`).
+        ruleSetCode:
+          type: string
+          description: |-
+            Rule set of the fund (`RulRuleSet.code`) — resolves the items' type/spec
+            codes, the same way `ArchivalEntity.ruleSetCode` does for a fetched entity.
+        parents:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeHit'
+          description: Parent chain, root first (when `withParents`; never windowed — depth is small).
+        siblings:
+          allOf:
+            - $ref: '#/components/schemas/NodeWindow'
+          description: Sibling window (when `withSiblings`).
+        children:
+          allOf:
+            - $ref: '#/components/schemas/NodeWindow'
+          description: Children window (when `withChildren`).
+      description: |-
+        Result of the `getArchivalDescription` tool: the level — always with its
+        complete description items (the round-trip dominates the cost; the provider
+        decides how much reaches the model) — plus the requested surroundings in the
+        arrangement tree.
     ArchivalDescriptionObject:
       type: object
       required:
@@ -1387,6 +1424,31 @@ components:
         One part of an archival entity — a block of its structured description
         (`ApPart`, e.g. a name or a body of description). A part has a type, a text
         representation, its own description items and, recursively, nested sub-parts.
+    EntityRelationFilter:
+      type: object
+      required:
+        - accessPointId
+      properties:
+        accessPointId:
+          type: integer
+          format: int32
+          description: The referenced entity (`ApAccessPoint.accessPointId`).
+        relationTypeCode:
+          type: string
+          description: |-
+            Relation item type code (`RulItemType.code`) the reference must use;
+            omitted = any reference anywhere in the description.
+        relationSpecCode:
+          type: string
+          description: Specification code, when the relation type is enumerated (e.g. the kind of kinship).
+      description: '"Has a reference to entity X", optionally narrowed to one relation item type/spec.'
+    EntitySearchArea:
+      type: string
+      enum:
+        - preferNames
+        - allNames
+        - allParts
+      description: Scope of the `searchEntities` full-text match.
     FundHits:
       type: object
       required:
@@ -1466,6 +1528,41 @@ components:
       allOf:
         - $ref: '#/components/schemas/AiObject'
       description: Fund information object.
+    GetArchivalDescriptionParams:
+      type: object
+      properties:
+        nodeId:
+          type: integer
+          format: int32
+          description: Level id (`ArrNode.nodeId`) — the same identity `elza.archivalDescription` and `NodeHit` use.
+        uuid:
+          type: string
+          description: Stable level UUID (`ArrNode.uuid`).
+        withChildren:
+          type: boolean
+          description: Include a window of the direct child levels, in arrangement order (default false).
+        childrenFrom:
+          type: integer
+          format: int32
+          description: 0-based offset of the children window (default 0 = the first children).
+        withSiblings:
+          type: boolean
+          description: |-
+            Include a window of the sibling levels (same parent), in arrangement order
+            (default false). Without `siblingsFrom` the window is centered on the
+            level itself — its neighborhood; the result reports the level's own index.
+        siblingsFrom:
+          type: integer
+          format: int32
+          description: 0-based offset of the siblings window; omitted = centered on the level.
+        withParents:
+          type: boolean
+          description: Include the parent chain, root first (default false).
+        limit:
+          type: integer
+          format: int32
+          description: Requested maximum nodes per window (children / siblings); the client may cap it lower.
+      description: Arguments of the `getArchivalDescription` tool. Exactly one of the ids.
     GetArchivalEntityParams:
       type: object
       properties:
@@ -1714,6 +1811,37 @@ components:
         Kind of a problem found by Elza's automatic (rule-based) checks on a level.
         The set may grow additively; a client treats an unknown kind as a generic
         problem.
+    NodeWindow:
+      type: object
+      required:
+        - nodes
+        - from
+        - totalCount
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeHit'
+          description: The window's nodes, in arrangement order.
+        from:
+          type: integer
+          format: int32
+          description: 0-based index of `nodes[0]` within the whole ordered list.
+        totalCount:
+          type: integer
+          format: int32
+          description: Size of the whole ordered list.
+        nodeIndex:
+          type: integer
+          format: int32
+          description: |-
+            Siblings only: the anchor level's own 0-based index within the whole list
+            — its position among its siblings, and the aim point for a next window.
+      description: |-
+        One window of an ordered node list. Self-describing — the slice, where it
+        sits and how long the whole list is — because arrangement lists can be huge
+        (thousands of units under one series) and, unlike search results, ordered
+        lists page by design: the caller aims the next window instead of refining.
     ObjectType:
       type: string
       enum:
@@ -1810,6 +1938,68 @@ components:
       allOf:
         - $ref: '#/components/schemas/AiObject'
       description: Revision findings object.
+    SearchEntitiesParams:
+      type: object
+      properties:
+        fulltext:
+          type: string
+          description: Full-text query over entity names/description (`"…"` = exact phrase).
+        area:
+          allOf:
+            - $ref: '#/components/schemas/EntitySearchArea'
+          description: |-
+            Where the full text matches: the preferred name only, every name part
+            (the default), or the whole description.
+        onlyMainPart:
+          type: boolean
+          description: |-
+            Restrict the full text to the main part of names (`NM_MAIN`) — e.g. a
+            surname-only match for persons.
+        typeCode:
+          type: string
+          description: |-
+            Restrict to one entity class or type (`ApType.code`, e.g. `PERSON` or
+            `PERSON_INDIVIDUAL`); a non-leaf code includes all its subtypes.
+        relatedTo:
+          allOf:
+            - $ref: '#/components/schemas/EntityRelationFilter'
+          description: |-
+            Only entities whose description references a given entity — the incoming
+            relations of that entity (relations are stored one-way: son→father lives
+            on the son, so "find X's children" = entities whose relation items point
+            at X).
+        limit:
+          type: integer
+          format: int32
+          description: |-
+            Requested maximum number of hits; the client may cap it lower (the result
+            then reports `partial`). Omitted = the client's default.
+      description: |-
+        Arguments of the `searchEntities` tool. At least one of `fulltext`,
+        `typeCode`, `relatedTo` must be given (an unconstrained listing is refused).
+    SearchEntitiesResult:
+      type: object
+      required:
+        - entities
+        - totalCount
+        - partial
+      properties:
+        entities:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArchivalEntityInfo'
+          description: The matching entities as lightweight identities, best match first.
+        totalCount:
+          type: integer
+          format: int64
+          description: Total matching entities (before capping).
+        partial:
+          type: boolean
+          description: |-
+            True when the result is incomplete (a hit cap was reached). The tool does
+            not page: refine the query (sharper terms, `typeCode`, `onlyMainPart`)
+            instead of re-asking with the same terms.
+      description: Result of the `searchEntities` tool.
     SearchNodesParams:
       type: object
       properties:
@@ -1834,6 +2024,15 @@ components:
           description: |-
             Restrict the search to these funds (`FundInfo.fundId`). Omitted = every
             fund the requesting user may read.
+        referencesEntityId:
+          type: integer
+          format: int32
+          description: |-
+            Only description units with an item referencing this entity
+            (`ApAccessPoint.accessPointId`), regardless of the item type — the
+            description-side usage of an entity. For a type-specific reference match
+            use an `ItemCondition` on the `RECORD_REF` item type with the id as
+            `value` instead (a numeric value on a reference item matches by id).
         limit:
           type: integer
           format: int32
@@ -1919,6 +2118,8 @@ components:
         - getItemTypes
         - searchNodes
         - getArchivalEntity
+        - searchEntities
+        - getArchivalDescription
       description: |-
         Standard tools — the **closed, contract-owned** set of tools a client can
         execute locally on the provider's request during `awaiting_tools`. The set is
@@ -1948,6 +2149,19 @@ components:
         description item (`RECORD_REF`) or from another entity's parts; the client
         resolves it under the requesting user's read permissions and returns its
         identity, classification, `ruleSetCode` and complete part tree.
+        - `searchEntities` — search archival entities (access points). Arguments
+        `SearchEntitiesParams`, result `SearchEntitiesResult`: full text over
+        names/description, optionally constrained to an entity class/type or to
+        entities referencing a given entity (incoming relations); executed under
+        the requesting user's scope read permissions, capped hit list of
+        lightweight identities.
+        - `getArchivalDescription` — fetch one description level in full and/or its
+        surroundings in the arrangement tree. Arguments
+        `GetArchivalDescriptionParams`, result `ArchivalDescriptionDetail`: the
+        level always comes with its complete description items (the round-trip
+        dominates the cost); ordered, windowed lists of its children and siblings
+        (designed for levels with thousands of nodes) and the parent chain are
+        opt-in. Executed under the requesting user's fund read permissions.
     StructuredObjectInfo:
       type: object
       required:

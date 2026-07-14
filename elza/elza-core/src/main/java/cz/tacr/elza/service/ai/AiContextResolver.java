@@ -229,12 +229,14 @@ public class AiContextResolver {
             Map<Integer, String> titlesByNode = loadTitles(version, toBuild);
             Map<Integer, List<NodeIssue>> issuesByNode = loadIssues(version, toBuild, sdp);
             for (Integer nodeId : toBuild) {
-                AiObject level = buildArchivalDescription(nodeId, nodeId.equals(node.getNodeId()),
+                ArchivalDescription level = buildArchivalDescription(nodeId, nodeId.equals(node.getNodeId()),
                         nodesById.get(nodeId), treeMap.get(nodeId),
                         itemsByNode.getOrDefault(nodeId, List.of()), sdp,
                         titlesByNode.get(nodeId), issuesByNode.getOrDefault(nodeId, List.of()));
                 if (level != null) {
-                    resolved.add(level);
+                    resolved.add(new ArchivalDescriptionObject()
+                            .objectType(ObjectType.ELZA_ARCHIVAL_DESCRIPTION)
+                            .data(level));
                 }
             }
         }
@@ -244,6 +246,31 @@ public class AiContextResolver {
     /** Builds one level's {@code elza.archivalDescription}, loading its own pieces. */
     private AiObject buildArchivalDescription(final ArrFundVersion version, final Integer nodeId,
                                               final boolean focus) {
+        ArchivalDescription data = buildArchivalDescriptionPayload(version, nodeId, focus);
+        if (data == null) {
+            return null;
+        }
+        return new ArchivalDescriptionObject()
+                .objectType(ObjectType.ELZA_ARCHIVAL_DESCRIPTION)
+                .data(data);
+    }
+
+    /**
+     * Builds one level's {@code ArchivalDescription} payload — the same data a
+     * context level carries, without the focus flag. Pure mapping: no permission
+     * check (the caller enforces fund read permission), and the entity references
+     * carried by the items stay bare — enrich them via
+     * {@link #enrichEntityRefs(ArchivalDescription)}. Serves the
+     * {@code getArchivalDescription} tool; {@code null} when the level is not in
+     * the version's tree (deleted or foreign).
+     */
+    public ArchivalDescription buildArchivalDescription(final ArrFundVersion version, final Integer nodeId) {
+        return buildArchivalDescriptionPayload(version, nodeId, false);
+    }
+
+    /** Builds one level's {@code ArchivalDescription} payload, loading its own pieces. */
+    private ArchivalDescription buildArchivalDescriptionPayload(final ArrFundVersion version, final Integer nodeId,
+                                                                final boolean focus) {
         TreeNode treeNode = levelTreeCacheService.getVersionTreeCache(version).get(nodeId);
         if (treeNode == null) {
             logger.info("AI context node {} not found in fund {} open version; skipped",
@@ -258,8 +285,8 @@ public class AiContextResolver {
         return buildArchivalDescription(nodeId, focus, node, treeNode, items, sdp, title, issues);
     }
 
-    /** Maps a level's already-loaded pieces to an {@code elza.archivalDescription} object. */
-    private AiObject buildArchivalDescription(final Integer nodeId, final boolean focus,
+    /** Maps a level's already-loaded pieces to the {@code ArchivalDescription} payload. */
+    private ArchivalDescription buildArchivalDescription(final Integer nodeId, final boolean focus,
                                               final ArrNode node, final TreeNode treeNode,
                                               final List<ArrDescItem> items, final StaticDataProvider sdp,
                                               final String title, final List<NodeIssue> issues) {
@@ -288,9 +315,7 @@ public class AiContextResolver {
                 .map(item -> toDescriptionItem(item, sdp))
                 .filter(Objects::nonNull)
                 .toList());
-        return new ArchivalDescriptionObject()
-                .objectType(ObjectType.ELZA_ARCHIVAL_DESCRIPTION)
-                .data(data);
+        return data;
     }
 
     /** Maps a level's description item to stable codes plus its display text. */
@@ -435,6 +460,50 @@ public class AiContextResolver {
         return entity;
     }
 
+    /**
+     * Maps a cached access point to the lightweight {@code ArchivalEntityInfo} —
+     * identity, classification, external-system identity and the preferred
+     * (display) name, without the parts. Pure mapping: no permission check (the
+     * caller enforces scope read permission). Serves the {@code searchEntities}
+     * tool, whose hits are this payload.
+     */
+    public ArchivalEntityInfo buildArchivalEntityInfo(final CachedAccessPoint cap) {
+        StaticDataProvider sdp = staticDataService.getData();
+        ArchivalEntityInfo info = new ArchivalEntityInfo().accessPointId(cap.getAccessPointId());
+        info.uuid(cap.getUuid());
+        ApState apState = cap.getApState();
+        if (apState != null) {
+            Classification classification = classify(apState.getApTypeId(), sdp);
+            if (classification != null) {
+                info.classCode(classification.classCode()).className(classification.className())
+                        .typeCode(classification.typeCode()).typeName(classification.typeName());
+            }
+        }
+        List<CachedBinding> bindings = cap.getBindings();
+        if (bindings != null && !bindings.isEmpty()) {
+            CachedBinding binding = bindings.get(0);
+            info.externalSystemCode(binding.getExternalSystemCode()).externalId(binding.getValue());
+        }
+        String preferredName = findPreferredName(cap);
+        if (preferredName != null && !preferredName.isEmpty()) {
+            info.preferredName(preferredName);
+        }
+        return info;
+    }
+
+    /** The display name of the entity's preferred part, or {@code null}. */
+    private String findPreferredName(final CachedAccessPoint cap) {
+        if (cap.getParts() == null || cap.getPreferredPartId() == null) {
+            return null;
+        }
+        for (CachedPart part : cap.getParts()) {
+            if (cap.getPreferredPartId().equals(part.getPartId())) {
+                return findDisplayName(part.getIndices());
+            }
+        }
+        return null;
+    }
+
     /** Builds one part (recursively, with its sub-parts) from a cached part. */
     private EntityPart buildEntityPart(final CachedPart part,
                                        final Map<Integer, List<CachedPart>> childrenByParent,
@@ -567,6 +636,17 @@ public class AiContextResolver {
     public void enrichEntityRefs(final ArchivalEntity entity) {
         List<ArchivalEntityInfo> refs = new ArrayList<>();
         collectFromParts(entity.getParts(), refs);
+        enrichRefs(refs);
+    }
+
+    /**
+     * Enriches the entity references carried by one level's description items —
+     * the single-level variant used by the {@code getArchivalDescription} tool,
+     * which resolves a level outside the context flow.
+     */
+    public void enrichEntityRefs(final ArchivalDescription description) {
+        List<ArchivalEntityInfo> refs = new ArrayList<>();
+        collectFromItems(description.getItems(), refs);
         enrichRefs(refs);
     }
 

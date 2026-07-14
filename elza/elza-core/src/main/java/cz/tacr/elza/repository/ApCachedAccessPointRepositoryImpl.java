@@ -89,7 +89,7 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
                                                                               ApAdvanceSearchFilter searchFilter,
                                                                               Collection<Integer> apTypeIdTree,
                                                                               Collection<Integer> scopeIds,
-                                                                              ApState.StateApproval state,
+                                                                              Collection<ApState.StateApproval> states,
                                                                               RevStateApproval revState,
                                                                               Integer from,
                                                                               Integer count,
@@ -98,12 +98,12 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
         SearchPredicateFactory factory = session.scope(ApCachedAccessPoint.class).predicate();
 
         if (log.isTraceEnabled()) {
-            log.trace("Search query params: search='{}', apTypeIdTree={}, scopeIds={}, state={}, revState={}, from={}, count={}",
-                      search, apTypeIdTree, scopeIds, state, revState, from, count);
+            log.trace("Search query params: search='{}', apTypeIdTree={}, scopeIds={}, states={}, revState={}, from={}, count={}",
+                      search, apTypeIdTree, scopeIds, states, revState, from, count);
             logSearchConfig();
         }
 
-        SearchPredicate predicate = buildQueryFromParams(factory, search, searchFilter, apTypeIdTree, scopeIds, state, revState);
+        SearchPredicate predicate = buildQueryFromParams(factory, search, searchFilter, apTypeIdTree, scopeIds, states, revState);
 
 		SearchResult<ApCachedAccessPoint> result = session.search(ApCachedAccessPoint.class)
 				.where(predicate)
@@ -148,12 +148,12 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 		return new QueryResults<ApCachedAccessPoint>(hitCount.intValue(), result.hits());
     }
 
-    private SearchPredicate buildQueryFromParams(SearchPredicateFactory factory, 
+    private SearchPredicate buildQueryFromParams(SearchPredicateFactory factory,
     											 String search,
     											 ApAdvanceSearchFilter searchFilter,
     											 Collection<Integer> apTypeIdTree,
     											 Collection<Integer> scopeIds,
-    											 ApState.StateApproval state,
+    											 Collection<ApState.StateApproval> states,
     											 RevStateApproval revState) {
         BooleanPredicateClausesStep<?> bool = factory.bool();
 
@@ -211,8 +211,12 @@ public class ApCachedAccessPointRepositoryImpl implements ApCachedAccessPointRep
 			bool.must(scopeBool);
 		}
 
-		if (state != null) {
-			bool.must(factory.match().field(STATE).matching(state.name().toLowerCase()));
+		if (CollectionUtils.isNotEmpty(states)) {
+			BooleanPredicateClausesStep<?> stateBool = factory.bool();
+			for (ApState.StateApproval state : states) {
+				stateBool.should(factory.match().field(STATE).matching(state.name().toLowerCase()));
+			}
+			bool.must(stateBool);
 		}
 
 		if (revState != null) {
