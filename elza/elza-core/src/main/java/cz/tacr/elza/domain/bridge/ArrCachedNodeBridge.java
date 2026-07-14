@@ -174,6 +174,6 @@ public class ArrCachedNodeBridge implements TypeBridge<ArrCachedNode> {
 		}
 
 		Coordinate coordinate = geometry.getCoordinate();
-		return GeoPoint.of(coordinate.getX(), coordinate.getY());
+		return GeoPoint.of(coordinate.getY(), coordinate.getX());
 	}
 }
