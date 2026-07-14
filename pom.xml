@@ -785,7 +785,7 @@
     <distributionManagement>
 		<repository>
 			<id>LightCompReleaseRepository</id>
-			<url>https://artifactory.lightcomp.cz/artifactory/distributions</url>
+			<url>https://mvn.lightcomp.cz/distributions</url>
 		</repository>
     </distributionManagement>
 </project>
