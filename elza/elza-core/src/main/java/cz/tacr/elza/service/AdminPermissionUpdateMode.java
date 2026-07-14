@@ -18,5 +18,10 @@ public enum AdminPermissionUpdateMode {
      * permissions are kept. This allows an administrator to grant extra group or
      * user permissions on a fonds without a web service update removing them.
      */
-    ADD_ONLY
+    ADD_ONLY,
+    
+    /**
+     * Do not synchronize permissions.
+     */
+    NO_SYNC
 }

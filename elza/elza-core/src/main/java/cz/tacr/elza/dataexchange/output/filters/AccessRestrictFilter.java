@@ -110,6 +110,9 @@ public class AccessRestrictFilter implements ExportFilter {
         if (!restrictionItems.isEmpty()) {
             levelRestrMap.put(levelInfo.getNodeId(), restrictionItems);
 
+            // non-structured restriction items all share the same context (the level's own items),
+            // so that context is evaluated only once regardless of how many such items are present
+            boolean ownItemsProcessed = false;
             for (ArrItem restrictionItem : restrictionItems) {
                 ItemType itemType = sdp.getItemTypeById(restrictionItem.getItemTypeId());
                 Integer restrStructId = null;
@@ -123,6 +126,10 @@ public class AccessRestrictFilter implements ExportFilter {
                     restrStructId = soi.getId();
                     restrItems = soi.getItems();
                 } else {
+                    if (ownItemsProcessed) {
+                        continue;
+                    }
+                    ownItemsProcessed = true;
                     // Create fake SOI from current level
                     restrItems = levelInfo.getItems();
                 }
