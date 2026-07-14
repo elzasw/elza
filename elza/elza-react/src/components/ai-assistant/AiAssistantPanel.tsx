@@ -217,6 +217,7 @@ const useStyles = makeStyles({
         maxWidth: "900px",
         display: "flex",
         justifyContent: "flex-end",
+        scrollMarginTop: tokens.spacingVerticalM,
     },
     userMessage: {
         maxWidth: "85%",
@@ -233,6 +234,7 @@ const useStyles = makeStyles({
         backgroundColor: "transparent",
         borderRadius: tokens.borderRadiusLarge,
         padding: `${tokens.spacingVerticalXL} ${tokens.spacingHorizontalXXL}`,
+        scrollMarginTop: tokens.spacingVerticalM,
     },
     aiMessageFull: {
         maxWidth: "95%",
@@ -316,11 +318,32 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
     const activeProfileCode = selectedProfile ?? defaultProfile?.code;
     const activeProfile = profiles.find(profile => profile.code === activeProfileCode);
     const activeProfileLabel = activeProfile?.name || activeProfile?.code;
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const lastRequestRef = useRef<HTMLDivElement>(null);
+    const aiMessageRef = useRef<HTMLDivElement>(null);
+    const lastRequest = requests[requests.length - 1];
+    const lastRequestId = lastRequest?.id;
+    const lastRequestState = lastRequest?.state;
+    const lastRequestActivityCount = lastRequest?.activities?.length ?? 0;
+    const lastRequestFinished = lastRequest ? !isRequestInProgress(lastRequest) : false;
 
+    // On a new request, scroll its user message to the top of the viewport so the
+    // response reads from the beginning. Only the request id triggers this — not the
+    // streaming state — so the view doesn't yank while the answer updates.
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [requests, pending]);
+        lastRequestRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, [lastRequestId]);
+
+    // While the request runs, follow newly added subtasks into view.
+    useEffect(() => {
+        if (lastRequestFinished) return;
+        aiMessageRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, [lastRequestActivityCount, lastRequestFinished]);
+
+    // When the final message arrives, scroll its beginning to the top of the viewport.
+    useEffect(() => {
+        if (!lastRequestFinished) return;
+        aiMessageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, [lastRequestId, lastRequestState, lastRequestFinished]);
 
     const [listExpanded, setListExpanded] = useState(false);
     const [expanded, setExpanded] = useState(false);
@@ -470,15 +493,16 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                         const statusLabel = runningActivity
                             ? activityTitle(runningActivity, intl)
                             : request.progressMessage || intl.formatMessage(aiAssistantMessages.thinking);
+                        const isLastRequest = request.id === lastRequest?.id;
                         return (
                         <div key={request.id} style={{ display: "contents" }}>
                             {request.userInstructions && (
-                                <div className={mergeClasses(styles.userMessageRow, aiFullWidth && styles.aiMessageFull)}>
+                                <div ref={isLastRequest ? lastRequestRef : undefined} className={mergeClasses(styles.userMessageRow, aiFullWidth && styles.aiMessageFull)}>
                                     <div className={styles.userMessage}>{request.userInstructions}</div>
                                 </div>
                             )}
                             {request.state === "error" ? (
-                                <div className={mergeClasses(styles.aiMessage, aiFullWidth && styles.aiMessageFull)}>
+                                <div ref={isLastRequest ? aiMessageRef : undefined} className={mergeClasses(styles.aiMessage, aiFullWidth && styles.aiMessageFull)}>
                                     {finishedSteps}
                                     <div className={styles.aiError}>
                                         <FormattedMessage {...aiAssistantMessages.errorPrefix} />
@@ -486,7 +510,7 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                     </div>
                                 </div>
                             ) : isRequestInProgress(request) ? (
-                                <div className={mergeClasses(styles.aiMessage, styles.progressBlock, aiFullWidth && styles.aiMessageFull)}>
+                                <div ref={isLastRequest ? aiMessageRef : undefined} className={mergeClasses(styles.aiMessage, styles.progressBlock, aiFullWidth && styles.aiMessageFull)}>
                                     {activities.length > 0 && <AiRequestActivities activities={activities} />}
                                     <Spinner size="tiny" label={statusLabel} labelPosition="after" />
                                     {request.progressPercent != null && (
@@ -495,7 +519,7 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                 </div>
                             ) : (
                                 request.blocks && (
-                                    <div className={mergeClasses(styles.aiMessage, aiFullWidth && styles.aiMessageFull)}>
+                                    <div ref={isLastRequest ? aiMessageRef : undefined} className={mergeClasses(styles.aiMessage, aiFullWidth && styles.aiMessageFull)}>
                                         {finishedSteps}
                                         <AiDisplayBlocks blocks={request.blocks} />
                                         {request.usage && (
@@ -563,7 +587,6 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                         );
                     })}
                     {error && <div className={styles.aiError}>{error}</div>}
-                    <div ref={messagesEndRef} />
                 </div>
                 <div className={styles.composer}>
                     <div className={styles.contextBar}>
