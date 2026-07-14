@@ -4,7 +4,7 @@
     <parent>
         <artifactId>distrib</artifactId>
         <groupId>cz.tacr.elza</groupId>
-        <version>3.3.17</version>
+        <version>3.3.18-SNAPSHOT</version>
     </parent>
     <artifactId>elza-tomcat</artifactId>
     <packaging>jar</packaging>
