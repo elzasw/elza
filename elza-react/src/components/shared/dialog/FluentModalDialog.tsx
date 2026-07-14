@@ -182,8 +182,10 @@ function CollapsibleWindowBody({
   initialHeight,
   children,
 }: PropsWithChildren<CollapsibleWindowBodyProps>) {
-  const { pinnedBottom } = useContext(DraggableWindowContext);
+  const { pinnedBottom, registerResizable, isResizingRef } = useContext(DraggableWindowContext);
   const PINNED_COLLAPSED_WIDTH = 260;
+  const MIN_WIDTH = 300;
+  const MIN_HEIGHT = 300;
 
   const [open, setOpen] = useState(true);
   const [height, setHeight] = useState(initialHeight);
@@ -191,11 +193,31 @@ function CollapsibleWindowBody({
   const [width, setWidth] = useState(initialWidth);
   const [viewport, setViewport] = useState({ width: window.innerWidth, height: window.innerHeight });
 
+  const openRef = useRef(open);
+  openRef.current = open;
+  const sizeRef = useRef({ width, height });
+  sizeRef.current = { width, height };
+
   useEffect(() => {
     const handleResize = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    registerResizable({
+      onResizeStart: () => ({
+        width: sizeRef.current.width,
+        height: sizeRef.current.height,
+        minWidth: MIN_WIDTH,
+        minHeight: openRef.current ? MIN_HEIGHT : 0,
+      }),
+      onResize: (newWidth, newHeight) => {
+        setWidth(newWidth);
+        if (openRef.current) setHeight(newHeight);
+      },
+    });
+  }, [registerResizable]);
 
   const collapsedPinned = pinnedBottom && !open;
   const collapsedPinnedRef = useRef(collapsedPinned);
@@ -215,6 +237,9 @@ function CollapsibleWindowBody({
     if (node !== null) {
       const resizeObserver = new ResizeObserver(() => {
         if (collapsedPinnedRef.current) return;
+        // While the user drags a resize handle the size is driven directly by
+        // setWidth/setHeight; reading it back here would fight that update.
+        if (isResizingRef.current) return;
         const rect = node.getBoundingClientRect();
         // Ignore sizes forced by the viewport cap (maxWidth/maxHeight); otherwise
         // shrinking the viewport would overwrite the user's chosen size and it
@@ -227,27 +252,6 @@ function CollapsibleWindowBody({
       resizeObserver.observe(node);
     }
   }, []);
-
-  // When pinned the bottom and right edges are fixed, so the native bottom-right
-  // resize handle is useless; a custom top-left handle grows the window up and left.
-  const handleCornerDrag = useCallback((event: React.MouseEvent) => {
-    event.preventDefault();
-    const startX = event.clientX;
-    const startY = event.clientY;
-    const startWidth = width;
-    const startHeight = height;
-
-    const onMove = (moveEvent: MouseEvent) => {
-      setWidth(Math.max(300, startWidth + (startX - moveEvent.clientX)));
-      setHeight(Math.max(300, startHeight + (startY - moveEvent.clientY)));
-    };
-    const onUp = () => {
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseup", onUp);
-    };
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseup", onUp);
-  }, [width, height]);
 
   return (
     <div
@@ -266,25 +270,10 @@ function CollapsibleWindowBody({
         borderRadius: pinnedBottom ? "8px 8px 0 0" : "8px",
         boxShadow: "5px 5px 30px 5px rgba(0, 0, 0, 0.2)",
         overflow: "hidden",
-        resize: pinnedBottom ? "none" : (open ? "both" : "horizontal"),
         display: "flex",
         flexDirection: "column",
       }}
     >
-      {pinnedBottom && open && (
-        <div
-          onMouseDown={handleCornerDrag}
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "14px",
-            height: "14px",
-            cursor: "nwse-resize",
-            zIndex: 10001,
-          }}
-        />
-      )}
       <DraggableWindowDragger style={{ display: "flex", padding: "5px", alignItems: "center" }}>
         <div>&nbsp;{title}</div>
         <div style={{ flexGrow: 1 }}></div>
