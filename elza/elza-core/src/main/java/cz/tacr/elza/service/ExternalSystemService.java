@@ -458,29 +458,33 @@ public class ExternalSystemService {
 
         // if type changed in ApExternalSystem
         if (original instanceof ApExternalSystem origExtSys 
-        		&& newExternalSystem instanceof ApExternalSystem newExtSys) {
-        	if (origExtSys.getType() != newExtSys.getType()) {
+                && newExternalSystem instanceof ApExternalSystem newExtSys
+                && origExtSys.getType() != newExtSys.getType()) {
 
-        	    ApExternalSystemType newExtSysType = newExtSys.getType();
-        	    ApExternalSystemType origExtSysType = origExtSys.getType();
+    	    ApExternalSystemType newExtSysType = newExtSys.getType();
+    	    ApExternalSystemType origExtSysType = origExtSys.getType();
 
-                // if it's a switch between versions
-                if (!newExtSysType.isSameType(origExtSysType)) {
-                    throw new SystemException("Změna typu Externího Systému není možná", BaseCode.INVALID_STATE)
-                        .set("extSystemId", origExtSys.getExternalSystemId())
-                        .set("extSystemType", origExtSysType)
-                        .set("newExtSystemType", newExtSysType);
-                }
-        	}
-            // any ApExternalSystem update may have changed url/apiKey -
-            // notify listeners so cached connector instances get invalidated
-            eventPublisher.publishEvent(new ApExternalSystemEvent(this, origExtSys));
+            // if it's a switch between versions
+            if (!newExtSysType.isSameType(origExtSysType)) {
+                throw new SystemException("Změna typu Externího Systému není možná", BaseCode.INVALID_STATE)
+                    .set("extSystemId", origExtSys.getExternalSystemId())
+                    .set("extSystemType", origExtSysType)
+                    .set("newExtSystemType", newExtSysType);
+            }
         }
 
         validateExternalSystem(newExternalSystem, false);
         sendUpdateExternalSystemNotification(newExternalSystem.getExternalSystemId());
 
-        return externalSystemRepository.save(newExternalSystem);
+        SysExternalSystem extSysSaved = externalSystemRepository.save(newExternalSystem);
+
+        // Publish AFTER save so listeners (CamScheduler, connector cache invalidators) see the new state
+        // when they re-read the entity from the persistence context.
+        if (extSysSaved instanceof ApExternalSystem savedApExtSys) {
+            eventPublisher.publishEvent(new ApExternalSystemEvent(this, savedApExtSys));
+        }
+
+        return extSysSaved;
     }
 
     /**
