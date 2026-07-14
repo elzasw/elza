@@ -35,6 +35,7 @@ import cz.tacr.elza.controller.vo.MultimatchContainsFilter;
 import cz.tacr.elza.controller.vo.OperationCompareType;
 import cz.tacr.elza.controller.vo.SearchParams;
 import cz.tacr.elza.controller.vo.TreeNodeVO;
+import cz.tacr.elza.core.data.StaticDataService;
 import cz.tacr.elza.domain.ArrFund;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.UsrPermission.Permission;
@@ -61,6 +62,7 @@ class SearchNodesToolTest {
     private final NodeSearchService nodeSearchService = mock(NodeSearchService.class);
     private final ArrangementInternalService arrangementInternalService = mock(ArrangementInternalService.class);
     private final LevelTreeCacheService levelTreeCacheService = mock(LevelTreeCacheService.class);
+    private final StaticDataService staticDataService = mock(StaticDataService.class);
     private final PlatformTransactionManager txManager = mock(PlatformTransactionManager.class);
 
     private SearchNodesTool tool;
@@ -69,7 +71,8 @@ class SearchNodesToolTest {
     void setUp() {
         when(txManager.getTransaction(any())).thenReturn(new SimpleTransactionStatus());
         tool = new SearchNodesTool(userService, nodeSearchService, arrangementInternalService,
-                levelTreeCacheService, new TransactionTemplate(txManager), new ObjectMapper());
+                                   levelTreeCacheService, staticDataService, 
+                                   new TransactionTemplate(txManager), new ObjectMapper());
     }
 
     @Test
