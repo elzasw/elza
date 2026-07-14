@@ -186,12 +186,27 @@ public class DmsController {
         }
     }
 
-    // TODO: In Spring6 change to: "/api/digirepo/{repoId}/{*filePath}"
-    @RequestMapping(value = "/api/digirepo/{repoId}", method = RequestMethod.GET)
+    /**
+     * Stažení souboru z file:// repozitáře digitalizátů (např. pro zobrazení náhledu).
+     * Cesta k souboru je předávána jako path segment {@code {*filePath}} —
+     * Spring ji dekóduje podle pravidel URI (znak '+' zůstává znakem '+',
+     * nezaměňuje se za mezeru jako u query parametru).
+     *
+     * @param response http odpověď, do jejíhož výstupu se zapíše obsah souboru
+     * @param repoId   id úložiště digitalizátů (externí systém typu file://)
+     * @param filePath cesta k souboru relativně ke kořeni úložiště;
+     *                 díky vzoru {@code {*filePath}} začíná znakem '/', který je před resolve odstraněn
+     * @throws IOException při chybě čtení souboru nebo zápisu do odpovědi
+     */
+    @RequestMapping(value = "/api/digirepo/{repoId}/{*filePath}", method = RequestMethod.GET)
     @Transactional
-    public void getFile(HttpServletResponse response, @PathVariable(value = "repoId") Integer repoId,
-                        @RequestParam(value = "filePath") String filePath)
-            throws IOException {
+    public void getFile(HttpServletResponse response, 
+                        @PathVariable(value = "repoId") Integer repoId,
+                        @PathVariable(value = "filePath") String filePath) throws IOException {
+        // {*filePath} vždy začíná znakem '/', před resolve odstraníme
+        if (filePath.startsWith("/")) {
+            filePath = filePath.substring(1);
+        }
         // check permissions RD_ALL 
         userService.authorizeRequest(AuthorizationRequest.hasPermission(UsrPermission.Permission.FUND_RD_ALL));
 
@@ -205,13 +220,12 @@ public class DmsController {
             FileDownload.addContentDispositionAsAttachment(response, fp.getFileName().toString());
         }
         response.setContentType(contentType);
-        
+
         try (ServletOutputStream out = response.getOutputStream();
-                InputStream in = fileSystemRepoService.getInputStream(digiRep, filePath);) {
+                InputStream in = fileSystemRepoService.getInputStream(digiRep, filePath)) {
             IOUtils.copy(in, out);
         }
-
-    }    
+    }
 
     /**
      * Stažení souboru
