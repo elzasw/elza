@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Api } from "api";
-import { AiTaskType } from "elza-api";
+import { AiProfile, AiTaskType } from "elza-api";
 
 export function useAiProviderInfo(externalSystemCode: string) {
     const [taskTypes, setTaskTypes] = useState<AiTaskType[]>([]);
+    const [profiles, setProfiles] = useState<AiProfile[]>([]);
 
     useEffect(() => {
         if (!externalSystemCode) return;
@@ -11,13 +12,17 @@ export function useAiProviderInfo(externalSystemCode: string) {
         (async () => {
             try {
                 const { data } = await Api.aiprovider.aiProviderGetInfo(externalSystemCode);
-                if (!cancelled) setTaskTypes(data.taskTypes ?? []);
+                if (cancelled) return;
+                setTaskTypes(data.taskTypes ?? []);
+                setProfiles(data.profiles ?? []);
             } catch {
-                if (!cancelled) setTaskTypes([]);
+                if (cancelled) return;
+                setTaskTypes([]);
+                setProfiles([]);
             }
         })();
         return () => { cancelled = true; };
     }, [externalSystemCode]);
 
-    return { taskTypes };
+    return { taskTypes, profiles };
 }

@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Button, Textarea, Spinner, ProgressBar, makeStyles, mergeClasses, tokens, Badge, Tooltip, Menu, MenuTrigger, MenuPopover, MenuList, MenuItemCheckbox } from "@fluentui/react-components";
-import { SendRegular, FolderRegular, DocumentRegular, PersonRegular, AppsRegular, AddRegular, SparkleRegular, HistoryRegular, ChevronLeftRegular, ChevronRightRegular, SettingsRegular } from "@fluentui/react-icons";
+import { Button, Textarea, Spinner, ProgressBar, makeStyles, mergeClasses, tokens, Badge, Tooltip, Menu, MenuTrigger, MenuPopover, MenuList, MenuItemCheckbox, MenuItemRadio } from "@fluentui/react-components";
+import { SendRegular, FolderRegular, DocumentRegular, PersonRegular, AppsRegular, AddRegular, SparkleRegular, HistoryRegular, ChevronLeftRegular, ChevronRightRegular, SettingsRegular, ChevronDownRegular } from "@fluentui/react-icons";
 import { useUserSettings } from "contexts/user";
 import type { AiContextSegmentLabel } from "./useCurrentAiContext";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage, useIntl, IntlShape } from "react-intl";
 import { CollapsibleDragWindow } from "components/shared/dialog/FluentModalDialog";
 import { AiDisplayBlocks } from "./AiDisplayBlocks";
 import { AiRequestActivities, activityTitle, isActivityFinished } from "./AiRequestActivities";
@@ -16,6 +16,21 @@ import { aiAssistantMessages, aiContextSegmentLabels, aiModuleLabels } from "./m
 // costUnits are USD cents. CNB USD→CZK fixing rate (09 Jul 2026); update manually.
 const USD_CZK_RATE = 21.213;
 const costUnitsToCzk = (costUnits: number) => (costUnits / 100) * USD_CZK_RATE;
+
+// Requests may run for seconds up to hours; show only the non-zero, largest units.
+function formatDuration(intl: IntlShape, milliseconds: number): string {
+    const totalSeconds = Math.max(0, Math.round(milliseconds / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const unit = (value: number, unit: "hour" | "minute" | "second") =>
+        intl.formatNumber(value, { style: "unit", unit, unitDisplay: "narrow" });
+    const parts: string[] = [];
+    if (hours > 0) parts.push(unit(hours, "hour"));
+    if (minutes > 0) parts.push(unit(minutes, "minute"));
+    if (seconds > 0 || parts.length === 0) parts.push(unit(seconds, "second"));
+    return intl.formatList(parts, { type: "unit" });
+}
 
 const contextSegmentIcons: Record<AiContextSegmentLabel, JSX.Element> = {
     module: <AppsRegular />,
@@ -67,7 +82,16 @@ const useStyles = makeStyles({
     },
     settingsButton: {
         flexShrink: 0,
+    },
+    contextBarActions: {
+        display: "flex",
+        alignItems: "center",
+        flexShrink: 0,
         marginLeft: "auto",
+        gap: tokens.spacingHorizontalXXS,
+    },
+    profileButton: {
+        maxWidth: "160px",
     },
     conversationList: {
         display: "flex",
@@ -276,7 +300,7 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
         externalSystemCode,
         getContext: () => contextRef.current,
     });
-    const { taskTypes } = useAiProviderInfo(externalSystemCode);
+    const { taskTypes, profiles } = useAiProviderInfo(externalSystemCode);
     // The first task type is the default (used by the free-text input); the rest get quick-action bubbles.
     const defaultTaskType = taskTypes[0]?.code;
     const quickTasks = taskTypes.slice(1);
@@ -286,6 +310,12 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
     const currentTaskLabel = currentTask?.name || currentTaskType;
     const { conversations } = useAiConversationList(activeConversationId);
     const [draft, setDraft] = useState("");
+    // null = follow the provider default; user pick overrides it.
+    const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
+    const defaultProfile = profiles.find(profile => profile.default) ?? profiles[0];
+    const activeProfileCode = selectedProfile ?? defaultProfile?.code;
+    const activeProfile = profiles.find(profile => profile.code === activeProfileCode);
+    const activeProfileLabel = activeProfile?.name || activeProfile?.code;
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -327,7 +357,7 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
 
     const handleSend = () => {
         if (!canSend) return;
-        send(trimmedDraft, defaultTaskType);
+        send(trimmedDraft, defaultTaskType, activeProfileCode);
         setDraft("");
     };
 
@@ -411,7 +441,7 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                                 type="button"
                                                 className={styles.quickBubble}
                                                 title={task.description}
-                                                onClick={() => send(label, task.code)}
+                                                onClick={() => send(label, task.code, activeProfileCode)}
                                             >
                                                 {label}
                                             </button>
@@ -474,17 +504,55 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                                     <FormattedMessage {...aiAssistantMessages.usage} />
                                                 </summary>
                                                 <div className={styles.usageBody}>
-                                                    <FormattedMessage
-                                                        {...aiAssistantMessages.usageDetail}
-                                                        values={{
-                                                            input: request.usage.inputTokens,
-                                                            output: request.usage.outputTokens,
-                                                            cost: intl.formatNumber(costUnitsToCzk(request.usage.costUnits), {
-                                                                style: "currency",
-                                                                currency: "CZK",
-                                                            }),
-                                                        }}
-                                                    />
+                                                    <div>
+                                                        <FormattedMessage
+                                                            {...aiAssistantMessages.usageStarted}
+                                                            values={{
+                                                                datetime: intl.formatDate(request.createDate, {
+                                                                    dateStyle: "short",
+                                                                    timeStyle: "medium",
+                                                                }),
+                                                            }}
+                                                        />
+                                                        {request.finishDate && (
+                                                            <>
+                                                                {" · "}
+                                                                <FormattedMessage
+                                                                    {...aiAssistantMessages.usageDuration}
+                                                                    values={{
+                                                                        duration: formatDuration(
+                                                                            intl,
+                                                                            new Date(request.finishDate).getTime() - new Date(request.createDate).getTime(),
+                                                                        ),
+                                                                    }}
+                                                                />
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <FormattedMessage
+                                                            {...aiAssistantMessages.usageDetail}
+                                                            values={{
+                                                                input: request.usage.inputTokens,
+                                                                output: request.usage.outputTokens,
+                                                                cost: intl.formatNumber(costUnitsToCzk(request.usage.costUnits), {
+                                                                    style: "currency",
+                                                                    currency: "CZK",
+                                                                }),
+                                                            }}
+                                                        />
+                                                        {request.profile && (
+                                                            <>
+                                                                {" · "}
+                                                                <FormattedMessage
+                                                                    {...aiAssistantMessages.usageProfile}
+                                                                    values={{
+                                                                        profile: profiles.find(profile => profile.code === request.profile)?.name || request.profile,
+                                                                    }}
+                                                                />
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </details>
                                         )}
@@ -533,23 +601,53 @@ export function AiAssistantPanel({ onClose, externalSystemCode }: Props) {
                                 <FormattedMessage {...aiAssistantMessages.contextNone} />
                             </Badge>
                         )}
-                        <Menu
-                            checkedValues={{ width: aiFullWidth ? ["full"] : [] }}
-                            onCheckedValueChange={(_e, data) => update({ aiFullWidth: data.checkedItems.includes("full") })}
-                        >
-                            <MenuTrigger disableButtonEnhancement>
-                                <Tooltip content={intl.formatMessage(aiAssistantMessages.settings)} relationship="label">
-                                    <Button className={styles.settingsButton} appearance="subtle" size="small" icon={<SettingsRegular />} />
-                                </Tooltip>
-                            </MenuTrigger>
-                            <MenuPopover>
-                                <MenuList>
-                                    <MenuItemCheckbox name="width" value="full">
-                                        <FormattedMessage {...aiAssistantMessages.fullWidthResponses} />
-                                    </MenuItemCheckbox>
-                                </MenuList>
-                            </MenuPopover>
-                        </Menu>
+                        <div className={styles.contextBarActions}>
+                            {profiles.length > 1 && (
+                                <Menu
+                                    checkedValues={{ profile: activeProfileCode ? [activeProfileCode] : [] }}
+                                    onCheckedValueChange={(_e, data) => setSelectedProfile(data.checkedItems[0] ?? null)}
+                                >
+                                    <MenuTrigger disableButtonEnhancement>
+                                        <Tooltip content={intl.formatMessage(aiAssistantMessages.profile)} relationship="label">
+                                            <Button className={styles.profileButton} appearance="subtle" size="small" iconPosition="after" icon={<ChevronDownRegular />}>
+                                                {activeProfileLabel ?? intl.formatMessage(aiAssistantMessages.profileDefault)}
+                                            </Button>
+                                        </Tooltip>
+                                    </MenuTrigger>
+                                    <MenuPopover>
+                                        <MenuList>
+                                            {profiles.map(profile => (
+                                                <MenuItemRadio
+                                                    key={profile.code}
+                                                    name="profile"
+                                                    value={profile.code}
+                                                    title={profile.description}
+                                                >
+                                                    {profile.name || profile.code}
+                                                </MenuItemRadio>
+                                            ))}
+                                        </MenuList>
+                                    </MenuPopover>
+                                </Menu>
+                            )}
+                            <Menu
+                                checkedValues={{ width: aiFullWidth ? ["full"] : [] }}
+                                onCheckedValueChange={(_e, data) => update({ aiFullWidth: data.checkedItems.includes("full") })}
+                            >
+                                <MenuTrigger disableButtonEnhancement>
+                                    <Tooltip content={intl.formatMessage(aiAssistantMessages.settings)} relationship="label">
+                                        <Button className={styles.settingsButton} appearance="subtle" size="small" icon={<SettingsRegular />} />
+                                    </Tooltip>
+                                </MenuTrigger>
+                                <MenuPopover>
+                                    <MenuList>
+                                        <MenuItemCheckbox name="width" value="full">
+                                            <FormattedMessage {...aiAssistantMessages.fullWidthResponses} />
+                                        </MenuItemCheckbox>
+                                    </MenuList>
+                                </MenuPopover>
+                            </Menu>
+                        </div>
                     </div>
                     <div className={styles.inputRow}>
                         <Textarea

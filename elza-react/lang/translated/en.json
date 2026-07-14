@@ -285,6 +285,10 @@
     "defaultMessage": "New conversation",
     "srcHash": "7ajWenFvRbIr"
   },
+  "aiAssistant.action.profile": {
+    "defaultMessage": "Model",
+    "srcHash": "XixhTCPwIjm8"
+  },
   "aiAssistant.action.send": {
     "defaultMessage": "Send",
     "srcHash": "qmmhj7gqjJS4"
@@ -369,6 +373,10 @@
     "defaultMessage": "Type a message…",
     "srcHash": "-Sb-aBO8zCrQ"
   },
+  "aiAssistant.profile.default": {
+    "defaultMessage": "Default",
+    "srcHash": "ea14D4gXIsVV"
+  },
   "aiAssistant.settings.fullWidthResponses": {
     "defaultMessage": "Full-width responses",
     "srcHash": "u04WWMytfMeS"
@@ -388,6 +396,18 @@
   "aiAssistant.usage.detail": {
     "defaultMessage": "Input tokens: {input}, output tokens: {output}, price: {cost}",
     "srcHash": "13zp3tAZUt40"
+  },
+  "aiAssistant.usage.duration": {
+    "defaultMessage": "Processing time: {duration}",
+    "srcHash": "CNSPzIru8DFR"
+  },
+  "aiAssistant.usage.profile": {
+    "defaultMessage": "Model: {profile}",
+    "srcHash": "5bWvPMt2Re76"
+  },
+  "aiAssistant.usage.started": {
+    "defaultMessage": "Started: {datetime}",
+    "srcHash": "Vir1ka5YTxx4"
   },
   "aiAssistant.usage.summary": {
     "defaultMessage": "Usage",
@@ -1224,6 +1244,14 @@
   "userSettings.display.language": {
     "defaultMessage": "Language",
     "srcHash": "ARpdV1qvwAV4"
+  },
+  "userSettings.display.previewFont": {
+    "defaultMessage": "Font (preview)",
+    "srcHash": "gjUgcdlLghCr"
+  },
+  "userSettings.display.previewFont.default": {
+    "defaultMessage": "Default",
+    "srcHash": "ea14D4gXIsVV"
   },
   "userSettings.display.showDebugInfo": {
     "defaultMessage": "Show debug information",

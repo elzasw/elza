@@ -33,6 +33,18 @@ export const aiAssistantMessages = defineMessages({
         id: "aiAssistant.usage.detail",
         defaultMessage: "Vstupní tokeny: {input}, výstupní tokeny: {output}, cena: {cost}",
     },
+    usageProfile: {
+        id: "aiAssistant.usage.profile",
+        defaultMessage: "Model: {profile}",
+    },
+    usageStarted: {
+        id: "aiAssistant.usage.started",
+        defaultMessage: "Zahájeno: {datetime}",
+    },
+    usageDuration: {
+        id: "aiAssistant.usage.duration",
+        defaultMessage: "Doba zpracování: {duration}",
+    },
     unsupportedBlock: {
         id: "aiAssistant.block.unsupported",
         defaultMessage: "Nepodporovaný typ obsahu.",
@@ -56,6 +68,14 @@ export const aiAssistantMessages = defineMessages({
     settings: {
         id: "aiAssistant.action.settings",
         defaultMessage: "Nastavení",
+    },
+    profile: {
+        id: "aiAssistant.action.profile",
+        defaultMessage: "Model",
+    },
+    profileDefault: {
+        id: "aiAssistant.profile.default",
+        defaultMessage: "Výchozí",
     },
     fullWidthResponses: {
         id: "aiAssistant.settings.fullWidthResponses",
