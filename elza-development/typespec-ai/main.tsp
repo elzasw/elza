@@ -406,6 +406,16 @@ model ArchivalEntity {
   ...ArchivalEntityIdentity;
 
   /**
+   * Rule set governing this entity's description, e.g. `ZP2015` (`RulRuleSet.code`)
+   * — taken from the entity's scope (`ApScope.rulRuleSet`). Selects the dictionary
+   * (the same `getItemTypes` tool that funds use) that resolves the item-type/spec
+   * codes carried in the parts' `DescriptionItem`s. Optional: a scope may have no
+   * rule set, in which case those codes render unresolved. Not on
+   * `ArchivalEntityInfo`, which carries no items to resolve.
+   */
+  ruleSetCode?: string;
+
+  /**
    * Top-level parts of the entity, in display order — the roots of the part tree;
    * each part's sub-parts nest under its own `parts`.
    */
