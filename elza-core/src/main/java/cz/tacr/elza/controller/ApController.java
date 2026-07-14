@@ -507,8 +507,9 @@ public class ApController {
     @RequestMapping(value = "/{accessPointId}/usage", method = RequestMethod.GET)
     @Transactional
     public RecordUsageVO findUsage(@PathVariable final Integer accessPointId) {
-    	ApAccessPoint apAccessPoint = accessPointRepository.getOneCheckExist(accessPointId);
-    	return accessPointService.findRecordUsage(apAccessPoint);
+        ApState apState = accessPointService.getStateInternal(accessPointId);
+        accessPointService.checkPermissionForRead(apState);
+        return accessPointService.findRecordUsage(apState.getAccessPoint());
     }
 
     /**
