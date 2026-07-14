@@ -100,6 +100,7 @@ class AiContextResolverTest {
 
         // Cached access point: state, uuid, one binding, a small part tree.
         CachedAccessPoint cap = new CachedAccessPoint();
+        cap.setAccessPointId(AP_ID);
         cap.setUuid("ap-uuid");
         cap.setPreferredPartId(PART_NAME);
         cap.setApState(apState(individual));
