@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -98,6 +99,17 @@ public class AiRequestPoller {
     @Autowired
     private AiToolRegistry toolRegistry;
 
+    /**
+     * Give up polling a request after this many seconds of <em>uninterrupted</em>
+     * poll failures (provider unreachable, or the task gone — a {@code 404}), and
+     * mark the exchange {@code error}/{@code TIMEOUT}. A single successful poll
+     * resets the window, so a task that is legitimately still running (the model
+     * is thinking, tools are executing) is never given up on — only one the
+     * provider can no longer answer for. Default 5 minutes.
+     */
+    @Value("${elza.ai.poll-failure-timeout-seconds:300}")
+    private long pollFailureTimeoutSeconds;
+
     private final Set<Integer> active = ConcurrentHashMap.newKeySet();
 
     private final ExecutorService executor = Executors.newFixedThreadPool(4, runnable -> {
@@ -175,22 +187,33 @@ public class AiRequestPoller {
 
     /**
      * Marks a stranded request terminally interrupted ({@code error} /
-     * {@code INTERRUPTED}) and notifies the owner. Re-reads the row in its own
-     * transaction and skips a request that has meanwhile become terminal, so it
-     * never races an in-flight poll.
+     * {@code INTERRUPTED}) — the poll can never advance it (§
+     * {@link #failUnresumableRequests}).
      */
     private void markInterrupted(final Integer aiRequestId, final String reason) {
+        if (failRequest(aiRequestId, "INTERRUPTED",
+                "The exchange was interrupted and could not be resumed after a restart (" + reason + ").")) {
+            logger.info("AI request {} marked interrupted at startup: {}", aiRequestId, reason);
+        }
+    }
+
+    /**
+     * Marks a request terminally failed ({@code error} with the given code and
+     * message), records the ERROR transparency event, clears the partial-answer
+     * buffer and notifies the owner. Re-reads the row in its own transaction and
+     * skips a request that has meanwhile become terminal, so it never races an
+     * in-flight poll. Returns whether the request was actually settled.
+     */
+    private boolean failRequest(final Integer aiRequestId, final String errorCode, final String message) {
         Integer[] owner = new Integer[1];
-        AiRequestUpdateMessage message = transactionTemplate.execute(status -> {
+        AiRequestUpdateMessage updateMessage = transactionTemplate.execute(status -> {
             AiRequest request = aiRequestRepository.findById(aiRequestId).orElse(null);
             if (request == null || TERMINAL_STATES.contains(request.getState())) {
                 return null;
             }
-            String detail = "The exchange was interrupted and could not be resumed after a restart ("
-                    + reason + ").";
             request.setState("error");
-            request.setErrorCode("INTERRUPTED");
-            request.setErrorMessage(detail);
+            request.setErrorCode(errorCode);
+            request.setErrorMessage(message);
             // Advisory progress is display state of a running task; a finished
             // exchange shows its outcome, not the last phase.
             request.setProgressMessage(null);
@@ -198,20 +221,24 @@ public class AiRequestPoller {
             request.setFinishDate(new Date());
             aiRequestRepository.save(request);
             addEvent(request, AiRequestEvent.TYPE_ERROR,
-                    toJson(Map.of("errorCode", "INTERRUPTED", "message", detail)));
+                    toJson(Map.of("errorCode", errorCode, "message", message)));
             aiConversationRepository.findById(request.getAiConversationId())
                     .ifPresent(conversation -> owner[0] = conversation.getUserId());
             return requestViewMapper.buildUpdateMessage(request);
         });
-        if (message == null) {
-            return;
+        if (updateMessage == null) {
+            return false;
         }
-        logger.info("AI request {} marked interrupted at startup: {}", aiRequestId, reason);
         answerBuffer.clear(aiRequestId);
-        pushService.push(owner[0], message);
+        pushService.push(owner[0], updateMessage);
+        return true;
     }
 
     private void pollLoop(final Integer aiRequestId) {
+        // Start of the current uninterrupted run of poll failures (0 = none in
+        // progress); a successful poll resets it, so the give-up window measures
+        // only continuous unreachability, never a slow-but-healthy task.
+        long failingSinceMs = 0;
         try {
             while (true) {
                 PollTarget target = loadTarget(aiRequestId);
@@ -234,9 +261,30 @@ public class AiRequestPoller {
                                 aiRequestId, target.taskUid, target.externalSystem.getCode(),
                                 target.externalSystem.getUrl(), e.getMessage());
                     logger.debug("Polling failure detail for AI request {}", aiRequestId, e);
+                    long now = System.currentTimeMillis();
+                    if (failingSinceMs == 0) {
+                        failingSinceMs = now;
+                    }
+                    long failingForMs = now - failingSinceMs;
+                    if (failingForMs >= pollFailureTimeoutSeconds * 1000L) {
+                        // The task has been unreachable past the give-up window
+                        // (the provider forgot/expired it, or is down). Stop
+                        // retrying and settle the exchange, so it does not stay
+                        // "running" forever.
+                        long seconds = failingForMs / 1000;
+                        logger.warn("Giving up on AI request {} (task {}, provider {}): polling has failed"
+                                + " continuously for {} s (>= elza.ai.poll-failure-timeout-seconds={});"
+                                + " marking the exchange timed out",
+                                aiRequestId, target.taskUid, target.externalSystem.getCode(), seconds,
+                                pollFailureTimeoutSeconds);
+                        failRequest(aiRequestId, "TIMEOUT", "The AI provider stopped responding; the exchange"
+                                + " timed out after " + seconds + " s of failed polling.");
+                        return;
+                    }
                     Thread.sleep(RETRY_PAUSE_MS);
                     continue;
                 }
+                failingSinceMs = 0; // a reachable task resets the give-up window
                 // The task paused for client-side tools: execute them, return the
                 // results, and keep polling the resumed task.
                 if ("awaiting_tools".equals(task.getState().getValue())) {
