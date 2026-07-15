@@ -61,7 +61,7 @@ public class AiRequestViewMapper {
                     ? request.getProgressPercent().floatValue() : null);
             vo.setPartialAnswer(answerBuffer.get(request.getAiRequestId()));
         }
-        List<AiRequestActivityVO> activities = activityMapper.map(events);
+        List<AiRequestActivityVO> activities = activityMapper.map(events, isTerminal(request.getState()));
         if (!activities.isEmpty()) {
             vo.setActivities(activities);
         }

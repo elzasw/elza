@@ -3,6 +3,7 @@ package cz.tacr.elza.service.ai;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -114,15 +115,100 @@ public class AiRequestPoller {
         }
     }
 
-    /** Resumes polling of all open requests after an application (re)start. */
+    /**
+     * Resumes polling of all open requests after an application (re)start. First
+     * settles the non-terminal requests a restart can never advance
+     * ({@link #failUnresumableRequests}), so they do not linger as perpetually
+     * "running" exchanges; the rest are handed back to the poll, losing nothing.
+     */
     @EventListener(ApplicationReadyEvent.class)
     public void resumeOpenRequests() {
+        failUnresumableRequests();
         List<AiRequest> open = aiRequestRepository.findByStateNotInAndTaskUidIsNotNull(TERMINAL_STATES);
         for (AiRequest request : open) {
             logger.info("Resuming polling of AI request {} (task {})", request.getAiRequestId(),
                         request.getTaskUid());
             ensurePolling(request.getAiRequestId());
         }
+    }
+
+    /**
+     * Settles every non-terminal request the poll can never advance, so it does
+     * not stay "running" (with spinning tool steps) forever after a restart:
+     *
+     * <ul>
+     * <li>no {@code taskUid} — the task was never accepted by a provider, so
+     *     there is nothing to poll (also excluded from the resume query);</li>
+     * <li>its conversation or its AI provider is gone — {@link #loadTarget} can
+     *     no longer build a poll target, so the poll loop would exit at once and
+     *     the state would never change.</li>
+     * </ul>
+     *
+     * A request that IS resumable (a live {@code taskUid} with a resolvable
+     * provider) is left untouched — the poll picks it up and a restart loses
+     * nothing, as designed.
+     */
+    private void failUnresumableRequests() {
+        for (AiRequest request : aiRequestRepository.findByStateNotIn(TERMINAL_STATES)) {
+            String reason = unresumableReason(request);
+            if (reason != null) {
+                markInterrupted(request.getAiRequestId(), reason);
+            }
+        }
+    }
+
+    /** Why the poll can never advance this request, or {@code null} when it is resumable. */
+    private String unresumableReason(final AiRequest request) {
+        if (request.getTaskUid() == null) {
+            return "the task was never submitted to a provider";
+        }
+        AiConversation conversation = aiConversationRepository
+                .findById(request.getAiConversationId()).orElse(null);
+        if (conversation == null) {
+            return "its conversation no longer exists";
+        }
+        if (aiExternalSystemRepository.findById(conversation.getExternalSystemId()).isEmpty()) {
+            return "its AI provider is no longer configured";
+        }
+        return null;
+    }
+
+    /**
+     * Marks a stranded request terminally interrupted ({@code error} /
+     * {@code INTERRUPTED}) and notifies the owner. Re-reads the row in its own
+     * transaction and skips a request that has meanwhile become terminal, so it
+     * never races an in-flight poll.
+     */
+    private void markInterrupted(final Integer aiRequestId, final String reason) {
+        Integer[] owner = new Integer[1];
+        AiRequestUpdateMessage message = transactionTemplate.execute(status -> {
+            AiRequest request = aiRequestRepository.findById(aiRequestId).orElse(null);
+            if (request == null || TERMINAL_STATES.contains(request.getState())) {
+                return null;
+            }
+            String detail = "The exchange was interrupted and could not be resumed after a restart ("
+                    + reason + ").";
+            request.setState("error");
+            request.setErrorCode("INTERRUPTED");
+            request.setErrorMessage(detail);
+            // Advisory progress is display state of a running task; a finished
+            // exchange shows its outcome, not the last phase.
+            request.setProgressMessage(null);
+            request.setProgressPercent(null);
+            request.setFinishDate(new Date());
+            aiRequestRepository.save(request);
+            addEvent(request, AiRequestEvent.TYPE_ERROR,
+                    toJson(Map.of("errorCode", "INTERRUPTED", "message", detail)));
+            aiConversationRepository.findById(request.getAiConversationId())
+                    .ifPresent(conversation -> owner[0] = conversation.getUserId());
+            return requestViewMapper.buildUpdateMessage(request);
+        });
+        if (message == null) {
+            return;
+        }
+        logger.info("AI request {} marked interrupted at startup: {}", aiRequestId, reason);
+        answerBuffer.clear(aiRequestId);
+        pushService.push(owner[0], message);
     }
 
     private void pollLoop(final Integer aiRequestId) {

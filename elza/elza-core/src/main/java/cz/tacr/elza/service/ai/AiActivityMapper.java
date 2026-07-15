@@ -78,8 +78,16 @@ public class AiActivityMapper {
      * Maps a request's ordered event log to its activities, oldest first. Only
      * tool and preparation events contribute; the other event types are covered
      * by the request itself (instructions, progress, blocks, error).
+     *
+     * <p>When {@code requestFinished} is true the exchange has reached a terminal
+     * state, so any step still {@link #STATE_RUNNING} is settled as
+     * {@link #STATE_DONE}: the task-event stream is advisory and best-effort — a
+     * provider may never deliver a tool's {@code tool_result} event (client-tool
+     * calls in particular are never completed on the stream), and the poll stops
+     * at the terminal state — so a finished exchange must not render a step as a
+     * perpetual spinner.
      */
-    public List<AiRequestActivityVO> map(final List<AiRequestEvent> events) {
+    public List<AiRequestActivityVO> map(final List<AiRequestEvent> events, final boolean requestFinished) {
         Mapping mapping = new Mapping();
         for (AiRequestEvent event : events) {
             try {
@@ -101,7 +109,15 @@ public class AiActivityMapper {
                         event.getAiRequestEventId(), event.getEventType(), e.getMessage());
             }
         }
-        return new ArrayList<>(mapping.byCallId.values());
+        List<AiRequestActivityVO> activities = new ArrayList<>(mapping.byCallId.values());
+        if (requestFinished) {
+            for (AiRequestActivityVO activity : activities) {
+                if (STATE_RUNNING.equals(activity.getState())) {
+                    activity.setState(STATE_DONE);
+                }
+            }
+        }
+        return activities;
     }
 
     /** Working state of one mapping pass. */

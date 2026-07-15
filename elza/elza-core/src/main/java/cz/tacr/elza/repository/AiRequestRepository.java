@@ -21,4 +21,7 @@ public interface AiRequestRepository extends JpaRepository<AiRequest, Integer> {
 
     /** Open requests to resume polling for after an application start. */
     List<AiRequest> findByStateNotInAndTaskUidIsNotNull(Collection<String> states);
+
+    /** All non-terminal requests, including those never submitted; startup reconciliation. */
+    List<AiRequest> findByStateNotIn(Collection<String> states);
 }
