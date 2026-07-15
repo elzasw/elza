@@ -76,7 +76,7 @@ using TypeSpec.OpenAPI;
  * `GET /ping`. See `SignatureAuth` and the companion `security.md`.
  */
 @service(#{ title: "Elza AI Provider API" })
-@info(#{ version: "0.8.0" })
+@info(#{ version: "0.9.0" })
 @server(
   "{endpoint}",
   "Provider-assigned base endpoint, e.g. https://ai.example.com/elza",
@@ -1473,11 +1473,14 @@ model Task {
  * - `preparation` — a preparatory step before the model turn (e.g. resolving
  *   rule-set dictionaries), including any client tool round it drives.
  * - `model_round` — one model request/response completed.
- * - `tool_call` — the model requested a tool: `tool` names it, `detail` may
- *   summarize the arguments. Covers both provider-internal tools and the client
- *   tools of `StandardToolName`.
- * - `tool_result` — a tool the provider ran internally produced a result
- *   (a summary only — internal tool results never leave the provider).
+ * - `tool_call` — the provider invoked a tool: `tool` names it, `origin` says
+ *   whether it ran inside the provider or was delegated to the client, `label` /
+ *   `summary` are display-ready, `callId` correlates it with `Task.toolCalls`,
+ *   and `refs` points at the archival object it concerns. Covers both
+ *   provider-internal tools and the client tools of `StandardToolName`.
+ * - `tool_result` — a tool the provider ran internally produced a result:
+ *   `summary` describes it (a summary only — internal tool results never leave
+ *   the provider); `tool` / `callId` match the originating `tool_call`.
  * - `answer_delta` — a slice of the answer text as it is composed, in
  *   `message`; batched, never per-token.
  *
@@ -1510,17 +1513,65 @@ model TaskEvent {
   /**
    * Display-ready one-line message, when the event has one — e.g. a `phase`
    * label or the text fragment of an `answer_delta`. In the task's language,
-   * suitable for direct display.
+   * suitable for direct display. (A tool event's human name is `label`, not
+   * here.)
    */
   message?: string;
 
   /**
-   * The tool a `tool_call` / `tool_result` event concerns — the provider's
-   * model-facing tool name. May be a client tool (a `StandardToolName` value) or
-   * a provider-internal tool the protocol otherwise never exposes; treat it as
-   * an opaque label. Absent on non-tool events.
+   * The tool a `tool_call` / `tool_result` event concerns. For a tool the
+   * provider **delegated to the client** (`origin` = `client`) this is the
+   * `StandardToolName` code — the same identity as the matching
+   * `Task.toolCalls` entry and the `awaiting_tools` pending call — so the client
+   * recognizes its own tool directly. For a **provider-internal** tool
+   * (`origin` = `internal`) it is the provider's own model-facing name, which
+   * the protocol otherwise never exposes: treat it as an opaque label. Absent on
+   * non-tool events.
    */
   tool?: string;
+
+  /**
+   * Where a tool event's tool ran: `internal` (inside the provider — e.g. a
+   * knowledge-base search; the name in `tool` is opaque) or `client` (a
+   * `StandardToolName` the provider delegated to the client, executed by it).
+   * Lets a client tell its own tools from the provider's without matching names.
+   * Present on `tool_call` / `tool_result`; absent otherwise.
+   */
+  origin?: ToolOrigin;
+
+  /**
+   * Correlation id of a `tool_call` / `tool_result` event: for a delegated tool
+   * it equals the `Task.toolCalls[].callId` (and the `awaiting_tools` pending
+   * `callId`) the client executes, so a client can fold the event, the pending
+   * call and its own execution into one activity item. Absent on non-tool
+   * events.
+   */
+  callId?: string;
+
+  /**
+   * Display-ready, localized human name of a tool event's tool — e.g. "Reading
+   * the archival description" — for the activity feed, in place of the raw
+   * `tool` code. Present on `tool_call` / `tool_result` when the provider
+   * localizes it; absent otherwise.
+   */
+  label?: string;
+
+  /**
+   * Display-ready, localized one-line summary complementing `label` on a tool
+   * event: the call's key arguments (e.g. "level 12345") on a `tool_call`, or a
+   * short result summary (e.g. "sections found: 6") on a `tool_result`. Never a
+   * full tool result or any knowledge-corpus content. Absent when there is none.
+   */
+  summary?: string;
+
+  /**
+   * The archival objects a `tool_call` / `tool_result` concerns, so a client can
+   * turn the activity line into links to them. Each entry references one object
+   * (a level or an entity); usually a single entry, but an array so a tool that
+   * fetches several objects at once can report them all. Absent when the call
+   * targets none (e.g. a knowledge-base search).
+   */
+  refs?: ArchivalObjectRef[];
 
   /** Rough completion estimate for a `phase` event, 0–100; absent otherwise. */
   @minValue(0)
@@ -1528,13 +1579,42 @@ model TaskEvent {
   percent?: float32;
 
   /**
-   * Curated, event-specific detail as free JSON — e.g. the pending
-   * `{callId, tool}` list of an `awaiting_tools` event, an error `{code}`, or a
-   * short summary of a tool call's arguments. Never a full tool result or any
-   * knowledge-corpus content. Absent when the event needs none; a client may
-   * ignore it entirely.
+   * Curated, event-specific detail as free JSON, for what has no dedicated field
+   * — e.g. the pending `{callId, tool}` list of an `awaiting_tools` event, an
+   * error `{code}`, or a `model_round`'s `{round, stopReason}`. The tool-event
+   * display and correlation data are first-class fields (`tool`, `origin`,
+   * `callId`, `label`, `summary`, `refs`); `detail` never duplicates them.
+   * Absent when the event needs none; a client may ignore it entirely.
    */
   detail?: unknown;
+}
+
+/**
+ * Where a tool event's tool ran — the recognition key that lets a client tell
+ * its own tools from the provider's internal ones (see `TaskEvent.origin`).
+ * Binary by nature (a tool either runs in the provider or is delegated to the
+ * client), so a closed set.
+ */
+enum ToolOrigin {
+  /** Executed inside the provider and never leaving it (e.g. a knowledge-base search). */
+  internal,
+
+  /** A client `StandardToolName` the provider delegated to the client to execute. */
+  client,
+}
+
+/**
+ * A reference to one archival object a tool event concerns (an entry of
+ * `TaskEvent.refs`), for linking from the activity feed. Exactly one identifier
+ * is set — a level (`nodeId`) or an entity (`accessPointId`); both are optional
+ * so the shape is forward-compatible.
+ */
+model ArchivalObjectRef {
+  /** `nodeId` of an archival description level this event concerns. */
+  nodeId?: int64;
+
+  /** `accessPointId` of an archival entity (access point) this event concerns. */
+  accessPointId?: int64;
 }
 
 /**
