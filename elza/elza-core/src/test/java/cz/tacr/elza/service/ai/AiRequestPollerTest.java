@@ -133,4 +133,23 @@ class AiRequestPollerTest {
         verify(answerBuffer).clear(3);
         verify(answerBuffer, never()).clear(4);
     }
+
+    @Test
+    void failRequestAppliesTheGivenErrorCode() {
+        // The give-up path (a task the provider can no longer answer for) settles
+        // the exchange with a TIMEOUT code through the same helper.
+        AiRequest request = request(7, "t7", "running", 70);
+        AiConversation conversation = conversation(700, 7000);
+        when(requestRepository.findById(7)).thenReturn(Optional.of(request));
+        when(conversationRepository.findById(70)).thenReturn(Optional.of(conversation));
+
+        Boolean marked = ReflectionTestUtils.invokeMethod(poller, "failRequest", 7, "TIMEOUT",
+                "The AI provider stopped responding.");
+
+        assertThat(marked).isTrue();
+        assertThat(request.getState()).isEqualTo("error");
+        assertThat(request.getErrorCode()).isEqualTo("TIMEOUT");
+        assertThat(request.getFinishDate()).isNotNull();
+        verify(answerBuffer).clear(7);
+    }
 }
