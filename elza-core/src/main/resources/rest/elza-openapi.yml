@@ -3189,8 +3189,7 @@ paths:
                   $ref: '#/components/schemas/Output.Def'
       tags:
         - output
-  /funds/out/{fundVersionId}/create:
-    put:
+    post:
       operationId: Output_createNamedOutput
       description: Creating a new named output
       parameters:
@@ -3331,10 +3330,6 @@ paths:
       responses:
         '200':
           description: The request has succeeded.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Output.RequestStatus'
       tags:
         - output
   /funds/out/{outputId}/settings:
@@ -4908,6 +4903,7 @@ paths:
           description: When set, return only the item types available in this rule set (`RulRuleSet.code`); otherwise all loaded rule sets.
           schema:
             type: string
+          explode: false
         - name: Accept-Language
           in: header
           required: false
@@ -8588,10 +8584,6 @@ components:
         - name
         - internalCode
         - outputTypeId
-        - templateId
-        - templateIds
-        - anonymizedAp
-        - outputFilterId
       properties:
         name:
           type: string

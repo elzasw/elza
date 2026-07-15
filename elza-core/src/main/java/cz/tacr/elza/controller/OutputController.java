@@ -6,7 +6,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,16 +27,28 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import cz.tacr.elza.common.FileDownload;
 import cz.tacr.elza.controller.factory.OutputFactory;
+import cz.tacr.elza.controller.vo.OutputDef;
 import cz.tacr.elza.controller.vo.OutputFormData;
 import cz.tacr.elza.controller.vo.OutputItem;
 import cz.tacr.elza.controller.vo.OutputItemRes;
+import cz.tacr.elza.controller.vo.OutputNameParam;
+import cz.tacr.elza.controller.vo.OutputRequestStatus;
+import cz.tacr.elza.controller.vo.OutputRestrictionScope;
+import cz.tacr.elza.controller.vo.OutputSettings;
+import cz.tacr.elza.controller.vo.OutputState;
+import cz.tacr.elza.controller.vo.OutputTemplate;
+import cz.tacr.elza.controller.vo.OutputType;
 import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulOutputType;
+import cz.tacr.elza.domain.UsrUser;
 import cz.tacr.elza.exception.ObjectNotFoundException;
 import cz.tacr.elza.exception.SystemException;
 import cz.tacr.elza.exception.codes.BaseCode;
@@ -43,14 +57,20 @@ import cz.tacr.elza.service.ArrIOService;
 import cz.tacr.elza.service.ArrangementService;
 import cz.tacr.elza.service.OutputService;
 import cz.tacr.elza.service.RuleService;
+import cz.tacr.elza.service.UserService;
+import cz.tacr.elza.service.output.OutputData;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 @RestController
 @RequestMapping("/api/v1")
 public class OutputController implements OutputApi {
 
     private static final Logger logger = LoggerFactory.getLogger(OutputController.class);
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private RuleService ruleService;
@@ -104,7 +124,7 @@ public class OutputController implements OutputApi {
      * @param outputVersion output version (required)
      * @param outputItem body output item (required)
      * @return The request has succeeded. (status code 200)
-     */    
+     */
     @Override
     @Transactional
     public ResponseEntity<OutputItemRes> outputUpdateOutputItem(@PathVariable("fundVersionId") Integer fundVersionId,
@@ -119,7 +139,7 @@ public class OutputController implements OutputApi {
         		outputFactory.createDef(updated.getOutput()),
         		outputFactory.createOutputItem(updated)));
     }
-    
+
     /**
      * DELETE /funds/out/item/{fundVersionId}/{outputVersion}/delete
      * Delete output item
@@ -329,9 +349,9 @@ public class OutputController implements OutputApi {
 	@Override
     @Transactional
     public ResponseEntity<Void> outputSetOutputItemMode(@PathVariable("outputId") Integer outputId,
-                                                           @PathVariable("fundVersionId") Integer fundVersionId,
-                                                           @PathVariable("itemTypeId") Integer itemTypeId,
-                                                           @PathVariable("manual") Boolean manual) {
+                                                        @PathVariable("fundVersionId") Integer fundVersionId,
+                                                        @PathVariable("itemTypeId") Integer itemTypeId,
+                                                        @PathVariable("manual") Boolean manual) {
         ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
         ArrOutput output = outputService.getOutput(outputId);
         RulItemType itemType = itemTypeRepository.findById(itemTypeId)
@@ -340,4 +360,334 @@ public class OutputController implements OutputApi {
 
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * GET /funds/out/types/{fundVersionId}
+     * Getting output types
+     *
+     * @param fundVersionId fund version id (required)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+    @Transactional
+    public ResponseEntity<List<OutputType>> outputGetOutputTypes(@PathVariable("fundVersionId") Integer fundVersionId) {
+		List<RulOutputType> outputTypes = outputService.getOutputTypes(fundVersionId);
+
+		return ResponseEntity.ok(outputFactory.createOutputTypes(outputTypes));
+	}
+
+    /**
+     * GET /funds/out/{fundVersionId}
+     * Getting list of outputs – an output object linked to a named output object
+     *
+     * @param fundVersionId fund version id (required)
+     * @param state output state (optional)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+    @Transactional
+    public ResponseEntity<List<OutputDef>> outputGetOutputs(@PathVariable("fundVersionId") Integer fundVersionId,
+    		                                                @RequestParam(value = "state", required = false) @Nullable OutputState state) {
+	    ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+	    List<ArrOutput> outputs = state == null
+	            ? outputService.getSortedOutputs(fundVersion)
+	            : outputService.getSortedOutputsByState(fundVersion, ArrOutput.OutputState.valueOf(state.name()));
+
+	    return ResponseEntity.ok(outputFactory.createDefList(outputs));		
+	}
+
+    /**
+     * GET /funds/out/{fundVersionId}/{outputId}
+     * Getting output details: an output object linked to a named output, with a list of connected nodes.
+     *
+     * @param fundVersionId fund version id (required)
+     * @param outputId output id (required)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+    @Transactional
+    public ResponseEntity<OutputDef> outputGetOutput(@PathVariable("fundVersionId") Integer fundVersionId,
+    		                                         @PathVariable("outputId") Integer outputId) {
+		ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+	    ArrOutput output = outputService.getOutput(outputId);
+	    outputService.getOutput(fundVersion, output);
+
+	    return ResponseEntity.ok(outputFactory.createDefExt(output, fundVersion));		
+	}
+
+    /**
+     * PUT /funds/out/{outputId}/settings
+     * Configuration of generated outputs
+     *
+     * @param outputId output id (required)
+     * @param outputSettings body (required)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+    @Transactional
+    public ResponseEntity<Void> outputUpdateOutputSettings(@PathVariable("outputId") Integer outputId,
+                                                           @Valid @RequestBody OutputSettings outputSettings) {
+		try {
+	        outputService.setOutputSettings(outputSettings, outputId);
+	    } catch (JsonProcessingException e) {
+	        throw new SystemException("Chyba serializace nastavení výstupu", e, BaseCode.INVALID_STATE);
+	    }
+		return ResponseEntity.ok().build();
+	}
+
+    /**
+     * GET /funds/out/{outputId}/generate
+     * Generate output
+     *
+     * @param outputId output id (required)
+     * @param forced forced (required)
+     * @return The request has succeeded. (status code 200)
+     */	
+	@Override
+    @Transactional
+    public ResponseEntity<OutputRequestStatus> outputGenerateOutput(@PathVariable("outputId") Integer outputId,
+                                                                    @NotNull @Valid @RequestParam(value = "forced", defaultValue = "false") Boolean forced) {
+	    ArrOutput output = outputService.getOutput(outputId);
+
+	    UsrUser loggedUser = userService.getLoggedUser();
+	    Integer userId = loggedUser != null ? loggedUser.getUserId() : null;
+
+	    ArrFundVersion fundVersion = arrangementService.getOpenVersionByFundId(output.getFundId());
+	    cz.tacr.elza.service.output.OutputRequestStatus outputRequestStatus = outputService.addRequest(outputId, fundVersion, !forced, userId);
+
+	    return ResponseEntity.ok(OutputRequestStatus.valueOf(outputRequestStatus.name()));		
+	}
+
+    /**
+     * GET /funds/out/{outputId}/send
+     * Send output
+     *
+     * @param outputId output id (required)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+    @Transactional
+    public ResponseEntity<Void> outputSendOutput(@PathVariable("outputId") Integer outputId) {
+        ArrOutput output = outputService.getOutput(outputId);
+        outputService.sendOutput(output);
+
+        return ResponseEntity.ok().build();
+	}
+
+    /**
+     * POST /funds/out/{fundVersionId}
+     * Creating a new named output
+     *
+     * @param fundVersionId fund version id (required)
+     * @param outputNameParam output parameters (required)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+    @Transactional
+    public ResponseEntity<OutputDef> outputCreateNamedOutput(@PathVariable("fundVersionId") Integer fundVersionId,
+                                                             @Valid @RequestBody OutputNameParam outputNameParam) {
+	    Assert.notNull(outputNameParam, "Vstupní data musí být vyplněny");
+	    ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+
+	    Set<Integer> templateIds = new HashSet<>();
+	    if (outputNameParam.getTemplateId() != null) {
+	        templateIds.add(outputNameParam.getTemplateId());
+	    }
+	    if (outputNameParam.getTemplateIds() != null) {
+	        templateIds.addAll(outputNameParam.getTemplateIds());
+	    }
+	    OutputData outputData = outputService.createOutput(fundVersion,
+	            outputNameParam.getName(),
+	            outputNameParam.getInternalCode(),
+	            outputNameParam.getOutputTypeId(),
+	            templateIds,
+	            outputNameParam.getOutputFilterId());
+
+	    return ResponseEntity.ok(outputFactory.createDefExt(outputData.getOutput(), fundVersion));		
+	}
+
+    /**
+     * DELETE /funds/out/{outputId}/{fundVersionId}
+     * Deleting named output
+     *
+     * @param outputId output id (required)
+     * @param fundVersionId fund version id (required)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+    @Transactional
+	public ResponseEntity<Void> outputDeleteNamedOutput(@PathVariable("outputId") Integer outputId,
+                                                        @PathVariable("fundVersionId") Integer fundVersionId) {
+		ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        outputService.deleteNamedOutput(fundVersion, output);
+
+        return ResponseEntity.ok().build();
+	}
+
+    /**
+     * PUT /funds/out/{outputId}/{fundVersionId}/update
+     * Update output
+     *
+     * @param outputId output id (required)
+     * @param fundVersionId fund version id (required)
+     * @param outputNameParam output parameters (required)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+    @Transactional
+	public ResponseEntity<Void> outputUpdateNamedOutput(@PathVariable("outputId") Integer outputId,
+                                                        @PathVariable("fundVersionId") Integer fundVersionId,
+                                                        @Valid @RequestBody OutputNameParam param) {
+        Assert.notNull(param, "Vstupní data musí být vyplněny");
+        ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        outputService.updateNamedOutput(fundVersion, output, param.getName(), param.getInternalCode(), param.getTemplateId(), param.getAnonymizedAp(), param.getOutputFilterId());
+
+        return ResponseEntity.ok().build();
+	}
+
+    /**
+     * POST /funds/out/{outputId}/{fundVersionId}/nodes/add
+     * Adding nodes to output
+     *
+     * @param outputId output id (required)
+     * @param fundVersionId fund version id (required)
+     * @param requestBody list of node ids (required)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+    @Transactional
+	public ResponseEntity<Void> outputAddNodesNamedOutput(@PathVariable("outputId") Integer outputId,
+                                                          @PathVariable("fundVersionId") Integer fundVersionId,
+                                                          @Valid @RequestBody List<Integer> nodeIds) {
+		ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        outputService.addNodesNamedOutput(fundVersion, output, nodeIds);
+
+        return ResponseEntity.ok().build();
+	}
+
+    /**
+     * DELETE /funds/out/{outputId}/{fundVersionId}/nodes/remove
+     * Removing nodes from output
+     *
+     * @param outputId output id (required)
+     * @param fundVersionId fund version id (required)
+     * @param requestBody list of node ids (required)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+    @Transactional
+    public ResponseEntity<Void> outputRemoveNodesNamedOutput(@PathVariable("outputId") Integer outputId,
+                                                             @PathVariable("fundVersionId") Integer fundVersionId,
+                                                             @Valid @RequestBody List<Integer> nodeIds) {
+		ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        outputService.removeNodesNamedOutput(fundVersion, output, nodeIds);
+
+        return ResponseEntity.ok().build();
+	}
+ 
+    /**
+     * POST /funds/out/{outputId}/{fundVersionId}/revert
+     * Reset status of a named output to \&quot;Open\&quot;
+     *
+     * @param outputId output id (required)
+     * @param fundVersionId fund version id (required)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+    @Transactional
+    public ResponseEntity<Void> outputRevertToOpenState(@PathVariable("outputId") Integer outputId,
+                                                        @PathVariable("fundVersionId") Integer fundVersionId) {
+    	ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+        ArrOutput output = outputService.getOutput(outputId);
+        outputService.revertToOpenState(fundVersion, output);
+
+        return ResponseEntity.ok().build();
+    }
+    
+    /**
+     * POST /funds/out/{outputId}/{fundVersionId}/clone
+     * Creating copy of output
+     *
+     * @param outputId output id (required)
+     * @param fundVersionId fund version id (required)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+    @Transactional
+    public ResponseEntity<OutputDef> outputCloneOutput(@PathVariable("outputId") Integer outputId,
+                                                       @PathVariable("fundVersionId") Integer fundVersionId) {
+		ArrFundVersion fundVersion = arrangementService.getFundVersion(fundVersionId);
+	    ArrOutput output = outputService.getOutput(outputId);
+	    OutputData outputData = outputService.cloneOutput(fundVersion, output);
+
+	    return ResponseEntity.ok(outputFactory.createDefExt(outputData.getOutput(), fundVersion));
+    }
+
+    /**
+     * POST /funds/out/{outputId}/restrict/{scopeId}
+     * Adding limiting register to output
+     *
+     * @param outputId output id (required)
+     * @param scopeId scope id (required)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+    @Transactional
+	public ResponseEntity<OutputRestrictionScope> outputAddRestrictedScope(@PathVariable("outputId") Integer outputId,
+                                                                           @PathVariable("scopeId") Integer scopeId) {
+		return ResponseEntity.ok(
+				outputFactory.createRestrictionScope(outputService.addRestrictedScope(outputId, scopeId)));
+	}
+
+    /**
+     * DELETE /funds/out/{outputId}/restrict/{scopeId}
+     * Deleting limiting register from output
+     *
+     * @param outputId output id (required)
+     * @param scopeId scope id (required)
+     * @return The request has succeeded. (status code 200)
+     */
+	@Override
+    @Transactional
+	public ResponseEntity<Void> outputDeleteRestrictedScope(@PathVariable("outputId") Integer outputId,
+                                                            @PathVariable("scopeId") Integer scopeId) {
+		outputService.deleteRestrictedScope(outputId, scopeId);
+
+		return ResponseEntity.ok().build();
+	}
+
+    /**
+     * POST /funds/out/{outputId}/template/{templateId}
+     * Adding template to output
+     *
+     * @param outputId output id (required)
+     * @param templateId template id (required)
+     * @return The request has succeeded. (status code 200)
+     */
+	public ResponseEntity<OutputTemplate> outputAddOutputTemplate(@PathVariable("outputId") Integer outputId,
+                                                                  @PathVariable("templateId") Integer templateId) {
+	    ArrOutput output = outputService.getOutput(outputId);
+	    return ResponseEntity.ok(outputFactory.createTemplate(outputService.addOutputTemplate(output.getFundId(), output, templateId)));		
+	}
+	
+    /**
+     * DELETE /funds/out/{outputId}/template/{templateId}
+     * Deleting template from output
+     *
+     * @param outputId output id (required)
+     * @param templateId template id (required)
+     * @return The request has succeeded. (status code 200)
+     */
+	public ResponseEntity<Void> outputDeleteOutputTemplate(@PathVariable("outputId") Integer outputId,
+                                                            @PathVariable("templateId") Integer templateId) {
+    	ArrOutput output = outputService.getOutput(outputId);
+    	outputService.deleteOutputTemplate(output.getFundId(), output, templateId);
+		
+		return ResponseEntity.ok().build();
+	}
+
 }

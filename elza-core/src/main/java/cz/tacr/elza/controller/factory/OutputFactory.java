@@ -1,6 +1,7 @@
 package cz.tacr.elza.controller.factory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -14,22 +15,38 @@ import org.springframework.util.Assert;
 import cz.tacr.elza.common.db.HibernateUtils;
 import cz.tacr.elza.controller.config.ClientFactoryDO;
 import cz.tacr.elza.controller.config.ClientFactoryVO;
+import cz.tacr.elza.controller.vo.ApScopeVO;
+import cz.tacr.elza.controller.vo.ArrOutputRestrictionScopeVO;
+import cz.tacr.elza.controller.vo.ArrOutputTemplateVO;
 import cz.tacr.elza.controller.vo.FormItemType;
+import cz.tacr.elza.controller.vo.NodeTreeData;
 import cz.tacr.elza.controller.vo.OutputDef;
 import cz.tacr.elza.controller.vo.OutputItem;
+import cz.tacr.elza.controller.vo.OutputRestrictionScope;
 import cz.tacr.elza.controller.vo.OutputState;
+import cz.tacr.elza.controller.vo.OutputTemplate;
+import cz.tacr.elza.controller.vo.OutputType;
+import cz.tacr.elza.controller.vo.Scope;
+import cz.tacr.elza.controller.vo.TreeNodeVO;
 import cz.tacr.elza.core.data.DataType;
 import cz.tacr.elza.core.data.StaticDataProvider;
 import cz.tacr.elza.core.data.StaticDataService;
+import cz.tacr.elza.domain.ApAccessPoint;
 import cz.tacr.elza.domain.ArrData;
+import cz.tacr.elza.domain.ArrFundVersion;
 import cz.tacr.elza.domain.ArrItem;
+import cz.tacr.elza.domain.ArrNodeOutput;
 import cz.tacr.elza.domain.ArrOutput;
 import cz.tacr.elza.domain.ArrOutputItem;
 import cz.tacr.elza.domain.ArrOutputResult;
+import cz.tacr.elza.domain.ArrOutputTemplate;
 import cz.tacr.elza.domain.RulItemType;
 import cz.tacr.elza.domain.RulItemTypeExt;
+import cz.tacr.elza.domain.RulOutputType;
 import cz.tacr.elza.exception.BusinessException;
 import cz.tacr.elza.exception.codes.BaseCode;
+import cz.tacr.elza.service.LevelTreeCacheService;
+import cz.tacr.elza.service.OutputServiceInternal;
 
 @Component
 public class OutputFactory {
@@ -42,6 +59,79 @@ public class OutputFactory {
 
     @Autowired
     private ClientFactoryVO clientFactoryVO;
+
+    @Autowired
+    private OutputServiceInternal outputServiceInternal;
+
+    @Autowired
+    private LevelTreeCacheService levelTreeCacheService;
+
+    @Autowired
+    private ApFactory apFactory;
+
+    /**
+     * Extended ArrOutput -> OutputDef. Fills additional fields (templateIds, nodes,
+     * scopes, anonymizedAp) beyond {@link #createDef(ArrOutput)}.
+     */
+    public OutputDef createDefExt(final ArrOutput output, final ArrFundVersion fundVersion) {
+        OutputDef def = createDef(output);
+
+        List<ArrOutputTemplate> outputTemplates = outputServiceInternal.getOutputTemplates(output);
+        if (CollectionUtils.isNotEmpty(outputTemplates)) {
+            def.setTemplateIds(outputTemplates.stream()
+                    .map(ArrOutputTemplate::getTemplateId)
+                    .collect(Collectors.toList()));
+        } else {
+            def.setTemplateIds(Collections.emptyList());
+        }
+
+        List<ArrNodeOutput> outputNodes = outputServiceInternal.getOutputNodes(output, fundVersion.getLockChange());
+        List<Integer> nodeIds = outputNodes.stream().map(ArrNodeOutput::getNodeId).collect(Collectors.toList());
+        def.setNodes(mapNodes(levelTreeCacheService.getNodesByIds(nodeIds, fundVersion)));
+
+        def.setScopes(mapScopes(outputServiceInternal.getRestrictedScopeVOs(output)));
+
+        ApAccessPoint anonymizedAp = output.getAnonymizedAp();
+        if (anonymizedAp != null) {
+            def.setAnonymizedAp(apFactory.createVO(anonymizedAp));
+        }
+        return def;
+    }
+
+    private List<NodeTreeData> mapNodes(final List<TreeNodeVO> nodes) {
+        if (nodes == null) {
+            return Collections.emptyList();
+        }
+        return nodes.stream().map(src -> {
+            NodeTreeData ntd = new NodeTreeData();
+            ntd.setId(src.getId());
+            ntd.setDepth(src.getDepth());
+            ntd.setName(src.getName());
+            ntd.setIcon(src.getIcon());
+            ntd.setHasChildren(src.isHasChildren());
+            ntd.setVersion(src.getVersion());
+            ntd.setArrPerm(src.isArrPerm());
+            if (src.getReferenceMark() != null) {
+                ntd.setReferenceMark(Arrays.asList(src.getReferenceMark()));
+            }
+            return ntd;
+        }).collect(Collectors.toList());
+    }
+
+    private List<Scope> mapScopes(final List<ApScopeVO> scopes) {
+        if (scopes == null) {
+            return Collections.emptyList();
+        }
+        return scopes.stream().map(src -> {
+            Scope scope = new Scope();
+            scope.setId(src.getId());
+            scope.setCode(src.getCode());
+            scope.setName(src.getName());
+            scope.setLanguage(src.getLanguage());
+            scope.setRuleSetCode(src.getRuleSetCode());
+            return scope;
+        }).collect(Collectors.toList());
+    }
 
     /**
      * ArrOutput -> OutputDef.
@@ -77,6 +167,16 @@ public class OutputFactory {
             def.setOutputFilterId(output.getOutputFilter().getOutputFilterId());
         }
         return def;
+    }
+
+    /**
+     * List<ArrOutput> -> List<OutputDef>
+     */
+    public List<OutputDef> createDefList(final List<ArrOutput> outputs) {
+        if (outputs == null) {
+            return Collections.emptyList();
+        }
+        return outputs.stream().map(this::createDef).collect(Collectors.toList());
     }
 
     /**
@@ -154,5 +254,39 @@ public class OutputFactory {
     		                                      final Integer fundId,
                                                   final List<RulItemTypeExt> itemTypes) {
         return clientFactoryVO.createFormItemTypes(ruleCode, fundId, itemTypes);
+    }
+
+    public OutputType createOutputType(final RulOutputType outputType) {
+        Objects.requireNonNull(outputType, "Typ výstupu musí být vyplněn");
+        OutputType vo = new OutputType();
+        vo.setId(outputType.getOutputTypeId());
+        vo.setCode(outputType.getCode());
+        vo.setName(outputType.getName());
+        return vo;
+    }
+
+    public List<OutputType> createOutputTypes(final List<RulOutputType> outputTypes) {
+        if (outputTypes == null) {
+            return Collections.emptyList();
+        }
+        return outputTypes.stream().map(this::createOutputType).collect(Collectors.toList());
+    }
+
+    public OutputRestrictionScope createRestrictionScope(final ArrOutputRestrictionScopeVO src) {
+        Objects.requireNonNull(src, "Restrikce scope musí být vyplněna");
+        OutputRestrictionScope vo = new OutputRestrictionScope();
+        vo.setId(src.getId());
+        vo.setOutputId(src.getOutputId());
+        vo.setScopeId(src.getScopeId());
+        return vo;
+    }
+
+    public OutputTemplate createTemplate(final ArrOutputTemplateVO src) {
+        Objects.requireNonNull(src, "Šablona výstupu musí být vyplněna");
+        OutputTemplate vo = new OutputTemplate();
+        vo.setId(src.getId());
+        vo.setOutputId(src.getOutputId());
+        vo.setTemplateId(src.getTemplateId());
+        return vo;
     }
 }
