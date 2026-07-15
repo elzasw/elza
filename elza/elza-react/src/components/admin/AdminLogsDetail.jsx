@@ -1,9 +1,10 @@
 import React from 'react';
-import {AbstractReactComponent, FormInput, Icon} from 'components/shared';
+import {AbstractReactComponent} from 'components/shared';
 import {WebApi} from 'actions/index.jsx';
+import {Button, SpinButton, Tooltip} from '@fluentui/react-components';
+import {ArrowDownRegular, PauseRegular, PlayRegular} from '@fluentui/react-icons';
 
 import './AdminLogsDetail.scss';
-import {Col, Row} from 'react-bootstrap';
 
 /**
  * Komponenta detailu osoby
@@ -47,9 +48,9 @@ class AdminLogsDetail extends AbstractReactComponent {
         }
     };
 
-    changeLineCount = e => {
-        const value = e.target.value;
-        if (value <= 0 || value > 10000) {
+    changeLineCount = (_event, data) => {
+        const value = data.value ?? Number(data.displayValue);
+        if (isNaN(value) || value <= 0 || value > 10000) {
             return;
         }
 
@@ -117,10 +118,10 @@ class AdminLogsDetail extends AbstractReactComponent {
             });
     };
 
-    scrollDown = () => {
+    scrollDown = (smooth = false) => {
         if (this.refs.textLog) {
             const t = this.refs.textLog;
-            t.scrollTop = t.scrollHeight;
+            t.scrollTo({top: t.scrollHeight, behavior: smooth ? 'smooth' : 'auto'});
         }
     };
 
@@ -131,49 +132,46 @@ class AdminLogsDetail extends AbstractReactComponent {
 
         const isOnEnd = this.isOnEnd();
 
-        let cls = 'btn';
-        if (isOnEnd) {
-            cls += ' active';
-        }
-
         return (
             <section className="logs-detail">
-                <Row className="log-controll-buttons">
-                    <Col xs="1">
-                        <div className="">
-                            <button className={cls} onClick={this.scrollDown}>
-                                <Icon glyph="fa-sort-desc" />
-                            </button>
-                            <button className="btn" onClick={this.pauseContinue}>
-                                {this.stop ? 'Pokračovat' : 'Pozastavit'}
-                            </button>
-                        </div>
-                    </Col>
-                    <Col xs="3">
-                        <FormInput
-                            type="number"
-                            value={lineCount}
-                            min="1"
-                            max="10000"
-                            onChange={this.changeLineCount}
-                            label={false}
+                <div className="log-controll-buttons">
+                    <Tooltip content="Posunout dolů" relationship="label" withArrow>
+                        <Button
+                            appearance="outline"
+                            disabled={isOnEnd}
+                            icon={<ArrowDownRegular />}
+                            onClick={() => this.scrollDown(true)}
                         />
-                    </Col>
-                </Row>
-                <Row className="">
-                    <Col xs={12}>
-                        <textarea
-                            readOnly
-                            onScroll={() => {
-                                this.setState({});
-                            }}
-                            spellCheck="false"
-                            ref="textLog"
-                            className="logs"
-                            value={fetched ? logs.map(line => line + '\n').join('') : 'Načítání...'}
-                        ></textarea>
-                    </Col>
-                </Row>
+                    </Tooltip>
+                    <Tooltip
+                        content={this.stop ? 'Pokračovat' : 'Pozastavit'}
+                        relationship="label"
+                        withArrow
+                    >
+                        <Button
+                            icon={this.stop ? <PlayRegular /> : <PauseRegular />}
+                            onClick={this.pauseContinue}
+                        />
+                    </Tooltip>
+                    <SpinButton
+                        value={lineCount}
+                        min={1}
+                        max={10000}
+                        onChange={this.changeLineCount}
+                    />
+                </div>
+                <div className="logs-readout">
+                    <textarea
+                        readOnly
+                        onScroll={() => {
+                            this.setState({});
+                        }}
+                        spellCheck="false"
+                        ref="textLog"
+                        className="logs"
+                        value={fetched ? logs.map(line => line + '\n').join('') : 'Načítání...'}
+                    ></textarea>
+                </div>
             </section>
         );
     }

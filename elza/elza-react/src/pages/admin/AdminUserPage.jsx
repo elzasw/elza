@@ -3,7 +3,7 @@ import './AdminUserPage.scss';
 
 import React from 'react';
 import {connect} from 'react-redux';
-import PageLayout from '../shared/layout/PageLayout';
+import { AdminLayout } from '../shared/layout/AdminLayout';
 import {FormControl} from 'react-bootstrap';
 import {Button} from '../../components/ui';
 import {
@@ -251,7 +251,7 @@ class AdminUserPage extends AbstractReactComponent {
             );
         }
 
-        return <Ribbon admin {...this.props} altSection={altSection} itemSection={itemSection} />;
+        return <Ribbon {...this.props} altSection={altSection} itemSection={itemSection} />;
     }
 
     handleFilterStateChange(e) {
@@ -299,7 +299,7 @@ class AdminUserPage extends AbstractReactComponent {
         }
 
         return (
-            <PageLayout
+            <AdminLayout
                 splitter={splitter}
                 className="admin-user-page"
                 ribbon={this.buildRibbon()}

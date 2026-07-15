@@ -41,10 +41,6 @@ import { ExperimentalFeature } from 'components/shared/ExperimentalFeature';
 const displayUserInfo = window.displayUserInfo !== undefined ? window.displayUserInfo : true;
 
 const messages = defineMessages({
-    reports: {
-        id: 'ribbon_action_admin_reports',
-        defaultMessage: 'Přehledy',
-    },
     publication: {
         id: 'ribbon.action.publication',
         defaultMessage: 'Publikace',
@@ -56,7 +52,6 @@ class Ribbon extends AbstractReactComponent {
         showUser: PropTypes.bool,
         subMenu: PropTypes.bool,
         primarySection: PropTypes.object,
-        admin: PropTypes.bool,
         arr: PropTypes.bool,
         altSection: PropTypes.node,
         itemSection: PropTypes.node,
@@ -156,86 +151,6 @@ class Ribbon extends AbstractReactComponent {
 
         let section = null;
         // Aktomatické sekce podle vybrané oblasti
-        if (this.props.admin) {
-            const isSuperuser = userDetail.hasOne(perms.ADMIN);
-            // Users can be administered if controlls some group or user
-            const administersUser =
-                userDetail.hasOne(perms.GROUP_CONTROL_ENTITY, perms.USR_PERM) ||
-                userDetail.hasOne(perms.USER_CONTROL_ENTITY, perms.USR_PERM);
-            const administersGroup = userDetail.hasOne(perms.GROUP_CONTROL_ENTITY, perms.USR_PERM);
-            const canSeeReports = userDetail.hasOne(perms.REPORT_ALL);
-
-            section = (
-                <RibbonGroup key="ribbon-group-admin" className="large">
-                    {administersUser && (
-                        <LinkContainer key="ribbon-btn-admin-user" to="/admin/user">
-                            <Button variant={'default'}>
-                                <Icon glyph="fa-user" />
-                                <span className="btnText">{i18n('ribbon.action.admin.user')}</span>
-                            </Button>
-                        </LinkContainer>
-                    )}
-                    {administersGroup && (
-                        <LinkContainer key="ribbon-btn-admin-groups" to="/admin/group">
-                            <Button variant={'default'}>
-                                <Icon glyph="fa-group" />
-                                <span className="btnText">{i18n('ribbon.action.admin.group')}</span>
-                            </Button>
-                        </LinkContainer>
-                    )}
-                    {(administersGroup || administersUser) && (
-                        <LinkContainer key="ribbon-btn-admin-funds" to="/admin/fund">
-                            <Button variant={'default'}>
-                                <Icon glyph="fa-database" />
-                                <span className="btnText">{i18n('ribbon.action.admin.fund')}</span>
-                            </Button>
-                        </LinkContainer>
-                    )}
-                    {canSeeReports &&
-                        <LinkContainer key="ribbon-btn-admin-reports" to="/admin/reports">
-                            <Button variant={'default'}>
-                                <Icon glyph="fa-line-chart" />
-                                <span className="btnText">
-                                    <FormattedMessage {...messages.reports} />
-                                </span>
-                            </Button>
-                        </LinkContainer>
-                    }
-                    {isSuperuser && [
-                        <LinkContainer key="ribbon-btn-admin-packages" to="/admin/packages">
-                            <Button variant={'default'}>
-                                <Icon glyph="fa-archive" />
-                                <span className="btnText">{i18n('ribbon.action.admin.packages')}</span>
-                            </Button>
-                        </LinkContainer>,
-                        <LinkContainer key="ribbon-btn-admin-external-systems" to="/admin/extSystem">
-                            <Button variant={'default'}>
-                                <Icon glyph="fa-external-link" />
-                                <span className="btnText">{i18n('ribbon.action.admin.externalSystems')}</span>
-                            </Button>
-                        </LinkContainer>,
-                        <LinkContainer key="ribbon-btn-admin-bulkActions" to="/admin/backgroundProcesses">
-                            <Button>
-                                <Icon glyph="fa-list-alt" />
-                                <span className="btnText">{i18n('ribbon.action.admin.backgroundProcesses')}</span>
-                            </Button>
-                        </LinkContainer>,
-                        <LinkContainer key="ribbon-btn-admin-requestsQueue" to="/admin/requestsQueue">
-                            <Button variant={'default'}>
-                                <Icon glyph="fa-shopping-basket" />
-                                <span className="btnText">{i18n('ribbon.action.admin.requestsQueue')}</span>
-                            </Button>
-                        </LinkContainer>,
-                        <LinkContainer key="ribbon-btn-admin-show-logs" to="/admin/logs">
-                            <Button variant={'default'}>
-                                <Icon glyph="fa-file-text-o" />
-                                <span className="btnText">{i18n('ribbon.action.admin.showLogs')}</span>
-                            </Button>
-                        </LinkContainer>,
-                    ]}
-                </RibbonGroup>
-            );
-        }
         if (this.props.arr) {
             const arrParts = [];
             if (userDetail.hasRdPage(fundId)) {

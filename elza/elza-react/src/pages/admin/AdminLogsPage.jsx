@@ -1,7 +1,7 @@
 import React from 'react';
 import {RibbonGroup, Utils} from 'components/shared';
 import {AdminLogsDetail, Ribbon} from 'components/index.jsx';
-import PageLayout from '../shared/layout/PageLayout';
+import { AdminLayout } from '../shared/layout/AdminLayout';
 import {Shortcuts} from 'react-shortcuts';
 import './AdminExtSystemPage.scss';
 import AbstractReactComponent from '../../components/AbstractReactComponent';
@@ -50,7 +50,7 @@ class AdminLogsPage extends AbstractReactComponent {
             );
         }
 
-        return <Ribbon admin altSection={altSection} itemSection={itemSection} {...this.props} />;
+        return <Ribbon altSection={altSection} itemSection={itemSection} {...this.props} />;
     };
 
     /**
@@ -64,8 +64,8 @@ class AdminLogsPage extends AbstractReactComponent {
         const centerPanel = <AdminLogsDetail />;
 
         return (
-            <Shortcuts name="AdminLogsPage" handler={this.handleShortcuts}>
-                <PageLayout
+            <Shortcuts name="AdminLogsPage" handler={this.handleShortcuts} className="admin-page-shortcuts">
+                <AdminLayout
                     splitter={{}}
                     className="admin-logs-page"
                     ribbon={this.buildRibbon()}
