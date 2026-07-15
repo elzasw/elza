@@ -143,8 +143,10 @@ export function AiRequestActivities({ activities }: Props) {
                             ) : (
                                 <Spinner size="extra-tiny" />
                             )}
-                            <span className={styles.title}>{activityTitle(activity, intl)}</span>
-                            {activity.query && <span className={styles.query}>{activity.query}</span>}
+                            <span className={styles.title}>{activity.label ?? activityTitle(activity, intl)}</span>
+                            {(activity.summary ?? activity.query) && (
+                                <span className={styles.query}>{activity.summary ?? activity.query}</span>
+                            )}
                             {activity.state === STATE_DONE && activity.resultCount != null && (
                                 <span className={styles.result}>
                                     {intl.formatMessage(aiAssistantMessages.activityResultCount, {
@@ -162,19 +164,23 @@ export function AiRequestActivities({ activities }: Props) {
                             <div className={styles.links}>
                                 {shownLinks.map((link, index) => {
                                     const path = linkPath(link.target);
-                                    const label = link.label || path;
+                                    // A `refs`-derived link carries no name — fall back to a generic
+                                    // "open" label so it never renders a raw URL.
+                                    const label =
+                                        link.label ??
+                                        (path ? intl.formatMessage(aiAssistantMessages.activityLinkOpen) : null);
                                     if (!label) return null;
                                     return path ? (
                                         <Link
                                             key={index}
                                             className={styles.link}
-                                            title={link.label}
+                                            title={label}
                                             onClick={() => dispatch(routerNavigate(path))}
                                         >
                                             {label}
                                         </Link>
                                     ) : (
-                                        <span key={index} className={styles.link} title={link.label}>
+                                        <span key={index} className={styles.link} title={label}>
                                             {label}
                                         </span>
                                     );

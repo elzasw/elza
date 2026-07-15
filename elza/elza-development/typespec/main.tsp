@@ -2446,11 +2446,26 @@ model AiRequestActivity {
     /** Tool name for TOOL_CALL: `searchNodes`, `getItemTypes`, … */
     tool?: string;
 
+    /**
+     * Localized, display-ready name of a provider-internal step (from the
+     * task-event stream); render in place of `tool`. Absent for a client tool
+     * Elza executed itself — the client renders those from `tool`.
+     */
+    label?: string;
+
     /** RUNNING | DONE | ERROR (open set). */
     state: string;
 
     /** Data-like input summary: the fulltext query / the rule-set code. */
     query?: string;
+
+    /**
+     * Localized, display-ready one-line detail of a provider-internal step: the
+     * call's key arguments, or a short result summary once DONE. Secondary text
+     * next to `label`; for a client tool the client shows `query`/`resultCount`
+     * instead.
+     */
+    summary?: string;
 
     /** Result size once DONE: search hits, dictionary entries. */
     resultCount?: int64;
@@ -2542,7 +2557,12 @@ model AiContextFund extends AiContextObject {
 model AiContextNode extends AiContextObject {
     @invisible(Lifecycle)
     type: AiContextType.NODE;
-    fundId: int32;
+    /**
+     * `ArrFund.fundId`. Present for a UI-context node or a search hit; absent on
+     * a link built from a bare object reference (a tool event's `refs`), where
+     * only the node id is known and the fund is not needed to navigate.
+     */
+    fundId?: int32;
     fundVersionId?: int32;
     nodeId: int32;
 }

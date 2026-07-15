@@ -297,6 +297,10 @@
     "defaultMessage": "Settings",
     "srcHash": "4BNW7MyPieeu"
   },
+  "aiAssistant.activity.linkOpen": {
+    "defaultMessage": "Show record",
+    "srcHash": "4TJ9uV9Hs2DT"
+  },
   "aiAssistant.activity.moreLinks": {
     "defaultMessage": "{count, plural, one {+# more} other {+# more}}",
     "srcHash": "1Z8ideBGxiey"
