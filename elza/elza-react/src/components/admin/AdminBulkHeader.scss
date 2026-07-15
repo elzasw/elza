@@ -1,3 +1,5 @@
+@import "../../variables.scss";
+
 .bulk-containter{
     display: flex;
     flex-direction: row;
@@ -24,5 +26,15 @@
     .bulk-threads {
         width: 40%;
         padding: 0 15px;
+
+        .table {
+            --bs-table-bg: transparent;
+            --bs-table-color: #{$fg-color};
+            --bs-table-border-color: #{$border-color};
+            --bs-table-striped-bg: #{$shade-1};
+            --bs-table-striped-color: #{$fg-color};
+            --bs-table-hover-bg: #{$shade-2};
+            --bs-table-hover-color: #{$fg-color};
+        }
     }
 }

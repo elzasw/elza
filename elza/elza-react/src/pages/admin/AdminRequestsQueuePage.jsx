@@ -8,6 +8,7 @@ import {Button} from '../../components/ui';
 import {AbstractReactComponent, i18n, StoreHorizontalLoader} from 'components/shared';
 import {Ribbon} from 'components/index.jsx';
 import { AdminLayout } from '../shared/layout/AdminLayout';
+import './AdminRequestsQueuePage.scss';
 import * as arrRequestActions from 'actions/arr/arrRequestActions';
 import {
     createDaoLinkName,

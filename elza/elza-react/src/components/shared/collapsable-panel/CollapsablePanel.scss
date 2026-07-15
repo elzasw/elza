@@ -1,0 +1,19 @@
+@import "../../../variables.scss";
+
+.collapsable-panel {
+    --bs-accordion-color: #{$fg-color};
+    --bs-accordion-bg: transparent;
+    --bs-accordion-border-color: #{$border-color};
+    --bs-accordion-btn-color: #{$fg-color};
+    --bs-accordion-btn-bg: #{$shade-3};
+    --bs-accordion-active-color: #{$fg-color};
+    --bs-accordion-active-bg: #{$shade-5};
+    --bs-accordion-btn-focus-border-color: #{$focus-border-color};
+    --bs-accordion-btn-focus-box-shadow: none;
+
+    .accordion-button {
+        &:hover {
+            background-color: $shade-4;
+        }
+    }
+}
